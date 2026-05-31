@@ -8,18 +8,18 @@ window.addEventListener('blur', () => keys.clear())
 // Returns { x, z } in world space, length <= 1.
 // Camera looks down +z toward origin, so W (forward) = -z.
 export function moveVector() {
-  let x = 0
-  let z = 0
-  if (keys.has('KeyW') || keys.has('ArrowUp')) z -= 1
-  if (keys.has('KeyS') || keys.has('ArrowDown')) z += 1
-  if (keys.has('KeyA') || keys.has('ArrowLeft')) x -= 1
-  if (keys.has('KeyD') || keys.has('ArrowRight')) x += 1
-  const len = Math.hypot(x, z)
-  if (len > 1) {
-    x /= len
-    z /= len
-  }
-  return { x, z }
+	let x = 0
+	let z = 0
+	if (keys.has('KeyW') || keys.has('ArrowUp')) z -= 1
+	if (keys.has('KeyS') || keys.has('ArrowDown')) z += 1
+	if (keys.has('KeyA') || keys.has('ArrowLeft')) x -= 1
+	if (keys.has('KeyD') || keys.has('ArrowRight')) x += 1
+	const len = Math.hypot(x, z)
+	if (len > 1) {
+		x /= len
+		z /= len
+	}
+	return { x, z }
 }
 
 // --- Pointer (aim) + shoot edge-detect ---
@@ -32,51 +32,53 @@ let releaseQueued = false
 let down = false
 
 window.addEventListener('pointermove', (e) => {
-  pointer.x = (e.clientX / window.innerWidth) * 2 - 1
-  pointer.y = -(e.clientY / window.innerHeight) * 2 + 1
+	pointer.x = (e.clientX / window.innerWidth) * 2 - 1
+	pointer.y = -(e.clientY / window.innerHeight) * 2 + 1
 })
 window.addEventListener('pointerdown', (e) => {
-  if (e.button !== 0) return
-  down = true
-  pressQueued = true
+	if (e.button !== 0) return
+	down = true
+	pressQueued = true
 })
 window.addEventListener('pointerup', (e) => {
-  if (e.button !== 0) return
-  down = false
-  releaseQueued = true
+	if (e.button !== 0) return
+	down = false
+	releaseQueued = true
 })
-window.addEventListener('blur', () => { down = false })
+window.addEventListener('blur', () => {
+	down = false
+})
 
 export function pointerNDC() {
-  return pointer
+	return pointer
 }
 
 // True once per press; clears the flag so each click fires a single shot.
 export function consumePress() {
-  if (pressQueued) {
-    pressQueued = false
-    return true
-  }
-  return false
+	if (pressQueued) {
+		pressQueued = false
+		return true
+	}
+	return false
 }
 
 // True once per release of the left button.
 export function consumeRelease() {
-  if (releaseQueued) {
-    releaseQueued = false
-    return true
-  }
-  return false
+	if (releaseQueued) {
+		releaseQueued = false
+		return true
+	}
+	return false
 }
 
 // Is the left button currently held? (drives the charge meter)
 export function pointerDown() {
-  return down
+	return down
 }
 
 // Swallow any pending edges (used when a round starts, so the click that
 // dismissed the overlay doesn't immediately loose an arrow).
 export function clearShoot() {
-  pressQueued = false
-  releaseQueued = false
+	pressQueued = false
+	releaseQueued = false
 }

@@ -1,81 +1,171 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>arrrrow</title>
-    <style>
-      :root { color-scheme: dark; }
-      html, body { margin: 0; height: 100%; overflow: hidden; background: #0b0e14; }
-      #app { width: 100vw; height: 100vh; display: block; }
-      #hud {
-        position: fixed; top: 12px; left: 12px;
-        font: 13px/1.4 ui-monospace, monospace; color: #9aa7bd;
-        pointer-events: none; white-space: pre;
-      }
-      #combat {
-        position: fixed; bottom: 12px; left: 12px;
-        width: 360px; max-height: 38vh; overflow: hidden;
-        font: 12px/1.5 ui-monospace, monospace; color: #c8d2e4;
-        pointer-events: none; display: flex; flex-direction: column; gap: 1px;
-      }
-      #combat .row { opacity: 0.55; }
-      #combat .row:last-child { opacity: 1; color: #eaf0ff; }
-      #combat .hit { color: #ff8d8d; }
-      #combat .win { color: #ffd35d; font-weight: bold; }
-      #combat .pickup { color: #7fd8a0; }
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>arrrrow</title>
+		<style>
+			:root {
+				color-scheme: dark;
+			}
+			html,
+			body {
+				margin: 0;
+				height: 100%;
+				overflow: hidden;
+				background: #0b0e14;
+			}
+			#app {
+				width: 100vw;
+				height: 100vh;
+				display: block;
+			}
+			#hud {
+				position: fixed;
+				top: 12px;
+				left: 12px;
+				font:
+					13px/1.4 ui-monospace,
+					monospace;
+				color: #9aa7bd;
+				pointer-events: none;
+				white-space: pre;
+			}
+			#combat {
+				position: fixed;
+				bottom: 12px;
+				left: 12px;
+				width: 360px;
+				max-height: 38vh;
+				overflow: hidden;
+				font:
+					12px/1.5 ui-monospace,
+					monospace;
+				color: #c8d2e4;
+				pointer-events: none;
+				display: flex;
+				flex-direction: column;
+				gap: 1px;
+			}
+			#combat .row {
+				opacity: 0.55;
+			}
+			#combat .row:last-child {
+				opacity: 1;
+				color: #eaf0ff;
+			}
+			#combat .hit {
+				color: #ff8d8d;
+			}
+			#combat .win {
+				color: #ffd35d;
+				font-weight: bold;
+			}
+			#combat .pickup {
+				color: #7fd8a0;
+			}
 
-      /* Scoreboard — best-of-N pips, centered up top. Hidden in the menu. */
-      #score {
-        position: fixed; top: 12px; left: 50%; transform: translateX(-50%);
-        display: flex; gap: 18px; align-items: baseline;
-        font: 13px/1 ui-monospace, monospace; color: #c8d2e4;
-        letter-spacing: 0.12em; pointer-events: none;
-      }
-      #score[hidden] { display: none; }
-      #score .a { color: #5db4ff; }
-      #score .b { color: #ff5d5d; }
-      #score .mid { color: #6b7689; letter-spacing: 0.04em; }
+			/* Scoreboard — best-of-N pips, centered up top. Hidden in the menu. */
+			#score {
+				position: fixed;
+				top: 12px;
+				left: 50%;
+				transform: translateX(-50%);
+				display: flex;
+				gap: 18px;
+				align-items: baseline;
+				font:
+					13px/1 ui-monospace,
+					monospace;
+				color: #c8d2e4;
+				letter-spacing: 0.12em;
+				pointer-events: none;
+			}
+			#score[hidden] {
+				display: none;
+			}
+			#score .a {
+				color: #5db4ff;
+			}
+			#score .b {
+				color: #ff5d5d;
+			}
+			#score .mid {
+				color: #6b7689;
+				letter-spacing: 0.04em;
+			}
 
-      /* Modal overlay for menu / round-over / match-over. */
-      #overlay {
-        position: fixed; inset: 0; z-index: 10;
-        display: grid; place-items: center;
-        background: rgba(7, 10, 16, 0.72);
-        backdrop-filter: blur(2px);
-      }
-      #overlay[hidden] { display: none; }
-      #overlay .card {
-        text-align: center; color: #eaf0ff;
-        font: 14px/1.6 ui-monospace, monospace;
-        padding: 28px 44px;
-      }
-      #overlay h1 {
-        margin: 0 0 6px; font-size: 44px; font-weight: 800;
-        letter-spacing: 0.18em; color: #ffd35d;
-      }
-      #overlay .sub {
-        margin: 0 0 20px; color: #9aa7bd;
-        letter-spacing: 0.32em; text-transform: uppercase; font-size: 12px;
-      }
-      #overlay .line { margin: 4px 0; color: #c8d2e4; }
-      #overlay .actions {
-        margin-top: 24px; display: flex; gap: 12px; justify-content: center;
-      }
-      #overlay button {
-        font: 13px ui-monospace, monospace; color: #eaf0ff;
-        background: #1a2230; border: 1px solid #2f3b50; border-radius: 8px;
-        padding: 10px 16px; cursor: pointer; transition: background 0.12s, border-color 0.12s;
-      }
-      #overlay button:hover { background: #243047; border-color: #5db4ff; }
-    </style>
-  </head>
-  <body>
-    <canvas id="app"></canvas>
-    <div id="hud"></div>
-    <div id="combat"></div>
-    <div id="score" hidden></div>
-    <div id="overlay" hidden></div>
-    <script type="module" src="/src/main.js"></script>
-  </body>
+			/* Modal overlay for menu / round-over / match-over. */
+			#overlay {
+				position: fixed;
+				inset: 0;
+				z-index: 10;
+				display: grid;
+				place-items: center;
+				background: rgba(7, 10, 16, 0.72);
+				backdrop-filter: blur(2px);
+			}
+			#overlay[hidden] {
+				display: none;
+			}
+			#overlay .card {
+				text-align: center;
+				color: #eaf0ff;
+				font:
+					14px/1.6 ui-monospace,
+					monospace;
+				padding: 28px 44px;
+			}
+			#overlay h1 {
+				margin: 0 0 6px;
+				font-size: 44px;
+				font-weight: 800;
+				letter-spacing: 0.18em;
+				color: #ffd35d;
+			}
+			#overlay .sub {
+				margin: 0 0 20px;
+				color: #9aa7bd;
+				letter-spacing: 0.32em;
+				text-transform: uppercase;
+				font-size: 12px;
+			}
+			#overlay .line {
+				margin: 4px 0;
+				color: #c8d2e4;
+			}
+			#overlay .actions {
+				margin-top: 24px;
+				display: flex;
+				gap: 12px;
+				justify-content: center;
+			}
+			#overlay button {
+				font:
+					13px ui-monospace,
+					monospace;
+				color: #eaf0ff;
+				background: #1a2230;
+				border: 1px solid #2f3b50;
+				border-radius: 8px;
+				padding: 10px 16px;
+				cursor: pointer;
+				transition:
+					background 0.12s,
+					border-color 0.12s;
+			}
+			#overlay button:hover {
+				background: #243047;
+				border-color: #5db4ff;
+			}
+		</style>
+	</head>
+	<body>
+		<canvas id="app"></canvas>
+		<div id="hud"></div>
+		<div id="combat"></div>
+		<div id="score" hidden></div>
+		<div id="overlay" hidden></div>
+		<script type="module" src="/src/main.js"></script>
+	</body>
 </html>

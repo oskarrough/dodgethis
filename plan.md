@@ -36,20 +36,20 @@ open to rearm is where you get hit.
 
 ## Physics mapping (Rapier)
 
-| Thing   | Rapier representation                                                    |
-|---------|-------------------------------------------------------------------------|
-| Court   | fixed rigid body + cuboid collider (the floor) + invisible walls/out-of-bounds |
-| Player  | `KinematicCharacterController` + capsule collider, moved by input/AI     |
-| Arrow   | dynamic rigid body + thin cuboid/capsule collider                       |
-| Held    | arrow removed from sim, parented to player's hand (pure transform)       |
-| Flying  | dynamic body, `applyImpulse` on loose; gravity + `linearDamping` = arc   |
-| Grounded| velocity ~0 → freeze (sleep or convert to fixed), enable pickup sensor   |
-| Hit     | Rapier collision/contact event: arrow(flying) ∩ player(enemy) → out      |
-| Pickup  | proximity check or sensor collider: player ∩ arrow(grounded) → held      |
+| Thing    | Rapier representation                                                          |
+| -------- | ------------------------------------------------------------------------------ |
+| Court    | fixed rigid body + cuboid collider (the floor) + invisible walls/out-of-bounds |
+| Player   | `KinematicCharacterController` + capsule collider, moved by input/AI           |
+| Arrow    | dynamic rigid body + thin cuboid/capsule collider                              |
+| Held     | arrow removed from sim, parented to player's hand (pure transform)             |
+| Flying   | dynamic body, `applyImpulse` on loose; gravity + `linearDamping` = arc         |
+| Grounded | velocity ~0 → freeze (sleep or convert to fixed), enable pickup sensor         |
+| Hit      | Rapier collision/contact event: arrow(flying) ∩ player(enemy) → out            |
+| Pickup   | proximity check or sensor collider: player ∩ arrow(grounded) → held            |
 
 Aim = direction + power. Loose = `impulse = aimDir * power`. Drag (`linearDamping`)
 keeps arcs readable instead of laser-flat. Tune gravity/damping/impulse together —
-that triple *is* the game feel.
+that triple _is_ the game feel.
 
 ## State
 
@@ -73,7 +73,8 @@ Round = {
 
 The court + Rapier world + contact queue persist across rounds; only the round's
 units/arrows come and go. The "real reset" is `round.dispose()` (frees every mesh
-+ body it added) then a fresh `createRound()` — no more `location.reload()`.
+
+- body it added) then a fresh `createRound()` — no more `location.reload()`.
 
 `round.step(dt)` reads input, steps Rapier, syncs Three meshes
 from rigid-body transforms, checks win condition.
@@ -88,10 +89,11 @@ from rigid-body transforms, checks win condition.
 ## AI (the other team)
 
 Cheap state machine per AI player:
+
 - `noArrow` → move toward nearest grounded arrow, grab it
 - `armed` → line up a shot on nearest enemy, lead the target, loose
 - `threatened` → if an enemy arrow is flying toward me, strafe
-Difficulty = reaction time + aim jitter. No pathfinding needed on an open court.
+  Difficulty = reaction time + aim jitter. No pathfinding needed on an open court.
 
 ## Milestones
 
@@ -117,8 +119,8 @@ Difficulty = reaction time + aim jitter. No pathfinding needed on an open court.
 
 ## Open questions
 
-- **"Choose arrows"** — assumed *scarce pickup pool* (above). If you instead meant
-  *arrow types* (fast / heavy / curve), that's a layer on top of `Arrow` (a `type`
+- **"Choose arrows"** — assumed _scarce pickup pool_ (above). If you instead meant
+  _arrow types_ (fast / heavy / curve), that's a layer on top of `Arrow` (a `type`
   field + per-type impulse/drag) and a selection UI — easy to add once milestone 3 works.
 - **Camera** — fixed isometric over the court (readable, simple) vs. over-shoulder
   third-person (better aim, more work). Start fixed.
