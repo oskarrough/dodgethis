@@ -363,6 +363,7 @@ async function main() {
 	let frames = 0
 	let fps = 0
 	let fpsTimer = 0
+	let hudTimer = 0
 
 	function frame(now) {
 		const dt = Math.min((now - last) / 1000, 0.1)
@@ -399,7 +400,15 @@ async function main() {
 			frames = 0
 			fpsTimer = 0
 		}
-		updateHud()
+
+		// The HUD is plain text (counts + fps + weapon line): refreshing it 60×/s
+		// burns DOM writes and array allocs for no visible gain. Throttle to ~10Hz,
+		// but keep it live while the charge meter is winding so its bar stays smooth.
+		hudTimer += dt
+		if (hudTimer >= 0.1 || (weapon === 'charge' && charge.charging)) {
+			hudTimer = 0
+			updateHud()
+		}
 
 		requestAnimationFrame(frame)
 	}
@@ -407,9 +416,17 @@ async function main() {
 	function updateHud() {
 		let status = ''
 		if (round) {
-			const enemiesLeft = round.units.filter((u) => u.team === 'B' && u.alive).length
-			const allies = round.units.filter((u) => u.team === 'A' && u.alive).length
-			const grounded = round.arrows.filter((a) => a.state === 'grounded').length
+			// Single pass each — the old code made three filtered copies of units and
+			// one of arrows every refresh just to read their lengths.
+			let allies = 0
+			let enemiesLeft = 0
+			for (const u of round.units) {
+				if (!u.alive) continue
+				if (u.team === 'A') allies++
+				else if (u.team === 'B') enemiesLeft++
+			}
+			let grounded = 0
+			for (const a of round.arrows) if (a.state === 'grounded') grounded++
 			status = `team A: ${allies}  enemies left: ${enemiesLeft}  held: ${round.human.heldArrow ? 'yes' : '—'}  loose: ${grounded}\n`
 		}
 		hud.textContent =

@@ -1,10 +1,13 @@
 import * as THREE from 'three'
-import { COURT } from './court.js'
 import { tune } from './debug.js'
 
 export function createRenderer() {
 	const canvas = document.getElementById('app')
-	const renderer = new THREE.WebGLRenderer({ canvas, antialias: true })
+	const renderer = new THREE.WebGLRenderer({
+		canvas,
+		antialias: true,
+		powerPreference: 'high-performance',
+	})
 	renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 	renderer.shadowMap.enabled = true
 
@@ -23,11 +26,19 @@ export function createRenderer() {
 	const sun = new THREE.DirectionalLight(0xffffff, 1.4)
 	sun.position.set(10, 24, 12)
 	sun.castShadow = true
-	sun.shadow.camera.left = -COURT.depth
-	sun.shadow.camera.right = COURT.depth
-	sun.shadow.camera.top = COURT.depth
-	sun.shadow.camera.bottom = -COURT.depth
-	sun.shadow.mapSize.set(2048, 2048)
+	// Tighten the shadow frustum to the court's footprint (the old ±COURT.depth box
+	// was ~4× too large, so most of the map covered empty space). A 15-unit half-
+	// extent clears the 11×24 court's projected diagonal with margin; pairing that
+	// with a 1024² map gives the same on-court sharpness as the old 2048² box while
+	// rendering a quarter of the shadow texels each frame.
+	const SHADOW_EXTENT = 15
+	sun.shadow.camera.left = -SHADOW_EXTENT
+	sun.shadow.camera.right = SHADOW_EXTENT
+	sun.shadow.camera.top = SHADOW_EXTENT
+	sun.shadow.camera.bottom = -SHADOW_EXTENT
+	sun.shadow.camera.near = 1
+	sun.shadow.camera.far = 70
+	sun.shadow.mapSize.set(1024, 1024)
 	scene.add(sun)
 
 	function resize() {
@@ -42,11 +53,25 @@ export function createRenderer() {
 
 	// --- Screenshake: a decaying energy that jitters the camera off its base. ---
 	let shake = 0
+	let settled = true // camera resting at camBase, no per-frame work needed
 	const _o = new THREE.Vector3()
 	function addShake(amount) {
-		if (tune.fx.shake) shake = Math.min(shake + amount, 1.5)
+		if (tune.fx.shake) {
+			shake = Math.min(shake + amount, 1.5)
+			settled = false
+		}
 	}
 	function updateCamera(dt) {
+		// Common case: no active shake. Snap back to base once, then idle — no random
+		// jitter or lookAt() matrix recompute on the (vast majority of) still frames.
+		if (shake <= 0) {
+			if (!settled) {
+				camera.position.copy(camBase)
+				camera.lookAt(0, 0, 0)
+				settled = true
+			}
+			return
+		}
 		shake = Math.max(0, shake - dt * 2.5)
 		const s = shake * shake * 0.7
 		_o.set((Math.random() * 2 - 1) * s, (Math.random() * 2 - 1) * s, (Math.random() * 2 - 1) * s)
