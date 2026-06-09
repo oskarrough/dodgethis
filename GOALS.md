@@ -28,8 +28,10 @@ verify (`bun run check` + `bun run build`), commit, repeat.
 - [x] Automated tests: `bun test` (wired into `bun run check`) covers the
       ballistic solve, the charge meter, and `nearest`. Required extracting
       `tune` into src/tune.js so game logic stops importing lil-gui.
-- [ ] Headless round-simulation test (needs Rapier wasm init under bun —
-      try `@dimforge/rapier3d-compat` as a test-only dep)
+- [x] Headless round-simulation test: tests/round.test.js boots a real Rapier
+      world + Round (via `@dimforge/rapier3d-compat`, test-only dep), steps it
+      at 60Hz — asserts the AI wipes a passive human, onOver fires once, no
+      arrow leaves the court, dispose() empties everything.
 - [ ] Gamepad input (plan.md lists stick controls)
 - [ ] Arrow types / net down the middle (plan.md open questions)
 
