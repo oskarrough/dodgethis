@@ -253,6 +253,12 @@ export function createRound(
 			const bi = brains.findIndex((b) => b.unit === u)
 			if (bi >= 0) brains.splice(bi, 1)
 			units.splice(i, 1)
+			// Drop a held arrow back into the pool — disposing the holder would
+			// strand it in 'held' forever and shrink the scarce pool.
+			if (u.heldArrow) {
+				u.heldArrow.ground()
+				u.heldArrow = null
+			}
 			u.dispose()
 			combat.push(`- removed Team ${team} unit #${u.id}`, 'kill')
 			checkWin()

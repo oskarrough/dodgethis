@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { tune } from './debug.js'
 import { TRAIL } from './weapons.js'
+import { COURT } from './court.js'
 
 // The arrow state machine — the spine of the whole game (see plan.md):
 //   held → flying → grounded → held
@@ -198,7 +199,16 @@ export function createArrow(scene, world, RAPIER, { position = [0, GROUND_Y, 0] 
 		body.setAngvel({ x: (dir.z * speed) / r, y: 0, z: (-dir.x * speed) / r }, true)
 	}
 
+	// A shot that crosses the platform edge would otherwise "land" floating over
+	// the void — unreachable, and bait that lures the AI off the edge. Clamping
+	// the landing spot keeps the scarce pool intact (no all-arrows-lost
+	// soft-lock) at the cost of a small visual snap at the rim.
+	const LAND_X = COURT.width / 2 - 0.5
+	const LAND_Z = COURT.depth / 2 - 0.5
+
 	function land(x, z, heading) {
+		x = Math.max(-LAND_X, Math.min(LAND_X, x))
+		z = Math.max(-LAND_Z, Math.min(LAND_Z, z))
 		destroyBody()
 		_lv.set(0, 0, 0)
 		trail.visible = false

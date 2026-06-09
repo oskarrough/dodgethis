@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { tune } from './debug.js'
 import { nearest } from './spatial.js'
+import { COURT } from './court.js'
 
 // Cheap per-enemy brain (plan.md M5). Each tick it picks one of three intents
 // and returns { move, grab, shoot } for the main loop to execute:
@@ -78,7 +79,7 @@ export function createBrain(unit) {
 			move.set(dodge.x, 0, dodge.z)
 			unit.aim.set(target.position.x - me.x, 0, target.position.z - me.z)
 			if (unit.aim.lengthSq() > 1e-4) unit.aim.normalize()
-			return norm(move, grab, shoot)
+			return norm(move, grab, shoot, me)
 		}
 
 		// --- armed: aim with lead + jitter and loose after a reaction beat. ---
@@ -103,7 +104,7 @@ export function createBrain(unit) {
 				const distPred = Math.hypot(pred.x - me.x, pred.z - me.z)
 				shoot = { x: aim.x * c - aim.z * s, z: aim.x * s + aim.z * c, dist: distPred }
 			}
-			return norm(move, grab, shoot)
+			return norm(move, grab, shoot, me)
 		}
 
 		// --- noArrow: fetch the nearest grounded arrow. ---
@@ -114,13 +115,24 @@ export function createBrain(unit) {
 			if (unit.aim.lengthSq() > 1e-4) unit.aim.normalize()
 			if (ad2 <= tune.player.pickupRadius ** 2 * 0.9) grab = true
 		}
-		return norm(move, grab, shoot)
+		return norm(move, grab, shoot, me)
 	}
 
 	return { unit, think }
 }
 
-function norm(move, grab, shoot) {
+// Brains steer straight at whatever they want; near the platform rim that walks
+// them into the lava. Kill the outward component inside this margin — falls stay
+// possible (knockback, dodges started at the rim) but the AI stops suiciding.
+const EDGE = 0.9
+
+function norm(move, grab, shoot, me) {
+	if (me) {
+		const mx = COURT.width / 2 - EDGE
+		const mz = COURT.depth / 2 - EDGE
+		if ((me.x > mx && move.x > 0) || (me.x < -mx && move.x < 0)) move.x = 0
+		if ((me.z > mz && move.z > 0) || (me.z < -mz && move.z < 0)) move.z = 0
+	}
 	const l = Math.hypot(move.x, move.z)
 	if (l > 1e-4) {
 		move.x /= l

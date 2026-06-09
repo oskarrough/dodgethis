@@ -386,8 +386,21 @@ async function main() {
 
 		if (debugLines.visible) {
 			const { vertices, colors: vcolors } = world.debugRender()
-			debugGeom.setAttribute('position', new THREE.BufferAttribute(vertices, 3))
-			debugGeom.setAttribute('color', new THREE.BufferAttribute(vcolors, 4))
+			// Reuse the existing GPU buffers when the vertex count is unchanged;
+			// blindly swapping in new BufferAttributes every frame leaks the old
+			// buffers until the geometry itself is disposed.
+			const pos = debugGeom.getAttribute('position')
+			if (pos && pos.array.length === vertices.length) {
+				pos.array.set(vertices)
+				pos.needsUpdate = true
+				const col = debugGeom.getAttribute('color')
+				col.array.set(vcolors)
+				col.needsUpdate = true
+			} else {
+				debugGeom.dispose() // release the old buffers before replacing
+				debugGeom.setAttribute('position', new THREE.BufferAttribute(vertices, 3))
+				debugGeom.setAttribute('color', new THREE.BufferAttribute(vcolors, 4))
+			}
 		}
 
 		updateCamera(dt)
