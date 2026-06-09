@@ -32,7 +32,9 @@ verify (`bun run check` + `bun run build`), commit, repeat.
       world + Round (via `@dimforge/rapier3d-compat`, test-only dep), steps it
       at 60Hz — asserts the AI wipes a passive human, onOver fires once, no
       arrow leaves the court, dispose() empties everything.
-- [ ] Gamepad input (plan.md lists stick controls)
+- [x] Gamepad input: left stick move (sums with WASD), right stick drives the
+      aim cursor (virtual pointer through the same raycast), RT/A mirrors the
+      mouse press/hold/release model so the charge bow works on a pad.
 - [ ] Arrow types / net down the middle (plan.md open questions)
 
 ## Done

@@ -12,6 +12,7 @@ import {
 	consumeRelease,
 	pointerDown,
 	clearShoot,
+	pollGamepad,
 } from './input.js'
 import { WEAPONS, TRAIL, createChargeMeter } from './weapons.js'
 import { sfx } from './audio.js'
@@ -388,6 +389,7 @@ async function main() {
 		const dt = Math.min((now - last) / 1000, 0.1)
 		last = now
 
+		pollGamepad(dt)
 		if (phase === 'playing' && round) {
 			weaponUpdate(dt)
 			if (!tune.physics.paused) {
