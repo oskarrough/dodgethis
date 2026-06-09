@@ -1,4 +1,4 @@
-import { tune } from './debug.js'
+import { tune } from './tune.js'
 
 // Weapon definitions — the one place a weapon's identity lives (Godot would make
 // these Resources). The human picks one (1/2/3); it's a property of the shooter,

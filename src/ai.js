@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { tune } from './debug.js'
+import { tune } from './tune.js'
 import { nearest } from './spatial.js'
 import { COURT } from './court.js'
 

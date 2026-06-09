@@ -22,11 +22,16 @@ verify (`bun run check` + `bun run build`), commit, repeat.
 
 - [x] Round-by-round AI difficulty ramp (reaction/jitter scale with `roundNum`)
 - [x] Reset frame clock on tab re-show (rAF already pauses the sim while hidden)
-- [ ] Tie-round handling: both teams wiped in the same step currently scores B's
-      wipe-out check first (A checked first → winner B). Decide draw vs replay.
+- [x] Tie-round handling: a double wipe-out in the same step is now a DRAW —
+      nobody scores, the round replays. (Win check moved to once-per-step so a
+      simultaneous wipe is actually detectable.)
+- [x] Automated tests: `bun test` (wired into `bun run check`) covers the
+      ballistic solve, the charge meter, and `nearest`. Required extracting
+      `tune` into src/tune.js so game logic stops importing lil-gui.
+- [ ] Headless round-simulation test (needs Rapier wasm init under bun —
+      try `@dimforge/rapier3d-compat` as a test-only dep)
 - [ ] Gamepad input (plan.md lists stick controls)
 - [ ] Arrow types / net down the middle (plan.md open questions)
-- [ ] Some automated smoke test (boot headless, step N frames, assert no throw)
 
 ## Done
 

@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { tune } from './debug.js'
+import { tune } from './tune.js'
 import { startDeath } from './death.js'
 
 // A unit (the human player or an enemy) is a capsule driven by a Rapier

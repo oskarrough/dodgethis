@@ -1,4 +1,4 @@
-import { tune } from './debug.js'
+import { tune } from './tune.js'
 
 // Rapier ships as wasm. The non-compat build instantiates the wasm at module-load
 // time (wired up by vite-plugin-wasm). A dynamic import isolates Rapier + its wasm

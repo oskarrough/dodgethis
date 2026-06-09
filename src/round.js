@@ -3,7 +3,7 @@ import { createPlayer } from './player.js'
 import { createArrow, solveLaunch } from './arrow.js'
 import { createBrain } from './ai.js'
 import { nearest } from './spatial.js'
-import { tune } from './debug.js'
+import { tune } from './tune.js'
 
 // A Round is the gameplay "scene" (Godot framing): it owns the units, their AI
 // brains, and the arrow pool for ONE round. Build it with createRound(), tick it
@@ -69,12 +69,12 @@ export function createRound(
 	combat.push(`round ${roundNum} start — Team A (you) vs Team B (${enemies})`)
 
 	let over = false
-	let winner = null
+	let winner = null // 'A' | 'B' | null — null with over=true means a draw
 	// When a round is decided we don't end it instantly — we let the deciding
 	// death animation play out for a beat, then fire onOver. overDelay counts that
-	// beat down (in step()); pendingWinner holds who won until it elapses.
+	// beat down (in step()); `ending` flags the countdown (winner may be null).
 	let overDelay = 0
-	let pendingWinner = null
+	let ending = false
 
 	// --- Shared actions (used by both the human and the AI brains). ---
 	// `opts` carries the human's weapon choice: { kind:'arrow'|'bowl', perfect }.
@@ -155,7 +155,6 @@ export function createRound(
 			combat.push(`HIT — arrow #${arrow.id} eliminated Team ${unit.team} unit #${unit.id}`, 'hit')
 			sfx.hit()
 			addShake(0.7)
-			checkWin()
 		})
 	}
 
@@ -177,25 +176,28 @@ export function createRound(
 				combat.push(u.isHuman ? 'you fell into the lava' : `Team ${u.team} unit fell in`, 'kill')
 				sfx.hit()
 				addShake(u.isHuman ? 0.6 : 0.3)
-				checkWin()
 			}
 		}
 	}
 
 	function checkWin() {
 		if (over) return
-		for (const team of ['A', 'B']) {
-			const alive = units.filter((u) => u.team === team && u.alive).length
-			if (alive === 0) {
-				over = true
-				winner = team === 'A' ? 'B' : 'A'
-				// Hold the round open briefly so the deciding death animation finishes
-				// before the overlay drops; step() fires onOver once overDelay elapses.
-				pendingWinner = winner
-				overDelay = 1.4 * Math.max(0.25, tune.fx.deathTime)
-				return
-			}
+		let aliveA = 0
+		let aliveB = 0
+		for (const u of units) {
+			if (!u.alive) continue
+			if (u.team === 'A') aliveA++
+			else aliveB++
 		}
+		if (aliveA > 0 && aliveB > 0) return
+		over = true
+		// Both teams wiped in the same step (mutual kills / a double fall) is a
+		// draw — winner stays null and the match controller replays the round.
+		winner = aliveA === 0 && aliveB === 0 ? null : aliveA === 0 ? 'B' : 'A'
+		// Hold the round open briefly so the deciding death animation finishes
+		// before the overlay drops; step() fires onOver once overDelay elapses.
+		ending = true
+		overDelay = 1.4 * Math.max(0.25, tune.fx.deathTime)
 	}
 
 	// One fixed-timestep update: drive the human, run the brains, step physics,
@@ -206,15 +208,18 @@ export function createRound(
 		world.step(eventQueue)
 		resolveHits()
 		checkPits()
+		// One win check per step, after every hit and fall has resolved — checking
+		// inside each elimination would award the round to whichever team's wipe
+		// landed first in the event queue, making a true draw unreachable.
+		checkWin()
 		for (const a of arrows) a.update()
 
 		// Deciding-death grace period: let the animation breathe, then end the round.
-		if (pendingWinner) {
+		if (ending) {
 			overDelay -= dt
 			if (overDelay <= 0) {
-				const w = pendingWinner
-				pendingWinner = null
-				onOver(w) // signal up to the match controller
+				ending = false
+				onOver(winner) // signal up to the match controller (null = draw)
 			}
 		}
 	}

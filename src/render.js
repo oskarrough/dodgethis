@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { tune } from './debug.js'
+import { tune } from './tune.js'
 
 export function createRenderer() {
 	const canvas = document.getElementById('app')

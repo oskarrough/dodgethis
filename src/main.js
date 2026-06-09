@@ -15,7 +15,8 @@ import {
 } from './input.js'
 import { WEAPONS, TRAIL, createChargeMeter } from './weapons.js'
 import { sfx } from './audio.js'
-import { tune, log, createDebugGui, createCombatLog } from './debug.js'
+import { tune } from './tune.js'
+import { log, createDebugGui, createCombatLog } from './debug.js'
 
 const hud = document.getElementById('hud')
 const scoreEl = document.getElementById('score')
@@ -102,8 +103,20 @@ async function main() {
 	}
 
 	// Signal handler for round.onOver: tally the win, then branch to the next round
-	// or end the match.
+	// or end the match. A null winner is a draw (both teams wiped in the same
+	// step) — nobody scores and the round is replayed.
 	function endRound(winner) {
+		if (!winner) {
+			phase = 'roundOver'
+			combat.push(`round ${match.round} is a DRAW — replaying`, 'win')
+			overlay.show({
+				title: 'DRAW',
+				subtitle: `Both teams wiped — round ${match.round} replays`,
+				lines: [scoreLine()],
+				actions: [{ label: 'Replay round', keyLabel: 'Enter', onSelect: restartRound }],
+			})
+			return
+		}
 		match.wins[winner]++
 		renderScore()
 		sfx.win()

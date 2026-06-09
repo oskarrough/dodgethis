@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { tune } from './debug.js'
+import { tune } from './tune.js'
 
 // Death animations — the "you're out" flourish. The old code toppled a capsule
 // in a single frame, which read as a glitch. Here an elimination instead picks a

@@ -1,4 +1,4 @@
-import { tune } from './debug.js'
+import { tune } from './tune.js'
 
 // Tiny WebAudio synth — no asset files, just oscillator blips. The AudioContext
 // can't start until a user gesture, so we lazily create it and resume on the
