@@ -20,8 +20,8 @@ verify (`bun run check` + `bun run build`), commit, repeat.
 
 ## Backlog (later iterations)
 
-- [ ] Round-by-round AI difficulty ramp (reaction/jitter scale with `roundNum`)
-- [ ] Pause the sim when the tab is hidden (visibilitychange), not just dt-clamp
+- [x] Round-by-round AI difficulty ramp (reaction/jitter scale with `roundNum`)
+- [x] Reset frame clock on tab re-show (rAF already pauses the sim while hidden)
 - [ ] Tie-round handling: both teams wiped in the same step currently scores B's
       wipe-out check first (A checked first → winner B). Decide draw vs replay.
 - [ ] Gamepad input (plan.md lists stick controls)

@@ -13,7 +13,9 @@ import { COURT } from './court.js'
 // Difficulty is just two knobs in tune.ai: reaction time and aim jitter. No
 // pathfinding — the court is open, movement is a normalized direction.
 
-export function createBrain(unit) {
+// `mods` scales the two difficulty knobs per-round (round.js ramps them down a
+// little each round, so later rounds react faster and aim tighter).
+export function createBrain(unit, { reactionMul = 1, jitterMul = 1 } = {}) {
 	let aimTimer = 0
 	let lastTarget = null
 	const lastPos = new THREE.Vector3()
@@ -96,9 +98,9 @@ export function createBrain(unit) {
 			if (dist > 14) move.set(aim.x, 0, aim.z) // close in if the arc can't reach
 
 			aimTimer += dt
-			if (aimTimer >= tune.ai.reaction) {
+			if (aimTimer >= tune.ai.reaction * reactionMul) {
 				aimTimer = 0
-				const j = (Math.random() * 2 - 1) * tune.ai.jitter // rotate aim by jitter
+				const j = (Math.random() * 2 - 1) * tune.ai.jitter * jitterMul // rotate aim by jitter
 				const c = Math.cos(j)
 				const s = Math.sin(j)
 				const distPred = Math.hypot(pred.x - me.x, pred.z - me.z)

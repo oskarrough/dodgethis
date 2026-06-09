@@ -359,6 +359,12 @@ async function main() {
 
 	// --- Frame loop ------------------------------------------------------------
 	let last = performance.now()
+
+	// rAF stops while the tab is hidden, leaving `last` stale; without this the
+	// first frame back would advance the sim by the (clamped) 0.1s max step.
+	document.addEventListener('visibilitychange', () => {
+		if (!document.hidden) last = performance.now()
+	})
 	let acc = 0
 	let frames = 0
 	let fps = 0

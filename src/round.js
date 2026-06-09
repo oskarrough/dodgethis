@@ -42,7 +42,13 @@ export function createRound(
 	}
 	// Brains for every non-human unit (Team B). They share the same grab/loose
 	// helpers the human uses, so the rules live in exactly one place.
-	const brains = units.filter((u) => !u.isHuman).map(createBrain)
+	// Later rounds sharpen the AI a touch: faster reactions, tighter aim. Floors
+	// keep a long match challenging but never frame-perfect.
+	const aiMod = {
+		reactionMul: Math.max(0.55, 1 - 0.12 * (roundNum - 1)),
+		jitterMul: Math.max(0.5, 1 - 0.15 * (roundNum - 1)),
+	}
+	const brains = units.filter((u) => !u.isHuman).map((u) => createBrain(u, aiMod))
 
 	// --- Arrow pool: scattered loose on the court, one nocked for the human. ---
 	const arrows = []
@@ -240,7 +246,7 @@ export function createRound(
 			team,
 		})
 		units.push(u)
-		brains.push(createBrain(u)) // added units are never the human → always AI
+		brains.push(createBrain(u, aiMod)) // added units are never the human → always AI
 		combat.push(`+ spawned Team ${team} unit #${u.id}`, 'pickup')
 		return u
 	}
