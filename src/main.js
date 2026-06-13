@@ -15,9 +15,11 @@ import {
 	pollGamepad,
 } from './input.js'
 import { WEAPONS, TRAIL, createChargeMeter } from './weapons.js'
+import { createWeaponHud } from './weaponHud.js'
 import { sfx } from './audio.js'
 import { tune } from './tune.js'
 import { log, createDebugGui, createCombatLog } from './debug.js'
+import { createGodmodeFx } from './godmodeFx.js'
 
 const hud = document.getElementById('hud')
 const scoreEl = document.getElementById('score')
@@ -27,6 +29,7 @@ async function main() {
 	const { renderer, scene, camera, addShake, updateCamera } = createRenderer()
 	const combat = createCombatLog()
 	const overlay = createOverlay()
+	const godmodeFx = createGodmodeFx(scene)
 	log.info('booted', { renderer: 'three', physics: 'rapier' })
 
 	// Persistent stage: the court and the contact queue outlive every round. Only
@@ -197,6 +200,8 @@ async function main() {
 		charge.cancel()
 		combat.push(`weapon → ${WEAPONS[w].label}`, 'pickup')
 	}
+
+	const weaponHud = createWeaponHud({ onSelect: setWeapon })
 
 	// --- Aim: raycast the pointer onto the ground plane (reads the live human) --
 	const raycaster = new THREE.Raycaster()
@@ -401,8 +406,10 @@ async function main() {
 				}
 			}
 			round.lateUpdate(dt)
+			godmodeFx.update(dt, round.human)
 		} else {
 			hideAim()
+			godmodeFx.update(dt, null)
 		}
 
 		if (debugLines.visible) {
@@ -468,28 +475,8 @@ async function main() {
 			`WASD move · mouse aim · click shoot · R restart\n` +
 			`G godmode · =/- enemy · ]/[ ally\n` +
 			status +
-			`weapon: ${WEAPONS[weapon].label}  (1 arrow · 2 charge · 3 bowl)${chargeBar()}\n` +
 			`fps: ${fps}  [${phase}]${tune.physics.paused ? '  [paused]' : ''}${tune.cheats.godmode ? '  [GODMODE]' : ''}`
-	}
-
-	// ASCII wind-up meter for the charge bow: '=' filled, '.' empty, and the top
-	// perfectWindow slice shown as '#'/'+' so you can see the perfect band.
-	function chargeBar() {
-		if (weapon !== 'charge') return ''
-		const N = 24
-		const lo = Math.round((1 - tune.weapons.perfectWindow) * N)
-		const filled = Math.round(charge.value * N)
-		let s = ''
-		for (let i = 0; i < N; i++) {
-			if (i < filled) s += i >= lo ? '#' : '='
-			else s += i >= lo ? '+' : '.'
-		}
-		const tag = charge.charging
-			? charge.perfect
-				? '  PERFECT!'
-				: `  ${Math.round(charge.value * 100)}%`
-			: '  (hold to wind)'
-		return `\ncharge [${s}]${tag}`
+		weaponHud.update({ weapon, charge, visible: phase === 'playing' })
 	}
 
 	enterMenu()
