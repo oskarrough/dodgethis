@@ -1,0 +1,10 @@
+#:schema node_modules/wrangler/config-schema.json
+name = "dodgethis"
+compatibility_date = "2026-06-13"
+
+[[routes]]
+pattern = "dodgethis.0sk.ar"
+custom_domain = true
+
+[assets]
+directory = "./dist"
