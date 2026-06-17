@@ -1,4 +1,4 @@
-# arrrrow — a 3D Dodge Bolt
+# dodgethis — a 3D Dodge Bolt
 
 A small 3D archery dodgeball game. Two teams on a tennis-court-like platform
 shoot arrows at each other. Arrows are **scarce** — you don't have infinite ammo,
