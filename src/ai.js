@@ -18,36 +18,56 @@ import { COURT } from './court.js'
 export function createBrain(unit, { reactionMul = 1, jitterMul = 1 } = {}) {
 	let aimTimer = 0
 	let lastTarget = null
+	let strafeDir = Math.random() < 0.5 ? 1 : -1 // circle-strafe handedness (flips over time)
+	let strafeTimer = 0
 	const lastPos = new THREE.Vector3()
 	const tvel = new THREE.Vector3() // estimated target velocity (for leading)
 	const move = new THREE.Vector3()
 	const aim = new THREE.Vector3()
 	const pred = new THREE.Vector3()
 
-	// Is any enemy arrow flying roughly at me? Return a strafe dir (toward center) if so.
+	// Closest-approach dodge: look at EVERY inbound enemy arrow, work out where its
+	// line passes me, and step off the ones that would actually clip me. Reacting on
+	// time-to-impact (not raw distance) catches fast arrows from farther out, and
+	// summing an escape vector over all threats means a dodge won't strafe into a
+	// second arrow. Returns an (un-normalized) escape direction, or null if safe.
 	function incomingDodge(arrows, me) {
+		let ex = 0
+		let ez = 0
+		let minT = Infinity // soonest closest-approach among real threats
+		let threatened = false
 		for (const a of arrows) {
 			if (a.state !== 'flying' || a.ownerTeam === unit.team) continue
-			const ap = a.position
-			const tox = me.x - ap.x
-			const toz = me.z - ap.z
-			const dist2 = tox * tox + toz * toz
-			if (dist2 > 49) continue // only react within ~7m
 			const v = a.velocity
-			const vlen = Math.hypot(v.x, v.z)
-			if (vlen < 1e-3) continue
-			const dot = (v.x * tox + v.z * toz) / (vlen * Math.sqrt(dist2) + 1e-6)
-			if (dot < 0.7) continue // not headed at me
-			// Perpendicular to the arrow's path; pick the side that moves toward x=0.
+			const vlen2 = v.x * v.x + v.z * v.z
+			if (vlen2 < 1e-4) continue
+			const rx = me.x - a.position.x // me relative to the arrow, ground plane
+			const rz = me.z - a.position.z
+			const t = -(rx * v.x + rz * v.z) / vlen2 // time of closest approach
+			if (t < 0 || t > DODGE_HORIZON) continue // already past me, or not soon
+			const mx = rx + v.x * t // miss vector at closest approach
+			const mz = rz + v.z * t
+			if (mx * mx + mz * mz > HIT_R * HIT_R) continue // it'll sail by
+			threatened = true
+			if (t < minT) minT = t
+			// Step perpendicular to the arrow's path, toward the side I'm already on;
+			// weight by urgency so the most imminent arrow dominates the blend.
+			const vlen = Math.sqrt(vlen2)
 			let px = -v.z / vlen
 			let pz = v.x / vlen
-			if (px * me.x > 0) {
+			if (px * rx + pz * rz < 0) {
 				px = -px
 				pz = -pz
 			}
-			return { x: px, z: pz }
+			const urgency = 1 / (t + 0.1)
+			ex += px * urgency
+			ez += pz * urgency
 		}
-		return null
+		if (!threatened) return null
+		ex += -me.x * 0.03 // gentle pull to center so a panic-dodge avoids the rim
+		ez += -me.z * 0.03
+		if (ex * ex + ez * ez < 1e-6) return null
+		return { x: ex, z: ez, urgent: minT < DASH_TTI } // dash only on imminent hits
 	}
 
 	function think(ctx, dt) {
@@ -81,7 +101,9 @@ export function createBrain(unit, { reactionMul = 1, jitterMul = 1 } = {}) {
 			move.set(dodge.x, 0, dodge.z)
 			unit.aim.set(target.position.x - me.x, 0, target.position.z - me.z)
 			if (unit.aim.lengthSq() > 1e-4) unit.aim.normalize()
-			return norm(move, grab, shoot, me)
+			const out = norm(move, grab, shoot, me)
+			out.dash = dodge.urgent // burst out of the way when a hit is imminent
+			return out
 		}
 
 		// --- armed: aim with lead + jitter and loose after a reaction beat. ---
@@ -95,7 +117,36 @@ export function createBrain(unit, { reactionMul = 1, jitterMul = 1 } = {}) {
 			aim.normalize()
 			unit.aim.copy(aim)
 
-			if (dist > 14) move.set(aim.x, 0, aim.z) // close in if the arc can't reach
+			// Kite: circle-strafe at a standoff so an armed bot is a moving target,
+			// not a post. Aim stays locked on the lead (above); move is independent.
+			const standoff = tune.ai.standoff
+			const band = 2.5
+			const rx = (target.position.x - me.x) / dist // unit dir toward target
+			const rz = (target.position.z - me.z) / dist
+			let radial = 0
+			if (dist > standoff + band)
+				radial = 1 // too far → close in
+			else if (dist < standoff - band) radial = -1 // too close → back off
+			strafeTimer += dt
+			if (strafeTimer > 2.2) {
+				strafeTimer = 0
+				if (Math.random() < 0.5) strafeDir = -strafeDir // stay unpredictable
+			}
+			let sx = -rz * strafeDir // tangent (perpendicular to the line to target)
+			let sz = rx * strafeDir
+			const rimX = COURT.width / 2 - 1.6 // flip rather than grind the lava rim
+			const rimZ = COURT.depth / 2 - 1.6
+			if (
+				(me.x > rimX && sx > 0) ||
+				(me.x < -rimX && sx < 0) ||
+				(me.z > rimZ && sz > 0) ||
+				(me.z < -rimZ && sz < 0)
+			) {
+				strafeDir = -strafeDir
+				sx = -sx
+				sz = -sz
+			}
+			move.set(rx * radial + sx * 0.85, 0, rz * radial + sz * 0.85)
 
 			aimTimer += dt
 			if (aimTimer >= tune.ai.reaction * reactionMul) {
@@ -127,6 +178,14 @@ export function createBrain(unit, { reactionMul = 1, jitterMul = 1 } = {}) {
 // them into the lava. Kill the outward component inside this margin — falls stay
 // possible (knockback, dodges started at the rim) but the AI stops suiciding.
 const EDGE = 0.9
+
+// Dodge tuning: how soon (seconds to closest approach) a bot reacts to an inbound
+// arrow, and how near the arrow's line must pass to count as a hit worth dodging.
+const DODGE_HORIZON = 1.1
+const HIT_R = 1.0
+// Only spend a dash when the soonest hit is closer than this (seconds) — a far-off
+// arrow gets a cheap strafe; an imminent one gets the burst.
+const DASH_TTI = 0.5
 
 function norm(move, grab, shoot, me) {
 	if (me) {

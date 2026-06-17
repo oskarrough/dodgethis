@@ -24,7 +24,7 @@ function makeCtx() {
 		RAPIER,
 		eventQueue: new RAPIER.EventQueue(true),
 		combat: { push() {} },
-		sfx: { loose() {}, grab() {}, hit() {}, perfect() {}, roll() {}, win() {} },
+		sfx: { loose() {}, grab() {}, hit() {}, perfect() {}, roll() {}, win() {}, taunt() {} },
 		addShake() {},
 	}
 }

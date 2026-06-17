@@ -1,6 +1,9 @@
 import * as THREE from 'three'
 import { tune } from './tune.js'
 import { startDeath } from './death.js'
+import { COURT } from './court.js'
+
+const clamp = (v, lo, hi) => (v < lo ? lo : v > hi ? hi : v)
 
 // A unit (the human player or an enemy) is a capsule driven by a Rapier
 // KinematicCharacterController. Kinematic = we move it explicitly; it slides
@@ -46,6 +49,9 @@ export function createPlayer(
 	controller.setApplyImpulsesToDynamicBodies(true)
 
 	let vy = 0
+	let dashT = 0 // >0 while the dash burst is active
+	let dashCd = 0 // >0 while dash is on cooldown (counts down from dashCooldown)
+	const dashDir = new THREE.Vector3()
 	let death = null // active death animation (death.js), or null while alive
 	const _hand = new THREE.Vector3()
 	const unit = {
@@ -66,8 +72,15 @@ export function createPlayer(
 			return mesh.position
 		},
 		update,
+		dash,
 		sync,
 		face,
+		get dashing() {
+			return dashT > 0
+		},
+		get dashReady() {
+			return dashCd <= 0
+		},
 		handPosition,
 		eliminate,
 		updateDeath,
@@ -89,10 +102,41 @@ export function createPlayer(
 		if (dir.x !== 0 || dir.z !== 0) mesh.rotation.y = Math.atan2(dir.x, dir.z) + Math.PI
 	}
 
+	// Start a dash burst in `dir` (falls back to current facing if dir is ~zero).
+	// No-op if dead or still on cooldown. Returns true if a dash actually fired.
+	function dash(dir) {
+		if (!unit.alive || dashCd > 0 || dashT > 0) return false
+		let dx = dir ? dir.x : 0
+		let dz = dir ? dir.z : 0
+		if (dx === 0 && dz === 0) {
+			dx = unit.aim.x
+			dz = unit.aim.z // no steer input → scoot where you're facing
+		}
+		const l = Math.hypot(dx, dz)
+		if (l < 1e-4) return false
+		dashDir.set(dx / l, 0, dz / l)
+		dashT = tune.player.dashTime
+		dashCd = tune.player.dashCooldown
+		return true
+	}
+
 	function update(dir, dt) {
 		if (!unit.alive) return
-		const speed = tune.player.speed
-		const desired = { x: dir.x * speed * dt, y: 0, z: dir.z * speed * dt }
+		if (dashCd > 0) dashCd -= dt
+
+		// During a dash, override steering with the latched direction + multiplier.
+		let mx = dir.x
+		let mz = dir.z
+		let speed = tune.player.speed
+		const dashing = dashT > 0
+		if (dashing) {
+			dashT -= dt
+			mx = dashDir.x
+			mz = dashDir.z
+			speed *= tune.player.dashMul
+		}
+
+		const desired = { x: mx * speed * dt, y: 0, z: mz * speed * dt }
 
 		vy += tune.physics.gravity * dt
 		desired.y = vy * dt
@@ -100,9 +144,21 @@ export function createPlayer(
 		controller.computeColliderMovement(collider, desired)
 		const mv = controller.computedMovement()
 		const t = body.translation()
-		body.setNextKinematicTranslation({ x: t.x + mv.x, y: t.y + mv.y, z: t.z + mv.z })
+		let nx = t.x + mv.x
+		let nz = t.z + mv.z
+		// A dash commits a big step; clamp it to the court so it can't fling a unit
+		// off the rim into the lava (normal walking can still walk off — that's skill).
+		if (dashing) {
+			const limX = COURT.width / 2 - radius
+			const limZ = COURT.depth / 2 - radius
+			nx = clamp(nx, -limX, limX)
+			nz = clamp(nz, -limZ, limZ)
+		}
+		body.setNextKinematicTranslation({ x: nx, y: t.y + mv.y, z: nz })
 		if (controller.computedGrounded()) vy = 0
 
+		// Face the steer/aim direction (not the latched dash dir) so a dash reads as
+		// a sidestep, not a spin.
 		if (dir.x !== 0 || dir.z !== 0) mesh.rotation.y = Math.atan2(dir.x, dir.z) + Math.PI
 	}
 

@@ -3,35 +3,74 @@
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>arrrrow</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Barriecito&family=Darumadrop+One&family=Ranchers&display=swap"
+			rel="stylesheet"
+		/>
+		<title>dodgethis</title>
 		<style>
 			:root {
-				color-scheme: dark;
+				color-scheme: light;
+				--ui-font: 'Darumadrop One', 'Ranchers', 'Barriecito', system-ui, sans-serif;
+				--page-bg: #8fd7ff;
+				--court-bg: #69d66f;
+				--court-line: #fff7c7;
+				--ui-text: #26445f;
+				--ui-muted: #5f7897;
+				--ui-panel: rgba(255, 249, 213, 0.9);
+				--ui-panel-border: #ffbf3f;
+				--ui-button: #ffcf5a;
+				--ui-button-hover: #ffe27a;
+				--ui-blue: #1677ff;
+				--ui-red: #ff4f6d;
+				--ui-green: #1b9f5a;
+				--ui-gold: #ff9f1c;
+
+				/* Font sizes. Darumadrop reads small, so we run large — base 20px.
+				   Everything points at the base for now; tune each token individually. */
+				--fs-base: 20px;
+				--fs-hud: var(--fs-base);
+				--fs-combat: 16px;
+				--fs-score: var(--fs-base);
+				--fs-title: var(--fs-base);
+				--fs-sub: var(--fs-base);
+				--fs-button: var(--fs-base);
+				--fs-slot: var(--fs-base);
+				--fs-name: var(--fs-base);
+				--fs-key: var(--fs-base);
+				--fs-charge: var(--fs-base);
 			}
 			html,
 			body {
 				margin: 0;
 				height: 100%;
 				overflow: hidden;
-				background: #0b0e14;
+				background: var(--page-bg);
+				font-family: var(--ui-font);
+				font-size: var(--fs-base);
 			}
-			#app {
+			/* lil-gui auto-places with a 15px right gap — flush it to the edge. */
+			.lil-gui.autoPlace {
+				right: 0;
+			}
+			.app {
 				width: 100vw;
 				height: 100vh;
 				display: block;
+				background: var(--page-bg);
 			}
-			#hud {
+			.hud {
 				position: fixed;
 				top: 12px;
 				left: 12px;
-				font:
-					13px/1.4 ui-monospace,
-					monospace;
-				color: #9aa7bd;
+				font: var(--fs-hud)/1.4 var(--ui-font);
+				color: var(--ui-muted);
 				pointer-events: none;
 				white-space: pre;
 			}
-			#combat {
+			.combat {
 				position: fixed;
 				bottom: 12px;
 				left: 12px;
@@ -39,34 +78,34 @@
 				max-height: 38vh;
 				overflow: hidden;
 				font:
-					12px/1.5 ui-monospace,
-					monospace;
-				color: #c8d2e4;
+					var(--fs-combat)/1.5 system-ui,
+					sans-serif;
+				color: var(--ui-text);
 				pointer-events: none;
 				display: flex;
 				flex-direction: column;
 				gap: 1px;
 			}
-			#combat .row {
+			.combat .row {
 				opacity: 0.55;
 			}
-			#combat .row:last-child {
+			.combat .row:last-child {
 				opacity: 1;
-				color: #eaf0ff;
+				color: var(--ui-text);
 			}
-			#combat .hit {
-				color: #ff8d8d;
+			.combat .hit {
+				color: var(--ui-red);
 			}
-			#combat .win {
-				color: #ffd35d;
+			.combat .win {
+				color: var(--ui-gold);
 				font-weight: bold;
 			}
-			#combat .pickup {
-				color: #7fd8a0;
+			.combat .pickup {
+				color: var(--ui-green);
 			}
 
 			/* Scoreboard — best-of-N pips, centered up top. Hidden in the menu. */
-			#score {
+			.score {
 				position: fixed;
 				top: 12px;
 				left: 50%;
@@ -74,93 +113,110 @@
 				display: flex;
 				gap: 18px;
 				align-items: baseline;
-				font:
-					13px/1 ui-monospace,
-					monospace;
-				color: #c8d2e4;
+				font: var(--fs-score)/1 var(--ui-font);
+				color: var(--ui-text);
 				letter-spacing: 0.12em;
 				pointer-events: none;
 			}
-			#score[hidden] {
+			.score[hidden] {
 				display: none;
 			}
-			#score .a {
-				color: #5db4ff;
+			.score .a {
+				color: var(--ui-blue);
 			}
-			#score .b {
-				color: #ff5d5d;
+			.score .b {
+				color: var(--ui-red);
 			}
-			#score .mid {
-				color: #6b7689;
+			.score .mid {
+				color: var(--ui-muted);
 				letter-spacing: 0.04em;
 			}
 
 			/* Modal overlay for menu / round-over / match-over. */
-			#overlay {
+			.overlay {
 				position: fixed;
 				inset: 0;
 				z-index: 10;
 				display: grid;
 				place-items: center;
-				background: rgba(7, 10, 16, 0.72);
+				background: rgba(143, 215, 255, 0.42);
 				backdrop-filter: blur(2px);
 			}
-			#overlay[hidden] {
+			.overlay[hidden] {
 				display: none;
 			}
-			#overlay .card {
+			.overlay .card {
 				text-align: center;
-				color: #eaf0ff;
-				font:
-					14px/1.6 ui-monospace,
-					monospace;
+				color: var(--ui-text);
+				font: var(--fs-base)/1.6 var(--ui-font);
+				max-width: 60ch;
 				padding: 28px 44px;
+				background: var(--ui-panel);
+				border-radius: 24px;
+				box-shadow: 0 18px 40px rgba(45, 99, 150, 0.18);
 			}
-			#overlay h1 {
+			.overlay h1 {
 				margin: 0 0 6px;
-				font-size: 44px;
-				font-weight: 800;
+				font-family: var(--ui-font);
+				font-size: var(--fs-title);
+				font-weight: 400;
 				letter-spacing: 0.18em;
-				color: #ffd35d;
+				color: var(--ui-blue);
 			}
-			#overlay .sub {
+			.overlay .sub {
 				margin: 0 0 20px;
-				color: #9aa7bd;
+				color: var(--ui-muted);
 				letter-spacing: 0.32em;
 				text-transform: uppercase;
-				font-size: 12px;
+				font-size: var(--fs-sub);
 			}
-			#overlay .line {
+			.overlay .line {
 				margin: 4px 0;
-				color: #c8d2e4;
+				color: var(--ui-text);
 			}
-			#overlay .actions {
+			.overlay .actions {
 				margin-top: 24px;
 				display: flex;
 				gap: 12px;
 				justify-content: center;
 			}
-			#overlay button {
-				font:
-					13px ui-monospace,
-					monospace;
-				color: #eaf0ff;
-				background: #1a2230;
-				border: 1px solid #2f3b50;
-				border-radius: 8px;
-				padding: 10px 16px;
+			/* Comic-sticker buttons: thick navy outline + a hard offset shadow,
+			   no blur. Hover lifts toward the light; press slams into the shadow. */
+			.overlay button {
+				font: var(--fs-button) var(--ui-font);
+				letter-spacing: 0.04em;
+				text-transform: uppercase;
+				color: var(--ui-text);
+				background: #fffdf4;
+				border: 3px solid var(--ui-text);
+				border-radius: 999px;
+				padding: 10px 28px;
 				cursor: pointer;
+				box-shadow: 4px 4px 0 var(--ui-text);
 				transition:
-					background 0.12s,
-					border-color 0.12s;
+					transform 0.07s ease,
+					box-shadow 0.07s ease,
+					background 0.12s;
 			}
-			#overlay button:hover {
-				background: #243047;
-				border-color: #5db4ff;
+			.overlay button:hover {
+				background: var(--ui-button-hover);
+				transform: translate(-1px, -1px);
+				box-shadow: 6px 6px 0 var(--ui-text);
+			}
+			.overlay button:active {
+				transform: translate(4px, 4px);
+				box-shadow: 0 0 0 var(--ui-text);
+			}
+			/* The first action is the primary CTA (Next round / Replay) — bold gold. */
+			.overlay .actions button:first-child {
+				background: var(--ui-button);
+			}
+			.overlay .actions button:first-child:hover {
+				background: var(--ui-button-hover);
 			}
 
 			/* Weapon picker — bottom-center, visible during play. */
-			#weapons {
+			.weapons {
 				position: fixed;
 				bottom: 12px;
 				left: 50%;
@@ -169,82 +225,87 @@
 				flex-direction: column;
 				align-items: center;
 				gap: 8px;
-				font:
-					12px/1.3 ui-monospace,
-					monospace;
+				font: var(--fs-base)/1.3 var(--ui-font);
 				pointer-events: auto;
 			}
-			#weapons[hidden] {
+			.weapons[hidden] {
 				display: none;
 			}
-			#weapons .slots {
+			.weapons .slots {
 				display: flex;
 				gap: 6px;
 			}
-			#weapons .slot {
+			.weapons .slot {
 				display: flex;
 				flex-direction: column;
 				align-items: center;
-				gap: 4px;
-				min-width: 72px;
-				padding: 8px 10px;
-				font:
-					11px/1.2 ui-monospace,
-					monospace;
-				color: #9aa7bd;
-				background: rgba(15, 20, 30, 0.88);
-				border: 1px solid #2f3b50;
-				border-radius: 8px;
+				gap: 6px;
+				min-width: 84px;
+				padding: 10px 12px;
+				font: var(--fs-slot)/1.2 var(--ui-font);
+				color: var(--ui-text);
+				background: #fffdf4;
+				border: 3px solid var(--ui-text);
+				border-radius: 16px;
 				cursor: pointer;
+				box-shadow: 3px 3px 0 var(--ui-text);
 				transition:
+					transform 0.07s ease,
+					box-shadow 0.07s ease,
 					background 0.12s,
-					border-color 0.12s,
-					color 0.12s,
-					box-shadow 0.12s;
+					color 0.12s;
 			}
-			#weapons .slot:hover {
-				background: #1a2230;
-				border-color: #4a5a72;
-				color: #c8d2e4;
+			.weapons .slot:hover {
+				background: var(--ui-button-hover);
+				transform: translate(-1px, -1px);
+				box-shadow: 5px 5px 0 var(--ui-text);
 			}
-			#weapons .slot.active {
-				color: #eaf0ff;
-				border-color: var(--accent);
-				box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 35%, transparent);
+			.weapons .slot:active,
+			.weapons .slot.active:active {
+				transform: translate(3px, 3px);
+				box-shadow: 0 0 0 var(--ui-text);
 			}
-			#weapons .slot .key {
+			.weapons .slot.active {
+				background: color-mix(in srgb, var(--accent) 42%, #fffdf4);
+				box-shadow:
+					3px 3px 0 var(--ui-text),
+					0 0 16px color-mix(in srgb, var(--accent) 55%, transparent);
+			}
+			.weapons .slot .key {
 				display: grid;
 				place-items: center;
-				width: 20px;
-				height: 20px;
-				border-radius: 4px;
-				font-size: 11px;
+				width: 26px;
+				height: 26px;
+				border-radius: 8px;
+				font-size: var(--fs-key);
 				font-weight: 700;
-				color: #0b0e14;
+				color: var(--ui-text);
 				background: var(--accent);
+				border: 2px solid var(--ui-text);
+				box-shadow: 2px 2px 0 var(--ui-text);
 			}
-			#weapons .slot .name {
-				font-size: 10px;
-				letter-spacing: 0.06em;
+			.weapons .slot .name {
+				font-size: var(--fs-name);
+				letter-spacing: 0.04em;
 				text-transform: uppercase;
 				white-space: nowrap;
 			}
-			#weapons .charge {
+			.weapons .charge {
 				width: 100%;
 				min-width: 228px;
 				padding: 8px 10px;
-				background: rgba(15, 20, 30, 0.88);
-				border: 1px solid #2f3b50;
+				background: var(--ui-panel);
+				border: 2px solid var(--ui-panel-border);
 				border-radius: 8px;
 			}
-			#weapons .charge-track {
+			.weapons .charge-track {
 				position: relative;
 				height: 8px;
 				border-radius: 4px;
-				background: #1a2230;
+				background: #fff2b8;
 				overflow: hidden;
 			}
-			#weapons .charge-perfect {
+			.weapons .charge-perfect {
 				position: absolute;
 				top: 0;
 				bottom: 0;
@@ -253,7 +314,7 @@
 				border-right: 1px solid rgba(255, 93, 255, 0.55);
 				pointer-events: none;
 			}
-			#weapons .charge-fill {
+			.weapons .charge-fill {
 				position: absolute;
 				top: 0;
 				left: 0;
@@ -263,26 +324,26 @@
 				background: #ffd35d;
 				transition: width 0.05s linear;
 			}
-			#weapons .charge-fill.perfect {
+			.weapons .charge-fill.perfect {
 				background: #ff5dff;
 			}
-			#weapons .charge-label {
+			.weapons .charge-label {
 				margin-top: 6px;
-				font-size: 10px;
+				font-size: var(--fs-charge);
 				letter-spacing: 0.08em;
 				text-transform: uppercase;
-				color: #6b7689;
+				color: var(--ui-muted);
 				text-align: center;
 			}
 		</style>
 	</head>
 	<body>
-		<canvas id="app"></canvas>
-		<div id="hud"></div>
-		<div id="combat"></div>
-		<div id="score" hidden></div>
-		<div id="weapons" hidden></div>
-		<div id="overlay" hidden></div>
+		<canvas class="app"></canvas>
+		<div class="hud"></div>
+		<div class="combat"></div>
+		<div class="score" hidden></div>
+		<div class="weapons" hidden></div>
+		<div class="overlay" hidden></div>
 		<script type="module" src="/src/main.js"></script>
 	</body>
 </html>

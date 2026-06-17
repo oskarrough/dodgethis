@@ -13,6 +13,7 @@ import {
 	pointerDown,
 	clearShoot,
 	pollGamepad,
+	consumeDash,
 } from './input.js'
 import { WEAPONS, TRAIL, createChargeMeter } from './weapons.js'
 import { createWeaponHud } from './weaponHud.js'
@@ -21,8 +22,8 @@ import { tune } from './tune.js'
 import { log, createDebugGui, createCombatLog } from './debug.js'
 import { createGodmodeFx } from './godmodeFx.js'
 
-const hud = document.getElementById('hud')
-const scoreEl = document.getElementById('score')
+const hud = document.querySelector('.hud')
+const scoreEl = document.querySelector('.score')
 
 async function main() {
 	const { RAPIER, world } = await initPhysics()
@@ -57,12 +58,11 @@ async function main() {
 		phase = 'menu'
 		renderScore()
 		overlay.show({
-			title: 'ARRRROW',
-			subtitle: '3D Dodge Bolt',
-			lines: ['Grab arrows, dodge incoming, wipe out the red team.', 'Pick a match length:'],
+			title: 'DODGETHIS',
+			lines: ['Grab arrows, dodge incoming, wipe out the red team.'],
 			actions: [
-				{ label: 'Best of 3', key: 'Digit3', keyLabel: '3', onSelect: () => startMatch(3) },
-				{ label: 'Best of 5', key: 'Digit5', keyLabel: '5', onSelect: () => startMatch(5) },
+				{ label: 'Best of 3', key: 'Digit3', onSelect: () => startMatch(3) },
+				{ label: 'Best of 5', key: 'Digit5', onSelect: () => startMatch(5) },
 			],
 		})
 	}
@@ -194,10 +194,18 @@ async function main() {
 	let weapon = 'arrow'
 	const charge = createChargeMeter()
 
+	// Audio feedback for the charge meter: a tick each time the wind-up climbs into
+	// a new step (the meter ping-pongs, so ticks fire on the way up and fall silent
+	// on the way down), plus a brighter cue the instant it enters the perfect band.
+	const CHARGE_STEP = 0.16
+	let chargeStep = -1
+	let chargePerfect = false
+
 	function setWeapon(w) {
 		if (weapon === w || !WEAPONS[w]) return
 		weapon = w
 		charge.cancel()
+		sfx.switch()
 		combat.push(`weapon → ${WEAPONS[w].label}`, 'pickup')
 	}
 
@@ -266,8 +274,20 @@ async function main() {
 
 		// The charge bow loads on hold and fires on release — its own input model.
 		if (weapon === 'charge') {
-			if (consumePress()) charge.press()
+			if (consumePress()) {
+				charge.press()
+				chargeStep = 0
+				chargePerfect = false
+			}
 			if (pointerDown()) charge.update(dt)
+			// Ratchet ticks: rising pitch per step up, brighter cue entering perfect.
+			if (charge.charging) {
+				const step = Math.floor(charge.value / CHARGE_STEP)
+				if (step > chargeStep) sfx.tick(charge.value)
+				chargeStep = step
+				if (charge.perfect && !chargePerfect) sfx.tickPerfect()
+				chargePerfect = charge.perfect
+			}
 			aimSpeed = charge.previewSpeed()
 			updateArc(hand, aimSpeed, charge.perfect ? TRAIL.perfect : TRAIL.arrow)
 			if (consumeRelease()) {
@@ -397,6 +417,8 @@ async function main() {
 		pollGamepad(dt)
 		if (phase === 'playing' && round) {
 			weaponUpdate(dt)
+			// Dash latches a direction now; the burst plays out across the steps below.
+			if (consumeDash() && round.human) round.human.dash(moveVector())
 			if (!tune.physics.paused) {
 				acc += dt * tune.physics.timeScale
 				// Guard on phase too: a winning hit flips us out of 'playing' mid-step.
@@ -471,7 +493,7 @@ async function main() {
 			status = `team A: ${allies}  enemies left: ${enemiesLeft}  held: ${round.human.heldArrow ? 'yes' : '—'}  loose: ${grounded}\n`
 		}
 		hud.textContent =
-			`arrrrow — milestone 7\n` +
+			`dodgethis — milestone 7\n` +
 			`WASD move · mouse aim · click shoot · R restart\n` +
 			`G godmode · =/- enemy · ]/[ ally\n` +
 			status +

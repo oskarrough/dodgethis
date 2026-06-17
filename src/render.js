@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { tune } from './tune.js'
 
 export function createRenderer() {
-	const canvas = document.getElementById('app')
+	const canvas = document.querySelector('.app')
 	const renderer = new THREE.WebGLRenderer({
 		canvas,
 		antialias: true,
@@ -11,9 +11,13 @@ export function createRenderer() {
 	renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 	renderer.shadowMap.enabled = true
 
+	const bg =
+		getComputedStyle(document.documentElement).getPropertyValue('--page-bg').trim() || '#8fd7ff'
+	renderer.setClearColor(bg)
+
 	const scene = new THREE.Scene()
-	scene.background = new THREE.Color(0x0b0e14)
-	scene.fog = new THREE.Fog(0x0b0e14, 30, 70)
+	scene.background = new THREE.Color(bg)
+	scene.fog = new THREE.Fog(bg, 45, 90)
 
 	// Fixed isometric-ish camera looking down the court.
 	const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 200)
@@ -21,9 +25,9 @@ export function createRenderer() {
 	camera.position.copy(camBase)
 	camera.lookAt(0, 0, 0)
 
-	const hemi = new THREE.HemisphereLight(0xbfd4ff, 0x202830, 0.8)
+	const hemi = new THREE.HemisphereLight(0xffffff, 0x8bd67a, 1.05)
 	scene.add(hemi)
-	const sun = new THREE.DirectionalLight(0xffffff, 1.4)
+	const sun = new THREE.DirectionalLight(0xfff0b8, 1.7)
 	sun.position.set(10, 24, 12)
 	sun.castShadow = true
 	// Tighten the shadow frustum to the court's footprint (the old ±COURT.depth box

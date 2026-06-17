@@ -10,8 +10,10 @@
 // Action shape: { label, key?, keyLabel?, onSelect }
 //   key      — a KeyboardEvent.code ('Digit3', 'KeyM', …) that triggers it
 //   keyLabel — short hint shown on the button ('Enter', '3', 'R')
-export function createOverlay(elId = 'overlay') {
-	const el = document.getElementById(elId)
+import { sfx } from './audio.js'
+
+export function createOverlay(selector = '.overlay') {
+	const el = document.querySelector(selector)
 	let actions = []
 
 	function show({ title = '', subtitle = '', lines = [], actions: acts = [] }) {
@@ -42,8 +44,11 @@ export function createOverlay(elId = 'overlay') {
 			for (const a of acts) {
 				const b = document.createElement('button')
 				b.textContent = a.keyLabel ? `${a.label}  (${a.keyLabel})` : a.label
+				b.addEventListener('pointerenter', () => sfx.hover())
+				b.addEventListener('pointerdown', () => sfx.press())
 				b.addEventListener('click', (e) => {
 					e.stopPropagation()
+					sfx.confirm()
 					select(a)
 				})
 				row.append(b)
@@ -53,9 +58,11 @@ export function createOverlay(elId = 'overlay') {
 
 		el.replaceChildren(card)
 		el.hidden = false
+		sfx.menuOpen()
 	}
 
 	function hide() {
+		if (!el.hidden) sfx.menuClose()
 		el.hidden = true
 		actions = []
 	}
@@ -69,12 +76,14 @@ export function createOverlay(elId = 'overlay') {
 		if (el.hidden) return
 		if (e.code === 'Enter' && actions[0]) {
 			e.preventDefault()
+			sfx.click()
 			select(actions[0])
 			return
 		}
 		const a = actions.find((x) => x.key === e.code)
 		if (a) {
 			e.preventDefault()
+			sfx.click()
 			select(a)
 		}
 	})

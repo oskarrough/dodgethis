@@ -1,9 +1,29 @@
 // Minimal keyboard state. Reads WASD / arrows into a normalized move vector.
 const keys = new Set()
 
-window.addEventListener('keydown', (e) => keys.add(e.code))
+// Dash is an edge (one burst per tap), not a held state. Space / Shift on the
+// keyboard, a bumper on the pad (see pollGamepad). Space also scrolls the page,
+// so swallow its default while we're in the game.
+let dashQueued = false
+
+window.addEventListener('keydown', (e) => {
+	if (e.code === 'Space' || e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
+		if (!e.repeat) dashQueued = true
+		if (e.code === 'Space') e.preventDefault()
+	}
+	keys.add(e.code)
+})
 window.addEventListener('keyup', (e) => keys.delete(e.code))
 window.addEventListener('blur', () => keys.clear())
+
+// True once per dash tap; clears the flag so each press is a single burst.
+export function consumeDash() {
+	if (dashQueued) {
+		dashQueued = false
+		return true
+	}
+	return false
+}
 
 // Returns { x, z } in world space, length <= 1.
 // Camera looks down +z toward origin, so W (forward) = -z.
@@ -94,6 +114,7 @@ const DEADZONE = 0.18
 const AIM_SPEED = 1.7 // NDC units per second at full stick deflection
 const padMove = { x: 0, z: 0 }
 let padShootHeld = false
+let padDashHeld = false
 
 function axis(v) {
 	return Math.abs(v) < DEADZONE ? 0 : v
@@ -131,4 +152,9 @@ export function pollGamepad(dt) {
 		releaseQueued = true
 	}
 	padShootHeld = held
+
+	// Dash on either bumper (LB/RB) or B — edge-detected like the keyboard tap.
+	const dashHeld = !!(gp.buttons[4]?.pressed || gp.buttons[5]?.pressed || gp.buttons[1]?.pressed)
+	if (dashHeld && !padDashHeld) dashQueued = true
+	padDashHeld = dashHeld
 }

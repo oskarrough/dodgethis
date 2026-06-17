@@ -8,7 +8,7 @@ const ACCENT = { arrow: '#ffd35d', charge: '#ffd35d', bowl: '#8a6cff' }
 // Bottom-center weapon picker + charge meter. Keyboard 1/2/3 still switches via
 // main.js; slots are clickable during play for mouse users.
 export function createWeaponHud({ onSelect } = {}) {
-	const root = document.getElementById('weapons')
+	const root = document.querySelector('.weapons')
 	const slots = new Map()
 	const chargeWrap = document.createElement('div')
 	chargeWrap.className = 'charge'

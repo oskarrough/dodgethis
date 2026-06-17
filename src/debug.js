@@ -13,7 +13,7 @@ function emit(level, args) {
 	ring.push(line)
 	if (ring.length > RING_MAX) ring.shift()
 	const fn = level === 'debug' ? console.log : console[level]
-	fn('%c arrrrow ', 'background:#5db4ff;color:#0b0e14;border-radius:3px', ...args)
+	fn('%c dodgethis ', 'background:#5db4ff;color:#0b0e14;border-radius:3px', ...args)
 }
 
 function stringify(v) {
@@ -39,8 +39,8 @@ export const log = {
 // eliminations, round results. This is the primary tool for inspecting behavior
 // (the plan calls for logging built in). Every entry also goes to log.info, so
 // the console ring buffer keeps the full history for log.dump().
-export function createCombatLog(elId = 'combat', max = 12) {
-	const el = document.getElementById(elId)
+export function createCombatLog(selector = '.combat', max = 12) {
+	const el = document.querySelector(selector)
 	const rows = []
 
 	function push(msg, kind = '') {
@@ -67,7 +67,7 @@ export function createCombatLog(elId = 'combat', max = 12) {
 // `cheats` carries live sandbox actions (addEnemy/removeEnemy/addAlly/removeAlly)
 // the main loop binds to the current round; they show up as buttons here.
 export function createDebugGui(onChange = () => {}, cheats = {}) {
-	const gui = new GUI({ title: 'arrrrow / debug' })
+	const gui = new GUI({ title: 'dodgethis / debug' })
 
 	const phys = gui.addFolder('physics')
 	phys.add(tune.physics, 'gravity', -30, 0, 0.1).onChange(onChange)
@@ -77,6 +77,9 @@ export function createDebugGui(onChange = () => {}, cheats = {}) {
 
 	const player = gui.addFolder('player')
 	player.add(tune.player, 'speed', 1, 20, 0.5)
+	player.add(tune.player, 'dashMul', 1, 5, 0.1).name('dash ×')
+	player.add(tune.player, 'dashTime', 0.05, 0.4, 0.01).name('dash time (s)')
+	player.add(tune.player, 'dashCooldown', 0.1, 2, 0.05).name('dash cooldown (s)')
 
 	const arrow = gui.addFolder('arrow')
 	arrow.add(tune.arrow, 'maxSpeed', 10, 60, 0.5).name('max speed')
@@ -98,6 +101,7 @@ export function createDebugGui(onChange = () => {}, cheats = {}) {
 	ai.add(tune.ai, 'enabled')
 	ai.add(tune.ai, 'reaction', 0, 2, 0.05).name('reaction (s)')
 	ai.add(tune.ai, 'jitter', 0, 0.6, 0.01).name('aim jitter (rad)')
+	ai.add(tune.ai, 'standoff', 2, 18, 0.5).name('standoff (m)')
 
 	const fx = gui.addFolder('fx')
 	fx.add(tune.fx, 'sound')
@@ -119,5 +123,6 @@ export function createDebugGui(onChange = () => {}, cheats = {}) {
 	dbg.add(tune.debug, 'logLevel', ['debug', 'info', 'warn', 'error'])
 	dbg.add({ dumpLog: () => log.dump() }, 'dumpLog').name('dump log → console')
 
+	gui.close()
 	return gui
 }

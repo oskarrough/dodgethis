@@ -98,6 +98,7 @@ export function createRound(
 			if (opts.perfect) sfx.perfect()
 		}
 		if (unit.isHuman) addShake(opts.kind === 'bowl' ? 0.35 : opts.perfect ? 0.4 : 0.22)
+		else sfx.taunt() // enemy chatter on every shot they take
 	}
 
 	// The human's shot — main.js solves the aim direction + speed + weapon opts.
@@ -125,6 +126,7 @@ export function createRound(
 		for (const b of brains) {
 			if (!b.unit.alive) continue
 			const intent = b.think(ictx, dt)
+			if (intent.dash) b.unit.dash(intent.move) // burst out of an imminent arrow
 			b.unit.update(intent.move, dt)
 			if (intent.grab) grabNearestArrow(b.unit)
 			if (intent.shoot) looseArrow(b.unit, intent.shoot, solveLaunch(intent.shoot.dist))

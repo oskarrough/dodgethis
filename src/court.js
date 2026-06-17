@@ -8,13 +8,20 @@ export const COURT = { width: 11, depth: 24, thickness: 1 }
 // so this leaves a brief, readable drop before the kill.
 export const KILL_Y = -5
 
+function cssColor(name, fallback) {
+	if (typeof document === 'undefined') return fallback // headless (tests) — no DOM
+	return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback
+}
+
 // Builds the floor: a Three mesh + a matching fixed Rapier collider.
 export function buildCourt(scene, world, RAPIER) {
 	const { width, depth, thickness } = COURT
+	const courtColor = cssColor('--court-bg', '#69d66f')
+	const lineColor = cssColor('--court-line', '#fff7c7')
 
 	const mesh = new THREE.Mesh(
 		new THREE.BoxGeometry(width, thickness, depth),
-		new THREE.MeshStandardMaterial({ color: 0x2f6b3d, roughness: 0.95 }),
+		new THREE.MeshStandardMaterial({ color: courtColor, roughness: 0.8 }),
 	)
 	mesh.position.y = -thickness / 2
 	mesh.receiveShadow = true
@@ -23,7 +30,7 @@ export function buildCourt(scene, world, RAPIER) {
 	// Center line (the "net" line) for orientation.
 	const line = new THREE.Mesh(
 		new THREE.BoxGeometry(width, 0.02, 0.12),
-		new THREE.MeshBasicMaterial({ color: 0xeaf0ff }),
+		new THREE.MeshBasicMaterial({ color: lineColor }),
 	)
 	line.position.y = 0.011
 	scene.add(line)

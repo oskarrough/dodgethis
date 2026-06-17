@@ -12,10 +12,16 @@ export const tune = {
 		paused: false,
 	},
 	player: {
-		speed: 7,
+		speed: 5,
 		radius: 0.4,
 		halfHeight: 0.6,
 		pickupRadius: 1.1,
+		// Dash: a short, committed ground burst (Quake-style scoot). Latches a
+		// direction and overrides normal steering for dashTime, then locks out for
+		// dashCooldown. Edge-clamped so a dash can't fling you into the lava.
+		dashMul: 2.8, // speed multiplier during the burst
+		dashTime: 0.14, // seconds the burst lasts
+		dashCooldown: 0.7, // seconds (from dash start) before you can dash again
 	},
 	arrow: {
 		impulse: 22, // fallback launch speed (m/s) when no aim distance is known
@@ -42,6 +48,7 @@ export const tune = {
 		enabled: true,
 		reaction: 0.7, // seconds an enemy lines up a shot before loosing
 		jitter: 0.2, // aim error in radians (higher = worse shots)
+		standoff: 10, // preferred range (m) an armed bot circle-strafes the target at
 	},
 	fx: {
 		sound: true,
