@@ -144,6 +144,8 @@ export const sfx = {
 		[523, 659, 784, 1047].forEach((f, i) =>
 			setTimeout(() => blip({ freq: f, type: 'triangle', dur: 0.2, gain: 0.2 }), i * 120),
 		),
+	// Menu cursor-move blip — a short square wave, very handheld (D-pad thunk).
+	nav: () => blip({ freq: 660, type: 'square', dur: 0.05, gain: 0.12 }),
 
 	// Sample-backed cues (mp3s in ./sfx) — the UI / character layer.
 	grab: () => sample(unboxUrl, { gain: 0.6, rateJitter: 0.05 }),

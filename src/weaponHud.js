@@ -1,11 +1,11 @@
 import { WEAPONS } from './weapons.js'
 import { tune } from './tune.js'
 
-const ORDER = ['arrow', 'charge', 'bowl']
-const KEYS = { arrow: '1', charge: '2', bowl: '3' }
-const ACCENT = { arrow: '#ffd35d', charge: '#ffd35d', bowl: '#8a6cff' }
+const ORDER = ['bow', 'bowl']
+const KEYS = { bow: '1', bowl: '2' }
+const ACCENT = { bow: '#ffd35d', bowl: '#8a6cff' }
 
-// Bottom-center weapon picker + charge meter. Keyboard 1/2/3 still switches via
+// Bottom-center weapon picker + charge meter. Keyboard 1/2 still switches via
 // main.js; slots are clickable during play for mouse users.
 export function createWeaponHud({ onSelect } = {}) {
 	const root = document.querySelector('.weapons')
@@ -53,7 +53,7 @@ export function createWeaponHud({ onSelect } = {}) {
 				btn.classList.toggle('active', id === weapon)
 			}
 
-			const showCharge = weapon === 'charge'
+			const showCharge = weapon === 'bow'
 			chargeWrap.hidden = !showCharge
 			if (!showCharge) return
 

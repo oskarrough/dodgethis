@@ -3,9 +3,12 @@
 // gameplay HUD and combat log live elsewhere.
 //
 // show() renders a title + subtitle + lines + a row of actions. Each action is a
-// button (click) optionally bound to a key, and Enter always triggers the first
-// (default) action — so every screen is operable by mouse or keyboard. This is
-// the rough analog of a Godot menu scene whose buttons emit a "pressed" signal.
+// button (click) optionally bound to a key. A single "cursor" selection is
+// always active: a blinking ▶ marker + gold fill marks the current action, and
+// the D-pad / arrow keys (or WASD) move it; Enter or Space picks it. That's the
+// classic handheld-menu feel — D-pad to move, A to confirm — so the menu never
+// depends on tab-focus. Number keys still shortcut straight to an action, with
+// a "(3)"-style hint on the button.
 //
 // Action shape: { label, key?, keyLabel?, onSelect }
 //   key      — a KeyboardEvent.code ('Digit3', 'KeyM', …) that triggers it
@@ -15,9 +18,13 @@ import { sfx } from './audio.js'
 export function createOverlay(selector = '.overlay') {
 	const el = document.querySelector(selector)
 	let actions = []
+	let buttons = []
+	let index = 0
 
 	function show({ title = '', subtitle = '', lines = [], actions: acts = [] }) {
 		actions = acts
+		buttons = []
+		index = 0
 		const card = document.createElement('div')
 		card.className = 'card'
 
@@ -41,10 +48,19 @@ export function createOverlay(selector = '.overlay') {
 		if (acts.length) {
 			const row = document.createElement('div')
 			row.className = 'actions'
-			for (const a of acts) {
+			acts.forEach((a, i) => {
 				const b = document.createElement('button')
-				b.textContent = a.keyLabel ? `${a.label}  (${a.keyLabel})` : a.label
-				b.addEventListener('pointerenter', () => sfx.hover())
+				b.tabIndex = -1 // keyboard goes through the cursor, not tab focus
+				const cursor = document.createElement('span')
+				cursor.className = 'cursor'
+				cursor.textContent = '▶'
+				const label = document.createElement('span')
+				label.textContent = a.keyLabel ? `${a.label}  (${a.keyLabel})` : a.label
+				b.append(cursor, label)
+				b.addEventListener('pointerenter', () => {
+					setIndex(i)
+					sfx.hover()
+				})
 				b.addEventListener('pointerdown', () => sfx.press())
 				b.addEventListener('click', (e) => {
 					e.stopPropagation()
@@ -52,12 +68,14 @@ export function createOverlay(selector = '.overlay') {
 					select(a)
 				})
 				row.append(b)
-			}
+				buttons.push(b)
+			})
 			card.append(row)
 		}
 
 		el.replaceChildren(card)
 		el.hidden = false
+		render()
 		sfx.menuOpen()
 	}
 
@@ -65,19 +83,50 @@ export function createOverlay(selector = '.overlay') {
 		if (!el.hidden) sfx.menuClose()
 		el.hidden = true
 		actions = []
+		buttons = []
+		index = 0
 	}
 
 	function select(a) {
 		if (a && a.onSelect) a.onSelect()
 	}
 
-	// Keyboard: Enter = default action, or any action's bound key.
+	function setIndex(i) {
+		const n = actions.length
+		if (!n) return
+		index = ((i % n) + n) % n // wrap both directions
+		render()
+	}
+
+	function render() {
+		buttons.forEach((b, i) => b.classList.toggle('selected', i === index))
+	}
+
+	// Keyboard: D-pad / WASD move the cursor, Enter/Space confirm, and any
+	// action's bound key shortcuts straight to it.
 	window.addEventListener('keydown', (e) => {
-		if (el.hidden) return
-		if (e.code === 'Enter' && actions[0]) {
+		if (el.hidden || !actions.length) return
+		if (
+			e.code === 'ArrowDown' ||
+			e.code === 'ArrowRight' ||
+			e.code === 'KeyS' ||
+			e.code === 'KeyD'
+		) {
+			e.preventDefault()
+			setIndex(index + 1)
+			sfx.nav()
+			return
+		}
+		if (e.code === 'ArrowUp' || e.code === 'ArrowLeft' || e.code === 'KeyW' || e.code === 'KeyA') {
+			e.preventDefault()
+			setIndex(index - 1)
+			sfx.nav()
+			return
+		}
+		if (e.code === 'Enter' || e.code === 'Space') {
 			e.preventDefault()
 			sfx.click()
-			select(actions[0])
+			select(actions[index])
 			return
 		}
 		const a = actions.find((x) => x.key === e.code)

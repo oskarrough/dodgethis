@@ -119,6 +119,7 @@ export function createDebugGui(onChange = () => {}, cheats = {}) {
 	// Cheats / sandbox. godmode toggles live (also bound to the G key in main).
 	const ch = gui.addFolder('cheats')
 	ch.add(tune.cheats, 'godmode').name('godmode (G)').listen()
+	ch.add(tune.cheats, 'infiniteAmmo').name('infinite ammo (H)').listen()
 	if (cheats.addEnemy) ch.add(cheats, 'addEnemy').name('+ enemy ( = )')
 	if (cheats.removeEnemy) ch.add(cheats, 'removeEnemy').name('- enemy ( - )')
 	if (cheats.addAlly) ch.add(cheats, 'addAlly').name('+ ally ( ] )')

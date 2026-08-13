@@ -1,12 +1,11 @@
 import { tune } from './tune.js'
 
 // Weapon definitions — the one place a weapon's identity lives (Godot would make
-// these Resources). The human picks one (1/2/3); it's a property of the shooter,
+// these Resources). The human picks one (1/2); it's a property of the shooter,
 // not the ammo. `kind` is what the projectile reads to decide how it flies; the
 // numbers that tune each weapon live in tune.weapons (debug.js).
 export const WEAPONS = {
-	arrow: { label: 'Arrow', kind: 'arrow' },
-	charge: { label: 'Charge bow', kind: 'arrow' },
+	bow: { label: 'Bow', kind: 'arrow' },
 	bowl: { label: 'Bowl', kind: 'bowl' },
 }
 

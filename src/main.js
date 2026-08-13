@@ -3,7 +3,7 @@ import { initPhysics } from './physics.js'
 import { createRenderer } from './render.js'
 import { buildCourt } from './court.js'
 import { createRound } from './round.js'
-import { solveLaunch, launchVelocity } from './arrow.js'
+import { launchVelocity } from './arrow.js'
 import { createOverlay } from './overlay.js'
 import {
 	moveVector,
@@ -12,6 +12,7 @@ import {
 	consumeRelease,
 	pointerDown,
 	clearShoot,
+	clearDash,
 	pollGamepad,
 	consumeDash,
 } from './input.js'
@@ -32,6 +33,21 @@ async function main() {
 	const overlay = createOverlay()
 	const godmodeFx = createGodmodeFx(scene)
 	log.info('booted', { renderer: 'three', physics: 'rapier' })
+
+	// Mute toggle — flips the same tune.fx.sound gate every cue already honours,
+	// so one button silences synth blips and sample players alike.
+	const muteBtn = document.querySelector('.mute')
+	function renderMute() {
+		muteBtn.textContent = tune.fx.sound ? '🔊' : '🔇'
+		muteBtn.classList.toggle('muted', !tune.fx.sound)
+		muteBtn.title = tune.fx.sound ? 'Mute' : 'Unmute'
+	}
+	muteBtn.addEventListener('click', () => {
+		tune.fx.sound = !tune.fx.sound
+		renderMute()
+		if (tune.fx.sound) sfx.switch() // audible confirmation when unmuting
+	})
+	renderMute()
 
 	// Persistent stage: the court and the contact queue outlive every round. Only
 	// the per-round entities (built in round.js) come and go.
@@ -61,8 +77,8 @@ async function main() {
 			title: 'DODGETHIS',
 			lines: ['Grab arrows, dodge incoming, wipe out the red team.'],
 			actions: [
-				{ label: 'Best of 3', key: 'Digit3', onSelect: () => startMatch(3) },
-				{ label: 'Best of 5', key: 'Digit5', onSelect: () => startMatch(5) },
+				{ label: 'Best of 3', key: 'Digit3', keyLabel: '3', onSelect: () => startMatch(3) },
+				{ label: 'Best of 5', key: 'Digit5', keyLabel: '5', onSelect: () => startMatch(5) },
 			],
 		})
 	}
@@ -99,6 +115,7 @@ async function main() {
 			onOver: endRound,
 		})
 		clearShoot() // swallow the click/Enter that dismissed the overlay
+		clearDash() // a Space confirm shouldn't become an instant dash
 		charge.cancel()
 		acc = 0
 		phase = 'playing'
@@ -187,11 +204,11 @@ async function main() {
 			`<span class="b">${pips(match.wins.B)} FOE</span>`
 	}
 
-	// --- Weapons (1/2/3) -------------------------------------------------------
+	// --- Weapons (1/2) ---------------------------------------------------------
 	// The weapon is a property of the human shooter, not the ammo: you still grab
 	// arrows from the scarce pool, but the selected weapon changes how a held
-	// arrow is loosed. The charge bow's wind-up meter is its own component.
-	let weapon = 'arrow'
+	// arrow is loosed. The bow's wind-up meter is its own component.
+	let weapon = 'bow'
 	const charge = createChargeMeter()
 
 	// Audio feedback for the charge meter: a tick each time the wind-up climbs into
@@ -272,8 +289,8 @@ async function main() {
 		const hand = h.handPosition()
 		const def = WEAPONS[weapon]
 
-		// The charge bow loads on hold and fires on release — its own input model.
-		if (weapon === 'charge') {
+		// The bow loads on hold and fires on release — its own input model.
+		if (weapon === 'bow') {
 			if (consumePress()) {
 				charge.press()
 				chargeStep = 0
@@ -299,14 +316,9 @@ async function main() {
 			return
 		}
 
-		// Instant weapons (arrow, bowl): aim differs, but both fire on click.
-		if (def.kind === 'bowl') {
-			aimSpeed = tune.weapons.bowlSpeed
-			updateGroundLine(hand)
-		} else {
-			aimSpeed = solveLaunch(dist, hand.y) // auto-solve to land on the reticle
-			updateArc(hand, aimSpeed, TRAIL.arrow)
-		}
+		// The bowl rolls along the ground and fires on click.
+		aimSpeed = tune.weapons.bowlSpeed
+		updateGroundLine(hand)
 		if (consumePress()) round.looseHuman(aimDir, aimSpeed, { kind: def.kind })
 	}
 
@@ -384,11 +396,22 @@ async function main() {
 			combat.push(`godmode ${tune.cheats.godmode ? 'ON' : 'off'}`, tune.cheats.godmode ? 'win' : '')
 			return
 		}
+		if (e.code === 'KeyH') {
+			tune.cheats.infiniteAmmo = !tune.cheats.infiniteAmmo
+			combat.push(
+				`infinite ammo ${tune.cheats.infiniteAmmo ? 'ON' : 'off'}`,
+				tune.cheats.infiniteAmmo ? 'win' : '',
+			)
+			return
+		}
+		if (e.code === 'Escape') {
+			if (phase !== 'menu') enterMenu() // quit the match back to the splash
+			return
+		}
 		if (phase !== 'playing') return
 		if (e.code === 'KeyR') return restartRound()
-		if (e.code === 'Digit1') return setWeapon('arrow')
-		if (e.code === 'Digit2') return setWeapon('charge')
-		if (e.code === 'Digit3') return setWeapon('bowl')
+		if (e.code === 'Digit1') return setWeapon('bow')
+		if (e.code === 'Digit2') return setWeapon('bowl')
 		if (!round) return
 		if (e.code === 'Equal') round.addUnit('B')
 		else if (e.code === 'Minus') round.removeUnit('B')
@@ -468,7 +491,7 @@ async function main() {
 		// burns DOM writes and array allocs for no visible gain. Throttle to ~10Hz,
 		// but keep it live while the charge meter is winding so its bar stays smooth.
 		hudTimer += dt
-		if (hudTimer >= 0.1 || (weapon === 'charge' && charge.charging)) {
+		if (hudTimer >= 0.1 || (weapon === 'bow' && charge.charging)) {
 			hudTimer = 0
 			updateHud()
 		}
@@ -494,10 +517,10 @@ async function main() {
 		}
 		hud.textContent =
 			`dodgethis — milestone 7\n` +
-			`WASD move · mouse aim · click shoot · R restart\n` +
-			`G godmode · =/- enemy · ]/[ ally\n` +
+			`WASD move · mouse aim · hold & release to shoot · R restart · Esc menu\n` +
+			`G godmode · H ∞ ammo · =/- enemy · ]/[ ally\n` +
 			status +
-			`fps: ${fps}  [${phase}]${tune.physics.paused ? '  [paused]' : ''}${tune.cheats.godmode ? '  [GODMODE]' : ''}`
+			`fps: ${fps}  [${phase}]${tune.physics.paused ? '  [paused]' : ''}${tune.cheats.godmode ? '  [GODMODE]' : ''}${tune.cheats.infiniteAmmo ? '  [∞ AMMO]' : ''}`
 		weaponHud.update({ weapon, charge, visible: phase === 'playing' })
 	}
 

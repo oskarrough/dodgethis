@@ -38,16 +38,16 @@ export const tune = {
 		launchAngle: 20, // degrees above horizontal
 		linearDamping: 0.05,
 	},
-	// Alternate "weapons" the human can switch to (1/2/3). The ammo is the same
+	// Alternate "weapons" the human can switch to (1/2). The ammo is the same
 	// scarce arrow pool — the weapon only changes how a held arrow is loosed.
 	weapons: {
-		// (2) Charge bow — hold to wind a ping-pong meter, release to fire.
+		// (1) Bow — hold to wind a ping-pong meter, release to fire.
 		chargeTime: 0.9, // seconds for the meter to climb 0→1 (then it reverses)
 		chargeMin: 14, // launch speed (m/s) at an empty meter
 		chargeMax: 30, // launch speed (m/s) at a full meter
 		perfectWindow: 0.1, // top fraction of the meter that scores a "perfect" release
 		perfectMult: 1.5, // speed multiplier on a perfect release
-		// (3) Bowl — a big, slow, heavy ball that rolls along the ground.
+		// (2) Bowl — a big, slow, heavy ball that rolls along the ground.
 		bowlSpeed: 15, // launch speed (m/s) — slower than an arrow
 		bowlRadius: 0.45, // collider + visual radius (big)
 		bowlDensity: 4, // heavy, so it bowls through
@@ -68,6 +68,7 @@ export const tune = {
 	},
 	cheats: {
 		godmode: false, // the human can't be eliminated (toggle live with G)
+		infiniteAmmo: false, // the human never runs out of arrows (toggle live with H)
 	},
 	debug: {
 		showColliders: false,

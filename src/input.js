@@ -104,6 +104,12 @@ export function clearShoot() {
 	releaseQueued = false
 }
 
+// Swallow a pending dash (used when a round starts, so the Space that confirmed
+// a menu doesn't immediately fire a dash burst).
+export function clearDash() {
+	dashQueued = false
+}
+
 // --- Gamepad (plan.md: stick move + aim, trigger shoot) ---
 // Polled once per frame by main. Left stick feeds moveVector; the right stick
 // nudges the same NDC pointer the mouse writes (a virtual cursor, so the

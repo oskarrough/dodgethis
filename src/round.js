@@ -119,6 +119,19 @@ export function createRound(
 		}
 	}
 
+	// Infinite-ammo cheat: the human's quiver never empties. Whenever they have no
+	// arrow in hand — just loosed one, or the cheat was toggled on empty-handed —
+	// nock a fresh arrow so shooting never stalls on the scarce pool. A new arrow
+	// enters the pool each time, which is the point of "infinite".
+	function nockInfinite() {
+		if (!tune.cheats.infiniteAmmo || over || !human.alive || human.heldArrow) return
+		const a = createArrow(scene, world, RAPIER, { position: [0, 0, 0] })
+		a.hold()
+		human.heldArrow = a
+		arrows.push(a)
+		combat.push('infinite ammo — fresh arrow nocked', 'pickup')
+	}
+
 	// Run every brain: move, maybe grab, maybe shoot.
 	function thinkAI(dt) {
 		if (!tune.ai.enabled) return
@@ -205,6 +218,7 @@ export function createRound(
 	// One fixed-timestep update: drive the human, run the brains, step physics,
 	// resolve the contacts that step produced, advance flying arrows.
 	function step(dt, move) {
+		nockInfinite()
 		human.update(move, dt)
 		thinkAI(dt)
 		world.step(eventQueue)
