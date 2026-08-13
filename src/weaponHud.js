@@ -6,7 +6,8 @@ const KEYS = { bow: '1', bowl: '2' }
 const ACCENT = { bow: '#ffd35d', bowl: '#8a6cff' }
 
 // Bottom-center weapon picker + charge meter. Keyboard 1/2 still switches via
-// main.js; slots are clickable during play for mouse users.
+// main.js; slots are clickable during play for mouse users. Armed status sits
+// here with the weapon chrome — not in the left-stack debug HUD.
 export function createWeaponHud({ onSelect } = {}) {
 	const root = document.querySelector('.weapons')
 	const slots = new Map()
@@ -26,6 +27,10 @@ export function createWeaponHud({ onSelect } = {}) {
 	chargeLabel.className = 'charge-label'
 	chargeWrap.append(track, chargeLabel)
 
+	const armed = document.createElement('div')
+	armed.className = 'armed off'
+	armed.textContent = 'UNARMED'
+
 	const row = document.createElement('div')
 	row.className = 'slots'
 	for (const id of ORDER) {
@@ -42,12 +47,15 @@ export function createWeaponHud({ onSelect } = {}) {
 		row.append(btn)
 	}
 
-	root.append(row, chargeWrap)
+	root.append(armed, row, chargeWrap)
 
 	return {
-		update({ weapon, charge, visible }) {
+		update({ weapon, charge, visible, holding = false }) {
 			root.hidden = !visible
 			if (!visible) return
+
+			armed.textContent = holding ? 'ARMED' : 'UNARMED'
+			armed.classList.toggle('off', !holding)
 
 			for (const [id, btn] of slots) {
 				btn.classList.toggle('active', id === weapon)

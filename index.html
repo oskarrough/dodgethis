@@ -61,14 +61,20 @@
 				display: block;
 				background: var(--page-bg);
 			}
+			/* Left-stack developer chrome — system face so it never reads as match UI. */
 			.hud {
 				position: fixed;
-				top: 12px;
-				left: 12px;
-				font: var(--fs-hud)/1.4 var(--ui-font);
-				color: var(--ui-muted);
+				top: 10px;
+				left: 10px;
+				z-index: 2;
+				font:
+					12px/1.35 system-ui,
+					sans-serif;
+				color: rgba(38, 68, 95, 0.55);
 				pointer-events: none;
 				white-space: pre;
+				letter-spacing: 0;
+				max-width: min(42ch, 36vw);
 			}
 			.combat {
 				position: fixed;
@@ -104,19 +110,21 @@
 				color: var(--ui-green);
 			}
 
-			/* Scoreboard — best-of-N pips, centered up top. Hidden in the menu. */
+			/* Match chrome — gym scoreboard. Pips imply best-of; no panel. */
 			.score {
 				position: fixed;
-				top: 12px;
+				top: 14px;
 				left: 50%;
 				transform: translateX(-50%);
+				z-index: 3;
 				display: flex;
-				gap: 18px;
+				gap: 22px;
 				align-items: baseline;
 				font: var(--fs-score)/1 var(--ui-font);
 				color: var(--ui-text);
-				letter-spacing: 0.12em;
+				letter-spacing: 0.14em;
 				pointer-events: none;
+				text-transform: uppercase;
 			}
 			.score[hidden] {
 				display: none;
@@ -127,12 +135,18 @@
 			.score .b {
 				color: var(--ui-red);
 			}
+			.score .pips {
+				letter-spacing: 0.2em;
+			}
 			.score .mid {
-				color: var(--ui-muted);
-				letter-spacing: 0.04em;
+				color: var(--ui-text);
+				letter-spacing: 0.08em;
+				font-size: 0.72em;
+				opacity: 0.72;
 			}
 
-			/* Modal overlay for menu / round-over / match-over. */
+			/* Modal overlay for round-over / match-over.
+			   Round-over (.clear) keeps the court + scoreboard readable — no frost. */
 			.overlay {
 				position: fixed;
 				inset: 0;
@@ -141,6 +155,10 @@
 				place-items: center;
 				background: rgba(143, 215, 255, 0.42);
 				backdrop-filter: blur(2px);
+			}
+			.overlay.clear {
+				background: transparent;
+				backdrop-filter: none;
 			}
 			.overlay[hidden] {
 				display: none;
@@ -152,11 +170,12 @@
 				max-width: 60ch;
 				padding: 28px 44px;
 				background: var(--ui-panel);
+				border: 3px solid var(--ui-text);
 				border-radius: 24px;
-				box-shadow: 0 18px 40px rgba(45, 99, 150, 0.18);
+				box-shadow: 6px 6px 0 var(--ui-text);
 			}
 			.overlay h1 {
-				margin: 0 0 6px;
+				margin: 0;
 				font-family: var(--ui-font);
 				font-size: var(--fs-title);
 				font-weight: 400;
@@ -164,32 +183,40 @@
 				color: var(--ui-blue);
 			}
 			.overlay .sub {
-				margin: 0 0 20px;
+				margin: 8px 0 0;
 				color: var(--ui-muted);
 				text-transform: uppercase;
 				font-size: var(--fs-sub);
 			}
 			.overlay .line {
-				margin: 4px 0;
+				margin: 8px 0 0;
 				color: var(--ui-text);
 			}
 			.overlay .actions {
-				margin-top: 24px;
+				margin-top: 22px;
 				display: flex;
 				gap: 12px;
 				justify-content: center;
 			}
 			/* Comic-sticker buttons: thick navy outline + a hard offset shadow,
-			   no blur. Hover lifts toward the light; press slams into the shadow. */
+			   no blur. Hover lifts toward the light; press slams into the shadow.
+			   Label is flex-centered; ▶ cursor is out of flow so it can't shove
+			   the text off optical vertical center. */
 			.overlay button {
-				font: var(--fs-button) var(--ui-font);
+				position: relative;
+				display: inline-flex;
+				align-items: center;
+				justify-content: center;
+				font-family: var(--ui-font);
+				font-size: var(--fs-button);
+				line-height: 1;
 				letter-spacing: 0.04em;
 				text-transform: uppercase;
 				color: var(--ui-text);
 				background: #fffdf4;
 				border: 3px solid var(--ui-text);
 				border-radius: 999px;
-				padding: 10px 28px;
+				padding: 12px 32px;
 				cursor: pointer;
 				box-shadow: 4px 4px 0 var(--ui-text);
 				transition:
@@ -206,11 +233,20 @@
 				transform: translate(4px, 4px);
 				box-shadow: 0 0 0 var(--ui-text);
 			}
+			.overlay .actions button .label {
+				display: block;
+				line-height: 1;
+			}
 			/* The keyboard cursor: one action is always selected — a blinking ▶
 			   marker plus a gold fill. Arrow keys / WASD move it, Enter/Space pick. */
 			.overlay .actions button .cursor {
-				visibility: hidden; /* reserves the slot so buttons don't shift */
-				margin-right: 6px;
+				position: absolute;
+				left: 14px;
+				top: 50%;
+				transform: translateY(-50%);
+				visibility: hidden;
+				line-height: 1;
+				pointer-events: none;
 			}
 			.overlay .actions button.selected {
 				background: var(--ui-button);
@@ -248,6 +284,18 @@
 			}
 			.weapons[hidden] {
 				display: none;
+			}
+			.weapons .armed {
+				font-size: 0.78em;
+				line-height: 1;
+				letter-spacing: 0.16em;
+				text-transform: uppercase;
+				color: var(--ui-text);
+				-webkit-text-stroke: 4px #fffdf4;
+				paint-order: stroke fill;
+			}
+			.weapons .armed.off {
+				color: var(--ui-muted);
 			}
 			.weapons .slots {
 				display: flex;

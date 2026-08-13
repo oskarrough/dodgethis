@@ -23,11 +23,14 @@ export function createOverlay(selector = '.overlay') {
 	let previousFocus = null
 	let outside = []
 
-	function show({ title = '', subtitle = '', lines = [], actions: acts = [] }) {
+	// clear: round-over keeps court + scoreboard readable (no dim / blur veil).
+	// Match-over may keep the default curtain.
+	function show({ title = '', subtitle = '', lines = [], actions: acts = [], clear = false } = {}) {
 		actions = acts
 		buttons = []
 		index = 0
 		if (el.hidden) previousFocus = document.activeElement
+		el.classList.toggle('clear', clear)
 		const card = document.createElement('div')
 		card.className = 'card'
 		card.setAttribute('role', 'dialog')
@@ -51,7 +54,7 @@ export function createOverlay(selector = '.overlay') {
 		for (const ln of lines) {
 			const p = document.createElement('p')
 			p.className = 'line'
-			p.innerHTML = ln // lines may carry colored <span>s for the score
+			p.textContent = ln
 			card.append(p)
 		}
 		if (acts.length) {
@@ -64,6 +67,7 @@ export function createOverlay(selector = '.overlay') {
 				cursor.setAttribute('aria-hidden', 'true')
 				cursor.textContent = '▶'
 				const label = document.createElement('span')
+				label.className = 'label'
 				label.textContent = a.keyLabel ? `${a.label}  (${a.keyLabel})` : a.label
 				b.append(cursor, label)
 				b.addEventListener('pointerenter', () => {
@@ -85,8 +89,14 @@ export function createOverlay(selector = '.overlay') {
 
 		el.replaceChildren(card)
 		el.hidden = false
+		// Keep match chrome + debug readable during clear round-over; only the
+		// dialog captures focus. Curtain phases still inert the rest of the page.
 		outside = [...document.body.children].filter((child) => child !== el)
-		for (const child of outside) child.inert = true
+		if (clear) {
+			outside = []
+		} else {
+			for (const child of outside) child.inert = true
+		}
 		render()
 		buttons[0]?.focus()
 		sfx.menuOpen()
@@ -95,6 +105,7 @@ export function createOverlay(selector = '.overlay') {
 	function hide() {
 		if (!el.hidden) sfx.menuClose()
 		el.hidden = true
+		el.classList.remove('clear')
 		actions = []
 		buttons = []
 		index = 0
