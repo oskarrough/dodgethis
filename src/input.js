@@ -116,8 +116,13 @@ const padMove = { x: 0, z: 0 }
 let padShootHeld = false
 let padDashHeld = false
 
+// Hard deadzone, then rescale so the usable stick range maps to 0→1.
+// Without rescale, the first 18% of throw is wasted and full tilt never quite
+// feels like full tilt — mushy vs. keyboard.
 function axis(v) {
-	return Math.abs(v) < DEADZONE ? 0 : v
+	const a = Math.abs(v)
+	if (a < DEADZONE) return 0
+	return Math.sign(v) * ((a - DEADZONE) / (1 - DEADZONE))
 }
 
 export function pollGamepad(dt) {

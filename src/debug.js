@@ -77,6 +77,12 @@ export function createDebugGui(onChange = () => {}, cheats = {}) {
 
 	const player = gui.addFolder('player')
 	player.add(tune.player, 'speed', 1, 20, 0.5)
+	player.add(tune.player, 'accel', 1, 40, 0.5).name('accel')
+	player.add(tune.player, 'friction', 0, 30, 0.5).name('friction')
+	player.add(tune.player, 'stopFriction', 0, 40, 0.5).name('stop friction')
+	player.add(tune.player, 'stopSpeed', 0.1, 10, 0.1).name('stop speed')
+	player.add(tune.player, 'airAccel', 0, 20, 0.5).name('air accel')
+	player.add(tune.player, 'airSpeedMul', 1, 2, 0.05).name('air speed ×')
 	player.add(tune.player, 'dashMul', 1, 5, 0.1).name('dash ×')
 	player.add(tune.player, 'dashTime', 0.05, 0.4, 0.01).name('dash time (s)')
 	player.add(tune.player, 'dashCooldown', 0.1, 2, 0.05).name('dash cooldown (s)')
