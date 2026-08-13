@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import { tune } from './tune.js'
 import { startDeath } from './death.js'
 import { COURT } from './court.js'
+import { stepHorizontalVelocity } from './move.js'
 
 const clamp = (v, lo, hi) => (v < lo ? lo : v > hi ? hi : v)
 
@@ -48,7 +49,10 @@ export function createPlayer(
 	controller.enableSnapToGround(0.3)
 	controller.setApplyImpulsesToDynamicBodies(true)
 
+	let vx = 0
+	let vz = 0
 	let vy = 0
+	let grounded = true // last tick's controller grounded flag (spawn on court)
 	let dashT = 0 // >0 while the dash burst is active
 	let dashCd = 0 // >0 while dash is on cooldown (counts down from dashCooldown)
 	const dashDir = new THREE.Vector3()
@@ -70,6 +74,10 @@ export function createPlayer(
 		},
 		get position() {
 			return mesh.position
+		},
+		/** Horizontal velocity (m/s) — useful for tests / leading. */
+		get velocity() {
+			return { x: vx, y: vy, z: vz }
 		},
 		update,
 		dash,
@@ -124,19 +132,20 @@ export function createPlayer(
 		if (!unit.alive) return
 		if (dashCd > 0) dashCd -= dt
 
-		// During a dash, override steering with the latched direction + multiplier.
-		let mx = dir.x
-		let mz = dir.z
-		let speed = tune.player.speed
 		const dashing = dashT > 0
 		if (dashing) {
+			// Committed burst: latch velocity on the dash heading (no mid-dash steer).
 			dashT -= dt
-			mx = dashDir.x
-			mz = dashDir.z
-			speed *= tune.player.dashMul
+			const burst = tune.player.speed * tune.player.dashMul
+			vx = dashDir.x * burst
+			vz = dashDir.z * burst
+		} else {
+			// Q3-style accel/friction (ground vs air). Uses last tick's grounded
+			// flag — one-frame lag is fine at 60Hz and keeps spawn grounded=true.
+			;({ vx, vz } = stepHorizontalVelocity(vx, vz, dir.x, dir.z, grounded, dt, tune.player))
 		}
 
-		const desired = { x: mx * speed * dt, y: 0, z: mz * speed * dt }
+		const desired = { x: vx * dt, y: 0, z: vz * dt }
 
 		vy += tune.physics.gravity * dt
 		desired.y = vy * dt
@@ -155,7 +164,8 @@ export function createPlayer(
 			nz = clamp(nz, -limZ, limZ)
 		}
 		body.setNextKinematicTranslation({ x: nx, y: t.y + mv.y, z: nz })
-		if (controller.computedGrounded()) vy = 0
+		grounded = controller.computedGrounded()
+		if (grounded) vy = 0
 
 		// Face the steer/aim direction (not the latched dash dir) so a dash reads as
 		// a sidestep, not a spin.
@@ -190,11 +200,14 @@ export function createPlayer(
 		if (death) death.update(dt)
 	}
 
-	// Teleport a *live* unit (kinematic body + mesh) to a spot, killing vertical
-	// velocity. Used by godmode to rescue a player who walked off the edge.
+	// Teleport a *live* unit (kinematic body + mesh) to a spot, killing velocity.
+	// Used by godmode to rescue a player who walked off the edge.
 	function place(x, y, z) {
 		body.setTranslation({ x, y, z }, true)
+		vx = 0
+		vz = 0
 		vy = 0
+		grounded = true
 		mesh.position.set(x, y, z)
 	}
 

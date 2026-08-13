@@ -12,15 +12,24 @@ export const tune = {
 		paused: false,
 	},
 	player: {
-		speed: 5,
+		// Horizontal move (Q3 spirit): high accel + hard stop friction, not
+		// instant dir*speed. See src/move.js. Tuned for a tennis-court arena —
+		// snappy strafe commitment without bunny-hop runaway.
+		speed: 6.5, // max ground wishspeed (m/s)
+		accel: 14, // ground accel (≈1/accel seconds to full from rest)
+		friction: 8, // ground friction while steering
+		stopFriction: 16, // ground friction with no wish (snappy stop)
+		stopSpeed: 2, // Quake stop-speed floor for low-speed friction
+		airAccel: 6, // air control — enough to aim a strafe off the rim
+		airSpeedMul: 1.15, // soft air speed cap as a multiple of speed
 		radius: 0.4,
 		halfHeight: 0.6,
 		pickupRadius: 1.1,
 		// Dash: a short, committed ground burst (Quake-style scoot). Latches a
 		// direction and overrides normal steering for dashTime, then locks out for
 		// dashCooldown. Edge-clamped so a dash can't fling you into the lava.
-		dashMul: 2.8, // speed multiplier during the burst
-		dashTime: 0.14, // seconds the burst lasts
+		dashMul: 2.6, // speed multiplier during the burst
+		dashTime: 0.12, // seconds the burst lasts
 		dashCooldown: 0.7, // seconds (from dash start) before you can dash again
 	},
 	arrow: {
