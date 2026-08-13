@@ -97,7 +97,9 @@ export function createRound(
 		)
 		if (opts.kind === 'bowl') sfx.roll()
 		else {
-			sfx.loose()
+			// The player's own bow is the hero sound; enemy shots read much
+			// quieter so a whole team loosing at once doesn't blow out the mix.
+			sfx.loose(unit.isHuman ? 1 : 0.45)
 			if (opts.perfect) sfx.perfect()
 		}
 		if (unit.isHuman) addShake(opts.kind === 'bowl' ? 0.35 : opts.perfect ? 0.4 : 0.22)

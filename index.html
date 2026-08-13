@@ -166,7 +166,6 @@
 			.overlay .sub {
 				margin: 0 0 20px;
 				color: var(--ui-muted);
-				letter-spacing: 0.32em;
 				text-transform: uppercase;
 				font-size: var(--fs-sub);
 			}
@@ -432,28 +431,19 @@
 				-webkit-text-stroke: 8px var(--ui-text);
 				paint-order: stroke fill;
 				text-shadow: 0.04em 0.06em 0 rgba(38, 68, 95, 0.25);
-				animation: splash-pop 0.55s cubic-bezier(0.2, 1.9, 0.4, 1) calc(var(--i) * 0.055s)
-					backwards;
+				animation: splash-pop 0.55s cubic-bezier(0.2, 1.9, 0.4, 1) calc(var(--i) * 0.055s) backwards;
 			}
 			.splash-title .letter .wob {
 				display: inline-block;
 				animation: splash-wave 2.6s ease-in-out calc(var(--i) * 0.13s) infinite;
 			}
-			/* Candy color cycle + alternating tilts, Mario-logo style. */
-			.splash-title .letter:nth-child(4n + 1) {
-				--l: var(--ui-red);
+			/* Two-tone gold logo with alternating tilts. */
+			.splash-title .letter:nth-child(odd) {
+				--l: var(--ui-gold);
 				--r: -4deg;
 			}
-			.splash-title .letter:nth-child(4n + 2) {
+			.splash-title .letter:nth-child(even) {
 				--l: var(--ui-button);
-				--r: 3deg;
-			}
-			.splash-title .letter:nth-child(4n + 3) {
-				--l: var(--ui-blue);
-				--r: -2deg;
-			}
-			.splash-title .letter:nth-child(4n + 4) {
-				--l: var(--ui-green);
 				--r: 4deg;
 			}
 			@keyframes splash-pop {
@@ -535,12 +525,15 @@
 				><span class="letter" style="--i: 2"><span class="wob">D</span></span
 				><span class="letter" style="--i: 3"><span class="wob">G</span></span
 				><span class="letter" style="--i: 4"><span class="wob">E</span></span
-				><span class="gap"></span><span class="letter" style="--i: 5"><span class="wob">T</span></span
+				><span class="gap"></span
+				><span class="letter" style="--i: 5"><span class="wob">T</span></span
 				><span class="letter" style="--i: 6"><span class="wob">H</span></span
 				><span class="letter" style="--i: 7"><span class="wob">I</span></span
 				><span class="letter" style="--i: 8"><span class="wob">S</span></span>
 			</h1>
-			<p class="splash-hint"><span class="arrow">▼</span>walk into a portal<span class="arrow">▼</span></p>
+			<p class="splash-hint">
+				<span class="arrow">▼</span>walk into a portal<span class="arrow">▼</span>
+			</p>
 		</div>
 		<div class="fade"></div>
 		<script type="module" src="/src/main.js"></script>

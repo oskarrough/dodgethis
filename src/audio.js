@@ -131,7 +131,9 @@ function blip({ freq = 440, type = 'sine', dur = 0.12, gain = 0.2, slideTo = nul
 
 export const sfx = {
 	// Synth blips — punchy, time-critical, pitch-varied procedurally.
-	loose: () => blip({ freq: 360, slideTo: 150, type: 'sawtooth', dur: 0.16, gain: 0.16 }),
+	// `gain` scales the default so enemy shots can read quieter than the player's own bow.
+	loose: (gain = 1) =>
+		blip({ freq: 360, slideTo: 150, type: 'sawtooth', dur: 0.16, gain: 0.16 * gain }),
 	hit: () => blip({ freq: 200, slideTo: 55, type: 'square', dur: 0.22, gain: 0.3 }),
 	// A bright two-note chime for a perfectly-timed charge release.
 	perfect: () =>
@@ -168,5 +170,7 @@ export const sfx = {
 	tick: (level = 0) => sample(tick1Url, { gain: 0.3, rate: 0.85 + level * 0.9 }),
 	tickPerfect: () => sample(tick2Url, { gain: 0.45, rate: 1.15 }),
 	// Random enemy chatter — one of five bot-talk variants, detuned for variety.
-	taunt: () => sample(pick(BOT_TALK), { gain: 0.3, rateJitter: 0.08 }),
+	// Quiet enough to sit under the action; every enemy shot triggers one, so a
+	// full team firing at once can otherwise pile up.
+	taunt: () => sample(pick(BOT_TALK), { gain: 0.18, rateJitter: 0.08 }),
 }
