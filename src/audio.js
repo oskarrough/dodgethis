@@ -27,10 +27,21 @@ const BOT_TALK = [botTalk1, botTalk2, botTalk3, botTalk4, botTalk5]
 // pointer/key event. Both honour the same tune.fx.sound / tune.fx.volume gate.
 
 let ctx = null
+let master = null
 
 function ac() {
-	if (!ctx) ctx = new (window.AudioContext || window['webkitAudioContext'])()
+	if (!ctx) {
+		ctx = new (window.AudioContext || window['webkitAudioContext'])()
+		master = ctx.createGain()
+		master.gain.value = tune.fx.sound ? 1 : 0
+		master.connect(ctx.destination)
+	}
 	return ctx
+}
+
+export function setSound(enabled) {
+	tune.fx.sound = enabled
+	if (master) master.gain.setValueAtTime(enabled ? 1 : 0, ctx.currentTime)
 }
 
 const resume = () => {
@@ -105,16 +116,16 @@ async function sample(url, { gain = 1, rate = 1, rateJitter = 0 } = {}) {
 	if (rate !== 1 || jitter) src.playbackRate.value = Math.max(0.05, rate + jitter)
 	const g = c.createGain()
 	g.gain.value = Math.max(0.0001, gain * tune.fx.volume)
-	src.connect(g).connect(c.destination)
+	src.connect(g).connect(master)
 	src.start()
 }
 
 const pick = (arr) => arr[(Math.random() * arr.length) | 0]
 
-function blip({ freq = 440, type = 'sine', dur = 0.12, gain = 0.2, slideTo = null }) {
+function blip({ freq = 440, type = 'sine', dur = 0.12, gain = 0.2, slideTo = null, delay = 0 }) {
 	if (!tune.fx.sound) return
 	const c = ac()
-	const t0 = c.currentTime
+	const t0 = c.currentTime + delay
 	const osc = c.createOscillator()
 	const g = c.createGain()
 	osc.type = type
@@ -124,7 +135,7 @@ function blip({ freq = 440, type = 'sine', dur = 0.12, gain = 0.2, slideTo = nul
 	g.gain.setValueAtTime(0.0001, t0)
 	g.gain.exponentialRampToValueAtTime(peak, t0 + 0.005)
 	g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur)
-	osc.connect(g).connect(c.destination)
+	osc.connect(g).connect(master)
 	osc.start(t0)
 	osc.stop(t0 + dur + 0.02)
 }
@@ -138,20 +149,20 @@ export const sfx = {
 	// A bright two-note chime for a perfectly-timed charge release.
 	perfect: () =>
 		[880, 1320].forEach((f, i) =>
-			setTimeout(() => blip({ freq: f, type: 'triangle', dur: 0.14, gain: 0.18 }), i * 70),
+			blip({ freq: f, type: 'triangle', dur: 0.14, gain: 0.18, delay: i * 0.07 }),
 		),
 	// Low rumble for a bowl loosed along the ground.
 	roll: () => blip({ freq: 120, slideTo: 70, type: 'sawtooth', dur: 0.3, gain: 0.18 }),
 	win: () =>
 		[523, 659, 784, 1047].forEach((f, i) =>
-			setTimeout(() => blip({ freq: f, type: 'triangle', dur: 0.2, gain: 0.2 }), i * 120),
+			blip({ freq: f, type: 'triangle', dur: 0.2, gain: 0.2, delay: i * 0.12 }),
 		),
 	// Menu cursor-move blip — a short square wave, very handheld (D-pad thunk).
 	nav: () => blip({ freq: 660, type: 'square', dur: 0.05, gain: 0.12 }),
 	// Portal: a downward suck-in sweep, then a rising pop-out on arrival.
 	portal: () => {
 		blip({ freq: 900, slideTo: 80, type: 'sawtooth', dur: 0.3, gain: 0.18 })
-		setTimeout(() => blip({ freq: 160, slideTo: 900, type: 'square', dur: 0.22, gain: 0.16 }), 300)
+		blip({ freq: 160, slideTo: 900, type: 'square', dur: 0.22, gain: 0.16, delay: 0.3 })
 	},
 
 	// Sample-backed cues (mp3s in ./sfx) — the UI / character layer.

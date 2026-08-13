@@ -13,6 +13,66 @@ import { COURT } from './court.js'
 
 const FORWARD = new THREE.Vector3(0, 0, 1)
 const GROUND_Y = 0.045
+const LAND_X = COURT.width / 2 - 0.5
+const LAND_Z = COURT.depth / 2 - 0.5
+
+export function clampArrowLanding(x, z) {
+	return {
+		x: Math.max(-LAND_X, Math.min(LAND_X, x)),
+		z: Math.max(-LAND_Z, Math.min(LAND_Z, z)),
+	}
+}
+
+// Fill a fixed-size preview with the same gravity, damping, and ground threshold
+// as a real arrow. Distances are horizontal from the muzzle; heights are world Y.
+// Returns the raw landing distance, or null when the current gravity never lands.
+export function projectArrowFlight(speed, startHeight, distances, heights, dt = 1 / 60) {
+	const launch = launchVelocity(speed)
+	const damping = 1 / (1 + tune.arrow.linearDamping * dt)
+	const maxSteps = 600
+	let distance = 0
+	let y = startHeight
+	let horizontalSpeed = launch.vx
+	let verticalSpeed = launch.vy
+	let impactStep = 0
+
+	for (let step = 1; step <= maxSteps; step++) {
+		verticalSpeed += tune.physics.gravity * dt
+		horizontalSpeed *= damping
+		verticalSpeed *= damping
+		distance += horizontalSpeed * dt
+		y += verticalSpeed * dt
+		if (y <= GROUND_Y + 0.02 && verticalSpeed <= 0.5) {
+			impactStep = step
+			break
+		}
+	}
+	if (!impactStep || !Number.isFinite(distance)) return null
+
+	distances[0] = 0
+	heights[0] = startHeight
+	distance = 0
+	y = startHeight
+	horizontalSpeed = launch.vx
+	verticalSpeed = launch.vy
+	let sample = 1
+	for (let step = 1; step <= impactStep; step++) {
+		verticalSpeed += tune.physics.gravity * dt
+		horizontalSpeed *= damping
+		verticalSpeed *= damping
+		distance += horizontalSpeed * dt
+		y += verticalSpeed * dt
+		while (
+			sample < distances.length &&
+			step >= Math.round((sample * impactStep) / (distances.length - 1))
+		) {
+			distances[sample] = distance
+			heights[sample] = Math.max(y, GROUND_Y)
+			sample++
+		}
+	}
+	return distance
+}
 
 let _id = 0
 
@@ -203,22 +263,26 @@ export function createArrow(scene, world, RAPIER, { position = [0, GROUND_Y, 0] 
 	// the void — unreachable, and bait that lures the AI off the edge. Clamping
 	// the landing spot keeps the scarce pool intact (no all-arrows-lost
 	// soft-lock) at the cost of a small visual snap at the rim.
-	const LAND_X = COURT.width / 2 - 0.5
-	const LAND_Z = COURT.depth / 2 - 0.5
-
 	function land(x, z, heading) {
-		x = Math.max(-LAND_X, Math.min(LAND_X, x))
-		z = Math.max(-LAND_Z, Math.min(LAND_Z, z))
+		const landing = clampArrowLanding(x, z)
+		x = landing.x
+		z = landing.z
 		destroyBody()
 		_lv.set(0, 0, 0)
 		trail.visible = false
 		placeGrounded(x, z, heading)
 	}
 
-	// Called on a hit: drop the arrow where it currently is so it stays grabbable.
+	// Called on a hit: drop the arrow at its physics position so bowl ammo does
+	// not jump back to the hidden arrow mesh near the shooter.
 	function ground() {
-		const p = mesh.position
-		land(p.x, p.z, mesh.rotation.y)
+		if (body) {
+			const p = body.translation()
+			const v = body.linvel()
+			land(p.x, p.z, Math.atan2(v.x, v.z))
+			return
+		}
+		land(mesh.position.x, mesh.position.z, mesh.rotation.y)
 	}
 
 	const _v = new THREE.Vector3()
@@ -282,7 +346,7 @@ export function createArrow(scene, world, RAPIER, { position = [0, GROUND_Y, 0] 
 			return kind
 		},
 		get position() {
-			return mesh.position
+			return state === 'flying' && body ? body.translation() : mesh.position
 		},
 		get ownerTeam() {
 			return ownerTeam

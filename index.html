@@ -481,6 +481,34 @@
 				color: var(--ui-gold);
 				margin: 0 8px;
 			}
+			.portal-options {
+				display: flex;
+				flex-wrap: wrap;
+				justify-content: center;
+				gap: 10px;
+				pointer-events: auto;
+			}
+			.portal-option {
+				font: 16px/1 var(--ui-font);
+				text-transform: uppercase;
+				color: var(--ui-text);
+				background: #fffdf4;
+				border: 3px solid var(--ui-text);
+				border-radius: 999px;
+				padding: 8px 16px;
+				cursor: pointer;
+				box-shadow: 3px 3px 0 var(--ui-text);
+			}
+			.portal-option:hover,
+			.portal-option:focus-visible {
+				background: var(--ui-button-hover);
+				outline: 3px solid #fffdf4;
+				outline-offset: 2px;
+			}
+			.portal-option:active {
+				transform: translate(3px, 3px);
+				box-shadow: none;
+			}
 			@keyframes hint-hop {
 				0%,
 				40%,
@@ -508,6 +536,18 @@
 				pointer-events: none;
 				transition: opacity 0.28s ease;
 			}
+
+			@media (prefers-reduced-motion: reduce) {
+				.overlay .actions button.selected .cursor,
+				.splash-title .letter,
+				.splash-title .letter .wob,
+				.splash-hint {
+					animation: none;
+				}
+				.fade {
+					transition: none;
+				}
+			}
 		</style>
 	</head>
 	<body>
@@ -516,7 +556,9 @@
 		<div class="combat"></div>
 		<div class="score" hidden></div>
 		<div class="weapons" hidden></div>
-		<button class="mute" type="button" title="Mute" aria-label="Toggle sound">🔊</button>
+		<button class="mute" type="button" title="Mute" aria-label="Mute sound" aria-pressed="false">
+			🔊
+		</button>
 		<div class="overlay" hidden></div>
 		<div class="splash" hidden>
 			<h1 class="splash-title" aria-label="dodge this">
@@ -534,6 +576,11 @@
 			<p class="splash-hint">
 				<span class="arrow">▼</span>walk into a portal<span class="arrow">▼</span>
 			</p>
+			<div class="portal-options" role="group" aria-label="Choose difficulty">
+				<button class="portal-option" type="button" data-enemies="1">Chill · 1 foe</button>
+				<button class="portal-option" type="button" data-enemies="2">Spicy · 2 foes</button>
+				<button class="portal-option" type="button" data-enemies="3">Chaos · 3 foes</button>
+			</div>
 		</div>
 		<div class="fade"></div>
 		<script type="module" src="/src/main.js"></script>

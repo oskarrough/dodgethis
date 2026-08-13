@@ -133,9 +133,10 @@ export function createPlayer(
 		if (dashCd > 0) dashCd -= dt
 
 		const dashing = dashT > 0
+		const dashEnding = dashing && dashT <= dt
 		if (dashing) {
 			// Committed burst: latch velocity on the dash heading (no mid-dash steer).
-			dashT -= dt
+			dashT = Math.max(0, dashT - dt)
 			const burst = tune.player.speed * tune.player.dashMul
 			vx = dashDir.x * burst
 			vz = dashDir.z * burst
@@ -146,6 +147,12 @@ export function createPlayer(
 		}
 
 		const desired = { x: vx * dt, y: 0, z: vz * dt }
+		// Keep only normal run speed after the final burst step; otherwise the next
+		// un-clamped frame carries dash velocity straight off the court.
+		if (dashEnding) {
+			vx = dashDir.x * tune.player.speed
+			vz = dashDir.z * tune.player.speed
+		}
 
 		vy += tune.physics.gravity * dt
 		desired.y = vy * dt
@@ -160,8 +167,12 @@ export function createPlayer(
 		if (dashing) {
 			const limX = COURT.width / 2 - radius
 			const limZ = COURT.depth / 2 - radius
-			nx = clamp(nx, -limX, limX)
-			nz = clamp(nz, -limZ, limZ)
+			const clampedX = clamp(nx, -limX, limX)
+			const clampedZ = clamp(nz, -limZ, limZ)
+			if (clampedX !== nx) vx = 0
+			if (clampedZ !== nz) vz = 0
+			nx = clampedX
+			nz = clampedZ
 		}
 		body.setNextKinematicTranslation({ x: nx, y: t.y + mv.y, z: nz })
 		grounded = controller.computedGrounded()

@@ -23,10 +23,11 @@ export function createChargeMeter() {
 	let value = 0
 	let perfect = false
 
-	// Base launch speed for the current meter position (before the perfect bonus).
-	function base() {
+	// Resolve the launch speed once so the preview and fired shot cannot disagree.
+	function speed() {
 		const w = tune.weapons
-		return w.chargeMin + (w.chargeMax - w.chargeMin) * value
+		const base = w.chargeMin + (w.chargeMax - w.chargeMin) * value
+		return perfect ? base * w.perfectMult : base
 	}
 
 	return {
@@ -39,7 +40,7 @@ export function createChargeMeter() {
 		get perfect() {
 			return perfect
 		},
-		previewSpeed: base, // what the live aim arc should draw
+		previewSpeed: speed, // what the live aim arc should draw
 
 		press() {
 			charging = true
@@ -58,7 +59,7 @@ export function createChargeMeter() {
 		// Resolve to a fired shot { speed, perfect }, or null if it wasn't charging.
 		release() {
 			if (!charging) return null
-			const shot = { speed: perfect ? base() * tune.weapons.perfectMult : base(), perfect }
+			const shot = { speed: speed(), perfect }
 			charging = false
 			return shot
 		},

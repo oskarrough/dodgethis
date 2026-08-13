@@ -4,7 +4,7 @@ import { createRenderer } from './render.js'
 import { buildCourt } from './court.js'
 import { createRound } from './round.js'
 import { createPortal } from './portal.js'
-import { launchVelocity } from './arrow.js'
+import { clampArrowLanding, projectArrowFlight } from './arrow.js'
 import { createOverlay } from './overlay.js'
 import {
 	moveVector,
@@ -16,10 +16,11 @@ import {
 	clearDash,
 	pollGamepad,
 	consumeDash,
+	consumeMenuInput,
 } from './input.js'
 import { WEAPONS, TRAIL, createChargeMeter } from './weapons.js'
 import { createWeaponHud } from './weaponHud.js'
-import { sfx } from './audio.js'
+import { setSound, sfx } from './audio.js'
 import { tune } from './tune.js'
 import { log, createDebugGui, createCombatLog } from './debug.js'
 import { createGodmodeFx } from './godmodeFx.js'
@@ -28,6 +29,7 @@ const hud = document.querySelector('.hud')
 const scoreEl = document.querySelector('.score')
 const fadeEl = document.querySelector('.fade')
 const splashEl = document.querySelector('.splash')
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
 
 async function main() {
 	const { RAPIER, world } = await initPhysics()
@@ -37,16 +39,19 @@ async function main() {
 	const godmodeFx = createGodmodeFx(scene)
 	log.info('booted', { renderer: 'three', physics: 'rapier' })
 
-	// Mute toggle — flips the same tune.fx.sound gate every cue already honours,
-	// so one button silences synth blips and sample players alike.
+	// Mute toggle controls the shared audio output, so it also silences cues that
+	// are already playing instead of only gating future sounds.
 	const muteBtn = document.querySelector('.mute')
 	function renderMute() {
-		muteBtn.textContent = tune.fx.sound ? '🔊' : '🔇'
-		muteBtn.classList.toggle('muted', !tune.fx.sound)
-		muteBtn.title = tune.fx.sound ? 'Mute' : 'Unmute'
+		const muted = !tune.fx.sound
+		muteBtn.textContent = muted ? '🔇' : '🔊'
+		muteBtn.classList.toggle('muted', muted)
+		muteBtn.title = muted ? 'Unmute' : 'Mute'
+		muteBtn.setAttribute('aria-label', muted ? 'Unmute sound' : 'Mute sound')
+		muteBtn.setAttribute('aria-pressed', String(muted))
 	}
 	muteBtn.addEventListener('click', () => {
-		tune.fx.sound = !tune.fx.sound
+		setSound(!tune.fx.sound)
 		renderMute()
 		if (tune.fx.sound) sfx.switch() // audible confirmation when unmuting
 	})
@@ -78,7 +83,7 @@ async function main() {
 	// That's the "splash doesn't block the game" trick: same scene, same input.
 	function fadeOut(done) {
 		fadeEl.style.opacity = '1'
-		setTimeout(done, 280)
+		setTimeout(done, reduceMotion.matches ? 0 : 280)
 	}
 	function fadeIn() {
 		fadeEl.style.opacity = '0'
@@ -122,6 +127,13 @@ async function main() {
 			startMatch(enemies)
 			teleporting = false
 			fadeIn()
+		})
+	}
+
+	for (const button of splashEl.querySelectorAll('.portal-option')) {
+		button.addEventListener('click', () => {
+			sfx.click()
+			teleportTo(Number(button.dataset.enemies))
 		})
 	}
 
@@ -301,10 +313,13 @@ async function main() {
 		new THREE.MeshBasicMaterial({ color: 0xffd35d }),
 	)
 	aimMarker.rotation.x = -Math.PI / 2
+	aimMarker.visible = false
 	scene.add(aimMarker)
 
 	const PREVIEW_N = 32
 	const previewPos = new Float32Array(PREVIEW_N * 3)
+	const previewDistance = new Float32Array(PREVIEW_N)
+	const previewHeight = new Float32Array(PREVIEW_N)
 	const previewGeom = new THREE.BufferGeometry()
 	previewGeom.setAttribute('position', new THREE.BufferAttribute(previewPos, 3))
 	const preview = new THREE.Line(
@@ -318,6 +333,7 @@ async function main() {
 		}),
 	)
 	preview.frustumCulled = false
+	preview.visible = false
 	scene.add(preview)
 
 	function hideAim() {
@@ -330,6 +346,7 @@ async function main() {
 		const h = round && round.human
 		if (!h || !h.alive || !h.heldArrow) {
 			hideAim()
+			clearShoot()
 			charge.cancel()
 			return
 		}
@@ -338,8 +355,6 @@ async function main() {
 			hideAim()
 			return
 		}
-		aimMarker.position.set(aimTarget.x, 0.02, aimTarget.z)
-		aimMarker.visible = true
 		const p = h.mesh.position
 		aimDir.set(aimTarget.x - p.x, 0, aimTarget.z - p.z)
 		const dist = Math.hypot(aimDir.x, aimDir.z)
@@ -382,28 +397,34 @@ async function main() {
 		if (consumePress()) round.looseHuman(aimDir, aimSpeed, { kind: def.kind })
 	}
 
-	// Sample the (drag-free) parabola from the hand at a given speed/angle.
+	// Sample the damped flight through touchdown and share the projectile's court
+	// clamp, so the final preview point and landing marker match grounded ammo.
 	function updateArc(hand, speed, color) {
+		const distance = projectArrowFlight(speed, hand.y, previewDistance, previewHeight)
+		if (distance === null) {
+			hideAim()
+			return
+		}
 		preview.visible = true
 		preview.material.color.set(color)
-		const { vx, vy } = launchVelocity(speed)
-		const g = tune.physics.gravity // negative
-		let n = 0
 		for (let i = 0; i < PREVIEW_N; i++) {
-			const t = i * 0.06
-			const y = hand.y + vy * t + 0.5 * g * t * t
-			previewPos[i * 3] = hand.x + aimDir.x * vx * t
-			previewPos[i * 3 + 1] = Math.max(y, 0.02)
-			previewPos[i * 3 + 2] = hand.z + aimDir.z * vx * t
-			n = i + 1
-			if (y <= 0) break
+			previewPos[i * 3] = hand.x + aimDir.x * previewDistance[i]
+			previewPos[i * 3 + 1] = previewHeight[i]
+			previewPos[i * 3 + 2] = hand.z + aimDir.z * previewDistance[i]
 		}
-		previewGeom.setDrawRange(0, n)
+		const landing = clampArrowLanding(hand.x + aimDir.x * distance, hand.z + aimDir.z * distance)
+		previewPos[(PREVIEW_N - 1) * 3] = landing.x
+		previewPos[(PREVIEW_N - 1) * 3 + 1] = 0.02
+		previewPos[(PREVIEW_N - 1) * 3 + 2] = landing.z
+		previewGeom.setDrawRange(0, PREVIEW_N)
 		previewGeom.attributes.position.needsUpdate = true
 		preview.computeLineDistances()
+		aimMarker.position.set(landing.x, 0.02, landing.z)
+		aimMarker.visible = true
 	}
 
-	// A flat ground line in the aim direction — the bowl's travel preview.
+	// A flat range guide in the aim direction. Bowls stop through live physics, so
+	// unlike arrows this deliberately has no landing marker.
 	function updateGroundLine(hand) {
 		preview.visible = true
 		preview.material.color.set(TRAIL.bowl)
@@ -417,6 +438,7 @@ async function main() {
 		previewGeom.setDrawRange(0, PREVIEW_N)
 		previewGeom.attributes.position.needsUpdate = true
 		preview.computeLineDistances()
+		aimMarker.visible = false
 	}
 
 	// --- Collider debug overlay (GUI toggle) ----------------------------------
@@ -441,6 +463,8 @@ async function main() {
 	createDebugGui(() => {
 		world.gravity = { x: 0, y: tune.physics.gravity, z: 0 }
 		debugLines.visible = tune.debug.showColliders
+		setSound(tune.fx.sound)
+		renderMute()
 		if (round) for (const a of round.arrows) a.applyDamping()
 	}, cheats)
 
@@ -451,6 +475,7 @@ async function main() {
 	//   ] / [     add / remove an ally (Team A, AI fights for you)
 	// During roundOver/matchOver the overlay's own buttons own R/Enter.
 	window.addEventListener('keydown', (e) => {
+		if (e.defaultPrevented) return
 		if (e.code === 'KeyG') {
 			tune.cheats.godmode = !tune.cheats.godmode
 			combat.push(`godmode ${tune.cheats.godmode ? 'ON' : 'off'}`, tune.cheats.godmode ? 'win' : '')
@@ -498,9 +523,11 @@ async function main() {
 		last = now
 
 		pollGamepad(dt)
+		overlay.handleGamepad(consumeMenuInput())
 		// The hub (menu) is a live round too — same step/lateUpdate, just no aiming.
 		if (round && (phase === 'playing' || phase === 'menu')) {
 			if (phase === 'playing') weaponUpdate(dt)
+			else hideAim()
 			// Dash latches a direction now; the burst plays out across the steps below.
 			if (consumeDash() && round.human) round.human.dash(moveVector())
 			if (!tune.physics.paused) {

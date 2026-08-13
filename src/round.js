@@ -20,6 +20,7 @@ export function createRound(
 	ctx,
 	{ enemies = 3, arrowCount = 7, roundNum = 1, onOver = () => {}, lobby = false } = {},
 ) {
+	if (!lobby && arrowCount < 1) throw new Error('Combat rounds require at least one arrow')
 	const { scene, world, RAPIER, eventQueue, combat, sfx, addShake } = ctx
 
 	// --- Units: human (team A) near, enemy dummies (team B) far. ---

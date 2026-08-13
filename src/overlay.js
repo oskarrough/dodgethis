@@ -20,18 +20,27 @@ export function createOverlay(selector = '.overlay') {
 	let actions = []
 	let buttons = []
 	let index = 0
+	let previousFocus = null
+	let outside = []
 
 	function show({ title = '', subtitle = '', lines = [], actions: acts = [] }) {
 		actions = acts
 		buttons = []
 		index = 0
+		if (el.hidden) previousFocus = document.activeElement
 		const card = document.createElement('div')
 		card.className = 'card'
+		card.setAttribute('role', 'dialog')
+		card.setAttribute('aria-modal', 'true')
 
 		if (title) {
 			const h = document.createElement('h1')
+			h.id = 'overlay-title'
 			h.textContent = title
+			card.setAttribute('aria-labelledby', h.id)
 			card.append(h)
+		} else {
+			card.setAttribute('aria-label', 'Game menu')
 		}
 		if (subtitle) {
 			const s = document.createElement('p')
@@ -50,9 +59,9 @@ export function createOverlay(selector = '.overlay') {
 			row.className = 'actions'
 			acts.forEach((a, i) => {
 				const b = document.createElement('button')
-				b.tabIndex = -1 // keyboard goes through the cursor, not tab focus
 				const cursor = document.createElement('span')
 				cursor.className = 'cursor'
+				cursor.setAttribute('aria-hidden', 'true')
 				cursor.textContent = '▶'
 				const label = document.createElement('span')
 				label.textContent = a.keyLabel ? `${a.label}  (${a.keyLabel})` : a.label
@@ -61,6 +70,7 @@ export function createOverlay(selector = '.overlay') {
 					setIndex(i)
 					sfx.hover()
 				})
+				b.addEventListener('focus', () => setIndex(i))
 				b.addEventListener('pointerdown', () => sfx.press())
 				b.addEventListener('click', (e) => {
 					e.stopPropagation()
@@ -75,7 +85,10 @@ export function createOverlay(selector = '.overlay') {
 
 		el.replaceChildren(card)
 		el.hidden = false
+		outside = [...document.body.children].filter((child) => child !== el)
+		for (const child of outside) child.inert = true
 		render()
+		buttons[0]?.focus()
 		sfx.menuOpen()
 	}
 
@@ -85,27 +98,54 @@ export function createOverlay(selector = '.overlay') {
 		actions = []
 		buttons = []
 		index = 0
+		for (const child of outside) child.inert = false
+		outside = []
+		previousFocus?.focus()
+		previousFocus = null
 	}
 
 	function select(a) {
 		if (a && a.onSelect) a.onSelect()
 	}
 
-	function setIndex(i) {
+	function setIndex(i, focus = false) {
 		const n = actions.length
 		if (!n) return
 		index = ((i % n) + n) % n // wrap both directions
 		render()
+		if (focus) buttons[index].focus()
 	}
 
 	function render() {
 		buttons.forEach((b, i) => b.classList.toggle('selected', i === index))
 	}
 
-	// Keyboard: D-pad / WASD move the cursor, Enter/Space confirm, and any
+	// Keyboard: arrows / WASD move the cursor, Enter/Space confirm, and any
 	// action's bound key shortcuts straight to it.
+	function handleGamepad({ move, confirm }) {
+		if (el.hidden || !actions.length) return
+		if (move) {
+			setIndex(index + move, true)
+			sfx.nav()
+		}
+		if (confirm) {
+			sfx.click()
+			select(actions[index])
+		}
+	}
+
 	window.addEventListener('keydown', (e) => {
 		if (el.hidden || !actions.length) return
+		if (e.code === 'Tab') {
+			const focusable = buttons
+			const current = focusable.indexOf(document.activeElement)
+			const direction = e.shiftKey ? -1 : 1
+			const next =
+				(((current + direction) % focusable.length) + focusable.length) % focusable.length
+			e.preventDefault()
+			focusable[next].focus()
+			return
+		}
 		if (
 			e.code === 'ArrowDown' ||
 			e.code === 'ArrowRight' ||
@@ -113,13 +153,13 @@ export function createOverlay(selector = '.overlay') {
 			e.code === 'KeyD'
 		) {
 			e.preventDefault()
-			setIndex(index + 1)
+			setIndex(index + 1, true)
 			sfx.nav()
 			return
 		}
 		if (e.code === 'ArrowUp' || e.code === 'ArrowLeft' || e.code === 'KeyW' || e.code === 'KeyA') {
 			e.preventDefault()
-			setIndex(index - 1)
+			setIndex(index - 1, true)
 			sfx.nav()
 			return
 		}
@@ -140,6 +180,7 @@ export function createOverlay(selector = '.overlay') {
 	return {
 		show,
 		hide,
+		handleGamepad,
 		get visible() {
 			return !el.hidden
 		},

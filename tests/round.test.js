@@ -99,4 +99,54 @@ describe('headless round', () => {
 		expect(winner).toBe('A')
 		round.dispose()
 	})
+
+	test('a bowl drops ammo where its physics body was hit', () => {
+		const ctx = makeCtx()
+		const round = createRound(ctx, { enemies: 1, arrowCount: 2 })
+		const bowl = round.human.heldArrow
+		round.looseHuman({ x: 1, z: 0 }, tune.weapons.bowlSpeed, { kind: 'bowl' })
+		for (let i = 0; i < 10; i++) round.step(1 / 60, STILL)
+		const before = { x: bowl.position.x, z: bowl.position.z }
+		bowl.ground()
+		expect(bowl.state).toBe('grounded')
+		expect(bowl.position.x).toBeCloseTo(before.x, 4)
+		expect(bowl.position.z).toBeCloseTo(before.z, 4)
+		round.dispose()
+	})
+
+	test('lobby stays live without arrows and rescues the player from the void', () => {
+		const ctx = makeCtx()
+		let overCalls = 0
+		const previousInfiniteAmmo = tune.cheats.infiniteAmmo
+		tune.cheats.infiniteAmmo = true
+		const round = createRound(ctx, {
+			enemies: 0,
+			arrowCount: 0,
+			lobby: true,
+			onOver: () => overCalls++,
+		})
+		try {
+			expect(round.arrows).toHaveLength(0)
+			expect(round.human.heldArrow).toBeNull()
+			round.human.body.setTranslation({ x: 0, y: -20, z: 8 }, true)
+			for (let i = 0; i < 120; i++) {
+				round.step(1 / 60, STILL)
+				round.lateUpdate(1 / 60)
+			}
+			expect(round.human.alive).toBe(true)
+			expect(round.human.position.y).toBeGreaterThan(0)
+			expect(round.arrows).toHaveLength(0)
+			expect(round.over).toBe(false)
+			expect(overCalls).toBe(0)
+		} finally {
+			tune.cheats.infiniteAmmo = previousInfiniteAmmo
+			round.dispose()
+		}
+	})
+
+	test('combat rounds reject an empty arrow pool', () => {
+		expect(() => createRound(makeCtx(), { enemies: 1, arrowCount: 0 })).toThrow(
+			'Combat rounds require at least one arrow',
+		)
+	})
 })

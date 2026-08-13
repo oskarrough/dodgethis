@@ -14,7 +14,10 @@ window.addEventListener('keydown', (e) => {
 	keys.add(e.code)
 })
 window.addEventListener('keyup', (e) => keys.delete(e.code))
-window.addEventListener('blur', () => keys.clear())
+window.addEventListener('blur', () => {
+	keys.clear()
+	dashQueued = false
+})
 
 // True once per dash tap; clears the flag so each press is a single burst.
 export function consumeDash() {
@@ -47,27 +50,47 @@ export function moveVector() {
 // Three signals off the left button: a press edge (click weapons fire on this),
 // a release edge (the charge bow fires on this), and the held state (the charge
 // bow winds while it's true). blur drops the held state without firing a release.
+const canvas = document.querySelector('.app')
 const pointer = { x: 0, y: 0 }
 let pressQueued = false
 let releaseQueued = false
-let down = false
+let pointerHeld = false
+let padShootHeld = false
+let activePointerId = null
 
 window.addEventListener('pointermove', (e) => {
 	pointer.x = (e.clientX / window.innerWidth) * 2 - 1
 	pointer.y = -(e.clientY / window.innerHeight) * 2 + 1
 })
-window.addEventListener('pointerdown', (e) => {
+canvas.addEventListener('pointerdown', (e) => {
 	if (e.button !== 0) return
-	down = true
-	pressQueued = true
+	const wasHeld = pointerHeld || padShootHeld
+	activePointerId = e.pointerId
+	canvas.setPointerCapture(e.pointerId)
+	pointerHeld = true
+	if (!wasHeld) pressQueued = true
 })
-window.addEventListener('pointerup', (e) => {
-	if (e.button !== 0) return
-	down = false
-	releaseQueued = true
+canvas.addEventListener('pointerup', (e) => {
+	if (e.button !== 0 || e.pointerId !== activePointerId) return
+	activePointerId = null
+	pointerHeld = false
+	if (!padShootHeld) releaseQueued = true
+})
+canvas.addEventListener('pointercancel', (e) => {
+	if (e.pointerId !== activePointerId) return
+	activePointerId = null
+	pointerHeld = false
 })
 window.addEventListener('blur', () => {
-	down = false
+	activePointerId = null
+	pointerHeld = false
+	padShootHeld = false
+	padMenuDirection = 0
+	padConfirmHeld = false
+	menuMoveQueued = 0
+	menuConfirmQueued = false
+	pressQueued = false
+	releaseQueued = false
 })
 
 export function pointerNDC() {
@@ -94,7 +117,7 @@ export function consumeRelease() {
 
 // Is the left button currently held? (drives the charge meter)
 export function pointerDown() {
-	return down
+	return pointerHeld || padShootHeld
 }
 
 // Swallow any pending edges (used when a round starts, so the click that
@@ -119,8 +142,11 @@ export function clearDash() {
 const DEADZONE = 0.18
 const AIM_SPEED = 1.7 // NDC units per second at full stick deflection
 const padMove = { x: 0, z: 0 }
-let padShootHeld = false
 let padDashHeld = false
+let padMenuDirection = 0
+let padConfirmHeld = false
+let menuMoveQueued = 0
+let menuConfirmQueued = false
 
 // Hard deadzone, then rescale so the usable stick range maps to 0→1.
 // Without rescale, the first 18% of throw is wasted and full tilt never quite
@@ -142,7 +168,21 @@ export function pollGamepad(dt) {
 			break
 		}
 	}
-	if (!gp) return
+	if (!gp) {
+		// A disconnected trigger cancels its charge instead of leaving it held or
+		// firing a release edge when the controller disappears.
+		if (padShootHeld) {
+			padShootHeld = false
+			if (!pointerHeld) {
+				pressQueued = false
+				releaseQueued = false
+			}
+		}
+		padDashHeld = false
+		padMenuDirection = 0
+		padConfirmHeld = false
+		return
+	}
 
 	padMove.x = axis(gp.axes[0] || 0)
 	padMove.z = axis(gp.axes[1] || 0)
@@ -154,18 +194,35 @@ export function pollGamepad(dt) {
 		pointer.y = Math.max(-1, Math.min(1, pointer.y - ry * AIM_SPEED * dt))
 	}
 
-	const held = !!(gp.buttons[7]?.pressed || gp.buttons[0]?.pressed)
-	if (held && !padShootHeld) {
-		down = true
-		pressQueued = true
-	} else if (!held && padShootHeld) {
-		down = false
-		releaseQueued = true
-	}
+	const menuDirection =
+		gp.buttons[13]?.pressed || gp.buttons[15]?.pressed || padMove.z > 0.65 || padMove.x > 0.65
+			? 1
+			: gp.buttons[12]?.pressed || gp.buttons[14]?.pressed || padMove.z < -0.65 || padMove.x < -0.65
+				? -1
+				: 0
+	if (menuDirection && !padMenuDirection) menuMoveQueued = menuDirection
+	padMenuDirection = menuDirection
+
+	const confirmHeld = !!gp.buttons[0]?.pressed
+	if (confirmHeld && !padConfirmHeld) menuConfirmQueued = true
+	padConfirmHeld = confirmHeld
+
+	const held = !!(gp.buttons[7]?.pressed || confirmHeld)
+	const wasHeld = pointerHeld || padShootHeld
 	padShootHeld = held
+	const isHeld = pointerHeld || padShootHeld
+	if (isHeld && !wasHeld) pressQueued = true
+	else if (!isHeld && wasHeld) releaseQueued = true
 
 	// Dash on either bumper (LB/RB) or B — edge-detected like the keyboard tap.
 	const dashHeld = !!(gp.buttons[4]?.pressed || gp.buttons[5]?.pressed || gp.buttons[1]?.pressed)
 	if (dashHeld && !padDashHeld) dashQueued = true
 	padDashHeld = dashHeld
+}
+
+export function consumeMenuInput() {
+	const input = { move: menuMoveQueued, confirm: menuConfirmQueued }
+	menuMoveQueued = 0
+	menuConfirmQueued = false
+	return input
 }

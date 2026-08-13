@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { solveLaunch, launchVelocity } from '../src/arrow.js'
+import { clampArrowLanding, launchVelocity, projectArrowFlight, solveLaunch } from '../src/arrow.js'
 import { createChargeMeter } from '../src/weapons.js'
 import { nearest } from '../src/spatial.js'
 import { tune } from '../src/tune.js'
@@ -32,6 +32,24 @@ describe('solveLaunch', () => {
 		const angle = (Math.atan2(vy, vx) * 180) / Math.PI
 		expect(angle).toBeCloseTo(tune.arrow.launchAngle, 9)
 	})
+
+	test('flight preview reaches a clamped landing and handles zero gravity', () => {
+		const distances = new Float32Array(32)
+		const heights = new Float32Array(32)
+		const distance = projectArrowFlight(30, 1.6, distances, heights)
+		expect(distance).toBeGreaterThan(0)
+		expect(distances.at(-1)).toBeCloseTo(distance, 4)
+		expect(heights.at(-1)).toBeLessThan(0.07)
+		expect(clampArrowLanding(100, -100)).toEqual({ x: 5, z: -11.5 })
+
+		const gravity = tune.physics.gravity
+		tune.physics.gravity = 0
+		try {
+			expect(projectArrowFlight(30, 1.6, distances, heights)).toBeNull()
+		} finally {
+			tune.physics.gravity = gravity
+		}
+	})
 })
 
 describe('charge meter', () => {
@@ -46,6 +64,7 @@ describe('charge meter', () => {
 		m.update(w.chargeTime / 2) // at the peak
 		expect(m.value).toBeCloseTo(1, 6)
 		expect(m.perfect).toBe(true)
+		expect(m.previewSpeed()).toBeCloseTo(w.chargeMax * w.perfectMult, 6)
 		const shot = m.release()
 		expect(shot.perfect).toBe(true)
 		expect(shot.speed).toBeCloseTo(w.chargeMax * w.perfectMult, 6)
