@@ -252,9 +252,12 @@ async function main() {
 
 	// --- Scoreboard ------------------------------------------------------------
 	// Gym clock: YOU/FOE + filled pips. Pip count implies best-of — don't also print it.
+	// CSS dots (not ●/○ glyphs) so Darumadrop can't substitute weird fallback shapes.
 	function pips(n) {
 		let s = ''
-		for (let i = 0; i < match.needed; i++) s += i < n ? '●' : '○'
+		for (let i = 0; i < match.needed; i++) {
+			s += `<span class="pip${i < n ? ' on' : ''}"></span>`
+		}
 		return s
 	}
 	function renderScore() {
