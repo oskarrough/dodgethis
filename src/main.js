@@ -198,14 +198,15 @@ async function main() {
 	// Signal handler for round.onOver: tally the win, then branch to the next round
 	// or end the match. A null winner is a draw (both teams wiped in the same
 	// step) — nobody scores and the round is replayed.
+	// Round-over card is verdict + actions only; the live scoreboard keeps the score.
 	function endRound(winner) {
 		if (!winner) {
 			phase = 'roundOver'
+			renderScore()
 			combat.push(`round ${match.round} is a DRAW — replaying`, 'win')
 			overlay.show({
 				title: 'DRAW',
-				subtitle: `Both teams wiped — round ${match.round} replays`,
-				lines: [scoreLine()],
+				clear: true,
 				actions: [{ label: 'Replay round', keyLabel: 'Enter', onSelect: restartRound }],
 			})
 			return
@@ -227,8 +228,7 @@ async function main() {
 		const youWon = winner === 'A'
 		overlay.show({
 			title: youWon ? 'ROUND WON' : 'ROUND LOST',
-			subtitle: `Team ${winner} takes round ${match.round}`,
-			lines: [scoreLine()],
+			clear: true,
 			actions: [
 				{ label: 'Next round', keyLabel: 'Enter', onSelect: startRound },
 				{ label: 'Restart', key: 'KeyR', keyLabel: 'R', onSelect: restartRound },
@@ -238,12 +238,11 @@ async function main() {
 
 	function endMatch(winner) {
 		phase = 'matchOver'
+		renderScore()
 		const youWon = winner === 'A'
 		combat.push(`Team ${winner} wins the match ${match.wins.A}–${match.wins.B}!`, 'win')
 		overlay.show({
 			title: youWon ? 'YOU WIN' : 'YOU LOSE',
-			subtitle: `Match to Team ${winner} · ${match.wins.A}–${match.wins.B}`,
-			lines: [`Best of ${match.bestOf}`],
 			actions: [
 				{ label: 'Rematch', keyLabel: 'Enter', onSelect: () => startMatch(match.enemies) },
 				{ label: 'Main menu', key: 'KeyM', keyLabel: 'M', onSelect: enterHub },
@@ -252,17 +251,11 @@ async function main() {
 	}
 
 	// --- Scoreboard ------------------------------------------------------------
+	// Gym clock: YOU/FOE + filled pips. Pip count implies best-of — don't also print it.
 	function pips(n) {
 		let s = ''
 		for (let i = 0; i < match.needed; i++) s += i < n ? '●' : '○'
 		return s
-	}
-	function scoreLine() {
-		return (
-			`<span style="color:#5db4ff">You ${match.wins.A}</span>` +
-			` — ` +
-			`<span style="color:#ff5d5d">${match.wins.B} Foe</span>`
-		)
 	}
 	function renderScore() {
 		if (phase === 'menu') {
@@ -271,9 +264,9 @@ async function main() {
 		}
 		scoreEl.hidden = false
 		scoreEl.innerHTML =
-			`<span class="a">YOU ${pips(match.wins.A)}</span>` +
-			`<span class="mid">best of ${match.bestOf} · round ${match.round}</span>` +
-			`<span class="b">${pips(match.wins.B)} FOE</span>`
+			`<span class="a">YOU <span class="pips">${pips(match.wins.A)}</span></span>` +
+			`<span class="mid">round ${match.round}</span>` +
+			`<span class="b"><span class="pips">${pips(match.wins.B)}</span> FOE</span>`
 	}
 
 	// --- Weapons (1/2) ---------------------------------------------------------
@@ -595,18 +588,16 @@ async function main() {
 	}
 
 	function updateHud() {
-		// The hub is the splash screen — keep the corner clear so the title owns it.
+		// Hub keeps the corner clear so the splash title owns it.
 		if (phase === 'menu') {
 			hud.textContent = ''
-			weaponHud.update({ weapon, charge, visible: false })
+			weaponHud.update({ weapon, charge, visible: false, holding: false })
 			return
 		}
+		// Left-stack stays developer chrome (always visible in-match). Armed status
+		// lives on the weapon HUD — not here, and never as match-scoreboard copy.
 		let status = ''
-		let help = ''
-		if (phase === 'playing') {
-			help = 'hold & release to shoot · R restart · Esc hub'
-			// Single pass each — the old code made three filtered copies of units and
-			// one of arrows every refresh just to read their lengths.
+		if (phase === 'playing' && round) {
 			let allies = 0
 			let enemiesLeft = 0
 			for (const u of round.units) {
@@ -616,17 +607,21 @@ async function main() {
 			}
 			let grounded = 0
 			for (const a of round.arrows) if (a.state === 'grounded') grounded++
-			status = `team A: ${allies}  enemies left: ${enemiesLeft}  held: ${round.human.heldArrow ? 'yes' : '—'}  loose: ${grounded}\n`
-		} else {
-			help = 'arrow keys / Enter to pick · Esc → hub'
+			status = `A:${allies}  B:${enemiesLeft}  loose:${grounded}\n`
 		}
 		hud.textContent =
-			`dodgethis — best of ${BEST_OF}\n` +
-			help +
-			`\nG godmode · H ∞ ammo · =/- enemy · ]/[ ally\n` +
+			`G god · H ∞ammo · =/- foe · ]/[ ally\n` +
 			status +
-			`fps: ${fps}  [${phase}]${tune.physics.paused ? '  [paused]' : ''}${tune.cheats.godmode ? '  [GODMODE]' : ''}${tune.cheats.infiniteAmmo ? '  [∞ AMMO]' : ''}`
-		weaponHud.update({ weapon, charge, visible: phase === 'playing' })
+			`fps ${fps}  ${phase}` +
+			`${tune.physics.paused ? '  paused' : ''}` +
+			`${tune.cheats.godmode ? '  GOD' : ''}` +
+			`${tune.cheats.infiniteAmmo ? '  ∞' : ''}`
+		weaponHud.update({
+			weapon,
+			charge,
+			visible: phase === 'playing',
+			holding: !!(round && round.human && round.human.heldArrow),
+		})
 	}
 
 	enterHub()
