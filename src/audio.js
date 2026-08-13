@@ -146,6 +146,11 @@ export const sfx = {
 		),
 	// Menu cursor-move blip — a short square wave, very handheld (D-pad thunk).
 	nav: () => blip({ freq: 660, type: 'square', dur: 0.05, gain: 0.12 }),
+	// Portal: a downward suck-in sweep, then a rising pop-out on arrival.
+	portal: () => {
+		blip({ freq: 900, slideTo: 80, type: 'sawtooth', dur: 0.3, gain: 0.18 })
+		setTimeout(() => blip({ freq: 160, slideTo: 900, type: 'square', dur: 0.22, gain: 0.16 }), 300)
+	},
 
 	// Sample-backed cues (mp3s in ./sfx) — the UI / character layer.
 	grab: () => sample(unboxUrl, { gain: 0.6, rateJitter: 0.05 }),
@@ -163,5 +168,5 @@ export const sfx = {
 	tick: (level = 0) => sample(tick1Url, { gain: 0.3, rate: 0.85 + level * 0.9 }),
 	tickPerfect: () => sample(tick2Url, { gain: 0.45, rate: 1.15 }),
 	// Random enemy chatter — one of five bot-talk variants, detuned for variety.
-	taunt: () => sample(pick(BOT_TALK), { gain: 0.4, rateJitter: 0.08 }),
+	taunt: () => sample(pick(BOT_TALK), { gain: 0.3, rateJitter: 0.08 }),
 }

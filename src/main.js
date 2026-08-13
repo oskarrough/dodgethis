@@ -3,6 +3,7 @@ import { initPhysics } from './physics.js'
 import { createRenderer } from './render.js'
 import { buildCourt } from './court.js'
 import { createRound } from './round.js'
+import { createPortal } from './portal.js'
 import { launchVelocity } from './arrow.js'
 import { createOverlay } from './overlay.js'
 import {
@@ -25,6 +26,8 @@ import { createGodmodeFx } from './godmodeFx.js'
 
 const hud = document.querySelector('.hud')
 const scoreEl = document.querySelector('.score')
+const fadeEl = document.querySelector('.fade')
+const splashEl = document.querySelector('.splash')
 
 async function main() {
 	const { RAPIER, world } = await initPhysics()
@@ -62,34 +65,89 @@ async function main() {
 	// phase drives what the frame loop does and which overlay is up.
 	//   menu → playing → roundOver → playing → … → matchOver → menu
 	// match holds the best-of-N score. `round` is the live gameplay scene or null.
-	const match = { bestOf: 3, needed: 2, wins: { A: 0, B: 0 }, round: 0 }
+	const BEST_OF = 3
+	const match = { bestOf: BEST_OF, needed: 2, wins: { A: 0, B: 0 }, round: 0, enemies: 3 }
 	let phase = 'menu'
 	let round = null
+	let portals = []
+	let teleporting = false
 
-	function enterMenu() {
+	// --- The hub: a live, physical splash ------------------------------------
+	// The menu IS a game instance — a lobby round with no enemies, no scoring, no
+	// arrows. You free-roam the court and step into a portal to commit to a match.
+	// That's the "splash doesn't block the game" trick: same scene, same input.
+	function fadeOut(done) {
+		fadeEl.style.opacity = '1'
+		setTimeout(done, 280)
+	}
+	function fadeIn() {
+		fadeEl.style.opacity = '0'
+	}
+
+	function enterHub() {
 		if (round) {
 			round.dispose()
 			round = null
 		}
+		clearPortals()
+		overlay.hide()
 		phase = 'menu'
+		// Un-hiding restarts the CSS letter animations, so the title bounces in
+		// fresh every time you come back to the hub.
+		splashEl.hidden = false
 		renderScore()
-		overlay.show({
-			title: 'DODGETHIS',
-			lines: ['Grab arrows, dodge incoming, wipe out the red team.'],
-			actions: [
-				{ label: 'Best of 3', key: 'Digit3', keyLabel: '3', onSelect: () => startMatch(3) },
-				{ label: 'Best of 5', key: 'Digit5', keyLabel: '5', onSelect: () => startMatch(5) },
-			],
+		round = createRound(ctx, { enemies: 0, arrowCount: 0, roundNum: 0, lobby: true })
+		// Three portals, one per difficulty — black holes in the ground with a
+		// swirling ring and a floating number. Step in to teleport into a best-of-3
+		// match with that many enemies.
+		for (const s of [
+			{ x: -3.5, enemies: 1 },
+			{ x: 0, enemies: 2 },
+			{ x: 3.5, enemies: 3 },
+		]) {
+			portals.push(createPortal(scene, { x: s.x, z: -3, enemies: s.enemies }))
+		}
+	}
+
+	function clearPortals() {
+		for (const p of portals) p.dispose()
+		portals = []
+	}
+
+	function teleportTo(enemies) {
+		if (teleporting) return
+		teleporting = true
+		sfx.portal()
+		fadeOut(() => {
+			startMatch(enemies)
+			teleporting = false
+			fadeIn()
 		})
 	}
 
-	function startMatch(bestOf) {
-		match.bestOf = bestOf
-		match.needed = Math.floor(bestOf / 2) + 1 // first to a majority of rounds
+	// Step-into-portal check, run each frame while roaming the hub.
+	function checkPortals() {
+		if (!round || !round.human || !round.human.alive) return
+		const p = round.human.position
+		for (const portal of portals) {
+			if (portal.trigger(p.x, p.z)) {
+				teleportTo(portal.enemies)
+				return
+			}
+		}
+	}
+
+	function startMatch(enemies) {
+		match.bestOf = BEST_OF
+		match.needed = Math.floor(BEST_OF / 2) + 1 // first to a majority of rounds
 		match.wins.A = 0
 		match.wins.B = 0
 		match.round = 0
-		combat.push(`match start — best of ${bestOf}, first to ${match.needed}`, 'win')
+		match.enemies = enemies
+		combat.push(
+			`match start — ${enemies} enemies, best of ${BEST_OF}, first to ${match.needed}`,
+			'win',
+		)
 		startRound()
 	}
 
@@ -108,8 +166,9 @@ async function main() {
 
 	function spawnRound() {
 		if (round) round.dispose()
+		clearPortals() // leave the hub's portals behind when a match begins
 		round = createRound(ctx, {
-			enemies: 3,
+			enemies: match.enemies,
 			arrowCount: 7,
 			roundNum: match.round,
 			onOver: endRound,
@@ -120,6 +179,7 @@ async function main() {
 		acc = 0
 		phase = 'playing'
 		overlay.hide()
+		splashEl.hidden = true
 		renderScore()
 	}
 
@@ -173,8 +233,8 @@ async function main() {
 			subtitle: `Match to Team ${winner} · ${match.wins.A}–${match.wins.B}`,
 			lines: [`Best of ${match.bestOf}`],
 			actions: [
-				{ label: 'Rematch', keyLabel: 'Enter', onSelect: () => startMatch(match.bestOf) },
-				{ label: 'Main menu', key: 'KeyM', keyLabel: 'M', onSelect: enterMenu },
+				{ label: 'Rematch', keyLabel: 'Enter', onSelect: () => startMatch(match.enemies) },
+				{ label: 'Main menu', key: 'KeyM', keyLabel: 'M', onSelect: enterHub },
 			],
 		})
 	}
@@ -405,7 +465,7 @@ async function main() {
 			return
 		}
 		if (e.code === 'Escape') {
-			if (phase !== 'menu') enterMenu() // quit the match back to the splash
+			if (phase !== 'menu') enterHub() // quit the match back to the hub
 			return
 		}
 		if (phase !== 'playing') return
@@ -438,24 +498,32 @@ async function main() {
 		last = now
 
 		pollGamepad(dt)
-		if (phase === 'playing' && round) {
-			weaponUpdate(dt)
+		// The hub (menu) is a live round too — same step/lateUpdate, just no aiming.
+		if (round && (phase === 'playing' || phase === 'menu')) {
+			if (phase === 'playing') weaponUpdate(dt)
 			// Dash latches a direction now; the burst plays out across the steps below.
 			if (consumeDash() && round.human) round.human.dash(moveVector())
 			if (!tune.physics.paused) {
 				acc += dt * tune.physics.timeScale
 				// Guard on phase too: a winning hit flips us out of 'playing' mid-step.
-				while (acc >= world.timestep && phase === 'playing') {
+				while (acc >= world.timestep && (phase === 'playing' || phase === 'menu')) {
 					round.step(world.timestep, moveVector())
 					acc -= world.timestep
 				}
 			}
 			round.lateUpdate(dt)
 			godmodeFx.update(dt, round.human)
+			if (phase === 'menu') checkPortals()
 		} else {
 			hideAim()
 			godmodeFx.update(dt, null)
 		}
+
+		// Portal idle/wake animation — cheap, and the list is empty outside the hub.
+		// The player position drives the proximity "wake" pop.
+		const hubPlayer =
+			phase === 'menu' && round && round.human && round.human.alive ? round.human.position : null
+		for (const p of portals) p.update(dt, hubPlayer)
 
 		if (debugLines.visible) {
 			const { vertices, colors: vcolors } = world.debugRender()
@@ -500,8 +568,16 @@ async function main() {
 	}
 
 	function updateHud() {
+		// The hub is the splash screen — keep the corner clear so the title owns it.
+		if (phase === 'menu') {
+			hud.textContent = ''
+			weaponHud.update({ weapon, charge, visible: false })
+			return
+		}
 		let status = ''
-		if (round) {
+		let help = ''
+		if (phase === 'playing') {
+			help = 'hold & release to shoot · R restart · Esc hub'
 			// Single pass each — the old code made three filtered copies of units and
 			// one of arrows every refresh just to read their lengths.
 			let allies = 0
@@ -514,17 +590,19 @@ async function main() {
 			let grounded = 0
 			for (const a of round.arrows) if (a.state === 'grounded') grounded++
 			status = `team A: ${allies}  enemies left: ${enemiesLeft}  held: ${round.human.heldArrow ? 'yes' : '—'}  loose: ${grounded}\n`
+		} else {
+			help = 'arrow keys / Enter to pick · Esc → hub'
 		}
 		hud.textContent =
-			`dodgethis — milestone 7\n` +
-			`WASD move · mouse aim · hold & release to shoot · R restart · Esc menu\n` +
-			`G godmode · H ∞ ammo · =/- enemy · ]/[ ally\n` +
+			`dodgethis — best of ${BEST_OF}\n` +
+			help +
+			`\nG godmode · H ∞ ammo · =/- enemy · ]/[ ally\n` +
 			status +
 			`fps: ${fps}  [${phase}]${tune.physics.paused ? '  [paused]' : ''}${tune.cheats.godmode ? '  [GODMODE]' : ''}${tune.cheats.infiniteAmmo ? '  [∞ AMMO]' : ''}`
 		weaponHud.update({ weapon, charge, visible: phase === 'playing' })
 	}
 
-	enterMenu()
+	enterHub()
 	requestAnimationFrame(frame)
 }
 

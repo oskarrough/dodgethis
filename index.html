@@ -390,6 +390,134 @@
 			.mute.muted {
 				background: color-mix(in srgb, var(--ui-red) 30%, #fffdf4);
 			}
+
+			/* Splash title — big candy letters over the hub. The hub stays playable
+			   underneath (pointer-events: none); this is pure signage. Letters pop in
+			   staggered with an overshoot, then settle into a slow wave. Each letter
+			   carries --i (stagger index) and --r (its resting tilt) so the keyframes
+			   can preserve the tilt while animating transform. */
+			.splash {
+				position: fixed;
+				top: 5vh;
+				left: 0;
+				right: 0;
+				z-index: 5;
+				display: grid;
+				justify-items: center;
+				gap: 18px;
+				text-align: center;
+				pointer-events: none;
+			}
+			.splash[hidden] {
+				display: none;
+			}
+			.splash-title {
+				margin: 0;
+				font-family: var(--ui-font);
+				font-weight: 400;
+				font-size: clamp(56px, 11vw, 112px);
+				line-height: 1;
+				letter-spacing: 0.02em;
+			}
+			.splash-title .gap {
+				display: inline-block;
+				width: 0.3em;
+			}
+			/* Pop and wave live on nested spans so their transforms COMPOSE: the
+			   letter is already waving while it pops in — one continuous motion,
+			   no still-frame handoff between the two animations. */
+			.splash-title .letter {
+				display: inline-block;
+				color: var(--l, var(--ui-gold));
+				-webkit-text-stroke: 8px var(--ui-text);
+				paint-order: stroke fill;
+				text-shadow: 0.04em 0.06em 0 rgba(38, 68, 95, 0.25);
+				animation: splash-pop 0.55s cubic-bezier(0.2, 1.9, 0.4, 1) calc(var(--i) * 0.055s)
+					backwards;
+			}
+			.splash-title .letter .wob {
+				display: inline-block;
+				animation: splash-wave 2.6s ease-in-out calc(var(--i) * 0.13s) infinite;
+			}
+			/* Candy color cycle + alternating tilts, Mario-logo style. */
+			.splash-title .letter:nth-child(4n + 1) {
+				--l: var(--ui-red);
+				--r: -4deg;
+			}
+			.splash-title .letter:nth-child(4n + 2) {
+				--l: var(--ui-button);
+				--r: 3deg;
+			}
+			.splash-title .letter:nth-child(4n + 3) {
+				--l: var(--ui-blue);
+				--r: -2deg;
+			}
+			.splash-title .letter:nth-child(4n + 4) {
+				--l: var(--ui-green);
+				--r: 4deg;
+			}
+			@keyframes splash-pop {
+				from {
+					transform: translateY(-0.6em) scale(0.2) rotate(var(--r, 0deg));
+					opacity: 0;
+				}
+				to {
+					transform: translateY(0) scale(1) rotate(var(--r, 0deg));
+					opacity: 1;
+				}
+			}
+			@keyframes splash-wave {
+				0%,
+				100% {
+					transform: translateY(0);
+				}
+				50% {
+					transform: translateY(-0.09em);
+				}
+			}
+			/* Hint caption — plain ink text (no box: boxes read as buttons, and this
+			   isn't clickable). A cream stroke lifts it off the sky. */
+			.splash-hint {
+				margin: 0;
+				font: var(--fs-base) / 1 var(--ui-font);
+				text-transform: uppercase;
+				letter-spacing: 0.14em;
+				color: var(--ui-text);
+				-webkit-text-stroke: 6px #fffdf4;
+				paint-order: stroke fill;
+				animation: hint-hop 2.2s ease-in-out 1s infinite;
+			}
+			.splash-hint .arrow {
+				color: var(--ui-gold);
+				margin: 0 8px;
+			}
+			@keyframes hint-hop {
+				0%,
+				40%,
+				100% {
+					transform: translateY(0) scale(1, 1);
+				}
+				48% {
+					transform: translateY(-7px) scale(0.97, 1.04);
+				}
+				56% {
+					transform: translateY(0) scale(1.05, 0.94);
+				}
+				64% {
+					transform: translateY(-2px) scale(1, 1);
+				}
+			}
+
+			/* Teleport fade — a full-screen black flash that hides the hub→match swap. */
+			.fade {
+				position: fixed;
+				inset: 0;
+				z-index: 30;
+				background: #0a0e14;
+				opacity: 0;
+				pointer-events: none;
+				transition: opacity 0.28s ease;
+			}
 		</style>
 	</head>
 	<body>
@@ -400,6 +528,21 @@
 		<div class="weapons" hidden></div>
 		<button class="mute" type="button" title="Mute" aria-label="Toggle sound">🔊</button>
 		<div class="overlay" hidden></div>
+		<div class="splash" hidden>
+			<h1 class="splash-title" aria-label="dodge this">
+				<span class="letter" style="--i: 0"><span class="wob">D</span></span
+				><span class="letter" style="--i: 1"><span class="wob">O</span></span
+				><span class="letter" style="--i: 2"><span class="wob">D</span></span
+				><span class="letter" style="--i: 3"><span class="wob">G</span></span
+				><span class="letter" style="--i: 4"><span class="wob">E</span></span
+				><span class="gap"></span><span class="letter" style="--i: 5"><span class="wob">T</span></span
+				><span class="letter" style="--i: 6"><span class="wob">H</span></span
+				><span class="letter" style="--i: 7"><span class="wob">I</span></span
+				><span class="letter" style="--i: 8"><span class="wob">S</span></span>
+			</h1>
+			<p class="splash-hint"><span class="arrow">▼</span>walk into a portal<span class="arrow">▼</span></p>
+		</div>
+		<div class="fade"></div>
 		<script type="module" src="/src/main.js"></script>
 	</body>
 </html>

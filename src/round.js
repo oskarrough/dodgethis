@@ -18,7 +18,7 @@ import { tune } from './tune.js'
 //   { scene, world, RAPIER, eventQueue, combat, sfx, addShake }
 export function createRound(
 	ctx,
-	{ enemies = 3, arrowCount = 7, roundNum = 1, onOver = () => {} } = {},
+	{ enemies = 3, arrowCount = 7, roundNum = 1, onOver = () => {}, lobby = false } = {},
 ) {
 	const { scene, world, RAPIER, eventQueue, combat, sfx, addShake } = ctx
 
@@ -63,10 +63,13 @@ export function createRound(
 			}),
 		)
 	}
-	human.heldArrow = arrows[0]
-	arrows[0].hold()
+	if (arrows.length) {
+		human.heldArrow = arrows[0]
+		arrows[0].hold()
+	}
 
-	combat.push(`round ${roundNum} start — Team A (you) vs Team B (${enemies})`)
+	if (lobby) combat.push('hub — step into a portal to fight')
+	else combat.push(`round ${roundNum} start — Team A (you) vs Team B (${enemies})`)
 
 	let over = false
 	let winner = null // 'A' | 'B' | null — null with over=true means a draw
@@ -124,7 +127,7 @@ export function createRound(
 	// nock a fresh arrow so shooting never stalls on the scarce pool. A new arrow
 	// enters the pool each time, which is the point of "infinite".
 	function nockInfinite() {
-		if (!tune.cheats.infiniteAmmo || over || !human.alive || human.heldArrow) return
+		if (!tune.cheats.infiniteAmmo || lobby || over || !human.alive || human.heldArrow) return
 		const a = createArrow(scene, world, RAPIER, { position: [0, 0, 0] })
 		a.hold()
 		human.heldArrow = a
@@ -182,9 +185,14 @@ export function createRound(
 			if (!u.alive) continue
 			if (u.body.translation().y < KILL_Y) {
 				// Godmode: scoop the human back onto the court instead of killing them.
-				if (u.isHuman && tune.cheats.godmode) {
+				if (u.isHuman && (tune.cheats.godmode || lobby)) {
 					u.place(0, 2, 8)
-					combat.push('godmode — pulled you out of the lava', 'pickup')
+					combat.push(
+						lobby
+							? 'the void spat you back onto the field'
+							: 'godmode — pulled you out of the lava',
+						'pickup',
+					)
 					continue
 				}
 				u.eliminate({ fell: true })
@@ -196,7 +204,7 @@ export function createRound(
 	}
 
 	function checkWin() {
-		if (over) return
+		if (over || lobby) return
 		let aliveA = 0
 		let aliveB = 0
 		for (const u of units) {
