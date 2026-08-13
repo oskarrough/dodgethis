@@ -136,7 +136,23 @@
 				color: var(--ui-red);
 			}
 			.score .pips {
-				letter-spacing: 0.2em;
+				display: inline-flex;
+				gap: 0.22em;
+				align-items: center;
+				margin: 0 0.15em;
+				letter-spacing: 0;
+			}
+			.score .pip {
+				display: inline-block;
+				width: 0.5em;
+				height: 0.5em;
+				border: 2px solid currentColor;
+				border-radius: 50%;
+				box-sizing: border-box;
+				vertical-align: middle;
+			}
+			.score .pip.on {
+				background: currentColor;
 			}
 			.score .mid {
 				color: var(--ui-text);
