@@ -168,6 +168,8 @@ export function createArrow(scene, world, RAPIER, { position = [0, GROUND_Y, 0] 
 	let ownerTeam = null
 	let kind = 'arrow' // 'arrow' | 'bowl' — how the in-flight body behaves
 	let perfect = false // was this loosed on a perfect charge release?
+	let source = null
+	const launchDirection = new THREE.Vector3()
 	const _lv = new THREE.Vector3() // last known velocity (for AI threat detection)
 
 	function placeGrounded(x, z, heading = 0) {
@@ -217,8 +219,10 @@ export function createArrow(scene, world, RAPIER, { position = [0, GROUND_Y, 0] 
 		ownerTeam = team
 		kind = opts.kind === 'bowl' ? 'bowl' : 'arrow'
 		perfect = !!opts.perfect
+		source = { id: opts.sourceId ?? null, team, isHuman: !!opts.sourceIsHuman }
 		if (kind === 'bowl') {
 			looseBowl(fromPos, dir, speed)
+			launchDirection.copy(body.linvel())
 			return
 		}
 
@@ -245,6 +249,7 @@ export function createArrow(scene, world, RAPIER, { position = [0, GROUND_Y, 0] 
 		const horiz = Math.cos(a) * speed
 		const vy = Math.sin(a) * speed
 		body.setLinvel({ x: dir.x * horiz, y: vy, z: dir.z * horiz }, true)
+		launchDirection.copy(body.linvel())
 	}
 
 	// Bowl: a big heavy ball spawned at ground level in front of the hand, fired
@@ -289,6 +294,38 @@ export function createArrow(scene, world, RAPIER, { position = [0, GROUND_Y, 0] 
 		placeGrounded(x, z, heading)
 	}
 
+	// Only natural settlement reports a miss. Forced hit/holder drops use ground().
+	function settle(x, z, heading) {
+		const event = snapshotImpact()
+		const onCourt = Math.abs(x) <= COURT.width / 2 && Math.abs(z) <= COURT.depth / 2
+		event.outcome = onCourt ? 'landed' : 'recovered'
+		event.surface = onCourt ? 'court' : 'void'
+		if (onCourt) {
+			event.point = { x, y: 0, z }
+			event.pointKind = 'surface'
+			event.normal = { x: 0, y: 1, z: 0 }
+		}
+		land(x, z, heading)
+		return event
+	}
+
+	// Copy before contact resolution removes bodies or resets projectile identity.
+	// The previous flight velocity preserves the incoming direction, not a bounce.
+	function snapshotImpact() {
+		const v = _lv.lengthSq() > 1e-4 ? _lv : launchDirection
+		const length = v.length() || 1
+		return {
+			type: 'impact',
+			arrowId: id,
+			kind,
+			perfect,
+			source: { ...source },
+			point: { ...body.translation() },
+			pointKind: 'projectile',
+			direction: { x: v.x / length, y: v.y / length, z: v.z / length },
+		}
+	}
+
 	// Called on a hit: drop the arrow at its physics position so bowl ammo does
 	// not jump back to the hidden arrow mesh near the shooter.
 	function ground() {
@@ -315,15 +352,14 @@ export function createArrow(scene, world, RAPIER, { position = [0, GROUND_Y, 0] 
 			pushTrail(t.x, t.y, t.z)
 			// Settle once it has all but stopped (or rolled off the edge).
 			if (Math.hypot(lv.x, lv.z) < tune.weapons.bowlStop || t.y < GROUND_Y) {
-				land(t.x, t.z, Math.atan2(lv.x, lv.z))
+				return settle(t.x, t.z, Math.atan2(lv.x, lv.z))
 			}
 			return
 		}
 
 		if (t.y <= GROUND_Y + 0.02 && lv.y <= 0.5) {
 			// Touched down — freeze it lying along its travel heading.
-			land(t.x, t.z, Math.atan2(lv.x, lv.z))
-			return
+			return settle(t.x, t.z, Math.atan2(lv.x, lv.z))
 		}
 
 		_lv.set(lv.x, lv.y, lv.z)
@@ -380,6 +416,7 @@ export function createArrow(scene, world, RAPIER, { position = [0, GROUND_Y, 0] 
 		setHeldPose,
 		loose,
 		ground,
+		snapshotImpact,
 		update,
 		applyDamping,
 		dispose,

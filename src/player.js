@@ -1,6 +1,5 @@
 import * as THREE from 'three'
 import { tune } from './tune.js'
-import { startDeath } from './death.js'
 import { COURT } from './court.js'
 import { stepHorizontalVelocity } from './move.js'
 
@@ -56,7 +55,6 @@ export function createPlayer(
 	let dashT = 0 // >0 while the dash burst is active
 	let dashCd = 0 // >0 while dash is on cooldown (counts down from dashCooldown)
 	const dashDir = new THREE.Vector3()
-	let death = null // active death animation (death.js), or null while alive
 	const _hand = new THREE.Vector3()
 	const unit = {
 		id,
@@ -91,7 +89,6 @@ export function createPlayer(
 		},
 		handPosition,
 		eliminate,
-		updateDeath,
 		place,
 		dispose,
 	}
@@ -189,26 +186,17 @@ export function createPlayer(
 		mesh.position.set(t.x, t.y, t.z)
 	}
 
-	// Out! Pull the unit from the physics world (so arrows fly through the corpse)
-	// and hand the mesh to a death animation — a random melt/crumble/implode/etc.
-	// that plays out over a couple seconds via updateDeath. A `fell` death uses the
-	// plunge-into-the-void style. The animation owns the mesh from here on.
-	function eliminate({ fell = false } = {}) {
+	// Resolve the out immediately; presentation may reveal and animate the corpse.
+	function eliminate() {
 		if (!unit.alive) return
+		sync() // use this contact step's body pose, not last frame's mesh
 		unit.alive = false
+		mesh.visible = false
 		if (unit.heldArrow) {
 			unit.heldArrow.ground()
 			unit.heldArrow = null
 		} // drop the arrow
 		world.removeRigidBody(body) // removes its collider too
-		death = startDeath(scene, mesh, { fell, radius })
-	}
-
-	// Advance the death animation (no-op while alive). The round ticks this each
-	// frame for every unit; sync() has already bailed for dead units, so the
-	// animation has sole control of the mesh transform.
-	function updateDeath(dt) {
-		if (death) death.update(dt)
 	}
 
 	// Teleport a *live* unit (kinematic body + mesh) to a spot, killing velocity.
@@ -227,7 +215,6 @@ export function createPlayer(
 	// A live unit still has its body/collider; an eliminated one already shed them.
 	function dispose() {
 		if (unit.alive) world.removeRigidBody(body)
-		if (death) death.dispose()
 		world.removeCharacterController(controller)
 		scene.remove(mesh)
 		mesh.geometry.dispose()

@@ -161,6 +161,19 @@
 				opacity: 0.72;
 			}
 
+			.hit-confirmation {
+				position: fixed;
+				top: 72px;
+				left: 50%;
+				transform: translateX(-50%);
+				z-index: 4;
+				pointer-events: none;
+				font: 28px/1 var(--ui-font);
+				color: var(--ui-text);
+				-webkit-text-stroke: 5px #fffdf4;
+				paint-order: stroke fill;
+			}
+
 			/* Modal overlay for round-over / match-over.
 			   Round-over (.clear) keeps the court + scoreboard readable — no frost. */
 			.overlay {
@@ -619,6 +632,7 @@
 		<div class="hud"></div>
 		<div class="combat"></div>
 		<div class="score" hidden></div>
+		<div class="hit-confirmation" role="status" hidden></div>
 		<div class="weapons" hidden></div>
 		<button class="mute" type="button" title="Mute" aria-label="Mute sound" aria-pressed="false">
 			🔊

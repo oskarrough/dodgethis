@@ -146,6 +146,9 @@ export const sfx = {
 	loose: (gain = 1) =>
 		blip({ freq: 360, slideTo: 150, type: 'sawtooth', dur: 0.16, gain: 0.16 * gain }),
 	hit: () => blip({ freq: 200, slideTo: 55, type: 'square', dur: 0.22, gain: 0.3 }),
+	land: () => blip({ freq: 160, slideTo: 95, type: 'triangle', dur: 0.06, gain: 0.06 }),
+	deflect: () => blip({ freq: 900, slideTo: 350, type: 'triangle', dur: 0.1, gain: 0.12 }),
+	fall: () => blip({ freq: 180, slideTo: 35, type: 'sine', dur: 0.35, gain: 0.2 }),
 	// A bright two-note chime for a perfectly-timed charge release.
 	perfect: () =>
 		[880, 1320].forEach((f, i) =>

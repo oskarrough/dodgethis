@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'bun:test'
+import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import * as THREE from 'three'
 import RAPIER from '@dimforge/rapier3d-compat'
 import { buildCourt } from '../src/court.js'
@@ -18,7 +18,10 @@ function makeCtx() {
 	const world = new RAPIER.World({ x: 0, y: tune.physics.gravity, z: 0 })
 	world.timestep = 1 / 60
 	buildCourt(scene, world, RAPIER)
+	const events = []
 	return {
+		events,
+		present: (event) => events.push(event),
 		scene,
 		world,
 		RAPIER,
@@ -138,6 +141,7 @@ describe('headless round', () => {
 			expect(round.arrows).toHaveLength(0)
 			expect(round.over).toBe(false)
 			expect(overCalls).toBe(0)
+			expect(ctx.events).toHaveLength(0)
 		} finally {
 			tune.cheats.infiniteAmmo = previousInfiniteAmmo
 			round.dispose()
@@ -148,5 +152,146 @@ describe('headless round', () => {
 		expect(() => createRound(makeCtx(), { enemies: 1, arrowCount: 0 })).toThrow(
 			'Combat rounds require at least one arrow',
 		)
+	})
+})
+
+describe('contact facts', () => {
+	let ctx, round, aiEnabled, godmode
+	beforeEach(() => {
+		aiEnabled = tune.ai.enabled
+		godmode = tune.cheats.godmode
+		tune.ai.enabled = false
+		tune.cheats.godmode = false
+		ctx = makeCtx()
+		round = createRound(ctx, { enemies: 1, arrowCount: 2 })
+		round.human.place(-4, 1, 4)
+		round.units[1].place(0, 1, 0)
+	})
+	afterEach(() => {
+		round.dispose()
+		ctx.eventQueue.free()
+		ctx.world.free()
+		tune.ai.enabled = aiEnabled
+		tune.cheats.godmode = godmode
+	})
+
+	function stepUntilEvent() {
+		for (let i = 0; i < 600 && !ctx.events.length; i++) round.step(1 / 60, STILL)
+		expect(ctx.events).toHaveLength(1)
+		return ctx.events[0]
+	}
+
+	test.each([
+		['arrow', false],
+		['arrow', true],
+		['bowl', false],
+	])('%s hit (perfect=%s) emits one copied elimination after teardown', (kind, perfect) => {
+		const shot = round.human.heldArrow
+		round.human.heldArrow = null
+		shot.loose(new THREE.Vector3(-1, 1, 0), { x: 1, z: 0 }, 'A', 12, {
+			kind,
+			perfect,
+			sourceId: round.human.id,
+			sourceIsHuman: true,
+		})
+		const event = stepUntilEvent()
+		expect(event.outcome).toBe('eliminated')
+		expect(event.kind).toBe(kind)
+		expect(event.perfect).toBe(perfect)
+		expect(event.source).toEqual({ id: round.human.id, team: 'A', isHuman: true })
+		expect(event.target.id).toBe(round.units[1].id)
+		expect(event.surface).toBe('unit')
+		expect(event.pointKind).toBe('contact')
+		expect(event.normal).toBeDefined()
+		expect(event.point.x).toBeCloseTo(-0.4, 1)
+		expect(event.direction.x).toBeGreaterThan(0.9)
+		expect(round.units[1].alive).toBe(false)
+		expect(shot.state).toBe('grounded')
+		expect(round.arrows).toHaveLength(2)
+		expect(round.winner).toBe('A')
+		const saved = structuredClone(event)
+		for (let i = 0; i < 120; i++) round.step(1 / 60, STILL)
+		expect(ctx.events).toHaveLength(1)
+		shot.hold()
+		shot.loose(new THREE.Vector3(3, 2, 4), { x: 0, z: 1 }, 'B', 15)
+		expect(event).toEqual(saved) // reusing ammo cannot rewrite an old event
+	})
+
+	test('human release records the shooter independently of team ownership', () => {
+		const shot = round.human.heldArrow
+		round.looseHuman({ x: 0, z: -1 }, 15, { perfect: true })
+		expect(shot.snapshotImpact().source).toEqual({ id: round.human.id, team: 'A', isHuman: true })
+		expect(shot.snapshotImpact().perfect).toBe(true)
+	})
+
+	test.each([
+		[8, 'landed'],
+		[60, 'recovered'],
+	])('perfect miss at speed %s is %s, never a kill', (speed, outcome) => {
+		round.units[1].place(4, 1, 5)
+		round.human.place(0, 1, 5)
+		round.looseHuman({ x: 0, z: -1 }, speed, { perfect: true })
+		const event = stepUntilEvent()
+		expect(event.outcome).toBe(outcome)
+		expect(event.perfect).toBe(true)
+		expect(event.target).toBeUndefined()
+		expect(round.over).toBe(false)
+		expect(round.arrows).toHaveLength(2)
+		if (outcome === 'landed') {
+			expect(event.point.y).toBe(0)
+			expect(event.normal).toEqual({ x: 0, y: 1, z: 0 })
+		} else expect(event.surface).toBe('void')
+		for (let i = 0; i < 60; i++) round.step(1 / 60, STILL)
+		expect(ctx.events).toHaveLength(1)
+	})
+
+	test('godmode deflects once without an elimination or ammo loss', () => {
+		tune.cheats.godmode = true
+		round.human.place(0, 1, 0)
+		round.units[1].place(4, 1, 4)
+		const shot = round.arrows[1]
+		shot.loose(new THREE.Vector3(-1, 1, 0), { x: 1, z: 0 }, 'B', 12)
+		const event = stepUntilEvent()
+		expect(event.outcome).toBe('deflected')
+		expect(event.target.isHuman).toBe(true)
+		expect(round.human.alive).toBe(true)
+		expect(round.over).toBe(false)
+		expect(shot.state).toBe('grounded')
+		for (let i = 0; i < 60; i++) round.step(1 / 60, STILL)
+		expect(ctx.events).toHaveLength(1)
+	})
+
+	test('a fall reports a downward elimination without an arrow impact', () => {
+		round.human.place(0, -6, 0)
+		const event = stepUntilEvent()
+		expect(event.type).toBe('fall')
+		expect(event.outcome).toBe('eliminated')
+		expect(event.direction).toEqual({ x: 0, y: -1, z: 0 })
+		expect(event.source).toBeUndefined()
+		expect(event.point.y).toBeLessThan(-5)
+		expect(round.winner).toBe('B')
+	})
+
+	test('two contact eliminations in one step still produce a draw', () => {
+		const winners = []
+		round.dispose()
+		round = createRound(ctx, {
+			enemies: 1,
+			arrowCount: 2,
+			onOver: (winner) => winners.push(winner),
+		})
+		round.human.place(-2, 1, 0)
+		round.units[1].place(2, 1, 0)
+		round.human.heldArrow = null
+		round.arrows[0].loose(new THREE.Vector3(1.6, 1, 0), { x: 1, z: 0 }, 'A', 12)
+		round.arrows[1].loose(new THREE.Vector3(-1.6, 1, 0), { x: -1, z: 0 }, 'B', 12)
+		round.step(1 / 60, STILL)
+		expect(ctx.events.map((event) => event.outcome)).toEqual(['eliminated', 'eliminated'])
+		expect(round.over).toBe(true)
+		expect(round.winner).toBeNull()
+		expect(round.arrows.every((arrow) => arrow.state === 'grounded')).toBe(true)
+		for (let i = 0; i < 180; i++) round.step(1 / 60, STILL)
+		expect(winners).toEqual([null])
+		expect(ctx.events).toHaveLength(2)
 	})
 })

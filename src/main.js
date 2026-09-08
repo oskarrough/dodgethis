@@ -24,6 +24,7 @@ import { setSound, sfx } from './audio.js'
 import { tune } from './tune.js'
 import { log, createDebugGui, createCombatLog } from './debug.js'
 import { createGodmodeFx } from './godmodeFx.js'
+import { createFeedback } from './feedback.js'
 
 const hud = document.querySelector('.hud')
 const scoreEl = document.querySelector('.score')
@@ -37,6 +38,16 @@ async function main() {
 	const combat = createCombatLog()
 	const overlay = createOverlay()
 	const godmodeFx = createGodmodeFx(scene)
+	const hitConfirmation = document.querySelector('.hit-confirmation')
+	const feedback = createFeedback(scene, {
+		sfx,
+		addShake,
+		reducedMotion: () => reduceMotion.matches,
+		confirm(text) {
+			hitConfirmation.textContent = text
+			hitConfirmation.hidden = !text
+		},
+	})
 	log.info('booted', { renderer: 'three', physics: 'rapier' })
 
 	// Mute toggle controls the shared audio output, so it also silences cues that
@@ -64,7 +75,24 @@ async function main() {
 	world.timestep = 1 / 60
 
 	// Services a Round borrows. The court/world persist; the round fills the rest.
-	const ctx = { scene, world, RAPIER, eventQueue, combat, sfx, addShake }
+	const ctx = {
+		scene,
+		world,
+		RAPIER,
+		eventQueue,
+		combat,
+		sfx,
+		addShake,
+		present(event) {
+			const target = round?.units.find((u) => u.id === event.target?.id)
+			feedback.present(event, target?.mesh)
+			if (event.outcome === 'eliminated' && event.target.isHuman) {
+				hideAim()
+				charge.cancel()
+				updateHud()
+			}
+		},
+	}
 
 	// --- Game state machine (Godot framing) -----------------------------------
 	// phase drives what the frame loop does and which overlay is up.
@@ -90,6 +118,7 @@ async function main() {
 	}
 
 	function enterHub() {
+		feedback.reset()
 		if (round) {
 			round.dispose()
 			round = null
@@ -177,6 +206,7 @@ async function main() {
 	}
 
 	function spawnRound() {
+		feedback.reset()
 		if (round) round.dispose()
 		clearPortals() // leave the hub's portals behind when a match begins
 		round = createRound(ctx, {
@@ -567,6 +597,7 @@ async function main() {
 			}
 		}
 
+		feedback.update(dt) // exits and confirmation finish even after the verdict
 		updateCamera(dt)
 		renderer.render(scene, camera)
 
@@ -622,7 +653,7 @@ async function main() {
 		weaponHud.update({
 			weapon,
 			charge,
-			visible: phase === 'playing',
+			visible: phase === 'playing' && !!round?.human.alive,
 			holding: !!(round && round.human && round.human.heldArrow),
 		})
 	}

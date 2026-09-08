@@ -15,13 +15,13 @@ import { tune } from './tune.js'
 // signal the match controller (main.js) listens to, to keep score.
 //
 // ctx carries the persistent game services the round borrows but does not own:
-//   { scene, world, RAPIER, eventQueue, combat, sfx, addShake }
+//   { scene, world, RAPIER, eventQueue, combat, sfx, addShake, present }
 export function createRound(
 	ctx,
 	{ enemies = 3, arrowCount = 7, roundNum = 1, onOver = () => {}, lobby = false } = {},
 ) {
 	if (!lobby && arrowCount < 1) throw new Error('Combat rounds require at least one arrow')
-	const { scene, world, RAPIER, eventQueue, combat, sfx, addShake } = ctx
+	const { scene, world, RAPIER, eventQueue, combat, sfx, addShake, present = () => {} } = ctx
 
 	// --- Units: human (team A) near, enemy dummies (team B) far. ---
 	const units = []
@@ -89,7 +89,11 @@ export function createRound(
 		unit.aim.set(dir.x, 0, dir.z)
 		if (unit.aim.lengthSq() > 1e-4) unit.aim.normalize()
 		unit.face(unit.aim)
-		a.loose(unit.handPosition(), unit.aim, unit.team, speed, opts)
+		a.loose(unit.handPosition(), unit.aim, unit.team, speed, {
+			...opts,
+			sourceId: unit.id,
+			sourceIsHuman: unit.isHuman,
+		})
 		unit.heldArrow = null
 		const tag = opts.kind === 'bowl' ? ' (bowl)' : opts.perfect ? ' — PERFECT!' : ''
 		combat.push(
@@ -165,17 +169,36 @@ export function createRound(
 				(u) => u.alive && (u.colliderHandle === h1 || u.colliderHandle === h2),
 			)
 			if (!unit || unit.team === arrow.ownerTeam) return
+			const event = arrow.snapshotImpact()
+			event.surface = 'unit'
+			event.target = { id: unit.id, team: unit.team, isHuman: unit.isHuman }
+			world.contactPair(
+				world.getCollider(arrow.colliderHandle),
+				unit.collider,
+				(manifold, flipped) => {
+					if (event.pointKind === 'contact' || !manifold.numSolverContacts()) return
+					const point = manifold.solverContactPoint(0)
+					if (!point) return
+					event.point = { ...point }
+					event.pointKind = 'contact'
+					const normal = manifold.normal()
+					const sign = flipped ? 1 : -1 // outward from the target surface
+					event.normal = { x: normal.x * sign, y: normal.y * sign, z: normal.z * sign }
+				},
+			)
 			// Godmode: the human shrugs off the hit (the arrow still drops, grabbable).
 			if (unit.isHuman && tune.cheats.godmode) {
 				arrow.ground()
 				combat.push(`godmode — arrow #${arrow.id} bounced off you`, 'pickup')
+				event.outcome = 'deflected'
+				present(event)
 				return
 			}
 			unit.eliminate()
 			arrow.ground()
 			combat.push(`HIT — arrow #${arrow.id} eliminated Team ${unit.team} unit #${unit.id}`, 'hit')
-			sfx.hit()
-			addShake(0.7)
+			event.outcome = 'eliminated'
+			present(event)
 		})
 	}
 
@@ -198,10 +221,17 @@ export function createRound(
 					)
 					continue
 				}
-				u.eliminate({ fell: true })
+				const event = {
+					type: 'fall',
+					outcome: 'eliminated',
+					target: { id: u.id, team: u.team, isHuman: u.isHuman },
+					point: { ...u.body.translation() },
+					direction: { x: 0, y: -1, z: 0 },
+					surface: 'void',
+				}
+				u.eliminate()
 				combat.push(u.isHuman ? 'you fell into the lava' : `Team ${u.team} unit fell in`, 'kill')
-				sfx.hit()
-				addShake(u.isHuman ? 0.6 : 0.3)
+				present(event)
 			}
 		}
 	}
@@ -239,7 +269,10 @@ export function createRound(
 		// inside each elimination would award the round to whichever team's wipe
 		// landed first in the event queue, making a true draw unreachable.
 		checkWin()
-		for (const a of arrows) a.update()
+		for (const a of arrows) {
+			const event = a.update()
+			if (event) present(event)
+		}
 
 		// Deciding-death grace period: let the animation breathe, then end the round.
 		if (ending) {
@@ -251,13 +284,10 @@ export function createRound(
 		}
 	}
 
-	// Once per frame after stepping: sync meshes from bodies, advance any death
-	// animations, auto-grab for the human, and keep held arrows glued to hands.
-	function lateUpdate(dt) {
-		for (const u of units) {
-			u.sync()
-			u.updateDeath(dt)
-		}
+	// Once per frame after stepping: sync live meshes, auto-grab for the human,
+	// and keep held arrows glued to hands. Presentation owns eliminated meshes.
+	function lateUpdate() {
+		for (const u of units) u.sync()
 		if (!over) grabNearestArrow(human)
 		for (const u of units) {
 			if (u.alive && u.heldArrow) u.heldArrow.setHeldPose(u.handPosition(), u.aim)
