@@ -79,6 +79,8 @@ let _id = 0
 const shaftMat = new THREE.MeshStandardMaterial({ color: 0xcaa15a, roughness: 0.7 })
 const tipMat = new THREE.MeshStandardMaterial({ color: 0xdfe6f0, metalness: 0.4, roughness: 0.4 })
 const fletchMat = new THREE.MeshStandardMaterial({ color: 0xff5d5d, roughness: 0.8 })
+const pickupInkMat = new THREE.MeshBasicMaterial({ color: 0x26445f })
+const pickupCreamMat = new THREE.MeshBasicMaterial({ color: 0xfffdf4 })
 // The bowl's chunky ball (a unit sphere, scaled to bowlRadius when loosed).
 const bowlMat = new THREE.MeshStandardMaterial({
 	color: TRAIL.bowl,
@@ -107,6 +109,16 @@ export function createArrow(scene, world, RAPIER, { position = [0, GROUND_Y, 0] 
 	const id = _id++
 	const mesh = buildMesh()
 	scene.add(mesh)
+
+	// A still, ground-only diamond: readable ammo, not another circular reticle.
+	// Separate from the arrow so its heading/held pose never rotates the backing.
+	const pickup = new THREE.Mesh(new THREE.CircleGeometry(0.5, 4), pickupInkMat)
+	pickup.name = 'pickup-marker'
+	pickup.rotation.x = -Math.PI / 2
+	const pickupFill = new THREE.Mesh(new THREE.CircleGeometry(0.42, 4), pickupCreamMat)
+	pickupFill.position.z = 0.001
+	pickup.add(pickupFill)
+	scene.add(pickup)
 
 	// A separate ball mesh shown only while this projectile is flying as a bowl.
 	// Kept hidden the rest of the time; the arrow `mesh` hides while it's up.
@@ -165,6 +177,8 @@ export function createArrow(scene, world, RAPIER, { position = [0, GROUND_Y, 0] 
 		mesh.visible = true
 		mesh.rotation.set(0, heading, 0)
 		mesh.position.set(x, GROUND_Y, z)
+		pickup.position.set(x, 0.025, z) // above the center stripe, below the arrow
+		pickup.visible = true
 	}
 	placeGrounded(position[0], position[2], Math.random() * Math.PI)
 
@@ -179,6 +193,7 @@ export function createArrow(scene, world, RAPIER, { position = [0, GROUND_Y, 0] 
 	// Picked up: arrow leaves the world, becomes the holder's nocked arrow.
 	function hold() {
 		destroyBody()
+		pickup.visible = false
 		trail.visible = false
 		ball.visible = false
 		mesh.visible = true
@@ -198,6 +213,7 @@ export function createArrow(scene, world, RAPIER, { position = [0, GROUND_Y, 0] 
 	// perfectly-timed charge release (hotter trail).
 	function loose(fromPos, dir, team = null, speed = tune.arrow.impulse, opts = {}) {
 		state = 'flying'
+		pickup.visible = false
 		ownerTeam = team
 		kind = opts.kind === 'bowl' ? 'bowl' : 'arrow'
 		perfect = !!opts.perfect
@@ -328,6 +344,9 @@ export function createArrow(scene, world, RAPIER, { position = [0, GROUND_Y, 0] 
 		scene.remove(mesh)
 		scene.remove(ball)
 		scene.remove(trail)
+		scene.remove(pickup)
+		pickup.geometry.dispose()
+		pickupFill.geometry.dispose()
 		mesh.traverse((o) => {
 			if (o.geometry) o.geometry.dispose()
 		})
