@@ -23,7 +23,6 @@ export function createOverlay(selector = '.overlay') {
 	let previousFocus = null
 	let outside = []
 	let device = 'keyboard'
-	let controls = null
 
 	// clear: round-over keeps court + scoreboard readable (no dim / blur veil).
 	// Match-over may keep the default curtain.
@@ -86,9 +85,6 @@ export function createOverlay(selector = '.overlay') {
 				buttons.push(b)
 			})
 			card.append(row)
-			controls = document.createElement('p')
-			controls.className = 'controls'
-			card.append(controls)
 		}
 
 		el.replaceChildren(card)
@@ -113,7 +109,6 @@ export function createOverlay(selector = '.overlay') {
 		el.classList.remove('clear')
 		actions = []
 		buttons = []
-		controls = null
 		index = 0
 		for (const child of outside) child.inert = false
 		outside = []
@@ -144,10 +139,6 @@ export function createOverlay(selector = '.overlay') {
 			b.querySelector('.label').textContent =
 				!pad && action.keyLabel ? `${action.label}  (${action.keyLabel})` : action.label
 		})
-		if (controls)
-			controls.textContent = pad
-				? 'D-pad / left stick: choose · A: confirm'
-				: 'Arrow keys: choose · Enter: confirm'
 	}
 
 	function setDevice(next) {

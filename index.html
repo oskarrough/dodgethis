@@ -246,7 +246,9 @@
 				background: #fffdf4;
 				border: 3px solid var(--ui-text);
 				border-radius: 999px;
-				padding: 12px 32px;
+				/* Uneven on purpose: this display font's glyphs sit low in a
+				   line-height:1 box, so even padding reads as bottom-heavy. */
+				padding: 9px 32px 15px;
 				cursor: pointer;
 				box-shadow: 4px 4px 0 var(--ui-text);
 				transition:
@@ -266,6 +268,9 @@
 			.overlay .actions button .label {
 				display: block;
 				line-height: 1;
+				/* Clear of the ▶ cursor. Applied to every button, selected or not, so
+				   moving the selection never nudges the text. */
+				margin-left: 0.2rem;
 			}
 			/* The keyboard cursor: one action is always selected — a blinking ▶
 			   marker plus a gold fill. Arrow keys / WASD move it, Enter/Space pick. */
@@ -356,7 +361,7 @@
 				align-items: center;
 				gap: 6px;
 				min-width: 84px;
-				padding: 10px 12px;
+				padding: 8px 12px 12px;
 				font: var(--fs-slot)/1.2 var(--ui-font);
 				color: var(--ui-text);
 				background: #fffdf4;
@@ -406,17 +411,22 @@
 				white-space: nowrap;
 			}
 			.weapons .charge {
-				width: 100%;
-				min-width: 228px;
-				padding: 8px 10px;
-				background: var(--ui-panel);
-				border: 2px solid var(--ui-panel-border);
-				border-radius: 8px;
+				/* Fixed, not content-sized: the label text changes every few frames
+				   and the panel must not resize under it. */
+				width: 288px;
+				box-sizing: border-box;
+				padding: 9px 12px 11px;
+				background: #fffdf4;
+				border: 3px solid var(--ui-text);
+				border-radius: 16px;
+				box-shadow: 3px 3px 0 var(--ui-text);
 			}
 			.weapons .charge-track {
 				position: relative;
-				height: 8px;
-				border-radius: 4px;
+				height: 12px;
+				box-sizing: border-box;
+				border: 2px solid var(--ui-text);
+				border-radius: 6px;
 				background: #fff2b8;
 				overflow: hidden;
 			}
@@ -443,12 +453,15 @@
 				background: #ff5dff;
 			}
 			.weapons .charge-label {
-				margin-top: 6px;
+				margin-top: 7px;
 				font-size: var(--fs-charge);
 				letter-spacing: 0.08em;
 				text-transform: uppercase;
-				color: var(--ui-muted);
+				color: var(--ui-text);
 				text-align: center;
+				/* One line, always — a wrap would resize the panel vertically. */
+				white-space: nowrap;
+				overflow: hidden;
 			}
 
 			/* Mute toggle — bottom-right, always reachable (above the overlay). */
