@@ -75,7 +75,8 @@ export function createPlayer(
 	const collider = world.createCollider(RAPIER.ColliderDesc.capsule(halfHeight, radius), body)
 
 	const controller = world.createCharacterController(0.01)
-	controller.enableAutostep(0.3, 0.2, true)
+	// The court has no stairs. Autostep performs extra shape casts against every
+	// crowded capsule and can climb other players, trapping overlapping spawns.
 	controller.enableSnapToGround(0.3)
 	controller.setApplyImpulsesToDynamicBodies(true)
 

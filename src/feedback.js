@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { startDeath } from './death.js'
-import { instanceStyle } from './stylePass.js'
+import { instanceStyle } from './stylepass.js'
 
 const PARTICLES = 64
 

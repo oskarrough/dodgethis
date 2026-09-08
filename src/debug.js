@@ -43,11 +43,18 @@ export function createCombatLog(selector = '.combat', max = 12) {
 	const el = document.querySelector(selector)
 	const rows = []
 
+	let pending = false
 	function push(msg, kind = '') {
 		log.info('[combat]', msg)
 		rows.push({ msg, kind })
 		if (rows.length > max) rows.shift()
-		if (!el) return
+		if (!el || pending) return
+		pending = true
+		requestAnimationFrame(flush)
+	}
+
+	function flush() {
+		pending = false
 		el.replaceChildren(
 			...rows.map((r) => {
 				const div = document.createElement('div')
@@ -120,6 +127,8 @@ export function createDebugGui(onChange = () => {}, cheats = {}) {
 	const ch = gui.addFolder('cheats')
 	ch.add(tune.cheats, 'godmode').name('godmode (G)').listen()
 	ch.add(tune.cheats, 'infiniteAmmo').name('infinite ammo (H)').listen()
+	if (cheats.load20v20) ch.add(cheats, 'load20v20').name('Start 20v20')
+	if (cheats.step) ch.add(cheats, 'step').name('Step one tick (paused)')
 	if (cheats.addEnemy) ch.add(cheats, 'addEnemy').name('+ enemy ( = )')
 	if (cheats.removeEnemy) ch.add(cheats, 'removeEnemy').name('- enemy ( - )')
 	if (cheats.addAlly) ch.add(cheats, 'addAlly').name('+ ally ( ] )')

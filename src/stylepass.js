@@ -226,6 +226,7 @@ export function createStylePass(canvas) {
 	})
 	renderer.outputColorSpace = THREE.LinearSRGBColorSpace
 	renderer.autoClear = false
+	renderer.info.autoReset = false
 	// Fill rate, not scene complexity, is what this pass costs. 1.5 keeps a
 	// high-DPI laptop honest without visibly softening the ink.
 	const pixelRatio = Math.min(window.devicePixelRatio || 1, 1.5)
@@ -366,6 +367,7 @@ export function createStylePass(canvas) {
 	}
 
 	function render(scene, camera) {
+		renderer.info.reset()
 		scene.traverse((o) => {
 			if (o.isMesh || o.isLine || o.isSprite || o.isPoints) adopt(o)
 		})

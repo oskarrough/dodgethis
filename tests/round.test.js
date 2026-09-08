@@ -239,6 +239,9 @@ describe('contact facts', () => {
 		shot.ground()
 		round.lateUpdate()
 		round.lateUpdate()
+		expect(round.human.heldArrow).toBeNull() // rendering a paused fixture cannot pick up
+		round.step(1 / 60, STILL)
+		round.step(1 / 60, STILL)
 		expect(ctx.actions.map((event) => event.type)).toEqual(['shot', 'pickup'])
 		expect(round.human.heldArrow).toBe(shot)
 		expect(ctx.actions[1].source.isHuman).toBe(true)
@@ -321,4 +324,51 @@ describe('contact facts', () => {
 		expect(winners).toEqual([null])
 		expect(ctx.events).toHaveLength(2)
 	})
+})
+
+test('twenty additions per side never overlap live colliders, even without a physics tick', () => {
+	const ctx = makeCtx()
+	const round = createRound(ctx, { enemies: 1, seed: 42 })
+	try {
+		for (let i = 1; i < 20; i++) {
+			expect(round.addUnit('A')).not.toBeNull()
+			expect(round.addUnit('B')).not.toBeNull()
+		}
+		expect(round.units).toHaveLength(40)
+		for (let i = 0; i < round.units.length; i++) {
+			const p = round.units[i].body.translation()
+			for (let j = 0; j < i; j++) {
+				const q = round.units[j].body.translation()
+				expect(Math.hypot(p.x - q.x, p.z - q.z)).toBeGreaterThan(tune.player.radius * 2)
+			}
+		}
+	} finally {
+		round.dispose()
+		ctx.eventQueue.free()
+		ctx.world.free()
+	}
+})
+
+test('seeded 20v20 decisions repeat across fresh worlds', () => {
+	function run() {
+		const ctx = makeCtx()
+		const round = createRound(ctx, { enemies: 20, allies: 19, seed: 17 })
+		try {
+			for (let i = 0; i < 120; i++) {
+				round.step(1 / 60, STILL)
+				round.lateUpdate()
+			}
+			return round.units.map((u) => ({
+				team: u.team,
+				alive: u.alive,
+				position: u.position.toArray(),
+				armed: !!u.heldArrow,
+			}))
+		} finally {
+			round.dispose()
+			ctx.eventQueue.free()
+			ctx.world.free()
+		}
+	}
+	expect(run()).toEqual(run())
 })

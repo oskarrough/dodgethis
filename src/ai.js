@@ -15,10 +15,10 @@ import { ARENA, blockOutward, bounds } from './arena.js'
 
 // `mods` scales the two difficulty knobs per-round (round.js ramps them down a
 // little each round, so later rounds react faster and aim tighter).
-export function createBrain(unit, { reactionMul = 1, jitterMul = 1 } = {}) {
+export function createBrain(unit, { reactionMul = 1, jitterMul = 1, rng = Math.random } = {}) {
 	let aimTimer = 0
 	let lastTarget = null
-	let strafeDir = Math.random() < 0.5 ? 1 : -1 // circle-strafe handedness (flips over time)
+	let strafeDir = rng() < 0.5 ? 1 : -1 // circle-strafe handedness (flips over time)
 	let strafeTimer = 0
 	const lastPos = new THREE.Vector3()
 	const tvel = new THREE.Vector3() // estimated target velocity (for leading)
@@ -129,7 +129,7 @@ export function createBrain(unit, { reactionMul = 1, jitterMul = 1 } = {}) {
 			strafeTimer += dt
 			if (strafeTimer > 2.2) {
 				strafeTimer = 0
-				if (Math.random() < 0.5) strafeDir = -strafeDir // stay unpredictable
+				if (rng() < 0.5) strafeDir = -strafeDir // stay unpredictable
 			}
 			let sx = -rz * strafeDir // tangent (perpendicular to the line to target)
 			let sz = rx * strafeDir
@@ -149,7 +149,7 @@ export function createBrain(unit, { reactionMul = 1, jitterMul = 1 } = {}) {
 			aimTimer += dt
 			if (aimTimer >= tune.ai.reaction * reactionMul) {
 				aimTimer = 0
-				const j = (Math.random() * 2 - 1) * tune.ai.jitter * jitterMul // rotate aim by jitter
+				const j = (rng() * 2 - 1) * tune.ai.jitter * jitterMul // rotate aim by jitter
 				const c = Math.cos(j)
 				const s = Math.sin(j)
 				const distPred = Math.hypot(pred.x - me.x, pred.z - me.z)

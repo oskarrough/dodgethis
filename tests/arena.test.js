@@ -55,3 +55,18 @@ test('a seed rebuilds the same scatter; no seed does not', () => {
 		expect(onCourt(p.x, p.z, ARENA.inset.landing)).toBe(true)
 	}
 })
+
+test('large teams spawn on court without overlapping or sharing the other half', () => {
+	for (const count of [20, 40]) {
+		for (const team of ['A', 'B']) {
+			const spots = Array.from({ length: count }, (_, i) => spawnPoint(team, i, count))
+			for (let i = 0; i < spots.length; i++) {
+				const [x, , z] = spots[i]
+				expect(onCourt(x, z, ARENA.inset.aiEdge)).toBe(true)
+				expect(team === 'A' ? z > 0 : z < 0).toBe(true)
+				for (let j = 0; j < i; j++)
+					expect(Math.hypot(x - spots[j][0], z - spots[j][2])).toBeGreaterThan(0.8)
+			}
+		}
+	}
+})

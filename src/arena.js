@@ -58,9 +58,11 @@ export function blockOutward(move, x, z, inset = 0) {
 
 // Where a team's units line up at the start of a round. Team A stands at +z.
 export function spawnPoint(team, index = 0, count = 1) {
-	const z = team === 'A' ? ARENA.spawnZ : -ARENA.spawnZ
-	const x = count > 1 ? (index - (count - 1) / 2) * ARENA.enemySpacing : 0
-	return [x, 0, z]
+	const columns = Math.min(count, 7)
+	const spacing = Math.min(ARENA.enemySpacing, (ARENA.width - 2 * ARENA.inset.aiEdge) / columns)
+	const x = ((index % columns) - (columns - 1) / 2) * spacing
+	const z = ARENA.spawnZ - Math.floor(index / columns) * 1.4
+	return [x, 0, team === 'A' ? z : -z]
 }
 
 // Deterministic scatter for ammo and visual fixtures. Pass a seed to get the
@@ -84,4 +86,27 @@ export function ammoPoint(rng = Math.random) {
 		x: (rng() - 0.5) * (ARENA.width - ARENA.ammoInsetX),
 		z: (rng() - 0.5) * (ARENA.depth - ARENA.ammoInsetZ),
 	}
+}
+
+// Search the team's half for an unoccupied spawn. Read physics positions (not
+// last frame's meshes), so repeated additions within one frame are safe too.
+export function freeSpawnPoint(team, units, radius) {
+	const separation = radius * 2 + 0.1
+	const b = bounds(Math.max(ARENA.inset.aiEdge, radius + 0.1))
+	const columns = Math.floor((2 * b.x) / separation)
+	for (let z = Math.min(ARENA.spawnZ, b.z); z >= 1; z -= separation) {
+		for (let i = 0; i <= columns; i++) {
+			const x = (i - columns / 2) * separation
+			const pz = team === 'A' ? z : -z
+			if (
+				units.every((u) => {
+					if (!u.alive) return true
+					const p = u.body.translation()
+					return Math.hypot(x - p.x, pz - p.z) >= separation
+				})
+			)
+				return [x, 0, pz]
+		}
+	}
+	return null
 }

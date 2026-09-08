@@ -1,4 +1,6 @@
 import * as THREE from 'three'
+import { createPerformanceMonitor } from './performance.js'
+import { PRESETS, scenario, scenarioFromURL } from './scenario.js'
 import { initPhysics } from './physics.js'
 import { createRenderer } from './render.js'
 import { buildCourt } from './court.js'
@@ -39,7 +41,8 @@ const splashEl = document.querySelector('.splash')
 async function main() {
 	applyCssVariables() // one palette drives both the WebGL world and the HTML chrome
 	const { RAPIER, world } = await initPhysics()
-	const { scene, aimCamera, addShake, updateCamera, render } = createRenderer()
+	const { renderer, scene, aimCamera, addShake, updateCamera, render } = createRenderer()
+	const perf = createPerformanceMonitor()
 	const combat = createCombatLog()
 	const overlay = createOverlay()
 	const godmodeFx = createGodmodeFx(scene)
@@ -107,7 +110,16 @@ async function main() {
 	//   menu → playing → roundOver → playing → … → matchOver → menu
 	// match holds the best-of-N score. `round` is the live gameplay scene or null.
 	const BEST_OF = 3
-	const match = { bestOf: BEST_OF, needed: 2, wins: { A: 0, B: 0 }, round: 0, enemies: 3 }
+	const match = {
+		bestOf: BEST_OF,
+		needed: 2,
+		wins: { A: 0, B: 0 },
+		round: 0,
+		enemies: 3,
+		allies: 0,
+		arrowCount: 7,
+		seed: undefined,
+	}
 	let phase = 'menu'
 	let round = null
 	let portals = []
@@ -168,12 +180,17 @@ async function main() {
 		})
 	}
 
-	for (const button of splashEl.querySelectorAll('.portal-option')) {
+	// The splash difficulties, in the order they are printed. That order is also
+	// what the 1-9 keys pick, and the printed hint is written from the same list,
+	// so a fourth mode would number itself.
+	const portalOptions = [...splashEl.querySelectorAll('.portal-option')]
+	portalOptions.forEach((button, i) => {
+		if (i < 9) button.append(`  (${i + 1})`) // same hint shape the overlay uses
 		button.addEventListener('click', () => {
 			sfx.click()
 			teleportTo(Number(button.dataset.enemies))
 		})
-	}
+	})
 
 	// Step-into-portal check, run each frame while roaming the hub.
 	function checkPortals() {
@@ -187,7 +204,10 @@ async function main() {
 		}
 	}
 
-	function startMatch(enemies) {
+	function startMatch(enemies, { allies = 0, arrowCount = 7, seed } = {}) {
+		match.allies = allies
+		match.arrowCount = arrowCount
+		match.seed = seed
 		match.bestOf = BEST_OF
 		match.needed = Math.floor(BEST_OF / 2) + 1 // first to a majority of rounds
 		match.wins.A = 0
@@ -222,7 +242,9 @@ async function main() {
 		clearPortals() // leave the hub's portals behind when a match begins
 		round = createRound(ctx, {
 			enemies: match.enemies,
-			arrowCount: 7,
+			allies: match.allies,
+			arrowCount: match.arrowCount,
+			seed: match.seed,
 			roundNum: match.round,
 			onOver: endRound,
 		})
@@ -285,7 +307,7 @@ async function main() {
 		overlay.show({
 			title: youWon ? 'YOU WIN' : 'YOU LOSE',
 			actions: [
-				{ label: 'Rematch', keyLabel: 'Enter', onSelect: () => startMatch(match.enemies) },
+				{ label: 'Rematch', keyLabel: 'Enter', onSelect: () => startMatch(match.enemies, match) },
 				{ label: 'Main menu', key: 'KeyM', keyLabel: 'M', onSelect: enterHub },
 			],
 		})
@@ -524,6 +546,11 @@ async function main() {
 		removeEnemy: () => round && round.removeUnit('B'),
 		addAlly: () => round && round.addUnit('A'),
 		removeAlly: () => round && round.removeUnit('A'),
+		load20v20: () => startScenario(PRESETS['20v20']),
+		step: () => {
+			tune.physics.paused = true
+			stepPaused()
+		},
 	}
 
 	createDebugGui(() => {
@@ -534,6 +561,8 @@ async function main() {
 		if (round) for (const a of round.arrows) a.applyDamping()
 	}, cheats)
 
+	// Hotkeys on the splash:
+	//   1-9       enter that difficulty, in the order the options are printed
 	// Hotkeys during play:
 	//   R         restart the current round (a real in-place reset — no reload)
 	//   G         toggle godmode (you can't be eliminated)
@@ -557,6 +586,13 @@ async function main() {
 		}
 		if (e.code === 'Escape') {
 			if (phase !== 'menu') enterHub() // quit the match back to the hub
+			return
+		}
+		// On the splash, a number key is the same act as clicking that difficulty —
+		// so it goes through the button, not around it.
+		if (phase === 'menu') {
+			const pick = /^Digit([1-9])$/.exec(e.code)
+			if (pick) portalOptions[Number(pick[1]) - 1]?.click()
 			return
 		}
 		if (phase !== 'playing') return
@@ -583,11 +619,15 @@ async function main() {
 	let fps = 0
 	let fpsTimer = 0
 	let hudTimer = 0
+	let perfSummary = null
 
 	function frame(now) {
-		const dt = Math.min((now - last) / 1000, 0.1)
+		const frameStart = perf.enabled ? performance.now() : 0
+		const interval = now - last
+		const dt = Math.min(interval / 1000, 0.1)
 		last = now
 
+		const simulationStart = perf.enabled ? performance.now() : 0
 		pollGamepad(dt)
 		overlay.setDevice(activeDevice())
 		overlay.handleGamepad(consumeMenuInput())
@@ -615,6 +655,8 @@ async function main() {
 			hideAim()
 			godmodeFx.update(dt, null)
 		}
+
+		const simulationEnd = perf.enabled ? performance.now() : 0
 
 		// Portal idle/wake animation — cheap, and the list is empty outside the hub.
 		// The player position drives the proximity "wake" pop.
@@ -652,12 +694,15 @@ async function main() {
 		shadows.update(phase === 'playing' || phase === 'menu' ? round : null)
 		feedback.update(dt) // exits and confirmation finish even after the verdict
 		updateCamera(dt)
+		const renderStart = perf.enabled ? performance.now() : 0
 		render()
+		const renderEnd = perf.enabled ? performance.now() : 0
 
 		frames++
-		fpsTimer += dt
+		fpsTimer += interval / 1000
 		if (fpsTimer >= 0.5) {
 			fps = Math.round(frames / fpsTimer)
+			perfSummary = perf.enabled ? perf.report() : null
 			frames = 0
 			fpsTimer = 0
 		}
@@ -671,6 +716,14 @@ async function main() {
 			updateHud()
 		}
 
+		if (perf.enabled)
+			perf.record({
+				frame: interval,
+				simulation: simulationEnd - simulationStart,
+				presentation: renderStart - simulationEnd,
+				render: renderEnd - renderStart,
+				cpu: performance.now() - frameStart,
+			})
 		requestAnimationFrame(frame)
 	}
 
@@ -688,7 +741,10 @@ async function main() {
 			`fps ${fps}  ${phase}` +
 			`${tune.physics.paused ? '  paused' : ''}` +
 			`${tune.cheats.godmode ? '  GOD' : ''}` +
-			`${tune.cheats.infiniteAmmo ? '  ∞' : ''}`
+			`${tune.cheats.infiniteAmmo ? '  ∞' : ''}` +
+			(perfSummary?.ms.cpu
+				? `\ncpu p95 ${perfSummary.ms.cpu.p95.toFixed(1)}ms / 6.94ms\nsim ${perfSummary.ms.simulation.p95.toFixed(1)} · render ${perfSummary.ms.render.p95.toFixed(1)}ms`
+				: '')
 		syncRoster()
 		weaponHud.update({
 			weapon,
@@ -699,7 +755,136 @@ async function main() {
 		})
 	}
 
+	function startScenario(options = {}) {
+		const setup = scenario(options) // validate before replacing the current round
+		tune.ai.enabled = setup.ai
+		tune.physics.paused = setup.paused
+		tune.physics.timeScale = 1
+		acc = 0
+		tune.cheats.godmode = setup.godmode
+		tune.cheats.infiniteAmmo = setup.infiniteAmmo
+		if (setup.phase === 'menu') enterHub()
+		else {
+			startMatch(setup.teamB, {
+				allies: setup.teamA - 1,
+				arrowCount: setup.arrows,
+				seed: setup.seed,
+			})
+			if (setup.phase === 'roundOver') endRound(setup.winner)
+			if (setup.phase === 'matchOver') {
+				match.wins[setup.winner] = match.needed
+				endMatch(setup.winner)
+			}
+		}
+		perf.enabled = true
+		perf.reset()
+		perfSummary = null
+		updateHud()
+		return snapshot()
+	}
+
+	function snapshot() {
+		return {
+			phase,
+			match: { ...match, wins: { ...match.wins } },
+			paused: tune.physics.paused,
+			units: round.units.map((u) => ({
+				id: u.id,
+				team: u.team,
+				human: u.isHuman,
+				alive: u.alive,
+				position: { ...u.position },
+				heldArrow: u.heldArrow?.id ?? null,
+			})),
+			arrows: round.arrows.map((a) => ({
+				id: a.id,
+				state: a.state,
+				kind: a.kind,
+				position: { ...a.position },
+			})),
+		}
+	}
+
+	function stepPaused(ticks = 1) {
+		if (!tune.physics.paused) throw new Error('Pause before single-stepping')
+		if (!Number.isInteger(ticks) || ticks < 1 || ticks > 3600)
+			throw new Error('ticks must be 1..3600')
+		for (let i = 0; i < ticks && (phase === 'playing' || phase === 'menu'); i++) {
+			round.step(world.timestep, { x: 0, z: 0 })
+			round.lateUpdate()
+		}
+		updateHud()
+		return snapshot()
+	}
+
+	// Opt-in in a production build; always available on the development server.
+	if (import.meta.env.DEV || new URLSearchParams(location.search).has('debug')) {
+		window.game = {
+			get round() {
+				return round
+			},
+			get phase() {
+				return phase
+			},
+			tune,
+			perf,
+			renderer,
+			scene,
+			world,
+			start: startScenario,
+			preset(name, overrides = {}) {
+				if (!PRESETS[name]) throw new Error(`Unknown preset: ${name}`)
+				return startScenario({ ...PRESETS[name], ...overrides })
+			},
+			snapshot,
+			pause(value = true) {
+				tune.physics.paused = value
+				acc = 0
+			},
+			step: stepPaused,
+			hub: enterHub,
+			restart: restartRound,
+			async benchmark({ seconds = 10, warmup = 2 } = {}) {
+				if (
+					![seconds, warmup].every(Number.isFinite) ||
+					seconds <= 0 ||
+					seconds > 60 ||
+					warmup < 0 ||
+					warmup > 60
+				)
+					throw new Error('Invalid benchmark duration')
+				await new Promise((resolve) => setTimeout(resolve, warmup * 1000))
+				perf.enabled = true
+				perf.reset()
+				const before = snapshot()
+				await new Promise((resolve) => setTimeout(resolve, seconds * 1000))
+				return {
+					...perf.report(),
+					before,
+					after: snapshot(),
+					viewport: {
+						width: innerWidth,
+						height: innerHeight,
+						pixelRatio: renderer.getPixelRatio(),
+					},
+					draw: { ...renderer.info.render },
+					memory: { ...renderer.info.memory },
+					hidden: document.hidden,
+				}
+			},
+		}
+	}
 	enterHub()
+	try {
+		const setup = scenarioFromURL(location.search)
+		if (setup) {
+			startScenario(setup)
+			perf.enabled = true
+		}
+	} catch (error) {
+		log.error('debug setup', error.message)
+	}
+
 	requestAnimationFrame(frame)
 }
 

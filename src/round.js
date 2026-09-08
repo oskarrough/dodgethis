@@ -1,4 +1,4 @@
-import { ARENA, ammoPoint, makeRng, spawnPoint } from './arena.js'
+import { ARENA, ammoPoint, makeRng, spawnPoint, freeSpawnPoint } from './arena.js'
 import { createPlayer } from './player.js'
 import { createArrow, solveLaunch } from './arrow.js'
 import { createBrain } from './ai.js'
@@ -19,18 +19,26 @@ import { PALETTE } from './style.js'
 //   { scene, world, RAPIER, eventQueue, combat, present }
 export function createRound(
 	ctx,
-	{ enemies = 3, arrowCount = 7, roundNum = 1, onOver = () => {}, lobby = false, seed } = {},
+	{
+		enemies = 3,
+		allies = 0,
+		arrowCount = 7,
+		roundNum = 1,
+		onOver = () => {},
+		lobby = false,
+		seed,
+	} = {},
 ) {
 	if (!lobby && arrowCount < 1) throw new Error('Combat rounds require at least one arrow')
 	const { scene, world, RAPIER, eventQueue, combat, present = () => {} } = ctx
-	// Seeded only when asked, so a visual fixture can rebuild the same court. Bot
-	// randomness is untouched; this is not a promise of deterministic replays.
+	// Seeded gameplay randomness makes fixed-step fixtures repeatable; visual FX
+	// retain their independent random source.
 	const rng = makeRng(seed)
 
 	// --- Units: human (team A) near, enemy dummies (team B) far. ---
 	const units = []
 	const human = createPlayer(scene, world, RAPIER, {
-		position: spawnPoint('A'),
+		position: spawnPoint('A', 0, allies + 1),
 		color: PALETTE.teamA,
 		team: 'A',
 		isHuman: true,
@@ -45,11 +53,21 @@ export function createRound(
 			}),
 		)
 	}
-	// Brains for every non-human unit (Team B). They share the same grab/loose
+	for (let i = 1; i <= allies; i++) {
+		units.push(
+			createPlayer(scene, world, RAPIER, {
+				position: spawnPoint('A', i, allies + 1),
+				color: PALETTE.teamA,
+				team: 'A',
+			}),
+		)
+	}
+	// Brains for every non-human unit. They share the same grab/loose
 	// helpers the human uses, so the rules live in exactly one place.
 	// Later rounds sharpen the AI a touch: faster reactions, tighter aim. Floors
 	// keep a long match challenging but never frame-perfect.
 	const aiMod = {
+		rng,
 		reactionMul: Math.max(0.55, 1 - 0.12 * (roundNum - 1)),
 		jitterMul: Math.max(0.5, 1 - 0.15 * (roundNum - 1)),
 	}
@@ -108,7 +126,7 @@ export function createRound(
 
 	function grabNearestArrow(unit) {
 		if (unit.heldArrow || !unit.alive) return
-		const p = unit.mesh.position
+		const p = unit.body.translation()
 		const { item: best, d2 } = nearest(arrows, p.x, p.z, (a) => a.state === 'grounded')
 		if (best && d2 <= tune.player.pickupRadius ** 2) {
 			best.hold()
@@ -283,6 +301,8 @@ export function createRound(
 			if (event) present(event)
 		}
 
+		if (!over) grabNearestArrow(human)
+
 		// Deciding-death grace period: let the animation breathe, then end the round.
 		if (ending) {
 			overDelay -= dt
@@ -293,11 +313,10 @@ export function createRound(
 		}
 	}
 
-	// Once per frame after stepping: sync live meshes, auto-grab for the human,
-	// and keep held arrows glued to hands. Presentation owns eliminated meshes.
+	// Once per frame after stepping: sync live meshes and keep held arrows glued
+	// to hands. Gameplay pickups happen in step(), so pause is a stable fixture.
 	function lateUpdate() {
 		for (const u of units) u.sync()
-		if (!over) grabNearestArrow(human)
 		for (const u of units) {
 			if (u.alive && u.heldArrow) u.heldArrow.setHeldPose(u.handPosition(), u.aim)
 		}
@@ -310,9 +329,14 @@ export function createRound(
 	// round (checkWin runs) — handy for poking at the state machine.
 	function addUnit(team) {
 		const isB = team === 'B'
-		const x = (Math.random() - 0.5) * (ARENA.width - 3)
+		if (team !== 'A' && team !== 'B') throw new Error('Unknown team')
+		const position = freeSpawnPoint(team, units, tune.player.radius)
+		if (!position) {
+			combat.push(`no free spawn space on Team ${team}`)
+			return null
+		}
 		const u = createPlayer(scene, world, RAPIER, {
-			position: [x, 0, isB ? -ARENA.spawnZ : ARENA.spawnZ],
+			position,
 			color: isB ? PALETTE.teamB : PALETTE.teamA,
 			team,
 		})

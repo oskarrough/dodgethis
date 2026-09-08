@@ -11,31 +11,31 @@ import { onCourt } from './arena.js'
 //
 // One pooled, pre-allocated set of discs. Nothing is allocated per round.
 
-const POOL = 24
+const POOL = 512
 const LIFT = 0.014 // above the court line, below the ammo marker
 
 export function createShadows(scene) {
 	const geometry = new THREE.CircleGeometry(1, 18)
 	const material = new THREE.MeshBasicMaterial({ color: PALETTE.courtShade })
-	const discs = []
-	for (let i = 0; i < POOL; i++) {
-		const disc = new THREE.Mesh(geometry, material)
-		disc.rotation.x = -Math.PI / 2
-		disc.visible = false
-		scene.add(disc)
-		discs.push(disc)
-	}
+	const discs = new THREE.InstancedMesh(geometry, material, POOL)
+	discs.instanceMatrix.setUsage(THREE.DynamicDrawUsage)
+	discs.frustumCulled = false // bounds change with the live roster
+	discs.count = 0
+	discs.visible = false
+	scene.add(discs)
+	const pose = new THREE.Object3D()
+	pose.rotation.x = -Math.PI / 2
 
 	let used = 0
 	function cast(x, y, z, radius) {
 		if (used >= POOL || !onCourt(x, z)) return // nothing to fall on out over the void
-		const disc = discs[used++]
 		// Shrink a little with height so a high shot reads as high even where the
 		// caster and its shadow overlap on screen.
 		const shrink = 1 - Math.min(Math.max(y, 0) / 8, 1) * 0.35
-		disc.position.set(x, LIFT, z)
-		disc.scale.setScalar(Math.max(0.05, radius * shrink))
-		disc.visible = true
+		pose.position.set(x, LIFT, z)
+		pose.scale.setScalar(Math.max(0.05, radius * shrink))
+		pose.updateMatrix()
+		discs.setMatrixAt(used++, pose.matrix)
 	}
 
 	// Called once per frame with the live round (or null in an empty scene).
@@ -53,14 +53,16 @@ export function createShadows(scene) {
 				cast(p.x, p.y, p.z, arrow.kind === 'bowl' ? 0.5 : 0.2)
 			}
 		}
-		for (let i = used; i < POOL; i++) discs[i].visible = false
+		discs.count = used
+		discs.visible = used > 0
+		if (used) discs.instanceMatrix.needsUpdate = true
 	}
 
 	function dispose() {
-		for (const disc of discs) scene.remove(disc)
+		scene.remove(discs)
+		discs.dispose()
 		geometry.dispose()
 		material.dispose()
-		discs.length = 0
 	}
 
 	return { update, dispose }

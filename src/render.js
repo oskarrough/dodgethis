@@ -1,9 +1,9 @@
 import * as THREE from 'three'
 import { tune } from './tune.js'
-import { createStylePass } from './stylePass.js'
+import { createStylePass } from './stylepass.js'
 
 // Camera, framing and shake live here; what the world is made of lives in
-// stylePass.js. There is one rendering path — no direct-lit fallback.
+// stylepass.js. There is one rendering path — no direct-lit fallback.
 export function createRenderer() {
 	const canvas = document.querySelector('.app')
 	const style = createStylePass(canvas)
