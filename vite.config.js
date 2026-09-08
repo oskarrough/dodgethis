@@ -19,6 +19,14 @@ import wasm from 'vite-plugin-wasm'
 // ~906 kB gzip (the -compat build) to ~180 kB gzip.
 export default defineConfig({
 	plugins: [wasm()],
+	server: {
+		// Vite rejects Host headers it does not recognise. Two dev setups need
+		// naming: portless gives each app a stable https://<name>.localhost URL,
+		// and `portless run --tailscale` also publishes it on the tailnet so other
+		// machines can play a build without a deploy. A leading dot allows the
+		// domain and its subdomains. Dev server only — this is not a build setting.
+		allowedHosts: ['.localhost', '.ts.net'],
+	},
 	build: {
 		target: 'esnext',
 		rollupOptions: { treeshake: false },
