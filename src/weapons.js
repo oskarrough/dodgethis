@@ -1,17 +1,18 @@
 import { tune } from './tune.js'
+import { PALETTE } from './style.js'
 
 // Weapon definitions — the one place a weapon's identity lives (Godot would make
 // these Resources). The human picks one (1/2); it's a property of the shooter,
 // not the ammo. `kind` is what the projectile reads to decide how it flies; the
 // numbers that tune each weapon live in tune.weapons (debug.js).
 export const WEAPONS = {
-	bow: { label: 'Bow', kind: 'arrow' },
-	bowl: { label: 'Bowl', kind: 'bowl' },
+	bow: { label: 'Bow', kind: 'arrow', role: 'ammo', key: '1', pad: '←' },
+	bowl: { label: 'Bowl', kind: 'bowl', role: 'bowl', key: '2', pad: '→' },
 }
 
 // Shared palette so an arc preview and the in-flight trail of the same shot
 // always agree (keyed by projectile kind, plus the perfect-release highlight).
-export const TRAIL = { arrow: 0xffd35d, bowl: 0x8a6cff, perfect: 0xff5dff }
+export const TRAIL = { arrow: PALETTE.ammo, bowl: PALETTE.bowl, perfect: PALETTE.perfect }
 
 // The charge bow's wind-up meter, as a small self-contained component: hold to
 // charge and the meter ping-pongs (0→1→0…), so holding too long unwinds it. The

@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { tune } from './tune.js'
+import { PALETTE } from './style.js'
 
 // Translucent bubble-shield aura for the human while godmode is on. Follows the
 // player mesh each frame; hidden when the cheat is off or the unit is gone.
@@ -15,7 +16,7 @@ export function createGodmodeFx(scene) {
 	const shell = new THREE.Mesh(
 		new THREE.SphereGeometry(SHIELD_R, 28, 18),
 		new THREE.MeshBasicMaterial({
-			color: 0x8ae8ff,
+			color: PALETTE.godmode,
 			transparent: true,
 			opacity: 0.11,
 			depthWrite: false,
@@ -27,7 +28,7 @@ export function createGodmodeFx(scene) {
 	const lattice = new THREE.Mesh(
 		new THREE.IcosahedronGeometry(SHIELD_R * 1.01, 2),
 		new THREE.MeshBasicMaterial({
-			color: 0xc8f0ff,
+			color: PALETTE.godmodeGlow,
 			wireframe: true,
 			transparent: true,
 			opacity: 0.28,
@@ -39,7 +40,7 @@ export function createGodmodeFx(scene) {
 	const innerGlow = new THREE.Mesh(
 		new THREE.SphereGeometry(SHIELD_R * 0.72, 16, 12),
 		new THREE.MeshBasicMaterial({
-			color: 0x5db4ff,
+			color: PALETTE.teamA,
 			transparent: true,
 			opacity: 0.06,
 			depthWrite: false,
@@ -54,12 +55,12 @@ export function createGodmodeFx(scene) {
 		const mesh = new THREE.Mesh(
 			new THREE.SphereGeometry(r, 10, 8),
 			new THREE.MeshStandardMaterial({
-				color: 0xe8fbff,
+				color: PALETTE.godmodeCore,
 				transparent: true,
 				opacity: 0.62,
 				roughness: 0.15,
 				metalness: 0.35,
-				emissive: 0x1a4466,
+				emissive: PALETTE.godmodeDeep,
 				emissiveIntensity: 0.45,
 			}),
 		)

@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { tune } from './tune.js'
+import { PALETTE } from './style.js'
 
 // Immediate out pose, then a comic exit. feedback.js owns the timing and pooled
 // particles; these curves only animate a mesh that gameplay has already retired.
@@ -11,7 +12,7 @@ const clamp01 = (t) => (t < 0 ? 0 : t > 1 ? 1 : t)
 // keeps its shape while it deforms and only fades out as it finishes dissolving.
 const tailFade = (t, start = 0.6) => (t < start ? 1 : 1 - (t - start) / (1 - start))
 
-const DARK = new THREE.Color(0x26445f)
+const DARK = new THREE.Color(PALETTE.ink)
 
 // Drain every material on the unit toward a corpse-grey by k (0..1).
 function tint(ctx, k) {

@@ -1,9 +1,8 @@
 import { WEAPONS } from './weapons.js'
 import { tune } from './tune.js'
+import { hex } from './style.js'
 
-const ORDER = ['bow', 'bowl']
-const KEYS = { bow: '1', bowl: '2' }
-const ACCENT = { bow: '#ffd35d', bowl: '#8a6cff' }
+const ORDER = Object.keys(WEAPONS)
 
 // Bottom-center weapon picker + charge meter. Keyboard 1/2 still switches via
 // main.js; slots are clickable during play for mouse users. Armed status sits
@@ -41,9 +40,8 @@ export function createWeaponHud({ onSelect } = {}) {
 		btn.type = 'button'
 		btn.className = 'slot'
 		btn.dataset.weapon = id
-		btn.style.setProperty('--accent', ACCENT[id])
-		btn.innerHTML =
-			`<span class="key">${KEYS[id]}</span>` + `<span class="name">${def.label}</span>`
+		btn.style.setProperty('--accent', hex(def.role))
+		btn.innerHTML = `<span class="key">${def.key}</span>` + `<span class="name">${def.label}</span>`
 		btn.addEventListener('click', () => onSelect?.(id))
 		slots.set(id, btn)
 		row.append(btn)
@@ -73,7 +71,7 @@ export function createWeaponHud({ onSelect } = {}) {
 
 			for (const [id, btn] of slots) {
 				btn.classList.toggle('active', id === weapon)
-				btn.querySelector('.key').textContent = pad ? (id === 'bow' ? '←' : '→') : KEYS[id]
+				btn.querySelector('.key').textContent = pad ? WEAPONS[id].pad : WEAPONS[id].key
 			}
 
 			const showCharge = weapon === 'bow'

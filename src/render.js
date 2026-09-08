@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { tune } from './tune.js'
+import { PALETTE } from './style.js'
 
 export function createRenderer() {
 	const canvas = document.querySelector('.app')
@@ -11,8 +12,7 @@ export function createRenderer() {
 	renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 	renderer.shadowMap.enabled = true
 
-	const bg =
-		getComputedStyle(document.documentElement).getPropertyValue('--page-bg').trim() || '#8fd7ff'
+	const bg = PALETTE.page
 	renderer.setClearColor(bg)
 
 	const scene = new THREE.Scene()

@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { tune } from './tune.js'
 import { bounds as courtBounds } from './arena.js'
+import { PALETTE } from './style.js'
 import { stepHorizontalVelocity } from './move.js'
 
 const clamp = (v, lo, hi) => (v < lo ? lo : v > hi ? hi : v)
@@ -16,7 +17,7 @@ export function createPlayer(
 	scene,
 	world,
 	RAPIER,
-	{ position = [0, 0, 0], color = 0x5db4ff, team = 'A', isHuman = false } = {},
+	{ position = [0, 0, 0], color = PALETTE.teamA, team = 'A', isHuman = false } = {},
 ) {
 	const id = _uid++
 	const { radius, halfHeight } = tune.player
@@ -31,13 +32,39 @@ export function createPlayer(
 	mesh.add(visual)
 	scene.add(mesh)
 
-	// Little facing nub so you can read orientation (aim direction).
+	// Facing wedge: a pointed nose reads as a direction from across the court,
+	// where a square nub just reads as a bump.
 	const nose = new THREE.Mesh(
-		new THREE.BoxGeometry(0.18, 0.18, 0.4),
-		new THREE.MeshStandardMaterial({ color: 0xffffff }),
+		new THREE.ConeGeometry(0.15, 0.42, 4),
+		new THREE.MeshStandardMaterial({ color: PALETTE.cream }),
 	)
-	nose.position.set(0, halfHeight, -radius)
+	nose.rotation.set(-Math.PI / 2, 0, Math.PI / 4)
+	nose.position.set(0, halfHeight, -radius - 0.08)
 	visual.add(nose)
+
+	// Team badge: a shape, not a color, so ally and enemy survive a grayscale
+	// capture and the style pass's flattening. Team A wears a ring, team B a bar.
+	const badge = new THREE.Mesh(
+		team === 'A'
+			? new THREE.TorusGeometry(0.17, 0.05, 6, 16)
+			: new THREE.BoxGeometry(0.42, 0.09, 0.09),
+		new THREE.MeshStandardMaterial({ color: PALETTE.ink }),
+	)
+	badge.position.set(0, halfHeight + radius * 0.55, 0)
+	badge.rotation.x = Math.PI / 2
+	visual.add(badge)
+
+	// The bow: a readable armed silhouette. Shown only while this unit actually
+	// holds an arrow, so ARMED is legible with the HUD hidden. Decoration only —
+	// the capsule collider is unchanged, so it never enlarges the target.
+	const bow = new THREE.Mesh(
+		new THREE.TorusGeometry(0.34, 0.045, 6, 16, Math.PI * 1.1),
+		new THREE.MeshStandardMaterial({ color: PALETTE.ammoShaft, roughness: 0.7 }),
+	)
+	bow.position.set(radius * 0.85, halfHeight * 0.15, -0.05)
+	bow.rotation.set(0, Math.PI / 2, Math.PI * 0.45)
+	bow.visible = false
+	visual.add(bow)
 
 	const [px, py, pz] = position
 	const spawnY = py + radius + halfHeight
@@ -212,6 +239,7 @@ export function createPlayer(
 	}
 
 	function updateVisual(dt, charge = 0) {
+		bow.visible = !!unit.heldArrow
 		if (!unit.alive) return // feedback owns the detached corpse
 		stepSpring(leanX, 0, dt)
 		stepSpring(leanZ, 0, dt)
@@ -268,8 +296,10 @@ export function createPlayer(
 		visual.removeFromParent() // death presentation may have attached it to the scene
 		visual.geometry.dispose()
 		visual.material.dispose()
-		nose.geometry.dispose()
-		nose.material.dispose()
+		for (const part of [nose, badge, bow]) {
+			part.geometry.dispose()
+			part.material.dispose()
+		}
 	}
 
 	return unit

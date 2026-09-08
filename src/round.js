@@ -4,6 +4,7 @@ import { createArrow, solveLaunch } from './arrow.js'
 import { createBrain } from './ai.js'
 import { nearest } from './spatial.js'
 import { tune } from './tune.js'
+import { PALETTE } from './style.js'
 
 // A Round is the gameplay "scene" (Godot framing): it owns the units, their AI
 // brains, and the arrow pool for ONE round. Build it with createRound(), tick it
@@ -30,7 +31,7 @@ export function createRound(
 	const units = []
 	const human = createPlayer(scene, world, RAPIER, {
 		position: spawnPoint('A'),
-		color: 0x5db4ff,
+		color: PALETTE.teamA,
 		team: 'A',
 		isHuman: true,
 	})
@@ -39,7 +40,7 @@ export function createRound(
 		units.push(
 			createPlayer(scene, world, RAPIER, {
 				position: spawnPoint('B', i, enemies),
-				color: 0xff5d5d,
+				color: PALETTE.teamB,
 				team: 'B',
 			}),
 		)
@@ -312,7 +313,7 @@ export function createRound(
 		const x = (Math.random() - 0.5) * (ARENA.width - 3)
 		const u = createPlayer(scene, world, RAPIER, {
 			position: [x, 0, isB ? -ARENA.spawnZ : ARENA.spawnZ],
-			color: isB ? 0xff5d5d : 0x5db4ff,
+			color: isB ? PALETTE.teamB : PALETTE.teamA,
 			team,
 		})
 		units.push(u)

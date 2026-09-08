@@ -1,26 +1,19 @@
 import * as THREE from 'three'
 import { ARENA, bounds } from './arena.js'
+import { PALETTE } from './style.js'
 
 // Re-exported for readability at call sites that only want the dimensions.
 export const COURT = ARENA
 export const KILL_Y = ARENA.killY
 
-function cssColor(name, fallback) {
-	if (typeof document === 'undefined') return fallback // headless (tests) — no DOM
-	return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback
-}
-
 // Builds the floor: a Three mesh + a matching fixed Rapier collider, both sized
 // from ARENA so the thing you see and the thing you stand on cannot drift apart.
 export function buildCourt(scene, world, RAPIER) {
 	const { width, depth, thickness } = ARENA
-	const courtColor = cssColor('--court-bg', '#69d66f')
-	const lineColor = cssColor('--court-line', '#fff7c7')
-	const rimColor = cssColor('--court-rim', '#ffd35d')
 
 	const mesh = new THREE.Mesh(
 		new THREE.BoxGeometry(width, thickness, depth),
-		new THREE.MeshStandardMaterial({ color: courtColor, roughness: 0.8 }),
+		new THREE.MeshStandardMaterial({ color: PALETTE.court, roughness: 0.8 }),
 	)
 	mesh.position.y = -thickness / 2
 	mesh.receiveShadow = true
@@ -29,7 +22,7 @@ export function buildCourt(scene, world, RAPIER) {
 	// Center line (the "net" line) for orientation.
 	const line = new THREE.Mesh(
 		new THREE.BoxGeometry(width, 0.02, 0.12),
-		new THREE.MeshBasicMaterial({ color: lineColor }),
+		new THREE.MeshBasicMaterial({ color: PALETTE.courtLine }),
 	)
 	line.position.y = 0.011
 	scene.add(line)
@@ -37,7 +30,7 @@ export function buildCourt(scene, world, RAPIER) {
 	// Painted rim warning: where the ground stops being safe. Purely visual —
 	// it carries no collider, so walking (or dashing) off the edge still works.
 	const rim = new THREE.Group()
-	const rimMat = new THREE.MeshBasicMaterial({ color: rimColor })
+	const rimMat = new THREE.MeshBasicMaterial({ color: PALETTE.courtRim })
 	const b = bounds(ARENA.inset.rim / 2)
 	const band = ARENA.inset.rim
 	for (const [w, d, x, z] of [

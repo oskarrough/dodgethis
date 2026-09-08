@@ -27,6 +27,7 @@ import { tune } from './tune.js'
 import { log, createDebugGui, createCombatLog } from './debug.js'
 import { createGodmodeFx } from './godmodeFx.js'
 import { createFeedback } from './feedback.js'
+import { PALETTE, applyCssVariables } from './style.js'
 
 const hud = document.querySelector('.hud')
 const scoreEl = document.querySelector('.score')
@@ -34,6 +35,7 @@ const fadeEl = document.querySelector('.fade')
 const splashEl = document.querySelector('.splash')
 
 async function main() {
+	applyCssVariables() // one palette drives both the WebGL world and the HTML chrome
 	const { RAPIER, world } = await initPhysics()
 	const { renderer, scene, camera, aimCamera, addShake, updateCamera } = createRenderer()
 	const combat = createCombatLog()
@@ -343,7 +345,7 @@ async function main() {
 	// Landing reticle + a dotted preview of the arrow's arc to that spot.
 	const aimMarker = new THREE.Mesh(
 		new THREE.RingGeometry(0.25, 0.35, 24),
-		new THREE.MeshBasicMaterial({ color: 0xffd35d }),
+		new THREE.MeshBasicMaterial({ color: PALETTE.ammo }),
 	)
 	aimMarker.rotation.x = -Math.PI / 2
 	aimMarker.visible = false
@@ -358,7 +360,7 @@ async function main() {
 	const preview = new THREE.Line(
 		previewGeom,
 		new THREE.LineDashedMaterial({
-			color: 0xffd35d,
+			color: PALETTE.ammo,
 			dashSize: 0.45,
 			gapSize: 0.28,
 			transparent: true,

@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { sfx } from './audio.js'
+import { hex } from './style.js'
 
 // A portal is a warp pad sunk into the court floor — a chunky "sticker" in the
 // same comic language as the DOM UI: cream scalloped edge, fat colored donut
@@ -12,9 +13,9 @@ import { sfx } from './audio.js'
 // squash-stretch snap when the player walks near.
 const PORTAL_COLORS = { 1: '#1b9f5a', 2: '#ff9f1c', 3: '#ff4f6d' }
 const PORTAL_WORDS = { 1: 'CHILL', 2: 'SPICY', 3: 'CHAOS' }
-const INK = '#26445f'
-const CREAM = '#fffdf4'
-const HOLE = '#16233a'
+const INK = hex('ink')
+const CREAM = hex('cream')
+const HOLE = hex('hole')
 
 // Canvas-texture sprite: chunky outlined number + difficulty word, sticker style
 // (cream outer stroke → ink stroke → colored fill).
