@@ -218,6 +218,71 @@
 				paint-order: stroke fill;
 			}
 
+			/* Hitmarker: four short ink strokes flick out from the screen centre for ~120 ms.
+			   .near is a thin tick for an arrow that just missed; .kill is thicker and red-tinted. */
+			.hitmarker {
+				position: fixed;
+				top: 50%;
+				left: 50%;
+				width: 0;
+				height: 0;
+				z-index: 4;
+				pointer-events: none;
+			}
+			.hitmarker i {
+				position: absolute;
+				left: -2px;
+				top: -22px;
+				width: 4px;
+				height: 14px;
+				border-radius: 2px;
+				background: var(--ui-text);
+				box-shadow: 0 0 0 2px var(--ui-cream);
+				transform-origin: 2px 22px;
+				transform: rotate(var(--a)) scaleY(0);
+				opacity: 0;
+			}
+			.hitmarker i:nth-child(1) {
+				--a: 45deg;
+			}
+			.hitmarker i:nth-child(2) {
+				--a: 135deg;
+			}
+			.hitmarker i:nth-child(3) {
+				--a: 225deg;
+			}
+			.hitmarker i:nth-child(4) {
+				--a: 315deg;
+			}
+			.hitmarker.near i {
+				width: 3px;
+				left: -1.5px;
+				animation: hitmark 120ms ease-out both;
+			}
+			.hitmarker.kill i {
+				width: 6px;
+				left: -3px;
+				height: 18px;
+				top: -26px;
+				transform-origin: 3px 26px;
+				background: var(--ui-red);
+				animation: hitmark 140ms ease-out both;
+			}
+			@keyframes hitmark {
+				0% {
+					transform: rotate(var(--a)) translateY(6px) scaleY(0.2);
+					opacity: 1;
+				}
+				40% {
+					transform: rotate(var(--a)) translateY(-2px) scaleY(1);
+					opacity: 1;
+				}
+				100% {
+					transform: rotate(var(--a)) translateY(-6px) scaleY(0.6);
+					opacity: 0;
+				}
+			}
+
 			/* Modal overlay for round-over / match-over.
 			   Round-over (.clear) keeps the court + scoreboard readable — no frost. */
 			.overlay {
@@ -724,6 +789,7 @@
 		<div class="combat"></div>
 		<div class="score" hidden></div>
 		<div class="hit-confirmation" role="status" hidden></div>
+		<div class="hitmarker" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
 		<div class="weapons" hidden></div>
 		<button
 			class="mute sticker"

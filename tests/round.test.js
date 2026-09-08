@@ -269,6 +269,25 @@ describe('contact facts', () => {
 		expect(ctx.events).toHaveLength(1)
 	})
 
+	test('a whiff past an enemy reports one near miss before it lands', () => {
+		round.units[1].place(0.6, 1, 0)
+		round.human.place(0, 1, 5)
+		round.looseHuman({ x: 0, z: -1 }, 12)
+		for (let i = 0; i < 600 && ctx.events.length < 2; i++) round.step(1 / 60, STILL)
+		expect(ctx.events.map((event) => event.outcome)).toEqual(['nearMiss', 'landed'])
+		const [miss] = ctx.events
+		expect(miss.type).toBe('impact')
+		expect(miss.target.id).toBe(round.units[1].id)
+		expect(miss.source).toEqual({ id: round.human.id, team: 'A', isHuman: true })
+		expect(miss.distance).toBeLessThan(tune.arrow.nearMiss)
+		expect(miss.distance).toBeGreaterThan(0.4)
+		expect(miss.point.z).toBeCloseTo(0, 0)
+		expect(miss.direction.z).toBeLessThan(-0.9)
+		expect(round.units[1].alive).toBe(true)
+		for (let i = 0; i < 60; i++) round.step(1 / 60, STILL)
+		expect(ctx.events).toHaveLength(2)
+	})
+
 	test('godmode deflects once without an elimination or ammo loss', () => {
 		tune.cheats.godmode = true
 		round.human.place(0, 1, 0)

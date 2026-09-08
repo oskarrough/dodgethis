@@ -41,19 +41,53 @@ export function createRenderer() {
 			settled = false
 		}
 	}
+
+	// --- FOV kick: a critically damped spring on fov (base 50) that punches wide and settles in ~0.3 s. ---
+	const baseFov = camera.fov
+	const fovStiffness = 170
+	const fovDamping = 2 * Math.sqrt(fovStiffness) // critical
+	let fovOffset = 0
+	let fovVelocity = 0
+	function kickFov(amount) {
+		fovOffset += amount * tune.camera.fovKick
+		settled = false
+	}
+	// Return whether the spring is still moving; applies fov when it changed visibly.
+	function stepFov(dt) {
+		if (fovOffset === 0 && fovVelocity === 0) return false
+		fovVelocity += (-fovStiffness * fovOffset - fovDamping * fovVelocity) * dt
+		fovOffset += fovVelocity * dt
+		if (Math.abs(fovOffset) < 0.005 && Math.abs(fovVelocity) < 0.05) {
+			fovOffset = 0
+			fovVelocity = 0
+		}
+		const fov = baseFov + fovOffset
+		if (Math.abs(camera.fov - fov) > 0.01) {
+			camera.fov = fov
+			camera.updateProjectionMatrix()
+		}
+		return fovOffset !== 0
+	}
+
 	function updateCamera(dt) {
 		if (!tune.fx.shake) shake = 0
+		const fovActive = stepFov(dt)
 		// Common case: no active shake — snap back to base once, then idle with no jitter or lookAt() recompute.
 		if (shake <= 0) {
 			if (!settled) {
 				camera.position.copy(camBase)
 				camera.lookAt(0, 0, 0)
-				settled = true
+				if (!fovActive && camera.fov !== baseFov) {
+					camera.fov = baseFov
+					camera.updateProjectionMatrix()
+				}
+				settled = !fovActive
 			}
 			return
 		}
-		shake = Math.max(0, shake - dt * 2.5)
-		const s = shake * shake * 0.7
+		shake *= Math.exp(-tune.camera.shakeDecay * dt)
+		if (shake < 0.01) shake = 0
+		const s = shake * tune.camera.shakeAmount
 		_o.set((Math.random() * 2 - 1) * s, (Math.random() * 2 - 1) * s, (Math.random() * 2 - 1) * s)
 		camera.position.copy(camBase).add(_o)
 		camera.lookAt(0, 0, 0)
@@ -74,6 +108,7 @@ export function createRenderer() {
 		camera,
 		aimCamera,
 		addShake,
+		kickFov,
 		updateCamera,
 		render,
 		dispose,

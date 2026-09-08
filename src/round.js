@@ -2,6 +2,7 @@ import { ARENA, ammoPoint, makeRng, spawnPoint, freeSpawnPoint } from './arena.j
 import { createPlayer } from './player.js'
 import { createArrow, solveLaunch } from './arrow.js'
 import { createBrain } from './ai.js'
+import { createNearMissTracker } from './nearmiss.js'
 import { nearest } from './spatial.js'
 import { tune } from './tune.js'
 import { PALETTE } from './style.js'
@@ -69,6 +70,9 @@ export function createRound(
 		human.heldArrow = arrows[0]
 		arrows[0].hold()
 	}
+
+	// Whiffs past enemies become their own feedback events, tracked across steps per arrow/unit pair.
+	const nearMiss = createNearMissTracker({ radius: tune.arrow.nearMiss })
 
 	if (lobby) combat.push('hub — step into a portal to fight')
 	else combat.push(`round ${roundNum} start — Team A (you) vs Team B (${enemies})`)
@@ -264,11 +268,24 @@ export function createRound(
 		nockInfinite()
 		human.update(move, dt)
 		thinkAI(dt)
+		// Landings above a step-down/snap threshold are events so feedback can squash, thud and mark.
+		for (const u of units) {
+			const speed = u.consumeLanding()
+			if (speed > 2.5)
+				present({
+					type: 'land',
+					source: { id: u.id, team: u.team, isHuman: u.isHuman },
+					point: { ...u.body.translation() },
+					direction: { x: 0, y: -1, z: 0 },
+					speed,
+				})
+		}
 		world.step(eventQueue)
 		resolveHits()
 		checkPits()
 		// Check victory once after all same-step eliminations so mutual wipes remain draws.
 		checkWin()
+		nearMiss.scan(arrows, units, present)
 		for (const a of arrows) {
 			const event = a.update()
 			if (event) present(event)
@@ -339,6 +356,7 @@ export function createRound(
 
 	// Dispose every owned body and mesh; the next round needs a fresh instance.
 	function dispose() {
+		nearMiss.reset()
 		for (const u of units) u.dispose()
 		for (const a of arrows) a.dispose()
 		units.length = 0

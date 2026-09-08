@@ -45,8 +45,17 @@ const splashEl = document.querySelector('.splash')
 async function main() {
 	applyCssVariables() // one palette drives both the WebGL world and the HTML chrome
 	const { RAPIER, world } = await initPhysics()
-	const { renderer, scene, aimCamera, addShake, updateCamera, render, setPalette } =
-		createRenderer()
+	const {
+		renderer,
+		scene,
+		camera,
+		aimCamera,
+		addShake,
+		kickFov,
+		updateCamera,
+		render,
+		setPalette,
+	} = createRenderer()
 	const perf = createPerformanceMonitor()
 	const impact = createImpactBeat()
 	let diagnostics = new URLSearchParams(location.search).has('debug')
@@ -62,6 +71,7 @@ async function main() {
 	const feedback = createFeedback(scene, {
 		sfx,
 		addShake,
+		kickFov,
 		confirm(text) {
 			hitConfirmation.textContent = text
 			hitConfirmation.hidden = !text
@@ -99,6 +109,19 @@ async function main() {
 	const eventQueue = new RAPIER.EventQueue(true)
 	world.timestep = 1 / 60
 
+	// Flick the hitmarker at a world point (the near-miss or the eliminated unit), restarting its CSS animation via a forced reflow.
+	const hitmarker = document.querySelector('.hitmarker')
+	const _hm = new THREE.Vector3()
+	function hitmark(kind, point) {
+		if (!point) return
+		_hm.set(point.x, point.y, point.z).project(camera)
+		hitmarker.style.left = `${((_hm.x + 1) / 2) * 100}%`
+		hitmarker.style.top = `${((1 - _hm.y) / 2) * 100}%`
+		hitmarker.classList.remove('near', 'kill')
+		void hitmarker.offsetWidth
+		hitmarker.classList.add(kind)
+	}
+
 	// Services a Round borrows. The court/world persist; the round fills the rest.
 	const ctx = {
 		scene,
@@ -111,6 +134,11 @@ async function main() {
 			if (tune.fx.impact && impact.trigger(event)) rumble(0.35, 0.6, 85)
 			if (event.type === 'dash' && event.source?.isHuman) rumble(0.15, 0.3, 55)
 			if (event.type === 'shot' && event.source?.isHuman && event.perfect) rumble(0.2, 0.4, 65)
+			if (event.outcome === 'nearMiss') {
+				if (event.target?.isHuman) rumble(0.25, 0.1, 60)
+				if (event.source?.isHuman) hitmark('near', event.point)
+			} else if (event.outcome === 'eliminated' && event.source?.isHuman)
+				hitmark('kill', target?.position ?? event.point)
 			target?.react(event)
 			feedback.present(event, target?.visual)
 			if (event.source?.isHuman && (event.type === 'shot' || event.type === 'pickup')) {

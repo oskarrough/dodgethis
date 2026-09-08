@@ -97,6 +97,9 @@ export function createPlayer(
 	let vz = 0
 	let vy = 0
 	let grounded = true // last tick's controller grounded flag (spawn on court)
+	let airTime = 0 // seconds since last grounded; jump() forgives short walk-offs
+	let jumped = false // a jump was taken since last grounded, so coyote must not grant a second
+	let landingSpeed = 0 // downward speed (m/s) of the latest landing, read by consumeLanding()
 	let dashT = 0 // >0 while the dash burst is active
 	let dashCd = 0 // >0 while dash is on cooldown (counts down from dashCooldown)
 	const dashDir = new THREE.Vector3()
@@ -129,6 +132,7 @@ export function createPlayer(
 		},
 		update,
 		jump,
+		consumeLanding,
 		dash,
 		sync,
 		face,
@@ -179,10 +183,20 @@ export function createPlayer(
 	}
 
 	function jump() {
-		if (!unit.alive || !grounded) return false
+		if (!unit.alive) return false
+		const coyote = !jumped && airTime <= tune.player.coyoteTime
+		if (!grounded && !coyote) return false
 		vy = tune.player.jumpSpeed
 		grounded = false
+		jumped = true
 		return true
+	}
+
+	// Downward speed (m/s) of the most recent landing since the last call, or 0.
+	function consumeLanding() {
+		const speed = landingSpeed
+		landingSpeed = 0
+		return speed
 	}
 
 	function update(dir, dt) {
@@ -209,7 +223,8 @@ export function createPlayer(
 			vz = dashDir.z * tune.player.speed
 		}
 
-		vy += tune.physics.gravity * dt
+		// Player-only gravity: snappier arcs than the arrows, which keep world gravity.
+		vy += tune.physics.gravity * tune.player.gravityMul * dt
 		desired.y = vy * dt
 
 		controller.computeColliderMovement(collider, desired)
@@ -230,8 +245,14 @@ export function createPlayer(
 		}
 		body.setNextKinematicTranslation({ x: nx, y: t.y + mv.y, z: nz })
 		// A sideways contact with a higher bleacher must not cancel takeoff.
+		const wasGrounded = grounded
 		grounded = vy <= 0 && controller.computedGrounded()
-		if (grounded) vy = 0
+		if (grounded) {
+			if (!wasGrounded) landingSpeed = -vy
+			vy = 0
+			airTime = 0
+			jumped = false
+		} else airTime += dt
 
 		// Face steer or aim rather than latched dash direction so dashes read as sidesteps.
 		if (dir.x !== 0 || dir.z !== 0) mesh.rotation.y = Math.atan2(dir.x, dir.z) + Math.PI
@@ -253,6 +274,7 @@ export function createPlayer(
 			recoil.value = event.perfect ? 0.22 : 0.16 // a bounded kick, even when shots overlap
 			recoil.velocity = 0
 		} else if (event.type === 'pickup') pickup.value = 0.16
+		else if (event.type === 'land') pickup.value = Math.min(0.22, 0.05 + event.speed * 0.015)
 	}
 
 	function updateVisual(dt, charge = 0) {
@@ -339,6 +361,8 @@ export function createPlayer(
 		vz = 0
 		vy = 0
 		grounded = true
+		airTime = 0
+		jumped = false
 		mesh.position.set(x, y, z)
 		visualPosition.copy(mesh.position)
 		motion.setScalar(0)

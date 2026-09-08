@@ -224,7 +224,8 @@ function blip({
 }
 
 let noiseBuffer = null
-function scuff(point, dash = false) {
+// Bandpass-filtered white noise swept from `from` to `to` Hz over `dur`; the one shared buffer serves every scuff, dash and whoosh.
+function noise({ point = null, from, to, dur, gain: level, q = 0.7 }) {
 	if (!tune.fx.sound) return
 	const c = ac()
 	if (!noiseBuffer) {
@@ -236,19 +237,18 @@ function scuff(point, dash = false) {
 	source.buffer = noiseBuffer
 	const filter = c.createBiquadFilter()
 	filter.type = 'bandpass'
-	filter.Q.value = 0.7
+	filter.Q.value = q
 	const now = c.currentTime
-	const duration = dash ? 0.18 : 0.065
-	filter.frequency.setValueAtTime(dash ? 800 : 550, now)
-	filter.frequency.exponentialRampToValueAtTime(dash ? 2200 : 300, now + duration)
+	filter.frequency.setValueAtTime(from, now)
+	filter.frequency.exponentialRampToValueAtTime(to, now + dur)
 	const mix = spatialMix(point)
 	const gain = c.createGain()
 	gain.gain.setValueAtTime(0.0001, now)
 	gain.gain.exponentialRampToValueAtTime(
-		Math.max(0.0001, (dash ? 0.14 : 0.07) * tune.fx.volume * mix.gain),
+		Math.max(0.0001, level * tune.fx.volume * mix.gain),
 		now + 0.008,
 	)
-	gain.gain.exponentialRampToValueAtTime(0.0001, now + duration)
+	gain.gain.exponentialRampToValueAtTime(0.0001, now + dur)
 	const pan = c.createStereoPanner()
 	pan.pan.value = mix.pan
 	source.connect(filter).connect(gain).connect(pan).connect(master)
@@ -259,7 +259,14 @@ function scuff(point, dash = false) {
 		pan.disconnect()
 	}
 	source.start(now)
-	source.stop(now + duration)
+	source.stop(now + dur)
+}
+function scuff(point, dash = false) {
+	noise(
+		dash
+			? { point, from: 800, to: 2200, dur: 0.18, gain: 0.14 }
+			: { point, from: 550, to: 300, dur: 0.065, gain: 0.07 },
+	)
 }
 
 export const sfx = {
@@ -276,6 +283,30 @@ export const sfx = {
 		scuff(point, true)
 	},
 	step: (point) => scuff(point),
+	// An arrow zipping past your ear: a falling noise sweep, louder the closer it came (closeness 0..1).
+	whoosh: (point, closeness = 1) =>
+		noise({
+			point,
+			from: 1200,
+			to: 300,
+			dur: 0.12,
+			gain: 0.06 + 0.16 * Math.max(0, Math.min(1, closeness)),
+			q: 1.2,
+		}),
+	// Short bright tick when your own arrow nearly hits someone.
+	close: (point) =>
+		blip({ freq: 1400, slideTo: 900, type: 'triangle', dur: 0.05, gain: 0.1, point }),
+	// Player feet hitting the court: a low blip whose pitch drops with impact speed.
+	thud: (point, speed = 3, gain = 1) => {
+		const s = Math.max(0, speed)
+		blip({
+			freq: Math.max(70, Math.min(140, 140 - s * 4)),
+			type: 'triangle',
+			dur: 0.07,
+			gain: (0.05 + 0.07 * Math.min(1, s / 12)) * gain,
+			point,
+		})
+	},
 	// A bright two-note chime for a perfectly-timed charge release.
 	perfect: (point) =>
 		[880, 1320].forEach((f, i) =>

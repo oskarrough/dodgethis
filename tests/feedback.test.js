@@ -2,7 +2,7 @@ import { afterEach, beforeEach, expect, mock, test } from 'bun:test'
 import * as THREE from 'three'
 import { createFeedback } from '../src/feedback.js'
 
-let scene, feedback, mesh, sfx, confirm, addShake
+let scene, feedback, mesh, sfx, confirm, addShake, kickFov
 beforeEach(() => {
 	scene = new THREE.Scene()
 	mesh = new THREE.Mesh(
@@ -23,10 +23,14 @@ beforeEach(() => {
 		taunt: mock(),
 		grab: mock(),
 		dash: mock(),
+		whoosh: mock(),
+		close: mock(),
+		thud: mock(),
 	}
 	confirm = mock()
 	addShake = mock()
-	feedback = createFeedback(scene, { sfx, confirm, addShake })
+	kickFov = mock()
+	feedback = createFeedback(scene, { sfx, confirm, addShake, kickFov })
 })
 afterEach(() => {
 	feedback.dispose()
@@ -56,7 +60,12 @@ test('contact immediately marks the target out, then finishes the exit and confi
 	expect(sfx.hit).toHaveBeenCalledTimes(1)
 	expect(confirm).toHaveBeenLastCalledWith('OUT!')
 	expect(addShake).toHaveBeenCalledWith(0.7)
+	expect(kickFov).toHaveBeenCalledWith(2.5)
+	expect(mesh.material.color.getHex()).toBe(0xfffdf4) // hit flash prints cream first
 	feedback.update(0.05)
+	expect(mesh.material.color.getHex()).toBe(0xfffdf4)
+	feedback.update(0.05)
+	expect(mesh.material.color.getHex()).not.toBe(0xfffdf4) // then the corpse tint takes over
 	const chips = scene.getObjectByName('impact-ink')
 	expect(chips.visible).toBe(true)
 	const matrix = new THREE.Matrix4()
@@ -73,6 +82,7 @@ test('action feedback shares the event point and reuses the chip pool for dash s
 	feedback.present(event)
 	expect(sfx.loose).toHaveBeenCalledWith(1, event.point)
 	expect(sfx.perfect).toHaveBeenCalledWith(event.point)
+	expect(kickFov).toHaveBeenCalledWith(1.5)
 	expect(sfx.taunt).not.toHaveBeenCalled()
 	feedback.present({ ...event, type: 'pickup' })
 	expect(sfx.grab).toHaveBeenCalledWith(event.point, 1)
@@ -196,4 +206,98 @@ test('court marks stay bounded under spam and reset without resurrecting old str
 	expect(scene.getObjectByName('court-ink')).toBeUndefined()
 	expect(geometryDisposed).toHaveBeenCalledTimes(1)
 	expect(materialDisposed).toHaveBeenCalledTimes(1)
+})
+
+function nearMiss(overrides = {}) {
+	return {
+		...impact('nearMiss'),
+		point: { x: 0, y: 1, z: 0 },
+		distance: 0.3,
+		...overrides,
+	}
+}
+
+test('dodging an arrow whooshes past your ear with a shake and fov kick, no marks', () => {
+	const event = nearMiss({
+		source: { id: 1, team: 'B', isHuman: false },
+		target: { id: 0, team: 'A', isHuman: true },
+	})
+	feedback.present(event)
+	expect(sfx.whoosh).toHaveBeenCalledTimes(1)
+	expect(sfx.whoosh.mock.calls[0][0]).toBe(event.point)
+	expect(sfx.whoosh.mock.calls[0][1]).toBeCloseTo(0.8)
+	expect(addShake).toHaveBeenCalledWith(0.18)
+	expect(kickFov).toHaveBeenCalledWith(0.6)
+	expect(sfx.close).not.toHaveBeenCalled()
+	feedback.update(0.01)
+	expect(scene.getObjectByName('court-ink').visible).toBe(false)
+	expect(scene.getObjectByName('impact-ink').visible).toBe(false)
+	expect(confirm).not.toHaveBeenCalled()
+})
+
+test('nearly hitting someone ticks and drops two cream streaks along the flight line', () => {
+	feedback.present(nearMiss())
+	expect(sfx.close).toHaveBeenCalledWith({ x: 0, y: 1, z: 0 })
+	expect(sfx.whoosh).not.toHaveBeenCalled()
+	expect(addShake).not.toHaveBeenCalled()
+	expect(kickFov).not.toHaveBeenCalled()
+	feedback.update(0.01)
+	const marks = scene.getObjectByName('court-ink')
+	expect(marks.visible).toBe(true)
+	const matrix = new THREE.Matrix4()
+	marks.getMatrixAt(0, matrix)
+	expect(matrix.elements[8]).toBeCloseTo(0.7) // long streak follows the +X flight direction
+	marks.getMatrixAt(2, matrix)
+	expect(matrix.elements[0]).toBe(0) // only two streaks
+	const color = new THREE.Color()
+	marks.getColorAt(0, color)
+	expect(color.g).toBe(1) // flat cream instance style, brighter than shoe ink
+	feedback.present(nearMiss({ point: { x: 30, y: 1, z: 0 } })) // off court: no streaks
+	feedback.update(0.01)
+	marks.getMatrixAt(2, matrix)
+	expect(matrix.elements[0]).toBe(0)
+})
+
+test('a near miss between two bots is silent', () => {
+	feedback.present(nearMiss({ source: { id: 1, team: 'B', isHuman: false } }))
+	expect(sfx.close).not.toHaveBeenCalled()
+	expect(sfx.whoosh).not.toHaveBeenCalled()
+})
+
+function land(overrides = {}) {
+	return {
+		type: 'land',
+		source: { id: 0, team: 'A', isHuman: true },
+		point: { x: 0, y: 1, z: 0 },
+		direction: { x: 0, y: -1, z: 0 },
+		speed: 8,
+		...overrides,
+	}
+}
+
+test('landing thuds, ticks the court either side of the feet, and only shakes for a hard human landing', () => {
+	feedback.present(land())
+	expect(sfx.thud).toHaveBeenCalledWith({ x: 0, y: 1, z: 0 }, 8, 1)
+	expect(addShake).toHaveBeenCalledWith(0.08)
+	feedback.update(0.01)
+	const marks = scene.getObjectByName('court-ink')
+	expect(marks.visible).toBe(true)
+	const matrix = new THREE.Matrix4()
+	marks.getMatrixAt(0, matrix)
+	expect(matrix.elements[12]).toBeCloseTo(-0.25)
+	marks.getMatrixAt(1, matrix)
+	expect(matrix.elements[12]).toBeCloseTo(0.25)
+	marks.getMatrixAt(2, matrix)
+	expect(matrix.elements[0]).toBe(0)
+	expect(scene.getObjectByName('impact-ink').visible).toBe(false)
+	feedback.reset()
+	feedback.present(land({ source: { id: 2, team: 'B', isHuman: false }, speed: 9 }))
+	expect(sfx.thud).toHaveBeenLastCalledWith({ x: 0, y: 1, z: 0 }, 9, 0.4)
+	expect(addShake).toHaveBeenCalledTimes(1)
+	feedback.present(land({ speed: 4 }))
+	expect(addShake).toHaveBeenCalledTimes(1)
+	feedback.present(land({ point: { x: 0, y: 3, z: 0 } })) // on a bleacher: no court ticks
+	feedback.update(0.01)
+	marks.getMatrixAt(4, matrix)
+	expect(matrix.elements[0]).toBe(0)
 })

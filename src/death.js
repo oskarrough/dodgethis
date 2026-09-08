@@ -12,6 +12,7 @@ const clamp01 = (t) => (t < 0 ? 0 : t > 1 ? 1 : t)
 const tailFade = (t, start = 0.6) => (t < start ? 1 : 1 - (t - start) / (1 - start))
 
 const DARK = new THREE.Color(PALETTE.ink)
+const CREAM = new THREE.Color(PALETTE.cream)
 
 // Drain every material on the unit toward a corpse-grey by k (0..1).
 function tint(ctx, k) {
@@ -138,6 +139,7 @@ export function startDeath(mesh, { fell = false, radius = 0.4 } = {}) {
 		o.layers.set(FORWARD_LAYER)
 		previous.dispose()
 		mats.push({ mat: material, color0: material.color.clone() })
+		material.color.copy(CREAM) // hit flash: the first frames print pure cream before the tint sets in
 	})
 
 	const name = fell ? 'sink' : PICKABLE[(Math.random() * PICKABLE.length) | 0]
@@ -146,6 +148,7 @@ export function startDeath(mesh, { fell = false, radius = 0.4 } = {}) {
 
 	let t = 0
 	let done = false
+	let flash = tune.fx.hitFlash
 
 	function update(dt) {
 		if (done) return
@@ -153,6 +156,8 @@ export function startDeath(mesh, { fell = false, radius = 0.4 } = {}) {
 		const tc = clamp01(t)
 		mesh.scale.set(1, 1, 1)
 		style.apply(mesh, tc, ctx)
+		flash -= dt
+		if (flash > 0) for (const m of mats) m.mat.color.copy(CREAM)
 		if (!fell) {
 			mesh.scale.x *= 1.2
 			mesh.scale.y *= squash

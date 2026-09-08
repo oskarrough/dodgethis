@@ -84,3 +84,48 @@ test('air dash preserves jump height and does not teleport from outside the cour
 	expect(unit.position.z).toBeGreaterThan(before.z + 1)
 	expect(unit.position.y).toBeGreaterThan(before.y)
 })
+
+// Stand on the lowest bleacher and walk toward the court until the first airborne frame over the gap.
+function walkOffBleacher() {
+	unit.place(ARENA.width / 2 + 1.6, 1, 0)
+	step(60)
+	unit.consumeLanding()
+	for (let i = 0; i < 120 && unit.velocity.y === 0; i++) step(1, { x: -1, z: 0 })
+	expect(unit.velocity.y).toBeLessThan(0)
+	expect(unit.position.x).toBeLessThan(ARENA.width / 2 + 1.6)
+}
+
+test('coyote time forgives a jump shortly after walking off a bleacher, but never a second jump', () => {
+	walkOffBleacher()
+	step(2) // ~0.05 s in the air: inside the window
+	expect(unit.velocity.y).toBeLessThan(0)
+	expect(unit.jump()).toBe(true)
+	expect(unit.jump()).toBe(false) // a coyote jump is still one jump
+	step(3)
+	expect(unit.jump()).toBe(false)
+})
+
+test('coyote time expires after the window', () => {
+	walkOffBleacher()
+	step(11) // 0.2 s in the air: past the window
+	expect(unit.velocity.y).toBeLessThan(0)
+	expect(unit.jump()).toBe(false)
+})
+
+test('a landing reports its downward speed once, and a jump never grants coyote', () => {
+	expect(unit.consumeLanding()).toBeLessThan(2.5) // the spawn settle stays under the event threshold
+	expect(unit.jump()).toBe(true)
+	step(2)
+	expect(unit.jump()).toBe(false)
+	let landing = 0
+	for (let i = 0; i < 120 && !landing; i++) {
+		step(1)
+		landing = unit.consumeLanding()
+	}
+	// Landing after a ~1.8 m apex: near the launch speed, above the step-down threshold.
+	expect(landing).toBeGreaterThan(tune.player.jumpSpeed * 0.8)
+	expect(landing).toBeLessThanOrEqual(tune.player.jumpSpeed + 0.5)
+	expect(unit.consumeLanding()).toBe(0)
+	step(30)
+	expect(unit.consumeLanding()).toBe(0)
+})

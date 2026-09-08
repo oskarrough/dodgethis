@@ -8,7 +8,7 @@ const PARTICLES = 64
 const MARKS = 48
 
 // Gameplay sends copied facts; main supplies the retired target's visual handle. Persistent GPU pools serve all contacts and are cleared between rounds.
-export function createFeedback(scene, { sfx, confirm, addShake = () => {} }) {
+export function createFeedback(scene, { sfx, confirm, addShake = () => {}, kickFov = () => {} }) {
 	const chips = new THREE.InstancedMesh(
 		new THREE.OctahedronGeometry(1, 0),
 		makeStyleMaterial('ink', { flat: true }),
@@ -63,36 +63,54 @@ export function createFeedback(scene, { sfx, confirm, addShake = () => {} }) {
 	let nextMark = 0
 	let marksDirty = false
 
+	function onFloor(point) {
+		const footY = point.y - tune.player.radius - tune.player.halfHeight
+		return Math.abs(footY - ARENA.top) <= 0.15
+	}
+
+	// Dash: two long scratches trailing the feet. Land: two short ticks either side of the feet. Near miss: two long cream streaks along the flight line. Landed arrow: a fan of three ticks.
 	function courtMarks(event) {
 		const dash = event.type === 'dash'
-		if (dash) {
-			const footY = event.point.y - tune.player.radius - tune.player.halfHeight
-			if (Math.abs(footY - ARENA.top) > 0.15) return
+		const land = event.type === 'land'
+		const near = event.outcome === 'nearMiss'
+		if (dash || land) {
+			if (!onFloor(event.point)) return
+		} else if (near) {
+			if (!onCourt(event.point.x, event.point.z, ARENA.inset.rim)) return
 		} else if (event.outcome !== 'landed' || event.surface !== 'court') return
 		const { x, z } = event.direction
-		const heading = Math.atan2(x, z)
-		const count = dash ? 2 : 3
+		const heading = land ? 0 : Math.atan2(x, z) // landing ticks sit either side of the feet along +X
+		const fan = !(dash || land || near)
+		const count = fan ? 3 : 2
 		for (let i = 0; i < count; i++) {
-			const angle = heading + (dash ? 0 : (i - 1) * 0.8)
-			const length = dash ? 0.55 - i * 0.12 : 0.22 + (i % 2) * 0.08
-			const side = dash ? (i - 0.5) * 0.25 : 0
-			const reach = dash ? -0.22 : 0.19
+			const angle = heading + (fan ? (i - 1) * 0.8 : 0)
+			const length = dash
+				? 0.55 - i * 0.12
+				: near
+					? 0.7 - i * 0.1
+					: land
+						? 0.16
+						: 0.22 + (i % 2) * 0.08
+			const side = dash ? (i - 0.5) * 0.25 : near ? (i - 0.5) * 0.3 : land ? (i - 0.5) * 0.5 : 0
+			const reach = dash ? -0.22 : near ? 0.1 : land ? 0 : 0.19
 			const px = event.point.x + Math.sin(angle) * reach + Math.cos(angle) * side
 			const pz = event.point.z + Math.cos(angle) * reach - Math.sin(angle) * side
 			// Keep the entire stroke inside the paint; the conservative radius also covers rotated strokes.
 			if (!onCourt(px, pz, ARENA.inset.rim + length * 0.6)) continue
 			const mark = markSlots[nextMark]
+			marks.setColorAt(nextMark, near ? cream : ink) // cream streaks read brighter than shoe ink
 			nextMark = (nextMark + 1) % MARKS
 			Object.assign(mark, {
 				x: px,
 				z: pz,
 				heading: angle,
-				width: dash ? 0.055 : 0.07,
+				width: dash ? 0.055 : near ? 0.08 : land ? 0.06 : 0.07,
 				length,
-				life: dash ? 0.7 : 1.1,
+				life: dash ? 0.7 : near ? 0.9 : land ? 0.5 : 1.1,
 			})
 			marksDirty = true
 		}
+		marks.instanceColor.needsUpdate = true
 	}
 	const deaths = []
 	let next = 0
@@ -104,6 +122,7 @@ export function createFeedback(scene, { sfx, confirm, addShake = () => {} }) {
 			if (event.kind === 'bowl') sfx.roll(event.point)
 			else sfx.loose(event.source.isHuman ? 1 : 0.45, event.point)
 			if (event.perfect) sfx.perfect(event.point)
+			if (event.perfect && event.source.isHuman) kickFov(1.5)
 			if (event.source.isHuman) addShake(event.kind === 'bowl' ? 0.35 : event.perfect ? 0.4 : 0.22)
 			if (!event.source.isHuman) sfx.taunt(event.point)
 			return
@@ -112,9 +131,30 @@ export function createFeedback(scene, { sfx, confirm, addShake = () => {} }) {
 			sfx.grab(event.point, event.source.isHuman ? 1 : 0.35)
 			return
 		}
+		if (event.type === 'land') {
+			const human = event.source?.isHuman
+			sfx.thud(event.point, event.speed, human ? 1 : 0.4)
+			if (human && event.speed > 6) addShake(0.08)
+			courtMarks(event)
+			return
+		}
+		if (event.outcome === 'nearMiss') {
+			// The dodge reward: it zipped past your ear. Nearly hitting someone gets a bright tick and streaks instead.
+			if (event.target?.isHuman) {
+				sfx.whoosh(event.point, 1 - Math.min(1, (event.distance ?? 0) / 1.5))
+				addShake(0.18)
+				kickFov(0.6)
+			}
+			if (event.source?.isHuman) {
+				sfx.close(event.point)
+				courtMarks(event)
+			}
+			return
+		}
 		if (event.type === 'dash') sfx.dash(event.point)
 		if (event.outcome === 'recovered') return // ammo rescue is not a wall impact
 		if (event.outcome === 'eliminated') {
+			kickFov(2.5)
 			if (mesh) {
 				scene.attach(mesh) // preserve world pose, free the logical root from death motion
 				deaths.push(
@@ -226,6 +266,7 @@ export function createFeedback(scene, { sfx, confirm, addShake = () => {} }) {
 		chips.visible = false
 		for (const mark of markSlots) mark.life = 0
 		marks.visible = false
+		marks.instanceColor.needsUpdate = true
 		marksDirty = false
 		nextMark = 0
 		next = 0
