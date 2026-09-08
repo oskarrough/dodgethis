@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { startDeath } from './death.js'
-import { PALETTE } from './style.js'
+import { instanceStyle } from './stylePass.js'
 
 const PARTICLES = 64
 
@@ -16,8 +16,9 @@ export function createFeedback(scene, { sfx, confirm, addShake = () => {} }) {
 	chips.instanceMatrix.setUsage(THREE.DynamicDrawUsage)
 	chips.frustumCulled = false
 	chips.visible = false
-	const ink = new THREE.Color(PALETTE.ink)
-	const cream = new THREE.Color(PALETTE.cream)
+	// Not literal colours: the renderer reads a style role out of instanceColor.
+	const ink = instanceStyle('ink')
+	const cream = instanceStyle('cream')
 	const pose = new THREE.Object3D()
 	pose.scale.setScalar(0)
 	pose.updateMatrix()

@@ -31,9 +31,22 @@ const shared = { uLightDir: { value: new THREE.Vector3(0, 1, 0) } }
 
 const dataVert = /* glsl */ `
 varying vec3 vNormalV;
+varying vec2 vInstanceStyle; // x = style id (<0 when the material's own id wins), y = flatness
 void main() {
+	vec3 transformed = position;
 	vec3 objectNormal = normal;
-	vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+	// Pooled effects are instanced. Without this the whole pool collapses onto the
+	// mesh's origin — one large shape at world centre, once per burst.
+	#ifdef USE_INSTANCING
+		transformed = (instanceMatrix * vec4(transformed, 1.0)).xyz;
+		objectNormal = mat3(instanceMatrix) * objectNormal;
+	#endif
+	#ifdef USE_INSTANCING_COLOR
+		vInstanceStyle = vec2(instanceColor.r * 255.0, instanceColor.g);
+	#else
+		vInstanceStyle = vec2(-1.0, 0.0);
+	#endif
+	vec4 mvPosition = modelViewMatrix * vec4(transformed, 1.0);
 	vNormalV = normalize(normalMatrix * objectNormal);
 	gl_Position = projectionMatrix * mvPosition;
 }`
@@ -46,14 +59,20 @@ uniform float uStyleId;
 uniform float uFlat;
 uniform vec3 uLightDir;
 varying vec3 vNormalV;
+varying vec2 vInstanceStyle;
 void main() {
 	vec3 n = normalize(vNormalV);
 	if (!gl_FrontFacing) n = -n;
 	float ndl = dot(n, uLightDir) * 0.5 + 0.5;
+	// An instance may override the material's role, so one pooled mesh can draw
+	// marks in two roles at once.
+	bool perInstance = vInstanceStyle.x >= 0.0;
+	float id = perInstance ? vInstanceStyle.x : uStyleId;
+	float flatness = perInstance ? vInstanceStyle.y : uFlat;
 	// Flat surfaces (court lines, stickers, markers) opt out of shading and
 	// halftone entirely — they are printed ON the world, not lit by it.
-	float shade = uFlat > 0.5 ? -1.0 : clamp(ndl, 0.0, 1.0);
-	gl_FragColor = vec4(shade, uStyleId, n.x, n.y);
+	float shade = flatness > 0.5 ? -1.0 : clamp(ndl, 0.0, 1.0);
+	gl_FragColor = vec4(shade, id, n.x, n.y);
 }`
 
 const postVert = /* glsl */ `
@@ -177,6 +196,13 @@ export function makeStyleMaterial(role, { flat = false, side = THREE.FrontSide }
 		fragmentShader: dataFrag,
 		side,
 	})
+}
+
+// Per-instance style override, packed into an InstancedMesh's instanceColor:
+// red carries the style ID, green the flatness flag. An instance cannot have its
+// own uniform, so this is how one pooled mesh draws marks in several roles.
+export function instanceStyle(role, { flat = true } = {}) {
+	return new THREE.Color(Math.max(0, ROLES.indexOf(role)) / 255, flat ? 1 : 0, 0)
 }
 
 const OPAQUE_LAYER = 0
