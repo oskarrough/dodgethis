@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { startDeath } from './death.js'
-import { instanceStyle } from './stylepass.js'
+import { instanceStyle, makeStyleMaterial } from './stylepass.js'
 import { ARENA, onCourt } from './arena.js'
 import { tune } from './tune.js'
 
@@ -12,7 +12,7 @@ const MARKS = 48
 export function createFeedback(scene, { sfx, confirm, addShake = () => {} }) {
 	const chips = new THREE.InstancedMesh(
 		new THREE.OctahedronGeometry(1, 0),
-		new THREE.MeshBasicMaterial(),
+		makeStyleMaterial('ink', { flat: true }),
 		PARTICLES,
 	)
 	chips.name = 'impact-ink'
@@ -51,7 +51,7 @@ export function createFeedback(scene, { sfx, confirm, addShake = () => {} }) {
 		new THREE.Float32BufferAttribute([-0.5, 0, -0.5, 0, 0, 0.5, 0.5, 0, -0.5], 3),
 	)
 	stroke.computeVertexNormals()
-	const marks = new THREE.InstancedMesh(stroke, new THREE.MeshBasicMaterial(), MARKS)
+	const marks = new THREE.InstancedMesh(stroke, makeStyleMaterial('ink', { flat: true }), MARKS)
 	marks.name = 'court-ink'
 	marks.instanceMatrix.setUsage(THREE.DynamicDrawUsage)
 	marks.frustumCulled = false

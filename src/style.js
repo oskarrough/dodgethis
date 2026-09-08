@@ -19,6 +19,10 @@ export const PALETTE = {
 	ink: 0x26445f, // every outline, badge and mark
 	cream: 0xfffdf4, // highlight and sticker fill
 	hole: 0x16233a, // the dark inside a portal
+	// Difficulty pads retain their own semantic colors through the style pass.
+	portalChill: 0x1b9f5a,
+	portalSpicy: 0xff9f1c,
+	portalChaos: 0xff4f6d,
 	// Identity
 	teamA: 0x5db4ff,
 	teamB: 0xff5d5d,

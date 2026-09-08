@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+- Added park, sunset, and night-gym scenery for the three difficulties.
+- Added quiet music that follows the hub, combat, last-player tension, and results, with a pause-menu toggle.
+- Added a brief slowdown on local eliminations and optional controller rumble for impacts, dashes, and perfect shots.
+- Bots now visibly draw their bows before releasing a shot.
+- Reduced HUD clutter and kept diagnostics behind the debug URL option.
+- Batched portal geometry and removed per-frame material discovery to reduce rendering overhead.
+
 - Bow shots now land at the cursor within available reach, with separate target and touchdown markers.
 - Characters now step, lean, and draw their bows, with quiet footsteps and a fuller dash sound.
 - Dash accepts a tap just before cooldown ends; aiming and collision shapes remain stable.

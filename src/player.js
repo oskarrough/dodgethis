@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import { tune } from './tune.js'
 import { bounds as courtBounds } from './arena.js'
 import { PALETTE } from './style.js'
+import { makeStyleMaterial, styleRoleFromColor } from './stylepass.js'
 import { stepHorizontalVelocity } from './move.js'
 
 const clamp = (v, lo, hi) => (v < lo ? lo : v > hi ? hi : v)
@@ -26,7 +27,7 @@ export function createPlayer(
 	const mesh = new THREE.Group()
 	const visual = new THREE.Mesh(
 		new THREE.CapsuleGeometry(radius, halfHeight * 2, 8, 16),
-		new THREE.MeshStandardMaterial({ color, roughness: 0.6 }),
+		makeStyleMaterial(styleRoleFromColor(color)),
 	)
 	visual.castShadow = true
 	mesh.add(visual)
@@ -34,10 +35,7 @@ export function createPlayer(
 
 	// Facing wedge: a pointed nose reads as a direction from across the court,
 	// where a square nub just reads as a bump.
-	const nose = new THREE.Mesh(
-		new THREE.ConeGeometry(0.15, 0.42, 4),
-		new THREE.MeshStandardMaterial({ color: PALETTE.cream }),
-	)
+	const nose = new THREE.Mesh(new THREE.ConeGeometry(0.15, 0.42, 4), makeStyleMaterial('cream'))
 	nose.rotation.set(-Math.PI / 2, 0, Math.PI / 4)
 	nose.position.set(0, halfHeight, -radius - 0.08)
 	visual.add(nose)
@@ -48,7 +46,7 @@ export function createPlayer(
 		team === 'A'
 			? new THREE.TorusGeometry(0.17, 0.05, 6, 16)
 			: new THREE.BoxGeometry(0.42, 0.09, 0.09),
-		new THREE.MeshStandardMaterial({ color: PALETTE.ink }),
+		makeStyleMaterial('ink'),
 	)
 	badge.position.set(0, halfHeight + radius * 0.55, 0)
 	badge.rotation.x = Math.PI / 2
@@ -59,7 +57,7 @@ export function createPlayer(
 	// the capsule collider is unchanged, so it never enlarges the target.
 	const bow = new THREE.Mesh(
 		new THREE.TorusGeometry(0.34, 0.045, 6, 16, Math.PI * 1.1),
-		new THREE.MeshStandardMaterial({ color: PALETTE.ammoShaft, roughness: 0.7 }),
+		makeStyleMaterial('ammoShaft'),
 	)
 	bow.position.set(radius * 0.85, halfHeight * 0.15, -0.05)
 	bow.rotation.set(0, Math.PI / 2, Math.PI * 0.45)
@@ -68,7 +66,7 @@ export function createPlayer(
 
 	const feet = new THREE.InstancedMesh(
 		new THREE.BoxGeometry(radius * 0.85, 0.18, radius * 1.3),
-		new THREE.MeshBasicMaterial({ color: PALETTE.ink }),
+		makeStyleMaterial('ink', { flat: true }),
 		2,
 	)
 	feet.name = 'shoes'
@@ -78,7 +76,7 @@ export function createPlayer(
 	const footPose = new THREE.Object3D()
 	const hand = new THREE.Mesh(
 		new THREE.SphereGeometry(0.14, 8, 6),
-		new THREE.MeshBasicMaterial({ color: PALETTE.cream }),
+		makeStyleMaterial('cream', { flat: true }),
 	)
 	bow.add(hand)
 	hand.position.set(0.28, 0, 0)

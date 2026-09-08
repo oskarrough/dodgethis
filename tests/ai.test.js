@@ -115,3 +115,19 @@ test('seeded phases stagger strategic refreshes and eventually choose a closer p
 	expect(late.think(ctx, 0.06).move.x).toBeLessThan(-0.9)
 	expect(late.think(ctx, 0.2).move.x).toBeGreaterThan(0.9)
 })
+
+test('armed bots telegraph their shot and clear windup after release or disarming', () => {
+	const bot = unit('B', 0, 0, { held: {} })
+	const enemy = unit('A', 0, 10)
+	const ctx = { units: [bot, enemy], arrows: [] }
+	const brain = createBrain(bot, { rng: () => 0.5 })
+	brain.think(ctx, 0.2)
+	expect(bot.windup).toBeGreaterThan(0)
+	expect(bot.windup).toBeLessThan(1)
+	const shot = brain.think(ctx, 1).shoot
+	expect(shot).not.toBeNull()
+	expect(bot.windup).toBe(0)
+	bot.heldArrow = null
+	brain.think(ctx, 0.1)
+	expect(bot.windup).toBe(0)
+})

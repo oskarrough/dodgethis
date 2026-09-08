@@ -124,9 +124,8 @@ export function startDeath(mesh, { fell = false, radius = 0.4 } = {}) {
 	mesh.position.y *= squash
 	const baseY = mesh.position.y
 
-	// The opaque pass replaces color materials with surface-data shaders. Corpses
-	// need actual colors and opacity in the forward pass, even if already adopted
-	// by the renderer. Release the replaced shader; the unit owns the new material.
+	// Corpses replace their owned surface-data shaders with actual colors and
+	// opacity. Release each old material; the unit owns its replacement.
 	const mats = []
 	mesh.traverse((o) => {
 		if (!o.isMesh || !o.material) return
@@ -139,7 +138,7 @@ export function startDeath(mesh, { fell = false, radius = 0.4 } = {}) {
 		})
 		material.color.lerp(DARK, 0.85)
 		o.material = material
-		o.layers.set(FORWARD_LAYER) // the style pass's forward layer; opaque adoption is one-time
+		o.layers.set(FORWARD_LAYER)
 		previous.dispose()
 		mats.push({ mat: material, color0: material.color.clone() })
 	})

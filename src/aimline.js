@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { PALETTE } from './style.js'
+import { FORWARD_LAYER } from './stylepass.js'
 
 // The live aim guide. It used to be a hairline THREE.Line, which is one pixel
 // wide whatever the driver feels like and all but vanished when a pale ammo
@@ -33,10 +34,11 @@ export function createAimLine(scene, { samples = 32, width = 0.08, outline = 0.0
 			new THREE.MeshBasicMaterial({
 				color,
 				side: THREE.DoubleSide,
-				transparent: true, // also what routes it into the forward pass
+				transparent: true,
 				depthWrite: false, // the two ribbons are coplanar: order decides, not z
 			}),
 		)
+		mesh.layers.set(FORWARD_LAYER)
 		mesh.frustumCulled = false
 		mesh.renderOrder = renderOrder
 		mesh.visible = false

@@ -85,3 +85,34 @@ test.each(['grounded', 'held', 'flying'])('disposing %s ammo frees its marker', 
 		world.free()
 	}
 })
+
+test("new ammo has owned render routing and disposal preserves another arrow's shared shaders", () => {
+	const scene = new THREE.Scene()
+	const world = new RAPIER.World({ x: 0, y: -9.81, z: 0 })
+	const first = createArrow(scene, world, RAPIER)
+	const second = createArrow(scene, world, RAPIER)
+	const shared = first.mesh.children[0].material
+	let disposed = false
+	const onDispose = () => {
+		disposed = true
+	}
+	shared.addEventListener('dispose', onDispose)
+	try {
+		expect(second.mesh.children[0].material).toBe(shared)
+		scene.traverse((object) => {
+			if (object.isMesh) {
+				expect(object.material.isShaderMaterial).toBe(true)
+				expect(object.layers.mask).toBe(1)
+			}
+			if (object.isLine) expect(object.layers.mask).toBe(2)
+		})
+		first.dispose()
+		expect(disposed).toBe(false)
+		second.loose(hand, aim)
+		expect(second.mesh.children[0].material).toBe(shared)
+	} finally {
+		shared.removeEventListener('dispose', onDispose)
+		second.dispose()
+		world.free()
+	}
+})

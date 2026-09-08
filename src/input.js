@@ -1,3 +1,5 @@
+import { tune } from './tune.js'
+
 // Minimal keyboard state. Reads WASD / arrows into a normalized move vector.
 const keys = new Set()
 let device = 'keyboard'
@@ -297,4 +299,24 @@ export function resetActions() {
 	padNeedsRelease = true
 	menuMoveQueued = 0
 	menuConfirmQueued = false
+}
+
+// Haptics are optional hardware; an unsupported/disconnected actuator is silent.
+export function rumble(weak, strong, duration) {
+	if (!tune.fx.rumble || activeDevice() !== 'gamepad') return
+	const pad = [...(navigator.getGamepads?.() ?? [])].find((p) => p?.connected)
+	const actuator = pad?.vibrationActuator
+	if (!actuator?.playEffect) return
+	try {
+		actuator
+			.playEffect('dual-rumble', {
+				startDelay: 0,
+				duration,
+				weakMagnitude: weak,
+				strongMagnitude: strong,
+			})
+			?.catch(() => {})
+	} catch {
+		/* actuator support can disappear on disconnect */
+	}
 }

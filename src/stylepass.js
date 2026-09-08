@@ -14,16 +14,16 @@ import { PALETTE } from './style.js'
 //        forward pass (trails, preview, labels, corpses, shield)
 //        rendered against the copied opaque depth, so they occlude correctly
 //
-// The palette doubles as the style-ID table: a material's color is looked up in
-// PALETTE, and its index becomes the discrete ID written to the buffer. That is
-// why every module was moved onto semantic roles first — geometry names a role,
-// the renderer decides how a role looks.
+// Geometry explicitly names a palette role at construction; its index is the
+// discrete ID written to the buffer. Forward objects explicitly select layer 1.
+// Materials stay owned by their creators throughout their lifetime.
 
 const ROLES = Object.keys(PALETTE)
-// Keyed by the round-tripped hex, not the raw literal: Three converts material
-// colors into its working space, so `getHex()` must be compared against a value
-// that took the same trip or every lookup silently misses.
-const ROLE_INDEX = new Map(ROLES.map((role, i) => [new THREE.Color(PALETTE[role]).getHex(), i]))
+// Compatibility at construction boundaries that still accept a palette color.
+const ROLE_BY_COLOR = new Map(ROLES.map((role) => [new THREE.Color(PALETTE[role]).getHex(), role]))
+export function styleRoleFromColor(color) {
+	return ROLE_BY_COLOR.get(new THREE.Color(color).getHex()) ?? 'cream'
+}
 
 // Sun direction in world space. The style pass only needs one light.
 const LIGHT_WORLD = new THREE.Vector3(0.4, 0.85, 0.35).normalize()
@@ -212,15 +212,6 @@ export function instanceStyle(role, { flat = true } = {}) {
 const OPAQUE_LAYER = 0
 export const FORWARD_LAYER = 1
 
-// Anything that cannot describe itself as an opaque surface — trails, the dashed
-// preview, portal labels and sparkles, fading corpses, the godmode bubble — is
-// composited forward instead of being flattened into the data buffer.
-function isForward(object) {
-	if (object.isLine || object.isSprite || object.isPoints) return true
-	const m = object.material
-	return !!m && (m.transparent === true || m.opacity < 1)
-}
-
 export function createStylePass(canvas) {
 	const renderer = new THREE.WebGLRenderer({
 		canvas,
@@ -323,36 +314,13 @@ export function createStylePass(canvas) {
 		post.uniforms.uRes.value.set(rw, rh)
 	}
 
-	// Materials are swapped lazily, so a round spawning new units or arrows needs
-	// no explicit registration. The original material is kept for disposal by its
-	// owner; we only ever add ours alongside.
-	const converted = new WeakMap() // original material -> its style material
-	const seen = new WeakSet() // objects already routed, so this stays O(new)
-	function adopt(object) {
-		if (seen.has(object)) return
-		seen.add(object)
-		const m = object.material
-		if (!m) return
-		if (isForward(object)) {
-			object.layers.set(FORWARD_LAYER) // keeps its own material
-			return
-		}
-		let styled = converted.get(m)
-		if (!styled) {
-			const key = m.color?.getHex?.()
-			const roleName = ROLE_INDEX.has(key) ? ROLES[ROLE_INDEX.get(key)] : 'cream'
-			styled = makeStyleMaterial(roleName, { flat: !!m.isMeshBasicMaterial, side: m.side })
-			converted.set(m, styled)
-		}
-		object.layers.set(OPAQUE_LAYER)
-		object.material = styled
+	function setPalette(worldColors = {}) {
+		for (let i = 0; i < ROLES.length; i++) colors[i].set(worldColors[ROLES[i]] ?? PALETTE[ROLES[i]])
+		post.uniforms.uSky.value.set(worldColors.page ?? PALETTE.page)
 	}
 
 	function render(scene, camera) {
 		renderer.info.reset()
-		scene.traverse((o) => {
-			if (o.isMesh || o.isLine || o.isSprite || o.isPoints) adopt(o)
-		})
 		camera.updateMatrixWorld()
 		camera.matrixWorldInverse.copy(camera.matrixWorld).invert()
 		shared.uLightDir.value.copy(LIGHT_WORLD).transformDirection(camera.matrixWorldInverse)
@@ -394,5 +362,5 @@ export function createStylePass(canvas) {
 		renderer.dispose()
 	}
 
-	return { renderer, setSize, render, dispose, pixelRatio }
+	return { renderer, setSize, setPalette, render, dispose, pixelRatio }
 }

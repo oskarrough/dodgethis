@@ -60,6 +60,8 @@ export const tune = {
 		standoff: 10, // preferred range (m) an armed bot circle-strafes the target at
 	},
 	fx: {
+		impact: true,
+		rumble: true,
 		sound: true,
 		volume: 0.6,
 		shake: true,

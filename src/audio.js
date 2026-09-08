@@ -1,4 +1,5 @@
 import { tune } from './tune.js'
+import { createMusic } from './music.js'
 
 // Vite resolves these imports to hashed asset URLs at build time, so the files
 // are fingerprinted and copied without any path juggling. The sample player
@@ -28,6 +29,44 @@ const BOT_TALK = [botTalk1, botTalk2, botTalk3, botTalk4, botTalk5]
 
 let ctx = null
 let master = null
+let music = null
+let musicScene = 'hub'
+let musicEnabled = true
+let gestureReceived = false
+try {
+	musicEnabled = globalThis.localStorage?.getItem('dodgethis.music') !== 'off'
+} catch {
+	/* Storage can be unavailable in private contexts. */
+}
+
+function syncMusic() {
+	if (!gestureReceived || !ctx) return
+	if (!music) music = createMusic(ctx, master, { volume: () => tune.fx.volume })
+	music.setScene(musicScene)
+	music.setEnabled(
+		musicEnabled && tune.fx.sound && ctx.state === 'running' && !globalThis.document?.hidden,
+	)
+}
+
+export function setMusicScene(scene) {
+	musicScene = scene
+	syncMusic()
+}
+export function setMusicEnabled(enabled) {
+	musicEnabled = !!enabled
+	try {
+		globalThis.localStorage?.setItem('dodgethis.music', musicEnabled ? 'on' : 'off')
+	} catch {
+		/* The preference still works for this session. */
+	}
+	syncMusic()
+}
+export function isMusicEnabled() {
+	return musicEnabled
+}
+globalThis.document?.addEventListener?.('visibilitychange', syncMusic)
+globalThis.window?.addEventListener('pagehide', () => music?.setEnabled(false))
+globalThis.window?.addEventListener('pageshow', syncMusic)
 let soundGeneration = 0
 const listener = { x: 0, z: 0 }
 let tauntPlaying = false
@@ -55,6 +94,7 @@ function ac() {
 		master = ctx.createGain()
 		master.gain.value = tune.fx.sound ? 1 : 0
 		master.connect(ctx.destination)
+		ctx.addEventListener?.('statechange', syncMusic)
 	}
 	return ctx
 }
@@ -63,18 +103,21 @@ export function setSound(enabled) {
 	tune.fx.sound = enabled
 	if (!enabled) soundGeneration++ // cancel pending decodes even if unmuted before they finish
 	if (master) master.gain.setValueAtTime(enabled ? 1 : 0, ctx.currentTime)
+	syncMusic()
 }
 
 const resume = () => {
 	if (ctx && ctx.state === 'suspended') ctx.resume().catch(() => {}) // browser gesture policy
 }
 function wake() {
+	gestureReceived = true
 	ac()
 	resume()
+	syncMusic()
 	preload() // warm the decode cache so the first real cue has no lag
 }
-window.addEventListener('pointerdown', wake)
-window.addEventListener('keydown', wake)
+globalThis.window?.addEventListener('pointerdown', wake)
+globalThis.window?.addEventListener('keydown', wake)
 
 // --- Sample player ----------------------------------------------------------
 // Decode each file once into an AudioBuffer (cached by URL); play it through a

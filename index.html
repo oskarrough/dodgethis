@@ -670,6 +670,52 @@
 					transition: none;
 				}
 			}
+			.hud[hidden],
+			.combat[hidden] {
+				display: none;
+			}
+			.weapons {
+				gap: 5px;
+				bottom: 10px;
+			}
+			.weapons .slot {
+				flex-direction: row;
+				min-width: 96px;
+				--sticker-pad-y: 5px;
+				font-size: 14px;
+			}
+			.weapons .charge {
+				width: 248px;
+				padding: 5px 9px;
+				border-width: 2px;
+				border-radius: 10px;
+			}
+			.weapons .charge-label {
+				font-size: 12px;
+			}
+			.weapons .charge-track {
+				height: 8px;
+			}
+			.weapons .armed {
+				font-size: 11px;
+			}
+			.overlay .actions {
+				flex-wrap: wrap;
+				justify-content: center;
+			}
+			.overlay .card {
+				max-width: min(760px, 90vw);
+				box-sizing: border-box;
+			}
+			@media (max-width: 600px) {
+				.controls {
+					max-width: 280px;
+					text-align: center;
+				}
+				.overlay .card {
+					padding: 20px 14px;
+				}
+			}
 		</style>
 	</head>
 	<body>
@@ -706,9 +752,11 @@
 				<span class="arrow">▼</span>walk into a portal<span class="arrow">▼</span>
 			</p>
 			<div class="portal-options" role="group" aria-label="Choose difficulty">
-				<button class="portal-option sticker" type="button" data-enemies="1">Chill · 1 foe</button>
-				<button class="portal-option sticker" type="button" data-enemies="2">Spicy · 2 foes</button>
-				<button class="portal-option sticker" type="button" data-enemies="3">Chaos · 3 foes</button>
+				<button class="portal-option sticker" type="button" data-enemies="1">Chill · Park</button>
+				<button class="portal-option sticker" type="button" data-enemies="2">Spicy · Sunset</button>
+				<button class="portal-option sticker" type="button" data-enemies="3">
+					Chaos · Night Gym
+				</button>
 			</div>
 		</div>
 		<div class="fade" aria-hidden="true"></div>

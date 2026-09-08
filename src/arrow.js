@@ -3,6 +3,7 @@ import { tune } from './tune.js'
 import { TRAIL } from './weapons.js'
 import { ARENA, clamp as clampToCourt, onCourt } from './arena.js'
 import { PALETTE } from './style.js'
+import { makeStyleMaterial, FORWARD_LAYER } from './stylepass.js'
 
 // The arrow state machine — the spine of the whole game (see plan.md):
 //   held → flying → grounded → held
@@ -89,21 +90,13 @@ export function aimArrowSpeed(distance, height, availableSpeed) {
 
 let _id = 0
 
-const shaftMat = new THREE.MeshStandardMaterial({ color: PALETTE.ammoShaft, roughness: 0.7 })
-const tipMat = new THREE.MeshStandardMaterial({
-	color: PALETTE.ammoTip,
-	metalness: 0.4,
-	roughness: 0.4,
-})
-const fletchMat = new THREE.MeshStandardMaterial({ color: PALETTE.ammoFletch, roughness: 0.8 })
-const pickupInkMat = new THREE.MeshBasicMaterial({ color: PALETTE.ink })
-const pickupCreamMat = new THREE.MeshBasicMaterial({ color: PALETTE.cream })
-// The bowl's chunky ball (a unit sphere, scaled to bowlRadius when loosed).
-const bowlMat = new THREE.MeshStandardMaterial({
-	color: TRAIL.bowl,
-	roughness: 0.5,
-	metalness: 0.2,
-})
+// Shared for the application lifetime; arrow disposal owns only its geometry.
+const shaftMat = makeStyleMaterial('ammoShaft')
+const tipMat = makeStyleMaterial('ammoTip')
+const fletchMat = makeStyleMaterial('ammoFletch')
+const pickupInkMat = makeStyleMaterial('ink', { flat: true })
+const pickupCreamMat = makeStyleMaterial('cream', { flat: true })
+const bowlMat = makeStyleMaterial('bowl')
 
 function buildMesh() {
 	// Built pointing along local +Z, ~0.9m long.
@@ -152,6 +145,7 @@ export function createArrow(scene, world, RAPIER, { position = [0, GROUND_Y, 0] 
 		trailGeom,
 		new THREE.LineBasicMaterial({ color: PALETTE.ammo, transparent: true, opacity: 0.55 }),
 	)
+	trail.layers.set(FORWARD_LAYER)
 	trail.frustumCulled = false
 	trail.visible = false
 	scene.add(trail)

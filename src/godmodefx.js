@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { tune } from './tune.js'
 import { PALETTE } from './style.js'
+import { FORWARD_LAYER } from './stylepass.js'
 
 // Translucent bubble-shield aura for the human while godmode is on. Follows the
 // player mesh each frame; hidden when the cheat is off or the unit is gone.
@@ -23,6 +24,7 @@ export function createGodmodeFx(scene) {
 			side: THREE.DoubleSide,
 		}),
 	)
+	shell.layers.set(FORWARD_LAYER)
 	root.add(shell)
 
 	const lattice = new THREE.Mesh(
@@ -35,6 +37,7 @@ export function createGodmodeFx(scene) {
 			depthWrite: false,
 		}),
 	)
+	lattice.layers.set(FORWARD_LAYER)
 	root.add(lattice)
 
 	const innerGlow = new THREE.Mesh(
@@ -47,6 +50,7 @@ export function createGodmodeFx(scene) {
 			side: THREE.BackSide,
 		}),
 	)
+	innerGlow.layers.set(FORWARD_LAYER)
 	root.add(innerGlow)
 
 	const bubbles = []
@@ -64,6 +68,7 @@ export function createGodmodeFx(scene) {
 				emissiveIntensity: 0.45,
 			}),
 		)
+		mesh.layers.set(FORWARD_LAYER)
 		mesh.castShadow = false
 		root.add(mesh)
 		const theta = (i / BUBBLE_N) * Math.PI * 2

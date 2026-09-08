@@ -101,13 +101,12 @@ test('death detaches the visual without moving the logical root, and disposal ow
 
 test.each(['fall', 'impact'])(
 	'a rendered player can die by %s and fade in the forward pass',
-	async (type) => {
-		const { makeStyleMaterial } = await import('../src/stylepass.js')
+	(type) => {
 		const shaders = []
 		unit.visual.traverse((o) => {
 			if (!o.isMesh) return
-			o.material.dispose()
-			o.material = makeStyleMaterial('teamA')
+			expect(o.material.isShaderMaterial).toBe(true)
+			expect(o.layers.mask).toBe(1)
 			let disposed = false
 			o.material.addEventListener('dispose', () => {
 				disposed = true

@@ -48,7 +48,7 @@ export function createCombatLog(selector = '.combat', max = 12) {
 		log.info('[combat]', msg)
 		rows.push({ msg, kind })
 		if (rows.length > max) rows.shift()
-		if (!el || pending) return
+		if (!el || el.hidden || pending) return
 		pending = true
 		requestAnimationFrame(flush)
 	}

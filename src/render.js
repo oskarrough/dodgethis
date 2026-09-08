@@ -71,5 +71,15 @@ export function createRenderer() {
 		style.dispose()
 	}
 
-	return { renderer, scene, camera, aimCamera, addShake, updateCamera, render, dispose }
+	return {
+		renderer,
+		scene,
+		camera,
+		aimCamera,
+		addShake,
+		updateCamera,
+		render,
+		dispose,
+		setPalette: style.setPalette,
+	}
 }

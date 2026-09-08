@@ -1,6 +1,8 @@
 import * as THREE from 'three'
 import { sfx } from './audio.js'
 import { hex } from './style.js'
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'
+import { makeStyleMaterial, FORWARD_LAYER } from './stylepass.js'
 
 // A portal is a warp pad sunk into the court floor — a chunky "sticker" in the
 // same comic language as the DOM UI: cream scalloped edge, fat colored donut
@@ -11,11 +13,10 @@ import { hex } from './style.js'
 // people dizzy). Instead the pad breathes (slow scale pulse), the label bobs,
 // star sparkles rise out of the hole, and the whole thing POPS awake with a
 // squash-stretch snap when the player walks near.
-const PORTAL_COLORS = { 1: '#1b9f5a', 2: '#ff9f1c', 3: '#ff4f6d' }
+const PORTAL_ROLES = { 1: 'portalChill', 2: 'portalSpicy', 3: 'portalChaos' }
 const PORTAL_WORDS = { 1: 'CHILL', 2: 'SPICY', 3: 'CHAOS' }
 const INK = hex('ink')
 const CREAM = hex('cream')
-const HOLE = hex('hole')
 
 // Canvas-texture sprite: chunky outlined number + difficulty word, sticker style
 // (cream outer stroke → ink stroke → colored fill).
@@ -49,6 +50,7 @@ function makeLabel(enemies, color) {
 	const tex = new THREE.CanvasTexture(c)
 	tex.colorSpace = THREE.SRGBColorSpace
 	const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true }))
+	sprite.layers.set(FORWARD_LAYER)
 	sprite.scale.set(2.6, 2.6, 1)
 	sprite.position.y = 2.3
 	return sprite
@@ -74,34 +76,42 @@ function starTexture() {
 	return _starTex
 }
 
-export function createPortal(scene, { x, z, enemies }) {
-	const color = PORTAL_COLORS[enemies] || '#ff9f1c'
+// Build the static sticker independently of canvas labels: four semantic batches,
+// preserving the original layer heights, silhouettes and trigger clearance.
+export function buildPortalPad(enemies) {
 	const group = new THREE.Group()
-	group.position.set(x, 0.05, z)
-
-	// Flat sticker stack, outside in. Tiny y offsets dodge z-fighting.
-	function flat(geom, matColor, y, opts = {}) {
-		const mesh = new THREE.Mesh(geom, new THREE.MeshBasicMaterial({ color: matColor, ...opts }))
-		mesh.rotation.x = -Math.PI / 2
-		mesh.position.y = y
+	const batches = new Map()
+	function flat(geometry, role, y, x = 0, z = 0) {
+		geometry.rotateX(-Math.PI / 2)
+		geometry.translate(x, y, z)
+		if (!batches.has(role)) batches.set(role, [])
+		batches.get(role).push(geometry)
+	}
+	for (let i = 0; i < 8; i++) {
+		const a = (i / 8) * Math.PI * 2
+		flat(new THREE.CircleGeometry(0.29, 20), 'cream', 0.001, Math.cos(a) * 1.46, Math.sin(a) * 1.46)
+	}
+	flat(new THREE.CircleGeometry(1.5, 48), 'cream', 0.002)
+	flat(new THREE.CircleGeometry(1.16, 48), 'hole', 0.003)
+	flat(new THREE.RingGeometry(1.29, 1.37, 48), 'ink', 0.004)
+	flat(new THREE.RingGeometry(0.9, 0.96, 48), 'ink', 0.004)
+	flat(new THREE.RingGeometry(0.96, 1.29, 48), PORTAL_ROLES[enemies] || 'portalSpicy', 0.005)
+	for (const [role, geometries] of batches) {
+		const mesh = new THREE.Mesh(
+			mergeGeometries(geometries),
+			makeStyleMaterial(role, { flat: true }),
+		)
+		mesh.name = `portal-${role}`
 		group.add(mesh)
-		return mesh
+		for (const geometry of geometries) geometry.dispose()
 	}
+	return group
+}
 
-	// Scalloped flower edge: a ring of cream bumps peeking out from the base disc.
-	// Sized so neighbouring pads (3.5 apart) never touch: outer reach ≈ 1.75.
-	const SCALLOPS = 8
-	for (let i = 0; i < SCALLOPS; i++) {
-		const a = (i / SCALLOPS) * Math.PI * 2
-		const bump = flat(new THREE.CircleGeometry(0.29, 20), CREAM, 0.001)
-		bump.position.x = Math.cos(a) * 1.46
-		bump.position.z = Math.sin(a) * 1.46
-	}
-	flat(new THREE.CircleGeometry(1.5, 48), CREAM, 0.002) // sticker base
-	flat(new THREE.CircleGeometry(1.16, 48), HOLE, 0.003) // the hole
-	flat(new THREE.RingGeometry(1.29, 1.37, 48), INK, 0.004) // outer ink line
-	flat(new THREE.RingGeometry(0.9, 0.96, 48), INK, 0.004) // inner ink line
-	flat(new THREE.RingGeometry(0.96, 1.29, 48), color, 0.005) // fat colored donut
+export function createPortal(scene, { x, z, enemies }) {
+	const color = hex(PORTAL_ROLES[enemies] || 'portalSpicy')
+	const group = buildPortalPad(enemies)
+	group.position.set(x, 0.05, z)
 
 	// Star sparkles drifting up out of the hole — upward motion, zero rotation.
 	const sparkles = []
@@ -115,6 +125,7 @@ export function createPortal(scene, { x, z, enemies }) {
 			depthWrite: false,
 		})
 		const sprite = new THREE.Sprite(mat)
+		sprite.layers.set(FORWARD_LAYER)
 		const size = 0.14 + Math.random() * 0.14
 		sprite.scale.set(size, size, 1)
 		const sp = { sprite, y: 0, max: 1, speed: 1, angle: 0, r: 0 }

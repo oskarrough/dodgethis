@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { PALETTE } from './style.js'
+import { makeStyleMaterial } from './stylepass.js'
 import { onCourt } from './arena.js'
 
 // Printed drop shadows. The style pass has no lights and no shadow map, so
@@ -16,7 +16,7 @@ const LIFT = 0.014 // above the court line, below the ammo marker
 
 export function createShadows(scene) {
 	const geometry = new THREE.CircleGeometry(1, 18)
-	const material = new THREE.MeshBasicMaterial({ color: PALETTE.courtShade })
+	const material = makeStyleMaterial('courtShade', { flat: true })
 	const discs = new THREE.InstancedMesh(geometry, material, POOL)
 	discs.instanceMatrix.setUsage(THREE.DynamicDrawUsage)
 	discs.frustumCulled = false // bounds change with the live roster

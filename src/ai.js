@@ -80,6 +80,7 @@ export function createBrain(unit, { reactionMul = 1, jitterMul = 1, rng = Math.r
 	}
 
 	function think(ctx, dt) {
+		unit.windup = 0
 		move.set(0, 0, 0)
 		let grab = false
 		let shoot = null
@@ -162,8 +163,10 @@ export function createBrain(unit, { reactionMul = 1, jitterMul = 1, rng = Math.r
 			move.set(rx * radial + sx * 0.85, 0, rz * radial + sz * 0.85)
 
 			aimTimer += dt
+			unit.windup = Math.min(1, aimTimer / (tune.ai.reaction * reactionMul))
 			if (aimTimer >= tune.ai.reaction * reactionMul) {
 				aimTimer = 0
+				unit.windup = 0
 				const j = (rng() * 2 - 1) * tune.ai.jitter * jitterMul // rotate aim by jitter
 				const c = Math.cos(j)
 				const s = Math.sin(j)
