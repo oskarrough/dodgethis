@@ -2,7 +2,7 @@ import { afterEach, beforeEach, expect, mock, test } from 'bun:test'
 import * as THREE from 'three'
 import { createFeedback } from '../src/feedback.js'
 
-let scene, feedback, mesh, sfx, confirm, addShake, reducedMotion
+let scene, feedback, mesh, sfx, confirm, addShake
 beforeEach(() => {
 	scene = new THREE.Scene()
 	mesh = new THREE.Mesh(
@@ -26,8 +26,7 @@ beforeEach(() => {
 	}
 	confirm = mock()
 	addShake = mock()
-	reducedMotion = false
-	feedback = createFeedback(scene, { sfx, confirm, addShake, reducedMotion: () => reducedMotion })
+	feedback = createFeedback(scene, { sfx, confirm, addShake })
 })
 afterEach(() => {
 	feedback.dispose()
@@ -120,21 +119,6 @@ test('fall has its own sound and downward exit, without a contact burst', () => 
 	expect(sfx.fall).toHaveBeenCalledTimes(1)
 	expect(sfx.hit).not.toHaveBeenCalled()
 	expect(scene.getObjectByName('impact-ink').visible).toBe(false)
-})
-
-test('reduced motion keeps static out identity, sound and confirmation without flying chips', () => {
-	reducedMotion = true
-	feedback.present(impact(), mesh)
-	const position = mesh.position.clone()
-	const scale = mesh.scale.clone()
-	feedback.update(0.1)
-	expect(mesh.position.equals(position)).toBe(true)
-	expect(mesh.scale.equals(scale)).toBe(true)
-	expect(mesh.rotation.y).toBe(0)
-	expect(addShake).not.toHaveBeenCalled()
-	expect(scene.getObjectByName('impact-ink').visible).toBe(false)
-	expect(sfx.hit).toHaveBeenCalledTimes(1)
-	expect(confirm).toHaveBeenLastCalledWith('OUT!')
 })
 
 test('contact spam reuses a fixed pool, and reset clears effects before the next round', () => {

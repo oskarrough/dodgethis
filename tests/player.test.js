@@ -61,11 +61,12 @@ test('visual springs stay bounded after a stalled tab and settle back to neutral
 	expect(Math.abs(unit.visual.rotation.x)).toBeLessThan(0.0001)
 })
 
-test('reduced motion clears cosmetic impulses and charge anticipation', () => {
+test('elimination clears cosmetic impulses before handing the visual to death feedback', () => {
 	unit.react({ type: 'dash', direction: { x: 1, z: 0 } })
 	unit.react({ type: 'shot' })
 	unit.react({ type: 'pickup' })
-	unit.updateVisual(0.05, 1, true)
+	unit.updateVisual(0.05, 1)
+	unit.eliminate()
 	expect(unit.visual.position.toArray()).toEqual([0, 0, 0])
 	expect(unit.visual.scale.toArray()).toEqual([1, 1, 1])
 	expect(unit.visual.rotation.x).toBe(0)
@@ -75,12 +76,17 @@ test('death detaches the visual without moving the logical root, and disposal ow
 	const feedback = createFeedback(scene, {
 		sfx: { hit() {} },
 		confirm() {},
-		reducedMotion: () => true,
 	})
 	const root = unit.mesh.position.clone()
 	unit.eliminate()
 	feedback.present(
-		{ type: 'impact', outcome: 'eliminated', target: { isHuman: false } },
+		{
+			type: 'impact',
+			outcome: 'eliminated',
+			target: { isHuman: false },
+			point: { ...root },
+			direction: { x: 1, y: 0, z: 0 },
+		},
 		unit.visual,
 	)
 	expect(unit.visual.parent).toBe(scene)

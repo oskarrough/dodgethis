@@ -15,7 +15,6 @@ const PORTAL_WORDS = { 1: 'CHILL', 2: 'SPICY', 3: 'CHAOS' }
 const INK = '#26445f'
 const CREAM = '#fffdf4'
 const HOLE = '#16233a'
-const REDUCE_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)')
 
 // Canvas-texture sprite: chunky outlined number + difficulty word, sticker style
 // (cream outer stroke → ink stroke → colored fill).
@@ -166,17 +165,11 @@ export function createPortal(scene, { x, z, enemies }) {
 
 		// Label: gentle bob, lifts + grows when the pad wakes. The pad itself stays
 		// fixed so neighbouring coplanar stickers never overlap.
-		label.position.y = REDUCE_MOTION.matches
-			? 2.25
-			: 2.25 + 0.1 * Math.sin(t * 2 + phase) + wake * 0.3
-		const ls = REDUCE_MOTION.matches ? 2.6 : 2.6 * (1 + wake * 0.18)
+		label.position.y = 2.25 + 0.1 * Math.sin(t * 2 + phase) + wake * 0.3
+		const ls = 2.6 * (1 + wake * 0.18)
 		label.scale.set(ls, ls, 1)
 
 		for (const sp of sparkles) {
-			if (REDUCE_MOTION.matches) {
-				sp.sprite.material.opacity = 0
-				continue
-			}
 			sp.y += dt * sp.speed * (1 + wake * 1.6)
 			if (sp.y > sp.max) resetSparkle(sp)
 			sp.sprite.position.y = sp.y

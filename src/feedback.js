@@ -5,10 +5,7 @@ const PARTICLES = 64
 
 // Gameplay sends copied facts; main supplies the retired target's visual handle.
 // One persistent GPU pool serves all contacts and is cleared between rounds.
-export function createFeedback(
-	scene,
-	{ sfx, confirm, addShake = () => {}, reducedMotion = () => false },
-) {
+export function createFeedback(scene, { sfx, confirm, addShake = () => {} }) {
 	const chips = new THREE.InstancedMesh(
 		new THREE.OctahedronGeometry(1, 0),
 		new THREE.MeshBasicMaterial(),
@@ -51,8 +48,7 @@ export function createFeedback(
 			if (event.kind === 'bowl') sfx.roll(event.point)
 			else sfx.loose(event.source.isHuman ? 1 : 0.45, event.point)
 			if (event.perfect) sfx.perfect(event.point)
-			if (event.source.isHuman && !reducedMotion())
-				addShake(event.kind === 'bowl' ? 0.35 : event.perfect ? 0.4 : 0.22)
+			if (event.source.isHuman) addShake(event.kind === 'bowl' ? 0.35 : event.perfect ? 0.4 : 0.22)
 			if (!event.source.isHuman) sfx.taunt(event.point)
 			return
 		}
@@ -69,14 +65,12 @@ export function createFeedback(
 					startDeath(mesh, {
 						fell: event.type === 'fall',
 						radius: mesh.geometry.parameters.radius,
-						reducedMotion: reducedMotion(),
 					}),
 				)
 			}
 			if (event.type === 'fall') sfx.fall(event.point)
 			else sfx.hit(event.point)
-			if (!reducedMotion())
-				addShake(event.type === 'fall' ? (event.target.isHuman ? 0.6 : 0.3) : 0.7)
+			addShake(event.type === 'fall' ? (event.target.isHuman ? 0.6 : 0.3) : 0.7)
 			// A mutual hit must not overwrite YOU'RE OUT with a kill cheer.
 			if (event.target.isHuman) humanOut = true
 			if (event.target.isHuman || (event.source?.isHuman && !humanOut)) {
@@ -87,7 +81,7 @@ export function createFeedback(
 		else if (event.outcome === 'landed') sfx.land(event.point)
 
 		const dash = event.type === 'dash'
-		if ((!dash && event.type !== 'impact') || reducedMotion()) return
+		if (!dash && event.type !== 'impact') return
 		const lethal = event.outcome === 'eliminated'
 		const count = lethal ? 12 : dash || event.outcome === 'deflected' ? 6 : 3
 		const speed = lethal ? 3 : 1
@@ -130,10 +124,9 @@ export function createFeedback(
 			if (confirmationTime <= 0) confirm('')
 		}
 		let active = false
-		const still = reducedMotion()
 		for (let i = 0; i < PARTICLES; i++) {
 			const p = slots[i]
-			p.life = still ? 0 : Math.max(0, p.life - dt)
+			p.life = Math.max(0, p.life - dt)
 			if (p.life > 0) {
 				p.vy -= 5 * dt
 				p.x += p.vx * dt

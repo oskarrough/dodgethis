@@ -3,7 +3,6 @@ import { tune } from './tune.js'
 
 export function createRenderer() {
 	const canvas = document.querySelector('.app')
-	const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
 	const renderer = new THREE.WebGLRenderer({
 		canvas,
 		antialias: true,
@@ -65,17 +64,13 @@ export function createRenderer() {
 	let settled = true // camera resting at camBase, no per-frame work needed
 	const _o = new THREE.Vector3()
 	function addShake(amount) {
-		if (reduceMotion.matches) {
-			shake = 0
-			return
-		}
 		if (tune.fx.shake) {
 			shake = Math.min(shake + amount, 1.5)
 			settled = false
 		}
 	}
 	function updateCamera(dt) {
-		if (reduceMotion.matches || !tune.fx.shake) shake = 0
+		if (!tune.fx.shake) shake = 0
 		// Common case: no active shake. Snap back to base once, then idle — no random
 		// jitter or lookAt() matrix recompute on the (vast majority of) still frames.
 		if (shake <= 0) {

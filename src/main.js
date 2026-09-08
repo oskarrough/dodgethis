@@ -32,7 +32,6 @@ const hud = document.querySelector('.hud')
 const scoreEl = document.querySelector('.score')
 const fadeEl = document.querySelector('.fade')
 const splashEl = document.querySelector('.splash')
-const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
 
 async function main() {
 	const { RAPIER, world } = await initPhysics()
@@ -44,7 +43,6 @@ async function main() {
 	const feedback = createFeedback(scene, {
 		sfx,
 		addShake,
-		reducedMotion: () => reduceMotion.matches,
 		confirm(text) {
 			hitConfirmation.textContent = text
 			hitConfirmation.hidden = !text
@@ -116,7 +114,7 @@ async function main() {
 	// That's the "splash doesn't block the game" trick: same scene, same input.
 	function fadeOut(done) {
 		fadeEl.style.opacity = '1'
-		setTimeout(done, reduceMotion.matches ? 0 : 280)
+		setTimeout(done, 280)
 	}
 	function fadeIn() {
 		fadeEl.style.opacity = '0'
@@ -616,7 +614,7 @@ async function main() {
 					unit.isHuman && phase === 'playing' && weapon === 'bow' && charge.charging
 						? charge.value
 						: 0
-				unit.updateVisual(dt, windup, reduceMotion.matches)
+				unit.updateVisual(dt, windup)
 			}
 		feedback.update(dt) // exits and confirmation finish even after the verdict
 		updateCamera(dt)

@@ -98,12 +98,6 @@ const STYLES = {
 			fade(ctx, tailFade(t, 0.35))
 		},
 	},
-	still: {
-		dur: 1.4,
-		apply(_mesh, t, ctx) {
-			fade(ctx, tailFade(t, 0.35))
-		},
-	},
 	// Reserved for falls into the void: keep plunging with a slow tumble + fade.
 	sink: {
 		dur: 1.6,
@@ -121,7 +115,7 @@ const STYLES = {
 const PICKABLE = ['melt', 'crumble', 'topple', 'implode', 'vortex', 'ascend']
 
 // No per-death GPU resources: the unit still owns its mesh and materials.
-export function startDeath(mesh, { fell = false, radius = 0.4, reducedMotion = false } = {}) {
+export function startDeath(mesh, { fell = false, radius = 0.4 } = {}) {
 	mesh.visible = true
 	const squash = fell ? 1 : 0.65
 	mesh.scale.set(fell ? 1 : 1.2, squash, fell ? 1 : 1.2)
@@ -139,11 +133,7 @@ export function startDeath(mesh, { fell = false, radius = 0.4, reducedMotion = f
 		}
 	})
 
-	const name = reducedMotion
-		? 'still'
-		: fell
-			? 'sink'
-			: PICKABLE[(Math.random() * PICKABLE.length) | 0]
+	const name = fell ? 'sink' : PICKABLE[(Math.random() * PICKABLE.length) | 0]
 	const style = STYLES[name]
 	const ctx = { baseY, radius, mats, fell }
 
@@ -154,9 +144,9 @@ export function startDeath(mesh, { fell = false, radius = 0.4, reducedMotion = f
 		if (done) return
 		t += dt / (style.dur * Math.max(0.1, tune.fx.deathTime))
 		const tc = clamp01(t)
-		if (!reducedMotion) mesh.scale.set(1, 1, 1)
+		mesh.scale.set(1, 1, 1)
 		style.apply(mesh, tc, ctx)
-		if (!reducedMotion && !fell) {
+		if (!fell) {
 			mesh.scale.x *= 1.2
 			mesh.scale.y *= squash
 			mesh.scale.z *= 1.2
