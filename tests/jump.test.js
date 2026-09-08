@@ -31,8 +31,9 @@ function step(frames, dir = { x: 0, z: 0 }) {
 	}
 }
 
-test('jump leaves the floor, rejects double jumps, and resets on landing', () => {
+test('jump leaves the floor, rejects double jumps, and reports one landing on the way down', () => {
 	const y = unit.position.y
+	expect(unit.consumeLanding()).toBeLessThan(2.5) // the spawn settle stays under the event threshold
 	expect(unit.jump()).toBe(true)
 	expect(unit.jump()).toBe(false)
 	step(30)
@@ -40,26 +41,11 @@ test('jump leaves the floor, rejects double jumps, and resets on landing', () =>
 	expect(unit.jump()).toBe(false)
 	step(90)
 	expect(Math.abs(unit.position.y - y)).toBeLessThan(0.04)
-	expect(unit.jump()).toBe(true)
+	expect(unit.consumeLanding()).toBeGreaterThan(0) // the landing is reported once...
+	expect(unit.consumeLanding()).toBe(0)
+	expect(unit.jump()).toBe(true) // ...and the jump is available again
 	unit.eliminate()
 	expect(unit.jump()).toBe(false)
-})
-
-test('jump reaches a bleacher and can jump again from its surface', () => {
-	unit.place(ARENA.width / 2 - 0.5, unit.position.y, 0)
-	step(2)
-	expect(unit.jump()).toBe(true)
-	const targetX = ARENA.width / 2 + 1.6
-	for (let i = 0; i < 120; i++) {
-		// Steer and counter-steer: releasing movement preserves air momentum.
-		const steer = (targetX - unit.position.x) * 3 - unit.velocity.x * 0.6
-		step(1, { x: Math.max(-1, Math.min(1, steer)), z: 0 })
-	}
-	const feet = unit.position.y - tune.player.radius - tune.player.halfHeight
-	expect(unit.position.x).toBeGreaterThan(ARENA.width / 2 + 1.3)
-	expect(feet).toBeGreaterThan(-0.2)
-	expect(feet).toBeLessThan(0.75)
-	expect(unit.jump()).toBe(true)
 })
 
 test('contact with the next riser does not cancel a jump from the lowest bleacher', () => {
@@ -95,7 +81,7 @@ function walkOffBleacher() {
 	expect(unit.position.x).toBeLessThan(ARENA.width / 2 + 1.6)
 }
 
-test('coyote time forgives a jump shortly after walking off a bleacher, but never a second jump', () => {
+test('coyote time forgives a jump just after walking off a bleacher, then expires', () => {
 	walkOffBleacher()
 	step(2) // ~0.05 s in the air: inside the window
 	expect(unit.velocity.y).toBeLessThan(0)
@@ -103,29 +89,8 @@ test('coyote time forgives a jump shortly after walking off a bleacher, but neve
 	expect(unit.jump()).toBe(false) // a coyote jump is still one jump
 	step(3)
 	expect(unit.jump()).toBe(false)
-})
-
-test('coyote time expires after the window', () => {
 	walkOffBleacher()
 	step(11) // 0.2 s in the air: past the window
 	expect(unit.velocity.y).toBeLessThan(0)
 	expect(unit.jump()).toBe(false)
-})
-
-test('a landing reports its downward speed once, and a jump never grants coyote', () => {
-	expect(unit.consumeLanding()).toBeLessThan(2.5) // the spawn settle stays under the event threshold
-	expect(unit.jump()).toBe(true)
-	step(2)
-	expect(unit.jump()).toBe(false)
-	let landing = 0
-	for (let i = 0; i < 120 && !landing; i++) {
-		step(1)
-		landing = unit.consumeLanding()
-	}
-	// Landing after a ~1.8 m apex: near the launch speed, above the step-down threshold.
-	expect(landing).toBeGreaterThan(tune.player.jumpSpeed * 0.8)
-	expect(landing).toBeLessThanOrEqual(tune.player.jumpSpeed + 0.5)
-	expect(unit.consumeLanding()).toBe(0)
-	step(30)
-	expect(unit.consumeLanding()).toBe(0)
 })

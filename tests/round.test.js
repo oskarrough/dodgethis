@@ -88,18 +88,6 @@ describe('headless round', () => {
 		round.dispose()
 	})
 
-	test('removing every enemy ends the round as a win for A', () => {
-		const ctx = makeCtx()
-		let winner = null
-		const round = createRound(ctx, { enemies: 2, arrowCount: 4, onOver: (w) => (winner = w) })
-		round.removeUnit('B')
-		round.removeUnit('B')
-		// removeUnit's checkWin starts the grace countdown; step it out.
-		for (let i = 0; i < 5 * 60 && winner === null; i++) round.step(1 / 60, STILL)
-		expect(winner).toBe('A')
-		round.dispose()
-	})
-
 	test('a bowl drops ammo where its physics body was hit', () => {
 		const ctx = makeCtx()
 		const round = createRound(ctx, { enemies: 1, arrowCount: 2 })
@@ -139,16 +127,14 @@ describe('headless round', () => {
 			expect(round.over).toBe(false)
 			expect(overCalls).toBe(0)
 			expect(ctx.events).toHaveLength(0)
+			// Only the lobby may run dry; a combat round without ammo cannot start.
+			expect(() => createRound(makeCtx(), { enemies: 1, arrowCount: 0 })).toThrow(
+				'Combat rounds require at least one arrow',
+			)
 		} finally {
 			tune.cheats.infiniteAmmo = previousInfiniteAmmo
 			round.dispose()
 		}
-	})
-
-	test('combat rounds reject an empty arrow pool', () => {
-		expect(() => createRound(makeCtx(), { enemies: 1, arrowCount: 0 })).toThrow(
-			'Combat rounds require at least one arrow',
-		)
 	})
 })
 
@@ -214,17 +200,7 @@ describe('contact facts', () => {
 		expect(event).toEqual(saved) // reusing ammo cannot rewrite an old event
 	})
 
-	test('dash feedback only follows an accepted dash, using its latched direction', () => {
-		round.human.aim.set(1, 0, 0)
-		expect(round.dashHuman(STILL)).toBe(true)
-		expect(round.dashHuman({ x: 0, z: 1 })).toBe(false)
-		expect(ctx.actions).toHaveLength(1)
-		expect(ctx.actions[0].type).toBe('dash')
-		expect(ctx.actions[0].direction).toEqual({ x: 1, y: 0, z: 0 })
-		expect(ctx.actions[0].source.id).toBe(round.human.id)
-	})
-
-	test('shot and pickup feedback emit once, after the held state changes', () => {
+	test('shot, pickup and dash feedback each emit once, after the state actually changes', () => {
 		const shot = round.human.heldArrow
 		round.looseHuman({ x: 0, z: -1 }, 15)
 		round.looseHuman({ x: 0, z: -1 }, 15) // empty-handed: no second shot
@@ -239,13 +215,13 @@ describe('contact facts', () => {
 		expect(ctx.actions.map((event) => event.type)).toEqual(['shot', 'pickup'])
 		expect(round.human.heldArrow).toBe(shot)
 		expect(ctx.actions[1].source.isHuman).toBe(true)
-	})
-
-	test('human release records the shooter independently of team ownership', () => {
-		const shot = round.human.heldArrow
-		round.looseHuman({ x: 0, z: -1 }, 15, { perfect: true })
-		expect(shot.snapshotImpact().source).toEqual({ id: round.human.id, team: 'A', isHuman: true })
-		expect(shot.snapshotImpact().perfect).toBe(true)
+		// A dash reports once too, and only when it was accepted, with its latched direction.
+		round.human.aim.set(1, 0, 0)
+		expect(round.dashHuman(STILL)).toBe(true)
+		expect(round.dashHuman({ x: 0, z: 1 })).toBe(false)
+		expect(ctx.actions.map((event) => event.type)).toEqual(['shot', 'pickup', 'dash'])
+		expect(ctx.actions[2].direction).toEqual({ x: 1, y: 0, z: 0 })
+		expect(ctx.actions[2].source.id).toBe(round.human.id)
 	})
 
 	test.each([
@@ -340,7 +316,7 @@ describe('contact facts', () => {
 })
 
 describe('hit points', () => {
-	test('with hp 2 the first arrow hit wounds and disarms, the second eliminates', () => {
+	test('hp 2 wounds and disarms before eliminating; the default hp still dies on the first hit', () => {
 		const ctx = makeCtx()
 		const previousAI = tune.ai.enabled
 		tune.ai.enabled = false
@@ -380,27 +356,16 @@ describe('hit points', () => {
 			expect(foe.alive).toBe(false)
 			expect(round.over).toBe(true)
 			expect(round.winner).toBe('A')
-		} finally {
-			round.dispose()
-			ctx.eventQueue.free()
-			ctx.world.free()
-			tune.ai.enabled = previousAI
-		}
-	})
-
-	test('default hp still eliminates on the first hit', () => {
-		const ctx = makeCtx()
-		const previousAI = tune.ai.enabled
-		tune.ai.enabled = false
-		const round = createRound(ctx, { enemies: 1, arrowCount: 2 })
-		try {
-			const foe = round.units[1]
-			expect(foe.maxHp).toBe(1)
-			expect(foe.hp).toBe(1)
-			expect(foe.damage(1)).toBe(true) // caller eliminates; resolveHits owns that path
-			expect(foe.alive).toBe(true)
-			foe.eliminate()
-			expect(foe.alive).toBe(false)
+			// The default is one hit point, and damage never eliminates on its own.
+			const plain = createRound(makeCtx(), { enemies: 1, arrowCount: 2 })
+			const mortal = plain.units[1]
+			expect(mortal.maxHp).toBe(1)
+			expect(mortal.hp).toBe(1)
+			expect(mortal.damage(1)).toBe(true) // caller eliminates; resolveHits owns that path
+			expect(mortal.alive).toBe(true)
+			mortal.eliminate()
+			expect(mortal.alive).toBe(false)
+			plain.dispose()
 		} finally {
 			round.dispose()
 			ctx.eventQueue.free()

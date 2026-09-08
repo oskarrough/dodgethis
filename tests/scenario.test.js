@@ -2,7 +2,7 @@ import { expect, test } from 'bun:test'
 import { scenario, scenarioFromURL } from '../src/scenario.js'
 import { createPerformanceMonitor } from '../src/performance.js'
 
-test('a shareable URL names exact rosters, seed, ammo and controls', () => {
+test('a shareable URL names exact rosters, seed, ammo, layout and controls', () => {
 	expect(scenarioFromURL('')).toBeNull()
 	expect(scenarioFromURL('?debug')).toBeNull()
 	expect(scenarioFromURL('?debug=20v20&seed=17&arrows=40&paused=1&ai=0')).toMatchObject({
@@ -14,6 +14,7 @@ test('a shareable URL names exact rosters, seed, ammo and controls', () => {
 		ai: false,
 	})
 	expect(scenarioFromURL('?debug=matchOver&winner=B').phase).toBe('matchOver')
+	expect(scenarioFromURL('?debug=1&layout=pillars')).toMatchObject({ layout: 'pillars' })
 	for (const url of [
 		'?debug=bad',
 		'?debug=1&teamA=0',
@@ -21,14 +22,10 @@ test('a shareable URL names exact rosters, seed, ammo and controls', () => {
 		'?debug=1&arrows=Infinity',
 		'?debug=1&paused=false',
 		'?debug=1&seed=-1',
+		'?debug=1&layout=lava',
 	])
 		expect(() => scenarioFromURL(url)).toThrow()
 	expect(() => scenario({ teamB: 10000 })).toThrow()
-})
-
-test('layout selects the obstacle set: ?layout=pillars parses and bad names throw', () => {
-	expect(scenarioFromURL('?debug=1&layout=pillars')).toMatchObject({ layout: 'pillars' })
-	expect(() => scenarioFromURL('?debug=1&layout=lava')).toThrow()
 })
 
 test('performance history stays bounded, measures raw intervals and resets', () => {

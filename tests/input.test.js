@@ -32,7 +32,7 @@ afterAll(() => {
 	}
 })
 
-test('Space jumps once per tap; either Shift dashes without jumping', () => {
+test('Space jumps once per tap; either Shift dashes; blur and modal resets discard the queue', () => {
 	const key = (code, repeat = false) => {
 		const event = Object.assign(new Event('keydown', { cancelable: true }), { code, repeat })
 		browser.dispatchEvent(event)
@@ -52,14 +52,25 @@ test('Space jumps once per tap; either Shift dashes without jumping', () => {
 		key(code, true)
 		expect(input.consumeDash()).toBe(false)
 	}
-})
-
-test('blur and modal resets discard queued jumps', () => {
 	for (const reset of [() => browser.dispatchEvent(new Event('blur')), input.resetActions]) {
-		browser.dispatchEvent(Object.assign(new Event('keydown'), { code: 'Space', repeat: false }))
+		key('Space')
 		reset()
 		expect(input.consumeJump()).toBe(false)
 	}
+})
+
+test('a press aims at its own coordinates, and canceling it discards the queued shot', () => {
+	const press = (clientX, clientY) =>
+		canvas.dispatchEvent(
+			Object.assign(new Event('pointerdown'), { button: 0, pointerId: 1, clientX, clientY }),
+		)
+	press(750, 200) // no pointermove has ever arrived
+	expect(input.pointerNDC()).toEqual({ x: 0.5, y: 0.5 })
+	press(500, 400)
+	canvas.dispatchEvent(Object.assign(new Event('pointercancel'), { pointerId: 1 }))
+	expect(input.pointerDown()).toBe(false)
+	expect(input.consumePress()).toBe(false)
+	expect(input.consumeRelease()).toBe(false)
 })
 
 function pad() {
@@ -72,33 +83,6 @@ function pad() {
 	input.pollGamepad(0)
 	return gamepad
 }
-
-test('a press aims at its own coordinates without a preceding pointer move', () => {
-	canvas.dispatchEvent(
-		Object.assign(new Event('pointerdown'), {
-			button: 0,
-			pointerId: 1,
-			clientX: 750,
-			clientY: 200,
-		}),
-	)
-	expect(input.pointerNDC()).toEqual({ x: 0.5, y: 0.5 })
-})
-
-test('canceling a pointer before the next frame discards its queued shot', () => {
-	canvas.dispatchEvent(
-		Object.assign(new Event('pointerdown'), {
-			button: 0,
-			pointerId: 1,
-			clientX: 500,
-			clientY: 400,
-		}),
-	)
-	canvas.dispatchEvent(Object.assign(new Event('pointercancel'), { pointerId: 1 }))
-	expect(input.pointerDown()).toBe(false)
-	expect(input.consumePress()).toBe(false)
-	expect(input.consumeRelease()).toBe(false)
-})
 
 test('idle connected pads do not steal prompts from mouse/keyboard', () => {
 	const gp = pad()
@@ -115,8 +99,9 @@ test('idle connected pads do not steal prompts from mouse/keyboard', () => {
 	expect(input.activeDevice()).toBe('gamepad')
 })
 
-test('disconnect cancels held charge and pending pad actions without a release', () => {
-	const gp = pad()
+test('a pad consumes each gesture once, and blur, pause or disconnect never leave one held', () => {
+	// Disconnecting mid-charge cancels the charge and every pending pad action.
+	let gp = pad()
 	gp.buttons[7].pressed = true
 	gp.buttons[4].pressed = true
 	gp.buttons[15].pressed = true
@@ -131,10 +116,9 @@ test('disconnect cancels held charge and pending pad actions without a release',
 	expect(input.consumeWeaponSwitch()).toBeNull()
 	expect(input.consumeMenuInput()).toEqual({ move: 0, confirm: false })
 	expect(input.activeDevice()).toBe('keyboard')
-})
 
-test('a trigger held across blur or reconnect must be released before charging again', () => {
-	const gp = pad()
+	// A trigger held across blur or a reconnect must be released before it charges again.
+	gp = pad()
 	gp.buttons[7].pressed = true
 	input.pollGamepad(1 / 60)
 	expect(input.consumePress()).toBe(true)
@@ -154,10 +138,9 @@ test('a trigger held across blur or reconnect must be released before charging a
 	input.pollGamepad(1 / 60)
 	expect(input.pointerDown()).toBe(false)
 	expect(input.consumeRelease()).toBe(false)
-})
 
-test('D-pad selects a weapon once per press, matching the advertised controls', () => {
-	const gp = pad()
+	// The D-pad picks a weapon once per press, matching the advertised controls.
+	gp = pad()
 	gp.buttons[15].pressed = true
 	input.pollGamepad(1 / 60)
 	expect(input.consumeWeaponSwitch()).toBe('bowl')
@@ -167,18 +150,9 @@ test('D-pad selects a weapon once per press, matching the advertised controls', 
 	gp.buttons[14].pressed = true
 	input.pollGamepad(1 / 60)
 	expect(input.consumeWeaponSwitch()).toBe('bow')
-})
 
-test('a stalled tab cannot jump the virtual cursor through unbounded elapsed time', () => {
-	const gp = pad()
-	browser.dispatchEvent(Object.assign(new Event('pointermove'), { clientX: 500, clientY: 400 }))
-	gp.axes[2] = 1
-	input.pollGamepad(60)
-	expect(input.pointerNDC().x).toBeCloseTo(0.17, 6)
-})
-
-test('Start pauses once and modal handoff swallows held gameplay gestures', () => {
-	const gp = pad()
+	// Start pauses once, and the modal handoff swallows gameplay gestures still held down.
+	gp = pad()
 	gp.buttons[9].pressed = true
 	gp.buttons[7].pressed = true
 	gp.buttons[4].pressed = true
@@ -197,4 +171,12 @@ test('Start pauses once and modal handoff swallows held gameplay gestures', () =
 	gp.buttons[7].pressed = true
 	input.pollGamepad(1 / 60)
 	expect(input.consumePress()).toBe(true)
+})
+
+test('a stalled tab cannot jump the virtual cursor through unbounded elapsed time', () => {
+	const gp = pad()
+	browser.dispatchEvent(Object.assign(new Event('pointermove'), { clientX: 500, clientY: 400 }))
+	gp.axes[2] = 1
+	input.pollGamepad(60)
+	expect(input.pointerNDC().x).toBeCloseTo(0.17, 6)
 })

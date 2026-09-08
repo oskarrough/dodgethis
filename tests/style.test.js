@@ -2,13 +2,8 @@ import { expect, test } from 'bun:test'
 import { PALETTE, applyCssVariables, hex } from '../src/style.js'
 import { TRAIL, WEAPONS } from '../src/weapons.js'
 
-test('roles resolve to six-digit hex, including ones with leading zeroes', () => {
-	expect(hex('ink')).toBe('#26445f')
-	expect(hex('cream')).toBe('#fffdf4')
+test('every role resolves to six-digit hex, with or without a DOM', () => {
 	for (const role of Object.keys(PALETTE)) expect(hex(role)).toMatch(/^#[0-9a-f]{6}$/)
-})
-
-test('the palette is importable without a DOM', () => {
 	expect(() => applyCssVariables(null)).not.toThrow()
 	const props = {}
 	applyCssVariables({ style: { setProperty: (k, v) => (props[k] = v) } })

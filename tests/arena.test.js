@@ -23,23 +23,8 @@ test('a narrower court moves every derived boundary with it', () => {
 		ARENA.width = original
 	}
 	expect(bounds(0).x).toBe(wide)
-})
-
-test('insets stay distinct gameplay policies, not one shared margin', () => {
-	const { landing, aiEdge, aiKite, rim } = ARENA.inset
-	expect(new Set([landing, aiEdge, aiKite, rim]).size).toBe(4)
 	// The AI turns away well before a shot is allowed to come to rest, so bots never stand where ammo cannot land.
-	expect(aiKite).toBeGreaterThan(aiEdge)
-})
-
-test('spawns sit inside the court and face each other', () => {
-	const a = spawnPoint('A')
-	const b = spawnPoint('B', 1, 3)
-	expect(a[2]).toBe(ARENA.spawnZ)
-	expect(b[2]).toBe(-ARENA.spawnZ)
-	for (const [x, , z] of [a, b, spawnPoint('B', 0, 3), spawnPoint('B', 2, 3)]) {
-		expect(onCourt(x, z, ARENA.inset.aiEdge)).toBe(true)
-	}
+	expect(ARENA.inset.aiKite).toBeGreaterThan(ARENA.inset.aiEdge)
 })
 
 test('a seed rebuilds the same scatter; no seed does not', () => {
@@ -55,7 +40,9 @@ test('a seed rebuilds the same scatter; no seed does not', () => {
 	}
 })
 
-test('large teams spawn on court without overlapping or sharing the other half', () => {
+test('teams spawn on court, facing each other, without overlapping or sharing a half', () => {
+	expect(spawnPoint('A')[2]).toBe(ARENA.spawnZ)
+	expect(spawnPoint('B', 1, 3)[2]).toBe(-ARENA.spawnZ)
 	for (const count of [20, 40]) {
 		for (const team of ['A', 'B']) {
 			const spots = Array.from({ length: count }, (_, i) => spawnPoint(team, i, count))

@@ -7,7 +7,7 @@ const lowWall = { kind: 'wall', x: 0, z: 0, w: 2, d: 0.4, h: 0.9 }
 const tallWall = { ...lowWall, h: 2 }
 
 describe('geometry', () => {
-	test('distance and normal for pillars and walls, inside and out', () => {
+	test('distance, normal and padded containment for pillars and walls', () => {
 		expect(distanceTo(2, 0, pillar).d).toBeCloseTo(1.5)
 		expect(distanceTo(2, 0, pillar).nx).toBeCloseTo(1)
 		expect(distanceTo(0, 0.2, pillar).d).toBeLessThan(0)
@@ -17,9 +17,6 @@ describe('geometry', () => {
 		const inside = distanceTo(0.9, 0.05, lowWall)
 		expect(inside.d).toBeLessThan(0)
 		expect(inside.nx).toBe(1)
-	})
-
-	test('pointInside honours padding', () => {
 		expect(pointInside(0.8, 0, [pillar])).toBe(false)
 		expect(pointInside(0.8, 0, [pillar], 0.5)).toBe(true)
 	})

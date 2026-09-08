@@ -114,7 +114,7 @@ test('pause and resume preserve the live round, held ammo, and player position',
 	expect(flow.match.round).toBe(1)
 })
 
-test('canceling a pending arrival prevents stale scene replacement and unlocks transitions', async () => {
+test('canceling or disposing a pending arrival prevents stale scene replacement', async () => {
 	const original = flow.round
 	let staleArrivals = 0
 	flow.transition('OLD ARRIVAL', () => {
@@ -131,16 +131,14 @@ test('canceling a pending arrival prevents stale scene replacement and unlocks t
 	expect(flow.round).not.toBe(original)
 	expect(flow.transitioning).toBe(false)
 	expect(fade.classList.contains('active')).toBe(false)
-})
 
-test('disposing during a transition prevents arrival and releases the live round', async () => {
-	const original = flow.round
-	let arrivals = 0
-	flow.transition('LEAVING', () => arrivals++)
+	// Disposing mid-transition also skips the arrival, and releases the live round.
+	const live = flow.round
+	flow.transition('LEAVING', () => staleArrivals++)
 	flow.dispose()
 	await Bun.sleep(220)
-	expect(arrivals).toBe(0)
+	expect(staleArrivals).toBe(0)
 	expect(flow.round).toBeNull()
-	expect(original.units).toHaveLength(0)
+	expect(live.units).toHaveLength(0)
 	expect(flow.transitioning).toBe(false)
 })

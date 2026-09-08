@@ -48,7 +48,7 @@ function flyPast(h, arrow, units, z, xs = [-3, -2, -1, -0.5, 0, 0.5, 1, 2, 3]) {
 }
 
 describe('near-miss tracker', () => {
-	test('emits once when passing inside the radius and receding', () => {
+	test('emits once for an enemy pass inside the radius, and for nothing else', () => {
 		const h = harness()
 		const target = fakeUnit(1, 'B', 0, 0)
 		const arrow = fakeArrow(5, 'A', { perfect: true })
@@ -69,20 +69,21 @@ describe('near-miss tracker', () => {
 		arrow.state = 'grounded'
 		h.scan([arrow], [target])
 		expect(h.events).toHaveLength(1)
-	})
 
-	test('does not emit when the pass stays outside the radius', () => {
-		const h = harness()
-		const target = fakeUnit(1, 'B', 0, 0)
-		flyPast(h, fakeArrow(5, 'A'), [target], 1.5)
-		expect(h.events).toHaveLength(0)
-	})
-
-	test('does not emit for a teammate', () => {
-		const h = harness()
-		const ally = fakeUnit(1, 'A', 0, 0)
-		flyPast(h, fakeArrow(5, 'A'), [ally], 0.3)
-		expect(h.events).toHaveLength(0)
+		// A wide pass, a teammate, and a shot sailing overhead are all silent.
+		const wide = harness()
+		flyPast(wide, fakeArrow(5, 'A'), [fakeUnit(1, 'B', 0, 0)], 1.5)
+		expect(wide.events).toHaveLength(0)
+		const ally = harness()
+		flyPast(ally, fakeArrow(5, 'A'), [fakeUnit(1, 'A', 0, 0)], 0.3)
+		expect(ally.events).toHaveLength(0)
+		const above = harness()
+		const high = fakeArrow(5, 'A')
+		for (const x of [-1, 0, 1]) {
+			high.position = { x, y: 5, z: 0 }
+			above.scan([high], [target])
+		}
+		expect(above.events).toHaveLength(0)
 	})
 
 	test('emits on landing while still closing inside the radius', () => {
@@ -97,6 +98,10 @@ describe('near-miss tracker', () => {
 		expect(h.events).toHaveLength(1)
 		expect(h.events[0].target.isHuman).toBe(true)
 		expect(h.events[0].distance).toBeCloseTo(Math.hypot(1, 0.6), 6)
+		h.scan([arrow], [target])
+		expect(h.events).toHaveLength(1)
+		// A reset forgets the pair, so a re-scan cannot replay the miss.
+		h.tracker.reset()
 		h.scan([arrow], [target])
 		expect(h.events).toHaveLength(1)
 	})
@@ -120,22 +125,5 @@ describe('near-miss tracker', () => {
 		shot.position = { x: -0.45, y: 0.045, z: 0 }
 		h2.scan([shot], [human])
 		expect(h2.events).toHaveLength(0)
-	})
-
-	test('ignores arrows sailing far above a unit and forgets pairs on reset', () => {
-		const h = harness()
-		const target = fakeUnit(1, 'B', 0, 0)
-		const arrow = fakeArrow(5, 'A')
-		for (const x of [-1, 0, 1]) {
-			arrow.position = { x, y: 5, z: 0 }
-			h.scan([arrow], [target])
-		}
-		expect(h.events).toHaveLength(0)
-
-		flyPast(h, arrow, [target], 0.5, [-3, -2, -1])
-		h.tracker.reset()
-		arrow.state = 'grounded'
-		h.scan([arrow], [target])
-		expect(h.events).toHaveLength(0)
 	})
 })
