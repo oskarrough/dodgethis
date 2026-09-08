@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { tune } from './tune.js'
 import { nearest } from './spatial.js'
-import { COURT } from './court.js'
+import { ARENA, blockOutward, bounds } from './arena.js'
 
 // Cheap per-enemy brain (plan.md M5). Each tick it picks one of three intents
 // and returns { move, grab, shoot } for the main loop to execute:
@@ -124,8 +124,7 @@ export function createBrain(unit, { reactionMul = 1, jitterMul = 1 } = {}) {
 			const rx = (target.position.x - me.x) / dist // unit dir toward target
 			const rz = (target.position.z - me.z) / dist
 			let radial = 0
-			if (dist > standoff + band)
-				radial = 1 // too far → close in
+			if (dist > standoff + band) radial = 1 // too far → close in
 			else if (dist < standoff - band) radial = -1 // too close → back off
 			strafeTimer += dt
 			if (strafeTimer > 2.2) {
@@ -134,13 +133,12 @@ export function createBrain(unit, { reactionMul = 1, jitterMul = 1 } = {}) {
 			}
 			let sx = -rz * strafeDir // tangent (perpendicular to the line to target)
 			let sz = rx * strafeDir
-			const rimX = COURT.width / 2 - 1.6 // flip rather than grind the lava rim
-			const rimZ = COURT.depth / 2 - 1.6
+			const rim = bounds(ARENA.inset.aiKite) // flip rather than grind the lava rim
 			if (
-				(me.x > rimX && sx > 0) ||
-				(me.x < -rimX && sx < 0) ||
-				(me.z > rimZ && sz > 0) ||
-				(me.z < -rimZ && sz < 0)
+				(me.x > rim.x && sx > 0) ||
+				(me.x < -rim.x && sx < 0) ||
+				(me.z > rim.z && sz > 0) ||
+				(me.z < -rim.z && sz < 0)
 			) {
 				strafeDir = -strafeDir
 				sx = -sx
@@ -160,24 +158,30 @@ export function createBrain(unit, { reactionMul = 1, jitterMul = 1 } = {}) {
 			return norm(move, grab, shoot, me)
 		}
 
-		// --- noArrow: fetch the nearest grounded arrow. ---
-		const { item: arrow, d2: ad2 } = nearest(ctx.arrows, me.x, me.z, (a) => a.state === 'grounded')
+		// --- noArrow: claim an arrow worth walking to, without walking into a shot. ---
+		const { arrow, contested } = claimArrow(ctx.arrows, ctx.units, me, unit)
 		if (arrow) {
 			move.set(arrow.position.x - me.x, 0, arrow.position.z - me.z)
+			const ad = Math.hypot(move.x, move.z)
 			unit.aim.set(move.x, 0, move.z)
 			if (unit.aim.lengthSq() > 1e-4) unit.aim.normalize()
-			if (ad2 <= tune.player.pickupRadius ** 2 * 0.9) grab = true
+			// Face the pickup but arrive off the straight line an armed enemy is holding.
+			const weave = threatWeave(ctx.units, me, unit.team, strafeDir)
+			if (weave) {
+				move.x += weave.x * ad * WEAVE_MUL
+				move.z += weave.z * ad * WEAVE_MUL
+			}
+			if (ad * ad <= tune.player.pickupRadius ** 2 * 0.9) grab = true
+			const out = norm(move, grab, shoot, me)
+			// Spend the burst to win a race, not to cross an empty court.
+			out.dash = contested && unit.dashReady && ad > DASH_CLAIM_MIN && ad < DASH_CLAIM_MAX
+			return out
 		}
 		return norm(move, grab, shoot, me)
 	}
 
 	return { unit, think }
 }
-
-// Brains steer straight at whatever they want; near the platform rim that walks
-// them into the lava. Kill the outward component inside this margin — falls stay
-// possible (knockback, dodges started at the rim) but the AI stops suiciding.
-const EDGE = 0.9
 
 // Dodge tuning: how soon (seconds to closest approach) a bot reacts to an inbound
 // arrow, and how near the arrow's line must pass to count as a hit worth dodging.
@@ -187,13 +191,72 @@ const HIT_R = 1.0
 // arrow gets a cheap strafe; an imminent one gets the burst.
 const DASH_TTI = 0.5
 
-function norm(move, grab, shoot, me) {
-	if (me) {
-		const mx = COURT.width / 2 - EDGE
-		const mz = COURT.depth / 2 - EDGE
-		if ((me.x > mx && move.x > 0) || (me.x < -mx && move.x < 0)) move.x = 0
-		if ((me.z > mz && move.z > 0) || (me.z < -mz && move.z < 0)) move.z = 0
+// --- Ammo economy -----------------------------------------------------------
+// Everyone shares one small arrow pool, so WHICH arrow a bot walks to matters
+// more than how fast it walks. Nearest-first sends every unarmed bot at the same
+// pickup, and the losers spend the walk doing nothing. Score each grounded arrow
+// by our distance plus a penalty for how far behind the nearest rival we are.
+// A rival is anyone alive and empty-handed — the human competes for the same pool.
+const CONTEST_PENALTY = 1.5
+// Within this much of the rival's distance the race is still winnable, so it's
+// worth a dash rather than a concession.
+const CONTEST_MARGIN = 2
+const DASH_CLAIM_MIN = 2
+const DASH_CLAIM_MAX = 7
+
+function claimArrow(arrows, units, me, self) {
+	let grounded = 0
+	for (const a of arrows) if (a.state === 'grounded') grounded++
+	let arrow = null
+	let best = Infinity
+	let contested = false
+	for (const a of arrows) {
+		if (a.state !== 'grounded') continue
+		const myD = Math.hypot(a.position.x - me.x, a.position.z - me.z)
+		let rivalD = Infinity
+		for (const u of units) {
+			if (u === self || !u.alive || u.heldArrow) continue
+			const d = Math.hypot(a.position.x - u.position.x, a.position.z - u.position.z)
+			if (d < rivalD) rivalD = d
+		}
+		// Losing a contested arrow is usually not worth the walk. The last arrow on
+		// the court is the exception: denying it is the whole game, so always go.
+		const losing = rivalD < myD && grounded > 1
+		const score = myD + (losing ? (myD - rivalD) * CONTEST_PENALTY : 0)
+		if (score < best) {
+			best = score
+			arrow = a
+			contested = rivalD < myD + CONTEST_MARGIN
+		}
 	}
+	return { arrow, contested }
+}
+
+// An unarmed bot crossing open court in a straight line, in full view of someone
+// armed, is free ammo. Nudge sideways off the shooter's line while still closing
+// on the pickup. Null when nobody armed is looking our way.
+const WEAVE_RANGE = 16
+const WEAVE_DOT = 0.85 // how squarely the shooter must face us to count
+const WEAVE_MUL = 0.5
+
+function threatWeave(units, me, team, side) {
+	for (const u of units) {
+		if (!u.alive || u.team === team || !u.heldArrow) continue
+		const dx = me.x - u.position.x
+		const dz = me.z - u.position.z
+		const d = Math.hypot(dx, dz)
+		if (d > WEAVE_RANGE || d < 1e-4) continue
+		if ((u.aim.x * dx + u.aim.z * dz) / d < WEAVE_DOT) continue
+		return { x: (-dz / d) * side, z: (dx / d) * side }
+	}
+	return null
+}
+
+function norm(move, grab, shoot, me) {
+	// Brains steer straight at whatever they want; near the rim that walks them
+	// into the lava. Falls stay possible (knockback, a dodge begun at the edge),
+	// but the AI stops suiciding.
+	if (me) blockOutward(move, me.x, me.z, ARENA.inset.aiEdge)
 	const l = Math.hypot(move.x, move.z)
 	if (l > 1e-4) {
 		move.x /= l
