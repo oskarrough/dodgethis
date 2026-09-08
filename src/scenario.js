@@ -45,6 +45,8 @@ export function scenarioFromURL(search) {
 	const params = new URLSearchParams(search)
 	if (!params.has('debug')) return null
 	const name = params.get('debug')
+	// A bare ?debug enables diagnostics without forcing a scenario.
+	if (name === '') return null
 	if (name !== '1' && !PRESETS[name]) throw new Error(`Unknown debug preset: ${name}`)
 	const options = { ...PRESETS[name] }
 	for (const key of ['teamA', 'teamB', 'arrows', 'seed'])

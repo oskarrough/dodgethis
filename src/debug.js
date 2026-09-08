@@ -76,6 +76,18 @@ export function createCombatLog(selector = '.combat', max = 12) {
 export function createDebugGui(onChange = () => {}, cheats = {}) {
 	const gui = new GUI({ title: 'dodgethis / debug' })
 
+	const keys = gui.addFolder('shortcuts')
+	for (const [key, action] of [
+		['`', 'toggle debug'],
+		['G / H', 'godmode / infinite ammo'],
+		['= / −', 'add / remove enemy'],
+		['] / [', 'add / remove ally'],
+		['R', 'restart round'],
+		['1 / 2', 'bow / bowl'],
+		['Esc', 'pause / back'],
+	])
+		keys.add({ key }, 'key').name(action).disable()
+
 	const phys = gui.addFolder('physics')
 	phys.add(tune.physics, 'gravity', -30, 0, 0.1).onChange(onChange)
 	phys.add(tune.physics, 'restitution', 0, 1, 0.01)

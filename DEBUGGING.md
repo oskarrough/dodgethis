@@ -1,6 +1,10 @@
 # Reproduce a match and measure performance
 
-Start `bun run dev`, then open the URL Vite prints with
+Start `bun run dev`, then press the backtick key to toggle the debug panel,
+diagnostics, and browser-console API. The panel's **shortcuts** folder lists the
+live controls. A bare `?debug` opens diagnostics without starting a match.
+
+To launch a fixture directly, open the URL Vite prints with
 `?debug=20v20&seed=42&godmode=1`. This creates one human plus 19 allies against
 20 enemies. Godmode protects only the human; bots still fight and die.
 The debug GUI also has a “Start 20v20” button under cheats.

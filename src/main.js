@@ -48,9 +48,11 @@ async function main() {
 		createRenderer()
 	const perf = createPerformanceMonitor()
 	const impact = createImpactBeat()
-	const diagnostics = new URLSearchParams(location.search).has('debug')
+	let diagnostics = new URLSearchParams(location.search).has('debug')
+	let gameApi = null
+	const combatEl = document.querySelector('.combat')
 	hud.hidden = !diagnostics
-	document.querySelector('.combat').hidden = !diagnostics
+	combatEl.hidden = !diagnostics
 	const combat = createCombatLog()
 	const overlay = createOverlay()
 	const godmodeFx = createGodmodeFx(scene)
@@ -427,26 +429,44 @@ async function main() {
 		},
 	}
 
-	if (diagnostics)
-		createDebugGui(() => {
-			world.gravity = { x: 0, y: tune.physics.gravity, z: 0 }
-			debugLines.visible = tune.debug.showColliders
-			setSound(tune.fx.sound)
-			renderMute()
-			if (flow.round) for (const a of flow.round.arrows) a.applyDamping()
-		}, cheats)
+	const debugGui = createDebugGui(() => {
+		world.gravity = { x: 0, y: tune.physics.gravity, z: 0 }
+		debugLines.visible = tune.debug.showColliders
+		setSound(tune.fx.sound)
+		renderMute()
+		if (flow.round) for (const a of flow.round.arrows) a.applyDamping()
+	}, cheats)
 
-	// Hotkeys on the splash:
+	function setDiagnostics(enabled) {
+		diagnostics = enabled
+		hud.hidden = !enabled
+		combatEl.hidden = !enabled
+		if (enabled) debugGui.show()
+		else debugGui.hide()
+		if (gameApi) {
+			if (enabled || import.meta.env.DEV) window.game = gameApi
+			else delete window.game
+		}
+	}
+	setDiagnostics(diagnostics)
+
+	// Global hotkey:
+	//   `         toggle the debug panel, diagnostics and console API
 	// Hotkeys on the splash:
 	//   1-9       enter that difficulty, in the order the options are printed
 	// Hotkeys during play:
 	//   R         restart the current round (a real in-place reset — no reload)
-	//   G         toggle godmode (you can't be eliminated)
+	//   G / H     toggle godmode / infinite ammo
 	//   = / -     add / remove an enemy (Team B)
 	//   ] / [     add / remove an ally (Team A, AI fights for you)
 	// During roundOver/matchOver the overlay's own buttons own R/Enter.
 	window.addEventListener('keydown', (e) => {
-		if (e.defaultPrevented || flow.transitioning || e.repeat) return
+		if (e.defaultPrevented || e.repeat) return
+		if (e.code === 'Backquote') {
+			setDiagnostics(!diagnostics)
+			return
+		}
+		if (flow.transitioning) return
 		if (e.code === 'KeyG') {
 			tune.cheats.godmode = !tune.cheats.godmode
 			combat.push(`godmode ${tune.cheats.godmode ? 'ON' : 'off'}`, tune.cheats.godmode ? 'win' : '')
@@ -737,63 +757,62 @@ async function main() {
 		return snapshot()
 	}
 
-	// Opt-in in a production build; always available on the development server.
-	if (import.meta.env.DEV || new URLSearchParams(location.search).has('debug')) {
-		window.game = {
-			get round() {
-				return flow.round
-			},
-			get phase() {
-				return flow.phase
-			},
-			tune,
-			perf,
-			renderer,
-			scene,
-			world,
-			start: startScenario,
-			preset(name, overrides = {}) {
-				if (!PRESETS[name]) throw new Error(`Unknown preset: ${name}`)
-				return startScenario({ ...PRESETS[name], ...overrides })
-			},
-			snapshot,
-			pause(value = true) {
-				tune.physics.paused = value
-				acc = 0
-			},
-			step: stepPaused,
-			hub: flow.enterHub,
-			restart: flow.restartRound,
-			async benchmark({ seconds = 10, warmup = 2 } = {}) {
-				if (
-					![seconds, warmup].every(Number.isFinite) ||
-					seconds <= 0 ||
-					seconds > 60 ||
-					warmup < 0 ||
-					warmup > 60
-				)
-					throw new Error('Invalid benchmark duration')
-				await new Promise((resolve) => setTimeout(resolve, warmup * 1000))
-				perf.enabled = true
-				perf.reset()
-				const before = snapshot()
-				await new Promise((resolve) => setTimeout(resolve, seconds * 1000))
-				return {
-					...perf.report(),
-					before,
-					after: snapshot(),
-					viewport: {
-						width: innerWidth,
-						height: innerHeight,
-						pixelRatio: renderer.getPixelRatio(),
-					},
-					draw: { ...renderer.info.render },
-					memory: { ...renderer.info.memory },
-					hidden: document.hidden,
-				}
-			},
-		}
+	// Keep the console API ready so the debug hotkey can expose it without a reload.
+	gameApi = {
+		get round() {
+			return flow.round
+		},
+		get phase() {
+			return flow.phase
+		},
+		tune,
+		perf,
+		renderer,
+		scene,
+		world,
+		start: startScenario,
+		preset(name, overrides = {}) {
+			if (!PRESETS[name]) throw new Error(`Unknown preset: ${name}`)
+			return startScenario({ ...PRESETS[name], ...overrides })
+		},
+		snapshot,
+		pause(value = true) {
+			tune.physics.paused = value
+			acc = 0
+		},
+		step: stepPaused,
+		hub: flow.enterHub,
+		restart: flow.restartRound,
+		async benchmark({ seconds = 10, warmup = 2 } = {}) {
+			if (
+				![seconds, warmup].every(Number.isFinite) ||
+				seconds <= 0 ||
+				seconds > 60 ||
+				warmup < 0 ||
+				warmup > 60
+			)
+				throw new Error('Invalid benchmark duration')
+			await new Promise((resolve) => setTimeout(resolve, warmup * 1000))
+			perf.enabled = true
+			perf.reset()
+			const before = snapshot()
+			await new Promise((resolve) => setTimeout(resolve, seconds * 1000))
+			return {
+				...perf.report(),
+				before,
+				after: snapshot(),
+				viewport: {
+					width: innerWidth,
+					height: innerHeight,
+					pixelRatio: renderer.getPixelRatio(),
+				},
+				draw: { ...renderer.info.render },
+				memory: { ...renderer.info.memory },
+				hidden: document.hidden,
+			}
+		},
 	}
+	setDiagnostics(diagnostics)
 	flow.enterHub()
 	try {
 		const setup = scenarioFromURL(location.search)

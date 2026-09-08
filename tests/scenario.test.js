@@ -4,6 +4,7 @@ import { createPerformanceMonitor } from '../src/performance.js'
 
 test('a shareable URL names exact rosters, seed, ammo and controls', () => {
 	expect(scenarioFromURL('')).toBeNull()
+	expect(scenarioFromURL('?debug')).toBeNull()
 	expect(scenarioFromURL('?debug=20v20&seed=17&arrows=40&paused=1&ai=0')).toMatchObject({
 		teamA: 20,
 		teamB: 20,

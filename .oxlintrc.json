@@ -5,6 +5,13 @@
 		"correctness": "error"
 	},
 	"rules": {},
+	"overrides": [
+		{
+			"files": ["src/**/*.js"],
+			"env": { "browser": true },
+			"rules": { "no-undef": "error" }
+		}
+	],
 	"env": {
 		"builtin": true
 	}
