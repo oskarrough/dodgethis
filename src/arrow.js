@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { tune } from './tune.js'
 import { TRAIL } from './weapons.js'
-import { COURT } from './court.js'
+import { ARENA, clamp as clampToCourt, onCourt } from './arena.js'
 
 // The arrow state machine — the spine of the whole game (see plan.md):
 //   held → flying → grounded → held
@@ -13,14 +13,8 @@ import { COURT } from './court.js'
 
 const FORWARD = new THREE.Vector3(0, 0, 1)
 const GROUND_Y = 0.045
-const LAND_X = COURT.width / 2 - 0.5
-const LAND_Z = COURT.depth / 2 - 0.5
-
 export function clampArrowLanding(x, z) {
-	return {
-		x: Math.max(-LAND_X, Math.min(LAND_X, x)),
-		z: Math.max(-LAND_Z, Math.min(LAND_Z, z)),
-	}
+	return clampToCourt(x, z, ARENA.inset.landing)
 }
 
 // Fill a fixed-size preview with the same gravity, damping, and ground threshold
@@ -297,10 +291,10 @@ export function createArrow(scene, world, RAPIER, { position = [0, GROUND_Y, 0] 
 	// Only natural settlement reports a miss. Forced hit/holder drops use ground().
 	function settle(x, z, heading) {
 		const event = snapshotImpact()
-		const onCourt = Math.abs(x) <= COURT.width / 2 && Math.abs(z) <= COURT.depth / 2
-		event.outcome = onCourt ? 'landed' : 'recovered'
-		event.surface = onCourt ? 'court' : 'void'
-		if (onCourt) {
+		const landedOnCourt = onCourt(x, z)
+		event.outcome = landedOnCourt ? 'landed' : 'recovered'
+		event.surface = landedOnCourt ? 'court' : 'void'
+		if (landedOnCourt) {
 			event.point = { x, y: 0, z }
 			event.pointKind = 'surface'
 			event.normal = { x: 0, y: 1, z: 0 }

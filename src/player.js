@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { tune } from './tune.js'
-import { COURT } from './court.js'
+import { bounds as courtBounds } from './arena.js'
 import { stepHorizontalVelocity } from './move.js'
 
 const clamp = (v, lo, hi) => (v < lo ? lo : v > hi ? hi : v)
@@ -176,10 +176,9 @@ export function createPlayer(
 		// A dash commits a big step; clamp it to the court so it can't fling a unit
 		// off the rim into the lava (normal walking can still walk off — that's skill).
 		if (dashing) {
-			const limX = COURT.width / 2 - radius
-			const limZ = COURT.depth / 2 - radius
-			const clampedX = clamp(nx, -limX, limX)
-			const clampedZ = clamp(nz, -limZ, limZ)
+			const lim = courtBounds(radius)
+			const clampedX = clamp(nx, -lim.x, lim.x)
+			const clampedZ = clamp(nz, -lim.z, lim.z)
 			if (clampedX !== nx) vx = 0
 			if (clampedZ !== nz) vz = 0
 			nx = clampedX
@@ -212,15 +211,8 @@ export function createPlayer(
 		} else if (event.type === 'pickup') pickup.value = 0.16
 	}
 
-	function updateVisual(dt, charge = 0, reducedMotion = false) {
+	function updateVisual(dt, charge = 0) {
 		if (!unit.alive) return // feedback owns the detached corpse
-		if (reducedMotion) {
-			for (const spring of [leanX, leanZ, recoil, pickup]) spring.value = spring.velocity = 0
-			visual.position.set(0, 0, 0)
-			visual.rotation.set(0, 0, 0)
-			visual.scale.setScalar(1)
-			return
-		}
 		stepSpring(leanX, 0, dt)
 		stepSpring(leanZ, 0, dt)
 		stepSpring(recoil, charge * 0.12, dt)
@@ -242,7 +234,10 @@ export function createPlayer(
 	function eliminate() {
 		if (!unit.alive) return
 		sync() // use this contact step's body pose, not last frame's mesh
-		updateVisual(0, 0, true) // detach a neutral pose, not a half-finished recoil
+		// Detach a neutral pose, not a half-finished recoil.
+		visual.position.set(0, 0, 0)
+		visual.rotation.set(0, 0, 0)
+		visual.scale.setScalar(1)
 		unit.alive = false
 		visual.visible = false
 		if (unit.heldArrow) {

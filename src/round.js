@@ -1,4 +1,4 @@
-import { COURT, KILL_Y } from './court.js'
+import { ARENA, ammoPoint, makeRng, spawnPoint } from './arena.js'
 import { createPlayer } from './player.js'
 import { createArrow, solveLaunch } from './arrow.js'
 import { createBrain } from './ai.js'
@@ -18,15 +18,18 @@ import { tune } from './tune.js'
 //   { scene, world, RAPIER, eventQueue, combat, present }
 export function createRound(
 	ctx,
-	{ enemies = 3, arrowCount = 7, roundNum = 1, onOver = () => {}, lobby = false } = {},
+	{ enemies = 3, arrowCount = 7, roundNum = 1, onOver = () => {}, lobby = false, seed } = {},
 ) {
 	if (!lobby && arrowCount < 1) throw new Error('Combat rounds require at least one arrow')
 	const { scene, world, RAPIER, eventQueue, combat, present = () => {} } = ctx
+	// Seeded only when asked, so a visual fixture can rebuild the same court. Bot
+	// randomness is untouched; this is not a promise of deterministic replays.
+	const rng = makeRng(seed)
 
 	// --- Units: human (team A) near, enemy dummies (team B) far. ---
 	const units = []
 	const human = createPlayer(scene, world, RAPIER, {
-		position: [0, 0, 8],
+		position: spawnPoint('A'),
 		color: 0x5db4ff,
 		team: 'A',
 		isHuman: true,
@@ -35,7 +38,7 @@ export function createRound(
 	for (let i = 0; i < enemies; i++) {
 		units.push(
 			createPlayer(scene, world, RAPIER, {
-				position: [(i - 1) * 3, 0, -8],
+				position: spawnPoint('B', i, enemies),
 				color: 0xff5d5d,
 				team: 'B',
 			}),
@@ -54,15 +57,8 @@ export function createRound(
 	// --- Arrow pool: scattered loose on the court, one nocked for the human. ---
 	const arrows = []
 	for (let i = 0; i < arrowCount; i++) {
-		arrows.push(
-			createArrow(scene, world, RAPIER, {
-				position: [
-					(Math.random() - 0.5) * (COURT.width - 2),
-					0,
-					(Math.random() - 0.5) * (COURT.depth - 6),
-				],
-			}),
-		)
+		const spot = ammoPoint(rng)
+		arrows.push(createArrow(scene, world, RAPIER, { position: [spot.x, 0, spot.z] }))
 	}
 	if (arrows.length) {
 		human.heldArrow = arrows[0]
@@ -221,10 +217,10 @@ export function createRound(
 		if (over) return
 		for (const u of units) {
 			if (!u.alive) continue
-			if (u.body.translation().y < KILL_Y) {
+			if (u.body.translation().y < ARENA.killY) {
 				// Godmode: scoop the human back onto the court instead of killing them.
 				if (u.isHuman && (tune.cheats.godmode || lobby)) {
-					u.place(0, 2, 8)
+					u.place(spawnPoint('A')[0], 2, ARENA.spawnZ)
 					combat.push(
 						lobby
 							? 'the void spat you back onto the field'
@@ -313,9 +309,9 @@ export function createRound(
 	// round (checkWin runs) — handy for poking at the state machine.
 	function addUnit(team) {
 		const isB = team === 'B'
-		const x = (Math.random() - 0.5) * (COURT.width - 3)
+		const x = (Math.random() - 0.5) * (ARENA.width - 3)
 		const u = createPlayer(scene, world, RAPIER, {
-			position: [x, 0, isB ? -8 : 8],
+			position: [x, 0, isB ? -ARENA.spawnZ : ARENA.spawnZ],
 			color: isB ? 0xff5d5d : 0x5db4ff,
 			team,
 		})

@@ -17,6 +17,7 @@
 				--page-bg: #8fd7ff;
 				--court-bg: #69d66f;
 				--court-line: #fff7c7;
+				--court-rim: #ffd35d;
 				--ui-text: #26445f;
 				--ui-muted: #5f7897;
 				--ui-panel: rgba(255, 249, 213, 0.9);
@@ -631,19 +632,6 @@
 				opacity: 0;
 				pointer-events: none;
 				transition: opacity 0.28s ease;
-			}
-
-			@media (prefers-reduced-motion: reduce) {
-				.overlay .actions button.selected .cursor,
-				.splash-title .letter,
-				.splash-title .letter .wob,
-				.splash-hint,
-				.weapons .armed.picked-up {
-					animation: none;
-				}
-				.fade {
-					transition: none;
-				}
 			}
 		</style>
 	</head>
