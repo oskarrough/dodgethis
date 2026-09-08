@@ -339,6 +339,77 @@ describe('contact facts', () => {
 	})
 })
 
+describe('hit points', () => {
+	test('with hp 2 the first arrow hit wounds and disarms, the second eliminates', () => {
+		const ctx = makeCtx()
+		const previousAI = tune.ai.enabled
+		tune.ai.enabled = false
+		const round = createRound(ctx, { enemies: 1, arrowCount: 2, hp: 2 })
+		try {
+			round.human.place(-4, 1, 4)
+			const foe = round.units[1]
+			foe.place(0, 1, 0)
+			foe.heldArrow = round.arrows[1] // a wound must still cost the held arrow
+			round.arrows[1].hold()
+			const shot = round.human.heldArrow
+			shot.loose(new THREE.Vector3(-1, 1, 0), { x: 1, z: 0 }, 'A', 12, {
+				kind: 'arrow',
+				sourceId: round.human.id,
+				sourceIsHuman: true,
+			})
+			for (let i = 0; i < 600 && !ctx.events.length; i++) round.step(1 / 60, STILL)
+			expect(ctx.events).toHaveLength(1)
+			const hurt = ctx.events[0]
+			expect(hurt.outcome).toBe('hurt')
+			expect(hurt.hp).toBe(1)
+			expect(hurt.maxHp).toBe(2)
+			expect(hurt.target.id).toBe(foe.id)
+			expect(foe.alive).toBe(true)
+			expect(foe.heldArrow).toBeNull()
+			expect(shot.state).toBe('grounded')
+			// A second hit on the wounded unit takes the last hp and decides the round.
+			shot.hold()
+			shot.loose(new THREE.Vector3(-1, 1, 0), { x: 1, z: 0 }, 'A', 12, {
+				kind: 'arrow',
+				sourceId: round.human.id,
+				sourceIsHuman: true,
+			})
+			for (let i = 0; i < 600 && ctx.events.length < 2; i++) round.step(1 / 60, STILL)
+			expect(ctx.events).toHaveLength(2)
+			expect(ctx.events[1].outcome).toBe('eliminated')
+			expect(foe.alive).toBe(false)
+			expect(round.over).toBe(true)
+			expect(round.winner).toBe('A')
+		} finally {
+			round.dispose()
+			ctx.eventQueue.free()
+			ctx.world.free()
+			tune.ai.enabled = previousAI
+		}
+	})
+
+	test('default hp still eliminates on the first hit', () => {
+		const ctx = makeCtx()
+		const previousAI = tune.ai.enabled
+		tune.ai.enabled = false
+		const round = createRound(ctx, { enemies: 1, arrowCount: 2 })
+		try {
+			const foe = round.units[1]
+			expect(foe.maxHp).toBe(1)
+			expect(foe.hp).toBe(1)
+			expect(foe.damage(1)).toBe(true) // caller eliminates; resolveHits owns that path
+			expect(foe.alive).toBe(true)
+			foe.eliminate()
+			expect(foe.alive).toBe(false)
+		} finally {
+			round.dispose()
+			ctx.eventQueue.free()
+			ctx.world.free()
+			tune.ai.enabled = previousAI
+		}
+	})
+})
+
 test('twenty additions per side never overlap live colliders, even without a physics tick', () => {
 	const ctx = makeCtx()
 	const round = createRound(ctx, { enemies: 1, seed: 42 })

@@ -264,6 +264,37 @@ test('a near miss between two bots is silent', () => {
 	expect(sfx.whoosh).not.toHaveBeenCalled()
 })
 
+test('a survived hurt hit thumps and shakes without starting a death', () => {
+	const event = impact('hurt')
+	event.hp = 1
+	event.maxHp = 2
+	feedback.present(event, mesh)
+	expect(sfx.hit).toHaveBeenCalledTimes(1)
+	expect(sfx.hit).toHaveBeenCalledWith(event.point)
+	expect(addShake).toHaveBeenCalledWith(0.2)
+	expect(kickFov).toHaveBeenCalledWith(1)
+	expect(mesh.visible).toBe(false) // no death revealed the corpse
+	const position = mesh.position.clone()
+	feedback.update(0.1)
+	expect(mesh.visible).toBe(false)
+	expect(mesh.position.equals(position)).toBe(true) // no death animation owns the mesh
+	expect(confirm).not.toHaveBeenCalled()
+	const chips = scene.getObjectByName('impact-ink')
+	expect(chips.visible).toBe(true)
+	for (let i = 0; i < 3; i++) feedback.update(0.1)
+	expect(chips.visible).toBe(false)
+})
+
+test('a hurt hit on the human flashes HIT briefly and shakes harder', () => {
+	const event = impact('hurt')
+	event.target = { id: 0, team: 'A', isHuman: true }
+	feedback.present(event, mesh)
+	expect(addShake).toHaveBeenCalledWith(0.35)
+	expect(confirm).toHaveBeenLastCalledWith('HIT')
+	for (let i = 0; i < 5; i++) feedback.update(0.1)
+	expect(confirm).toHaveBeenLastCalledWith('')
+})
+
 function land(overrides = {}) {
 	return {
 		type: 'land',

@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'
 import { ARENA, bounds } from './arena.js'
+import { LAYOUTS } from './obstacles.js'
 import { PALETTE } from './style.js'
 import { makeStyleMaterial } from './stylepass.js'
 
@@ -177,6 +178,58 @@ export function buildCourt(scene, world, RAPIER) {
 		themeGroups.set(name, group)
 		scene.add(group)
 	}
+	// Obstacle layouts: one merged-mesh group plus fixed colliders per layout, toggled by setLayout without rebuilding geometry or physics.
+	const layoutGroups = new Map()
+	const layoutColliders = new Map()
+	let activeLayout = 'open'
+	for (const [name, shapes] of Object.entries(LAYOUTS)) {
+		const group = new THREE.Group()
+		group.name = `court-layout-${name}`
+		batches.clear()
+		const colliders = []
+		// Cylinders have no box() path, so they go through the same role batches with a matching helper.
+		const disc = (role, r, h, x, y, z) => {
+			const geometry = new THREE.CylinderGeometry(r, r, h, 12)
+			geometry.translate(x, y, z)
+			if (!batches.has(role)) batches.set(role, [])
+			batches.get(role).push(geometry)
+		}
+		for (const o of shapes) {
+			if (o.kind === 'pillar') {
+				disc('ink', o.r, o.h, o.x, o.h / 2, o.z)
+				disc('cream', o.r * 0.8, 0.04, o.x, o.h + 0.02, o.z)
+				colliders.push(
+					world.createCollider(
+						RAPIER.ColliderDesc.cylinder(o.h / 2, o.r).setTranslation(o.x, o.h / 2, o.z),
+						body,
+					),
+				)
+			} else {
+				box('courtShade', o.w, o.h, o.d, o.x, o.h / 2, o.z)
+				box('courtLine', o.w + 0.06, 0.04, o.d + 0.06, o.x, o.h + 0.02, o.z)
+				colliders.push(
+					world.createCollider(
+						RAPIER.ColliderDesc.cuboid(o.w / 2, o.h / 2, o.d / 2).setTranslation(o.x, o.h / 2, o.z),
+						body,
+					),
+				)
+			}
+		}
+		for (const [role, geometries] of batches) {
+			const decoration = new THREE.Mesh(
+				mergeGeometries(geometries),
+				makeStyleMaterial(role, { flat: true }),
+			)
+			decoration.name = `layout-${name}-${role}`
+			group.add(decoration)
+			for (const geometry of geometries) geometry.dispose()
+		}
+		group.visible = name === activeLayout
+		for (const collider of colliders) collider.setEnabled(name === activeLayout)
+		layoutGroups.set(name, group)
+		layoutColliders.set(name, colliders)
+		scene.add(group)
+	}
 	const scorePips = []
 	for (let team = 0; team < 2; team++) {
 		for (let i = 0; i < 2; i++) {
@@ -195,6 +248,21 @@ export function buildCourt(scene, world, RAPIER) {
 			const selected = Object.hasOwn(COURT_THEMES, name) ? name : 'park'
 			for (const [key, group] of themeGroups) group.visible = key === selected
 			return COURT_THEMES[selected]
+		},
+		// Show one obstacle layout's meshes and enable only its colliders; unknown names fall back to the open court.
+		setLayout(name) {
+			const selected = Object.hasOwn(LAYOUTS, name) ? name : 'open'
+			activeLayout = selected
+			for (const [key, group] of layoutGroups) group.visible = key === selected
+			for (const [key, colliders] of layoutColliders)
+				for (const collider of colliders) collider.setEnabled(key === selected)
+			return selected
+		},
+		get obstacles() {
+			return LAYOUTS[activeLayout]
+		},
+		get layout() {
+			return activeLayout
 		},
 		updateScore(a, b) {
 			for (let i = 0; i < 4; i++) scorePips[i].scale.setScalar(i % 2 < (i < 2 ? a : b) ? 1 : 0.25)

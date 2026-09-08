@@ -15,7 +15,7 @@ export function createPlayer(
 	scene,
 	world,
 	RAPIER,
-	{ position = [0, 0, 0], color = PALETTE.teamA, team = 'A', isHuman = false } = {},
+	{ position = [0, 0, 0], color = PALETTE.teamA, team = 'A', isHuman = false, hp = 1 } = {},
 ) {
 	const id = _uid++
 	const { radius, halfHeight } = tune.player
@@ -118,6 +118,8 @@ export function createPlayer(
 		collider,
 		controller,
 		alive: true,
+		hp, // hits left before elimination (damage() spends them)
+		maxHp: hp,
 		heldArrow: null,
 		aim: new THREE.Vector3(0, 0, -1), // facing/launch direction (set by input or AI)
 		get colliderHandle() {
@@ -148,6 +150,7 @@ export function createPlayer(
 		react,
 		updateVisual,
 		handPosition,
+		damage,
 		eliminate,
 		place,
 		dispose,
@@ -275,6 +278,12 @@ export function createPlayer(
 			recoil.velocity = 0
 		} else if (event.type === 'pickup') pickup.value = 0.16
 		else if (event.type === 'land') pickup.value = Math.min(0.22, 0.05 + event.speed * 0.015)
+		else if (event.type === 'impact' && event.outcome === 'hurt') {
+			// A survived hit still stings: squash plus a bounded kick along the facing.
+			pickup.value = 0.2
+			recoil.value = 0.2
+			recoil.velocity = 0
+		}
 	}
 
 	function updateVisual(dt, charge = 0) {
@@ -335,6 +344,13 @@ export function createPlayer(
 			return true
 		}
 		return false
+	}
+
+	// Spend hit points from a live unit; true means the pool hit zero and the caller must eliminate().
+	function damage(amount = 1) {
+		if (!unit.alive) return false
+		unit.hp = Math.max(0, unit.hp - amount)
+		return unit.hp === 0
 	}
 
 	// Resolve the out immediately; presentation may reveal and animate the corpse.

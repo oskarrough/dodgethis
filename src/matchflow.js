@@ -3,6 +3,9 @@ import { createPortal } from './portal.js'
 import { sfx, isMusicEnabled, setMusicEnabled, setMusicScene } from './audio.js'
 import { tune } from './tune.js'
 
+// Difficulty portals map to court obstacle layouts; anything else plays on the open court.
+const LAYOUT_BY_ENEMIES = { 1: 'open', 2: 'pillars', 3: 'walls' }
+
 // Owns match lifetime, score, menus, and the input handoff between scenes.
 export function createMatchFlow({
 	ctx,
@@ -122,7 +125,7 @@ export function createMatchFlow({
 		clearPortals()
 		overlay.hide()
 		phase = 'menu'
-		onTheme(0)
+		onTheme(0, 'open') // the hub/lobby round is always the open court
 		// Re-showing restarts the CSS letter animations, so the title bounces in fresh.
 		splashEl.hidden = false
 		for (const button of portalOptions) {
@@ -175,7 +178,7 @@ export function createMatchFlow({
 		}
 	}
 
-	function startMatch(enemies, { allies = 0, arrowCount = 7, seed } = {}) {
+	function startMatch(enemies, { allies = 0, arrowCount = 7, seed, layout, hp = 1 } = {}) {
 		if (enemies >= 1 && enemies <= 3 && allies === 0) {
 			lastDifficulty = enemies
 			try {
@@ -184,10 +187,11 @@ export function createMatchFlow({
 				/* optional preference */
 			}
 		}
-		onTheme(enemies)
+		onTheme(enemies, layout ?? LAYOUT_BY_ENEMIES[enemies] ?? 'open')
 		match.allies = allies
 		match.arrowCount = arrowCount
 		match.seed = seed
+		match.hp = hp
 		match.bestOf = BEST_OF
 		match.needed = Math.floor(BEST_OF / 2) + 1 // first to a majority of rounds
 		match.wins.A = 0
@@ -225,6 +229,7 @@ export function createMatchFlow({
 			allies: match.allies,
 			arrowCount: match.arrowCount,
 			seed: match.seed,
+			hp: match.hp,
 			roundNum: match.round,
 			onOver: endRound,
 		})

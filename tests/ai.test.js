@@ -130,3 +130,44 @@ test('armed bots telegraph their shot and clear windup after release or disarmin
 	brain.think(ctx, 0.1)
 	expect(bot.windup).toBe(0)
 })
+
+test('a pillar between an armed bot and its target blocks shots until the line clears', () => {
+	const bot = unit('B', -5, 0, { held: {} })
+	const enemy = unit('A', 5, 0)
+	const pillar = { kind: 'pillar', x: 0, z: 0, r: 0.5, h: 2.2 }
+	const ctx = { units: [bot, enemy], arrows: [], obstacles: [pillar] }
+	const brain = createBrain(bot, { rng: () => 0.5 })
+	let shot = null
+	for (let i = 0; i < 60; i++) shot = brain.think(ctx, 0.05).shoot // 3s of blindness, well past the 0.7s reaction
+	expect(bot.windup).toBe(0)
+	expect(shot).toBeNull()
+	ctx.obstacles = []
+	shot = brain.think(ctx, 1).shoot // sight restored: the same brain fires on the next beat
+	expect(shot).not.toBeNull()
+	expect(bot.windup).toBe(0)
+})
+
+test('an unarmed bot steers around a pillar blocking its pickup path', () => {
+	const bot = unit('B', 0, 0.7)
+	const enemy = unit('A', 0, 11)
+	const pickup = arrow(0, -5)
+	const pillar = { kind: 'pillar', x: 0, z: 0, r: 0.5, h: 2.2 }
+	const blocked = { units: [bot, enemy], arrows: [pickup], obstacles: [pillar] }
+	expect(Math.abs(heading(createBrain(bot), blocked).x)).toBeGreaterThan(0.3)
+	const clear = { units: [bot, enemy], arrows: [pickup] }
+	expect(Math.abs(heading(createBrain(bot), clear).x)).toBeLessThan(0.01)
+})
+
+test('a missing obstacles list behaves the same as an empty one', () => {
+	const bot = unit('B', 0, 0, { held: {} })
+	const enemy = unit('A', 0, 10)
+	const absent = { units: [bot, enemy], arrows: [] }
+	const empty = { units: [bot, enemy], arrows: [], obstacles: [] }
+	const a = createBrain(bot, { rng: () => 0.5 })
+	const b = createBrain(bot, { rng: () => 0.5 })
+	const ma = heading(a, absent)
+	const mb = heading(b, empty)
+	expect(ma.x).toBe(mb.x)
+	expect(ma.z).toBe(mb.z)
+	expect(a.think(absent, 1).shoot).toEqual(b.think(empty, 1).shoot)
+})

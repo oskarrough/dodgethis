@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import { tune } from './tune.js'
 import { nearest } from './spatial.js'
 import { ARENA, blockOutward, bounds } from './arena.js'
+import { blocksSight, steerAround } from './obstacles.js'
 
 // Each cheap brain returns { move, grab, shoot }: dodge inbound arrows, lead and loose when armed, or claim ammo; difficulty uses reaction and jitter, with no pathfinding.
 
@@ -11,6 +12,7 @@ export function createBrain(unit, { reactionMul = 1, jitterMul = 1, rng = Math.r
 	let lastTarget = null
 	let strafeDir = rng() < 0.5 ? 1 : -1 // circle-strafe handedness (flips over time)
 	let strafeTimer = 0
+	let sightless = 0 // seconds the armed bot has lacked a clear line to its target
 	// Seeded phases stagger five-Hz strategic scans; steering, leading, weaving, and dodging still run every step.
 	let targetTimer = rng() * DECISION_INTERVAL
 	let pickupTimer = rng() * DECISION_INTERVAL
@@ -71,6 +73,7 @@ export function createBrain(unit, { reactionMul = 1, jitterMul = 1, rng = Math.r
 		if (!unit.alive) return { move, grab, shoot }
 
 		const me = unit.position
+		const obstacles = ctx.obstacles ?? [] // missing or empty list = open court
 		targetTimer -= dt
 		pickupTimer -= dt
 		if (!targetInitialized || targetTimer <= 0 || (target && !target.alive)) {
@@ -100,7 +103,7 @@ export function createBrain(unit, { reactionMul = 1, jitterMul = 1, rng = Math.r
 			move.set(dodge.x, 0, dodge.z)
 			unit.aim.set(target.position.x - me.x, 0, target.position.z - me.z)
 			if (unit.aim.lengthSq() > 1e-4) unit.aim.normalize()
-			const out = norm(move, grab, shoot, me)
+			const out = norm(move, grab, shoot, me, obstacles, dodge) // dodge steers too, but keeps its escape direction
 			out.dash = dodge.urgent // burst out of the way when a hit is imminent
 			return out
 		}
@@ -143,6 +146,19 @@ export function createBrain(unit, { reactionMul = 1, jitterMul = 1, rng = Math.r
 				sx = -sx
 				sz = -sz
 			}
+			// A tall obstacle between us and the target blocks shots: slide sideways to regain the line instead of aiming.
+			if (blocksSight(me.x, me.z, target.position.x, target.position.z, obstacles)) {
+				sightless += dt
+				if (sightless > tune.ai.sightFlip) {
+					strafeDir = -strafeDir
+					sightless = 0
+				}
+				aimTimer = 0 // the shot would only hit the obstacle; restart the reaction beat once sight returns
+				unit.windup = 0
+				move.set(sx, 0, sz) // pure tangent, no radial closing
+				return norm(move, grab, shoot, me, obstacles)
+			}
+			sightless = 0
 			move.set(rx * radial + sx * 0.85, 0, rz * radial + sz * 0.85)
 
 			aimTimer += dt
@@ -182,12 +198,12 @@ export function createBrain(unit, { reactionMul = 1, jitterMul = 1, rng = Math.r
 				move.z += weave.z * ad * WEAVE_MUL
 			}
 			if (ad * ad <= tune.player.pickupRadius ** 2 * 0.9) grab = true
-			const out = norm(move, grab, shoot, me)
+			const out = norm(move, grab, shoot, me, obstacles)
 			// Spend the burst to win a race, not to cross an empty court.
 			out.dash = contested && unit.dashReady && ad > DASH_CLAIM_MIN && ad < DASH_CLAIM_MAX
 			return out
 		}
-		return norm(move, grab, shoot, me)
+		return norm(move, grab, shoot, me, obstacles)
 	}
 
 	return { unit, think }
@@ -254,9 +270,19 @@ function threatWeave(units, me, team, side) {
 	return null
 }
 
-function norm(move, grab, shoot, me) {
-	// Block deliberate outward steering at the rim while preserving falls from knockback or committed dodges.
-	if (me) blockOutward(move, me.x, me.z, ARENA.inset.aiEdge)
+function norm(move, grab, shoot, me, obstacles, keep = null) {
+	// Steer around nearby obstacles, then block deliberate outward steering at the rim while preserving falls from knockback or committed dodges.
+	if (me) {
+		const ox = move.x
+		const oz = move.z
+		steerAround(move, me.x, me.z, obstacles ?? [], tune.ai.steerClearance)
+		// `keep` marks a committed dodge: steering may bend it but never reverse it.
+		if (keep && move.x * keep.x + move.z * keep.z < 0) {
+			move.x = ox
+			move.z = oz
+		}
+		blockOutward(move, me.x, me.z, ARENA.inset.aiEdge)
+	}
 	const l = Math.hypot(move.x, move.z)
 	if (l > 1e-4) {
 		move.x /= l

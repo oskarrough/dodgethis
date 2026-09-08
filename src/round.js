@@ -1,4 +1,5 @@
 import { ARENA, ammoPoint, makeRng, spawnPoint, freeSpawnPoint } from './arena.js'
+import { pointInside } from './obstacles.js'
 import { createPlayer } from './player.js'
 import { createArrow, solveLaunch } from './arrow.js'
 import { createBrain } from './ai.js'
@@ -14,6 +15,7 @@ export function createRound(
 		enemies = 3,
 		allies = 0,
 		arrowCount = 7,
+		hp = 1,
 		roundNum = 1,
 		onOver = () => {},
 		lobby = false,
@@ -32,6 +34,7 @@ export function createRound(
 		color: PALETTE.teamA,
 		team: 'A',
 		isHuman: true,
+		hp,
 	})
 	units.push(human)
 	for (let i = 0; i < enemies; i++) {
@@ -40,6 +43,7 @@ export function createRound(
 				position: spawnPoint('B', i, enemies),
 				color: PALETTE.teamB,
 				team: 'B',
+				hp,
 			}),
 		)
 	}
@@ -49,6 +53,7 @@ export function createRound(
 				position: spawnPoint('A', i, allies + 1),
 				color: PALETTE.teamA,
 				team: 'A',
+				hp,
 			}),
 		)
 	}
@@ -63,7 +68,14 @@ export function createRound(
 	// --- Arrow pool: scattered loose on the court, one nocked for the human. ---
 	const arrows = []
 	for (let i = 0; i < arrowCount; i++) {
-		const spot = ammoPoint(rng)
+		// Retry scattered ammo that lands inside an obstacle; each attempt is one ammoPoint draw so the seed still drives everything.
+		let spot = ammoPoint(rng)
+		for (
+			let tries = 0;
+			tries < 20 && pointInside(spot.x, spot.z, ctx.obstacles ?? [], 0.6);
+			tries++
+		)
+			spot = ammoPoint(rng)
 		arrows.push(createArrow(scene, world, RAPIER, { position: [spot.x, 0, spot.z] }))
 	}
 	if (arrows.length) {
@@ -156,7 +168,7 @@ export function createRound(
 	// Run every brain: move, maybe grab, maybe shoot.
 	function thinkAI(dt) {
 		if (!tune.ai.enabled) return
-		const ictx = { units, arrows }
+		const ictx = { units, arrows, obstacles: ctx.obstacles ?? [] }
 		for (const b of brains) {
 			if (!b.unit.alive) continue
 			const intent = b.think(ictx, dt)
@@ -205,10 +217,27 @@ export function createRound(
 				present(event)
 				return
 			}
-			unit.eliminate()
+			if (unit.damage(1)) {
+				unit.eliminate()
+				arrow.ground()
+				combat.push(`HIT — arrow #${arrow.id} eliminated Team ${unit.team} unit #${unit.id}`, 'hit')
+				event.outcome = 'eliminated'
+				present(event)
+				return
+			}
+			// Wounded but standing: the arrow drops and the held one is forfeit, so a hit always costs ammo.
 			arrow.ground()
-			combat.push(`HIT — arrow #${arrow.id} eliminated Team ${unit.team} unit #${unit.id}`, 'hit')
-			event.outcome = 'eliminated'
+			if (unit.heldArrow) {
+				unit.heldArrow.ground()
+				unit.heldArrow = null
+			}
+			combat.push(
+				`HIT — arrow #${arrow.id} hurt Team ${unit.team} unit #${unit.id} (${unit.hp}/${unit.maxHp} hp)`,
+				'hit',
+			)
+			event.outcome = 'hurt'
+			event.hp = unit.hp
+			event.maxHp = unit.maxHp
 			present(event)
 		})
 	}
@@ -325,6 +354,7 @@ export function createRound(
 			position,
 			color: isB ? PALETTE.teamB : PALETTE.teamA,
 			team,
+			hp,
 		})
 		units.push(u)
 		brains.push(createBrain(u, aiMod)) // added units are never the human → always AI

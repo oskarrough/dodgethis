@@ -26,6 +26,11 @@ test('a shareable URL names exact rosters, seed, ammo and controls', () => {
 	expect(() => scenario({ teamB: 10000 })).toThrow()
 })
 
+test('layout selects the obstacle set: ?layout=pillars parses and bad names throw', () => {
+	expect(scenarioFromURL('?debug=1&layout=pillars')).toMatchObject({ layout: 'pillars' })
+	expect(() => scenarioFromURL('?debug=1&layout=lava')).toThrow()
+})
+
 test('performance history stays bounded, measures raw intervals and resets', () => {
 	const perf = createPerformanceMonitor(3)
 	for (const frame of [1000, 5, 6, 10])

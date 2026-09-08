@@ -1,4 +1,6 @@
 // Serializable setup shared by URLs, the console and the headless benchmark; a seed repeats gameplay decisions at fixed ticks, not browser input or FX.
+import { LAYOUTS } from './obstacles.js'
+
 export const PRESETS = {
 	duel: { teamA: 1, teamB: 1 },
 	'20v20': { teamA: 20, teamB: 20 },
@@ -18,14 +20,17 @@ export function scenario(options = {}) {
 		paused: false,
 		godmode: false,
 		infiniteAmmo: false,
+		hp: 1,
 		phase: 'playing',
 		winner: 'A',
+		layout: 'open',
 		...options,
 	}
 	for (const [key, min, max] of [
 		['teamA', 1, 40],
 		['teamB', 1, 40],
 		['arrows', 1, 200],
+		['hp', 1, 9],
 		['seed', 0, 4294967295],
 	]) {
 		if (!Number.isInteger(out[key]) || out[key] < min || out[key] > max)
@@ -37,6 +42,7 @@ export function scenario(options = {}) {
 	if (!['playing', 'menu', 'roundOver', 'matchOver'].includes(out.phase))
 		throw new Error('Unknown phase')
 	if (!['A', 'B'].includes(out.winner)) throw new Error('Unknown winner')
+	if (!Object.hasOwn(LAYOUTS, out.layout)) throw new Error('Unknown layout')
 	return out
 }
 
@@ -48,7 +54,7 @@ export function scenarioFromURL(search) {
 	if (name === '') return null
 	if (name !== '1' && !PRESETS[name]) throw new Error(`Unknown debug preset: ${name}`)
 	const options = { ...PRESETS[name] }
-	for (const key of ['teamA', 'teamB', 'arrows', 'seed'])
+	for (const key of ['teamA', 'teamB', 'arrows', 'seed', 'hp'])
 		if (params.has(key)) options[key] = Number(params.get(key))
 	for (const key of ['ai', 'paused', 'godmode', 'infiniteAmmo']) {
 		if (!params.has(key)) continue
@@ -56,6 +62,7 @@ export function scenarioFromURL(search) {
 		if (!['0', '1'].includes(value)) throw new Error(`${key} must be 0 or 1`)
 		options[key] = value === '1'
 	}
-	for (const key of ['phase', 'winner']) if (params.has(key)) options[key] = params.get(key)
+	for (const key of ['phase', 'winner', 'layout'])
+		if (params.has(key)) options[key] = params.get(key)
 	return scenario(options)
 }

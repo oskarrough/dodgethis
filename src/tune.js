@@ -58,6 +58,8 @@ export const tune = {
 		reaction: 0.7, // seconds an enemy lines up a shot before loosing
 		jitter: 0.2, // aim error in radians (higher = worse shots)
 		standoff: 10, // preferred range (m) an armed bot circle-strafes the target at
+		steerClearance: 1.1, // how close (m) an obstacle must be before the brain steers around it
+		sightFlip: 1.2, // seconds without a clear line to the target before the strafe flips sides
 	},
 	fx: {
 		impact: true,

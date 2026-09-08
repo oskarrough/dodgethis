@@ -129,6 +129,9 @@ async function main() {
 		RAPIER,
 		eventQueue,
 		combat,
+		get obstacles() {
+			return court.obstacles
+		},
 		present(event) {
 			const target = flow.round?.units.find((u) => u.id === (event.target?.id ?? event.source?.id))
 			if (tune.fx.impact && impact.trigger(event)) rumble(0.35, 0.6, 85)
@@ -176,8 +179,9 @@ async function main() {
 			impact.reset()
 		},
 		onChange: renderScore,
-		onTheme(enemies) {
+		onTheme(enemies, layout = 'open') {
 			applyCourtTheme(enemies)
+			court.setLayout(layout)
 		},
 	})
 
@@ -704,6 +708,8 @@ async function main() {
 				allies: setup.teamA - 1,
 				arrowCount: setup.arrows,
 				seed: setup.seed,
+				layout: setup.layout,
+				hp: setup.hp,
 			})
 			if (setup.phase === 'roundOver') flow.endRound(setup.winner)
 			if (setup.phase === 'matchOver') {

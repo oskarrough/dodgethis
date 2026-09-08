@@ -175,12 +175,26 @@ export function createFeedback(scene, { sfx, confirm, addShake = () => {}, kickF
 			}
 		} else if (event.outcome === 'deflected') sfx.deflect(event.point)
 		else if (event.outcome === 'landed') sfx.land(event.point)
+		else if (event.outcome === 'hurt') {
+			// A survived hit: softer thump and shake, a short HIT flash for the human, no death.
+			sfx.hit(event.point)
+			addShake(event.target.isHuman ? 0.35 : 0.2)
+			kickFov(1)
+			if (event.target.isHuman) {
+				confirm('HIT')
+				confirmationTime = 0.4
+			}
+		}
 
 		const dash = event.type === 'dash'
 		if (!dash && event.type !== 'impact') return
 		courtMarks(event)
 		const lethal = event.outcome === 'eliminated'
-		const count = lethal ? 12 : dash || event.outcome === 'deflected' ? 6 : 3
+		const count = lethal
+			? 12
+			: dash || event.outcome === 'deflected' || event.outcome === 'hurt'
+				? 6
+				: 3
 		const speed = lethal ? 3 : 1
 		const direction = event.direction
 		const horizontal = Math.hypot(direction.x, direction.z) || 1
