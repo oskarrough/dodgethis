@@ -361,6 +361,7 @@ export function createRound(
 				u.heldArrow = null
 			}
 			u.dispose()
+			u.alive = false // invalidate other brains’ cached target immediately
 			combat.push(`- removed Team ${team} unit #${u.id}`, 'kill')
 			checkWin()
 			return

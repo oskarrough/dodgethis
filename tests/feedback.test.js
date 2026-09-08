@@ -133,11 +133,67 @@ test('contact spam reuses a fixed pool, and reset clears effects before the next
 	expect(chips.instanceMatrix).toBe(matrices)
 	expect(chips.geometry).toBe(geometry)
 	expect(chips.material).toBe(material)
-	expect(scene.children).toHaveLength(2)
+	expect(scene.children).toHaveLength(3)
 	feedback.reset()
 	const position = mesh.position.clone()
 	feedback.update(10) // no stale death animation touches a retired round's mesh
 	expect(mesh.position.equals(position)).toBe(true)
 	expect(chips.visible).toBe(false)
 	expect(confirm).toHaveBeenLastCalledWith('')
+})
+
+test('court feedback distinguishes directional dash scratches from landing ticks', () => {
+	const marks = scene.getObjectByName('court-ink')
+	const matrix = new THREE.Matrix4()
+	feedback.present({ ...impact(), type: 'dash', outcome: undefined })
+	feedback.update(0.01)
+	expect(marks.visible).toBe(true)
+	marks.getMatrixAt(0, matrix)
+	expect(matrix.elements[8]).toBeCloseTo(0.55) // long stroke follows incoming +X
+	expect(matrix.elements[13]).toBeCloseTo(0.026) // court surface, not capsule centre
+	marks.getMatrixAt(2, matrix)
+	expect(matrix.elements[0]).toBe(0) // only the two shoe scratches
+	feedback.reset()
+	feedback.present({ ...impact('landed'), surface: 'court', point: { x: 0, y: 0, z: 0 } })
+	feedback.update(0.01)
+	marks.getMatrixAt(2, matrix)
+	expect(new THREE.Vector3().setFromMatrixScale(matrix).z).toBeCloseTo(0.22)
+	for (let i = 0; i < 12; i++) feedback.update(0.1)
+	expect(marks.visible).toBe(false)
+})
+
+test('marks never project aerial hits, off-court recovery, airborne dashes, or rim contacts onto the floor', () => {
+	feedback.present(impact())
+	feedback.present(impact('deflected'))
+	feedback.present({ ...impact('recovered'), surface: 'void' })
+	feedback.present({ ...impact(), type: 'dash', outcome: undefined, point: { x: 0, y: 3, z: 0 } })
+	feedback.present({ ...impact('landed'), surface: 'court', point: { x: 5.4, y: 0, z: 0 } })
+	feedback.update(0.01)
+	expect(scene.getObjectByName('court-ink').visible).toBe(false)
+})
+
+test('court marks stay bounded under spam and reset without resurrecting old strokes', () => {
+	const marks = scene.getObjectByName('court-ink')
+	const matrices = marks.instanceMatrix
+	const event = { ...impact('landed'), surface: 'court', point: { x: 0, y: 0, z: 0 } }
+	for (let i = 0; i < 100; i++) feedback.present(event)
+	feedback.update(0.01)
+	expect(marks.count).toBe(48)
+	expect(marks.instanceMatrix).toBe(matrices)
+	expect(marks.visible).toBe(true)
+	feedback.reset()
+	expect(marks.visible).toBe(false)
+	feedback.present(event)
+	feedback.update(0.01)
+	const matrix = new THREE.Matrix4()
+	marks.getMatrixAt(3, matrix)
+	expect(new THREE.Vector3().setFromMatrixScale(matrix).length()).toBe(0)
+	const geometryDisposed = mock()
+	const materialDisposed = mock()
+	marks.geometry.addEventListener('dispose', geometryDisposed)
+	marks.material.addEventListener('dispose', materialDisposed)
+	feedback.dispose()
+	expect(scene.getObjectByName('court-ink')).toBeUndefined()
+	expect(geometryDisposed).toHaveBeenCalledTimes(1)
+	expect(materialDisposed).toHaveBeenCalledTimes(1)
 })

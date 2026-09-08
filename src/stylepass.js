@@ -12,7 +12,7 @@ import { PALETTE } from './style.js'
 //                              │
 //                              ▼
 //        forward pass (trails, preview, labels, corpses, shield)
-//        rendered against the SAME depth buffer, so they occlude correctly
+//        rendered against the copied opaque depth, so they occlude correctly
 //
 // The palette doubles as the style-ID table: a material's color is looked up in
 // PALETTE, and its index becomes the discrete ID written to the buffer. That is
@@ -112,7 +112,10 @@ void main() {
 	vec2 px = 1.0 / uRes;
 	float sc = uRes.y / 900.0;
 	vec4 s = texture2D(tData, vUv);
+	// Copy the opaque depth while styling into a separate framebuffer. Forward
+	// effects can depth-test here without ever sampling an attached texture.
 	float z = texture2D(tDepth, vUv).x;
+	gl_FragDepth = z;
 	bool sky = z >= 0.99999;
 	if (sky) { gl_FragColor = vec4(uSky, 1.0); return; }
 
@@ -245,26 +248,19 @@ export function createStylePass(canvas) {
 		stencilBuffer: false,
 		generateMipmaps: false,
 	}
-	// Three targets, because a framebuffer may not sample the depth texture it is
-	// also writing to — that feedback loop renders black, with no error reported.
-	//   data     surface facts, and the depth every later pass reuses
-	//   styled   the post shader's output; it samples depth, so must NOT attach it
-	//   composed styled copied in, then forward effects depth-tested against that
-	//            same depth texture, which is what makes them occlude correctly
+	// Two independent depth attachments avoid a framebuffer feedback loop:
+	// data owns the sampled depth texture; composed owns a depth renderbuffer.
+	// The style shader writes color AND copies depth, removing the extra color
+	// target and fullscreen copy previously needed to share opaque depth.
 	const data = new THREE.WebGLRenderTarget(2, 2, targetOpts)
-	const styled = new THREE.WebGLRenderTarget(2, 2, {
+	const composed = new THREE.WebGLRenderTarget(2, 2, {
 		type: THREE.HalfFloatType,
 		format: THREE.RGBAFormat,
 		minFilter: THREE.LinearFilter,
 		magFilter: THREE.LinearFilter,
-		depthBuffer: false,
+		depthBuffer: true,
 		stencilBuffer: false,
 		generateMipmaps: false,
-	})
-	const composed = new THREE.WebGLRenderTarget(2, 2, {
-		...targetOpts,
-		minFilter: THREE.LinearFilter,
-		magFilter: THREE.LinearFilter,
 	})
 
 	const colors = ROLES.map((role) => new THREE.Color(PALETTE[role]))
@@ -284,30 +280,16 @@ export function createStylePass(canvas) {
 		},
 		vertexShader: postVert,
 		fragmentShader: postFrag,
-		depthTest: false,
-		depthWrite: false,
+		// Depth writes require depth testing to be enabled. Every fullscreen
+		// fragment must replace the destination depth, including sky pixels.
+		depthTest: true,
+		depthFunc: THREE.AlwaysDepth,
+		depthWrite: true,
 	})
 	const quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), post)
 	quad.frustumCulled = false
 	const postScene = new THREE.Scene().add(quad)
 	const postCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1)
-
-	// Plain copy, styled -> composed, so the forward pass joins it on a target
-	// that owns the shared depth buffer.
-	const copy = new THREE.ShaderMaterial({
-		uniforms: { tImage: { value: styled.texture } },
-		vertexShader: postVert,
-		fragmentShader: `
-			precision highp float;
-			varying vec2 vUv;
-			uniform sampler2D tImage;
-			void main() { gl_FragColor = vec4(texture2D(tImage, vUv).rgb, 1.0); }`,
-		depthTest: false,
-		depthWrite: false,
-	})
-	const copyQuad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), copy)
-	copyQuad.frustumCulled = false
-	const copyScene = new THREE.Scene().add(copyQuad)
 
 	// Final blit, converting to the display's color space exactly once.
 	const blit = new THREE.ShaderMaterial({
@@ -337,7 +319,6 @@ export function createStylePass(canvas) {
 		const rw = Math.max(2, Math.floor(w * pixelRatio))
 		const rh = Math.max(2, Math.floor(h * pixelRatio))
 		data.setSize(rw, rh)
-		styled.setSize(rw, rh)
 		composed.setSize(rw, rh)
 		post.uniforms.uRes.value.set(rw, rh)
 	}
@@ -383,26 +364,20 @@ export function createStylePass(canvas) {
 		renderer.clear(true, true, false)
 		renderer.render(scene, camera)
 
-		// 2. decide what it is made of
+		// 2. style the world and copy its depth into the composition target
 		post.uniforms.uNear.value = camera.near
 		post.uniforms.uFar.value = camera.far
 		post.uniforms.uInvProj.value.copy(camera.projectionMatrixInverse)
 		post.uniforms.uInvView.value.copy(camera.matrixWorld)
-		renderer.setRenderTarget(styled)
-		renderer.clear(true, false, false)
+		renderer.setRenderTarget(composed)
 		renderer.render(postScene, postCam)
 
-		// 3. move it onto the target that owns the depth written in step 1
-		renderer.setRenderTarget(composed)
-		renderer.clear(true, false, false) // colour only — that depth is the point
-		renderer.render(copyScene, postCam)
-
-		// 4. forward effects, depth-tested against the world they sit in
+		// 3. forward effects, depth-tested against the copied opaque depth
 		camera.layers.set(FORWARD_LAYER)
 		renderer.render(scene, camera)
 		camera.layers.set(OPAQUE_LAYER)
 
-		// 5. one conversion to display color space
+		// 4. one conversion to display color space
 		renderer.setRenderTarget(null)
 		renderer.clear(true, true, false)
 		renderer.render(blitScene, postCam)
@@ -410,14 +385,11 @@ export function createStylePass(canvas) {
 
 	function dispose() {
 		data.dispose()
-		styled.dispose()
 		composed.dispose()
 		depthTexture.dispose()
 		post.dispose()
-		copy.dispose()
 		blit.dispose()
 		quad.geometry.dispose()
-		copyQuad.geometry.dispose()
 		blitQuad.geometry.dispose()
 		renderer.dispose()
 	}

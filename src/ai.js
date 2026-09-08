@@ -3,7 +3,7 @@ import { tune } from './tune.js'
 import { nearest } from './spatial.js'
 import { ARENA, blockOutward, bounds } from './arena.js'
 
-// Cheap per-enemy brain (plan.md M5). Each tick it picks one of three intents
+// Cheap per-enemy brain (plan.md M5). Each tick it executes one of three intents
 // and returns { move, grab, shoot } for the main loop to execute:
 //
 //   threatened → an enemy arrow is inbound on my line → strafe off it (toward center)
@@ -20,6 +20,15 @@ export function createBrain(unit, { reactionMul = 1, jitterMul = 1, rng = Math.r
 	let lastTarget = null
 	let strafeDir = rng() < 0.5 ? 1 : -1 // circle-strafe handedness (flips over time)
 	let strafeTimer = 0
+	// Strategic scans run about five times per second, with seeded initial phases
+	// so a crowd does not all reconsider on the same simulation step. Steering,
+	// aim leading, threat weaving and projectile avoidance still run every step.
+	let targetTimer = rng() * DECISION_INTERVAL
+	let pickupTimer = rng() * DECISION_INTERVAL
+	let target = null
+	let targetInitialized = false
+	let pickup = { arrow: null, contested: false }
+	let pickupInitialized = false
 	const lastPos = new THREE.Vector3()
 	const tvel = new THREE.Vector3() // estimated target velocity (for leading)
 	const move = new THREE.Vector3()
@@ -77,13 +86,18 @@ export function createBrain(unit, { reactionMul = 1, jitterMul = 1, rng = Math.r
 		if (!unit.alive) return { move, grab, shoot }
 
 		const me = unit.position
-		const { item: target, d2 } = nearest(
-			ctx.units,
-			me.x,
-			me.z,
-			(u) => u.alive && u.team !== unit.team,
-		)
+		targetTimer -= dt
+		pickupTimer -= dt
+		if (!targetInitialized || targetTimer <= 0 || (target && !target.alive)) {
+			target = nearest(ctx.units, me.x, me.z, (u) => u.alive && u.team !== unit.team).item
+			targetInitialized = true
+			if (targetTimer <= 0) targetTimer = DECISION_INTERVAL
+		}
 		if (!target) return { move, grab, shoot }
+		// Positions stay live even while the strategic choice is cached.
+		const dx = target.position.x - me.x
+		const dz = target.position.z - me.z
+		const d2 = dx * dx + dz * dz
 
 		// Estimate the target's velocity from frame-to-frame movement (for leading).
 		if (target === lastTarget && dt > 0) {
@@ -108,7 +122,8 @@ export function createBrain(unit, { reactionMul = 1, jitterMul = 1, rng = Math.r
 
 		// --- armed: aim with lead + jitter and loose after a reaction beat. ---
 		if (unit.heldArrow) {
-			const dist = Math.sqrt(d2)
+			pickupInitialized = false
+			const dist = Math.max(Math.sqrt(d2), 1e-4)
 			const horiz = Math.cos((tune.arrow.launchAngle * Math.PI) / 180) * tune.arrow.impulse
 			const tTravel = dist / Math.max(horiz, 1)
 			pred.set(target.position.x + tvel.x * tTravel, 0, target.position.z + tvel.z * tTravel)
@@ -159,7 +174,16 @@ export function createBrain(unit, { reactionMul = 1, jitterMul = 1, rng = Math.r
 		}
 
 		// --- noArrow: claim an arrow worth walking to, without walking into a shot. ---
-		const { arrow, contested } = claimArrow(ctx.arrows, ctx.units, me, unit)
+		if (
+			!pickupInitialized ||
+			pickupTimer <= 0 ||
+			(pickup.arrow && pickup.arrow.state !== 'grounded')
+		) {
+			pickup = claimArrow(ctx.arrows, ctx.units, me, unit)
+			pickupInitialized = true
+			if (pickupTimer <= 0) pickupTimer = DECISION_INTERVAL
+		}
+		const { arrow, contested } = pickup
 		if (arrow) {
 			move.set(arrow.position.x - me.x, 0, arrow.position.z - me.z)
 			const ad = Math.hypot(move.x, move.z)
@@ -182,6 +206,8 @@ export function createBrain(unit, { reactionMul = 1, jitterMul = 1, rng = Math.r
 
 	return { unit, think }
 }
+
+const DECISION_INTERVAL = 0.2
 
 // Dodge tuning: how soon (seconds to closest approach) a bot reacts to an inbound
 // arrow, and how near the arrow's line must pass to count as a hit worth dodging.

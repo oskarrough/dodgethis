@@ -1,11 +1,14 @@
 import * as THREE from 'three'
 import { startDeath } from './death.js'
 import { instanceStyle } from './stylepass.js'
+import { ARENA, onCourt } from './arena.js'
+import { tune } from './tune.js'
 
 const PARTICLES = 64
+const MARKS = 48
 
 // Gameplay sends copied facts; main supplies the retired target's visual handle.
-// One persistent GPU pool serves all contacts and is cleared between rounds.
+// Persistent GPU pools serve all contacts and are cleared between rounds.
 export function createFeedback(scene, { sfx, confirm, addShake = () => {} }) {
 	const chips = new THREE.InstancedMesh(
 		new THREE.OctahedronGeometry(1, 0),
@@ -40,6 +43,60 @@ export function createFeedback(scene, { sfx, confirm, addShake = () => {} }) {
 		}
 	})
 	scene.add(chips)
+	// Tiny tapered strokes read as shoe scratches / landing ticks, in the same
+	// printed ink as the characters. One opaque batch, no decal textures or blend pass.
+	const stroke = new THREE.BufferGeometry()
+	stroke.setAttribute(
+		'position',
+		new THREE.Float32BufferAttribute([-0.5, 0, -0.5, 0, 0, 0.5, 0.5, 0, -0.5], 3),
+	)
+	stroke.computeVertexNormals()
+	const marks = new THREE.InstancedMesh(stroke, new THREE.MeshBasicMaterial(), MARKS)
+	marks.name = 'court-ink'
+	marks.instanceMatrix.setUsage(THREE.DynamicDrawUsage)
+	marks.frustumCulled = false
+	marks.visible = false
+	const markSlots = Array.from({ length: MARKS }, (_, i) => {
+		marks.setMatrixAt(i, pose.matrix)
+		marks.setColorAt(i, ink)
+		return { x: 0, z: 0, heading: 0, width: 0, length: 0, life: 0 }
+	})
+	scene.add(marks)
+	let nextMark = 0
+	let marksDirty = false
+
+	function courtMarks(event) {
+		const dash = event.type === 'dash'
+		if (dash) {
+			const footY = event.point.y - tune.player.radius - tune.player.halfHeight
+			if (Math.abs(footY - ARENA.top) > 0.15) return
+		} else if (event.outcome !== 'landed' || event.surface !== 'court') return
+		const { x, z } = event.direction
+		const heading = Math.atan2(x, z)
+		const count = dash ? 2 : 3
+		for (let i = 0; i < count; i++) {
+			const angle = heading + (dash ? 0 : (i - 1) * 0.8)
+			const length = dash ? 0.55 - i * 0.12 : 0.22 + (i % 2) * 0.08
+			const side = dash ? (i - 0.5) * 0.25 : 0
+			const reach = dash ? -0.22 : 0.19
+			const px = event.point.x + Math.sin(angle) * reach + Math.cos(angle) * side
+			const pz = event.point.z + Math.cos(angle) * reach - Math.sin(angle) * side
+			// Keep the entire stroke inside the paint; never print in the void or
+			// over the warning rim. A conservative radius also covers rotated strokes.
+			if (!onCourt(px, pz, ARENA.inset.rim + length * 0.6)) continue
+			const mark = markSlots[nextMark]
+			nextMark = (nextMark + 1) % MARKS
+			Object.assign(mark, {
+				x: px,
+				z: pz,
+				heading: angle,
+				width: dash ? 0.055 : 0.07,
+				length,
+				life: dash ? 0.7 : 1.1,
+			})
+			marksDirty = true
+		}
+	}
 	const deaths = []
 	let next = 0
 	let confirmationTime = 0
@@ -84,6 +141,7 @@ export function createFeedback(scene, { sfx, confirm, addShake = () => {} }) {
 
 		const dash = event.type === 'dash'
 		if (!dash && event.type !== 'impact') return
+		courtMarks(event)
 		const lethal = event.outcome === 'eliminated'
 		const count = lethal ? 12 : dash || event.outcome === 'deflected' ? 6 : 3
 		const speed = lethal ? 3 : 1
@@ -145,12 +203,34 @@ export function createFeedback(scene, { sfx, confirm, addShake = () => {} }) {
 		}
 		chips.visible = active
 		chips.instanceMatrix.needsUpdate = true
+		if (!marks.visible && !marksDirty) return
+		let marksActive = false
+		for (let i = 0; i < MARKS; i++) {
+			const mark = markSlots[i]
+			mark.life = Math.max(0, mark.life - dt)
+			if (mark.life > 0) {
+				const shrink = Math.min(1, mark.life / 0.2)
+				pose.position.set(mark.x, ARENA.top + 0.026, mark.z)
+				pose.rotation.y = mark.heading
+				pose.scale.set(mark.width * shrink, 1, mark.length * shrink)
+				marksActive = true
+			} else pose.scale.setScalar(0)
+			pose.updateMatrix()
+			marks.setMatrixAt(i, pose.matrix)
+		}
+		marks.visible = marksActive
+		marks.instanceMatrix.needsUpdate = true
+		marksDirty = false
 	}
 
 	function reset() {
 		deaths.length = 0 // round disposal owns the meshes, not this service
 		for (const p of slots) p.life = 0
 		chips.visible = false
+		for (const mark of markSlots) mark.life = 0
+		marks.visible = false
+		marksDirty = false
+		nextMark = 0
 		next = 0
 		humanOut = false
 		confirmationTime = 0
@@ -163,6 +243,10 @@ export function createFeedback(scene, { sfx, confirm, addShake = () => {} }) {
 		chips.dispose()
 		chips.geometry.dispose()
 		chips.material.dispose()
+		scene.remove(marks)
+		marks.dispose()
+		marks.geometry.dispose()
+		marks.material.dispose()
 	}
 
 	return { present, update, reset, dispose }

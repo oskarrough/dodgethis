@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Simplified rendering and spread out AI planning work in crowded matches.
+- Added brief court scratches for dashes and directional marks where shots land.
+
 - Fixed a crash when a rendered player was eliminated or fell off the court.
 
 - Reduced crowded-match slowdowns with safe player spawns and cheaper collision queries.

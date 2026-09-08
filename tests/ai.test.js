@@ -66,3 +66,52 @@ test('no weave when the enemy is empty-handed or looking elsewhere', () => {
 	const ctx = { units: [away, bot], arrows: [arrow(0, -10)] }
 	expect(Math.abs(heading(createBrain(bot), ctx).x)).toBeLessThan(0.001)
 })
+
+test('pickup decisions persist between scans and immediately replace unavailable arrows', () => {
+	const bot = unit('B', 0, 0)
+	const enemy = unit('A', 0, 11, { held: {} })
+	const left = arrow(-4, 0)
+	const right = arrow(6, 0)
+	const ctx = { units: [bot, enemy], arrows: [left, right] }
+	const brain = createBrain(bot, { rng: () => 0.9 })
+	expect(heading(brain, ctx).x).toBeLessThan(-0.9)
+	right.position.x = 2
+	expect(heading(brain, ctx).x).toBeLessThan(-0.9)
+	left.state = 'held'
+	expect(heading(brain, ctx).x).toBeGreaterThan(0.9)
+})
+
+test('target choice is cached, tracks live positions, and replaces dead targets immediately', () => {
+	const bot = unit('B', 0, 0, { held: {} })
+	const left = unit('A', -4, 0)
+	const right = unit('A', 6, 0)
+	const ctx = { units: [bot, left, right], arrows: [] }
+	const brain = createBrain(bot, { rng: () => 0.9 })
+	heading(brain, ctx)
+	expect(bot.aim.x).toBeLessThan(-0.9)
+	right.position.x = 2
+	heading(brain, ctx)
+	expect(bot.aim.x).toBeLessThan(-0.9)
+	left.position.z = 0.1
+	heading(brain, ctx)
+	expect(bot.aim.z).toBeGreaterThan(0)
+	left.alive = false
+	heading(brain, ctx)
+	expect(bot.aim.x).toBeGreaterThan(0.9)
+})
+
+test('seeded phases stagger strategic refreshes and eventually choose a closer pickup', () => {
+	const bot = unit('B', 0, 0)
+	const enemy = unit('A', 0, 11, { held: {} })
+	const left = arrow(-4, 0)
+	const right = arrow(6, 0)
+	const ctx = { units: [bot, enemy], arrows: [left, right] }
+	const early = createBrain(bot, { rng: () => 0.25 })
+	const late = createBrain(bot, { rng: () => 0.9 })
+	heading(early, ctx)
+	heading(late, ctx)
+	right.position.x = 2
+	expect(early.think(ctx, 0.06).move.x).toBeGreaterThan(0.9)
+	expect(late.think(ctx, 0.06).move.x).toBeLessThan(-0.9)
+	expect(late.think(ctx, 0.2).move.x).toBeGreaterThan(0.9)
+})
