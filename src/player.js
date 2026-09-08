@@ -7,10 +7,7 @@ import { stepHorizontalVelocity } from './move.js'
 
 const clamp = (v, lo, hi) => (v < lo ? lo : v > hi ? hi : v)
 
-// A unit (the human player or an enemy) is a capsule driven by a Rapier
-// KinematicCharacterController. Kinematic = we move it explicitly; it slides
-// against colliders but isn't shoved by them. Gravity is applied by hand so it
-// hugs the floor. Units belong to a team and can be eliminated by arrow hits.
+// A unit is a team-owned, manually moved Rapier kinematic capsule with hand-applied gravity, collider sliding, and arrow elimination.
 
 let _uid = 0
 
@@ -33,15 +30,13 @@ export function createPlayer(
 	mesh.add(visual)
 	scene.add(mesh)
 
-	// Facing wedge: a pointed nose reads as a direction from across the court,
-	// where a square nub just reads as a bump.
+	// A pointed nose reads as facing direction from across the court.
 	const nose = new THREE.Mesh(new THREE.ConeGeometry(0.15, 0.42, 4), makeStyleMaterial('cream'))
 	nose.rotation.set(-Math.PI / 2, 0, Math.PI / 4)
 	nose.position.set(0, halfHeight, -radius - 0.08)
 	visual.add(nose)
 
-	// Team badge: a shape, not a color, so ally and enemy survive a grayscale
-	// capture and the style pass's flattening. Team A wears a ring, team B a bar.
+	// Shape-coded badges survive grayscale and style flattening: Team A wears a ring, Team B a bar.
 	const badge = new THREE.Mesh(
 		team === 'A'
 			? new THREE.TorusGeometry(0.17, 0.05, 6, 16)
@@ -52,9 +47,7 @@ export function createPlayer(
 	badge.rotation.x = Math.PI / 2
 	visual.add(badge)
 
-	// The bow: a readable armed silhouette. Shown only while this unit actually
-	// holds an arrow, so ARMED is legible with the HUD hidden. Decoration only —
-	// the capsule collider is unchanged, so it never enlarges the target.
+	// The decorative bow exposes armed state without changing the capsule target.
 	const bow = new THREE.Mesh(
 		new THREE.TorusGeometry(0.34, 0.045, 6, 16, Math.PI * 1.1),
 		makeStyleMaterial('ammoShaft'),
@@ -96,8 +89,7 @@ export function createPlayer(
 	const collider = world.createCollider(RAPIER.ColliderDesc.capsule(halfHeight, radius), body)
 
 	const controller = world.createCharacterController(0.01)
-	// Solid bleachers aren't auto-stepped. Autostep adds shape casts against
-	// crowded capsules and can climb other players, trapping overlapping spawns.
+	// Disable autostep to avoid crowded shape casts and climbing other players; solid bleachers remain barriers.
 	controller.enableSnapToGround(0.3)
 	controller.setApplyImpulsesToDynamicBodies(true)
 
@@ -157,9 +149,7 @@ export function createPlayer(
 		dispose,
 	}
 
-	// The hand (muzzle): ~0.6m in front of and above the center, along the aim.
-	// Where held arrows ride and loosed arrows are born; both main (aim preview)
-	// and the round (loosing) read it, so the unit owns it.
+	// The unit-owned muzzle sits along aim for held arrows, previews, and launches.
 	function handPosition() {
 		const p = mesh.position
 		const d = unit.aim
@@ -171,8 +161,7 @@ export function createPlayer(
 		if (dir.x !== 0 || dir.z !== 0) mesh.rotation.y = Math.atan2(dir.x, dir.z) + Math.PI
 	}
 
-	// Start a dash burst in `dir` (falls back to current facing if dir is ~zero).
-	// No-op if dead or still on cooldown. Returns true if a dash actually fired.
+	// Start a dash in `dir` or current facing; return whether a live, ready unit fired it.
 	function dash(dir) {
 		if (!unit.alive || dashCd > 0 || dashT > 0) return false
 		let dx = dir ? dir.x : 0
@@ -209,14 +198,12 @@ export function createPlayer(
 			vx = dashDir.x * burst
 			vz = dashDir.z * burst
 		} else {
-			// Q3-style accel/friction (ground vs air). Uses last tick's grounded
-			// flag — one-frame lag is fine at 60Hz and keeps spawn grounded=true.
+			// Q3-style ground/air movement uses the prior grounded flag, preserving grounded spawn state.
 			;({ vx, vz } = stepHorizontalVelocity(vx, vz, dir.x, dir.z, grounded, dt, tune.player))
 		}
 
 		const desired = { x: vx * dt, y: 0, z: vz * dt }
-		// Keep only normal run speed after the final burst step; otherwise the next
-		// un-clamped frame carries dash velocity straight off the court.
+		// Reduce velocity after the final burst so the next unclamped frame cannot carry it off-court.
 		if (dashEnding) {
 			vx = dashDir.x * tune.player.speed
 			vz = dashDir.z * tune.player.speed
@@ -230,8 +217,7 @@ export function createPlayer(
 		const t = body.translation()
 		let nx = t.x + mv.x
 		let nz = t.z + mv.z
-		// A dash commits a big step; clamp it to the court so it can't fling a unit
-		// off the rim into the lava (normal walking can still walk off — that's skill).
+		// Clamp committed dash steps to the court while normal walking can still leave the rim.
 		const lim = courtBounds(radius)
 		// Don't teleport a bleacher/airborne player back inside the court.
 		if (dashing && Math.abs(t.x) <= lim.x && Math.abs(t.z) <= lim.z) {
@@ -247,8 +233,7 @@ export function createPlayer(
 		grounded = vy <= 0 && controller.computedGrounded()
 		if (grounded) vy = 0
 
-		// Face the steer/aim direction (not the latched dash dir) so a dash reads as
-		// a sidestep, not a spin.
+		// Face steer or aim rather than latched dash direction so dashes read as sidesteps.
 		if (dir.x !== 0 || dir.z !== 0) mesh.rotation.y = Math.atan2(dir.x, dir.z) + Math.PI
 	}
 
@@ -347,8 +332,7 @@ export function createPlayer(
 		world.removeRigidBody(body) // removes its collider too
 	}
 
-	// Teleport a *live* unit (kinematic body + mesh) to a spot, killing velocity.
-	// Used by godmode to rescue a player who walked off the edge.
+	// Teleport a live body and mesh while clearing velocity, used for godmode rescues.
 	function place(x, y, z) {
 		body.setTranslation({ x, y, z }, true)
 		vx = 0
@@ -362,9 +346,7 @@ export function createPlayer(
 		stepDistance = 0
 	}
 
-	// Free everything this unit put into the world + scene. Like Godot's
-	// queue_free(): the Round calls it on every unit to reset without a reload.
-	// A live unit still has its body/collider; an eliminated one already shed them.
+	// Free all owned world and scene resources, accounting for eliminated units that already shed their body.
 	function dispose() {
 		if (unit.alive) world.removeRigidBody(body)
 		world.removeCharacterController(controller)

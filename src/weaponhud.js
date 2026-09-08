@@ -4,9 +4,7 @@ import { hex } from './style.js'
 
 const ORDER = Object.keys(WEAPONS)
 
-// Bottom-center weapon picker + charge meter. Keyboard 1/2 still switches via
-// main.js; slots are clickable during play for mouse users. Armed status sits
-// here with the weapon chrome — not in the left-stack debug HUD.
+// Bottom-center picker, charge and armed status; clickable slots complement main's 1/2 keys, separate from debug HUD.
 export function createWeaponHud({ onSelect } = {}) {
 	const root = document.querySelector('.weapons')
 	const slots = new Map()

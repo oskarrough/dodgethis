@@ -3,14 +3,12 @@ import { tune } from './tune.js'
 import { PALETTE } from './style.js'
 import { FORWARD_LAYER } from './stylepass.js'
 
-// Immediate out pose, then a comic exit. feedback.js owns the timing and pooled
-// particles; these curves only animate a mesh that gameplay has already retired.
+// Animate retired meshes from out pose to comic exit; feedback.js owns timing and pooled particles.
 
 const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3)
 const easeInCubic = (t) => t * t * t
 const clamp01 = (t) => (t < 0 ? 0 : t > 1 ? 1 : t)
-// Opacity that holds full until `start`, then ramps to 0 by the end — so a body
-// keeps its shape while it deforms and only fades out as it finishes dissolving.
+// Hold opacity until `start`, then fade to zero so deformation reads before the body dissolves.
 const tailFade = (t, start = 0.6) => (t < start ? 1 : 1 - (t - start) / (1 - start))
 
 const DARK = new THREE.Color(PALETTE.ink)
@@ -124,8 +122,7 @@ export function startDeath(mesh, { fell = false, radius = 0.4 } = {}) {
 	mesh.position.y *= squash
 	const baseY = mesh.position.y
 
-	// Corpses replace their owned surface-data shaders with actual colors and
-	// opacity. Release each old material; the unit owns its replacement.
+	// Replace and release surface-data shaders for corpse color/opacity; the unit owns the new materials.
 	const mats = []
 	mesh.traverse((o) => {
 		if (!o.isMesh || !o.material) return

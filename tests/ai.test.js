@@ -2,8 +2,7 @@ import { expect, test } from 'bun:test'
 import * as THREE from 'three'
 import { createBrain } from '../src/ai.js'
 
-// The brain only reads these fields off a unit, so the economy behaviour can be
-// tested without booting Rapier or a Round.
+// The brain only reads these fields off a unit, so the economy behaviour is testable without booting Rapier or a Round.
 function unit(team, x, z, { held = null, aim = [0, 0, -1], alive = true } = {}) {
 	return {
 		team,

@@ -7,8 +7,7 @@ import { tune } from './tune.js'
 const PARTICLES = 64
 const MARKS = 48
 
-// Gameplay sends copied facts; main supplies the retired target's visual handle.
-// Persistent GPU pools serve all contacts and are cleared between rounds.
+// Gameplay sends copied facts; main supplies the retired target's visual handle. Persistent GPU pools serve all contacts and are cleared between rounds.
 export function createFeedback(scene, { sfx, confirm, addShake = () => {} }) {
 	const chips = new THREE.InstancedMesh(
 		new THREE.OctahedronGeometry(1, 0),
@@ -43,8 +42,7 @@ export function createFeedback(scene, { sfx, confirm, addShake = () => {} }) {
 		}
 	})
 	scene.add(chips)
-	// Tiny tapered strokes read as shoe scratches / landing ticks, in the same
-	// printed ink as the characters. One opaque batch, no decal textures or blend pass.
+	// Tiny tapered strokes read as shoe scratches / landing ticks, same printed ink as the characters; one opaque batch, no decals or blend pass.
 	const stroke = new THREE.BufferGeometry()
 	stroke.setAttribute(
 		'position',
@@ -81,8 +79,7 @@ export function createFeedback(scene, { sfx, confirm, addShake = () => {} }) {
 			const reach = dash ? -0.22 : 0.19
 			const px = event.point.x + Math.sin(angle) * reach + Math.cos(angle) * side
 			const pz = event.point.z + Math.cos(angle) * reach - Math.sin(angle) * side
-			// Keep the entire stroke inside the paint; never print in the void or
-			// over the warning rim. A conservative radius also covers rotated strokes.
+			// Keep the entire stroke inside the paint; the conservative radius also covers rotated strokes.
 			if (!onCourt(px, pz, ARENA.inset.rim + length * 0.6)) continue
 			const mark = markSlots[nextMark]
 			nextMark = (nextMark + 1) % MARKS

@@ -2,14 +2,7 @@ import * as THREE from 'three'
 import { makeStyleMaterial } from './stylepass.js'
 import { onCourt } from './arena.js'
 
-// Printed drop shadows. The style pass has no lights and no shadow map, so
-// height would otherwise be unreadable: an arrow at head height and an arrow on
-// the ground draw identically from this camera. A flat disc under each caster
-// restores the cue — the gap between a thing and its shadow IS its height —
-// without paying for a shadow map, and it matches the sticker language better
-// than a soft projected shadow would.
-//
-// One pooled, pre-allocated set of discs. Nothing is allocated per round.
+// Pooled printed discs restore height cues without shadow-map cost or per-round allocation.
 
 const POOL = 512
 const LIFT = 0.014 // above the court line, below the ammo marker
@@ -29,8 +22,7 @@ export function createShadows(scene) {
 	let used = 0
 	function cast(x, y, z, radius) {
 		if (used >= POOL || !onCourt(x, z)) return // nothing to fall on out over the void
-		// Shrink a little with height so a high shot reads as high even where the
-		// caster and its shadow overlap on screen.
+		// Shrink with height so high shots still read when caster and shadow overlap.
 		const shrink = 1 - Math.min(Math.max(y, 0) / 8, 1) * 0.35
 		pose.position.set(x, LIFT, z)
 		pose.scale.setScalar(Math.max(0.05, radius * shrink))

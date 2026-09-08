@@ -1,11 +1,4 @@
-// Quake-inspired horizontal movement (Q3 spirit, not a literal physics port).
-// Pure functions so the feel can be unit-tested without Rapier/Three.
-//
-// Model:
-//   1. Ground friction bleeds speed (harder when there's no wish).
-//   2. Accelerate along wishdir up to wishspeed (analog stick scales wishspeed).
-//   3. Soft speed cap — no bunny-hop runaway on a small court.
-// Air uses a separate accel so you can still aim a strafe off the rim.
+// Quake-inspired horizontal movement, pure functions for unit-testing: ground friction, wishdir accel, soft speed cap, separate air accel.
 
 const EPS = 1e-6
 
@@ -21,10 +14,7 @@ export function applyFriction(vx, vz, friction, stopSpeed, dt) {
 	return { vx: vx * s, vz: vz * s }
 }
 
-/**
- * Accelerate velocity toward wishdir * wishSpeed.
- * Classic CPM/Q3: only the component along wishdir is raised (strafe-friendly).
- */
+/** Accelerate velocity toward wishdir * wishSpeed; only the component along wishdir is raised (classic CPM/Q3, strafe-friendly). */
 export function accelerate(vx, vz, wishDirX, wishDirZ, wishSpeed, accel, dt) {
 	if (wishSpeed <= 0) return { vx, vz }
 	const currentSpeed = vx * wishDirX + vz * wishDirZ
@@ -38,11 +28,7 @@ export function accelerate(vx, vz, wishDirX, wishDirZ, wishSpeed, accel, dt) {
 	}
 }
 
-/**
- * One tick of horizontal velocity given a move intent {x,z} (length ≤ 1).
- * `grounded` selects ground friction/accel vs air accel.
- * `p` is typically tune.player (speed, accel, friction, …).
- */
+/** One tick of horizontal velocity for intent {x,z} (length ≤ 1); `grounded` picks ground vs air accel, `p` is typically tune.player. */
 export function stepHorizontalVelocity(vx, vz, wishX, wishZ, grounded, dt, p) {
 	const wishLen = Math.hypot(wishX, wishZ)
 	let wishDirX = 0
@@ -54,8 +40,7 @@ export function stepHorizontalVelocity(vx, vz, wishX, wishZ, grounded, dt, p) {
 	const wishSpeed = p.speed * (wishLen > 1 ? 1 : wishLen)
 
 	if (grounded) {
-		// No wish → slam the brakes (responsive stop). Holding a key uses softer
-		// friction so accel can still win and you settle at max speed.
+		// No wish → slam the brakes; softer friction otherwise lets accel win and settle at max speed.
 		const fric = wishLen < 0.01 ? p.stopFriction : p.friction
 		;({ vx, vz } = applyFriction(vx, vz, fric, p.stopSpeed, dt))
 	}
@@ -63,8 +48,7 @@ export function stepHorizontalVelocity(vx, vz, wishX, wishZ, grounded, dt, p) {
 	const accel = grounded ? p.accel : p.airAccel
 	;({ vx, vz } = accelerate(vx, vz, wishDirX, wishDirZ, wishSpeed, accel, dt))
 
-	// Soft cap. Air allows a little overshoot so strafing still feels useful
-	// without turning the court into a speed-run map.
+	// Soft cap; air allows a little overshoot so strafing still feels useful.
 	const max = grounded ? p.speed * 1.02 : p.speed * p.airSpeedMul
 	const speed = Math.hypot(vx, vz)
 	if (speed > max) {

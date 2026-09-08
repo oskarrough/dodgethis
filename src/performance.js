@@ -1,5 +1,4 @@
-// Bounded, opt-in measurements. Frame intervals include browser/GPU waiting;
-// CPU timings only measure JS work and WebGL submission, not GPU completion.
+// Bounded, opt-in measurements: frame intervals include browser/GPU waiting, CPU timings only measure JS work and WebGL submission.
 export function createPerformanceMonitor(capacity = 1800) {
 	const samples = []
 	let cursor = 0

@@ -6,17 +6,7 @@ import { nearest } from './spatial.js'
 import { tune } from './tune.js'
 import { PALETTE } from './style.js'
 
-// A Round is the gameplay "scene" (Godot framing): it owns the units, their AI
-// brains, and the arrow pool for ONE round. Build it with createRound(), tick it
-// each frame (step + lateUpdate), and call dispose() to free everything it added
-// to the Three scene and the Rapier world. That clean teardown is the "real
-// reset" — instance a fresh Round instead of reloading the page.
-//
-// When one team is wiped out the round fires onOver(winner) exactly once — a
-// signal the match controller (main.js) listens to, to keep score.
-//
-// ctx carries the persistent game services the round borrows but does not own:
-//   { scene, world, RAPIER, eventQueue, combat, present }
+// A Round owns one round's units, AI, and arrows; tick it with step + lateUpdate, dispose it for a real reset, and handle its one-shot onOver(winner) signal; ctx provides borrowed game services.
 export function createRound(
 	ctx,
 	{
@@ -31,8 +21,7 @@ export function createRound(
 ) {
 	if (!lobby && arrowCount < 1) throw new Error('Combat rounds require at least one arrow')
 	const { scene, world, RAPIER, eventQueue, combat, present = () => {} } = ctx
-	// Seeded gameplay randomness makes fixed-step fixtures repeatable; visual FX
-	// retain their independent random source.
+	// Seeded gameplay randomness makes fixed-step fixtures repeatable while visual FX retain independent randomness.
 	const rng = makeRng(seed)
 
 	// --- Units: human (team A) near, enemy dummies (team B) far. ---
@@ -62,10 +51,7 @@ export function createRound(
 			}),
 		)
 	}
-	// Brains for every non-human unit. They share the same grab/loose
-	// helpers the human uses, so the rules live in exactly one place.
-	// Later rounds sharpen the AI a touch: faster reactions, tighter aim. Floors
-	// keep a long match challenging but never frame-perfect.
+	// Non-human brains share human actions; later rounds lower reaction and jitter to bounded floors.
 	const aiMod = {
 		rng,
 		reactionMul: Math.max(0.55, 1 - 0.12 * (roundNum - 1)),
@@ -89,15 +75,12 @@ export function createRound(
 
 	let over = false
 	let winner = null // 'A' | 'B' | null — null with over=true means a draw
-	// When a round is decided we don't end it instantly — we let the deciding
-	// death animation play out for a beat, then fire onOver. overDelay counts that
-	// beat down (in step()); `ending` flags the countdown (winner may be null).
+	// A decided round delays onOver for the final death animation; `ending` tracks the countdown even for draws.
 	let overDelay = 0
 	let ending = false
 
 	// --- Shared actions (used by both the human and the AI brains). ---
-	// `opts` carries the human's weapon choice: { kind:'arrow'|'bowl', perfect }.
-	// The AI always omits it, so enemies fire plain arrows.
+	// `opts` carries the human weapon and perfect shot; AI omission means plain arrows.
 	function looseArrow(unit, dir, speed, opts = {}) {
 		const a = unit.heldArrow
 		if (!a) return
@@ -141,10 +124,7 @@ export function createRound(
 		}
 	}
 
-	// Infinite-ammo cheat: the human's quiver never empties. Whenever they have no
-	// arrow in hand — just loosed one, or the cheat was toggled on empty-handed —
-	// nock a fresh arrow so shooting never stalls on the scarce pool. A new arrow
-	// enters the pool each time, which is the point of "infinite".
+	// Infinite ammo adds and nocks a fresh pooled arrow whenever the human is empty-handed.
 	function nockInfinite() {
 		if (!tune.cheats.infiniteAmmo || lobby || over || !human.alive || human.heldArrow) return
 		const a = createArrow(scene, world, RAPIER, { position: [0, 0, 0] })
@@ -229,9 +209,7 @@ export function createRound(
 		})
 	}
 
-	// Anyone who tumbles off the platform sinks past the kill plane into the
-	// (invisible) lava below — an instant out, scored like any other death so a
-	// fall can win or lose the round via checkWin.
+	// Crossing the kill plane is an instant elimination that can decide the round.
 	function checkPits() {
 		if (over) return
 		for (const u of units) {
@@ -274,17 +252,14 @@ export function createRound(
 		}
 		if (aliveA > 0 && aliveB > 0) return
 		over = true
-		// Both teams wiped in the same step (mutual kills / a double fall) is a
-		// draw — winner stays null and the match controller replays the round.
+		// A same-step mutual wipe is a draw; null tells the match controller to replay the round.
 		winner = aliveA === 0 && aliveB === 0 ? null : aliveA === 0 ? 'B' : 'A'
-		// Hold the round open briefly so the deciding death animation finishes
-		// before the overlay drops; step() fires onOver once overDelay elapses.
+		// Keep the round open until the deciding death animation finishes, then step() fires onOver.
 		ending = true
 		overDelay = 1.4 * Math.max(0.25, tune.fx.deathTime)
 	}
 
-	// One fixed-timestep update: drive the human, run the brains, step physics,
-	// resolve the contacts that step produced, advance flying arrows.
+	// One fixed-timestep update drives actors, physics, contacts, pits, victory, and arrows.
 	function step(dt, move) {
 		nockInfinite()
 		human.update(move, dt)
@@ -292,9 +267,7 @@ export function createRound(
 		world.step(eventQueue)
 		resolveHits()
 		checkPits()
-		// One win check per step, after every hit and fall has resolved — checking
-		// inside each elimination would award the round to whichever team's wipe
-		// landed first in the event queue, making a true draw unreachable.
+		// Check victory once after all same-step eliminations so mutual wipes remain draws.
 		checkWin()
 		for (const a of arrows) {
 			const event = a.update()
@@ -313,8 +286,7 @@ export function createRound(
 		}
 	}
 
-	// Once per frame after stepping: sync live meshes and keep held arrows glued
-	// to hands. Gameplay pickups happen in step(), so pause is a stable fixture.
+	// After stepping, sync meshes and held arrows; pickups remain in step() so paused fixtures stay stable.
 	function lateUpdate() {
 		for (const u of units) u.sync()
 		for (const u of units) {
@@ -323,10 +295,7 @@ export function createRound(
 	}
 
 	// --- Live roster editing (debug/sandbox) ----------------------------------
-	// Drop a fresh unit onto a team mid-round, or yank the last one off. Every
-	// non-human unit gets a brain, so an added Team A unit fights at your side and
-	// an added Team B unit joins the foes. Removing the last enemy can win the
-	// round (checkWin runs) — handy for poking at the state machine.
+	// Debug roster edits add AI units to either team and can decide the round when removing the last opponent.
 	function addUnit(team) {
 		const isB = team === 'B'
 		if (team !== 'A' && team !== 'B') throw new Error('Unknown team')
@@ -354,8 +323,7 @@ export function createRound(
 			const bi = brains.findIndex((b) => b.unit === u)
 			if (bi >= 0) brains.splice(bi, 1)
 			units.splice(i, 1)
-			// Drop a held arrow back into the pool — disposing the holder would
-			// strand it in 'held' forever and shrink the scarce pool.
+			// Ground a removed unit's held arrow so the scarce pool does not shrink.
 			if (u.heldArrow) {
 				u.heldArrow.ground()
 				u.heldArrow = null
@@ -369,8 +337,7 @@ export function createRound(
 		combat.push(`no removable Team ${team} unit`)
 	}
 
-	// Free every body + mesh this round created. After this the round is dead;
-	// build a new one for the next round.
+	// Dispose every owned body and mesh; the next round needs a fresh instance.
 	function dispose() {
 		for (const u of units) u.dispose()
 		for (const a of arrows) a.dispose()

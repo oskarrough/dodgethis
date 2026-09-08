@@ -5,13 +5,7 @@ import { ARENA, clamp as clampToCourt, onCourt } from './arena.js'
 import { PALETTE } from './style.js'
 import { makeStyleMaterial, FORWARD_LAYER } from './stylepass.js'
 
-// The arrow state machine — the spine of the whole game (see plan.md):
-//   held → flying → grounded → held
-//
-// Only a *flying* arrow has a Rapier rigid body. Held arrows ride the player's
-// hand (pure transform), grounded arrows are static markers you can grab. The
-// body is created on loose() and destroyed on land()/hold(), so the physics
-// world only ever simulates arrows actually in the air.
+// Held → flying → grounded → held (plan.md): only flying arrows own bodies; held arrows ride hands, grounded arrows are pickup markers.
 
 const FORWARD = new THREE.Vector3(0, 0, 1)
 const GROUND_Y = 0.045
@@ -19,9 +13,7 @@ export function clampArrowLanding(x, z) {
 	return clampToCourt(x, z, ARENA.inset.landing)
 }
 
-// Fill a fixed-size preview with the same gravity, damping, and ground threshold
-// as a real arrow. Distances are horizontal from the muzzle; heights are world Y.
-// Returns the raw landing distance, or null when the current gravity never lands.
+// Sample real-flight gravity/damping/ground threshold into muzzle distances and world heights; return landing distance or null if unreachable.
 export function projectArrowFlight(speed, startHeight, distances, heights, dt = 1 / 60) {
 	const launch = launchVelocity(speed)
 	const damping = 1 / (1 + tune.arrow.linearDamping * dt)
@@ -70,8 +62,7 @@ export function projectArrowFlight(speed, startHeight, distances, heights, dt = 
 	return distance
 }
 
-// Invert the preview's damped flight rather than the AI's ideal ballistic solve.
-// Charge is a ceiling: close targets never get overshot just for charging longer.
+// Invert damped preview flight, not ideal AI ballistics; charge caps speed so close targets aren't overshot.
 const solveDistances = new Float32Array(2)
 const solveHeights = new Float32Array(2)
 export function aimArrowSpeed(distance, height, availableSpeed) {
@@ -120,8 +111,7 @@ export function createArrow(scene, world, RAPIER, { position = [0, GROUND_Y, 0] 
 	const mesh = buildMesh()
 	scene.add(mesh)
 
-	// A still, ground-only diamond: readable ammo, not another circular reticle.
-	// Separate from the arrow so its heading/held pose never rotates the backing.
+	// A ground-only ammo diamond, separate so arrow heading and held pose cannot rotate it.
 	const pickup = new THREE.Mesh(new THREE.CircleGeometry(0.5, 4), pickupInkMat)
 	pickup.name = 'pickup-marker'
 	pickup.rotation.x = -Math.PI / 2
@@ -130,8 +120,7 @@ export function createArrow(scene, world, RAPIER, { position = [0, GROUND_Y, 0] 
 	pickup.add(pickupFill)
 	scene.add(pickup)
 
-	// A separate ball mesh shown only while this projectile is flying as a bowl.
-	// Kept hidden the rest of the time; the arrow `mesh` hides while it's up.
+	// A flying bowl shows this ball instead of the arrow mesh.
 	const ball = new THREE.Mesh(new THREE.SphereGeometry(1, 18, 14), bowlMat)
 	ball.castShadow = true
 	ball.visible = false
@@ -219,11 +208,7 @@ export function createArrow(scene, world, RAPIER, { position = [0, GROUND_Y, 0] 
 		mesh.quaternion.setFromUnitVectors(FORWARD, dir)
 	}
 
-	// Loose it: spawn a dynamic body at the hand, fire it along dir + launch angle.
-	// `speed` is the muzzle speed in m/s (main solves this so the arrow lands on
-	// the reticle); falls back to the tunable when not supplied. `opts.kind`
-	// selects the weapon ('arrow' default, or 'bowl'); `opts.perfect` flags a
-	// perfectly-timed charge release (hotter trail).
+	// Launch from the hand at `speed` m/s (reticle-solved or tunable default); opts selects arrow/bowl and a perfect-release trail.
 	function loose(fromPos, dir, team = null, speed = tune.arrow.impulse, opts = {}) {
 		state = 'flying'
 		pickup.visible = false
@@ -247,8 +232,7 @@ export function createArrow(scene, world, RAPIER, { position = [0, GROUND_Y, 0] 
 				.setLinearDamping(tune.arrow.linearDamping)
 				.setCcdEnabled(true),
 		)
-		// Ball collider: arrow flies like a point-mass, mesh shows the pointing.
-		// COLLISION_EVENTS so the main loop hears arrow-vs-unit contacts.
+		// Point-mass ball physics, mesh-only heading; collision events report arrow-vs-unit contacts.
 		collider = world.createCollider(
 			RAPIER.ColliderDesc.ball(0.06)
 				.setDensity(2)
@@ -263,9 +247,7 @@ export function createArrow(scene, world, RAPIER, { position = [0, GROUND_Y, 0] 
 		launchDirection.copy(body.linvel())
 	}
 
-	// Bowl: a big heavy ball spawned at ground level in front of the hand, fired
-	// flat so it rolls. Slower than an arrow but a much wider hit. Settles into a
-	// grabbable arrow once it loses momentum (see update()).
+	// Bowl rolls from ground level below the hand: slower, wider hits, then a pickup arrow when momentum dies (update).
 	function looseBowl(fromPos, dir, speed) {
 		const r = tune.weapons.bowlRadius
 		mesh.visible = false
@@ -291,10 +273,7 @@ export function createArrow(scene, world, RAPIER, { position = [0, GROUND_Y, 0] 
 		body.setAngvel({ x: (dir.z * speed) / r, y: 0, z: (-dir.x * speed) / r }, true)
 	}
 
-	// A shot that crosses the platform edge would otherwise "land" floating over
-	// the void — unreachable, and bait that lures the AI off the edge. Clamping
-	// the landing spot keeps the scarce pool intact (no all-arrows-lost
-	// soft-lock) at the cost of a small visual snap at the rim.
+	// Clamp void landings to the rim: a small visual snap prevents unreachable ammo, AI suicides and an empty-pool soft-lock.
 	function land(x, z, heading) {
 		const landing = clampArrowLanding(x, z)
 		x = landing.x
@@ -320,8 +299,7 @@ export function createArrow(scene, world, RAPIER, { position = [0, GROUND_Y, 0] 
 		return event
 	}
 
-	// Copy before contact resolution removes bodies or resets projectile identity.
-	// The previous flight velocity preserves the incoming direction, not a bounce.
+	// Snapshot identity before contact resolution; previous flight velocity preserves incoming direction, not a bounce.
 	function snapshotImpact() {
 		const v = _lv.lengthSq() > 1e-4 ? _lv : launchDirection
 		const length = v.length() || 1
@@ -337,8 +315,7 @@ export function createArrow(scene, world, RAPIER, { position = [0, GROUND_Y, 0] 
 		}
 	}
 
-	// Called on a hit: drop the arrow at its physics position so bowl ammo does
-	// not jump back to the hidden arrow mesh near the shooter.
+	// Hit drops use physics position so bowl ammo cannot jump back to the shooter's hidden arrow mesh.
 	function ground() {
 		if (body) {
 			const p = body.translation()
@@ -384,8 +361,7 @@ export function createArrow(scene, world, RAPIER, { position = [0, GROUND_Y, 0] 
 		if (body) body.setLinearDamping(tune.arrow.linearDamping)
 	}
 
-	// Free the arrow's body + meshes. Module-level materials are shared across all
-	// arrows, so dispose only the per-instance geometries (and this trail).
+	// Free the body, per-arrow geometries and trail; module-level materials stay shared.
 	function dispose() {
 		destroyBody()
 		scene.remove(mesh)
@@ -434,10 +410,7 @@ export function createArrow(scene, world, RAPIER, { position = [0, GROUND_Y, 0] 
 	}
 }
 
-// Ballistic solve: at the fixed launch angle, what muzzle speed lands an arrow on
-// a target `dist` meters away (fired from height H)? Shared by the human's aim
-// (main.js, so the reticle means something) and the AI (round.js, leading shots).
-// No drag term; linearDamping is kept low so real flight stays near this ideal.
+// Ideal fixed-angle muzzle speed for range `dist` from height H; low damping keeps real flight near this drag-free solve.
 export function solveLaunch(dist, H = 1.6) {
 	const g = -tune.physics.gravity // positive magnitude
 	const th = (tune.arrow.launchAngle * Math.PI) / 180
@@ -447,9 +420,7 @@ export function solveLaunch(dist, H = 1.6) {
 	return Math.max(8, Math.min(v, tune.arrow.maxSpeed))
 }
 
-// Decompose a muzzle speed into horizontal/vertical components at the fixed
-// launch angle. Shared by the aim preview (main.js) so the drawn arc matches the
-// angle the solver assumes.
+// Share fixed-angle velocity components with the preview so its arc matches the solver.
 export function launchVelocity(speed) {
 	const th = (tune.arrow.launchAngle * Math.PI) / 180
 	return { vx: Math.cos(th) * speed, vy: Math.sin(th) * speed }

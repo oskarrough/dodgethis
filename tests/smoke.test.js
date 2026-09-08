@@ -4,9 +4,7 @@ import { createChargeMeter } from '../src/weapons.js'
 import { nearest } from '../src/spatial.js'
 import { tune } from '../src/tune.js'
 
-// The ballistic solve is the contract behind the reticle: an arrow loosed at
-// solveLaunch(dist)'s speed must (drag aside) land `dist` meters out. Verify
-// against the closed-form flight time at the fixed launch angle.
+// The ballistic solve is the contract behind the reticle: an arrow loosed at solveLaunch(dist)'s speed must (drag aside) land `dist` meters out. Verify against the closed-form flight time at the fixed launch angle.
 describe('solveLaunch', () => {
 	test('lands on the reticle across the court', () => {
 		const H = 1.6

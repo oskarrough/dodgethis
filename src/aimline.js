@@ -2,16 +2,7 @@ import * as THREE from 'three'
 import { PALETTE } from './style.js'
 import { FORWARD_LAYER } from './stylepass.js'
 
-// The live aim guide. It used to be a hairline THREE.Line, which is one pixel
-// wide whatever the driver feels like and all but vanished when a pale ammo
-// yellow crossed the green court. So the guide is printed like everything else
-// here: a dashed ribbon with real world width, laid over an ink ribbon a touch
-// wider that acts as its outline.
-//
-// The path is always planar — the sampled points share one horizontal heading —
-// so widening it is just an offset along the horizontal perpendicular of that
-// heading. Seen from the game's high camera that reads as a flat painted band,
-// on the floor and through the top of an arc alike.
+// Readable aim: world-width dashed ribbons over wider ink, widened perpendicular to the planar path's shared horizontal heading.
 const DASH_PERIOD = 3 // samples per dash cycle...
 const DASH_ON = 2 // ...of which this many are drawn
 

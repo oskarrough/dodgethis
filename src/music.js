@@ -1,5 +1,4 @@
-// A short Web Audio lookahead keeps the beat steady without scheduling a whole
-// song ahead. Like Doodle's scheduler, a delayed tick skips missed notes.
+// A short Web Audio lookahead keeps the beat steady; a delayed tick skips missed notes.
 const PROFILES = {
 	hub: { bpm: 88, gain: 0.032 },
 	play: { bpm: 120, gain: 0.045 },

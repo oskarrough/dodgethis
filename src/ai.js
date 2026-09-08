@@ -3,26 +3,15 @@ import { tune } from './tune.js'
 import { nearest } from './spatial.js'
 import { ARENA, blockOutward, bounds } from './arena.js'
 
-// Cheap per-enemy brain (plan.md M5). Each tick it executes one of three intents
-// and returns { move, grab, shoot } for the main loop to execute:
-//
-//   threatened → an enemy arrow is inbound on my line → strafe off it (toward center)
-//   armed      → I hold an arrow → face nearest enemy, lead + jitter, loose after a beat
-//   noArrow    → walk to the nearest grounded arrow and grab it
-//
-// Difficulty is just two knobs in tune.ai: reaction time and aim jitter. No
-// pathfinding — the court is open, movement is a normalized direction.
+// Each cheap brain returns { move, grab, shoot }: dodge inbound arrows, lead and loose when armed, or claim ammo; difficulty uses reaction and jitter, with no pathfinding.
 
-// `mods` scales the two difficulty knobs per-round (round.js ramps them down a
-// little each round, so later rounds react faster and aim tighter).
+// Per-round modifiers make later brains react faster and aim tighter.
 export function createBrain(unit, { reactionMul = 1, jitterMul = 1, rng = Math.random } = {}) {
 	let aimTimer = 0
 	let lastTarget = null
 	let strafeDir = rng() < 0.5 ? 1 : -1 // circle-strafe handedness (flips over time)
 	let strafeTimer = 0
-	// Strategic scans run about five times per second, with seeded initial phases
-	// so a crowd does not all reconsider on the same simulation step. Steering,
-	// aim leading, threat weaving and projectile avoidance still run every step.
+	// Seeded phases stagger five-Hz strategic scans; steering, leading, weaving, and dodging still run every step.
 	let targetTimer = rng() * DECISION_INTERVAL
 	let pickupTimer = rng() * DECISION_INTERVAL
 	let target = null
@@ -35,11 +24,7 @@ export function createBrain(unit, { reactionMul = 1, jitterMul = 1, rng = Math.r
 	const aim = new THREE.Vector3()
 	const pred = new THREE.Vector3()
 
-	// Closest-approach dodge: look at EVERY inbound enemy arrow, work out where its
-	// line passes me, and step off the ones that would actually clip me. Reacting on
-	// time-to-impact (not raw distance) catches fast arrows from farther out, and
-	// summing an escape vector over all threats means a dodge won't strafe into a
-	// second arrow. Returns an (un-normalized) escape direction, or null if safe.
+	// Blend perpendicular escapes from every imminent intersecting arrow, weighted by time to impact; return null when safe.
 	function incomingDodge(arrows, me) {
 		let ex = 0
 		let ez = 0
@@ -59,8 +44,7 @@ export function createBrain(unit, { reactionMul = 1, jitterMul = 1, rng = Math.r
 			if (mx * mx + mz * mz > HIT_R * HIT_R) continue // it'll sail by
 			threatened = true
 			if (t < minT) minT = t
-			// Step perpendicular to the arrow's path, toward the side I'm already on;
-			// weight by urgency so the most imminent arrow dominates the blend.
+			// Step toward the current side of the path, weighted so the most imminent arrow dominates.
 			const vlen = Math.sqrt(vlen2)
 			let px = -v.z / vlen
 			let pz = v.x / vlen
@@ -133,8 +117,7 @@ export function createBrain(unit, { reactionMul = 1, jitterMul = 1, rng = Math.r
 			aim.normalize()
 			unit.aim.copy(aim)
 
-			// Kite: circle-strafe at a standoff so an armed bot is a moving target,
-			// not a post. Aim stays locked on the lead (above); move is independent.
+			// Armed bots circle-strafe at a standoff while aiming independently at the lead.
 			const standoff = tune.ai.standoff
 			const band = 2.5
 			const rx = (target.position.x - me.x) / dist // unit dir toward target
@@ -212,23 +195,16 @@ export function createBrain(unit, { reactionMul = 1, jitterMul = 1, rng = Math.r
 
 const DECISION_INTERVAL = 0.2
 
-// Dodge tuning: how soon (seconds to closest approach) a bot reacts to an inbound
-// arrow, and how near the arrow's line must pass to count as a hit worth dodging.
+// Dodge tuning sets the reaction horizon and how near a trajectory must pass to threaten.
 const DODGE_HORIZON = 1.1
 const HIT_R = 1.0
-// Only spend a dash when the soonest hit is closer than this (seconds) — a far-off
-// arrow gets a cheap strafe; an imminent one gets the burst.
+// Reserve dashes for imminent hits; distant threats get a cheap strafe.
 const DASH_TTI = 0.5
 
 // --- Ammo economy -----------------------------------------------------------
-// Everyone shares one small arrow pool, so WHICH arrow a bot walks to matters
-// more than how fast it walks. Nearest-first sends every unarmed bot at the same
-// pickup, and the losers spend the walk doing nothing. Score each grounded arrow
-// by our distance plus a penalty for how far behind the nearest rival we are.
-// A rival is anyone alive and empty-handed — the human competes for the same pool.
+// Score shared grounded arrows by distance plus the deficit to the nearest empty-handed rival, avoiding wasted pickup races.
 const CONTEST_PENALTY = 1.5
-// Within this much of the rival's distance the race is still winnable, so it's
-// worth a dash rather than a concession.
+// A race within this margin is winnable enough to spend a dash.
 const CONTEST_MARGIN = 2
 const DASH_CLAIM_MIN = 2
 const DASH_CLAIM_MAX = 7
@@ -248,8 +224,7 @@ function claimArrow(arrows, units, me, self) {
 			const d = Math.hypot(a.position.x - u.position.x, a.position.z - u.position.z)
 			if (d < rivalD) rivalD = d
 		}
-		// Losing a contested arrow is usually not worth the walk. The last arrow on
-		// the court is the exception: denying it is the whole game, so always go.
+		// Avoid losing contested pickups unless it is the last grounded arrow.
 		const losing = rivalD < myD && grounded > 1
 		const score = myD + (losing ? (myD - rivalD) * CONTEST_PENALTY : 0)
 		if (score < best) {
@@ -261,9 +236,7 @@ function claimArrow(arrows, units, me, self) {
 	return { arrow, contested }
 }
 
-// An unarmed bot crossing open court in a straight line, in full view of someone
-// armed, is free ammo. Nudge sideways off the shooter's line while still closing
-// on the pickup. Null when nobody armed is looking our way.
+// Nudge unarmed bots sideways while crossing an armed enemy's sightline; return null when unseen.
 const WEAVE_RANGE = 16
 const WEAVE_DOT = 0.85 // how squarely the shooter must face us to count
 const WEAVE_MUL = 0.5
@@ -282,9 +255,7 @@ function threatWeave(units, me, team, side) {
 }
 
 function norm(move, grab, shoot, me) {
-	// Brains steer straight at whatever they want; near the rim that walks them
-	// into the lava. Falls stay possible (knockback, a dodge begun at the edge),
-	// but the AI stops suiciding.
+	// Block deliberate outward steering at the rim while preserving falls from knockback or committed dodges.
 	if (me) blockOutward(move, me.x, me.z, ARENA.inset.aiEdge)
 	const l = Math.hypot(move.x, move.z)
 	if (l > 1e-4) {

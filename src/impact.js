@@ -1,5 +1,4 @@
-// A local decisive hit gets one short beat. Real-time cooldown prevents a crowded
-// volley from repeatedly extending slow motion; simulation clocks stay separate.
+// A local decisive hit gets one short beat; real-time cooldown keeps a crowded volley from extending slow motion.
 export function createImpactBeat() {
 	let remaining = 0
 	let cooldown = 0

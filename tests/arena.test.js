@@ -28,8 +28,7 @@ test('a narrower court moves every derived boundary with it', () => {
 test('insets stay distinct gameplay policies, not one shared margin', () => {
 	const { landing, aiEdge, aiKite, rim } = ARENA.inset
 	expect(new Set([landing, aiEdge, aiKite, rim]).size).toBe(4)
-	// The AI turns away well before a shot is allowed to come to rest, so bots
-	// never have to stand where ammo cannot land.
+	// The AI turns away well before a shot is allowed to come to rest, so bots never stand where ammo cannot land.
 	expect(aiKite).toBeGreaterThan(aiEdge)
 })
 

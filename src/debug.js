@@ -35,10 +35,7 @@ export const log = {
 }
 
 // --- Combat log --------------------------------------------------------------
-// An on-screen, persistent record of what the game did: shots, hits, pickups,
-// eliminations, round results. This is the primary tool for inspecting behavior
-// (the plan calls for logging built in). Every entry also goes to log.info, so
-// the console ring buffer keeps the full history for log.dump().
+// Inspect combat history on screen; entries also reach log.info's ring buffer for log.dump().
 export function createCombatLog(selector = '.combat', max = 12) {
 	const el = document.querySelector(selector)
 	const rows = []
@@ -69,10 +66,7 @@ export function createCombatLog(selector = '.combat', max = 12) {
 }
 
 // --- GUI ---------------------------------------------------------------------
-// Returns the GUI so callers can add game-specific folders later (teams,
-// players, AI difficulty). `onChange` fires whenever any control moves.
-// `cheats` carries live sandbox actions (addEnemy/removeEnemy/addAlly/removeAlly)
-// the main loop binds to the current round; they show up as buttons here.
+// Return an extensible GUI with onChange hooks and cheat buttons bound to main's live-round actions.
 export function createDebugGui(onChange = () => {}, cheats = {}) {
 	const gui = new GUI({ title: 'dodgethis / debug' })
 

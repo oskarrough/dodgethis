@@ -22,8 +22,7 @@ window.addEventListener('pointerdown', () => {
 	device = 'keyboard'
 })
 
-// Jump and dash are edges, not held states. Space jumps; Shift dashes.
-// Swallow Space's page-scroll default while we're in the game.
+// Jump and dash are Space and Shift edges, with Space's page-scroll suppressed.
 let jumpQueued = false
 let dashQueued = false
 let padDashQueued = false
@@ -66,9 +65,7 @@ export function consumeDash() {
 	return false
 }
 
-// Returns { x, z } in world space, length <= 1.
-// Camera looks down +z toward origin, so W (forward) = -z.
-// Keyboard and the gamepad's left stick simply sum (then clamp).
+// Sum keyboard and gamepad movement into a clamped world-space vector, with forward along -z.
 export function moveVector() {
 	let x = padMove.x
 	let z = padMove.z
@@ -85,9 +82,7 @@ export function moveVector() {
 }
 
 // --- Pointer (aim) + shoot edge-detect ---
-// Three signals off the left button: a press edge (click weapons fire on this),
-// a release edge (the charge bow fires on this), and the held state (the charge
-// bow winds while it's true). blur drops the held state without firing a release.
+// The left button provides press, release, and held signals; blur cancels held state without firing.
 const canvas = document.querySelector('.app')
 const pointer = { x: 0, y: 0 }
 let pressQueued = false
@@ -162,8 +157,7 @@ export function pointerDown() {
 	return pointerHeld || padShootHeld
 }
 
-// Swallow any pending edges (used when a round starts, so the click that
-// dismissed the overlay doesn't immediately loose an arrow).
+// Swallow pending edges so a click dismissing the overlay cannot loose an arrow.
 export function clearShoot() {
 	pressQueued = false
 	releaseQueued = false
@@ -176,11 +170,7 @@ export function clearDash() {
 }
 
 // --- Gamepad (plan.md: stick move + aim, trigger shoot) ---
-// Polled once per frame by main. Left stick feeds moveVector; the right stick
-// nudges the same NDC pointer the mouse writes (a virtual cursor, so the
-// ground-plane raycast aim works unchanged); RT or A mirrors the left mouse
-// button through the same press/hold/release edge model (so the charge bow's
-// hold-and-release works on a pad too).
+// Main polls each frame: left stick moves, right stick drives the shared NDC aim cursor, and RT or A mirrors mouse press, hold, and release.
 const DEADZONE = 0.18
 const AIM_SPEED = 1.7 // NDC units per second at full stick deflection
 const padMove = { x: 0, z: 0 }
@@ -190,9 +180,7 @@ let padConfirmHeld = false
 let menuMoveQueued = 0
 let menuConfirmQueued = false
 
-// Hard deadzone, then rescale so the usable stick range maps to 0→1.
-// Without rescale, the first 18% of throw is wasted and full tilt never quite
-// feels like full tilt — mushy vs. keyboard.
+// Apply a hard deadzone, then rescale the usable stick range to 0→1.
 function axis(v) {
 	const a = Math.abs(v)
 	if (a < DEADZONE) return 0
@@ -213,8 +201,7 @@ export function pollGamepad(dt) {
 	if (!gp) {
 		pauseQueued = false
 		if (previousPadButtons.some(Boolean)) padNeedsRelease = true
-		// A disconnected trigger cancels its charge instead of leaving it held or
-		// firing a release edge when the controller disappears.
+		// Disconnect cancels trigger charge without creating a release edge.
 		if (padShootHeld) {
 			padShootHeld = false
 			if (!pointerHeld) {

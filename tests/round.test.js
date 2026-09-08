@@ -5,12 +5,7 @@ import { buildCourt } from '../src/court.js'
 import { createRound } from '../src/round.js'
 import { tune } from '../src/tune.js'
 
-// Headless integration smoke test: boot the real game loop — Rapier world,
-// court, a full Round with AI brains — and step it at 60Hz with the human
-// standing still. The AI must arm itself, shoot, and wipe team A (or someone
-// falls in); either way the round must end cleanly via onOver and dispose
-// without throwing. Uses the -compat Rapier build because the bundler build's
-// wasm doesn't load under bun.
+// Headless integration smoke test: boot the real game loop (Rapier world, court, a full Round with AI brains) at 60Hz with a still human; the AI must shoot and wipe team A (or someone falls in) and the round must end cleanly via onOver and dispose. Uses the -compat Rapier build — the bundler build's wasm doesn't load under bun.
 await RAPIER.init({})
 
 function makeCtx() {
@@ -66,8 +61,7 @@ describe('headless round', () => {
 		// Let the deciding-death grace period elapse so onOver fires exactly once.
 		for (let i = 0; i < 5 * 60; i++) round.step(1 / 60, STILL)
 		expect(overCalls).toBe(1)
-		// A lone passive human against 3 archers loses (a draw is theoretically
-		// possible but the human never shoots, so B must have units standing).
+		// A lone passive human against 3 archers loses — the human never shoots, so B must have units standing.
 		expect(winner).toBe('B')
 		round.dispose()
 		expect(round.units.length).toBe(0)

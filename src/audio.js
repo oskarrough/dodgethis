@@ -1,9 +1,7 @@
 import { tune } from './tune.js'
 import { createMusic } from './music.js'
 
-// Vite resolves these imports to hashed asset URLs at build time, so the files
-// are fingerprinted and copied without any path juggling. The sample player
-// below decodes each one into an AudioBuffer the first time it's needed.
+// Vite fingerprints these asset imports; the player below decodes each into an AudioBuffer on first use.
 import menuOpenUrl from './sfx/menu-open.mp3'
 import menuCloseUrl from './sfx/menu-close.mp3'
 import clickUrl from './sfx/click-1.mp3'
@@ -22,10 +20,7 @@ import botTalk5 from './sfx/bot-talk-5-v2.mp3'
 
 const BOT_TALK = [botTalk1, botTalk2, botTalk3, botTalk4, botTalk5]
 
-// Two audio sources share one context: the synth (oscillator blips, below) and
-// a sample player (mp3s in ./sfx). The AudioContext can't start until a user
-// gesture, so we lazily create it and resume + preload samples on the first
-// pointer/key event. Both honour the same tune.fx.sound / tune.fx.volume gate.
+// One context serves the synth (below) and the ./sfx sample player; it lazy-starts on the first user gesture, gated by tune.fx.sound / tune.fx.volume.
 
 let ctx = null
 let master = null
@@ -120,9 +115,7 @@ globalThis.window?.addEventListener('pointerdown', wake)
 globalThis.window?.addEventListener('keydown', wake)
 
 // --- Sample player ----------------------------------------------------------
-// Decode each file once into an AudioBuffer (cached by URL); play it through a
-// throwaway BufferSourceNode. Sources are one-shot, so overlapping retriggers
-// need no pooling — each play() spins up a fresh node and lets it GC on end.
+// Decode per URL into a cached AudioBuffer; each play() uses a fresh one-shot BufferSourceNode, so no pooling.
 
 const buffers = new Map() // url -> Promise<AudioBuffer>
 
@@ -161,9 +154,7 @@ function preload() {
 		load(url).catch(() => {})
 }
 
-// gain is relative (multiplied by tune.fx.volume); rate sets the base playback
-// speed (1 = original pitch), and rateJitter detunes it by ±frac so repeated
-// cues don't sound mechanically identical.
+// gain is relative (× tune.fx.volume); rate sets base playback speed/pitch; rateJitter detunes by ±frac so repeats don't sound mechanical.
 async function sample(url, { gain = 1, rate = 1, rateJitter = 0, point = null } = {}) {
 	if (!tune.fx.sound) return
 	const generation = soundGeneration
@@ -272,8 +263,7 @@ function scuff(point, dash = false) {
 }
 
 export const sfx = {
-	// Synth blips — punchy, time-critical, pitch-varied procedurally.
-	// `gain` scales the default so enemy shots can read quieter than the player's own bow.
+	// Synth blips — punchy, time-critical; `gain` scales the default (e.g. enemy shots quieter than the player's bow).
 	loose: (gain = 1, point) =>
 		blip({ freq: 360, slideTo: 150, type: 'sawtooth', dur: 0.16, gain: 0.16 * gain, point }),
 	hit: (point) => blip({ freq: 200, slideTo: 55, type: 'square', dur: 0.22, gain: 0.3, point }),
@@ -309,15 +299,13 @@ export const sfx = {
 	grab: (point, gain = 1) => sample(unboxUrl, { gain: 0.6 * gain, rateJitter: 0.05, point }),
 	menuOpen: () => sample(menuOpenUrl, { gain: 0.5 }),
 	menuClose: () => sample(menuCloseUrl, { gain: 0.5 }),
-	// Menu buttons: hover whisper, then a press/release pair (mouse) for a tactile
-	// down→up feel; keyboard activation gets its own single click instead.
+	// Menu buttons: hover whisper + mouse press/release pair; keyboard gets a single click.
 	hover: () => sample(clickSoftUrl, { gain: 0.3, rateJitter: 0.06 }),
 	press: () => sample(clickInUrl, { gain: 0.45, rateJitter: 0.05 }),
 	confirm: () => sample(clickOutUrl, { gain: 0.5, rateJitter: 0.05 }),
 	click: () => sample(clickUrl, { gain: 0.45, rateJitter: 0.06 }),
 	switch: () => sample(click2Url, { gain: 0.5, rateJitter: 0.05 }),
-	// Charge-meter ratchet: pitch rises with the wind-up level (0→1), so the bow
-	// audibly tightens. tickPerfect is the brighter cue for entering the band.
+	// Charge-meter ratchet: pitch rises with wind-up level (0→1); tickPerfect marks entering the band.
 	tick: (level = 0) => sample(tick1Url, { gain: 0.3, rate: 0.85 + level * 0.9 }),
 	tickPerfect: () => sample(tick2Url, { gain: 0.45, rate: 1.15 }),
 	// At most one voice, including pending decodes, with space between phrases.

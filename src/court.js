@@ -45,8 +45,7 @@ export const COURT_THEMES = Object.freeze({
 export const COURT = ARENA
 export const KILL_Y = ARENA.killY
 
-// Builds the floor: a Three mesh + a matching fixed Rapier collider, both sized
-// from ARENA so the thing you see and the thing you stand on cannot drift apart.
+// Build matching Three floor geometry and fixed Rapier collision from ARENA dimensions.
 export function buildCourt(scene, world, RAPIER) {
 	const { width, depth, thickness } = ARENA
 
@@ -66,8 +65,7 @@ export function buildCourt(scene, world, RAPIER) {
 	line.position.y = 0.011
 	scene.add(line)
 
-	// Painted rim warning: where the ground stops being safe. Purely visual —
-	// it carries no collider, so walking (or dashing) off the edge still works.
+	// The painted warning rim is visual only, leaving the edge fallable.
 	const rimGeometries = []
 	const rimMat = makeStyleMaterial('courtRim', { flat: true })
 	const b = bounds(ARENA.inset.rim / 2)
@@ -97,8 +95,7 @@ export function buildCourt(scene, world, RAPIER) {
 		body,
 	)
 
-	// Scenery stays merged by ink role; solid bleacher pieces get matching fixed
-	// colliders from the same dimensions. Gaps outside the rim remain fallable.
+	// Merge scenery by ink role and give solid bleachers matching fixed colliders while gaps remain fallable.
 	const batches = new Map()
 	function box(role, w, h, d, x, y, z, solid = false) {
 		if (solid) {
@@ -141,8 +138,7 @@ export function buildCourt(scene, world, RAPIER) {
 		scene.add(decoration)
 		for (const geometry of geometries) geometry.dispose()
 	}
-	// Each location gets a small silhouette outside the arena. Merge by role and
-	// toggle whole groups; switching matches never rebuilds geometry or physics.
+	// Each location's off-court silhouette is merged by role and toggled as a group without rebuilding geometry or physics.
 	const themeGroups = new Map()
 	for (const name of Object.keys(COURT_THEMES)) {
 		const group = new THREE.Group()

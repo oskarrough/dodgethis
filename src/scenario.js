@@ -1,5 +1,4 @@
-// Serializable setup, shared by URLs, the console and the headless benchmark.
-// A seed repeats gameplay decisions at fixed ticks, not browser input or FX.
+// Serializable setup shared by URLs, the console and the headless benchmark; a seed repeats gameplay decisions at fixed ticks, not browser input or FX.
 export const PRESETS = {
 	duel: { teamA: 1, teamB: 1 },
 	'20v20': { teamA: 20, teamB: 20 },

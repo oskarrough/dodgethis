@@ -69,8 +69,7 @@ async function main() {
 	})
 	log.info('booted', { renderer: 'style-pass', physics: 'rapier' })
 
-	// Mute toggle controls the shared audio output, so it also silences cues that
-	// are already playing instead of only gating future sounds.
+	// Mute the shared output so already-playing cues go silent too.
 	const muteBtn = document.querySelector('.mute')
 	function renderMute() {
 		const muted = !tune.fx.sound
@@ -87,8 +86,7 @@ async function main() {
 	})
 	renderMute()
 
-	// Persistent stage: the court and the contact queue outlive every round. Only
-	// the per-round entities (built in round.js) come and go.
+	// Court and contact queue persist; only round.js entities come and go.
 	const court = buildCourt(scene, world, RAPIER)
 	function applyCourtTheme(enemies) {
 		const theme = court.setTheme(enemies >= 3 ? 'gym' : enemies === 2 ? 'sunset' : 'park')
@@ -156,8 +154,7 @@ async function main() {
 	})
 
 	// --- Scoreboard ------------------------------------------------------------
-	// Gym clock: YOU/FOE + filled pips. Pip count implies best-of — don't also print it.
-	// CSS dots (not ●/○ glyphs) so Darumadrop can't substitute weird fallback shapes.
+	// YOU/FOE pips imply best-of; CSS dots avoid Darumadrop's fallback glyph shapes.
 	function pips(n) {
 		let s = ''
 		for (let i = 0; i < flow.match.needed; i++) {
@@ -165,11 +162,7 @@ async function main() {
 		}
 		return s
 	}
-	// One mark per unit on a side, filled while that unit is still standing, so
-	// you can read the state of the round without counting capsules on the court.
-	// Individual marks stop being countable at a glance (and stop fitting) once a
-	// side is more than a squad, so past MAX_MARKS it collapses to one mark and a
-	// number. The debug keys can add foes without limit, so this is not academic.
+	// Filled marks count survivors; beyond MAX_MARKS use one mark plus a number so debug-sized teams still fit.
 	const MAX_MARKS = 6
 	function roster(team) {
 		if (!flow.round) return ''
@@ -224,15 +217,11 @@ async function main() {
 	}
 
 	// --- Weapons (1/2) ---------------------------------------------------------
-	// The weapon is a property of the human shooter, not the ammo: you still grab
-	// arrows from the scarce pool, but the selected weapon changes how a held
-	// arrow is loosed. The bow's wind-up meter is its own component.
+	// Shooter weapon changes how pooled arrows launch; the bow's charge meter stays a separate component.
 	let weapon = 'bow'
 	const charge = createChargeMeter()
 
-	// Audio feedback for the charge meter: a tick each time the wind-up climbs into
-	// a new step (the meter ping-pongs, so ticks fire on the way up and fall silent
-	// on the way down), plus a brighter cue the instant it enters the perfect band.
+	// Charge ticks only on rising steps, with a brighter cue on entering the perfect band.
 	const CHARGE_STEP = 0.16
 	let chargeStep = -1
 	let chargePerfect = false
@@ -255,9 +244,7 @@ async function main() {
 	const aimDir = new THREE.Vector3(0, 0, -1)
 	let aimSpeed = tune.arrow.impulse
 
-	// Landing reticle + a dotted preview of the arrow's arc to that spot.
-	// Two rings, not one: the ammo yellow alone is nearly the same value as the
-	// green court, so it rides on an ink one the way every other mark here does.
+	// Back the landing reticle's ammo yellow with ink so it reads against the similarly valued green court.
 	const aimMarker = new THREE.Mesh(
 		new THREE.RingGeometry(0.26, 0.38, 24),
 		new THREE.MeshBasicMaterial({ color: PALETTE.ammo, transparent: true, depthWrite: false }),
@@ -369,8 +356,7 @@ async function main() {
 		if (consumePress()) flow.round.looseHuman(aimDir, aimSpeed, { kind: def.kind })
 	}
 
-	// Sample the damped flight through touchdown and share the projectile's court
-	// clamp, so the final preview point and landing marker match grounded ammo.
+	// Share damped flight and the projectile's court clamp so preview endpoint, marker and grounded ammo agree.
 	function updateArc(hand, speed, color) {
 		const distance = projectArrowFlight(speed, hand.y, previewDistance, previewHeight)
 		if (distance === null) {
@@ -391,8 +377,7 @@ async function main() {
 		aimMarker.visible = true
 	}
 
-	// A flat range guide in the aim direction. Bowls stop through live physics, so
-	// unlike arrows this deliberately has no landing marker.
+	// Bowls stop through live physics, so their flat range guide deliberately has no landing marker.
 	function updateGroundLine(hand) {
 		const len = 7
 		for (let i = 0; i < PREVIEW_N; i++) {
@@ -415,9 +400,7 @@ async function main() {
 	debugLines.visible = tune.debug.showColliders
 	scene.add(debugLines)
 
-	// Live sandbox actions for the GUI's "cheats" folder. They read the current
-	// `round` each call, so they always act on the live scene (which is rebuilt
-	// every round). The same actions are bound to keys below.
+	// GUI cheats and hotkeys read the current round on every call, surviving scene rebuilds.
 	const cheats = {
 		addEnemy: () => flow.round && flow.round.addUnit('B'),
 		removeEnemy: () => flow.round && flow.round.removeUnit('B'),
@@ -451,16 +434,7 @@ async function main() {
 	}
 	setDiagnostics(diagnostics)
 
-	// Global hotkey:
-	//   `         toggle the debug panel, diagnostics and console API
-	// Hotkeys on the splash:
-	//   1-9       enter that difficulty, in the order the options are printed
-	// Hotkeys during play:
-	//   R         restart the current round (a real in-place reset — no reload)
-	//   G / H     toggle godmode / infinite ammo
-	//   = / -     add / remove an enemy (Team B)
-	//   ] / [     add / remove an ally (Team A, AI fights for you)
-	// During roundOver/matchOver the overlay's own buttons own R/Enter.
+	// Backquote toggles diagnostics/API; splash digits pick difficulty, play keys restart/cheat/edit teams, verdict overlays own R/Enter.
 	window.addEventListener('keydown', (e) => {
 		if (e.defaultPrevented || e.repeat) return
 		if (e.code === 'Backquote') {
@@ -486,8 +460,7 @@ async function main() {
 			else if (flow.phase !== 'menu') flow.transition('BACK TO THE COURT', flow.enterHub)
 			return
 		}
-		// On the splash, a number key is the same act as clicking that difficulty —
-		// so it goes through the button, not around it.
+		// Splash digits click difficulty buttons instead of bypassing their handlers.
 		if (flow.phase === 'menu') {
 			const pick = /^Digit([1-9])$/.exec(e.code)
 			if (pick) portalOptions[Number(pick[1]) - 1]?.click()
@@ -507,8 +480,7 @@ async function main() {
 	// --- Frame loop ------------------------------------------------------------
 	let last = performance.now()
 
-	// rAF stops while the tab is hidden, leaving `last` stale; without this the
-	// first frame back would advance the sim by the (clamped) 0.1s max step.
+	// Reset stale rAF time on tab return to avoid an artificial 0.1s simulation step.
 	window.addEventListener('blur', () => {
 		if (flow.phase === 'playing' && !flow.transitioning) flow.togglePause()
 	})
@@ -573,8 +545,7 @@ async function main() {
 
 		const simulationEnd = perf.enabled ? performance.now() : 0
 
-		// Portal idle/wake animation — cheap, and the list is empty outside the hub.
-		// The player position drives the proximity "wake" pop.
+		// Hub player proximity drives portal wake pops; outside the hub the portal list is empty.
 		const hubPlayer =
 			flow.phase === 'menu' && flow.round && flow.round.human && flow.round.human.alive
 				? flow.round.human.position
@@ -583,9 +554,7 @@ async function main() {
 
 		if (debugLines.visible) {
 			const { vertices, colors: vcolors } = world.debugRender()
-			// Reuse the existing GPU buffers when the vertex count is unchanged;
-			// blindly swapping in new BufferAttributes every frame leaks the old
-			// buffers until the geometry itself is disposed.
+			// Reuse same-sized GPU buffers; replacing attributes leaks old buffers until geometry disposal.
 			const pos = debugGeom.getAttribute('position')
 			if (pos && pos.array.length === vertices.length) {
 				pos.array.set(vertices)
@@ -629,9 +598,7 @@ async function main() {
 			fpsTimer = 0
 		}
 
-		// The HUD is plain text (counts + fps + weapon line): refreshing it 60×/s
-		// burns DOM writes and array allocs for no visible gain. Throttle to ~10Hz,
-		// but keep it live while the charge meter is winding so its bar stays smooth.
+		// Throttle HUD writes/allocations to ~10Hz, except while charging so the meter stays smooth.
 		hudTimer += dt
 		if (hudTimer >= 0.1 || (weapon === 'bow' && charge.charging)) {
 			hudTimer = 0
@@ -674,8 +641,7 @@ async function main() {
 			weaponHud.update({ weapon, charge, visible: false, holding: false })
 			return
 		}
-		// The left stack is opt-in developer chrome. Armed status
-		// lives on the weapon HUD — not here, and never as match-scoreboard copy.
+		// Left stack is opt-in diagnostics; armed status belongs on the weapon HUD, never the scoreboard.
 		hud.textContent =
 			`G god · H ∞ammo · =/- foe · ]/[ ally\n` +
 			`fps ${fps}  ${flow.phase}` +

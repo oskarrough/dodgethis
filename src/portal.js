@@ -4,22 +4,13 @@ import { hex } from './style.js'
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'
 import { makeStyleMaterial, FORWARD_LAYER } from './stylepass.js'
 
-// A portal is a warp pad sunk into the court floor — a chunky "sticker" in the
-// same comic language as the DOM UI: cream scalloped edge, fat colored donut
-// with navy ink outlines, dark hole in the middle. Step into its trigger zone
-// to teleport into a match.
-//
-// Motion rule: nothing spins (continuous rotation reads as a vortex and makes
-// people dizzy). Instead the pad breathes (slow scale pulse), the label bobs,
-// star sparkles rise out of the hole, and the whole thing POPS awake with a
-// squash-stretch snap when the player walks near.
+// A portal is a comic sticker-style court pad whose trigger starts a match; it avoids dizzying rotation and instead wakes with breathing, label bobbing, rising sparkles, and squash-stretch.
 const PORTAL_ROLES = { 1: 'portalChill', 2: 'portalSpicy', 3: 'portalChaos' }
 const PORTAL_WORDS = { 1: 'CHILL', 2: 'SPICY', 3: 'CHAOS' }
 const INK = hex('ink')
 const CREAM = hex('cream')
 
-// Canvas-texture sprite: chunky outlined number + difficulty word, sticker style
-// (cream outer stroke → ink stroke → colored fill).
+// Canvas label uses cream and ink strokes around a colored difficulty number and word.
 function makeLabel(enemies, color) {
 	const c = document.createElement('canvas')
 	c.width = 256
@@ -76,8 +67,7 @@ function starTexture() {
 	return _starTex
 }
 
-// Build the static sticker independently of canvas labels: four semantic batches,
-// preserving the original layer heights, silhouettes and trigger clearance.
+// Build the static sticker as four semantic batches, independent of canvas labels.
 export function buildPortalPad(enemies) {
 	const group = new THREE.Group()
 	const batches = new Map()
@@ -154,8 +144,7 @@ export function createPortal(scene, { x, z, enemies }) {
 		return dx * dx + dz * dz < R * R
 	}
 
-	// The wake zone: inside it the label pops up and sparkles hurry. The pop is a
-	// fast lerp (snappy in), and the release relaxes on the same curve.
+	// Inside the wake zone, a fast lerp pops the label and accelerates sparkles, then relaxes on exit.
 	const NEAR = 3.6
 	const phase = Math.random() * Math.PI * 2 // desync the breathing across portals
 	let t = 0
@@ -175,8 +164,7 @@ export function createPortal(scene, { x, z, enemies }) {
 
 		wake += ((near ? 1 : 0) - wake) * Math.min(1, dt * 9)
 
-		// Label: gentle bob, lifts + grows when the pad wakes. The pad itself stays
-		// fixed so neighbouring coplanar stickers never overlap.
+		// The label bobs, lifts, and grows on wake while the pad stays fixed to avoid coplanar overlap.
 		label.position.y = 2.25 + 0.1 * Math.sin(t * 2 + phase) + wake * 0.3
 		const ls = 2.6 * (1 + wake * 0.18)
 		label.scale.set(ls, ls, 1)

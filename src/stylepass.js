@@ -1,22 +1,7 @@
 import * as THREE from 'three'
 import { PALETTE } from './style.js'
 
-// The game's only renderer: a geometry-first surface-data pass, then one
-// full-screen shader that decides what the world is made of.
-//
-//   opaque geometry ──► data buffer (shade, style id, view normal xy) + depth
-//                              │
-//                              ▼
-//                    one style shader ──► flat color, navy ink edges,
-//                                          cream highlight, halftone shadow
-//                              │
-//                              ▼
-//        forward pass (trails, preview, labels, corpses, shield)
-//        rendered against the copied opaque depth, so they occlude correctly
-//
-// Geometry explicitly names a palette role at construction; its index is the
-// discrete ID written to the buffer. Forward objects explicitly select layer 1.
-// Materials stay owned by their creators throughout their lifetime.
+// Opaque shade/role/normal/depth → ink, highlights and halftone → layer-1 effects against copied depth; creators own materials.
 
 const ROLES = Object.keys(PALETTE)
 // Compatibility at construction boundaries that still accept a palette color.
@@ -35,8 +20,7 @@ varying vec2 vInstanceStyle; // x = style id (<0 when the material's own id wins
 void main() {
 	vec3 transformed = position;
 	vec3 objectNormal = normal;
-	// Pooled effects are instanced. Without this the whole pool collapses onto the
-	// mesh's origin — one large shape at world centre, once per burst.
+	// Instancing without this collapses the pool onto the mesh's origin — one large shape at world centre per burst.
 	#ifdef USE_INSTANCING
 		transformed = (instanceMatrix * vec4(transformed, 1.0)).xyz;
 		objectNormal = mat3(instanceMatrix) * objectNormal;
@@ -51,8 +35,7 @@ void main() {
 	gl_Position = projectionMatrix * mvPosition;
 }`
 
-// shade, style id, and the two view-space normal channels that survive
-// reconstruction (z is recovered in the style shader from their length).
+// Pack shade, style ID and view-normal xy; the style shader reconstructs z from their length.
 const dataFrag = /* glsl */ `
 precision highp float;
 uniform float uStyleId;
@@ -64,13 +47,11 @@ void main() {
 	vec3 n = normalize(vNormalV);
 	if (!gl_FrontFacing) n = -n;
 	float ndl = dot(n, uLightDir) * 0.5 + 0.5;
-	// An instance may override the material's role, so one pooled mesh can draw
-	// marks in two roles at once.
+	// An instance may override the material's role, so one pooled mesh draws marks in two roles at once.
 	bool perInstance = vInstanceStyle.x >= 0.0;
 	float id = perInstance ? vInstanceStyle.x : uStyleId;
 	float flatness = perInstance ? vInstanceStyle.y : uFlat;
-	// Flat surfaces (court lines, stickers, markers) opt out of shading and
-	// halftone entirely — they are printed ON the world, not lit by it.
+	// Flat surfaces (court lines, stickers, markers) are printed ON the world, not lit — no shading or halftone.
 	float shade = flatness > 0.5 ? -1.0 : clamp(ndl, 0.0, 1.0);
 	gl_FragColor = vec4(shade, id, n.x, n.y);
 }`
@@ -112,8 +93,7 @@ void main() {
 	vec2 px = 1.0 / uRes;
 	float sc = uRes.y / 900.0;
 	vec4 s = texture2D(tData, vUv);
-	// Copy the opaque depth while styling into a separate framebuffer. Forward
-	// effects can depth-test here without ever sampling an attached texture.
+	// Copy opaque depth while styling into a separate framebuffer; forward effects can depth-test without sampling it.
 	float z = texture2D(tDepth, vUv).x;
 	gl_FragDepth = z;
 	bool sky = z >= 0.99999;
@@ -127,11 +107,7 @@ void main() {
 	vec4 sl = texture2D(tData, vUv - ox), sr = texture2D(tData, vUv + ox);
 	vec4 su = texture2D(tData, vUv + oy), sd = texture2D(tData, vUv - oy);
 
-	// Silhouettes from an inverse-depth laplacian. 1/d is affine across ANY
-	// plane, including the court seen at a grazing angle, so a flat floor has a
-	// second difference of zero and never draws a false outline. Dividing by 1/d
-	// makes the test scale invariant, so a far arrow outlines as crisply as a
-	// near one.
+	// Silhouettes from an inverse-depth laplacian: 1/d is affine across any plane, so a flat floor has zero second difference (no false outline), and dividing by 1/d keeps outlines scale invariant.
 	float iw = 1.0 / d;
 	float lap = abs(1.0 / linDepth(zl) + 1.0 / linDepth(zr) - 2.0 * iw)
 	          + abs(1.0 / linDepth(zu) + 1.0 / linDepth(zd) - 2.0 * iw);
@@ -140,8 +116,7 @@ void main() {
 	float nEdge = length(sl.ba - sr.ba) + length(su.ba - sd.ba);
 	edge = max(edge, smoothstep(0.45, 0.9, nEdge));
 
-	// Take the ink color from the front-most neighbour so an outline belongs to
-	// the nearer shape rather than smearing the background's role across it.
+	// Take ink color from the front-most neighbour so the outline belongs to the nearer shape.
 	float zmin = z; float inkId = s.g;
 	if (zl < zmin) { zmin = zl; inkId = sl.g; }
 	if (zr < zmin) { zmin = zr; inkId = sr.g; }
@@ -158,10 +133,7 @@ void main() {
 		col = mix(base, uCream, band * 0.32);
 		col = mix(col, uInk, (1.0 - band) * 0.18);
 
-		// One halftone rule, anchored in world space so the dots sit ON the
-		// surface and do not swim when the camera moves. Spacing steps in powers
-		// of two with distance to keep on-screen density roughly constant, which
-		// is what stops the pattern from crawling into moire far away.
+		// One halftone rule anchored in world space so dots sit ON the surface and don't swim; power-of-two distance stepping keeps on-screen density constant (no far moire).
 		vec4 clip = vec4(vUv * 2.0 - 1.0, z * 2.0 - 1.0, 1.0);
 		vec4 vpos = uInvProj * clip; vpos /= vpos.w;
 		vec3 wpos = (uInvView * vec4(vpos.xyz, 1.0)).xyz;
@@ -178,15 +150,13 @@ void main() {
 		col = mix(col, uInk, dots * 0.30);
 	}
 
-	// Ink the edge last so nothing prints over the outline. A little stable
-	// noise varies the weight, which reads as a pen rather than a filter.
+	// Ink the edge last so nothing prints over the outline; stable noise varies the weight so it reads as a pen, not a filter.
 	float ew = 0.78 + 0.32 * vnoise(gl_FragCoord.xy * 0.35);
 	col = mix(col, mix(uInk, roleColor(inkId) * 0.35, 0.25), clamp(edge * ew, 0.0, 1.0));
 	gl_FragColor = vec4(col, 1.0);
 }`
 
-// A material that writes surface data instead of a final color. `role` names a
-// palette entry; `flat` opts a surface out of shading and halftone.
+// Write surface data for a palette `role`; `flat` skips shading and halftone.
 export function makeStyleMaterial(role, { flat = false, side = THREE.FrontSide } = {}) {
 	const id = ROLES.indexOf(role)
 	return new THREE.ShaderMaterial({
@@ -202,9 +172,7 @@ export function makeStyleMaterial(role, { flat = false, side = THREE.FrontSide }
 	})
 }
 
-// Per-instance style override, packed into an InstancedMesh's instanceColor:
-// red carries the style ID, green the flatness flag. An instance cannot have its
-// own uniform, so this is how one pooled mesh draws marks in several roles.
+// Pack per-instance role ID in red and flatness in green: instances cannot own uniforms.
 export function instanceStyle(role, { flat = true } = {}) {
 	return new THREE.Color(Math.max(0, ROLES.indexOf(role)) / 255, flat ? 1 : 0, 0)
 }
@@ -222,8 +190,7 @@ export function createStylePass(canvas) {
 	renderer.outputColorSpace = THREE.LinearSRGBColorSpace
 	renderer.autoClear = false
 	renderer.info.autoReset = false
-	// Fill rate, not scene complexity, is what this pass costs. 1.5 keeps a
-	// high-DPI laptop honest without visibly softening the ink.
+	// Cap high-DPI fill cost at 1.5 without visibly softening the ink.
 	const pixelRatio = Math.min(window.devicePixelRatio || 1, 1.5)
 
 	const depthTexture = new THREE.DepthTexture(2, 2)
@@ -239,10 +206,7 @@ export function createStylePass(canvas) {
 		stencilBuffer: false,
 		generateMipmaps: false,
 	}
-	// Two independent depth attachments avoid a framebuffer feedback loop:
-	// data owns the sampled depth texture; composed owns a depth renderbuffer.
-	// The style shader writes color AND copies depth, removing the extra color
-	// target and fullscreen copy previously needed to share opaque depth.
+	// Separate sampled depth from composed's renderbuffer; styling copies depth without a feedback loop or extra blit.
 	const data = new THREE.WebGLRenderTarget(2, 2, targetOpts)
 	const composed = new THREE.WebGLRenderTarget(2, 2, {
 		type: THREE.HalfFloatType,
@@ -271,8 +235,7 @@ export function createStylePass(canvas) {
 		},
 		vertexShader: postVert,
 		fragmentShader: postFrag,
-		// Depth writes require depth testing to be enabled. Every fullscreen
-		// fragment must replace the destination depth, including sky pixels.
+		// Enable depth testing so every fullscreen fragment, including sky, replaces destination depth.
 		depthTest: true,
 		depthFunc: THREE.AlwaysDepth,
 		depthWrite: true,

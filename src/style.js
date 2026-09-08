@@ -1,12 +1,4 @@
-// The game's palette, by job rather than by hue. Every material, canvas sticker
-// and CSS accent reads a role from here, so a color has one definition and one
-// meaning. Renaming a hue is a one-line change; nothing else in the game knows
-// what "navy" is.
-//
-// DOM-free on purpose — tests and headless rounds import this without a document.
-// `applyCssVariables()` pushes the same numbers out to CSS at boot so the HTML
-// chrome and the WebGL world cannot drift apart. index.html keeps matching
-// literals so the first paint is correct before any script runs.
+// The game's palette by role — one definition per color; DOM-free, and applyCssVariables() mirrors the same numbers into CSS at boot so HTML chrome and WebGL world can't drift.
 export const PALETTE = {
 	// World
 	page: 0xb5dce8, // sky behind the court

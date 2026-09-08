@@ -2,15 +2,13 @@ import * as THREE from 'three'
 import { tune } from './tune.js'
 import { createStylePass } from './stylepass.js'
 
-// Camera, framing and shake live here; what the world is made of lives in
-// stylepass.js. There is one rendering path — no direct-lit fallback.
+// Camera, framing and shake live here; materials live in stylepass.js. One rendering path — no direct-lit fallback.
 export function createRenderer() {
 	const canvas = document.querySelector('.app')
 	const style = createStylePass(canvas)
 	const renderer = style.renderer
 
-	// No lights, no fog, no shadow map: the style pass derives shading from
-	// surface normals in one shader, and the sky is painted by that shader too.
+	// No lights, no fog, no shadow map: the style pass derives shading from surface normals in one shader that also paints the sky.
 	const scene = new THREE.Scene()
 
 	// Fixed isometric-ish camera looking down the court.
@@ -45,8 +43,7 @@ export function createRenderer() {
 	}
 	function updateCamera(dt) {
 		if (!tune.fx.shake) shake = 0
-		// Common case: no active shake. Snap back to base once, then idle — no random
-		// jitter or lookAt() matrix recompute on the (vast majority of) still frames.
+		// Common case: no active shake — snap back to base once, then idle with no jitter or lookAt() recompute.
 		if (shake <= 0) {
 			if (!settled) {
 				camera.position.copy(camBase)

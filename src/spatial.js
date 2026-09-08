@@ -1,7 +1,4 @@
-// Nearest item to a point on the XZ plane. The game keeps asking this — nearest
-// enemy, nearest grounded arrow, nearest pickup — so it lives once here. `ok`
-// filters candidates; callers range-gate afterward with the returned d2 (squared
-// distance) so the loop stays a single pure scan.
+// Nearest item to a point on the XZ plane; `ok` filters candidates, callers range-gate with the returned squared distance. One pure scan.
 export function nearest(items, x, z, ok) {
 	let item = null
 	let d2 = Infinity

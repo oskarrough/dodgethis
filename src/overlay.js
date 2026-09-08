@@ -1,18 +1,4 @@
-// The full-screen modal for the non-playing phases: the start menu, the
-// round-over card, the match-over card. It's the game's only "menu UI"; the
-// gameplay HUD and combat log live elsewhere.
-//
-// show() renders a title + subtitle + lines + a row of actions. Each action is a
-// button (click) optionally bound to a key. A single "cursor" selection is
-// always active: a blinking ▶ marker + gold fill marks the current action, and
-// the D-pad / arrow keys (or WASD) move it; Enter or Space picks it. That's the
-// classic handheld-menu feel — D-pad to move, A to confirm — so the menu never
-// depends on tab-focus. Number keys still shortcut straight to an action, with
-// a "(3)"-style hint on the button.
-//
-// Action shape: { label, key?, keyLabel?, onSelect }
-//   key      — a KeyboardEvent.code ('Digit3', 'KeyM', …) that triggers it
-//   keyLabel — short hint shown on the button ('Enter', '3', 'R')
+// Full-screen non-playing modal with persistent cursor navigation by keyboard or gamepad; actions are { label, key?, keyLabel?, onSelect }, where key is a KeyboardEvent.code and keyLabel is its button hint.
 import { sfx } from './audio.js'
 
 export function createOverlay(selector = '.overlay') {
@@ -24,8 +10,7 @@ export function createOverlay(selector = '.overlay') {
 	let outside = []
 	let device = 'keyboard'
 
-	// clear: round-over keeps court + scoreboard readable (no dim / blur veil).
-	// Match-over may keep the default curtain.
+	// Clear round-over keeps the court and score readable; match-over may retain the curtain.
 	function show({ title = '', subtitle = '', lines = [], actions: acts = [], clear = false } = {}) {
 		actions = acts
 		buttons = []
@@ -91,8 +76,7 @@ export function createOverlay(selector = '.overlay') {
 		el.replaceChildren(card)
 		renderPrompts()
 		el.hidden = false
-		// Keep match chrome + debug readable during clear round-over; only the
-		// dialog captures focus. Curtain phases still inert the rest of the page.
+		// Clear mode keeps chrome and debug active; curtain mode makes the page outside the dialog inert.
 		outside = [...document.body.children].filter((child) => child !== el)
 		if (clear) {
 			outside = []
@@ -148,8 +132,7 @@ export function createOverlay(selector = '.overlay') {
 		renderPrompts()
 	}
 
-	// Keyboard: arrows / WASD move the cursor, Enter/Space confirm, and any
-	// action's bound key shortcuts straight to it.
+	// Gamepad movement changes selection and confirm invokes it.
 	function handleGamepad({ move, confirm }) {
 		if (el.hidden || !actions.length) return
 		if (move) {

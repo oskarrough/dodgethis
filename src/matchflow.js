@@ -16,9 +16,7 @@ export function createMatchFlow({
 	onTheme,
 }) {
 	// --- Game state machine (Godot framing) -----------------------------------
-	// phase drives what the frame loop does and which overlay is up.
-	//   menu → playing → roundOver → playing → … → matchOver → menu
-	// match holds the best-of-N score. `round` is the live gameplay scene or null.
+	// phase drives the frame loop and which overlay is up (menu → playing → roundOver → … → matchOver); match holds the best-of-N score, `round` is the live scene or null.
 	const { combat } = ctx
 	const BEST_OF = 3
 	const match = {
@@ -113,9 +111,7 @@ export function createMatchFlow({
 	}
 
 	// --- The hub: a live, physical splash ------------------------------------
-	// The menu IS a game instance — a lobby round with no enemies, no scoring, no
-	// arrows. You free-roam the court and step into a portal to commit to a match.
-	// That's the "splash doesn't block the game" trick: same scene, same input.
+	// The menu IS a lobby round — no enemies, no scoring; free-roam and step into a portal to commit to a match.
 	function enterHub() {
 		clearActions()
 		resetPresentation()
@@ -127,8 +123,7 @@ export function createMatchFlow({
 		overlay.hide()
 		phase = 'menu'
 		onTheme(0)
-		// Un-hiding restarts the CSS letter animations, so the title bounces in
-		// fresh every time you come back to the hub.
+		// Re-showing restarts the CSS letter animations, so the title bounces in fresh.
 		splashEl.hidden = false
 		for (const button of portalOptions) {
 			const recent = Number(button.dataset.enemies) === lastDifficulty
@@ -138,9 +133,7 @@ export function createMatchFlow({
 		}
 		round = createRound(ctx, { enemies: 0, arrowCount: 0, roundNum: 0, lobby: true })
 		onChange()
-		// Three portals, one per difficulty — black holes in the ground with a
-		// swirling ring and a floating number. Step in to teleport into a best-of-3
-		// match with that many enemies.
+		// Three difficulty portals; stepping in starts a best-of-3 match with that many enemies.
 		for (const s of [
 			{ x: -3.5, enemies: 1 },
 			{ x: 0, enemies: 2 },
@@ -161,9 +154,7 @@ export function createMatchFlow({
 		transition('ROUND 1', () => startMatch(enemies))
 	}
 
-	// The splash difficulties, in the order they are printed. That order is also
-	// what the 1-9 keys pick, and the printed hint is written from the same list,
-	// so a fourth mode would number itself.
+	// Splash difficulties in printed order — the same list the 1-9 keys and the printed hint use, so a fourth mode numbers itself.
 	portalOptions.forEach((button, i) => {
 		if (i < 9) button.append(`  (${i + 1})`) // same hint shape the overlay uses
 		button.addEventListener('click', () => {
@@ -210,8 +201,7 @@ export function createMatchFlow({
 		startRound()
 	}
 
-	// Build a fresh round (incrementing the counter) and start play. Disposing the
-	// old round here is the real reset that replaced location.reload().
+	// Build a fresh round (incrementing the counter) and start play — disposing the old round is the real reset that replaced location.reload().
 	function startRound() {
 		match.round++
 		spawnRound()
@@ -245,10 +235,7 @@ export function createMatchFlow({
 		onChange()
 	}
 
-	// Signal handler for round.onOver: tally the win, then branch to the next round
-	// or end the match. A null winner is a draw (both teams wiped in the same
-	// step) — nobody scores and the round is replayed.
-	// Round-over card is verdict + actions only; the live scoreboard keeps the score.
+	// round.onOver handler: tally the win, then advance or end the match; a null winner (simultaneous wipe) is a draw — nobody scores, round replays. Card is verdict + actions only.
 	function endRound(winner) {
 		if (phase !== 'playing' || roundScored) return
 		lastWinner = winner
