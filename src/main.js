@@ -14,6 +14,7 @@ import {
 	pointerNDC,
 	consumePress,
 	consumeRelease,
+	clearShoot,
 	pointerDown,
 	pollGamepad,
 	consumeDash,

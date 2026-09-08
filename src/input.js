@@ -103,6 +103,8 @@ window.addEventListener('pointermove', (e) => {
 })
 canvas.addEventListener('pointerdown', (e) => {
 	if (e.button !== 0) return
+	pointer.x = (e.clientX / window.innerWidth) * 2 - 1
+	pointer.y = -(e.clientY / window.innerHeight) * 2 + 1
 	const wasHeld = pointerHeld || padShootHeld
 	activePointerId = e.pointerId
 	canvas.setPointerCapture(e.pointerId)
@@ -119,6 +121,7 @@ canvas.addEventListener('pointercancel', (e) => {
 	if (e.pointerId !== activePointerId) return
 	activePointerId = null
 	pointerHeld = false
+	if (!padShootHeld) clearShoot()
 })
 window.addEventListener('blur', () => {
 	activePointerId = null

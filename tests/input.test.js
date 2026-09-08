@@ -73,6 +73,33 @@ function pad() {
 	return gamepad
 }
 
+test('a press aims at its own coordinates without a preceding pointer move', () => {
+	canvas.dispatchEvent(
+		Object.assign(new Event('pointerdown'), {
+			button: 0,
+			pointerId: 1,
+			clientX: 750,
+			clientY: 200,
+		}),
+	)
+	expect(input.pointerNDC()).toEqual({ x: 0.5, y: 0.5 })
+})
+
+test('canceling a pointer before the next frame discards its queued shot', () => {
+	canvas.dispatchEvent(
+		Object.assign(new Event('pointerdown'), {
+			button: 0,
+			pointerId: 1,
+			clientX: 500,
+			clientY: 400,
+		}),
+	)
+	canvas.dispatchEvent(Object.assign(new Event('pointercancel'), { pointerId: 1 }))
+	expect(input.pointerDown()).toBe(false)
+	expect(input.consumePress()).toBe(false)
+	expect(input.consumeRelease()).toBe(false)
+})
+
 test('idle connected pads do not steal prompts from mouse/keyboard', () => {
 	const gp = pad()
 	input.pollGamepad(1 / 60)
