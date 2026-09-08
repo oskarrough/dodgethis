@@ -1,23 +1,17 @@
 import * as THREE from 'three'
 import { tune } from './tune.js'
-import { PALETTE } from './style.js'
+import { createStylePass } from './stylePass.js'
 
+// Camera, framing and shake live here; what the world is made of lives in
+// stylePass.js. There is one rendering path — no direct-lit fallback.
 export function createRenderer() {
 	const canvas = document.querySelector('.app')
-	const renderer = new THREE.WebGLRenderer({
-		canvas,
-		antialias: true,
-		powerPreference: 'high-performance',
-	})
-	renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
-	renderer.shadowMap.enabled = true
+	const style = createStylePass(canvas)
+	const renderer = style.renderer
 
-	const bg = PALETTE.page
-	renderer.setClearColor(bg)
-
+	// No lights, no fog, no shadow map: the style pass derives shading from
+	// surface normals in one shader, and the sky is painted by that shader too.
 	const scene = new THREE.Scene()
-	scene.background = new THREE.Color(bg)
-	scene.fog = new THREE.Fog(bg, 45, 90)
 
 	// Fixed isometric-ish camera looking down the court.
 	const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 200)
@@ -27,30 +21,10 @@ export function createRenderer() {
 	const aimCamera = camera.clone() // never shaken: pointer rays stay gameplay-stable
 	aimCamera.updateMatrixWorld(true)
 
-	const hemi = new THREE.HemisphereLight(0xffffff, 0x8bd67a, 1.05)
-	scene.add(hemi)
-	const sun = new THREE.DirectionalLight(0xfff0b8, 1.7)
-	sun.position.set(10, 24, 12)
-	sun.castShadow = true
-	// Tighten the shadow frustum to the court's footprint (the old ±COURT.depth box
-	// was ~4× too large, so most of the map covered empty space). A 15-unit half-
-	// extent clears the 11×24 court's projected diagonal with margin; pairing that
-	// with a 1024² map gives the same on-court sharpness as the old 2048² box while
-	// rendering a quarter of the shadow texels each frame.
-	const SHADOW_EXTENT = 15
-	sun.shadow.camera.left = -SHADOW_EXTENT
-	sun.shadow.camera.right = SHADOW_EXTENT
-	sun.shadow.camera.top = SHADOW_EXTENT
-	sun.shadow.camera.bottom = -SHADOW_EXTENT
-	sun.shadow.camera.near = 1
-	sun.shadow.camera.far = 70
-	sun.shadow.mapSize.set(1024, 1024)
-	scene.add(sun)
-
 	function resize() {
 		const w = window.innerWidth
 		const h = window.innerHeight
-		renderer.setSize(w, h, false)
+		style.setSize(w, h)
 		camera.aspect = w / h
 		camera.updateProjectionMatrix()
 		aimCamera.aspect = camera.aspect
@@ -88,5 +62,14 @@ export function createRenderer() {
 		camera.lookAt(0, 0, 0)
 	}
 
-	return { renderer, scene, camera, aimCamera, addShake, updateCamera }
+	function render() {
+		style.render(scene, camera)
+	}
+
+	function dispose() {
+		window.removeEventListener('resize', resize)
+		style.dispose()
+	}
+
+	return { renderer, scene, camera, aimCamera, addShake, updateCamera, render, dispose }
 }

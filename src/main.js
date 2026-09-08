@@ -37,7 +37,7 @@ const splashEl = document.querySelector('.splash')
 async function main() {
 	applyCssVariables() // one palette drives both the WebGL world and the HTML chrome
 	const { RAPIER, world } = await initPhysics()
-	const { renderer, scene, camera, aimCamera, addShake, updateCamera } = createRenderer()
+	const { scene, aimCamera, addShake, updateCamera, render } = createRenderer()
 	const combat = createCombatLog()
 	const overlay = createOverlay()
 	const godmodeFx = createGodmodeFx(scene)
@@ -50,7 +50,7 @@ async function main() {
 			hitConfirmation.hidden = !text
 		},
 	})
-	log.info('booted', { renderer: 'three', physics: 'rapier' })
+	log.info('booted', { renderer: 'style-pass', physics: 'rapier' })
 
 	// Mute toggle controls the shared audio output, so it also silences cues that
 	// are already playing instead of only gating future sounds.
@@ -620,7 +620,7 @@ async function main() {
 			}
 		feedback.update(dt) // exits and confirmation finish even after the verdict
 		updateCamera(dt)
-		renderer.render(scene, camera)
+		render()
 
 		frames++
 		fpsTimer += dt
