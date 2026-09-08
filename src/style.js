@@ -13,6 +13,7 @@ export const PALETTE = {
 	court: 0x69d66f,
 	courtLine: 0xfff7c7,
 	courtRim: 0xffd35d, // painted edge warning — no collision
+	courtShade: 0x4aa653, // printed drop shadow on the court
 	// Print language
 	ink: 0x26445f, // every outline, badge and mark
 	cream: 0xfffdf4, // highlight and sticker fill

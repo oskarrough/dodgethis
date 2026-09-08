@@ -26,6 +26,7 @@ import { setAudioListener, setSound, sfx } from './audio.js'
 import { tune } from './tune.js'
 import { log, createDebugGui, createCombatLog } from './debug.js'
 import { createGodmodeFx } from './godmodeFx.js'
+import { createShadows } from './shadows.js'
 import { createFeedback } from './feedback.js'
 import { PALETTE, applyCssVariables } from './style.js'
 
@@ -41,6 +42,7 @@ async function main() {
 	const combat = createCombatLog()
 	const overlay = createOverlay()
 	const godmodeFx = createGodmodeFx(scene)
+	const shadows = createShadows(scene)
 	const hitConfirmation = document.querySelector('.hit-confirmation')
 	const feedback = createFeedback(scene, {
 		sfx,
@@ -618,6 +620,7 @@ async function main() {
 						: 0
 				unit.updateVisual(dt, windup)
 			}
+		shadows.update(phase === 'playing' || phase === 'menu' ? round : null)
 		feedback.update(dt) // exits and confirmation finish even after the verdict
 		updateCamera(dt)
 		render()
