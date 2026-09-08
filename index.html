@@ -647,10 +647,28 @@
 				position: fixed;
 				inset: 0;
 				z-index: 30;
-				background: #0a0e14;
+				background: var(--ui-text);
+				color: var(--cream, #fffdf4);
+				display: grid;
+				place-items: center;
+				font-size: clamp(2rem, 6vw, 5rem);
+				font-weight: 900;
 				opacity: 0;
 				pointer-events: none;
-				transition: opacity 0.28s ease;
+				transition: opacity 0.18s ease;
+			}
+			.fade.active {
+				opacity: 1;
+				pointer-events: auto;
+			}
+			.portal-option.recent {
+				outline: 3px solid var(--accent-bow);
+				outline-offset: 4px;
+			}
+			@media (prefers-reduced-motion: reduce) {
+				.fade {
+					transition: none;
+				}
 			}
 		</style>
 	</head>
@@ -693,7 +711,7 @@
 				<button class="portal-option sticker" type="button" data-enemies="3">Chaos · 3 foes</button>
 			</div>
 		</div>
-		<div class="fade"></div>
+		<div class="fade" aria-hidden="true"></div>
 		<script type="module" src="/src/main.js"></script>
 	</body>
 </html>

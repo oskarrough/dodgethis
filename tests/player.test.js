@@ -138,3 +138,24 @@ test.each(['fall', 'impact'])(
 		feedback.dispose()
 	},
 )
+
+test('stride follows displacement, settles at rest, and teleporting never produces a footstep', () => {
+	const shoes = unit.visual.getObjectByName('shoes')
+	const before = new THREE.Matrix4()
+	const moving = new THREE.Matrix4()
+	unit.updateVisual(1 / 60)
+	shoes.getMatrixAt(0, before)
+	let steps = 0
+	for (let i = 0; i < 12; i++) {
+		unit.mesh.position.z -= 0.1
+		if (unit.updateVisual(1 / 60)) steps++
+	}
+	shoes.getMatrixAt(0, moving)
+	expect(moving.equals(before)).toBe(false)
+	expect(steps).toBe(1)
+	for (let i = 0; i < 120; i++) expect(unit.updateVisual(1 / 60)).toBe(false)
+	shoes.getMatrixAt(0, moving)
+	expect(moving.elements[13]).toBeCloseTo(before.elements[13], 4)
+	unit.place(0, 1, -8)
+	expect(unit.updateVisual(1 / 60)).toBe(false)
+})

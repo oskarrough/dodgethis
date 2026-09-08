@@ -6,7 +6,7 @@ import { createRenderer } from './render.js'
 import { buildCourt } from './court.js'
 import { createRound } from './round.js'
 import { createPortal } from './portal.js'
-import { clampArrowLanding, projectArrowFlight } from './arrow.js'
+import { aimArrowSpeed, clampArrowLanding, projectArrowFlight } from './arrow.js'
 import { createOverlay } from './overlay.js'
 import {
 	moveVector,
@@ -21,6 +21,8 @@ import {
 	consumeMenuInput,
 	activeDevice,
 	consumeWeaponSwitch,
+	consumePause,
+	resetActions,
 } from './input.js'
 import { WEAPONS, TRAIL, createChargeMeter } from './weapons.js'
 import { createWeaponHud } from './weaponhud.js'
@@ -78,7 +80,7 @@ async function main() {
 
 	// Persistent stage: the court and the contact queue outlive every round. Only
 	// the per-round entities (built in round.js) come and go.
-	buildCourt(scene, world, RAPIER)
+	const court = buildCourt(scene, world, RAPIER)
 	const eventQueue = new RAPIER.EventQueue(true)
 	world.timestep = 1 / 60
 
@@ -124,20 +126,76 @@ async function main() {
 	let round = null
 	let portals = []
 	let teleporting = false
+	let transitionTimer = null
+	let humanDashBuffer = 0
+	let roundScored = false
+	let lastDifficulty = 0
+	try {
+		lastDifficulty = Number(localStorage.getItem('dodgethis.difficulty'))
+	} catch {
+		/* storage may be unavailable */
+	}
+
+	function clearActions() {
+		resetActions()
+		humanDashBuffer = 0
+		charge.cancel()
+		acc = 0
+	}
+
+	function transition(label, arrive) {
+		if (teleporting) return
+		teleporting = true
+		clearActions()
+		overlay.hide()
+		fadeEl.textContent = label
+		fadeEl.classList.add('active')
+		transitionTimer = setTimeout(() => {
+			arrive()
+			clearActions()
+			fadeEl.classList.remove('active')
+			transitionTimer = setTimeout(() => {
+				clearActions()
+				teleporting = false
+				transitionTimer = null
+			}, 180)
+		}, 180)
+	}
+
+	function togglePause() {
+		if (teleporting) return
+		if (phase === 'paused') {
+			clearActions()
+			phase = 'playing'
+			tune.physics.paused = false
+			overlay.hide()
+		} else if (phase === 'playing') {
+			clearActions()
+			phase = 'paused'
+			hideAim()
+			overlay.show({
+				title: 'PAUSED',
+				subtitle: `Round ${match.round} · ${match.wins.A}–${match.wins.B}`,
+				actions: [
+					{ label: 'Resume', keyLabel: 'Enter', onSelect: togglePause },
+					{ label: 'Restart round', key: 'KeyR', keyLabel: 'R', onSelect: restartRound },
+					{
+						label: 'Back to hub',
+						key: 'KeyM',
+						keyLabel: 'M',
+						onSelect: () => transition('BACK TO THE COURT', enterHub),
+					},
+				],
+			})
+		}
+	}
 
 	// --- The hub: a live, physical splash ------------------------------------
 	// The menu IS a game instance — a lobby round with no enemies, no scoring, no
 	// arrows. You free-roam the court and step into a portal to commit to a match.
 	// That's the "splash doesn't block the game" trick: same scene, same input.
-	function fadeOut(done) {
-		fadeEl.style.opacity = '1'
-		setTimeout(done, 280)
-	}
-	function fadeIn() {
-		fadeEl.style.opacity = '0'
-	}
-
 	function enterHub() {
+		clearActions()
 		feedback.reset()
 		weaponHud.reset()
 		if (round) {
@@ -151,6 +209,12 @@ async function main() {
 		// fresh every time you come back to the hub.
 		splashEl.hidden = false
 		renderScore()
+		for (const button of portalOptions) {
+			const recent = Number(button.dataset.enemies) === lastDifficulty
+			button.classList.toggle('recent', recent)
+			if (recent) button.setAttribute('aria-description', 'Last played difficulty')
+			else button.removeAttribute('aria-description')
+		}
 		round = createRound(ctx, { enemies: 0, arrowCount: 0, roundNum: 0, lobby: true })
 		// Three portals, one per difficulty — black holes in the ground with a
 		// swirling ring and a floating number. Step in to teleport into a best-of-3
@@ -171,13 +235,8 @@ async function main() {
 
 	function teleportTo(enemies) {
 		if (teleporting) return
-		teleporting = true
 		sfx.portal()
-		fadeOut(() => {
-			startMatch(enemies)
-			teleporting = false
-			fadeIn()
-		})
+		transition('ROUND 1', () => startMatch(enemies))
 	}
 
 	// The splash difficulties, in the order they are printed. That order is also
@@ -205,6 +264,14 @@ async function main() {
 	}
 
 	function startMatch(enemies, { allies = 0, arrowCount = 7, seed } = {}) {
+		if (enemies >= 1 && enemies <= 3 && allies === 0) {
+			lastDifficulty = enemies
+			try {
+				localStorage.setItem('dodgethis.difficulty', String(enemies))
+			} catch {
+				/* optional preference */
+			}
+		}
 		match.allies = allies
 		match.arrowCount = arrowCount
 		match.seed = seed
@@ -230,11 +297,13 @@ async function main() {
 
 	// Replay the current round without touching the score (R / restart button).
 	function restartRound() {
-		if (match.round === 0) return
-		spawnRound()
+		if (match.round === 0 || roundScored || phase === 'menu') return
+		transition(`ROUND ${match.round} · AGAIN`, spawnRound)
 	}
 
 	function spawnRound() {
+		roundScored = false
+		clearActions()
 		feedback.reset()
 		weaponHud.reset()
 		consumeWeaponSwitch()
@@ -248,6 +317,7 @@ async function main() {
 			roundNum: match.round,
 			onOver: endRound,
 		})
+		for (const unit of round.units) unit.updateVisual(0)
 		clearShoot() // swallow the click/Enter that dismissed the overlay
 		clearDash() // a Space confirm shouldn't become an instant dash
 		charge.cancel()
@@ -263,6 +333,7 @@ async function main() {
 	// step) — nobody scores and the round is replayed.
 	// Round-over card is verdict + actions only; the live scoreboard keeps the score.
 	function endRound(winner) {
+		if (phase !== 'playing' || roundScored) return
 		if (!winner) {
 			phase = 'roundOver'
 			renderScore()
@@ -274,6 +345,7 @@ async function main() {
 			})
 			return
 		}
+		roundScored = true
 		match.wins[winner]++
 		renderScore()
 		sfx.win()
@@ -293,8 +365,17 @@ async function main() {
 			title: youWon ? 'ROUND WON' : 'ROUND LOST',
 			clear: true,
 			actions: [
-				{ label: 'Next round', keyLabel: 'Enter', onSelect: startRound },
-				{ label: 'Restart', key: 'KeyR', keyLabel: 'R', onSelect: restartRound },
+				{
+					label: 'Next round',
+					keyLabel: 'Enter',
+					onSelect: () => transition(`ROUND ${match.round + 1}`, startRound),
+				},
+				{
+					label: 'Back to hub',
+					key: 'KeyM',
+					keyLabel: 'M',
+					onSelect: () => transition('BACK TO THE COURT', enterHub),
+				},
 			],
 		})
 	}
@@ -307,8 +388,25 @@ async function main() {
 		overlay.show({
 			title: youWon ? 'YOU WIN' : 'YOU LOSE',
 			actions: [
-				{ label: 'Rematch', keyLabel: 'Enter', onSelect: () => startMatch(match.enemies, match) },
-				{ label: 'Main menu', key: 'KeyM', keyLabel: 'M', onSelect: enterHub },
+				{
+					label: 'Rematch',
+					keyLabel: 'Enter',
+					onSelect: () => transition('ROUND 1 · AGAIN', () => startMatch(match.enemies, match)),
+				},
+				...(match.enemies < 3 && match.allies === 0
+					? [
+							{
+								label: 'Try harder',
+								onSelect: () => transition('STEP IT UP', () => startMatch(match.enemies + 1)),
+							},
+						]
+					: []),
+				{
+					label: 'Back to hub',
+					key: 'KeyM',
+					keyLabel: 'M',
+					onSelect: () => transition('BACK TO THE COURT', enterHub),
+				},
 			],
 		})
 	}
@@ -349,6 +447,7 @@ async function main() {
 		return s
 	}
 	function renderScore() {
+		court.updateScore(phase === 'menu' ? 0 : match.wins.A, phase === 'menu' ? 0 : match.wins.B)
 		if (phase === 'menu') {
 			scoreEl.hidden = true
 			return
@@ -414,7 +513,7 @@ async function main() {
 	// green court, so it rides on an ink one the way every other mark here does.
 	const aimMarker = new THREE.Mesh(
 		new THREE.RingGeometry(0.26, 0.38, 24),
-		new THREE.MeshBasicMaterial({ color: PALETTE.ammo }),
+		new THREE.MeshBasicMaterial({ color: PALETTE.ammo, transparent: true, depthWrite: false }),
 	)
 	aimMarker.rotation.x = -Math.PI / 2
 	aimMarker.visible = false
@@ -426,6 +525,13 @@ async function main() {
 	aimMarker.add(markerInk)
 	scene.add(aimMarker)
 
+	// The hollow cursor is the requested target; the solid dot is actual touchdown.
+	const targetMarker = aimMarker.clone(true)
+	targetMarker.material = aimMarker.material.clone()
+	scene.add(targetMarker)
+	aimMarker.geometry = new THREE.CircleGeometry(0.14, 24)
+	markerInk.geometry = new THREE.CircleGeometry(0.2, 24)
+
 	const PREVIEW_N = 32
 	const previewPos = new Float32Array(PREVIEW_N * 3)
 	const previewDistance = new Float32Array(PREVIEW_N)
@@ -433,8 +539,10 @@ async function main() {
 	const preview = createAimLine(scene, { samples: PREVIEW_N })
 
 	function hideAim() {
+		renderer.domElement.style.cursor = ''
 		preview.hide()
 		aimMarker.visible = false
+		targetMarker.visible = false
 	}
 
 	// Aim every frame and fire per the selected weapon. dt drives the charge meter.
@@ -476,17 +584,37 @@ async function main() {
 				if (charge.perfect && !chargePerfect) sfx.tickPerfect()
 				chargePerfect = charge.perfect
 			}
-			aimSpeed = charge.previewSpeed()
+			const targetDistance = Math.max(0, dist - 0.6) // measured from the hand, not feet
+			aimSpeed = aimArrowSpeed(targetDistance, hand.y, charge.previewSpeed())
 			updateArc(hand, aimSpeed, charge.perfect ? TRAIL.perfect : TRAIL.arrow)
+			targetMarker.position.set(aimTarget.x, 0.04, aimTarget.z)
+			targetMarker.visible = true
+			// Canvas only: HUD buttons and overlays retain their normal pointers.
+			renderer.domElement.style.cursor = 'none'
+			const onTarget =
+				aimMarker.visible &&
+				Math.hypot(aimMarker.position.x - aimTarget.x, aimMarker.position.z - aimTarget.z) < 0.3
+			targetMarker.material.color.set(
+				onTarget ? (charge.perfect ? TRAIL.perfect : PALETTE.ammo) : PALETTE.cream,
+			)
 			if (consumeRelease()) {
 				const shot = charge.release()
-				if (shot) round.looseHuman(aimDir, shot.speed, { kind: 'arrow', perfect: shot.perfect })
+				if (shot) {
+					round.looseHuman(aimDir, aimArrowSpeed(targetDistance, hand.y, shot.speed), {
+						kind: 'arrow',
+						perfect: shot.perfect,
+					})
+					charge.cancel()
+					hideAim()
+				}
 			} else if (charge.charging && !pointerDown()) {
 				charge.cancel() // lost the button without a clean release (blur) — no shot
 			}
 			return
 		}
 
+		targetMarker.visible = false
+		renderer.domElement.style.cursor = ''
 		// The bowl rolls along the ground and fires on click.
 		aimSpeed = tune.weapons.bowlSpeed
 		updateGroundLine(hand)
@@ -570,7 +698,7 @@ async function main() {
 	//   ] / [     add / remove an ally (Team A, AI fights for you)
 	// During roundOver/matchOver the overlay's own buttons own R/Enter.
 	window.addEventListener('keydown', (e) => {
-		if (e.defaultPrevented) return
+		if (e.defaultPrevented || teleporting || e.repeat) return
 		if (e.code === 'KeyG') {
 			tune.cheats.godmode = !tune.cheats.godmode
 			combat.push(`godmode ${tune.cheats.godmode ? 'ON' : 'off'}`, tune.cheats.godmode ? 'win' : '')
@@ -585,7 +713,8 @@ async function main() {
 			return
 		}
 		if (e.code === 'Escape') {
-			if (phase !== 'menu') enterHub() // quit the match back to the hub
+			if (phase === 'playing' || phase === 'paused') togglePause()
+			else if (phase !== 'menu') transition('BACK TO THE COURT', enterHub)
 			return
 		}
 		// On the splash, a number key is the same act as clicking that difficulty —
@@ -611,6 +740,9 @@ async function main() {
 
 	// rAF stops while the tab is hidden, leaving `last` stale; without this the
 	// first frame back would advance the sim by the (clamped) 0.1s max step.
+	window.addEventListener('blur', () => {
+		if (phase === 'playing' && !teleporting) togglePause()
+	})
 	document.addEventListener('visibilitychange', () => {
 		if (!document.hidden) last = performance.now()
 	})
@@ -629,21 +761,27 @@ async function main() {
 
 		const simulationStart = perf.enabled ? performance.now() : 0
 		pollGamepad(dt)
+		if (consumePause()) togglePause()
 		overlay.setDevice(activeDevice())
-		overlay.handleGamepad(consumeMenuInput())
+		const menuInput = consumeMenuInput()
+		if (!teleporting) overlay.handleGamepad(menuInput)
 		const selectedWeapon = consumeWeaponSwitch()
-		if (phase === 'playing' && selectedWeapon) setWeapon(selectedWeapon)
+		if (!teleporting && phase === 'playing' && selectedWeapon) setWeapon(selectedWeapon)
 		setAudioListener(round?.human.position)
 		// The hub (menu) is a live round too — same step/lateUpdate, just no aiming.
-		if (round && (phase === 'playing' || phase === 'menu')) {
-			if (phase === 'playing') weaponUpdate(dt)
+		if (round && !teleporting && (phase === 'playing' || phase === 'menu')) {
+			if (phase === 'playing' && !tune.physics.paused) weaponUpdate(dt)
 			else hideAim()
 			// Dash latches a direction now; the burst plays out across the steps below.
-			if (consumeDash()) round.dashHuman(moveVector())
+			if (consumeDash() && !tune.physics.paused) humanDashBuffer = 0.1
 			if (!tune.physics.paused) {
 				acc += dt * tune.physics.timeScale
 				// Guard on phase too: a winning hit flips us out of 'playing' mid-step.
 				while (acc >= world.timestep && (phase === 'playing' || phase === 'menu')) {
+					if (humanDashBuffer > 0) {
+						if (round.dashHuman(moveVector())) humanDashBuffer = 0
+						else humanDashBuffer = Math.max(0, humanDashBuffer - world.timestep)
+					}
 					round.step(world.timestep, moveVector())
 					acc -= world.timestep
 				}
@@ -653,7 +791,7 @@ async function main() {
 			if (phase === 'menu') checkPortals()
 		} else {
 			hideAim()
-			godmodeFx.update(dt, null)
+			godmodeFx.update(0, phase === 'paused' ? round?.human : null)
 		}
 
 		const simulationEnd = perf.enabled ? performance.now() : 0
@@ -683,17 +821,20 @@ async function main() {
 			}
 		}
 
-		if (round)
+		const frozen = phase === 'paused' || teleporting || tune.physics.paused
+		if (round && !frozen)
 			for (const unit of round.units) {
 				const windup =
 					unit.isHuman && phase === 'playing' && weapon === 'bow' && charge.charging
 						? charge.value
 						: 0
-				unit.updateVisual(dt, windup)
+				const stepped = unit.updateVisual(dt, windup)
+				if (stepped && unit.isHuman && (phase === 'playing' || phase === 'menu'))
+					sfx.step(unit.position)
 			}
-		shadows.update(phase === 'playing' || phase === 'menu' ? round : null)
-		feedback.update(dt) // exits and confirmation finish even after the verdict
-		updateCamera(dt)
+		shadows.update(round)
+		feedback.update(frozen ? 0 : dt) // exits and confirmation finish even after the verdict
+		updateCamera(frozen ? 0 : dt)
 		const renderStart = perf.enabled ? performance.now() : 0
 		render()
 		const renderEnd = perf.enabled ? performance.now() : 0
@@ -757,6 +898,10 @@ async function main() {
 
 	function startScenario(options = {}) {
 		const setup = scenario(options) // validate before replacing the current round
+		clearTimeout(transitionTimer)
+		transitionTimer = null
+		teleporting = false
+		fadeEl.classList.remove('active')
 		tune.ai.enabled = setup.ai
 		tune.physics.paused = setup.paused
 		tune.physics.timeScale = 1
@@ -787,7 +932,7 @@ async function main() {
 		return {
 			phase,
 			match: { ...match, wins: { ...match.wins } },
-			paused: tune.physics.paused,
+			paused: tune.physics.paused || phase === 'paused',
 			units: round.units.map((u) => ({
 				id: u.id,
 				team: u.team,

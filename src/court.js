@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'
 import { ARENA, bounds } from './arena.js'
 import { PALETTE } from './style.js'
 
@@ -55,5 +56,60 @@ export function buildCourt(scene, world, RAPIER) {
 		body,
 	)
 
-	return mesh
+	// Peripheral scenery is merged by ink role. The playing surface stays quiet,
+	// and nothing outside the painted rim changes the fall/collision rules.
+	const batches = new Map()
+	function box(role, w, h, d, x, y, z) {
+		const geometry = new THREE.BoxGeometry(w, h, d)
+		geometry.translate(x, y, z)
+		if (!batches.has(role)) batches.set(role, [])
+		batches.get(role).push(geometry)
+	}
+	for (const side of [-1, 1]) {
+		for (let row = 0; row < 3; row++) {
+			const x = side * (width / 2 + 1.6 + row * 0.65)
+			box('scenery', 0.62, 0.22, depth * 0.64, x, row * 0.45 - 0.3, 0)
+			for (const z of [-depth * 0.26, depth * 0.26])
+				box('ink', 0.12, 0.7 + row * 0.45, 0.12, x, row * 0.225 - 0.65, z)
+		}
+	}
+	// Service lines frame the ends without laying texture under moving ammo.
+	for (const z of [-depth * 0.3, depth * 0.3]) {
+		box('courtLine', width * 0.8, 0.01, 0.055, 0, 0.018, z)
+		box('courtLine', 0.055, 0.01, 0.55, 0, 0.018, z)
+	}
+	const boardZ = -depth / 2 - 2
+	box('ink', 5.8, 1.9, 0.22, 0, 2.1, boardZ)
+	box('cream', 5.35, 1.5, 0.08, 0, 2.1, boardZ + 0.15)
+	for (const x of [-2.3, 2.3]) box('ink', 0.16, 2.4, 0.16, x, 0.15, boardZ)
+	box('teamA', 0.2, 1.1, 0.08, -2.35, 2.1, boardZ + 0.22)
+	box('teamB', 0.2, 1.1, 0.08, 2.35, 2.1, boardZ + 0.22)
+	for (const [role, geometries] of batches) {
+		const decoration = new THREE.Mesh(
+			mergeGeometries(geometries),
+			new THREE.MeshBasicMaterial({ color: PALETTE[role] }),
+		)
+		decoration.name = `court-${role}`
+		decoration.matrixAutoUpdate = false
+		scene.add(decoration)
+		for (const geometry of geometries) geometry.dispose()
+	}
+	const scorePips = []
+	for (let team = 0; team < 2; team++) {
+		for (let i = 0; i < 2; i++) {
+			const pip = new THREE.Mesh(
+				new THREE.CircleGeometry(0.22, 12),
+				new THREE.MeshBasicMaterial({ color: team ? PALETTE.teamB : PALETTE.teamA }),
+			)
+			pip.position.set((team ? 1 : -1) * (0.65 + i * 0.75), 2.1, boardZ + 0.22)
+			scene.add(pip)
+			scorePips.push(pip)
+		}
+	}
+	return {
+		floor: mesh,
+		updateScore(a, b) {
+			for (let i = 0; i < 4; i++) scorePips[i].scale.setScalar(i % 2 < (i < 2 ? a : b) ? 1 : 0.25)
+		},
+	}
 }

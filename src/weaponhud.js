@@ -66,8 +66,8 @@ export function createWeaponHud({ onSelect } = {}) {
 			armed.classList.toggle('picked-up', holding && performance.now() < pickupUntil)
 			const pad = device === 'gamepad'
 			controls.textContent = pad
-				? 'LS move · RS aim · LB/RB dash · D-pad weapon'
-				: 'WASD move · mouse aim · Space/Shift dash'
+				? 'LS move · RS aim · LB/RB dash · D-pad weapon · Start pause'
+				: 'WASD move · mouse aim · Space/Shift dash · Esc pause'
 
 			for (const [id, btn] of slots) {
 				btn.classList.toggle('active', id === weapon)
@@ -94,12 +94,12 @@ export function createWeaponHud({ onSelect } = {}) {
 			if (charge.charging) {
 				chargeLabel.textContent = charge.perfect
 					? 'PERFECT — release!'
-					: `${Math.round(charge.value * 100)}% — release to fire`
+					: `${Math.round(charge.value * 100)}% reach · release!`
 			} else {
 				chargeLabel.textContent = holding
 					? pad
-						? 'hold RT / A to wind up'
-						: 'hold click to wind up'
+						? 'hold RT / A for reach'
+						: 'hold click for reach'
 					: 'grab an arrow to rearm'
 			}
 		},

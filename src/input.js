@@ -2,6 +2,7 @@
 const keys = new Set()
 let device = 'keyboard'
 let weaponQueued = null
+let pauseQueued = false
 let padNeedsRelease = false
 const previousPadButtons = []
 
@@ -35,6 +36,7 @@ window.addEventListener('keydown', (e) => {
 })
 window.addEventListener('keyup', (e) => keys.delete(e.code))
 window.addEventListener('blur', () => {
+	pauseQueued = false
 	keys.clear()
 	dashQueued = false
 	padDashQueued = false
@@ -195,6 +197,7 @@ export function pollGamepad(dt) {
 		}
 	}
 	if (!gp) {
+		pauseQueued = false
 		if (previousPadButtons.some(Boolean)) padNeedsRelease = true
 		// A disconnected trigger cancels its charge instead of leaving it held or
 		// firing a release edge when the controller disappears.
@@ -233,6 +236,7 @@ export function pollGamepad(dt) {
 		gp.buttons.some((b, i) => b.pressed && !previousPadButtons[i])
 	)
 		device = 'gamepad'
+	if (gp.buttons[9]?.pressed && !previousPadButtons[9]) pauseQueued = true
 	if (gp.buttons[14]?.pressed && !previousPadButtons[14]) weaponQueued = 'bow'
 	if (gp.buttons[15]?.pressed && !previousPadButtons[15]) weaponQueued = 'bowl'
 	for (let i = 0; i < gp.buttons.length; i++) previousPadButtons[i] = gp.buttons[i].pressed
@@ -272,4 +276,25 @@ export function consumeMenuInput() {
 	menuMoveQueued = 0
 	menuConfirmQueued = false
 	return input
+}
+
+export function consumePause() {
+	const queued = pauseQueued
+	pauseQueued = false
+	return queued
+}
+
+// Modal navigation owns these gestures; resuming requires a fresh press.
+export function resetActions() {
+	keys.clear()
+	clearShoot()
+	clearDash()
+	weaponQueued = null
+	pauseQueued = false
+	pointerHeld = false
+	activePointerId = null
+	padShootHeld = false
+	padNeedsRelease = true
+	menuMoveQueued = 0
+	menuConfirmQueued = false
 }

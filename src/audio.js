@@ -189,6 +189,45 @@ function blip({
 	osc.stop(t0 + dur + 0.02)
 }
 
+let noiseBuffer = null
+function scuff(point, dash = false) {
+	if (!tune.fx.sound) return
+	const c = ac()
+	if (!noiseBuffer) {
+		noiseBuffer = c.createBuffer(1, Math.ceil(c.sampleRate * 0.25), c.sampleRate)
+		const samples = noiseBuffer.getChannelData(0)
+		for (let i = 0; i < samples.length; i++) samples[i] = Math.random() * 2 - 1
+	}
+	const source = c.createBufferSource()
+	source.buffer = noiseBuffer
+	const filter = c.createBiquadFilter()
+	filter.type = 'bandpass'
+	filter.Q.value = 0.7
+	const now = c.currentTime
+	const duration = dash ? 0.18 : 0.065
+	filter.frequency.setValueAtTime(dash ? 800 : 550, now)
+	filter.frequency.exponentialRampToValueAtTime(dash ? 2200 : 300, now + duration)
+	const mix = spatialMix(point)
+	const gain = c.createGain()
+	gain.gain.setValueAtTime(0.0001, now)
+	gain.gain.exponentialRampToValueAtTime(
+		Math.max(0.0001, (dash ? 0.14 : 0.07) * tune.fx.volume * mix.gain),
+		now + 0.008,
+	)
+	gain.gain.exponentialRampToValueAtTime(0.0001, now + duration)
+	const pan = c.createStereoPanner()
+	pan.pan.value = mix.pan
+	source.connect(filter).connect(gain).connect(pan).connect(master)
+	source.onended = () => {
+		source.disconnect()
+		filter.disconnect()
+		gain.disconnect()
+		pan.disconnect()
+	}
+	source.start(now)
+	source.stop(now + duration)
+}
+
 export const sfx = {
 	// Synth blips — punchy, time-critical, pitch-varied procedurally.
 	// `gain` scales the default so enemy shots can read quieter than the player's own bow.
@@ -199,8 +238,11 @@ export const sfx = {
 	deflect: (point) =>
 		blip({ freq: 900, slideTo: 350, type: 'triangle', dur: 0.1, gain: 0.12, point }),
 	fall: (point) => blip({ freq: 180, slideTo: 35, type: 'sine', dur: 0.35, gain: 0.2, point }),
-	dash: (point) =>
-		blip({ freq: 220, slideTo: 100, type: 'triangle', dur: 0.06, gain: 0.05, point }),
+	dash: (point) => {
+		blip({ freq: 220, slideTo: 100, type: 'triangle', dur: 0.06, gain: 0.05, point })
+		scuff(point, true)
+	},
+	step: (point) => scuff(point),
 	// A bright two-note chime for a perfectly-timed charge release.
 	perfect: (point) =>
 		[880, 1320].forEach((f, i) =>

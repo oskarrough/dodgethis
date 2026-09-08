@@ -119,3 +119,25 @@ test('a stalled tab cannot jump the virtual cursor through unbounded elapsed tim
 	input.pollGamepad(60)
 	expect(input.pointerNDC().x).toBeCloseTo(0.17, 6)
 })
+
+test('Start pauses once and modal handoff swallows held gameplay gestures', () => {
+	const gp = pad()
+	gp.buttons[9].pressed = true
+	gp.buttons[7].pressed = true
+	gp.buttons[4].pressed = true
+	input.pollGamepad(1 / 60)
+	expect(input.consumePause()).toBe(true)
+	expect(input.consumePause()).toBe(false)
+	input.resetActions()
+	input.pollGamepad(1 / 60)
+	expect(input.pointerDown()).toBe(false)
+	expect(input.consumePress()).toBe(false)
+	expect(input.consumeDash()).toBe(false)
+	gp.buttons.forEach((b) => {
+		b.pressed = false
+	})
+	input.pollGamepad(1 / 60)
+	gp.buttons[7].pressed = true
+	input.pollGamepad(1 / 60)
+	expect(input.consumePress()).toBe(true)
+})

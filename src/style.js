@@ -9,11 +9,12 @@
 // literals so the first paint is correct before any script runs.
 export const PALETTE = {
 	// World
-	page: 0x8fd7ff, // sky behind the court
-	court: 0x69d66f,
+	page: 0xb5dce8, // sky behind the court
+	court: 0x79bd86,
 	courtLine: 0xfff7c7,
 	courtRim: 0xffd35d, // painted edge warning — no collision
 	courtShade: 0x4aa653, // printed drop shadow on the court
+	scenery: 0x91aeb3, // quiet bleacher paint
 	// Print language
 	ink: 0x26445f, // every outline, badge and mark
 	cream: 0xfffdf4, // highlight and sticker fill

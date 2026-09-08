@@ -69,6 +69,24 @@ export function projectArrowFlight(speed, startHeight, distances, heights, dt = 
 	return distance
 }
 
+// Invert the preview's damped flight rather than the AI's ideal ballistic solve.
+// Charge is a ceiling: close targets never get overshot just for charging longer.
+const solveDistances = new Float32Array(2)
+const solveHeights = new Float32Array(2)
+export function aimArrowSpeed(distance, height, availableSpeed) {
+	const range = projectArrowFlight(availableSpeed, height, solveDistances, solveHeights)
+	if (range === null || distance >= range) return availableSpeed
+	let low = 0
+	let high = availableSpeed
+	for (let i = 0; i < 18; i++) {
+		const mid = (low + high) / 2
+		const landing = projectArrowFlight(mid, height, solveDistances, solveHeights)
+		if (landing === null || landing > Math.max(0, distance)) high = mid
+		else low = mid
+	}
+	return (low + high) / 2
+}
+
 let _id = 0
 
 const shaftMat = new THREE.MeshStandardMaterial({ color: PALETTE.ammoShaft, roughness: 0.7 })

@@ -66,9 +66,32 @@ export function createPlayer(
 	bow.visible = false
 	visual.add(bow)
 
+	const feet = new THREE.InstancedMesh(
+		new THREE.BoxGeometry(radius * 0.85, 0.18, radius * 1.3),
+		new THREE.MeshBasicMaterial({ color: PALETTE.ink }),
+		2,
+	)
+	feet.name = 'shoes'
+	feet.frustumCulled = false
+	feet.instanceMatrix.setUsage(THREE.DynamicDrawUsage)
+	visual.add(feet)
+	const footPose = new THREE.Object3D()
+	const hand = new THREE.Mesh(
+		new THREE.SphereGeometry(0.14, 8, 6),
+		new THREE.MeshBasicMaterial({ color: PALETTE.cream }),
+	)
+	bow.add(hand)
+	hand.position.set(0.28, 0, 0)
+	let stride = 0
+	let stepDistance = 0
+	let strideAmount = 0
+	const motion = new THREE.Vector3()
+	const visualPosition = new THREE.Vector3()
+
 	const [px, py, pz] = position
 	const spawnY = py + radius + halfHeight
 	mesh.position.set(px, spawnY, pz)
+	visualPosition.copy(mesh.position)
 	const body = world.createRigidBody(
 		RAPIER.RigidBodyDesc.kinematicPositionBased().setTranslation(px, spawnY, pz),
 	)
@@ -242,21 +265,61 @@ export function createPlayer(
 	function updateVisual(dt, charge = 0) {
 		bow.visible = !!unit.heldArrow
 		if (!unit.alive) return // feedback owns the detached corpse
-		stepSpring(leanX, 0, dt)
-		stepSpring(leanZ, 0, dt)
+		dt = Math.max(0, Math.min(dt, 0.1))
+		const dx = mesh.position.x - visualPosition.x
+		const dz = mesh.position.z - visualPosition.z
+		visualPosition.copy(mesh.position)
+		const distance = Math.hypot(dx, dz)
+		const walking = grounded && !unit.dashing && distance < 2
+		const speed = walking && dt > 0 ? Math.min(distance / dt, tune.player.speed) : 0
+		motion.set(walking && dt > 0 ? dx / dt : 0, 0, walking && dt > 0 ? dz / dt : 0)
+		strideAmount += (speed / tune.player.speed - strideAmount) * (1 - Math.exp(-16 * dt))
+		if (walking) stride += (distance * Math.PI) / 0.7
+		stepSpring(leanX, clamp(motion.x * 0.055, -0.4, 0.4), dt)
+		stepSpring(leanZ, clamp(motion.z * 0.055, -0.4, 0.4), dt)
 		stepSpring(recoil, charge * 0.12, dt)
 		stepSpring(pickup, 0, dt)
 		const c = Math.cos(mesh.rotation.y)
 		const s = Math.sin(mesh.rotation.y)
 		const aimX = c * unit.aim.x - s * unit.aim.z
 		const aimZ = s * unit.aim.x + c * unit.aim.z
-		visual.position.set(-aimX * recoil.value, 0, -aimZ * recoil.value)
+		visual.position.set(
+			-aimX * recoil.value,
+			Math.abs(Math.sin(stride)) * 0.045 * strideAmount,
+			-aimZ * recoil.value,
+		)
 		visual.rotation.set(
 			(s * leanX.value + c * leanZ.value) * 0.35,
-			0,
+			-charge * 0.13,
 			-(c * leanX.value - s * leanZ.value) * 0.35,
 		)
 		visual.scale.set(1 + pickup.value, 1 - pickup.value * 0.5, 1 + pickup.value)
+		bow.position.set(
+			radius * 0.85,
+			halfHeight * 0.15 + charge * 0.2,
+			-0.05 + charge * 0.22 - recoil.value,
+		)
+		bow.rotation.z = Math.PI * 0.45 - charge * 0.3
+		hand.position.x = 0.28 - charge * 0.2
+		for (let i = 0; i < 2; i++) {
+			const step = Math.sin(stride + i * Math.PI) * strideAmount
+			footPose.position.set(
+				(i ? 1 : -1) * radius * 0.62,
+				-radius - halfHeight + 0.09 + Math.max(0, step) * 0.15,
+				-0.07 + step * 0.18,
+			)
+			footPose.rotation.x = step * 0.18
+			footPose.updateMatrix()
+			feet.setMatrixAt(i, footPose.matrix)
+		}
+		feet.instanceMatrix.needsUpdate = true
+		if (walking && speed > 0.5) stepDistance += distance
+		else stepDistance = 0
+		if (stepDistance >= 0.95) {
+			stepDistance %= 0.95
+			return true
+		}
+		return false
 	}
 
 	// Resolve the out immediately; presentation may reveal and animate the corpse.
@@ -285,6 +348,10 @@ export function createPlayer(
 		vy = 0
 		grounded = true
 		mesh.position.set(x, y, z)
+		visualPosition.copy(mesh.position)
+		motion.setScalar(0)
+		strideAmount = 0
+		stepDistance = 0
 	}
 
 	// Free everything this unit put into the world + scene. Like Godot's
@@ -297,12 +364,14 @@ export function createPlayer(
 		visual.removeFromParent() // death presentation may have attached it to the scene
 		visual.geometry.dispose()
 		visual.material.dispose()
-		for (const part of [nose, badge, bow]) {
+		feet.dispose()
+		for (const part of [nose, badge, bow, feet, hand]) {
 			part.geometry.dispose()
 			part.material.dispose()
 		}
 	}
 
+	updateVisual(0)
 	return unit
 }
 
