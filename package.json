@@ -5,7 +5,7 @@
 	"type": "module",
 	"scripts": {
 		"dev": "vite",
-		"build": "vite build",
+		"build": "bun run check && vite build",
 		"preview": "vite preview",
 		"check": "oxlint && oxfmt && bun test",
 		"test": "bun test",
