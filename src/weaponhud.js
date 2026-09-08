@@ -67,7 +67,7 @@ export function createWeaponHud({ onSelect } = {}) {
 			const pad = device === 'gamepad'
 			controls.textContent = pad
 				? 'LS move · RS aim · LB/RB dash · D-pad weapon · Start pause'
-				: 'WASD move · mouse aim · Space/Shift dash · Esc pause'
+				: 'WASD move · mouse aim · Space jump · Shift dash · Esc pause'
 
 			for (const [id, btn] of slots) {
 				btn.classList.toggle('active', id === weapon)

@@ -25,7 +25,8 @@ export const tune = {
 		radius: 0.4,
 		halfHeight: 0.6,
 		pickupRadius: 1.1,
-		// Dash: a short, committed ground burst (Quake-style scoot). Latches a
+		jumpSpeed: 6, // ~1.8m high: clears bleacher risers and the gap from court
+		// Dash: a short, committed horizontal burst (also works in air). Latches a
 		// direction and overrides normal steering for dashTime, then locks out for
 		// dashCooldown. Edge-clamped so a dash can't fling you into the lava.
 		dashMul: 2.6, // speed multiplier during the burst

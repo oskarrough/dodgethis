@@ -97,10 +97,16 @@ export function buildCourt(scene, world, RAPIER) {
 		body,
 	)
 
-	// Peripheral scenery is merged by ink role. The playing surface stays quiet,
-	// and nothing outside the painted rim changes the fall/collision rules.
+	// Scenery stays merged by ink role; solid bleacher pieces get matching fixed
+	// colliders from the same dimensions. Gaps outside the rim remain fallable.
 	const batches = new Map()
-	function box(role, w, h, d, x, y, z) {
+	function box(role, w, h, d, x, y, z, solid = false) {
+		if (solid) {
+			world.createCollider(
+				RAPIER.ColliderDesc.cuboid(w / 2, h / 2, d / 2).setTranslation(x, y, z),
+				body,
+			)
+		}
 		const geometry = new THREE.BoxGeometry(w, h, d)
 		geometry.translate(x, y, z)
 		if (!batches.has(role)) batches.set(role, [])
@@ -109,9 +115,9 @@ export function buildCourt(scene, world, RAPIER) {
 	for (const side of [-1, 1]) {
 		for (let row = 0; row < 3; row++) {
 			const x = side * (width / 2 + 1.6 + row * 0.65)
-			box('scenery', 0.62, 0.22, depth * 0.64, x, row * 0.45 - 0.3, 0)
+			box('scenery', 0.62, 0.22, depth * 0.64, x, row * 0.45 - 0.3, 0, true)
 			for (const z of [-depth * 0.26, depth * 0.26])
-				box('ink', 0.12, 0.7 + row * 0.45, 0.12, x, row * 0.225 - 0.65, z)
+				box('ink', 0.12, 0.7 + row * 0.45, 0.12, x, row * 0.225 - 0.65, z, true)
 		}
 	}
 	// Service lines frame the ends without laying texture under moving ammo.

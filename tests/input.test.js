@@ -32,6 +32,36 @@ afterAll(() => {
 	}
 })
 
+test('Space jumps once per tap; either Shift dashes without jumping', () => {
+	const key = (code, repeat = false) => {
+		const event = Object.assign(new Event('keydown', { cancelable: true }), { code, repeat })
+		browser.dispatchEvent(event)
+		return event
+	}
+	expect(key('Space').defaultPrevented).toBe(true)
+	expect(input.consumeJump()).toBe(true)
+	expect(input.consumeJump()).toBe(false)
+	expect(input.consumeDash()).toBe(false)
+	key('Space', true)
+	expect(input.consumeJump()).toBe(false)
+	for (const code of ['ShiftLeft', 'ShiftRight']) {
+		key(code)
+		expect(input.consumeDash()).toBe(true)
+		expect(input.consumeDash()).toBe(false)
+		expect(input.consumeJump()).toBe(false)
+		key(code, true)
+		expect(input.consumeDash()).toBe(false)
+	}
+})
+
+test('blur and modal resets discard queued jumps', () => {
+	for (const reset of [() => browser.dispatchEvent(new Event('blur')), input.resetActions]) {
+		browser.dispatchEvent(Object.assign(new Event('keydown'), { code: 'Space', repeat: false }))
+		reset()
+		expect(input.consumeJump()).toBe(false)
+	}
+})
+
 function pad() {
 	const gamepad = {
 		connected: true,

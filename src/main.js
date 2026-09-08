@@ -17,6 +17,7 @@ import {
 	pointerDown,
 	pollGamepad,
 	consumeDash,
+	consumeJump,
 	consumeMenuInput,
 	activeDevice,
 	consumeWeaponSwitch,
@@ -124,9 +125,11 @@ async function main() {
 	}
 
 	let humanDashBuffer = 0
+	let humanJumpBuffer = 0
 	function clearActions() {
 		resetActions()
 		humanDashBuffer = 0
+		humanJumpBuffer = 0
 		charge.cancel()
 		acc = 0
 	}
@@ -434,6 +437,7 @@ async function main() {
 		}, cheats)
 
 	// Hotkeys on the splash:
+	// Hotkeys on the splash:
 	//   1-9       enter that difficulty, in the order the options are printed
 	// Hotkeys during play:
 	//   R         restart the current round (a real in-place reset — no reload)
@@ -521,10 +525,15 @@ async function main() {
 			else hideAim()
 			// Dash latches a direction now; the burst plays out across the steps below.
 			if (consumeDash() && !tune.physics.paused) humanDashBuffer = 0.1
+			if (consumeJump() && !tune.physics.paused) humanJumpBuffer = 0.1
 			if (!tune.physics.paused) {
 				acc += gameDt * tune.physics.timeScale
 				// Guard on phase too: a winning hit flips us out of 'playing' mid-step.
 				while (acc >= world.timestep && (flow.phase === 'playing' || flow.phase === 'menu')) {
+					if (humanJumpBuffer > 0) {
+						if (flow.round.human.jump()) humanJumpBuffer = 0
+						else humanJumpBuffer = Math.max(0, humanJumpBuffer - world.timestep)
+					}
 					if (humanDashBuffer > 0) {
 						if (flow.round.dashHuman(moveVector())) humanDashBuffer = 0
 						else humanDashBuffer = Math.max(0, humanDashBuffer - world.timestep)

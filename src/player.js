@@ -96,8 +96,8 @@ export function createPlayer(
 	const collider = world.createCollider(RAPIER.ColliderDesc.capsule(halfHeight, radius), body)
 
 	const controller = world.createCharacterController(0.01)
-	// The court has no stairs. Autostep performs extra shape casts against every
-	// crowded capsule and can climb other players, trapping overlapping spawns.
+	// Solid bleachers aren't auto-stepped. Autostep adds shape casts against
+	// crowded capsules and can climb other players, trapping overlapping spawns.
 	controller.enableSnapToGround(0.3)
 	controller.setApplyImpulsesToDynamicBodies(true)
 
@@ -136,6 +136,7 @@ export function createPlayer(
 			return { x: vx, y: vy, z: vz }
 		},
 		update,
+		jump,
 		dash,
 		sync,
 		face,
@@ -188,6 +189,13 @@ export function createPlayer(
 		return true
 	}
 
+	function jump() {
+		if (!unit.alive || !grounded) return false
+		vy = tune.player.jumpSpeed
+		grounded = false
+		return true
+	}
+
 	function update(dir, dt) {
 		if (!unit.alive) return
 		if (dashCd > 0) dashCd -= dt
@@ -224,8 +232,9 @@ export function createPlayer(
 		let nz = t.z + mv.z
 		// A dash commits a big step; clamp it to the court so it can't fling a unit
 		// off the rim into the lava (normal walking can still walk off — that's skill).
-		if (dashing) {
-			const lim = courtBounds(radius)
+		const lim = courtBounds(radius)
+		// Don't teleport a bleacher/airborne player back inside the court.
+		if (dashing && Math.abs(t.x) <= lim.x && Math.abs(t.z) <= lim.z) {
 			const clampedX = clamp(nx, -lim.x, lim.x)
 			const clampedZ = clamp(nz, -lim.z, lim.z)
 			if (clampedX !== nx) vx = 0
@@ -234,7 +243,8 @@ export function createPlayer(
 			nz = clampedZ
 		}
 		body.setNextKinematicTranslation({ x: nx, y: t.y + mv.y, z: nz })
-		grounded = controller.computedGrounded()
+		// A sideways contact with a higher bleacher must not cancel takeoff.
+		grounded = vy <= 0 && controller.computedGrounded()
 		if (grounded) vy = 0
 
 		// Face the steer/aim direction (not the latched dash dir) so a dash reads as

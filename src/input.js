@@ -22,17 +22,20 @@ window.addEventListener('pointerdown', () => {
 	device = 'keyboard'
 })
 
-// Dash is an edge (one burst per tap), not a held state. Space / Shift on the
-// keyboard, a bumper on the pad (see pollGamepad). Space also scrolls the page,
-// so swallow its default while we're in the game.
+// Jump and dash are edges, not held states. Space jumps; Shift dashes.
+// Swallow Space's page-scroll default while we're in the game.
+let jumpQueued = false
 let dashQueued = false
 let padDashQueued = false
 
 window.addEventListener('keydown', (e) => {
 	device = 'keyboard'
-	if (e.code === 'Space' || e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
+	if (e.code === 'Space') {
+		if (!e.repeat) jumpQueued = true
+		e.preventDefault()
+	}
+	if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
 		if (!e.repeat) dashQueued = true
-		if (e.code === 'Space') e.preventDefault()
 	}
 	keys.add(e.code)
 })
@@ -40,11 +43,18 @@ window.addEventListener('keyup', (e) => keys.delete(e.code))
 window.addEventListener('blur', () => {
 	pauseQueued = false
 	keys.clear()
+	jumpQueued = false
 	dashQueued = false
 	padDashQueued = false
 	weaponQueued = null
 	padNeedsRelease = true
 })
+
+export function consumeJump() {
+	const queued = jumpQueued
+	jumpQueued = false
+	return queued
+}
 
 // True once per dash tap; clears the flag so each press is a single burst.
 export function consumeDash() {
@@ -156,8 +166,7 @@ export function clearShoot() {
 	releaseQueued = false
 }
 
-// Swallow a pending dash (used when a round starts, so the Space that confirmed
-// a menu doesn't immediately fire a dash burst).
+// Swallow a pending dash when changing rounds or opening a modal.
 export function clearDash() {
 	dashQueued = false
 	padDashQueued = false
@@ -291,6 +300,7 @@ export function resetActions() {
 	keys.clear()
 	clearShoot()
 	clearDash()
+	jumpQueued = false
 	weaponQueued = null
 	pauseQueued = false
 	pointerHeld = false
