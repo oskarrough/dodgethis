@@ -1,6 +1,7 @@
 # dodgethis — a 3D Dodge Bolt
 
-A small 3D archery dodgeball game. Two teams on a tennis-court-like platform
+A small 3D archery dodgeball game. Two teams on a tennis-court-like platform,
+in escher moebius style architecture.
 shoot arrows at each other. Arrows are **scarce** — you don't have infinite ammo,
 you race to grab the ones lying on the court. Last team standing wins the round.
 
