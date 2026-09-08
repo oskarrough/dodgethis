@@ -605,7 +605,9 @@
 				background: #fffdf4;
 				border: 3px solid var(--ui-text);
 				border-radius: 999px;
-				padding: 8px 16px;
+				/* 2px of lift: measured ink sat 15px below the top edge and 11px
+				   above the bottom one, because this display font's caps ride low. */
+				padding: 6px 16px 10px;
 				cursor: pointer;
 				box-shadow: 3px 3px 0 var(--ui-text);
 			}
