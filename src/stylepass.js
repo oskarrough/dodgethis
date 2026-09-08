@@ -187,6 +187,7 @@ void main() {
 export function makeStyleMaterial(role, { flat = false, side = THREE.FrontSide } = {}) {
 	const id = ROLES.indexOf(role)
 	return new THREE.ShaderMaterial({
+		userData: { styleColor: PALETTE[role] ?? PALETTE.cream },
 		uniforms: {
 			uStyleId: { value: id < 0 ? 0 : id },
 			uFlat: { value: flat ? 1 : 0 },
@@ -206,7 +207,7 @@ export function instanceStyle(role, { flat = true } = {}) {
 }
 
 const OPAQUE_LAYER = 0
-const FORWARD_LAYER = 1
+export const FORWARD_LAYER = 1
 
 // Anything that cannot describe itself as an opaque surface — trails, the dashed
 // preview, portal labels and sparkles, fading corpses, the godmode bubble — is

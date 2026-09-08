@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { tune } from './tune.js'
 import { PALETTE } from './style.js'
+import { FORWARD_LAYER } from './stylepass.js'
 
 // Immediate out pose, then a comic exit. feedback.js owns the timing and pooled
 // particles; these curves only animate a mesh that gameplay has already retired.
@@ -115,7 +116,7 @@ const STYLES = {
 // Styles eligible for a normal (arrow) elimination. 'sink' is fall-only.
 const PICKABLE = ['melt', 'crumble', 'topple', 'implode', 'vortex', 'ascend']
 
-// No per-death GPU resources: the unit still owns its mesh and materials.
+// The unit owns the replacement corpse materials and disposes them on reset.
 export function startDeath(mesh, { fell = false, radius = 0.4 } = {}) {
 	mesh.visible = true
 	const squash = fell ? 1 : 0.65
@@ -123,15 +124,24 @@ export function startDeath(mesh, { fell = false, radius = 0.4 } = {}) {
 	mesh.position.y *= squash
 	const baseY = mesh.position.y
 
-	// Snapshot every material (capsule + nose) and switch on transparency so the
-	// fade can work; remember the base colors so the tint can lerp from them.
+	// The opaque pass replaces color materials with surface-data shaders. Corpses
+	// need actual colors and opacity in the forward pass, even if already adopted
+	// by the renderer. Release the replaced shader; the unit owns the new material.
 	const mats = []
 	mesh.traverse((o) => {
-		if (o.isMesh && o.material) {
-			o.material.transparent = true
-			o.material.color.lerp(DARK, 0.85) // immediate, persistent out identity
-			mats.push({ mat: o.material, color0: o.material.color.clone() })
-		}
+		if (!o.isMesh || !o.material) return
+		const previous = o.material
+		const material = new THREE.MeshBasicMaterial({
+			color: previous.color ?? previous.userData.styleColor ?? PALETTE.cream,
+			side: previous.side,
+			transparent: true,
+			depthWrite: false,
+		})
+		material.color.lerp(DARK, 0.85)
+		o.material = material
+		o.layers.set(FORWARD_LAYER) // the style pass's forward layer; opaque adoption is one-time
+		previous.dispose()
+		mats.push({ mat: material, color0: material.color.clone() })
 	})
 
 	const name = fell ? 'sink' : PICKABLE[(Math.random() * PICKABLE.length) | 0]

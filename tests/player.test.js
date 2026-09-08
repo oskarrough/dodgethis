@@ -98,3 +98,43 @@ test('death detaches the visual without moving the logical root, and disposal ow
 	feedback.dispose()
 	// afterEach disposes the unit; a detached corpse still belongs to that unit.
 })
+
+test.each(['fall', 'impact'])(
+	'a rendered player can die by %s and fade in the forward pass',
+	async (type) => {
+		const { makeStyleMaterial } = await import('../src/stylepass.js')
+		const shaders = []
+		unit.visual.traverse((o) => {
+			if (!o.isMesh) return
+			o.material.dispose()
+			o.material = makeStyleMaterial('teamA')
+			let disposed = false
+			o.material.addEventListener('dispose', () => {
+				disposed = true
+			})
+			shaders.push(() => disposed)
+		})
+		const feedback = createFeedback(scene, { sfx: { hit() {}, fall() {} }, confirm() {} })
+		unit.eliminate()
+		feedback.present(
+			{
+				type,
+				outcome: 'eliminated',
+				target: { isHuman: false },
+				point: { x: 2, y: 1, z: 3 },
+				direction: { x: 0, y: -1, z: 0 },
+			},
+			unit.visual,
+		)
+		unit.visual.traverse((o) => {
+			if (!o.isMesh) return
+			expect(o.material.isMeshBasicMaterial).toBe(true)
+			expect(o.material.transparent).toBe(true)
+			expect(o.layers.mask).toBe(2)
+		})
+		expect(shaders.every((disposed) => disposed())).toBe(true)
+		for (let i = 0; i < 50; i++) feedback.update(0.1)
+		expect(unit.visual.visible).toBe(false)
+		feedback.dispose()
+	},
+)
