@@ -21,11 +21,14 @@ export function createPlayer(
 	const id = _uid++
 	const { radius, halfHeight } = tune.player
 
-	const mesh = new THREE.Mesh(
+	// Gameplay only reads this root. All squash, lean and recoil live on its child.
+	const mesh = new THREE.Group()
+	const visual = new THREE.Mesh(
 		new THREE.CapsuleGeometry(radius, halfHeight * 2, 8, 16),
 		new THREE.MeshStandardMaterial({ color, roughness: 0.6 }),
 	)
-	mesh.castShadow = true
+	visual.castShadow = true
+	mesh.add(visual)
 	scene.add(mesh)
 
 	// Little facing nub so you can read orientation (aim direction).
@@ -34,10 +37,11 @@ export function createPlayer(
 		new THREE.MeshStandardMaterial({ color: 0xffffff }),
 	)
 	nose.position.set(0, halfHeight, -radius)
-	mesh.add(nose)
+	visual.add(nose)
 
 	const [px, py, pz] = position
 	const spawnY = py + radius + halfHeight
+	mesh.position.set(px, spawnY, pz)
 	const body = world.createRigidBody(
 		RAPIER.RigidBodyDesc.kinematicPositionBased().setTranslation(px, spawnY, pz),
 	)
@@ -56,11 +60,16 @@ export function createPlayer(
 	let dashCd = 0 // >0 while dash is on cooldown (counts down from dashCooldown)
 	const dashDir = new THREE.Vector3()
 	const _hand = new THREE.Vector3()
+	const leanX = { value: 0, velocity: 0 }
+	const leanZ = { value: 0, velocity: 0 }
+	const recoil = { value: 0, velocity: 0 }
+	const pickup = { value: 0, velocity: 0 }
 	const unit = {
 		id,
 		team,
 		isHuman,
 		mesh,
+		visual,
 		body,
 		collider,
 		controller,
@@ -87,6 +96,11 @@ export function createPlayer(
 		get dashReady() {
 			return dashCd <= 0
 		},
+		get dashDirection() {
+			return { x: dashDir.x, y: 0, z: dashDir.z }
+		},
+		react,
+		updateVisual,
 		handPosition,
 		eliminate,
 		place,
@@ -186,12 +200,51 @@ export function createPlayer(
 		mesh.position.set(t.x, t.y, t.z)
 	}
 
+	// Semantic action feedback never writes the root, body, aim or muzzle.
+	function react(event) {
+		if (!unit.alive) return
+		if (event.type === 'dash') {
+			leanX.velocity += event.direction.x * 20
+			leanZ.velocity += event.direction.z * 20
+		} else if (event.type === 'shot') {
+			recoil.value = event.perfect ? 0.22 : 0.16 // a bounded kick, even when shots overlap
+			recoil.velocity = 0
+		} else if (event.type === 'pickup') pickup.value = 0.16
+	}
+
+	function updateVisual(dt, charge = 0, reducedMotion = false) {
+		if (!unit.alive) return // feedback owns the detached corpse
+		if (reducedMotion) {
+			for (const spring of [leanX, leanZ, recoil, pickup]) spring.value = spring.velocity = 0
+			visual.position.set(0, 0, 0)
+			visual.rotation.set(0, 0, 0)
+			visual.scale.setScalar(1)
+			return
+		}
+		stepSpring(leanX, 0, dt)
+		stepSpring(leanZ, 0, dt)
+		stepSpring(recoil, charge * 0.12, dt)
+		stepSpring(pickup, 0, dt)
+		const c = Math.cos(mesh.rotation.y)
+		const s = Math.sin(mesh.rotation.y)
+		const aimX = c * unit.aim.x - s * unit.aim.z
+		const aimZ = s * unit.aim.x + c * unit.aim.z
+		visual.position.set(-aimX * recoil.value, 0, -aimZ * recoil.value)
+		visual.rotation.set(
+			(s * leanX.value + c * leanZ.value) * 0.35,
+			0,
+			-(c * leanX.value - s * leanZ.value) * 0.35,
+		)
+		visual.scale.set(1 + pickup.value, 1 - pickup.value * 0.5, 1 + pickup.value)
+	}
+
 	// Resolve the out immediately; presentation may reveal and animate the corpse.
 	function eliminate() {
 		if (!unit.alive) return
 		sync() // use this contact step's body pose, not last frame's mesh
+		updateVisual(0, 0, true) // detach a neutral pose, not a half-finished recoil
 		unit.alive = false
-		mesh.visible = false
+		visual.visible = false
 		if (unit.heldArrow) {
 			unit.heldArrow.ground()
 			unit.heldArrow = null
@@ -217,11 +270,22 @@ export function createPlayer(
 		if (unit.alive) world.removeRigidBody(body)
 		world.removeCharacterController(controller)
 		scene.remove(mesh)
-		mesh.geometry.dispose()
-		mesh.material.dispose()
+		visual.removeFromParent() // death presentation may have attached it to the scene
+		visual.geometry.dispose()
+		visual.material.dispose()
 		nose.geometry.dispose()
 		nose.material.dispose()
 	}
 
 	return unit
+}
+
+// Exact critically damped spring step; clamping also bounds recovery after a stall.
+function stepSpring(spring, target, dt) {
+	dt = Math.max(0, Math.min(dt, 0.1))
+	const offset = spring.value - target
+	const speed = spring.velocity + 18 * offset
+	const decay = Math.exp(-18 * dt)
+	spring.value = target + (offset + speed * dt) * decay
+	spring.velocity = (spring.velocity - 18 * speed * dt) * decay
 }

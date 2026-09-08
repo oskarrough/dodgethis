@@ -25,6 +25,8 @@ export function createRenderer() {
 	const camBase = new THREE.Vector3(0, 22, 26)
 	camera.position.copy(camBase)
 	camera.lookAt(0, 0, 0)
+	const aimCamera = camera.clone() // never shaken: pointer rays stay gameplay-stable
+	aimCamera.updateMatrixWorld(true)
 
 	const hemi = new THREE.HemisphereLight(0xffffff, 0x8bd67a, 1.05)
 	scene.add(hemi)
@@ -52,6 +54,8 @@ export function createRenderer() {
 		renderer.setSize(w, h, false)
 		camera.aspect = w / h
 		camera.updateProjectionMatrix()
+		aimCamera.aspect = camera.aspect
+		aimCamera.updateProjectionMatrix()
 	}
 	window.addEventListener('resize', resize)
 	resize()
@@ -71,6 +75,7 @@ export function createRenderer() {
 		}
 	}
 	function updateCamera(dt) {
+		if (reduceMotion.matches || !tune.fx.shake) shake = 0
 		// Common case: no active shake. Snap back to base once, then idle — no random
 		// jitter or lookAt() matrix recompute on the (vast majority of) still frames.
 		if (shake <= 0) {
@@ -88,5 +93,5 @@ export function createRenderer() {
 		camera.lookAt(0, 0, 0)
 	}
 
-	return { renderer, scene, camera, addShake, updateCamera }
+	return { renderer, scene, camera, aimCamera, addShake, updateCamera }
 }

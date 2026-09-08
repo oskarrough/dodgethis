@@ -22,6 +22,8 @@ export function createOverlay(selector = '.overlay') {
 	let index = 0
 	let previousFocus = null
 	let outside = []
+	let device = 'keyboard'
+	let controls = null
 
 	// clear: round-over keeps court + scoreboard readable (no dim / blur veil).
 	// Match-over may keep the default curtain.
@@ -68,7 +70,6 @@ export function createOverlay(selector = '.overlay') {
 				cursor.textContent = '▶'
 				const label = document.createElement('span')
 				label.className = 'label'
-				label.textContent = a.keyLabel ? `${a.label}  (${a.keyLabel})` : a.label
 				b.append(cursor, label)
 				b.addEventListener('pointerenter', () => {
 					setIndex(i)
@@ -85,9 +86,13 @@ export function createOverlay(selector = '.overlay') {
 				buttons.push(b)
 			})
 			card.append(row)
+			controls = document.createElement('p')
+			controls.className = 'controls'
+			card.append(controls)
 		}
 
 		el.replaceChildren(card)
+		renderPrompts()
 		el.hidden = false
 		// Keep match chrome + debug readable during clear round-over; only the
 		// dialog captures focus. Curtain phases still inert the rest of the page.
@@ -108,6 +113,7 @@ export function createOverlay(selector = '.overlay') {
 		el.classList.remove('clear')
 		actions = []
 		buttons = []
+		controls = null
 		index = 0
 		for (const child of outside) child.inert = false
 		outside = []
@@ -129,6 +135,25 @@ export function createOverlay(selector = '.overlay') {
 
 	function render() {
 		buttons.forEach((b, i) => b.classList.toggle('selected', i === index))
+	}
+
+	function renderPrompts() {
+		const pad = device === 'gamepad'
+		buttons.forEach((b, i) => {
+			const action = actions[i]
+			b.querySelector('.label').textContent =
+				!pad && action.keyLabel ? `${action.label}  (${action.keyLabel})` : action.label
+		})
+		if (controls)
+			controls.textContent = pad
+				? 'D-pad / left stick: choose · A: confirm'
+				: 'Arrow keys: choose · Enter: confirm'
+	}
+
+	function setDevice(next) {
+		if (device === next) return
+		device = next
+		renderPrompts()
 	}
 
 	// Keyboard: arrows / WASD move the cursor, Enter/Space confirm, and any
@@ -192,6 +217,7 @@ export function createOverlay(selector = '.overlay') {
 		show,
 		hide,
 		handleGamepad,
+		setDevice,
 		get visible() {
 			return !el.hidden
 		},

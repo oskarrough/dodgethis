@@ -15,13 +15,13 @@ import { tune } from './tune.js'
 // signal the match controller (main.js) listens to, to keep score.
 //
 // ctx carries the persistent game services the round borrows but does not own:
-//   { scene, world, RAPIER, eventQueue, combat, sfx, addShake, present }
+//   { scene, world, RAPIER, eventQueue, combat, present }
 export function createRound(
 	ctx,
 	{ enemies = 3, arrowCount = 7, roundNum = 1, onOver = () => {}, lobby = false } = {},
 ) {
 	if (!lobby && arrowCount < 1) throw new Error('Combat rounds require at least one arrow')
-	const { scene, world, RAPIER, eventQueue, combat, sfx, addShake, present = () => {} } = ctx
+	const { scene, world, RAPIER, eventQueue, combat, present = () => {} } = ctx
 
 	// --- Units: human (team A) near, enemy dummies (team B) far. ---
 	const units = []
@@ -100,15 +100,7 @@ export function createRound(
 			`Team ${unit.team} unit #${unit.id} loosed arrow #${a.id}${tag}`,
 			opts.perfect ? 'win' : '',
 		)
-		if (opts.kind === 'bowl') sfx.roll()
-		else {
-			// The player's own bow is the hero sound; enemy shots read much
-			// quieter so a whole team loosing at once doesn't blow out the mix.
-			sfx.loose(unit.isHuman ? 1 : 0.45)
-			if (opts.perfect) sfx.perfect()
-		}
-		if (unit.isHuman) addShake(opts.kind === 'bowl' ? 0.35 : opts.perfect ? 0.4 : 0.22)
-		else sfx.taunt() // enemy chatter on every shot they take
+		present({ ...a.snapshotImpact(), type: 'shot' })
 	}
 
 	// The human's shot — main.js solves the aim direction + speed + weapon opts.
@@ -125,7 +117,12 @@ export function createRound(
 			best.hold()
 			unit.heldArrow = best
 			combat.push(`Team ${unit.team} unit #${unit.id} grabbed arrow #${best.id}`, 'pickup')
-			if (unit.isHuman) sfx.grab()
+			present({
+				type: 'pickup',
+				arrowId: best.id,
+				source: { id: unit.id, team: unit.team, isHuman: unit.isHuman },
+				point: { ...best.position },
+			})
 		}
 	}
 
@@ -142,6 +139,21 @@ export function createRound(
 		combat.push('infinite ammo — fresh arrow nocked', 'pickup')
 	}
 
+	function dashUnit(unit, direction) {
+		if (!unit.dash(direction)) return false
+		present({
+			type: 'dash',
+			source: { id: unit.id, team: unit.team, isHuman: unit.isHuman },
+			point: { ...unit.body.translation() },
+			direction: unit.dashDirection,
+		})
+		return true
+	}
+
+	function dashHuman(direction) {
+		return dashUnit(human, direction)
+	}
+
 	// Run every brain: move, maybe grab, maybe shoot.
 	function thinkAI(dt) {
 		if (!tune.ai.enabled) return
@@ -149,7 +161,7 @@ export function createRound(
 		for (const b of brains) {
 			if (!b.unit.alive) continue
 			const intent = b.think(ictx, dt)
-			if (intent.dash) b.unit.dash(intent.move) // burst out of an imminent arrow
+			if (intent.dash) dashUnit(b.unit, intent.move) // burst out of an imminent arrow
 			b.unit.update(intent.move, dt)
 			if (intent.grab) grabNearestArrow(b.unit)
 			if (intent.shoot) looseArrow(b.unit, intent.shoot, solveLaunch(intent.shoot.dist))
@@ -358,6 +370,7 @@ export function createRound(
 		step,
 		lateUpdate,
 		looseHuman,
+		dashHuman,
 		addUnit,
 		removeUnit,
 		dispose,

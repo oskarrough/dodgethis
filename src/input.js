@@ -1,12 +1,32 @@
 // Minimal keyboard state. Reads WASD / arrows into a normalized move vector.
 const keys = new Set()
+let device = 'keyboard'
+let weaponQueued = null
+let padNeedsRelease = false
+const previousPadButtons = []
+
+export function activeDevice() {
+	return device
+}
+
+export function consumeWeaponSwitch() {
+	const weapon = weaponQueued
+	weaponQueued = null
+	return weapon
+}
+
+window.addEventListener('pointerdown', () => {
+	device = 'keyboard'
+})
 
 // Dash is an edge (one burst per tap), not a held state. Space / Shift on the
 // keyboard, a bumper on the pad (see pollGamepad). Space also scrolls the page,
 // so swallow its default while we're in the game.
 let dashQueued = false
+let padDashQueued = false
 
 window.addEventListener('keydown', (e) => {
+	device = 'keyboard'
 	if (e.code === 'Space' || e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
 		if (!e.repeat) dashQueued = true
 		if (e.code === 'Space') e.preventDefault()
@@ -17,12 +37,16 @@ window.addEventListener('keyup', (e) => keys.delete(e.code))
 window.addEventListener('blur', () => {
 	keys.clear()
 	dashQueued = false
+	padDashQueued = false
+	weaponQueued = null
+	padNeedsRelease = true
 })
 
 // True once per dash tap; clears the flag so each press is a single burst.
 export function consumeDash() {
-	if (dashQueued) {
+	if (dashQueued || padDashQueued) {
 		dashQueued = false
+		padDashQueued = false
 		return true
 	}
 	return false
@@ -59,6 +83,7 @@ let padShootHeld = false
 let activePointerId = null
 
 window.addEventListener('pointermove', (e) => {
+	device = 'keyboard'
 	pointer.x = (e.clientX / window.innerWidth) * 2 - 1
 	pointer.y = -(e.clientY / window.innerHeight) * 2 + 1
 })
@@ -131,6 +156,7 @@ export function clearShoot() {
 // a menu doesn't immediately fire a dash burst).
 export function clearDash() {
 	dashQueued = false
+	padDashQueued = false
 }
 
 // --- Gamepad (plan.md: stick move + aim, trigger shoot) ---
@@ -158,17 +184,18 @@ function axis(v) {
 }
 
 export function pollGamepad(dt) {
+	dt = Math.max(0, Math.min(dt, 0.1))
 	padMove.x = 0
 	padMove.z = 0
-	if (!navigator.getGamepads) return
 	let gp = null
-	for (const p of navigator.getGamepads()) {
+	for (const p of navigator.getGamepads?.() ?? []) {
 		if (p && p.connected) {
 			gp = p
 			break
 		}
 	}
 	if (!gp) {
+		if (previousPadButtons.some(Boolean)) padNeedsRelease = true
 		// A disconnected trigger cancels its charge instead of leaving it held or
 		// firing a release edge when the controller disappears.
 		if (padShootHeld) {
@@ -179,16 +206,36 @@ export function pollGamepad(dt) {
 			}
 		}
 		padDashHeld = false
+		padDashQueued = false
 		padMenuDirection = 0
 		padConfirmHeld = false
+		menuMoveQueued = 0
+		menuConfirmQueued = false
+		weaponQueued = null
+		previousPadButtons.length = 0
+		device = 'keyboard'
 		return
 	}
 
+	// A held button carried across blur/disconnect is not a fresh press.
+	if (padNeedsRelease && gp.buttons.some((button) => button.pressed)) return
+	padNeedsRelease = false
 	padMove.x = axis(gp.axes[0] || 0)
 	padMove.z = axis(gp.axes[1] || 0)
 
 	const rx = axis(gp.axes[2] || 0)
 	const ry = axis(gp.axes[3] || 0)
+	if (
+		padMove.x ||
+		padMove.z ||
+		rx ||
+		ry ||
+		gp.buttons.some((b, i) => b.pressed && !previousPadButtons[i])
+	)
+		device = 'gamepad'
+	if (gp.buttons[14]?.pressed && !previousPadButtons[14]) weaponQueued = 'bow'
+	if (gp.buttons[15]?.pressed && !previousPadButtons[15]) weaponQueued = 'bowl'
+	for (let i = 0; i < gp.buttons.length; i++) previousPadButtons[i] = gp.buttons[i].pressed
 	if (rx || ry) {
 		pointer.x = Math.max(-1, Math.min(1, pointer.x + rx * AIM_SPEED * dt))
 		pointer.y = Math.max(-1, Math.min(1, pointer.y - ry * AIM_SPEED * dt))
@@ -216,7 +263,7 @@ export function pollGamepad(dt) {
 
 	// Dash on either bumper (LB/RB) or B — edge-detected like the keyboard tap.
 	const dashHeld = !!(gp.buttons[4]?.pressed || gp.buttons[5]?.pressed || gp.buttons[1]?.pressed)
-	if (dashHeld && !padDashHeld) dashQueued = true
+	if (dashHeld && !padDashHeld) padDashQueued = true
 	padDashHeld = dashHeld
 }
 

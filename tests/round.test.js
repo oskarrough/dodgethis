@@ -19,9 +19,12 @@ function makeCtx() {
 	world.timestep = 1 / 60
 	buildCourt(scene, world, RAPIER)
 	const events = []
+	const actions = []
 	return {
 		events,
-		present: (event) => events.push(event),
+		actions,
+		present: (event) =>
+			(event.type === 'impact' || event.type === 'fall' ? events : actions).push(event),
 		scene,
 		world,
 		RAPIER,
@@ -215,6 +218,30 @@ describe('contact facts', () => {
 		shot.hold()
 		shot.loose(new THREE.Vector3(3, 2, 4), { x: 0, z: 1 }, 'B', 15)
 		expect(event).toEqual(saved) // reusing ammo cannot rewrite an old event
+	})
+
+	test('dash feedback only follows an accepted dash, using its latched direction', () => {
+		round.human.aim.set(1, 0, 0)
+		expect(round.dashHuman(STILL)).toBe(true)
+		expect(round.dashHuman({ x: 0, z: 1 })).toBe(false)
+		expect(ctx.actions).toHaveLength(1)
+		expect(ctx.actions[0].type).toBe('dash')
+		expect(ctx.actions[0].direction).toEqual({ x: 1, y: 0, z: 0 })
+		expect(ctx.actions[0].source.id).toBe(round.human.id)
+	})
+
+	test('shot and pickup feedback emit once, after the held state changes', () => {
+		const shot = round.human.heldArrow
+		round.looseHuman({ x: 0, z: -1 }, 15)
+		round.looseHuman({ x: 0, z: -1 }, 15) // empty-handed: no second shot
+		expect(ctx.actions.map((event) => event.type)).toEqual(['shot'])
+		expect(round.human.heldArrow).toBeNull()
+		shot.ground()
+		round.lateUpdate()
+		round.lateUpdate()
+		expect(ctx.actions.map((event) => event.type)).toEqual(['shot', 'pickup'])
+		expect(round.human.heldArrow).toBe(shot)
+		expect(ctx.actions[1].source.isHuman).toBe(true)
 	})
 
 	test('human release records the shooter independently of team ownership', () => {

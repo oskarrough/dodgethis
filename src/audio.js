@@ -28,6 +28,26 @@ const BOT_TALK = [botTalk1, botTalk2, botTalk3, botTalk4, botTalk5]
 
 let ctx = null
 let master = null
+let soundGeneration = 0
+const listener = { x: 0, z: 0 }
+let tauntPlaying = false
+let nextTaunt = 0
+
+export function setAudioListener(position) {
+	listener.x = position?.x ?? 0
+	listener.z = position?.z ?? 0
+}
+
+// The fixed overview camera's right axis is world +X. UI cues stay centered.
+export function spatialMix(point) {
+	if (!point) return { pan: 0, gain: 1 }
+	const dx = point.x - listener.x
+	const dz = point.z - listener.z
+	return {
+		pan: Math.max(-0.8, Math.min(0.8, dx / 8)),
+		gain: 1 / (1 + Math.hypot(dx, dz) / 14),
+	}
+}
 
 function ac() {
 	if (!ctx) {
@@ -41,11 +61,12 @@ function ac() {
 
 export function setSound(enabled) {
 	tune.fx.sound = enabled
+	if (!enabled) soundGeneration++ // cancel pending decodes even if unmuted before they finish
 	if (master) master.gain.setValueAtTime(enabled ? 1 : 0, ctx.currentTime)
 }
 
 const resume = () => {
-	if (ctx && ctx.state === 'suspended') ctx.resume()
+	if (ctx && ctx.state === 'suspended') ctx.resume().catch(() => {}) // browser gesture policy
 }
 function wake() {
 	ac()
@@ -100,8 +121,9 @@ function preload() {
 // gain is relative (multiplied by tune.fx.volume); rate sets the base playback
 // speed (1 = original pitch), and rateJitter detunes it by ±frac so repeated
 // cues don't sound mechanically identical.
-async function sample(url, { gain = 1, rate = 1, rateJitter = 0 } = {}) {
+async function sample(url, { gain = 1, rate = 1, rateJitter = 0, point = null } = {}) {
 	if (!tune.fx.sound) return
+	const generation = soundGeneration
 	const c = ac()
 	let buf
 	try {
@@ -109,20 +131,39 @@ async function sample(url, { gain = 1, rate = 1, rateJitter = 0 } = {}) {
 	} catch {
 		return // decode/network failure — stay silent rather than throw into the game loop
 	}
-	if (!tune.fx.sound) return // re-check: the toggle may have flipped during the await
+	if (!tune.fx.sound || generation !== soundGeneration) return
 	const src = c.createBufferSource()
 	src.buffer = buf
 	const jitter = rateJitter ? (Math.random() * 2 - 1) * rateJitter : 0
 	if (rate !== 1 || jitter) src.playbackRate.value = Math.max(0.05, rate + jitter)
 	const g = c.createGain()
-	g.gain.value = Math.max(0.0001, gain * tune.fx.volume)
-	src.connect(g).connect(master)
-	src.start()
+	const mix = spatialMix(point)
+	g.gain.value = Math.max(0.0001, gain * tune.fx.volume * mix.gain)
+	const panner = c.createStereoPanner()
+	panner.pan.value = mix.pan
+	src.connect(g).connect(panner).connect(master)
+	return new Promise((resolve) => {
+		src.onended = () => {
+			src.disconnect()
+			g.disconnect()
+			panner.disconnect()
+			resolve()
+		}
+		src.start()
+	})
 }
 
 const pick = (arr) => arr[(Math.random() * arr.length) | 0]
 
-function blip({ freq = 440, type = 'sine', dur = 0.12, gain = 0.2, slideTo = null, delay = 0 }) {
+function blip({
+	freq = 440,
+	type = 'sine',
+	dur = 0.12,
+	gain = 0.2,
+	slideTo = null,
+	delay = 0,
+	point = null,
+}) {
 	if (!tune.fx.sound) return
 	const c = ac()
 	const t0 = c.currentTime + delay
@@ -131,11 +172,19 @@ function blip({ freq = 440, type = 'sine', dur = 0.12, gain = 0.2, slideTo = nul
 	osc.type = type
 	osc.frequency.setValueAtTime(freq, t0)
 	if (slideTo) osc.frequency.exponentialRampToValueAtTime(slideTo, t0 + dur)
-	const peak = Math.max(0.0001, gain * tune.fx.volume)
+	const mix = spatialMix(point)
+	const peak = Math.max(0.0001, gain * tune.fx.volume * mix.gain)
 	g.gain.setValueAtTime(0.0001, t0)
 	g.gain.exponentialRampToValueAtTime(peak, t0 + 0.005)
 	g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur)
-	osc.connect(g).connect(master)
+	const panner = c.createStereoPanner()
+	panner.pan.value = mix.pan
+	osc.connect(g).connect(panner).connect(master)
+	osc.onended = () => {
+		osc.disconnect()
+		g.disconnect()
+		panner.disconnect()
+	}
 	osc.start(t0)
 	osc.stop(t0 + dur + 0.02)
 }
@@ -143,19 +192,22 @@ function blip({ freq = 440, type = 'sine', dur = 0.12, gain = 0.2, slideTo = nul
 export const sfx = {
 	// Synth blips — punchy, time-critical, pitch-varied procedurally.
 	// `gain` scales the default so enemy shots can read quieter than the player's own bow.
-	loose: (gain = 1) =>
-		blip({ freq: 360, slideTo: 150, type: 'sawtooth', dur: 0.16, gain: 0.16 * gain }),
-	hit: () => blip({ freq: 200, slideTo: 55, type: 'square', dur: 0.22, gain: 0.3 }),
-	land: () => blip({ freq: 160, slideTo: 95, type: 'triangle', dur: 0.06, gain: 0.06 }),
-	deflect: () => blip({ freq: 900, slideTo: 350, type: 'triangle', dur: 0.1, gain: 0.12 }),
-	fall: () => blip({ freq: 180, slideTo: 35, type: 'sine', dur: 0.35, gain: 0.2 }),
+	loose: (gain = 1, point) =>
+		blip({ freq: 360, slideTo: 150, type: 'sawtooth', dur: 0.16, gain: 0.16 * gain, point }),
+	hit: (point) => blip({ freq: 200, slideTo: 55, type: 'square', dur: 0.22, gain: 0.3, point }),
+	land: (point) => blip({ freq: 160, slideTo: 95, type: 'triangle', dur: 0.06, gain: 0.06, point }),
+	deflect: (point) =>
+		blip({ freq: 900, slideTo: 350, type: 'triangle', dur: 0.1, gain: 0.12, point }),
+	fall: (point) => blip({ freq: 180, slideTo: 35, type: 'sine', dur: 0.35, gain: 0.2, point }),
+	dash: (point) =>
+		blip({ freq: 220, slideTo: 100, type: 'triangle', dur: 0.06, gain: 0.05, point }),
 	// A bright two-note chime for a perfectly-timed charge release.
-	perfect: () =>
+	perfect: (point) =>
 		[880, 1320].forEach((f, i) =>
-			blip({ freq: f, type: 'triangle', dur: 0.14, gain: 0.18, delay: i * 0.07 }),
+			blip({ freq: f, type: 'triangle', dur: 0.14, gain: 0.18, delay: i * 0.07, point }),
 		),
 	// Low rumble for a bowl loosed along the ground.
-	roll: () => blip({ freq: 120, slideTo: 70, type: 'sawtooth', dur: 0.3, gain: 0.18 }),
+	roll: (point) => blip({ freq: 120, slideTo: 70, type: 'sawtooth', dur: 0.3, gain: 0.18, point }),
 	win: () =>
 		[523, 659, 784, 1047].forEach((f, i) =>
 			blip({ freq: f, type: 'triangle', dur: 0.2, gain: 0.2, delay: i * 0.12 }),
@@ -169,7 +221,7 @@ export const sfx = {
 	},
 
 	// Sample-backed cues (mp3s in ./sfx) — the UI / character layer.
-	grab: () => sample(unboxUrl, { gain: 0.6, rateJitter: 0.05 }),
+	grab: (point, gain = 1) => sample(unboxUrl, { gain: 0.6 * gain, rateJitter: 0.05, point }),
 	menuOpen: () => sample(menuOpenUrl, { gain: 0.5 }),
 	menuClose: () => sample(menuCloseUrl, { gain: 0.5 }),
 	// Menu buttons: hover whisper, then a press/release pair (mouse) for a tactile
@@ -183,8 +235,15 @@ export const sfx = {
 	// audibly tightens. tickPerfect is the brighter cue for entering the band.
 	tick: (level = 0) => sample(tick1Url, { gain: 0.3, rate: 0.85 + level * 0.9 }),
 	tickPerfect: () => sample(tick2Url, { gain: 0.45, rate: 1.15 }),
-	// Random enemy chatter — one of five bot-talk variants, detuned for variety.
-	// Quiet enough to sit under the action; every enemy shot triggers one, so a
-	// full team firing at once can otherwise pile up.
-	taunt: () => sample(pick(BOT_TALK), { gain: 0.18, rateJitter: 0.08 }),
+	// At most one voice, including pending decodes, with space between phrases.
+	taunt: async (point) => {
+		if (!tune.fx.sound || tauntPlaying || performance.now() < nextTaunt) return
+		tauntPlaying = true
+		nextTaunt = performance.now() + 1200
+		try {
+			await sample(pick(BOT_TALK), { gain: 0.18, rateJitter: 0.08, point })
+		} finally {
+			tauntPlaying = false
+		}
+	},
 }

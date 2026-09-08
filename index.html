@@ -323,6 +323,25 @@
 				-webkit-text-stroke: 4px #fffdf4;
 				paint-order: stroke fill;
 			}
+			.weapons .armed.picked-up {
+				color: #fffdf4;
+				-webkit-text-stroke-color: var(--ui-text);
+				animation: pickup-pop 0.35s ease-out;
+			}
+			@keyframes pickup-pop {
+				from {
+					transform: scale(1.2);
+				}
+				to {
+					transform: scale(1);
+				}
+			}
+			.controls {
+				font:
+					12px/1.4 system-ui,
+					sans-serif;
+				color: var(--ui-text);
+			}
 			.weapons .armed.off {
 				color: var(--ui-muted);
 			}
@@ -618,7 +637,8 @@
 				.overlay .actions button.selected .cursor,
 				.splash-title .letter,
 				.splash-title .letter .wob,
-				.splash-hint {
+				.splash-hint,
+				.weapons .armed.picked-up {
 					animation: none;
 				}
 				.fade {

@@ -17,10 +17,12 @@ import {
 	pollGamepad,
 	consumeDash,
 	consumeMenuInput,
+	activeDevice,
+	consumeWeaponSwitch,
 } from './input.js'
 import { WEAPONS, TRAIL, createChargeMeter } from './weapons.js'
 import { createWeaponHud } from './weaponHud.js'
-import { setSound, sfx } from './audio.js'
+import { setAudioListener, setSound, sfx } from './audio.js'
 import { tune } from './tune.js'
 import { log, createDebugGui, createCombatLog } from './debug.js'
 import { createGodmodeFx } from './godmodeFx.js'
@@ -34,7 +36,7 @@ const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
 
 async function main() {
 	const { RAPIER, world } = await initPhysics()
-	const { renderer, scene, camera, addShake, updateCamera } = createRenderer()
+	const { renderer, scene, camera, aimCamera, addShake, updateCamera } = createRenderer()
 	const combat = createCombatLog()
 	const overlay = createOverlay()
 	const godmodeFx = createGodmodeFx(scene)
@@ -81,11 +83,14 @@ async function main() {
 		RAPIER,
 		eventQueue,
 		combat,
-		sfx,
-		addShake,
 		present(event) {
-			const target = round?.units.find((u) => u.id === event.target?.id)
-			feedback.present(event, target?.mesh)
+			const target = round?.units.find((u) => u.id === (event.target?.id ?? event.source?.id))
+			target?.react(event)
+			feedback.present(event, target?.visual)
+			if (event.source?.isHuman && (event.type === 'shot' || event.type === 'pickup')) {
+				if (event.type === 'pickup') weaponHud.emphasizePickup()
+				updateHud()
+			}
 			if (event.outcome === 'eliminated' && event.target.isHuman) {
 				hideAim()
 				charge.cancel()
@@ -119,6 +124,7 @@ async function main() {
 
 	function enterHub() {
 		feedback.reset()
+		weaponHud.reset()
 		if (round) {
 			round.dispose()
 			round = null
@@ -207,6 +213,8 @@ async function main() {
 
 	function spawnRound() {
 		feedback.reset()
+		weaponHud.reset()
+		consumeWeaponSwitch()
 		if (round) round.dispose()
 		clearPortals() // leave the hub's portals behind when a match begins
 		round = createRound(ctx, {
@@ -322,6 +330,7 @@ async function main() {
 		charge.cancel()
 		sfx.switch()
 		combat.push(`weapon → ${WEAPONS[w].label}`, 'pickup')
+		updateHud()
 	}
 
 	const weaponHud = createWeaponHud({ onSelect: setWeapon })
@@ -376,7 +385,7 @@ async function main() {
 			charge.cancel()
 			return
 		}
-		raycaster.setFromCamera(pointerNDC(), camera)
+		raycaster.setFromCamera(pointerNDC(), aimCamera)
 		if (!raycaster.ray.intersectPlane(groundPlane, aimTarget)) {
 			hideAim()
 			return
@@ -549,13 +558,17 @@ async function main() {
 		last = now
 
 		pollGamepad(dt)
+		overlay.setDevice(activeDevice())
 		overlay.handleGamepad(consumeMenuInput())
+		const selectedWeapon = consumeWeaponSwitch()
+		if (phase === 'playing' && selectedWeapon) setWeapon(selectedWeapon)
+		setAudioListener(round?.human.position)
 		// The hub (menu) is a live round too — same step/lateUpdate, just no aiming.
 		if (round && (phase === 'playing' || phase === 'menu')) {
 			if (phase === 'playing') weaponUpdate(dt)
 			else hideAim()
 			// Dash latches a direction now; the burst plays out across the steps below.
-			if (consumeDash() && round.human) round.human.dash(moveVector())
+			if (consumeDash()) round.dashHuman(moveVector())
 			if (!tune.physics.paused) {
 				acc += dt * tune.physics.timeScale
 				// Guard on phase too: a winning hit flips us out of 'playing' mid-step.
@@ -597,6 +610,14 @@ async function main() {
 			}
 		}
 
+		if (round)
+			for (const unit of round.units) {
+				const windup =
+					unit.isHuman && phase === 'playing' && weapon === 'bow' && charge.charging
+						? charge.value
+						: 0
+				unit.updateVisual(dt, windup, reduceMotion.matches)
+			}
 		feedback.update(dt) // exits and confirmation finish even after the verdict
 		updateCamera(dt)
 		renderer.render(scene, camera)
@@ -654,6 +675,7 @@ async function main() {
 			weapon,
 			charge,
 			visible: phase === 'playing' && !!round?.human.alive,
+			device: activeDevice(),
 			holding: !!(round && round.human && round.human.heldArrow),
 		})
 	}

@@ -12,7 +12,18 @@ beforeEach(() => {
 	mesh.position.y = 1
 	mesh.visible = false // gameplay has removed the unit
 	scene.add(mesh)
-	sfx = { hit: mock(), land: mock(), deflect: mock(), fall: mock() }
+	sfx = {
+		hit: mock(),
+		land: mock(),
+		deflect: mock(),
+		fall: mock(),
+		loose: mock(),
+		roll: mock(),
+		perfect: mock(),
+		taunt: mock(),
+		grab: mock(),
+		dash: mock(),
+	}
 	confirm = mock()
 	addShake = mock()
 	reducedMotion = false
@@ -56,6 +67,24 @@ test('contact immediately marks the target out, then finishes the exit and confi
 	expect(mesh.visible).toBe(false)
 	expect(chips.visible).toBe(false)
 	expect(confirm).toHaveBeenLastCalledWith('')
+})
+
+test('action feedback shares the event point and reuses the chip pool for dash streaks', () => {
+	const event = { ...impact(), type: 'shot', perfect: true, outcome: undefined }
+	feedback.present(event)
+	expect(sfx.loose).toHaveBeenCalledWith(1, event.point)
+	expect(sfx.perfect).toHaveBeenCalledWith(event.point)
+	expect(sfx.taunt).not.toHaveBeenCalled()
+	feedback.present({ ...event, type: 'pickup' })
+	expect(sfx.grab).toHaveBeenCalledWith(event.point, 1)
+	feedback.present({ ...event, type: 'dash' })
+	feedback.update(0.01)
+	expect(sfx.dash).toHaveBeenCalledWith(event.point)
+	expect(scene.getObjectByName('impact-ink').visible).toBe(true)
+	expect(scene.getObjectByName('impact-ink').count).toBe(64)
+	for (let i = 0; i < 3; i++) feedback.update(0.1)
+	expect(scene.getObjectByName('impact-ink').visible).toBe(false)
+	expect(confirm).not.toHaveBeenCalled()
 })
 
 test('misses and godmode deflections never confirm a kill; recovery makes no impact', () => {

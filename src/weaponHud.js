@@ -11,9 +11,11 @@ const ACCENT = { bow: '#ffd35d', bowl: '#8a6cff' }
 export function createWeaponHud({ onSelect } = {}) {
 	const root = document.querySelector('.weapons')
 	const slots = new Map()
+	let pickupUntil = 0
+	const controls = document.createElement('div')
+	controls.className = 'controls'
 	const chargeWrap = document.createElement('div')
 	chargeWrap.className = 'charge'
-	chargeWrap.hidden = true
 
 	const track = document.createElement('div')
 	track.className = 'charge-track'
@@ -47,23 +49,43 @@ export function createWeaponHud({ onSelect } = {}) {
 		row.append(btn)
 	}
 
-	root.append(armed, row, chargeWrap)
+	root.append(armed, row, chargeWrap, controls)
 
 	return {
-		update({ weapon, charge, visible, holding = false }) {
+		emphasizePickup() {
+			pickupUntil = performance.now() + 350
+		},
+		reset() {
+			pickupUntil = 0
+			armed.classList.remove('picked-up')
+		},
+		update({ weapon, charge, visible, holding = false, device = 'keyboard' }) {
 			root.hidden = !visible
 			if (!visible) return
 
 			armed.textContent = holding ? 'ARMED' : 'UNARMED'
 			armed.classList.toggle('off', !holding)
+			armed.classList.toggle('picked-up', holding && performance.now() < pickupUntil)
+			const pad = device === 'gamepad'
+			controls.textContent = pad
+				? 'LS move · RS aim · LB/RB dash · D-pad weapon'
+				: 'WASD move · mouse aim · Space/Shift dash'
 
 			for (const [id, btn] of slots) {
 				btn.classList.toggle('active', id === weapon)
+				btn.querySelector('.key').textContent = pad ? (id === 'bow' ? '←' : '→') : KEYS[id]
 			}
 
 			const showCharge = weapon === 'bow'
-			chargeWrap.hidden = !showCharge
-			if (!showCharge) return
+			track.hidden = !showCharge
+			if (!showCharge) {
+				chargeLabel.textContent = holding
+					? pad
+						? 'press RT / A to roll'
+						: 'click to roll'
+					: 'grab an arrow to rearm'
+				return
+			}
 
 			const window = tune.weapons.perfectWindow
 			perfectZone.style.left = `${(1 - window) * 100}%`
@@ -76,7 +98,11 @@ export function createWeaponHud({ onSelect } = {}) {
 					? 'PERFECT — release!'
 					: `${Math.round(charge.value * 100)}% — release to fire`
 			} else {
-				chargeLabel.textContent = 'hold click to wind up'
+				chargeLabel.textContent = holding
+					? pad
+						? 'hold RT / A to wind up'
+						: 'hold click to wind up'
+					: 'grab an arrow to rearm'
 			}
 		},
 	}

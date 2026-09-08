@@ -26,7 +26,19 @@ export function createFeedback(
 	const slots = Array.from({ length: PARTICLES }, (_, i) => {
 		chips.setMatrixAt(i, pose.matrix)
 		chips.setColorAt(i, i % 3 ? ink : cream)
-		return { x: 0, y: 0, z: 0, vx: 0, vy: 0, vz: 0, life: 0, duration: 0, size: 0 }
+		return {
+			x: 0,
+			y: 0,
+			z: 0,
+			vx: 0,
+			vy: 0,
+			vz: 0,
+			life: 0,
+			duration: 0,
+			size: 0,
+			stretch: 1,
+			heading: 0,
+		}
 	})
 	scene.add(chips)
 	const deaths = []
@@ -35,9 +47,24 @@ export function createFeedback(
 	let humanOut = false
 
 	function present(event, mesh) {
+		if (event.type === 'shot') {
+			if (event.kind === 'bowl') sfx.roll(event.point)
+			else sfx.loose(event.source.isHuman ? 1 : 0.45, event.point)
+			if (event.perfect) sfx.perfect(event.point)
+			if (event.source.isHuman && !reducedMotion())
+				addShake(event.kind === 'bowl' ? 0.35 : event.perfect ? 0.4 : 0.22)
+			if (!event.source.isHuman) sfx.taunt(event.point)
+			return
+		}
+		if (event.type === 'pickup') {
+			sfx.grab(event.point, event.source.isHuman ? 1 : 0.35)
+			return
+		}
+		if (event.type === 'dash') sfx.dash(event.point)
 		if (event.outcome === 'recovered') return // ammo rescue is not a wall impact
 		if (event.outcome === 'eliminated') {
-			if (mesh)
+			if (mesh) {
+				scene.attach(mesh) // preserve world pose, free the logical root from death motion
 				deaths.push(
 					startDeath(mesh, {
 						fell: event.type === 'fall',
@@ -45,8 +72,9 @@ export function createFeedback(
 						reducedMotion: reducedMotion(),
 					}),
 				)
-			if (event.type === 'fall') sfx.fall()
-			else sfx.hit()
+			}
+			if (event.type === 'fall') sfx.fall(event.point)
+			else sfx.hit(event.point)
 			if (!reducedMotion())
 				addShake(event.type === 'fall' ? (event.target.isHuman ? 0.6 : 0.3) : 0.7)
 			// A mutual hit must not overwrite YOU'RE OUT with a kill cheer.
@@ -55,12 +83,13 @@ export function createFeedback(
 				confirm(humanOut ? "YOU'RE OUT" : 'OUT!')
 				confirmationTime = 0.65
 			}
-		} else if (event.outcome === 'deflected') sfx.deflect()
-		else if (event.outcome === 'landed') sfx.land()
+		} else if (event.outcome === 'deflected') sfx.deflect(event.point)
+		else if (event.outcome === 'landed') sfx.land(event.point)
 
-		if (event.type !== 'impact' || reducedMotion()) return
+		const dash = event.type === 'dash'
+		if ((!dash && event.type !== 'impact') || reducedMotion()) return
 		const lethal = event.outcome === 'eliminated'
-		const count = lethal ? 12 : event.outcome === 'deflected' ? 6 : 3
+		const count = lethal ? 12 : dash || event.outcome === 'deflected' ? 6 : 3
 		const speed = lethal ? 3 : 1
 		const direction = event.direction
 		const horizontal = Math.hypot(direction.x, direction.z) || 1
@@ -76,6 +105,17 @@ export function createFeedback(
 			p.vy = direction.y * speed * 0.3 + 0.8 + (i % 3) * 0.35
 			p.duration = p.life = lethal ? 0.4 + (i % 4) * 0.06 : 0.25
 			p.size = lethal ? 0.1 + (i % 3) * 0.025 : 0.06
+			p.stretch = dash ? 4 : 1
+			p.heading = Math.atan2(direction.x, direction.z)
+			if (dash) {
+				p.x -= direction.x * i * 0.18
+				p.z -= direction.z * i * 0.18
+				p.y = event.point.y - 0.6
+				p.vx = -direction.x * 0.5
+				p.vz = -direction.z * 0.5
+				p.vy = 0.2
+				p.duration = p.life = 0.18
+			}
 		}
 	}
 
@@ -100,7 +140,9 @@ export function createFeedback(
 				p.y += p.vy * dt
 				p.z += p.vz * dt
 				pose.position.set(p.x, p.y, p.z)
-				pose.scale.setScalar(p.size * (p.life / p.duration))
+				const size = p.size * (p.life / p.duration)
+				pose.scale.set(size, size, size * p.stretch)
+				pose.rotation.y = p.heading
 				active = true
 			} else pose.scale.setScalar(0)
 			pose.updateMatrix()
