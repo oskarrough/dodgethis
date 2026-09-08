@@ -18,6 +18,7 @@
 				--court-bg: #69d66f;
 				--court-line: #fff7c7;
 				--court-rim: #ffd35d;
+				--ui-cream: #fffdf4;
 				--ui-text: #26445f;
 				--ui-muted: #5f7897;
 				--ui-panel: rgba(255, 249, 213, 0.9);
@@ -111,7 +112,11 @@
 				color: var(--ui-green);
 			}
 
-			/* Match chrome — gym scoreboard. Pips imply best-of; no panel. */
+			/* Match chrome — a printed scoreboard sticker. Two kinds of mark, and
+			   they must not be confused: a round pip is a round WON (best-of, so
+			   the pip count implies the format), a capsule is a unit still
+			   STANDING. Both are CSS shapes, never glyphs — the display font
+			   substitutes odd fallbacks for ● and ○. */
 			.score {
 				position: fixed;
 				top: 14px;
@@ -119,16 +124,33 @@
 				transform: translateX(-50%);
 				z-index: 3;
 				display: flex;
-				gap: 22px;
-				align-items: baseline;
+				gap: 18px;
+				align-items: center;
+				padding: 7px 18px 9px;
 				font: var(--fs-score)/1 var(--ui-font);
 				color: var(--ui-text);
 				letter-spacing: 0.14em;
 				pointer-events: none;
 				text-transform: uppercase;
+				background-color: var(--ui-cream);
+				/* A printed halftone, echoing the one the renderer puts on the
+				   world. Kept faint so it never competes with the numbers. */
+				background-image: radial-gradient(
+					color-mix(in srgb, var(--ui-text) 22%, transparent) 0.5px,
+					transparent 0.6px
+				);
+				background-size: 4px 4px;
+				border: 3px solid var(--ui-text);
+				border-radius: 999px;
+				box-shadow: 3px 3px 0 var(--ui-text);
 			}
 			.score[hidden] {
 				display: none;
+			}
+			.score .side {
+				display: inline-flex;
+				align-items: center;
+				gap: 0.5em;
 			}
 			.score .a {
 				color: var(--ui-blue);
@@ -136,11 +158,11 @@
 			.score .b {
 				color: var(--ui-red);
 			}
-			.score .pips {
+			.score .pips,
+			.score .crew {
 				display: inline-flex;
 				gap: 0.22em;
 				align-items: center;
-				margin: 0 0.15em;
 				letter-spacing: 0;
 			}
 			.score .pip {
@@ -154,6 +176,27 @@
 			}
 			.score .pip.on {
 				background: currentColor;
+			}
+			/* A standing unit, shaped like the capsule it represents. Hollow once
+			   that unit is out, so the mark stays and only its state changes. */
+			.score .unit {
+				display: inline-block;
+				width: 0.3em;
+				height: 0.62em;
+				border: 2px solid currentColor;
+				border-radius: 999px;
+				box-sizing: border-box;
+				opacity: 0.45;
+			}
+			.score .unit.up {
+				background: currentColor;
+				opacity: 1;
+			}
+			/* Big rosters collapse to one mark plus a count — 20 capsules is not a
+			   number anyone reads, and it would not fit. */
+			.score .count {
+				font-size: 0.82em;
+				letter-spacing: 0.04em;
 			}
 			.score .mid {
 				color: var(--ui-text);
@@ -232,38 +275,56 @@
 			   no blur. Hover lifts toward the light; press slams into the shadow.
 			   Label is flex-centered; ▶ cursor is out of flow so it can't shove
 			   the text off optical vertical center. */
-			.overlay button {
+			/* Every clickable surface in the game is one sticker: cream fill, hard
+			   ink outline, hard offset shadow, no blur. Variants below set only
+			   what differs — radius, shadow depth, padding, font. Defining this
+			   four times is how the splash buttons ended up with text sitting
+			   2px low while the others were fine. */
+			.sticker {
+				--sticker-lift: 3px;
+				--sticker-radius: 999px;
+				--sticker-pad-x: 16px;
+				--sticker-pad-y: 8px;
 				position: relative;
 				display: inline-flex;
 				align-items: center;
 				justify-content: center;
 				font-family: var(--ui-font);
-				font-size: var(--fs-button);
 				line-height: 1;
 				letter-spacing: 0.04em;
 				text-transform: uppercase;
 				color: var(--ui-text);
-				background: #fffdf4;
+				background: var(--ui-cream);
 				border: 3px solid var(--ui-text);
-				border-radius: 999px;
-				/* Uneven on purpose: this display font's glyphs sit low in a
-				   line-height:1 box, so even padding reads as bottom-heavy. */
-				padding: 9px 32px 15px;
+				border-radius: var(--sticker-radius);
+				/* Off-centre by 0.13em, measured not guessed: this display font's
+				   caps ride low in a line-height:1 box, so even padding reads
+				   bottom-heavy. Measured 2px of lift needed at 16px and 3px at
+				   20px, hence em, so every variant corrects by the same ratio. */
+				padding: calc(var(--sticker-pad-y) - 0.13em) var(--sticker-pad-x)
+					calc(var(--sticker-pad-y) + 0.13em);
 				cursor: pointer;
-				box-shadow: 4px 4px 0 var(--ui-text);
+				box-shadow: var(--sticker-lift) var(--sticker-lift) 0 var(--ui-text);
 				transition:
 					transform 0.07s ease,
 					box-shadow 0.07s ease,
-					background 0.12s;
+					background 0.12s,
+					color 0.12s;
 			}
-			.overlay button:hover {
+			.sticker:hover {
 				background: var(--ui-button-hover);
 				transform: translate(-1px, -1px);
-				box-shadow: 6px 6px 0 var(--ui-text);
+				box-shadow: calc(var(--sticker-lift) + 2px) calc(var(--sticker-lift) + 2px) 0 var(--ui-text);
 			}
-			.overlay button:active {
-				transform: translate(4px, 4px);
+			.sticker:active {
+				transform: translate(var(--sticker-lift), var(--sticker-lift));
 				box-shadow: 0 0 0 var(--ui-text);
+			}
+			.overlay button {
+				--sticker-lift: 4px;
+				--sticker-pad-x: 32px;
+				--sticker-pad-y: 12px;
+				font-size: var(--fs-button);
 			}
 			.overlay .actions button .label {
 				display: block;
@@ -356,39 +417,18 @@
 				gap: 6px;
 			}
 			.weapons .slot {
-				display: flex;
+				--sticker-radius: 16px;
+				--sticker-pad-x: 12px;
+				--sticker-pad-y: 10px;
 				flex-direction: column;
-				align-items: center;
 				gap: 6px;
 				min-width: 84px;
-				padding: 8px 12px 12px;
-				font: var(--fs-slot)/1.2 var(--ui-font);
-				color: var(--ui-text);
-				background: #fffdf4;
-				border: 3px solid var(--ui-text);
-				border-radius: 16px;
-				cursor: pointer;
-				box-shadow: 3px 3px 0 var(--ui-text);
-				transition:
-					transform 0.07s ease,
-					box-shadow 0.07s ease,
-					background 0.12s,
-					color 0.12s;
-			}
-			.weapons .slot:hover {
-				background: var(--ui-button-hover);
-				transform: translate(-1px, -1px);
-				box-shadow: 5px 5px 0 var(--ui-text);
-			}
-			.weapons .slot:active,
-			.weapons .slot.active:active {
-				transform: translate(3px, 3px);
-				box-shadow: 0 0 0 var(--ui-text);
+				font-size: var(--fs-slot);
 			}
 			.weapons .slot.active {
-				background: color-mix(in srgb, var(--accent) 42%, #fffdf4);
+				background: color-mix(in srgb, var(--accent) 42%, var(--ui-cream));
 				box-shadow:
-					3px 3px 0 var(--ui-text),
+					var(--sticker-lift) var(--sticker-lift) 0 var(--ui-text),
 					0 0 16px color-mix(in srgb, var(--accent) 55%, transparent);
 			}
 			.weapons .slot .key {
@@ -470,31 +510,11 @@
 				bottom: 12px;
 				right: 12px;
 				z-index: 20;
+				--sticker-radius: 50%;
 				width: 48px;
 				height: 48px;
-				display: grid;
-				place-items: center;
+				padding: 0; /* fixed square: the optical text correction would skew it */
 				font-size: 22px;
-				line-height: 1;
-				color: var(--ui-text);
-				background: #fffdf4;
-				border: 3px solid var(--ui-text);
-				border-radius: 50%;
-				cursor: pointer;
-				box-shadow: 3px 3px 0 var(--ui-text);
-				transition:
-					transform 0.07s ease,
-					box-shadow 0.07s ease,
-					background 0.12s;
-			}
-			.mute:hover {
-				background: var(--ui-button-hover);
-				transform: translate(-1px, -1px);
-				box-shadow: 5px 5px 0 var(--ui-text);
-			}
-			.mute:active {
-				transform: translate(3px, 3px);
-				box-shadow: 0 0 0 var(--ui-text);
 			}
 			.mute.muted {
 				background: color-mix(in srgb, var(--ui-red) 30%, #fffdf4);
@@ -599,27 +619,11 @@
 				pointer-events: auto;
 			}
 			.portal-option {
-				font: 16px/1 var(--ui-font);
-				text-transform: uppercase;
-				color: var(--ui-text);
-				background: #fffdf4;
-				border: 3px solid var(--ui-text);
-				border-radius: 999px;
-				/* 2px of lift: measured ink sat 15px below the top edge and 11px
-				   above the bottom one, because this display font's caps ride low. */
-				padding: 6px 16px 10px;
-				cursor: pointer;
-				box-shadow: 3px 3px 0 var(--ui-text);
+				font-size: 16px;
 			}
-			.portal-option:hover,
 			.portal-option:focus-visible {
-				background: var(--ui-button-hover);
-				outline: 3px solid #fffdf4;
+				outline: 3px solid var(--ui-cream);
 				outline-offset: 2px;
-			}
-			.portal-option:active {
-				transform: translate(3px, 3px);
-				box-shadow: none;
 			}
 			@keyframes hint-hop {
 				0%,
@@ -657,7 +661,13 @@
 		<div class="score" hidden></div>
 		<div class="hit-confirmation" role="status" hidden></div>
 		<div class="weapons" hidden></div>
-		<button class="mute" type="button" title="Mute" aria-label="Mute sound" aria-pressed="false">
+		<button
+			class="mute sticker"
+			type="button"
+			title="Mute"
+			aria-label="Mute sound"
+			aria-pressed="false"
+		>
 			🔊
 		</button>
 		<div class="overlay" hidden></div>
@@ -678,9 +688,9 @@
 				<span class="arrow">▼</span>walk into a portal<span class="arrow">▼</span>
 			</p>
 			<div class="portal-options" role="group" aria-label="Choose difficulty">
-				<button class="portal-option" type="button" data-enemies="1">Chill · 1 foe</button>
-				<button class="portal-option" type="button" data-enemies="2">Spicy · 2 foes</button>
-				<button class="portal-option" type="button" data-enemies="3">Chaos · 3 foes</button>
+				<button class="portal-option sticker" type="button" data-enemies="1">Chill · 1 foe</button>
+				<button class="portal-option sticker" type="button" data-enemies="2">Spicy · 2 foes</button>
+				<button class="portal-option sticker" type="button" data-enemies="3">Chaos · 3 foes</button>
 			</div>
 		</div>
 		<div class="fade"></div>

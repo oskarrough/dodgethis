@@ -63,6 +63,7 @@ export function createOverlay(selector = '.overlay') {
 			row.className = 'actions'
 			acts.forEach((a, i) => {
 				const b = document.createElement('button')
+				b.className = 'sticker'
 				const cursor = document.createElement('span')
 				cursor.className = 'cursor'
 				cursor.setAttribute('aria-hidden', 'true')

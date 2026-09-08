@@ -21,13 +21,14 @@ import {
 	consumeWeaponSwitch,
 } from './input.js'
 import { WEAPONS, TRAIL, createChargeMeter } from './weapons.js'
-import { createWeaponHud } from './weaponHud.js'
+import { createWeaponHud } from './weaponhud.js'
 import { setAudioListener, setSound, sfx } from './audio.js'
 import { tune } from './tune.js'
 import { log, createDebugGui, createCombatLog } from './debug.js'
-import { createGodmodeFx } from './godmodeFx.js'
+import { createGodmodeFx } from './godmodefx.js'
 import { createShadows } from './shadows.js'
 import { createFeedback } from './feedback.js'
+import { createAimLine } from './aimline.js'
 import { PALETTE, applyCssVariables } from './style.js'
 
 const hud = document.querySelector('.hud')
@@ -300,6 +301,31 @@ async function main() {
 		}
 		return s
 	}
+	// One mark per unit on a side, filled while that unit is still standing, so
+	// you can read the state of the round without counting capsules on the court.
+	// Individual marks stop being countable at a glance (and stop fitting) once a
+	// side is more than a squad, so past MAX_MARKS it collapses to one mark and a
+	// number. The debug keys can add foes without limit, so this is not academic.
+	const MAX_MARKS = 6
+	function roster(team) {
+		if (!round) return ''
+		let alive = 0
+		let total = 0
+		for (const u of round.units) {
+			if (u.team !== team) continue
+			total++
+			if (u.alive) alive++
+		}
+		if (total > MAX_MARKS) {
+			return `<span class="unit${alive ? ' up' : ''}"></span><span class="count">${alive}</span>`
+		}
+		let s = ''
+		for (const u of round.units) {
+			if (u.team !== team) continue
+			s += `<span class="unit${u.alive ? ' up' : ''}"></span>`
+		}
+		return s
+	}
 	function renderScore() {
 		if (phase === 'menu') {
 			scoreEl.hidden = true
@@ -307,9 +333,26 @@ async function main() {
 		}
 		scoreEl.hidden = false
 		scoreEl.innerHTML =
-			`<span class="a">YOU <span class="pips">${pips(match.wins.A)}</span></span>` +
-			`<span class="mid">round ${match.round}</span>` +
-			`<span class="b"><span class="pips">${pips(match.wins.B)}</span> FOE</span>`
+			`<span class="side a"><span class="name">You</span>` +
+			`<span class="crew">${roster('A')}</span>` +
+			`<span class="pips">${pips(match.wins.A)}</span></span>` +
+			`<span class="mid">Round ${match.round}</span>` +
+			`<span class="side b"><span class="pips">${pips(match.wins.B)}</span>` +
+			`<span class="crew">${roster('B')}</span>` +
+			`<span class="name">Foe</span></span>`
+	}
+	// Cheap per-frame refresh: only touch the DOM when someone actually goes out.
+	let lastRoster = ''
+	function syncRoster() {
+		if (phase === 'menu' || !round) return
+		const key = `${roster('A')}|${roster('B')}`
+		if (key === lastRoster) return
+		lastRoster = key
+		const crews = scoreEl.querySelectorAll('.crew')
+		if (crews.length === 2) {
+			crews[0].innerHTML = roster('A')
+			crews[1].innerHTML = roster('B')
+		}
 	}
 
 	// --- Weapons (1/2) ---------------------------------------------------------
@@ -345,36 +388,30 @@ async function main() {
 	let aimSpeed = tune.arrow.impulse
 
 	// Landing reticle + a dotted preview of the arrow's arc to that spot.
+	// Two rings, not one: the ammo yellow alone is nearly the same value as the
+	// green court, so it rides on an ink one the way every other mark here does.
 	const aimMarker = new THREE.Mesh(
-		new THREE.RingGeometry(0.25, 0.35, 24),
+		new THREE.RingGeometry(0.26, 0.38, 24),
 		new THREE.MeshBasicMaterial({ color: PALETTE.ammo }),
 	)
 	aimMarker.rotation.x = -Math.PI / 2
 	aimMarker.visible = false
+	const markerInk = new THREE.Mesh(
+		new THREE.RingGeometry(0.22, 0.42, 24),
+		new THREE.MeshBasicMaterial({ color: PALETTE.ink }),
+	)
+	markerInk.position.z = -0.01 // the parent's local -z is world down once rotated
+	aimMarker.add(markerInk)
 	scene.add(aimMarker)
 
 	const PREVIEW_N = 32
 	const previewPos = new Float32Array(PREVIEW_N * 3)
 	const previewDistance = new Float32Array(PREVIEW_N)
 	const previewHeight = new Float32Array(PREVIEW_N)
-	const previewGeom = new THREE.BufferGeometry()
-	previewGeom.setAttribute('position', new THREE.BufferAttribute(previewPos, 3))
-	const preview = new THREE.Line(
-		previewGeom,
-		new THREE.LineDashedMaterial({
-			color: PALETTE.ammo,
-			dashSize: 0.45,
-			gapSize: 0.28,
-			transparent: true,
-			opacity: 0.85,
-		}),
-	)
-	preview.frustumCulled = false
-	preview.visible = false
-	scene.add(preview)
+	const preview = createAimLine(scene, { samples: PREVIEW_N })
 
 	function hideAim() {
-		preview.visible = false
+		preview.hide()
 		aimMarker.visible = false
 	}
 
@@ -442,8 +479,6 @@ async function main() {
 			hideAim()
 			return
 		}
-		preview.visible = true
-		preview.material.color.set(color)
 		for (let i = 0; i < PREVIEW_N; i++) {
 			previewPos[i * 3] = hand.x + aimDir.x * previewDistance[i]
 			previewPos[i * 3 + 1] = previewHeight[i]
@@ -451,20 +486,16 @@ async function main() {
 		}
 		const landing = clampArrowLanding(hand.x + aimDir.x * distance, hand.z + aimDir.z * distance)
 		previewPos[(PREVIEW_N - 1) * 3] = landing.x
-		previewPos[(PREVIEW_N - 1) * 3 + 1] = 0.02
+		previewPos[(PREVIEW_N - 1) * 3 + 1] = 0.03
 		previewPos[(PREVIEW_N - 1) * 3 + 2] = landing.z
-		previewGeom.setDrawRange(0, PREVIEW_N)
-		previewGeom.attributes.position.needsUpdate = true
-		preview.computeLineDistances()
-		aimMarker.position.set(landing.x, 0.02, landing.z)
+		preview.update(previewPos, aimDir, color)
+		aimMarker.position.set(landing.x, 0.03, landing.z)
 		aimMarker.visible = true
 	}
 
 	// A flat range guide in the aim direction. Bowls stop through live physics, so
 	// unlike arrows this deliberately has no landing marker.
 	function updateGroundLine(hand) {
-		preview.visible = true
-		preview.material.color.set(TRAIL.bowl)
 		const len = 7
 		for (let i = 0; i < PREVIEW_N; i++) {
 			const t = i / (PREVIEW_N - 1)
@@ -472,9 +503,7 @@ async function main() {
 			previewPos[i * 3 + 1] = 0.05
 			previewPos[i * 3 + 2] = hand.z + aimDir.z * len * t
 		}
-		previewGeom.setDrawRange(0, PREVIEW_N)
-		previewGeom.attributes.position.needsUpdate = true
-		preview.computeLineDistances()
+		preview.update(previewPos, aimDir, TRAIL.bowl)
 		aimMarker.visible = false
 	}
 
@@ -654,26 +683,13 @@ async function main() {
 		}
 		// Left-stack stays developer chrome (always visible in-match). Armed status
 		// lives on the weapon HUD — not here, and never as match-scoreboard copy.
-		let status = ''
-		if (phase === 'playing' && round) {
-			let allies = 0
-			let enemiesLeft = 0
-			for (const u of round.units) {
-				if (!u.alive) continue
-				if (u.team === 'A') allies++
-				else if (u.team === 'B') enemiesLeft++
-			}
-			let grounded = 0
-			for (const a of round.arrows) if (a.state === 'grounded') grounded++
-			status = `A:${allies}  B:${enemiesLeft}  loose:${grounded}\n`
-		}
 		hud.textContent =
 			`G god · H ∞ammo · =/- foe · ]/[ ally\n` +
-			status +
 			`fps ${fps}  ${phase}` +
 			`${tune.physics.paused ? '  paused' : ''}` +
 			`${tune.cheats.godmode ? '  GOD' : ''}` +
 			`${tune.cheats.infiniteAmmo ? '  ∞' : ''}`
+		syncRoster()
 		weaponHud.update({
 			weapon,
 			charge,
