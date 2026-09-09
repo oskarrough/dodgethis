@@ -6,11 +6,10 @@ import { makeStyleMaterial, FORWARD_LAYER } from './stylepass.js'
 
 // A portal is a comic sticker-style court pad whose trigger starts a match; it avoids dizzying rotation and instead wakes with breathing, label bobbing, rising sparkles, and squash-stretch.
 const PORTAL_ROLES = { 1: 'portalChill', 2: 'portalSpicy', 3: 'portalChaos' }
-const PORTAL_WORDS = { 1: 'CHILL', 2: 'SPICY', 3: 'CHAOS' }
 const INK = hex('ink')
 const CREAM = hex('cream')
 
-// Canvas label uses cream and ink strokes around a colored difficulty number and word.
+// Canvas label outlines the difficulty number in cream and ink.
 function makeLabel(enemies, color) {
 	const c = document.createElement('canvas')
 	c.width = 256
@@ -23,20 +22,12 @@ function makeLabel(enemies, color) {
 	g.font = '150px "Ranchers", "Darumadrop One", system-ui, sans-serif'
 	g.lineWidth = 30
 	g.strokeStyle = CREAM
-	g.strokeText(String(enemies), 128, 100)
+	g.strokeText(String(enemies), 128, 128)
 	g.lineWidth = 14
 	g.strokeStyle = INK
-	g.strokeText(String(enemies), 128, 100)
+	g.strokeText(String(enemies), 128, 128)
 	g.fillStyle = color
-	g.fillText(String(enemies), 128, 100)
-
-	const word = PORTAL_WORDS[enemies] || ''
-	g.font = '44px "Ranchers", "Darumadrop One", system-ui, sans-serif'
-	g.lineWidth = 14
-	g.strokeStyle = CREAM
-	g.strokeText(word, 128, 200)
-	g.fillStyle = INK
-	g.fillText(word, 128, 200)
+	g.fillText(String(enemies), 128, 128)
 
 	const tex = new THREE.CanvasTexture(c)
 	tex.colorSpace = THREE.SRGBColorSpace

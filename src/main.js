@@ -175,14 +175,12 @@ async function main() {
 		charge.cancel()
 		acc = 0
 	}
-	const portalOptions = [...splashEl.querySelectorAll('.portal-option')]
 	let onlineMatch = null
 	let flow = createMatchFlow({
 		ctx,
 		overlay,
 		fadeEl,
 		splashEl,
-		portalOptions,
 		clearActions,
 		resetPresentation() {
 			feedback.reset()
@@ -595,10 +593,10 @@ async function main() {
 			else if (flow.phase !== 'menu') flow.transition('BACK TO THE COURT', flow.enterHub)
 			return
 		}
-		// Splash digits click difficulty buttons instead of bypassing their handlers.
+		// Number keys enter the matching difficulty portal.
 		if (flow.phase === 'menu') {
-			const pick = /^Digit([1-9])$/.exec(e.code)
-			if (pick) portalOptions[Number(pick[1]) - 1]?.click()
+			const pick = /^Digit([1-3])$/.exec(e.code)
+			if (pick) flow.enterPortal(Number(pick[1]))
 			return
 		}
 		if (flow.phase !== 'playing') return

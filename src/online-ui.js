@@ -1,11 +1,9 @@
 import { MAX_BOTS } from './online-session.js'
 
 export function createOnlineUi(session, { onOpen = () => {}, onClose = () => {} } = {}) {
-	const entry = document.createElement('button')
-	entry.type = 'button'
-	entry.className = 'sticker online-entry'
-	entry.textContent = 'Online · Private match'
-	document.querySelector('.splash').append(entry)
+	// The entry button lives in the splash markup (index.html) — it's the one
+	// button left there now that the difficulty buttons are gone.
+	const entry = document.querySelector('.splash .online-entry')
 	const panel = document.createElement('dialog')
 	panel.className = 'online-panel dialog-card'
 	panel.setAttribute('aria-labelledby', 'online-title')

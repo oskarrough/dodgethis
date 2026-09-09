@@ -12,7 +12,6 @@ export function createMatchFlow({
 	overlay,
 	fadeEl,
 	splashEl,
-	portalOptions,
 	clearActions,
 	resetPresentation,
 	onChange,
@@ -41,12 +40,6 @@ export function createMatchFlow({
 	let transitionTimer = null
 	let roundScored = false
 	let lastWinner = null
-	let lastDifficulty = 0
-	try {
-		lastDifficulty = Number(localStorage.getItem('dodgethis.difficulty'))
-	} catch {
-		/* storage may be unavailable */
-	}
 
 	function transition(label, arrive) {
 		if (teleporting) return
@@ -130,12 +123,6 @@ export function createMatchFlow({
 		onTheme(0, 'open') // the hub/lobby round is always the open court
 		// Re-showing restarts the CSS letter animations, so the title bounces in fresh.
 		splashEl.hidden = false
-		for (const button of portalOptions) {
-			const recent = Number(button.dataset.enemies) === lastDifficulty
-			button.classList.toggle('recent', recent)
-			if (recent) button.setAttribute('aria-description', 'Last played difficulty')
-			else button.removeAttribute('aria-description')
-		}
 		round = createRound(ctx, { enemies: 0, arrowCount: 0, roundNum: 0, lobby: true })
 		onChange()
 		// Three difficulty portals; stepping in starts a best-of-3 match with that many enemies.
@@ -159,15 +146,6 @@ export function createMatchFlow({
 		transition('ROUND 1', () => startMatch(enemies))
 	}
 
-	// Splash difficulties in printed order — the same list the 1-9 keys and the printed hint use, so a fourth mode numbers itself.
-	portalOptions.forEach((button, i) => {
-		if (i < 9) button.append(`  (${i + 1})`) // same hint shape the overlay uses
-		button.addEventListener('click', () => {
-			sfx.click()
-			teleportTo(Number(button.dataset.enemies))
-		})
-	})
-
 	// Step-into-portal check, run each frame while roaming the hub.
 	function checkPortals() {
 		if (!round || !round.localPlayer || !round.localPlayer.alive) return
@@ -186,14 +164,6 @@ export function createMatchFlow({
 	) {
 		participants = roster
 		localParticipantId = localId
-		if (enemies >= 1 && enemies <= 3 && allies === 0) {
-			lastDifficulty = enemies
-			try {
-				localStorage.setItem('dodgethis.difficulty', String(enemies))
-			} catch {
-				/* optional preference */
-			}
-		}
 		onTheme(enemies, layout ?? LAYOUT_BY_ENEMIES[enemies] ?? 'open')
 		match.allies = allies
 		match.arrowCount = arrowCount
@@ -364,6 +334,7 @@ export function createMatchFlow({
 		},
 		match,
 		enterHub,
+		enterPortal: teleportTo,
 		startMatch,
 		restartRound,
 		endRound,

@@ -48,7 +48,6 @@ beforeEach(() => {
 		overlay,
 		fadeEl: fade,
 		splashEl: { hidden: false },
-		portalOptions: [],
 		clearActions() {},
 		resetPresentation() {},
 		onChange() {},
