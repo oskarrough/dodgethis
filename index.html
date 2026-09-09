@@ -770,9 +770,59 @@
 				margin-top: 18px;
 			}
 			.online-panel {
-				width: min(600px, 90vw);
+				width: min(760px, 92vw);
 				max-height: calc(100dvh - 32px);
 			}
+			.online-panel h1 {
+				font-size: clamp(28px, 5vw, 40px);
+				letter-spacing: 0.04em;
+			}
+			.online-choices {
+				display: grid;
+				grid-template-columns: repeat(2, minmax(0, 1fr));
+				gap: 18px;
+				margin-top: 24px;
+				text-align: left;
+			}
+			.online-choices > * {
+				display: flex;
+				flex-direction: column;
+				align-items: stretch;
+				padding: 20px;
+				border: 2px solid var(--ui-text);
+				border-radius: 18px;
+				background: var(--ui-cream);
+			}
+			.online-choices h2 {
+				margin: 0;
+				font-size: 1.25em;
+				font-weight: 400;
+				color: var(--ui-blue);
+			}
+			.online-choices p {
+				margin: 8px 0 20px;
+				line-height: 1.4;
+			}
+			.online-choices button {
+				margin-top: auto;
+			}
+			.online-choices label {
+				flex-wrap: wrap;
+			}
+			.online-choices input {
+				text-transform: uppercase;
+				letter-spacing: 0.12em;
+			}
+			.online-panel :focus-visible {
+				outline: 3px solid var(--ui-blue);
+				outline-offset: 4px;
+			}
+			@media (max-width: 600px) {
+				.online-choices {
+					grid-template-columns: 1fr;
+				}
+			}
+
 			.online-panel::backdrop {
 				background: rgba(143, 215, 255, 0.42);
 				backdrop-filter: blur(2px);
@@ -836,7 +886,7 @@
 					>▼</span
 				>
 			</p>
-			<button class="sticker online-entry" type="button">Online · Private match</button>
+			<button class="sticker online-entry" type="button">Play online</button>
 		</div>
 		<div class="fade" aria-hidden="true"></div>
 		<script type="module" src="/src/main.js"></script>

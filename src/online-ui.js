@@ -1,8 +1,7 @@
 import { MAX_BOTS } from './online-session.js'
 
 export function createOnlineUi(session, { onOpen = () => {}, onClose = () => {} } = {}) {
-	// The entry button lives in the splash markup (index.html) — it's the one
-	// button left there now that the difficulty buttons are gone.
+	// The entry button lives in the playable hub's splash markup.
 	const entry = document.querySelector('.splash .online-entry')
 	const panel = document.createElement('dialog')
 	panel.className = 'online-panel dialog-card'
@@ -58,21 +57,42 @@ export function createOnlineUi(session, { onOpen = () => {}, onClose = () => {} 
 		const actions = document.createElement('div')
 		actions.className = 'actions'
 		if (!state) {
-			actions.append(button('Create lobby', () => session.host()))
+			const intro = document.createElement('p')
+			intro.className = 'line'
+			intro.textContent = 'Two teams. First to two round wins. Up to 8 players.'
+			const choices = document.createElement('div')
+			choices.className = 'online-choices'
+			const create = document.createElement('section')
+			create.innerHTML =
+				'<h2>Bring your crew</h2><p>Share a code with friends. Pick teams and add bots in your lobby.</p>'
+			create.append(button('Create lobby', () => session.host()))
+			const join = document.createElement('form')
+			join.innerHTML = '<h2>Got an invite?</h2><p>Join a friend’s lobby. Team up or face off.</p>'
 			const label = document.createElement('label')
-			label.textContent = 'Lobby code '
+			label.textContent = 'Lobby code'
 			const input = document.createElement('input')
 			input.name = 'code'
 			input.placeholder = 'ABCDE'
 			input.maxLength = 12
 			input.value = joinCode
 			input.autocomplete = 'off'
+			input.autocapitalize = 'characters'
+			input.spellcheck = false
+			input.required = true
+			input.disabled = busy
+			const joinButton = button('Join lobby', () => session.join(joinCode.trim()), !joinCode.trim())
 			input.oninput = () => {
 				joinCode = input.value
+				joinButton.disabled = busy || !joinCode.trim()
+			}
+			join.onsubmit = (event) => {
+				event.preventDefault()
+				if (!joinButton.disabled) joinButton.click()
 			}
 			label.append(input)
-			panel.append(label)
-			actions.append(button('Join lobby', () => session.join(joinCode)))
+			join.append(label, joinButton)
+			choices.append(create, join)
+			panel.append(intro, choices)
 		} else {
 			const hint = document.createElement('p')
 			hint.className = 'line'
@@ -142,7 +162,7 @@ export function createOnlineUi(session, { onOpen = () => {}, onClose = () => {} 
 		status.className = 'line'
 		status.setAttribute('role', 'status')
 		status.textContent = error || (busy ? 'Connecting…' : state?.message || '')
-		const back = button(state ? 'Leave lobby' : 'Back to solo', leave)
+		const back = button(state ? 'Leave lobby' : 'Back to game', leave)
 		back.disabled = false
 		actions.append(back)
 		panel.append(status, actions)

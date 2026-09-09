@@ -1,6 +1,6 @@
 # DodgeThis
 
-Choose a difficulty on the court to play solo, or choose **Online · Private match** to play with friends.
+Choose a difficulty on the court to play solo, or choose **Play online** to play with friends.
 
 ## Host or join
 
