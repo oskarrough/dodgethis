@@ -1,5 +1,6 @@
 #:schema node_modules/wrangler/config-schema.json
 name = "dodgethis"
+main = "worker/index.js"
 compatibility_date = "2026-06-13"
 
 [[routes]]
@@ -8,3 +9,14 @@ custom_domain = true
 
 [assets]
 directory = "./dist"
+
+binding = "ASSETS"
+run_worker_first = ["/api/*"]
+
+[[durable_objects.bindings]]
+name = "LOBBIES"
+class_name = "LobbyDirectory"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["LobbyDirectory"]

@@ -134,3 +134,55 @@ test('synchronous departure during start broadcast cannot resurrect the aborted 
 	expect(f.session.state.matchId).toBeNull()
 	expect(f.starts).toHaveLength(0)
 })
+
+test('quick join skips unavailable lobbies and waits for a valid roster', async () => {
+	const host = fixture()
+	await host.session.host()
+	host.net.onPeerJoin('guest')
+	const directory = { list: async () => [{ code: 'BCDEF' }, { code: 'ABCDE' }], stop() {} }
+	const guest = fixture(false, { directory })
+	const attempts = []
+	guest.net.join = async (code) => {
+		attempts.push(code)
+		if (code === 'BCDEF') throw new Error('Lobby full')
+		guest.receive('lobby', host.session.state, 'host')
+	}
+	await guest.session.quickJoin()
+	expect(attempts).toEqual(['BCDEF', 'ABCDE'])
+	expect(guest.session.state.humans).toHaveLength(2)
+})
+
+test('quick join reports no lobbies and leave cancels discovery', async () => {
+	let resolve
+	const directory = { list: async () => [], stop() {} }
+	const guest = fixture(false, { directory })
+	await expect(guest.session.quickJoin()).rejects.toThrow('No public lobbies')
+	directory.list = () =>
+		new Promise((done) => {
+			resolve = done
+		})
+	const joining = guest.session.quickJoin()
+	guest.session.leave()
+	resolve([{ code: 'ABCDE' }])
+	await expect(joining).rejects.toThrow('cancelled')
+	expect(guest.session.state).toBeNull()
+})
+
+test('public hosting registers explicitly and leaves cleanly if registration fails', async () => {
+	let registrations = 0
+	const directory = {
+		update() {},
+		stop() {},
+		async start(state) {
+			registrations++
+			expect(state.public).toBe(true)
+			throw new Error('Directory unavailable')
+		},
+	}
+	const host = fixture(true, { directory })
+	await host.session.host()
+	expect(registrations).toBe(0)
+	await expect(host.session.host(true)).rejects.toThrow('Directory unavailable')
+	expect(registrations).toBe(1)
+	expect(host.session.state).toBeNull()
+})

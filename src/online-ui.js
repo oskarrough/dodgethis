@@ -10,6 +10,7 @@ export function createOnlineUi(session, { onOpen = () => {}, onClose = () => {} 
 	let busy = false
 	let error = ''
 	let joinCode = ''
+	let isPublic = true
 	entry.onclick = () => {
 		onOpen()
 		error = ''
@@ -52,7 +53,9 @@ export function createOnlineUi(session, { onOpen = () => {}, onClose = () => {} 
 		panel.replaceChildren()
 		const heading = document.createElement('h1')
 		heading.id = 'online-title'
-		heading.textContent = state ? `Private lobby · ${state.code}` : 'Play online'
+		heading.textContent = state
+			? `${state.public ? 'Public' : 'Private'} lobby · ${state.code}`
+			: 'Play online'
 		panel.append(heading)
 		const actions = document.createElement('div')
 		actions.className = 'actions'
@@ -62,10 +65,26 @@ export function createOnlineUi(session, { onOpen = () => {}, onClose = () => {} 
 			intro.textContent = 'Two teams. First to two round wins. Up to 8 players.'
 			const choices = document.createElement('div')
 			choices.className = 'online-choices'
+			const quick = document.createElement('section')
+			quick.innerHTML = '<h2>Find a game</h2><p>Join an available public lobby. No code needed.</p>'
+			quick.append(button('Quick join', () => session.quickJoin()))
 			const create = document.createElement('section')
 			create.innerHTML =
 				'<h2>Bring your crew</h2><p>Share a code with friends. Pick teams and add bots in your lobby.</p>'
-			create.append(button('Create lobby', () => session.host()))
+			const visibility = document.createElement('label')
+			visibility.textContent = 'Public lobby'
+			const checkbox = document.createElement('input')
+			checkbox.type = 'checkbox'
+			checkbox.checked = isPublic
+			checkbox.disabled = busy
+			checkbox.onchange = () => {
+				isPublic = checkbox.checked
+			}
+			visibility.append(checkbox)
+			create.append(
+				visibility,
+				button('Create lobby', () => session.host(isPublic)),
+			)
 			const join = document.createElement('form')
 			join.innerHTML = '<h2>Got an invite?</h2><p>Join a friend’s lobby. Team up or face off.</p>'
 			const label = document.createElement('label')
@@ -91,7 +110,7 @@ export function createOnlineUi(session, { onOpen = () => {}, onClose = () => {} 
 			}
 			label.append(input)
 			join.append(label, joinButton)
-			choices.append(create, join)
+			choices.append(quick, create, join)
 			panel.append(intro, choices)
 		} else {
 			const hint = document.createElement('p')

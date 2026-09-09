@@ -1,3 +1,4 @@
+import { createLobbyDirectory } from './lobby-directory.js'
 import { validateRoster } from './roster.js'
 
 export const MAX_BOTS = 12
@@ -13,6 +14,7 @@ export function createOnlineSession(
 		onAbort = () => {},
 		onMessage = () => {},
 		rosterTimeout = 7000,
+		directory = createLobbyDirectory(),
 	} = {},
 ) {
 	let state = null
@@ -30,6 +32,7 @@ export function createOnlineSession(
 	}
 	const notify = () => onChange(state)
 	function publish() {
+		directory.update(state)
 		state.revision = ++revision
 		net.send('lobby', state)
 		notify()
@@ -76,6 +79,7 @@ export function createOnlineSession(
 	}
 	net.onDisconnect = (message) => {
 		generation++
+		directory.stop()
 		const reason = message || 'The host left. Session ended.'
 		settleRoster(new Error(reason))
 		net.leave()
@@ -121,7 +125,8 @@ export function createOnlineSession(
 			return !!state
 		},
 		net,
-		async host() {
+		async host(isPublic = false) {
+			directory.stop()
 			const operation = ++generation
 			settleRoster(new Error('Connection attempt cancelled'))
 			await net.host()
@@ -131,6 +136,7 @@ export function createOnlineSession(
 			state = {
 				revision: 0,
 				phase: 'lobby',
+				public: isPublic,
 				matchId: null,
 				code: net.code,
 				hostId: net.id,
@@ -139,8 +145,35 @@ export function createOnlineSession(
 				message: '',
 			}
 			publish()
+			if (isPublic) {
+				try {
+					await directory.start(state, (error) => {
+						if (operation === generation) onChange(state, error.message)
+					})
+					if (operation !== generation) throw new Error('Connection attempt cancelled')
+				} catch (error) {
+					if (operation === generation) this.leave()
+					throw error
+				}
+			}
+		},
+		async quickJoin() {
+			const operation = ++generation
+			const lobbies = await directory.list()
+			if (operation !== generation) throw new Error('Connection attempt cancelled')
+			for (const { code } of lobbies) {
+				const attempt = generation + 1
+				try {
+					await this.join(code)
+					return
+				} catch (error) {
+					if (generation !== attempt || state) throw error
+				}
+			}
+			throw new Error('No public lobbies available. Create a public lobby or try again.')
 		},
 		async join(code) {
+			directory.stop()
 			const operation = ++generation
 			settleRoster(new Error('Connection attempt cancelled'))
 			lastRevision = -1
@@ -200,6 +233,7 @@ export function createOnlineSession(
 			publish()
 		},
 		leave() {
+			directory.stop()
 			generation++
 			settleRoster(new Error('Connection attempt cancelled'))
 			net.leave()

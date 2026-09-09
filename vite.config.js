@@ -26,6 +26,7 @@ export default defineConfig({
 		// machines can play a build without a deploy. A leading dot allows the
 		// domain and its subdomains. Dev server only — this is not a build setting.
 		allowedHosts: ['.localhost', '.ts.net'],
+		proxy: { '/api': 'http://127.0.0.1:8787' },
 	},
 	build: {
 		target: 'esnext',
