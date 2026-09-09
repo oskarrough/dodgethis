@@ -18,7 +18,7 @@ export function createOverlay(selector = '.overlay') {
 		if (el.hidden) previousFocus = document.activeElement
 		el.classList.toggle('clear', clear)
 		const card = document.createElement('div')
-		card.className = 'card'
+		card.className = 'card dialog-card'
 		card.setAttribute('role', 'dialog')
 		card.setAttribute('aria-modal', 'true')
 

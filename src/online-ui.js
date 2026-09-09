@@ -7,7 +7,8 @@ export function createOnlineUi(session, { onOpen = () => {}, onClose = () => {} 
 	entry.textContent = 'Online · Private match'
 	document.querySelector('.splash').append(entry)
 	const panel = document.createElement('dialog')
-	panel.className = 'online-panel'
+	panel.className = 'online-panel dialog-card'
+	panel.setAttribute('aria-labelledby', 'online-title')
 	document.body.append(panel)
 	let busy = false
 	let error = ''
@@ -32,6 +33,7 @@ export function createOnlineUi(session, { onOpen = () => {}, onClose = () => {} 
 	function button(text, action, disabled = false) {
 		const el = document.createElement('button')
 		el.type = 'button'
+		el.className = 'sticker'
 		el.textContent = text
 		el.disabled = disabled || busy
 		el.onclick = async () => {
@@ -51,11 +53,14 @@ export function createOnlineUi(session, { onOpen = () => {}, onClose = () => {} 
 	function render(state = session.state, message = '') {
 		if (message) error = message
 		panel.replaceChildren()
-		const heading = document.createElement('h2')
+		const heading = document.createElement('h1')
+		heading.id = 'online-title'
 		heading.textContent = state ? `Private lobby · ${state.code}` : 'Play online'
 		panel.append(heading)
+		const actions = document.createElement('div')
+		actions.className = 'actions'
 		if (!state) {
-			panel.append(button('Create lobby', () => session.host()))
+			actions.append(button('Create lobby', () => session.host()))
 			const label = document.createElement('label')
 			label.textContent = 'Lobby code '
 			const input = document.createElement('input')
@@ -68,12 +73,11 @@ export function createOnlineUi(session, { onOpen = () => {}, onClose = () => {} 
 				joinCode = input.value
 			}
 			label.append(input)
-			panel.append(
-				label,
-				button('Join lobby', () => session.join(joinCode)),
-			)
+			panel.append(label)
+			actions.append(button('Join lobby', () => session.join(joinCode)))
 		} else {
 			const hint = document.createElement('p')
+			hint.className = 'line'
 			hint.textContent = `Share code ${state.code} with friends. ${state.humans.length}/8 humans connected.`
 			panel.append(hint)
 			const editable = session.net.isHost && state.phase === 'lobby'
@@ -125,8 +129,9 @@ export function createOnlineUi(session, { onOpen = () => {}, onClose = () => {} 
 					(team) => state.bots[team] > 0 || state.humans.some((p) => p.team === team),
 				)
 				if (session.net.isHost)
-					panel.append(button('Start match', () => session.start(), !canStart))
+					actions.append(button('Start match', () => session.start(), !canStart))
 				const hint = document.createElement('p')
+				hint.className = 'line'
 				hint.textContent = !canStart
 					? 'Both teams need at least one human or bot.'
 					: session.net.isHost
@@ -136,11 +141,13 @@ export function createOnlineUi(session, { onOpen = () => {}, onClose = () => {} 
 			}
 		}
 		const status = document.createElement('p')
+		status.className = 'line'
 		status.setAttribute('role', 'status')
 		status.textContent = error || (busy ? 'Connecting…' : state?.message || '')
 		const back = button(state ? 'Leave lobby' : 'Back to solo', leave)
 		back.disabled = false
-		panel.append(status, back)
+		actions.append(back)
+		panel.append(status, actions)
 	}
 	return {
 		render,

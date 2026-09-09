@@ -302,7 +302,7 @@
 			.overlay[hidden] {
 				display: none;
 			}
-			.overlay .card {
+			.dialog-card {
 				text-align: center;
 				color: var(--ui-text);
 				font: var(--fs-base)/1.6 var(--ui-font);
@@ -313,7 +313,7 @@
 				border-radius: 24px;
 				box-shadow: 6px 6px 0 var(--ui-text);
 			}
-			.overlay h1 {
+			.dialog-card h1 {
 				margin: 0;
 				font-family: var(--ui-font);
 				font-size: var(--fs-title);
@@ -321,17 +321,17 @@
 				letter-spacing: 0.18em;
 				color: var(--ui-blue);
 			}
-			.overlay .sub {
+			.dialog-card .sub {
 				margin: 8px 0 0;
 				color: var(--ui-muted);
 				text-transform: uppercase;
 				font-size: var(--fs-sub);
 			}
-			.overlay .line {
+			.dialog-card .line {
 				margin: 8px 0 0;
 				color: var(--ui-text);
 			}
-			.overlay .actions {
+			.dialog-card .actions {
 				margin-top: 22px;
 				display: flex;
 				gap: 12px;
@@ -377,16 +377,16 @@
 					background 0.12s,
 					color 0.12s;
 			}
-			.sticker:hover {
+			.sticker:hover:not(:disabled) {
 				background: var(--ui-button-hover);
 				transform: translate(-1px, -1px);
 				box-shadow: calc(var(--sticker-lift) + 2px) calc(var(--sticker-lift) + 2px) 0 var(--ui-text);
 			}
-			.sticker:active {
+			.sticker:active:not(:disabled) {
 				transform: translate(var(--sticker-lift), var(--sticker-lift));
 				box-shadow: 0 0 0 var(--ui-text);
 			}
-			.overlay button {
+			.dialog-card button {
 				--sticker-lift: 4px;
 				--sticker-pad-x: 32px;
 				--sticker-pad-y: 12px;
@@ -677,20 +677,6 @@
 				color: var(--ui-gold);
 				margin: 0 8px;
 			}
-			.portal-options {
-				display: flex;
-				flex-wrap: wrap;
-				justify-content: center;
-				gap: 10px;
-				pointer-events: auto;
-			}
-			.portal-option {
-				font-size: 16px;
-			}
-			.portal-option:focus-visible {
-				outline: 3px solid var(--ui-cream);
-				outline-offset: 2px;
-			}
 			@keyframes hint-hop {
 				0%,
 				40%,
@@ -727,10 +713,6 @@
 				opacity: 1;
 				pointer-events: auto;
 			}
-			.portal-option.recent {
-				outline: 3px solid var(--accent-bow);
-				outline-offset: 4px;
-			}
 			@media (prefers-reduced-motion: reduce) {
 				.fade {
 					transition: none;
@@ -765,11 +747,11 @@
 			.weapons .armed {
 				font-size: 11px;
 			}
-			.overlay .actions {
+			.dialog-card .actions {
 				flex-wrap: wrap;
 				justify-content: center;
 			}
-			.overlay .card {
+			.dialog-card {
 				max-width: min(760px, 90vw);
 				box-sizing: border-box;
 			}
@@ -778,7 +760,7 @@
 					max-width: 280px;
 					text-align: center;
 				}
-				.overlay .card {
+				.dialog-card {
 					padding: 20px 14px;
 				}
 			}
@@ -788,20 +770,12 @@
 				margin-top: 18px;
 			}
 			.online-panel {
-				width: min(440px, calc(100vw - 32px));
-				box-sizing: border-box;
-				border: 3px solid var(--ui-text);
-				border-radius: 18px;
-				padding: 24px;
-				color: var(--ui-text);
-				background: var(--ui-cream);
-				font: 20px var(--ui-font);
+				width: min(600px, 90vw);
+				max-height: calc(100dvh - 32px);
 			}
 			.online-panel::backdrop {
-				background: #18334488;
-			}
-			.online-panel h2 {
-				margin-top: 0;
+				background: rgba(143, 215, 255, 0.42);
+				backdrop-filter: blur(2px);
 			}
 			.online-panel label {
 				display: flex;
@@ -811,8 +785,7 @@
 				margin: 12px 0;
 			}
 			.online-panel input,
-			.online-panel select,
-			.online-panel button {
+			.online-panel select {
 				font: inherit;
 				padding: 6px 12px;
 				border: 2px solid var(--ui-text);
@@ -820,11 +793,6 @@
 			}
 			.online-panel input {
 				width: 110px;
-			}
-			.online-panel button {
-				background: var(--ui-button);
-				margin: 6px;
-				cursor: pointer;
 			}
 			.online-panel :disabled {
 				opacity: 0.55;
@@ -864,15 +832,9 @@
 				><span class="letter" style="--i: 8"><span class="wob">S</span></span>
 			</h1>
 			<p class="splash-hint">
-				<span class="arrow">▼</span>walk into a portal<span class="arrow">▼</span>
+				<span class="arrow">▼</span>walk into a portal — or press 1, 2, 3<span class="arrow">▼</span>
 			</p>
-			<div class="portal-options" role="group" aria-label="Choose difficulty">
-				<button class="portal-option sticker" type="button" data-enemies="1">Chill · Park</button>
-				<button class="portal-option sticker" type="button" data-enemies="2">Spicy · Sunset</button>
-				<button class="portal-option sticker" type="button" data-enemies="3">
-					Chaos · Night Gym
-				</button>
-			</div>
+			<button class="sticker online-entry" type="button">Online · Private match</button>
 		</div>
 		<div class="fade" aria-hidden="true"></div>
 		<script type="module" src="/src/main.js"></script>
