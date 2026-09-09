@@ -170,7 +170,7 @@ export function createOnlineSession(
 					if (generation !== attempt || state) throw error
 				}
 			}
-			throw new Error('No public lobbies available. Create a public lobby or try again.')
+			throw Object.assign(new Error('No public lobbies available.'), { code: 'NO_PUBLIC_LOBBIES' })
 		},
 		async join(code) {
 			directory.stop()

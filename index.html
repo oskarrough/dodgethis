@@ -770,7 +770,7 @@
 				margin-top: 18px;
 			}
 			.online-panel {
-				width: min(1000px, 92vw);
+				width: min(520px, 92vw);
 				max-height: calc(100dvh - 32px);
 			}
 			.online-panel h1 {
@@ -779,48 +779,49 @@
 			}
 			.online-choices {
 				display: grid;
-				grid-template-columns: repeat(3, minmax(0, 1fr));
-				gap: 18px;
-				margin-top: 24px;
-				text-align: left;
+				gap: 28px;
+				margin-top: 28px;
 			}
-			.online-choices > * {
-				display: flex;
-				flex-direction: column;
-				align-items: stretch;
-				padding: 20px;
-				border: 2px solid var(--ui-text);
-				border-radius: 18px;
-				background: var(--ui-cream);
+			.online-choices section {
+				display: grid;
+				gap: 14px;
+			}
+			.online-choices section + section {
+				border-top: 1px solid var(--ui-text);
+				padding-top: 24px;
 			}
 			.online-choices h2 {
 				margin: 0;
-				font-size: 1.25em;
+				font-size: 1.1em;
 				font-weight: 400;
 				color: var(--ui-blue);
 			}
 			.online-choices p {
-				margin: 8px 0 20px;
+				margin: 0;
 				line-height: 1.4;
 			}
-			.online-choices button {
-				margin-top: auto;
+			.online-choices section:first-child > button:first-child {
+				font-size: 1.5em;
+				padding: 18px 24px;
 			}
-			.online-choices label {
-				flex-wrap: wrap;
+			.online-choices form {
+				display: flex;
+				gap: 12px;
 			}
-			.online-choices input {
+			.online-choices form input {
+				flex: 1;
+				min-width: 0;
+				width: 0;
 				text-transform: uppercase;
-				letter-spacing: 0.12em;
+				letter-spacing: 0.08em;
+			}
+			.online-choices input::placeholder {
+				text-transform: none;
+				letter-spacing: normal;
 			}
 			.online-panel :focus-visible {
 				outline: 3px solid var(--ui-blue);
 				outline-offset: 4px;
-			}
-			@media (max-width: 800px) {
-				.online-choices {
-					grid-template-columns: 1fr;
-				}
 			}
 
 			.online-panel::backdrop {

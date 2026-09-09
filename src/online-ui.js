@@ -10,10 +10,11 @@ export function createOnlineUi(session, { onOpen = () => {}, onClose = () => {} 
 	let busy = false
 	let error = ''
 	let joinCode = ''
-	let isPublic = true
+	let noGames = false
 	entry.onclick = () => {
 		onOpen()
 		error = ''
+		noGames = false
 		render()
 		panel.showModal()
 	}
@@ -41,7 +42,8 @@ export function createOnlineUi(session, { onOpen = () => {}, onClose = () => {} 
 			try {
 				await action()
 			} catch (e) {
-				error = e.message
+				if (e.code === 'NO_PUBLIC_LOBBIES') noGames = true
+				else error = e.message
 			}
 			busy = false
 			render()
@@ -60,38 +62,35 @@ export function createOnlineUi(session, { onOpen = () => {}, onClose = () => {} 
 		const actions = document.createElement('div')
 		actions.className = 'actions'
 		if (!state) {
-			const intro = document.createElement('p')
-			intro.className = 'line'
-			intro.textContent = 'Two teams. First to two round wins. Up to 8 players.'
 			const choices = document.createElement('div')
 			choices.className = 'online-choices'
 			const quick = document.createElement('section')
-			quick.innerHTML = '<h2>Find a game</h2><p>Join an available public lobby. No code needed.</p>'
-			quick.append(button('Quick join', () => session.quickJoin()))
-			const create = document.createElement('section')
-			create.innerHTML =
-				'<h2>Bring your crew</h2><p>Share a code with friends. Pick teams and add bots in your lobby.</p>'
-			const visibility = document.createElement('label')
-			visibility.textContent = 'Public lobby'
-			const checkbox = document.createElement('input')
-			checkbox.type = 'checkbox'
-			checkbox.checked = isPublic
-			checkbox.disabled = busy
-			checkbox.onchange = () => {
-				isPublic = checkbox.checked
-			}
-			visibility.append(checkbox)
-			create.append(
-				visibility,
-				button('Create lobby', () => session.host(isPublic)),
+			quick.append(
+				button('Find a game', () => {
+					noGames = false
+					return session.quickJoin()
+				}),
 			)
+			const hint = document.createElement('p')
+			hint.textContent = 'Join other players in a public lobby.'
+			quick.append(hint)
+			if (noGames) {
+				const empty = document.createElement('p')
+				empty.setAttribute('role', 'status')
+				empty.textContent = 'No games available right now. Start one and others can join you.'
+				quick.append(
+					empty,
+					button('Start a public game', () => session.host(true)),
+				)
+			}
+			const friends = document.createElement('section')
+			friends.innerHTML = '<h2>Play with friends</h2>'
+			friends.append(button('Create a private game', () => session.host(false)))
 			const join = document.createElement('form')
-			join.innerHTML = '<h2>Got an invite?</h2><p>Join a friend’s lobby. Team up or face off.</p>'
-			const label = document.createElement('label')
-			label.textContent = 'Lobby code'
 			const input = document.createElement('input')
 			input.name = 'code'
-			input.placeholder = 'ABCDE'
+			input.placeholder = 'Enter code…'
+			input.setAttribute('aria-label', 'Lobby code')
 			input.maxLength = 12
 			input.value = joinCode
 			input.autocomplete = 'off'
@@ -99,7 +98,7 @@ export function createOnlineUi(session, { onOpen = () => {}, onClose = () => {} 
 			input.spellcheck = false
 			input.required = true
 			input.disabled = busy
-			const joinButton = button('Join lobby', () => session.join(joinCode.trim()), !joinCode.trim())
+			const joinButton = button('Join', () => session.join(joinCode.trim()), !joinCode.trim())
 			input.oninput = () => {
 				joinCode = input.value
 				joinButton.disabled = busy || !joinCode.trim()
@@ -108,10 +107,10 @@ export function createOnlineUi(session, { onOpen = () => {}, onClose = () => {} 
 				event.preventDefault()
 				if (!joinButton.disabled) joinButton.click()
 			}
-			label.append(input)
-			join.append(label, joinButton)
-			choices.append(quick, create, join)
-			panel.append(intro, choices)
+			join.append(input, joinButton)
+			friends.append(join)
+			choices.append(quick, friends)
+			panel.append(choices)
 		} else {
 			const hint = document.createElement('p')
 			hint.className = 'line'
