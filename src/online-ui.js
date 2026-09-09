@@ -11,10 +11,12 @@ export function createOnlineUi(session, { onOpen = () => {}, onClose = () => {} 
 	let error = ''
 	let joinCode = ''
 	let noGames = false
+	let creating = false
 	entry.onclick = () => {
 		onOpen()
 		error = ''
 		noGames = false
+		creating = false
 		render()
 		panel.showModal()
 	}
@@ -52,13 +54,14 @@ export function createOnlineUi(session, { onOpen = () => {}, onClose = () => {} 
 	}
 	function render(state = session.state, message = '') {
 		if (message) error = message
-		panel.replaceChildren()
+		const children = []
+		const sameLobby = state && panel.dataset.lobbyCode === state.code
 		const heading = document.createElement('h1')
 		heading.id = 'online-title'
 		heading.textContent = state
 			? `${state.public ? 'Public' : 'Private'} lobby · ${state.code}`
 			: 'Play online'
-		panel.append(heading)
+		children.push(heading)
 		const actions = document.createElement('div')
 		actions.className = 'actions'
 		if (!state) {
@@ -84,8 +87,30 @@ export function createOnlineUi(session, { onOpen = () => {}, onClose = () => {} 
 				)
 			}
 			const friends = document.createElement('section')
-			friends.innerHTML = '<h2>Play with friends</h2>'
-			friends.append(button('Create a private game', () => session.host(false)))
+			friends.innerHTML = '<h2>Your own game</h2>'
+			if (creating) {
+				const visibility = document.createElement('div')
+				visibility.className = 'online-visibility'
+				for (const [name, description, isPublic] of [
+					['Public', 'Anyone can join', true],
+					['Private', 'Invite code only', false],
+				]) {
+					const choice = document.createElement('div')
+					const hint = document.createElement('p')
+					hint.textContent = description
+					choice.append(
+						button(name, () => session.host(isPublic)),
+						hint,
+					)
+					visibility.append(choice)
+				}
+				friends.append(visibility)
+			} else
+				friends.append(
+					button('Create a game', () => {
+						creating = true
+					}),
+				)
 			const join = document.createElement('form')
 			const input = document.createElement('input')
 			input.name = 'code'
@@ -110,12 +135,12 @@ export function createOnlineUi(session, { onOpen = () => {}, onClose = () => {} 
 			join.append(input, joinButton)
 			friends.append(join)
 			choices.append(quick, friends)
-			panel.append(choices)
+			children.push(choices)
 		} else {
 			const hint = document.createElement('p')
 			hint.className = 'line'
 			hint.textContent = `Share code ${state.code} with friends. ${state.humans.length}/8 humans connected.`
-			panel.append(hint)
+			children.push(hint)
 			const editable = session.net.isHost && state.phase === 'lobby'
 			for (const human of state.humans) {
 				const label = document.createElement('label')
@@ -137,16 +162,20 @@ export function createOnlineUi(session, { onOpen = () => {}, onClose = () => {} 
 					session.setTeam(human.id, select.value)
 				}
 				label.append(select)
-				panel.append(label)
+				children.push(label)
 			}
 			for (const team of ['A', 'B']) {
-				const label = document.createElement('label')
-				label.textContent = `Team ${team} bots `
-				const input = document.createElement('input')
+				const existing = sameLobby && panel.querySelector(`label[data-bot-team="${team}"]`)
+				const label = existing || document.createElement('label')
+				if (!existing) {
+					label.dataset.botTeam = team
+					label.textContent = `Team ${team} bots `
+				}
+				const input = existing ? label.querySelector('input') : document.createElement('input')
 				input.type = 'number'
 				input.min = '0'
 				input.max = String(MAX_BOTS)
-				input.value = state.bots[team]
+				if (document.activeElement !== input || !editable) input.value = state.bots[team]
 				input.setAttribute('aria-label', `Team ${team} bots`)
 				input.disabled = !editable
 				input.onchange = () => {
@@ -157,8 +186,8 @@ export function createOnlineUi(session, { onOpen = () => {}, onClose = () => {} 
 						render()
 					}
 				}
-				label.append(input)
-				panel.append(label)
+				if (!existing) label.append(input)
+				children.push(label)
 			}
 			if (state.phase === 'lobby') {
 				const canStart = ['A', 'B'].every(
@@ -173,7 +202,7 @@ export function createOnlineUi(session, { onOpen = () => {}, onClose = () => {} 
 					: session.net.isHost
 						? 'First team to win two rounds wins the match.'
 						: 'Waiting for the host to start.'
-				panel.append(hint)
+				children.push(hint)
 			}
 		}
 		const status = document.createElement('p')
@@ -183,7 +212,14 @@ export function createOnlineUi(session, { onOpen = () => {}, onClose = () => {} 
 		const back = button(state ? 'Leave lobby' : 'Back to game', leave)
 		back.disabled = false
 		actions.append(back)
-		panel.append(status, actions)
+		children.push(status, actions)
+		// Keep bot controls mounted so typing and held spinner buttons survive roster updates.
+		const previousChildren = [...panel.children]
+		for (const child of previousChildren) if (!children.includes(child)) child.remove()
+		children.forEach((child, index) => {
+			if (panel.children[index] !== child) panel.insertBefore(child, panel.children[index] || null)
+		})
+		panel.dataset.lobbyCode = state?.code || ''
 	}
 	return {
 		render,
