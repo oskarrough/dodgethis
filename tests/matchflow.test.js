@@ -142,3 +142,25 @@ test('canceling or disposing a pending arrival prevents stale scene replacement'
 	expect(live.units).toHaveLength(0)
 	expect(flow.transitioning).toBe(false)
 })
+
+test('a roster match preserves local Team B identity through next round and rematch', async () => {
+	const roster = [
+		{ id: 'host', team: 'A', controller: 'human', peerId: 'host-peer' },
+		{ id: 'guest', team: 'B', controller: 'human', peerId: 'guest-peer' },
+	]
+	flow.startMatch(1, { roster, localParticipantId: 'guest' })
+	expect(flow.round.localPlayer.participantId).toBe('guest')
+	flow.endRound('B')
+	expect(overlay.card.title).toBe('ROUND WON')
+	overlay.card.actions.find((a) => a.label === 'Next round').onSelect()
+	await Bun.sleep(400)
+	expect(flow.round.roster).toEqual(roster)
+	expect(flow.round.localPlayer.team).toBe('B')
+	flow.endRound('B')
+	expect(overlay.card.title).toBe('YOU WIN')
+	overlay.card.actions.find((a) => a.label === 'Rematch').onSelect()
+	await Bun.sleep(400)
+	expect(flow.round.roster).toEqual(roster)
+	expect(flow.round.localPlayer.participantId).toBe('guest')
+	expect(flow.match.wins).toEqual({ A: 0, B: 0 })
+})

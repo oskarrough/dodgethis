@@ -120,19 +120,20 @@ export function createFeedback(scene, { sfx, confirm, addShake = () => {}, kickF
 	function present(event, mesh) {
 		if (event.type === 'shot') {
 			if (event.kind === 'bowl') sfx.roll(event.point)
-			else sfx.loose(event.source.isHuman ? 1 : 0.45, event.point)
+			else sfx.loose((event.source.isLocal ?? event.source.isHuman) ? 1 : 0.45, event.point)
 			if (event.perfect) sfx.perfect(event.point)
-			if (event.perfect && event.source.isHuman) kickFov(1.5)
-			if (event.source.isHuman) addShake(event.kind === 'bowl' ? 0.35 : event.perfect ? 0.4 : 0.22)
+			if (event.perfect && (event.source.isLocal ?? event.source.isHuman)) kickFov(1.5)
+			if (event.source.isLocal ?? event.source.isHuman)
+				addShake(event.kind === 'bowl' ? 0.35 : event.perfect ? 0.4 : 0.22)
 			if (!event.source.isHuman) sfx.taunt(event.point)
 			return
 		}
 		if (event.type === 'pickup') {
-			sfx.grab(event.point, event.source.isHuman ? 1 : 0.35)
+			sfx.grab(event.point, (event.source.isLocal ?? event.source.isHuman) ? 1 : 0.35)
 			return
 		}
 		if (event.type === 'land') {
-			const human = event.source?.isHuman
+			const human = event.source?.isLocal ?? event.source?.isHuman
 			sfx.thud(event.point, event.speed, human ? 1 : 0.4)
 			if (human && event.speed > 6) addShake(0.08)
 			courtMarks(event)
@@ -140,12 +141,12 @@ export function createFeedback(scene, { sfx, confirm, addShake = () => {}, kickF
 		}
 		if (event.outcome === 'nearMiss') {
 			// The dodge reward: it zipped past your ear. Nearly hitting someone gets a bright tick and streaks instead.
-			if (event.target?.isHuman) {
+			if (event.target?.isLocal ?? event.target?.isHuman) {
 				sfx.whoosh(event.point, 1 - Math.min(1, (event.distance ?? 0) / 1.5))
 				addShake(0.18)
 				kickFov(0.6)
 			}
-			if (event.source?.isHuman) {
+			if (event.source?.isLocal ?? event.source?.isHuman) {
 				sfx.close(event.point)
 				courtMarks(event)
 			}
@@ -166,10 +167,15 @@ export function createFeedback(scene, { sfx, confirm, addShake = () => {}, kickF
 			}
 			if (event.type === 'fall') sfx.fall(event.point)
 			else sfx.hit(event.point)
-			addShake(event.type === 'fall' ? (event.target.isHuman ? 0.6 : 0.3) : 0.7)
+			addShake(
+				event.type === 'fall' ? ((event.target.isLocal ?? event.target.isHuman) ? 0.6 : 0.3) : 0.7,
+			)
 			// A mutual hit must not overwrite YOU'RE OUT with a kill cheer.
-			if (event.target.isHuman) humanOut = true
-			if (event.target.isHuman || (event.source?.isHuman && !humanOut)) {
+			if (event.target.isLocal ?? event.target.isHuman) humanOut = true
+			if (
+				(event.target.isLocal ?? event.target.isHuman) ||
+				((event.source?.isLocal ?? event.source?.isHuman) && !humanOut)
+			) {
 				confirm(humanOut ? "YOU'RE OUT" : 'OUT!')
 				confirmationTime = 0.65
 			}

@@ -5,7 +5,11 @@ export function createImpactBeat() {
 	return {
 		trigger(event) {
 			if (cooldown > 0 || event.type !== 'impact' || event.outcome !== 'eliminated') return false
-			if (!event.source?.isHuman && !event.target?.isHuman) return false
+			if (
+				!(event.source?.isLocal ?? event.source?.isHuman) &&
+				!(event.target?.isLocal ?? event.target?.isHuman)
+			)
+				return false
 			remaining = 0.065
 			cooldown = 0.35
 			return true

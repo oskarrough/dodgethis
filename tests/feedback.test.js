@@ -116,3 +116,19 @@ test('chip and court-mark pools are fixed, survive spam, and are released on res
 	expect(geometryDisposed).toHaveBeenCalledTimes(1)
 	expect(materialDisposed).toHaveBeenCalledTimes(1)
 })
+
+test('remote humans do not own local confirmations or bot taunts', () => {
+	feedback.dispose()
+	const confirm = mock()
+	const sfx = Object.fromEntries(CUES.map((cue) => [cue, mock()]))
+	feedback = createFeedback(scene, { sfx, confirm })
+	const event = impact()
+	event.source = { id: 1, team: 'A', isHuman: true, isLocal: false }
+	event.target = { id: 2, team: 'B', isHuman: true, isLocal: false }
+	feedback.present(event, mesh)
+	expect(confirm).not.toHaveBeenCalled()
+	feedback.present({ ...event, type: 'shot' })
+	expect(sfx.taunt).not.toHaveBeenCalled()
+	feedback.present({ ...event, target: { ...event.target, isLocal: true } })
+	expect(confirm).toHaveBeenLastCalledWith("YOU'RE OUT")
+})

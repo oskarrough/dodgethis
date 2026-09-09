@@ -106,8 +106,15 @@ function buildMesh() {
 
 const TRAIL_N = 20 // points in an arrow's fading trail
 
-export function createArrow(scene, world, RAPIER, { position = [0, GROUND_Y, 0] } = {}) {
-	const id = _id++
+export function createArrow(
+	scene,
+	world,
+	RAPIER,
+	{ position = [0, GROUND_Y, 0], replica = false, id: replicaId } = {},
+) {
+	const id = replica ? replicaId : _id++
+	let disposed = false
+	let replicaInitialized = false
 	const mesh = buildMesh()
 	scene.add(mesh)
 
@@ -194,6 +201,7 @@ export function createArrow(scene, world, RAPIER, { position = [0, GROUND_Y, 0] 
 
 	// Picked up: arrow leaves the world, becomes the holder's nocked arrow.
 	function hold() {
+		if (replica) return
 		destroyBody()
 		pickup.visible = false
 		trail.visible = false
@@ -210,6 +218,7 @@ export function createArrow(scene, world, RAPIER, { position = [0, GROUND_Y, 0] 
 
 	// Launch from the hand at `speed` m/s (reticle-solved or tunable default); opts selects arrow/bowl and a perfect-release trail.
 	function loose(fromPos, dir, team = null, speed = tune.arrow.impulse, opts = {}) {
+		if (replica) return
 		state = 'flying'
 		pickup.visible = false
 		ownerTeam = team
@@ -309,7 +318,7 @@ export function createArrow(scene, world, RAPIER, { position = [0, GROUND_Y, 0] 
 			kind,
 			perfect,
 			source: { ...source },
-			point: { ...body.translation() },
+			point: { ...(body ? body.translation() : kind === 'bowl' ? ball.position : mesh.position) },
 			pointKind: 'projectile',
 			direction: { x: v.x / length, y: v.y / length, z: v.z / length },
 		}
@@ -317,6 +326,7 @@ export function createArrow(scene, world, RAPIER, { position = [0, GROUND_Y, 0] 
 
 	// Hit drops use physics position so bowl ammo cannot jump back to the shooter's hidden arrow mesh.
 	function ground() {
+		if (replica) return
 		if (body) {
 			const p = body.translation()
 			const v = body.linvel()
@@ -361,8 +371,68 @@ export function createArrow(scene, world, RAPIER, { position = [0, GROUND_Y, 0] 
 		if (body) body.setLinearDamping(tune.arrow.linearDamping)
 	}
 
-	// Free the body, per-arrow geometries and trail; module-level materials stay shared.
+	// Plain authoritative facts, including held/grounded arrows with no body.
+	function snapshot() {
+		const pose = state === 'flying' && kind === 'bowl' ? ball : mesh
+		const position = body ? body.translation() : pose.position
+		const quaternion = body && kind === 'bowl' ? body.rotation() : pose.quaternion
+		return {
+			id,
+			state,
+			kind,
+			perfect,
+			ownerTeam,
+			source: source ? { ...source } : null,
+			position: { x: position.x, y: position.y, z: position.z },
+			quaternion: { x: quaternion.x, y: quaternion.y, z: quaternion.z, w: quaternion.w },
+			velocity: { ...(body ? body.linvel() : _lv) },
+		}
+	}
+
+	// Only replica.js calls these after whole-packet validation. The same meshes,
+	// markers and trail implement both simulated and replicated presentation.
+	function applyReplicaState(data) {
+		if (!replica) throw new Error('Cannot apply replica state to a simulated arrow')
+		const changed =
+			!replicaInitialized ||
+			state !== data.state ||
+			kind !== data.kind ||
+			source?.id !== data.source?.id
+		state = data.state
+		kind = data.kind
+		perfect = data.perfect
+		ownerTeam = data.ownerTeam
+		source = data.source ? { ...data.source } : null
+		_lv.copy(data.velocity)
+		const rolling = state === 'flying' && kind === 'bowl'
+		mesh.visible = !rolling
+		ball.visible = rolling
+		ball.scale.setScalar(tune.weapons.bowlRadius)
+		pickup.visible = state === 'grounded'
+		trail.material.color.set(rolling ? TRAIL.bowl : perfect ? TRAIL.perfect : TRAIL.arrow)
+		trail.visible = state === 'flying' && tune.fx.trails
+		if (changed) {
+			if (state === 'flying') resetTrail(data.position.x, data.position.y, data.position.z)
+			setReplicaPose(data.position, data.quaternion)
+		}
+		replicaInitialized = true
+	}
+
+	function setReplicaPose(position, quaternion) {
+		if (!replica) throw new Error('Cannot set replica pose on a simulated arrow')
+		mesh.position.copy(position)
+		mesh.quaternion.copy(quaternion)
+		ball.position.copy(position)
+		ball.quaternion.copy(quaternion)
+		pickup.position.set(position.x, 0.025, position.z)
+		if (state === 'flying') pushTrail(position.x, position.y, position.z)
+	}
+
+	// Free the arrow's body + meshes. Module-level materials are shared across all
+	// arrows, so dispose only the per-instance geometries (and this trail).
 	function dispose() {
+		if (disposed) return
+		disposed = true
 		destroyBody()
 		scene.remove(mesh)
 		scene.remove(ball)
@@ -381,6 +451,9 @@ export function createArrow(scene, world, RAPIER, { position = [0, GROUND_Y, 0] 
 	return {
 		id,
 		mesh,
+		ball,
+		pickup,
+		trail,
 		get state() {
 			return state
 		},
@@ -388,7 +461,8 @@ export function createArrow(scene, world, RAPIER, { position = [0, GROUND_Y, 0] 
 			return kind
 		},
 		get position() {
-			return state === 'flying' && body ? body.translation() : mesh.position
+			if (state === 'flying' && body) return body.translation()
+			return state === 'flying' && kind === 'bowl' ? ball.position : mesh.position
 		},
 		get ownerTeam() {
 			return ownerTeam
@@ -404,6 +478,9 @@ export function createArrow(scene, world, RAPIER, { position = [0, GROUND_Y, 0] 
 		loose,
 		ground,
 		snapshotImpact,
+		snapshot,
+		applyReplicaState,
+		setReplicaPose,
 		update,
 		applyDamping,
 		dispose,

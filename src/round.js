@@ -7,6 +7,9 @@ import { createNearMissTracker } from './nearmiss.js'
 import { nearest } from './spatial.js'
 import { tune } from './tune.js'
 import { PALETTE } from './style.js'
+import { createSoloRoster, validateRoster } from './roster.js'
+
+const STILL = Object.freeze({ x: 0, z: 0 })
 
 // A Round owns one round's units, AI, and arrows; tick it with step + lateUpdate, dispose it for a real reset, and handle its one-shot onOver(winner) signal; ctx provides borrowed game services.
 export function createRound(
@@ -20,52 +23,52 @@ export function createRound(
 		onOver = () => {},
 		lobby = false,
 		seed,
+		roster,
+		localParticipantId,
 	} = {},
 ) {
 	if (!lobby && arrowCount < 1) throw new Error('Combat rounds require at least one arrow')
+	const explicitRoster = roster !== undefined
+	const participants = validateRoster(explicitRoster ? roster : createSoloRoster(enemies, allies))
+	if (!explicitRoster) localParticipantId ??= 'local'
+	if (!participants.some((p) => p.id === localParticipantId && p.controller === 'human'))
+		throw new Error('localParticipantId must identify a human in the roster')
 	const { scene, world, RAPIER, eventQueue, combat, present = () => {} } = ctx
 	// Seeded gameplay randomness makes fixed-step fixtures repeatable while visual FX retain independent randomness.
 	const rng = makeRng(seed)
 
-	// --- Units: human (team A) near, enemy dummies (team B) far. ---
-	const units = []
-	const human = createPlayer(scene, world, RAPIER, {
-		position: spawnPoint('A', 0, allies + 1),
-		color: PALETTE.teamA,
-		team: 'A',
-		isHuman: true,
-		hp,
-	})
-	units.push(human)
-	for (let i = 0; i < enemies; i++) {
-		units.push(
-			createPlayer(scene, world, RAPIER, {
-				position: spawnPoint('B', i, enemies),
-				color: PALETTE.teamB,
-				team: 'B',
-				hp,
-			}),
-		)
-	}
-	for (let i = 1; i <= allies; i++) {
-		units.push(
-			createPlayer(scene, world, RAPIER, {
-				position: spawnPoint('A', i, allies + 1),
-				color: PALETTE.teamA,
-				team: 'A',
-				hp,
-			}),
-		)
-	}
-	// Non-human brains share human actions; later rounds lower reaction and jitter to bounded floors.
+	// Spawn by team and roster order, never by which human is local.
+	const teamCounts = { A: 0, B: 0 }
+	const teamIndices = { A: 0, B: 0 }
+	for (const p of participants) teamCounts[p.team]++
+	const units = participants.map((participant) =>
+		createPlayer(scene, world, RAPIER, {
+			hp,
+			participant,
+			position: spawnPoint(
+				participant.team,
+				teamIndices[participant.team]++,
+				teamCounts[participant.team],
+			),
+			color: participant.team === 'A' ? PALETTE.teamA : PALETTE.teamB,
+		}),
+	)
+	const humans = units.filter((u) => u.controller === 'human')
+	const localPlayer = humans.find((u) => u.participantId === localParticipantId)
+	const usedParticipantIds = new Set(participants.map((p) => p.id))
+	let addedUnitId = 0
+	// Only bots get brains. Remote humans use the same actions as local humans.
+	// Later rounds sharpen the AI a touch: faster reactions, tighter aim. Floors
+	// keep a long match challenging but never frame-perfect.
 	const aiMod = {
 		rng,
 		reactionMul: Math.max(0.55, 1 - 0.12 * (roundNum - 1)),
 		jitterMul: Math.max(0.5, 1 - 0.15 * (roundNum - 1)),
 	}
-	const brains = units.filter((u) => !u.isHuman).map((u) => createBrain(u, aiMod))
+	const brains = units.filter((u) => u.controller === 'bot').map((u) => createBrain(u, aiMod))
 
-	// --- Arrow pool: scattered loose on the court, one nocked for the human. ---
+	// One arrow per human in roster order, while the pool lasts. Solo still starts
+	// with exactly one nocked arrow; explicit rosters never privilege local identity.
 	const arrows = []
 	for (let i = 0; i < arrowCount; i++) {
 		// Retry scattered ammo that lands inside an obstacle; each attempt is one ammoPoint draw so the seed still drives everything.
@@ -78,16 +81,21 @@ export function createRound(
 			spot = ammoPoint(rng)
 		arrows.push(createArrow(scene, world, RAPIER, { position: [spot.x, 0, spot.z] }))
 	}
-	if (arrows.length) {
-		human.heldArrow = arrows[0]
-		arrows[0].hold()
+	for (let i = 0; i < Math.min(humans.length, arrows.length); i++) {
+		humans[i].heldArrow = arrows[i]
+		arrows[i].hold()
 	}
 
 	// Whiffs past enemies become their own feedback events, tracked across steps per arrow/unit pair.
 	const nearMiss = createNearMissTracker({ radius: tune.arrow.nearMiss })
 
 	if (lobby) combat.push('hub — step into a portal to fight')
-	else combat.push(`round ${roundNum} start — Team A (you) vs Team B (${enemies})`)
+	else {
+		const opponentTeam = localPlayer.team === 'A' ? 'B' : 'A'
+		combat.push(
+			`round ${roundNum} start — Team ${localPlayer.team} (you) vs Team ${opponentTeam} (${teamCounts[opponentTeam]})`,
+		)
+	}
 
 	let over = false
 	let winner = null // 'A' | 'B' | null — null with over=true means a draw
@@ -98,6 +106,7 @@ export function createRound(
 	// --- Shared actions (used by both the human and the AI brains). ---
 	// `opts` carries the human weapon and perfect shot; AI omission means plain arrows.
 	function looseArrow(unit, dir, speed, opts = {}) {
+		if (over || !unit.alive) return
 		const a = unit.heldArrow
 		if (!a) return
 		unit.aim.set(dir.x, 0, dir.z)
@@ -119,12 +128,11 @@ export function createRound(
 
 	// The human's shot — main.js solves the aim direction + speed + weapon opts.
 	function looseHuman(dir, speed, opts = {}) {
-		if (over || !human.alive || !human.heldArrow) return
-		looseArrow(human, dir, speed, opts)
+		looseArrow(localPlayer, dir, speed, opts)
 	}
 
 	function grabNearestArrow(unit) {
-		if (unit.heldArrow || !unit.alive) return
+		if (over || unit.heldArrow || !unit.alive) return
 		const p = unit.body.translation()
 		const { item: best, d2 } = nearest(arrows, p.x, p.z, (a) => a.state === 'grounded')
 		if (best && d2 <= tune.player.pickupRadius ** 2) {
@@ -140,12 +148,15 @@ export function createRound(
 		}
 	}
 
-	// Infinite ammo adds and nocks a fresh pooled arrow whenever the human is empty-handed.
-	function nockInfinite() {
-		if (!tune.cheats.infiniteAmmo || lobby || over || !human.alive || human.heldArrow) return
+	// Infinite-ammo cheat: the human's quiver never empties. Whenever they have no
+	// arrow in hand — just loosed one, or the cheat was toggled on empty-handed —
+	// nock a fresh arrow so shooting never stalls on the scarce pool. A new arrow
+	// enters the pool each time, which is the point of "infinite".
+	function nockInfinite(unit) {
+		if (!tune.cheats.infiniteAmmo || lobby || over || !unit.alive || unit.heldArrow) return
 		const a = createArrow(scene, world, RAPIER, { position: [0, 0, 0] })
 		a.hold()
-		human.heldArrow = a
+		unit.heldArrow = a
 		arrows.push(a)
 		combat.push('infinite ammo — fresh arrow nocked', 'pickup')
 	}
@@ -162,7 +173,7 @@ export function createRound(
 	}
 
 	function dashHuman(direction) {
-		return dashUnit(human, direction)
+		return dashUnit(localPlayer, direction)
 	}
 
 	// Run every brain: move, maybe grab, maybe shoot.
@@ -250,7 +261,8 @@ export function createRound(
 			if (u.body.translation().y < ARENA.killY) {
 				// Godmode: scoop the human back onto the court instead of killing them.
 				if (u.isHuman && (tune.cheats.godmode || lobby)) {
-					u.place(spawnPoint('A')[0], 2, ARENA.spawnZ)
+					const [x, , z] = spawnPoint(u.team)
+					u.place(x, 2, z)
 					combat.push(
 						lobby
 							? 'the void spat you back onto the field'
@@ -292,10 +304,21 @@ export function createRound(
 		overDelay = 1.4 * Math.max(0.25, tune.fx.deathTime)
 	}
 
-	// One fixed-timestep update drives actors, physics, contacts, pits, victory, and arrows.
-	function step(dt, move) {
-		nockInfinite()
-		human.update(move, dt)
+	// Remote moves: Map<participantId, {x,z}> or (participantId) => {x,z}.
+	// Missing moves are neutral each tick (never AI or a latched network input).
+	// The second argument remains local movement for existing solo callers.
+	function step(dt, move = STILL, remoteMoves) {
+		for (const unit of humans) {
+			nockInfinite(unit)
+			let direction = move
+			if (unit !== localPlayer) {
+				direction =
+					typeof remoteMoves === 'function'
+						? remoteMoves(unit.participantId)
+						: remoteMoves?.get(unit.participantId)
+			}
+			unit.update(direction ?? STILL, dt)
+		}
 		thinkAI(dt)
 		// Landings above a step-down/snap threshold are events so feedback can squash, thud and mark.
 		for (const u of units) {
@@ -320,7 +343,7 @@ export function createRound(
 			if (event) present(event)
 		}
 
-		if (!over) grabNearestArrow(human)
+		if (!over) for (const unit of humans) grabNearestArrow(unit)
 
 		// Deciding-death grace period: let the animation breathe, then end the round.
 		if (ending) {
@@ -350,12 +373,17 @@ export function createRound(
 			combat.push(`no free spawn space on Team ${team}`)
 			return null
 		}
+		let id
+		do {
+			id = `bot-added-${++addedUnitId}`
+		} while (usedParticipantIds.has(id))
 		const u = createPlayer(scene, world, RAPIER, {
 			position,
 			color: isB ? PALETTE.teamB : PALETTE.teamA,
-			team,
 			hp,
+			participant: { id, team, controller: 'bot', peerId: null },
 		})
+		usedParticipantIds.add(id)
 		units.push(u)
 		brains.push(createBrain(u, aiMod)) // added units are never the human → always AI
 		combat.push(`+ spawned Team ${team} unit #${u.id}`, 'pickup')
@@ -392,11 +420,18 @@ export function createRound(
 		units.length = 0
 		arrows.length = 0
 		brains.length = 0
+		humans.length = 0
 	}
 
 	return {
-		human,
+		human: localPlayer, // compatibility alias: not the only human, nor necessarily Team A
+		localPlayer,
+		localParticipantId,
+		get roster() {
+			return units.map((u) => u.participant)
+		},
 		units,
+		brains,
 		arrows,
 		get over() {
 			return over
@@ -406,6 +441,9 @@ export function createRound(
 		},
 		step,
 		lateUpdate,
+		looseArrow,
+		grabNearestArrow,
+		dashUnit,
 		looseHuman,
 		dashHuman,
 		addUnit,

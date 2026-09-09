@@ -1,3 +1,7 @@
+import { createOnlineMatch } from './online-match.js'
+import { Net } from './net.js'
+import { createOnlineSession } from './online-session.js'
+import { createOnlineUi } from './online-ui.js'
 import * as THREE from 'three'
 import { createImpactBeat } from './impact.js'
 import { makeStyleMaterial, FORWARD_LAYER } from './stylepass.js'
@@ -133,22 +137,28 @@ async function main() {
 			return court.obstacles
 		},
 		present(event) {
+			const localId = flow.round?.localPlayer?.id
+			event = {
+				...event,
+				source: event.source && { ...event.source, isLocal: event.source.id === localId },
+				target: event.target && { ...event.target, isLocal: event.target.id === localId },
+			}
 			const target = flow.round?.units.find((u) => u.id === (event.target?.id ?? event.source?.id))
 			if (tune.fx.impact && impact.trigger(event)) rumble(0.35, 0.6, 85)
-			if (event.type === 'dash' && event.source?.isHuman) rumble(0.15, 0.3, 55)
-			if (event.type === 'shot' && event.source?.isHuman && event.perfect) rumble(0.2, 0.4, 65)
+			if (event.type === 'dash' && event.source?.isLocal) rumble(0.15, 0.3, 55)
+			if (event.type === 'shot' && event.source?.isLocal && event.perfect) rumble(0.2, 0.4, 65)
 			if (event.outcome === 'nearMiss') {
-				if (event.target?.isHuman) rumble(0.25, 0.1, 60)
-				if (event.source?.isHuman) hitmark('near', event.point)
-			} else if (event.outcome === 'eliminated' && event.source?.isHuman)
+				if (event.target?.isLocal) rumble(0.25, 0.1, 60)
+				if (event.source?.isLocal) hitmark('near', event.point)
+			} else if (event.outcome === 'eliminated' && event.source?.isLocal)
 				hitmark('kill', target?.position ?? event.point)
 			target?.react(event)
 			feedback.present(event, target?.visual)
-			if (event.source?.isHuman && (event.type === 'shot' || event.type === 'pickup')) {
+			if (event.source?.isLocal && (event.type === 'shot' || event.type === 'pickup')) {
 				if (event.type === 'pickup') weaponHud.emphasizePickup()
 				updateHud()
 			}
-			if (event.outcome === 'eliminated' && event.target.isHuman) {
+			if (event.outcome === 'eliminated' && event.target.isLocal) {
 				hideAim()
 				charge.cancel()
 				updateHud()
@@ -166,7 +176,8 @@ async function main() {
 		acc = 0
 	}
 	const portalOptions = [...splashEl.querySelectorAll('.portal-option')]
-	const flow = createMatchFlow({
+	let onlineMatch = null
+	let flow = createMatchFlow({
 		ctx,
 		overlay,
 		fadeEl,
@@ -182,6 +193,72 @@ async function main() {
 		onTheme(enemies, layout = 'open') {
 			applyCourtTheme(enemies)
 			court.setLayout(layout)
+		},
+	})
+
+	const soloFlow = flow
+	let debugGui
+	const net = new Net()
+	const online = createOnlineSession(net, {
+		onChange(state, message) {
+			onlineUi.render(state, message)
+			if (debugGui) debugGui.domElement.inert = !!state
+		},
+		onStart(roster, matchId) {
+			soloFlow.cancelTransition()
+			soloFlow.dispose()
+			onlineMatch?.dispose()
+			tune.cheats.godmode = false
+			tune.cheats.infiniteAmmo = false
+			tune.physics.paused = false
+			tune.physics.timeScale = 1
+			tune.ai.enabled = true
+			applyCourtTheme(3)
+			onlineMatch = createOnlineMatch({
+				ctx,
+				net,
+				roster,
+				matchId,
+				overlay,
+				clearActions,
+				resetPresentation() {
+					feedback.reset()
+					weaponHud.reset()
+					impact.reset()
+				},
+				onChange: renderScore,
+				onLobby(leave = false, message = '') {
+					if (leave) {
+						online.leave()
+						if (message) onlineUi.show(message)
+					} else online.backToLobby()
+				},
+			})
+			flow = onlineMatch
+			splashEl.hidden = true
+			onlineUi.hide()
+			renderScore()
+		},
+		onAbort(message) {
+			if (onlineMatch) {
+				onlineMatch.dispose()
+				onlineMatch = null
+				flow = soloFlow
+				flow.enterHub()
+			}
+			clearActions()
+			if (online.state || message) onlineUi.show(message)
+		},
+		onMessage(type, data, from) {
+			onlineMatch?.receive(type, data, from)
+		},
+	})
+	const onlineUi = createOnlineUi(online, {
+		onOpen() {
+			clearActions()
+		},
+		onClose() {
+			clearActions()
 		},
 	})
 
@@ -226,13 +303,13 @@ async function main() {
 		}
 		scoreEl.hidden = false
 		scoreEl.innerHTML =
-			`<span class="side a"><span class="name">You</span>` +
+			`<span class="side a"><span class="name">${flow.round?.localPlayer?.team === 'B' ? 'Foe' : 'You'}</span>` +
 			`<span class="crew">${roster('A')}</span>` +
 			`<span class="pips">${pips(flow.match.wins.A)}</span></span>` +
 			`<span class="mid">Round ${flow.match.round}</span>` +
 			`<span class="side b"><span class="pips">${pips(flow.match.wins.B)}</span>` +
 			`<span class="crew">${roster('B')}</span>` +
-			`<span class="name">Foe</span></span>`
+			`<span class="name">${flow.round?.localPlayer?.team === 'B' ? 'You' : 'Foe'}</span></span>`
 	}
 	// Cheap per-frame refresh: only touch the DOM when someone actually goes out.
 	let lastRoster = ''
@@ -314,7 +391,7 @@ async function main() {
 
 	// Aim every frame and fire per the selected weapon. dt drives the charge meter.
 	function weaponUpdate(dt) {
-		const h = flow.round && flow.round.human
+		const h = flow.round && flow.round.localPlayer
 		if (!h || !h.alive || !h.heldArrow) {
 			hideAim()
 			clearShoot()
@@ -338,6 +415,7 @@ async function main() {
 		// The bow loads on hold and fires on release — its own input model.
 		if (weapon === 'bow') {
 			if (consumePress()) {
+				if (onlineMatch && !sendOnlineInput('press', true)) return
 				charge.press()
 				chargeStep = 0
 				chargePerfect = false
@@ -365,12 +443,14 @@ async function main() {
 				onTarget ? (charge.perfect ? TRAIL.perfect : PALETTE.ammo) : PALETTE.cream,
 			)
 			if (consumeRelease()) {
+				if (onlineMatch && !sendOnlineInput('release', true)) return
 				const shot = charge.release()
 				if (shot) {
-					flow.round.looseHuman(aimDir, aimArrowSpeed(targetDistance, hand.y, shot.speed), {
-						kind: 'arrow',
-						perfect: shot.perfect,
-					})
+					if (!onlineMatch)
+						flow.round.looseHuman(aimDir, aimArrowSpeed(targetDistance, hand.y, shot.speed), {
+							kind: 'arrow',
+							perfect: shot.perfect,
+						})
 					charge.cancel()
 					hideAim()
 				}
@@ -385,7 +465,29 @@ async function main() {
 		// The bowl rolls along the ground and fires on click.
 		aimSpeed = tune.weapons.bowlSpeed
 		updateGroundLine(hand)
-		if (consumePress()) flow.round.looseHuman(aimDir, aimSpeed, { kind: def.kind })
+		if (consumePress()) {
+			if (onlineMatch) {
+				sendOnlineInput('press', true)
+				return
+			} else flow.round.looseHuman(aimDir, aimSpeed, { kind: def.kind })
+		}
+	}
+
+	function sendOnlineInput(action = null, force = false) {
+		if (!onlineMatch) return
+		const blocked = onlineUi.open || document.hidden || !document.hasFocus()
+		const activeMatch = onlineMatch
+		activeMatch.setInput(
+			{
+				move: blocked ? { x: 0, z: 0 } : moveVector(),
+				target: { x: aimTarget.x, z: aimTarget.z },
+				weapon,
+				down: !blocked && pointerDown(),
+			},
+			blocked ? 'cancel' : action,
+			force,
+		)
+		return onlineMatch === activeMatch
 	}
 
 	// Share damped flight and the projectile's court clamp so preview endpoint, marker and grounded ammo agree.
@@ -434,18 +536,19 @@ async function main() {
 
 	// GUI cheats and hotkeys read the current round on every call, surviving scene rebuilds.
 	const cheats = {
-		addEnemy: () => flow.round && flow.round.addUnit('B'),
-		removeEnemy: () => flow.round && flow.round.removeUnit('B'),
-		addAlly: () => flow.round && flow.round.addUnit('A'),
-		removeAlly: () => flow.round && flow.round.removeUnit('A'),
-		load20v20: () => startScenario(PRESETS['20v20']),
+		addEnemy: () => !online.active && flow.round?.addUnit('B'),
+		removeEnemy: () => !online.active && flow.round?.removeUnit('B'),
+		addAlly: () => !online.active && flow.round?.addUnit('A'),
+		removeAlly: () => !online.active && flow.round?.removeUnit('A'),
+		load20v20: () => !online.active && startScenario(PRESETS['20v20']),
 		step: () => {
+			if (online.active) return
 			tune.physics.paused = true
 			stepPaused()
 		},
 	}
 
-	const debugGui = createDebugGui(() => {
+	debugGui = createDebugGui(() => {
 		world.gravity = { x: 0, y: tune.physics.gravity, z: 0 }
 		debugLines.visible = tune.debug.showColliders
 		setSound(tune.fx.sound)
@@ -473,7 +576,7 @@ async function main() {
 			setDiagnostics(!diagnostics)
 			return
 		}
-		if (flow.transitioning) return
+		if (onlineUi.open || online.active || flow.transitioning) return
 		if (e.code === 'KeyG') {
 			tune.cheats.godmode = !tune.cheats.godmode
 			combat.push(`godmode ${tune.cheats.godmode ? 'ON' : 'off'}`, tune.cheats.godmode ? 'win' : '')
@@ -514,7 +617,10 @@ async function main() {
 
 	// Reset stale rAF time on tab return to avoid an artificial 0.1s simulation step.
 	window.addEventListener('blur', () => {
-		if (flow.phase === 'playing' && !flow.transitioning) flow.togglePause()
+		if (onlineMatch) {
+			clearActions()
+			sendOnlineInput('cancel', true)
+		} else if (flow.phase === 'playing' && !flow.transitioning) flow.togglePause()
 	})
 	document.addEventListener('visibilitychange', () => {
 		if (!document.hidden) last = performance.now()
@@ -534,53 +640,81 @@ async function main() {
 
 		const stopped = flow.phase === 'paused' || flow.transitioning || tune.physics.paused
 		const impactScale = stopped ? 1 : impact.step(dt)
-		const gameDt = dt * impactScale
+		const gameDt = onlineMatch ? dt : dt * impactScale
 		const simulationStart = perf.enabled ? performance.now() : 0
 		pollGamepad(dt)
-		if (consumePause()) flow.togglePause()
+		if (consumePause() && !onlineUi.open) {
+			if (onlineMatch) {
+				clearActions()
+				onlineUi.show()
+			} else if (!online.active) flow.togglePause()
+		}
 		overlay.setDevice(activeDevice())
 		const menuInput = consumeMenuInput()
-		if (!flow.transitioning) overlay.handleGamepad(menuInput)
+		if (!flow.transitioning && !onlineUi.open) overlay.handleGamepad(menuInput)
 		const selectedWeapon = consumeWeaponSwitch()
 		if (!flow.transitioning && flow.phase === 'playing' && selectedWeapon) setWeapon(selectedWeapon)
-		setAudioListener(flow.round?.human.position)
-		// The hub (menu) is a live round too — same step/lateUpdate, just no aiming.
-		if (flow.round && !flow.transitioning && (flow.phase === 'playing' || flow.phase === 'menu')) {
-			if (flow.phase === 'playing' && !tune.physics.paused) weaponUpdate(gameDt)
+		setAudioListener(flow.round?.localPlayer?.position)
+		if (onlineMatch) {
+			const activeMatch = onlineMatch
+			if (flow.phase === 'playing' && !onlineUi.open) weaponUpdate(dt)
 			else hideAim()
-			// Dash latches a direction now; the burst plays out across the steps below.
-			if (consumeDash() && !tune.physics.paused) humanDashBuffer = 0.1
-			if (consumeJump() && !tune.physics.paused) humanJumpBuffer = 0.1
-			if (!tune.physics.paused) {
-				acc += gameDt * tune.physics.timeScale
-				// Guard on phase too: a winning hit flips us out of 'playing' mid-step.
-				while (acc >= world.timestep && (flow.phase === 'playing' || flow.phase === 'menu')) {
-					if (humanJumpBuffer > 0) {
-						if (flow.round.human.jump()) humanJumpBuffer = 0
-						else humanJumpBuffer = Math.max(0, humanJumpBuffer - world.timestep)
-					}
-					if (humanDashBuffer > 0) {
-						if (flow.round.dashHuman(moveVector())) humanDashBuffer = 0
-						else humanDashBuffer = Math.max(0, humanDashBuffer - world.timestep)
-					}
-					flow.round.step(world.timestep, moveVector())
+			if (onlineMatch === activeMatch && consumeDash()) sendOnlineInput('dash', true)
+			if (onlineMatch === activeMatch && consumeJump()) sendOnlineInput('jump', true)
+			if (onlineMatch === activeMatch) sendOnlineInput()
+			if (onlineMatch === activeMatch && net.isHost) {
+				acc += dt
+				while (onlineMatch === activeMatch && acc >= world.timestep) {
+					activeMatch.step(world.timestep)
 					acc -= world.timestep
 				}
 			}
-			flow.round.lateUpdate(dt)
-			godmodeFx.update(dt, flow.round.human)
-			if (flow.phase === 'menu') flow.checkPortals()
+			if (onlineMatch === activeMatch) activeMatch.update(dt)
+			godmodeFx.update(0, null)
 		} else {
-			hideAim()
-			godmodeFx.update(0, flow.phase === 'paused' ? flow.round?.human : null)
+			// The hub (menu) is a live round too — same step/lateUpdate, just no aiming.
+			if (
+				flow.round &&
+				!onlineUi.open &&
+				!flow.transitioning &&
+				(flow.phase === 'playing' || flow.phase === 'menu')
+			) {
+				if (flow.phase === 'playing' && !tune.physics.paused) weaponUpdate(gameDt)
+				else hideAim()
+				// Dash latches a direction now; the burst plays out across the steps below.
+				if (consumeDash() && !tune.physics.paused) humanDashBuffer = 0.1
+				if (consumeJump() && !tune.physics.paused) humanJumpBuffer = 0.1
+				if (!tune.physics.paused) {
+					acc += gameDt * tune.physics.timeScale
+					// Guard on phase too: a winning hit flips us out of 'playing' mid-step.
+					while (acc >= world.timestep && (flow.phase === 'playing' || flow.phase === 'menu')) {
+						if (humanJumpBuffer > 0) {
+							if (flow.round.localPlayer.jump()) humanJumpBuffer = 0
+							else humanJumpBuffer = Math.max(0, humanJumpBuffer - world.timestep)
+						}
+						if (humanDashBuffer > 0) {
+							if (flow.round.dashHuman(moveVector())) humanDashBuffer = 0
+							else humanDashBuffer = Math.max(0, humanDashBuffer - world.timestep)
+						}
+						flow.round.step(world.timestep, moveVector())
+						acc -= world.timestep
+					}
+				}
+				flow.round.lateUpdate(dt)
+				godmodeFx.update(dt, flow.round.localPlayer)
+				if (flow.phase === 'menu') flow.checkPortals()
+			} else {
+				hideAim()
+				godmodeFx.update(0, flow.phase === 'paused' ? flow.round?.localPlayer : null)
+			}
 		}
 
 		const simulationEnd = perf.enabled ? performance.now() : 0
 
 		// Hub player proximity drives portal wake pops; outside the hub the portal list is empty.
 		const hubPlayer =
-			flow.phase === 'menu' && flow.round && flow.round.human && flow.round.human.alive
-				? flow.round.human.position
+			flow.phase === 'menu' && flow.round && flow.round.localPlayer && flow.round.localPlayer.alive
+				? flow.round.localPlayer.position
 				: null
 		for (const p of flow.portals) p.update(dt, hubPlayer)
 
@@ -605,13 +739,20 @@ async function main() {
 		if (flow.round && !frozen)
 			for (const unit of flow.round.units) {
 				const windup =
-					unit.isHuman && flow.phase === 'playing' && weapon === 'bow' && charge.charging
+					unit === flow.round.localPlayer &&
+					flow.phase === 'playing' &&
+					weapon === 'bow' &&
+					charge.charging
 						? charge.value
-						: unit.isHuman
+						: unit === flow.round.localPlayer
 							? 0
 							: (unit.windup ?? 0)
 				const stepped = unit.updateVisual(gameDt, windup)
-				if (stepped && unit.isHuman && (flow.phase === 'playing' || flow.phase === 'menu'))
+				if (
+					stepped &&
+					unit === flow.round.localPlayer &&
+					(flow.phase === 'playing' || flow.phase === 'menu')
+				)
 					sfx.step(unit.position)
 			}
 		shadows.update(flow.round)
@@ -656,14 +797,15 @@ async function main() {
 					? 'play'
 					: flow.phase === 'paused'
 						? 'paused'
-						: flow.winner === 'A'
+						: flow.winner === flow.round?.localPlayer?.team
 							? 'victory'
-							: flow.winner === 'B'
+							: flow.winner != null
 								? 'defeat'
 								: 'paused'
 		if (flow.phase === 'playing' && flow.round) {
-			const allies = flow.round.units.filter((u) => u.alive && u.team === 'A').length
-			const enemies = flow.round.units.filter((u) => u.alive && u.team === 'B').length
+			const localTeam = flow.round.localPlayer.team
+			const allies = flow.round.units.filter((u) => u.alive && u.team === localTeam).length
+			const enemies = flow.round.units.filter((u) => u.alive && u.team !== localTeam).length
 			if (allies === 1 && enemies > 0 && (flow.match.allies > 0 || enemies === 1)) music = 'clutch'
 		}
 		setMusicScene(tune.physics.paused || flow.transitioning ? 'paused' : music)
@@ -687,13 +829,15 @@ async function main() {
 		weaponHud.update({
 			weapon,
 			charge,
-			visible: flow.phase === 'playing' && !!flow.round?.human.alive,
+			visible: flow.phase === 'playing' && !!flow.round?.localPlayer?.alive,
 			device: activeDevice(),
-			holding: !!(flow.round && flow.round.human && flow.round.human.heldArrow),
+			online: !!onlineMatch,
+			holding: !!(flow.round && flow.round.localPlayer && flow.round.localPlayer.heldArrow),
 		})
 	}
 
 	function startScenario(options = {}) {
+		if (online.active) throw new Error('Leave online before starting a solo scenario')
 		const setup = scenario(options) // validate before replacing the current round
 		flow.cancelTransition()
 		tune.ai.enabled = setup.ai
@@ -747,6 +891,7 @@ async function main() {
 	}
 
 	function stepPaused(ticks = 1) {
+		if (online.active) throw new Error('Leave online before single-stepping')
 		if (!tune.physics.paused) throw new Error('Pause before single-stepping')
 		if (!Number.isInteger(ticks) || ticks < 1 || ticks > 3600)
 			throw new Error('ticks must be 1..3600')
@@ -760,6 +905,10 @@ async function main() {
 
 	// Keep the console API ready so the debug hotkey can expose it without a reload.
 	gameApi = {
+		online,
+		get onlineMatch() {
+			return onlineMatch
+		},
 		get round() {
 			return flow.round
 		},

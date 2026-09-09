@@ -32,6 +32,8 @@ export function createMatchFlow({
 		arrowCount: 7,
 		seed: undefined,
 	}
+	let participants
+	let localParticipantId
 	let phase = 'menu'
 	let round = null
 	let portals = []
@@ -168,8 +170,8 @@ export function createMatchFlow({
 
 	// Step-into-portal check, run each frame while roaming the hub.
 	function checkPortals() {
-		if (!round || !round.human || !round.human.alive) return
-		const p = round.human.position
+		if (!round || !round.localPlayer || !round.localPlayer.alive) return
+		const p = round.localPlayer.position
 		for (const portal of portals) {
 			if (portal.trigger(p.x, p.z)) {
 				teleportTo(portal.enemies)
@@ -178,7 +180,12 @@ export function createMatchFlow({
 		}
 	}
 
-	function startMatch(enemies, { allies = 0, arrowCount = 7, seed, layout, hp = 1 } = {}) {
+	function startMatch(
+		enemies,
+		{ allies = 0, arrowCount = 7, seed, layout, hp = 1, roster, localParticipantId: localId } = {},
+	) {
+		participants = roster
+		localParticipantId = localId
 		if (enemies >= 1 && enemies <= 3 && allies === 0) {
 			lastDifficulty = enemies
 			try {
@@ -232,6 +239,8 @@ export function createMatchFlow({
 			hp: match.hp,
 			roundNum: match.round,
 			onOver: endRound,
+			roster: participants,
+			localParticipantId,
 		})
 		for (const unit of round.units) unit.updateVisual(0)
 		phase = 'playing'
@@ -270,7 +279,7 @@ export function createMatchFlow({
 		}
 
 		phase = 'roundOver'
-		const youWon = winner === 'A'
+		const youWon = winner === (round?.localPlayer?.team ?? 'A')
 		overlay.show({
 			title: youWon ? 'ROUND WON' : 'ROUND LOST',
 			clear: true,
@@ -294,7 +303,7 @@ export function createMatchFlow({
 		lastWinner = winner
 		phase = 'matchOver'
 		onChange()
-		const youWon = winner === 'A'
+		const youWon = winner === (round?.localPlayer?.team ?? 'A')
 		combat.push(`Team ${winner} wins the match ${match.wins.A}–${match.wins.B}!`, 'win')
 		overlay.show({
 			title: youWon ? 'YOU WIN' : 'YOU LOSE',
@@ -302,7 +311,10 @@ export function createMatchFlow({
 				{
 					label: 'Rematch',
 					keyLabel: 'Enter',
-					onSelect: () => transition('ROUND 1 · AGAIN', () => startMatch(match.enemies, match)),
+					onSelect: () =>
+						transition('ROUND 1 · AGAIN', () =>
+							startMatch(match.enemies, { ...match, roster: participants, localParticipantId }),
+						),
 				},
 				...(match.enemies < 3 && match.allies === 0
 					? [

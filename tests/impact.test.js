@@ -15,3 +15,15 @@ test('only local eliminations slow time, and volleys cannot extend the beat', ()
 	expect(beat.step(0.05)).toBe(1)
 	expect(beat.trigger(hit)).toBe(true)
 })
+
+test('remote human eliminations do not trigger the local impact beat', () => {
+	const beat = createImpactBeat()
+	const hit = {
+		type: 'impact',
+		outcome: 'eliminated',
+		source: { isHuman: true, isLocal: false },
+		target: { isHuman: true, isLocal: false },
+	}
+	expect(beat.trigger(hit)).toBe(false)
+	expect(beat.trigger({ ...hit, target: { isHuman: true, isLocal: true } })).toBe(true)
+})

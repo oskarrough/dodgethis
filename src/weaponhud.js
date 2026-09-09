@@ -55,7 +55,7 @@ export function createWeaponHud({ onSelect } = {}) {
 			pickupUntil = 0
 			armed.classList.remove('picked-up')
 		},
-		update({ weapon, charge, visible, holding = false, device = 'keyboard' }) {
+		update({ weapon, charge, visible, holding = false, device = 'keyboard', online = false }) {
 			root.hidden = !visible
 			if (!visible) return
 
@@ -64,8 +64,8 @@ export function createWeaponHud({ onSelect } = {}) {
 			armed.classList.toggle('picked-up', holding && performance.now() < pickupUntil)
 			const pad = device === 'gamepad'
 			controls.textContent = pad
-				? 'LS move · RS aim · LB/RB dash · D-pad weapon · Start pause'
-				: 'WASD move · mouse aim · Space jump · Shift dash · Esc pause'
+				? `LS move · RS aim · LB/RB dash · D-pad weapon · Start ${online ? 'menu' : 'pause'}`
+				: `WASD move · mouse aim · Space jump · Shift dash · Esc ${online ? 'menu' : 'pause'}`
 
 			for (const [id, btn] of slots) {
 				btn.classList.toggle('active', id === weapon)

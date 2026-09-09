@@ -10,6 +10,7 @@
 			rel="stylesheet"
 		/>
 		<title>dodgethis</title>
+		<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js"></script>
 		<style>
 			:root {
 				color-scheme: light;
@@ -780,6 +781,54 @@
 				.overlay .card {
 					padding: 20px 14px;
 				}
+			}
+
+			.online-entry {
+				pointer-events: auto;
+				margin-top: 18px;
+			}
+			.online-panel {
+				width: min(440px, calc(100vw - 32px));
+				box-sizing: border-box;
+				border: 3px solid var(--ui-text);
+				border-radius: 18px;
+				padding: 24px;
+				color: var(--ui-text);
+				background: var(--ui-cream);
+				font: 20px var(--ui-font);
+			}
+			.online-panel::backdrop {
+				background: #18334488;
+			}
+			.online-panel h2 {
+				margin-top: 0;
+			}
+			.online-panel label {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				gap: 12px;
+				margin: 12px 0;
+			}
+			.online-panel input,
+			.online-panel select,
+			.online-panel button {
+				font: inherit;
+				padding: 6px 12px;
+				border: 2px solid var(--ui-text);
+				border-radius: 8px;
+			}
+			.online-panel input {
+				width: 110px;
+			}
+			.online-panel button {
+				background: var(--ui-button);
+				margin: 6px;
+				cursor: pointer;
+			}
+			.online-panel :disabled {
+				opacity: 0.55;
+				cursor: default;
 			}
 		</style>
 	</head>

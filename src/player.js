@@ -4,6 +4,7 @@ import { bounds as courtBounds } from './arena.js'
 import { PALETTE } from './style.js'
 import { makeStyleMaterial, styleRoleFromColor } from './stylepass.js'
 import { stepHorizontalVelocity } from './move.js'
+import { validateRoster } from './roster.js'
 
 const clamp = (v, lo, hi) => (v < lo ? lo : v > hi ? hi : v)
 
@@ -15,9 +16,28 @@ export function createPlayer(
 	scene,
 	world,
 	RAPIER,
-	{ position = [0, 0, 0], color = PALETTE.teamA, team = 'A', isHuman = false, hp = 1 } = {},
+	{
+		position = [0, 0, 0],
+		color = PALETTE.teamA,
+		team = 'A',
+		isHuman = false,
+		hp = 1,
+		participant,
+		replica = false,
+	} = {},
 ) {
-	const id = _uid++
+	// Validate before allocating meshes, bodies or character controllers.
+	participant = validateRoster([
+		participant ?? {
+			id: `unit-${_uid}`,
+			team,
+			controller: isHuman ? 'human' : 'bot',
+			peerId: isHuman ? 'local' : null,
+		},
+	])[0]
+	team = participant.team
+	isHuman = participant.controller === 'human'
+	const id = replica ? null : _uid++
 	const { radius, halfHeight } = tune.player
 
 	// Gameplay only reads this root. All squash, lean and recoil live on its child.
@@ -83,15 +103,21 @@ export function createPlayer(
 	const spawnY = py + radius + halfHeight
 	mesh.position.set(px, spawnY, pz)
 	visualPosition.copy(mesh.position)
-	const body = world.createRigidBody(
-		RAPIER.RigidBodyDesc.kinematicPositionBased().setTranslation(px, spawnY, pz),
-	)
-	const collider = world.createCollider(RAPIER.ColliderDesc.capsule(halfHeight, radius), body)
+	const body = replica
+		? null
+		: world.createRigidBody(
+				RAPIER.RigidBodyDesc.kinematicPositionBased().setTranslation(px, spawnY, pz),
+			)
+	const collider = replica
+		? null
+		: world.createCollider(RAPIER.ColliderDesc.capsule(halfHeight, radius), body)
 
-	const controller = world.createCharacterController(0.01)
-	// Disable autostep to avoid crowded shape casts and climbing other players; solid bleachers remain barriers.
-	controller.enableSnapToGround(0.3)
-	controller.setApplyImpulsesToDynamicBodies(true)
+	const controller = replica ? null : world.createCharacterController(0.01)
+	// The court has no stairs. Autostep performs extra shape casts against every
+	// crowded capsule and can climb other players, trapping overlapping spawns.
+	controller?.enableSnapToGround(0.3)
+	controller?.setApplyImpulsesToDynamicBodies(true)
+	let disposed = false
 
 	let vx = 0
 	let vz = 0
@@ -109,21 +135,25 @@ export function createPlayer(
 	const recoil = { value: 0, velocity: 0 }
 	const pickup = { value: 0, velocity: 0 }
 	const unit = {
-		id,
+		id, // transient presentation/physics identity; use participantId across rounds
+		participant,
+		participantId: participant.id,
+		peerId: participant.peerId,
 		team,
 		isHuman,
 		mesh,
 		visual,
 		body,
 		collider,
-		controller,
+		controller: participant.controller,
+		characterController: controller,
 		alive: true,
 		hp, // hits left before elimination (damage() spends them)
 		maxHp: hp,
 		heldArrow: null,
 		aim: new THREE.Vector3(0, 0, -1), // facing/launch direction (set by input or AI)
 		get colliderHandle() {
-			return collider.handle
+			return collider ? collider.handle : -1
 		},
 		get position() {
 			return mesh.position
@@ -138,6 +168,15 @@ export function createPlayer(
 		dash,
 		sync,
 		face,
+		get grounded() {
+			return grounded
+		},
+		get dashTime() {
+			return dashT
+		},
+		get dashCooldown() {
+			return Math.max(0, dashCd)
+		},
 		get dashing() {
 			return dashT > 0
 		},
@@ -153,6 +192,7 @@ export function createPlayer(
 		damage,
 		eliminate,
 		place,
+		applyReplicaState,
 		dispose,
 	}
 
@@ -170,7 +210,7 @@ export function createPlayer(
 
 	// Start a dash in `dir` or current facing; return whether a live, ready unit fired it.
 	function dash(dir) {
-		if (!unit.alive || dashCd > 0 || dashT > 0) return false
+		if (replica || !unit.alive || dashCd > 0 || dashT > 0) return false
 		let dx = dir ? dir.x : 0
 		let dz = dir ? dir.z : 0
 		if (dx === 0 && dz === 0) {
@@ -203,7 +243,7 @@ export function createPlayer(
 	}
 
 	function update(dir, dt) {
-		if (!unit.alive) return
+		if (replica || !unit.alive) return
 		if (dashCd > 0) dashCd -= dt
 
 		const dashing = dashT > 0
@@ -262,7 +302,7 @@ export function createPlayer(
 	}
 
 	function sync() {
-		if (!unit.alive) return
+		if (replica || !unit.alive) return
 		const t = body.translation()
 		mesh.position.set(t.x, t.y, t.z)
 	}
@@ -364,15 +404,15 @@ export function createPlayer(
 		unit.alive = false
 		visual.visible = false
 		if (unit.heldArrow) {
-			unit.heldArrow.ground()
+			if (!replica) unit.heldArrow.ground()
 			unit.heldArrow = null
-		} // drop the arrow
-		world.removeRigidBody(body) // removes its collider too
+		} // Replica projectile state comes only from the same authoritative snapshot.
+		if (body) world.removeRigidBody(body) // removes its collider too
 	}
 
 	// Teleport a live body and mesh while clearing velocity, used for godmode rescues.
 	function place(x, y, z) {
-		body.setTranslation({ x, y, z }, true)
+		body?.setTranslation({ x, y, z }, true)
 		vx = 0
 		vz = 0
 		vy = 0
@@ -386,10 +426,30 @@ export function createPlayer(
 		stepDistance = 0
 	}
 
-	// Free all owned world and scene resources, accounting for eliminated units that already shed their body.
+	// Trusted only after replica.js has validated the complete packet. Transforms
+	// are interpolated separately; newest gameplay flags never run a guest action.
+	function applyReplicaState(state) {
+		if (!replica) throw new Error('Cannot apply replica state to a simulated player')
+		vx = state.velocity.x
+		vy = state.velocity.y
+		vz = state.velocity.z
+		grounded = state.grounded
+		dashT = state.dashTime
+		dashCd = state.dashCooldown
+		dashDir.copy(state.dashDirection)
+		unit.windup = state.windup
+		unit.weapon = state.weapon
+		if (!state.alive) eliminate()
+	}
+
+	// Free everything this unit put into the world + scene. Like Godot's
+	// queue_free(): the Round calls it on every unit to reset without a reload.
+	// A live unit still has its body/collider; an eliminated one already shed them.
 	function dispose() {
-		if (unit.alive) world.removeRigidBody(body)
-		world.removeCharacterController(controller)
+		if (disposed) return
+		disposed = true
+		if (unit.alive && body) world.removeRigidBody(body)
+		if (controller) world.removeCharacterController(controller)
 		scene.remove(mesh)
 		visual.removeFromParent() // death presentation may have attached it to the scene
 		visual.geometry.dispose()
