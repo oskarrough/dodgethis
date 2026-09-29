@@ -21,7 +21,7 @@ z −13 └──────────────── flank ────�
 ```
 
 - **Bounds:** 104 × 26 m. Walkable is the outer rectangle (|x| ≤ 52, |z| ≤ 13) minus the base walls (|x| > 28 and |z| > 8) and four hedges (12 ≤ |x| ≤ 24, 6 ≤ |z| ≤ 8). That leaves a lane 12 m wide, and a flank 5 m wide on each side, whose centre lines are 21 m apart so a flank fight stays near the lane camera's edge. Each flank opens into the plaza and into the lane just short of each fort; the fort-to-base throat is 16 m wide. The base is |x| ≥ 44: heroes spawn at ±48, and standing in your own base heals 10% of max HP per second.
-- **Obstacles:** circles plus axis-aligned boxes, answered by one mode-local module that everything shares: `walkable`, `clampWalkable`, the A* grid, path shortcuts (today's `segmentClear` tests circles only) and skillshot sweeps (today's `stepShot` sees enemies only). Hedges and pillars block movement and every skillshot. Hedges stand 1.2 m tall, so they never hide a unit from the camera. Pillars (r 1.1): four in the plaza at (±4.5, ±4), and one in front of each tower at (±13, ±3).
+- **Obstacles:** circles plus axis-aligned boxes, answered by one mode-local module that everything shares: `walkable`, `clampWalkable`, the rectangular A* grid, path shortcuts, skillshot sweeps and basic-attack sight lines. `obstacles.js` supplies the shapes and queries, including the movement colliders. The conservative grid is built once per mode start (rebuilt on live path-tune changes); inflated free cells and no corner cutting keep its edges safe without per-neighbour sweeps. Shortcuts keep body radius plus clearance, except the first escape leg from a tight start. Line shots stop at the first obstacle and emit a `blocked` fact with a distinct cue and ink burst. Homing basics require a clear sight line before windup but ignore cover after release, like tower orbs; they cannot be dodged behind a pillar. Hedges and pillars block movement and every skillshot. Hedges stand 1.2 m tall, so they never hide a unit from the camera. Pillars (r 1.1): four in the plaza at (±4.5, ±4), and one in front of each tower at (±13, ±3).
 
 ## Structures
 
@@ -62,16 +62,16 @@ Win by destroying the enemy core. There's no hard cap. XP comes to about 960/min
 
 The comic-sticker style: flat role fills, ink outlines, cream highlights, halftone. Everything is stylised primitives from `makeStyleMaterial`, and there are no assets.
 
-- **Ground:** the lane is a cream-printed road with a dashed ink centreline. The flanks are `courtShade` with halftone dots, so off-road reads as off-road. Each half of the road carries a faint team tint. The plaza is a printed dodgeball centre circle, a callback that costs nothing.
+- **Ground:** the lane is a cream-printed road with a dashed ink centreline. The flanks are `courtShade` with halftone dots, so off-road reads as off-road. Each half of the road carries opaque team-coloured kerb marks; transparent tints cannot survive the palette style pass. The plaza is a printed dodgeball centre circle, a callback that costs nothing.
 - **Hedges** are rounded `courtShade` boxes with scalloped tops; **pillars** are the M1 cylinders. New palette roles: at most two in `core/style.js`, `road` and `hedge`. Off-screen enemy heroes get a pip at the screen edge, shipped with the flanks.
 - **Structures:** the tower is a squat drum, a tapered shaft and a team-coloured cone flag, 4 m tall. The fort is an octagonal drum with crenels and a team banner, 5 m. The core is a faceted team crystal spinning above a pedestal, 7 m tall and visible from mid; it cracks (darker facets) at 66% and 33% HP. A silenced structure wears a cream gag of crossed tape.
 - **Minions** are the mannequin at 0.6 scale in team colour, told apart by one prop each: a shield disc (melee), a stick (ranged), a cone hat (wizard). The brute is at 1.0 scale with a block helmet. **The Ball** is a cream sphere 1.4 m across with ink seams and a long printed shadow, tinted by its carrier's team.
 
 ## Build order
 
-M2 comes first: hero HP, death, respawn and basic attacks, which the sim doesn't have yet (M1 dummies die by hit count). Then one thread each:
+M2 is built: hero HP, death, respawn and basic attacks. Then one thread each:
 
-1. **Map and collision:** the layout, the shared obstacle module (movement, paths, shots), the look of the ground, hedges and pillars, and edge pips. Test: shots stop at hedges, and paths never cut through a box.
+1. **Map and collision (built):** the layout, shared obstacle module (movement, paths, shortcuts, shots and basics), printed ground, hedges and pillars, and off-screen enemy hero pips. Heroes spawn at ±48, spaced by team and centred on z 0; the two practice dummies remain until the next slice. Map geometry applies on mode restart. Tests: shots stop at hedges, and paths never cut through a box. Towers, waves and base healing are not in this slice.
 2. **One tower and waves:** a tower per side with targeting, tethers and call-for-help; waves, aggro and leash; soak XP. Test: waves meet at mid by ~0:28, and the tower switches to a diving hero.
 3. **The full lane:** the fort and core chain, levels, killer-team globes, base healing, the win condition, and the HUD clock with levels, played against a scripted hero that walks the lane and casts Q. Test: the invulnerability chain, the globe team rule, and a core kill ending the match.
 4. **The Ball:** the schedule, carry, throw, silence, state and facts. It's testable solo by throwing at a tower.

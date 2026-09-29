@@ -71,6 +71,15 @@ export function createFeedback({ juice, sfx, camera, input, view, skillsView, hu
 				cue(fact.slot === 'primary' ? 'attack' : 'loose', fact, mine ? 1 : 0.45)
 				return
 			}
+			case 'blocked':
+				view.unbolt(fact.projectile) // Prevent the generic expiry fizzle from also firing.
+				juice.burst(
+					fact.point,
+					{ x: -fact.direction.x, y: 0, z: -fact.direction.z },
+					tune.juice.blocked,
+				)
+				cue('blocked', fact)
+				return
 			case 'impact':
 				juice.burst(
 					fact.point,

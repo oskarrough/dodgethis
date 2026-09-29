@@ -106,11 +106,11 @@ test('Vault commits to its heading, resumes a queued order, and cannot pass a so
 	step(15)
 	expect(h().body.position.x).toBeLessThan(1.1)
 
-	h().body.place(19, 1.05, 12)
+	h().body.place(tune.map.halfX - 1, 1.05, 0)
 	h().cd[1] = 0
-	press('slot2', { x: 99, z: 12 })
+	press('slot2', { x: 99, z: 0 })
 	step(15)
-	expect(h().body.position.x).toBeLessThanOrEqual(20 - tune.hero.radius + 0.001)
+	expect(h().body.position.x).toBeLessThanOrEqual(tune.map.halfX - tune.hero.radius + 0.001)
 })
 
 test('held pad slots only show aim: no cast until the device supplies its release edge; ranges follow the slot', () => {

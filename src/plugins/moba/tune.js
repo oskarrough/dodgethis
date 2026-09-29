@@ -1,6 +1,49 @@
 // --- Tunables ----------------------------------------------------------------
 // Moba's live values (docs/moba-plan.md, "Feel numbers"), shared by the debug GUI, the sim and DOM-free tests. Metres and seconds.
 export const tune = {
+	// Static layout and dressing: applies on mode restart.
+	map: {
+		halfX: 52,
+		halfZ: 13,
+		thickness: 1,
+		groundGrid: 1,
+		baseWallX: 28,
+		throat: 8,
+		spawnX: 48,
+		spawnSpacing: 1.5,
+		hedgeInnerX: 12,
+		hedgeOuterX: 24,
+		hedgeInnerZ: 6,
+		hedgeOuterZ: 8,
+		hedgeHeight: 1.2,
+		scallopRadius: 0.5,
+		scallopSpacing: 0.8,
+		plazaRadius: 9,
+		pillarX: 4.5,
+		pillarZ: 4,
+		guardX: 13,
+		guardZ: 3,
+		pillarRadius: 1.1,
+		pillarHeight: 2.4,
+		pillarSegments: 24,
+		capScale: 0.8,
+		capHeight: 0.04,
+		printLayers: { road: 0.015, dots: 0.03, plaza: 0.045, marks: 0.06, seams: 0.075 },
+		lineWidth: 0.06,
+		dashLength: 1,
+		dashSpacing: 2,
+		dotSpacing: 1,
+		dotRadius: 0.045,
+		printSegments: 32,
+		wallHeight: 2.4,
+		boundaryThickness: 0.5,
+		dummyPosts: [
+			{ x: -3, z: -7 },
+			{ x: 5, z: -10 },
+		],
+	},
+	collision: { epsilon: 1e-6, separation: 1e-3, clampPasses: 8 },
+	pips: { inset: 0.92, size: 12, height: 1.1 },
 	// The hero's movement profile (core/body.js). Obedience first: full speed in ~25 ms, a dead stop, no air.
 	hero: {
 		hp: 1400,
@@ -26,6 +69,8 @@ export const tune = {
 		stallProgress: 0.3, // repath when progress stays under this fraction of top speed…
 		stallTime: 0.25, // …for this long
 		grid: 0.5, // A* cell size
+		replanDistance: 0.75, // target movement that invalidates an attack path
+		rejoinDistance: 0.3, // a duplicate click replans if the hero was displaced this far from its path
 		clearance: 0.1, // extra room kept from pillars beyond the body's radius
 		attackRange: 5.5, // an attack order walks until the target is this close
 	},
@@ -90,6 +135,7 @@ export const tune = {
 		respawn: 2,
 	},
 	sounds: {
+		blocked: { freq: 135, slideTo: 55, type: 'square', dur: 0.09, gain: 0.16 },
 		attack: { freq: 620, slideTo: 280, type: 'triangle', dur: 0.08, gain: 0.12 },
 		attackHit: { freq: 310, slideTo: 120, type: 'triangle', dur: 0.09, gain: 0.18 },
 		loose: { freq: 760, slideTo: 190, type: 'sawtooth', dur: 0.14, gain: 0.14 },
@@ -98,6 +144,7 @@ export const tune = {
 		vault: { freq: 180, slideTo: 720, type: 'triangle', dur: 0.12, gain: 0.12 },
 	},
 	juice: {
+		blocked: { count: 7, speed: 0.9, life: 0.22, size: 0.08 },
 		attackSquash: 0.1,
 		castSquash: -0.08,
 		vaultSquash: 0.16,

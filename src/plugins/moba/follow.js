@@ -1,5 +1,5 @@
 import { tune } from './tune.js'
-import { FLOOR } from './map.js'
+import { FLOOR, clampMap } from './obstacles.js'
 
 // Follow framing: a critically damped spring on the rendered hero. Only pad aim gets look-ahead.
 // Runs per rendered frame, so it is as smooth as the interpolation it reads.
@@ -24,7 +24,7 @@ export function createFollow(t = tune.follow) {
 				lz *= t.lookCap / l
 			}
 		}
-		return { x: hero.x + lx, z: hero.z + lz }
+		return clampMap({ x: hero.x + lx, z: hero.z + lz })
 	}
 
 	// `aim` is a held pad aim, never the mouse. Pan is world-space; Space locks back onto the hero.
@@ -41,8 +41,8 @@ export function createFollow(t = tune.follow) {
 		if (panning) {
 			free = true
 			const length = Math.max(1, Math.hypot(pan.x, pan.z))
-			at.x = Math.max(-FLOOR.half, Math.min(FLOOR.half, at.x + (pan.x / length) * t.pan * dt))
-			at.z = Math.max(-FLOOR.half, Math.min(FLOOR.half, at.z + (pan.z / length) * t.pan * dt))
+			at.x = Math.max(-FLOOR.halfX, Math.min(FLOOR.halfX, at.x + (pan.x / length) * t.pan * dt))
+			at.z = Math.max(-FLOOR.halfZ, Math.min(FLOOR.halfZ, at.z + (pan.z / length) * t.pan * dt))
 			vel.x = vel.z = 0
 		} else if (!free || centred) {
 			// Exact critically damped step: ~90% of a step change is covered in `response` seconds.
@@ -55,6 +55,7 @@ export function createFollow(t = tune.follow) {
 				at[k] = g[k] + (d + tmp) * decay
 			}
 		}
+		Object.assign(at, clampMap(at))
 		target.x = at.x
 		target.z = at.z
 		eye.x = at.x

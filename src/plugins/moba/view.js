@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { makeStyleMaterial } from '../../core/stylepass.js'
 import { tune } from './tune.js'
+import { projectMap } from './obstacles.js'
 
 // Moba's own scene dressing: click pings, the hover ring, the held-aim indicator and the skillshot meshes. Local presentation only.
 export function createView(scene, smooth) {
@@ -168,11 +169,15 @@ export function createView(scene, smooth) {
 			const dx = aim.x - hero.x
 			const dz = aim.z - hero.z
 			const yaw = Math.atan2(dx, dz) + Math.PI
-			const length = tune.loose.range
+			const end = projectMap(hero, {
+				x: hero.x - Math.sin(yaw) * tune.loose.range,
+				z: hero.z - Math.cos(yaw) * tune.loose.range,
+			})
+			const length = Math.hypot(end.x - hero.x, end.z - hero.z)
 			line.position.set(hero.x, 0.016, hero.z)
 			line.rotation.y = yaw
 			line.scale.set(tune.loose.radius * 2, 1, length)
-			tip.position.set(hero.x - Math.sin(yaw) * length, 0.017, hero.z - Math.cos(yaw) * length)
+			tip.position.set(end.x, 0.017, end.z)
 			tip.rotation.y = yaw
 		}
 

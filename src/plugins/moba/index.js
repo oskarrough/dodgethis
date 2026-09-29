@@ -10,6 +10,7 @@ import { createCursor } from './cursor.js'
 import { createView } from './view.js'
 import { createSkillsView } from './skills-view.js'
 import { createHud } from './hud.js'
+import { createPips } from './pips.js'
 import { createSounds } from './sounds.js'
 import { createFeedback } from './feedback.js'
 
@@ -17,6 +18,7 @@ const FACTS = [
 	'order',
 	'cast',
 	'projectile',
+	'blocked',
 	'hit',
 	'nearMiss',
 	'death',
@@ -25,7 +27,7 @@ const FACTS = [
 	'impact',
 ]
 
-// Moba's kit slice: one hero, pillars and two dummies, one of which casts back.
+// Lane map slice: one hero and two practice dummies; structures and waves follow.
 // Boots with ?mode=moba. Everything lives as long as a run of the mode.
 export default function moba(app) {
 	const { scene, world, RAPIER, input, audio } = app
@@ -42,11 +44,12 @@ export default function moba(app) {
 			const unbuild = buildMap(scene, world, RAPIER)
 			const juice = createJuice(scene)
 			const shadows = createShadows(scene, {
-				onGround: (x, z) => Math.abs(x) <= FLOOR.half && Math.abs(z) <= FLOOR.half,
+				onGround: (x, z) => Math.abs(x) <= FLOOR.halfX && Math.abs(z) <= FLOOR.halfZ,
 			})
 			const view = createView(scene, run.smooth)
 			const skillsView = createSkillsView(scene)
 			const hud = createHud()
+			const pips = createPips()
 			const follow = createFollow()
 			const cameraControls = createCameraControls(window, run.signal, follow)
 			const cursor = createCursor(app.renderer.domElement)
@@ -151,6 +154,7 @@ export default function moba(app) {
 						: null,
 				})
 				app.camera.update(frozen ? 0 : dt)
+				pips.update(app.camera.view, [...sim.heroes, ...sim.dummies], hero.team)
 			})
 
 			function togglePause() {
@@ -198,9 +202,10 @@ export default function moba(app) {
 				f.add(t, 'pick', 0, 2, 0.05).name('attack pick (m)')
 				f.add(t, 'carrot', 0.1, 3, 0.05).name('carrot (m)')
 				f.add(t, 'arrival', 0.01, 0.5, 0.01).name('arrival (m)')
+				f.add(t, 'rejoinDistance', 0.05, 1, 0.05).name('rejoin after displacement (m)')
 				f.add(t, 'stallProgress', 0, 1, 0.05).name('repath below ×')
 				f.add(t, 'stallTime', 0.05, 1, 0.05).name('repath after (s)')
-				f.add(t, 'clearance', 0, 0.5, 0.01).name('pillar clearance')
+				f.add(t, 'clearance', 0, 0.5, 0.01).name('obstacle clearance')
 				f.add(t, 'attackRange', 1, 10, 0.25).name('attack range')
 			})
 			run.debug.tune('loose', tune.loose, (f, t) => {
@@ -250,7 +255,7 @@ export default function moba(app) {
 				f.add(t, 'flipMax', 0.1, 4, 0.05).name('flip max (s)')
 				f.add(t, 'span', 0.5, 10, 0.5).name('span (m)')
 				f.add(t, 'hp', 200, 3000, 100).name('HP on respawn')
-				f.add(t, 'tell', app.clock.step, 1, app.clock.step).name('Q warning (s)')
+				f.add(t, 'tell', 0.3, 1, app.clock.step).name('Q warning (s)')
 				f.add(t, 'castEvery', 1, 10, 0.25).name('cast interval')
 				f.add(t, 'respawn', 0.2, 10, 0.1).name('respawn (s)')
 			})
@@ -285,6 +290,7 @@ export default function moba(app) {
 				view.dispose()
 				skillsView.dispose()
 				hud.dispose()
+				pips.dispose()
 				juice.dispose()
 				shadows.dispose()
 				sim.dispose()

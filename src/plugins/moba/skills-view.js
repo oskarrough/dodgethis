@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import { makeStyleMaterial } from '../../core/stylepass.js'
 import { STEP } from '../../core/app.js'
 import { tune } from './tune.js'
+import { clampMap, projectMap } from './obstacles.js'
 
 // E's held circle and filling impact tell; W's held arrow and brief departure streak.
 export function createSkillsView(scene) {
@@ -63,11 +64,16 @@ export function createSkillsView(scene) {
 			const dz = aim.z - hero.z
 			const distance = Math.hypot(dx, dz)
 			const reach = Math.min(1, tune.rain.range / (distance || 1))
-			heldCircle.position.set(hero.x + dx * reach, 0.022, hero.z + dz * reach)
+			const at = clampMap({ x: hero.x + dx * reach, z: hero.z + dz * reach })
+			heldCircle.position.set(at.x, 0.022, at.z)
 			heldCircle.scale.setScalar(tune.rain.radius)
 			heldArrow.position.set(hero.x, 0.023, hero.z)
 			heldArrow.rotation.y = Math.atan2(dx, dz) + Math.PI
-			heldArrow.scale.set(1, 1, tune.vault.range)
+			const end = projectMap(hero, {
+				x: hero.x + (dx / (distance || 1)) * tune.vault.range,
+				z: hero.z + (dz / (distance || 1)) * tune.vault.range,
+			})
+			heldArrow.scale.set(1, 1, Math.hypot(end.x - hero.x, end.z - hero.z))
 		}
 		const live = new Set(zones.map((z) => z.id))
 		for (const [id, tell] of tells) {

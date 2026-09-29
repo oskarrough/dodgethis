@@ -1,21 +1,5 @@
-// Skillshots are swept circles, not Rapier bodies (docs/moba-plan.md, "Skillshots"): each step tests the whole segment it covered.
-
-// The earliest fraction t ∈ [0, 1] of a→b at which a circle moving along it touches a point `R` away, or null. Already touching is 0.
-export function sweepHit(ax, az, bx, bz, cx, cz, R) {
-	const dx = bx - ax
-	const dz = bz - az
-	const fx = ax - cx
-	const fz = az - cz
-	const c = fx * fx + fz * fz - R * R
-	if (c <= 0) return 0
-	const a = dx * dx + dz * dz
-	if (a === 0) return null
-	const b = 2 * (fx * dx + fz * dz)
-	const disc = b * b - 4 * a * c
-	if (disc < 0) return null
-	const t = (-b - Math.sqrt(disc)) / (2 * a)
-	return t >= 0 && t <= 1 ? t : null
-}
+import { sweepHit, sweepObstacles, mapExit } from './obstacles.js'
+export { sweepHit } from './obstacles.js'
 
 // Closest approach of a→b to a point: the fraction along it and the distance.
 export function closest(ax, az, bx, bz, cx, cz) {
@@ -35,7 +19,13 @@ export function stepShot(shot, dt, targets, nearMiss) {
 	const bx = ax + shot.dx * step
 	const bz = az + shot.dz * step
 	let hit = null
-	let at = Infinity
+	const from = { x: ax, z: az },
+		to = { x: bx, z: bz }
+	// Homing attacks check sight before windup; once released, cover cannot dodge them.
+	const obstacle = shot.target ? null : sweepObstacles(from, to, shot.radius)
+	const edge = mapExit(from, to, shot.radius)
+	const blocked = obstacle === null ? edge : edge === null ? obstacle : Math.min(obstacle, edge)
+	let at = blocked ?? Infinity
 	for (const target of targets) {
 		const t = sweepHit(ax, az, bx, bz, target.x, target.z, shot.radius + target.radius)
 		if (t !== null && t < at) {
@@ -48,6 +38,18 @@ export function stepShot(shot, dt, targets, nearMiss) {
 		shot.z = az + (bz - az) * at
 		shot.travelled += step * at
 		return { hit, point: { x: shot.x, z: shot.z }, nearMisses: [] }
+	}
+	if (blocked !== null) {
+		shot.x = ax + (bx - ax) * blocked
+		shot.z = az + (bz - az) * blocked
+		shot.travelled += step * blocked
+		return {
+			hit: null,
+			blocked: true,
+			expired: true,
+			point: { x: shot.x, z: shot.z },
+			nearMisses: [],
+		}
 	}
 	shot.x = bx
 	shot.z = bz

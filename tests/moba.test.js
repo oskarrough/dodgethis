@@ -9,6 +9,7 @@ import { createIntents, neutralFrame } from '../src/core/intents.js'
 import { createSim } from '../src/plugins/moba/sim.js'
 import { tune } from '../src/plugins/moba/tune.js'
 import { PILLARS, clampWalkable, walkable } from '../src/plugins/moba/map.js'
+import { buildColliders } from '../src/plugins/moba/obstacles.js'
 import { planPath, segmentClear } from '../src/plugins/moba/path.js'
 import { closest, stepShot, sweepHit } from '../src/plugins/moba/skillshot.js'
 
@@ -109,7 +110,7 @@ test('orders path around pillars and clicks off the walkable area clamp to it', 
 	expect(walkable(...Object.values(clampWalkable({ x: pillar.x, z: pillar.z }, 0.45)), 0.45)).toBe(
 		true,
 	)
-	expect(clampWalkable({ x: 99, z: -99 }, 0.45)).toEqual({ x: 19.55, z: -19.55 })
+	expect(clampWalkable({ x: 99, z: -99 }, 0.45)).toEqual({ x: 51.549, z: -7.549 })
 })
 
 test('a full-speed reversal takes at most 8 steps', () => {
@@ -325,7 +326,7 @@ test('at 144 Hz an ordered hero and the follow camera advance evenly', () => {
 	const app = createApp()
 	const w = new RAPIER.World({ x: 0, y: -9.81, z: 0 })
 	w.timestep = STEP
-	w.createCollider(RAPIER.ColliderDesc.cuboid(20, 0.5, 20).setTranslation(0, -0.5, 0))
+	buildColliders(w, RAPIER)
 	const own = createSim({
 		scene: new THREE.Scene(),
 		world: w,
@@ -336,7 +337,11 @@ test('at 144 Hz an ordered hero and the follow camera advance evenly', () => {
 	})
 	app.system('simulate', (dt) => own.step(dt))
 	const h = own.heroes[0]
-	h.body.place(12, h.body.position.y, 8)
+	for (const d of own.dummies) {
+		d.sparring = false
+		d.body.place(-20, d.body.position.y, 12)
+	}
+	h.body.place(0, h.body.position.y, 8)
 	const follow = createFollow()
 	const rendered = []
 	const framed = []
@@ -344,7 +349,7 @@ test('at 144 Hz an ordered hero and the follow camera advance evenly', () => {
 		rendered.push(h.body.mesh.position.z)
 		framed.push(follow.frame(dt, h.body.mesh.position, null).target.z)
 	})
-	app.intents.feed(ID, { ...neutralFrame(), order: { x: 12, z: -16 } })
+	app.intents.feed(ID, { ...neutralFrame(), order: { x: 0, z: -12 } })
 	for (let i = 0; i < 144 * 3; i++) app.frame(1 / 144)
 	const even = (zs, from, to) => {
 		const steps = zs.slice(from + 1, to).map((z, i) => z - zs[from + i])
@@ -352,7 +357,7 @@ test('at 144 Hz an ordered hero and the follow camera advance evenly', () => {
 		expect(mean).toBeCloseTo(-tune.hero.speed / 144, 3)
 		for (const d of steps) expect(Math.abs(d - mean)).toBeLessThan(Math.abs(mean) * 0.05)
 	}
-	even(rendered, 30, 144 * 3 - 1) // after ~0.2 s of acceleration, before arrival
+	even(rendered, 30, 144 * 3 - 1) // after acceleration, before arrival
 	even(framed, 144, 144 * 3 - 1) // once the spring has caught up
 	own.dispose()
 	w.free()

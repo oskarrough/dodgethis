@@ -1,110 +1,175 @@
 import * as THREE from 'three'
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js'
 import { makeStyleMaterial } from '../../core/stylepass.js'
+import { tune } from './tune.js'
+import { FLOOR, PILLARS, BOXES, buildColliders } from './obstacles.js'
+export { FLOOR, PILLARS, SPAWN, walkable, clampWalkable } from './obstacles.js'
 
-// The feel slice's floor (docs/moba-plan.md, M1): 40 × 40 m, flat, with three round pillars. Static circles are the whole collision layout.
-export const FLOOR = { id: 'feel', half: 20, thickness: 1 }
-export const PILLARS = Object.freeze([
-	{ x: -5, z: -4, r: 1.2 },
-	{ x: 4.5, z: -1.5, r: 0.9 },
-	{ x: 0, z: -12, r: 1.5 },
-])
-export const SPAWN = { x: 0, z: 4 }
-
-// Is (x, z) a place a body of `radius` may stand?
-export function walkable(x, z, radius, clearance = 0) {
-	const edge = FLOOR.half - radius
-	if (Math.abs(x) > edge || Math.abs(z) > edge) return false
-	return PILLARS.every((p) => Math.hypot(x - p.x, z - p.z) >= p.r + radius + clearance)
-}
-
-// The nearest point a body of `radius` may stand on: pushed out of pillars, then clamped to the floor.
-export function clampWalkable(point, radius, clearance = 0) {
-	const edge = FLOOR.half - radius - clearance
-	let x = Math.max(-edge, Math.min(edge, point.x))
-	let z = Math.max(-edge, Math.min(edge, point.z))
-	for (let pass = 0; pass < 3; pass++) {
-		let moved = false
-		for (const p of PILLARS) {
-			const need = p.r + radius + clearance + 1e-3
-			const dx = x - p.x
-			const dz = z - p.z
-			const d = Math.hypot(dx, dz)
-			if (d >= need) continue
-			const nx = d > 1e-6 ? dx / d : 0
-			const nz = d > 1e-6 ? dz / d : 1
-			x = Math.max(-edge, Math.min(edge, p.x + nx * need))
-			z = Math.max(-edge, Math.min(edge, p.z + nz * need))
-			moved = true
-		}
-		if (!moved) break
-	}
-	return { x, z }
-}
-
-// Floor and pillars: meshes plus fixed colliders. Returns the teardown.
+// Printed road, shaded flanks and low cover; all collision geometry comes from obstacles.js.
 export function buildMap(scene, world, RAPIER) {
+	const m = tune.map
 	const group = new THREE.Group()
 	group.name = 'moba-map'
-	const size = FLOOR.half * 2
-	const floor = new THREE.Mesh(
-		new THREE.BoxGeometry(size, FLOOR.thickness, size),
-		makeStyleMaterial('court'),
-	)
-	floor.position.y = -FLOOR.thickness / 2
-	group.add(floor)
-	// A faint grid every 4 m, so speed reads against the floor.
-	const lines = []
-	for (let i = -FLOOR.half + 4; i < FLOOR.half; i += 4) {
-		lines.push(new THREE.BoxGeometry(size, 0.02, 0.05).translate(0, 0.011, i))
-		lines.push(new THREE.BoxGeometry(0.05, 0.02, size).translate(i, 0.011, 0))
+	const owned = []
+	const material = (role, options) => {
+		const mat = makeStyleMaterial(role, options)
+		owned.push(mat)
+		return mat
 	}
-	const merged = new THREE.Mesh(
-		mergeGeometries(lines),
-		makeStyleMaterial('courtShade', { flat: true }),
+	const shade = material('courtShade')
+	const ink = material('ink', { flat: true })
+	const cream = material('cream', { flat: true })
+	const scenery = material('scenery')
+	const add = (geometry, mat, x, y, z) => {
+		owned.push(geometry)
+		const mesh = new THREE.Mesh(geometry, mat)
+		mesh.position.set(x, y, z)
+		group.add(mesh)
+		return mesh
+	}
+	const print = (geometries, mat, name) => {
+		if (!geometries.length) return
+		add(mergeGeometries(geometries), mat, 0, 0, 0).name = name
+		for (const g of geometries) g.dispose()
+	}
+	add(
+		new THREE.BoxGeometry(FLOOR.halfX * 2, FLOOR.thickness, FLOOR.halfZ * 2),
+		shade,
+		0,
+		-FLOOR.thickness / 2,
+		0,
 	)
-	group.add(merged)
-	const body = world.createRigidBody(RAPIER.RigidBodyDesc.fixed())
-	const colliders = [
-		world.createCollider(
-			RAPIER.ColliderDesc.cuboid(FLOOR.half, FLOOR.thickness / 2, FLOOR.half).setTranslation(
-				0,
-				-FLOOR.thickness / 2,
-				0,
-			),
-			body,
+	add(
+		new THREE.PlaneGeometry(FLOOR.halfX * 2, m.hedgeInnerZ * 2).rotateX(-Math.PI / 2),
+		cream,
+		0,
+		m.printLayers.road,
+		0,
+	)
+	for (const side of [-1, 1]) {
+		// The base throat is wider than the central road.
+		add(
+			new THREE.PlaneGeometry(FLOOR.halfX - m.baseWallX, m.throat * 2).rotateX(-Math.PI / 2),
+			cream,
+			(side * (FLOOR.halfX + m.baseWallX)) / 2,
+			m.printLayers.road,
+			0,
+		)
+		const team = material(side < 0 ? 'teamA' : 'teamB', { flat: true })
+		const kerbs = []
+		for (let x = m.dashSpacing; x < FLOOR.halfX; x += m.dashSpacing)
+			for (const flank of [-1, 1])
+				kerbs.push(
+					new THREE.PlaneGeometry(m.dashLength, m.lineWidth * 2)
+						.rotateX(-Math.PI / 2)
+						.translate(side * x, m.printLayers.marks, flank * (m.hedgeInnerZ - m.lineWidth)),
+				)
+		print(kerbs, team, `moba-kerbs-${side}`)
+	}
+	const dashes = []
+	for (let x = -FLOOR.halfX + m.dashSpacing; x < FLOOR.halfX; x += m.dashSpacing)
+		dashes.push(
+			new THREE.PlaneGeometry(m.dashLength, m.lineWidth)
+				.rotateX(-Math.PI / 2)
+				.translate(x, m.printLayers.marks, 0),
+		)
+	print(dashes, ink, 'moba-centreline')
+	const dots = []
+	for (let x = -m.baseWallX; x <= m.baseWallX; x += m.dotSpacing)
+		for (const side of [-1, 1])
+			for (let z = m.hedgeOuterZ + m.dotSpacing; z < FLOOR.halfZ; z += m.dotSpacing)
+				dots.push(
+					new THREE.CircleGeometry(m.dotRadius, m.printSegments)
+						.rotateX(-Math.PI / 2)
+						.translate(x, m.printLayers.dots, side * z),
+				)
+	print(dots, ink, 'moba-halftone')
+	add(
+		new THREE.CircleGeometry(m.plazaRadius, m.printSegments).rotateX(-Math.PI / 2),
+		cream,
+		0,
+		m.printLayers.plaza,
+		0,
+	)
+	add(
+		new THREE.RingGeometry(m.plazaRadius - m.lineWidth, m.plazaRadius, m.printSegments).rotateX(
+			-Math.PI / 2,
 		),
-	]
-	for (const g of lines) g.dispose()
-	const meshes = [floor, merged]
-	for (const p of PILLARS) {
-		const h = 2.4
-		const pillar = new THREE.Mesh(
-			new THREE.CylinderGeometry(p.r, p.r, h, 24),
-			makeStyleMaterial('scenery'),
+		ink,
+		0,
+		m.printLayers.seams,
+		0,
+	)
+	// Printed dodgeball centre: a ring and crossing seams, not an objective yet.
+	add(
+		new THREE.RingGeometry(
+			m.plazaRadius / 3 - m.lineWidth,
+			m.plazaRadius / 3,
+			m.printSegments,
+		).rotateX(-Math.PI / 2),
+		ink,
+		0,
+		m.printLayers.seams,
+		0,
+	)
+	for (const yaw of [0, Math.PI / 2]) {
+		const seam = add(
+			new THREE.PlaneGeometry((m.plazaRadius * 2) / 3, m.lineWidth).rotateX(-Math.PI / 2),
+			ink,
+			0,
+			m.printLayers.seams,
+			0,
 		)
-		pillar.position.set(p.x, h / 2, p.z)
-		const cap = new THREE.Mesh(
-			new THREE.CylinderGeometry(p.r * 0.8, p.r * 0.8, 0.04, 24),
-			makeStyleMaterial('cream', { flat: true }),
-		)
-		cap.position.set(p.x, h + 0.02, p.z)
-		group.add(pillar, cap)
-		meshes.push(pillar, cap)
-		colliders.push(
-			world.createCollider(
-				RAPIER.ColliderDesc.cylinder(h / 2, p.r).setTranslation(p.x, h / 2, p.z),
-				body,
+		seam.rotation.y = yaw
+	}
+	for (const b of BOXES) {
+		const h = b.kind === 'hedge' ? m.hedgeHeight : m.wallHeight
+		const trunk = b.kind === 'hedge' ? h - m.scallopRadius : h
+		add(
+			new RoundedBoxGeometry(
+				b.halfX * 2,
+				trunk,
+				b.halfZ * 2,
+				1,
+				Math.min(m.scallopRadius, trunk / 2),
 			),
+			shade,
+			b.x,
+			trunk / 2,
+			b.z,
+		)
+		if (b.kind !== 'hedge') continue
+		for (let x = b.x - b.halfX + m.scallopRadius; x < b.x + b.halfX; x += m.scallopSpacing)
+			add(
+				new THREE.SphereGeometry(m.scallopRadius, m.pillarSegments, m.pillarSegments / 2),
+				shade,
+				x,
+				h - m.scallopRadius,
+				b.z,
+			)
+	}
+	for (const p of PILLARS) {
+		add(
+			new THREE.CylinderGeometry(p.r, p.r, m.pillarHeight, m.pillarSegments),
+			scenery,
+			p.x,
+			m.pillarHeight / 2,
+			p.z,
+		)
+		add(
+			new THREE.CylinderGeometry(p.r * m.capScale, p.r * m.capScale, m.capHeight, m.pillarSegments),
+			cream,
+			p.x,
+			m.pillarHeight + m.capHeight / 2,
+			p.z,
 		)
 	}
+	const uncollide = buildColliders(world, RAPIER)
 	scene.add(group)
 	return () => {
 		scene.remove(group)
-		for (const m of meshes) {
-			m.geometry.dispose()
-			m.material.dispose()
-		}
-		world.removeRigidBody(body)
+		for (const resource of owned) resource.dispose()
+		uncollide()
 	}
 }

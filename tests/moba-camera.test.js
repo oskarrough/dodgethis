@@ -66,14 +66,14 @@ test('pan speed is tunable and clamps at all floor edges', () => {
 	follow.frame(0, hero, null)
 	expect(follow.frame(0.1, hero, null, { pan: { x: 1, z: 0 } }).target.x).toBe(1)
 	expect(follow.frame(100, hero, null, { pan: { x: 1, z: 1 } }).target).toMatchObject({
-		x: FLOOR.half,
-		z: FLOOR.half,
+		x: FLOOR.halfX,
+		z: FLOOR.halfZ,
 	})
 	expect(follow.frame(100, hero, null, { pan: { x: -1, z: -1 } }).target).toMatchObject({
-		x: -FLOOR.half,
-		z: -FLOOR.half,
+		x: -FLOOR.halfX,
+		z: -FLOOR.halfZ,
 	})
-	expect(follow.frame(1, hero, null).target).toMatchObject({ x: -FLOOR.half, z: -FLOOR.half })
+	expect(follow.frame(1, hero, null).target).toMatchObject({ x: -FLOOR.halfX, z: -FLOOR.halfZ })
 })
 
 test('diagonal pan has the same speed, Space wins over arrows, blur releases keys', () => {

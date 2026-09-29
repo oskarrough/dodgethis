@@ -79,8 +79,10 @@ test('MOBA combat cues have separate synth presets and read tuning live', () => 
 	const sounds = createSounds({ sfx: { step() {} }, blip: (options) => calls.push(options) })
 	const point = { x: 2, z: 3 }
 	for (const name of Object.keys(tune.sounds)) sounds[name](point)
-	expect(calls).toHaveLength(6)
-	expect(new Set(calls.map((c) => `${c.freq}:${c.slideTo}:${c.type}:${c.dur}`)).size).toBe(6)
+	expect(calls).toHaveLength(Object.keys(tune.sounds).length)
+	expect(new Set(calls.map((c) => `${c.freq}:${c.slideTo}:${c.type}:${c.dur}`)).size).toBe(
+		Object.keys(tune.sounds).length,
+	)
 	expect(calls.every((c) => c.point === point)).toBe(true)
 	const old = tune.sounds.attack.freq
 	try {

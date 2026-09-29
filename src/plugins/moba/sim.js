@@ -3,8 +3,8 @@ import { PALETTE } from '../../core/style.js'
 import { STEP } from '../../core/app.js'
 import { SCHEMES } from '../../core/intents.js'
 import { tune, profile } from './tune.js'
-import { SPAWN, FLOOR, clampWalkable } from './map.js'
-import { planPath, pursue } from './path.js'
+import { SPAWN, FLOOR, clampWalkable, clampMap, segmentClear } from './obstacles.js'
+import { createPathPlanner, pursue } from './path.js'
 import { stepShot } from './skillshot.js'
 
 const SLOTS = ['slot1', 'slot2', 'slot3', 'slot4', 'slot5']
@@ -14,10 +14,7 @@ const TAU = Math.PI * 2
 // Yaw ↔ ground direction, matching body.face: yaw = atan2(x, z) + π.
 const yawOf = (x, z) => Math.atan2(x, z) + Math.PI
 const dirOf = (yaw) => ({ x: -Math.sin(yaw), z: -Math.cos(yaw) })
-const DUMMY_POSTS = [
-	{ x: -3, z: -7 },
-	{ x: 5, z: -10 },
-]
+const DUMMY_POSTS = tune.map.dummyPosts
 const ABILITIES = { slot1: 'loose', slot2: 'vault', slot3: 'rain' }
 
 // The feel slice's simulation: heroes driven by intent frames, strafing dummies, swept skillshots. No DOM; presentation reads it and its facts.
@@ -32,6 +29,7 @@ export function createSim({
 	present: emit = () => {},
 	rng = Math.random,
 }) {
+	const planPath = createPathPlanner({ radius: profile.radius, ...tune.orders })
 	let t = 0
 	const present = (fact) => emit({ ...fact, tick: t })
 	let shotIds = 0
@@ -42,18 +40,24 @@ export function createSim({
 			profile,
 			position: [x, 0, z],
 			color: team === 'A' ? PALETTE.teamA : PALETTE.teamB,
-			bounds: (radius) => ({ x: FLOOR.half - radius, z: FLOOR.half - radius }),
+			bounds: (radius) => ({ x: FLOOR.halfX - radius, z: FLOOR.halfZ - radius }),
 			smooth,
 		})
 
 	const heroes = seats.map(({ id, team }, i) => {
-		const body = bodyAt(SPAWN.x + i * 1.5, SPAWN.z, team)
+		const teamSeats = seats.filter((seat) => seat.team === team)
+		const index = seats.slice(0, i).filter((seat) => seat.team === team).length
+		const spawn = {
+			x: team === 'A' ? SPAWN.x : -SPAWN.x,
+			z: SPAWN.z + (index - (teamSeats.length - 1) / 2) * tune.map.spawnSpacing,
+		}
+		const body = bodyAt(spawn.x, spawn.z, team)
 		return {
 			id,
 			team,
 			body,
 			yaw: 0,
-			spawn: { x: SPAWN.x + i * 1.5, z: SPAWN.z },
+			spawn,
 			hp: tune.hero.hp,
 			maxHp: tune.hero.hp,
 			level: tune.hero.level,
@@ -140,12 +144,31 @@ export function createSim({
 		}
 	}
 
+	// Re-clicks still acknowledge input; only the expensive plan is suppressed while the hero stays on it.
+	function offPath(h) {
+		const path = h.order?.path
+		if (!path || path.points.length < 2) return false
+		const p = h.body.position
+		let distance = Infinity
+		for (let i = path.leg; i < path.points.length - 1; i++) {
+			const a = path.points[i],
+				b = path.points[i + 1]
+			const dx = b.x - a.x,
+				dz = b.z - a.z,
+				len2 = dx * dx + dz * dz
+			const u = len2 ? Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.z - a.z) * dz) / len2)) : 0
+			distance = Math.min(distance, Math.hypot(p.x - a.x - dx * u, p.z - a.z - dz * u))
+		}
+		return distance > tune.orders.rejoinDistance
+	}
+
 	function issue(h, point) {
 		const target = pick(h.team, point)
 		const repeat = t - h.lastOrder <= ticks(0.15)
 		h.lastOrder = t
 		if (target) {
-			h.order = { kind: 'attack', target: target.id, goal: null, path: null, replanIn: 0 }
+			if (h.order?.kind !== 'attack' || h.order.target !== target.id || offPath(h))
+				h.order = { kind: 'attack', target: target.id, goal: null, path: null }
 			present({
 				type: 'order',
 				hero: h.id,
@@ -157,7 +180,12 @@ export function createSim({
 			return
 		}
 		const goal = clampWalkable(point, profile.radius, tune.orders.clearance)
-		h.order = { kind: 'move', target: null, goal, path: plan(h, goal) }
+		if (
+			h.order?.kind !== 'move' ||
+			Math.hypot(h.order.goal.x - goal.x, h.order.goal.z - goal.z) >= tune.collision.epsilon ||
+			offPath(h)
+		)
+			h.order = { kind: 'move', target: null, goal, path: plan(h, goal) }
 		present({ type: 'order', hero: h.id, kind: 'move', target: null, point: goal, repeat })
 	}
 
@@ -186,6 +214,7 @@ export function createSim({
 		const top = profile.speed * h.body.speedMul
 		const dist = Math.hypot(goal.x - p.x, goal.z - p.z)
 		if (arrive && dist <= tune.orders.arrival) return null
+		if (h.order.path.points.length < 2) return null
 		const { carrot, remaining } = pursue(h.order.path, p, tune.orders.carrot)
 		const last = remaining <= 1
 		const aim = last ? goal : carrot
@@ -224,7 +253,10 @@ export function createSim({
 			else {
 				const tp = target.body.position
 				const p = body.position
-				if (Math.hypot(tp.x - p.x, tp.z - p.z) <= tune.orders.attackRange) {
+				if (
+					Math.hypot(tp.x - p.x, tp.z - p.z) <= tune.orders.attackRange &&
+					segmentClear(p, tp, tune.attack.radius)
+				) {
 					o.path = null
 					if (t >= h.attackTick - ticks(tune.attack.windup) + 1 && !body.dashing) {
 						h.attack = { target: target.id, phase: 'windup', left: ticks(tune.attack.windup) }
@@ -239,11 +271,12 @@ export function createSim({
 						})
 					}
 				} else {
-					o.replanIn -= dt
-					if (!o.path || o.replanIn <= 0) {
+					if (
+						!o.path ||
+						Math.hypot(tp.x - o.goal.x, tp.z - o.goal.z) > tune.orders.replanDistance
+					) {
 						o.goal = clampWalkable(tp, profile.radius, tune.orders.clearance)
 						o.path = plan(h, o.goal)
-						o.replanIn = 0.25
 					}
 					s = steer(h, o.goal, false, dt)
 				}
@@ -310,7 +343,7 @@ export function createSim({
 		const dir = len > 1e-4 ? { x: dx / len, z: dz / len } : dirOf(h.yaw)
 		const skill = tune[ability]
 		const reach = Math.min(len, skill.range)
-		const target = { x: p.x + dir.x * reach, z: p.z + dir.z * reach }
+		const target = clampMap({ x: p.x + dir.x * reach, z: p.z + dir.z * reach })
 		h.cast = { slot, dir, target, yaw: yawOf(dir.x, dir.z), left: ticks(skill.castPoint) }
 		h.yaw = h.cast.yaw
 		h.cd[i] = ticks(skill.cooldown)
@@ -520,7 +553,7 @@ export function createSim({
 			dz: (tp.z - p.z) / length,
 			speed: tune.attack.speed,
 			radius: tune.attack.radius,
-			range: FLOOR.half * 4,
+			range: FLOOR.halfX * 4,
 			travelled: 0,
 			passed: [],
 			damage: tune.attack.damage,
@@ -648,6 +681,15 @@ export function createSim({
 					point: { x: n.point.x, y: tune.loose.height, z: n.point.z },
 					distance: n.distance,
 				})
+			if (r.blocked)
+				present({
+					type: 'blocked',
+					source: shot.owner,
+					projectile: shot.id,
+					slot: shot.slot,
+					point: { ...r.point, y: tune.loose.height },
+					direction: { x: shot.dx, y: 0, z: shot.dz },
+				})
 			if (r.hit) hit(shot, r.hit, r.point)
 			if (r.hit || r.expired) shots.splice(i, 1)
 		}
@@ -673,7 +715,7 @@ export function createSim({
 			}
 			if (best) return { x: best.x, z: best.z }
 			const f = dirOf(h.yaw)
-			return { x: p.x + f.x * range, z: p.z + f.z * range }
+			return clampMap({ x: p.x + f.x * range, z: p.z + f.z * range })
 		}
 		let angle = Math.atan2(dir.x, dir.z)
 		if (slot === 'slot1') {
@@ -693,14 +735,14 @@ export function createSim({
 		}
 		const u = Math.max(0, Math.min(1, (magnitude - a.inMin) / Math.max(1e-6, a.inMax - a.inMin)))
 		const reach = range * (a.outMin + (1 - a.outMin) * u)
-		return { x: p.x + Math.sin(angle) * reach, z: p.z + Math.cos(angle) * reach }
+		return clampMap({ x: p.x + Math.sin(angle) * reach, z: p.z + Math.cos(angle) * reach })
 	}
 
 	function snapshot() {
 		const pos = (b) => ({ x: q(b.position.x), z: q(b.position.z) })
 		return {
 			t,
-			map: 'feel',
+			map: FLOOR.id,
 			heroes: heroes.map((h) => ({
 				id: h.id,
 				team: h.team,

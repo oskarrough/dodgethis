@@ -1,75 +1,86 @@
-import { FLOOR, PILLARS, walkable } from './map.js'
+import { FLOOR, walkable, clampWalkable, segmentClear } from './obstacles.js'
+export { segmentClear } from './obstacles.js'
 
-// Pathing (docs/moba-plan.md, "Pathing"): straight when the segment clears every static circle, otherwise A* on a grid, then string-pulling.
-
-// Does a→b keep `inflate` clear of every circle? A start already inside that margin may still leave it.
-export function segmentClear(a, b, inflate, circles = PILLARS) {
-	const dx = b.x - a.x
-	const dz = b.z - a.z
-	const len2 = dx * dx + dz * dz
-	for (const c of circles) {
-		const need = c.r + inflate
-		const t = len2 > 0 ? Math.max(0, Math.min(1, ((c.x - a.x) * dx + (c.z - a.z) * dz) / len2)) : 0
-		const closest = Math.hypot(a.x + dx * t - c.x, a.z + dz * t - c.z)
-		if (closest >= need - 1e-6) continue
-		if (closest >= Math.hypot(a.x - c.x, a.z - c.z) - 1e-6) continue // heading out, never deeper
-		return false
+// Cache the static grid for a run. Live radius/clearance/grid changes invalidate it on the next order, not on a tick.
+export function createPathPlanner(options) {
+	let grid = buildGrid(options)
+	return (from, to, next = options) => {
+		if (next.radius !== grid.radius || next.clearance !== grid.clearance || next.grid !== grid.grid)
+			grid = buildGrid(next)
+		return route(from, to, grid)
 	}
-	return true
 }
 
-// Waypoints from `from` to `to` (both {x, z}), excluding `from` and ending on `to`.
-export function planPath(from, to, { radius, clearance, grid }) {
-	const inflate = radius + clearance
-	if (segmentClear(from, to, inflate)) return [{ x: to.x, z: to.z }]
-	const n = Math.ceil((FLOOR.half * 2) / grid)
-	const centre = (i) => (i + 0.5) * grid - FLOOR.half
-	const cellOf = (v) => Math.max(0, Math.min(n - 1, Math.floor((v + FLOOR.half) / grid)))
-	const open = new Uint8Array(n * n)
-	for (let j = 0; j < n; j++)
-		for (let i = 0; i < n; i++)
-			open[j * n + i] = walkable(centre(i), centre(j), radius, clearance) ? 1 : 0
-	const nearestOpen = (p) => {
-		const ci = cellOf(p.x)
-		const cj = cellOf(p.z)
-		let best = -1
-		let bestD = Infinity
-		for (let r = 0; r < 6 && best < 0; r++)
-			for (let j = Math.max(0, cj - r); j <= Math.min(n - 1, cj + r); j++)
-				for (let i = Math.max(0, ci - r); i <= Math.min(n - 1, ci + r); i++) {
-					if (!open[j * n + i]) continue
-					const d = Math.hypot(centre(i) - p.x, centre(j) - p.z)
-					if (d < bestD) {
-						bestD = d
-						best = j * n + i
-					}
-				}
-		return best
+let defaultPlanner
+export function planPath(from, to, options) {
+	defaultPlanner ??= createPathPlanner(options)
+	return defaultPlanner(from, to, options)
+}
+
+function buildGrid({ radius, clearance, grid }) {
+	const nx = Math.ceil((FLOOR.halfX * 2) / grid)
+	const nz = Math.ceil((FLOOR.halfZ * 2) / grid)
+	const point = (c) => ({
+		x: ((c % nx) + 0.5) * grid - FLOOR.halfX,
+		z: (Math.floor(c / nx) + 0.5) * grid - FLOOR.halfZ,
+	})
+	const open = new Uint8Array(nx * nz)
+	// Mark an entire cell free, not merely its centre: this also protects edges near circle tangencies.
+	const margin = radius + clearance + grid * Math.SQRT1_2
+	for (let c = 0; c < open.length; c++) {
+		const p = point(c)
+		open[c] = walkable(p.x, p.z, margin) ? 1 : 0
 	}
-	const start = nearestOpen(from)
-	const goal = nearestOpen(to)
-	if (start < 0 || goal < 0) return [{ x: to.x, z: to.z }]
-	const cells = astar(open, n, start, goal)
-	if (!cells) return [{ x: to.x, z: to.z }]
-	const points = [
-		from,
-		...cells.slice(1, -1).map((c) => ({ x: centre(c % n), z: centre((c / n) | 0) })),
-		to,
-	]
-	// String-pull: from each kept point, jump to the farthest point still in plain sight.
-	const pulled = []
-	let i = 0
+	return { radius, clearance, grid, nx, nz, point, open }
+}
+
+function route(from, to, { radius, clearance, grid, nx, nz, point, open }) {
+	if (!walkable(from.x, from.z, radius)) return []
+	const inflate = radius + clearance
+	const firstMargin = walkable(from.x, from.z, radius, clearance) ? inflate : radius
+	to = clampWalkable(to, radius, clearance)
+	if (firstMargin === inflate && segmentClear(from, to, inflate)) return [{ ...to }]
+	const nearestOpen = (p, margin) => {
+		const ci = Math.max(0, Math.min(nx - 1, Math.floor((p.x + FLOOR.halfX) / grid)))
+		const cj = Math.max(0, Math.min(nz - 1, Math.floor((p.z + FLOOR.halfZ) / grid)))
+		for (let r = 0; r < Math.max(nx, nz); r++) {
+			const candidates = []
+			for (let j = Math.max(0, cj - r); j <= Math.min(nz - 1, cj + r); j++)
+				for (let i = Math.max(0, ci - r); i <= Math.min(nx - 1, ci + r); i++) {
+					if (r && Math.max(Math.abs(i - ci), Math.abs(j - cj)) !== r) continue
+					const c = j * nx + i
+					if (open[c]) candidates.push(c)
+				}
+			candidates.sort((a, b) => {
+				const pa = point(a),
+					pb = point(b)
+				return Math.hypot(pa.x - p.x, pa.z - p.z) - Math.hypot(pb.x - p.x, pb.z - p.z)
+			})
+			for (const c of candidates) if (segmentClear(p, point(c), margin)) return c
+		}
+		return -1
+	}
+	const start = nearestOpen(from, firstMargin),
+		goal = nearestOpen(to, inflate)
+	if (start < 0 || goal < 0) return []
+	const cells = astar(open, nx, nz, start, goal)
+	if (!cells) return []
+	const points = [from, ...cells.map(point), to]
+	// A tight start rejoins a fully clear grid cell before any shortcut is considered.
+	const pulled = firstMargin === inflate ? [] : [{ ...points[1] }]
+	let i = firstMargin === inflate ? 0 : 1
 	while (i < points.length - 1) {
 		let j = points.length - 1
-		while (j > i + 1 && !segmentClear(points[i], points[j], inflate)) j--
-		pulled.push({ x: points[j].x, z: points[j].z })
+		while (j > i && !segmentClear(points[i], points[j], inflate)) j--
+		if (j === i) return []
+		pulled.push({ ...points[j] })
 		i = j
 	}
 	return pulled
 }
 
 // 8-connected A* with no corner cutting; returns cell indices from start to goal, or null.
-function astar(open, n, start, goal) {
+function astar(open, n, rows, start, goal) {
 	const gx = goal % n
 	const gz = (goal / n) | 0
 	const h = (c) => {
@@ -77,9 +88,9 @@ function astar(open, n, start, goal) {
 		const dz = Math.abs(((c / n) | 0) - gz)
 		return Math.max(dx, dz) + (Math.SQRT2 - 1) * Math.min(dx, dz)
 	}
-	const g = new Float32Array(n * n).fill(Infinity)
-	const from = new Int32Array(n * n).fill(-1)
-	const closed = new Uint8Array(n * n)
+	const g = new Float32Array(n * rows).fill(Infinity)
+	const from = new Int32Array(n * rows).fill(-1)
+	const closed = new Uint8Array(n * rows)
 	const heap = [[h(start), start]]
 	g[start] = 0
 	while (heap.length) {
@@ -94,7 +105,7 @@ function astar(open, n, start, goal) {
 				if (!di && !dj) continue
 				const i = ci + di
 				const j = cj + dj
-				if (i < 0 || j < 0 || i >= n || j >= n) continue
+				if (i < 0 || j < 0 || i >= n || j >= rows) continue
 				const next = j * n + i
 				if (!open[next] || closed[next]) continue
 				if (di && dj && (!open[cj * n + i] || !open[j * n + ci])) continue
@@ -154,7 +165,20 @@ export function pursue(path, pos, ahead) {
 		const dz = b.z - a.z
 		const len2 = dx * dx + dz * dz
 		t = len2 > 0 ? Math.max(0, Math.min(1, ((pos.x - a.x) * dx + (pos.z - a.z) * dz) / len2)) : 1
-		if (t < 1 || k >= pts.length - 2) break
+		if (k >= pts.length - 2) break
+		if (t < 1) {
+			// Look-ahead turns before a vertex: advance once the next leg is the closer forward projection.
+			const c = pts[k + 2],
+				nx = c.x - b.x,
+				nz = c.z - b.z
+			const nextLen2 = nx * nx + nz * nz
+			const u = nextLen2
+				? Math.max(0, Math.min(1, ((pos.x - b.x) * nx + (pos.z - b.z) * nz) / nextLen2))
+				: 0
+			const currentDistance = Math.hypot(pos.x - a.x - dx * t, pos.z - a.z - dz * t)
+			const nextDistance = Math.hypot(pos.x - b.x - nx * u, pos.z - b.z - nz * u)
+			if (u <= 0 || nextDistance >= currentDistance) break
+		}
 		k++
 	}
 	path.leg = k

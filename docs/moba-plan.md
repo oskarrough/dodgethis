@@ -5,7 +5,7 @@ A small Heroes of the Storm-style mode: the smallest thing that already feels li
 ## Scope
 
 - **Match:** 3v3 (human + 2 bot allies vs 3 bots), all the same hero. Destroy the enemy core. 8–12 minutes. Boots with `?mode=moba` until the hub plugin exists.
-- **Map:** one flat lane along x, 96 × 16 m. Per side: tower ±22, fort ±32, core ±42, base ±46. The base heals 10% max HP/s. A few round pillars.
+- **Map:** one flat lane along x, 104 × 26 m, with hedged flanks and six pillars; layout and structure positions are specified in [moba-lane.md](moba-lane.md). The map is built; structures and base healing follow.
 - **Structures** (no ammo; HotS removed it in 2017). Each is invulnerable until the one in front falls. Abilities deal 25% to structures; a kill is worth 300 XP.
 
 |       | HP   | Damage | Rate | Range | Targets                    |
