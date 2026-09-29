@@ -147,7 +147,7 @@ test('a slot press buffers for 0.15 s: it fires on the first legal step, or is d
 	step(cooldown - 13) // 0.2 s left: outside the buffer
 	press('slot1', { x: 0, z: 0 })
 	step()
-	expect(facts.at(-1)).toEqual({ type: 'denied', hero: ID, slot: 'slot1' })
+	expect(facts.at(-1)).toMatchObject({ type: 'denied', hero: ID, slot: 'slot1' })
 	step(20)
 	expect(casts()).toHaveLength(2)
 

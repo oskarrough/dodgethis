@@ -85,10 +85,23 @@ export const tune = {
 		flipMax: 1.4,
 		span: 4, // metres either side of the post
 		hp: 1400,
+		tell: 0.4, // an enemy-visible line before the sparring dummy releases Q
 		castEvery: 4, // one sparring dummy casts Loose back while in range
 		respawn: 2,
 	},
+	sounds: {
+		attack: { freq: 620, slideTo: 280, type: 'triangle', dur: 0.08, gain: 0.12 },
+		attackHit: { freq: 310, slideTo: 120, type: 'triangle', dur: 0.09, gain: 0.18 },
+		loose: { freq: 760, slideTo: 190, type: 'sawtooth', dur: 0.14, gain: 0.14 },
+		looseHit: { freq: 240, slideTo: 45, type: 'square', dur: 0.18, gain: 0.24 },
+		rain: { freq: 90, slideTo: 480, type: 'sine', dur: 0.3, gain: 0.23 },
+		vault: { freq: 180, slideTo: 720, type: 'triangle', dur: 0.12, gain: 0.12 },
+	},
 	juice: {
+		attackSquash: 0.1,
+		castSquash: -0.08,
+		vaultSquash: 0.16,
+		rainSquash: -0.16,
 		flash: 0.07,
 		hitstop: 0.065, // your own takedowns only; ignored when shared
 		shakeTaken: 0.15,

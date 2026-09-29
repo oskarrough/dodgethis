@@ -27,6 +27,14 @@ export function createFeedback({ juice, sfx, camera, input, view, skillsView, hu
 
 	const unitOf = (id) => sim.heroes.find((h) => h.id === id) ?? sim.dummies.find((d) => d.id === id)
 
+	const sounded = new Map()
+	function cue(name, fact, gain = 1) {
+		const tick = fact.tick ?? sim.tick
+		if (sounded.get(name) === tick) return
+		sounded.set(name, tick)
+		sfx[name](fact.point, gain)
+	}
+
 	function present(fact) {
 		const mine = fact.hero === local || fact.source === local
 		const onMe = fact.target === local
@@ -42,10 +50,17 @@ export function createFeedback({ juice, sfx, camera, input, view, skillsView, hu
 				return
 			}
 			case 'cast':
-				unitOf(fact.hero)?.body.squash(-0.08)
+				unitOf(fact.hero)?.body.squash(
+					{
+						primary: tune.juice.attackSquash,
+						slot1: tune.juice.castSquash,
+						slot2: tune.juice.vaultSquash,
+						slot3: tune.juice.rainSquash,
+					}[fact.slot] ?? 0,
+				)
 				if (fact.slot === 'slot2') {
 					skillsView.vault(fact.point, fact.direction)
-					sfx.whoosh(fact.point, mine ? 0.7 : 0.3)
+					cue('vault', fact, mine ? 1 : 0.45)
 					juice.burst(fact.point, { ...fact.direction, y: 0 }, { count: 8, streak: true })
 				} else if (fact.slot === 'slot3' && mine) skillsView.rain(fact.target)
 				return
@@ -53,8 +68,7 @@ export function createFeedback({ juice, sfx, camera, input, view, skillsView, hu
 				const shot = sim.shots.find((s) => s.id === fact.id)
 				if (shot) view.bolt(shot, fact.point)
 				unitOf(fact.hero)?.body.kick(0.18)
-				if (fact.slot === 'primary') sfx.deflect(fact.point)
-				else sfx.loose(mine ? 1 : 0.45, fact.point)
+				cue(fact.slot === 'primary' ? 'attack' : 'loose', fact, mine ? 1 : 0.45)
 				return
 			}
 			case 'impact':
@@ -63,7 +77,7 @@ export function createFeedback({ juice, sfx, camera, input, view, skillsView, hu
 					{ x: 0, y: 1, z: 0 },
 					{ count: 20, speed: 3, life: 0.35, size: 0.1 },
 				)
-				sfx.roll(fact.point) // one Rain cue per impact, even when several units are hit
+				cue('rain', fact) // once per tick, including multi-target impacts
 				return
 			case 'hit': {
 				view.unbolt(fact.projectile)
@@ -73,7 +87,7 @@ export function createFeedback({ juice, sfx, camera, input, view, skillsView, hu
 					unit.body.squash(0.28)
 				}
 				juice.burst(fact.point, fact.direction, { count: 6, speed: 1.4, life: 0.3, size: 0.07 })
-				if (fact.slot !== 'slot3') sfx.hit(fact.point)
+				if (fact.slot !== 'slot3') cue(fact.slot === 'primary' ? 'attackHit' : 'looseHit', fact)
 				if (onMe) {
 					camera.shake(tune.juice.shakeTaken)
 					input.rumble(0.2, 0.3, 60)
@@ -154,6 +168,7 @@ export function createFeedback({ juice, sfx, camera, input, view, skillsView, hu
 		beat,
 		reset() {
 			stop = 0
+			sounded.clear()
 		},
 	}
 }

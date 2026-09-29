@@ -1,3 +1,5 @@
+import { tune } from './tune.js'
+
 // Three cooldown sweeps, slot-specific denied flashes, controls and pause. Removed with the run.
 const CSS = `
 .moba-hud { position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%); z-index: 3; display: grid;
@@ -47,6 +49,7 @@ export function createHud() {
 	const help = root.querySelector('.moba-help')
 	const health = root.querySelector('.moba-health')
 	let shownDevice = ''
+	let shownHealth = ''
 
 	return {
 		// A press on cooldown outside the buffer: the icon flashes for 60 ms.
@@ -57,10 +60,11 @@ export function createHud() {
 			s.slot.classList.add('denied')
 		},
 		update(dt, { cooldowns, totals, device, pausedNow, hp, maxHp, respawn }) {
-			health.textContent =
+			const text =
 				respawn !== null
 					? `Respawn in ${Math.ceil(respawn)} s`
-					: `${Math.ceil(hp)} / ${maxHp} HP · Momentum: Q hits cut Vault by 2 s`
+					: `${Math.ceil(hp)} / ${maxHp} HP · Momentum: Q hits cut Vault by ${tune.momentum.reduction} s`
+			if (text !== shownHealth) health.textContent = shownHealth = text
 			for (const [i, s] of slots.entries()) {
 				const { slot, left, shown } = s
 				const cooldown = cooldowns[i]

@@ -194,7 +194,7 @@ test('Vault keeps its path during the dash and replans once from its landing poi
 	expect(h().order.path).toBe(landingPath)
 })
 
-test('Vault whooshes with streaks; Rain has its own cue once for a hit or a miss', () => {
+test('Vault has its own cue and streaks; Rain sounds once for a hit or a miss', () => {
 	const previousDocument = globalThis.document
 	globalThis.document = { querySelector: () => null }
 	const sounds = []
@@ -205,10 +205,10 @@ test('Vault whooshes with streaks; Rain has its own cue once for a hit or a miss
 			local: 'observer',
 			juice: { burst: (...args) => bursts.push(args), flash() {} },
 			sfx: {
-				whoosh: () => sounds.push('whoosh'),
+				vault: () => sounds.push('vault'),
 				loose: () => sounds.push('loose'),
-				hit: () => sounds.push('hit'),
-				roll: () => sounds.push('rain'),
+				looseHit: () => sounds.push('hit'),
+				rain: () => sounds.push('rain'),
 			},
 			view: { unbolt() {} },
 			skillsView: { vault() {} },
@@ -216,7 +216,7 @@ test('Vault whooshes with streaks; Rain has its own cue once for a hit or a miss
 		press('slot2', { x: 10, z: 8 })
 		step()
 		for (const fact of facts.splice(0)) feedback.present(fact)
-		expect(sounds).toEqual(['whoosh'])
+		expect(sounds).toEqual(['vault'])
 		expect(bursts[0][2].streak).toBe(true)
 		step(15)
 		sounds.length = 0

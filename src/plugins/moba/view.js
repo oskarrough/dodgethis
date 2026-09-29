@@ -72,6 +72,11 @@ export function createView(scene, smooth) {
 			}
 		for (const unit of units) {
 			let bar = bars.get(unit.id)
+			if (bar && bar.maxHp !== unit.maxHp) {
+				group.remove(bar.root)
+				bars.delete(unit.id)
+				bar = null
+			}
 			if (!bar) {
 				const root = new THREE.Group()
 				root.rotation.x = -Math.atan2(tune.follow.height, tune.follow.back)
@@ -86,7 +91,7 @@ export function createView(scene, smooth) {
 					root.add(tick)
 				}
 				group.add(root)
-				bars.set(unit.id, (bar = { root, fill }))
+				bars.set(unit.id, (bar = { root, fill, maxHp: unit.maxHp }))
 			}
 			bar.root.visible = !unit.dead
 			const p = unit.body.mesh.position

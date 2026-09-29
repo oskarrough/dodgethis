@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-- MOBA heroes and dummies now have HP, death and respawn; attacks can stutter-step, Q hits recharge Vault, and one dummy fights back. Health bars and hit feedback distinguish pokes, damage taken and takedowns.
+- MOBA heroes and dummies now have HP, death and respawn, cancellable stutter-step attacks, Q hits that recharge Vault, a dummy with dodgeable return fire, and distinct combat sounds and feedback.
 
 - Added MOBA Vault on W and Rain on E, with distinct aiming tells, controller hold-to-aim casts, and three visible cooldowns.
 

@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { makeStyleMaterial } from '../../core/stylepass.js'
+import { STEP } from '../../core/app.js'
 import { tune } from './tune.js'
 
 // E's held circle and filling impact tell; W's held arrow and brief departure streak.
@@ -28,6 +29,9 @@ export function createSkillsView(scene) {
 	const heldArrow = mesh(arrowGeometry, cream)
 	const tells = new Map()
 	const streaks = []
+	const enemyTells = new Map()
+	const lineGeometry = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2).translate(0, 0, -0.5)
+	const enemy = makeStyleMaterial('teamB', { flat: true })
 	let castCircle = null
 	let castLeft = 0
 
@@ -47,7 +51,7 @@ export function createSkillsView(scene) {
 		streaks.push({ mesh: m, left: 0.25 })
 	}
 
-	function update(dt, { hero, aim, held, zones, alpha = 0 }) {
+	function update(dt, { hero, aim, held, zones, casters = [], alpha = 0 }) {
 		if (castCircle) {
 			castLeft = Math.max(0, castLeft - dt)
 			castCircle.visible = castLeft > 0
@@ -88,6 +92,33 @@ export function createSkillsView(scene) {
 				tune.rain.radius * Math.max(0.01, Math.min(1, 1 - (z.left - alpha) / z.total)),
 			)
 		}
+		const casting = casters.filter((unit) => !unit.dead && unit.cast?.slot === 'slot1')
+		const castingIds = new Set(casting.map((unit) => unit.id))
+		for (const [id, tell] of enemyTells)
+			if (!castingIds.has(id)) {
+				group.remove(tell.root)
+				enemyTells.delete(id)
+			}
+		for (const unit of casting) {
+			let tell = enemyTells.get(unit.id)
+			if (!tell) {
+				const root = new THREE.Group()
+				root.name = 'moba-enemy-tell'
+				const edge = new THREE.Mesh(lineGeometry, enemy)
+				edge.scale.set(tune.loose.radius * 2, 1, tune.loose.range)
+				const fill = new THREE.Mesh(lineGeometry, cream)
+				fill.position.y = 0.001
+				root.add(edge, fill)
+				group.add(root)
+				enemyTells.set(unit.id, (tell = { root, fill }))
+			}
+			const p = unit.body.mesh.position
+			tell.root.position.set(p.x, 0.029, p.z)
+			tell.root.rotation.y = unit.cast.yaw
+			const total = unit.cast.total ?? Math.max(1, Math.round(tune.loose.castPoint / STEP))
+			const progress = Math.max(0, Math.min(1, 1 - (unit.cast.left - alpha) / total))
+			tell.fill.scale.set(tune.loose.radius, 1, tune.loose.range * progress)
+		}
 		for (let i = streaks.length - 1; i >= 0; i--) {
 			const s = streaks[i]
 			s.left -= dt
@@ -104,7 +135,7 @@ export function createSkillsView(scene) {
 		rain,
 		dispose() {
 			scene.remove(group)
-			for (const x of [ring, disc, arrowGeometry, cream, gold]) x.dispose()
+			for (const x of [ring, disc, arrowGeometry, lineGeometry, cream, gold, enemy]) x.dispose()
 		},
 	}
 }

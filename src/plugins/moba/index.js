@@ -10,6 +10,7 @@ import { createCursor } from './cursor.js'
 import { createView } from './view.js'
 import { createSkillsView } from './skills-view.js'
 import { createHud } from './hud.js'
+import { createSounds } from './sounds.js'
 import { createFeedback } from './feedback.js'
 
 const FACTS = [
@@ -28,7 +29,7 @@ const FACTS = [
 // Boots with ?mode=moba. Everything lives as long as a run of the mode.
 export default function moba(app) {
 	const { scene, world, RAPIER, input, audio } = app
-	const { sfx } = audio
+	const sfx = createSounds(audio)
 	let runs = 0
 
 	app.modes.define('moba', {
@@ -123,6 +124,7 @@ export default function moba(app) {
 					aim: frame.aim,
 					held: hero.dead ? {} : frame.held,
 					zones: sim.zones,
+					casters: [...sim.heroes, ...sim.dummies].filter((unit) => unit.team !== hero.team),
 					alpha: frozen ? 0 : alpha,
 				})
 				feedback.fizzle(gone)
@@ -168,7 +170,7 @@ export default function moba(app) {
 
 			// --- Tune GUI: moba's sections come and go with the run; the values live in tune.js and survive restarts. ---
 			run.debug.tune('hero', tune.hero, (f, t) => {
-				f.add(t, 'hp', 200, 3000, 100).name('initial HP')
+				f.add(t, 'hp', 200, 3000, 100).name('HP (applies on restart)')
 				f.add(t, 'speed', 1, 12, 0.1)
 				f.add(t, 'accel', 1, 80, 1)
 				f.add(t, 'friction', 0, 40, 0.5)
@@ -247,11 +249,24 @@ export default function moba(app) {
 				f.add(t, 'flipMin', 0.1, 3, 0.05).name('flip min (s)')
 				f.add(t, 'flipMax', 0.1, 4, 0.05).name('flip max (s)')
 				f.add(t, 'span', 0.5, 10, 0.5).name('span (m)')
-				f.add(t, 'hp', 200, 3000, 100).name('initial HP')
+				f.add(t, 'hp', 200, 3000, 100).name('HP on respawn')
+				f.add(t, 'tell', app.clock.step, 1, app.clock.step).name('Q warning (s)')
 				f.add(t, 'castEvery', 1, 10, 0.25).name('cast interval')
 				f.add(t, 'respawn', 0.2, 10, 0.1).name('respawn (s)')
 			})
+			for (const [name, sound] of Object.entries(tune.sounds)) {
+				run.debug.tune(`sound ${name}`, sound, (f, t) => {
+					f.add(t, 'freq', 20, 2400, 10)
+					f.add(t, 'slideTo', 20, 2400, 10)
+					f.add(t, 'dur', app.clock.step, 0.6, app.clock.step)
+					f.add(t, 'gain', 0, 1, 0.01)
+				})
+			}
 			run.debug.tune('juice', tune.juice, (f, t) => {
+				f.add(t, 'attackSquash', -0.3, 0.3, 0.01)
+				f.add(t, 'castSquash', -0.3, 0.3, 0.01)
+				f.add(t, 'vaultSquash', -0.3, 0.3, 0.01)
+				f.add(t, 'rainSquash', -0.3, 0.3, 0.01)
 				f.add(t, 'flash', 0, 0.3, 0.01).name('hit flash (s)')
 				f.add(t, 'hitstop', 0, 0.3, 0.005).name('hitstop (s)')
 				f.add(t, 'shakeTaken', 0, 1, 0.05).name('shake on you')

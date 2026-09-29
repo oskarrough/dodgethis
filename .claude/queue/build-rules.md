@@ -1,0 +1,13 @@
+Build rules, appended to every build brief. Each one comes from a finding an earlier review caught.
+
+- Everything drawn moves with render interpolation: telegraphs, fills and timers blend with `alpha`, not just bodies.
+- Every number lives in the plugin's tune.js, and every slider has a sane range (fractions 0–1, times at least one step). No slider value may produce NaN or reverse movement.
+- Cameras, pans and projected points are clamped to the map.
+- Each action gets its own sound and effect. Don't reuse another skill's cue, and don't play the same cue twice on one tick.
+- Keyboard, mouse and pad get equal treatment: aim cues, cursors and help text cover all three.
+- Path and replan work happens once per event, not every tick.
+- Update the docs line your change contradicts, and add tests for tricky state (timers, windows, mode toggles).
+- Every enemy attack or cast has a visible tell of at least 0.3 s, and every action gets its own pose. No shared squash.
+- Input is never swallowed: stop and move cancel windups, and a new order cancels the backswing. A buffered press that can't become legal flashes a deny.
+- Tune sliders apply live, or are labelled "applies on restart". HUD text is built from tune, never hard-coded, and written only when it changes.
+- Test death and respawn in the middle of every timed state (dash, windup, cast, projectile in flight), and drive dodge tests through intents, not teleports.

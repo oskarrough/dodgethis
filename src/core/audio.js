@@ -189,7 +189,7 @@ async function sample(url, { gain = 1, rate = 1, rateJitter = 0, point = null } 
 
 const pick = (arr) => arr[(Math.random() * arr.length) | 0]
 
-function blip({
+export function blip({
 	freq = 440,
 	type = 'sine',
 	dur = 0.12,

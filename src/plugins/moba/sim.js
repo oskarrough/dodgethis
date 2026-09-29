@@ -29,10 +29,11 @@ export function createSim({
 	intents,
 	heroes: seats,
 	smooth = null,
-	present = () => {},
+	present: emit = () => {},
 	rng = Math.random,
 }) {
 	let t = 0
+	const present = (fact) => emit({ ...fact, tick: t })
 	let shotIds = 0
 	const shots = []
 	const zones = []
@@ -285,12 +286,19 @@ export function createSim({
 		const i = SLOTS.indexOf(slot)
 		if (!h.judged.has(latest)) {
 			h.judged.add(latest)
-			if (h.cd[i] * STEP >= SCHEMES.pointClick.windows[slot] - 1e-9) {
+			const wait = Math.max(
+				h.cd[i],
+				h.cast?.left ?? 0,
+				h.attack?.phase === 'windup' ? h.attack.left - 1 : 0,
+				ticks(h.body.dashTime),
+			)
+			if (wait * STEP >= SCHEMES.pointClick.windows[slot] - 1e-9) {
 				intents.consume(h.id, slot)
 				present({ type: 'denied', hero: h.id, slot })
 				return
 			}
 		}
+		if (h.attack?.phase === 'windup' && h.attack.left <= 1) basicAttack(h)
 		if (h.cast || h.attack?.phase === 'windup' || h.body.dashing || h.cd[i] > 0) return
 		h.attack = null // abilities cut the backswing, not the windup
 		intents.consume(h.id, slot)
@@ -374,9 +382,13 @@ export function createSim({
 		}
 		const frame = intents.get(h.id)
 		if (
+			Math.hypot(frame.move.x, frame.move.z) > 0.01 ||
+			frame.pressed.some((e) => e.action === 'stop')
+		)
+			h.attack = null
+		if (
 			h.attack?.phase === 'backswing' &&
-			(Math.hypot(frame.move.x, frame.move.z) > 0.01 ||
-				frame.pressed.some((e) => e.action === 'stop'))
+			(frame.order || frame.pressed.some((e) => e.action === 'primary'))
 		)
 			h.attack = null
 		for (const e of frame.pressed.slice()) {
@@ -393,7 +405,7 @@ export function createSim({
 		}
 		if (frame.order) issue(h, frame.order)
 		if (Math.hypot(frame.move.x, frame.move.z) > 0.01) h.order = null
-		if (h.attack?.phase === 'backswing' && h.order?.kind === 'move') h.attack = null
+		if (frame.order && h.order?.kind === 'move') h.attack = null
 		casts(h, frame)
 		if (h.cast?.left === 0) release(h)
 		h.body.speedMul = t < h.slowUntil ? 1 - tune.rain.slow : 1
@@ -426,7 +438,8 @@ export function createSim({
 				dir: { x: dx / length, z: dz / length },
 				target: { x: target.x, z: target.z },
 				yaw: yawOf(dx, dz),
-				left: ticks(tune.loose.castPoint),
+				left: ticks(tune.dummies.tell),
+				total: ticks(tune.dummies.tell),
 			}
 			d.castTick = t + ticks(tune.dummies.castEvery)
 			present({
@@ -472,6 +485,7 @@ export function createSim({
 		unit.body = bodyAt(spawn.x, spawn.z, unit.team)
 		unit.body.face(dirOf(unit.yaw))
 		unit.dead = false
+		if (unit.post) unit.maxHp = tune.dummies.hp
 		unit.hp = unit.maxHp
 		unit.respawnTick = null
 		unit.slowUntil = 0
@@ -481,7 +495,7 @@ export function createSim({
 
 	function basicAttack(h) {
 		const attack = h.attack
-		if (!attack || --attack.left > 0) return
+		if (!attack || attack.startedTick === t || --attack.left > 0) return
 		if (attack.phase === 'backswing') {
 			h.attack = null
 			return
@@ -513,7 +527,12 @@ export function createSim({
 		}
 		shots.push(shot)
 		h.attackTick = t + ticks(1 / tune.attack.rate)
-		h.attack = { target: target.id, phase: 'backswing', left: ticks(tune.attack.backswing) }
+		h.attack = {
+			target: target.id,
+			phase: 'backswing',
+			left: ticks(tune.attack.backswing),
+			startedTick: t,
+		}
 		present({
 			type: 'projectile',
 			id: shot.id,
@@ -710,7 +729,13 @@ export function createSim({
 				yaw: q(d.yaw),
 				hp: d.hp,
 				maxHp: d.maxHp,
-				cast: d.cast && { slot: d.cast.slot, left: d.cast.left, yaw: q(d.cast.yaw) },
+				cast: d.cast && {
+					slot: d.cast.slot,
+					left: d.cast.left,
+					total: d.cast.total,
+					yaw: q(d.cast.yaw),
+					target: { x: q(d.cast.target.x), z: q(d.cast.target.z) },
+				},
 				castTick: d.castTick,
 				slowUntil: d.slowUntil,
 				dead: d.dead,
