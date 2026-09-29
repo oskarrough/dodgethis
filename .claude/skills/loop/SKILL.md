@@ -18,4 +18,4 @@ description: Orchestrate dodgethis work through bb threads. Brief, spawn, verify
 
 Every few steps, spawn an Opus creative thread (name the taste, ban the obvious) and turn the best pitches into queue briefs.
 
-Rules: prototyping, so no git ceremony. Commit only at checkpoints, mashed together ("Add lanes, fix cursor, and tune W"), and one thread finishes entangled work rather than two splitting it. Short docs; if a doc keeps growing, the design is too big. A thread that produces a file dump was briefed wrong.
+Rules: prototyping, so no git ceremony. Commit only at checkpoints, mashed together ("Add lanes, fix cursor, and tune W") and never with an empty message, and one thread finishes entangled work rather than two splitting it. Short docs; if a doc keeps growing, the design is too big. A thread that produces a file dump was briefed wrong.

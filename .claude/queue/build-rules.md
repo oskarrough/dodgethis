@@ -16,3 +16,8 @@ Build rules, appended to every build brief. Each one comes from a finding an ear
 - Hot paths get a time-budget test: path planning and per-tick queries must fit well inside a 16.7 ms frame, measured, not assumed.
 - Every outcome emits a fact with its own feedback: blocked shots, repeated orders and denied casts included. Nothing vanishes silently.
 - Print layers on the ground each get their own height. No z-fighting.
+- Art never stretches: scale scenery uniformly and screenshot 390 wide, 1440 and 2560×1080.
+- Trace interactions (pointer sweeps, reversals mid-transition), not just idle.
+- Tests assert the whole population (all 12 minions arrive), not that some unit did.
+- No sim state in module globals; two sims alive at once must not see each other.
+- Time-budget tests measure a median or count work, so they don't flake under load.
