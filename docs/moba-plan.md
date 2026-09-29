@@ -34,7 +34,7 @@ A small Heroes of the Storm-style mode: the smallest thing that already feels li
 | R     | Volley   | Heroic, unlocks at level 10. Piercing line, cast point 0.5 s, range 30, 30 m/s, radius 0.8, 320 damage, cooldown 60 |
 | Mount | —        | 1 s channel, then `speedMul` 1.3. Movement cancels the channel; damage, attacking or casting dismounts              |
 
-- **Bots:** hero bots write intent frames into `app.intents` inside `simulate`. They stay 2–4 m behind their minions, poke with a led Q (reaction and jitter as in dodgeball's `tune.ai`), drop W on clumps, sidestep telegraphs, retreat below 35% HP and return at 90%.
+- **Bots:** hero bots play through `app.intents` exactly like players; see [Hero bots](#hero-bots-m4).
 - **Cut:** talents (Oskar's call), mana, items, extra lanes, mercenary camps, hearthstone, gates, fountains, shift-queue, attack-move, minimap, catch-up XP, and more than one hero.
 
 ## Controls
@@ -84,6 +84,43 @@ Obedience from HotS, springs and juice from dodgethis. Everything below is moba'
   { t, match, teams: { A: { xp, level }, B }, heroes: [{ id, team, hp, pos, vel, yaw, order, cast, cd[5], mounted, dead, respawnTick }],
     minions: [{ id, kind, team, hp, pos, yaw, target, attackTick }], structures: [{ id, hp }], projectiles, zones, globes }
   ```
+
+## Hero bots (M4)
+
+Map, Ball and structure rules come from [moba-lane.md](moba-lane.md). A bot is a brain per hero id that writes a `pointClick` frame with `app.intents.feed(id, frame)` at the top of moba's `simulate`, before any hero reads its intents. That keeps bots on the fixed tick, independent of render rate, paused while the sim is held, and absent on replicas. The sim can't tell a bot from a mouse player: `order` to move or attack, `aim` plus a `slotN` press whose `at` is the aim, never `move` or `held`. It reads sim state through a read-only view and never writes it. It thinks every 6th tick, staggered by id, and feeds its current frame on the ticks between. Randomness comes from one seeded stream per bot, forked from the match seed, so changing one bot doesn't reshuffle the others.
+
+- **Perception:** there's no fog, and edge pips show every enemy hero, so a bot sees the whole map, late. Every enemy query goes through one perception view: the sim state as it was `reaction` seconds ago, from a ring buffer of views. That covers heroes, minions, structures' targets, casts, projectiles and zones, and it includes first-hit sweeps, mid-Vault checks and dodge prediction. Only the bot's own hero, cooldowns and Ball state are read live.
+- **Orders:** a move order is sent once per new goal and re-sent only if the hero's resolved order has lapsed. An attack order clicks the target's live position once. The bot keeps the target id and sends nothing more while its hero's resolved order is an attack on that id. It re-clicks only if the order lapsed, since re-sending a stale point would turn into a move.
+- **Roles:** the three bots of a team take files z −3, 0 and +3 in the lane, so they don't stack in one Rain.
+- **Priority** each think, first match wins: dodge, retreat, Ball, fight, push, lane. Other states hold for at least 0.5 s. Retreat latches: once entered, it lasts until 90% HP or death, and dodge interrupts it without clearing it.
+- **Lane:** stand 2–4 m behind the most advanced allied minion, inside its own file, and basic the minion the wave is hitting. With no allied wave, hold 3 m behind its own frontmost structure. Always stay within 12 m of dying enemy minions, since that's the soak.
+- **Push:** when the allied wave is inside a vulnerable enemy structure's range, basic the structure only while that structure targets a minion, and step back out of its range when fewer than 2 allied minions are left.
+- **Tower safety** gates every offensive action in every state: a basic, Q, E, W or throw. An action is illegal if it would make an enemy structure call for help on the bot. That applies when the bot's position after the action (W's landing spot included) is inside the structure's range, and when any hero it could hit is inside that range (E's whole circle counts). The one exception is a kill. The target's perceived HP must be at most the bot's burst available in the next 1.5 s, and the bot's HP minus 2 s of that structure's damage must stay above `retreatHp`.
+- **Fight:** enter when an enemy hero is within 9 m and `advantage ≥ −aggression`. Advantage is the sum of HP × (1 + 0.04 × level) over allied heroes within 12 m, minus the same for enemies, divided by max HP, with 1.0 subtracted per enemy structure whose range the bot stands in. Target the lowest effective HP in reach, sticky for 1 s. Order of play: E on the predicted spot, Q, basics with a stutter-step back toward the bot's own side after every shot, W to chase a target under 25% HP within 7 m.
+- **Retreat:** enter below `retreatHp` (0.35), or when advantage drops under −`aggression` − 1. Order to its own base (|x| ≥ 44), take any own-team globe within 6 m of the path, and save W for a telegraph.
+- **Dodge:** triggered by a perceived enemy `cast` fact, so the cast point counts toward reaction time. A normal bot sees an 8 m Q with about 0.27 s left to clear it. For each Q, R or Ball shot whose predicted sweep passes within the bot's radius + 0.6 m, roll `dodge` once; a failed roll commits, with no re-roll for that shot. On success, the obstacle module finds the nearest cleared spot perpendicular to the shot. The bot walks there if it can arrive before impact at its current speed; otherwise it Vaults there if W is up; otherwise it doesn't try. Rain uses the same test for its nearest edge + 0.5 m. From the centre, walking is too slow and it takes a Vault.
+- **Skillshots:** Q aims at an intercept solved from the perceived position and velocity, then misses like a human would. The lead is scaled by `1 + N(0, leadError)`, the angle rotated by `N(0, jitter)` radians, and the release waits `reaction` after the target first came into range. A bot casts only if the perceived sweep says the first thing on the line is a hero, since Q stops at the first minion. It holds Q while the target is perceived mid-Vault. E aims at the perceived position plus 0.7 s of velocity and prefers a spot that covers two heroes. R (M5) only on two heroes in a line or a target under 30%.
+- **Ball:** at the 30 s warning a bot finishes its wave. At 10 s left, every bot above 50% HP walks toward the plaza. After that, the lane doc's rule applies. A bot contests when its side has at least as many heroes within 12 m of the Ball and more than half their HP. Otherwise it shadows at 8 m, focuses the carrier to force a drop, and grabs the loose Ball. Only the nearest ally channels the pickup; the others stand between the carrier and the nearest enemy. If the catch rule ships, bots catch at `catchRate`.
+- **Carrier:** since any slot or `primary` press throws, a carrier sends no edges except the deliberate throw. Dodge and retreat still apply, as movement only at ×0.85. It walks the lane to the frontmost vulnerable enemy structure, or the flank if an enemy hero is within 10 m of the lane path. It throws when that structure's centre is 0.5 m inside the Ball's reach (6.9, 7.9 and 8.2 m for tower, fort and core), or at an enemy hero within 4 m.
+- **Knobs:** `tune.bots` with a preset per difficulty and each value tunable in the GUI. Enemies take `?bots=easy|normal|hard` (default normal); allies are always normal.
+
+| Knob            | Easy | Normal | Hard | Meaning                                     |
+| --------------- | ---- | ------ | ---- | ------------------------------------------- |
+| `reaction`      | 0.45 | 0.3    | 0.18 | Perception lag and hold before a release, s |
+| `dodgeReaction` | 0.3  | 0.2    | 0.12 | Lag from a perceived `cast` to the dodge, s |
+| `jitter`        | 0.14 | 0.08   | 0.04 | Aim angle σ, radians                        |
+| `leadError`     | 0.35 | 0.2    | 0.1  | Lead scale σ                                |
+| `dodge`         | 0.2  | 0.5    | 0.75 | Chance to try dodging a threatening shot    |
+| `aggression`    | 0.3  | 0.6    | 0.9  | Disadvantage a bot will still fight at      |
+| `catchRate`     | 0.1  | 0.3    | 0.5  | Ball catch chance                           |
+
+**Test** (`tests/moba-bots.test.js`):
+
+- **Match:** a headless match on six bot heroes, all normal, with seeds 1, 2 and 3, stepped for at most 54 000 ticks. Each seed must end in `matchOver` from a core kill. Every bot frame must pass `validIntent`.
+- **Determinism:** the same seed run twice, and run once driven at 30 Hz and once at 144 Hz render, must produce identical per-tick snapshots and facts.
+- **No stuck brain:** no living bot may move less than 2 m in 30 s while no enemy is within 12 m.
+- **Fixtures:** retreat latches from 34% to 90% HP through a dodge; a carrier never sends a non-throw edge and throws at the right reach; no tower aggro unless the kill exception holds; an attack order survives its target moving 3 m; a blocked or too-late dodge falls back to Vault, or to nothing; a close Q and a centre-of-Rain escape.
+- **If a seed runs long,** the lane doc's rule applies: shorten the Ball interval first, then bring the late phase and brutes forward.
 
 ## Milestones
 

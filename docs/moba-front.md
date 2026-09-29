@@ -1,0 +1,40 @@
+# MOBA front end
+
+Mode select, hero select, loading, the match, and post-match, all for `?mode=moba`. The in-game look is [moba-look.md](moba-look.md), and the stats come from [moba-plan.md](moba-plan.md). Everything lives in `plugins/moba/front/`. The screens are DOM and CSS; WebGL draws only the hero and the descent.
+
+**The two looks share an ink and differ in weight.** The front end is the world, drawn in ligne claire: one thin, even navy line, pale fills, fine hatching where the shade falls, and a lot of empty sky. The match is a toy printed from that world: thick ink, loud flat colour, halftone, and a crowded ground. Both use the same navy `ink`, the same `cream` and the same team colours. The front-end pastels come from the palette roles mixed 60% toward cream, so they add no new roles. The loading descent is where one look becomes the other: the camera falls from the horizon to the lane while the line thickens and the colours saturate. Keeping them this far apart is deliberate. The quiet in the front end is what makes the match feel loud.
+
+## Core changes (approved, opt-in, scoped)
+
+- **Style preset:** `setStylePreset({ line, hatch, alpha })` returns a restore function, and the run scope calls it on dispose. `alpha` clears the sky and blits transparent. `hatch` is new shader logic: world-anchored lines replace the halftone dots, and the cream bands are dropped. The defaults are today's pass, byte for byte. Tests: the characterization snapshots stay identical, and a pixel diff of a fixed dodgeball frame, before and after a preset-and-restore round trip, shows nothing.
+- **Render gate:** `app.renderDemand(fn)`, scoped the same way. `browser.js` skips `view.render()` while any demand says no, but it keeps running `app.frame`, so menu input is still polled. Verify zero draw calls on model-free screens with `renderer.info`.
+- **Tune scope:** moba's `debug.tune` folders register once, in a scope that covers selection and play, rather than per gameplay run. Any edit invalidates the kit card. Test: editing `loose.damage` while hero select sits idle redraws the number.
+- **Lettering:** Josefin Sans (OFL), self-hosted as two woff2 subsets (light and regular, Latin only) in `public/fonts/`, and preloaded.
+
+## The shared backdrop
+
+- One scene sits behind every screen and never remounts: a vast pastel desert under a sky that fills three quarters of the frame. The sky is CSS gradient bands from peach through mint to pale lilac, with a huge pale planet low on the left and long, flat strata of cloud.
+- The dunes, mesas and one broken arch are hand-written inline SVG paths. The shade sides are hatched with an SVG `<pattern>` of 0.75 px lines at 30°. A lone figure, the Fletcher's silhouette, stands on the far ridge.
+- Compositing budget: four parallax layers, none rastered larger than the viewport plus 10%. Hatching never scales. The descent scales only a pre-rasterized, unhatched copy, and crossfades to it first. Each screen gets its own sky by crossfading two stacked gradient layers. At most six animated surfaces are alive at once, and that count includes View Transition snapshots, so a transition only runs while the backdrop is still. There's no `filter`, no `backdrop-filter`, and no animated gradient or shadow.
+- Type: Darumadrop (`--ui-font`) sets only the big words (VICTORY, mode names, LOCK IN). Josefin Sans sets everything else, with tabular figures for numbers. Sound: one airy synth chord per confirm, and a low wind bed from `music.js`.
+
+## Screens
+
+- **Mode select:** the modes stand as cards on the horizon. _Practice_ (the sparring dummies) comes first; _Versus AI_ (3v3) appears once the bots ship. A mode that doesn't exist yet gets no card. Esc or B goes back to the dodgeball hub. Entry is a hub portal (plan question 4); until that exists, `?mode=moba` opens this screen.
+- **Hero select:** the hero is big, over the left third, standing on a dune with a low horizon, so a big figure still gets a big sky. It's the real 3D Fletcher on the alpha preset above the SVG backdrop. It idles, and when a skill is focused it casts it on a small printed patch, with its in-game telegraph.
+- **Kit card:** on the right, the trait, Q, W, E and R, each with a name, one plain line and its key. It's built from `tune` and redrawn on edit (see Tune scope).
+- **Numbers:** a _Numbers_ button opens the full values, and the derived ones come from pure functions in `front/stats.js`. Warning time and flight time are shown apart. Q warns for its 0.133 s cast point, then flies 8 m in 0.33 s, and a sidestep needs (0.3 + 0.45) / 5 = 0.15 s. Rain's escape from dead centre is (2.5 + 0.45) / 5 = 0.59 s against a 0.7 s delay, 0.11 s to spare. Tests step movement at 60 Hz, acceleration included, and check each threshold from both sides. Values are shown at level 1 and level 10 (+4% per level).
+- **Seats:** the six stand along the bottom as small ligne-claire busts. With one hero there's no picking, so no roster rail and no locked silhouettes. When a second hero exists, add a rail and cycle it with LB/RB.
+- **Input:** one focus ring shared by pad, keyboard and mouse, like `core/overlay.js`. Tab and Shift-Tab only navigate. The kit slots, _Numbers_, _Back_ and _Lock in_ are all focusable buttons. A, Enter or a click activates the focused control and nothing else, so confirming on Q previews Q. B or Esc means _Back_. Prompts follow the last device used.
+- **Loading:** the two teams stand as rows of small figures on facing ridges, with the map's name in the sky. The map builds behind the screen with the sim frozen. The descent starts only when the map is ready _and_ a 1.2 s hold has run out. A confirm press during the hold skips the rest of the hold but never the readiness wait. That press is consumed, so it can't reach the match. The **descent** takes 0.8 s: the backdrop scales and fades while the camera eases from a far, high pose down to the follow camera, and the preset tweens to the sticker values. The sim, the clock and match input stay frozen until it lands. Back during loading cancels, disposes the map and returns to hero select.
+- **Post-match:** it opens after the core shatter. VICTORY or DEFEAT fills a dusk sky in the team colour. Below it is a ligne-claire table with one row per hero: takedowns, deaths, hero damage, siege damage, Ball hits and XP soaked. A team XP graph in SVG marks structure kills and Balls. Buttons: _Again_ (same seats, straight to loading), _Hero_ and _Modes_. Counters come from sim facts, never from scraping the DOM.
+
+## Build order
+
+One thread per slice. Each passes `bun run check`, completes its flow with keyboard only, pad only and mouse only, and backs out one screen per Esc or B. Screenshots are at 1440 × 900, 1280 × 720 and 2560 × 1080.
+
+1. **Core, backdrop and mode select:** the preset and render-gate APIs, the fonts, the desert, and Practice starting directly with a plain cut. Screenshots: each card focused by pad. Traces: 10 s idle with no layout or paint per frame, zero draw calls, and a sky crossfade at 2560 × 1440 and DPR 2.
+2. **Hero select:** preset hero, kit, Numbers, seats, tune scope; _Lock in_ still does a direct start. Screenshots: default; Q mid-preview; Numbers open; the same after a `&debug` edit; grayscale for the hatching.
+3. **Loading and descent:** gates, frozen sim, skip, cancel. Tests: held confirm, early skip, a slow build (stubbed at 3 s), cancel mid-load. Screenshots at 0%, 50% and 100% of the descent. Trace at 2560 × 1440 and DPR 2, checking raster work and hatch shimmer.
+4. **Versus AI** (after the M4 bots): the card, six seats, and a full 3v3 through loading.
+5. **Post-match**, after the core shatter (moba-lane.md build step 6, which ships first): the dusk sky, table, graph and buttons. Screenshots: victory and defeat from a seeded bot match, with pad focus on _Again_. Test: _Again_ starts clean, with the pools empty and the clock at 0:00.
