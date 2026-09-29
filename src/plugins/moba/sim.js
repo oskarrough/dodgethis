@@ -1,9 +1,11 @@
+import { createLane } from './lane.js'
+import { createLaneView } from './lane-view.js'
 import { createBody } from '../../core/body.js'
 import { PALETTE } from '../../core/style.js'
 import { STEP } from '../../core/app.js'
 import { SCHEMES } from '../../core/intents.js'
 import { tune, profile } from './tune.js'
-import { SPAWN, FLOOR, clampWalkable, clampMap, segmentClear } from './obstacles.js'
+import { OBSTACLES, SPAWN, FLOOR, clampWalkable, clampMap, segmentClear } from './obstacles.js'
 import { createPathPlanner, pursue } from './path.js'
 import { stepShot } from './skillshot.js'
 
@@ -17,7 +19,8 @@ const dirOf = (yaw) => ({ x: -Math.sin(yaw), z: -Math.cos(yaw) })
 const DUMMY_POSTS = tune.map.dummyPosts
 const ABILITIES = { slot1: 'loose', slot2: 'vault', slot3: 'rain' }
 
-// The feel slice's simulation: heroes driven by intent frames, strafing dummies, swept skillshots. No DOM; presentation reads it and its facts.
+// Heroes read intents; optional lane agents share damage, shots and targeting. No DOM.
+// Training fixtures retain the dummies; the browser opts into `lane: true`.
 // `heroes` is [{ id, team }], each id a participant in `intents`. `present(fact)` receives plain facts. `rng()` drives the dummies.
 export function createSim({
 	scene,
@@ -28,8 +31,32 @@ export function createSim({
 	smooth = null,
 	present: emit = () => {},
 	rng = Math.random,
+	lane: withLane = false,
 }) {
-	const planPath = createPathPlanner({ radius: profile.radius, ...tune.orders })
+	const laneView = withLane ? createLaneView(scene, smooth) : null
+	const towerObstacles = withLane
+		? ['A', 'B'].map((team) => ({
+				id: `tower-${team}`,
+				kind: 'tower',
+				x: team === 'A' ? -tune.tower.x : tune.tower.x,
+				z: 0,
+				r: tune.tower.radius,
+			}))
+		: []
+	OBSTACLES.push(...towerObstacles)
+	const towerColliders = new Map(
+		towerObstacles.map((o) => [
+			o.id,
+			world.createCollider(
+				RAPIER.ColliderDesc.cylinder(tune.laneView.towerHeight / 2, o.r).setTranslation(
+					o.x,
+					tune.laneView.towerHeight / 2,
+					0,
+				),
+			),
+		]),
+	)
+	let planPath = createPathPlanner({ radius: profile.radius, ...tune.orders })
 	let t = 0
 	const present = (fact) => emit({ ...fact, tick: t })
 	let shotIds = 0
@@ -77,7 +104,7 @@ export function createSim({
 		}
 	})
 	for (const h of heroes) h.body.face(dirOf(h.yaw))
-	const dummies = DUMMY_POSTS.map((post, i) => ({
+	const dummies = (withLane ? [] : DUMMY_POSTS).map((post, i) => ({
 		id: `dummy${i + 1}`,
 		team: 'B',
 		post,
@@ -96,10 +123,78 @@ export function createSim({
 		slowUntil: 0,
 	}))
 
+	const lane = withLane
+		? createLane({
+				heroes,
+				present,
+				makeBody: laneView.makeBody,
+				removeTower(unit) {
+					const obstacle = towerObstacles.find((o) => o.id === unit.id)
+					const index = OBSTACLES.indexOf(obstacle)
+					if (index >= 0) OBSTACLES.splice(index, 1)
+					const collider = towerColliders.get(unit.id)
+					if (collider) world.removeCollider(collider, true)
+					towerColliders.delete(unit.id)
+					planPath = createPathPlanner({ radius: profile.radius, ...tune.orders })
+				},
+				damage(source, target, damage) {
+					hit(
+						{
+							owner: source.id,
+							team: source.team,
+							slot: source.kind,
+							damage,
+							dx: 0,
+							dz: 0,
+							id: ++shotIds,
+						},
+						{ id: target.id, unit: target, hero: !target.kind },
+						target.body.position,
+					)
+				},
+				projectile(source, target, stats) {
+					const p = source.body.position,
+						tp = target.body.position
+					const length = Math.hypot(tp.x - p.x, tp.z - p.z) || 1
+					const shot = {
+						id: ++shotIds,
+						owner: source.id,
+						team: source.team,
+						slot: source.kind,
+						target: target.id,
+						x: p.x,
+						z: p.z,
+						dx: (tp.x - p.x) / length,
+						dz: (tp.z - p.z) / length,
+						speed: source.kind === 'tower' ? stats.speed : stats.shotSpeed,
+						radius: tune.attack.radius,
+						range: FLOOR.halfX * 4,
+						travelled: 0,
+						passed: [],
+						damage: stats.damage,
+					}
+					shots.push(shot)
+					present({
+						type: 'projectile',
+						id: shot.id,
+						hero: source.id,
+						slot: source.kind,
+						point: { x: p.x, y: tune.loose.height, z: p.z },
+						direction: { x: shot.dx, z: shot.dz },
+					})
+				},
+			})
+		: null
+
 	// Everyone who can be shot, targeted or picked, as plain circles.
 	const units = () => [
 		...heroes.filter((h) => !h.dead).map((h) => ({ id: h.id, team: h.team, unit: h, hero: true })),
 		...dummies.filter((d) => !d.dead).map((d) => ({ id: d.id, team: d.team, unit: d, hero: true })),
+		...(lane
+			? [...lane.minions, ...lane.structures]
+					.filter((u) => !u.dead)
+					.map((u) => ({ id: u.id, team: u.team, unit: u, hero: false }))
+			: []),
 	]
 	const enemiesOf = (team) =>
 		units()
@@ -108,10 +203,12 @@ export function createSim({
 				...u,
 				x: u.unit.body.position.x,
 				z: u.unit.body.position.z,
-				radius: profile.radius,
+				radius: u.unit.body.radius,
 			}))
 	const find = (id) =>
-		heroes.find((h) => h.id === id && !h.dead) ?? dummies.find((d) => d.id === id && !d.dead)
+		heroes.find((h) => h.id === id && !h.dead) ??
+		dummies.find((d) => d.id === id && !d.dead) ??
+		lane?.find(id)
 
 	// The enemy an order point lands on: the unit's silhouette on the ground, its axis projected along the view, so a click on a torso counts.
 	function pick(team, p) {
@@ -123,7 +220,10 @@ export function createSim({
 			const sz = e.z - tall * lean
 			const s = Math.max(0, Math.min(1, (e.z - p.z) / (e.z - sz || 1)))
 			const d = Math.hypot(p.x - e.x, p.z - (e.z + (sz - e.z) * s)) - e.radius
-			if (d <= tune.orders.pick && d < bestD) {
+			if (
+				d <= tune.orders.pick &&
+				(!best || (e.hero && !best.hero) || (e.hero === best.hero && d < bestD))
+			) {
 				best = e
 				bestD = d
 			}
@@ -200,7 +300,11 @@ export function createSim({
 			const dx = e.x - p.x
 			const dz = e.z - p.z
 			const d = Math.hypot(dx, dz)
-			if (d > tune.orders.attackRange * 1.5 || d >= bestD) continue
+			if (
+				d > tune.orders.attackRange * 1.5 ||
+				(best && ((!e.hero && best.hero) || (e.hero === best.hero && d >= bestD)))
+			)
+				continue
 			if ((dx * f.x + dz * f.z) / (d * fl || 1) < Math.cos(Math.PI / 8)) continue
 			best = e
 			bestD = d
@@ -254,8 +358,14 @@ export function createSim({
 				const tp = target.body.position
 				const p = body.position
 				if (
-					Math.hypot(tp.x - p.x, tp.z - p.z) <= tune.orders.attackRange &&
-					segmentClear(p, tp, tune.attack.radius)
+					Math.hypot(tp.x - p.x, tp.z - p.z) <=
+						tune.orders.attackRange + (target.kind ? target.body.radius : 0) &&
+					segmentClear(
+						p,
+						tp,
+						tune.attack.radius,
+						OBSTACLES.filter((o) => o.id !== target.id),
+					)
 				) {
 					o.path = null
 					if (t >= h.attackTick - ticks(tune.attack.windup) + 1 && !body.dashing) {
@@ -580,7 +690,11 @@ export function createSim({
 		const unit = target.unit
 		const direction = { x: shot.dx, y: 0, z: shot.dz }
 		const at = { x: point.x, y: tune.loose.height, z: point.z }
-		const damage = shot.damage ?? (shot.slot === 'slot3' ? tune.rain.damage : tune.loose.damage)
+		const rawDamage = shot.damage ?? (shot.slot === 'slot3' ? tune.rain.damage : tune.loose.damage)
+		const damage =
+			rawDamage *
+			(unit.kind === 'tower' && shot.slot.startsWith('slot') ? tune.waves.abilityStructure : 1)
+		lane?.help(find(shot.owner), unit, t)
 		unit.hp = Math.max(0, unit.hp - damage)
 		const lethal = unit.hp === 0
 		if (shot.slot === 'slot1' && target.hero) {
@@ -606,6 +720,12 @@ export function createSim({
 		unit.dead = true
 		unit.corpse = unit.body
 		unit.body.retire()
+		if (unit.kind) {
+			unit.attack = null
+			lane.reward(unit, shot.team ?? (unit.team === 'A' ? 'B' : 'A'))
+			present({ type: 'death', source: shot.owner, target: unit.id, point: at, direction })
+			return
+		}
 		unit.respawnTick =
 			t +
 			ticks(
@@ -622,6 +742,7 @@ export function createSim({
 
 	function step(dt = STEP) {
 		t++
+		lane?.step(t, dt)
 		const dashEnds = []
 		for (const h of heroes) {
 			const dashing = h.body.dashing
@@ -657,12 +778,24 @@ export function createSim({
 			}
 			zones.splice(i, 1)
 		}
+		const shotTargets = new Map(['A', 'B'].map((team) => [team, enemiesOf(team)]))
+		const shotTargetById = new Map([...shotTargets.values()].flat().map((unit) => [unit.id, unit]))
 		for (let i = shots.length - 1; i >= 0; i--) {
 			const shot = shots[i]
-			let targets = enemiesOf(shot.team)
+			let targets
 			if (shot.target) {
-				targets = targets.filter((e) => e.id === shot.target)
+				const candidate = shotTargetById.get(shot.target)
+				targets =
+					candidate && !candidate.unit.dead && candidate.team !== shot.team ? [candidate] : []
 				if (!targets.length) {
+					present({
+						type: 'expired',
+						source: shot.owner,
+						projectile: shot.id,
+						reason: 'targetLost',
+						point: { x: shot.x, y: tune.loose.height, z: shot.z },
+						direction: { x: shot.dx, y: 0, z: shot.dz },
+					})
 					shots.splice(i, 1)
 					continue
 				}
@@ -670,7 +803,7 @@ export function createSim({
 				const length = Math.hypot(target.x - shot.x, target.z - shot.z) || 1
 				shot.dx = (target.x - shot.x) / length
 				shot.dz = (target.z - shot.z) / length
-			}
+			} else targets = (shotTargets.get(shot.team) ?? []).filter((unit) => !unit.unit.dead)
 			const r = stepShot(shot, dt, targets, shot.target ? -Infinity : tune.loose.nearMiss)
 			for (const n of r.nearMisses)
 				present({
@@ -691,6 +824,15 @@ export function createSim({
 					direction: { x: shot.dx, y: 0, z: shot.dz },
 				})
 			if (r.hit) hit(shot, r.hit, r.point)
+			if (r.expired && !r.hit && !r.blocked)
+				present({
+					type: 'expired',
+					source: shot.owner,
+					projectile: shot.id,
+					reason: 'range',
+					point: { x: shot.x, y: tune.loose.height, z: shot.z },
+					direction: { x: shot.dx, y: 0, z: shot.dz },
+				})
 			if (r.hit || r.expired) shots.splice(i, 1)
 		}
 	}
@@ -706,7 +848,7 @@ export function createSim({
 		if (!dir) {
 			let best = null
 			let bestD = range
-			for (const e of enemiesOf(h.team)) {
+			for (const e of enemiesOf(h.team).filter((e) => e.hero)) {
 				const d = Math.hypot(e.x - p.x, e.z - p.z)
 				if (d <= bestD) {
 					best = e
@@ -720,7 +862,7 @@ export function createSim({
 		let angle = Math.atan2(dir.x, dir.z)
 		if (slot === 'slot1') {
 			let bend = null
-			for (const e of enemiesOf(h.team)) {
+			for (const e of enemiesOf(h.team).filter((e) => e.hero)) {
 				const d = Math.hypot(e.x - p.x, e.z - p.z)
 				if (d > range + e.radius) continue
 				const gap =
@@ -742,6 +884,38 @@ export function createSim({
 		const pos = (b) => ({ x: q(b.position.x), z: q(b.position.z) })
 		return {
 			t,
+			...(lane
+				? {
+						match: { nextWave: lane.nextWave },
+						teams: structuredClone(lane.teams),
+						minions: lane.minions.map((u) => ({
+							id: u.id,
+							kind: u.kind,
+							team: u.team,
+							hp: u.hp,
+							pos: pos(u.body),
+							yaw: q(u.yaw ?? 0),
+							target: u.target,
+							attackTick: u.attackTick,
+							attack: u.attack && { ...u.attack },
+							aggroUntil: u.aggroUntil,
+							forced: u.forced,
+							returning: !!u.returning,
+							slowUntil: u.slowUntil,
+						})),
+						structures: lane.structures.map((u) => ({
+							id: u.id,
+							team: u.team,
+							hp: u.hp,
+							dead: u.dead,
+							target: u.target,
+							attackTick: u.attackTick,
+							attack: u.attack && { ...u.attack },
+							aggroUntil: u.aggroUntil,
+							forced: u.forced,
+						})),
+					}
+				: {}),
 			map: FLOOR.id,
 			heroes: heroes.map((h) => ({
 				id: h.id,
@@ -804,6 +978,12 @@ export function createSim({
 	}
 
 	function dispose() {
+		laneView?.dispose()
+		for (const o of towerObstacles) {
+			const index = OBSTACLES.indexOf(o)
+			if (index >= 0) OBSTACLES.splice(index, 1)
+		}
+		for (const collider of towerColliders.values()) world.removeCollider(collider, true)
 		for (const h of heroes) {
 			h.corpse?.dispose()
 			if (!h.dead) h.body.dispose()
@@ -821,6 +1001,9 @@ export function createSim({
 		dummies,
 		shots,
 		zones,
+		lane,
+		laneView,
+		find,
 		step,
 		stickAim,
 		pick,

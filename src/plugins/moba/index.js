@@ -25,9 +25,13 @@ const FACTS = [
 	'spawn',
 	'denied',
 	'impact',
+	'aggro',
+	'expired',
+	'xp',
+	'structureDown',
 ]
 
-// Lane map slice: one hero and two practice dummies; structures and waves follow.
+// Lane slice: one hero, two towers and opposing minion waves.
 // Boots with ?mode=moba. Everything lives as long as a run of the mode.
 export default function moba(app) {
 	const { scene, world, RAPIER, input, audio } = app
@@ -61,6 +65,7 @@ export default function moba(app) {
 				heroes: [{ id: local, team: 'A' }],
 				smooth: run.smooth,
 				present: run.present,
+				lane: true,
 			})
 			const hero = sim.heroes[0]
 			const feedback = createFeedback({
@@ -94,7 +99,7 @@ export default function moba(app) {
 			run.on('present', feedback.present)
 
 			const locate = (id) => {
-				const unit = id === hero.id ? hero : sim.dummies.find((d) => d.id === id && !d.dead)
+				const unit = sim.find(id)
 				return unit?.body.mesh.position ?? null
 			}
 			run.system('present', ({ dt, gameDt, alpha }) => {
@@ -113,12 +118,13 @@ export default function moba(app) {
 					pad: onPad(),
 					paused: frozen,
 				})
+				sim.laneView.update(sim.lane, sim.heroes, frozen ? 0 : alpha, locate, step)
 				const gone = view.update(step, {
 					live: new Set(sim.shots.map((s) => s.id)),
 					hero: p,
 					aim: hero.cast?.slot === 'slot1' ? hero.cast.target : frame.aim,
 					held: !hero.dead && (frame.held.slot1 || hero.cast?.slot === 'slot1'),
-					units: [...sim.heroes, ...sim.dummies],
+					units: [...sim.heroes, ...sim.lane.minions, ...sim.lane.structures],
 					hovered,
 					locate,
 				})
@@ -172,6 +178,36 @@ export default function moba(app) {
 			window.addEventListener('keydown', onKey, { signal: run.signal })
 			window.addEventListener('keyup', onKey, { signal: run.signal })
 
+			run.debug.tune('tower', tune.tower, (f, t) => {
+				f.add(t, 'hp', 100, 6000, 100).name('HP (applies on restart)')
+				f.add(t, 'x', 10, 25, 1).name('position (applies on restart)')
+				f.add(t, 'radius', 0.5, 2, 0.1).name('radius (applies on restart)')
+				f.add(t, 'damage', 1, 300, 1)
+				f.add(t, 'rate', 0.25, 3, 0.05)
+				f.add(t, 'range', 1, 12, 0.25)
+				f.add(t, 'speed', 1, 40, 1)
+				f.add(t, 'tell', 0.3, 1, app.clock.step)
+			})
+			run.debug.tune('waves', tune.waves, (f, t) => {
+				f.add(t, 'first', app.clock.step, 30, app.clock.step).name(
+					'first wave (applies on restart)',
+				)
+				f.add(t, 'interval', app.clock.step, 60, app.clock.step).name('interval (next scheduling)')
+				f.add(t, 'aggro', 1, 10, 0.25)
+				f.add(t, 'helpHold', app.clock.step, 5, app.clock.step)
+				f.add(t, 'leash', 1, 12, 0.25)
+				f.add(t, 'soak', 1, 20, 0.5)
+			})
+			for (const kind of ['melee', 'ranged', 'wizard'])
+				run.debug.tune(kind, tune.minions[kind], (f, t) => {
+					f.add(t, 'hp', 1, 1000, 1).name('HP (next spawn)')
+					f.add(t, 'damage', 1, 100, 1)
+					f.add(t, 'rate', 0.1, 3, 0.05)
+					f.add(t, 'range', 0.1, 8, 0.1)
+					f.add(t, 'speed', 0, 8, 0.1)
+					f.add(t, 'tell', 0.3, 1, app.clock.step)
+					f.add(t, 'xp', 0, 200, 1)
+				})
 			// --- Tune GUI: moba's sections come and go with the run; the values live in tune.js and survive restarts. ---
 			run.debug.tune('hero', tune.hero, (f, t) => {
 				f.add(t, 'hp', 200, 3000, 100).name('HP (applies on restart)')

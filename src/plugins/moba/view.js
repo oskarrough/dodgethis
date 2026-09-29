@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { FORWARD_LAYER } from '../../core/stylepass.js'
 import { makeStyleMaterial } from '../../core/stylepass.js'
 import { tune } from './tune.js'
 import { projectMap } from './obstacles.js'
@@ -103,6 +104,26 @@ export function createView(scene, smooth) {
 		}
 	}
 
+	const xpLabels = []
+	function xp(amount, point) {
+		const canvas = document.createElement('canvas')
+		canvas.width = tune.laneView.xpWidth
+		canvas.height = tune.laneView.xpHeight
+		const context = canvas.getContext('2d')
+		context.font = `bold ${tune.laneView.xpFont}px monospace`
+		context.fillStyle = '#ffd76a'
+		context.textAlign = 'center'
+		context.fillText(`+${amount} XP`, canvas.width / 2, canvas.height * tune.laneView.xpBaseline)
+		const texture = new THREE.CanvasTexture(canvas)
+		const material = new THREE.SpriteMaterial({ map: texture, depthWrite: false })
+		const mesh = new THREE.Sprite(material)
+		mesh.layers.set(FORWARD_LAYER)
+		mesh.position.set(point.x, tune.laneView.xpY, point.z)
+		mesh.scale.set(tune.laneView.xpScale, tune.laneView.xpScale / 2, 1)
+		group.add(mesh)
+		xpLabels.push({ mesh, texture, material, life: tune.laneView.xpLife })
+	}
+
 	// --- Skillshots: a bright bolt with a trail that grows from the hand. ---
 	const boltGeometry = own(new THREE.CapsuleGeometry(0.12, 0.7, 4, 8).rotateX(Math.PI / 2))
 	const trailGeometry = own(new THREE.BoxGeometry(0.1, 0.06, 1).translate(0, 0, -0.5))
@@ -114,9 +135,12 @@ export function createView(scene, smooth) {
 		const mesh = new THREE.Group()
 		const body = new THREE.Mesh(
 			boltGeometry,
-			shot.slot === 'primary' ? barColors[shot.team] : boltMaterial,
+			shot.slot === 'primary' || ['tower', 'ranged', 'wizard'].includes(shot.slot)
+				? barColors[shot.team]
+				: boltMaterial,
 		)
 		if (shot.slot === 'primary') body.scale.setScalar(tune.attack.visualScale)
+		if (shot.slot === 'tower') body.scale.setScalar(tune.laneView.orbScale)
 		const trail = new THREE.Mesh(trailGeometry, trailMaterial)
 		trail.scale.z = 0.001
 		mesh.add(body, trail)
@@ -146,6 +170,17 @@ export function createView(scene, smooth) {
 	// Per rendered frame. `live` is the set of shot ids still flying; the rest are returned so feedback can fizzle them.
 	function update(dt, { live, hero, aim, held, hovered, locate, units = [] }) {
 		health(units)
+		for (let i = xpLabels.length - 1; i >= 0; i--) {
+			const label = xpLabels[i]
+			label.life -= dt
+			label.mesh.position.y += dt * tune.laneView.xpRise
+			if (label.life <= 0) {
+				group.remove(label.mesh)
+				label.texture.dispose()
+				label.material.dispose()
+				xpLabels.splice(i, 1)
+			}
+		}
 		for (const p of pings) {
 			if (p.life <= 0) continue
 			p.life -= dt
@@ -197,6 +232,12 @@ export function createView(scene, smooth) {
 	}
 
 	function reset() {
+		for (const label of xpLabels) {
+			group.remove(label.mesh)
+			label.texture.dispose()
+			label.material.dispose()
+		}
+		xpLabels.length = 0
 		for (const id of bolts.keys()) unbolt(id)
 		for (const p of pings) {
 			p.life = 0
@@ -211,7 +252,7 @@ export function createView(scene, smooth) {
 		for (const x of owned) x.dispose()
 	}
 
-	return { ping, bolt, unbolt, update, reset, dispose }
+	return { ping, xp, bolt, unbolt, update, reset, dispose }
 }
 
 const PING = 0.25

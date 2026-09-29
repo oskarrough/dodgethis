@@ -1,4 +1,4 @@
-import { sweepHit, sweepObstacles, mapExit } from './obstacles.js'
+import { OBSTACLES, sweepHit, sweepObstacles, mapExit } from './obstacles.js'
 export { sweepHit } from './obstacles.js'
 
 // Closest approach of a→b to a point: the fraction along it and the distance.
@@ -22,7 +22,14 @@ export function stepShot(shot, dt, targets, nearMiss) {
 	const from = { x: ax, z: az },
 		to = { x: bx, z: bz }
 	// Homing attacks check sight before windup; once released, cover cannot dodge them.
-	const obstacle = shot.target ? null : sweepObstacles(from, to, shot.radius)
+	const obstacle = shot.target
+		? null
+		: sweepObstacles(
+				from,
+				to,
+				shot.radius,
+				OBSTACLES.filter((o) => o.kind !== 'tower'),
+			)
 	const edge = mapExit(from, to, shot.radius)
 	const blocked = obstacle === null ? edge : edge === null ? obstacle : Math.min(obstacle, edge)
 	let at = blocked ?? Infinity

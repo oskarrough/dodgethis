@@ -25,7 +25,11 @@ export function createFeedback({ juice, sfx, camera, input, view, skillsView, hu
 		return elapsed > 0 ? 1 - (slowed / elapsed) * 0.9 : 1
 	}
 
-	const unitOf = (id) => sim.heroes.find((h) => h.id === id) ?? sim.dummies.find((d) => d.id === id)
+	const unitOf = (id) =>
+		sim.heroes.find((h) => h.id === id) ??
+		sim.dummies.find((d) => d.id === id) ??
+		sim.lane?.minions.find((u) => u.id === id) ??
+		sim.lane?.structures.find((u) => u.id === id)
 
 	const sounded = new Map()
 	function cue(name, fact, gain = 1) {
@@ -68,9 +72,34 @@ export function createFeedback({ juice, sfx, camera, input, view, skillsView, hu
 				const shot = sim.shots.find((s) => s.id === fact.id)
 				if (shot) view.bolt(shot, fact.point)
 				unitOf(fact.hero)?.body.kick(0.18)
-				cue(fact.slot === 'primary' ? 'attack' : 'loose', fact, mine ? 1 : 0.45)
+				cue(
+					['tower', 'ranged', 'wizard'].includes(fact.slot)
+						? fact.slot
+						: fact.slot === 'primary'
+							? 'attack'
+							: 'loose',
+					fact,
+					mine ? 1 : 0.45,
+				)
 				return
 			}
+			case 'expired': {
+				const bolt = view.unbolt(fact.projectile)
+				if (bolt) fizzle([bolt])
+				return
+			}
+			case 'aggro':
+				view.ping('attack', fact.point, { follow: fact.target })
+				return
+			case 'xp':
+				view.xp?.(fact.amount, fact.point)
+				cue('xp', fact)
+				return
+			case 'structureDown':
+				juice.burst(fact.point, { x: 0, y: 1, z: 0 }, tune.juice.structureDown)
+				cue('structureDown', fact)
+				camera.shake(tune.juice.shakeTakedown)
+				return
 			case 'blocked':
 				view.unbolt(fact.projectile) // Prevent the generic expiry fizzle from also firing.
 				juice.burst(
@@ -96,7 +125,15 @@ export function createFeedback({ juice, sfx, camera, input, view, skillsView, hu
 					unit.body.squash(0.28)
 				}
 				juice.burst(fact.point, fact.direction, { count: 6, speed: 1.4, life: 0.3, size: 0.07 })
-				if (fact.slot !== 'slot3') cue(fact.slot === 'primary' ? 'attackHit' : 'looseHit', fact)
+				if (fact.slot !== 'slot3')
+					cue(
+						['tower', 'melee', 'ranged', 'wizard'].includes(fact.slot)
+							? fact.slot
+							: fact.slot === 'primary'
+								? 'attackHit'
+								: 'looseHit',
+						fact,
+					)
 				if (onMe) {
 					camera.shake(tune.juice.shakeTaken)
 					input.rumble(0.2, 0.3, 60)

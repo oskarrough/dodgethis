@@ -5,7 +5,7 @@ A small Heroes of the Storm-style mode: the smallest thing that already feels li
 ## Scope
 
 - **Match:** 3v3 (human + 2 bot allies vs 3 bots), all the same hero. Destroy the enemy core. 8–12 minutes. Boots with `?mode=moba` until the hub plugin exists.
-- **Map:** one flat lane along x, 104 × 26 m, with hedged flanks and six pillars; layout and structure positions are specified in [moba-lane.md](moba-lane.md). The map is built; structures and base healing follow.
+- **Map:** one flat lane along x, 104 × 26 m, with hedged flanks and six pillars; layout and structure positions are specified in [moba-lane.md](moba-lane.md). The map, one tower per side and minion waves are built; forts, cores, levels, globes and base healing follow.
 - **Structures** (no ammo; HotS removed it in 2017). Each is invulnerable until the one in front falls. Abilities deal 25% to structures; a kill is worth 300 XP.
 
 |       | HP   | Damage | Rate | Range | Targets                    |
@@ -77,7 +77,7 @@ Obedience from HotS, springs and juice from dodgethis. Everything below is moba'
 
 ## Facts and state
 
-- **`app.present` facts** (each has a `type`, carries copied data plus ids, and passes `validFact`): `order`, `cast`, `projectile`, `hit`, `nearMiss`, `death`, `spawn`, `denied`, `xp`, `levelUp`, `mount`, `globe`, `structureDown`, `matchOver`. `order` carries the ping (and `repeat` for RMB re-sends, which ping small and silent); `denied` is the cooldown flash. Moba's own switch maps them to juice verbs, sfx and rumble.
+- **`app.present` facts** (each has a `type`, carries copied data plus ids, and passes `validFact`): `order`, `cast`, `projectile`, `hit`, `nearMiss`, `death`, `spawn`, `denied`, `xp`, `levelUp`, `mount`, `globe`, `structureDown`, `matchOver`, `aggro`, `expired`. Expired homing shots report a lost target; missed skillshots report spent range, both with a fizzle. The current lane slice emits `aggro` on a call-for-help and `xp` on soak and tower destruction. `order` carries the ping (and `repeat` for RMB re-sends, which ping small and silent); `denied` is the cooldown flash. Moba's own switch maps them to juice verbs, sfx and rumble.
 - **Snapshot:** full plain JSON with timers in ticks, positions quantised inside the state, and the static layout keyed by map id. Paths are never replicated.
 
   ```
