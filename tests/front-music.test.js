@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test'
 import { createMusic } from '../src/core/music.js'
 
-test('front wind uses one looping voice, no timer, and releases all nodes on scene change', () => {
+test('wind uses one looping voice, no timer, and releases all nodes on scene change', () => {
 	const nodes = []
 	const timers = []
 	const node = () => {
@@ -18,7 +18,12 @@ test('front wind uses one looping voice, no timer, and releases all nodes on sce
 				this.stops++
 			},
 			start() {},
-			gain: { value: 0 },
+			gain: {
+				value: 0,
+				setValueAtTime(value) {
+					this.value = value
+				},
+			},
 			frequency: { value: 0 },
 		}
 		nodes.push(value)
@@ -32,10 +37,12 @@ test('front wind uses one looping voice, no timer, and releases all nodes on sce
 		createBiquadFilter: node,
 		createGain: node,
 	}
+	let volume = 1
 	const music = createMusic(
 		context,
 		{},
 		{
+			volume: () => volume,
 			startTimer: (tick) => {
 				timers.push(tick)
 				return timers.length
@@ -43,17 +50,23 @@ test('front wind uses one looping voice, no timer, and releases all nodes on sce
 			stopTimer() {},
 		},
 	)
-	music.setScene('front')
+	music.setScene('wind')
 	music.setEnabled(true)
 	expect(nodes).toHaveLength(3)
 	expect(nodes[0].loop).toBe(true)
 	expect(timers).toHaveLength(0)
+	volume = 0.25
+	music.refreshVolume()
+	expect(nodes[2].gain.value).toBe(0.055 * volume)
+	volume = 0
+	music.refreshVolume()
+	expect(nodes[2].gain.value).toBe(0)
 	music.setEnabled(true)
 	expect(nodes).toHaveLength(3)
 	music.setScene('silent')
 	expect(nodes[0].stops).toBe(1)
 	expect(nodes.every((n) => n.disconnects === 1)).toBe(true)
-	music.setScene('front')
+	music.setScene('wind')
 	expect(nodes).toHaveLength(6)
 	music.dispose()
 	expect(nodes[3].stops).toBe(1)

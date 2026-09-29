@@ -12,7 +12,7 @@ export function createControls({ focus, activate, back, device, count }) {
 			focus(index)
 		},
 		key(event) {
-			if (event.defaultPrevented || event.repeat) return
+			if (event.defaultPrevented || event.repeat || event.target?.closest?.('.lil-gui')) return
 			if (event.code === 'Backquote') return
 			if (
 				![

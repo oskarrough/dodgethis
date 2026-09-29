@@ -125,7 +125,7 @@ export async function createBrowserApp() {
 			audio.setSound(t.sound)
 			renderMute()
 		})
-		f.add(t, 'volume', 0, 1, 0.05)
+		f.add(t, 'volume', 0, 1, 0.05).onChange(audio.syncMusic)
 		f.add(t, 'shake')
 	})
 	app.debug.tune('debug', tune.debug, (f, t) => {

@@ -34,9 +34,10 @@ try {
 	/* Storage can be unavailable in private contexts. */
 }
 
-function syncMusic() {
+export function syncMusic() {
 	if (!gestureReceived || !ctx) return
 	if (!music) music = createMusic(ctx, master, { volume: () => tune.output.volume })
+	music.refreshVolume()
 	music.setScene(musicScene)
 	music.setEnabled(
 		musicEnabled && tune.output.sound && ctx.state === 'running' && !globalThis.document?.hidden,

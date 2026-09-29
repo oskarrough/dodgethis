@@ -2,6 +2,32 @@ import { expect, test } from 'bun:test'
 import { createApp } from '../src/core/app.js'
 import { createStylePresets } from '../src/core/style-presets.js'
 import { createControls } from '../src/plugins/moba/front/controls.js'
+import { projectFrame, easePointer } from '../src/plugins/moba/front/geometry.js'
+
+test('the sign shares an undistorted slice projection at wide and narrow aspect ratios', () => {
+	for (const [width, height] of [
+		[1440, 900],
+		[2560, 1080],
+		[390, 844],
+	]) {
+		const shot = projectFrame(width, height)
+		expect(shot.scale).toBe(Math.max((width * 1.1) / 1440, (height * 1.1) / 900))
+		expect(shot.signX - 95 * shot.scale).toBeGreaterThan(0)
+		expect(shot.signX + 95 * shot.scale).toBeLessThan(width)
+		expect(shot.ground).toBeGreaterThan(0)
+	}
+})
+
+test('pointer easing never overshoots, is frame-rate independent and holds for zero time', () => {
+	expect(easePointer(0, 1, 0, 0.18)).toBe(0)
+	const once = easePointer(0, 1, 1 / 30, 0.18)
+	const twice = easePointer(easePointer(0, 1, 1 / 60, 0.18), 1, 1 / 60, 0.18)
+	expect(once).toBeCloseTo(twice, 12)
+	for (const dt of [0, 0.001, 0.1, 1, 10]) {
+		expect(easePointer(-1, 1, dt, 0.18)).toBeGreaterThanOrEqual(-1)
+		expect(easePointer(-1, 1, dt, 0.18)).toBeLessThanOrEqual(1)
+	}
+})
 
 test('render demands stop drawing, not input or presentation, and release with their scope', () => {
 	const app = createApp()

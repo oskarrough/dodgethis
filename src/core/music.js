@@ -100,7 +100,7 @@ export function createMusic(
 	}
 	function start() {
 		if (!enabled || finished || timer !== null || wind) return
-		if (scene === 'front') {
+		if (scene === 'wind') {
 			const buffer = context.createBuffer(1, context.sampleRate * 4, context.sampleRate)
 			const samples = buffer.getChannelData(0)
 			for (let i = 0; i < samples.length; i++) samples[i] = Math.random() * 2 - 1
@@ -123,6 +123,9 @@ export function createMusic(
 		tick()
 	}
 	return {
+		refreshVolume() {
+			if (wind) wind.gain.gain.setValueAtTime(0.055 * volume(), context.currentTime)
+		},
 		setScene(value) {
 			if (value === scene) return
 			stop()
