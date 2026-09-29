@@ -492,6 +492,15 @@ export default function dodgeball(app, { hubPortal = null } = {}) {
 				splashEl.hidden = true
 				aim.hide()
 				resetPresentation()
+				shadows.update(null)
+				godmodeFx.update(0, null)
+				overlay.hide()
+				splashEl.hidden = true
+				scoreEl.hidden = true
+				hitConfirmation.hidden = true
+				hitmarker.classList.remove('near', 'kill')
+				weaponHud.update({ visible: false })
+				hud.textContent = ''
 				court.setShown(false)
 			})
 

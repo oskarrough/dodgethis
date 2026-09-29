@@ -22,7 +22,7 @@ Layout: `src/main.js` (composition only), `src/core/`, `src/plugins/dodgeball/`,
 - `feedback.js`: core gets a juice kit of verbs (`burst`, `mark`, `flash`, `retire`). Each mode keeps its own fact-to-verb switch. It moves into dodgeball whole for now and is extracted at moba M1.
 - Camera: core owns the rig, shake, FOV kick and the unshaken aim camera. The mode supplies `frame(dt) → { eye, target }`, applied to both cameras, with shake applied to the render camera only.
 - Unit visual: it lives on the core body (root `mesh`, a cosmetic `visual` child, a default mannequin). Loadouts parent their parts to `visual`.
-- Hub: it stays dodgeball's menu until moba needs a portal, then becomes a tiny plugin that renders entries registered by modes. Until then moba boots with `?mode=moba`.
+- Hub: dodgeball owns its difficulty portals. `plugins/mode-picker/` provides persistent browser chrome for switching solo runs; it disables switching during shared matches. `?mode=moba` still boots directly into the prototype.
 - Oskar's calls: one input path for solo and online humans; `shared` as the single social flag; each mode owns its replica; movement feel is a per-mode tune value; no talents in the MVP; pad casts hold to aim and release to fire.
 
 ## Splitting player.js
@@ -70,7 +70,7 @@ Before starting, add two characterization tests against today's code: a scripted
 - C. Intents and body. Write `core/intents.js` with the `direct` scheme, edge buffering (dash and jump 0.1 s), cancel/suspend and `validIntent`. Write dodgeball's `actions.js` from `online-match.js`'s per-seat loop and route solo humans through it. Split `player.js` as above, with movement profiles and per-call dash. Add render interpolation. The legacy online block maps frames onto today's input packet, so the wire doesn't change. The characterization tests may shift by at most one step.
 - D. Online. Put `replica.js` behind `snapshot/apply/validFact`, extracting `core/snapshot-buffer.js`. Move `online-match.js`'s dodgeball half (match rules, result cards, arrow count, charge meters) into dodgeball's flow, driven by `session`. The rest becomes `plugins/online/link.js`. Switch the wire to intent frames plus envelopes, bump `PROTO`, and delete every `onlineMatch`/`online.active` branch. Exit when the allowlist is empty and `grep -rE "online|peer|lobby" src/plugins/dodgeball` finds nothing. Done: rosters lost `peerId` (a human's id is its owner) and the hub round's `lobby` flag became `hub`. The online characterization moved only in coordinates, by 0.9 mm at the median, because the old wire's 1/60 s throttle dropped a third of the scripted frames to float jitter.
 
-Landed with moba M1: the `pointClick` scheme, `input.stickAim` (the kernel hands the newest live one to the device), follow framing (`camera.frame`), the juice kit (`core/juice.js`, with `death.js` as its `retire`), and hiding the court (`court.setShown`). The hub plugin is still to come.
+Landed with moba M1: the `pointClick` scheme, `input.stickAim` (the kernel hands the newest live one to the device), follow framing (`camera.frame`), the juice kit (`core/juice.js`, with `death.js` as its `retire`), and hiding the court (`court.setShown`). Mode selection lives in the separate mode-picker plugin.
 
 ## Answers to moba-plan.md's assumptions
 

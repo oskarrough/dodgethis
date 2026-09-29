@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Added an always-visible mode picker for switching between dodgeball and MOBA without reloading.
+
 - MOBA is reachable from the hub, with pause and result menus, off-screen Ball and hero arrows, tighter mouse following, clearer controls and compact hero selection.
 
 - MOBA Practice now starts on Easy, keeps your hero visible at base, prevents accidental pause-menu choices, and lets the core shatter before a team-coloured result card.

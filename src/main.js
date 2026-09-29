@@ -3,6 +3,7 @@ import dodgeball from './plugins/dodgeball/index.js'
 import moba from './plugins/moba/index.js'
 import { mobaFront } from './plugins/moba/front/index.js'
 import online from './plugins/online/index.js'
+import modePicker from './plugins/mode-picker/index.js'
 
 // Composition owns the hub's cross-plugin destination; plugins never import each other.
 try {
@@ -29,6 +30,7 @@ try {
 		app.use(mobaReplay)
 		app.modes.start('moba-replay', { options: { replay: await loadReplay(query.get('replay')) } })
 	} else app.modes.start(query.get('mode') === 'moba' ? 'moba-front' : 'dodgeball')
+	app.use((scope) => modePicker(scope, { moba: 'moba-front' }))
 	app.run()
 } catch (err) {
 	reportBootError(err)

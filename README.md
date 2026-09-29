@@ -1,6 +1,6 @@
 # DodgeThis
 
-Choose a difficulty on the court to play solo, or choose **Play online** to play with friends.
+Use the mode picker to choose Dodgeball or the MOBA prototype. Dodgeball has difficulty portals and **Play online** for playing with friends. MOBA is a solo practice arena: right-click to move or attack, Q to fire, S to stop, and Space to centre the camera. Switching modes starts a fresh run; leave an online match before switching.
 
 ## Host or join
 
