@@ -32,7 +32,7 @@ function pad(button) {
 	evaluate(`mockPad.buttons[${button}].pressed=false`)
 	wait(80)
 }
-const report = {}
+const report = { defaultIdle: [], qFlight: [] }
 boot()
 key('Enter')
 report.keyboardHero = evaluate('probe.front.screen === "hero"')
@@ -59,6 +59,22 @@ browser('click', '.front-slot[data-slot=E]')
 report.mousePreview = evaluate(
 	'!!document.querySelector(".front-slot[data-slot=E].selected") && !probe.moba',
 )
+report.hoverClick = evaluate(`(async()=>{
+	const button=document.querySelector('[data-slot=Q]');
+	window.dispatchEvent(new PointerEvent('pointermove',{clientX:900,clientY:340}));
+	button.dispatchEvent(new PointerEvent('pointerenter'));
+	await new Promise(r=>setTimeout(r,100));
+	const before=probe.front.preview.elapsed;button.click();
+	return before>0 && probe.front.preview.elapsed>=before && probe.front.preview.slot==='Q';
+})()`)
+browser('click', '.front-slot[data-slot=R]')
+wait(300)
+browser('click', '.front-numbers')
+report.numbersCancels = evaluate(
+	'probe.front.preview.phase==="idle" && probe.front.preview.rotation.every(v=>v===0)',
+)
+browser('click', '.front-slot[data-slot=Trait]')
+report.traitIdle = evaluate('probe.front.preview.phase==="idle"')
 browser('click', '.front-lock')
 wait(200)
 report.mouseLock = evaluate('!!probe.moba')
@@ -104,10 +120,27 @@ for (const [width, height] of [
 	browser('set', 'viewport', String(width), String(height))
 	boot()
 	key('Enter')
-	wait(2200)
+	wait(100)
+	const idle = () =>
+		evaluate(
+			'probe.front.preview.phase==="idle" && probe.front.preview.slot===null && !probe.front.preview.bolt && !probe.front.preview.tell',
+		)
+	if (!idle()) throw new Error(`Default ${width} started a skill`)
+	wait(1000)
 	browser('screenshot', `${dir}/hero-${width}-default.png`)
-	key('Tab')
+	report.defaultIdle.push({ width, idle: idle() })
+	const before = evaluate(`(async()=>{
+		window.dispatchEvent(new KeyboardEvent('keydown',{code:'Tab',bubbles:true,cancelable:true}));
+		const at=probe.tune.front.preview.hold+probe.tune.kit.loose.castPoint+.15;
+		await new Promise(resolve=>{function frame(){if(probe.front.preview.elapsed>=at)resolve();else requestAnimationFrame(frame)}requestAnimationFrame(frame)});
+		// Hold the real interpolated frame so screenshot IPC latency cannot move the bolt off-screen.
+		probe.front.freezePreview(true);
+		return probe.front.preview;
+	})()`)
+	if (!before.bolt || before.screenBolt.x < 0 || before.screenBolt.x > width)
+		throw new Error(`Q ${width} is not mid-flight: ${JSON.stringify(before)}`)
 	browser('screenshot', `${dir}/hero-${width}-q.png`)
+	report.qFlight.push({ width, before, after: evaluate('probe.front.preview') })
 	for (let i = 0; i < 4; i++) key('Tab')
 	key('Enter')
 	browser('screenshot', `${dir}/hero-${width}-numbers.png`)
@@ -181,8 +214,8 @@ report.trace = evaluate(`(async()=>{
 	const start=performance.now();let next=0;
 	await new Promise(resolve=>{function frame(now){const t=(now-start)/1000;
 		window.dispatchEvent(new PointerEvent('pointermove',{clientX:innerWidth*(.5+.48*Math.sin(t*4)),clientY:innerHeight*(.5+.4*Math.cos(t*4)),bubbles:true}));
-		if(t>=next){const slot=['Q','W','E','R'][Math.floor(next/.6)%4];const button=document.querySelector('[data-slot='+slot+']');button.dispatchEvent(new PointerEvent('pointerenter'));button.click();next+=.6}
-		if(t<6)requestAnimationFrame(frame);else resolve()
+		if(t>=next){const slot=['Q','W','E','R'][Math.floor(next/1.6)%4];const button=document.querySelector('[data-slot='+slot+']');button.dispatchEvent(new PointerEvent('pointerenter'));button.click();next+=1.6}
+		if(t<8)requestAnimationFrame(frame);else resolve()
 	}requestAnimationFrame(frame)});
 	return {viewport:[innerWidth,innerHeight,devicePixelRatio],draw:probe.renderer.info.render.calls,animations:document.getAnimations().length};
 })()`)
@@ -202,4 +235,10 @@ await send('Emulation.clearDeviceMetricsOverride', {}, sessionId)
 ws.close()
 writeFileSync(`${dir}/results.json`, JSON.stringify(report, null, 2) + '\n')
 console.log(JSON.stringify(report, null, 2))
-if (Object.values(report).some((value) => value === false)) process.exitCode = 1
+if (
+	Object.values(report).some((value) => value === false) ||
+	report.defaultIdle.some((s) => !s.idle) ||
+	report.qFlight.some((s) => !s.before.bolt || !s.after.bolt) ||
+	report.screens.some((s) => s.valuesOverflow > 0)
+)
+	process.exitCode = 1

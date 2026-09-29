@@ -117,7 +117,7 @@ test('preview timers interpolate at 144 Hz, switch cleanly and dispose mid-cast 
 			scene.traverse((object) => {
 				if (
 					object.geometry?.type === 'CircleGeometry' &&
-					object.position.z === -tune.preview.distance
+					object.position.x === -tune.preview.rainDistance
 				)
 					fill = object
 			})

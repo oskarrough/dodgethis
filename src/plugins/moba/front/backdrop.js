@@ -38,6 +38,23 @@ const planes = [
 	</g>`,
 ]
 
+// Selection leaves the right sky empty. Its scenery frames the portrait, never the kit.
+const selectionPlanes = [
+	`<g class="front-select-cloud" fill="var(--front-cloud)"><path d="M40 270 Q180 260 360 267 L435 275 L70 280Z"/></g>
+	<g class="front-select-planet"><circle cx="466" cy="475" r="184" fill="var(--front-planet)"/>
+	<path d="M305 565 Q347 609 418 634 M295 551 Q329 597 391 623" fill="none" stroke="var(--front-planet-line)"/></g>`,
+	`<path fill="var(--front-far)" d="M0 752 L130 738 L165 670 L245 667 L273 721 L450 754 V900 H0Z"/>
+	<path fill="url(#vertical-1)" d="M245 667 L254 717 L273 721Z"/>
+	<g class="front-select-arch" transform="translate(-750 0)">
+	<path fill="var(--front-mesa)" d="M1108 737 L1127 587 Q1135 546 1210 545 L1240 547 L1258 566 L1211 568 Q1163 570 1161 608 L1158 738Z M1274 585 L1303 594 L1320 741 L1283 740Z"/>
+	<path fill="url(#vertical-1)" d="M1127 587 L1141 603 L1128 738 L1108 737Z M1283 740 L1274 585 L1288 603 L1304 740Z"/>
+	<path fill="none" d="M1143 617 L1136 706 M1192 557 L1225 555 M1293 628 L1301 704"/></g>`,
+	`<path stroke="none" fill="var(--front-ridge)" d="M0 778 Q220 755 374 748 Q533 725 660 743 Q1040 770 1440 790 V900 H0Z"/>
+	<path fill="none" d="M0 790 Q233 775 368 763 M385 759 Q492 740 557 746"/>`,
+	`<path stroke="none" fill="var(--front-dune)" d="M0 853 Q211 799 394 835 Q624 889 836 860 Q1119 851 1440 875 V900 H0Z"/>
+	<path fill="none" d="M0 863 Q201 810 390 846 Q510 880 640 874 M30 881 Q189 843 330 864"/>`,
+]
+
 export function createBackdrop(root) {
 	const el = document.createElement('div')
 	el.className = 'front-backdrop'
@@ -72,7 +89,7 @@ export function createBackdrop(root) {
 				<pattern id="vertical-${i}" patternUnits="userSpaceOnUse" width="6" height="6">
 					<path d="M3 0 V6" stroke="var(--front-ink)" stroke-width="0.75"/>
 				</pattern>
-			</defs><g stroke="var(--front-ink)" stroke-width="0.75" stroke-linejoin="round">${paths}</g></svg>`,
+			</defs><g stroke="var(--front-ink)" stroke-width="0.75" stroke-linejoin="round"><g class="front-mode-world">${paths}</g><g class="front-select-world">${selectionPlanes[i]}</g></g></svg>`,
 			)
 			.join('')
 	const layers = [...el.querySelectorAll('svg')]

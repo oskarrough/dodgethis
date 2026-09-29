@@ -82,9 +82,18 @@ export function mobaFront(app) {
 			for (const child of outside) child.inert = true
 			document.body.append(el)
 			let controls
+			let pointerMoved = false
+			window.addEventListener(
+				'pointermove',
+				() => {
+					pointerMoved = true
+				},
+				{ signal: run.signal },
+			)
 			function showHero() {
 				if (screen === 'hero') return
 				screen = 'hero'
+				pointerMoved = false
 				setDevice(device, true)
 				practice.hidden = true
 				backButton.textContent = 'Back'
@@ -121,12 +130,15 @@ export function mobaFront(app) {
 			function activate(index) {
 				const button = buttons[index]
 				if (button === backButton) return showModes()
+				if (screen === 'hero' && button.dataset.slot) return preview.start(button.dataset.slot)
+				if (button.classList.contains('front-numbers')) {
+					preview.stop()
+					card.toggle()
+					return
+				}
 				for (const freq of tune.confirm.frequencies)
 					app.audio.blip({ freq, dur: tune.confirm.dur, gain: tune.confirm.gain, type: 'sine' })
-				if (screen === 'modes') return showHero()
-				if (button.dataset.slot)
-					preview.start(button.dataset.slot === 'Trait' ? 'Q' : button.dataset.slot)
-				else if (button.classList.contains('front-numbers')) card.toggle()
+				if (screen === 'modes') showHero()
 				else leave('moba')
 			}
 			let leaving = false
@@ -171,14 +183,20 @@ export function mobaFront(app) {
 			}
 			setDevice('keyboard')
 			function bindControls() {
+				let focused = -1
 				controls = createControls({
 					count: buttons.length,
 					initialBackHeld: !!app.input.pad()?.buttons[1],
 					focus(index) {
 						buttons.forEach((button, i) => button.classList.toggle('selected', i === index))
 						const key = buttons[index].dataset.slot
-						if (preview && key && key !== 'Trait' && document.activeElement !== buttons[index])
-							preview.start(key === 'Trait' ? 'Q' : key)
+						if (focused !== index) {
+							focused = index
+							if (preview) {
+								if (key) preview.start(key)
+								else preview.stop()
+							}
+						}
 						if (document.activeElement !== buttons[index])
 							buttons[index].focus({ preventScroll: true })
 					},
@@ -188,12 +206,18 @@ export function mobaFront(app) {
 				})
 				buttons.forEach((button, index) => {
 					button.onpointerenter = () => {
+						if (!pointerMoved) return
+						setDevice('mouse')
+						controls.point(index)
+					}
+					button.onpointermove = () => {
 						setDevice('mouse')
 						controls.point(index)
 					}
 					button.onfocus = () => controls.point(index)
 					button.onclick = () => {
 						setDevice('mouse')
+						controls.point(index)
 						activate(index)
 					}
 				})
@@ -207,6 +231,10 @@ export function mobaFront(app) {
 			run.debug.expose({
 				front: {
 					crossfade: backdrop.crossfade,
+					freezePreview: (value) => preview?.freeze(value),
+					get preview() {
+						return preview?.state ?? null
+					},
 					get screen() {
 						return screen
 					},

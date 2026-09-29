@@ -51,6 +51,10 @@ export function heroStats(kit, front, level = 1) {
 			clear: qClear,
 			sidestep: escapeTime(qClear, kit.hero),
 			steady: qClear / kit.hero.speed,
+			margin:
+				kit.loose.castPoint +
+				front.preview.distance / kit.loose.speed -
+				escapeTime(qClear, kit.hero),
 		},
 		w: { ...kit.vault },
 		e: {
@@ -82,11 +86,11 @@ export function numberLines(s, distance) {
 		`Basic · ${Math.round(s.attack)} damage · ${s.attackRange} m · ${s.attackRate}/s`,
 		`Loose · ${Math.round(s.q.damage)} damage · ${s.q.range} m · ${s.q.radius} m radius · ${s.q.speed} m/s · ${s.q.cooldown} s recharge`,
 		`Warning ${n(s.q.warning)} s; flight to ${distance} m ${n(s.q.flight)} s`,
-		`Sidestep ${n(s.q.steady)} s at speed; ${n(s.q.sidestep)} s from rest (60 Hz)`,
+		`Sidestep ${n(s.q.steady)} s at speed; ${n(s.q.sidestep)} s from rest; ${n(Math.abs(s.q.margin))} s ${s.q.margin >= 0 ? 'to spare' : 'too late'} at ${distance} m`,
 		`Vault · ${s.w.range} m in ${s.w.time} s · ${s.w.cooldown} s recharge`,
 		`Rain · ${Math.round(s.e.damage)} damage · ${s.e.range} m reach · ${s.e.radius} m radius · ${s.e.delay} s delay · ${s.e.cooldown} s recharge`,
 		`Slow ${Math.round(s.e.slow * 100)}% for ${s.e.duration} s`,
-		`Centre escape ${n(s.e.steady)} s at speed; ${n(s.e.escape)} s from rest; ${n(s.e.margin)} s to spare`,
+		`Centre escape ${n(s.e.steady)} s at speed; ${n(s.e.escape)} s from rest; ${n(Math.abs(s.e.margin))} s ${s.e.margin >= 0 ? 'to spare' : 'too late'}`,
 		`Volley · ${Math.round(s.r.damage)} damage · ${s.r.range} m · ${s.r.radius} m radius · ${s.r.speed} m/s`,
 		`Warning ${s.r.castPoint} s · ${s.r.cooldown} s recharge · level ${s.r.unlock}`,
 	]

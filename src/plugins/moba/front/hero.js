@@ -13,8 +13,8 @@ export function createHeroCard() {
 	el.innerHTML = `<div class="front-kit"><p class="front-hero-name">Fletcher</p>${slots.map((key, i) => `<button type="button" class="front-slot" data-slot="${key}"><span class="front-key">${key}</span><span><span class="front-skill-name">${names[i]}</span><span class="front-description"></span></span></button>`).join('')}
 		<button type="button" class="front-numbers" aria-expanded="false">Numbers</button>
 		<div class="front-values" hidden aria-label="Full values at level 1 and level 10"></div></div>
-		<div class="front-seats" aria-label="Practice: your seat, five seats unoccupied">${Array.from({ length: 6 }, (_, i) => `<span class="front-seat ${i ? 'vacant' : ''}" aria-label="${i ? 'Unoccupied' : 'You, Fletcher'}">${bust}${i ? '' : '<span>You</span>'}</span>`).join('')}</div>
-		<button type="button" class="front-lock">Lock in</button>`
+		<div class="front-ready"><div class="front-seats" aria-label="Practice: your seat, five seats unoccupied">${Array.from({ length: 6 }, (_, i) => `<span class="front-seat ${i ? 'vacant' : ''}" aria-label="${i ? 'Unoccupied' : 'You, Fletcher'}">${bust}${i ? '' : '<span>You</span>'}</span>`).join('')}</div>
+		<button type="button" class="front-lock">Lock in</button></div>`
 	let previous = ''
 	let open = false
 	function refresh() {
