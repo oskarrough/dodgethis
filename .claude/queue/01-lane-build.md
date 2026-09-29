@@ -1,2 +1,2 @@
-Model: GPT 6.1, one thread per slice. After: 00. Slice 1 landed (f949744, reviewed and fixed); slice 2 running.
+Model: GPT 6.1, one thread per slice. After: 00. Slices 1 (f949744) and 2 (086fdbf) landed, reviewed and fixed; slice 3 running.
 Build slices 1–3 of "Build order" in `docs/moba-lane.md`, one thread each and in order: map and collision, then one tower and waves, then the full lane. Each slice gets tests, a green check, dodgeball unchanged, a boot in the browser, a mashed checkpoint commit and an Opus review before the next one starts. Slices 4 and 5 are queue briefs 02 and 03/04.
