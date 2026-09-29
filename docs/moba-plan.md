@@ -122,6 +122,36 @@ Map, Ball and structure rules come from [moba-lane.md](moba-lane.md). A bot is a
 - **Fixtures:** retreat latches from 34% to 90% HP through a dodge; a carrier never sends a non-throw edge and throws at the right reach; no tower aggro unless the kill exception holds; an attack order survives its target moving 3 m; a blocked or too-late dodge falls back to Vault, or to nothing; a close Q and a centre-of-Rain escape.
 - **If a seed runs long,** the lane doc's rule applies: shorten the Ball interval first, then bring the late phase and brutes forward.
 
+## Shared play (M6)
+
+Measured on 2026-09-29 from a headless 3v3 of six scripted Fletchers with full waves and the Ball in progress: 12 simulated minutes, a snapshot every third tick. Moba reads `session.local` and `session.authoritative` and nothing else; online stays mode-blind.
+
+- **Host authority, not lockstep.** The host already runs the sim (0.52 ms a tick at 3v3). Lockstep would put RTT/2 plus jitter of input delay on every click, the host's included, stall everyone on the slowest peer, and need bit-identical Rapier across browsers, which `rapier3d-compat` doesn't promise; one tune-GUI change would desync it.
+- **Snapshot size.** Today's `snapshot()` is 7.2 KB mean, 8.9 KB p95, 10.5 KB peak (14 minions mean, 25 max), plus 0.4 KB of facts: 152 KB/s per guest at 20 Hz. Half of it is host bookkeeping and float noise (`aggroOrigin`, `returnGoal`, `forced`, `aggroUntil`, `hp: 1273.9999999999993`). A replica projection (short keys, centimetre integers, whole HP, only what a replica draws) is 3.9 KB mean and 5.4 KB peak: 86 KB/s per guest, dodgeball's 2+2 figure. A keyed field delta against the previous envelope is 1.1 KB mean and 4.6 KB peak (wave spawns) for 0.13 ms of host CPU. Gzip would give 1.4 KB, but the data channel has none.
+- **So `snapshot(sinceSeq)` is not needed.** Only a lobby of six humans asks for deltas: five guests cost the host 430 KB/s (3.4 Mbit/s) of upload. If play proves it, the delta lives in the link, not the contract. The channel is reliable and ordered, so the link diffs keyed arrays against its last envelope, sends a whole state at join and on a guest's `resync`, and `apply` still gets a whole state.
+- **Replica.** The guest builds map, views and HUD from `createSnapshotBuffer`, keyed by host time (`t × STEP` plus the smallest arrival offset seen), not arrival time, so a burst after a stall replays at its true spacing. The delay is 100 ms, two send intervals, so one late envelope freezes nobody. Past the newest state, heroes dead-reckon on `vel` and minions on their last two positions for up to 100 ms, then hold. Facts present on arrival, 100 ms ahead of the bodies; that is kept, because cast cues are the dodge signal.
+- **Local-hero prediction.** Only the guest's own hero is predicted. The mode keeps one kinematic body for it (contract line 5 gains "except its local predictor") and steps it at 1/60 in the `intents` phase, before the link drains the frame, with the solo code: paths, arrival, cast rules, cooldowns and Vault. Ping, order line, yaw snap, cast pose, frozen aim and E's circle play at once. Projectiles, hits, damage, deaths, slows and stuns are never predicted.
+- **Reconciliation.** The core stamps each local frame with `n`, a per-participant counter. The host sim keeps per hero the `n` of the last frame a step read, and the snapshot carries it as `ack`. On apply the predictor resets to the host's hero (pos, vel, order goal, cast, cd, slow, stun, dead), replays its logged steps after `ack` (8 at 100 ms RTT, 14 at 200), and folds the difference into a visual offset that decays over 0.1 s. More than 2 m snaps.
+- **Own line shots** fly locally from the predicted hand at windup end and bind to the first host projectile with the same owner and slot. An arrow crossing a displayed enemy waits there for the host's `hit`, `blocked` or `expired`, for at most 0.3 s, so it neither passes through nor hits early. An arrow nothing claims within 0.3 s fizzles.
+
+What a guest sees, with a 25 ms average send wait, 8 ms tick wait and 100 ms delay:
+
+| RTT    | Own click moves | Host confirms | Others shown | Q lead error at 5 m/s | 8 m Q dodge window (host 0.47 s) |
+| ------ | --------------- | ------------- | ------------ | --------------------- | -------------------------------- |
+| 100 ms | ≤ 17 ms         | 133 ms        | 175 ms old   | 1.1 m                 | 0.34 s                           |
+| 200 ms | ≤ 17 ms         | 233 ms        | 225 ms old   | 1.6 m                 | 0.24 s                           |
+
+Without prediction the own hero would start after RTT + 133 ms: 233 and 333 ms. There's no lag compensation, as in LoL: a guest leads a strafing hero by the lead error, and the host player has the edge. At 200 ms a dodge on sight is half of what the host gets; that's the honest cost.
+
+- **Drops and rejoin.** Today one peer leaving cancels the match for everyone, which is too harsh for ten minutes. Online holds the seat for 60 s instead, with the hero standing still under the existing silent-seat rule, and cancels only after that. At start the lobby gives each human a seat token, kept in `sessionStorage`. A returning browser, with a new peer id, presents `{ matchId, token }`, and the host rebinds the seat. The guest starts moba with `session.local = [seat id]` rather than `[net.id]`. Its first envelope is a whole state, which must build a replica cold (rubble, globes, levels, Ball), and older facts are gone. Expect 1–3 s of PeerJS reconnect, then control within 150 ms. A stall under `HOST_TIMEOUT` (10 s) is a lag spike, not a drop.
+- **Core changes:** `n` on local frames and in `validIntent`, and the line 5 wording. **Online:** the unchanged-frame key ignores `n` (or an idle guest sends 71 frames a second instead of 10); seat hold, token and rebind across `online-session`, `link` and `index`; the seat id as `session.local`. **Moba, found while measuring:** `start` ignores `roster` and hard-codes `[local, 'lane-script']`, so bots must come from roster controllers and run on the host only; R and the menu call `app.modes.start('moba')` after a win without checking for `restart` in `session.actions`, which would restart a guest solo; `apply` returns false.
+
+Build order. Each slice's test wires a host and a guest sim with a hand-delivered wire, as `tests/shared-match.js` does for dodgeball.
+
+1. **Replica:** roster-driven heroes, the projection, `apply`, the host-time buffer and gated restart. Test: host human, guest human and four bots for 5 minutes. After each envelope the guest's replica matches the host's snapshot of that tick to 1 cm, with equal HP and structure state; every host fact presents once on the guest; envelope p95 stays under 6 KB; a guest frame moves its hero on the host.
+2. **Prediction:** `n`, `ack`, the predictor, reconciliation and own-shot binding. Test: the wire holds each direction 50 ms, then 100 ms, with 20 ms jitter. A guest click 10 m away moves the predicted hero on the first tick, both heroes arrive within 0.05 m of the goal, and the predicted-to-host error stays under 0.3 m. A Rain slow the guest didn't predict converges within 0.3 s, and at zero latency the offset stays exactly 0.
+3. **Rejoin,** then deltas if slice 1's p95 missed. Test: drop the guest at 2:00 while the host steps on and its hero stands still. At 2:40 a new link, new peer id and the seat token gets one whole state, and the replica matches the host within one envelope. A drop left for 61 s cancels. Deltas: a guest fed deltas equals one fed whole states after every `apply` over 5 minutes, and a rejected patch costs exactly one keyframe.
+
 ## Milestones
 
 Each ends with `bun run check` green and is playable behind `?mode=moba`. Requires the core migration through phase C, including render interpolation.
@@ -133,7 +163,7 @@ Each ends with `bun run check` green and is playable behind `?mode=moba`. Requir
 3. **Lane.** Map, structures, waves, the soak rule, levels, globes, base healing, win condition. 1v1 against a scripted hero, then 2v2.
 4. **Bots.** Hero bots and 3v3. A seeded headless bots-only match must end in a core kill within 15 simulated minutes.
 5. **HotS layer.** Mount and the R heroic.
-6. **Shared play.** Runs through online with no moba code knowing. Includes snapshot size (`snapshot(sinceSeq)` if needed) and local-unit prediction, designed then.
+6. **Shared play.** Runs through online with no moba code knowing; designed in [Shared play](#shared-play-m6).
 
 ## Open questions for Oskar
 
