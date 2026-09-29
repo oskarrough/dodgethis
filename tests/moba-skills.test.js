@@ -28,7 +28,10 @@ beforeEach(() => {
 		rng: () => 0.5,
 	})
 	sim.heroes[0].body.place(0, 1.05, 8)
-	for (const d of sim.dummies) d.body.place(-15, 1.05, 18)
+	for (const d of sim.dummies) {
+		d.sparring = false
+		d.body.place(-15, 1.05, 18)
+	}
 })
 afterEach(() => {
 	sim.dispose()
@@ -191,7 +194,7 @@ test('Vault keeps its path during the dash and replans once from its landing poi
 	expect(h().order.path).toBe(landingPath)
 })
 
-test('Vault whooshes with streaks; Rain sounds once for a hit or a miss', () => {
+test('Vault whooshes with streaks; Rain has its own cue once for a hit or a miss', () => {
 	const previousDocument = globalThis.document
 	globalThis.document = { querySelector: () => null }
 	const sounds = []
@@ -205,6 +208,7 @@ test('Vault whooshes with streaks; Rain sounds once for a hit or a miss', () => 
 				whoosh: () => sounds.push('whoosh'),
 				loose: () => sounds.push('loose'),
 				hit: () => sounds.push('hit'),
+				roll: () => sounds.push('rain'),
 			},
 			view: { unbolt() {} },
 			skillsView: { vault() {} },
@@ -220,7 +224,7 @@ test('Vault whooshes with streaks; Rain sounds once for a hit or a miss', () => 
 		step(Math.round(tune.rain.delay / STEP))
 		expect(facts.find((f) => f.type === 'impact').hit).toBe(false)
 		for (const fact of facts.splice(0)) feedback.present(fact)
-		expect(sounds).toEqual(['hit'])
+		expect(sounds).toEqual(['rain'])
 		sounds.length = 0
 		h().cd[2] = 0
 		press('slot3', { x: 10, z: 8 })
@@ -229,7 +233,7 @@ test('Vault whooshes with streaks; Rain sounds once for a hit or a miss', () => 
 		step()
 		expect(facts.find((f) => f.type === 'impact').hit).toBe(true)
 		for (const fact of facts.splice(0)) feedback.present(fact)
-		expect(sounds).toEqual(['hit'])
+		expect(sounds).toEqual(['rain'])
 	} finally {
 		if (previousDocument === undefined) delete globalThis.document
 		else globalThis.document = previousDocument

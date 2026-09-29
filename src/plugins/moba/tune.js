@@ -3,6 +3,8 @@
 export const tune = {
 	// The hero's movement profile (core/body.js). Obedience first: full speed in ~25 ms, a dead stop, no air.
 	hero: {
+		hp: 1400,
+		level: 1,
 		speed: 5, // HotS 4.84; mounted 6.5
 		accel: 40,
 		friction: 14, // if it feels weightless, lower this first
@@ -27,8 +29,20 @@ export const tune = {
 		clearance: 0.1, // extra room kept from pillars beyond the body's radius
 		attackRange: 5.5, // an attack order walks until the target is this close
 	},
+	attack: {
+		damage: 90,
+		rate: 1,
+		windup: 0.15,
+		backswing: 0.25,
+		speed: 24,
+		radius: 0.12,
+		visualScale: 0.65,
+	},
+	respawn: { base: 6, perLevel: 2 },
+	momentum: { reduction: 2 },
 	// Q, Loose: a line skillshot, first hit.
 	loose: {
+		damage: 140,
 		castPoint: 0.133,
 		range: 11,
 		speed: 24, // tune this before anything else: the dodge window at 8 m is 8 / speed
@@ -37,7 +51,16 @@ export const tune = {
 		height: 1.1, // flight height, for presentation only
 		nearMiss: 0.8, // a pass this close to a body's edge cues "close"
 	},
-	rain: { castPoint: 0, range: 10, radius: 2.5, delay: 0.7, slow: 0.3, duration: 1.5, cooldown: 6 },
+	rain: {
+		damage: 180,
+		castPoint: 0,
+		range: 10,
+		radius: 2.5,
+		delay: 0.7,
+		slow: 0.3,
+		duration: 1.5,
+		cooldown: 6,
+	},
 	vault: { castPoint: 0, range: 4, time: 0.18, cooldown: 3 },
 	// The pad's right stick: hero + dir × range × remap(magnitude).
 	stickAim: {
@@ -61,7 +84,8 @@ export const tune = {
 		flipMin: 0.5, // seconds between strafe reversals, drawn uniformly
 		flipMax: 1.4,
 		span: 4, // metres either side of the post
-		hits: 3, // Q hits to take one down
+		hp: 1400,
+		castEvery: 4, // one sparring dummy casts Loose back while in range
 		respawn: 2,
 	},
 	juice: {

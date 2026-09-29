@@ -35,7 +35,10 @@ beforeEach(() => {
 		present: (f) => facts.push(f),
 		rng: () => (seed = (seed * 16807) % 2147483647) / 2147483647,
 	})
-	for (const d of sim.dummies) d.body.place(-15 + d.post.x * 0.1, 1.05, 18) // parked out of the way unless a test wants them
+	for (const d of sim.dummies) {
+		d.sparring = false
+		d.body.place(-15 + d.post.x * 0.1, 1.05, 18)
+	} // parked out of the way unless a test wants them
 })
 afterEach(() => {
 	sim.dispose()
@@ -235,19 +238,20 @@ test('skillshots sweep: a thin target between two sampled positions is hit, a cl
 	expect(near[0].point.x).toBeCloseTo(5, 6)
 })
 
-test('Q hits a strafing dummy through the sim, three hits take it down, and it respawns', () => {
+test('Q deals HP damage to a strafing dummy, takes it down at zero, and it respawns', () => {
 	const d = sim.dummies[0]
 	d.body.place(d.post.x, 1.05, d.post.z)
 	d.dir = 1
 	d.flipIn = 99
 	place(d.post.x - 6, d.post.z)
-	for (let n = 0; n < tune.dummies.hits; n++) {
+	const hitCount = Math.ceil(tune.dummies.hp / tune.loose.damage)
+	for (let n = 0; n < hitCount; n++) {
 		const target = d.body.position
 		press('slot1', { x: target.x + tune.dummies.speed * 0.35, z: target.z })
 		step(Math.round(tune.loose.cooldown * 60) + 1)
 		d.body.place(d.post.x, 1.05, d.post.z)
 	}
-	expect(facts.filter((f) => f.type === 'hit')).toHaveLength(tune.dummies.hits)
+	expect(facts.filter((f) => f.type === 'hit')).toHaveLength(hitCount)
 	expect(facts.find((f) => f.type === 'death')?.target).toBe(d.id)
 	expect(d.dead || facts.some((f) => f.type === 'spawn')).toBe(true)
 	step(Math.round(tune.dummies.respawn * 60) + 1)
@@ -297,14 +301,14 @@ test('E shows a delayed control zone, clamps its range, then hits and slows enem
 	expect(sim.zones).toHaveLength(1)
 	expect(sim.zones[0]).toMatchObject({ x: 0, z: 0 })
 	expect(hero().cd[2]).toBe(Math.round(tune.rain.cooldown / STEP))
-	expect(d.hits).toBe(0)
+	expect(d.hp).toBe(d.maxHp)
 	// Park the dummy in the zone until the tell completes.
 	for (let i = 1; i < Math.round(tune.rain.delay / STEP); i++) {
 		d.body.place(0, 1.05, 0)
 		step()
 	}
 	expect(sim.zones).toHaveLength(0)
-	expect(d.hits).toBe(1)
+	expect(d.hp).toBe(d.maxHp - tune.rain.damage)
 	expect(d.slowUntil).toBeGreaterThan(sim.tick)
 	expect(facts.find((f) => f.type === 'hit')?.slot).toBe('slot3')
 	expect(facts.some((f) => f.type === 'impact')).toBe(true)

@@ -30,7 +30,7 @@ export function createHud() {
 	style.textContent = CSS
 	const root = document.createElement('div')
 	root.className = 'moba-hud'
-	root.innerHTML = `<div class="moba-slots">${['Q', 'W', 'E'].map((key) => `<div class="moba-slot"><div class="sweep"></div><span class="key">${key}</span><span class="left"></span></div>`).join('')}</div><div class="moba-help"></div>`
+	root.innerHTML = `<div class="moba-health" role="status"></div><div class="moba-slots">${['Q', 'W', 'E'].map((key) => `<div class="moba-slot"><div class="sweep"></div><span class="key">${key}</span><span class="left"></span></div>`).join('')}</div><div class="moba-help"></div>`
 	const paused = document.createElement('div')
 	paused.className = 'moba-paused'
 	paused.textContent = 'PAUSED'
@@ -45,6 +45,7 @@ export function createHud() {
 		shown: { fraction: -1, seconds: '' },
 	}))
 	const help = root.querySelector('.moba-help')
+	const health = root.querySelector('.moba-health')
 	let shownDevice = ''
 
 	return {
@@ -55,7 +56,11 @@ export function createHud() {
 			s.deniedFor = 0.06
 			s.slot.classList.add('denied')
 		},
-		update(dt, { cooldowns, totals, device, pausedNow }) {
+		update(dt, { cooldowns, totals, device, pausedNow, hp, maxHp, respawn }) {
+			health.textContent =
+				respawn !== null
+					? `Respawn in ${Math.ceil(respawn)} s`
+					: `${Math.ceil(hp)} / ${maxHp} HP · Momentum: Q hits cut Vault by 2 s`
 			for (const [i, s] of slots.entries()) {
 				const { slot, left, shown } = s
 				const cooldown = cooldowns[i]

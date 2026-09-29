@@ -57,6 +57,46 @@ export function createView(scene, smooth) {
 	tip.visible = false
 	group.add(tip)
 
+	// HP bars tick every 200 HP; they follow rendered poses, not physics ticks.
+	const bars = new Map()
+	const barGeometry = own(new THREE.PlaneGeometry(1, 0.16))
+	const barBack = flat('ink')
+	const barColors = { A: flat('teamA'), B: flat('teamB') }
+	const tickGeometry = own(new THREE.PlaneGeometry(0.018, 0.16))
+	function health(units) {
+		const live = new Set(units.map((u) => u.id))
+		for (const [id, bar] of bars)
+			if (!live.has(id)) {
+				group.remove(bar.root)
+				bars.delete(id)
+			}
+		for (const unit of units) {
+			let bar = bars.get(unit.id)
+			if (!bar) {
+				const root = new THREE.Group()
+				root.rotation.x = -Math.atan2(tune.follow.height, tune.follow.back)
+				const back = new THREE.Mesh(barGeometry, barBack)
+				back.scale.x = 1.8
+				const fill = new THREE.Mesh(barGeometry, barColors[unit.team])
+				fill.position.z = 0.005
+				root.add(back, fill)
+				for (let hp = 200; hp < unit.maxHp; hp += 200) {
+					const tick = new THREE.Mesh(tickGeometry, barBack)
+					tick.position.set(-0.9 + (1.8 * hp) / unit.maxHp, 0, 0.01)
+					root.add(tick)
+				}
+				group.add(root)
+				bars.set(unit.id, (bar = { root, fill }))
+			}
+			bar.root.visible = !unit.dead
+			const p = unit.body.mesh.position
+			bar.root.position.set(p.x, p.y + unit.body.halfHeight + unit.body.radius + 0.4, p.z)
+			const width = (1.8 * unit.hp) / unit.maxHp
+			bar.fill.scale.x = Math.max(0.001, width)
+			bar.fill.position.x = -0.9 + width / 2
+		}
+	}
+
 	// --- Skillshots: a bright bolt with a trail that grows from the hand. ---
 	const boltGeometry = own(new THREE.CapsuleGeometry(0.12, 0.7, 4, 8).rotateX(Math.PI / 2))
 	const trailGeometry = own(new THREE.BoxGeometry(0.1, 0.06, 1).translate(0, 0, -0.5))
@@ -66,7 +106,11 @@ export function createView(scene, smooth) {
 	const UP = new THREE.Vector3(0, 1, 0)
 	function bolt(shot, from) {
 		const mesh = new THREE.Group()
-		const body = new THREE.Mesh(boltGeometry, boltMaterial)
+		const body = new THREE.Mesh(
+			boltGeometry,
+			shot.slot === 'primary' ? barColors[shot.team] : boltMaterial,
+		)
+		if (shot.slot === 'primary') body.scale.setScalar(tune.attack.visualScale)
 		const trail = new THREE.Mesh(trailGeometry, trailMaterial)
 		trail.scale.z = 0.001
 		mesh.add(body, trail)
@@ -75,6 +119,7 @@ export function createView(scene, smooth) {
 		pose.quaternion.setFromAxisAngle(UP, Math.atan2(shot.dx, shot.dz))
 		const read = () => {
 			pose.position.set(shot.x, tune.loose.height, shot.z)
+			pose.quaternion.setFromAxisAngle(UP, Math.atan2(shot.dx, shot.dz))
 			return pose
 		}
 		read()
@@ -93,7 +138,8 @@ export function createView(scene, smooth) {
 	}
 
 	// Per rendered frame. `live` is the set of shot ids still flying; the rest are returned so feedback can fizzle them.
-	function update(dt, { live, hero, aim, held, hovered, locate }) {
+	function update(dt, { live, hero, aim, held, hovered, locate, units = [] }) {
+		health(units)
 		for (const p of pings) {
 			if (p.life <= 0) continue
 			p.life -= dt

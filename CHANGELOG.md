@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- MOBA heroes and dummies now have HP, death and respawn; attacks can stutter-step, Q hits recharge Vault, and one dummy fights back. Health bars and hit feedback distinguish pokes, damage taken and takedowns.
+
 - Added MOBA Vault on W and Rain on E, with distinct aiming tells, controller hold-to-aim casts, and three visible cooldowns.
 
 - MOBA camera follows without mouse drift, supports bounded arrow-key panning and hold-Space recentring without changing follow mode, and uses high-contrast native move, attack, and targeting cursors.

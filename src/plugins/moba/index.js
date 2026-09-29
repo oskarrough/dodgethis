@@ -24,7 +24,7 @@ const FACTS = [
 	'impact',
 ]
 
-// Moba, milestone 1 (docs/moba-plan.md): one hero on an empty floor with pillars and two strafing dummies, to get the feel right.
+// Moba's kit slice: one hero, pillars and two dummies, one of which casts back.
 // Boots with ?mode=moba. Everything lives as long as a run of the mode.
 export default function moba(app) {
 	const { scene, world, RAPIER, input, audio } = app
@@ -99,7 +99,7 @@ export default function moba(app) {
 				const frame = app.intents.get(local)
 				const p = hero.body.mesh.position
 				audio.setAudioListener(p)
-				if (hero.body.animate(step, hero.cast ? 1 : 0)) sfx.step(p)
+				if (!hero.dead && hero.body.animate(step, hero.cast || hero.attack ? 1 : 0)) sfx.step(p)
 				for (const d of sim.dummies) if (!d.dead) d.body.animate(step)
 				const target = !onPad() && frame.aim ? sim.pick(hero.team, frame.aim) : null
 				const hovered = target && locate(target.id)
@@ -113,21 +113,22 @@ export default function moba(app) {
 					live: new Set(sim.shots.map((s) => s.id)),
 					hero: p,
 					aim: hero.cast?.slot === 'slot1' ? hero.cast.target : frame.aim,
-					held: frame.held.slot1 || hero.cast?.slot === 'slot1',
+					held: !hero.dead && (frame.held.slot1 || hero.cast?.slot === 'slot1'),
+					units: [...sim.heroes, ...sim.dummies],
 					hovered,
 					locate,
 				})
 				skillsView.update(step, {
 					hero: p,
 					aim: frame.aim,
-					held: frame.held,
+					held: hero.dead ? {} : frame.held,
 					zones: sim.zones,
 					alpha: frozen ? 0 : alpha,
 				})
 				feedback.fizzle(gone)
 				juice.update(step)
 				shadows.update((cast) => {
-					cast(p.x, p.y - hero.body.radius - hero.body.halfHeight, p.z, 0.5)
+					if (!hero.dead) cast(p.x, p.y - hero.body.radius - hero.body.halfHeight, p.z, 0.5)
 					for (const d of sim.dummies) {
 						if (d.dead) continue
 						const q = d.body.mesh.position
@@ -135,10 +136,17 @@ export default function moba(app) {
 					}
 				})
 				hud.update(dt, {
-					cooldowns: hero.cd.slice(0, 3).map((cd) => cd * app.clock.step),
+					cooldowns: hero.cd
+						.slice(0, 3)
+						.map((cd) => Math.max(0, cd - (frozen ? 0 : alpha)) * app.clock.step),
 					totals: [tune.loose.cooldown, tune.vault.cooldown, tune.rain.cooldown],
 					device: input.activeDevice(),
 					pausedNow: paused,
+					hp: hero.hp,
+					maxHp: hero.maxHp,
+					respawn: hero.dead
+						? Math.max(0, hero.respawnTick - sim.tick - (frozen ? 0 : alpha)) * app.clock.step
+						: null,
 				})
 				app.camera.update(frozen ? 0 : dt)
 			})
@@ -160,12 +168,29 @@ export default function moba(app) {
 
 			// --- Tune GUI: moba's sections come and go with the run; the values live in tune.js and survive restarts. ---
 			run.debug.tune('hero', tune.hero, (f, t) => {
+				f.add(t, 'hp', 200, 3000, 100).name('initial HP')
 				f.add(t, 'speed', 1, 12, 0.1)
 				f.add(t, 'accel', 1, 80, 1)
 				f.add(t, 'friction', 0, 40, 0.5)
 				f.add(t, 'stopFriction', 0, 60, 0.5).name('stop friction')
 				f.add(t, 'stopSpeed', 0, 6, 0.1).name('stop speed')
 				f.add(t, 'turnRate', 90, 3600, 30).name('turn rate (°/s)')
+			})
+			run.debug.tune('attack', tune.attack, (f, t) => {
+				f.add(t, 'damage', 10, 300, 5)
+				f.add(t, 'rate', 0.25, 3, 0.05)
+				f.add(t, 'windup', app.clock.step, 0.5, app.clock.step)
+				f.add(t, 'backswing', app.clock.step, 0.5, app.clock.step)
+				f.add(t, 'speed', 8, 60, 1)
+				f.add(t, 'radius', 0.05, 0.5, 0.01)
+				f.add(t, 'visualScale', 0.1, 1, 0.05)
+			})
+			run.debug.tune('respawn', tune.respawn, (f, t) => {
+				f.add(t, 'base', app.clock.step, 20, app.clock.step)
+				f.add(t, 'perLevel', app.clock.step, 5, app.clock.step)
+			})
+			run.debug.tune('momentum', tune.momentum, (f, t) => {
+				f.add(t, 'reduction', 0, 4, 0.25).name('Vault recharge (s)')
 			})
 			run.debug.tune('orders', tune.orders, (f, t) => {
 				f.add(t, 'pick', 0, 2, 0.05).name('attack pick (m)')
@@ -177,15 +202,17 @@ export default function moba(app) {
 				f.add(t, 'attackRange', 1, 10, 0.25).name('attack range')
 			})
 			run.debug.tune('loose', tune.loose, (f, t) => {
+				f.add(t, 'damage', 10, 500, 10)
 				f.add(t, 'speed', 6, 60, 0.5).name('speed (m/s)')
 				f.add(t, 'range', 3, 30, 0.5)
 				f.add(t, 'radius', 0.05, 1.5, 0.05)
-				f.add(t, 'castPoint', 0, 0.5, 0.01).name('cast point (s)')
+				f.add(t, 'castPoint', app.clock.step, 0.5, app.clock.step).name('cast point (s)')
 				f.add(t, 'cooldown', 0.2, 10, 0.1).name('cooldown (s)')
 				f.add(t, 'nearMiss', 0, 2, 0.05).name('near miss (m)')
 			})
 			run.debug.tune('rain', tune.rain, (f, t) => {
-				f.add(t, 'castPoint', 0, 1, 0.01)
+				f.add(t, 'damage', 10, 500, 10)
+				f.add(t, 'castPoint', app.clock.step, 1, app.clock.step)
 				f.add(t, 'range', 1, 20, 0.25)
 				f.add(t, 'radius', 0.1, 6, 0.1)
 				f.add(t, 'delay', app.clock.step, 3, app.clock.step)
@@ -194,7 +221,7 @@ export default function moba(app) {
 				f.add(t, 'cooldown', 0.2, 15, 0.1)
 			})
 			run.debug.tune('vault', tune.vault, (f, t) => {
-				f.add(t, 'castPoint', 0, 1, 0.01)
+				f.add(t, 'castPoint', app.clock.step, 1, app.clock.step)
 				f.add(t, 'range', 0.5, 10, 0.25)
 				f.add(t, 'time', app.clock.step, 1, app.clock.step)
 				f.add(t, 'cooldown', 0.2, 10, 0.1)
@@ -220,7 +247,8 @@ export default function moba(app) {
 				f.add(t, 'flipMin', 0.1, 3, 0.05).name('flip min (s)')
 				f.add(t, 'flipMax', 0.1, 4, 0.05).name('flip max (s)')
 				f.add(t, 'span', 0.5, 10, 0.5).name('span (m)')
-				f.add(t, 'hits', 1, 10, 1)
+				f.add(t, 'hp', 200, 3000, 100).name('initial HP')
+				f.add(t, 'castEvery', 1, 10, 0.25).name('cast interval')
 				f.add(t, 'respawn', 0.2, 10, 0.1).name('respawn (s)')
 			})
 			run.debug.tune('juice', tune.juice, (f, t) => {

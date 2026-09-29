@@ -92,7 +92,7 @@ Each ends with `bun run check` green and is playable behind `?mode=moba`. Requir
 1. **Feel slice.** One hero on a flat 40 × 40 m floor with three pillars, and the court hidden. Build the `pointClick` scheme, `stickAim`, follow framing and the juice-kit extraction. RMB order with pathing, arrival and pings; left-stick move; Q with the cast rules and buffer; two strafing dummies that flash, cue near misses, go down after three Q hits and respawn 2 s later. Everything in the tune GUI. Headless tests: no overshoot on arrival, reversal time, buffer timing, order resumption, swept hits. Done when Oskar calls it smooth on mouse and pad at 144 Hz.
    Pulled forward from M2: W Vault (arrow, 4 m dash), E Rain (filling circle, delayed hit and slow), and three cooldowns; the feel slice swaps the planned W/E bindings, with W 3 s / E 6 s cooldowns. Q is unchanged; pad holds aim and releases fire.
 
-2. **Kit.** W, E, basic attacks with stutter-step, the trait, HP, death and respawn, a dummy that casts back, indicators, the cooldown HUD, hit-feedback tiers.
+2. **Kit.** W, E, basic attacks with stutter-step, the trait, HP, death and respawn, a dummy that casts back, indicators, the cooldown HUD, hit-feedback tiers. Keeps the feel slice's W Vault / E Rain bindings and cooldowns; Momentum recharges Vault (now W), not Rain. Dummies have 1400 HP and keep their 2 s respawn; the hero uses `6 + 2 × level` s.
 3. **Lane.** Map, structures, waves, the soak rule, levels, globes, base healing, win condition. 1v1 against a scripted hero, then 2v2.
 4. **Bots.** Hero bots and 3v3. A seeded headless bots-only match must end in a core kill within 15 simulated minutes.
 5. **HotS layer.** Mount and the R heroic.

@@ -7,6 +7,7 @@ export function createFeedback({ juice, sfx, camera, input, view, skillsView, hu
 	const hitmarker = document.querySelector('.hitmarker')
 	const _hm = new THREE.Vector3()
 	function hitmark(kind, point) {
+		if (!hitmarker) return
 		_hm.set(point.x, point.y ?? 1, point.z).project(camera.view)
 		hitmarker.style.left = `${((_hm.x + 1) / 2) * 100}%`
 		hitmarker.style.top = `${((1 - _hm.y) / 2) * 100}%`
@@ -52,7 +53,8 @@ export function createFeedback({ juice, sfx, camera, input, view, skillsView, hu
 				const shot = sim.shots.find((s) => s.id === fact.id)
 				if (shot) view.bolt(shot, fact.point)
 				unitOf(fact.hero)?.body.kick(0.18)
-				sfx.loose(mine ? 1 : 0.45, fact.point)
+				if (fact.slot === 'primary') sfx.deflect(fact.point)
+				else sfx.loose(mine ? 1 : 0.45, fact.point)
 				return
 			}
 			case 'impact':
@@ -61,7 +63,7 @@ export function createFeedback({ juice, sfx, camera, input, view, skillsView, hu
 					{ x: 0, y: 1, z: 0 },
 					{ count: 20, speed: 3, life: 0.35, size: 0.1 },
 				)
-				if (!fact.hit) sfx.hit(fact.point)
+				sfx.roll(fact.point) // one Rain cue per impact, even when several units are hit
 				return
 			case 'hit': {
 				view.unbolt(fact.projectile)
@@ -71,7 +73,7 @@ export function createFeedback({ juice, sfx, camera, input, view, skillsView, hu
 					unit.body.squash(0.28)
 				}
 				juice.burst(fact.point, fact.direction, { count: 6, speed: 1.4, life: 0.3, size: 0.07 })
-				sfx.hit(fact.point)
+				if (fact.slot !== 'slot3') sfx.hit(fact.point)
 				if (onMe) {
 					camera.shake(tune.juice.shakeTaken)
 					input.rumble(0.2, 0.3, 60)
@@ -109,8 +111,12 @@ export function createFeedback({ juice, sfx, camera, input, view, skillsView, hu
 					size: 0.1,
 					sizeStep: 0.025,
 				})
-				camera.kick(2)
-				if (mine) {
+				if (onMe) {
+					camera.shake(tune.juice.shakeTakedown)
+					input.rumble(0.35, 0.6, 85)
+				}
+				if (mine && !onMe) {
+					camera.kick(2)
 					stop = tune.juice.hitstop
 					camera.shake(tune.juice.shakeTakedown)
 					hitmark('kill', fact.point)

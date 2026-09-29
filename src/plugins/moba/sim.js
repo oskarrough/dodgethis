@@ -52,6 +52,15 @@ export function createSim({
 			team,
 			body,
 			yaw: 0,
+			spawn: { x: SPAWN.x + i * 1.5, z: SPAWN.z },
+			hp: tune.hero.hp,
+			maxHp: tune.hero.hp,
+			level: tune.hero.level,
+			dead: false,
+			corpse: null,
+			respawnTick: null,
+			attack: null,
+			attackTick: 0,
 			order: null,
 			cast: null,
 			slowUntil: 0,
@@ -71,16 +80,20 @@ export function createSim({
 		yaw: 0,
 		dir: i % 2 ? -1 : 1,
 		flipIn: tune.dummies.flipMax,
-		hits: 0,
+		hp: tune.dummies.hp,
+		maxHp: tune.dummies.hp,
+		cast: null,
+		castTick: ticks(tune.dummies.castEvery),
+		sparring: i === 0,
 		dead: false,
 		corpse: null,
-		respawnIn: 0,
+		respawnTick: null,
 		slowUntil: 0,
 	}))
 
 	// Everyone who can be shot, targeted or picked, as plain circles.
 	const units = () => [
-		...heroes.map((h) => ({ id: h.id, team: h.team, unit: h, hero: true })),
+		...heroes.filter((h) => !h.dead).map((h) => ({ id: h.id, team: h.team, unit: h, hero: true })),
 		...dummies.filter((d) => !d.dead).map((d) => ({ id: d.id, team: d.team, unit: d, hero: true })),
 	]
 	const enemiesOf = (team) =>
@@ -93,7 +106,7 @@ export function createSim({
 				radius: profile.radius,
 			}))
 	const find = (id) =>
-		heroes.find((h) => h.id === id) ?? dummies.find((d) => d.id === id && !d.dead)
+		heroes.find((h) => h.id === id && !h.dead) ?? dummies.find((d) => d.id === id && !d.dead)
 
 	// The enemy an order point lands on: the unit's silhouette on the ground, its axis projected along the view, so a click on a torso counts.
 	function pick(team, p) {
@@ -196,7 +209,7 @@ export function createSim({
 
 	function move(h, frame, dt) {
 		const body = h.body
-		if (h.cast) return body.update({ x: 0, z: 0 }, dt, 0) // rooted for the cast point, stopped dead
+		if (h.cast || h.attack) return body.update({ x: 0, z: 0 }, dt, 0) // rooted for the cast point, stopped dead
 		const stick = Math.hypot(frame.move.x, frame.move.z)
 		if (stick > 0.01) return body.update(frame.move, dt)
 		const o = h.order
@@ -211,7 +224,19 @@ export function createSim({
 				const tp = target.body.position
 				const p = body.position
 				if (Math.hypot(tp.x - p.x, tp.z - p.z) <= tune.orders.attackRange) {
-					o.path = null // in range: hold and face it until M2 gives the hero an attack
+					o.path = null
+					if (t >= h.attackTick - ticks(tune.attack.windup) + 1 && !body.dashing) {
+						h.attack = { target: target.id, phase: 'windup', left: ticks(tune.attack.windup) }
+						h.yaw = yawOf(tp.x - p.x, tp.z - p.z)
+						present({
+							type: 'cast',
+							hero: h.id,
+							slot: 'primary',
+							point: { x: p.x, y: p.y, z: p.z },
+							direction: dirOf(h.yaw),
+							target: { x: tp.x, z: tp.z },
+						})
+					}
 				} else {
 					o.replanIn -= dt
 					if (!o.path || o.replanIn <= 0) {
@@ -266,7 +291,8 @@ export function createSim({
 				return
 			}
 		}
-		if (h.cast || h.body.dashing || h.cd[i] > 0) return
+		if (h.cast || h.attack?.phase === 'windup' || h.body.dashing || h.cd[i] > 0) return
+		h.attack = null // abilities cut the backswing, not the windup
 		intents.consume(h.id, slot)
 		const p = h.body.position
 		const at = latest.at
@@ -340,8 +366,19 @@ export function createSim({
 	}
 
 	function control(h, dt) {
-		const frame = intents.get(h.id)
 		for (let i = 0; i < h.cd.length; i++) if (h.cd[i] > 0) h.cd[i]--
+		if (h.dead) {
+			intents.cancel(h.id)
+			if (t >= h.respawnTick) respawn(h)
+			return
+		}
+		const frame = intents.get(h.id)
+		if (
+			h.attack?.phase === 'backswing' &&
+			(Math.hypot(frame.move.x, frame.move.z) > 0.01 ||
+				frame.pressed.some((e) => e.action === 'stop'))
+		)
+			h.attack = null
 		for (const e of frame.pressed.slice()) {
 			if (e.action === 'stop') {
 				h.order = null
@@ -356,6 +393,7 @@ export function createSim({
 		}
 		if (frame.order) issue(h, frame.order)
 		if (Math.hypot(frame.move.x, frame.move.z) > 0.01) h.order = null
+		if (h.attack?.phase === 'backswing' && h.order?.kind === 'move') h.attack = null
 		casts(h, frame)
 		if (h.cast?.left === 0) release(h)
 		h.body.speedMul = t < h.slowUntil ? 1 - tune.rain.slow : 1
@@ -364,8 +402,47 @@ export function createSim({
 
 	function strafe(d, dt) {
 		if (d.dead) {
-			d.respawnIn -= dt
-			if (d.respawnIn <= 0) respawn(d)
+			if (t >= d.respawnTick) respawn(d)
+			return
+		}
+		const target = enemiesOf(d.team).sort(
+			(a, b) =>
+				Math.hypot(a.x - d.body.position.x, a.z - d.body.position.z) -
+				Math.hypot(b.x - d.body.position.x, b.z - d.body.position.z),
+		)[0]
+		if (
+			d.sparring &&
+			!d.cast &&
+			t >= d.castTick &&
+			target &&
+			Math.hypot(target.x - d.body.position.x, target.z - d.body.position.z) <= tune.loose.range
+		) {
+			const p = d.body.position
+			const dx = target.x - p.x,
+				dz = target.z - p.z
+			const length = Math.hypot(dx, dz) || 1
+			d.cast = {
+				slot: 'slot1',
+				dir: { x: dx / length, z: dz / length },
+				target: { x: target.x, z: target.z },
+				yaw: yawOf(dx, dz),
+				left: ticks(tune.loose.castPoint),
+			}
+			d.castTick = t + ticks(tune.dummies.castEvery)
+			present({
+				type: 'cast',
+				hero: d.id,
+				slot: 'slot1',
+				point: { x: p.x, y: p.y, z: p.z },
+				direction: { ...d.cast.dir },
+				target: { ...d.cast.target },
+			})
+		}
+		if (d.cast) {
+			d.yaw = d.cast.yaw
+			d.body.face(d.cast.dir)
+			d.body.update({ x: 0, z: 0 }, dt, 0)
+			if (--d.cast.left <= 0) release(d)
 			return
 		}
 		const x = d.body.position.x - d.post.x
@@ -388,21 +465,78 @@ export function createSim({
 		d.body.face(dirOf(d.yaw))
 	}
 
-	function respawn(d) {
-		d.corpse?.dispose()
-		d.corpse = null
-		d.body = bodyAt(d.post.x, d.post.z, 'B')
-		d.dead = false
-		d.hits = 0
-		d.slowUntil = 0
-		present({ type: 'spawn', target: d.id, point: { x: d.post.x, y: 0, z: d.post.z } })
+	function respawn(unit) {
+		unit.corpse?.dispose()
+		unit.corpse = null
+		const spawn = unit.post ?? unit.spawn
+		unit.body = bodyAt(spawn.x, spawn.z, unit.team)
+		unit.body.face(dirOf(unit.yaw))
+		unit.dead = false
+		unit.hp = unit.maxHp
+		unit.respawnTick = null
+		unit.slowUntil = 0
+		if (unit.post) unit.castTick = t + ticks(tune.dummies.castEvery)
+		present({ type: 'spawn', target: unit.id, point: { x: spawn.x, y: 0, z: spawn.z } })
+	}
+
+	function basicAttack(h) {
+		const attack = h.attack
+		if (!attack || --attack.left > 0) return
+		if (attack.phase === 'backswing') {
+			h.attack = null
+			return
+		}
+		const target = find(attack.target)
+		if (!target) {
+			h.attack = null
+			return
+		}
+		const p = h.body.position,
+			tp = target.body.position
+		const length = Math.hypot(tp.x - p.x, tp.z - p.z) || 1
+		const shot = {
+			id: ++shotIds,
+			owner: h.id,
+			team: h.team,
+			slot: 'primary',
+			target: target.id,
+			x: p.x,
+			z: p.z,
+			dx: (tp.x - p.x) / length,
+			dz: (tp.z - p.z) / length,
+			speed: tune.attack.speed,
+			radius: tune.attack.radius,
+			range: FLOOR.half * 4,
+			travelled: 0,
+			passed: [],
+			damage: tune.attack.damage,
+		}
+		shots.push(shot)
+		h.attackTick = t + ticks(1 / tune.attack.rate)
+		h.attack = { target: target.id, phase: 'backswing', left: ticks(tune.attack.backswing) }
+		present({
+			type: 'projectile',
+			id: shot.id,
+			hero: h.id,
+			slot: 'primary',
+			point: { x: p.x, y: tune.loose.height, z: p.z },
+			direction: { x: shot.dx, z: shot.dz },
+		})
 	}
 
 	function hit(shot, target, point) {
 		const unit = target.unit
 		const direction = { x: shot.dx, y: 0, z: shot.dz }
 		const at = { x: point.x, y: tune.loose.height, z: point.z }
-		const lethal = !!unit.post && ++unit.hits >= tune.dummies.hits // only dummies go down in M1
+		const damage = shot.damage ?? (shot.slot === 'slot3' ? tune.rain.damage : tune.loose.damage)
+		unit.hp = Math.max(0, unit.hp - damage)
+		const lethal = unit.hp === 0
+		if (shot.slot === 'slot1' && target.hero) {
+			const source = heroes.find((h) => h.id === shot.owner)
+			// Momentum follows Vault, which the feel slice moved from E to W.
+			if (source && !source.dead)
+				source.cd[1] = Math.max(0, source.cd[1] - ticks(tune.momentum.reduction))
+		}
 		present({
 			type: 'hit',
 			source: shot.owner,
@@ -412,12 +546,25 @@ export function createSim({
 			point: at,
 			direction,
 			lethal,
+			damage,
+			hp: unit.hp,
+			maxHp: unit.maxHp,
 		})
 		if (!lethal) return
 		unit.dead = true
 		unit.corpse = unit.body
 		unit.body.retire()
-		unit.respawnIn = tune.dummies.respawn
+		unit.respawnTick =
+			t +
+			ticks(
+				unit.post ? tune.dummies.respawn : tune.respawn.base + tune.respawn.perLevel * unit.level,
+			)
+		unit.cast = null
+		if (!unit.post) {
+			unit.order = null
+			unit.attack = null
+			intents.cancel(unit.id)
+		}
 		present({ type: 'death', source: shot.owner, target: target.id, point: at, direction })
 	}
 
@@ -429,10 +576,12 @@ export function createSim({
 			control(h, dt)
 			if (dashing && !h.body.dashing) dashEnds.push(h)
 			if (h.cast && --h.cast.left <= 0) release(h)
+			if (!h.dead) basicAttack(h)
 		}
 		for (const d of dummies) strafe(d, dt)
 		world.step()
 		for (const h of heroes) {
+			if (h.dead) continue
 			h.body.sync()
 			face(h, dt)
 		}
@@ -458,7 +607,19 @@ export function createSim({
 		}
 		for (let i = shots.length - 1; i >= 0; i--) {
 			const shot = shots[i]
-			const r = stepShot(shot, dt, enemiesOf(shot.team), tune.loose.nearMiss)
+			let targets = enemiesOf(shot.team)
+			if (shot.target) {
+				targets = targets.filter((e) => e.id === shot.target)
+				if (!targets.length) {
+					shots.splice(i, 1)
+					continue
+				}
+				const target = targets[0]
+				const length = Math.hypot(target.x - shot.x, target.z - shot.z) || 1
+				shot.dx = (target.x - shot.x) / length
+				shot.dz = (target.z - shot.z) / length
+			}
+			const r = stepShot(shot, dt, targets, shot.target ? -Infinity : tune.loose.nearMiss)
 			for (const n of r.nearMisses)
 				present({
 					type: 'nearMiss',
@@ -524,6 +685,13 @@ export function createSim({
 			heroes: heroes.map((h) => ({
 				id: h.id,
 				team: h.team,
+				hp: h.hp,
+				maxHp: h.maxHp,
+				level: h.level,
+				dead: h.dead,
+				respawnTick: h.respawnTick,
+				attack: h.attack && { ...h.attack },
+				attackTick: h.attackTick,
 				pos: pos(h.body),
 				vel: { x: q(h.body.velocity.x), z: q(h.body.velocity.z) },
 				yaw: q(h.yaw),
@@ -540,10 +708,13 @@ export function createSim({
 				id: d.id,
 				pos: d.dead ? null : pos(d.body),
 				yaw: q(d.yaw),
-				hits: d.hits,
+				hp: d.hp,
+				maxHp: d.maxHp,
+				cast: d.cast && { slot: d.cast.slot, left: d.cast.left, yaw: q(d.cast.yaw) },
+				castTick: d.castTick,
 				slowUntil: d.slowUntil,
 				dead: d.dead,
-				respawnTick: d.dead ? t + ticks(d.respawnIn) : null,
+				respawnTick: d.respawnTick,
 			})),
 			zones: zones.map((z) => ({
 				id: z.id,
@@ -556,6 +727,8 @@ export function createSim({
 				id: s.id,
 				owner: s.owner,
 				slot: s.slot,
+				target: s.target ?? null,
+				damage: s.damage ?? tune.loose.damage,
 				pos: { x: q(s.x), z: q(s.z) },
 				dir: { x: q(s.dx), z: q(s.dz) },
 				travelled: q(s.travelled),
@@ -564,7 +737,10 @@ export function createSim({
 	}
 
 	function dispose() {
-		for (const h of heroes) h.body.dispose()
+		for (const h of heroes) {
+			h.corpse?.dispose()
+			if (!h.dead) h.body.dispose()
+		}
 		for (const d of dummies) {
 			d.corpse?.dispose()
 			if (!d.dead) d.body.dispose()
