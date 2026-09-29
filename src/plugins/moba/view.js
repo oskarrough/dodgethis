@@ -18,7 +18,7 @@ export function createView(scene, smooth) {
 
 	// --- Pings: a ring that contracts over 0.25 s; attack pings sit on the target. ---
 	const ringGeometry = own(new THREE.RingGeometry(0.62, 0.8, 40).rotateX(-Math.PI / 2))
-	const ringMaterials = { move: flat('teamA'), attack: flat('teamB') }
+	const ringMaterials = { move: flat('teamA'), attack: flat('teamB'), aggro: flat('ink') }
 	const pings = Array.from({ length: 10 }, () => {
 		const mesh = new THREE.Mesh(ringGeometry, ringMaterials.move)
 		mesh.visible = false

@@ -4,6 +4,8 @@ import { tune } from './tune.js'
 
 export function createLaneView(scene, smooth = null) {
 	const bodies = new Set()
+	const cameraFacing = new THREE.Quaternion()
+	const pitchAxis = new THREE.Vector3(1, 0, 0)
 	function makeBody(x, z, team, kind) {
 		const v = tune.laneView
 		const tower = kind === 'tower'
@@ -72,6 +74,26 @@ export function createLaneView(scene, smooth = null) {
 				shield.position.z = -radius
 			}
 		}
+		let tell = null
+		if (!tower) {
+			const shape =
+				kind === 'melee'
+					? new THREE.CircleGeometry(v.tellSize / 2, 3)
+					: kind === 'ranged'
+						? new THREE.PlaneGeometry(v.tellSize, v.tellSize * v.tellRangedHeight)
+						: new THREE.CircleGeometry(v.tellSize / 2, 5)
+			owned.push(shape)
+			tell = new THREE.Group()
+			tell.name = `moba-${kind}-tell`
+			tell.rotation.x = -Math.atan2(tune.follow.height, tune.follow.back)
+			tell.position.y = halfHeight + v.tellLift
+			const back = new THREE.Mesh(shape, ink),
+				fill = new THREE.Mesh(shape, cream)
+			fill.position.z = v.tellLayer
+			tell.add(back, fill)
+			tell.visible = false
+			mesh.add(tell)
+		}
 		const pose = {
 			position: new THREE.Vector3(x, halfHeight, z),
 			quaternion: new THREE.Quaternion(),
@@ -79,6 +101,15 @@ export function createLaneView(scene, smooth = null) {
 		mesh.position.copy(pose.position)
 		scene.add(mesh)
 		const unsmooth = smooth?.(mesh, () => pose)
+		let helpTether = null
+		if (!tower) {
+			const geometry = new THREE.BoxGeometry(v.tetherWidth, v.tetherHeight, 1)
+			owned.push(geometry)
+			helpTether = new THREE.Mesh(geometry, teamMaterial)
+			helpTether.name = 'moba-help-tether'
+			helpTether.visible = false
+			scene.add(helpTether)
+		}
 		const body = {
 			position: pose.position,
 			mesh,
@@ -116,10 +147,14 @@ export function createLaneView(scene, smooth = null) {
 			dispose() {
 				unsmooth?.()
 				scene.remove(mesh)
+				if (helpTether) scene.remove(helpTether)
 				for (const item of owned) item.dispose()
 				bodies.delete(body)
 			},
 			pose,
+			tell,
+			helpTether,
+			aggroFlash: 0,
 		}
 		bodies.add(body)
 		return body
@@ -129,6 +164,7 @@ export function createLaneView(scene, smooth = null) {
 	const marks = new Map()
 	function update(lane, heroes, alpha, locate, dt = 0) {
 		const v = tune.laneView
+		cameraFacing.setFromAxisAngle(pitchAxis, -Math.atan2(tune.follow.height, tune.follow.back))
 		for (const unit of [...lane.structures, ...lane.minions]) {
 			unit.body.squeeze *= Math.exp(-v.feedbackDecay * dt)
 			unit.body.recoil *= Math.exp(-v.feedbackDecay * dt)
@@ -146,6 +182,29 @@ export function createLaneView(scene, smooth = null) {
 			else visual.position.y = progress * v.wizardPose
 			visual.scale.y *= Math.max(0.1, 1 - unit.body.squeeze)
 			visual.position.z = unit.body.recoil
+			const tell = unit.body.tell
+			if (tell) {
+				tell.visible = !unit.dead && !!unit.attack
+				tell.quaternion.copy(unit.body.mesh.quaternion).invert().multiply(cameraFacing)
+				tell.children[1].scale.setScalar(v.tellInset * (v.tellStart + (1 - v.tellStart) * progress))
+			}
+			unit.body.aggroFlash = Math.max(0, unit.body.aggroFlash - dt)
+			const flash = unit.body.aggroFlash / v.aggroLife
+			const helpTether = unit.body.helpTether
+			if (helpTether) {
+				const target = locate(unit.target),
+					p = unit.body.mesh.position
+				helpTether.visible = !unit.dead && flash > 0 && !!target
+				if (target) {
+					helpTether.position.set((p.x + target.x) / 2, v.tetherY, (p.z + target.z) / 2)
+					helpTether.rotation.y = Math.atan2(target.x - p.x, target.z - p.z)
+					helpTether.scale.set(
+						1 + flash * v.aggroWidth,
+						1,
+						Math.hypot(target.x - p.x, target.z - p.z),
+					)
+				}
+			}
 			if (unit.kind !== 'tower') continue
 			let mark = marks.get(unit.id)
 			if (!mark) {
@@ -175,6 +234,8 @@ export function createLaneView(scene, smooth = null) {
 				)
 			const target = locate(unit.target)
 			mark.tether.visible = !unit.dead && !!target
+			mark.tether.scale.x = 1 + flash * v.aggroWidth
+			mark.tether.scale.y = 1 + flash * v.aggroWidth
 			if (target) {
 				const dx = target.x - p.x,
 					dz = target.z - p.z
@@ -186,6 +247,9 @@ export function createLaneView(scene, smooth = null) {
 	}
 	return {
 		makeBody,
+		aggro(body) {
+			if (body) body.aggroFlash = tune.laneView.aggroLife
+		},
 		update,
 		dispose() {
 			for (const body of bodies) body.dispose()

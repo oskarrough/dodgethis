@@ -54,10 +54,10 @@ export function projectMap(a, b) {
 	return { x: a.x + (b.x - a.x) * t, z: a.z + (b.z - a.z) * t }
 }
 
-export function walkable(x, z, radius = 0, clearance = 0) {
+export function walkable(x, z, radius = 0, clearance = 0, obstacles = OBSTACLES) {
 	const r = radius + clearance
 	if (Math.abs(x) > FLOOR.halfX - r || Math.abs(z) > FLOOR.halfZ - r) return false
-	return OBSTACLES.every((o) =>
+	return obstacles.every((o) =>
 		o.r !== undefined
 			? Math.hypot(x - o.x, z - o.z) >= o.r + r
 			: Math.hypot(
@@ -67,11 +67,11 @@ export function walkable(x, z, radius = 0, clearance = 0) {
 	)
 }
 
-export function clampWalkable(point, radius, clearance = 0) {
+export function clampWalkable(point, radius, clearance = 0, obstacles = OBSTACLES) {
 	const r = radius + clearance + tune.collision.separation
 	let p = clampMap(point, r)
 	for (let pass = 0; pass < tune.collision.clampPasses; pass++) {
-		for (const o of OBSTACLES) {
+		for (const o of obstacles) {
 			if (o.r !== undefined) {
 				const dx = p.x - o.x,
 					dz = p.z - o.z,
@@ -103,7 +103,7 @@ export function clampWalkable(point, radius, clearance = 0) {
 			}
 			p = clampMap(p, r)
 		}
-		if (walkable(p.x, p.z, radius, clearance)) break
+		if (walkable(p.x, p.z, radius, clearance, obstacles)) break
 	}
 	return p
 }

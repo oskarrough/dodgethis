@@ -1,12 +1,12 @@
-import { FLOOR, walkable, clampWalkable, segmentClear } from './obstacles.js'
+import { OBSTACLES, FLOOR, walkable, clampWalkable, segmentClear } from './obstacles.js'
 export { segmentClear } from './obstacles.js'
 
 // Cache the static grid for a run. Live radius/clearance/grid changes invalidate it on the next order, not on a tick.
-export function createPathPlanner(options) {
-	let grid = buildGrid(options)
+export function createPathPlanner(options, obstacles = OBSTACLES) {
+	let grid = buildGrid(options, obstacles)
 	return (from, to, next = options) => {
 		if (next.radius !== grid.radius || next.clearance !== grid.clearance || next.grid !== grid.grid)
-			grid = buildGrid(next)
+			grid = buildGrid(next, obstacles)
 		return route(from, to, grid)
 	}
 }
@@ -17,7 +17,7 @@ export function planPath(from, to, options) {
 	return defaultPlanner(from, to, options)
 }
 
-function buildGrid({ radius, clearance, grid }) {
+function buildGrid({ radius, clearance, grid }, obstacles) {
 	const nx = Math.ceil((FLOOR.halfX * 2) / grid)
 	const nz = Math.ceil((FLOOR.halfZ * 2) / grid)
 	const point = (c) => ({
@@ -29,17 +29,17 @@ function buildGrid({ radius, clearance, grid }) {
 	const margin = radius + clearance + grid * Math.SQRT1_2
 	for (let c = 0; c < open.length; c++) {
 		const p = point(c)
-		open[c] = walkable(p.x, p.z, margin) ? 1 : 0
+		open[c] = walkable(p.x, p.z, margin, 0, obstacles) ? 1 : 0
 	}
-	return { radius, clearance, grid, nx, nz, point, open }
+	return { radius, clearance, grid, nx, nz, point, open, obstacles }
 }
 
-function route(from, to, { radius, clearance, grid, nx, nz, point, open }) {
-	if (!walkable(from.x, from.z, radius)) return []
+function route(from, to, { radius, clearance, grid, nx, nz, point, open, obstacles }) {
+	if (!walkable(from.x, from.z, radius, 0, obstacles)) return []
 	const inflate = radius + clearance
-	const firstMargin = walkable(from.x, from.z, radius, clearance) ? inflate : radius
-	to = clampWalkable(to, radius, clearance)
-	if (firstMargin === inflate && segmentClear(from, to, inflate)) return [{ ...to }]
+	const firstMargin = walkable(from.x, from.z, radius, clearance, obstacles) ? inflate : radius
+	to = clampWalkable(to, radius, clearance, obstacles)
+	if (firstMargin === inflate && segmentClear(from, to, inflate, obstacles)) return [{ ...to }]
 	const nearestOpen = (p, margin) => {
 		const ci = Math.max(0, Math.min(nx - 1, Math.floor((p.x + FLOOR.halfX) / grid)))
 		const cj = Math.max(0, Math.min(nz - 1, Math.floor((p.z + FLOOR.halfZ) / grid)))
@@ -56,7 +56,7 @@ function route(from, to, { radius, clearance, grid, nx, nz, point, open }) {
 					pb = point(b)
 				return Math.hypot(pa.x - p.x, pa.z - p.z) - Math.hypot(pb.x - p.x, pb.z - p.z)
 			})
-			for (const c of candidates) if (segmentClear(p, point(c), margin)) return c
+			for (const c of candidates) if (segmentClear(p, point(c), margin, obstacles)) return c
 		}
 		return -1
 	}
@@ -71,7 +71,7 @@ function route(from, to, { radius, clearance, grid, nx, nz, point, open }) {
 	let i = firstMargin === inflate ? 0 : 1
 	while (i < points.length - 1) {
 		let j = points.length - 1
-		while (j > i && !segmentClear(points[i], points[j], inflate)) j--
+		while (j > i && !segmentClear(points[i], points[j], inflate, obstacles)) j--
 		if (j === i) return []
 		pulled.push({ ...points[j] })
 		i = j

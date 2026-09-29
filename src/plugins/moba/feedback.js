@@ -31,6 +31,7 @@ export function createFeedback({ juice, sfx, camera, input, view, skillsView, hu
 		sim.lane?.minions.find((u) => u.id === id) ??
 		sim.lane?.structures.find((u) => u.id === id)
 
+	let aggroPingTick = -1
 	const sounded = new Map()
 	function cue(name, fact, gain = 1) {
 		const tick = fact.tick ?? sim.tick
@@ -89,7 +90,11 @@ export function createFeedback({ juice, sfx, camera, input, view, skillsView, hu
 				return
 			}
 			case 'aggro':
-				view.ping('attack', fact.point, { follow: fact.target })
+				sim.laneView?.aggro(unitOf(fact.source)?.body)
+				if (onMe && aggroPingTick !== fact.tick) {
+					aggroPingTick = fact.tick
+					view.ping('aggro', fact.point, { follow: local, size: tune.laneView.aggroPing })
+				}
 				return
 			case 'xp':
 				view.xp?.(fact.amount, fact.point)
@@ -214,6 +219,7 @@ export function createFeedback({ juice, sfx, camera, input, view, skillsView, hu
 		beat,
 		reset() {
 			stop = 0
+			aggroPingTick = -1
 			sounded.clear()
 		},
 	}

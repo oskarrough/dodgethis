@@ -12,7 +12,7 @@ export function closest(ax, az, bx, bz, cx, cz) {
 
 // Advance one shot by `dt` against `targets` ({ id, x, z, radius }). Returns { hit, point } for the first body touched,
 // { expired } once the range is spent, and lists `nearMisses` it passed within `nearMiss` of without touching.
-export function stepShot(shot, dt, targets, nearMiss) {
+export function stepShot(shot, dt, targets, nearMiss, obstacles = OBSTACLES) {
 	const step = Math.min(shot.speed * dt, shot.range - shot.travelled)
 	const ax = shot.x
 	const az = shot.z
@@ -28,7 +28,7 @@ export function stepShot(shot, dt, targets, nearMiss) {
 				from,
 				to,
 				shot.radius,
-				OBSTACLES.filter((o) => o.kind !== 'tower'),
+				obstacles.filter((o) => o.kind !== 'tower'),
 			)
 	const edge = mapExit(from, to, shot.radius)
 	const blocked = obstacle === null ? edge : edge === null ? obstacle : Math.min(obstacle, edge)

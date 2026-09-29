@@ -43,7 +43,7 @@ export function createSim({
 				r: tune.tower.radius,
 			}))
 		: []
-	OBSTACLES.push(...towerObstacles)
+	const obstacles = [...OBSTACLES, ...towerObstacles]
 	const towerColliders = new Map(
 		towerObstacles.map((o) => [
 			o.id,
@@ -56,7 +56,7 @@ export function createSim({
 			),
 		]),
 	)
-	let planPath = createPathPlanner({ radius: profile.radius, ...tune.orders })
+	let planPath = createPathPlanner({ radius: profile.radius, ...tune.orders }, obstacles)
 	let t = 0
 	const present = (fact) => emit({ ...fact, tick: t })
 	let shotIds = 0
@@ -128,14 +128,15 @@ export function createSim({
 				heroes,
 				present,
 				makeBody: laneView.makeBody,
+				obstacles,
 				removeTower(unit) {
 					const obstacle = towerObstacles.find((o) => o.id === unit.id)
-					const index = OBSTACLES.indexOf(obstacle)
-					if (index >= 0) OBSTACLES.splice(index, 1)
+					const index = obstacles.indexOf(obstacle)
+					if (index >= 0) obstacles.splice(index, 1)
 					const collider = towerColliders.get(unit.id)
 					if (collider) world.removeCollider(collider, true)
 					towerColliders.delete(unit.id)
-					planPath = createPathPlanner({ radius: profile.radius, ...tune.orders })
+					planPath = createPathPlanner({ radius: profile.radius, ...tune.orders }, obstacles)
 				},
 				damage(source, target, damage) {
 					hit(
@@ -279,7 +280,7 @@ export function createSim({
 			})
 			return
 		}
-		const goal = clampWalkable(point, profile.radius, tune.orders.clearance)
+		const goal = clampWalkable(point, profile.radius, tune.orders.clearance, obstacles)
 		if (
 			h.order?.kind !== 'move' ||
 			Math.hypot(h.order.goal.x - goal.x, h.order.goal.z - goal.z) >= tune.collision.epsilon ||
@@ -364,7 +365,7 @@ export function createSim({
 						p,
 						tp,
 						tune.attack.radius,
-						OBSTACLES.filter((o) => o.id !== target.id),
+						obstacles.filter((o) => o.id !== target.id),
 					)
 				) {
 					o.path = null
@@ -385,7 +386,7 @@ export function createSim({
 						!o.path ||
 						Math.hypot(tp.x - o.goal.x, tp.z - o.goal.z) > tune.orders.replanDistance
 					) {
-						o.goal = clampWalkable(tp, profile.radius, tune.orders.clearance)
+						o.goal = clampWalkable(tp, profile.radius, tune.orders.clearance, obstacles)
 						o.path = plan(h, o.goal)
 					}
 					s = steer(h, o.goal, false, dt)
@@ -804,7 +805,13 @@ export function createSim({
 				shot.dx = (target.x - shot.x) / length
 				shot.dz = (target.z - shot.z) / length
 			} else targets = (shotTargets.get(shot.team) ?? []).filter((unit) => !unit.unit.dead)
-			const r = stepShot(shot, dt, targets, shot.target ? -Infinity : tune.loose.nearMiss)
+			const r = stepShot(
+				shot,
+				dt,
+				targets,
+				shot.target ? -Infinity : tune.loose.nearMiss,
+				obstacles,
+			)
 			for (const n of r.nearMisses)
 				present({
 					type: 'nearMiss',
@@ -901,6 +908,8 @@ export function createSim({
 							aggroUntil: u.aggroUntil,
 							forced: u.forced,
 							returning: !!u.returning,
+							aggroOrigin: u.aggroOrigin ? { x: q(u.aggroOrigin.x), z: q(u.aggroOrigin.z) } : null,
+							returnGoal: u.returnGoal ? { x: q(u.returnGoal.x), z: q(u.returnGoal.z) } : null,
 							slowUntil: u.slowUntil,
 						})),
 						structures: lane.structures.map((u) => ({
@@ -979,10 +988,6 @@ export function createSim({
 
 	function dispose() {
 		laneView?.dispose()
-		for (const o of towerObstacles) {
-			const index = OBSTACLES.indexOf(o)
-			if (index >= 0) OBSTACLES.splice(index, 1)
-		}
 		for (const collider of towerColliders.values()) world.removeCollider(collider, true)
 		for (const h of heroes) {
 			h.corpse?.dispose()
@@ -1003,6 +1008,7 @@ export function createSim({
 		zones,
 		lane,
 		laneView,
+		obstacles,
 		find,
 		step,
 		stickAim,

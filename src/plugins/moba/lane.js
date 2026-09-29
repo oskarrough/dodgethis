@@ -1,6 +1,7 @@
 import { STEP } from '../../core/app.js'
 import { tune } from './tune.js'
 import { clampWalkable } from './obstacles.js'
+import { createPathPlanner } from './path.js'
 
 const ticks = (s) => Math.max(1, Math.round(s / STEP))
 const distance = (a, b) =>
@@ -12,7 +13,17 @@ export const inReach = (a, b, range) => {
 }
 
 // Plain agents: no character controllers, paths or render-time decisions.
-export function createLane({ heroes, present, damage, projectile, makeBody, removeTower }) {
+export function createLane({
+	heroes,
+	present,
+	damage,
+	projectile,
+	makeBody,
+	removeTower,
+	obstacles,
+}) {
+	const pathOptions = () => ({ radius: tune.waves.radius, ...tune.orders })
+	const plan = createPathPlanner(pathOptions(), obstacles)
 	let serial = 0
 	let nextWave = ticks(tune.waves.first)
 	const minions = []
@@ -99,7 +110,12 @@ export function createLane({ heroes, present, damage, projectile, makeBody, remo
 				continue
 			guard.forced = source.id
 			guard.aggroUntil = t + ticks(tune.waves.helpHold)
+			if (guard.target === source.id) continue
 			guard.target = source.id
+			guard.aggroOrigin = { x: guard.body.position.x, z: guard.body.position.z }
+			guard.returning = false
+			guard.returnGoal = null
+			guard.path = null
 			guard.attack = null
 			present({
 				type: 'aggro',
@@ -159,15 +175,46 @@ export function createLane({ heroes, present, damage, projectile, makeBody, remo
 			let target = t < unit.aggroUntil ? liveTarget(unit.forced) : null
 			if (target && !inReach(unit, target, range)) target = null
 			const old = liveTarget(unit.target)
-			const leashed = !tower && Math.abs(unit.body.position.z - unit.file) > tune.waves.leash
-			// A lost target gets one return-to-file leg, rather than reacquiring while off-road.
-			if (leashed || (unit.target && !old)) unit.returning = true
-			if (unit.returning && Math.abs(unit.body.position.z - unit.file) <= tune.orders.arrival)
-				unit.returning = false
+			const p = unit.body.position
+			if (!tower) {
+				const origin = unit.aggroOrigin
+				const leashed = origin && Math.hypot(p.x - origin.x, p.z - origin.z) > tune.waves.leash
+				if (leashed || (unit.target && !old)) {
+					unit.returning = true
+					unit.returnGoal = clampWalkable(
+						{ x: origin?.x ?? p.x, z: unit.file },
+						unit.body.radius,
+						tune.orders.clearance,
+						obstacles,
+					)
+					unit.path = null
+					unit.forced = null
+					unit.aggroUntil = 0
+					target = null
+				}
+				if (
+					unit.returning &&
+					Math.hypot(p.x - unit.returnGoal.x, p.z - unit.returnGoal.z) <= tune.orders.arrival
+				) {
+					unit.returning = false
+					unit.returnGoal = null
+					unit.aggroOrigin = null
+					unit.path = null
+				}
+				// A fresh call for help wins over the return leg, but not an exhausted leash.
+				if (target) {
+					unit.returning = false
+					unit.returnGoal = null
+				}
+			}
 			if (!unit.returning) target ??= nearest(unit, range, candidates)
-			else target = null
-			if (unit.target !== (target?.id ?? null)) unit.attack = null
+			if (unit.target !== (target?.id ?? null)) {
+				unit.attack = null
+				unit.path = null
+				if (target && !tower && !old) unit.aggroOrigin = { x: p.x, z: p.z }
+			}
 			unit.target = target?.id ?? null
+			if (!tower && !target && !unit.returning) unit.aggroOrigin = null
 			if (unit.attack) {
 				if (!target || !inReach(unit, target, stats.range)) unit.attack = null
 				else if (--unit.attack.left <= 0) {
@@ -198,13 +245,29 @@ export function createLane({ heroes, present, damage, projectile, makeBody, remo
 				continue
 			}
 			if (tower) continue
-			const p = unit.body.position
-			const goal = target?.body.position ?? {
-				x: unit.returning ? p.x : unit.team === 'A' ? tune.waves.spawnX : -tune.waves.spawnX,
-				z: unit.file,
+			const goal = target?.body.position ??
+				unit.returnGoal ?? {
+					x: unit.team === 'A' ? tune.waves.spawnX : -tune.waves.spawnX,
+					z: unit.file,
+				}
+			if (
+				!unit.path ||
+				Math.hypot(goal.x - unit.pathGoal.x, goal.z - unit.pathGoal.z) > tune.orders.replanDistance
+			) {
+				unit.pathGoal = { x: goal.x, z: goal.z }
+				const destination = clampWalkable(goal, unit.body.radius, tune.orders.clearance, obstacles)
+				unit.path = plan(p, destination, pathOptions())
+				unit.leg = 0
 			}
-			const dx = goal.x - p.x,
-				dz = goal.z - p.z,
+			while (
+				unit.leg < unit.path.length - 1 &&
+				Math.hypot(unit.path[unit.leg].x - p.x, unit.path[unit.leg].z - p.z) <= tune.orders.arrival
+			)
+				unit.leg++
+			const waypoint = unit.path[unit.leg]
+			if (!waypoint) continue
+			const dx = waypoint.x - p.x,
+				dz = waypoint.z - p.z,
 				length = Math.hypot(dx, dz)
 			const speed = stats.speed * (t < unit.slowUntil ? 1 - tune.rain.slow : 1)
 			const travel = Math.min(length, speed * dt)
@@ -212,6 +275,8 @@ export function createLane({ heroes, present, damage, projectile, makeBody, remo
 				const next = clampWalkable(
 					{ x: p.x + (dx / length) * travel, z: p.z + (dz / length) * travel },
 					unit.body.radius,
+					0,
+					obstacles,
 				)
 				p.x = next.x
 				p.z = Math.max(-tune.waves.laneZ, Math.min(tune.waves.laneZ, next.z))
