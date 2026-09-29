@@ -49,6 +49,7 @@ export async function createBrowserApp() {
 		RAPIER,
 		renderer: view.renderer,
 		setPalette: view.setPalette,
+		setStylePreset: view.setStylePreset,
 		camera: {
 			view: view.camera,
 			aim: view.aimCamera, // never shaken: pointer rays stay gameplay-stable
@@ -217,7 +218,8 @@ export async function createBrowserApp() {
 		app.frame(dt)
 		drawColliders()
 		const renderStart = perf.enabled ? performance.now() : 0
-		view.render()
+		if (app.shouldRender) view.render()
+		else view.renderer.info.reset()
 		const renderEnd = perf.enabled ? performance.now() : 0
 
 		frames++

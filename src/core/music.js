@@ -25,6 +25,7 @@ export function createMusic(
 	let next = 0
 	let finished = false
 	const voices = new Set()
+	let wind = null
 
 	function note(midi, at, duration, level, type = 'triangle') {
 		const osc = context.createOscillator()
@@ -81,6 +82,13 @@ export function createMusic(
 	}
 
 	function stop() {
+		if (wind) {
+			wind.source.stop()
+			wind.source.disconnect()
+			wind.filter.disconnect()
+			wind.gain.disconnect()
+			wind = null
+		}
 		if (timer !== null) stopTimer(timer)
 		timer = null
 		const now = context.currentTime
@@ -91,7 +99,25 @@ export function createMusic(
 		}
 	}
 	function start() {
-		if (!enabled || !PROFILES[scene] || finished || timer !== null) return
+		if (!enabled || finished || timer !== null || wind) return
+		if (scene === 'front') {
+			const buffer = context.createBuffer(1, context.sampleRate * 4, context.sampleRate)
+			const samples = buffer.getChannelData(0)
+			for (let i = 0; i < samples.length; i++) samples[i] = Math.random() * 2 - 1
+			const source = context.createBufferSource()
+			source.buffer = buffer
+			source.loop = true
+			const filter = context.createBiquadFilter()
+			filter.type = 'lowpass'
+			filter.frequency.value = 180
+			const gain = context.createGain()
+			gain.gain.value = 0.055 * volume()
+			source.connect(filter).connect(gain).connect(destination)
+			source.start()
+			wind = { source, filter, gain }
+			return
+		}
+		if (!PROFILES[scene]) return
 		next = context.currentTime + 0.025
 		timer = startTimer(tick)
 		tick()

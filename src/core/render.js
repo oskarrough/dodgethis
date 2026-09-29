@@ -145,5 +145,6 @@ export function createRenderer() {
 		frame,
 		dispose,
 		setPalette: style.setPalette,
+		setStylePreset: style.setStylePreset,
 	}
 }

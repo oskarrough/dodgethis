@@ -21,6 +21,7 @@ export function createApp(services = {}) {
 	const holds = []
 	const suspends = []
 	const aimers = []
+	const renderDemands = []
 	const intents = createIntents()
 	const suspended = () => suspends.some((s) => !s.signal.aborted && s.fn())
 	const smoother = createSmoother()
@@ -154,6 +155,17 @@ export function createApp(services = {}) {
 				},
 			}),
 			signal,
+			renderDemand: (fn) => enlist(renderDemands, { fn, signal }, signal),
+			get shouldRender() {
+				return renderDemands.every((d) => d.signal.aborted || d.fn())
+			},
+			...(fields.setStylePreset && {
+				setStylePreset(preset) {
+					const restore = fields.setStylePreset(preset)
+					onAbort(signal, restore)
+					return restore
+				},
+			}),
 			get session() {
 				return session
 			},

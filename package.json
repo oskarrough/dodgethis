@@ -7,7 +7,7 @@
 		"dev": "vite",
 		"build": "bun run check && vite build",
 		"preview": "vite preview",
-		"check": "oxlint && oxfmt && bun test",
+		"check": "oxlint && oxfmt --check && bun test",
 		"test": "bun test",
 		"bench": "bun scripts/bench.js",
 		"deploy": "wrangler deploy"

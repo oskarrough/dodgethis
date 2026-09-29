@@ -1,0 +1,160 @@
+@font-face {
+	font-family: 'Josefin Sans';
+	font-style: normal;
+	font-weight: 300;
+	font-display: swap;
+	src: url('/fonts/josefin-sans-light-latin.woff2') format('woff2');
+}
+@font-face {
+	font-family: 'Josefin Sans';
+	font-style: normal;
+	font-weight: 400;
+	font-display: swap;
+	src: url('/fonts/josefin-sans-regular-latin.woff2') format('woff2');
+}
+.moba-front {
+	position: fixed;
+	inset: 0;
+	z-index: 40;
+	isolation: isolate;
+	overflow: hidden;
+	color: var(--ui-text);
+	background: var(--ui-cream);
+	font:
+		400 clamp(16px, 1.4vw, 22px) / 1.5 'Josefin Sans',
+		sans-serif;
+	font-variant-numeric: tabular-nums;
+}
+.front-backdrop,
+.front-backdrop > * {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+}
+.front-backdrop {
+	z-index: -1;
+}
+.front-backdrop > svg {
+	inset: -5%;
+	width: 110%;
+	height: 110%;
+}
+.front-sky {
+	background: linear-gradient(
+		to bottom,
+		var(--front-lilac) 0%,
+		var(--front-mint) 42%,
+		var(--front-peach) 76%,
+		var(--front-dune) 100%
+	);
+}
+.front-sky-next {
+	opacity: 0;
+	background: linear-gradient(
+		to bottom,
+		var(--front-peach) 0%,
+		var(--front-lilac) 42%,
+		var(--front-mint) 76%,
+		var(--front-dune) 100%
+	);
+}
+.moba-front header {
+	position: absolute;
+	top: 10%;
+	left: 10%;
+}
+.moba-front p {
+	margin: 0;
+}
+.moba-front header p:first-child {
+	font-size: 0.7em;
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+}
+.moba-front h1 {
+	margin: 0.3em 0 0.15em;
+	font-weight: 300;
+	font-size: clamp(38px, 4.4vw, 72px);
+	line-height: 1.15;
+}
+.moba-front section {
+	position: absolute;
+	top: 48%;
+	left: 50%;
+	transform: translateX(-50%);
+}
+.moba-front button {
+	color: inherit;
+	font: inherit;
+	cursor: pointer;
+}
+.front-practice {
+	--front-straw: color-mix(in srgb, var(--accent-bow) 40%, var(--ui-cream));
+	display: grid;
+	justify-items: center;
+	gap: 0.55em;
+	width: clamp(300px, 27vw, 440px);
+	padding: 1em 1.5em 1.2em;
+	background: var(--ui-cream);
+	border: 1px solid var(--ui-text);
+	border-radius: 3px;
+}
+.front-practice svg {
+	width: 180px;
+	height: 90px;
+	stroke: var(--ui-text);
+	stroke-width: 1;
+	stroke-linecap: round;
+}
+.front-mode-name {
+	font: 400 clamp(32px, 3vw, 48px) / 1 var(--ui-font);
+}
+.front-practice > span:not(.front-mode-name) {
+	font-size: 0.8em;
+}
+.front-enter {
+	margin-top: 0.5em;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+}
+.moba-front button.selected,
+.moba-front button:focus-visible {
+	outline: 2px solid var(--ui-text);
+	outline-offset: 7px;
+}
+.moba-front footer {
+	position: absolute;
+	bottom: 4%;
+	left: 5%;
+	right: 5%;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1em;
+	font-size: 0.75em;
+}
+.front-back {
+	border: 0;
+	border-bottom: 1px solid currentColor;
+	background: transparent;
+	padding: 0.5em 0;
+}
+.front-prompts {
+	white-space: pre;
+}
+@media (max-width: 700px) {
+	.moba-front header {
+		left: 7%;
+	}
+	.moba-front footer {
+		flex-wrap: wrap;
+	}
+	.moba-front footer > span {
+		display: none;
+	}
+	.front-prompts {
+		white-space: normal;
+	}
+}

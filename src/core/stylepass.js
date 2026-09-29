@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { PALETTE } from './style.js'
+import { createStylePresets } from './style-presets.js'
 
 // Opaque shade/role/normal/depth → ink, highlights and halftone → layer-1 effects against copied depth; creators own materials.
 
@@ -74,6 +75,9 @@ uniform vec3 uCream;
 uniform vec3 uSky;
 uniform mat4 uInvProj;
 uniform mat4 uInvView;
+uniform float uLine;
+uniform float uHatch;
+uniform float uAlpha;
 
 float hash21(vec2 p) { p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
 float vnoise(vec2 p) {
@@ -97,10 +101,10 @@ void main() {
 	float z = texture2D(tDepth, vUv).x;
 	gl_FragDepth = z;
 	bool sky = z >= 0.99999;
-	if (sky) { gl_FragColor = vec4(uSky, 1.0); return; }
+	if (sky) { gl_FragColor = vec4(uSky, 1.0 - uAlpha); return; }
 
 	float d = linDepth(z);
-	float o = 1.2 * sc;
+	float o = 1.2 * sc * uLine;
 	vec2 ox = vec2(o, 0.0) * px, oy = vec2(0.0, o) * px;
 	float zl = texture2D(tDepth, vUv - ox).x, zr = texture2D(tDepth, vUv + ox).x;
 	float zu = texture2D(tDepth, vUv + oy).x, zd = texture2D(tDepth, vUv - oy).x;
@@ -147,11 +151,20 @@ void main() {
 		vec2 cell = fract(hp / sp) - 0.5;
 		float dot0 = 1.0 - smoothstep(0.16, 0.30, length(cell));
 		float dots = dot0 * smoothstep(0.42, 0.16, shade);
-		col = mix(col, uInk, dots * 0.30);
+		if (uHatch > 0.0) {
+			// World-anchored 30 degree lines, anti-aliased at their projected width.
+			float stripe = (hp.x * 0.8660254 + hp.y * 0.5) / sp;
+			float width = max(fwidth(stripe), 0.001);
+			float hatch = 1.0 - smoothstep(0.10, 0.10 + width, abs(fract(stripe) - 0.5));
+			vec3 hatched = mix(base, uInk, hatch * smoothstep(0.66, 0.16, shade) * 0.30);
+			col = mix(mix(col, uInk, dots * 0.30), hatched, uHatch);
+		} else {
+			col = mix(col, uInk, dots * 0.30);
+		}
 	}
 
 	// Ink the edge last so nothing prints over the outline; stable noise varies the weight so it reads as a pen, not a filter.
-	float ew = 0.78 + 0.32 * vnoise(gl_FragCoord.xy * 0.35);
+	float ew = mix(0.78 + 0.32 * vnoise(gl_FragCoord.xy * 0.35), 1.0, uHatch);
 	col = mix(col, mix(uInk, roleColor(inkId) * 0.35, 0.25), clamp(edge * ew, 0.0, 1.0));
 	gl_FragColor = vec4(col, 1.0);
 }`
@@ -190,6 +203,7 @@ export function createStylePass(canvas) {
 		canvas,
 		antialias: false,
 		stencil: false,
+		alpha: true,
 		powerPreference: 'high-performance',
 	})
 	renderer.outputColorSpace = THREE.LinearSRGBColorSpace
@@ -237,6 +251,9 @@ export function createStylePass(canvas) {
 			uSky: { value: new THREE.Color(PALETTE.page) },
 			uInvProj: { value: new THREE.Matrix4() },
 			uInvView: { value: new THREE.Matrix4() },
+			uLine: { value: 1 },
+			uHatch: { value: 0 },
+			uAlpha: { value: 0 },
 		},
 		vertexShader: postVert,
 		fragmentShader: postFrag,
@@ -259,11 +276,12 @@ export function createStylePass(canvas) {
 			varying vec2 vUv;
 			uniform sampler2D tImage;
 			void main() {
-				vec3 c = texture2D(tImage, vUv).rgb;
+				vec4 image = texture2D(tImage, vUv);
+				vec3 c = image.rgb;
 				// linear -> sRGB
 				vec3 lo = c * 12.92;
 				vec3 hi = 1.055 * pow(max(c, vec3(0.0031308)), vec3(1.0 / 2.4)) - 0.055;
-				gl_FragColor = vec4(mix(hi, lo, step(c, vec3(0.0031308))), 1.0);
+				gl_FragColor = vec4(mix(hi, lo, step(c, vec3(0.0031308))) * image.a, image.a);
 			}`,
 		depthTest: false,
 		depthWrite: false,
@@ -330,5 +348,11 @@ export function createStylePass(canvas) {
 		renderer.dispose()
 	}
 
-	return { renderer, setSize, setPalette, render, dispose, pixelRatio }
+	const setStylePreset = createStylePresets(({ line, hatch, alpha }) => {
+		post.uniforms.uLine.value = line
+		post.uniforms.uHatch.value = hatch
+		post.uniforms.uAlpha.value = alpha ? 1 : 0
+	})
+
+	return { renderer, setSize, setPalette, setStylePreset, render, dispose, pixelRatio }
 }
