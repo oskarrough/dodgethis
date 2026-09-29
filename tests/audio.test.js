@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import { setAudioListener, spatialMix } from '../src/audio.js'
+import { setAudioListener, spatialMix } from '../src/core/audio.js'
 
 test('world cues pan left/right and attenuate with distance; UI stays centered', () => {
 	expect(spatialMix(null)).toEqual({ pan: 0, gain: 1 })

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, expect, mock, test } from 'bun:test'
 import * as THREE from 'three'
-import { createFeedback } from '../src/feedback.js'
+import { createFeedback } from '../src/plugins/dodgeball/feedback.js'
 
 // Presentation values (colours, shake, chip counts, wording) are design choices and deliberately untested; what must hold is that feedback owns a corpse only while animating it, and that its pools are fixed and released.
 const CUES = [

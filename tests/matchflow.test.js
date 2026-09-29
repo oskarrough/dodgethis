@@ -1,17 +1,17 @@
 import { afterEach, beforeEach, expect, test } from 'bun:test'
 import * as THREE from 'three'
 import RAPIER from '@dimforge/rapier3d-compat'
-import { createMatchFlow } from '../src/matchflow.js'
-import { buildCourt } from '../src/court.js'
-import { tune } from '../src/tune.js'
+import { createMatchFlow } from '../src/plugins/dodgeball/matchflow.js'
+import { buildCourt } from '../src/plugins/dodgeball/court.js'
+import { tune } from '../src/core/tune.js'
 
 await RAPIER.init({})
 
 let flow, ctx, overlay, fade, savedSound, savedPause
 beforeEach(() => {
-	savedSound = tune.fx.sound
+	savedSound = tune.output.sound
 	savedPause = tune.physics.paused
-	tune.fx.sound = false
+	tune.output.sound = false
 	tune.physics.paused = false
 	const scene = new THREE.Scene()
 	const world = new RAPIER.World({ x: 0, y: tune.physics.gravity, z: 0 })
@@ -59,7 +59,7 @@ afterEach(() => {
 	flow?.dispose()
 	ctx?.eventQueue.free()
 	ctx?.world.free()
-	tune.fx.sound = savedSound
+	tune.output.sound = savedSound
 	tune.physics.paused = savedPause
 })
 
@@ -144,8 +144,8 @@ test('canceling or disposing a pending arrival prevents stale scene replacement'
 
 test('a roster match preserves local Team B identity through next round and rematch', async () => {
 	const roster = [
-		{ id: 'host', team: 'A', controller: 'human', peerId: 'host-peer' },
-		{ id: 'guest', team: 'B', controller: 'human', peerId: 'guest-peer' },
+		{ id: 'host', team: 'A', controller: 'human' },
+		{ id: 'guest', team: 'B', controller: 'human' },
 	]
 	flow.startMatch(1, { roster, localParticipantId: 'guest' })
 	expect(flow.round.localPlayer.participantId).toBe('guest')

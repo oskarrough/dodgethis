@@ -1,15 +1,16 @@
 import { afterEach, beforeEach, expect, test } from 'bun:test'
 import * as THREE from 'three'
 import RAPIER from '@dimforge/rapier3d-compat'
-import { buildCourt } from '../src/court.js'
-import { createRound } from '../src/round.js'
-import { createPlayer } from '../src/player.js'
-import { spawnPoint } from '../src/arena.js'
-import { tune } from '../src/tune.js'
+import { buildCourt } from '../src/plugins/dodgeball/court.js'
+import { createRound } from '../src/plugins/dodgeball/round.js'
+import { createPlayer } from '../src/plugins/dodgeball/unit.js'
+import { spawnPoint } from '../src/plugins/dodgeball/arena.js'
+import { tune } from '../src/plugins/dodgeball/tune.js'
+import { tune as coreTune } from '../src/core/tune.js'
 
 await RAPIER.init({})
 const STILL = { x: 0, z: 0 }
-const human = (id, team) => ({ id, team, controller: 'human', peerId: `peer-${id}` })
+const human = (id, team) => ({ id, team, controller: 'human' })
 const bot = (id, team) => ({ id, team, controller: 'bot' })
 let ctx, round, previous
 beforeEach(() => {
@@ -18,7 +19,7 @@ beforeEach(() => {
 	tune.cheats.godmode = false
 	tune.cheats.infiniteAmmo = false
 	const scene = new THREE.Scene()
-	const world = new RAPIER.World({ x: 0, y: tune.physics.gravity, z: 0 })
+	const world = new RAPIER.World({ x: 0, y: coreTune.physics.gravity, z: 0 })
 	world.timestep = 1 / 60
 	buildCourt(scene, world, RAPIER)
 	const events = []
@@ -110,13 +111,12 @@ test('mixed roster: only bots get brains and move, remote human defaults to neut
 	}
 })
 
-test('local identity may be on B and movement maps address participant ids, not peers or unit ids', () => {
+test('local identity may be on B and movement maps address participant ids, not unit ids', () => {
 	make([human('a', 'A'), human('b', 'B')], 'b')
 	const [remote, local] = round.units
 	expect(round.human).toBe(local)
 	expect(round.localPlayer).toBe(local)
 	expect(local.team).toBe('B')
-	expect(local.peerId).toBe('peer-b')
 	ticks(
 		15,
 		{ x: 1, z: 0 },
@@ -254,11 +254,7 @@ test.each([
 	['empty id', [human('a', 'A'), bot(' ', 'B')]],
 	['invalid team', [human('a', 'A'), bot('b', 'C')]],
 	['invalid controller', [human('a', 'A'), { id: 'b', team: 'B', controller: 'remote' }]],
-	['missing human owner', [{ id: 'a', team: 'A', controller: 'human' }]],
-	['invalid human owner', [{ ...human('a', 'A'), peerId: 5 }]],
-	['empty human owner', [{ ...human('a', 'A'), peerId: ' ' }]],
-	['duplicate owner', [human('a', 'A'), { ...human('b', 'B'), peerId: 'peer-a' }]],
-	['bot owner', [human('a', 'A'), { ...bot('b', 'B'), peerId: 'peer-b' }]],
+	['non-string id', [human('a', 'A'), { ...bot('b', 'B'), id: 5 }]],
 ])('rejects %s before any physics or scene allocation', (_name, roster) => {
 	const bodies = ctx.world.bodies.len()
 	const colliders = ctx.world.colliders.len()

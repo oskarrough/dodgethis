@@ -1,14 +1,20 @@
 import { describe, expect, test } from 'bun:test'
-import { clampArrowLanding, launchVelocity, projectArrowFlight, solveLaunch } from '../src/arrow.js'
-import { createChargeMeter } from '../src/weapons.js'
-import { nearest } from '../src/spatial.js'
-import { tune } from '../src/tune.js'
+import {
+	clampArrowLanding,
+	launchVelocity,
+	projectArrowFlight,
+	solveLaunch,
+} from '../src/plugins/dodgeball/arrow.js'
+import { createChargeMeter } from '../src/plugins/dodgeball/weapons.js'
+import { nearest } from '../src/core/spatial.js'
+import { tune } from '../src/plugins/dodgeball/tune.js'
+import { tune as coreTune } from '../src/core/tune.js'
 
 // The ballistic solve is the contract behind the reticle: an arrow loosed at solveLaunch(dist)'s speed must (drag aside) land `dist` meters out. Verify against the closed-form flight time at the fixed launch angle.
 describe('solveLaunch', () => {
 	test('lands on the reticle across the court and clamps at the extremes', () => {
 		const H = 1.6
-		const g = -tune.physics.gravity
+		const g = -coreTune.physics.gravity
 		for (const dist of [8, 10, 12, 14, 16]) {
 			const v = solveLaunch(dist, H)
 			expect(v).toBeGreaterThan(8)
@@ -33,12 +39,12 @@ describe('solveLaunch', () => {
 		expect(heights.at(-1)).toBeLessThan(0.07)
 		expect(clampArrowLanding(100, -100)).toEqual({ x: 5, z: -11.5 })
 
-		const gravity = tune.physics.gravity
-		tune.physics.gravity = 0
+		const gravity = coreTune.physics.gravity
+		coreTune.physics.gravity = 0
 		try {
 			expect(projectArrowFlight(30, 1.6, distances, heights)).toBeNull()
 		} finally {
-			tune.physics.gravity = gravity
+			coreTune.physics.gravity = gravity
 		}
 	})
 })

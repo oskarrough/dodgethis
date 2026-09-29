@@ -1,18 +1,19 @@
 import { expect, test } from 'bun:test'
 import * as THREE from 'three'
 import RAPIER from '@dimforge/rapier3d-compat'
-import { createPlayer } from '../src/player.js'
-import { tune } from '../src/tune.js'
+import { createPlayer } from '../src/plugins/dodgeball/unit.js'
+import { tune } from '../src/plugins/dodgeball/tune.js'
+import { tune as coreTune } from '../src/core/tune.js'
 
 await RAPIER.init({})
-import { ARENA } from '../src/arena.js'
-import { LAYOUTS } from '../src/obstacles.js'
-import { buildCourt, COURT_THEMES } from '../src/court.js'
-import { PALETTE } from '../src/style.js'
+import { ARENA } from '../src/plugins/dodgeball/arena.js'
+import { LAYOUTS } from '../src/plugins/dodgeball/obstacles.js'
+import { buildCourt, COURT_THEMES } from '../src/plugins/dodgeball/court.js'
+import { PALETTE } from '../src/core/style.js'
 
 test('court themes switch scenery without rebuilding colliders or changing gameplay colors', () => {
 	const scene = new THREE.Scene()
-	const world = new RAPIER.World({ x: 0, y: tune.physics.gravity, z: 0 })
+	const world = new RAPIER.World({ x: 0, y: coreTune.physics.gravity, z: 0 })
 	const court = buildCourt(scene, world, RAPIER)
 	const colliders = world.colliders.len()
 	const size = scene.children.length
@@ -43,7 +44,7 @@ test('court themes switch scenery without rebuilding colliders or changing gamep
 
 test('bleachers support falling players and block movement through a riser', () => {
 	const scene = new THREE.Scene()
-	const world = new RAPIER.World({ x: 0, y: tune.physics.gravity, z: 0 })
+	const world = new RAPIER.World({ x: 0, y: coreTune.physics.gravity, z: 0 })
 	buildCourt(scene, world, RAPIER)
 	const x = ARENA.width / 2 + 1.6
 	const unit = createPlayer(scene, world, RAPIER, { position: [x, 2, 0] })
@@ -73,7 +74,7 @@ test('bleachers support falling players and block movement through a riser', () 
 
 test('obstacle layouts toggle meshes and colliders without changing the world collider count', () => {
 	const scene = new THREE.Scene()
-	const world = new RAPIER.World({ x: 0, y: tune.physics.gravity, z: 0 })
+	const world = new RAPIER.World({ x: 0, y: coreTune.physics.gravity, z: 0 })
 	const court = buildCourt(scene, world, RAPIER)
 	const total = world.colliders.len()
 	const enabledCount = () => {
@@ -111,5 +112,32 @@ test('obstacle layouts toggle meshes and colliders without changing the world co
 			obj.geometry?.dispose()
 			obj.material?.dispose()
 		})
+	}
+})
+
+test('a hidden court leaves the scene and disables every collider, and comes back with its layout', () => {
+	const scene = new THREE.Scene()
+	const world = new RAPIER.World({ x: 0, y: coreTune.physics.gravity, z: 0 })
+	const court = buildCourt(scene, world, RAPIER)
+	const enabled = () => {
+		let n = 0
+		world.forEachCollider((c) => (n += c.isEnabled() ? 1 : 0))
+		return n
+	}
+	try {
+		court.setLayout('pillars')
+		const parts = scene.children.length
+		const shown = enabled()
+		court.setShown(false)
+		expect(scene.children).toHaveLength(0)
+		expect(enabled()).toBe(0)
+		court.setLayout('walls') // while hidden: remembered, not enabled
+		expect(enabled()).toBe(0)
+		court.setShown(true)
+		expect(scene.children).toHaveLength(parts)
+		expect(enabled()).toBe(shown + 1) // walls has one more piece than pillars
+		expect(court.obstacles).toEqual(LAYOUTS.walls)
+	} finally {
+		world.free()
 	}
 })

@@ -28,3 +28,13 @@ The deployed site had different pre-existing arrow tuning from this checkout dur
 Use the same build on both devices, preferably with one device on home Wi-Fi and the other on mobile data. Host a lobby on one, join its code on the other, and complete a human-only match. Repeat with allied humans against bots and mixed teams. Compare scores, deaths, pickups, and bow/bowl ownership; test leaving/rejoining and host departure.
 
 Record device/browser versions, network types, final scores, whether a relay was used, and visible delay or disconnects. If a pair cannot connect, verify [signaling and TURN configuration](network.md); success on one machine does not establish connectivity through independent NATs.
+
+## Browser checks recorded on 2026-09-28 (protocol 2)
+
+After online became a plugin, two `agent-browser` sessions on the dev server, through the public PeerJS signalling service:
+
+- Solo: portal entry, walking, a charged bow shot with the charge HUD, a lost round, next round, pause and resume, `R` restart, godmode and infinite-ammo keys, `game.preset('duel')` and `game.hub()`.
+- Host and guest joined by code. Human-only match: guest movement and a charged guest shot (local charge preview, host-owned arrow on team B); the host walked off the court and both screens scored 0–1 with the right cards; the host's Next round rebuilt the guest's round with matching unit ids.
+- Escape mid-match opened the online menu (Resume, Leave match, and Back to lobby for the host); the host kept simulating under it. Back to lobby returned both to the lobby with a reset message.
+- One human plus one bot per team: two host brains; no guest brains or bodies.
+- Guest left mid-match: host back in the lobby with "A player left"; the guest's solo portal then started a normal match. Host left mid-match: the guest's session ended with a readable message. Leaving online restored solo cheats.

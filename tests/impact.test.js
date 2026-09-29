@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import { createImpactBeat } from '../src/impact.js'
+import { createImpactBeat } from '../src/plugins/dodgeball/impact.js'
 
 test('only local eliminations slow time, and volleys cannot extend the beat', () => {
 	const beat = createImpactBeat()

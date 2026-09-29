@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
-import { PALETTE, applyCssVariables, hex } from '../src/style.js'
-import { TRAIL, WEAPONS } from '../src/weapons.js'
+import { PALETTE, applyCssVariables, hex } from '../src/core/style.js'
+import { TRAIL, WEAPONS } from '../src/plugins/dodgeball/weapons.js'
 
 test('every role resolves to six-digit hex, with or without a DOM', () => {
 	for (const role of Object.keys(PALETTE)) expect(hex(role)).toMatch(/^#[0-9a-f]{6}$/)

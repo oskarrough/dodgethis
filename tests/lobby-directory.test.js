@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test'
 import { Database } from 'bun:sqlite'
 import { LobbyDirectory } from '../worker/index.js'
-import { createLobbyDirectory } from '../src/lobby-directory.js'
+import { createLobbyDirectory } from '../src/plugins/online/lobby-directory.js'
 
 function directory() {
 	const db = new Database(':memory:')

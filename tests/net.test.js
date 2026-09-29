@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, expect, test } from 'bun:test'
-import { DEFAULT_PEER_OPTIONS, MAX_PLAYERS, Net, PROTO } from '../src/net.js'
+import { DEFAULT_PEER_OPTIONS, MAX_PLAYERS, Net, PROTO } from '../src/plugins/online/net.js'
 
 class Emitter {
 	listeners = new Map()
@@ -279,7 +279,7 @@ test('unacknowledged or malformed messages never reach application handlers', as
 	expect(seen).toEqual([2])
 })
 
-test.each([undefined, 0, 2])(
+test.each([undefined, 0, PROTO + 1])(
 	'host refuses wrong metadata version %s without seating a guest',
 	async (v) => {
 		const server = await host()
@@ -298,7 +298,7 @@ test.each([undefined, 0, 2])(
 test('host validates hello version, ignores repeated hello, and rejects duplicates without dropping original', async () => {
 	const server = await host()
 	const wrong = incoming(server, 'wrong')
-	hello(wrong, 2)
+	hello(wrong, PROTO + 1)
 	expect(wrong.sent.at(-1).t).toBe('refused')
 	let joins = 0
 	server.onPeerJoin = () => joins++
@@ -355,10 +355,10 @@ test('guests reject unsolicited incoming links and never route their data', asyn
 })
 
 test.each([
-	[{ t: 'welcome', d: { v: 2, hostId: 'dodgethis-ABCDE' } }, 'version mismatch'],
-	[{ t: 'refused', d: { v: 2, reason: 'old server' } }, 'version mismatch'],
-	[{ t: 'welcome', d: { v: 1, hostId: 'wrong-host' } }, 'invalid host identity'],
-	[{ t: 'refused', d: { v: 1, reason: 'Lobby closed' } }, 'Lobby closed'],
+	[{ t: 'welcome', d: { v: PROTO + 1, hostId: 'dodgethis-ABCDE' } }, 'version mismatch'],
+	[{ t: 'refused', d: { v: PROTO + 1, reason: 'old server' } }, 'version mismatch'],
+	[{ t: 'welcome', d: { v: PROTO, hostId: 'wrong-host' } }, 'invalid host identity'],
+	[{ t: 'refused', d: { v: PROTO, reason: 'Lobby closed' } }, 'Lobby closed'],
 ])('guest validates welcome/refused: %j', async (message, reason) => {
 	hub.autoConnect = false
 	const client = make()

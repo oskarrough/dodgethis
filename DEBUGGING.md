@@ -12,8 +12,9 @@ The debug GUI also has a “Start 20v20” button under cheats.
 For a busy ammo fixture, use `?debug=crowd`. For an exact starting frame, append
 `&paused=1`. Custom sizes work with, for example,
 `?debug=1&teamA=5&teamB=12&arrows=20&seed=17&ai=0&paused=1`.
-Validation and the available presets live in [src/scenario.js](src/scenario.js).
-Invalid setup parameters are logged and leave the hub available.
+Validation and the available presets live in [scenario.js](src/plugins/dodgeball/scenario.js).
+Invalid setup parameters are logged and leave the hub available. The URL only sets up the
+first run; returning from an online match lands in the hub.
 
 ## Inspect and reproduce a bug
 
@@ -46,11 +47,29 @@ game.step(60)
 
 Use `unit.eliminate()` for roster fixtures, `round.addUnit(team)` /
 `round.removeUnit(team)` for live roster editing, and `game.tune` for live knobs.
-Read [src/round.js](src/round.js) and [src/player.js](src/player.js) for the actions.
+Read [round.js](src/plugins/dodgeball/round.js) and [unit.js](src/plugins/dodgeball/unit.js) for the actions.
 Keep fixture scripts rather than cached entity references: restarting disposes the
 old round. Snapshots are inspection output, not a full Rapier save/restore format.
 Seeds repeat AI and ammo decisions with identical fixed ticks and inputs;
 visual effects, browser frame scheduling and globally increasing IDs are independent.
+
+## Inspect an online match
+
+Online restarts the mode under a shared session, which withholds pause, restart and
+cheats: `game.preset`, `game.step`, `game.hub` and `game.restart` refuse or do nothing,
+and the debug panel is inert. What stays useful:
+
+```js
+game.online.state // the lobby: code, humans, bots, phase
+game.link.stats // host: envelopes and bytes sent, intents seated; guest: envelopes applied
+game.round.brains.length // bots think only on the host; a guest has none
+game.snapshot() // same shape on both sides, for comparing host and guest
+```
+
+To test the wire without browsers, [tests/shared-match.js](tests/shared-match.js) wires a
+host and a guest the way the browser does and delivers their messages by hand;
+[tests/link.test.js](tests/link.test.js) shows how to script both sides. The two-browser
+checks are in [docs/verification.md](docs/verification.md).
 
 ## Measure a regression
 
@@ -82,8 +101,8 @@ It runs real Rapier and AI through three fresh seeded rounds and reports the liv
 roster before and after each window. It excludes rendering and must not be reported
 as FPS. Run `bun test` and `bun run build` after gameplay changes.
 
-Spawn spacing and free-space selection live in [src/arena.js](src/arena.js).
+Spawn spacing and free-space selection live in [arena.js](src/plugins/dodgeball/arena.js).
 Avoid overlapping kinematic capsules: crowded penetration queries are expensive.
 The flat court needs no character-controller stair climbing. All players retain
 Rapier collision, sliding, projectile contacts and gravity. Drop shadows use one
-instanced draw in [src/shadows.js](src/shadows.js).
+instanced draw in [shadows.js](src/core/shadows.js).

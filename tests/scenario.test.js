@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
-import { scenario, scenarioFromURL } from '../src/scenario.js'
-import { createPerformanceMonitor } from '../src/performance.js'
+import { scenario, scenarioFromURL } from '../src/plugins/dodgeball/scenario.js'
+import { createPerformanceMonitor } from '../src/core/performance.js'
 
 test('a shareable URL names exact rosters, seed, ammo, layout and controls', () => {
 	expect(scenarioFromURL('')).toBeNull()

@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, expect, test } from 'bun:test'
 import * as THREE from 'three'
 import RAPIER from '@dimforge/rapier3d-compat'
-import { createPlayer } from '../src/player.js'
-import { createArrow } from '../src/arrow.js'
+import { createPlayer } from '../src/plugins/dodgeball/unit.js'
+import { createArrow } from '../src/plugins/dodgeball/arrow.js'
 
 await RAPIER.init({})
 let scene, world, unit

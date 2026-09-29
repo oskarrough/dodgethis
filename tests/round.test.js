@@ -1,16 +1,17 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import * as THREE from 'three'
 import RAPIER from '@dimforge/rapier3d-compat'
-import { buildCourt } from '../src/court.js'
-import { createRound } from '../src/round.js'
-import { tune } from '../src/tune.js'
+import { buildCourt } from '../src/plugins/dodgeball/court.js'
+import { createRound } from '../src/plugins/dodgeball/round.js'
+import { tune } from '../src/plugins/dodgeball/tune.js'
+import { tune as coreTune } from '../src/core/tune.js'
 
 // Headless integration smoke test: boot the real game loop (Rapier world, court, a full Round with AI brains) at 60Hz with a still human; the AI must shoot and wipe team A (or someone falls in) and the round must end cleanly via onOver and dispose. Uses the -compat Rapier build — the bundler build's wasm doesn't load under bun.
 await RAPIER.init({})
 
 function makeCtx() {
 	const scene = new THREE.Scene()
-	const world = new RAPIER.World({ x: 0, y: tune.physics.gravity, z: 0 })
+	const world = new RAPIER.World({ x: 0, y: coreTune.physics.gravity, z: 0 })
 	world.timestep = 1 / 60
 	buildCourt(scene, world, RAPIER)
 	const events = []
@@ -110,7 +111,7 @@ describe('headless round', () => {
 		const round = createRound(ctx, {
 			enemies: 0,
 			arrowCount: 0,
-			lobby: true,
+			hub: true,
 			onOver: () => overCalls++,
 		})
 		try {

@@ -8,7 +8,7 @@ import {
 	makeRng,
 	onCourt,
 	spawnPoint,
-} from '../src/arena.js'
+} from '../src/plugins/dodgeball/arena.js'
 
 test('a narrower court moves every derived boundary with it', () => {
 	const wide = bounds(0).x

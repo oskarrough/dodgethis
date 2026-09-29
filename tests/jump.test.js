@@ -1,10 +1,10 @@
 import { beforeEach, afterEach, expect, test } from 'bun:test'
 import * as THREE from 'three'
 import RAPIER from '@dimforge/rapier3d-compat'
-import { buildCourt } from '../src/court.js'
-import { createPlayer } from '../src/player.js'
-import { ARENA } from '../src/arena.js'
-import { tune } from '../src/tune.js'
+import { buildCourt } from '../src/plugins/dodgeball/court.js'
+import { createPlayer } from '../src/plugins/dodgeball/unit.js'
+import { ARENA } from '../src/plugins/dodgeball/arena.js'
+import { tune } from '../src/core/tune.js'
 
 await RAPIER.init({})
 let scene, world, unit

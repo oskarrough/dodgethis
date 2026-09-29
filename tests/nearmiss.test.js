@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { createNearMissTracker } from '../src/nearmiss.js'
+import { createNearMissTracker } from '../src/plugins/dodgeball/nearmiss.js'
 
 // Pure-logic near-miss tracking with fake arrows/units: only the getters the scan reads exist here.
 

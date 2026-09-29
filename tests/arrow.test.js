@@ -1,9 +1,9 @@
 import { expect, test } from 'bun:test'
 import * as THREE from 'three'
 import RAPIER from '@dimforge/rapier3d-compat'
-import { createArrow } from '../src/arrow.js'
-import { buildCourt } from '../src/court.js'
-import { tune } from '../src/tune.js'
+import { createArrow } from '../src/plugins/dodgeball/arrow.js'
+import { buildCourt } from '../src/plugins/dodgeball/court.js'
+import { tune } from '../src/core/tune.js'
 
 await RAPIER.init({})
 

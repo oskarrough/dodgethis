@@ -1,10 +1,10 @@
 // No browser/GPU: measures real Rapier + AI fixed steps, not displayed FPS.
 import * as THREE from 'three'
 import RAPIER from '@dimforge/rapier3d-compat'
-import { createRound } from '../src/round.js'
-import { buildCourt } from '../src/court.js'
-import { tune } from '../src/tune.js'
-import { PRESETS, scenario } from '../src/scenario.js'
+import { createRound } from '../src/plugins/dodgeball/round.js'
+import { buildCourt } from '../src/plugins/dodgeball/court.js'
+import { tune } from '../src/core/tune.js'
+import { PRESETS, scenario } from '../src/plugins/dodgeball/scenario.js'
 
 await RAPIER.init({})
 const name = process.argv[2] ?? '20v20'

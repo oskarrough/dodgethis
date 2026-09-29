@@ -1,5 +1,5 @@
 import { test, expect } from 'bun:test'
-import { createOnlineSession } from '../src/online-session.js'
+import { createOnlineSession } from '../src/plugins/online/online-session.js'
 
 function fixture(isHost = true, options = {}) {
 	const handlers = new Map()
@@ -65,10 +65,10 @@ test('allied humans and mixed bots use explicit ownership; guest settings and sc
 	expect(f.session.state.bots).toEqual({ A: 0, B: 3 })
 	f.session.start()
 	expect(f.starts[0][0].filter((p) => p.controller === 'bot')).toHaveLength(3)
-	f.receive('snapshot', { wins: { A: 99 } }, 'guest')
-	f.receive('input', {}, 'stranger')
+	f.receive('state', { wins: { A: 99 } }, 'guest')
+	f.receive('intent', {}, 'stranger')
 	expect(f.messages).toHaveLength(0)
-	f.receive('input', {}, 'guest')
+	f.receive('intent', {}, 'guest')
 	expect(f.messages).toHaveLength(1)
 })
 test('guest only adopts validated newer host lobby; start is once, stale and malformed messages ignored', async () => {
@@ -89,7 +89,7 @@ test('guest only adopts validated newer host lobby; start is once, stale and mal
 	expect(guest.starts).toHaveLength(1)
 	guest.receive('lobby', { ...state, revision: 999, bots: { A: -1, B: 0 } }, 'host')
 	expect(guest.session.state.revision).toBe(state.revision)
-	guest.receive('input', {}, 'host')
+	guest.receive('intent', {}, 'host')
 	expect(guest.messages).toHaveLength(0)
 	guest.net.onDisconnect()
 	expect(guest.session.state).toBeNull()

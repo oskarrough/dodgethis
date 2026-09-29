@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test'
-import { aimArrowSpeed, projectArrowFlight } from '../src/arrow.js'
-import { createChargeMeter } from '../src/weapons.js'
-import { tune } from '../src/tune.js'
+import { aimArrowSpeed, projectArrowFlight } from '../src/plugins/dodgeball/arrow.js'
+import { createChargeMeter } from '../src/plugins/dodgeball/weapons.js'
+import { tune } from '../src/plugins/dodgeball/tune.js'
 
 function range(speed, height = 1.6) {
 	return projectArrowFlight(speed, height, new Float32Array(2), new Float32Array(2))

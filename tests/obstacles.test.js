@@ -1,6 +1,12 @@
 import { describe, expect, test } from 'bun:test'
-import { LAYOUTS, blocksSight, pointInside, steerAround, distanceTo } from '../src/obstacles.js'
-import { ARENA, spawnPoint } from '../src/arena.js'
+import {
+	LAYOUTS,
+	blocksSight,
+	pointInside,
+	steerAround,
+	distanceTo,
+} from '../src/plugins/dodgeball/obstacles.js'
+import { ARENA, spawnPoint } from '../src/plugins/dodgeball/arena.js'
 
 const pillar = { kind: 'pillar', x: 0, z: 0, r: 0.5, h: 2.2 }
 const lowWall = { kind: 'wall', x: 0, z: 0, w: 2, d: 0.4, h: 0.9 }

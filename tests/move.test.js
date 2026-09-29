@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
-import { accelerate, applyFriction, stepHorizontalVelocity } from '../src/move.js'
-import { tune } from '../src/tune.js'
+import { accelerate, applyFriction, stepHorizontalVelocity } from '../src/core/move.js'
+import { tune } from '../src/plugins/dodgeball/tune.js'
 
 const dt = 1 / 60
 const p = tune.player

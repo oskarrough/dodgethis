@@ -18,7 +18,7 @@ Object.defineProperty(globalThis, 'navigator', {
 	configurable: true,
 	value: { getGamepads: () => pads },
 })
-const input = await import('../src/input.js')
+const input = await import('../src/core/input.js')
 
 afterEach(() => {
 	browser.dispatchEvent(new Event('blur'))
@@ -113,7 +113,7 @@ test('a pad consumes each gesture once, and blur, pause or disconnect never leav
 	expect(input.consumePress()).toBe(false)
 	expect(input.consumeRelease()).toBe(false)
 	expect(input.consumeDash()).toBe(false)
-	expect(input.consumeWeaponSwitch()).toBeNull()
+	expect(input.consumeSlot()).toBeNull()
 	expect(input.consumeMenuInput()).toEqual({ move: 0, confirm: false })
 	expect(input.activeDevice()).toBe('keyboard')
 
@@ -143,13 +143,13 @@ test('a pad consumes each gesture once, and blur, pause or disconnect never leav
 	gp = pad()
 	gp.buttons[15].pressed = true
 	input.pollGamepad(1 / 60)
-	expect(input.consumeWeaponSwitch()).toBe('bowl')
+	expect(input.consumeSlot()).toBe('slot2')
 	input.pollGamepad(1 / 60)
-	expect(input.consumeWeaponSwitch()).toBeNull()
+	expect(input.consumeSlot()).toBeNull()
 	gp.buttons[15].pressed = false
 	gp.buttons[14].pressed = true
 	input.pollGamepad(1 / 60)
-	expect(input.consumeWeaponSwitch()).toBe('bow')
+	expect(input.consumeSlot()).toBe('slot1')
 
 	// Start pauses once, and the modal handoff swallows gameplay gestures still held down.
 	gp = pad()
@@ -179,4 +179,13 @@ test('a stalled tab cannot jump the virtual cursor through unbounded elapsed tim
 	gp.axes[2] = 1
 	input.pollGamepad(60)
 	expect(input.pointerNDC().x).toBeCloseTo(0.17, 6)
+})
+
+test('number keys pick slots, and a frame without a pad does not drop them', () => {
+	browser.dispatchEvent(Object.assign(new Event('keydown'), { code: 'Digit2', repeat: false }))
+	input.pollGamepad(1 / 60)
+	expect(input.consumeSlot()).toBe('slot2')
+	expect(input.consumeSlot()).toBeNull()
+	browser.dispatchEvent(Object.assign(new Event('keydown'), { code: 'Digit1', repeat: true }))
+	expect(input.consumeSlot()).toBeNull()
 })

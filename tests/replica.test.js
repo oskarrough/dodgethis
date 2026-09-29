@@ -1,18 +1,19 @@
 import { afterEach, beforeEach, expect, test } from 'bun:test'
 import * as THREE from 'three'
 import RAPIER from '@dimforge/rapier3d-compat'
-import { createRound } from '../src/round.js'
-import { createReplicaRound, snapshotRound } from '../src/replica.js'
-import { buildCourt } from '../src/court.js'
-import { createFeedback } from '../src/feedback.js'
-import { tune } from '../src/tune.js'
-import { TRAIL } from '../src/weapons.js'
+import { createRound } from '../src/plugins/dodgeball/round.js'
+import { createReplicaRound, snapshotRound } from '../src/plugins/dodgeball/replica.js'
+import { buildCourt } from '../src/plugins/dodgeball/court.js'
+import { createFeedback } from '../src/plugins/dodgeball/feedback.js'
+import { tune } from '../src/plugins/dodgeball/tune.js'
+import { tune as coreTune } from '../src/core/tune.js'
+import { TRAIL } from '../src/plugins/dodgeball/weapons.js'
 
 await RAPIER.init({})
 const roster = [
-	{ id: 'alice', team: 'A', controller: 'human', peerId: 'peer-a' },
-	{ id: 'bob', team: 'B', controller: 'human', peerId: 'peer-b' },
-	{ id: 'bot', team: 'B', controller: 'bot', peerId: null },
+	{ id: 'alice', team: 'A', controller: 'human' },
+	{ id: 'bob', team: 'B', controller: 'human' },
+	{ id: 'bot', team: 'B', controller: 'bot' },
 ]
 let host, replica, hostWorld, guestWorld, queue, scene, previous
 beforeEach(() => {
@@ -27,7 +28,7 @@ beforeEach(() => {
 	tune.cheats.infiniteAmmo = false
 	tune.cheats.godmode = false
 	const hostScene = new THREE.Scene()
-	hostWorld = new RAPIER.World({ x: 0, y: tune.physics.gravity, z: 0 })
+	hostWorld = new RAPIER.World({ x: 0, y: coreTune.physics.gravity, z: 0 })
 	buildCourt(hostScene, hostWorld, RAPIER)
 	queue = new RAPIER.EventQueue(true)
 	host = createRound(
@@ -295,9 +296,9 @@ test.each([
 		},
 	],
 	[
-		'owner changed',
+		'controller changed',
 		(p) => {
-			p.units[0].participant.peerId = 'intruder'
+			p.units[0].participant.controller = 'bot'
 		},
 	],
 	[

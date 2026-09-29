@@ -1,0 +1,258 @@
+import { MAX_BOTS } from './online-session.js'
+
+// `inMatch()` is true while a match runs under the panel: Escape then resumes it rather than leaving.
+export function createOnlineUi(session, { inMatch = () => false } = {}) {
+	// The entry button lives in the playable hub's splash markup.
+	const entry = document.querySelector('.splash .online-entry')
+	const panel = document.createElement('dialog')
+	panel.className = 'online-panel dialog-card'
+	panel.setAttribute('aria-labelledby', 'online-title')
+	document.body.append(panel)
+	let busy = false
+	let error = ''
+	let joinCode = ''
+	let noGames = false
+	let creating = false
+	entry.onclick = () => {
+		error = ''
+		noGames = false
+		creating = false
+		render()
+		open()
+	}
+	// The result card's curtain marks every other body child inert, this panel included; opening over it must lift that.
+	function open() {
+		if (!panel.open) panel.showModal()
+		panel.inert = false
+	}
+	panel.addEventListener('cancel', (event) => {
+		event.preventDefault()
+		if (inMatch()) panel.close()
+		else leave()
+	})
+	panel.addEventListener('keydown', (event) => event.stopPropagation())
+	// A modal owns the keyboard even when focus slips outside it (a backdrop click): Enter must not reach the result card underneath.
+	window.addEventListener(
+		'keydown',
+		(event) => {
+			if (panel.open && !(event.target instanceof Node && panel.contains(event.target)))
+				event.stopImmediatePropagation()
+		},
+		true,
+	)
+	panel.addEventListener('keyup', (event) => event.stopPropagation())
+	function leave() {
+		session.leave()
+		panel.close()
+	}
+	function button(text, action, disabled = false) {
+		const el = document.createElement('button')
+		el.type = 'button'
+		el.className = 'sticker'
+		el.textContent = text
+		el.disabled = disabled || busy
+		el.onclick = async () => {
+			error = ''
+			busy = true
+			render()
+			try {
+				await action()
+			} catch (e) {
+				if (e.code === 'NO_PUBLIC_LOBBIES') noGames = true
+				else error = e.message
+			}
+			busy = false
+			render()
+		}
+		return el
+	}
+	function render(state = session.state, message = '') {
+		if (message) error = message
+		const children = []
+		const sameLobby = state && panel.dataset.lobbyCode === state.code
+		const heading = document.createElement('h1')
+		heading.id = 'online-title'
+		heading.textContent = state
+			? `${state.public ? 'Public' : 'Private'} lobby · ${state.code}`
+			: 'Play online'
+		children.push(heading)
+		const actions = document.createElement('div')
+		actions.className = 'actions'
+		if (!state) {
+			const choices = document.createElement('div')
+			choices.className = 'online-choices'
+			const quick = document.createElement('section')
+			quick.append(
+				button('Find a game', () => {
+					noGames = false
+					return session.quickJoin()
+				}),
+			)
+			const hint = document.createElement('p')
+			hint.textContent = 'Join other players in a public lobby.'
+			quick.append(hint)
+			if (noGames) {
+				const empty = document.createElement('p')
+				empty.setAttribute('role', 'status')
+				empty.textContent = 'No games available right now. Start one and others can join you.'
+				quick.append(
+					empty,
+					button('Start a public game', () => session.host(true)),
+				)
+			}
+			const friends = document.createElement('section')
+			friends.innerHTML = '<h2>Your own game</h2>'
+			if (creating) {
+				const visibility = document.createElement('div')
+				visibility.className = 'online-visibility'
+				for (const [name, description, isPublic] of [
+					['Public', 'Anyone can join', true],
+					['Private', 'Invite code only', false],
+				]) {
+					const choice = document.createElement('div')
+					const hint = document.createElement('p')
+					hint.textContent = description
+					choice.append(
+						button(name, () => session.host(isPublic)),
+						hint,
+					)
+					visibility.append(choice)
+				}
+				friends.append(visibility)
+			} else
+				friends.append(
+					button('Create a game', () => {
+						creating = true
+					}),
+				)
+			const join = document.createElement('form')
+			const input = document.createElement('input')
+			input.name = 'code'
+			input.placeholder = 'Enter code…'
+			input.setAttribute('aria-label', 'Lobby code')
+			input.maxLength = 12
+			input.value = joinCode
+			input.autocomplete = 'off'
+			input.autocapitalize = 'characters'
+			input.spellcheck = false
+			input.required = true
+			input.disabled = busy
+			const joinButton = button('Join', () => session.join(joinCode.trim()), !joinCode.trim())
+			input.oninput = () => {
+				joinCode = input.value
+				joinButton.disabled = busy || !joinCode.trim()
+			}
+			join.onsubmit = (event) => {
+				event.preventDefault()
+				if (!joinButton.disabled) joinButton.click()
+			}
+			join.append(input, joinButton)
+			friends.append(join)
+			choices.append(quick, friends)
+			children.push(choices)
+		} else {
+			const hint = document.createElement('p')
+			hint.className = 'line'
+			hint.textContent = `Share code ${state.code} with friends. ${state.humans.length}/8 humans connected.`
+			children.push(hint)
+			const editable = session.net.isHost && state.phase === 'lobby'
+			for (const human of state.humans) {
+				const label = document.createElement('label')
+				label.textContent = `${human.peerId === session.net.id ? 'You' : human.peerId === state.hostId ? 'Host' : `Player ${state.humans.indexOf(human) + 1}`} ${human.peerId === state.hostId ? '(host)' : ''} `
+				const select = document.createElement('select')
+				select.setAttribute(
+					'aria-label',
+					`Team for ${human.peerId === session.net.id ? 'you' : `player ${state.humans.indexOf(human) + 1}`}`,
+				)
+				for (const team of ['A', 'B']) {
+					const option = document.createElement('option')
+					option.value = team
+					option.textContent = `Team ${team}`
+					select.append(option)
+				}
+				select.value = human.team
+				select.disabled = !editable
+				select.onchange = () => {
+					session.setTeam(human.id, select.value)
+				}
+				label.append(select)
+				children.push(label)
+			}
+			for (const team of ['A', 'B']) {
+				const existing = sameLobby && panel.querySelector(`label[data-bot-team="${team}"]`)
+				const label = existing || document.createElement('label')
+				if (!existing) {
+					label.dataset.botTeam = team
+					label.textContent = `Team ${team} bots `
+				}
+				const input = existing ? label.querySelector('input') : document.createElement('input')
+				input.type = 'number'
+				input.min = '0'
+				input.max = String(MAX_BOTS)
+				if (document.activeElement !== input || !editable) input.value = state.bots[team]
+				input.setAttribute('aria-label', `Team ${team} bots`)
+				input.disabled = !editable
+				input.onchange = () => {
+					try {
+						session.setBots(team, Number(input.value))
+					} catch (e) {
+						error = e.message
+						render()
+					}
+				}
+				if (!existing) label.append(input)
+				children.push(label)
+			}
+			if (state.phase === 'lobby') {
+				const canStart = ['A', 'B'].every(
+					(team) => state.bots[team] > 0 || state.humans.some((p) => p.team === team),
+				)
+				if (session.net.isHost)
+					actions.append(button('Start match', () => session.start(), !canStart))
+				const hint = document.createElement('p')
+				hint.className = 'line'
+				hint.textContent = !canStart
+					? 'Both teams need at least one human or bot.'
+					: session.net.isHost
+						? 'First team to win two rounds wins the match.'
+						: 'Waiting for the host to start.'
+				children.push(hint)
+			} else if (inMatch()) {
+				actions.append(button('Resume', () => panel.close()))
+				if (session.net.isHost) actions.append(button('Back to lobby', () => session.backToLobby()))
+			}
+		}
+		const status = document.createElement('p')
+		status.className = 'line'
+		status.setAttribute('role', 'status')
+		status.textContent = error || (busy ? 'Connecting…' : state?.message || '')
+		const back = button(
+			state ? (state.phase === 'match' ? 'Leave match' : 'Leave lobby') : 'Back to game',
+			leave,
+		)
+		back.disabled = false
+		actions.append(back)
+		children.push(status, actions)
+		// Keep bot controls mounted so typing and held spinner buttons survive roster updates.
+		const previousChildren = [...panel.children]
+		for (const child of previousChildren) if (!children.includes(child)) child.remove()
+		children.forEach((child, index) => {
+			if (panel.children[index] !== child) panel.insertBefore(child, panel.children[index] || null)
+		})
+		panel.dataset.lobbyCode = state?.code || ''
+	}
+	return {
+		render,
+		get open() {
+			return panel.open
+		},
+		show(message = '') {
+			error = message
+			render()
+			open()
+		},
+		hide() {
+			panel.close()
+		},
+	}
+}
