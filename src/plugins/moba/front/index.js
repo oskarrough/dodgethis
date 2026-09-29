@@ -1,10 +1,14 @@
 import { createBackdrop } from './backdrop.js'
 import { createControls } from './controls.js'
 import { tune } from './tune.js'
+import { createHeroCard, registerKitTune } from './hero.js'
+import { createPreview } from './preview.js'
 import './front.css'
+import './hero.css'
 
-// Separate menu run: no map, no bodies, no WebGL draws. Practice uses the existing match.
+// One backdrop through modes and selection; only the replica preview requests WebGL.
 export function mobaFront(app) {
+	registerKitTune(app)
 	let activeBackdrop = null
 	app.debug.tune('front', tune, (folder, values) => {
 		folder
@@ -38,7 +42,14 @@ export function mobaFront(app) {
 	app.modes.define('moba-front', {
 		scheme: 'pointClick',
 		start(run) {
-			run.renderDemand(() => false)
+			let preview = null
+			let card = null
+			let screen = 'modes'
+			run.renderDemand(() => screen === 'hero')
+			run.system('present', ({ dt }) => {
+				preview?.update(dt)
+				card?.refresh()
+			})
 			run.clock.pause(() => true)
 			run.intents.suspend(() => true)
 			app.intents.cancel()
@@ -58,21 +69,71 @@ export function mobaFront(app) {
 			const backdrop = createBackdrop(el)
 			activeBackdrop = backdrop
 			el.prepend(backdrop.el)
-			const buttons = [...el.querySelectorAll('button')]
+			let buttons = [...el.querySelectorAll('button')]
+			const practice = el.querySelector('.front-practice')
+			const backButton = el.querySelector('.front-back')
+			const canvas = app.renderer.domElement
+			const canvasParent = canvas.parentNode
+			const canvasNext = canvas.nextSibling
 			const outside = [...document.body.children].filter(
 				(child) => child.tagName !== 'SCRIPT' && !child.matches('.lil-gui'),
 			)
 			const previous = outside.map((child) => child.inert)
 			for (const child of outside) child.inert = true
 			document.body.append(el)
+			let controls
+			function showHero() {
+				if (screen === 'hero') return
+				screen = 'hero'
+				setDevice(device, true)
+				practice.hidden = true
+				backButton.textContent = 'Back'
+				el.setAttribute('aria-label', 'Choose your hero')
+				el.classList.add('selecting-hero')
+				card = createHeroCard()
+				el.append(card.el)
+				canvas.inert = false
+				canvas.classList.add('front-canvas')
+				el.append(canvas)
+				preview = createPreview(app, run)
+				buttons = [...card.el.querySelectorAll('button'), backButton]
+				bindControls()
+			}
+			function showModes() {
+				if (screen !== 'hero') return leave('dodgeball')
+				app.audio.blip({ ...tune.back, type: 'sine' })
+				preview.dispose()
+				preview = null
+				card.el.remove()
+				card = null
+				screen = 'modes'
+				setDevice(device, true)
+				canvas.classList.remove('front-canvas')
+				canvasParent.insertBefore(canvas, canvasNext)
+				canvas.inert = true
+				practice.hidden = false
+				backButton.textContent = 'Back to the hub'
+				el.classList.remove('selecting-hero')
+				el.setAttribute('aria-label', 'Choose a mode')
+				buttons = [practice, backButton]
+				bindControls()
+			}
+			function activate(index) {
+				const button = buttons[index]
+				if (button === backButton) return showModes()
+				for (const freq of tune.confirm.frequencies)
+					app.audio.blip({ freq, dur: tune.confirm.dur, gain: tune.confirm.gain, type: 'sine' })
+				if (screen === 'modes') return showHero()
+				if (button.dataset.slot)
+					preview.start(button.dataset.slot === 'Trait' ? 'Q' : button.dataset.slot)
+				else if (button.classList.contains('front-numbers')) card.toggle()
+				else leave('moba')
+			}
 			let leaving = false
 			function leave(mode) {
 				if (leaving) return
 				leaving = true
-				if (mode === 'moba') {
-					for (const freq of tune.confirm.frequencies)
-						app.audio.blip({ freq, dur: tune.confirm.dur, gain: tune.confirm.gain, type: 'sine' })
-				} else {
+				if (mode !== 'moba') {
 					app.audio.blip({ ...tune.back, type: 'sine' })
 					const url = new URL(location.href)
 					url.searchParams.delete('mode')
@@ -82,16 +143,24 @@ export function mobaFront(app) {
 				app.modes.start(mode)
 			}
 			let device = ''
-			function setDevice(next) {
-				if (device === next) return
+			function setDevice(next, force = false) {
+				if (device === next && !force) return
 				device = next
 				el.dataset.device = next
 				const prompts =
 					next === 'gamepad'
-						? ['D-pad / stick · choose', 'A · go', 'B · back']
+						? [
+								'D-pad / stick · choose',
+								screen === 'hero' ? 'A · preview / lock' : 'A · go',
+								'B · back',
+							]
 						: next === 'mouse'
-							? ['Point · choose', 'Click · go']
-							: ['Tab / arrows · choose', 'Enter · go', 'Esc · back']
+							? ['Point · choose', screen === 'hero' ? 'Click · preview / lock' : 'Click · go']
+							: [
+									'Tab / arrows · choose',
+									screen === 'hero' ? 'Enter · preview / lock' : 'Enter · go',
+									'Esc · back',
+								]
 				el.querySelector('.front-prompts').replaceChildren(
 					...prompts.map((text) => {
 						const span = document.createElement('span')
@@ -101,35 +170,55 @@ export function mobaFront(app) {
 				)
 			}
 			setDevice('keyboard')
-			const controls = createControls({
-				count: buttons.length,
-				focus(index) {
-					buttons.forEach((button, i) => button.classList.toggle('selected', i === index))
-					if (document.activeElement !== buttons[index])
-						buttons[index].focus({ preventScroll: true })
-				},
-				activate: (index) => leave(index === 0 ? 'moba' : 'dodgeball'),
-				back: () => leave('dodgeball'),
-				device: setDevice,
-			})
-			buttons.forEach((button, index) => {
-				button.addEventListener('pointerenter', () => {
-					setDevice('mouse')
-					controls.point(index)
+			function bindControls() {
+				controls = createControls({
+					count: buttons.length,
+					initialBackHeld: !!app.input.pad()?.buttons[1],
+					focus(index) {
+						buttons.forEach((button, i) => button.classList.toggle('selected', i === index))
+						const key = buttons[index].dataset.slot
+						if (preview && key && key !== 'Trait' && document.activeElement !== buttons[index])
+							preview.start(key === 'Trait' ? 'Q' : key)
+						if (document.activeElement !== buttons[index])
+							buttons[index].focus({ preventScroll: true })
+					},
+					activate,
+					back: showModes,
+					device: setDevice,
 				})
-				button.addEventListener('focus', () => controls.point(index))
-				button.addEventListener('click', () => leave(index === 0 ? 'moba' : 'dodgeball'))
-			})
+				buttons.forEach((button, index) => {
+					button.onpointerenter = () => {
+						setDevice('mouse')
+						controls.point(index)
+					}
+					button.onfocus = () => controls.point(index)
+					button.onclick = () => {
+						setDevice('mouse')
+						activate(index)
+					}
+				})
+				controls.point(0)
+			}
+			bindControls()
 			window.addEventListener('keydown', (event) => controls.key(event), { signal: run.signal })
 			run.system('input', () => {
 				controls.pad(app.input.consumeMenuInput(), app.input.pad())
 			})
-			controls.point(0)
-			run.debug.expose({ front: { crossfade: backdrop.crossfade } })
+			run.debug.expose({
+				front: {
+					crossfade: backdrop.crossfade,
+					get screen() {
+						return screen
+					},
+				},
+			})
 			run.signal.addEventListener(
 				'abort',
 				() => {
 					if (activeBackdrop === backdrop) activeBackdrop = null
+					preview?.dispose()
+					canvas.classList.remove('front-canvas')
+					canvasParent.insertBefore(canvas, canvasNext)
 					backdrop.dispose()
 					el.remove()
 					outside.forEach((child, i) => {
@@ -140,7 +229,7 @@ export function mobaFront(app) {
 			)
 			return {
 				epoch: 0,
-				snapshot: () => ({ screen: 'modes' }),
+				snapshot: () => ({ screen }),
 				apply: () => false,
 				validFact: () => false,
 			}

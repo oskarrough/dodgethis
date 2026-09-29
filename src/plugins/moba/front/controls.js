@@ -1,7 +1,7 @@
 // One cursor and rising-edge pad back. Tab navigates; it never confirms.
-export function createControls({ focus, activate, back, device, count }) {
+export function createControls({ focus, activate, back, device, count, initialBackHeld = false }) {
 	let index = 0
-	let backHeld = false
+	let backHeld = initialBackHeld
 	const move = (delta) => {
 		index = (index + delta + count) % count
 		focus(index)

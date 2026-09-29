@@ -19,15 +19,15 @@ const planes = [
 	<path fill="url(#vertical-1)" d="M1127 587 L1141 603 L1128 738 L1108 737Z M1283 740 L1274 585 L1288 603 L1304 740Z"/>
 	<path fill="none" d="M1143 617 L1136 706 M1192 557 L1225 555 M1293 628 L1301 704"/>`,
 	`<path fill="var(--front-ridge)" d="M0 778 Q195 760 374 748 Q533 725 660 743 Q797 753 952 738 Q1153 732 1440 767 V900 H0Z"/>
-	<path fill="var(--front-shadow)" stroke="none" d="M605 739 L620 739 L836 771 L819 774Z"/>
+	<path class="front-distant-fletcher" fill="var(--front-shadow)" stroke="none" d="M605 739 L620 739 L836 771 L819 774Z"/>
 	<path fill="none" d="M0 790 Q233 775 368 763 M385 759 Q492 740 557 746 M641 755 Q821 773 951 752"/>
-	<g fill="var(--front-ink)" stroke="none">
+	<g class="front-distant-fletcher" fill="var(--front-ink)" stroke="none">
 		<path d="M596 676 Q596 662 606 659 Q619 661 618 675 L611 681 L599 679Z"/>
 		<path d="M599 680 L613 680 L621 706 L614 715 L614 737 L609 740 L606 714 L601 728 L596 739 L590 739 L598 710 L593 696 L588 703 L584 701 L594 683Z"/>
 		<path d="M591 678 L596 676 L600 706 L593 708Z"/>
 	</g>
-	<path d="M623 679 Q641 700 625 719 M625 679 L625 719" fill="none" stroke-width="1.5"/>
-	<path d="M586 671 L594 691 M591 669 L598 689" fill="none" stroke-width="1.2"/>
+	<path class="front-distant-fletcher" d="M623 679 Q641 700 625 719 M625 679 L625 719" fill="none" stroke-width="1.5"/>
+	<path class="front-distant-fletcher" d="M586 671 L594 691 M591 669 L598 689" fill="none" stroke-width="1.2"/>
 	<path fill="none" d="M439 784 Q549 769 644 783 M950 782 Q1151 763 1305 791"/>`,
 	`<path fill="var(--front-dune)" d="M0 853 Q211 799 394 835 Q624 889 836 831 Q1119 801 1440 862 V900 H0Z"/>
 	<g fill="none">
