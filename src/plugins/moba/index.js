@@ -5,11 +5,24 @@ import { tune } from './tune.js'
 import { buildMap, FLOOR } from './map.js'
 import { createSim } from './sim.js'
 import { createFollow } from './follow.js'
+import { createCameraControls } from './camera-controls.js'
+import { createCursor } from './cursor.js'
 import { createView } from './view.js'
+import { createSkillsView } from './skills-view.js'
 import { createHud } from './hud.js'
 import { createFeedback } from './feedback.js'
 
-const FACTS = ['order', 'cast', 'projectile', 'hit', 'nearMiss', 'death', 'spawn', 'denied']
+const FACTS = [
+	'order',
+	'cast',
+	'projectile',
+	'hit',
+	'nearMiss',
+	'death',
+	'spawn',
+	'denied',
+	'impact',
+]
 
 // Moba, milestone 1 (docs/moba-plan.md): one hero on an empty floor with pillars and two strafing dummies, to get the feel right.
 // Boots with ?mode=moba. Everything lives as long as a run of the mode.
@@ -31,8 +44,11 @@ export default function moba(app) {
 				onGround: (x, z) => Math.abs(x) <= FLOOR.half && Math.abs(z) <= FLOOR.half,
 			})
 			const view = createView(scene, run.smooth)
+			const skillsView = createSkillsView(scene)
 			const hud = createHud()
 			const follow = createFollow()
+			const cameraControls = createCameraControls(window, run.signal, follow)
+			const cursor = createCursor(app.renderer.domElement)
 			const sim = createSim({
 				scene,
 				world,
@@ -49,6 +65,7 @@ export default function moba(app) {
 				camera: app.camera,
 				input,
 				view,
+				skillsView,
 				hud,
 				sim,
 				local,
@@ -56,21 +73,18 @@ export default function moba(app) {
 			app.clock.reset()
 
 			let paused = false
-			let centred = false
 			run.clock.pause(() => paused)
 			run.clock.scale(feedback.beat)
 			run.intents.suspend(() => paused || coreTune.physics.paused)
 			run.input.stickAim((dir, magnitude, slot) => sim.stickAim(local, dir, magnitude, slot))
 
-			// Look ahead toward the cursor, or on a pad toward a held aim only: a resting stick aims at the nearest enemy, which is no place to look.
 			const onPad = () => input.activeDevice() === 'gamepad'
-			const lookAt = () => {
+			run.camera.frame((dt) => {
 				const frame = app.intents.get(local)
-				if (centred) return null
-				if (onPad()) return Object.keys(frame.held).length ? frame.aim : null
-				return frame.aim
-			}
-			run.camera.frame((dt) => follow.frame(dt, hero.body.mesh.position, lookAt()))
+				const pad = onPad()
+				const aim = pad && Object.keys(frame.held).length ? frame.aim : null
+				return follow.frame(dt, hero.body.mesh.position, aim, { ...cameraControls.read(), pad })
+			})
 
 			run.system('simulate', (dt) => sim.step(dt))
 			run.on('present', feedback.present)
@@ -79,7 +93,7 @@ export default function moba(app) {
 				const unit = id === hero.id ? hero : sim.dummies.find((d) => d.id === id && !d.dead)
 				return unit?.body.mesh.position ?? null
 			}
-			run.system('present', ({ dt, gameDt }) => {
+			run.system('present', ({ dt, gameDt, alpha }) => {
 				const frozen = paused || coreTune.physics.paused
 				const step = frozen ? 0 : gameDt
 				const frame = app.intents.get(local)
@@ -89,13 +103,26 @@ export default function moba(app) {
 				for (const d of sim.dummies) if (!d.dead) d.body.animate(step)
 				const target = !onPad() && frame.aim ? sim.pick(hero.team, frame.aim) : null
 				const hovered = target && locate(target.id)
+				cursor.update({
+					enemy: !!target,
+					aiming: ['slot1', 'slot2', 'slot3', 'slot4'].some((s) => frame.held[s]),
+					pad: onPad(),
+					paused: frozen,
+				})
 				const gone = view.update(step, {
 					live: new Set(sim.shots.map((s) => s.id)),
 					hero: p,
-					aim: frame.aim,
-					held: frame.held.slot1,
+					aim: hero.cast?.slot === 'slot1' ? hero.cast.target : frame.aim,
+					held: frame.held.slot1 || hero.cast?.slot === 'slot1',
 					hovered,
 					locate,
+				})
+				skillsView.update(step, {
+					hero: p,
+					aim: frame.aim,
+					held: frame.held,
+					zones: sim.zones,
+					alpha: frozen ? 0 : alpha,
 				})
 				feedback.fizzle(gone)
 				juice.update(step)
@@ -108,8 +135,8 @@ export default function moba(app) {
 					}
 				})
 				hud.update(dt, {
-					cooldown: hero.cd[0] * app.clock.step,
-					total: tune.loose.cooldown,
+					cooldowns: hero.cd.slice(0, 3).map((cd) => cd * app.clock.step),
+					totals: [tune.loose.cooldown, tune.vault.cooldown, tune.rain.cooldown],
 					device: input.activeDevice(),
 					pausedNow: paused,
 				})
@@ -119,6 +146,7 @@ export default function moba(app) {
 			function togglePause() {
 				if (!app.session.actions.includes('pause')) return
 				paused = !paused
+				cameraControls.clear()
 				sfx[paused ? 'menuOpen' : 'menuClose']()
 			}
 			run.on('menu', togglePause)
@@ -126,11 +154,6 @@ export default function moba(app) {
 			const onKey = (e) => {
 				if (e.defaultPrevented || e.code === 'Backquote') return
 				if (e.type === 'keydown' && !e.repeat && e.code === 'Escape') togglePause()
-				if (e.code === 'Space') {
-					e.preventDefault()
-					centred = e.type === 'keydown'
-					if (centred && !e.repeat) follow.snap()
-				}
 			}
 			window.addEventListener('keydown', onKey, { signal: run.signal })
 			window.addEventListener('keyup', onKey, { signal: run.signal })
@@ -161,6 +184,21 @@ export default function moba(app) {
 				f.add(t, 'cooldown', 0.2, 10, 0.1).name('cooldown (s)')
 				f.add(t, 'nearMiss', 0, 2, 0.05).name('near miss (m)')
 			})
+			run.debug.tune('rain', tune.rain, (f, t) => {
+				f.add(t, 'castPoint', 0, 1, 0.01)
+				f.add(t, 'range', 1, 20, 0.25)
+				f.add(t, 'radius', 0.1, 6, 0.1)
+				f.add(t, 'delay', app.clock.step, 3, app.clock.step)
+				f.add(t, 'slow', 0, 1, 0.01)
+				f.add(t, 'duration', 0.1, 5, 0.1)
+				f.add(t, 'cooldown', 0.2, 15, 0.1)
+			})
+			run.debug.tune('vault', tune.vault, (f, t) => {
+				f.add(t, 'castPoint', 0, 1, 0.01)
+				f.add(t, 'range', 0.5, 10, 0.25)
+				f.add(t, 'time', app.clock.step, 1, app.clock.step)
+				f.add(t, 'cooldown', 0.2, 10, 0.1)
+			})
 			run.debug.tune('stickAim', tune.stickAim, (f, t) => {
 				f.add(t, 'inMin', 0, 1, 0.01).name('stick from')
 				f.add(t, 'inMax', 0, 1, 0.01).name('stick to')
@@ -169,12 +207,13 @@ export default function moba(app) {
 				f.add(t, 'assistBend', 0, 1, 0.05).name('assist bend')
 			})
 			run.debug.tune('follow', tune.follow, (f, t) => {
+				f.add(t, 'pan', 5, 40, 0.5).name('pan (m/s)')
 				f.add(t, 'height', 5, 40, 0.5)
 				f.add(t, 'back', 0, 30, 0.5)
 				f.add(t, 'fov', 20, 70, 1)
 				f.add(t, 'response', 0.02, 0.6, 0.01).name('response (s)')
-				f.add(t, 'lookAhead', 0, 0.6, 0.01).name('look ahead ×')
-				f.add(t, 'lookCap', 0, 8, 0.25).name('look cap (m)')
+				f.add(t, 'lookAhead', 0, 0.6, 0.01).name('pad look ahead ×')
+				f.add(t, 'lookCap', 0, 8, 0.25).name('pad look cap (m)')
 			})
 			run.debug.tune('dummies', tune.dummies, (f, t) => {
 				f.add(t, 'speed', 0, 8, 0.25)
@@ -198,8 +237,10 @@ export default function moba(app) {
 			})
 
 			run.signal.addEventListener('abort', () => {
+				cursor.dispose()
 				feedback.reset()
 				view.dispose()
+				skillsView.dispose()
 				hud.dispose()
 				juice.dispose()
 				shadows.dispose()

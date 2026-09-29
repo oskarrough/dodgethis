@@ -1,0 +1,2 @@
+Model: Opus 5.5 design, then GPT 6.1 build. After: 04.
+Start with Mitts from `docs/moba-ideas.md` (catches and returns skillshots; ult Dodge This). A second and third hero, taken from `docs/moba-ideas.md` where it's good: kits born from dodgeball (catch, deflect, ricochet), each with a clear role and one skill that creates a moment. Design at most 30 lines per hero in `docs/moba-heroes.md`, GPT reviews it, then build one hero per thread. Mirror matches stay possible.

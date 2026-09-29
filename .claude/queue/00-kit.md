@@ -1,0 +1,2 @@
+Model: GPT 6.1. After: the Opus review of camera/cursor/QWE, with its findings fixed.
+The hero kit from moba-plan M2 that the lane needs: hero HP, death and respawn, basic attacks with stutter-step, the trait, a dummy that casts back, cast indicators, hit-feedback tiers. Dummies take damage instead of dying by hit count. Headless tests. Check green, dodgeball unchanged, boots. Mashed checkpoint commit. Report in 5 lines.

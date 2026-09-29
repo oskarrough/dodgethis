@@ -1,0 +1,2 @@
+Model: Opus 5.5 design, then GPT 6.1 build, then a Sonnet smoke with screenshots. After: 01.
+Nice graphics. Push the comic-sticker look (`redesign.md`, `core/stylepass.js`) for the moba: the map's ground art, structure silhouettes, minion and hero readability at a distance, ability VFX, a UI skin. At most 50 lines of direction in `docs/moba-look.md`, then build it in slices. Readability beats decoration; 60 fps on a mid laptop.

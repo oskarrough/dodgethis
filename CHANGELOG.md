@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+- Added MOBA Vault on W and Rain on E, with distinct aiming tells, controller hold-to-aim casts, and three visible cooldowns.
+
+- MOBA camera follows without mouse drift, supports bounded arrow-key panning and hold-Space recentring without changing follow mode, and uses high-contrast native move, attack, and targeting cursors.
+
 - Added park, sunset, and night-gym scenery for the three difficulties.
 - Added quiet music that follows the hub, combat, last-player tension, and results, with a pause-menu toggle.
 - Added a brief slowdown on local eliminations and optional controller rumble for impacts, dashes, and perfect shots.

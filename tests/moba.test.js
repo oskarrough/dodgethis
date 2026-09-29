@@ -270,8 +270,50 @@ test('pad aim: remapped reach, a 10° assist toward an enemy on Q, and a resting
 	const bent = sim.stickAim(ID, dir, 1, 'slot1')
 	const angle = Math.atan2(bent.x, bent.z - 8)
 	expect(Math.cos(angle - (Math.PI + off * (1 - tune.stickAim.assistBend)))).toBeCloseTo(1, 9)
-	expect(sim.stickAim(ID, dir, 1, 'slot2').x).toBeCloseTo(dir.x * tune.loose.range, 6)
+	expect(sim.stickAim(ID, dir, 1, 'slot2').x).toBeCloseTo(dir.x * tune.vault.range, 6)
+	expect(sim.stickAim(ID, dir, 1, 'slot3').x).toBeCloseTo(dir.x * tune.rain.range, 6)
 	expect(sim.stickAim(ID, null, 0, null)).toEqual({ x: 0, z: 0 })
+})
+
+test('W vaults in the aimed direction, with its own cooldown and no projectile', () => {
+	place(0, 8)
+	press('slot2', { x: 10, z: 8 })
+	step()
+	expect(hero().body.dashing).toBe(true)
+	expect(hero().cd[1]).toBe(Math.round(tune.vault.cooldown / STEP))
+	expect(sim.shots).toHaveLength(0)
+	expect(sim.zones).toHaveLength(0)
+	step(Math.ceil(tune.vault.time / STEP) + 2)
+	expect(pos().x).toBeCloseTo(tune.vault.range, 1)
+	expect(pos().z).toBeCloseTo(8, 3)
+})
+
+test('E shows a delayed control zone, clamps its range, then hits and slows enemies', () => {
+	place(0, 8)
+	const d = sim.dummies[0]
+	d.body.place(0, 1.05, 0)
+	press('slot3', { x: 0, z: 0 })
+	step()
+	expect(sim.zones).toHaveLength(1)
+	expect(sim.zones[0]).toMatchObject({ x: 0, z: 0 })
+	expect(hero().cd[2]).toBe(Math.round(tune.rain.cooldown / STEP))
+	expect(d.hits).toBe(0)
+	// Park the dummy in the zone until the tell completes.
+	for (let i = 1; i < Math.round(tune.rain.delay / STEP); i++) {
+		d.body.place(0, 1.05, 0)
+		step()
+	}
+	expect(sim.zones).toHaveLength(0)
+	expect(d.hits).toBe(1)
+	expect(d.slowUntil).toBeGreaterThan(sim.tick)
+	expect(facts.find((f) => f.type === 'hit')?.slot).toBe('slot3')
+	expect(facts.some((f) => f.type === 'impact')).toBe(true)
+	step()
+	expect(d.body.speedMul).toBeCloseTo((tune.dummies.speed / tune.hero.speed) * (1 - tune.rain.slow))
+	hero().cd[2] = 0
+	press('slot3', { x: 0, z: -100 })
+	step()
+	expect(sim.zones[0].z).toBeCloseTo(8 - tune.rain.range)
 })
 
 // The bar is feel at 144 Hz: the rendered hero and the follow camera must move the same distance every frame.

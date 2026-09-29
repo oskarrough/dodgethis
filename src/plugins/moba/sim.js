@@ -3,7 +3,7 @@ import { PALETTE } from '../../core/style.js'
 import { STEP } from '../../core/app.js'
 import { SCHEMES } from '../../core/intents.js'
 import { tune, profile } from './tune.js'
-import { SPAWN, clampWalkable } from './map.js'
+import { SPAWN, FLOOR, clampWalkable } from './map.js'
 import { planPath, pursue } from './path.js'
 import { stepShot } from './skillshot.js'
 
@@ -18,8 +18,7 @@ const DUMMY_POSTS = [
 	{ x: -3, z: -7 },
 	{ x: 5, z: -10 },
 ]
-// Abilities by slot. M1 has only Q; other slots are consumed and ignored.
-const ABILITIES = { slot1: 'loose' }
+const ABILITIES = { slot1: 'loose', slot2: 'vault', slot3: 'rain' }
 
 // The feel slice's simulation: heroes driven by intent frames, strafing dummies, swept skillshots. No DOM; presentation reads it and its facts.
 // `heroes` is [{ id, team }], each id a participant in `intents`. `present(fact)` receives plain facts. `rng()` drives the dummies.
@@ -36,11 +35,13 @@ export function createSim({
 	let t = 0
 	let shotIds = 0
 	const shots = []
+	const zones = []
 	const bodyAt = (x, z, team) =>
 		createBody(scene, world, RAPIER, {
 			profile,
 			position: [x, 0, z],
 			color: team === 'A' ? PALETTE.teamA : PALETTE.teamB,
+			bounds: (radius) => ({ x: FLOOR.half - radius, z: FLOOR.half - radius }),
 			smooth,
 		})
 
@@ -53,6 +54,7 @@ export function createSim({
 			yaw: 0,
 			order: null,
 			cast: null,
+			slowUntil: 0,
 			cd: SLOTS.map(() => 0),
 			judged: new WeakSet(), // slot edges already checked against the cooldown
 			lastOrder: -Infinity,
@@ -73,6 +75,7 @@ export function createSim({
 		dead: false,
 		corpse: null,
 		respawnIn: 0,
+		slowUntil: 0,
 	}))
 
 	// Everyone who can be shot, targeted or picked, as plain circles.
@@ -263,7 +266,7 @@ export function createSim({
 				return
 			}
 		}
-		if (h.cast || h.cd[i] > 0) return
+		if (h.cast || h.body.dashing || h.cd[i] > 0) return
 		intents.consume(h.id, slot)
 		const p = h.body.position
 		const at = latest.at
@@ -271,23 +274,45 @@ export function createSim({
 		const dz = at ? at.z - p.z : dirOf(h.yaw).z
 		const len = Math.hypot(dx, dz)
 		const dir = len > 1e-4 ? { x: dx / len, z: dz / len } : dirOf(h.yaw)
-		h.cast = { slot, dir, yaw: yawOf(dir.x, dir.z), left: ticks(tune.loose.castPoint) }
+		const skill = tune[ability]
+		const reach = Math.min(len, skill.range)
+		const target = { x: p.x + dir.x * reach, z: p.z + dir.z * reach }
+		h.cast = { slot, dir, target, yaw: yawOf(dir.x, dir.z), left: ticks(skill.castPoint) }
 		h.yaw = h.cast.yaw
-		h.cd[i] = ticks(tune.loose.cooldown)
+		h.cd[i] = ticks(skill.cooldown)
 		present({
 			type: 'cast',
 			hero: h.id,
 			slot,
 			point: { x: p.x, y: p.y, z: p.z },
 			direction: { ...dir },
+			target: { ...target },
 		})
 	}
 
 	function release(h) {
-		const { slot, dir } = h.cast
+		const { slot, dir, target } = h.cast
 		h.cast = null
 		h.lastRemaining = null
 		const p = h.body.position
+		if (slot === 'slot2') {
+			// Whole fixed steps avoid overshooting the advertised distance on the final dash tick.
+			const time = Math.max(1, Math.ceil(tune.vault.time / STEP)) * STEP - 1e-9
+			h.body.dash(dir, { distance: tune.vault.range, time })
+			return
+		}
+		if (slot === 'slot3') {
+			zones.push({
+				id: ++shotIds,
+				owner: h.id,
+				team: h.team,
+				x: target.x,
+				z: target.z,
+				left: ticks(tune.rain.delay),
+				total: ticks(tune.rain.delay),
+			})
+			return
+		}
 		const shot = {
 			id: ++shotIds,
 			owner: h.id,
@@ -332,6 +357,8 @@ export function createSim({
 		if (frame.order) issue(h, frame.order)
 		if (Math.hypot(frame.move.x, frame.move.z) > 0.01) h.order = null
 		casts(h, frame)
+		if (h.cast?.left === 0) release(h)
+		h.body.speedMul = t < h.slowUntil ? 1 - tune.rain.slow : 1
 		move(h, frame, dt)
 	}
 
@@ -348,7 +375,8 @@ export function createSim({
 			const { flipMin, flipMax } = tune.dummies
 			d.flipIn = flipMin + rng() * Math.max(0, flipMax - flipMin)
 		}
-		d.body.speedMul = tune.dummies.speed / profile.speed
+		d.body.speedMul =
+			(tune.dummies.speed / profile.speed) * (t < d.slowUntil ? 1 - tune.rain.slow : 1)
 		d.body.update({ x: d.dir, z: 0 }, dt)
 		// Dummies watch the nearest hero, like players would.
 		const h = heroes[0]
@@ -366,6 +394,7 @@ export function createSim({
 		d.body = bodyAt(d.post.x, d.post.z, 'B')
 		d.dead = false
 		d.hits = 0
+		d.slowUntil = 0
 		present({ type: 'spawn', target: d.id, point: { x: d.post.x, y: 0, z: d.post.z } })
 	}
 
@@ -394,8 +423,11 @@ export function createSim({
 
 	function step(dt = STEP) {
 		t++
+		const dashEnds = []
 		for (const h of heroes) {
+			const dashing = h.body.dashing
 			control(h, dt)
+			if (dashing && !h.body.dashing) dashEnds.push(h)
 			if (h.cast && --h.cast.left <= 0) release(h)
 		}
 		for (const d of dummies) strafe(d, dt)
@@ -405,6 +437,25 @@ export function createSim({
 			face(h, dt)
 		}
 		for (const d of dummies) if (!d.dead) d.body.sync()
+		for (const h of dashEnds) if (h.order?.goal) h.order.path = plan(h, h.order.goal)
+		for (let i = zones.length - 1; i >= 0; i--) {
+			const zone = zones[i]
+			if (--zone.left > 0) continue
+			const targets = enemiesOf(zone.team).filter(
+				(e) => Math.hypot(e.x - zone.x, e.z - zone.z) <= tune.rain.radius + e.radius,
+			)
+			present({
+				type: 'impact',
+				hero: zone.owner,
+				hit: targets.length > 0,
+				point: { x: zone.x, y: 0.05, z: zone.z },
+			})
+			for (const e of targets) {
+				e.unit.slowUntil = t + ticks(tune.rain.duration)
+				hit({ owner: zone.owner, id: zone.id, slot: 'slot3', dx: 0, dz: 0 }, e, { x: e.x, z: e.z })
+			}
+			zones.splice(i, 1)
+		}
 		for (let i = shots.length - 1; i >= 0; i--) {
 			const shot = shots[i]
 			const r = stepShot(shot, dt, enemiesOf(shot.team), tune.loose.nearMiss)
@@ -428,7 +479,7 @@ export function createSim({
 		const h = heroes.find((x) => x.id === id)
 		if (!h) return null
 		const p = h.body.position
-		const range = tune.loose.range
+		const range = tune[ABILITIES[slot] ?? 'loose'].range
 		const a = tune.stickAim
 		if (!dir) {
 			let best = null
@@ -483,14 +534,23 @@ export function createSim({
 				},
 				cast: h.cast && { slot: h.cast.slot, left: h.cast.left, yaw: q(h.cast.yaw) },
 				cd: h.cd.slice(),
+				slowUntil: h.slowUntil,
 			})),
 			dummies: dummies.map((d) => ({
 				id: d.id,
 				pos: d.dead ? null : pos(d.body),
 				yaw: q(d.yaw),
 				hits: d.hits,
+				slowUntil: d.slowUntil,
 				dead: d.dead,
 				respawnTick: d.dead ? t + ticks(d.respawnIn) : null,
+			})),
+			zones: zones.map((z) => ({
+				id: z.id,
+				owner: z.owner,
+				pos: { x: q(z.x), z: q(z.z) },
+				left: z.left,
+				total: z.total,
 			})),
 			projectiles: shots.map((s) => ({
 				id: s.id,
@@ -510,12 +570,14 @@ export function createSim({
 			if (!d.dead) d.body.dispose()
 		}
 		shots.length = 0
+		zones.length = 0
 	}
 
 	return {
 		heroes,
 		dummies,
 		shots,
+		zones,
 		step,
 		stickAim,
 		pick,

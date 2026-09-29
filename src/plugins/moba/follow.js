@@ -1,11 +1,13 @@
 import { tune } from './tune.js'
+import { FLOOR } from './map.js'
 
-// Follow framing (docs/moba-plan.md, "Camera"): a critically damped spring on the hero's rendered position, leaning toward the aim.
+// Follow framing: a critically damped spring on the rendered hero. Only pad aim gets look-ahead.
 // Runs per rendered frame, so it is as smooth as the interpolation it reads.
 export function createFollow(t = tune.follow) {
 	const at = { x: 0, z: 0 }
 	const vel = { x: 0, z: 0 }
 	let fresh = true
+	let free = false
 	const eye = { x: 0, y: 0, z: 0 }
 	const target = { x: 0, y: 0, z: 0 }
 
@@ -25,15 +27,24 @@ export function createFollow(t = tune.follow) {
 		return { x: hero.x + lx, z: hero.z + lz }
 	}
 
-	// `hero` is the rendered position; `aim` a ground point or null. Returns { eye, target, fov } for camera.frame.
-	function frame(dt, hero, aim) {
-		const g = goal(hero, aim)
+	// `aim` is a held pad aim, never the mouse. Pan is world-space; Space locks back onto the hero.
+	function frame(dt, hero, aim, { pan = null, centred = false, pad = false } = {}) {
+		if (pad) free = false
+		const panning = !centred && !pad && pan && (pan.x || pan.z)
+		const g = goal(hero, pad && !centred ? aim : null)
 		if (fresh) {
 			at.x = g.x
 			at.z = g.z
 			vel.x = vel.z = 0
 			fresh = false
-		} else {
+		}
+		if (panning) {
+			free = true
+			const length = Math.max(1, Math.hypot(pan.x, pan.z))
+			at.x = Math.max(-FLOOR.half, Math.min(FLOOR.half, at.x + (pan.x / length) * t.pan * dt))
+			at.z = Math.max(-FLOOR.half, Math.min(FLOOR.half, at.z + (pan.z / length) * t.pan * dt))
+			vel.x = vel.z = 0
+		} else if (!free || centred) {
 			// Exact critically damped step: ~90% of a step change is covered in `response` seconds.
 			const w = 3.9 / Math.max(0.01, t.response)
 			const decay = Math.exp(-w * dt)

@@ -73,7 +73,7 @@ Obedience from HotS, springs and juice from dodgethis. Everything below is moba'
 - **Skillshots** are swept circles, not Rapier bodies. They're registered with `app.smooth`. Q's dodge window at 8 m is about 0.47 s. Tune projectile speed before anything else.
 - **Telegraphs:** your own indicators while held: a line for Q and R, a circle for W, an arrow for E. Enemies see W's circle for its full 0.7 s, filling toward impact, and R's line during its cast point. Q's tell is the pose, the yaw snap and a bright trail. A near miss within 0.8 m plays the "close" cue for both players (moba has its own detector).
 - **Hit feedback:** via juice-kit verbs. Every hit gets a 70 ms flash, a squash and a few chips. Hits on you add shake 0.15 and rumble (0.2, 0.3, 60 ms); your hits on a hero add a hitmarker and rumble (0.1, 0.2, 40 ms). HP bars tick every 200. Gold XP numbers float up. Your own takedowns get `clock.scale` hitstop (65 ms), which is ignored when the session is shared. A structure kill adds shake 0.6, an FOV kick and a banner.
-- **Camera:** `camera.frame(dt)` follows rendered positions. Pitch ~58° (height 20, back 12.5, FOV 40), for ~30 m of lane visible. Spring response ~0.12 s. Look-ahead is 25% toward the aim point, capped at 3 m. Space recentres. No free camera yet.
+- **Camera:** `camera.frame(dt)` follows rendered positions. Pitch ~58° (height 20, back 12.5, FOV 40), for ~30 m of lane visible. Spring response ~0.12 s. Only held pad aim gets 25% look-ahead, capped at 3 m; mouse movement never shifts the camera. Arrow keys detach and pan at 20 m/s, clamped to the floor edges. Space snaps to the hero and follows while held; release returns to the previous follow/free mode.
 
 ## Facts and state
 
@@ -90,6 +90,8 @@ Obedience from HotS, springs and juice from dodgethis. Everything below is moba'
 Each ends with `bun run check` green and is playable behind `?mode=moba`. Requires the core migration through phase C, including render interpolation.
 
 1. **Feel slice.** One hero on a flat 40 × 40 m floor with three pillars, and the court hidden. Build the `pointClick` scheme, `stickAim`, follow framing and the juice-kit extraction. RMB order with pathing, arrival and pings; left-stick move; Q with the cast rules and buffer; two strafing dummies that flash, cue near misses, go down after three Q hits and respawn 2 s later. Everything in the tune GUI. Headless tests: no overshoot on arrival, reversal time, buffer timing, order resumption, swept hits. Done when Oskar calls it smooth on mouse and pad at 144 Hz.
+   Pulled forward from M2: W Vault (arrow, 4 m dash), E Rain (filling circle, delayed hit and slow), and three cooldowns; the feel slice swaps the planned W/E bindings, with W 3 s / E 6 s cooldowns. Q is unchanged; pad holds aim and releases fire.
+
 2. **Kit.** W, E, basic attacks with stutter-step, the trait, HP, death and respawn, a dummy that casts back, indicators, the cooldown HUD, hit-feedback tiers.
 3. **Lane.** Map, structures, waves, the soak rule, levels, globes, base healing, win condition. 1v1 against a scripted hero, then 2v2.
 4. **Bots.** Hero bots and 3v3. A seeded headless bots-only match must end in a core kill within 15 simulated minutes.

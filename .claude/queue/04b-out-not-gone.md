@@ -1,0 +1,2 @@
+Model: Opus 5.5 design (10 lines in docs/moba-lane.md), then GPT 6.1 build. After: 04.
+"Out, not gone" from `docs/moba-ideas.md`: dead heroes throw rubber balls from the touchline, and each hit takes time off their respawn. The losing team gets more fire without anyone getting a stat bonus. Define the touchline, ball damage (chip, no kills?), the respawn trade and pad controls while dead. Bots use it too.

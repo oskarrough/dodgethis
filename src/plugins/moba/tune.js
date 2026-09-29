@@ -37,6 +37,8 @@ export const tune = {
 		height: 1.1, // flight height, for presentation only
 		nearMiss: 0.8, // a pass this close to a body's edge cues "close"
 	},
+	rain: { castPoint: 0, range: 10, radius: 2.5, delay: 0.7, slow: 0.3, duration: 1.5, cooldown: 6 },
+	vault: { castPoint: 0, range: 4, time: 0.18, cooldown: 3 },
 	// The pad's right stick: hero + dir × range × remap(magnitude).
 	stickAim: {
 		inMin: 0.25,
@@ -46,6 +48,7 @@ export const tune = {
 		assistBend: 0.6, // …by this fraction of the gap
 	},
 	follow: {
+		pan: 20, // metres per second; free camera stays inside the floor
 		height: 20,
 		back: 12.5, // pitch = atan(height / back) ≈ 58°
 		fov: 40,

@@ -1,0 +1,1 @@
+Queued briefs for the moba, in order. The loop skill takes the lowest number whose "after" is met, spawns it with the model named on line 1, and deletes the file once it lands. Reviews use `review.md` with the reverse model.

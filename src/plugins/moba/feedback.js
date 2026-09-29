@@ -3,7 +3,7 @@ import { tune } from './tune.js'
 
 // Moba's fact switch (docs/moba-plan.md, "Hit feedback"): each fact becomes juice-kit verbs, sfx, rumble, pings and HUD.
 // `local` is this machine's participant id; facts about anyone else get the quieter version.
-export function createFeedback({ juice, sfx, camera, input, view, hud, sim, local }) {
+export function createFeedback({ juice, sfx, camera, input, view, skillsView, hud, sim, local }) {
 	const hitmarker = document.querySelector('.hitmarker')
 	const _hm = new THREE.Vector3()
 	function hitmark(kind, point) {
@@ -42,6 +42,11 @@ export function createFeedback({ juice, sfx, camera, input, view, hud, sim, loca
 			}
 			case 'cast':
 				unitOf(fact.hero)?.body.squash(-0.08)
+				if (fact.slot === 'slot2') {
+					skillsView.vault(fact.point, fact.direction)
+					sfx.whoosh(fact.point, mine ? 0.7 : 0.3)
+					juice.burst(fact.point, { ...fact.direction, y: 0 }, { count: 8, streak: true })
+				} else if (fact.slot === 'slot3' && mine) skillsView.rain(fact.target)
 				return
 			case 'projectile': {
 				const shot = sim.shots.find((s) => s.id === fact.id)
@@ -50,6 +55,14 @@ export function createFeedback({ juice, sfx, camera, input, view, hud, sim, loca
 				sfx.loose(mine ? 1 : 0.45, fact.point)
 				return
 			}
+			case 'impact':
+				juice.burst(
+					fact.point,
+					{ x: 0, y: 1, z: 0 },
+					{ count: 20, speed: 3, life: 0.35, size: 0.1 },
+				)
+				if (!fact.hit) sfx.hit(fact.point)
+				return
 			case 'hit': {
 				view.unbolt(fact.projectile)
 				const unit = unitOf(fact.target)
@@ -111,7 +124,7 @@ export function createFeedback({ juice, sfx, camera, input, view, hud, sim, loca
 				return
 			}
 			case 'denied':
-				if (fact.hero === local) hud.deny()
+				if (fact.hero === local) hud.deny(fact.slot)
 				return
 		}
 	}
