@@ -21,3 +21,5 @@ Build rules, appended to every build brief. Each one comes from a finding an ear
 - Tests assert the whole population (all 12 minions arrive), not that some unit did.
 - No sim state in module globals; two sims alive at once must not see each other.
 - Time-budget tests measure a median or count work, so they don't flake under load.
+- Screenshot scripts assert the state they claim (idle is idle, "mid-flight" waits for the flight).
+- Previews stage actions across the frame, never straight away from the camera.
