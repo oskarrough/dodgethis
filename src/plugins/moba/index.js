@@ -29,9 +29,13 @@ const FACTS = [
 	'expired',
 	'xp',
 	'structureDown',
+	'shielded',
+	'levelUp',
+	'globe',
+	'matchOver',
 ]
 
-// Lane slice: one hero, two towers and opposing minion waves.
+// Full lane: a player, an intent-driven sparring hero and opposing waves.
 // Boots with ?mode=moba. Everything lives as long as a run of the mode.
 export default function moba(app) {
 	const { scene, world, RAPIER, input, audio } = app
@@ -62,7 +66,11 @@ export default function moba(app) {
 				world,
 				RAPIER,
 				intents: run.intents,
-				heroes: [{ id: local, team: 'A' }],
+				heroes: [
+					{ id: local, team: 'A' },
+					{ id: 'lane-script', team: 'B' },
+				],
+				scripted: ['lane-script'],
 				smooth: run.smooth,
 				present: run.present,
 				lane: true,
@@ -109,7 +117,7 @@ export default function moba(app) {
 				const p = hero.body.mesh.position
 				audio.setAudioListener(p)
 				if (!hero.dead && hero.body.animate(step, hero.cast || hero.attack ? 1 : 0)) sfx.step(p)
-				for (const d of sim.dummies) if (!d.dead) d.body.animate(step)
+				for (const d of [...sim.heroes.slice(1), ...sim.dummies]) if (!d.dead) d.body.animate(step)
 				const target = !onPad() && frame.aim ? sim.pick(hero.team, frame.aim) : null
 				const hovered = target && locate(target.id)
 				cursor.update({
@@ -151,6 +159,10 @@ export default function moba(app) {
 						.slice(0, 3)
 						.map((cd) => Math.max(0, cd - (frozen ? 0 : alpha)) * app.clock.step),
 					totals: [tune.loose.cooldown, tune.vault.cooldown, tune.rain.cooldown],
+					elapsed: sim.tick * app.clock.step,
+					teams: sim.lane.teams,
+					nextWave: (sim.lane.nextWave - sim.tick - (frozen ? 0 : alpha)) * app.clock.step,
+					winner: sim.lane.match.winner,
 					device: input.activeDevice(),
 					pausedNow: paused,
 					hp: hero.hp,
@@ -159,7 +171,13 @@ export default function moba(app) {
 						? Math.max(0, hero.respawnTick - sim.tick - (frozen ? 0 : alpha)) * app.clock.step
 						: null,
 				})
-				app.camera.update(frozen ? 0 : dt)
+				// The camera's explicit FOV spring needs bounded integration steps on slow renderers.
+				let cameraLeft = frozen ? 0 : dt
+				do {
+					const cameraStep = Math.min(cameraLeft, tune.follow.maxStep)
+					app.camera.update(cameraStep)
+					cameraLeft -= cameraStep
+				} while (cameraLeft > 0)
 				pips.update(app.camera.view, [...sim.heroes, ...sim.dummies], hero.team)
 			})
 
@@ -169,10 +187,15 @@ export default function moba(app) {
 				cameraControls.clear()
 				sfx[paused ? 'menuOpen' : 'menuClose']()
 			}
-			run.on('menu', togglePause)
+			run.on('menu', () => {
+				if (sim.lane.match.winner) app.modes.start('moba')
+				else togglePause()
+			})
 			run.on('blur', () => app.intents.cancel(local))
 			const onKey = (e) => {
 				if (e.defaultPrevented || e.code === 'Backquote') return
+				if (e.type === 'keydown' && !e.repeat && e.code === 'KeyR' && sim.lane.match.winner)
+					app.modes.start('moba')
 				if (e.type === 'keydown' && !e.repeat && e.code === 'Escape') togglePause()
 			}
 			window.addEventListener('keydown', onKey, { signal: run.signal })
@@ -187,6 +210,43 @@ export default function moba(app) {
 				f.add(t, 'range', 1, 12, 0.25)
 				f.add(t, 'speed', 1, 40, 1)
 				f.add(t, 'tell', 0.3, 1, app.clock.step)
+			})
+			for (const kind of ['fort', 'core'])
+				run.debug.tune(kind, tune[kind], (f, t) => {
+					f.add(t, 'hp', 100, 10000, 100).name('HP (applies on restart)')
+					f.add(t, 'x', 26, 43, 1).name('position (applies on restart)')
+					f.add(t, 'radius', 0.5, 3, 0.1).name('radius (applies on restart)')
+					f.add(t, 'damage', 1, 400, 1)
+					f.add(t, 'rate', 0.25, 3, 0.05)
+					f.add(t, 'range', 1, 12, 0.25)
+					f.add(t, 'speed', 1, 40, 1)
+					f.add(t, 'tell', 0.3, 1, app.clock.step)
+				})
+			run.debug.tune('levels', tune.levels, (f, t) => {
+				for (const key of ['cap', 'first', 'increment'])
+					f.add(t, key, 1, key === 'cap' ? 10 : 2000, 1).name(`${key} (applies on restart)`)
+				f.add(t, 'growth', 0, 1, 0.01).name('growth (on next level)')
+				f.add(t, 'passive', 0, 100, 1)
+				f.add(t, 'passiveStart', app.clock.step, 120, app.clock.step)
+				f.add(t, 'takedown', 0, 1000, 1)
+				f.add(t, 'victimLevel', 0, 100, 1)
+			})
+			run.debug.tune('globes', tune.globes, (f, t) => {
+				f.add(t, 'heal', 0, 1, 0.01)
+				f.add(t, 'life', app.clock.step, 60, app.clock.step).name('life (next drop)')
+				f.add(t, 'pickup', 0.1, 3, 0.1)
+			})
+			run.debug.tune('base', tune.base, (f, t) => {
+				f.add(t, 'x', 43, 48, 1)
+				f.add(t, 'heal', 0, 1, 0.01)
+			})
+			run.debug.tune('scripted', tune.scripted, (f, t) => {
+				f.add(t, 'think', app.clock.step, 1, app.clock.step)
+				f.add(t, 'tell', 0.3, 1, app.clock.step)
+				f.add(t, 'retreat', 0, 1, 0.01)
+				f.add(t, 'recover', 0, 1, 0.01)
+				f.add(t, 'file', -3, 3, 0.1)
+				f.add(t, 'hold', 1, 5, 0.1)
 			})
 			run.debug.tune('waves', tune.waves, (f, t) => {
 				f.add(t, 'first', app.clock.step, 30, app.clock.step).name(

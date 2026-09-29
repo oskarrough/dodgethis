@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { makeStyleMaterial } from '../../core/stylepass.js'
+import { STEP } from '../../core/app.js'
 import { tune } from './tune.js'
 
 export function createLaneView(scene, smooth = null) {
@@ -8,9 +9,9 @@ export function createLaneView(scene, smooth = null) {
 	const pitchAxis = new THREE.Vector3(1, 0, 0)
 	function makeBody(x, z, team, kind) {
 		const v = tune.laneView
-		const tower = kind === 'tower'
-		const radius = tower ? tune.tower.radius : tune.waves.radius
-		const halfHeight = tower ? v.towerHeight / 2 : v.minionHeight / 2
+		const tower = ['tower', 'fort', 'core'].includes(kind)
+		const radius = tower ? tune[kind].radius : tune.waves.radius
+		const halfHeight = tower ? v[`${kind}Height`] / 2 : v.minionHeight / 2
 		const mesh = new THREE.Group()
 		const visual = new THREE.Group()
 		mesh.add(visual)
@@ -31,7 +32,41 @@ export function createLaneView(scene, smooth = null) {
 			visual.add(object)
 			return object
 		}
-		if (tower) {
+		let crystal = null
+		const cracks = []
+		if (kind === 'core') {
+			part(
+				new THREE.CylinderGeometry(radius, radius, v.drumHeight, v.crenels),
+				ink,
+				-halfHeight + v.drumHeight / 2,
+			)
+			crystal = part(new THREE.OctahedronGeometry(radius), teamMaterial, 0)
+			for (const sign of [-1, 1]) {
+				const crack = part(new THREE.BoxGeometry(v.domeWidth, radius, v.domeWidth), ink, 0)
+				crack.position.z = -radius / 2
+				crack.position.x = (sign * radius) / 2
+				crack.rotation.z = (sign * Math.PI) / 4
+				cracks.push(crack)
+			}
+		} else if (kind === 'fort') {
+			part(
+				new THREE.CylinderGeometry(radius, radius, v.fortHeight - v.drumHeight, v.crenels),
+				teamMaterial,
+				-v.drumHeight / 2,
+			)
+			for (let i = 0; i < v.crenels; i++) {
+				const angle = (i * Math.PI * 2) / v.crenels
+				const crenel = part(
+					new THREE.BoxGeometry(v.crenelSize, v.drumHeight, v.crenelSize),
+					cream,
+					halfHeight - v.drumHeight / 2,
+				)
+				crenel.position.x = Math.cos(angle) * radius
+				crenel.position.z = Math.sin(angle) * radius
+			}
+			part(new THREE.BoxGeometry(v.flagHeight, v.flagHeight, v.footHeight), cream, 0).position.z =
+				-radius
+		} else if (tower) {
 			part(
 				new THREE.CylinderGeometry(radius, radius, v.drumHeight, v.segments),
 				ink,
@@ -73,6 +108,30 @@ export function createLaneView(scene, smooth = null) {
 				shield.rotation.x = Math.PI / 2
 				shield.position.z = -radius
 			}
+		}
+		let dome = null
+		if (tower) {
+			dome = new THREE.Group()
+			dome.name = 'moba-invulnerability-dome'
+			for (let i = 0; i < v.domeSegments; i++) {
+				const arc = new THREE.TorusGeometry(
+					halfHeight + radius,
+					v.domeWidth,
+					v.capSegments,
+					v.segments,
+					Math.PI / v.domeSegments,
+				)
+				owned.push(arc)
+				for (const tilt of [0, Math.PI / 2]) {
+					const dash = new THREE.Mesh(arc, cream)
+					dash.rotation.z = (i * Math.PI * 2) / v.domeSegments
+					const axis = new THREE.Group()
+					axis.rotation.y = tilt
+					axis.add(dash)
+					dome.add(axis)
+				}
+			}
+			mesh.add(dome)
 		}
 		let tell = null
 		if (!tower) {
@@ -152,6 +211,9 @@ export function createLaneView(scene, smooth = null) {
 				bodies.delete(body)
 			},
 			pose,
+			dome,
+			crystal,
+			cracks,
 			tell,
 			helpTether,
 			aggroFlash: 0,
@@ -162,6 +224,7 @@ export function createLaneView(scene, smooth = null) {
 	const group = new THREE.Group()
 	scene.add(group)
 	const marks = new Map()
+	const globeMarks = new Map()
 	function update(lane, heroes, alpha, locate, dt = 0) {
 		const v = tune.laneView
 		cameraFacing.setFromAxisAngle(pitchAxis, -Math.atan2(tune.follow.height, tune.follow.back))
@@ -176,7 +239,15 @@ export function createLaneView(scene, smooth = null) {
 			visual.scale.set(1, 1, 1)
 			visual.rotation.x = 0
 			visual.position.y = 0
+			if (unit.body.dome) unit.body.dome.visible = !unit.dead && !lane.vulnerable(unit)
+			if (unit.body.crystal) {
+				unit.body.crystal.rotation.y = (lane.time + alpha) * STEP * v.coreSpin
+				for (const [i, crack] of unit.body.cracks.entries())
+					crack.visible = unit.hp <= unit.maxHp * (1 - (i + 1) * v.coreCrack)
+			}
 			if (unit.kind === 'tower') visual.scale.x = visual.scale.z = 1 + progress * v.towerCharge
+			else if (unit.kind === 'fort') visual.rotation.x = progress * v.fortPose
+			else if (unit.kind === 'core') visual.position.y = progress * v.corePose
 			else if (unit.kind === 'melee') visual.rotation.x = progress * v.meleePose
 			else if (unit.kind === 'ranged') visual.rotation.x = -progress * v.rangedPose
 			else visual.position.y = progress * v.wizardPose
@@ -205,12 +276,13 @@ export function createLaneView(scene, smooth = null) {
 					)
 				}
 			}
-			if (unit.kind !== 'tower') continue
+			if (!unit.structure) continue
+			const stats = tune[unit.kind]
 			let mark = marks.get(unit.id)
 			if (!mark) {
 				const material = makeStyleMaterial(unit.team === 'A' ? 'teamA' : 'teamB', { flat: true })
 				const geometry = new THREE.RingGeometry(
-					1 - v.ringWidth / tune.tower.range,
+					1 - v.ringWidth / stats.range,
 					1,
 					v.ringSegments,
 				).rotateX(-Math.PI / 2)
@@ -222,7 +294,7 @@ export function createLaneView(scene, smooth = null) {
 			}
 			const p = unit.body.mesh.position
 			mark.ring.position.set(p.x, v.ringY, p.z)
-			mark.ring.scale.setScalar(tune.tower.range)
+			mark.ring.scale.setScalar(stats.range)
 			mark.ring.visible =
 				!unit.dead &&
 				heroes.some(
@@ -230,7 +302,7 @@ export function createLaneView(scene, smooth = null) {
 						!h.dead &&
 						h.team !== unit.team &&
 						Math.hypot(h.body.mesh.position.x - p.x, h.body.mesh.position.z - p.z) <=
-							tune.tower.range + tune.tower.ringNear,
+							stats.range + stats.ringNear,
 				)
 			const target = locate(unit.target)
 			mark.tether.visible = !unit.dead && !!target
@@ -244,6 +316,29 @@ export function createLaneView(scene, smooth = null) {
 				mark.tether.scale.z = Math.hypot(dx, dz)
 			}
 		}
+		const live = new Set(lane.globes.map((g) => g.id))
+		for (const [id, globe] of globeMarks)
+			if (!live.has(id)) {
+				group.remove(globe)
+				globe.geometry.dispose()
+				globe.material.dispose()
+				globeMarks.delete(id)
+			}
+		for (const globe of lane.globes) {
+			let mesh = globeMarks.get(globe.id)
+			if (!mesh) {
+				mesh = new THREE.Mesh(
+					new THREE.OctahedronGeometry(tune.globes.radius),
+					makeStyleMaterial(
+						globe.team === heroes[0]?.team ? (globe.team === 'A' ? 'teamA' : 'teamB') : 'ink',
+					),
+				)
+				group.add(mesh)
+				globeMarks.set(globe.id, mesh)
+			}
+			mesh.position.set(globe.pos.x, tune.globes.height, globe.pos.z)
+			mesh.rotation.y = (lane.time + alpha) * STEP * tune.globes.spin
+		}
 	}
 	return {
 		makeBody,
@@ -253,6 +348,10 @@ export function createLaneView(scene, smooth = null) {
 		update,
 		dispose() {
 			for (const body of bodies) body.dispose()
+			for (const globe of globeMarks.values()) {
+				globe.geometry.dispose()
+				globe.material.dispose()
+			}
 			for (const mark of marks.values()) {
 				mark.geometry.dispose()
 				mark.tetherGeometry.dispose()

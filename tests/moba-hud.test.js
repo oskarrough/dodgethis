@@ -24,6 +24,7 @@ function element() {
 test('Momentum text follows live tuning and unchanged HUD frames do not rewrite it', () => {
 	const previous = globalThis.document
 	const old = tune.momentum.reduction
+	const nodes = []
 	const health = element(),
 		help = element()
 	const slots = Array.from({ length: 3 }, () => {
@@ -38,6 +39,7 @@ test('Momentum text follows live tuning and unchanged HUD frames do not rewrite 
 		body: element(),
 		createElement() {
 			const node = element()
+			nodes.push(node)
 			node.querySelectorAll = () => slots
 			node.querySelector = (selector) => (selector === '.moba-health' ? health : help)
 			return node
@@ -52,12 +54,22 @@ test('Momentum text follows live tuning and unchanged HUD frames do not rewrite 
 		hp: 1400,
 		maxHp: 1400,
 		respawn: null,
+		elapsed: 65,
+		teams: { A: { xp: 600, level: 2 }, B: { xp: 0, level: 1 } },
+		nextWave: 10,
+		winner: null,
 	}
 	try {
 		hud.update(0, frame)
 		expect(health.textContent).toContain('Vault by 2 s')
 		hud.update(0, frame)
 		expect(health.writes).toBe(1)
+		const score = nodes.find((node) => node.className === 'moba-score')
+		expect(score.textContent).toBe('A level 2 · 1:05 · B level 1 · wave 10s')
+		expect(score.writes).toBe(1)
+		hud.update(0, { ...frame, elapsed: 66, nextWave: 9 })
+		expect(score.textContent).toBe('A level 2 · 1:06 · B level 1 · wave 9s')
+		expect(score.writes).toBe(2)
 		tune.momentum.reduction = 1.25
 		hud.update(0, frame)
 		expect(health.textContent).toContain('Vault by 1.25 s')

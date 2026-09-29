@@ -74,7 +74,7 @@ export function createFeedback({ juice, sfx, camera, input, view, skillsView, hu
 				if (shot) view.bolt(shot, fact.point)
 				unitOf(fact.hero)?.body.kick(0.18)
 				cue(
-					['tower', 'ranged', 'wizard'].includes(fact.slot)
+					['tower', 'fort', 'core', 'ranged', 'wizard'].includes(fact.slot)
 						? fact.slot
 						: fact.slot === 'primary'
 							? 'attack'
@@ -100,10 +100,36 @@ export function createFeedback({ juice, sfx, camera, input, view, skillsView, hu
 				view.xp?.(fact.amount, fact.point)
 				cue('xp', fact)
 				return
+			case 'shielded':
+				view.unbolt(fact.projectile)
+				view.ping('aggro', fact.point)
+				cue('shielded', fact)
+				return
+			case 'levelUp':
+				hud.banner?.(`Team ${fact.team} level ${fact.level}`)
+				juice.burst(fact.point, { x: 0, y: 1, z: 0 }, tune.juice.levelUp)
+				cue('levelUp', fact)
+				return
+			case 'globe':
+				if (fact.state === 'expired') {
+					view.ping('move', fact.point)
+					return
+				}
+				juice.burst(fact.point, { x: 0, y: 1, z: 0 }, tune.juice.globe)
+				cue('globe', fact)
+				return
+			case 'matchOver':
+				hud.banner?.(`Team ${fact.team} wins · R / Start to restart`)
+				juice.burst(fact.point, { x: 0, y: 1, z: 0 }, tune.juice.matchOver)
+				cue('matchOver', fact)
+				camera.kick(tune.juice.winKick)
+				return
 			case 'structureDown':
 				juice.burst(fact.point, { x: 0, y: 1, z: 0 }, tune.juice.structureDown)
 				cue('structureDown', fact)
-				camera.shake(tune.juice.shakeTakedown)
+				hud.banner?.(`${fact.target} fell`)
+				camera.kick(tune.juice.structureKick)
+				camera.shake(tune.juice.structureShake)
 				return
 			case 'blocked':
 				view.unbolt(fact.projectile) // Prevent the generic expiry fizzle from also firing.
@@ -132,7 +158,7 @@ export function createFeedback({ juice, sfx, camera, input, view, skillsView, hu
 				juice.burst(fact.point, fact.direction, { count: 6, speed: 1.4, life: 0.3, size: 0.07 })
 				if (fact.slot !== 'slot3')
 					cue(
-						['tower', 'melee', 'ranged', 'wizard'].includes(fact.slot)
+						['tower', 'fort', 'core', 'melee', 'ranged', 'wizard'].includes(fact.slot)
 							? fact.slot
 							: fact.slot === 'primary'
 								? 'attackHit'

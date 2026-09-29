@@ -14,7 +14,11 @@ const CSS = `
 .moba-slot.denied { background: var(--ui-red); transform: scale(1.08); }
 .moba-slot.ready { animation: moba-ready 0.25s ease-out; }
 @keyframes moba-ready { from { box-shadow: 0 0 0 8px var(--ui-gold); } }
-.moba-help { font: 12px/1.4 system-ui, sans-serif; color: var(--ui-text); opacity: 0.75; white-space: nowrap; }
+.moba-score { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); padding: 8px 14px; background: var(--ui-cream); border: 3px solid var(--ui-text); border-radius: 12px; z-index: 4; white-space: nowrap; font: var(--fs-base)/1 var(--ui-font); }
+.moba-banner { position: fixed; top: 28%; left: 50%; transform: translateX(-50%); text-align: center; padding: 12px; background: var(--ui-cream); border: 3px solid var(--ui-text); border-radius: 12px; z-index: 5; font: var(--fs-base)/1.4 var(--ui-font); }
+.moba-banner[hidden] { display: none; }
+@media (max-width: 600px) { .moba-help { white-space: normal !important; text-align: center; max-width: 94vw; } .moba-health { font-size: 12px; text-align: center; width: 94vw; } .moba-score { font-size: 13px; } }
+.moba-help { font: 12px/1.4 system-ui, sans-serif; color: var(--ui-text); opacity: 0.75; width: min(94vw, 700px); text-align: center; white-space: normal; }
 .moba-paused { position: fixed; inset: 0; display: grid; place-items: center; z-index: 10; pointer-events: none;
 	font: 48px/1 var(--ui-font); color: var(--ui-text); -webkit-text-stroke: 6px var(--ui-cream); paint-order: stroke fill;
 	background: rgba(143, 215, 255, 0.35); }
@@ -33,12 +37,19 @@ export function createHud() {
 	const root = document.createElement('div')
 	root.className = 'moba-hud'
 	root.innerHTML = `<div class="moba-health" role="status"></div><div class="moba-slots">${['Q', 'W', 'E'].map((key) => `<div class="moba-slot"><div class="sweep"></div><span class="key">${key}</span><span class="left"></span></div>`).join('')}</div><div class="moba-help"></div>`
+	const score = document.createElement('div')
+	score.className = 'moba-score'
+	const banner = document.createElement('div')
+	banner.className = 'moba-banner'
+	banner.hidden = true
+	let bannerLeft = 0
+	let shownScore = ''
 	const paused = document.createElement('div')
 	paused.className = 'moba-paused'
 	paused.textContent = 'PAUSED'
 	paused.hidden = true
 	document.head.append(style)
-	document.body.append(root, paused)
+	document.body.append(root, paused, score, banner)
 	const slots = [...root.querySelectorAll('.moba-slot')].map((slot) => ({
 		slot,
 		key: slot.querySelector('.key'),
@@ -52,6 +63,11 @@ export function createHud() {
 	let shownHealth = ''
 
 	return {
+		banner(text, seconds = tune.hud.bannerLife) {
+			banner.textContent = text
+			banner.hidden = false
+			bannerLeft = seconds
+		},
 		// A press on cooldown outside the buffer: the icon flashes for 60 ms.
 		deny(action) {
 			const s = slots[['slot1', 'slot2', 'slot3'].indexOf(action)]
@@ -59,11 +75,37 @@ export function createHud() {
 			s.deniedFor = 0.06
 			s.slot.classList.add('denied')
 		},
-		update(dt, { cooldowns, totals, device, pausedNow, hp, maxHp, respawn }) {
+		update(
+			dt,
+			{
+				cooldowns,
+				totals,
+				device,
+				pausedNow,
+				hp,
+				maxHp,
+				respawn,
+				elapsed,
+				teams,
+				nextWave,
+				winner,
+			},
+		) {
+			if (teams) {
+				const seconds = Math.floor(elapsed)
+				const clock = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`
+				const status = `A level ${teams.A.level} · ${clock} · B level ${teams.B.level} · wave ${Math.max(0, Math.ceil(nextWave))}s`
+				if (status !== shownScore) score.textContent = shownScore = status
+			}
+			if (winner) {
+				const text = `Team ${winner} wins · R / Start to restart`
+				if (banner.textContent !== text) banner.textContent = text
+				banner.hidden = false
+			} else if (bannerLeft > 0 && (bannerLeft -= dt) <= 0) banner.hidden = true
 			const text =
 				respawn !== null
 					? `Respawn in ${Math.ceil(respawn)} s`
-					: `${Math.ceil(hp)} / ${maxHp} HP · Momentum: Q hits cut Vault by ${tune.momentum.reduction} s`
+					: `${Math.ceil(hp)} / ${Math.round(maxHp)} HP · Momentum: Q hits cut Vault by ${tune.momentum.reduction} s`
 			if (text !== shownHealth) health.textContent = shownHealth = text
 			for (const [i, s] of slots.entries()) {
 				const { slot, left, shown } = s
@@ -96,6 +138,8 @@ export function createHud() {
 			style.remove()
 			root.remove()
 			paused.remove()
+			score.remove()
+			banner.remove()
 		},
 	}
 }

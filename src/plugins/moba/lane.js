@@ -24,24 +24,36 @@ export function createLane({
 }) {
 	const pathOptions = () => ({ radius: tune.waves.radius, ...tune.orders })
 	const plan = createPathPlanner(pathOptions(), obstacles)
+	let time = 0
 	let serial = 0
 	let nextWave = ticks(tune.waves.first)
 	const minions = []
 	const teams = { A: { xp: 0, level: 1 }, B: { xp: 0, level: 1 } }
-	const structures = ['A', 'B'].map((team) => ({
-		id: `tower-${team}`,
-		team,
-		kind: 'tower',
-		hp: tune.tower.hp,
-		maxHp: tune.tower.hp,
-		dead: false,
-		body: makeBody(team === 'A' ? -tune.tower.x : tune.tower.x, 0, team, 'tower'),
-		target: null,
-		forced: null,
-		aggroUntil: 0,
-		attackTick: 0,
-		attack: null,
-	}))
+	const globes = []
+	const match = { winner: null, endedTick: null, phase: 'early' }
+	const structures = ['tower', 'fort', 'core'].flatMap((kind) =>
+		['A', 'B'].map((team) => ({
+			id: `${kind}-${team}`,
+			team,
+			kind,
+			structure: true,
+			hp: tune[kind].hp,
+			maxHp: tune[kind].hp,
+			dead: false,
+			body: makeBody(team === 'A' ? -tune[kind].x : tune[kind].x, 0, team, kind),
+			target: null,
+			forced: null,
+			aggroUntil: 0,
+			attackTick: 0,
+			attack: null,
+		})),
+	)
+	const vulnerable = (unit) =>
+		!unit.structure ||
+		unit.kind === 'tower' ||
+		structures.find(
+			(s) => s.team === unit.team && s.kind === (unit.kind === 'fort' ? 'tower' : 'fort'),
+		).dead
 	const find = (id) =>
 		minions.find((u) => u.id === id && !u.dead) ??
 		structures.find((u) => u.id === id && !u.dead) ??
@@ -51,12 +63,12 @@ export function createLane({
 			bestRank = Infinity,
 			bestDistance = Infinity
 		for (const candidate of candidates) {
-			if (candidate.dead || candidate.team === unit.team) continue
+			if (candidate.dead || candidate.team === unit.team || !vulnerable(candidate)) continue
 			const dx = candidate.body.position.x - unit.body.position.x,
 				dz = candidate.body.position.z - unit.body.position.z
 			const d = dx * dx + dz * dz
 			if (d > (range + candidate.body.radius) ** 2) continue
-			const rank = candidate.kind === 'tower' ? 1 : candidate.kind ? 0 : 2
+			const rank = candidate.structure ? 1 : candidate.kind ? 0 : 2
 			if (rank < bestRank || (rank === bestRank && d < bestDistance)) {
 				best = candidate
 				bestRank = rank
@@ -90,6 +102,14 @@ export function createLane({
 						attack: null,
 						slowUntil: 0,
 					}
+					const safe = clampWalkable(
+						unit.body.position,
+						unit.body.radius,
+						tune.orders.clearance,
+						obstacles,
+					)
+					unit.body.position.x = safe.x
+					unit.body.position.z = safe.z
 					minions.push(unit)
 					present({ type: 'spawn', target: unit.id, point: { ...unit.body.position } })
 				}
@@ -100,7 +120,7 @@ export function createLane({
 		if (source?.kind || victim.kind || source?.team === victim.team || !source || source.dead)
 			return
 		for (const guard of [...structures, ...minions]) {
-			const range = guard.kind === 'tower' ? tune.tower.range : tune.waves.aggro
+			const range = guard.structure ? tune[guard.kind].range : tune.waves.aggro
 			if (
 				guard.dead ||
 				guard.team !== victim.team ||
@@ -125,38 +145,114 @@ export function createLane({
 			})
 		}
 	}
-	function reward(unit, killerTeam) {
-		if (unit.kind === 'tower') {
+	function addXp(team, amount, point) {
+		const state = teams[team]
+		state.xp += amount
+		present({ type: 'xp', team, amount, total: state.xp, point: { ...point } })
+		let threshold = 0
+		for (let level = 1; level < tune.levels.cap; level++) {
+			threshold += tune.levels.first + tune.levels.increment * (level - 1)
+			if (state.xp < threshold || state.level > level) continue
+			state.level = level + 1
+			for (const h of heroes.filter((h) => h.team === team)) {
+				const previous = h.maxHp
+				h.level = state.level
+				h.maxHp = tune.hero.hp * (1 + tune.levels.growth * (h.level - 1))
+				if (!h.dead) h.hp = Math.min(h.maxHp, h.hp + h.maxHp - previous)
+			}
+			present({ type: 'levelUp', team, level: state.level, point: { ...point } })
+		}
+	}
+	function reward(unit, killerTeam, t) {
+		if (unit.structure) {
 			removeTower(unit)
-			teams[killerTeam].xp += tune.waves.structureXp
-			present({
-				type: 'xp',
-				team: killerTeam,
-				amount: tune.waves.structureXp,
-				total: teams[killerTeam].xp,
-				point: { ...unit.body.position },
-			})
+			addXp(killerTeam, tune.waves.structureXp, unit.body.position)
 			present({
 				type: 'structureDown',
 				target: unit.id,
 				team: killerTeam,
 				point: { ...unit.body.position },
 			})
+			if (unit.kind === 'core' && !match.winner) {
+				match.winner = killerTeam
+				match.endedTick = t
+				present({
+					type: 'matchOver',
+					team: killerTeam,
+					target: unit.id,
+					point: { ...unit.body.position },
+				})
+			}
+		} else if (!unit.kind) {
+			addXp(
+				killerTeam,
+				tune.levels.takedown + tune.levels.victimLevel * unit.level,
+				unit.body.position,
+			)
 		} else if (
 			heroes.some((h) => !h.dead && h.team !== unit.team && distance(unit, h) <= tune.waves.soak)
 		) {
-			const team = unit.team === 'A' ? 'B' : 'A'
-			teams[team].xp += tune.minions[unit.kind].xp
-			present({
-				type: 'xp',
-				team,
-				amount: tune.minions[unit.kind].xp,
-				total: teams[team].xp,
-				point: { ...unit.body.position },
-			})
+			addXp(unit.team === 'A' ? 'B' : 'A', tune.minions[unit.kind].xp, unit.body.position)
+		}
+		if (unit.kind === 'wizard') {
+			const globe = {
+				id: ++serial,
+				team: killerTeam,
+				pos: { x: unit.body.position.x, y: tune.globes.height, z: unit.body.position.z },
+				expires: t + ticks(tune.globes.life),
+			}
+			globes.push(globe)
+			present({ type: 'globe', state: 'spawn', team: killerTeam, point: { ...globe.pos } })
 		}
 	}
 	function step(t, dt) {
+		time = t
+		match.phase =
+			t * STEP >= tune.match.late
+				? 'late'
+				: t * STEP >= tune.match.objective
+					? 'objective'
+					: 'early'
+		if (t >= ticks(tune.levels.passiveStart) && t % ticks(1) === 0) {
+			for (const team of ['A', 'B'])
+				addXp(team, tune.levels.passive, {
+					x: team === 'A' ? -tune.base.x : tune.base.x,
+					y: 0,
+					z: 0,
+				})
+		}
+		for (const h of heroes) {
+			if (!h.dead && (h.team === 'A' ? -h.body.position.x : h.body.position.x) >= tune.base.x)
+				h.hp = Math.min(h.maxHp, h.hp + h.maxHp * tune.base.heal * dt)
+		}
+		for (let i = globes.length - 1; i >= 0; i--) {
+			const globe = globes[i]
+			const hero = heroes.find(
+				(h) =>
+					!h.dead &&
+					t < globe.expires &&
+					h.team === globe.team &&
+					Math.hypot(h.body.position.x - globe.pos.x, h.body.position.z - globe.pos.z) <=
+						tune.globes.pickup,
+			)
+			if (hero) {
+				const heal = Math.min(hero.maxHp - hero.hp, hero.maxHp * tune.globes.heal)
+				hero.hp += heal
+				present({
+					type: 'globe',
+					state: 'pickup',
+					target: hero.id,
+					team: globe.team,
+					heal,
+					point: { ...globe.pos },
+				})
+			}
+			if (hero || t >= globe.expires) {
+				if (!hero)
+					present({ type: 'globe', state: 'expired', team: globe.team, point: { ...globe.pos } })
+				globes.splice(i, 1)
+			}
+		}
 		if (t >= nextWave) {
 			spawn(t)
 			nextWave += ticks(tune.waves.interval)
@@ -168,9 +264,10 @@ export function createLane({
 			return unit?.dead ? null : unit
 		}
 		for (const unit of [...structures, ...minions]) {
+			if (match.winner) break
 			if (unit.dead) continue
-			const tower = unit.kind === 'tower'
-			const stats = tower ? tune.tower : tune.minions[unit.kind]
+			const tower = unit.structure
+			const stats = tower ? tune[unit.kind] : tune.minions[unit.kind]
 			const range = tower ? stats.range : tune.waves.aggro
 			let target = t < unit.aggroUntil ? liveTarget(unit.forced) : null
 			if (target && !inReach(unit, target, range)) target = null
@@ -294,10 +391,17 @@ export function createLane({
 		minions,
 		structures,
 		teams,
+		globes,
+		match,
+		vulnerable,
+		addXp,
 		find,
 		help,
 		reward,
 		step,
+		get time() {
+			return time
+		},
 		get nextWave() {
 			return nextWave
 		},

@@ -28,7 +28,7 @@ export function stepShot(shot, dt, targets, nearMiss, obstacles = OBSTACLES) {
 				from,
 				to,
 				shot.radius,
-				obstacles.filter((o) => o.kind !== 'tower'),
+				obstacles.filter((o) => !['tower', 'fort', 'core'].includes(o.kind)),
 			)
 	const edge = mapExit(from, to, shot.radius)
 	const blocked = obstacle === null ? edge : edge === null ? obstacle : Math.min(obstacle, edge)

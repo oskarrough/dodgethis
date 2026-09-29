@@ -1,3 +1,4 @@
+import { createScriptedHero } from './scripted.js'
 import { createLane } from './lane.js'
 import { createLaneView } from './lane-view.js'
 import { createBody } from '../../core/body.js'
@@ -32,25 +33,28 @@ export function createSim({
 	present: emit = () => {},
 	rng = Math.random,
 	lane: withLane = false,
+	scripted = [],
 }) {
 	const laneView = withLane ? createLaneView(scene, smooth) : null
 	const towerObstacles = withLane
-		? ['A', 'B'].map((team) => ({
-				id: `tower-${team}`,
-				kind: 'tower',
-				x: team === 'A' ? -tune.tower.x : tune.tower.x,
-				z: 0,
-				r: tune.tower.radius,
-			}))
+		? ['tower', 'fort', 'core'].flatMap((kind) =>
+				['A', 'B'].map((team) => ({
+					id: `${kind}-${team}`,
+					kind,
+					x: team === 'A' ? -tune[kind].x : tune[kind].x,
+					z: 0,
+					r: tune[kind].radius,
+				})),
+			)
 		: []
 	const obstacles = [...OBSTACLES, ...towerObstacles]
 	const towerColliders = new Map(
 		towerObstacles.map((o) => [
 			o.id,
 			world.createCollider(
-				RAPIER.ColliderDesc.cylinder(tune.laneView.towerHeight / 2, o.r).setTranslation(
+				RAPIER.ColliderDesc.cylinder(tune.laneView[`${o.kind}Height`] / 2, o.r).setTranslation(
 					o.x,
-					tune.laneView.towerHeight / 2,
+					tune.laneView[`${o.kind}Height`] / 2,
 					0,
 				),
 			),
@@ -167,7 +171,7 @@ export function createSim({
 						z: p.z,
 						dx: (tp.x - p.x) / length,
 						dz: (tp.z - p.z) / length,
-						speed: source.kind === 'tower' ? stats.speed : stats.shotSpeed,
+						speed: source.structure ? stats.speed : stats.shotSpeed,
 						radius: tune.attack.radius,
 						range: FLOOR.halfX * 4,
 						travelled: 0,
@@ -369,8 +373,26 @@ export function createSim({
 					)
 				) {
 					o.path = null
-					if (t >= h.attackTick - ticks(tune.attack.windup) + 1 && !body.dashing) {
-						h.attack = { target: target.id, phase: 'windup', left: ticks(tune.attack.windup) }
+					if (
+						t >=
+							h.attackTick -
+								ticks(
+									scripted.includes(h.id)
+										? Math.max(tune.attack.windup, tune.scripted.tell)
+										: tune.attack.windup,
+								) +
+								1 &&
+						!body.dashing
+					) {
+						h.attack = {
+							target: target.id,
+							phase: 'windup',
+							left: ticks(
+								scripted.includes(h.id)
+									? Math.max(tune.attack.windup, tune.scripted.tell)
+									: tune.attack.windup,
+							),
+						}
 						h.yaw = yawOf(tp.x - p.x, tp.z - p.z)
 						present({
 							type: 'cast',
@@ -455,7 +477,22 @@ export function createSim({
 		const skill = tune[ability]
 		const reach = Math.min(len, skill.range)
 		const target = clampMap({ x: p.x + dir.x * reach, z: p.z + dir.z * reach })
-		h.cast = { slot, dir, target, yaw: yawOf(dir.x, dir.z), left: ticks(skill.castPoint) }
+		h.cast = {
+			slot,
+			dir,
+			target,
+			yaw: yawOf(dir.x, dir.z),
+			left: ticks(
+				scripted.includes(h.id) && slot === 'slot1'
+					? Math.max(skill.castPoint, tune.scripted.tell)
+					: skill.castPoint,
+			),
+			total: ticks(
+				scripted.includes(h.id) && slot === 'slot1'
+					? Math.max(skill.castPoint, tune.scripted.tell)
+					: skill.castPoint,
+			),
+		}
 		h.yaw = h.cast.yaw
 		h.cd[i] = ticks(skill.cooldown)
 		present({
@@ -505,6 +542,7 @@ export function createSim({
 			range: tune.loose.range,
 			travelled: 0,
 			passed: [h.id],
+			damage: tune.loose.damage * (1 + tune.levels.growth * ((h.level ?? tune.hero.level) - 1)),
 		}
 		shots.push(shot)
 		present({
@@ -667,7 +705,7 @@ export function createSim({
 			range: FLOOR.halfX * 4,
 			travelled: 0,
 			passed: [],
-			damage: tune.attack.damage,
+			damage: tune.attack.damage * (1 + tune.levels.growth * (h.level - 1)),
 		}
 		shots.push(shot)
 		h.attackTick = t + ticks(1 / tune.attack.rate)
@@ -691,10 +729,23 @@ export function createSim({
 		const unit = target.unit
 		const direction = { x: shot.dx, y: 0, z: shot.dz }
 		const at = { x: point.x, y: tune.loose.height, z: point.z }
-		const rawDamage = shot.damage ?? (shot.slot === 'slot3' ? tune.rain.damage : tune.loose.damage)
+		if (unit.structure && !lane.vulnerable(unit)) {
+			present({
+				type: 'shielded',
+				source: shot.owner,
+				target: unit.id,
+				projectile: shot.id,
+				point: at,
+			})
+			return
+		}
+		const source = heroes.find((h) => h.id === shot.owner)
+		const rawDamage =
+			shot.damage ??
+			(shot.slot === 'slot3' ? tune.rain.damage : tune.loose.damage) *
+				(1 + tune.levels.growth * ((source?.level ?? 1) - 1))
 		const damage =
-			rawDamage *
-			(unit.kind === 'tower' && shot.slot.startsWith('slot') ? tune.waves.abilityStructure : 1)
+			rawDamage * (unit.structure && shot.slot.startsWith('slot') ? tune.waves.abilityStructure : 1)
 		lane?.help(find(shot.owner), unit, t)
 		unit.hp = Math.max(0, unit.hp - damage)
 		const lethal = unit.hp === 0
@@ -723,10 +774,11 @@ export function createSim({
 		unit.body.retire()
 		if (unit.kind) {
 			unit.attack = null
-			lane.reward(unit, shot.team ?? (unit.team === 'A' ? 'B' : 'A'))
+			lane.reward(unit, shot.team ?? (unit.team === 'A' ? 'B' : 'A'), t)
 			present({ type: 'death', source: shot.owner, target: unit.id, point: at, direction })
 			return
 		}
+		if (lane && !unit.post) lane.reward(unit, shot.team ?? (unit.team === 'A' ? 'B' : 'A'), t)
 		unit.respawnTick =
 			t +
 			ticks(
@@ -741,9 +793,13 @@ export function createSim({
 		present({ type: 'death', source: shot.owner, target: target.id, point: at, direction })
 	}
 
+	const brains = scripted.map(createScriptedHero)
 	function step(dt = STEP) {
+		if (lane?.match.winner) return
+		for (const brain of brains) brain({ heroes, lane, tick: t }, intents)
 		t++
 		lane?.step(t, dt)
+		if (lane?.match.winner) return
 		const dashEnds = []
 		for (const h of heroes) {
 			const dashing = h.body.dashing
@@ -775,13 +831,17 @@ export function createSim({
 			})
 			for (const e of targets) {
 				e.unit.slowUntil = t + ticks(tune.rain.duration)
-				hit({ owner: zone.owner, id: zone.id, slot: 'slot3', dx: 0, dz: 0 }, e, { x: e.x, z: e.z })
+				hit({ owner: zone.owner, team: zone.team, id: zone.id, slot: 'slot3', dx: 0, dz: 0 }, e, {
+					x: e.x,
+					z: e.z,
+				})
 			}
 			zones.splice(i, 1)
 		}
 		const shotTargets = new Map(['A', 'B'].map((team) => [team, enemiesOf(team)]))
 		const shotTargetById = new Map([...shotTargets.values()].flat().map((unit) => [unit.id, unit]))
 		for (let i = shots.length - 1; i >= 0; i--) {
+			if (lane?.match.winner) break
 			const shot = shots[i]
 			let targets
 			if (shot.target) {
@@ -893,7 +953,8 @@ export function createSim({
 			t,
 			...(lane
 				? {
-						match: { nextWave: lane.nextWave },
+						match: { ...lane.match, nextWave: lane.nextWave },
+						globes: structuredClone(lane.globes),
 						teams: structuredClone(lane.teams),
 						minions: lane.minions.map((u) => ({
 							id: u.id,
@@ -915,6 +976,8 @@ export function createSim({
 						structures: lane.structures.map((u) => ({
 							id: u.id,
 							team: u.team,
+							kind: u.kind,
+							vulnerable: lane.vulnerable(u),
 							hp: u.hp,
 							dead: u.dead,
 							target: u.target,

@@ -5,7 +5,7 @@ A small Heroes of the Storm-style mode: the smallest thing that already feels li
 ## Scope
 
 - **Match:** 3v3 (human + 2 bot allies vs 3 bots), all the same hero. Destroy the enemy core. 8–12 minutes. Boots with `?mode=moba` until the hub plugin exists.
-- **Map:** one flat lane along x, 104 × 26 m, with hedged flanks and six pillars; layout and structure positions are specified in [moba-lane.md](moba-lane.md). The map, one tower per side and minion waves are built; forts, cores, levels, globes and base healing follow.
+- **Map:** one flat lane along x, 104 × 26 m, with hedged flanks and six pillars; layout and structure positions are specified in [moba-lane.md](moba-lane.md). The full lane is built: towers, forts, cores, waves, shared levels, killer-team globes, base healing and a core-kill win. One intent-driven scripted opponent walks the lane and casts Q; tactical bots follow.
 - **Structures** (no ammo; HotS removed it in 2017). Each is invulnerable until the one in front falls. Abilities deal 25% to structures; a kill is worth 300 XP.
 
 |       | HP   | Damage | Rate | Range | Targets                    |
@@ -14,7 +14,7 @@ A small Heroes of the Storm-style mode: the smallest thing that already feels li
 | Fort  | 5000 | 160    | 1/s  | 8.5   | same                       |
 | Core  | 6000 | 180    | 1/s  | 9     | same; death ends the match |
 
-- **Minions:** a wave every 30 s from each core, first at 0:15. Each wave is 3 melee, 2 ranged and 1 wizard; the wizard drops a regen globe (+15% HP, either team). They walk the centreline and take the nearest enemy within 6 m: minion, then structure, then hero. They are plain agents, not character controllers. A dying minion's XP goes to the enemy team if any enemy hero is within 12 m, which replaces last-hitting.
+- **Minions:** a wave every 30 s from each core, first at 0:15. Each wave is 3 melee, 2 ranged and 1 wizard; the wizard drops a regen globe (+15% max HP, killing team only, 15 s lifetime). They walk the centreline and take the nearest enemy within 6 m: minion, then structure, then hero. They are plain agents, not character controllers. A dying minion's XP goes to the enemy team if any enemy hero is within 12 m, which replaces last-hitting.
 
 |        | HP  | Damage | Rate   | Range | Speed | XP  |
 | ------ | --- | ------ | ------ | ----- | ----- | --- |
@@ -77,7 +77,7 @@ Obedience from HotS, springs and juice from dodgethis. Everything below is moba'
 
 ## Facts and state
 
-- **`app.present` facts** (each has a `type`, carries copied data plus ids, and passes `validFact`): `order`, `cast`, `projectile`, `hit`, `nearMiss`, `death`, `spawn`, `denied`, `xp`, `levelUp`, `mount`, `globe`, `structureDown`, `matchOver`, `aggro`, `expired`. Expired homing shots report a lost target; missed skillshots report spent range, both with a fizzle. The current lane slice emits `aggro` on a call-for-help and `xp` on soak and tower destruction. `order` carries the ping (and `repeat` for RMB re-sends, which ping small and silent); `denied` is the cooldown flash. Moba's own switch maps them to juice verbs, sfx and rumble.
+- **`app.present` facts** (each has a `type`, carries copied data plus ids, and passes `validFact`): `order`, `cast`, `projectile`, `hit`, `nearMiss`, `death`, `spawn`, `denied`, `xp`, `levelUp`, `mount`, `globe`, `structureDown`, `matchOver`, `aggro`, `expired`. Expired homing shots report a lost target; missed skillshots report spent range, both with a fizzle. The full lane emits `aggro` on a call-for-help; `xp` on soak, structure kills, takedowns and the passive trickle; `levelUp`, `globe` (spawn/pickup/expired), `structureDown` and `matchOver`. Invulnerable hits emit `shielded` with their own cue. `order` carries the ping (and `repeat` for RMB re-sends, which ping small and silent); `denied` is the cooldown flash. Moba's own switch maps them to juice verbs, sfx and rumble.
 - **Snapshot:** full plain JSON with timers in ticks, positions quantised inside the state, and the static layout keyed by map id. Paths are never replicated.
 
   ```
@@ -139,5 +139,5 @@ Each ends with `bun run check` green and is playable behind `?mode=moba`. Requir
 
 1. Mirror match, or a melee bruiser against the Fletcher? One kit is half the work; two would test the lane harder.
 2. Stay at 3v3, or go to 5v5 once bots hold up? Five a side on a 16 m lane is a scrum.
-3. Regen globes: either team, or killing team only (HotS)?
+3. Regen globes are killing-team only, as settled in the lane design.
 4. When moba needs the hub: a portal beside dodgeball's difficulties, or a separate mode picker?
