@@ -21,7 +21,19 @@ export function createScriptedHero(id) {
 					Math.hypot(a.body.position.x - p.x, a.body.position.z - p.z) -
 					Math.hypot(b.body.position.x - p.x, b.body.position.z - p.z),
 			)
-		const target = enemies[0]
+		// Commit to a siege in basic reach. At mid, close on heroes instead of
+		// parking outside basic range while two identical waves cancel forever.
+		const siege = enemies.find(
+			(u) =>
+				u.structure &&
+				Math.hypot(u.body.position.x - p.x, u.body.position.z - p.z) <=
+					tune.orders.attackRange + u.body.radius,
+		)
+		const rival = enemies.find(
+			(u) =>
+				!u.kind && Math.hypot(u.body.position.x - p.x, u.body.position.z - p.z) <= tune.loose.range,
+		)
+		const target = siege ?? rival ?? enemies[0]
 		const allies = sim.lane.minions.filter((u) => !u.dead && u.team === h.team)
 		const front = allies.sort((a, b) => side * (a.body.position.x - b.body.position.x))[0]
 		const guard = sim.lane.structures.find((u) => !u.dead && u.team === h.team)
@@ -38,7 +50,7 @@ export function createScriptedHero(id) {
 			!retreating &&
 			target &&
 			Math.hypot(target.body.position.x - p.x, target.body.position.z - p.z) <=
-				tune.orders.attackRange + target.body.radius
+				(target === rival ? tune.loose.range : tune.orders.attackRange + target.body.radius)
 		) {
 			if (h.order?.target !== target.id)
 				frame.order = { x: target.body.position.x, z: target.body.position.z }

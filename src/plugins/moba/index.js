@@ -248,6 +248,9 @@ export default function moba(app) {
 				f.add(t, 'file', -3, 3, 0.1)
 				f.add(t, 'hold', 1, 5, 0.1)
 			})
+			run.debug.tune('match', tune.match, (f, t) => {
+				f.add(t, 'structureTeamSize', 1, 3, 1).name('pre-Ball HP team size (applies on restart)')
+			})
 			run.debug.tune('waves', tune.waves, (f, t) => {
 				f.add(t, 'first', app.clock.step, 30, app.clock.step).name(
 					'first wave (applies on restart)',
@@ -376,7 +379,32 @@ export default function moba(app) {
 			run.debug.expose({
 				moba: {
 					sim,
+					proof: { ...tune.proof, step: app.clock.step },
 					snapshot: () => sim.snapshot(),
+					focus: (point) => follow.focus(point),
+					// Proof uses the real app loop: intents, fixed simulation, smoothing and feedback.
+					fastForward({ ticks, target = null }) {
+						if (!Number.isInteger(ticks) || ticks < 0 || ticks > tune.proof.batch)
+							throw new Error('Invalid proof step count')
+						const wasPaused = paused
+						const wasPhysicsPaused = coreTune.physics.paused
+						paused = false
+						coreTune.physics.paused = false
+						try {
+							for (let i = 0; i < ticks; i++) {
+								if (target && sim.lane.structures.find((s) => s.id === target)?.dead) break
+								app.frame(app.clock.step)
+							}
+						} finally {
+							paused = wasPaused
+							coreTune.physics.paused = wasPhysicsPaused
+						}
+						return {
+							tick: sim.tick,
+							winner: sim.lane.match.winner,
+							dead: target ? !!sim.lane.structures.find((s) => s.id === target)?.dead : false,
+						}
+					},
 				},
 			})
 

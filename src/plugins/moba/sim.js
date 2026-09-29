@@ -222,6 +222,7 @@ export function createSim({
 		let best = null
 		let bestD = Infinity
 		for (const e of enemiesOf(team)) {
+			if (lane && !lane.vulnerable(e.unit)) continue
 			const sz = e.z - tall * lean
 			const s = Math.max(0, Math.min(1, (e.z - p.z) / (e.z - sz || 1)))
 			const d = Math.hypot(p.x - e.x, p.z - (e.z + (sz - e.z) * s)) - e.radius
@@ -302,6 +303,7 @@ export function createSim({
 		let best = null
 		let bestD = Infinity
 		for (const e of enemiesOf(h.team)) {
+			if (lane && !lane.vulnerable(e.unit)) continue
 			const dx = e.x - p.x
 			const dz = e.z - p.z
 			const d = Math.hypot(dx, dz)

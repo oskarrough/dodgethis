@@ -67,6 +67,12 @@ export function createFollow(t = tune.follow) {
 	return {
 		frame,
 		goal,
+		focus(point) {
+			Object.assign(at, clampMap(point))
+			vel.x = vel.z = 0
+			free = true
+			fresh = false
+		},
 		// Recentre: the next frame starts on its goal with no blend.
 		snap() {
 			fresh = true

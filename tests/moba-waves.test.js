@@ -195,7 +195,7 @@ test('soak is credited regardless of killer, but not to distant or dead heroes; 
 	const tower = sim.lane.structures[1]
 	shoot(tower, 140, 'A', 'A', 'slot1')
 	step()
-	expect(tower.hp).toBe(2400 - 35)
+	expect(tower.hp).toBe(tower.maxHp - 35)
 	expect(facts.some((f) => f.type === 'xp' && f.amount === 40)).toBe(true)
 })
 

@@ -40,7 +40,11 @@ export function createLaneView(scene, smooth = null) {
 				ink,
 				-halfHeight + v.drumHeight / 2,
 			)
-			crystal = part(new THREE.OctahedronGeometry(radius), teamMaterial, 0)
+			crystal = part(
+				new THREE.OctahedronGeometry(radius * v.coreWidth).scale(1, v.coreAspect, 1),
+				teamMaterial,
+				0,
+			)
 			for (const sign of [-1, 1]) {
 				const crack = part(new THREE.BoxGeometry(v.domeWidth, radius, v.domeWidth), ink, 0)
 				crack.position.z = -radius / 2
@@ -50,22 +54,30 @@ export function createLaneView(scene, smooth = null) {
 			}
 		} else if (kind === 'fort') {
 			part(
-				new THREE.CylinderGeometry(radius, radius, v.fortHeight - v.drumHeight, v.crenels),
+				new THREE.CylinderGeometry(radius, radius, v.fortHeight * v.fortDrum, v.crenels),
 				teamMaterial,
-				-v.drumHeight / 2,
+				-halfHeight + (v.fortHeight * v.fortDrum) / 2,
 			)
 			for (let i = 0; i < v.crenels; i++) {
 				const angle = (i * Math.PI * 2) / v.crenels
 				const crenel = part(
 					new THREE.BoxGeometry(v.crenelSize, v.drumHeight, v.crenelSize),
 					cream,
-					halfHeight - v.drumHeight / 2,
+					-halfHeight + v.fortHeight * v.fortDrum,
 				)
 				crenel.position.x = Math.cos(angle) * radius
 				crenel.position.z = Math.sin(angle) * radius
 			}
-			part(new THREE.BoxGeometry(v.flagHeight, v.flagHeight, v.footHeight), cream, 0).position.z =
-				-radius
+			part(
+				new THREE.CylinderGeometry(v.bannerPole, v.bannerPole, v.bannerHeight, v.flagSides),
+				ink,
+				halfHeight - v.bannerHeight / 2,
+			)
+			part(
+				new THREE.BoxGeometry(v.bannerWidth, v.bannerHeight, v.footHeight),
+				teamMaterial,
+				halfHeight - v.bannerHeight / 2,
+			).position.x = v.bannerWidth / 2
 		} else if (tower) {
 			part(
 				new THREE.CylinderGeometry(radius, radius, v.drumHeight, v.segments),
@@ -180,7 +192,9 @@ export function createLaneView(scene, smooth = null) {
 					mesh.visible = false
 					return
 				}
+				mesh.remove(visual)
 				visual.visible = false
+				if (dome) dome.visible = false
 				const geometry = new THREE.CylinderGeometry(
 					radius * v.rubbleRadius,
 					radius,
@@ -217,6 +231,7 @@ export function createLaneView(scene, smooth = null) {
 			tell,
 			helpTether,
 			aggroFlash: 0,
+			shieldFlash: 0,
 		}
 		bodies.add(body)
 		return body
@@ -239,7 +254,11 @@ export function createLaneView(scene, smooth = null) {
 			visual.scale.set(1, 1, 1)
 			visual.rotation.x = 0
 			visual.position.y = 0
-			if (unit.body.dome) unit.body.dome.visible = !unit.dead && !lane.vulnerable(unit)
+			if (unit.body.dome) {
+				unit.body.dome.visible = !unit.dead && !lane.vulnerable(unit)
+				unit.body.shieldFlash = Math.max(0, unit.body.shieldFlash - dt)
+				unit.body.dome.scale.setScalar(1 + (v.shieldPulse * unit.body.shieldFlash) / v.shieldLife)
+			}
 			if (unit.body.crystal) {
 				unit.body.crystal.rotation.y = (lane.time + alpha) * STEP * v.coreSpin
 				for (const [i, crack] of unit.body.cracks.entries())
@@ -342,6 +361,9 @@ export function createLaneView(scene, smooth = null) {
 	}
 	return {
 		makeBody,
+		shield(body) {
+			if (body) body.shieldFlash = tune.laneView.shieldLife
+		},
 		aggro(body) {
 			if (body) body.aggroFlash = tune.laneView.aggroLife
 		},

@@ -87,6 +87,30 @@ export function createView(scene, smooth) {
 				const fill = new THREE.Mesh(barGeometry, barColors[unit.team])
 				fill.position.z = 0.005
 				root.add(back, fill)
+				if (unit.structure) {
+					const canvas = document.createElement('canvas')
+					canvas.width = tune.laneView.xpWidth
+					canvas.height = tune.laneView.xpHeight
+					const ctx = canvas.getContext('2d')
+					ctx.font = `bold ${tune.laneView.xpFont}px monospace`
+					ctx.textAlign = 'center'
+					ctx.fillStyle = '#fff9e8'
+					ctx.fillRect(0, 0, canvas.width, canvas.height)
+					ctx.fillStyle = '#26445f'
+					ctx.fillText(
+						`${unit.team} ${unit.kind.toUpperCase()}`,
+						canvas.width / 2,
+						canvas.height * tune.laneView.xpBaseline,
+					)
+					const texture = own(new THREE.CanvasTexture(canvas))
+					const material = own(new THREE.SpriteMaterial({ map: texture, depthWrite: false }))
+					const label = new THREE.Sprite(material)
+					label.name = 'moba-structure-label'
+					label.layers.set(FORWARD_LAYER)
+					label.scale.set(tune.laneView.labelWidth, tune.laneView.labelHeight, 1)
+					label.position.y = tune.laneView.labelLift
+					root.add(label)
+				}
 				for (let hp = 200; hp < unit.maxHp; hp += 200) {
 					const tick = new THREE.Mesh(tickGeometry, barBack)
 					tick.position.set(-0.9 + (1.8 * hp) / unit.maxHp, 0, 0.01)
@@ -97,7 +121,11 @@ export function createView(scene, smooth) {
 			}
 			bar.root.visible = !unit.dead
 			const p = unit.body.mesh.position
-			bar.root.position.set(p.x, p.y + unit.body.halfHeight + unit.body.radius + 0.4, p.z)
+			bar.root.position.set(
+				p.x,
+				p.y + unit.body.halfHeight + (unit.structure ? 0 : unit.body.radius) + 0.4,
+				p.z,
+			)
 			const width = (1.8 * unit.hp) / unit.maxHp
 			bar.fill.scale.x = Math.max(0.001, width)
 			bar.fill.position.x = -0.9 + width / 2

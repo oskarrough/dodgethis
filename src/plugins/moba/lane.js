@@ -31,14 +31,20 @@ export function createLane({
 	const teams = { A: { xp: 0, level: 1 }, B: { xp: 0, level: 1 } }
 	const globes = []
 	const match = { winner: null, endedTick: null, phase: 'early' }
+	const hpFor = (kind, team) =>
+		tune[kind].hp *
+		Math.min(
+			1,
+			Math.max(1, heroes.filter((h) => h.team === team).length) / tune.match.structureTeamSize,
+		)
 	const structures = ['tower', 'fort', 'core'].flatMap((kind) =>
 		['A', 'B'].map((team) => ({
 			id: `${kind}-${team}`,
 			team,
 			kind,
 			structure: true,
-			hp: tune[kind].hp,
-			maxHp: tune[kind].hp,
+			hp: hpFor(kind, team),
+			maxHp: hpFor(kind, team),
 			dead: false,
 			body: makeBody(team === 'A' ? -tune[kind].x : tune[kind].x, 0, team, kind),
 			target: null,
@@ -145,10 +151,10 @@ export function createLane({
 			})
 		}
 	}
-	function addXp(team, amount, point) {
+	function addXp(team, amount, point, passive = false) {
 		const state = teams[team]
 		state.xp += amount
-		present({ type: 'xp', team, amount, total: state.xp, point: { ...point } })
+		present({ type: 'xp', team, amount, total: state.xp, passive, point: { ...point } })
 		let threshold = 0
 		for (let level = 1; level < tune.levels.cap; level++) {
 			threshold += tune.levels.first + tune.levels.increment * (level - 1)
@@ -215,11 +221,16 @@ export function createLane({
 					: 'early'
 		if (t >= ticks(tune.levels.passiveStart) && t % ticks(1) === 0) {
 			for (const team of ['A', 'B'])
-				addXp(team, tune.levels.passive, {
-					x: team === 'A' ? -tune.base.x : tune.base.x,
-					y: 0,
-					z: 0,
-				})
+				addXp(
+					team,
+					tune.levels.passive,
+					{
+						x: team === 'A' ? -tune.base.x : tune.base.x,
+						y: 0,
+						z: 0,
+					},
+					true,
+				)
 		}
 		for (const h of heroes) {
 			if (!h.dead && (h.team === 'A' ? -h.body.position.x : h.body.position.x) >= tune.base.x)

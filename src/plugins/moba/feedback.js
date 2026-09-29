@@ -97,12 +97,13 @@ export function createFeedback({ juice, sfx, camera, input, view, skillsView, hu
 				}
 				return
 			case 'xp':
+				if (fact.passive || fact.team !== unitOf(local)?.team) return
 				view.xp?.(fact.amount, fact.point)
 				cue('xp', fact)
 				return
 			case 'shielded':
 				view.unbolt(fact.projectile)
-				view.ping('aggro', fact.point)
+				sim.laneView?.shield(unitOf(fact.target)?.body)
 				cue('shielded', fact)
 				return
 			case 'levelUp':
@@ -127,7 +128,11 @@ export function createFeedback({ juice, sfx, camera, input, view, skillsView, hu
 			case 'structureDown':
 				juice.burst(fact.point, { x: 0, y: 1, z: 0 }, tune.juice.structureDown)
 				cue('structureDown', fact)
-				hud.banner?.(`${fact.target} fell`)
+				hud.banner?.(
+					unitOf(fact.target)?.team === unitOf(local)?.team
+						? `Your ${unitOf(fact.target).kind} fell`
+						: `Enemy ${unitOf(fact.target)?.kind ?? 'structure'} destroyed`,
+				)
 				camera.kick(tune.juice.structureKick)
 				camera.shake(tune.juice.structureShake)
 				return
@@ -193,6 +198,7 @@ export function createFeedback({ juice, sfx, camera, input, view, skillsView, hu
 			case 'death': {
 				const unit = unitOf(fact.target)
 				const corpse = unit?.corpse ?? unit?.body
+				if (unit?.structure) return // The sim already replaced it with solid rubble.
 				if (corpse) juice.retire(corpse.visual, { radius: corpse.radius })
 				juice.burst(fact.point, fact.direction, {
 					count: 12,

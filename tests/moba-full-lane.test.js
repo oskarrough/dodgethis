@@ -6,29 +6,35 @@ import { createIntents, neutralFrame, validIntent } from '../src/core/intents.js
 import { createSim } from '../src/plugins/moba/sim.js'
 import { buildColliders, walkable } from '../src/plugins/moba/obstacles.js'
 import { validFact } from '../src/plugins/moba/index.js'
+import { createFeedback } from '../src/plugins/moba/feedback.js'
+import { createJuice } from '../src/core/juice.js'
 import { inReach } from '../src/plugins/moba/lane.js'
 import { tune } from '../src/plugins/moba/tune.js'
 
 await RAPIER.init({})
-let sim, world, intents, facts, unbuild
+let sim, world, intents, facts, unbuild, scene
 const ticks = (seconds) => Math.round(seconds / STEP)
-function boot(scripted = []) {
+function boot(
+	scripted = [],
+	seats = [
+		{ id: 'A', team: 'A' },
+		{ id: 'B', team: 'B' },
+	],
+) {
 	world = new RAPIER.World({ x: 0, y: -9.81, z: 0 })
 	world.timestep = STEP
 	unbuild = buildColliders(world, RAPIER)
 	intents = createIntents()
 	intents.use('pointClick')
 	facts = []
+	scene = new THREE.Scene()
 	sim = createSim({
-		scene: new THREE.Scene(),
+		scene,
 		world,
 		RAPIER,
 		intents,
 		lane: true,
-		heroes: [
-			{ id: 'A', team: 'A' },
-			{ id: 'B', team: 'B' },
-		],
+		heroes: seats,
 		scripted,
 		present: (fact) => facts.push(fact),
 	})
@@ -66,6 +72,25 @@ afterEach(() => {
 	sim.dispose()
 	unbuild()
 	world.free()
+})
+
+test('pre-Ball structure HP scales to defending team size, not attacking team size', () => {
+	for (const u of sim.lane.structures) expect(u.maxHp).toBeCloseTo(tune[u.kind].hp / 3)
+	sim.dispose()
+	unbuild()
+	world.free()
+	boot(
+		[],
+		[
+			{ id: 'a1', team: 'A' },
+			{ id: 'a2', team: 'A' },
+			{ id: 'a3', team: 'A' },
+			{ id: 'b1', team: 'B' },
+			{ id: 'b2', team: 'B' },
+		],
+	)
+	for (const u of sim.lane.structures)
+		expect(u.maxHp).toBeCloseTo(tune[u.kind].hp * (u.team === 'A' ? 1 : 2 / 3))
 })
 
 test('both invulnerability chains shield all damage and unlock one link at a time; rubble loses collision', () => {
@@ -331,6 +356,7 @@ test('five-minute intent-driven scripted match: whole population stays walkable,
 		}
 	}
 	expect(sim.tick).toBe(ticks(300))
+	expect(facts.some((f) => f.type === 'structureDown')).toBe(true)
 	for (const team of ['A', 'B']) {
 		expect(xp[team]).toBeGreaterThan(8 * 270)
 		expect(sim.lane.teams[team].level).toBeGreaterThan(3)
@@ -339,3 +365,103 @@ test('five-minute intent-driven scripted match: whole population stays walkable,
 	expect(facts.every(validFact)).toBe(true)
 	console.log('five-minute XP', sim.lane.teams, 'living minions', sim.lane.minions.length)
 }, 60000)
+
+for (const [scripted, limit] of [
+	[['B'], 600],
+	[['A', 'B'], 1200],
+])
+	test(`real play ${scripted.length === 1 ? 'scripted vs idle' : 'scripted vs scripted'} destroys a core before ${limit / 60} minutes`, () => {
+		sim.dispose()
+		unbuild()
+		world.free()
+		boot(scripted)
+		while (!sim.lane.match.winner && sim.tick < ticks(limit)) step()
+		expect(sim.lane.match.winner).not.toBeNull()
+		if (scripted.length === 1) expect(sim.lane.match.winner).toBe('B')
+		const winner = sim.lane.match.winner
+		const defeated = winner === 'A' ? 'B' : 'A'
+		expect(
+			facts.filter((f) => f.type === 'structureDown' && f.team === winner).map((f) => f.target),
+		).toEqual(['tower', 'fort', 'core'].map((kind) => `${kind}-${defeated}`))
+		expect(facts.filter((f) => f.type === 'matchOver')).toHaveLength(1)
+		expect(facts.every(validFact)).toBe(true)
+		console.log('real-play win', scripted, sim.tick * STEP, sim.lane.teams)
+	}, 120000)
+
+test('shielded structures are not picks; unlock restores picking and a shield hit flashes only its dome', () => {
+	const fort = structure('fort')
+	expect(sim.pick('A', fort.body.position)).toBeNull()
+	const h = sim.heroes[0]
+	h.body.place(fort.body.position.x - 6, 1.05, 0)
+	intents.feed('A', {
+		...neutralFrame(),
+		pressed: [{ action: 'primary', at: { x: fort.body.position.x, z: 0 } }],
+	})
+	step()
+	expect(h.order).toBeNull()
+	sim.laneView.shield(fort.body)
+	sim.laneView.update(sim.lane, sim.heroes, 0.5, () => null)
+	expect(fort.body.dome.scale.x).toBeGreaterThan(1)
+	expect(structure('core').body.dome.scale.x).toBe(1)
+	shot(structure('tower'), structure('tower').hp)
+	step()
+	expect(sim.pick('A', fort.body.position).id).toBe(fort.id)
+})
+
+test('passive and enemy XP are silent; local earned XP gets one popup and cue; structure death never clones a corpse', () => {
+	const previous = globalThis.document
+	globalThis.document = { querySelector: () => null }
+	const juice = createJuice(scene)
+	const cues = [],
+		popups = [],
+		banners = []
+	const feedback = createFeedback({
+		juice,
+		sim,
+		local: 'A',
+		view: {
+			xp: (...args) => popups.push(args),
+			unbolt() {},
+			ping() {
+				throw new Error('Shield reused an aggro ping')
+			},
+		},
+		sfx: {
+			xp: () => cues.push('xp'),
+			shielded: () => cues.push('shielded'),
+			structureDown: () => cues.push('structureDown'),
+		},
+		camera: { kick() {}, shake() {} },
+		hud: { banner: (text) => banners.push(text) },
+	})
+	try {
+		const point = { x: 0, y: 0, z: 0 }
+		for (const fact of [{ team: 'A', passive: true }, { team: 'B' }, { team: 'A' }])
+			feedback.present({ type: 'xp', amount: 8, point, ...fact })
+		expect(cues).toEqual(['xp'])
+		expect(popups).toHaveLength(1)
+		feedback.present({ type: 'shielded', target: structure('fort').id, projectile: 1, point })
+		expect(structure('fort').body.shieldFlash).toBe(tune.laneView.shieldLife)
+		shot(structure('tower'), structure('tower').hp)
+		step()
+		const fort = structure('fort')
+		shot(fort, fort.hp)
+		step()
+		const before = scene.children.length
+		feedback.present(facts.find((f) => f.type === 'death' && f.target === fort.id))
+		feedback.present(facts.find((f) => f.type === 'structureDown' && f.target === fort.id))
+		juice.update(1)
+		expect(scene.children.length).toBe(before)
+		expect(fort.body.visual.parent).toBeNull()
+		expect(fort.body.mesh.children.every((child) => child !== fort.body.visual)).toBe(true)
+		expect(banners).toEqual(['Enemy fort destroyed'])
+		for (const u of sim.lane.structures.filter((u) => u.dead))
+			expect(u.body.visual.parent).toBeNull()
+		step(ticks(30) - sim.tick)
+		expect(facts.filter((f) => f.type === 'xp' && f.passive)).toHaveLength(2)
+	} finally {
+		juice.dispose()
+		if (previous === undefined) delete globalThis.document
+		else globalThis.document = previous
+	}
+})
