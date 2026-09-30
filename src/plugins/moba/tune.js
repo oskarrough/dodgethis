@@ -221,6 +221,15 @@ export const tune = {
 			catchRate: 0.5,
 		},
 	},
+	// Agent protocol settings apply on match start; not debug sliders.
+	agents: {
+		decision: 0.5,
+		maxWait: 30,
+		nearby: 12,
+		observationBytes: 1000,
+		precision: 10,
+		maxSeconds: 900,
+	},
 	scripted: { think: 0.1, tell: 0.3, retreat: 0.35, recover: 0.9, file: 2, hold: 3 },
 	proof: { batch: 3600, afterKill: 1, siegeLimit: 600, trace: 128, queryBudgetMs: 2 },
 	hud: { bannerLife: 2.5, ending: 1.5 },

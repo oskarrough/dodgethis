@@ -23,9 +23,12 @@ try {
 	app.use(moba)
 	app.use(mobaFront)
 	app.use(online)
-	app.modes.start(
-		new URLSearchParams(location.search).get('mode') === 'moba' ? 'moba-front' : 'dodgeball',
-	)
+	const query = new URLSearchParams(location.search)
+	if (query.get('mode') === 'moba' && query.has('replay')) {
+		const { mobaReplay, loadReplay } = await import('./plugins/moba/replay.js')
+		app.use(mobaReplay)
+		app.modes.start('moba-replay', { options: { replay: await loadReplay(query.get('replay')) } })
+	} else app.modes.start(query.get('mode') === 'moba' ? 'moba-front' : 'dodgeball')
 	app.run()
 } catch (err) {
 	reportBootError(err)

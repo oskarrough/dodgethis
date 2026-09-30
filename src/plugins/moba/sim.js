@@ -41,6 +41,7 @@ export function createSim({
 	scripted = [],
 	bots = [],
 	seed = tune.bots.seed,
+	driveBots = true, // Replay retains controller identity (and its tells), but supplies recorded frames.
 	intercept = null,
 }) {
 	const laneView = withLane ? createLaneView(scene, smooth) : null
@@ -1245,7 +1246,7 @@ export function createSim({
 	const botTeam = botSeats.length && withLane ? createBots(botSeats, seed) : null
 	function step(dt = STEP) {
 		if (lane?.match.winner) return
-		botTeam?.step(api, intents)
+		if (driveBots) botTeam?.step(api, intents)
 		for (const brain of brains) brain({ heroes, lane, ball, tick: t }, intents)
 		t++
 		for (let i = boards.length - 1; i >= 0; i--)

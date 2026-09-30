@@ -1,0 +1,6 @@
+.moba-replay .moba-help {
+	display: none;
+}
+.moba-replay .moba-hud::after {
+	content: 'Replay · Esc / Start / menu to pause';
+}
