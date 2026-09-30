@@ -158,7 +158,7 @@ export function createLane({
 			for (const h of heroes.filter((h) => h.team === team)) {
 				const previous = h.maxHp
 				h.level = state.level
-				h.maxHp = tune.hero.hp * (1 + tune.levels.growth * (h.level - 1))
+				h.maxHp = (h.definition?.base.hp ?? tune.hero.hp) * (1 + tune.levels.growth * (h.level - 1))
 				if (!h.dead) h.hp = Math.min(h.maxHp, h.hp + h.maxHp - previous)
 			}
 			present({ type: 'levelUp', team, level: state.level, point: { ...point } })

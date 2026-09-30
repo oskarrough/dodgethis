@@ -30,7 +30,15 @@ export function interceptShot(shot, dt, intercept, context) {
 	const at = Math.min(obstacle ?? 1, edge ?? 1)
 	to.x = from.x + (to.x - from.x) * at
 	to.z = from.z + (to.z - from.z) * at
-	return intercept({ ...context, shot, from, to }) === true
+	return (
+		intercept({
+			...context,
+			shot,
+			from,
+			to,
+			catchable: !shot.target && shot.catchable === true,
+		}) === true
+	)
 }
 
 // Advance one shot by `dt` against `targets` ({ id, x, z, radius }). Returns { hit, point } for the first body touched,
@@ -56,11 +64,33 @@ export function stepShot(shot, dt, targets, nearMiss, obstacles = OBSTACLES) {
 	const edge = mapExit(from, to, shot.radius)
 	const blocked = obstacle === null ? edge : edge === null ? obstacle : Math.min(obstacle, edge)
 	let at = blocked ?? Infinity
+	const hits = []
 	for (const target of targets) {
+		if (shot.pierce && shot.passed.includes(target.id)) continue
 		const t = sweepHit(ax, az, bx, bz, target.x, target.z, shot.radius + target.radius)
+		if (t !== null && shot.pierce && t < (blocked ?? Infinity)) {
+			hits.push({ hit: target, point: { x: ax + (bx - ax) * t, z: az + (bz - az) * t }, at: t })
+			continue
+		}
 		if (t !== null && t < at) {
 			at = t
 			hit = target
+		}
+	}
+	if (shot.pierce) {
+		hits.sort((a, b) => a.at - b.at || String(a.hit.id).localeCompare(String(b.hit.id)))
+		for (const entry of hits) shot.passed.push(entry.hit.id)
+		const end = blocked ?? 1
+		shot.x = ax + (bx - ax) * end
+		shot.z = az + (bz - az) * end
+		shot.travelled += step * end
+		return {
+			hit: null,
+			hits,
+			nearMisses: [],
+			blocked: blocked !== null,
+			expired: blocked !== null || shot.travelled >= shot.range - 1e-9,
+			point: { x: shot.x, z: shot.z },
 		}
 	}
 	if (hit) {

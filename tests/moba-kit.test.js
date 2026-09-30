@@ -363,13 +363,13 @@ test('attack orders chase into range, and pad primary uses the same windup', () 
 test('Q hits recharge Vault by two seconds, clamped to zero; Rain and basic attacks do not', () => {
 	hero().cd[1] = 150
 	feed({ pressed: [{ action: 'slot1', at: { x: 4, z: 8 } }] })
-	step(20)
+	step(30)
 	expect(dummy().hp).toBe(dummy().maxHp - 140)
-	expect(hero().cd[1]).toBe(10)
+	expect(hero().cd[1]).toBe(0)
 	hero().cd[0] = 0
 	hero().cd[1] = 30
 	feed({ pressed: [{ action: 'slot1', at: { x: 4, z: 8 } }] })
-	step(20)
+	step(30)
 	expect(hero().cd[1]).toBe(0)
 	hero().cd[1] = 200
 	feed({ pressed: [{ action: 'slot3', at: { x: 4, z: 8 } }] })

@@ -1,3 +1,5 @@
+import { heroDefinition, freshAbilityState } from './heroes.js'
+import { dressHero } from './hero-view.js'
 import { createBall } from './ball.js'
 import { createScriptedHero } from './scripted.js'
 import { createLane } from './lane.js'
@@ -19,7 +21,6 @@ const TAU = Math.PI * 2
 const yawOf = (x, z) => Math.atan2(x, z) + Math.PI
 const dirOf = (yaw) => ({ x: -Math.sin(yaw), z: -Math.cos(yaw) })
 const DUMMY_POSTS = tune.map.dummyPosts
-const ABILITIES = { slot1: 'loose', slot2: 'vault', slot3: 'rain' }
 
 // Heroes read intents; optional lane agents share damage, shots and targeting. No DOM.
 // Training fixtures retain the dummies; the browser opts into `lane: true`.
@@ -68,32 +69,49 @@ export function createSim({
 	let shotIds = 0
 	const shots = []
 	const zones = []
-	const bodyAt = (x, z, team) =>
-		createBody(scene, world, RAPIER, {
-			profile,
+	const bodyAt = (x, z, team, definition = heroDefinition()) => {
+		const body = createBody(scene, world, RAPIER, {
+			profile: definition.base,
 			position: [x, 0, z],
 			color: team === 'A' ? PALETTE.teamA : PALETTE.teamB,
 			bounds: (radius) => ({ x: FLOOR.halfX - radius, z: FLOOR.halfZ - radius }),
 			smooth,
 		})
+		const undress = dressHero(body, definition.id, team)
+		const retire = body.retire
+		body.retire = () => {
+			for (const part of body.mesh.children) if (part !== body.visual) part.visible = false
+			retire()
+		}
+		const dispose = body.dispose
+		body.dispose = () => {
+			undress()
+			dispose()
+		}
+		return body
+	}
 
-	const heroes = seats.map(({ id, team }, i) => {
+	const heroes = seats.map(({ id, team, heroId = 'fletcher' }, i) => {
+		const definition = heroDefinition(heroId)
 		const teamSeats = seats.filter((seat) => seat.team === team)
 		const index = seats.slice(0, i).filter((seat) => seat.team === team).length
 		const spawn = {
 			x: team === 'A' ? SPAWN.x : -SPAWN.x,
 			z: SPAWN.z + (index - (teamSeats.length - 1) / 2) * tune.map.spawnSpacing,
 		}
-		const body = bodyAt(spawn.x, spawn.z, team)
+		const body = bodyAt(spawn.x, spawn.z, team, definition)
 		return {
 			id,
 			team,
+			heroId,
+			definition,
+			abilityState: freshAbilityState(),
 			body,
 			yaw: 0,
 			spawn,
-			hp: tune.hero.hp,
-			maxHp: tune.hero.hp,
-			level: tune.hero.level,
+			hp: definition.base.hp,
+			maxHp: definition.base.hp,
+			level: definition.base.level,
 			dead: false,
 			corpse: null,
 			respawnTick: null,
@@ -328,7 +346,7 @@ export function createSim({
 			const dz = e.z - p.z
 			const d = Math.hypot(dx, dz)
 			if (
-				d > tune.orders.attackRange * 1.5 ||
+				d > (h.definition.basic?.range ?? 0) * 1.5 ||
 				(best && ((!e.hero && best.hero) || (e.hero === best.hero && d >= bestD)))
 			)
 				continue
@@ -342,7 +360,7 @@ export function createSim({
 	// Walk the path: pursue a carrot, and in the last metre cap speed at distance / dt so arrival lands exactly with no easing.
 	function steer(h, goal, arrive, dt) {
 		const p = h.body.position
-		const top = profile.speed * h.body.speedMul
+		const top = h.definition.base.speed * h.body.speedMul
 		const dist = Math.hypot(goal.x - p.x, goal.z - p.z)
 		if (arrive && dist <= tune.orders.arrival) return null
 		if (h.order.path.points.length < 2) return null
@@ -386,12 +404,13 @@ export function createSim({
 				const tp = target.body.position
 				const p = body.position
 				if (
+					h.definition.basic &&
 					Math.hypot(tp.x - p.x, tp.z - p.z) <=
-						tune.orders.attackRange + (target.kind ? target.body.radius : 0) &&
+						h.definition.basic.range + (target.kind ? target.body.radius : 0) &&
 					segmentClear(
 						p,
 						tp,
-						tune.attack.radius,
+						h.definition.basic.radius,
 						obstacles.filter((o) => o.id !== target.id),
 					)
 				) {
@@ -401,8 +420,8 @@ export function createSim({
 							h.attackTick -
 								ticks(
 									scripted.includes(h.id)
-										? Math.max(tune.attack.windup, tune.scripted.tell)
-										: tune.attack.windup,
+										? Math.max(h.definition.basic.windup, tune.scripted.tell)
+										: h.definition.basic.windup,
 								) +
 								1 &&
 						!body.dashing
@@ -412,8 +431,8 @@ export function createSim({
 							phase: 'windup',
 							left: ticks(
 								scripted.includes(h.id)
-									? Math.max(tune.attack.windup, tune.scripted.tell)
-									: tune.attack.windup,
+									? Math.max(h.definition.basic.windup, tune.scripted.tell)
+									: h.definition.basic.windup,
 							),
 						}
 						h.yaw = yawOf(tp.x - p.x, tp.z - p.z)
@@ -471,8 +490,12 @@ export function createSim({
 		for (const e of edges.slice(0, -1)) intents.consume(h.id, e.action)
 		const latest = edges.at(-1)
 		const slot = latest.action
-		const ability = ABILITIES[slot]
-		if (!ability) return intents.consume(h.id, slot)
+		const ability = h.definition.abilities[slot]
+		if (!ability) {
+			intents.consume(h.id, slot)
+			present({ type: 'denied', hero: h.id, slot })
+			return
+		}
 		const i = SLOTS.indexOf(slot)
 		if (!h.judged.has(latest)) {
 			h.judged.add(latest)
@@ -498,7 +521,7 @@ export function createSim({
 		const dz = at ? at.z - p.z : dirOf(h.yaw).z
 		const len = Math.hypot(dx, dz)
 		const dir = len > 1e-4 ? { x: dx / len, z: dz / len } : dirOf(h.yaw)
-		const skill = tune[ability]
+		const skill = ability.stats
 		const reach = Math.min(len, skill.range)
 		const target = clampMap({ x: p.x + dir.x * reach, z: p.z + dir.z * reach })
 		h.cast = {
@@ -507,12 +530,12 @@ export function createSim({
 			target,
 			yaw: yawOf(dir.x, dir.z),
 			left: ticks(
-				scripted.includes(h.id) && slot === 'slot1'
+				scripted.includes(h.id) && ability.kind === 'shot'
 					? Math.max(skill.castPoint, tune.scripted.tell)
 					: skill.castPoint,
 			),
 			total: ticks(
-				scripted.includes(h.id) && slot === 'slot1'
+				scripted.includes(h.id) && ability.kind === 'shot'
 					? Math.max(skill.castPoint, tune.scripted.tell)
 					: skill.castPoint,
 			),
@@ -531,24 +554,28 @@ export function createSim({
 
 	function release(h) {
 		const { slot, dir, target } = h.cast
+		const ability = (h.definition ?? heroDefinition()).abilities[slot]
+		const skill = ability.stats
 		h.cast = null
 		h.lastRemaining = null
 		const p = h.body.position
-		if (slot === 'slot2') {
+		if (ability.kind === 'dash') {
 			// Whole fixed steps avoid overshooting the advertised distance on the final dash tick.
-			const time = Math.max(1, Math.ceil(tune.vault.time / STEP)) * STEP - 1e-9
-			h.body.dash(dir, { distance: tune.vault.range, time })
+			const time = Math.max(1, Math.ceil(skill.time / STEP)) * STEP - 1e-9
+			h.body.dash(dir, { distance: skill.range, time })
 			return
 		}
-		if (slot === 'slot3') {
+		if (ability.kind === 'zone') {
 			zones.push({
 				id: ++shotIds,
 				owner: h.id,
 				team: h.team,
 				x: target.x,
 				z: target.z,
-				left: ticks(tune.rain.delay),
-				total: ticks(tune.rain.delay),
+				left: ticks(skill.delay),
+				total: ticks(skill.delay),
+				ability: ability.id,
+				slot,
 			})
 			return
 		}
@@ -561,12 +588,17 @@ export function createSim({
 			z: p.z,
 			dx: dir.x,
 			dz: dir.z,
-			speed: tune.loose.speed,
-			radius: tune.loose.radius,
-			range: tune.loose.range,
+			ability: ability.id,
+			pierce: ability.pierce,
+			heal: ability.heal,
+			bounce: ability.bounce,
+			catchable: ability.catchable,
+			speed: skill.speed,
+			radius: skill.radius,
+			range: skill.range,
 			travelled: 0,
 			passed: [h.id],
-			damage: tune.loose.damage * (1 + tune.levels.growth * ((h.level ?? tune.hero.level) - 1)),
+			damage: skill.damage * (1 + tune.levels.growth * ((h.level ?? tune.hero.level) - 1)),
 		}
 		shots.push(shot)
 		present({
@@ -699,7 +731,8 @@ export function createSim({
 		unit.corpse?.dispose()
 		unit.corpse = null
 		const spawn = unit.post ?? unit.spawn
-		unit.body = bodyAt(spawn.x, spawn.z, unit.team)
+		unit.body = bodyAt(spawn.x, spawn.z, unit.team, unit.definition)
+		if (unit.definition) unit.abilityState = freshAbilityState()
 		unit.body.face(dirOf(unit.yaw))
 		unit.dead = false
 		if (unit.post) unit.maxHp = tune.dummies.hp
@@ -737,19 +770,19 @@ export function createSim({
 			z: p.z,
 			dx: (tp.x - p.x) / length,
 			dz: (tp.z - p.z) / length,
-			speed: tune.attack.speed,
-			radius: tune.attack.radius,
+			speed: h.definition.basic.speed,
+			radius: h.definition.basic.radius,
 			range: FLOOR.halfX * 4,
 			travelled: 0,
 			passed: [],
-			damage: tune.attack.damage * (1 + tune.levels.growth * (h.level - 1)),
+			damage: h.definition.basic.damage * (1 + tune.levels.growth * (h.level - 1)),
 		}
 		shots.push(shot)
-		h.attackTick = t + ticks(1 / tune.attack.rate)
+		h.attackTick = t + ticks(1 / h.definition.basic.rate)
 		h.attack = {
 			target: target.id,
 			phase: 'backswing',
-			left: ticks(tune.attack.backswing),
+			left: ticks(h.definition.basic.backswing),
 			startedTick: t,
 		}
 		present({
@@ -778,9 +811,10 @@ export function createSim({
 			return
 		}
 		const source = heroes.find((h) => h.id === shot.owner)
+		const ability = source?.definition.abilities[shot.slot]
 		const rawDamage =
 			shot.damage ??
-			(shot.slot === 'slot3' ? tune.rain.damage : tune.loose.damage) *
+			(tune[shot.ability]?.damage ?? ability?.stats.damage ?? tune.loose.damage) *
 				(1 + tune.levels.growth * ((source?.level ?? 1) - 1))
 		const damage =
 			rawDamage * (unit.structure && shot.slot.startsWith('slot') ? tune.waves.abilityStructure : 1)
@@ -788,12 +822,13 @@ export function createSim({
 		unit.hp = Math.max(0, unit.hp - damage)
 		const lethal = unit.hp === 0
 		if (!unit.kind && damage > 0) ball?.hurt(unit)
-		if (shot.slot === 'slot1' && target.hero) {
-			const source = heroes.find((h) => h.id === shot.owner)
-			// Momentum follows Vault, which the feel slice moved from E to W.
-			if (source && !source.dead)
-				source.cd[1] = Math.max(0, source.cd[1] - ticks(tune.momentum.reduction))
-		}
+		if (source)
+			source.definition.traits.onHit?.({
+				source,
+				target,
+				ticks,
+				shot: { ...shot, ability: shot.ability ?? source.definition.abilities[shot.slot]?.id },
+			})
 		present({
 			type: 'hit',
 			source: shot.owner,
@@ -826,6 +861,7 @@ export function createSim({
 			)
 		unit.cast = null
 		if (!unit.post) {
+			unit.abilityState = freshAbilityState()
 			unit.order = null
 			unit.attack = null
 			intents.cancel(unit.id)
@@ -861,8 +897,9 @@ export function createSim({
 		for (let i = zones.length - 1; i >= 0; i--) {
 			const zone = zones[i]
 			if (--zone.left > 0) continue
+			const skill = tune[zone.ability ?? 'rain']
 			const targets = enemiesOf(zone.team).filter(
-				(e) => Math.hypot(e.x - zone.x, e.z - zone.z) <= tune.rain.radius + e.radius,
+				(e) => Math.hypot(e.x - zone.x, e.z - zone.z) <= skill.radius + e.radius,
 			)
 			present({
 				type: 'impact',
@@ -871,11 +908,23 @@ export function createSim({
 				point: { x: zone.x, y: 0.05, z: zone.z },
 			})
 			for (const e of targets) {
-				e.unit.slowUntil = t + ticks(tune.rain.duration)
-				hit({ owner: zone.owner, team: zone.team, id: zone.id, slot: 'slot3', dx: 0, dz: 0 }, e, {
-					x: e.x,
-					z: e.z,
-				})
+				if (skill.slow) e.unit.slowUntil = t + ticks(skill.duration)
+				hit(
+					{
+						owner: zone.owner,
+						team: zone.team,
+						id: zone.id,
+						slot: zone.slot ?? 'slot3',
+						ability: zone.ability,
+						dx: 0,
+						dz: 0,
+					},
+					e,
+					{
+						x: e.x,
+						z: e.z,
+					},
+				)
 			}
 			zones.splice(i, 1)
 		}
@@ -943,6 +992,7 @@ export function createSim({
 					point: { ...r.point, y: tune.loose.height },
 					direction: { x: shot.dx, y: 0, z: shot.dz },
 				})
+			for (const entry of r.hits ?? []) hit(shot, entry.hit, entry.point)
 			if (r.hit) hit(shot, r.hit, r.point)
 			if (r.expired && !r.hit && !r.blocked)
 				present({
@@ -964,7 +1014,10 @@ export function createSim({
 		const h = heroes.find((x) => x.id === id)
 		if (!h) return null
 		const p = h.body.position
-		const range = ball?.carrying(h) ? tune.ball.range : tune[ABILITIES[slot] ?? 'loose'].range
+		const ability = h.definition.abilities[slot ?? 'slot1']
+		const range = ball?.carrying(h)
+			? tune.ball.range
+			: (ability?.stats.range ?? h.definition.basic?.range ?? 0)
 		const a = tune.stickAim
 		if (!dir) {
 			let best = null
@@ -981,7 +1034,7 @@ export function createSim({
 			return clampMap({ x: p.x + f.x * range, z: p.z + f.z * range })
 		}
 		let angle = Math.atan2(dir.x, dir.z)
-		if (slot === 'slot1') {
+		if (ability?.aimAssist) {
 			let bend = null
 			for (const e of enemiesOf(h.team).filter((e) => e.hero)) {
 				const d = Math.hypot(e.x - p.x, e.z - p.z)
@@ -1057,6 +1110,8 @@ export function createSim({
 			heroes: heroes.map((h) => ({
 				id: h.id,
 				team: h.team,
+				heroId: h.heroId,
+				abilityState: structuredClone(h.abilityState),
 				hp: h.hp,
 				maxHp: h.maxHp,
 				level: h.level,

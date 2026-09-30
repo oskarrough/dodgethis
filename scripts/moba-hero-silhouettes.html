@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<title>MOBA silhouette proof</title>
+		<style>
+			body {
+				margin: 24px;
+				background: #f5ead4;
+				color: #151922;
+				font: 16px sans-serif;
+			}
+			figure {
+				display: inline-block;
+				margin: 12px;
+				text-align: center;
+			}
+			canvas {
+				display: block;
+				filter: grayscale(1);
+			}
+			.zoom {
+				width: 320px;
+				height: 320px;
+				image-rendering: pixelated;
+			}
+		</style>
+	</head>
+	<body>
+		<p>
+			Four silhouettes, each 20 px across its projected bounds. Actual size, then nearest-neighbour
+			×4. No kits on the three stand-ins.
+		</p>
+		<main></main>
+		<script type="module" src="./moba-hero-silhouettes.js"></script>
+	</body>
+</html>

@@ -282,6 +282,58 @@ export const tune = {
 		coyoteTime: 0,
 		turnRate: 1080, // degrees per second; facing is cosmetic and nothing waits on it
 	},
+	heroes: {
+		mitts: { hp: 1600, speed: 5 },
+		carom: { hp: 1300, speed: 5 },
+		skip: { hp: 1450, speed: 5 },
+	},
+	// Silhouettes and costume geometry apply on restart. The collision disc stays 0.45 m.
+	silhouettes: {
+		segments: 24,
+		bodyRadius: 0.29,
+		bodyHalfHeight: 0.6,
+		discY: 0.08,
+		discBorder: 0.06,
+		quiverRadius: 0.14,
+		quiverHeight: 0.8,
+		quiverY: 0.15,
+		quiverZ: 0.38,
+		arrowCount: 3,
+		arrowSpacing: 0.22,
+		arrowFan: 0.42,
+		arrowRadius: 0.045,
+		arrowHeight: 1.1,
+		arrowY: 0.55,
+		fletchingRadius: 0.17,
+		fletchingHeight: 0.3,
+		mittsWidth: 0.9,
+		mittsDepth: 0.8,
+		mittsHeight: 0.8,
+		corner: 0.16,
+		gloveWidth: 0.65,
+		gloveDepth: 0.5,
+		gloveX: 0.55,
+		gloveZ: -0.25,
+		fingerRadius: 0.11,
+		fingerCount: 4,
+		fingerSpacing: 0.14,
+		caromRadius: 0.55,
+		caromHeight: 1.2,
+		racketRadius: 0.32,
+		racketTube: 0.055,
+		racketX: 0.6,
+		racketY: 0.55,
+		racketHandle: 0.5,
+		racketHandleRadius: 0.05,
+		skipWidth: 0.9,
+		skipDepth: 0.25,
+		skipHeight: 1.5,
+		megaphoneRadius: 0.28,
+		megaphoneMouth: 0.2,
+		megaphoneLength: 0.65,
+		megaphoneZ: -0.6,
+		megaphoneY: 0.25,
+	},
 	orders: {
 		pick: 0.6, // an order this close to an enemy's silhouette attacks it
 		carrot: 0.8, // the pursuit point runs this far ahead along the path
@@ -308,9 +360,9 @@ export const tune = {
 	// Q, Loose: a line skillshot, first hit.
 	loose: {
 		damage: 140,
-		castPoint: 0.133,
+		castPoint: 0.3,
 		range: 11,
-		speed: 24, // tune this before anything else: the dodge window at 8 m is 8 / speed
+		speed: 20, // Ground line plus flight gives an 8 m dodge deadline of about 0.52 s.
 		radius: 0.3,
 		cooldown: 4,
 		height: 1.1, // flight height, for presentation only

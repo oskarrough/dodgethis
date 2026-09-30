@@ -25,14 +25,14 @@ A small Heroes of the Storm-style mode: the smallest thing that already feels li
 - **XP:** XP to go from level L to L+1 is `600 + 100(L−1)`, 9000 total to reach the cap of 10. Passive trickle is 8 XP/s from 0:30. A takedown is worth `200 + 40 × victim level`. Each level gives +4% HP and damage. The death timer is `6 + 2 × level` s.
 - **Hero, the Fletcher:** 1400 HP, 5.0 m/s. Basic attack: 90 damage, 5.5 m range, 1/s, homing.
 
-| Key   | Name     | What it does                                                                                                        |
-| ----- | -------- | ------------------------------------------------------------------------------------------------------------------- |
-| Trait | Momentum | A Q hit on a hero (including training dummies) takes 2 s off Vault's cooldown                                       |
-| Q     | Loose    | Line skillshot, first hit. Cast point 0.133 s, range 11, 24 m/s, radius 0.3, 140 damage, cooldown 4                 |
-| W     | Vault    | `dash(dir, { distance: 4, time: 0.18 })` toward aim, cooldown 3. Blocked by structures                              |
-| E     | Rain     | Ground circle. Range 10, radius 2.5, lands after 0.7 s, 180 damage, 30% slow for 1.5 s, cooldown 6                  |
-| R     | Volley   | Heroic, unlocks at level 10. Piercing line, cast point 0.5 s, range 30, 30 m/s, radius 0.8, 320 damage, cooldown 60 |
-| Mount | —        | 1 s channel, then `speedMul` 1.3. Movement cancels the channel; damage, attacking or casting dismounts              |
+| Key   | Name     | What it does                                                                                                              |
+| ----- | -------- | ------------------------------------------------------------------------------------------------------------------------- |
+| Trait | Momentum | A Q hit on a hero (including training dummies) takes 2 s off Vault's cooldown                                             |
+| Q     | Loose    | Line skillshot, first hit. Cast point 0.3 s with a ground line tell, range 11, 20 m/s, radius 0.3, 140 damage, cooldown 4 |
+| W     | Vault    | `dash(dir, { distance: 4, time: 0.18 })` toward aim, cooldown 3. Blocked by structures                                    |
+| E     | Rain     | Ground circle. Range 10, radius 2.5, lands after 0.7 s, 180 damage, 30% slow for 1.5 s, cooldown 6                        |
+| R     | Volley   | Heroic, unlocks at level 10. Piercing line, cast point 0.5 s, range 30, 30 m/s, radius 0.8, 320 damage, cooldown 60       |
+| Mount | —        | 1 s channel, then `speedMul` 1.3. Movement cancels the channel; damage, attacking or casting dismounts                    |
 
 - **Bots:** hero bots play through `app.intents` exactly like players; see [Hero bots](#hero-bots-m4).
 - **Cut:** talents (Oskar's call), mana, items, extra lanes, mercenary camps, hearthstone, gates, fountains, shift-queue, attack-move, minimap, catch-up XP, and more than one hero.
@@ -70,8 +70,8 @@ Obedience from HotS, springs and juice from dodgethis. Everything below is moba'
 - **Click ping:** a team-coloured ring that contracts over 0.25 s, plus a tick sound. Attack orders ping red on the target.
 - **Casts:** the hero is rooted for the cast point and the aim is frozen at `at`. Movement during a cast point is kept, and the previous order resumes at release. Only channels (mount, and R's cast) cancel on move, stop or cancel. Abilities have no backswing. Basic attacks have 0.15 s windup and 0.25 s backswing. Stop and movement (stick or a move order) cancel the windup without firing; any new order, stop, stick movement or casting cancels the backswing (stutter-step). Slot presses during windup buffer for the first tick of backswing, or flash denied if they cannot become legal within the buffer.
 - **Buffering:** the core buffers slot edges for 0.15 s. Moba keeps one slot where the latest press wins, fires it on the first legal tick, and clears it on stop or death. A press on cooldown outside the buffer flashes the HUD icon for 60 ms.
-- **Skillshots** are swept circles, not Rapier bodies. They're registered with `app.smooth`. Q's dodge window at 8 m is about 0.47 s. Tune projectile speed before anything else.
-- **Telegraphs:** your own indicators while held: a line for Q and R, a circle for W, an arrow for E. Enemies see W's circle for its full 0.7 s, filling toward impact, and R's line during its cast point. Your Q's tell is the pose, the yaw snap and a bright trail. The sparring dummy freezes its aim and shows enemies a filling line for 0.4 s before releasing Q; basic attacks have their own pose. A near miss within 0.8 m plays the "close" cue for both players (moba has its own detector).
+- **Skillshots** are swept circles, not Rapier bodies. They're registered with `app.smooth`. Q's measured dodge deadline at 8 m is about 0.52 s, including its 0.3 s cast point. Tune projectile speed before anything else.
+- **Telegraphs:** your own indicators while held: a line for Q and R, a circle for W, an arrow for E. Enemies see W's circle for its full 0.7 s, filling toward impact, and R's line during its cast point. Q prints its exact ground line for enemies throughout the 0.3 s cast point, alongside its pose and yaw snap; the released shot has a bright trail. The sparring dummy freezes its aim and shows enemies a filling line for 0.4 s before releasing Q; basic attacks have their own pose. A near miss within 0.8 m plays the "close" cue for both players (moba has its own detector).
 - **Hit feedback:** via juice-kit verbs. Every hit gets a 70 ms flash, a squash and a few chips. Hits on you add shake 0.15 and rumble (0.2, 0.3, 60 ms); your hits on a hero add a hitmarker and rumble (0.1, 0.2, 40 ms). HP bars tick every 200. Gold XP numbers float up. Your own takedowns get `clock.scale` hitstop (65 ms), which is ignored when the session is shared. A structure kill adds shake 0.6, an FOV kick and a banner.
 - **Camera:** `camera.frame(dt)` follows rendered positions. Pitch ~58° (height 20, back 12.5, FOV 40), for ~30 m of lane visible. Spring response ~0.12 s. Only held pad aim gets 25% look-ahead, capped at 3 m; mouse movement never shifts the camera. Arrow keys detach and pan at 20 m/s, clamped to the floor edges. Space snaps to the hero and follows while held; release returns to the previous follow/free mode.
 
@@ -81,7 +81,7 @@ Obedience from HotS, springs and juice from dodgethis. Everything below is moba'
 - **Snapshot:** full plain JSON with timers in ticks, positions quantised inside the state, and the static layout keyed by map id. Paths are never replicated.
 
   ```
-  { t, match, teams: { A: { xp, level }, B }, heroes: [{ id, team, hp, pos, vel, yaw, order, cast, cd[5], mounted, dead, respawnTick }],
+  { t, match, teams: { A: { xp, level }, B }, heroes: [{ id, team, heroId, abilityState, hp, pos, vel, yaw, order, cast, cd[5], mounted, dead, respawnTick }],
     minions: [{ id, kind, team, hp, pos, yaw, target, attackTick }], structures: [{ id, hp }], projectiles, zones, globes }
   ```
 

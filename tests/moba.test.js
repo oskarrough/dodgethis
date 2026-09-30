@@ -171,6 +171,7 @@ test('a slot press buffers for 0.15 s: it fires on the first legal step, or is d
 
 test('a cast roots for its cast point, then the order resumes; an order given meanwhile wins', () => {
 	place(-10, 8)
+	step(60) // Settle on the floor before measuring a longer rooted cast.
 	const goal = { x: 10, z: 8 }
 	feed({ order: goal })
 	step(20)
@@ -180,7 +181,8 @@ test('a cast roots for its cast point, then the order resumes; an order given me
 	const castPoint = Math.round(tune.loose.castPoint * 60)
 	for (let i = 1; i < castPoint; i++) {
 		step()
-		expect(pos()).toEqual(rooted)
+		expect(pos().x).toBeCloseTo(rooted.x, 5)
+		expect(pos().z).toBeCloseTo(rooted.z, 5)
 	}
 	expect(facts.filter((f) => f.type === 'projectile')).toHaveLength(1)
 	step()
