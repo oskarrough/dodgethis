@@ -16,11 +16,26 @@ export function createStylePresets(apply) {
 		const entry = { value: next }
 		stack.push(entry)
 		apply(next)
-		return () => {
+		const restore = () => {
 			const index = stack.indexOf(entry)
 			if (index < 0) return
 			stack.splice(index, 1)
 			apply(stack.at(-1)?.value ?? defaults)
 		}
+		restore.update = ({ line, hatch, alpha }) => {
+			if (
+				!Number.isFinite(line) ||
+				line <= 0 ||
+				!Number.isFinite(hatch) ||
+				hatch < 0 ||
+				hatch > 1 ||
+				typeof alpha !== 'boolean'
+			)
+				throw new Error('Invalid style preset')
+			if (!stack.includes(entry)) return
+			entry.value = { line, hatch, alpha }
+			if (stack.at(-1) === entry) apply(entry.value)
+		}
+		return restore
 	}
 }

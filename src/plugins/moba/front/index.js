@@ -3,6 +3,7 @@ import { createControls } from './controls.js'
 import { tune } from './tune.js'
 import { createHeroCard, registerKitTune } from './hero.js'
 import { createPreview } from './preview.js'
+import { startLoading } from './loading.js'
 import './front.css'
 import './hero.css'
 
@@ -11,6 +12,18 @@ export function mobaFront(app) {
 	registerKitTune(app)
 	let activeBackdrop = null
 	app.debug.tune('front', tune, (folder, values) => {
+		const loading = folder.addFolder('loading')
+		for (const key of ['hold', 'duration', 'rasterFade'])
+			loading
+				.add(values.loading, key, app.clock.step, 3, app.clock.step)
+				.name(key === 'rasterFade' ? 'raster fade (next loading)' : key)
+		for (const key of ['line', 'pastel'])
+			loading.add(values.loading, key, key === 'line' ? 0.1 : 0, 1, 0.01)
+		loading.add(values.loading, 'scale', 1, 1.1, 0.01)
+		loading.add(values.loading, 'height', 20, 80, 1)
+		loading.add(values.loading, 'back', 0, 140, 1)
+		loading.add(values.loading, 'targetY', 0, 40, 1)
+		loading.add(values.loading, 'fov', 30, 90, 1)
 		folder
 			.add(values, 'skyFade', app.clock.step, 2, app.clock.step)
 			.name('sky fade (s)')
@@ -41,7 +54,8 @@ export function mobaFront(app) {
 	})
 	app.modes.define('moba-front', {
 		scheme: 'pointClick',
-		start(run) {
+		start(run, { options = {} } = {}) {
+			let transferred = false
 			let preview = null
 			let card = null
 			let screen = 'modes'
@@ -54,7 +68,7 @@ export function mobaFront(app) {
 			run.intents.suspend(() => true)
 			app.intents.cancel()
 			app.audio.setMusicScene('wind')
-			const el = document.createElement('main')
+			const el = options.el ?? document.createElement('main')
 			el.className = 'moba-front'
 			el.setAttribute('aria-label', 'Choose a mode')
 			el.innerHTML = `<button type="button" class="front-practice" aria-label="Practice">
@@ -66,7 +80,7 @@ export function mobaFront(app) {
 				</svg><span class="front-mode-name">Practice</span></button>
 				<footer><button type="button" class="front-back">Back to the hub</button>
 				<p class="front-prompts" aria-live="polite"></p></footer>`
-			const backdrop = createBackdrop(el)
+			const backdrop = options.backdrop ?? createBackdrop(el)
 			activeBackdrop = backdrop
 			el.prepend(backdrop.el)
 			let buttons = [...el.querySelectorAll('button')]
@@ -139,7 +153,16 @@ export function mobaFront(app) {
 				for (const freq of tune.confirm.frequencies)
 					app.audio.blip({ freq, dur: tune.confirm.dur, gain: tune.confirm.gain, type: 'sine' })
 				if (screen === 'modes') showHero()
-				else leave('moba')
+				else {
+					transferred = true
+					startLoading(app, {
+						el,
+						backdrop,
+						buildWait: options.buildWait ?? buildWait,
+						returnHero: () =>
+							app.modes.start('moba-front', { options: { hero: true, el, backdrop } }),
+					})
+				}
 			}
 			let leaving = false
 			function leave(mode) {
@@ -154,6 +177,7 @@ export function mobaFront(app) {
 				app.intents.cancel()
 				app.modes.start(mode)
 			}
+			let buildWait = 0
 			let device = ''
 			function setDevice(next, force = false) {
 				if (device === next && !force) return
@@ -224,6 +248,7 @@ export function mobaFront(app) {
 				controls.point(0)
 			}
 			bindControls()
+			if (options.hero) showHero()
 			window.addEventListener('keydown', (event) => controls.key(event), { signal: run.signal })
 			run.system('input', () => {
 				controls.pad(app.input.consumeMenuInput(), app.input.pad())
@@ -231,6 +256,10 @@ export function mobaFront(app) {
 			run.debug.expose({
 				front: {
 					crossfade: backdrop.crossfade,
+					waitForBuild(seconds) {
+						if (!Number.isFinite(seconds) || seconds < 0) throw new Error('Invalid build wait')
+						buildWait = seconds
+					},
 					freezePreview: (value) => preview?.freeze(value),
 					get preview() {
 						return preview?.state ?? null
@@ -247,7 +276,7 @@ export function mobaFront(app) {
 					preview?.dispose()
 					canvas.classList.remove('front-canvas')
 					canvasParent.insertBefore(canvas, canvasNext)
-					backdrop.dispose()
+					if (!transferred) backdrop.dispose()
 					el.remove()
 					outside.forEach((child, i) => {
 						child.inert = previous[i]

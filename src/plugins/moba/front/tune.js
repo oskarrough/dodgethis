@@ -1,6 +1,22 @@
 // Timing, motion and synth are live; authored world geometry stays in backdrop.js.
 export const tune = {
 	skyFade: 0.8,
+	loading: {
+		hold: 1.2,
+		duration: 0.8,
+		rasterFade: 0.15,
+		mapName: 'The paper lane',
+		height: 22,
+		back: 110,
+		fov: 55,
+		targetX: 0,
+		targetY: 8,
+		scale: 1.08,
+		line: 0.65,
+		pastel: 0.65,
+		skip: { freq: 520, slideTo: 740, dur: 0.12, gain: 0.035, type: 'sine' },
+		arrival: { freq: 110, slideTo: 55, dur: 0.4, gain: 0.06, type: 'sine' },
+	},
 	level: { growth: 0.04, cap: 10 },
 	volley: {
 		damage: 320,

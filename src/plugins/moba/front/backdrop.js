@@ -101,6 +101,9 @@ export function createBackdrop(root) {
 	let last = 0
 	let scale = 1
 	let disposed = false
+	let still = false
+	let raster = null
+	let preparation = 0
 	function resize() {
 		const shot = projectFrame(innerWidth, innerHeight)
 		scale = shot.scale
@@ -113,7 +116,8 @@ export function createBackdrop(root) {
 			path.setAttribute('vector-effect', 'non-scaling-stroke')
 	}
 	function wake() {
-		if (disposed || reduced.matches || frame !== null || fade?.playState === 'running') return
+		if (disposed || still || reduced.matches || frame !== null || fade?.playState === 'running')
+			return
 		last = performance.now()
 		frame = requestAnimationFrame(move)
 	}
@@ -163,6 +167,68 @@ export function createBackdrop(root) {
 	reduced.addEventListener('change', motionPreference)
 	return {
 		el,
+		async prepareDescent() {
+			const generation = ++preparation
+			still = true
+			sky.style.willChange = 'auto'
+			fade?.cancel()
+			if (frame !== null) cancelAnimationFrame(frame)
+			frame = null
+			layers.forEach((layer) => (layer.style.transform = 'none'))
+			const canvas = document.createElement('canvas')
+			canvas.width = innerWidth
+			canvas.height = innerHeight
+			const context = canvas.getContext('2d')
+			const colors = getComputedStyle(el)
+			for (const layer of layers) {
+				const copy = layer.cloneNode(true)
+				copy.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+				copy.setAttribute('width', canvas.width * 1.1)
+				copy.setAttribute('height', canvas.height * 1.1)
+				copy.removeAttribute('style')
+				copy.querySelector('.front-select-world').remove()
+				copy.querySelectorAll('[fill^="url"]').forEach((node) => node.remove())
+				copy.querySelectorAll('.front-distant-fletcher').forEach((node) => node.remove())
+				let svg = new XMLSerializer().serializeToString(copy)
+				svg = svg.replace(/var\((--[\w-]+)\)/g, (_, key) => {
+					context.fillStyle = colors.getPropertyValue(key)
+					return context.fillStyle
+				})
+				const image = new Image()
+				image.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg)
+				await image.decode()
+				if (disposed || generation !== preparation) return false
+				context.drawImage(image, -canvas.width * 0.05, -canvas.height * 0.05)
+			}
+			raster = new Image()
+			raster.className = 'front-descent-raster'
+			raster.src = canvas.toDataURL()
+			await raster.decode()
+			if (disposed || generation !== preparation) return false
+			el.append(raster)
+			await raster.animate([{ opacity: 0 }, { opacity: 1 }], {
+				duration: tune.loading.rasterFade * 1000,
+				fill: 'forwards',
+			}).finished
+			if (disposed || generation !== preparation) return false
+			layers.forEach((layer) => (layer.hidden = true))
+			return true
+		},
+		descent(progress) {
+			if (!raster) return
+			raster.style.transform = `scale(${1 + (tune.loading.scale - 1) * progress})`
+			el.style.opacity = String(1 - progress)
+		},
+		resume() {
+			preparation++
+			still = false
+			sky.style.willChange = ''
+			raster?.remove()
+			raster = null
+			el.style.opacity = ''
+			layers.forEach((layer) => (layer.hidden = false))
+			wake()
+		},
 		retune() {
 			if (fade?.playState === 'running')
 				fade.effect.updateTiming({ duration: reduced.matches ? 0 : tune.skyFade * 1000 })

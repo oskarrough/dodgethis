@@ -1,0 +1,263 @@
+// node scripts/verify-moba-front-loading.mjs <URL> <artifact directory>
+import { execFileSync } from 'node:child_process'
+import { mkdirSync, writeFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+const base = process.argv[2] ?? 'http://127.0.0.1:4178'
+const dir = resolve(process.argv[3] ?? `${process.env.BB_THREAD_STORAGE}/loading`)
+mkdirSync(dir, { recursive: true })
+const browser = (...args) =>
+	execFileSync('agent-browser', ['--session', 'loading-proof', ...args], {
+		encoding: 'utf8',
+	}).trim()
+const evaluate = (script) => JSON.parse(browser('eval', script))
+const wait = (ms) => browser('wait', String(ms))
+const key = (code, repeat = false) =>
+	evaluate(
+		`window.dispatchEvent(new KeyboardEvent('keydown',{code:${JSON.stringify(code)},repeat:${repeat},bubbles:true,cancelable:true}));true`,
+	)
+const assert = (value, message) => {
+	if (!value) throw new Error(message)
+}
+const boot = () => {
+	browser('open', `${base}/?mode=moba&debug`)
+	browser('wait', '.moba-front')
+	evaluate('window.probe=game;true')
+	key('Backquote')
+}
+const report = { screens: [] }
+boot()
+const baseline = evaluate(
+	'({bodies:probe.world.bodies.len(),colliders:probe.world.colliders.len()})',
+)
+key('Enter')
+evaluate('probe.front.waitForBuild(3);true')
+for (let i = 0; i < 6; i++) key('Tab')
+report.earlySkip = evaluate(`(()=>{
+	const key=(code,repeat=false)=>window.dispatchEvent(new KeyboardEvent('keydown',{code,repeat,bubbles:true,cancelable:true}));
+	key('Enter');key('Enter');key('Enter',true);
+	const state=probe.loading.state;
+	const valid=state.skipped && !state.ready && state.tick===0 && state.phase==='hold';
+	key('Escape');return valid;
+})()`)
+assert(report.earlySkip, 'Skip bypassed readiness or simulation freeze')
+report.cancel = evaluate(
+	`probe.front.screen==="hero" && !probe.moba && !probe.loading && probe.world.bodies.len()===${baseline.bodies} && probe.world.colliders.len()===${baseline.colliders}`,
+)
+assert(report.cancel, 'Cancel failed to dispose real map bodies')
+wait(3200)
+report.lateBuild = evaluate('probe.front.screen==="hero" && !probe.moba')
+key('Escape')
+report.backOne = evaluate('probe.front.screen==="modes"')
+key('Escape')
+report.hub = evaluate('!!document.querySelector(".splash:not([hidden])")')
+boot()
+key('Enter')
+for (let i = 0; i < 6; i++) key('Tab')
+key('Enter')
+key('Enter', true)
+evaluate('(async()=>{while(probe.loading)await new Promise(requestAnimationFrame);return true})()')
+report.keyboard = evaluate(
+	'!!probe.moba && !probe.loading && !probe.moba.sim.heroes[0].attack && !probe.moba.sim.heroes[0].cast',
+)
+assert(report.keyboard, 'Keyboard flow failed')
+boot()
+evaluate(
+	`window.mockPad={connected:true,axes:[0,0,0,0],buttons:Array.from({length:17},()=>({pressed:false}))};Object.defineProperty(navigator,'getGamepads',{value:()=>[mockPad],configurable:true});true`,
+)
+const pad = (index) => {
+	evaluate(`mockPad.buttons[${index}].pressed=true`)
+	wait(80)
+	evaluate(`mockPad.buttons[${index}].pressed=false`)
+	wait(80)
+}
+pad(0)
+for (let i = 0; i < 6; i++) pad(13)
+evaluate('mockPad.buttons[0].pressed=true')
+evaluate(
+	'(async()=>{while(probe.loading)await new Promise(requestAnimationFrame);await new Promise(r=>setTimeout(r,150));return true})()',
+)
+report.heldPad = evaluate(
+	'!!probe.moba && !probe.loading && !probe.moba.sim.heroes[0].attack && !probe.moba.sim.heroes[0].cast && probe.moba.sim.tick>0',
+)
+assert(report.heldPad, 'Held pad confirm leaked')
+boot()
+evaluate(
+	`window.mockPad={connected:true,axes:[0,0,0,0],buttons:Array.from({length:17},()=>({pressed:false}))};Object.defineProperty(navigator,'getGamepads',{value:()=>[mockPad],configurable:true});true`,
+)
+pad(0)
+evaluate('probe.front.waitForBuild(3);true')
+for (let i = 0; i < 6; i++) pad(13)
+pad(0)
+evaluate('mockPad.buttons[1].pressed=true')
+wait(500)
+report.padCancel = evaluate('probe.front.screen==="hero" && !probe.moba')
+assert(report.padCancel, 'Pad B crossed two screens')
+evaluate('mockPad.buttons[1].pressed=false')
+wait(100)
+pad(1)
+report.padBack = evaluate('probe.front.screen==="modes"')
+boot()
+browser('click', '.front-practice')
+evaluate('probe.front.waitForBuild(3);true')
+browser('click', '.front-lock')
+browser('click', '.front-skip')
+wait(300)
+report.mouseSkip = evaluate('probe.loading.state.skipped && probe.loading.state.tick===0')
+browser('click', '.front-back')
+report.mouseCancel = evaluate('probe.front.screen==="hero" && !probe.moba')
+assert(report.mouseCancel, 'Mouse cancel failed')
+browser('click', '.front-back')
+browser('click', '.front-back')
+report.mouseHub = evaluate('!!document.querySelector(".splash:not([hidden])")')
+for (const [width, height] of [
+	[390, 844],
+	[1440, 900],
+	[2560, 1080],
+]) {
+	browser('set', 'viewport', String(width), String(height))
+	boot()
+	browser('click', '.front-practice')
+	const layout = evaluate(
+		`(()=>{const n=document.querySelector('.front-numbers').getBoundingClientRect(), s=document.querySelector('.front-seats').getBoundingClientRect();return {width:innerWidth,numbersBottom:n.bottom,seatsTop:s.top,clear:n.bottom<s.top}})()`,
+	)
+	assert(layout.clear, `Seats overlap Numbers at ${width}`)
+	browser('screenshot', `${dir}/hero-${width}-seats.png`)
+	const zero = evaluate(
+		`(async()=>{document.querySelector('.front-lock').click();return await probe.loading.captureAt(0)})()`,
+	)
+	assert(zero.phase === 'descent' && zero.progress === 0, '0% is not descent start')
+	for (const progress of [0, 0.5, 1]) {
+		if (progress) {
+			const state = evaluate(`probe.loading.captureAt(${progress})`)
+			assert(
+				Math.abs(state.progress - progress) < 1e-8,
+				`Wrong capture ${progress}: ${JSON.stringify(state)}`,
+			)
+		}
+		const before = evaluate('probe.loading.state')
+		assert(before.tick === 0 && before.progress === progress, 'Screenshot is not frozen')
+		browser('screenshot', `${dir}/descent-${width}-${progress * 100}.png`)
+		const after = evaluate('probe.loading.state')
+		assert(after.tick === 0 && after.progress === progress, 'Screenshot drifted')
+		report.screens.push({ width, height, progress, before, after, layout })
+	}
+	evaluate('probe.loading.resume();true')
+	wait(200)
+	assert(
+		evaluate(
+			'!!probe.moba && !probe.loading && probe.moba.sim.tick>0 && document.querySelector("canvas").isConnected',
+		),
+		'Landing failed',
+	)
+}
+
+boot()
+browser('click', '.front-practice')
+evaluate(
+	'(async()=>{document.querySelector(".front-lock").click();return await probe.loading.captureAt(.5)})()',
+)
+key('Escape')
+report.midDescentCancel = evaluate(
+	'probe.front.screen==="hero" && !probe.moba && !probe.loading && !document.querySelector(".front-descent-raster")',
+)
+assert(report.midDescentCancel, 'Mid-descent cancellation failed')
+browser('click', '.front-back')
+report.reversal = evaluate('probe.front.screen==="modes"')
+boot()
+browser('click', '.front-practice')
+const ws = new WebSocket(browser('get', 'cdp-url'))
+await new Promise((resolve) => ws.addEventListener('open', resolve, { once: true }))
+let id = 0,
+	complete
+const pending = new Map(),
+	events = []
+ws.addEventListener('message', ({ data }) => {
+	const m = JSON.parse(data)
+	if (m.method === 'Tracing.dataCollected') events.push(...m.params.value)
+	if (m.method === 'Tracing.tracingComplete') complete?.()
+	if (m.id) {
+		const r = pending.get(m.id)
+		pending.delete(m.id)
+		if (m.error) r.reject(m.error)
+		else r.resolve(m.result)
+	}
+})
+const send = (method, params = {}, sessionId) =>
+	new Promise((resolve, reject) => {
+		const next = ++id
+		pending.set(next, { resolve, reject })
+		ws.send(JSON.stringify({ id: next, method, params, sessionId }))
+	})
+const { targetInfos } = await send('Target.getTargets')
+const target = targetInfos.find((t) => t.type === 'page' && t.url.startsWith(base))
+const { sessionId } = await send('Target.attachToTarget', {
+	targetId: target.targetId,
+	flatten: true,
+})
+await send(
+	'Emulation.setDeviceMetricsOverride',
+	{ width: 2560, height: 1440, deviceScaleFactor: 2, mobile: false },
+	sessionId,
+)
+wait(500)
+await send('Tracing.start', {
+	categories:
+		'devtools.timeline,disabled-by-default-devtools.timeline,disabled-by-default-devtools.timeline.frame,cc',
+	transferMode: 'ReportEvents',
+})
+report.trace = evaluate(`(async()=>{
+	document.querySelector('.front-lock').click();
+	const samples=[];const start=performance.now();let phase='';
+	await new Promise(resolve=>{function frame(now){const t=(now-start)/1000;
+		window.dispatchEvent(new PointerEvent('pointermove',{clientX:innerWidth*(.5+.48*Math.sin(t*8)),clientY:innerHeight*(.5+.4*Math.cos(t*8)),bubbles:true}));
+		if(probe.loading && probe.loading.state.phase!==phase){phase=probe.loading.state.phase;console.timeStamp('loading-'+phase)}
+		if(probe.loading)samples.push({...probe.loading.state,at:t,animations:document.getAnimations().length,raster:document.querySelector('.front-descent-raster')?.getBoundingClientRect().width,svgVisible:[...document.querySelectorAll('.front-backdrop > svg')].filter(el=>!el.hidden).length});
+		if(t<3.5 || ((probe.loading || !probe.moba.sim.tick) && t<20))requestAnimationFrame(frame);else resolve();
+	}requestAnimationFrame(frame)});
+	return {viewport:[innerWidth,innerHeight,devicePixelRatio],rendererDpr:probe.renderer.getPixelRatio(),samples,landed:!probe.loading && probe.moba.sim.tick>0};
+})()`)
+const done = new Promise((resolve) => (complete = resolve))
+await send('Tracing.end')
+await done
+writeFileSync(`${dir}/descent-dpr2.json`, JSON.stringify({ traceEvents: events }))
+report.trace.events = Object.fromEntries(
+	['Layout', 'Paint', 'RasterTask', 'UpdateLayoutTree'].map((name) => [
+		name,
+		events.filter((e) => e.name === name && e.ph === 'X').length,
+	]),
+)
+await send('Emulation.clearDeviceMetricsOverride', {}, sessionId)
+ws.close()
+const descentMark = events.find(
+	(event) => event.name === 'TimeStamp' && event.args?.data?.message === 'loading-descent',
+)
+report.trace.descentEvents = Object.fromEntries(
+	['Layout', 'Paint', 'RasterTask', 'UpdateLayoutTree'].map((name) => [
+		name,
+		events.filter((event) => event.name === name && event.ph === 'X' && event.ts >= descentMark.ts)
+			.length,
+	]),
+)
+assert(
+	report.trace.samples
+		.filter((sample) => sample.phase === 'descent')
+		.every((sample) => sample.svgVisible === 0 && sample.raster <= 2560 * 1.1),
+	'Descent scaled live SVG or exceeded raster budget',
+)
+assert(report.trace.landed, 'Trace did not land')
+assert(
+	report.trace.samples.every((s) => s.tick === 0),
+	'Sim advanced during trace descent',
+)
+writeFileSync(`${dir}/results.json`, JSON.stringify(report, null, 2) + '\n')
+console.log(
+	JSON.stringify(
+		{ ...report, trace: { ...report.trace, samples: report.trace.samples.length } },
+		null,
+		2,
+	),
+)
+assert(
+	Object.values(report).every((v) => v !== false),
+	'Interaction assertion failed',
+)
