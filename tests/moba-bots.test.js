@@ -4,7 +4,13 @@ import RAPIER from '@dimforge/rapier3d-compat'
 import { createApp, STEP } from '../src/core/app.js'
 import { createIntents, validIntent } from '../src/core/intents.js'
 import { createSim } from '../src/plugins/moba/sim.js'
-import { createBot, botRandom, interceptTime, practiceRoster } from '../src/plugins/moba/bots.js'
+import {
+	createBot,
+	createBots,
+	botRandom,
+	interceptTime,
+	practiceRoster,
+} from '../src/plugins/moba/bots.js'
 import { buildColliders, walkable } from '../src/plugins/moba/obstacles.js'
 import { HEROES } from '../src/plugins/moba/heroes.js'
 import { validFact } from '../src/plugins/moba/index.js'
@@ -57,11 +63,15 @@ function match(seed, { idle = false, hz = 60, trace = false, limit = 54000 } = {
 					if (['ballHit', 'matchOver', 'structureDown'].includes(fact.type)) facts.push(fact)
 				},
 			})
+			const stepBots = sim.bots.step
+			sim.bots.step = (...args) => {
+				const start = performance.now()
+				stepBots(...args)
+				budgets.push(performance.now() - start)
+			}
 			run.clock.pause(() => sim.tick >= limit || !!sim.lane.match.winner)
 			run.system('simulate', () => {
-				const start = performance.now()
 				sim.step()
-				if (sim.tick > 480 / STEP && sim.tick < 600 / STEP) budgets.push(performance.now() - start)
 				if (trace)
 					hashes.push(
 						new Bun.CryptoHasher('sha256')
@@ -122,7 +132,7 @@ function match(seed, { idle = false, hz = 60, trace = false, limit = 54000 } = {
 			hashes,
 			invalid,
 			frames,
-			medianMs: budgets.sort((a, b) => a - b)[Math.floor(budgets.length / 2)],
+			botP99Ms: budgets.sort((a, b) => a - b)[Math.ceil(budgets.length * 0.99) - 1],
 		}
 	} finally {
 		sim.dispose()
@@ -260,9 +270,9 @@ for (const seed of [1, 2, 3])
 		})
 		expect(result.scores.A).toBeGreaterThan(0)
 		expect(result.scores.B).toBeGreaterThan(0)
-		expect(result.medianMs).toBeLessThan(4)
+		expect(result.botP99Ms).toBeLessThan(1)
 		console.log(
-			`bots seed ${seed}: ${(result.snapshot.t * STEP).toFixed(2)} s, scores ${JSON.stringify(result.scores)}, median tick ${result.medianMs.toFixed(3)} ms`,
+			`bots seed ${seed}: ${(result.snapshot.t * STEP).toFixed(2)} s, scores ${JSON.stringify(result.scores)}, bot-team p99 ${result.botP99Ms.toFixed(3)} ms`,
 		)
 	}, 180000)
 
@@ -618,3 +628,228 @@ test('tower safety refuses damage to a protected healthy hero; independent RNG s
 	separate.think()
 	expect(separate.brain.retreating).toBe(false)
 })
+
+for (const z of [-0.8, 0.8])
+	for (const blocked of [false, true])
+		test(`off-centre Q at z=${z} dodges ${blocked ? 'across the line only when the near side is blocked' : 'away from the line on the near side'}`, () => {
+			const f = fixture(),
+				enemy = opponent(f),
+				previous = tune.bots.normal.dodge
+			f.h.body.position.z = z
+			f.perceived.heroes[0].pos.z = z
+			f.h.cd = [100, 100, 100, 0, 0]
+			enemy.cast = { ability: 'loose', dir: { x: 1, z: 0 }, left: 18 }
+			if (blocked) f.sim.obstacles = [{ x: 0, z: Math.sign(z) * 2, r: 0.2 }]
+			tune.bots.normal.dodge = 1
+			try {
+				let frame
+				for (let i = 0; i < 3; i++) {
+					enemy.cast.left = 36 - i * 6
+					frame = f.think()
+				}
+				expect(f.brain.state).toBe('dodge')
+				expect(Math.sign(frame.order.z)).toBe(Math.sign(z) * (blocked ? -1 : 1))
+				expect(Math.abs(frame.order.z)).toBeGreaterThan(f.h.body.radius + tune.loose.radius)
+				expect(
+					walkable(
+						frame.order.x,
+						frame.order.z,
+						f.h.body.radius,
+						tune.orders.clearance,
+						f.sim.obstacles,
+					),
+				).toBe(true)
+			} finally {
+				tune.bots.normal.dodge = previous
+			}
+		})
+
+test('centred dodges do not always choose the same side', () => {
+	const previous = tune.bots.normal.dodge,
+		directions = new Set()
+	tune.bots.normal.dodge = 1
+	try {
+		for (let seed = 1; seed <= 12; seed++) {
+			const f = fixture(),
+				enemy = opponent(f)
+			f.brain = createBot({ id: 'bot', team: 'A' }, seed)
+			f.h.cd = [100, 100, 100, 0, 0]
+			enemy.cast = { ability: 'loose', dir: { x: 1, z: 0 }, left: 18 }
+			let frame
+			for (let i = 0; i < 3; i++) {
+				f.perceived.tick = f.sim.tick
+				enemy.cast.left = 36 - i * 6
+				frame = f.brain.frame(f.sim, f.perceived)
+				f.sim.tick += 6
+			}
+			directions.add(Math.sign(frame.order.z))
+		}
+		expect([...directions].sort()).toEqual([-1, 1])
+	} finally {
+		tune.bots.normal.dodge = previous
+	}
+})
+
+test('Ball preparation keeps three files spread instead of stacking at the pickup', () => {
+	const goals = []
+	for (const file of [-3, 0, 3]) {
+		const f = fixture(),
+			brain = createBot({ id: 'bot', team: 'A', file }, 1)
+		f.h.body.position = { x: -20, z: file }
+		f.perceived.heroes[0].pos = { ...f.h.body.position }
+		f.sim.ball.state = { state: 'warning', spawnAt: 1300, pos: { x: 0, z: 0 } }
+		const frame = brain.frame(f.sim, f.perceived)
+		expect(frame.order).toEqual({ x: -tune.bots.shadowRange, z: file })
+		goals.push(frame.order)
+	}
+	expect(Math.abs(goals[0].z - goals[2].z)).toBeGreaterThan(2 * (tune.rain.radius + 0.45))
+})
+
+test('a nearby enemy takes priority over the Ball countdown', () => {
+	const f = fixture(),
+		enemy = opponent(f)
+	enemy.pos = { x: 3, z: 0 }
+	f.sim.heroes[1].body.position = { ...enemy.pos }
+	f.h.cd = [100, 100, 100, 0, 0]
+	f.sim.ball.state = { state: 'warning', spawnAt: 1300, pos: { x: 0, z: 0 } }
+	const frame = f.think()
+	expect(f.brain.state).toBe('fight')
+	expect(frame.order).toEqual(enemy.pos)
+	expect(frame.pressed).toEqual([])
+})
+
+test('a four-metre Ball throw goes through hard-bot perception lag and cannot earn an instant Vault', () => {
+	const f = fixture(),
+		previous = tune.bots.hard.dodge
+	f.h.cd = [100, 0, 100, 0, 0]
+	f.sim.lane = { minions: [], structures: [], globes: [], vulnerable: () => true }
+	f.sim.shots = []
+	f.sim.zones = []
+	const bots = createBots([{ id: 'bot', team: 'A', difficulty: 'hard' }], 1)
+	const frames = [],
+		seen = [],
+		original = bots.brains[0].frame
+	bots.brains[0].frame = (sim, perceived) => {
+		seen.push({ tick: sim.tick, perceived: perceived.tick, ball: perceived.ball })
+		return original(sim, perceived)
+	}
+	const intents = { feed: (_, frame) => frames.push({ tick: f.sim.tick, frame }) }
+	tune.bots.hard.dodge = 1
+	try {
+		// Align release with a think tick so the old live read would have time to Vault.
+		for (; f.sim.tick < 1024; f.sim.tick++) bots.step(f.sim, intents)
+		for (; f.sim.tick < 1060; f.sim.tick++) {
+			const travelled = (f.sim.tick - 1024) * STEP * tune.ball.speed
+			f.sim.ball.state =
+				travelled < 4
+					? {
+							id: 1,
+							state: 'flying',
+							team: 'B',
+							shot: {
+								x: -4 + travelled,
+								z: 0,
+								dx: 1,
+								dz: 0,
+								speed: tune.ball.speed,
+								radius: tune.ball.radius,
+								range: tune.ball.range,
+								travelled,
+							},
+						}
+					: null
+			bots.step(f.sim, intents)
+		}
+		const first = seen.find((s) => s.ball)
+		expect(first.tick - 1024).toBe(Math.round(tune.bots.hard.reaction / STEP))
+		expect(first.ball.shot.x).toBe(-4)
+		expect(seen.find((s) => s.tick === 1042).ball).not.toBeNull()
+		expect(frames.some(({ frame }) => frame.pressed.some((e) => e.action === 'slot2'))).toBe(false)
+	} finally {
+		tune.bots.hard.dodge = previous
+	}
+})
+
+function protectedPoke() {
+	const f = fixture(),
+		enemy = opponent(f, 1400)
+	f.h.body.position = { x: 5.5, z: 0 }
+	f.perceived.heroes[0].pos = { ...f.h.body.position }
+	enemy.pos = { x: 16, z: 0 }
+	f.sim.heroes[1].body.position = { ...enemy.pos }
+	f.perceived.structures = [
+		{
+			id: 'tower-B',
+			team: 'B',
+			kind: 'tower',
+			hp: 2400,
+			maxHp: 2400,
+			pos: { x: 18, z: 0 },
+			radius: 1.2,
+			vulnerable: true,
+		},
+	]
+	return f
+}
+
+test('Q pokes a tower-protected hero from outside the tower even when the basic attack spot is unsafe', () => {
+	const f = protectedPoke(),
+		previous = tune.bots.normal.jitter
+	f.h.cd = [0, 100, 100, 0, 0]
+	tune.bots.normal.jitter = 0
+	try {
+		let frame
+		for (let i = 0; i < 4; i++) frame = f.think()
+		expect(frame.pressed.map((e) => e.action)).toEqual(['slot1'])
+		expect(frame.order).toBeNull()
+		expect(f.h.body.position.x).toBeLessThan(18 - tune.tower.range - f.h.body.radius)
+	} finally {
+		tune.bots.normal.jitter = previous
+	}
+})
+
+test('Rain has its own safe casting position rather than inheriting the unsafe basic attack spot', () => {
+	const f = protectedPoke()
+	f.h.body.position.x = 6.5
+	f.perceived.heroes[0].pos = { ...f.h.body.position }
+	f.h.cd = [100, 100, 0, 0, 0]
+	const frame = f.think()
+	expect(frame.pressed.map((e) => e.action)).toEqual(['slot3'])
+	expect(frame.order).toBeNull()
+})
+
+test('a bot with no legal attack backs out of protected Q range instead of soaking free poke', () => {
+	const f = protectedPoke()
+	f.h.cd = [100, 100, 100, 0, 0]
+	const frame = f.think()
+	expect(frame.pressed).toEqual([])
+	expect(f.brain.state).toBe('backoff')
+	expect(Math.hypot(frame.order.x - 16, frame.order.z)).toBeGreaterThan(tune.loose.range)
+})
+
+test('backswing stutter keeps the current combat file instead of snapping to the lane file', () => {
+	const f = fixture(),
+		enemy = opponent(f)
+	f.h.body.position = { x: 0, z: 4 }
+	f.perceived.heroes[0].pos = { ...f.h.body.position }
+	enemy.pos = { x: 3, z: 4 }
+	f.sim.heroes[1].body.position = { ...enemy.pos }
+	f.h.cd = [100, 100, 100, 0, 0]
+	f.h.attack = { phase: 'backswing' }
+	expect(f.think().order).toEqual({ x: -tune.bots.stutter, z: 4 })
+})
+
+for (const health of [0.85, 1])
+	test(`outnumbered at ${health * 100}% HP retreats only until support returns`, () => {
+		const f = fixture(),
+			enemy = opponent(f, 1400)
+		f.h.hp = f.h.maxHp * health
+		f.perceived.heroes[0].hp = f.h.hp
+		f.perceived.heroes.push({ ...enemy, id: 'enemy-2' }, { ...enemy, id: 'enemy-3' })
+		expect(f.think().order).toEqual(f.h.spawn)
+		expect(f.brain.retreating).toBe(true)
+		f.perceived.heroes = f.perceived.heroes.slice(0, 1)
+		f.think()
+		expect(f.brain.retreating).toBe(false)
+		expect(f.brain.state).not.toBe('retreat')
+	})

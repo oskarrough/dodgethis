@@ -76,6 +76,7 @@ function view(sim, births) {
 				if (!births.has(s)) births.set(s, sim.tick)
 				return { ...s, releaseTick: births.get(s) }
 			}),
+		ball: sim.ball.state?.state === 'flying' ? structuredClone(sim.ball.state) : null,
 		zones: sim.zones.map((z) => ({ ...z })),
 		globes: sim.lane.globes.map((g) => ({ ...g, pos: { ...g.pos } })),
 	}
@@ -108,6 +109,7 @@ export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed) {
 		Math.sqrt(-2 * Math.log(Math.max(Number.EPSILON, random()))) * Math.cos(2 * Math.PI * random())
 	const knobs = () => tune.bots[difficulty] ?? tune.bots.normal
 	let retreat = false,
+		healing = false,
 		state = 'lane',
 		holdUntil = 0,
 		targetId = null,
@@ -134,6 +136,7 @@ export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed) {
 			const h = sim.heroes.find((u) => u.id === id)
 			if (!h || h.dead) {
 				retreat = false
+				healing = false
 				dodgeGoal = null
 				targetId = null
 				state = 'lane'
@@ -208,9 +211,9 @@ export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed) {
 							h.maxHp * b.retreatHp
 					)
 				})
-			if (h.hp < h.maxHp * b.retreatHp || advantage < -k.aggression - b.retreatDisadvantage)
-				retreat = true
-			if (h.hp >= h.maxHp * b.recoverHp) retreat = false
+			if (h.hp < h.maxHp * b.retreatHp) healing = true
+			if (h.hp >= h.maxHp * b.recoverHp) healing = false
+			retreat = healing || advantage < -k.aggression - b.retreatDisadvantage
 
 			// One judgement per windup/shot, retained until its threat is gone.
 			const threats = []
@@ -238,11 +241,10 @@ export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed) {
 					delay: 0,
 				})
 			const ball = sim.ball.state
-			if (ball?.state === 'flying' && ball.team !== team) {
-				const s = ball.shot
+			if (perceived.ball?.state === 'flying' && perceived.ball.team !== team) {
+				const s = perceived.ball.shot
 				threats.push({
-					key: `ball:${ball.id}`,
-					live: true,
+					key: `ball:${perceived.ball.id}`,
 					from: { x: s.x, z: s.z },
 					dir: { x: s.dx, z: s.dz },
 					range: s.range - s.travelled,
@@ -294,9 +296,11 @@ export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed) {
 						continue
 					impact = threat.delay + distance(p, threat.from) / threat.speed
 					const clearance = h.body.radius + threat.radius + b.dodgeClearance
-					const candidates = [-1, 1].map((sign) => ({
-						x: p.x + sign * threat.dir.z * clearance,
-						z: p.z - sign * threat.dir.x * clearance,
+					const offset = (p.x - threat.from.x) * threat.dir.z - (p.z - threat.from.z) * threat.dir.x
+					const nearSide = Math.sign(offset) || (random() < 0.5 ? -1 : 1)
+					const candidates = [nearSide, -nearSide].map((sign) => ({
+						x: p.x + threat.dir.z * (sign * clearance - offset),
+						z: p.z - threat.dir.x * (sign * clearance - offset),
 					}))
 					goal = candidates.find(
 						(at) =>
@@ -304,7 +308,7 @@ export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed) {
 							segmentClear(p, at, h.body.radius + tune.orders.clearance, sim.obstacles),
 					)
 				}
-				impact -= threat.live ? 0 : (now - perceived.tick) * STEP
+				impact -= (now - perceived.tick) * STEP
 				if (impact <= 0) continue
 				if (!judged.has(threat.key))
 					judged.set(threat.key, { try: random() < k.dodge, at: now + ticks(k.dodgeReaction) })
@@ -417,9 +421,15 @@ export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed) {
 				}
 				return frame
 			}
-			const rivals = near(enemies, p, b.fightRange).sort(
-				(a, c) => effective(a) - effective(c) || a.id.localeCompare(c.id),
-			)
+			const rivals = near(
+				enemies,
+				p,
+				Math.max(
+					b.fightRange,
+					h.definition.abilities.slot1?.stats.range ?? 0,
+					h.definition.abilities.slot3?.stats.range ?? 0,
+				),
+			).sort((a, c) => effective(a) - effective(c) || a.id.localeCompare(c.id))
 			let target =
 				(ball?.state === 'carried' && ball.team !== team
 					? rivals.find((u) => u.id === ball.carrier)
@@ -433,7 +443,11 @@ export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed) {
 			}
 			const preparing = ball?.state === 'warning' && ball.spawnAt - now <= ticks(b.ballPrepare)
 			const objective = ball && ['loose', 'channel'].includes(ball.state)
-			if ((preparing || objective) && h.hp > h.maxHp * b.ballHp) {
+			if (
+				(preparing || objective) &&
+				h.hp > h.maxHp * b.ballHp &&
+				(!preparing || !target || distance(p, target.pos) > b.fightRange)
+			) {
 				const allies = near(own, ball.pos, b.supportRange),
 					foes = near(enemies, ball.pos, b.supportRange)
 				const contest =
@@ -453,7 +467,7 @@ export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed) {
 					state = 'ball'
 					if (objective && distance(p, ball.pos) <= tune.ball.pickup) {
 						if (h.order || h.attack || h.cast) frame.pressed = [{ action: 'stop', at: null }]
-					} else move(ball.pos)
+					} else move(preparing ? { x: ball.pos.x + side * b.shadowRange, z: file } : ball.pos)
 					return frame
 				}
 				if (!target) {
@@ -508,7 +522,7 @@ export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed) {
 				attack(focus)
 				return frame
 			}
-			if (target && advantage >= -k.aggression && safe(attackSpot, [target])) {
+			if (target && advantage >= -k.aggression) {
 				state = 'fight'
 				holdUntil = now + ticks(b.hold)
 				const rain = h.definition.abilities.slot3?.stats
@@ -597,8 +611,20 @@ export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed) {
 					)
 					if (safe(landing, [target]) && cast('slot2', landing)) return frame
 				}
-				if (h.attack?.phase === 'backswing') move({ x: p.x + side * b.stutter, z: file })
-				else attack(target)
+				if (safe(attackSpot, [target])) {
+					if (h.attack?.phase === 'backswing') move({ x: p.x + side * b.stutter, z: p.z })
+					else attack(target)
+					return frame
+				}
+			}
+			if (target && !safe(attackSpot, [target])) {
+				state = 'backoff'
+				const reach = (h.definition.abilities.slot1?.stats.range ?? b.fightRange) + b.stutter
+				const d = targetDistance || 1
+				move({
+					x: target.pos.x + ((p.x - target.pos.x || side) / d) * reach,
+					z: target.pos.z + ((p.z - target.pos.z) / d) * reach,
+				})
 				return frame
 			}
 			if (ball?.state === 'carried' && ball.team === team) {
