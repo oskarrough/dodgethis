@@ -12,9 +12,22 @@ import { createSkillsView } from './skills-view.js'
 import { createHud } from './hud.js'
 import { createPips } from './pips.js'
 import { createSounds } from './sounds.js'
+import { createBallView } from './ball-view.js'
 import { createFeedback } from './feedback.js'
 
 const FACTS = [
+	'ballWarn',
+	'ballSpawn',
+	'ballChannel',
+	'ballInterrupted',
+	'ballPickup',
+	'ballWindup',
+	'ballThrow',
+	'ballHit',
+	'ballBounce',
+	'ballDrop',
+	'ballPop',
+	'ballDenied',
 	'order',
 	'cast',
 	'projectile',
@@ -75,6 +88,7 @@ export default function moba(app) {
 				present: run.present,
 				lane: true,
 			})
+			const ballView = createBallView(scene)
 			const hero = sim.heroes[0]
 			const feedback = createFeedback({
 				juice,
@@ -105,6 +119,13 @@ export default function moba(app) {
 
 			run.system('simulate', (dt) => sim.step(dt))
 			run.on('present', feedback.present)
+			run.on('present', ballView.present)
+			const ballFacts = []
+			run.on('present', (fact) => {
+				if (!fact.type.startsWith('ball')) return
+				ballFacts.push(fact)
+				if (ballFacts.length > tune.proof.trace) ballFacts.shift()
+			})
 
 			const locate = (id) => {
 				const unit = sim.find(id)
@@ -116,9 +137,15 @@ export default function moba(app) {
 				const frame = app.intents.get(local)
 				const p = hero.body.mesh.position
 				audio.setAudioListener(p)
-				if (!hero.dead && hero.body.animate(step, hero.cast || hero.attack ? 1 : 0)) sfx.step(p)
-				for (const d of [...sim.heroes.slice(1), ...sim.dummies]) if (!d.dead) d.body.animate(step)
-				const target = !onPad() && frame.aim ? sim.pick(hero.team, frame.aim) : null
+				if (
+					!hero.dead &&
+					hero.body.animate(step, hero.cast || hero.attack || hero.ballThrow ? 1 : 0)
+				)
+					sfx.step(p)
+				for (const d of [...sim.heroes.slice(1), ...sim.dummies])
+					if (!d.dead) d.body.animate(step, d.ballThrow ? 1 : 0)
+				const target =
+					!sim.ball.carrying(hero) && !onPad() && frame.aim ? sim.pick(hero.team, frame.aim) : null
 				const hovered = target && locate(target.id)
 				cursor.update({
 					enemy: !!target,
@@ -126,12 +153,16 @@ export default function moba(app) {
 					pad: onPad(),
 					paused: frozen,
 				})
+				ballView.update(sim, frozen ? 0 : alpha, local, frame.aim)
 				sim.laneView.update(sim.lane, sim.heroes, frozen ? 0 : alpha, locate, step)
 				const gone = view.update(step, {
 					live: new Set(sim.shots.map((s) => s.id)),
 					hero: p,
 					aim: hero.cast?.slot === 'slot1' ? hero.cast.target : frame.aim,
-					held: !hero.dead && (frame.held.slot1 || hero.cast?.slot === 'slot1'),
+					held:
+						!hero.dead &&
+						!sim.ball.carrying(hero) &&
+						(frame.held.slot1 || hero.cast?.slot === 'slot1'),
 					units: [...sim.heroes, ...sim.lane.minions, ...sim.lane.structures],
 					hovered,
 					locate,
@@ -139,7 +170,7 @@ export default function moba(app) {
 				skillsView.update(step, {
 					hero: p,
 					aim: frame.aim,
-					held: hero.dead ? {} : frame.held,
+					held: hero.dead || sim.ball.carrying(hero) ? {} : frame.held,
 					zones: sim.zones,
 					casters: [...sim.heroes, ...sim.dummies].filter((unit) => unit.team !== hero.team),
 					alpha: frozen ? 0 : alpha,
@@ -161,6 +192,8 @@ export default function moba(app) {
 					totals: [tune.loose.cooldown, tune.vault.cooldown, tune.rain.cooldown],
 					elapsed: sim.tick * app.clock.step,
 					teams: sim.lane.teams,
+					carryingBall: sim.ball.carrying(hero),
+					nextBall: (sim.ball.nextBall - sim.tick - (frozen ? 0 : alpha)) * app.clock.step,
 					nextWave: (sim.lane.nextWave - sim.tick - (frozen ? 0 : alpha)) * app.clock.step,
 					winner: sim.lane.match.winner,
 					device: input.activeDevice(),
@@ -231,6 +264,22 @@ export default function moba(app) {
 				f.add(t, 'takedown', 0, 1000, 1)
 				f.add(t, 'victimLevel', 0, 100, 1)
 			})
+			run.debug.tune('Ball', tune.ball, (f, t) => {
+				for (const key of ['carrySpeed', 'structureDamage']) f.add(t, key, 0, 1, 0.01)
+				f.add(t, 'first', 30, 600, app.clock.step).name('first (applies on restart)')
+				for (const key of ['interval', 'lateInterval'])
+					f.add(t, key, 90, 600, app.clock.step).name(`${key} (next scheduling)`)
+				f.add(t, 'warning', app.clock.step, 30, app.clock.step).name('warning (next warning)')
+				f.add(t, 'life', app.clock.step, 45, app.clock.step).name('life (next spawn)')
+				for (const key of ['channel', 'stun', 'silence', 'lock'])
+					f.add(t, key, app.clock.step, 30, app.clock.step).name(`${key} (next action)`)
+				f.add(t, 'tell', 0.3, 1, app.clock.step).name('tell (next throw)')
+				f.add(t, 'speed', 1, 40, 0.1).name('speed (next throw)')
+				f.add(t, 'range', 1, 12, 0.1).name('range (next throw)')
+				f.add(t, 'radius', 0.1, 1, 0.05).name('radius (next throw)')
+				f.add(t, 'pickup', 0.1, 2, 0.1)
+				f.add(t, 'damage', 0, 1000, 10)
+			})
 			run.debug.tune('globes', tune.globes, (f, t) => {
 				f.add(t, 'heal', 0, 1, 0.01)
 				f.add(t, 'life', app.clock.step, 60, app.clock.step).name('life (next drop)')
@@ -247,9 +296,6 @@ export default function moba(app) {
 				f.add(t, 'recover', 0, 1, 0.01)
 				f.add(t, 'file', -3, 3, 0.1)
 				f.add(t, 'hold', 1, 5, 0.1)
-			})
-			run.debug.tune('match', tune.match, (f, t) => {
-				f.add(t, 'structureTeamSize', 1, 3, 1).name('pre-Ball HP team size (applies on restart)')
 			})
 			run.debug.tune('waves', tune.waves, (f, t) => {
 				f.add(t, 'first', app.clock.step, 30, app.clock.step).name(
@@ -380,6 +426,7 @@ export default function moba(app) {
 				moba: {
 					sim,
 					proof: { ...tune.proof, step: app.clock.step },
+					ballFacts,
 					snapshot: () => sim.snapshot(),
 					focus: (point) => follow.focus(point),
 					// Proof uses the real app loop: intents, fixed simulation, smoothing and feedback.
@@ -411,6 +458,7 @@ export default function moba(app) {
 			run.signal.addEventListener('abort', () => {
 				cursor.dispose()
 				feedback.reset()
+				ballView.dispose()
 				view.dispose()
 				skillsView.dispose()
 				hud.dispose()

@@ -31,25 +31,20 @@ export function createLane({
 	const teams = { A: { xp: 0, level: 1 }, B: { xp: 0, level: 1 } }
 	const globes = []
 	const match = { winner: null, endedTick: null, phase: 'early' }
-	const hpFor = (kind, team) =>
-		tune[kind].hp *
-		Math.min(
-			1,
-			Math.max(1, heroes.filter((h) => h.team === team).length) / tune.match.structureTeamSize,
-		)
 	const structures = ['tower', 'fort', 'core'].flatMap((kind) =>
 		['A', 'B'].map((team) => ({
 			id: `${kind}-${team}`,
 			team,
 			kind,
 			structure: true,
-			hp: hpFor(kind, team),
-			maxHp: hpFor(kind, team),
+			hp: tune[kind].hp,
+			maxHp: tune[kind].hp,
 			dead: false,
 			body: makeBody(team === 'A' ? -tune[kind].x : tune[kind].x, 0, team, kind),
 			target: null,
 			forced: null,
 			aggroUntil: 0,
+			silentUntil: 0,
 			attackTick: 0,
 			attack: null,
 		})),
@@ -323,6 +318,10 @@ export function createLane({
 			}
 			unit.target = target?.id ?? null
 			if (!tower && !target && !unit.returning) unit.aggroOrigin = null
+			if (tower && t < unit.silentUntil) {
+				unit.attack = null
+				continue
+			}
 			if (unit.attack) {
 				if (!target || !inReach(unit, target, stats.range)) unit.attack = null
 				else if (--unit.attack.left <= 0) {

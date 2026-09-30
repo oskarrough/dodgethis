@@ -44,6 +44,61 @@ export function createFeedback({ juice, sfx, camera, input, view, skillsView, hu
 		const mine = fact.hero === local || fact.source === local
 		const onMe = fact.target === local
 		switch (fact.type) {
+			case 'ballWarn':
+				hud.banner?.(`Ball at mid in ${Math.ceil(fact.seconds)} s`)
+				cue('ballWarn', fact)
+				return
+			case 'ballSpawn':
+				hud.banner?.('Ball is live! Stand on it to pick up')
+				juice.burst(fact.point, { x: 0, y: 1, z: 0 }, tune.juice.ballBurst)
+				cue('ballSpawn', fact)
+				return
+			case 'ballChannel':
+				cue('ballChannel', fact, mine ? 1 : 0.4)
+				return
+			case 'ballPickup':
+				hud.banner?.(`Team ${fact.team} has the Ball!`)
+				unitOf(fact.hero)?.body.squash(tune.ballView.pickupSquash)
+				cue('ballPickup', fact)
+				return
+			case 'ballWindup':
+				unitOf(fact.hero)?.body.squash(tune.ballView.throwSquash)
+				cue('ballWindup', fact)
+				return
+			case 'ballThrow':
+				unitOf(fact.hero)?.body.kick(tune.ballView.radius)
+				cue('ballThrow', fact)
+				return
+			case 'ballHit':
+				juice.burst(
+					fact.point,
+					{ x: 0, y: 1, z: 0 },
+					fact.kind === 'structure' ? tune.juice.ballConfetti : tune.juice.ballBurst,
+				)
+				if (fact.kind === 'structure')
+					hud.banner?.(`Ball hit! Guns silenced for ${tune.ball.silence} s`)
+				cue('ballHit', fact)
+				return
+			case 'ballBounce':
+				if (fact.reason === 'shielded') sim.laneView?.shield(unitOf(fact.target)?.body)
+				view.ping('move', fact.point)
+				cue('ballBounce', fact)
+				return
+			case 'ballDrop':
+				juice.burst(fact.point, { x: 0, y: 1, z: 0 }, tune.juice.ballDrop)
+				cue('ballDrop', fact)
+				return
+			case 'ballPop':
+				if (fact.reason === 'spent') return // structure hit owns the confetti and its cue
+				juice.burst(fact.point, { x: 0, y: 1, z: 0 }, tune.juice.ballBurst)
+				cue('ballPop', fact)
+				return
+			case 'ballInterrupted':
+			case 'ballDenied':
+				view.ping('move', fact.point)
+				if (mine) hud.deny('slot1')
+				cue(fact.type, fact, mine ? 1 : 0.4)
+				return
 			case 'order': {
 				if (fact.hero !== local) return
 				const attack = fact.kind === 'attack'
@@ -161,7 +216,7 @@ export function createFeedback({ juice, sfx, camera, input, view, skillsView, hu
 					unit.body.squash(0.28)
 				}
 				juice.burst(fact.point, fact.direction, { count: 6, speed: 1.4, life: 0.3, size: 0.07 })
-				if (fact.slot !== 'slot3')
+				if (fact.slot !== 'slot3' && fact.slot !== 'ball')
 					cue(
 						['tower', 'fort', 'core', 'melee', 'ranged', 'wizard'].includes(fact.slot)
 							? fact.slot

@@ -46,6 +46,42 @@ export function createScriptedHero(id) {
 					z: tune.scripted.file,
 				}
 		const frame = neutralFrame()
+		const ball = sim.ball?.state
+		if (sim.ball?.carrying(h)) {
+			const structure = enemies.find((u) => u.structure)
+			if (structure) {
+				const at = structure.body.position
+				const distance = Math.hypot(at.x - p.x, at.z - p.z)
+				if (
+					distance <=
+					tune.ball.range + tune.ball.radius + structure.body.radius - tune.orders.arrival
+				) {
+					if (!h.ballThrow) frame.pressed = [{ action: 'primary', at: { x: at.x, z: at.z } }]
+				} else if (!h.order || h.order.kind !== 'move') {
+					const reach =
+						tune.ball.range + tune.ball.radius + structure.body.radius - 2 * tune.orders.arrival
+					frame.order = {
+						x: at.x + ((p.x - at.x) / distance) * reach,
+						z: at.z + ((p.z - at.z) / distance) * reach,
+					}
+				}
+				intents.feed(id, frame)
+				return
+			}
+		}
+		if (!retreating && ball && ['loose', 'channel'].includes(ball.state)) {
+			const distance = Math.hypot(ball.pos.x - p.x, ball.pos.z - p.z)
+			if (distance <= tune.ball.pickup) {
+				if (h.order || h.attack || h.cast) frame.pressed = [{ action: 'stop' }]
+			} else if (
+				!h.order ||
+				h.order.kind !== 'move' ||
+				Math.hypot(h.order.goal.x - ball.pos.x, h.order.goal.z - ball.pos.z) > tune.orders.arrival
+			)
+				frame.order = { ...ball.pos }
+			intents.feed(id, frame)
+			return
+		}
 		if (
 			!retreating &&
 			target &&

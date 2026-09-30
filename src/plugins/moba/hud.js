@@ -60,6 +60,7 @@ export function createHud() {
 	const help = root.querySelector('.moba-help')
 	const health = root.querySelector('.moba-health')
 	let shownDevice = ''
+	let shownHelp = ''
 	let shownHealth = ''
 
 	return {
@@ -88,13 +89,15 @@ export function createHud() {
 				elapsed,
 				teams,
 				nextWave,
+				nextBall,
+				carryingBall,
 				winner,
 			},
 		) {
 			if (teams) {
 				const seconds = Math.floor(elapsed)
 				const clock = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`
-				const status = `A level ${teams.A.level} · ${clock} · B level ${teams.B.level} · wave ${Math.max(0, Math.ceil(nextWave))}s`
+				const status = `A level ${teams.A.level} · ${clock} · B level ${teams.B.level} · wave ${Math.max(0, Math.ceil(nextWave))}s${nextBall === undefined ? '' : ` · Ball ${Math.max(0, Math.ceil(nextBall))}s`}`
 				if (status !== shownScore) score.textContent = shownScore = status
 			}
 			if (winner) {
@@ -130,8 +133,11 @@ export function createHud() {
 				shownDevice = device
 				for (const [i, s] of slots.entries())
 					s.key.textContent = (device === 'gamepad' ? ['RB', 'RT', 'LB'] : ['Q', 'W', 'E'])[i]
-				help.textContent = HELP[device] ?? HELP.keyboard
 			}
+			const controls = carryingBall
+				? `Ball: ${tune.ball.range} m throw · ${tune.ball.silence} s silence · ${device === 'gamepad' ? 'A or any shoulder release' : 'Q / W / E / primary'} throws toward aim · ${tune.ball.carrySpeed * 100}% speed`
+				: `${HELP[device] ?? HELP.keyboard} · Ball: stand still ${tune.ball.channel} s to pick up`
+			if (controls !== shownHelp) help.textContent = shownHelp = controls
 			paused.hidden = !pausedNow
 		},
 		dispose() {

@@ -1,0 +1,196 @@
+import * as THREE from 'three'
+import { makeStyleMaterial } from '../../core/stylepass.js'
+import { STEP } from '../../core/app.js'
+import { tune } from './tune.js'
+import { clampMap } from './obstacles.js'
+
+// Opaque print geometry; tick interpolation owns every fill and projectile position.
+export function createBallView(scene) {
+	const v = tune.ballView
+	const owned = []
+	const root = new THREE.Group()
+	scene.add(root)
+	const material = (role) => {
+		const m = makeStyleMaterial(role)
+		owned.push(m)
+		return m
+	}
+	const cream = material('cream'),
+		ink = material('ink'),
+		accent = material('ammo')
+	const teams = { A: material('teamA'), B: material('teamB') }
+	function mesh(geometry, mat, parent = root) {
+		owned.push(geometry)
+		const m = new THREE.Mesh(geometry, mat)
+		parent.add(m)
+		return m
+	}
+	function ring(radius, y, mat) {
+		const m = mesh(new THREE.RingGeometry(radius - v.ringWidth, radius, v.segments), mat)
+		m.rotation.x = -Math.PI / 2
+		m.position.y = y
+		return m
+	}
+	const warning = ring(tune.map.plazaRadius, v.ringY, ink)
+	const fill = ring(tune.map.plazaRadius - v.ringBorder, v.fillY, accent)
+	const channel = ring(v.channelRadius, v.fillY, accent)
+	const ball = new THREE.Group()
+	root.add(ball)
+	const sphere = mesh(new THREE.SphereGeometry(v.radius, v.segments, v.segments / 2), cream, ball)
+	for (const rotation of [0, Math.PI / 2]) {
+		const seam = mesh(new THREE.TorusGeometry(v.radius, v.seamWidth, 8, v.segments), ink, ball)
+		seam.rotation.y = rotation
+	}
+	const shadow = mesh(new THREE.CircleGeometry(v.radius, v.segments), ink)
+	shadow.rotation.x = -Math.PI / 2
+	shadow.scale.y = v.shadowLength
+	shadow.position.y = v.shadowY
+	const aim = mesh(new THREE.PlaneGeometry(1, v.aimWidth), accent)
+	aim.rotation.x = -Math.PI / 2
+	aim.position.y = v.aimFillY
+	const aimOutline = mesh(new THREE.PlaneGeometry(1, v.ringWidth), ink)
+	aimOutline.rotation.x = -Math.PI / 2
+	aimOutline.position.y = v.aimY
+	const gags = new Map()
+	const confetti = new THREE.Group()
+	root.add(confetti)
+	const chips = Array.from({ length: tune.ballConfetti.count }, (_, i) => {
+		const chip = mesh(
+			new THREE.BoxGeometry(tune.ballConfetti.size, tune.ballConfetti.size, v.seamWidth),
+			[cream, teams.A, teams.B][i % 3],
+			confetti,
+		)
+		return chip
+	})
+	let burst = null
+	let previous = null
+	let current = null
+	let lastTick = -1
+	function sweep(m, fraction) {
+		const progress = Math.max(0, Math.min(1, fraction))
+		const positions = m.geometry.attributes.position
+		const { innerRadius, outerRadius } = m.geometry.parameters
+		for (let i = 0; i < positions.count; i++) {
+			const angle = Math.min((i % (v.segments + 1)) / v.segments, progress) * Math.PI * 2
+			const radius = i <= v.segments ? innerRadius : outerRadius
+			positions.setXY(i, Math.cos(angle) * radius, Math.sin(angle) * radius)
+		}
+		positions.needsUpdate = true
+	}
+	return {
+		root,
+		present(fact) {
+			if (fact.type === 'ballHit' && fact.kind === 'structure')
+				burst = { point: fact.point, tick: fact.tick }
+		},
+		update(sim, alpha, local, target) {
+			const state = sim.ball.state
+			if (sim.tick !== lastTick) {
+				previous = current
+				current = state ? { id: state.id, pos: { ...state.pos }, state: state.state } : null
+				lastTick = sim.tick
+			}
+			warning.visible = fill.visible = state?.state === 'warning'
+			ball.visible = shadow.visible = !!state && state.state !== 'warning'
+			channel.visible = state?.state === 'channel'
+			aim.visible = aimOutline.visible = false
+			if (state) {
+				if (state.state === 'warning')
+					sweep(fill, (sim.tick + alpha - state.warnAt) / Math.max(1, state.spawnAt - state.warnAt))
+				const carrier = sim.heroes.find((h) => h.id === state.carrier)
+				const from =
+					previous?.id === state.id && previous.state === state.state ? previous.pos : state.pos
+				const x = carrier
+					? carrier.body.mesh.position.x
+					: THREE.MathUtils.lerp(from.x, state.pos.x, alpha)
+				const z = carrier
+					? carrier.body.mesh.position.z
+					: THREE.MathUtils.lerp(from.z, state.pos.z, alpha)
+				ball.position.set(x, carrier ? v.carryHeight : v.height, z)
+				sphere.material = carrier ? teams[carrier.team] : cream
+				shadow.position.x = x
+				shadow.position.z = z
+				channel.position.x = x
+				channel.position.z = z
+				if (state.channel)
+					sweep(
+						channel,
+						(sim.tick + alpha - state.channel.startTick) /
+							Math.max(1, state.channel.endTick - state.channel.startTick),
+					)
+				const throwing = sim.heroes.find((h) => h.ballThrow)
+				const aimer = throwing ?? (carrier?.id === local ? carrier : null)
+				if (aimer) {
+					const p = aimer.body.mesh.position
+					const dir =
+						throwing?.ballThrow.dir ?? (target ? { x: target.x - p.x, z: target.z - p.z } : null)
+					if (dir) {
+						const length = Math.hypot(dir.x, dir.z) || 1
+						const progress = throwing
+							? (sim.tick + alpha - throwing.ballThrow.startTick) /
+								Math.max(1, throwing.ballThrow.endTick - throwing.ballThrow.startTick)
+							: 1
+						const fullEnd = clampMap({
+							x: p.x + (dir.x / length) * tune.ball.range,
+							z: p.z + (dir.z / length) * tune.ball.range,
+						})
+						aimOutline.visible = true
+						aimOutline.scale.x = Math.hypot(fullEnd.x - p.x, fullEnd.z - p.z)
+						aimOutline.rotation.z = -Math.atan2(fullEnd.z - p.z, fullEnd.x - p.x)
+						aimOutline.position.set((p.x + fullEnd.x) / 2, v.aimY, (p.z + fullEnd.z) / 2)
+						const reach = tune.ball.range * Math.max(0, Math.min(1, progress))
+						const end = clampMap({
+							x: p.x + (dir.x / length) * reach,
+							z: p.z + (dir.z / length) * reach,
+						})
+						aim.visible = true
+						aim.scale.x = Math.hypot(end.x - p.x, end.z - p.z)
+						aim.rotation.z = -Math.atan2(end.z - p.z, end.x - p.x)
+						aim.position.set((p.x + end.x) / 2, v.aimFillY, (p.z + end.z) / 2)
+					}
+				}
+			}
+			const age = burst ? (sim.tick + alpha - burst.tick) * STEP : Infinity
+			confetti.visible = age >= 0 && age < tune.ballConfetti.life
+			if (confetti.visible) {
+				const c = tune.ballConfetti
+				confetti.position.set(burst.point.x, burst.point.y, burst.point.z)
+				for (const [i, chip] of chips.entries()) {
+					const angle = (i * Math.PI * 2) / chips.length
+					const speed = c.speed * (((i % 3) + 1) / 3)
+					chip.position.set(
+						Math.cos(angle) * speed * age,
+						c.lift * age - (c.gravity * age * age) / 2,
+						Math.sin(angle) * speed * age,
+					)
+					chip.rotation.set(age * c.spin, angle + age * c.spin, angle)
+				}
+			}
+			for (const u of sim.lane.structures) {
+				if (!gags.has(u.id)) {
+					const group = new THREE.Group()
+					root.add(group)
+					for (const sign of [-1, 1]) {
+						const tape = mesh(
+							new THREE.BoxGeometry(v.gagWidth, v.gagHeight, v.gagHeight),
+							cream,
+							group,
+						)
+						tape.rotation.z = sign * v.gagAngle
+					}
+					group.position.set(u.body.position.x, tune.laneView[`${u.kind}Height`], u.body.position.z)
+					gags.set(u.id, group)
+				}
+				const gag = gags.get(u.id)
+				gag.visible = !u.dead && sim.tick + alpha < u.silentUntil
+				gag.scale.setScalar(
+					Math.max(0, Math.min(1, (u.silentUntil - sim.tick - alpha) / (tune.ball.silence / STEP))),
+				)
+			}
+		},
+		dispose() {
+			root.removeFromParent()
+			for (const item of owned) item.dispose()
+		},
+	}
+}

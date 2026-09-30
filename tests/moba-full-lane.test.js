@@ -74,8 +74,8 @@ afterEach(() => {
 	world.free()
 })
 
-test('pre-Ball structure HP scales to defending team size, not attacking team size', () => {
-	for (const u of sim.lane.structures) expect(u.maxHp).toBeCloseTo(tune[u.kind].hp / 3)
+test('Ball slice restores full structure HP regardless of defending team size', () => {
+	for (const u of sim.lane.structures) expect(u.maxHp).toBeCloseTo(tune[u.kind].hp)
 	sim.dispose()
 	unbuild()
 	world.free()
@@ -89,8 +89,7 @@ test('pre-Ball structure HP scales to defending team size, not attacking team si
 			{ id: 'b2', team: 'B' },
 		],
 	)
-	for (const u of sim.lane.structures)
-		expect(u.maxHp).toBeCloseTo(tune[u.kind].hp * (u.team === 'A' ? 1 : 2 / 3))
+	for (const u of sim.lane.structures) expect(u.maxHp).toBeCloseTo(tune[u.kind].hp)
 })
 
 test('both invulnerability chains shield all damage and unlock one link at a time; rubble loses collision', () => {

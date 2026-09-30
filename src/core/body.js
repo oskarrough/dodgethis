@@ -138,6 +138,11 @@ export function createBody(
 		jump,
 		consumeLanding,
 		dash,
+		cancelDash() {
+			dashT = 0
+			vx = 0
+			vz = 0
+		},
 		sync,
 		face,
 		place,
