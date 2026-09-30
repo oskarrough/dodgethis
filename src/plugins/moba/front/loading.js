@@ -3,7 +3,8 @@ import { PALETTE } from '../../../core/style.js'
 import { tune as kit } from '../tune.js'
 import { FLOOR } from '../obstacles.js'
 import { createControls } from './controls.js'
-import { createLoadingState, descentFrame } from './loading-state.js'
+import { createLoadingState, descentFrame, localLoadingHero } from './loading-state.js'
+import { projectRidge } from './geometry.js'
 import { tune } from './tune.js'
 import './loading.css'
 
@@ -26,19 +27,42 @@ export function startLoading(app, { el, backdrop, returnHero, buildWait = 0 }) {
 		app.intents.cancel()
 		// mode start is synchronous today; waiting remains explicit for future async assets.
 		const rasterReady = backdrop.prepareDescent()
-		match = app.modes.start('moba')
+		const session = app.session
+		match = app.modes.start('moba', { session })
 		const parent = canvas.parentNode
 		const next = canvas.nextSibling
-		const hero = match.snapshot().heroes[0].pos
+		const hero = localLoadingHero(match.snapshot(), app.session.local[0])
+		const cameras = [app.camera.view, app.camera.aim]
+		const previousFar = cameras.map((camera) => camera.far)
 		app.audio.setMusicScene('wind')
 		el.className = 'moba-front front-loading'
 		el.setAttribute('aria-label', 'Loading the lane')
 		el.replaceChildren(backdrop.el)
 		const figures = (team) =>
-			`<div class="front-loading-team ${team}" aria-label="${team === 'A' ? 'Your' : 'Opposing'} ridge">${Array.from({ length: 3 }, (_, i) => `<svg viewBox="0 0 40 80" aria-label="${i ? 'Unoccupied seat' : 'Fletcher'}" class="${i ? 'vacant' : ''}"><path d="M12 20 Q7 4 20 3 Q33 4 28 20 L24 27 L32 48 L27 54 L28 76 H22 L19 54 L16 76 H10 L12 52 L7 46 L16 27Z"/><path d="M30 28 Q41 44 30 58 M30 28 V58" fill="none"/></svg>`).join('')}</div>`
+			`<div class="front-loading-team ${team}" aria-label="${team === 'A' ? 'Your' : 'Opposing'} ridge">${Array.from({ length: 3 }, (_, i) => `<svg viewBox="0 0 40 76" aria-label="${i ? 'Unoccupied seat' : 'Fletcher'}" class="${i ? 'vacant' : ''}"><path d="M12 20 Q7 4 20 3 Q33 4 28 20 L24 27 L32 48 L27 54 L28 76 H22 L19 54 L16 76 H10 L12 52 L7 46 L16 27Z"/><path d="M30 28 Q41 44 30 58 M30 28 V58" fill="none"/></svg>`).join('')}</div>`
 		const ui = document.createElement('section')
 		ui.className = 'front-loading-ui'
-		ui.innerHTML = `<h1>${tune.loading.mapName}</h1><p class="front-load-status" aria-live="polite">Building the lane</p>${figures('A')}${figures('B')}<footer><button class="front-back">Back</button><button class="front-skip">Skip the hold</button><p class="front-prompts"></p></footer>`
+		ui.innerHTML = `<h1>${tune.loading.mapName}</h1><p class="front-load-status" aria-live="polite">Preparing the view</p>${figures('A')}${figures('B')}<footer><button class="front-back">Back</button><button class="front-skip">Skip the hold</button><p class="front-prompts"></p></footer>`
+		function positionFigures() {
+			const size = Math.max(
+				tune.loading.figureWidth.min,
+				Math.min(tune.loading.figureWidth.max, innerWidth * tune.loading.figureWidth.fraction),
+			)
+			ui.querySelectorAll('.front-loading-team').forEach((team, teamIndex) => {
+				team.querySelectorAll('svg').forEach((figure, index) => {
+					const foot = projectRidge(
+						innerWidth,
+						innerHeight,
+						innerWidth * (tune.loading.figureStart[teamIndex] + index * tune.loading.figureSpacing),
+					)
+					figure.style.width = `${size}px`
+					figure.style.left = `${foot.x - size / 2}px`
+					figure.style.top = `${foot.y - (size * 76) / 40}px`
+				})
+			})
+		}
+		positionFigures()
+		window.addEventListener('resize', positionFigures, { signal: scope.signal })
 		el.append(canvas, ui)
 		canvas.classList.add('front-canvas')
 		canvas.inert = false
@@ -52,7 +76,9 @@ export function startLoading(app, { el, backdrop, returnHero, buildWait = 0 }) {
 		function draw(progress) {
 			const eased = progress * progress * (3 - 2 * progress)
 			backdrop.descent(eased)
-			ui.style.opacity = String(1 - eased)
+			const uiProgress = Math.min(1, progress / tune.loading.uiFadeEnd)
+			ui.style.opacity = String(1 - uiProgress * uiProgress * (3 - 2 * uiProgress))
+			ui.style.visibility = uiProgress === 1 ? 'hidden' : ''
 			restore.update({
 				line: tune.loading.line + (1 - tune.loading.line) * eased,
 				hatch: 1 - eased,
@@ -72,9 +98,36 @@ export function startLoading(app, { el, backdrop, returnHero, buildWait = 0 }) {
 				),
 			)
 		}
-		unframe = scope.camera.frame(() =>
-			descentFrame(gate.state.progress, hero, tune.loading, kit.follow, FLOOR),
-		)
+		unframe = scope.camera.frame(() => {
+			const frame = descentFrame(
+				gate.state.progress,
+				hero,
+				tune.loading,
+				kit.follow,
+				FLOOR,
+				innerWidth / innerHeight,
+			)
+			const establishing = descentFrame(
+				0,
+				hero,
+				tune.loading,
+				kit.follow,
+				FLOOR,
+				innerWidth / innerHeight,
+			)
+			const far = Math.max(
+				...previousFar,
+				Math.hypot(establishing.eye.y, establishing.eye.z) +
+					Math.hypot(FLOOR.halfX, FLOOR.halfZ) +
+					tune.loading.farMargin,
+			)
+			for (const camera of cameras)
+				if (camera.far !== far) {
+					camera.far = far
+					camera.updateProjectionMatrix()
+				}
+			return frame
+		})
 		draw(0)
 		app.camera.update(0)
 		function cancel() {
@@ -108,6 +161,7 @@ export function startLoading(app, { el, backdrop, returnHero, buildWait = 0 }) {
 			count: buttons.length,
 			initialBackHeld: !!app.input.pad()?.buttons[1],
 			focus(index) {
+				if (buttons[index].disabled) return controls.point(0)
 				buttons.forEach((button, i) => button.classList.toggle('selected', index === i))
 				buttons[index].focus({ preventScroll: true })
 			},
@@ -121,6 +175,7 @@ export function startLoading(app, { el, backdrop, returnHero, buildWait = 0 }) {
 		setDevice(app.input.activeDevice())
 		buttons.forEach((button, index) => {
 			button.onpointermove = () => {
+				if (button.disabled) return
 				setDevice('mouse')
 				controls.point(index)
 			}
@@ -140,16 +195,6 @@ export function startLoading(app, { el, backdrop, returnHero, buildWait = 0 }) {
 			event.stopImmediatePropagation()
 		}
 		window.addEventListener('keydown', key, { capture: true, signal: scope.signal })
-		window.addEventListener(
-			'keyup',
-			(event) => {
-				if (event.code !== 'Backquote') {
-					event.preventDefault()
-					event.stopImmediatePropagation()
-				}
-			},
-			{ capture: true, signal: scope.signal },
-		)
 		scope.system('input', () => controls.pad(app.input.consumeMenuInput(), app.input.pad()))
 		let status = ''
 		scope.system('present', ({ dt }) => {
@@ -169,8 +214,8 @@ export function startLoading(app, { el, backdrop, returnHero, buildWait = 0 }) {
 			const state = gate.state
 			const text = !state.ready
 				? state.skipped
-					? 'Hold skipped · waiting for the lane'
-					: 'Building the lane'
+					? 'Hold skipped · preparing the view'
+					: 'Preparing the view'
 				: state.phase === 'hold'
 					? 'Ready to descend'
 					: 'Dropping in'
@@ -178,12 +223,16 @@ export function startLoading(app, { el, backdrop, returnHero, buildWait = 0 }) {
 				status = text
 				ui.querySelector('.front-load-status').textContent = text
 			}
+			buttons[1].disabled = state.phase !== 'hold'
 			draw(state.progress)
 			app.camera.update(0)
 			if (state.phase === 'landed' && !capturing) {
 				ending = true
 				app.intents.cancel()
 				app.clock.reset()
+				// Prime the actual follow spring with neutral intents before its first live step.
+				unframe()
+				app.camera.update(0)
 				app.audio.blip(tune.loading.arrival)
 				app.audio.setMusicScene('play')
 				dispose()
@@ -225,6 +274,10 @@ export function startLoading(app, { el, backdrop, returnHero, buildWait = 0 }) {
 			restore?.()
 			unframe?.()
 			app.setPalette({})
+			cameras.forEach((camera, index) => {
+				camera.far = previousFar[index]
+				camera.updateProjectionMatrix()
+			})
 			canvas.classList.remove('front-canvas')
 			parent.insertBefore(canvas, next)
 			document.body.classList.remove('moba-loading')

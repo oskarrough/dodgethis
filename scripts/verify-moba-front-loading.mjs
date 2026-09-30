@@ -6,10 +6,32 @@ const base = process.argv[2] ?? 'http://127.0.0.1:4178'
 const dir = resolve(process.argv[3] ?? `${process.env.BB_THREAD_STORAGE}/loading`)
 mkdirSync(dir, { recursive: true })
 const browser = (...args) =>
-	execFileSync('agent-browser', ['--session', 'loading-proof', ...args], {
-		encoding: 'utf8',
-	}).trim()
-const evaluate = (script) => JSON.parse(browser('eval', script))
+	execFileSync(
+		'agent-browser',
+		['--session', process.env.FRONT_BROWSER_SESSION ?? 'loading-proof', ...args],
+		{
+			encoding: 'utf8',
+		},
+	).trim()
+const evaluate = (script) => {
+	if (!script.startsWith('(async') && !script.startsWith('probe.loading.captureAt('))
+		return JSON.parse(browser('eval', script))
+	// Poll long render waits instead of holding one CDP request past the CLI timeout on software GPUs.
+	browser(
+		'eval',
+		`(()=>{window.proofResult={done:false};Promise.resolve(${script}).then(value=>window.proofResult={done:true,value},error=>window.proofResult={done:true,error:String(error)});return true})()`,
+	)
+	const deadline = Date.now() + 120000
+	while (Date.now() < deadline) {
+		const result = JSON.parse(browser('eval', 'window.proofResult'))
+		if (result.done) {
+			if (result.error) throw new Error(result.error)
+			return result.value
+		}
+		Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 100)
+	}
+	throw new Error('Render wait exceeded two minutes')
+}
 const wait = (ms) => browser('wait', String(ms))
 const key = (code, repeat = false) =>
 	evaluate(
@@ -18,13 +40,16 @@ const key = (code, repeat = false) =>
 const assert = (value, message) => {
 	if (!value) throw new Error(message)
 }
+let boots = 0
+let currentUrl = ''
 const boot = () => {
-	browser('open', `${base}/?mode=moba&debug`)
+	currentUrl = `${base}/?mode=moba&debug&proof=${process.pid}-${++boots}`
+	browser('open', currentUrl)
 	browser('wait', '.moba-front')
 	evaluate('window.probe=game;true')
 	key('Backquote')
 }
-const report = { screens: [] }
+const report = { screens: [], handoff: [] }
 boot()
 const baseline = evaluate(
 	'({bodies:probe.world.bodies.len(),colliders:probe.world.colliders.len()})',
@@ -60,6 +85,30 @@ report.keyboard = evaluate(
 	'!!probe.moba && !probe.loading && !probe.moba.sim.heroes[0].attack && !probe.moba.sim.heroes[0].cast',
 )
 assert(report.keyboard, 'Keyboard flow failed')
+boot()
+browser('click', '.front-practice')
+report.keyup = evaluate(`(async()=>{
+	window.dispatchEvent(new KeyboardEvent('keydown',{code:'ArrowLeft',bubbles:true,cancelable:true}));
+	document.querySelector('.front-lock').click();
+	let released=false;
+	window.addEventListener('keyup',e=>{if(e.code==='ArrowLeft' && !e.defaultPrevented)released=true},{once:true});
+	await probe.loading.captureAt(.5);
+	window.dispatchEvent(new KeyboardEvent('keyup',{code:'ArrowLeft',bubbles:true,cancelable:true}));
+	probe.loading.resume();while(probe.loading)await new Promise(requestAnimationFrame);
+	const x=probe.moba.snapshot().heroes[0].pos.x;
+	await new Promise(requestAnimationFrame);
+	return released && Math.abs(probe.moba.snapshot().heroes[0].pos.x-x)<.001;
+})()`)
+assert(report.keyup, 'Loading swallowed a release or resumed movement')
+boot()
+browser('click', '.front-practice')
+report.slowReadyDwell = evaluate(`(async()=>{
+	probe.front.waitForBuild(3);document.querySelector('.front-lock').click();
+	const state=await probe.loading.captureAt(0);
+	const valid=state.elapsed>=probe.tune.front.loading.hold && state.dwell>=probe.tune.front.loading.dwell && state.ready;
+	window.dispatchEvent(new KeyboardEvent('keydown',{code:'Escape',bubbles:true,cancelable:true}));return valid;
+})()`)
+assert(report.slowReadyDwell, 'A slow build consumed the establishing dwell')
 boot()
 evaluate(
 	`window.mockPad={connected:true,axes:[0,0,0,0],buttons:Array.from({length:17},()=>({pressed:false}))};Object.defineProperty(navigator,'getGamepads',{value:()=>[mockPad],configurable:true});true`,
@@ -136,12 +185,29 @@ for (const [width, height] of [
 		}
 		const before = evaluate('probe.loading.state')
 		assert(before.tick === 0 && before.progress === progress, 'Screenshot is not frozen')
+		const presentation = evaluate(
+			`({opacity:getComputedStyle(document.querySelector('.front-loading-ui')).opacity,skipDisabled:document.querySelector('.front-skip').disabled,rasterPixels:document.querySelector('.front-descent-raster').naturalWidth,dpr:devicePixelRatio})`,
+		)
+		assert(presentation.skipDisabled, 'Skip stayed live after hold')
+		assert(presentation.rasterPixels === Math.ceil(width * presentation.dpr), 'Raster ignored DPR')
+		if (progress >= 0.5) assert(Number(presentation.opacity) === 0, 'UI lingered over the lane')
 		browser('screenshot', `${dir}/descent-${width}-${progress * 100}.png`)
 		const after = evaluate('probe.loading.state')
 		assert(after.tick === 0 && after.progress === progress, 'Screenshot drifted')
-		report.screens.push({ width, height, progress, before, after, layout })
+		report.screens.push({ width, height, progress, before, after, layout, presentation })
 	}
-	evaluate('probe.loading.resume();true')
+	const handoff = evaluate(`(async()=>{
+		const eye=probe.camera.position.clone(), rotation=probe.camera.quaternion.clone();
+		window.dispatchEvent(new PointerEvent('pointermove',{clientX:innerWidth*.82,clientY:innerHeight*.3,bubbles:true}));
+		probe.loading.resume();while(probe.loading)await new Promise(requestAnimationFrame);
+		await new Promise(requestAnimationFrame);
+		return {distance:eye.distanceTo(probe.camera.position),rotation:rotation.angleTo(probe.camera.quaternion)};
+	})()`)
+	assert(
+		handoff.distance < 0.01 && handoff.rotation < 0.001,
+		'Real follow camera snapped on handoff',
+	)
+	report.handoff.push({ width, ...handoff })
 	wait(200)
 	assert(
 		evaluate(
@@ -189,7 +255,7 @@ const send = (method, params = {}, sessionId) =>
 		ws.send(JSON.stringify({ id: next, method, params, sessionId }))
 	})
 const { targetInfos } = await send('Target.getTargets')
-const target = targetInfos.find((t) => t.type === 'page' && t.url.startsWith(base))
+const target = targetInfos.find((t) => t.type === 'page' && t.url === currentUrl)
 const { sessionId } = await send('Target.attachToTarget', {
 	targetId: target.targetId,
 	flatten: true,
@@ -205,17 +271,28 @@ await send('Tracing.start', {
 		'devtools.timeline,disabled-by-default-devtools.timeline,disabled-by-default-devtools.timeline.frame,cc',
 	transferMode: 'ReportEvents',
 })
-report.trace = evaluate(`(async()=>{
+const traceEvaluation = await send(
+	'Runtime.evaluate',
+	{
+		awaitPromise: true,
+		returnByValue: true,
+		expression: `(async()=>{
 	document.querySelector('.front-lock').click();
 	const samples=[];const start=performance.now();let phase='';
 	await new Promise(resolve=>{function frame(now){const t=(now-start)/1000;
 		window.dispatchEvent(new PointerEvent('pointermove',{clientX:innerWidth*(.5+.48*Math.sin(t*8)),clientY:innerHeight*(.5+.4*Math.cos(t*8)),bubbles:true}));
 		if(probe.loading && probe.loading.state.phase!==phase){phase=probe.loading.state.phase;console.timeStamp('loading-'+phase)}
-		if(probe.loading)samples.push({...probe.loading.state,at:t,animations:document.getAnimations().length,raster:document.querySelector('.front-descent-raster')?.getBoundingClientRect().width,svgVisible:[...document.querySelectorAll('.front-backdrop > svg')].filter(el=>!el.hidden).length});
-		if(t<3.5 || ((probe.loading || !probe.moba.sim.tick) && t<20))requestAnimationFrame(frame);else resolve();
+		if(probe.loading)samples.push({...probe.loading.state,at:t,animations:document.getAnimations().length,raster:document.querySelector('.front-descent-raster')?.getBoundingClientRect().width,rasterPixels:document.querySelector('.front-descent-raster')?.naturalWidth,svgVisible:[...document.querySelectorAll('.front-backdrop > svg')].filter(el=>!el.hidden).length});
+		if(t<3.5 || ((probe.loading || !probe.moba.sim.tick) && t<60))requestAnimationFrame(frame);else resolve();
 	}requestAnimationFrame(frame)});
 	return {viewport:[innerWidth,innerHeight,devicePixelRatio],rendererDpr:probe.renderer.getPixelRatio(),samples,landed:!probe.loading && probe.moba.sim.tick>0};
-})()`)
+})()`,
+	},
+	sessionId,
+)
+if (traceEvaluation.exceptionDetails)
+	throw new Error(JSON.stringify(traceEvaluation.exceptionDetails))
+report.trace = traceEvaluation.result.value
 const done = new Promise((resolve) => (complete = resolve))
 await send('Tracing.end')
 await done
@@ -241,7 +318,10 @@ report.trace.descentEvents = Object.fromEntries(
 assert(
 	report.trace.samples
 		.filter((sample) => sample.phase === 'descent')
-		.every((sample) => sample.svgVisible === 0 && sample.raster <= 2560 * 1.1),
+		.every(
+			(sample) =>
+				sample.svgVisible === 0 && sample.raster <= 2560 * 1.1 && sample.rasterPixels === 5120,
+		),
 	'Descent scaled live SVG or exceeded raster budget',
 )
 assert(report.trace.landed, 'Trace did not land')

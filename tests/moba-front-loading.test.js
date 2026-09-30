@@ -3,10 +3,17 @@ import { createLoadingState, descentFrame } from '../src/plugins/moba/front/load
 import { createApp } from '../src/core/app.js'
 import { createControls } from '../src/plugins/moba/front/controls.js'
 import { createStylePresets } from '../src/core/style-presets.js'
+import { createFollow } from '../src/plugins/moba/follow.js'
+import { tune as kit } from '../src/plugins/moba/tune.js'
+import { tune as front } from '../src/plugins/moba/front/tune.js'
+import { FLOOR } from '../src/plugins/moba/obstacles.js'
+import { localLoadingHero } from '../src/plugins/moba/front/loading-state.js'
+import { projectFrame, projectRidge } from '../src/plugins/moba/front/geometry.js'
+import * as THREE from 'three'
 
 describe('loading gates', () => {
 	test('early skip never bypasses a three-second build', () => {
-		const gate = createLoadingState({ hold: 1.2, duration: 0.8 })
+		const gate = createLoadingState(front.loading)
 		gate.skip()
 		gate.step(3)
 		expect(gate.state.phase).toBe('hold')
@@ -20,7 +27,7 @@ describe('loading gates', () => {
 		expect(gate.state.frozen).toBe(false)
 	})
 	test('readiness does not bypass hold; cancelled builds never descend', () => {
-		const gate = createLoadingState({ hold: 1.2, duration: 0.8 })
+		const gate = createLoadingState(front.loading)
 		gate.ready()
 		gate.step(1.19)
 		expect(gate.state.phase).toBe('hold')
@@ -30,7 +37,7 @@ describe('loading gates', () => {
 		expect(gate.state.phase).toBe('cancelled')
 	})
 	test('two gates are independent; live duration cannot reverse or divide by zero', () => {
-		const tune = { hold: 1.2, duration: 0.8 }
+		const tune = { hold: 1.8, dwell: 0.8, duration: 0.8 }
 		const a = createLoadingState(tune),
 			b = createLoadingState(tune)
 		a.ready()
@@ -96,21 +103,82 @@ describe('loading gates', () => {
 		expect(ticks).toBe(1)
 		app.dispose()
 	})
-	test('descent ends exactly on the bounded follow pose', () => {
-		const start = { height: 38, back: 48, targetX: 0, targetY: 8, fov: 65 }
-		const follow = { height: 20, back: 12, fov: 50 }
-		const bounds = { halfX: 48, halfZ: 18 }
-		for (const progress of [0, 0.5, 1]) {
-			const frame = descentFrame(progress, { x: -43, z: 0 }, start, follow, bounds)
-			expect(Math.abs(frame.eye.x)).toBeLessThanOrEqual(48)
-			expect(Math.abs(frame.target.z)).toBeLessThanOrEqual(18)
-			expect(Number.isFinite(frame.fov)).toBe(true)
+	test('real follow handoff stays still with an offset pointer, and pad look-ahead springs instead of snapping', () => {
+		const hero = { x: -43, z: 0 },
+			pointer = { x: -30, z: 8 }
+		const landing = descentFrame(1, hero, front.loading, kit.follow, FLOOR, 390 / 844)
+		const follow = createFollow(kit.follow)
+		follow.frame(0, hero, null)
+		const next = follow.frame(1 / 60, hero, pointer, { pad: false })
+		expect(
+			new THREE.Vector3().copy(next.eye).distanceTo(new THREE.Vector3().copy(landing.eye)),
+		).toBeLessThan(1e-8)
+		expect(next.fov).toBe(landing.fov)
+		const pad = follow.frame(1 / 60, hero, pointer, { pad: true })
+		expect(
+			new THREE.Vector3().copy(pad.eye).distanceTo(new THREE.Vector3().copy(landing.eye)),
+		).toBeLessThan(0.35)
+	})
+	test('an unskipped three-second build still gets the full ready dwell', () => {
+		const gate = createLoadingState(front.loading)
+		gate.step(3)
+		gate.ready()
+		gate.step(front.loading.dwell - 0.001)
+		expect(gate.state.phase).toBe('hold')
+		gate.step(0.001)
+		expect(gate.state.phase).toBe('descent')
+	})
+	test('arc rises to 50 m and settles pitch before its last tenth', () => {
+		const frame = (p) =>
+			descentFrame(p, { x: -43, z: 0 }, front.loading, kit.follow, FLOOR, 1440 / 900)
+		expect(frame(front.loading.riseEnd).eye.y).toBeCloseTo(50)
+		const pitch = (p) => {
+			const f = frame(p)
+			return Math.atan2(f.eye.y - f.target.y, f.eye.z - f.target.z)
 		}
-		expect(descentFrame(1, { x: -43, z: 0 }, start, follow, bounds)).toEqual({
-			eye: { x: -43, y: 20, z: 12 },
-			target: { x: -43, y: 0, z: 0 },
-			fov: 50,
-		})
+		expect(Math.abs(pitch(0.9) - pitch(1))).toBeLessThan(Math.PI / 180)
+	})
+	test('whole floor and core tops fit the establishing shot at all three widths', () => {
+		for (const [width, height] of [
+			[390, 844],
+			[1440, 900],
+			[2560, 1080],
+		]) {
+			const f = descentFrame(0, { x: -43, z: 0 }, front.loading, kit.follow, FLOOR, width / height)
+			const camera = new THREE.PerspectiveCamera(f.fov, width / height, 0.1, 1000)
+			camera.position.copy(f.eye)
+			camera.lookAt(new THREE.Vector3().copy(f.target))
+			camera.updateMatrixWorld()
+			for (const x of [-FLOOR.halfX, FLOOR.halfX])
+				for (const z of [-FLOOR.halfZ, FLOOR.halfZ])
+					for (const y of [0, 7]) {
+						const point = new THREE.Vector3(x, y, z).project(camera)
+						expect(Math.abs(point.x)).toBeLessThan(1)
+						expect(Math.abs(point.y)).toBeLessThan(1)
+						expect(point.z).toBeLessThan(1)
+					}
+			for (const fraction of [0.12, 0.22, 0.32, 0.65, 0.75, 0.85]) {
+				const foot = projectRidge(width, height, width * fraction)
+				expect(foot.x).toBeCloseTo(width * fraction, 4)
+				expect(foot.y).toBeLessThan(height)
+				expect(projectFrame(width, height).worldX(foot.x)).toBeGreaterThan(0)
+			}
+		}
+	})
+	test('team B descends onto its own participant even when not first', () => {
+		const pos = { x: 43, z: 0 }
+		expect(
+			localLoadingHero(
+				{
+					heroes: [
+						{ id: 'other', pos: { x: -43, z: 0 } },
+						{ id: 'local-B', pos },
+					],
+				},
+				'local-B',
+			),
+		).toBe(pos)
+		expect(() => localLoadingHero({ heroes: [] }, 'missing')).toThrow()
 	})
 	test('live preset updates remain nestable and restore defaults', () => {
 		let value

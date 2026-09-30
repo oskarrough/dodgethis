@@ -1,6 +1,6 @@
 import { hex } from '../../../core/style.js'
 import { tune } from './tune.js'
-import { easePointer, projectFrame } from './geometry.js'
+import { easePointer, projectFrame, ridgePath } from './geometry.js'
 
 // Authored in one undistorted world; the phone crops the shot, never the figure.
 const planes = [
@@ -18,7 +18,7 @@ const planes = [
 	<path fill="var(--front-mesa)" d="M1108 737 L1127 587 Q1135 546 1210 545 L1240 547 L1258 566 L1211 568 Q1163 570 1161 608 L1158 738Z M1274 585 L1303 594 L1320 741 L1283 740Z"/>
 	<path fill="url(#vertical-1)" d="M1127 587 L1141 603 L1128 738 L1108 737Z M1283 740 L1274 585 L1288 603 L1304 740Z"/>
 	<path fill="none" d="M1143 617 L1136 706 M1192 557 L1225 555 M1293 628 L1301 704"/>`,
-	`<path fill="var(--front-ridge)" d="M0 778 Q195 760 374 748 Q533 725 660 743 Q797 753 952 738 Q1153 732 1440 767 V900 H0Z"/>
+	`<path fill="var(--front-ridge)" d="${ridgePath} V900 H0Z"/>
 	<path class="front-distant-fletcher" fill="var(--front-shadow)" stroke="none" d="M605 739 L620 739 L836 771 L819 774Z"/>
 	<path fill="none" d="M0 790 Q233 775 368 763 M385 759 Q492 740 557 746 M641 755 Q821 773 951 752"/>
 	<g class="front-distant-fletcher" fill="var(--front-ink)" stroke="none">
@@ -176,8 +176,9 @@ export function createBackdrop(root) {
 			frame = null
 			layers.forEach((layer) => (layer.style.transform = 'none'))
 			const canvas = document.createElement('canvas')
-			canvas.width = innerWidth
-			canvas.height = innerHeight
+			const dpr = devicePixelRatio
+			canvas.width = Math.ceil(innerWidth * dpr)
+			canvas.height = Math.ceil(innerHeight * dpr)
 			const context = canvas.getContext('2d')
 			const colors = getComputedStyle(el)
 			for (const layer of layers) {
@@ -186,6 +187,8 @@ export function createBackdrop(root) {
 				copy.setAttribute('width', canvas.width * 1.1)
 				copy.setAttribute('height', canvas.height * 1.1)
 				copy.removeAttribute('style')
+				for (const node of copy.querySelectorAll('[stroke-width]'))
+					node.setAttribute('stroke-width', Number(node.getAttribute('stroke-width')) * dpr)
 				copy.querySelector('.front-select-world').remove()
 				copy.querySelectorAll('[fill^="url"]').forEach((node) => node.remove())
 				copy.querySelectorAll('.front-distant-fletcher').forEach((node) => node.remove())

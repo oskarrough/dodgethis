@@ -13,16 +13,21 @@ export function mobaFront(app) {
 	let activeBackdrop = null
 	app.debug.tune('front', tune, (folder, values) => {
 		const loading = folder.addFolder('loading')
-		for (const key of ['hold', 'duration', 'rasterFade'])
+		for (const key of ['hold', 'dwell', 'duration', 'rasterFade'])
 			loading
 				.add(values.loading, key, app.clock.step, 3, app.clock.step)
 				.name(key === 'rasterFade' ? 'raster fade (next loading)' : key)
 		for (const key of ['line', 'pastel'])
 			loading.add(values.loading, key, key === 'line' ? 0.1 : 0, 1, 0.01)
 		loading.add(values.loading, 'scale', 1, 1.1, 0.01)
-		loading.add(values.loading, 'height', 20, 80, 1)
+		loading.add(values.loading, 'height', 20, 40, 1)
+		loading.add(values.loading, 'arcHeight', 40, 80, 1)
+		loading.add(values.loading, 'riseEnd', 0.1, 0.6, 0.01)
+		loading.add(values.loading, 'pitchEnd', 0.65, 0.9, 0.01)
+		loading.add(values.loading, 'uiFadeEnd', 0.1, 0.3, 0.01)
+		loading.add(values.loading, 'fitMargin', 1.1, 1.5, 0.01)
 		loading.add(values.loading, 'back', 0, 140, 1)
-		loading.add(values.loading, 'targetY', 0, 40, 1)
+		loading.add(values.loading, 'targetY', 0, 19, 1)
 		loading.add(values.loading, 'fov', 30, 90, 1)
 		folder
 			.add(values, 'skyFade', app.clock.step, 2, app.clock.step)

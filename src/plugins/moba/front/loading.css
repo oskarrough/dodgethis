@@ -21,33 +21,31 @@
 }
 .front-loading-ui h1 {
 	position: absolute;
-	top: 14%;
+	top: max(16px, 2vh);
+	margin: 0;
+	line-height: 1.2;
 	left: 5%;
 	right: 5%;
 	text-align: center;
 	font-weight: 300;
-	font-size: clamp(28px, 4vw, 64px);
+	font-size: clamp(28px, 3vw, 48px);
 }
 .front-load-status {
 	position: absolute;
-	top: 30%;
+	top: calc(max(16px, 2vh) + clamp(28px, 3vw, 48px) * 1.2 + 2px);
+	margin: 0;
+	font-size: 14px;
+	line-height: 1.2;
 	width: 100%;
 	text-align: center;
 }
 .front-loading-team {
 	position: absolute;
-	bottom: 21%;
-	display: flex;
-	gap: 2vw;
-}
-.front-loading-team.A {
-	left: 12%;
-}
-.front-loading-team.B {
-	right: 12%;
+	inset: 0;
 }
 .front-loading-team svg {
-	width: clamp(24px, 4vw, 65px);
+	position: absolute;
+	height: auto;
 	fill: var(--ui-cream);
 	stroke: var(--ui-text);
 	stroke-width: 0.75;
