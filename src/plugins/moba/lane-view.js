@@ -10,8 +10,9 @@ export function createLaneView(scene, smooth = null) {
 	function makeBody(x, z, team, kind) {
 		const v = tune.laneView
 		const tower = ['tower', 'fort', 'core'].includes(kind)
-		const radius = tower ? tune[kind].radius : tune.waves.radius
-		const halfHeight = tower ? v[`${kind}Height`] / 2 : v.minionHeight / 2
+		const radius = tower ? tune[kind].radius : kind === 'brute' ? v.bruteRadius : tune.waves.radius
+		const height = kind === 'brute' ? v.bruteHeight : v.minionHeight
+		const halfHeight = tower ? v[`${kind}Height`] / 2 : height / 2
 		const mesh = new THREE.Group()
 		const visual = new THREE.Group()
 		mesh.add(visual)
@@ -97,12 +98,14 @@ export function createLaneView(scene, smooth = null) {
 			part(new THREE.ConeGeometry(v.flagRadius, v.flagHeight, v.flagSides), teamMaterial, v.flagY)
 		} else {
 			part(
-				new THREE.CapsuleGeometry(radius, v.minionHeight - radius * 2, v.capSegments, v.segments),
+				new THREE.CapsuleGeometry(radius, height - radius * 2, v.capSegments, v.segments),
 				teamMaterial,
 				0,
 			)
 			part(new THREE.BoxGeometry(v.footWidth, v.footHeight, v.footDepth), ink, -halfHeight)
-			if (kind === 'wizard')
+			if (kind === 'brute')
+				part(new THREE.BoxGeometry(v.bruteHelmet, v.bruteHelmet, v.bruteHelmet), cream, halfHeight)
+			else if (kind === 'wizard')
 				part(new THREE.ConeGeometry(v.hatRadius, v.hatHeight, v.flagSides), cream, halfHeight)
 			else if (kind === 'ranged') {
 				const stick = part(
@@ -148,11 +151,13 @@ export function createLaneView(scene, smooth = null) {
 		let tell = null
 		if (!tower) {
 			const shape =
-				kind === 'melee'
-					? new THREE.CircleGeometry(v.tellSize / 2, 3)
-					: kind === 'ranged'
-						? new THREE.PlaneGeometry(v.tellSize, v.tellSize * v.tellRangedHeight)
-						: new THREE.CircleGeometry(v.tellSize / 2, 5)
+				kind === 'brute'
+					? new THREE.CircleGeometry(v.tellSize / 2, 4)
+					: kind === 'melee'
+						? new THREE.CircleGeometry(v.tellSize / 2, 3)
+						: kind === 'ranged'
+							? new THREE.PlaneGeometry(v.tellSize, v.tellSize * v.tellRangedHeight)
+							: new THREE.CircleGeometry(v.tellSize / 2, 5)
 			owned.push(shape)
 			tell = new THREE.Group()
 			tell.name = `moba-${kind}-tell`
@@ -253,6 +258,7 @@ export function createLaneView(scene, smooth = null) {
 			const visual = unit.body.visual
 			visual.scale.set(1, 1, 1)
 			visual.rotation.x = 0
+			visual.rotation.z = 0
 			visual.position.y = 0
 			if (unit.body.dome) {
 				unit.body.dome.visible = !unit.dead && !lane.vulnerable(unit)
@@ -268,6 +274,7 @@ export function createLaneView(scene, smooth = null) {
 			else if (unit.kind === 'fort') visual.rotation.x = progress * v.fortPose
 			else if (unit.kind === 'core') visual.position.y = progress * v.corePose
 			else if (unit.kind === 'melee') visual.rotation.x = progress * v.meleePose
+			else if (unit.kind === 'brute') visual.rotation.z = progress * v.brutePose
 			else if (unit.kind === 'ranged') visual.rotation.x = -progress * v.rangedPose
 			else visual.position.y = progress * v.wizardPose
 			visual.scale.y *= Math.max(0.1, 1 - unit.body.squeeze)

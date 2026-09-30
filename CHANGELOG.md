@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Added 3v3 MOBA Practice: you and two allied hero bots against three enemy bots, with easy, normal and hard opponents.
+
 - Added a pastel desert mode screen for MOBA Practice, with keyboard, mouse and controller navigation and self-hosted lettering.
 
 - Added the MOBA lane, hedged flanks and plaza pillars, with shared cover collision for movement and shots, safe paths around boxes, and edge markers for off-screen enemies.

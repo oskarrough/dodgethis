@@ -68,7 +68,14 @@ export function createBall({ heroes, lane, obstacles, present, damage }) {
 		}
 		if (t >= nextBall) {
 			if (ball?.state !== 'warning') {
-				if (ball) fact('ballPop', { reason: 'replaced' })
+				if (ball) {
+					const carrier = heroes.find((h) => h.id === ball.carrier)
+					if (carrier?.ballThrow) {
+						carrier.ballThrow = null
+						fact('ballDenied', { hero: carrier.id, reason: 'replaced' })
+					}
+					fact('ballPop', { reason: 'replaced' })
+				}
 				ball = { id: ++serial, pos: { x: 0, z: 0 }, carrier: null, channel: null, shot: null }
 			}
 			ball.state = 'loose'
@@ -249,7 +256,8 @@ export function createBall({ heroes, lane, obstacles, present, damage }) {
 			const h = candidates.sort(
 				(a, b) =>
 					Math.hypot(a.body.position.x - ball.pos.x, a.body.position.z - ball.pos.z) -
-					Math.hypot(b.body.position.x - ball.pos.x, b.body.position.z - ball.pos.z),
+						Math.hypot(b.body.position.x - ball.pos.x, b.body.position.z - ball.pos.z) ||
+					a.id.localeCompare(b.id),
 			)[0]
 			if (h) {
 				ball.state = 'channel'

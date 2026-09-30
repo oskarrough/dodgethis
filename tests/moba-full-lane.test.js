@@ -355,7 +355,8 @@ test('five-minute intent-driven scripted match: whole population stays walkable,
 		}
 	}
 	expect(sim.tick).toBe(ticks(300))
-	expect(facts.some((f) => f.type === 'structureDown')).toBe(true)
+	// M4 fortifies early guns; tactical-bot tests own the core-kill proof.
+	expect(sim.lane.structures.some((s) => s.hp < s.maxHp)).toBe(true)
 	for (const team of ['A', 'B']) {
 		expect(xp[team]).toBeGreaterThan(8 * 270)
 		expect(sim.lane.teams[team].level).toBeGreaterThan(3)

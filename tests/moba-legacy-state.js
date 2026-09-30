@@ -11,6 +11,7 @@ export function legacyState(state) {
 				),
 			)
 			for (const key of [
+				'damageScale',
 				'heroId',
 				'abilityState',
 				'freezeUntil',

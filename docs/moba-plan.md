@@ -5,14 +5,16 @@ A small Heroes of the Storm-style mode: the smallest thing that already feels li
 ## Scope
 
 - **Match:** 3v3 (human + 2 bot allies vs 3 bots), all the same hero. Destroy the enemy core. 8–12 minutes. Boots with `?mode=moba` until the hub plugin exists.
-- **Map:** one flat lane along x, 104 × 26 m, with hedged flanks and six pillars; layout and structure positions are specified in [moba-lane.md](moba-lane.md). The full lane is built: towers, forts, cores, waves, shared levels, killer-team globes, base healing and a core-kill win. One intent-driven scripted opponent walks the lane and casts Q; tactical bots follow.
+- **Map:** one flat lane along x, 104 × 26 m, with hedged flanks and six pillars; layout and structure positions are specified in [moba-lane.md](moba-lane.md). The full lane is built: towers, forts, cores, waves, shared levels, killer-team globes, base healing and a core-kill win. Practice is a human plus two allied hero bots against three enemy hero bots, all Fletcher seats built from the hero table. Bots feed the same fixed-tick intents as players.
 - **Structures** (no ammo; HotS removed it in 2017). Each is invulnerable until the one in front falls. Abilities deal 25% to structures; a kill is worth 300 XP.
 
 |       | HP   | Damage | Rate | Range | Targets                    |
 | ----- | ---- | ------ | ---- | ----- | -------------------------- |
-| Tower | 2400 | 110    | 1/s  | 7.75  | nearest minion, then hero  |
-| Fort  | 5000 | 160    | 1/s  | 8.5   | same                       |
-| Core  | 6000 | 180    | 1/s  | 9     | same; death ends the match |
+| Tower | 2400 | 220    | 1/s  | 7.75  | nearest minion, then hero  |
+| Fort  | 5000 | 320    | 1/s  | 8.5   | same                       |
+| Core  | 6000 | 360    | 1/s  | 9     | same; death ends the match |
+
+Early gun damage is shown above. At 8:00 guns deal 25% of it, waves accelerate and brutes join. The stronger early guns protect a weak human's team; late pressure stops mirror bots from defending forever. Structure HP and the Ball's damage fraction are unchanged.
 
 - **Minions:** a wave every 30 s from each core, first at 0:15. Each wave is 3 melee, 2 ranged and 1 wizard; the wizard drops a regen globe (+15% max HP, killing team only, 15 s lifetime). They walk the centreline and take the nearest enemy within 6 m: minion, then structure, then hero. They are plain agents, not character controllers. A dying minion's XP goes to the enemy team if any enemy hero is within 12 m, which replaces last-hitting.
 
@@ -34,7 +36,7 @@ A small Heroes of the Storm-style mode: the smallest thing that already feels li
 | R     | Volley   | Heroic, unlocks at level 10. Piercing line, cast point 0.5 s, range 30, 30 m/s, radius 0.8, 320 damage, cooldown 60       |
 | Mount | —        | 1 s channel, then `speedMul` 1.3. Movement cancels the channel; damage, attacking or casting dismounts                    |
 
-- **Bots:** hero bots play through `app.intents` exactly like players; see [Hero bots](#hero-bots-m4).
+- **Bots (built):** hero bots play through `app.intents` exactly like players; see [Hero bots](#hero-bots-m4).
 - **Cut:** talents (Oskar's call), mana, items, extra lanes, mercenary camps, hearthstone, gates, fountains, shift-queue, attack-move, minimap, catch-up XP, and more than one hero.
 
 ## Controls
@@ -87,21 +89,25 @@ Obedience from HotS, springs and juice from dodgethis. Everything below is moba'
 
 ## Hero bots (M4)
 
+Built in `src/plugins/moba/bots.js`. Practice uses match seed 2; enemies take `?bots=easy|normal|hard`, allies stay normal. The roster and every bot's abilities come from the hero table. The scripted controller remains only for older characterization fixtures. Live difficulty knobs have their own GUI folders; seed and lane files apply on restart. `catchRate` is reserved for a hero with a catch kit; Fletcher has none.
+
+Siege tuning from real play: early structure guns are doubled, the late phase starts at 8:00 with quarter-strength guns and a 3500 HP brute, waves come every 15 s, and the Ball interval is 150 s early / 30 s late. Minions gain 4% HP and damage per whole minute. A disadvantaged bot uses Rain to clear a wave attacking its frontmost friendly structure. These changes keep default Practice with an idle local seat alive past eight minutes while letting seeded mirror matches finish.
+
 Map, Ball and structure rules come from [moba-lane.md](moba-lane.md). A bot is a brain per hero id that writes a `pointClick` frame with `app.intents.feed(id, frame)` at the top of moba's `simulate`, before any hero reads its intents. That keeps bots on the fixed tick, independent of render rate, paused while the sim is held, and absent on replicas. The sim can't tell a bot from a mouse player: `order` to move or attack, `aim` plus a `slotN` press whose `at` is the aim, never `move` or `held`. It reads sim state through a read-only view and never writes it. It thinks every 6th tick, staggered by id, and feeds its current frame on the ticks between. Randomness comes from one seeded stream per bot, forked from the match seed, so changing one bot doesn't reshuffle the others.
 
 - **Perception:** there's no fog, and edge pips show every enemy hero, so a bot sees the whole map, late. Every enemy query goes through one perception view: the sim state as it was `reaction` seconds ago, from a ring buffer of views. That covers heroes, minions, structures' targets, casts, projectiles and zones, and it includes first-hit sweeps, mid-Vault checks and dodge prediction. Only the bot's own hero, cooldowns and Ball state are read live.
 - **Orders:** a move order is sent once per new goal and re-sent only if the hero's resolved order has lapsed. An attack order clicks the target's live position once. The bot keeps the target id and sends nothing more while its hero's resolved order is an attack on that id. It re-clicks only if the order lapsed, since re-sending a stale point would turn into a move.
 - **Roles:** the three bots of a team take files z −3, 0 and +3 in the lane, so they don't stack in one Rain.
 - **Priority** each think, first match wins: dodge, retreat, Ball, fight, push, lane. Other states hold for at least 0.5 s. Retreat latches: once entered, it lasts until 90% HP or death, and dodge interrupts it without clearing it.
-- **Lane:** stand 2–4 m behind the most advanced allied minion, inside its own file, and basic the minion the wave is hitting. With no allied wave, hold 3 m behind its own frontmost structure. Always stay within 12 m of dying enemy minions, since that's the soak.
-- **Push:** when the allied wave is inside a vulnerable enemy structure's range, basic the structure only while that structure targets a minion, and step back out of its range when fewer than 2 allied minions are left.
+- **Lane:** defend an invaded friendly structure with Rain on clustered minions when disadvantaged; otherwise stand 2–4 m behind the most advanced allied minion, inside its own file, and basic the minion the wave is hitting. With no allied wave, hold 3 m behind its own frontmost structure. Always stay within 12 m of dying enemy minions, since that's the soak.
+- **Push:** the centre-file bot takes a screened siege opening before fighting; other files fight first. A brute counts as two escorts. When the allied wave is inside a vulnerable enemy structure's range, basic the structure only while that structure targets a minion, and step back out of its range when fewer than 2 allied minions are left.
 - **Tower safety** gates every offensive action in every state: a basic, Q, E, W or throw. An action is illegal if it would make an enemy structure call for help on the bot. That applies when the bot's position after the action (W's landing spot included) is inside the structure's range, and when any hero it could hit is inside that range (E's whole circle counts). The one exception is a kill. The target's perceived HP must be at most the bot's burst available in the next 1.5 s, and the bot's HP minus 2 s of that structure's damage must stay above `retreatHp`.
 - **Fight:** enter when an enemy hero is within 9 m and `advantage ≥ −aggression`. Advantage is the sum of HP × (1 + 0.04 × level) over allied heroes within 12 m, minus the same for enemies, divided by max HP, with 1.0 subtracted per enemy structure whose range the bot stands in. Target the lowest effective HP in reach, sticky for 1 s. Order of play: E on the predicted spot, Q, basics with a stutter-step back toward the bot's own side after every shot, W to chase a target under 25% HP within 7 m.
 - **Retreat:** enter below `retreatHp` (0.35), or when advantage drops under −`aggression` − 1. Order to its own base (|x| ≥ 44), take any own-team globe within 6 m of the path, and save W for a telegraph.
 - **Dodge:** triggered by a perceived enemy `cast` fact, so the cast point counts toward reaction time. A normal bot sees an 8 m Q with about 0.27 s left to clear it. For each Q, R or Ball shot whose predicted sweep passes within the bot's radius + 0.6 m, roll `dodge` once; a failed roll commits, with no re-roll for that shot. On success, the obstacle module finds the nearest cleared spot perpendicular to the shot. The bot walks there if it can arrive before impact at its current speed; otherwise it Vaults there if W is up; otherwise it doesn't try. Rain uses the same test for its nearest edge + 0.5 m. From the centre, walking is too slow and it takes a Vault.
 - **Skillshots:** Q aims at an intercept solved from the perceived position and velocity, then misses like a human would. The lead is scaled by `1 + N(0, leadError)`, the angle rotated by `N(0, jitter)` radians, and the release waits `reaction` after the target first came into range. A bot casts only if the perceived sweep says the first thing on the line is a hero, since Q stops at the first minion. It holds Q while the target is perceived mid-Vault. E aims at the perceived position plus 0.7 s of velocity and prefers a spot that covers two heroes. R (M5) only on two heroes in a line or a target under 30%.
 - **Ball:** at the 30 s warning a bot finishes its wave. At 10 s left, every bot above 50% HP walks toward the plaza. After that, the lane doc's rule applies. A bot contests when its side has at least as many heroes within 12 m of the Ball and more than half their HP. Otherwise it shadows at 8 m, focuses the carrier to force a drop, and grabs the loose Ball. Only the nearest ally channels the pickup; the others stand between the carrier and the nearest enemy. If the catch rule ships, bots catch at `catchRate`.
-- **Carrier:** since any slot or `primary` press throws, a carrier sends no edges except the deliberate throw. Dodge and retreat still apply, as movement only at ×0.85. It walks the lane to the frontmost vulnerable enemy structure, or the flank if an enemy hero is within 10 m of the lane path. It throws when that structure's centre is 0.5 m inside the Ball's reach (6.9, 7.9 and 8.2 m for tower, fort and core), or at an enemy hero within 4 m.
+- **Carrier:** since any slot or `primary` press throws, a carrier sends no edges except the deliberate throw. Dodge and retreat still apply, as movement only at ×0.85. It walks the lane to the frontmost vulnerable enemy structure, or the flank if an enemy hero is within 10 m of the lane path. It throws when that structure's centre is 0.5 m inside the Ball's reach (6.9, 7.9 and 8.2 m for tower, fort and core), or at an enemy hero within 4 m when below half health or when the Ball can finish that hero. Otherwise it keeps the objective for siege instead of spending every pickup on a healthy hero at mid. A completed flank waypoint advances toward siege rather than repeatedly selecting itself.
 - **Knobs:** `tune.bots` with a preset per difficulty and each value tunable in the GUI. Enemies take `?bots=easy|normal|hard` (default normal); allies are always normal.
 
 | Knob            | Easy | Normal | Hard | Meaning                                     |
@@ -117,10 +123,13 @@ Map, Ball and structure rules come from [moba-lane.md](moba-lane.md). A bot is a
 **Test** (`tests/moba-bots.test.js`):
 
 - **Match:** a headless match on six bot heroes, all normal, with seeds 1, 2 and 3, stepped for at most 54 000 ticks. Each seed must end in `matchOver` from a core kill. Every bot frame must pass `validIntent`.
-- **Determinism:** the same seed run twice, and run once driven at 30 Hz and once at 144 Hz render, must produce identical per-tick snapshots and facts.
+- **Determinism:** seed 2 runs through the real app clock at 60, 30 and 144 Hz. Every tick's complete snapshot and facts must hash identically; final states and objective facts are compared too.
+- **Weak human:** default seed 2 with the local allied seat idle in base must last past 8:00 and still end naturally.
 - **No stuck brain:** no living bot may move less than 2 m in 30 s while no enemy is within 12 m.
 - **Fixtures:** retreat latches from 34% to 90% HP through a dodge; a carrier never sends a non-throw edge and throws at the right reach; no tower aggro unless the kill exception holds; an attack order survives its target moving 3 m; a blocked or too-late dodge falls back to Vault, or to nothing; a close Q and a centre-of-Rain escape.
 - **If a seed runs long,** the lane doc's rule applies: shorten the Ball interval first, then bring the late phase and brutes forward.
+
+Proof: `tests/moba-bots.test.js` checks all three seeds, both sides scoring, fixed-tick frame validity, every living unit's walkability, stalled brains, a late-phase median tick budget, close-Q and centre-Rain dodge intents, a committed failed dodge roll across release, the intercept equation, separate sims and pause clocks, retreat/death, carried edges, stable attack orders and protected targets. `scripts/verify-moba-bots.mjs` captures genuine six-hero combat at mid at 390, 1440 and 2560×1080, using the real camera and shared camera tunes. All six hero centres must be visible in frame. The first qualifying phone fight is replayed at the same tick at all widths; the real camera pans to the fight bounds without changing its scale. Debug-only `?mode=moba&debug&bots-only` gives the local seat a normal brain for that proof.
 
 ## Shared play (M6)
 
@@ -162,7 +171,7 @@ Each ends with `bun run check` green and is playable behind `?mode=moba`. Requir
 
 2. **Kit.** W, E, basic attacks with stutter-step, the trait, HP, death and respawn, a dummy that casts back, indicators, the cooldown HUD, hit-feedback tiers. Keeps the feel slice's W Vault / E Rain bindings and cooldowns; Momentum recharges Vault (now W), not Rain. Dummies have 1400 HP and keep their 2 s respawn; the hero uses `6 + 2 × level` s.
 3. **Lane.** Map, structures, waves, the soak rule, levels, globes, base healing, win condition. 1v1 against a scripted hero, then 2v2.
-4. **Bots.** Hero bots and 3v3. A seeded headless bots-only match must end in a core kill within 15 simulated minutes.
+4. **Bots (built).** Hero bots and 3v3. A seeded headless bots-only match must end in a core kill within 15 simulated minutes.
 5. **HotS layer.** Mount and the R heroic.
 6. **Shared play.** Runs through online with no moba code knowing; designed in [Shared play](#shared-play-m6).
 

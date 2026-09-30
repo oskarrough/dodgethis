@@ -5,6 +5,7 @@ import { tune } from './tune.js'
 import { buildMap, FLOOR } from './map.js'
 import { castAbility } from './ability.js'
 import { createSim } from './sim.js'
+import { practiceRoster } from './bots.js'
 import { createFollow } from './follow.js'
 import { createCameraControls } from './camera-controls.js'
 import { createCursor } from './cursor.js'
@@ -55,7 +56,7 @@ const FACTS = [
 	'matchOver',
 ]
 
-// Full lane: a player, an intent-driven sparring hero and opposing waves.
+// Practice: a player plus two allies against three intent-driven hero bots.
 // Boots with ?mode=moba. Everything lives as long as a run of the mode.
 export default function moba(app) {
 	const { scene, world, RAPIER, input, audio } = app
@@ -81,22 +82,27 @@ export default function moba(app) {
 			const follow = createFollow()
 			const cameraControls = createCameraControls(window, run.signal, follow)
 			const cursor = createCursor(app.renderer.domElement)
+			const query = new URLSearchParams(window.location.search)
+			const difficulty = ['easy', 'normal', 'hard'].includes(query.get('bots'))
+				? query.get('bots')
+				: 'normal'
+			const seats = practiceRoster(local, difficulty)
+			const botsOnly = query.has('debug') && query.has('bots-only')
 			const sim = createSim({
 				scene,
 				world,
 				RAPIER,
 				intents: run.intents,
-				heroes: [
-					{ id: local, team: 'A' },
-					{ id: 'lane-script', team: 'B' },
-				],
-				scripted: ['lane-script'],
+				heroes: seats,
+				bots: app.session.authoritative
+					? seats.filter((seat) => botsOnly || seat.id !== local)
+					: [],
 				smooth: run.smooth,
 				present: run.present,
 				lane: true,
 			})
 			const ballView = createBallView(scene)
-			const hero = sim.heroes[0]
+			const hero = sim.heroes.find((h) => h.id === local)
 			const feedback = createFeedback({
 				juice,
 				sfx,
@@ -161,8 +167,9 @@ export default function moba(app) {
 					hero.body.animate(step, hero.cast || hero.attack || hero.ballThrow ? 1 : 0)
 				)
 					sfx.step(p)
-				for (const d of [...sim.heroes.slice(1), ...sim.dummies])
-					if (!d.dead && sim.tick >= (d.freezeUntil ?? 0)) d.body.animate(step, d.ballThrow ? 1 : 0)
+				for (const d of [...sim.heroes.filter((h) => h.id !== local), ...sim.dummies])
+					if (!d.dead && sim.tick >= (d.freezeUntil ?? 0))
+						d.body.animate(step, d.cast || d.attack || d.ballThrow ? 1 : 0)
 				for (const h of [...sim.heroes, ...sim.dummies])
 					if (!h.dead) h.body.poseAbility?.(h.cast, frozen ? 0 : alpha)
 				const target =
@@ -210,8 +217,7 @@ export default function moba(app) {
 				feedback.fizzle(gone)
 				juice.update(step)
 				shadows.update((cast) => {
-					if (!hero.dead) cast(p.x, p.y - hero.body.radius - hero.body.halfHeight, p.z, 0.5)
-					for (const d of sim.dummies) {
+					for (const d of [...sim.heroes, ...sim.dummies]) {
 						if (d.dead) continue
 						const q = d.body.mesh.position
 						cast(q.x, q.y - d.body.radius - d.body.halfHeight, q.z, 0.5)
@@ -227,7 +233,12 @@ export default function moba(app) {
 					carryingBall: sim.ball.carrying(hero),
 					ballPop:
 						sim.ball.state && sim.ball.state.state !== 'warning'
-							? Math.max(0, sim.ball.state.popAt - sim.tick - (frozen ? 0 : alpha)) * app.clock.step
+							? Math.max(
+									0,
+									Math.min(sim.ball.state.popAt, sim.ball.nextBall) -
+										sim.tick -
+										(frozen ? 0 : alpha),
+								) * app.clock.step
 							: null,
 					nextBall: (sim.ball.nextBall - sim.tick - (frozen ? 0 : alpha)) * app.clock.step,
 					nextWave: (sim.lane.nextWave - sim.tick - (frozen ? 0 : alpha)) * app.clock.step,
@@ -304,7 +315,7 @@ export default function moba(app) {
 				for (const key of ['carrySpeed', 'structureDamage']) f.add(t, key, 0, 1, 0.01)
 				f.add(t, 'first', 30, 600, app.clock.step).name('first (applies on restart)')
 				for (const key of ['interval', 'lateInterval'])
-					f.add(t, key, 90, 600, app.clock.step).name(`${key} (next scheduling)`)
+					f.add(t, key, 30, 600, app.clock.step).name(`${key} (next scheduling)`)
 				f.add(t, 'warning', app.clock.step, 30, app.clock.step).name('warning (next warning)')
 				f.add(t, 'life', app.clock.step, 45, app.clock.step).name('life (next spawn)')
 				for (const key of ['channel', 'stun', 'silence', 'lock'])
@@ -325,27 +336,43 @@ export default function moba(app) {
 				f.add(t, 'x', 43, 48, 1)
 				f.add(t, 'heal', 0, 1, 0.01)
 			})
-			run.debug.tune('scripted', tune.scripted, (f, t) => {
-				f.add(t, 'think', app.clock.step, 1, app.clock.step)
-				f.add(t, 'tell', 0.3, 1, app.clock.step)
-				f.add(t, 'retreat', 0, 1, 0.01)
-				f.add(t, 'recover', 0, 1, 0.01)
-				f.add(t, 'file', -3, 3, 0.1)
-				f.add(t, 'hold', 1, 5, 0.1)
+			for (const preset of ['easy', 'normal', 'hard'])
+				run.debug.tune(`bots ${preset}`, tune.bots[preset], (f, t) => {
+					for (const key of ['reaction', 'dodgeReaction'])
+						f.add(t, key, app.clock.step, 1, app.clock.step)
+					for (const key of ['jitter', 'leadError', 'dodge', 'aggression', 'catchRate'])
+						f.add(t, key, 0, 1, 0.01)
+				})
+			run.debug.tune('bots', tune.bots, (f, t) => {
+				f.add(t, 'seed', 0, 10000, 1).name('seed (applies on restart)')
+				f.add(t, 'thinkTicks', 1, 60, 1)
+				f.add(t, 'rainHeroes', 1, 3, 1)
+				f.add(t, 'bruteEscort', 1, 3, 1)
+				f.add(t, 'siegeFile', -4, 4, 1)
+				for (const key of ['retreatHp', 'recoverHp', 'ballHp', 'chaseHp']) f.add(t, key, 0, 1, 0.01)
+				f.add(t, 'fileSpacing', 0, 4, 0.1).name('files (applies on restart)')
+			})
+			run.debug.tune('match', tune.match, (f, t) => {
+				f.add(t, 'late', app.clock.step, 1200, app.clock.step)
+				f.add(t, 'lateGunDamage', 0, 1, 0.01)
 			})
 			run.debug.tune('waves', tune.waves, (f, t) => {
 				f.add(t, 'first', app.clock.step, 30, app.clock.step).name(
 					'first wave (applies on restart)',
 				)
 				f.add(t, 'interval', app.clock.step, 60, app.clock.step).name('interval (next scheduling)')
+				f.add(t, 'lateInterval', app.clock.step, 60, app.clock.step).name(
+					'late interval (next scheduling)',
+				)
+				f.add(t, 'growth', 0, 1, 0.01).name('growth (next spawn)')
 				f.add(t, 'aggro', 1, 10, 0.25)
 				f.add(t, 'helpHold', app.clock.step, 5, app.clock.step)
 				f.add(t, 'leash', 1, 12, 0.25)
 				f.add(t, 'soak', 1, 20, 0.5)
 			})
-			for (const kind of ['melee', 'ranged', 'wizard'])
+			for (const kind of ['melee', 'ranged', 'wizard', 'brute'])
 				run.debug.tune(kind, tune.minions[kind], (f, t) => {
-					f.add(t, 'hp', 1, 1000, 1).name('HP (next spawn)')
+					f.add(t, 'hp', 1, 5000, 1).name('HP (next spawn)')
 					f.add(t, 'damage', 1, 100, 1)
 					f.add(t, 'rate', 0.1, 3, 0.05)
 					f.add(t, 'range', 0.1, 8, 0.1)
@@ -461,7 +488,7 @@ export default function moba(app) {
 			run.debug.expose({
 				moba: {
 					sim,
-					proof: { ...tune.proof, step: app.clock.step },
+					proof: { ...tune.proof, step: app.clock.step, botsOnly },
 					ballFacts,
 					ballView,
 					snapshot: () => sim.snapshot(),

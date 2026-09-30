@@ -23,8 +23,13 @@ export function createLane({
 	removeTower,
 	obstacles,
 }) {
-	const pathOptions = () => ({ radius: tune.waves.radius, ...tune.orders })
-	const plan = createPathPlanner(pathOptions(), obstacles)
+	const pathOptions = (radius = tune.waves.radius) => ({ radius, ...tune.orders })
+	const planners = new Map()
+	const planner = (radius) => {
+		if (!planners.has(radius))
+			planners.set(radius, createPathPlanner(pathOptions(radius), obstacles))
+		return planners.get(radius)
+	}
 	let time = 0
 	let serial = 0
 	let nextWave = ticks(tune.waves.first)
@@ -82,8 +87,12 @@ export function createLane({
 	function spawn(t) {
 		for (const team of ['A', 'B']) {
 			const side = team === 'A' ? -1 : 1
-			for (const [row, kind] of ['melee', 'ranged', 'wizard'].entries()) {
+			for (const [row, kind] of (t * STEP >= tune.match.late
+				? ['melee', 'ranged', 'wizard', 'brute']
+				: ['melee', 'ranged', 'wizard']
+			).entries()) {
 				const stats = tune.minions[kind]
+				const growth = 1 + tune.waves.growth * Math.floor((t * STEP) / tune.waves.growthPeriod)
 				for (let file = 0; file < stats.count; file++) {
 					const z =
 						(stats.count === 2 ? file * 2 - 1 : file - (stats.count - 1) / 2) *
@@ -92,8 +101,9 @@ export function createLane({
 						id: `minion-${++serial}`,
 						team,
 						kind,
-						hp: stats.hp,
-						maxHp: stats.hp,
+						hp: stats.hp * growth,
+						maxHp: stats.hp * growth,
+						damageScale: growth,
 						dead: false,
 						body: makeBody(side * (tune.waves.spawnX + row * tune.waves.rowSpacing), z, team, kind),
 						file: z,
@@ -262,7 +272,7 @@ export function createLane({
 		}
 		if (t >= nextWave) {
 			spawn(t)
-			nextWave += ticks(tune.waves.interval)
+			nextWave += ticks(t * STEP >= tune.match.late ? tune.waves.lateInterval : tune.waves.interval)
 		}
 		const candidates = [...minions, ...structures, ...heroes]
 		const byId = new Map(candidates.map((u) => [u.id, u]))
@@ -274,7 +284,13 @@ export function createLane({
 			if (match.winner) break
 			if (unit.dead) continue
 			const tower = unit.structure
-			const stats = tower ? tune[unit.kind] : tune.minions[unit.kind]
+			const stats = tower
+				? {
+						...tune[unit.kind],
+						damage:
+							tune[unit.kind].damage * (t * STEP >= tune.match.late ? tune.match.lateGunDamage : 1),
+					}
+				: { ...tune.minions[unit.kind], damage: tune.minions[unit.kind].damage * unit.damageScale }
 			const range = tower ? stats.range : tune.waves.aggro
 			let target = t < unit.aggroUntil ? liveTarget(unit.forced) : null
 			if (target && !inReach(unit, target, range)) target = null
@@ -328,8 +344,14 @@ export function createLane({
 				else if (--unit.attack.left <= 0) {
 					unit.attack = null
 					unit.attackTick = t + Math.max(1, ticks(1 / stats.rate) - ticks(stats.tell))
-					if (tower || unit.kind !== 'melee') projectile(unit, target, stats)
-					else damage(unit, target, stats.damage)
+					if (tower || (unit.kind !== 'melee' && unit.kind !== 'brute'))
+						projectile(unit, target, stats)
+					else
+						damage(
+							unit,
+							target,
+							stats.damage * (target.structure ? (stats.structureDamage ?? 1) : 1),
+						)
 				}
 				continue
 			}
@@ -364,7 +386,7 @@ export function createLane({
 			) {
 				unit.pathGoal = { x: goal.x, z: goal.z }
 				const destination = clampWalkable(goal, unit.body.radius, tune.orders.clearance, obstacles)
-				unit.path = plan(p, destination, pathOptions())
+				unit.path = planner(unit.body.radius)(p, destination, pathOptions(unit.body.radius))
 				unit.leg = 0
 			}
 			while (
@@ -381,13 +403,27 @@ export function createLane({
 			const travel = Math.min(length, speed * dt)
 			if (length > 0) {
 				const next = clampWalkable(
-					{ x: p.x + (dx / length) * travel, z: p.z + (dz / length) * travel },
+					{
+						x: p.x + (dx / length) * travel,
+						z:
+							unit.kind === 'brute'
+								? Math.max(
+										-tune.waves.laneZ - unit.body.radius,
+										Math.min(tune.waves.laneZ + unit.body.radius, p.z + (dz / length) * travel),
+									)
+								: p.z + (dz / length) * travel,
+					},
 					unit.body.radius,
 					0,
 					obstacles,
 				)
 				p.x = next.x
-				p.z = Math.max(-tune.waves.laneZ, Math.min(tune.waves.laneZ, next.z))
+				// The larger brute needs the pillar's top escape leg. Never clamp
+				// a depenetrated point back into that pillar after the obstacle query.
+				p.z =
+					unit.kind === 'brute'
+						? next.z
+						: Math.max(-tune.waves.laneZ, Math.min(tune.waves.laneZ, next.z))
 				unit.yaw = Math.atan2(dx, dz) + Math.PI
 				unit.body.face(unit.yaw)
 			}

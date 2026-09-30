@@ -244,7 +244,7 @@ export function createFeedback({ juice, sfx, camera, input, view, skillsView, hu
 				juice.burst(fact.point, fact.direction, { count: 6, speed: 1.4, life: 0.3, size: 0.07 })
 				if (fact.slot !== 'ball' && !effects.impact)
 					cue(
-						['tower', 'fort', 'core', 'melee', 'ranged', 'wizard'].includes(fact.slot)
+						['tower', 'fort', 'core', 'melee', 'ranged', 'wizard', 'brute'].includes(fact.slot)
 							? fact.slot
 							: fact.slot === 'primary'
 								? 'attackHit'

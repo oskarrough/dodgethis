@@ -5,12 +5,36 @@ import { createHash } from 'node:crypto'
 import { STEP } from '../src/core/app.js'
 import { createIntents } from '../src/core/intents.js'
 import { createSim } from '../src/plugins/moba/sim.js'
+import { tune } from '../src/plugins/moba/tune.js'
 import { buildColliders } from '../src/plugins/moba/obstacles.js'
 
 // Every tick's complete legacy state AND facts enter the running digest. Checkpoints
 // bound fixture size; a mismatch on any tick changes every subsequent checkpoint.
 export async function heroTrace() {
 	await RAPIER.init({})
+	// This fixture proves the table migration, not M4's deliberate siege retune.
+	const saved = {
+		tower: tune.tower.damage,
+		fort: tune.fort.damage,
+		core: tune.core.damage,
+		ball: tune.ball.interval,
+		lateBall: tune.ball.lateInterval,
+		late: tune.match.late,
+		lateGun: tune.match.lateGunDamage,
+		growth: tune.waves.growth,
+		lateWave: tune.waves.lateInterval,
+	}
+	tune.tower.damage = 110
+	tune.fort.damage = 160
+	tune.core.damage = 180
+	tune.ball.interval = 150
+	tune.ball.lateInterval = 90
+	tune.match.late = 600
+	tune.match.lateGunDamage = 1
+	tune.waves.growth = 0
+	tune.waves.lateInterval = tune.waves.interval
+	const bruteCount = tune.minions.brute.count
+	tune.minions.brute.count = 0
 	const world = new RAPIER.World({ x: 0, y: -9.81, z: 0 })
 	world.timestep = STEP
 	const unbuild = buildColliders(world, RAPIER)
@@ -93,6 +117,16 @@ export async function heroTrace() {
 			tick: sim.tick,
 		}
 	} finally {
+		tune.tower.damage = saved.tower
+		tune.fort.damage = saved.fort
+		tune.core.damage = saved.core
+		tune.ball.interval = saved.ball
+		tune.ball.lateInterval = saved.lateBall
+		tune.match.late = saved.late
+		tune.match.lateGunDamage = saved.lateGun
+		tune.waves.growth = saved.growth
+		tune.waves.lateInterval = saved.lateWave
+		tune.minions.brute.count = bruteCount
 		sim.dispose()
 		unbuild()
 		world.free()

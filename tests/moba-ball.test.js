@@ -126,19 +126,50 @@ function fixture() {
 	}
 }
 
+test('a scheduled replacement clears the old carrier windup and reports its denial', () => {
+	const previous = tune.ball.interval
+	tune.ball.interval = 15
+	try {
+		const f = fixture()
+		f.pickup()
+		const next = f.ball.nextBall
+		f.ball.begin(next - 1)
+		f.ball.control(
+			f.a,
+			{ ...neutralFrame(), pressed: [{ action: 'primary', at: { x: 4, z: 0 } }] },
+			{ consume() {} },
+			{ x: 1, z: 0 },
+		)
+		expect(f.a.ballThrow).not.toBeNull()
+		f.ball.begin(next)
+		expect(f.a.ballThrow).toBeNull()
+		expect(f.ball.state.state).toBe('loose')
+		expect(f.facts.some((f) => f.type === 'ballDenied' && f.reason === 'replaced')).toBe(true)
+		expect(f.facts.some((f) => f.type === 'ballPop' && f.reason === 'replaced')).toBe(true)
+	} finally {
+		tune.ball.interval = previous
+	}
+})
+
 test('fixed schedule, warning, lifetime and late interval ignore the preceding outcome', () => {
 	const f = fixture()
-	f.ball.begin(ticks(150) - 1)
+	const warning = tune.ball.first - tune.ball.warning
+	f.ball.begin(ticks(warning) - 1)
 	expect(f.ball.state).toBeNull()
-	f.ball.begin(ticks(150))
+	f.ball.begin(ticks(warning))
 	expect(f.ball.state.state).toBe('warning')
-	f.ball.begin(ticks(180))
+	f.ball.begin(ticks(tune.ball.first))
 	expect(f.ball.state.state).toBe('loose')
-	f.ball.begin(ticks(225))
+	f.ball.begin(ticks(tune.ball.first + tune.ball.life))
 	expect(f.ball.state).toBeNull()
-	for (const time of [300, 330, 450, 480, 600, 630]) f.ball.begin(ticks(time))
-	expect(f.facts.filter((e) => e.type === 'ballSpawn')).toHaveLength(4)
-	expect(f.ball.nextBall).toBe(ticks(720))
+	const second = tune.ball.first + tune.ball.interval
+	f.ball.begin(ticks(second))
+	expect(f.facts.filter((e) => e.type === 'ballSpawn')).toHaveLength(2)
+	expect(f.ball.nextBall).toBe(ticks(second + tune.ball.interval))
+	while (f.ball.nextBall < ticks(tune.match.late)) f.ball.begin(f.ball.nextBall)
+	const lateSpawn = f.ball.nextBall
+	f.ball.begin(lateSpawn)
+	expect(f.ball.nextBall).toBe(lateSpawn + ticks(tune.ball.lateInterval))
 	expect(f.facts.every(validFact)).toBe(true)
 })
 

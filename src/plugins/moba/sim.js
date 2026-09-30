@@ -3,6 +3,7 @@ import { abilityOf, castAbility, slowFactor } from './ability.js'
 import { sweepHit, sweepObstacles } from './obstacles.js'
 import { dressHero } from './hero-view.js'
 import { createBall } from './ball.js'
+import { createBots } from './bots.js'
 import { createScriptedHero } from './scripted.js'
 import { createLane } from './lane.js'
 import { createLaneView } from './lane-view.js'
@@ -38,6 +39,8 @@ export function createSim({
 	rng = Math.random,
 	lane: withLane = false,
 	scripted = [],
+	bots = [],
+	seed = tune.bots.seed,
 	intercept = null,
 }) {
 	const laneView = withLane ? createLaneView(scene, smooth) : null
@@ -438,7 +441,7 @@ export function createSim({
 						t >=
 							h.attackTick -
 								ticks(
-									scripted.includes(h.id)
+									scripted.includes(h.id) || botIds.has(h.id)
 										? Math.max(h.definition.basic.windup, tune.scripted.tell)
 										: h.definition.basic.windup,
 								) +
@@ -449,7 +452,7 @@ export function createSim({
 							target: target.id,
 							phase: 'windup',
 							left: ticks(
-								scripted.includes(h.id)
+								scripted.includes(h.id) || botIds.has(h.id)
 									? Math.max(h.definition.basic.windup, tune.scripted.tell)
 									: h.definition.basic.windup,
 							),
@@ -557,12 +560,12 @@ export function createSim({
 			target,
 			yaw: yawOf(dir.x, dir.z),
 			left: ticks(
-				scripted.includes(h.id) && ability.kind === 'shot'
+				(scripted.includes(h.id) || botIds.has(h.id)) && ability.kind === 'shot'
 					? Math.max(skill.castPoint, tune.scripted.tell)
 					: skill.castPoint,
 			),
 			total: ticks(
-				scripted.includes(h.id) && ability.kind === 'shot'
+				(scripted.includes(h.id) || botIds.has(h.id)) && ability.kind === 'shot'
 					? Math.max(skill.castPoint, tune.scripted.tell)
 					: skill.castPoint,
 			),
@@ -1235,8 +1238,14 @@ export function createSim({
 	}
 
 	const brains = scripted.map(createScriptedHero)
+	const botSeats = bots.map((seat) =>
+		typeof seat === 'string' ? { ...seats.find((s) => s.id === seat) } : seat,
+	)
+	const botIds = new Set(botSeats.map((s) => s.id))
+	const botTeam = botSeats.length && withLane ? createBots(botSeats, seed) : null
 	function step(dt = STEP) {
 		if (lane?.match.winner) return
+		botTeam?.step(api, intents)
 		for (const brain of brains) brain({ heroes, lane, ball, tick: t }, intents)
 		t++
 		for (let i = boards.length - 1; i >= 0; i--)
@@ -1470,6 +1479,7 @@ export function createSim({
 							kind: u.kind,
 							team: u.team,
 							hp: u.hp,
+							damageScale: u.damageScale,
 							pos: pos(u.body),
 							yaw: q(u.yaw ?? 0),
 							target: u.target,
@@ -1602,6 +1612,7 @@ export function createSim({
 		ball,
 		obstacles,
 		find,
+		bots: botTeam,
 		step,
 		stickAim,
 		pick,
