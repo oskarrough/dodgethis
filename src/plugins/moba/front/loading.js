@@ -10,7 +10,10 @@ import './loading.css'
 
 // Parent-owned presentation scope survives starting the real match. The match itself
 // owns every body, map mesh and collider; cancellation aborts it through modes.start.
-export function startLoading(app, { el, backdrop, returnHero, buildWait = 0 }) {
+export function startLoading(
+	app,
+	{ el, backdrop, returnHero, buildWait = 0, difficulty = 'easy' },
+) {
 	let dispose
 	dispose = app.use((scope) => {
 		const gate = createLoadingState(tune.loading)
@@ -28,7 +31,10 @@ export function startLoading(app, { el, backdrop, returnHero, buildWait = 0 }) {
 		// mode start is synchronous today; waiting remains explicit for future async assets.
 		const rasterReady = backdrop.prepareDescent()
 		const session = app.session
-		match = app.modes.start('moba', { session })
+		match = app.modes.start('moba', {
+			session,
+			options: { difficulty, ready: () => gate.state.phase === 'landed' && !capturing },
+		})
 		const parent = canvas.parentNode
 		const next = canvas.nextSibling
 		const hero = localLoadingHero(match.snapshot(), app.session.local[0])

@@ -23,7 +23,7 @@ export function interceptTime(from, target, speed) {
 	return roots.length ? Math.min(...roots) : Math.sqrt(c) / speed
 }
 
-export function practiceRoster(local = 'local', difficulty = 'normal') {
+export function practiceRoster(local = 'local', difficulty = 'easy') {
 	return ['A', 'B'].flatMap((team) =>
 		Array.from({ length: 3 }, (_, i) => ({
 			id: team === 'A' && i === 0 ? local : `bot-${team}-${i}`,
@@ -87,7 +87,8 @@ function view(sim, births) {
 export function createBots(seats, seed = tune.bots.seed) {
 	const history = []
 	const births = new WeakMap()
-	const brains = seats.map((seat) => createBot(seat, seed))
+	const botIds = new Set(seats.map((seat) => seat.id))
+	const brains = seats.map((seat) => createBot(seat, seed, botIds))
 	return {
 		brains,
 		step(sim, intents) {
@@ -103,7 +104,7 @@ export function createBots(seats, seed = tune.bots.seed) {
 	}
 }
 
-export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed) {
+export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed, botIds = null) {
 	const random = botRandom(seed, id)
 	const normal = () =>
 		Math.sqrt(-2 * Math.log(Math.max(Number.EPSILON, random()))) * Math.cos(2 * Math.PI * random())
@@ -421,8 +422,21 @@ export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed) {
 				}
 				return frame
 			}
+			// Easy opponents give an early human one duelist, not a firing squad.
+			// Assignment uses delayed public positions and stable ids on equal distances.
+			const canFocus = (enemy) => {
+				if (difficulty !== 'easy' || !botIds || botIds.has(enemy.id) || now * STEP >= k.focusUntil)
+					return true
+				const duelists = own
+					.filter((unit) => botIds.has(unit.id))
+					.sort(
+						(a, c) =>
+							distance(a.pos, enemy.pos) - distance(c.pos, enemy.pos) || a.id.localeCompare(c.id),
+					)
+				return duelists.slice(0, k.humanAttackers).some((unit) => unit.id === id)
+			}
 			const rivals = near(
-				enemies,
+				enemies.filter(canFocus),
 				p,
 				Math.max(
 					b.fightRange,
@@ -539,7 +553,7 @@ export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed) {
 				const cluster =
 					rain &&
 					predictedHeroes
-						.filter((u) => distance(p, u.pos) <= rain.range)
+						.filter((u) => canFocus(u) && distance(p, u.pos) <= rain.range)
 						.map((u) => ({ u, count: near(predictedHeroes, u.pos, rain.radius).length }))
 						.sort(
 							(a, c) =>

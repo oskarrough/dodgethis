@@ -17,7 +17,7 @@ export function viewFootprint(t, aspect, fov = t.fov) {
 	}
 }
 
-export function clampView(point, t, aspect = 1, reserve = 0) {
+export function clampView(point, t, aspect = 1, reserve = 0, focus = null) {
 	let fov = t.fov + reserve,
 		footprint = viewFootprint(t, aspect, fov)
 	const padding = t.viewPadding ?? tune.follow.viewPadding
@@ -34,17 +34,47 @@ export function clampView(point, t, aspect = 1, reserve = 0) {
 		fov = low
 		footprint = viewFootprint(t, aspect, fov)
 	}
-	return {
-		x: Math.max(
-			-FLOOR.halfX + footprint.halfX + padding,
-			Math.min(FLOOR.halfX - footprint.halfX - padding, point.x),
-		),
-		z: Math.max(
-			-FLOOR.halfZ - footprint.minZ + padding,
-			Math.min(FLOOR.halfZ - footprint.maxZ - padding, point.z),
-		),
-		fov: Math.max(tune.follow.minFov, fov - reserve),
+	const bounded = (angle, centre = point) => {
+		const footprint = viewFootprint(t, aspect, angle)
+		return {
+			x: Math.max(
+				-FLOOR.halfX + footprint.halfX + padding,
+				Math.min(FLOOR.halfX - footprint.halfX - padding, centre.x),
+			),
+			z: Math.max(
+				-FLOOR.halfZ - footprint.minZ + padding,
+				Math.min(FLOOR.halfZ - footprint.maxZ - padding, centre.z),
+			),
+		}
 	}
+	let at = bounded(fov)
+	if (focus) {
+		// Narrow the lens near a base rather than show void or lose the hero off-screen.
+		const visible = (angle) => {
+			const at = bounded(angle, focus)
+			const height = Math.max(t.minHeight ?? tune.follow.minHeight, t.height)
+			const back = Math.max(0, t.back)
+			const distance = Math.hypot(height, back)
+			const dz = focus.z - at.z
+			const depth = (height * height + back * (back - dz)) / distance
+			const tangent = Math.tan((angle * Math.PI) / 360)
+			const x = (focus.x - at.x) / (depth * Math.max(0.01, aspect) * tangent)
+			const y = (height * dz) / (distance * depth * tangent)
+			return Math.max(Math.abs(x), Math.abs(y)) <= (t.edgeInset ?? tune.follow.edgeInset)
+		}
+		if (!visible(fov) && visible(tune.follow.minFov)) {
+			let low = tune.follow.minFov,
+				high = fov
+			for (let i = 0; i < tune.follow.fitIterations; i++) {
+				const middle = (low + high) / 2
+				if (visible(middle)) low = middle
+				else high = middle
+			}
+			fov = low
+			at = bounded(fov)
+		}
+	}
+	return { ...at, fov: Math.max(tune.follow.minFov, fov - reserve) }
 }
 
 // Follow framing: a critically damped spring on the rendered hero. Only pad aim gets look-ahead.
@@ -114,7 +144,13 @@ export function createFollow(t = tune.follow) {
 				at[k] = g[k] + (d + tmp) * decay
 			}
 		}
-		const bounded = clampView(at, t, aspect, Math.max(0, cameraFov - lastFov) + pendingKick)
+		const bounded = clampView(
+			at,
+			t,
+			aspect,
+			Math.max(0, cameraFov - lastFov) + pendingKick,
+			free && !centred ? null : hero,
+		)
 		pendingKick = 0
 		lastFov = bounded.fov
 		if (bounded.x !== at.x) vel.x = 0

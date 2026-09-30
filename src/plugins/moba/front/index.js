@@ -64,6 +64,8 @@ export function mobaFront(app) {
 			let preview = null
 			let card = null
 			let screen = 'modes'
+			const requested = options.difficulty ?? new URLSearchParams(location.search).get('bots')
+			let difficulty = ['easy', 'normal', 'hard'].includes(requested) ? requested : 'easy'
 			run.renderDemand(() => screen === 'hero')
 			run.system('present', ({ dt }) => {
 				preview?.update(dt)
@@ -83,6 +85,7 @@ export function mobaFront(app) {
 					<path d="M24 66 L168 60 M93 78 L93 124" fill="none"/>
 					<circle cx="29" cy="23" r="1.5"/><circle cx="161" cy="15" r="1.5"/>
 				</svg><span class="front-mode-name">Practice</span></button>
+				<div class="front-difficulty" role="group" aria-label="Opponent difficulty">${['easy', 'normal', 'hard'].map((value) => `<button type="button" data-difficulty="${value}" aria-pressed="${value === difficulty}">${value[0].toUpperCase() + value.slice(1)}</button>`).join('')}</div>
 				<footer><button type="button" class="front-back">Back to the hub</button>
 				<p class="front-prompts" aria-live="polite"></p></footer>`
 			const backdrop = options.backdrop ?? createBackdrop(el)
@@ -91,6 +94,8 @@ export function mobaFront(app) {
 			let buttons = [...el.querySelectorAll('button')]
 			const practice = el.querySelector('.front-practice')
 			const backButton = el.querySelector('.front-back')
+			const difficultyChoices = el.querySelector('.front-difficulty')
+			const modeButtons = [...buttons]
 			const canvas = app.renderer.domElement
 			const canvasParent = canvas.parentNode
 			const canvasNext = canvas.nextSibling
@@ -115,6 +120,7 @@ export function mobaFront(app) {
 				pointerMoved = false
 				setDevice(device, true)
 				practice.hidden = true
+				difficultyChoices.hidden = true
 				backButton.textContent = 'Back'
 				el.setAttribute('aria-label', 'Choose your hero')
 				el.classList.add('selecting-hero')
@@ -140,15 +146,22 @@ export function mobaFront(app) {
 				canvasParent.insertBefore(canvas, canvasNext)
 				canvas.inert = true
 				practice.hidden = false
+				difficultyChoices.hidden = false
 				backButton.textContent = 'Back to the hub'
 				el.classList.remove('selecting-hero')
 				el.setAttribute('aria-label', 'Choose a mode')
-				buttons = [practice, backButton]
+				buttons = [...modeButtons]
 				bindControls()
 			}
 			function activate(index) {
 				const button = buttons[index]
 				if (button === backButton) return showModes()
+				if (button.dataset.difficulty) {
+					difficulty = button.dataset.difficulty
+					for (const choice of difficultyChoices.querySelectorAll('button'))
+						choice.setAttribute('aria-pressed', String(choice.dataset.difficulty === difficulty))
+					return
+				}
 				if (screen === 'hero' && button.dataset.slot) return preview.start(button.dataset.slot)
 				if (button.classList.contains('front-numbers')) {
 					preview.stop()
@@ -164,8 +177,9 @@ export function mobaFront(app) {
 						el,
 						backdrop,
 						buildWait: options.buildWait ?? buildWait,
+						difficulty,
 						returnHero: () =>
-							app.modes.start('moba-front', { options: { hero: true, el, backdrop } }),
+							app.modes.start('moba-front', { options: { hero: true, el, backdrop, difficulty } }),
 					})
 				}
 			}
@@ -269,6 +283,9 @@ export function mobaFront(app) {
 					freezePreview: (value) => preview?.freeze(value),
 					get preview() {
 						return preview?.state ?? null
+					},
+					get difficulty() {
+						return difficulty
 					},
 					get screen() {
 						return screen

@@ -1,0 +1,32 @@
+.overlay[data-theme^='moba'] {
+	background: rgba(255, 253, 244, 0.12);
+	backdrop-filter: blur(0.3px);
+}
+.overlay[data-theme^='moba'] .dialog-card {
+	background: var(--ui-cream);
+}
+.overlay[data-theme^='moba'] h1 {
+	display: inline-block;
+	font: 400 clamp(38px, 6vw, 72px) / 1 var(--ui-font);
+	letter-spacing: 0.01em;
+	color: var(--ui-cream);
+	background: var(--overlay-accent);
+	border: 3px solid var(--ui-text);
+	border-radius: 14px;
+	padding: 10px 18px;
+	box-shadow: 4px 4px 0 var(--ui-text);
+	-webkit-text-stroke: 1px var(--ui-text);
+	paint-order: stroke fill;
+	transform: rotate(-1deg);
+}
+.overlay[data-theme='moba-pause'] h1 {
+	color: var(--ui-text);
+	background: var(--ui-cream);
+	-webkit-text-stroke: 0;
+}
+.overlay[data-theme^='moba'] .sub {
+	font-family: 'Josefin Sans', sans-serif;
+	text-transform: none;
+	letter-spacing: 0;
+	color: var(--ui-text);
+}

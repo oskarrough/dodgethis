@@ -23,7 +23,7 @@ function match(seed, { idle = false, hz = 60, trace = false, limit = 54000 } = {
 	world.timestep = STEP
 	const unbuild = buildColliders(world, RAPIER)
 	const app = createApp()
-	const seats = practiceRoster()
+	const seats = practiceRoster('local', 'normal')
 	let sim,
 		pending = [],
 		invalid = 0,
@@ -187,7 +187,7 @@ test('two real sims with the same participant ids have independent brains, strea
 		app.modes.define('proof', {
 			scheme: 'pointClick',
 			start(run) {
-				const seats = practiceRoster()
+				const seats = practiceRoster('local', 'normal')
 				sim = createSim({
 					scene: new THREE.Scene(),
 					world,
@@ -372,6 +372,32 @@ function opponent(f, hp = 1000) {
 	})
 	return f.perceived.heroes.at(-1)
 }
+
+test('early easy opponents assign only one duelist to a lone human, then lift the cap', () => {
+	const f = fixture()
+	const human = opponent(f)
+	human.id = 'human'
+	f.sim.heroes.at(-1).id = 'human'
+	f.h.cd = [99, 99, 99, 99, 99]
+	const ids = new Set(['bot', 'wing-1', 'wing-2'])
+	for (const [i, id] of ['wing-1', 'wing-2'].entries()) {
+		f.perceived.heroes.push({ ...f.perceived.heroes[0], id, pos: { x: 1 + i, z: 2 } })
+	}
+	const duelist = createBot({ id: 'bot', team: 'A', difficulty: 'easy' }, 1, ids)
+	const wing = createBot({ id: 'wing-1', team: 'A', difficulty: 'easy' }, 1, ids)
+	f.sim.heroes.push({ ...f.h, id: 'wing-1', body: { position: { x: 1, z: 2 }, radius: 0.45 } })
+	expect(duelist.frame(f.sim, f.perceived).order).toEqual(
+		f.sim.heroes.find((h) => h.id === 'human').body.position,
+	)
+	expect(wing.frame(f.sim, f.perceived).order).not.toEqual(
+		f.sim.heroes.find((h) => h.id === 'human').body.position,
+	)
+	f.sim.tick = Math.round(tune.bots.easy.focusUntil / STEP) + 6
+	f.perceived.tick = f.sim.tick
+	expect(wing.frame(f.sim, f.perceived).order).toEqual(
+		f.sim.heroes.find((h) => h.id === 'human').body.position,
+	)
+})
 
 test('Loose solves the positive intercept, including the equal-speed and unreachable cases', () => {
 	for (const velocity of [

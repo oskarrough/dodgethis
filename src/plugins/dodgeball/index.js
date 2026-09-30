@@ -358,7 +358,7 @@ export default function dodgeball(app, { hubPortal = null } = {}) {
 				entry.className = 'sticker online-entry hub-mode-entry'
 				entry.textContent = `Play ${hubPortal.label}`
 				entry.onclick = hubPortal.onSelect
-				splashEl.append(entry)
+				splashEl.querySelector('.hub-actions').append(entry)
 				run.signal.addEventListener('abort', () => entry.remove(), { once: true })
 			}
 			court.setShown(true)
@@ -489,6 +489,7 @@ export default function dodgeball(app, { hubPortal = null } = {}) {
 			run.signal.addEventListener('abort', () => {
 				flow.dispose()
 				flow = null
+				splashEl.hidden = true
 				aim.hide()
 				resetPresentation()
 				court.setShown(false)

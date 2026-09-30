@@ -66,7 +66,7 @@ export default function moba(app) {
 
 	app.modes.define('moba', {
 		scheme: 'pointClick',
-		start(run) {
+		start(run, { options = {} } = {}) {
 			const local = app.session.local[0]
 			app.setPalette({})
 			document.documentElement.style.removeProperty('--page-bg')
@@ -84,9 +84,8 @@ export default function moba(app) {
 			const cameraControls = createCameraControls(window, run.signal, follow, () => !menu.frozen())
 			const cursor = createCursor(app.renderer.domElement)
 			const query = new URLSearchParams(window.location.search)
-			const difficulty = ['easy', 'normal', 'hard'].includes(query.get('bots'))
-				? query.get('bots')
-				: 'normal'
+			const requested = options.difficulty ?? query.get('bots')
+			const difficulty = ['easy', 'normal', 'hard'].includes(requested) ? requested : 'easy'
 			const seats = practiceRoster(local, difficulty)
 			const botsOnly = query.has('debug') && query.has('bots-only')
 			const sim = createSim({
@@ -123,7 +122,16 @@ export default function moba(app) {
 			})
 			app.clock.reset()
 
-			const menu = createMatchMenu({ app, run, sim, hero, clearCamera: cameraControls.clear })
+			const menu = createMatchMenu({
+				app,
+				run,
+				sim,
+				hero,
+				clearCamera: cameraControls.clear,
+				focusCore: follow.focus,
+				ready: options.ready,
+				difficulty,
+			})
 			run.clock.scale(feedback.beat)
 			run.intents.suspend(() => coreTune.physics.paused)
 			run.input.stickAim((dir, magnitude, slot) => sim.stickAim(local, dir, magnitude, slot))
@@ -131,7 +139,7 @@ export default function moba(app) {
 			const onPad = () => input.activeDevice() === 'gamepad'
 			run.camera.frame((dt) => {
 				const frame = app.intents.get(local)
-				const pad = onPad()
+				const pad = onPad() && !sim.lane.match.winner
 				const aim = pad && Object.keys(frame.held).length ? frame.aim : null
 				return follow.frame(dt, hero.body.mesh.position, aim, {
 					...cameraControls.read(),
@@ -156,9 +164,10 @@ export default function moba(app) {
 				return unit?.body.mesh.position ?? null
 			}
 			run.system('present', ({ dt, gameDt, alpha }) => {
-				menu.result()
+				menu.result(coreTune.physics.paused ? 0 : dt)
 				const frozen = menu.frozen() || coreTune.physics.paused
-				const step = frozen ? 0 : gameDt
+				const presentationFrozen = menu.presentationFrozen() || coreTune.physics.paused
+				const step = presentationFrozen ? 0 : sim.lane.match.winner ? dt : gameDt
 				const frame = app.intents.get(local)
 				const p = hero.body.mesh.position
 				audio.setAudioListener(p)
@@ -182,7 +191,15 @@ export default function moba(app) {
 					pad: onPad(),
 					paused: frozen,
 				})
-				ballView.update(sim, frozen ? 0 : alpha, local, frame.aim, app.camera.view)
+				ballView.update(
+					sim,
+					frozen ? 0 : alpha,
+					local,
+					frame.aim,
+					app.camera.view,
+					sim.tick +
+						(sim.lane.match.winner ? menu.endingTime() / app.clock.step : frozen ? 0 : alpha),
+				)
 				sim.laneView.update(sim.lane, sim.heroes, frozen ? 0 : alpha, locate, step)
 				const lineAbility = hero.cast
 					? castAbility(hero)
@@ -252,7 +269,7 @@ export default function moba(app) {
 						: null,
 				})
 				// The camera's explicit FOV spring needs bounded integration steps on slow renderers.
-				let cameraLeft = frozen ? 0 : dt
+				let cameraLeft = presentationFrozen ? 0 : dt
 				while (cameraLeft > 0) {
 					const cameraStep = Math.min(cameraLeft, tune.follow.maxStep)
 					app.camera.update(cameraStep)
@@ -328,6 +345,10 @@ export default function moba(app) {
 						f.add(t, key, app.clock.step, 1, app.clock.step)
 					for (const key of ['jitter', 'leadError', 'dodge', 'aggression', 'catchRate'])
 						f.add(t, key, 0, 1, 0.01)
+					if (preset === 'easy') {
+						f.add(t, 'focusUntil', app.clock.step, 600, app.clock.step).name('early duel rule (s)')
+						f.add(t, 'humanAttackers', 1, 3, 1).name('early human duelists')
+					}
 				})
 			run.debug.tune('bots', tune.bots, (f, t) => {
 				f.add(t, 'seed', 0, 10000, 1).name('seed (applies on restart)')
@@ -440,6 +461,7 @@ export default function moba(app) {
 				f.add(t, 'back', 0, 30, 0.5)
 				f.add(t, 'fov', 20, 70, 1)
 				f.add(t, 'response', 0.02, 0.6, 0.01).name('pad response (s)')
+				f.add(t, 'edgeInset', 0.5, 0.95, 0.01).name('base framing ×')
 				f.add(t, 'lookAhead', 0, 0.6, 0.01).name('pad look ahead ×')
 				f.add(t, 'lookCap', 0, 8, 0.25).name('pad look cap (m)')
 			})

@@ -2,7 +2,19 @@ import { afterEach, beforeEach, expect, test } from 'bun:test'
 import { createApp, STEP } from '../src/core/app.js'
 import { createMatchMenu } from '../src/plugins/moba/menu.js'
 
-let app, sim, menu, overlay, pad, nav, cancelled, cleared, target, oldWindow
+let app,
+	sim,
+	menu,
+	overlay,
+	pad,
+	nav,
+	cancelled,
+	cleared,
+	target,
+	oldWindow,
+	ready,
+	consumed,
+	focused
 beforeEach(() => {
 	oldWindow = globalThis.window
 	globalThis.window = new EventTarget()
@@ -11,6 +23,9 @@ beforeEach(() => {
 	cancelled = []
 	cleared = 0
 	target = null
+	ready = true
+	consumed = 0
+	focused = []
 	overlay = {
 		visible: false,
 		card: null,
@@ -28,7 +43,13 @@ beforeEach(() => {
 	app = createApp({
 		overlay,
 		audio: { setMusicScene() {} },
-		input: { pad: () => pad, consumeMenuInput: () => nav },
+		input: {
+			pad: () => pad,
+			consumeMenuInput: () => {
+				consumed++
+				return nav
+			},
+		},
 	})
 	app.modes.define('moba-front', {
 		scheme: 'pointClick',
@@ -42,7 +63,10 @@ beforeEach(() => {
 		start(run) {
 			sim = {
 				tick: 0,
-				lane: { match: { winner: null } },
+				lane: {
+					match: { winner: null },
+					structures: [{ kind: 'core', dead: true, body: { position: { x: 40, z: 0 } } }],
+				},
 				heroes: [
 					{ id: 'other', team: 'A' },
 					{ id: 'me', team: 'B' },
@@ -63,9 +87,11 @@ beforeEach(() => {
 				sim,
 				hero: sim.heroes.find((h) => h.id === 'me'),
 				clearCamera: () => cleared++,
+				ready: () => ready,
+				focusCore: (point) => focused.push(point),
 			})
 			run.system('simulate', () => sim.tick++)
-			run.system('present', menu.result)
+			run.system('present', ({ dt }) => menu.result(dt))
 			return { snapshot: () => ({ t: sim.tick }), apply: () => false, validFact: () => false }
 		},
 	})
@@ -116,6 +142,9 @@ test.each([
 ])('result %s is relative, cannot resume, stays frozen and restarts clean', (winner, title) => {
 	sim.lane.match.winner = winner
 	app.frame(STEP)
+	expect(overlay.visible).toBe(false)
+	expect(focused).toEqual([{ x: 40, z: 0 }])
+	for (let i = 0; i < 91; i++) app.frame(STEP)
 	expect(overlay.card.title).toBe(title)
 	expect(overlay.card.actions.map((a) => a.label)).toEqual(['Again', 'Hero', 'Modes'])
 	const old = sim
@@ -142,9 +171,28 @@ test.each([
 	expect(overlay.visible).toBe(false)
 	expect(app.modes.active).toBe('moba-front')
 })
+test('loading owns controller gestures and Start cannot leave a pause queued after landing', () => {
+	ready = false
+	nav.confirm = true
+	app.emit('menu')
+	app.frame(STEP)
+	expect(overlay.visible).toBe(false)
+	expect(consumed).toBe(0)
+	ready = true
+	nav.confirm = false
+	app.frame(STEP)
+	expect(menu.frozen()).toBe(false)
+	expect(consumed).toBe(0)
+	app.emit('menu')
+	app.frame(STEP)
+	expect(consumed).toBe(1)
+	expect(overlay.card.pointerGuard).toBe(true)
+	expect(overlay.card.spaceConfirm).toBe(false)
+})
+
 test('fresh results offer hero and modes and no previous menu listener survives', () => {
 	sim.lane.match.winner = 'B'
-	app.frame(STEP)
+	for (let i = 0; i < 92; i++) app.frame(STEP)
 	overlay.card.actions.find((a) => a.label === 'Hero').onSelect()
 	expect(target).toBe('hero')
 	escape()

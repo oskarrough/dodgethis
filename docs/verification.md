@@ -27,7 +27,17 @@ The deployed site had different pre-existing arrow tuning from this checkout dur
 
 `node scripts/verify-moba-playability.mjs <preview URL> <shots directory>` checks a frozen production build. The recorded pass used the playability changes with `6eaf363e`'s bots, keeping the parallel bot review out of the proof. Keyboard, mouse and pad completed selection, loading, pause, resume and exit; both the physical hub portal and the Play MOBA button worked. Hero select, Numbers, pause and the panned-away hero marker were captured at 390×844, 1280×577, 1440×900 and 2560×1080 without overlapping the footer.
 
-Real seeded 3v3 play reached VICTORY at tick 50955 (14:09), without injected shots or damage. The live Ball marker, frozen result and clean Again were asserted. The browser reported no errors. `bun run check` passed 451 tests with both dodgeball characterization snapshots unchanged. Screenshots and the machine-readable report are in `/tmp/playability-shots/` on the build machine.
+Six bots playing a seeded 3v3 reached VICTORY at tick 50955 (14:09), without injected shots or damage. The local seat was also bot-controlled; this was not evidence that a human could win. The live Ball marker, frozen result and clean Again were asserted. The browser reported no errors. `bun run check` passed 451 tests with both dodgeball characterization snapshots unchanged. Screenshots and the machine-readable report are in `/tmp/playability-shots/` on the build machine.
+
+## MOBA playability review corrections
+
+`tests/moba-practice.test.js` runs a cautious scripted human through ordinary point-click orders and skill presses in default Easy Practice. Decisions arrive every half-second: follow the wave, fire from range, attack structures behind allied creeps, and retreat below 55% HP. It does not control the Ball, predict dodges or inject damage. Seed 2 reached victory at 14:41 with zero deaths, 180 casts and 324 hit facts from the human. This establishes that this policy can win, not that an actual first-time player has been playtested.
+
+Regression tests cover loading's ownership of controller input, ignored Start before landing, Resume-first focus, passive pointer hover, Space rejection, both relative result cards, a frozen winning simulation, presentation-timed core shatter, and visible base spawns for both teams at all four viewport sizes. The historical 14:09 result remains explicitly a six-bot match.
+
+The review browser artifacts are in `/tmp/playability-review-shots/`. Mouse, keyboard and pad entry/loading/menu/exit checks passed, including the moved physical portal, the unobstructed central dodgeball portal, hidden splash during the match, and A-to-skip while Start is ignored during loading. Mode, hero and Numbers layouts were captured at all four sizes; pause was captured at 1440×900. A separate six-bot browser run reached VICTORY at tick 74562 (20:43). The winning snapshot stayed unchanged during ending presentation, the team-blue result appeared, and Again started at tick zero with no shots or winner. That browser reported no errors; its record is `result-report.json` in the same directory.
+
+The single full working-copy test run, including the parallel agent-play tests, took 476.18 seconds: 464 passed, one camera test failed, and both dodgeball snapshots were unchanged. `bun run check` took 481 seconds overall. The failure exposed an unreachable corner focus driving the lens to its minimum; the fallback was corrected and all 35 camera/loading/menu/ending/overlay/lane tests then passed in 2.78 seconds. Lint and formatting passed separately. The full suite was not rerun.
 
 ## Two-device check
 

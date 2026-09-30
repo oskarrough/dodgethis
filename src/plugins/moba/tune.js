@@ -192,6 +192,8 @@ export const tune = {
 		siegeMinions: 2,
 		siegeBackoff: 1,
 		easy: {
+			focusUntil: 300,
+			humanAttackers: 1,
 			reaction: 0.45,
 			dodgeReaction: 0.3,
 			jitter: 0.14,
@@ -221,7 +223,7 @@ export const tune = {
 	},
 	scripted: { think: 0.1, tell: 0.3, retreat: 0.35, recover: 0.9, file: 2, hold: 3 },
 	proof: { batch: 3600, afterKill: 1, siegeLimit: 600, trace: 128, queryBudgetMs: 2 },
-	hud: { bannerLife: 2.5 },
+	hud: { bannerLife: 2.5, ending: 1.5 },
 	match: { objective: 180, late: 480, lateGunDamage: 0.25 },
 	waves: {
 		first: 15,
@@ -280,6 +282,12 @@ export const tune = {
 	laneView: {
 		rubbleRadius: 0.7,
 		rubbleHeight: 0.35,
+		shatterLife: 0.8,
+		shatterSpread: 2,
+		shatterLift: 1.5,
+		shatterPieces: 5,
+		shatterSize: 0.5,
+		shatterSpin: 3,
 		towerHeight: 4,
 		fortHeight: 5,
 		coreHeight: 7,
@@ -495,6 +503,7 @@ export const tune = {
 	},
 	follow: {
 		viewPadding: 1.25,
+		edgeInset: 0.85,
 		minHeight: 1,
 		minFov: 0.01,
 		fitIterations: 24,

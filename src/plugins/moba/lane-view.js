@@ -177,6 +177,7 @@ export function createLaneView(scene, smooth = null) {
 		mesh.position.copy(pose.position)
 		scene.add(mesh)
 		const unsmooth = smooth?.(mesh, () => pose)
+		let shatter = null
 		let helpTether = null
 		if (!tower) {
 			const geometry = new THREE.BoxGeometry(v.tetherWidth, v.tetherHeight, 1)
@@ -197,8 +198,22 @@ export function createLaneView(scene, smooth = null) {
 					mesh.visible = false
 					return
 				}
-				mesh.remove(visual)
-				visual.visible = false
+				if (kind === 'core') {
+					crystal.visible = false
+					for (const crack of cracks) crack.visible = false
+					shatter = { age: 0, pieces: [] }
+					for (let i = 0; i < v.shatterPieces; i++) {
+						const geometry = new THREE.OctahedronGeometry(v.shatterSize)
+						owned.push(geometry)
+						const piece = new THREE.Mesh(geometry, teamMaterial)
+						piece.name = 'core-shard'
+						mesh.add(piece)
+						shatter.pieces.push(piece)
+					}
+				} else {
+					mesh.remove(visual)
+					visual.visible = false
+				}
 				if (dome) dome.visible = false
 				const geometry = new THREE.CylinderGeometry(
 					radius * v.rubbleRadius,
@@ -210,6 +225,21 @@ export function createLaneView(scene, smooth = null) {
 				const rubble = new THREE.Mesh(geometry, ink)
 				rubble.position.y = -halfHeight + v.rubbleHeight / 2
 				mesh.add(rubble)
+			},
+			animateShatter(dt) {
+				if (!shatter) return
+				shatter.age += Math.max(0, dt)
+				const progress = Math.min(1, shatter.age / Math.max(STEP, tune.laneView.shatterLife))
+				for (const [i, piece] of shatter.pieces.entries()) {
+					const angle = (i * Math.PI * 2) / shatter.pieces.length
+					piece.position.set(
+						Math.cos(angle) * tune.laneView.shatterSpread * progress,
+						(-halfHeight + tune.laneView.shatterSize) * progress * progress +
+							tune.laneView.shatterLift * Math.sin(Math.PI * progress),
+						Math.sin(angle) * tune.laneView.shatterSpread * progress,
+					)
+					piece.rotation.set(progress * tune.laneView.shatterSpin, angle, progress * angle)
+				}
 			},
 			squeeze: 0,
 			recoil: 0,
@@ -249,6 +279,7 @@ export function createLaneView(scene, smooth = null) {
 		const v = tune.laneView
 		cameraFacing.setFromAxisAngle(pitchAxis, -Math.atan2(tune.follow.height, tune.follow.back))
 		for (const unit of [...lane.structures, ...lane.minions]) {
+			unit.body.animateShatter?.(dt)
 			unit.body.squeeze *= Math.exp(-v.feedbackDecay * dt)
 			unit.body.recoil *= Math.exp(-v.feedbackDecay * dt)
 			const progress = unit.attack

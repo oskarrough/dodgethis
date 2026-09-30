@@ -57,6 +57,8 @@ export function descentFrame(progress, hero, start, follow, bounds, aspect = 1) 
 		{ x: clamp(hero.x, bounds.halfX), z: clamp(hero.z, bounds.halfZ) },
 		follow,
 		aspect,
+		0,
+		hero,
 	)
 	const x = landing.x,
 		z = landing.z

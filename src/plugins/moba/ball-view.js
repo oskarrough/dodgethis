@@ -104,7 +104,7 @@ export function createBallView(scene, rng = Math.random) {
 				})
 			}
 		},
-		update(sim, alpha, local, target, camera = null) {
+		update(sim, alpha, local, target, camera = null, effectTick = sim.tick + alpha) {
 			const state = sim.ball.state
 			if (sim.tick !== lastTick) {
 				previous = current
@@ -196,7 +196,7 @@ export function createBallView(scene, rng = Math.random) {
 					}
 				}
 			}
-			const age = burst ? (sim.tick + alpha - burst.tick) * STEP : Infinity
+			const age = burst ? (effectTick - burst.tick) * STEP : Infinity
 			confetti.visible = age >= 0 && age < tune.ballConfetti.life
 			if (confetti.visible) {
 				const c = tune.ballConfetti

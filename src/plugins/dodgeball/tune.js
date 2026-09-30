@@ -1,7 +1,7 @@
 // --- Tunables ----------------------------------------------------------------
 // Dodgeball's live game-feel values, shared by the debug GUI, game logic, and DOM-free tests. Core's live in src/core/tune.js.
 export const tune = {
-	hubPortal: { x: 0, z: 3, labelSize: 72 },
+	hubPortal: { x: 3.5, z: 3, labelSize: 72 },
 	player: {
 		// Q3-style acceleration and hard stop friction give committed strafes without bunny-hop runaway.
 		speed: 6.5, // max ground wishspeed (m/s)

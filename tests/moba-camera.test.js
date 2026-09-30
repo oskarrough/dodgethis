@@ -1,3 +1,4 @@
+import * as THREE from 'three'
 import { expect, test } from 'bun:test'
 import { createFollow, viewFootprint } from '../src/plugins/moba/follow.js'
 import { createCameraControls } from '../src/plugins/moba/camera-controls.js'
@@ -127,6 +128,33 @@ test('mouse follow has no extra lag and suspended menus cannot pan or recenter',
 	key(target, 'Space')
 	expect(controls.read()).toEqual({ centred: false, pan: { x: 0, z: 0 } })
 	controller.abort()
+})
+
+test('all spawn and respawn files stay in view without any ground corner leaving the map', () => {
+	for (const [width, height] of [
+		[390, 844],
+		[1280, 577],
+		[1440, 900],
+		[2560, 1080],
+	]) {
+		for (const side of [-1, 1])
+			for (const file of [-1.5, 0, 1.5]) {
+				const hero = { x: side * tune.map.spawnX, z: file }
+				const follow = createFollow()
+				const frame = follow.frame(0, hero, null, { aspect: width / height })
+				const camera = new THREE.PerspectiveCamera(frame.fov, width / height, 0.1, 200)
+				camera.position.copy(frame.eye)
+				camera.lookAt(new THREE.Vector3().copy(frame.target))
+				camera.updateMatrixWorld(true)
+				const point = new THREE.Vector3(hero.x, tune.pips.height, hero.z).project(camera)
+				expect(Math.abs(point.x)).toBeLessThan(0.95)
+				expect(Math.abs(point.y)).toBeLessThan(0.95)
+				const footprint = viewFootprint(tune.follow, width / height, frame.fov)
+				expect(Math.abs(frame.target.x) + footprint.halfX).toBeLessThanOrEqual(FLOOR.halfX)
+				expect(frame.target.z + footprint.maxZ).toBeLessThanOrEqual(FLOOR.halfZ)
+				expect(frame.target.z + footprint.minZ).toBeGreaterThanOrEqual(-FLOOR.halfZ)
+			}
+	}
 })
 
 test('native cursor selects move, attack, targeting; restores on pause, pad and disposal', () => {

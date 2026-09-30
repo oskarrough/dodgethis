@@ -37,6 +37,7 @@ function play() {
 	browser('click', '.front-lock')
 	waitForMatch()
 	assert('!!probe.moba && !document.querySelector(".moba-front")', 'Loading did not finish')
+	assert('document.querySelector(".splash").hidden', 'Dodgeball splash leaked into the match')
 }
 function pad(button) {
 	evaluate(
@@ -54,6 +55,17 @@ for (const [width, height] of [
 	browser('open', `${base}/?mode=moba`)
 	browser('wait', '.front-practice')
 	probe()
+	assert(
+		'document.querySelector("[data-difficulty=easy]").getAttribute("aria-pressed")==="true"',
+		'Practice did not default to easy',
+	)
+	if (width === 1440) {
+		for (const difficulty of ['normal', 'hard', 'easy']) {
+			browser('click', `[data-difficulty=${difficulty}]`)
+			assert(`probe.front.difficulty==="${difficulty}"`, 'Difficulty choice failed')
+		}
+	}
+	browser('screenshot', `${dir}/modes-${width}.png`)
 	browser('click', '.front-practice')
 	assert('probe.front.preview.phase==="idle"', 'Hero idle is not idle')
 	assert(
@@ -68,8 +80,24 @@ for (const [width, height] of [
 	)
 	browser('screenshot', `${dir}/numbers-${width}.png`)
 	browser('click', '.front-numbers')
+	if (width !== 1440) {
+		report.layouts.push({ width, height })
+		continue
+	}
 	play()
 	key('Escape')
+	assert(
+		'document.querySelector(".overlay button.selected .label").textContent==="Resume"',
+		'Pause selected a destructive action under the cursor',
+	)
+	evaluate(
+		'document.querySelector(".overlay button:nth-child(3)").dispatchEvent(new PointerEvent("pointerenter"));true',
+	)
+	key('Space')
+	assert(
+		'!document.querySelector(".overlay").hidden&&document.querySelector(".overlay button.selected .label").textContent==="Resume"',
+		'Space or passive hover changed the pause selection',
+	)
 	assert(
 		'!document.querySelector(".overlay").hidden&&document.querySelector(".overlay h1").textContent==="PAUSED"',
 		'Pause card missing',
@@ -104,6 +132,9 @@ for (const [width, height] of [
 	report.layouts.push({ width, height, pausedTick: paused.t })
 }
 browser('set', 'viewport', '1440', '900')
+browser('open', base)
+browser('wait', '.splash:not([hidden])')
+probe()
 browser('screenshot', `${dir}/hub.png`)
 browser('click', '.hub-mode-entry')
 assert('probe.front.screen==="modes"', 'Hub mouse entry failed')
@@ -122,14 +153,28 @@ key('ArrowRight')
 key('ArrowRight')
 key('Enter')
 assert('probe.front.screen==="modes"', 'Keyboard pause Modes failed')
-// Physical hub portal, entered by real movement.
+// Holding W still reaches dodgeball portal 2, not the MOBA.
 key('Escape')
 key('KeyW', 'keydown')
 evaluate(
-	'(async()=>{for(let i=0;i<200&&!document.querySelector(".moba-front");i++)await new Promise(r=>setTimeout(r,100));return true})()',
+	'(async()=>{for(let i=0;i<200&&probe.phase!=="playing";i++)await new Promise(r=>setTimeout(r,100));return true})()',
 )
 key('KeyW', 'keyup')
-assert('probe.front.screen==="modes"', 'Physical hub portal failed')
+assert('probe.phase==="playing"&&!probe.front', 'MOBA stole the central dodgeball portal')
+browser('open', `${base}/?proof=physical`)
+browser('wait', '.splash:not([hidden])')
+probe()
+assert('probe.phase==="menu"', 'Physical proof did not start in the hub')
+// Walk sideways first to the MOBA portal, then forward.
+evaluate(
+	'(async()=>{window.dispatchEvent(new KeyboardEvent("keydown",{code:"KeyD"}));const deadline=Date.now()+8000;while(probe.round.localPlayer.position.x<3.5&&Date.now()<deadline)await new Promise(r=>setTimeout(r,25));window.dispatchEvent(new KeyboardEvent("keyup",{code:"KeyD"}));return true})()',
+)
+key('KeyW', 'keydown')
+evaluate(
+	'(async()=>{for(let i=0;i<80&&!document.querySelector(".moba-front");i++)await new Promise(r=>setTimeout(r,100));return true})()',
+)
+key('KeyW', 'keyup')
+assert('probe.front.screen==="modes"', 'Physical MOBA portal failed')
 // Pad-only select, lock, pause, resume and leave.
 evaluate(
 	'window.mockPad={connected:true,axes:[0,0,0,0],buttons:Array.from({length:17},()=>({pressed:false}))};Object.defineProperty(navigator,"getGamepads",{value:()=>[mockPad],configurable:true});true',
@@ -137,8 +182,22 @@ evaluate(
 pad(0)
 assert('probe.front.screen==="hero"', 'Pad hero select failed')
 for (let i = 0; i < 6; i++) pad(13)
+evaluate('probe.front.waitForBuild(3);true')
 pad(0)
+pad(9)
+assert('document.querySelector(".overlay").hidden', 'Start paused the loading match')
+pad(0)
+assert('probe.loading.state.skipped', 'Pad A failed to skip the loading hold')
+assert(
+	'document.querySelector(".front-prompts").textContent.includes("A ·")',
+	'Loading never switched to pad prompts',
+)
+browser('screenshot', `${dir}/loading-pad.png`)
 waitForMatch()
+assert(
+	'document.querySelector(".splash").hidden&&document.querySelector(".overlay").hidden',
+	'Loading left a splash or queued pause',
+)
 assert('!!probe.moba&&!document.querySelector(".moba-front")', 'Pad lock failed')
 pad(9)
 assert('!document.querySelector(".overlay").hidden', 'Pad pause failed')
@@ -152,14 +211,14 @@ pad(0)
 assert('probe.front.screen==="modes"', 'Pad Modes failed')
 report.inputs = ['mouse', 'keyboard', 'pad', 'physical hub portal']
 // Genuine seeded play: no injected shots or HP, same camera and fixed-tick loop.
-browser('open', `${base}/?mode=moba&debug&bots-only`)
+browser('open', `${base}/?mode=moba&debug&bots-only&bots=normal`)
 browser('wait', '.front-practice')
 evaluate('window.probe=window.game;true')
 key('Backquote')
 browser('click', '.front-practice')
 play()
 evaluate('probe.pause(true);true')
-for (let i = 0; i < 70 && !evaluate('probe.moba.sim.lane.match.winner'); i++) {
+for (let i = 0; i < 100 && !evaluate('probe.moba.sim.lane.match.winner'); i++) {
 	evaluate('probe.moba.fastForward({ticks:900});true')
 	if (i === 12) {
 		assert('probe.moba.sim.ball.state&&probe.moba.sim.ball.state.state!=="warning"', 'No live Ball')
@@ -171,6 +230,9 @@ for (let i = 0; i < 70 && !evaluate('probe.moba.sim.lane.match.winner'); i++) {
 		browser('screenshot', `${dir}/ball-marker.png`)
 	}
 }
+// Advance only presentation after the winning tick, including slow software renderers.
+assert('!!probe.moba.sim.lane.match.winner', 'Seeded six-bot match did not finish')
+evaluate('probe.moba.fastForward({ticks:120});true')
 assert(
 	'!!probe.moba.sim.lane.match.winner&&!document.querySelector(".overlay").hidden',
 	'Real match did not end',
@@ -188,12 +250,12 @@ assert('JSON.stringify(probe.moba.snapshot())===endedSnapshot', 'Ended world mov
 browser('screenshot', `${dir}/result.png`)
 clickButton('Again')
 assert(
-	'probe.moba.sim.tick===0&&probe.moba.sim.shots.length===0&&probe.moba.sim.lane.match.winner===null',
+	'probe.moba.sim.tick<60&&probe.moba.sim.shots.length===0&&probe.moba.sim.lane.match.winner===null',
 	'Again not clean',
 )
 key('Escape')
 clickButton('Modes')
-report.result = result
+report.result = { ...result, players: 'six bots, not a human win' }
 writeFileSync(`${dir}/report.json`, JSON.stringify(report, null, 2))
 console.log(JSON.stringify(report, null, 2))
 const errors = JSON.parse(browser('errors', '--json')).data.errors

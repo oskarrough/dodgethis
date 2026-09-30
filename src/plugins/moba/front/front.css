@@ -85,6 +85,26 @@
 	transform: translate3d(calc(-50% + var(--front-sign-dx)), var(--front-sign-dy), 0);
 	will-change: transform;
 }
+.front-difficulty {
+	position: absolute;
+	left: var(--front-sign-x);
+	bottom: calc(var(--front-ground) - 2.7em);
+	transform: translateX(-50%);
+	display: flex;
+	gap: 1em;
+}
+.front-difficulty[hidden] {
+	display: none;
+}
+.front-difficulty button {
+	background: transparent;
+	padding: 0.3em;
+}
+.front-difficulty button[aria-pressed='true'],
+.front-difficulty button.selected {
+	text-decoration: underline;
+	text-underline-offset: 0.3em;
+}
 .front-practice svg {
 	position: absolute;
 	inset: 0;

@@ -779,6 +779,14 @@
 				}
 			}
 
+			.hub-actions {
+				display: flex;
+				gap: 12px;
+				justify-content: center;
+			}
+			.hub-actions .online-entry {
+				margin-top: 0;
+			}
 			.online-entry {
 				pointer-events: auto;
 				margin-top: 18px;
@@ -914,7 +922,9 @@
 					>▼</span
 				>
 			</p>
-			<button class="sticker online-entry" type="button">Play online</button>
+			<div class="hub-actions">
+				<button class="sticker online-entry" type="button">Play online</button>
+			</div>
 		</div>
 		<div class="fade" aria-hidden="true"></div>
 		<script type="module" src="/src/main.js"></script>

@@ -9,9 +9,30 @@ export function createOverlay(selector = '.overlay') {
 	let previousFocus = null
 	let outside = []
 	let device = 'keyboard'
+	let pointerMoved = false
+	let guardPointer = false
+	let allowSpace = true
+	window.addEventListener('pointermove', () => {
+		pointerMoved = true
+	})
 
 	// Clear round-over keeps the court and score readable; match-over may retain the curtain.
-	function show({ title = '', subtitle = '', lines = [], actions: acts = [], clear = false } = {}) {
+	function show({
+		title = '',
+		subtitle = '',
+		lines = [],
+		actions: acts = [],
+		clear = false,
+		theme = '',
+		accent = '',
+		pointerGuard = false,
+		spaceConfirm = true,
+	} = {}) {
+		guardPointer = pointerGuard
+		pointerMoved = false
+		allowSpace = spaceConfirm
+		el.dataset.theme = theme
+		el.style.setProperty('--overlay-accent', accent)
 		actions = acts
 		buttons = []
 		index = 0
@@ -57,8 +78,13 @@ export function createOverlay(selector = '.overlay') {
 				label.className = 'label'
 				b.append(cursor, label)
 				b.addEventListener('pointerenter', () => {
+					if (guardPointer && !pointerMoved) return
 					setIndex(i)
 					sfx.hover()
+				})
+				b.addEventListener('pointermove', () => {
+					pointerMoved = true
+					setIndex(i)
 				})
 				b.addEventListener('focus', () => setIndex(i))
 				b.addEventListener('pointerdown', () => sfx.press())
@@ -92,6 +118,8 @@ export function createOverlay(selector = '.overlay') {
 		if (!el.hidden) sfx.menuClose()
 		el.hidden = true
 		el.classList.remove('clear')
+		delete el.dataset.theme
+		el.style.removeProperty('--overlay-accent')
 		actions = []
 		buttons = []
 		index = 0
@@ -176,6 +204,7 @@ export function createOverlay(selector = '.overlay') {
 		}
 		if (e.code === 'Enter' || e.code === 'Space') {
 			e.preventDefault()
+			if (e.repeat || (e.code === 'Space' && !allowSpace)) return
 			sfx.click()
 			select(actions[index])
 			return
