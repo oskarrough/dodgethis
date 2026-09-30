@@ -19,7 +19,7 @@ import {
 import { planPath } from '../src/plugins/moba/path.js'
 import { stepShot } from '../src/plugins/moba/skillshot.js'
 import { edgePip } from '../src/plugins/moba/pips.js'
-import { createFollow } from '../src/plugins/moba/follow.js'
+import { createFollow, clampView } from '../src/plugins/moba/follow.js'
 
 await RAPIER.init({})
 const options = { radius: tune.hero.radius, ...tune.orders }
@@ -209,7 +209,8 @@ test('intent movement, ordered paths and Vault all respect the same hedge collid
 test('camera follow and pad look-ahead clamp to the rectangular map; edge pips distinguish visible and behind-camera heroes', () => {
 	const follow = createFollow()
 	const camera = follow.frame(0, { x: 52, z: 13 }, { x: 99, z: 99 }, { pad: true })
-	expect(camera.target).toMatchObject({ x: 52, z: 13 })
+	const bounded = clampView({ x: 52, z: 13 }, tune.follow)
+	expect(camera.target).toMatchObject({ x: bounded.x, z: bounded.z })
 	expect(projectMap({ x: 50, z: 0 }, { x: 60, z: 10 })).toEqual({ x: 52, z: 2 })
 	expect(edgePip({ x: 0.2, y: 0.1, z: 0.5 })).toBeNull()
 	expect(edgePip({ x: 4, y: 2, z: 0.5 })).toEqual({ x: tune.pips.inset, y: tune.pips.inset / 2 })

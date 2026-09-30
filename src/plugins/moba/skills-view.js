@@ -2,9 +2,22 @@ import * as THREE from 'three'
 import { makeStyleMaterial } from '../../core/stylepass.js'
 import { STEP } from '../../core/app.js'
 import { tune } from './tune.js'
-import { clampMap, projectMap } from './obstacles.js'
+import { abilityOf, castAbility } from './ability.js'
+import { heroDefinition } from './heroes.js'
+import { clampMap, projectMap, OBSTACLES, sweepObstacles, mapExit } from './obstacles.js'
 
-// E's held circle and filling impact tell; W's held arrow and brief departure streak.
+// Presentation reads ability identity and stats, never what happens to occupy Q/W/E.
+export function lineReach(point, yaw, stats, obstacles = OBSTACLES) {
+	const end = { x: point.x - Math.sin(yaw) * stats.range, z: point.z - Math.cos(yaw) * stats.range }
+	const blocked = sweepObstacles(
+		point,
+		end,
+		stats.radius,
+		obstacles.filter((o) => !['tower', 'fort', 'core'].includes(o.kind)),
+	)
+	return stats.range * Math.min(blocked ?? 1, mapExit(point, end, stats.radius) ?? 1)
+}
+
 export function createSkillsView(scene) {
 	const group = new THREE.Group()
 	scene.add(group)
@@ -19,111 +32,171 @@ export function createSkillsView(scene) {
 	arrow.lineTo(0.18, 0.75)
 	arrow.lineTo(0.18, 0)
 	const arrowGeometry = new THREE.ShapeGeometry(arrow).rotateX(-Math.PI / 2)
+	const lineGeometry = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2).translate(0, 0, -0.5)
 	const cream = makeStyleMaterial('cream', { flat: true })
 	const gold = makeStyleMaterial('ammo', { flat: true })
-	const mesh = (geometry, material) => {
+	const enemy = makeStyleMaterial('teamB', { flat: true })
+	const mesh = (geometry, material, parent = group) => {
 		const m = new THREE.Mesh(geometry, material)
-		group.add(m)
+		parent.add(m)
 		return m
 	}
-	const heldCircle = mesh(ring, cream)
-	const heldArrow = mesh(arrowGeometry, cream)
-	const tells = new Map()
-	const streaks = []
-	const enemyTells = new Map()
-	const lineGeometry = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2).translate(0, 0, -0.5)
-	const enemy = makeStyleMaterial('teamB', { flat: true })
-	let castCircle = null
-	let castLeft = 0
+	const heldCircle = mesh(ring, cream),
+		heldArrow = mesh(arrowGeometry, cream)
+	const tells = new Map(),
+		enemyTells = new Map(),
+		catchTells = new Map(),
+		streaks = []
+	let castCircle = null,
+		castLeft = 0
 
-	function rain(point) {
+	function rain(point, stats = tune.rain) {
 		if (!castCircle) castCircle = mesh(ring, cream)
 		castCircle.position.set(point.x, 0.026, point.z)
-		castCircle.scale.setScalar(tune.rain.radius)
+		castCircle.scale.setScalar(stats.radius)
 		castCircle.visible = true
-		castLeft = 0.15
+		castLeft = tune.abilityView.castLife
 	}
-
-	function vault(point, direction) {
+	function vault(point, direction, stats = tune.vault) {
 		const m = mesh(arrowGeometry, gold)
 		m.position.set(point.x, 0.025, point.z)
 		m.rotation.y = Math.atan2(direction.x, direction.z) + Math.PI
-		m.scale.set(1, 1, tune.vault.range)
-		streaks.push({ mesh: m, left: 0.25 })
+		m.scale.set(1, 1, stats.range)
+		streaks.push({ mesh: m, left: tune.abilityView.streakLife })
 	}
-
-	function update(dt, { hero, aim, held, zones, casters = [], alpha = 0 }) {
+	function update(
+		dt,
+		{ hero, aim, held, zones = [], unit = null, casters = [], obstacles = OBSTACLES, alpha = 0 },
+	) {
 		if (castCircle) {
 			castLeft = Math.max(0, castLeft - dt)
 			castCircle.visible = castLeft > 0
 		}
-		heldCircle.visible = !!(held.slot3 && aim)
-		heldArrow.visible = !!(held.slot2 && aim)
+		const definition = unit?.definition ?? heroDefinition()
+		const holding = Object.entries(definition.abilities).filter(([slot, a]) => held[slot] && a)
+		const circle = holding.find(([, a]) => a.held === 'circle')?.[1]
+		const dash = holding.find(([, a]) => a.held === 'arrow')?.[1]
+		heldCircle.visible = !!(circle && aim)
+		heldArrow.visible = !!(dash && aim)
 		if (aim) {
-			const dx = aim.x - hero.x
-			const dz = aim.z - hero.z
-			const distance = Math.hypot(dx, dz)
-			const reach = Math.min(1, tune.rain.range / (distance || 1))
-			const at = clampMap({ x: hero.x + dx * reach, z: hero.z + dz * reach })
-			heldCircle.position.set(at.x, 0.022, at.z)
-			heldCircle.scale.setScalar(tune.rain.radius)
-			heldArrow.position.set(hero.x, 0.023, hero.z)
-			heldArrow.rotation.y = Math.atan2(dx, dz) + Math.PI
-			const end = projectMap(hero, {
-				x: hero.x + (dx / (distance || 1)) * tune.vault.range,
-				z: hero.z + (dz / (distance || 1)) * tune.vault.range,
-			})
-			heldArrow.scale.set(1, 1, Math.hypot(end.x - hero.x, end.z - hero.z))
-		}
-		const live = new Set(zones.map((z) => z.id))
-		for (const [id, tell] of tells) {
-			if (live.has(id)) continue
-			if (!tell.done) {
-				// Keep the completed disc for the impact frame before removing it.
-				tell.fill.scale.setScalar(tune.rain.radius)
-				tell.done = true
-			} else {
-				group.remove(tell.edge, tell.fill)
-				tells.delete(id)
+			const dx = aim.x - hero.x,
+				dz = aim.z - hero.z,
+				distance = Math.hypot(dx, dz)
+			if (circle) {
+				const stats = circle.stats,
+					reach = Math.min(1, stats.range / (distance || 1))
+				const at = clampMap({ x: hero.x + dx * reach, z: hero.z + dz * reach })
+				heldCircle.position.set(at.x, 0.022, at.z)
+				heldCircle.scale.setScalar(stats.radius)
+			}
+			if (dash) {
+				heldArrow.position.set(hero.x, 0.023, hero.z)
+				heldArrow.rotation.y = Math.atan2(dx, dz) + Math.PI
+				const end = projectMap(hero, {
+					x: hero.x + (dx / (distance || 1)) * dash.stats.range,
+					z: hero.z + (dz / (distance || 1)) * dash.stats.range,
+				})
+				heldArrow.scale.set(1, 1, Math.hypot(end.x - hero.x, end.z - hero.z))
 			}
 		}
+		const live = new Set(zones.map((z) => z.id))
+		for (const [id, tell] of tells)
+			if (!live.has(id)) {
+				if (!tell.done) {
+					tell.fill.scale.setScalar(tell.radius)
+					tell.done = true
+				} else {
+					group.remove(tell.edge, tell.fill)
+					tells.delete(id)
+				}
+			}
 		for (const z of zones) {
+			const stats = abilityOf(z.ability ?? 'rain')?.stats ?? z.stats
+			if (!stats) continue
 			if (!tells.has(z.id))
 				tells.set(z.id, { edge: mesh(ring, gold), fill: mesh(disc, gold), done: false })
-			const { edge, fill } = tells.get(z.id)
-			edge.position.set(z.x, 0.024, z.z)
-			fill.position.set(z.x, 0.025, z.z)
-			edge.scale.setScalar(tune.rain.radius)
-			fill.scale.setScalar(
-				tune.rain.radius * Math.max(0.01, Math.min(1, 1 - (z.left - alpha) / z.total)),
+			const tell = tells.get(z.id)
+			tell.radius = stats.radius
+			tell.edge.position.set(z.x, 0.024, z.z)
+			tell.fill.position.set(z.x, 0.025, z.z)
+			tell.edge.scale.setScalar(stats.radius)
+			tell.fill.scale.setScalar(
+				stats.radius * Math.max(0.01, Math.min(1, 1 - (z.left - alpha) / Math.max(1, z.total))),
 			)
 		}
-		const casting = casters.filter((unit) => !unit.dead && unit.cast?.slot === 'slot1')
-		const castingIds = new Set(casting.map((unit) => unit.id))
+		const casting = casters.filter(
+			(u) => !u.dead && u.cast && (castAbility(u) ?? heroDefinition().abilities[u.cast.slot])?.tell,
+		)
+		const castingIds = new Set(casting.map((u) => u.id))
 		for (const [id, tell] of enemyTells)
 			if (!castingIds.has(id)) {
 				group.remove(tell.root)
 				enemyTells.delete(id)
 			}
-		for (const unit of casting) {
-			let tell = enemyTells.get(unit.id)
+		for (const caster of casting) {
+			const ability = castAbility(caster) ?? heroDefinition().abilities[caster.cast.slot]
+			const stats = ability.stats
+			let tell = enemyTells.get(caster.id)
+			if (tell && tell.kind !== ability.tell) {
+				group.remove(tell.root)
+				enemyTells.delete(caster.id)
+				tell = null
+			}
 			if (!tell) {
 				const root = new THREE.Group()
 				root.name = 'moba-enemy-tell'
-				const edge = new THREE.Mesh(lineGeometry, enemy)
-				edge.scale.set(tune.loose.radius * 2, 1, tune.loose.range)
-				const fill = new THREE.Mesh(lineGeometry, cream)
-				fill.position.y = 0.001
-				root.add(edge, fill)
+				const edge = mesh(ability.tell === 'line' ? lineGeometry : ring, enemy, root)
+				const fill = mesh(ability.tell === 'line' ? lineGeometry : disc, cream, root)
+				fill.position.y = tune.abilityView.fillLift
 				group.add(root)
-				enemyTells.set(unit.id, (tell = { root, fill }))
+				enemyTells.set(caster.id, (tell = { root, edge, fill, kind: ability.tell }))
 			}
-			const p = unit.body.mesh.position
-			tell.root.position.set(p.x, 0.029, p.z)
-			tell.root.rotation.y = unit.cast.yaw
-			const total = unit.cast.total ?? Math.max(1, Math.round(tune.loose.castPoint / STEP))
-			const progress = Math.max(0, Math.min(1, 1 - (unit.cast.left - alpha) / total))
-			tell.fill.scale.set(tune.loose.radius, 1, tune.loose.range * progress)
+			const p = ability.tell === 'circle' ? caster.cast.target : caster.body.mesh.position
+			tell.root.position.set(p.x, tune.abilityView.tellY, p.z)
+			tell.root.rotation.y = caster.cast.yaw
+			const total =
+				caster.cast.total ??
+				Math.max(1, Math.round((stats.castPoint ?? tune.catching.returnTell) / STEP))
+			const progress = Math.max(0, Math.min(1, 1 - (caster.cast.left - alpha) / total))
+			if (ability.tell === 'line') {
+				const length = lineReach(p, caster.cast.yaw, stats, obstacles)
+				tell.edge.scale.set(stats.radius * 2, 1, length)
+				tell.fill.scale.set(stats.radius, 1, length * progress)
+			} else {
+				tell.edge.scale.setScalar(stats.radius)
+				tell.fill.scale.setScalar(stats.radius * progress)
+			}
+		}
+		const catching = casters.filter((u) => !u.dead && u.catchWindow)
+		const catchingIds = new Set(catching.map((u) => u.id))
+		for (const [id, tell] of catchTells)
+			if (!catchingIds.has(id)) {
+				group.remove(tell)
+				tell.geometry.dispose()
+				catchTells.delete(id)
+			}
+		for (const u of catching) {
+			let tell = catchTells.get(u.id)
+			if (tell && tell.userData.angle !== u.catchWindow.angle) {
+				group.remove(tell)
+				tell.geometry.dispose()
+				tell = null
+			}
+			if (!tell) {
+				const angle = (u.catchWindow.angle * Math.PI) / 180
+				tell = mesh(
+					new THREE.RingGeometry(0.94, 1, 48, 1, -angle / 2, angle)
+						.rotateX(-Math.PI / 2)
+						.rotateY(Math.PI / 2),
+					cream,
+				)
+				tell.name = 'moba-catch-window'
+				tell.userData.angle = u.catchWindow.angle
+				catchTells.set(u.id, tell)
+			}
+			tell.position.set(u.body.mesh.position.x, tune.abilityView.tellY, u.body.mesh.position.z)
+			tell.rotation.y = u.body.mesh.rotation.y
+			tell.scale.setScalar(u.catchWindow.radius)
 		}
 		for (let i = streaks.length - 1; i >= 0; i--) {
 			const s = streaks[i]
@@ -131,17 +204,18 @@ export function createSkillsView(scene) {
 			if (s.left <= 0) {
 				group.remove(s.mesh)
 				streaks.splice(i, 1)
-			} else s.mesh.scale.x = s.left / 0.25
+			} else s.mesh.scale.x = s.left / tune.abilityView.streakLife
 		}
 	}
-
 	return {
 		update,
 		vault,
 		rain,
 		dispose() {
 			scene.remove(group)
-			for (const x of [ring, disc, arrowGeometry, lineGeometry, cream, gold, enemy]) x.dispose()
+			for (const tell of catchTells.values()) tell.geometry.dispose()
+			for (const owned of [ring, disc, arrowGeometry, lineGeometry, cream, gold, enemy])
+				owned.dispose()
 		},
 	}
 }

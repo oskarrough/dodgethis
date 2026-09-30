@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import RAPIER from '@dimforge/rapier3d-compat'
+import { legacyState } from './moba-legacy-state.js'
 import { createHash } from 'node:crypto'
 import { STEP } from '../src/core/app.js'
 import { createIntents } from '../src/core/intents.js'
@@ -17,7 +18,37 @@ export async function heroTrace() {
 	intents.use('pointClick')
 	const seats = ['A', 'B'].flatMap((team) => [1, 2, 3].map((i) => ({ id: `${team}${i}`, team })))
 	let facts = []
-	const sim = createSim({
+	let sim
+	const feed = intents.feed
+	const coverage = { vault: 0, rain: 0, momentum: 0 }
+	intents.feed = (id, frame) => {
+		if (sim && (id === 'A1' || id === 'B1')) {
+			const hero = sim.heroes.find((h) => h.id === id)
+			const p = hero.body.position
+			if (!hero.dead && !hero.cast && !hero.body.dashing && !sim.ball.carrying(hero)) {
+				const enemy = sim.heroes.find(
+					(h) =>
+						h.team !== hero.team &&
+						!h.dead &&
+						Math.hypot(h.body.position.x - p.x, h.body.position.z - p.z) < 8,
+				)
+				const slot =
+					enemy && hero.cd[1] === 0 && hero.cd[0] === 0
+						? 'slot2'
+						: sim.tick % 420 === 0 && hero.cd[2] === 0
+							? 'slot3'
+							: null
+				if (slot) {
+					const at = enemy
+						? { x: enemy.body.position.x, z: enemy.body.position.z }
+						: { x: p.x + (hero.team === 'A' ? 6 : -6), z: p.z }
+					frame = { ...frame, pressed: [{ action: slot, at }] }
+				}
+			}
+		}
+		feed(id, frame)
+	}
+	sim = createSim({
 		scene: new THREE.Scene(),
 		world,
 		RAPIER,
@@ -31,13 +62,23 @@ export async function heroTrace() {
 	const checkpoints = []
 	try {
 		for (let tick = 1; tick <= 43200; tick++) {
+			const vaultBefore = new Map(sim.heroes.map((h) => [h.id, h.cd[1]]))
 			sim.step()
 			intents.age(STEP)
-			const state = sim.snapshot()
-			for (const hero of state.heroes) {
-				delete hero.heroId
-				delete hero.abilityState
+			for (const fact of facts) {
+				if (fact.type === 'cast' && fact.slot === 'slot2') coverage.vault++
+				if (fact.type === 'cast' && fact.slot === 'slot3') coverage.rain++
+				if (
+					fact.type === 'hit' &&
+					fact.slot === 'slot1' &&
+					sim.heroes.some((h) => h.id === fact.target) &&
+					(vaultBefore.get(fact.source) ?? 0) > 1 &&
+					sim.heroes.find((h) => h.id === fact.source).cd[1] < vaultBefore.get(fact.source) - 1
+				)
+					coverage.momentum++
+				delete fact.ability
 			}
+			const state = legacyState(sim.snapshot())
 			digest.update(JSON.stringify([state, facts]))
 			facts = []
 			if (tick % 60 === 0 || sim.lane.match.winner)
@@ -47,6 +88,7 @@ export async function heroTrace() {
 		return {
 			source: 'b5f7e7b + Loose castPoint=0.3, speed=20 (before hero table)',
 			checkpoints,
+			coverage,
 			winner: sim.lane.match.winner,
 			tick: sim.tick,
 		}

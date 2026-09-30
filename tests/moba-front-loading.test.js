@@ -103,22 +103,32 @@ describe('loading gates', () => {
 		expect(ticks).toBe(1)
 		app.dispose()
 	})
-	test('real follow handoff stays still with an offset pointer, and pad look-ahead springs instead of snapping', () => {
-		const hero = { x: -43, z: 0 },
-			pointer = { x: -30, z: 8 }
-		const landing = descentFrame(1, hero, front.loading, kit.follow, FLOOR, 390 / 844)
-		const follow = createFollow(kit.follow)
-		follow.frame(0, hero, null)
-		const next = follow.frame(1 / 60, hero, pointer, { pad: false })
-		expect(
-			new THREE.Vector3().copy(next.eye).distanceTo(new THREE.Vector3().copy(landing.eye)),
-		).toBeLessThan(1e-8)
-		expect(next.fov).toBe(landing.fov)
-		const pad = follow.frame(1 / 60, hero, pointer, { pad: true })
-		expect(
-			new THREE.Vector3().copy(pad.eye).distanceTo(new THREE.Vector3().copy(landing.eye)),
-		).toBeLessThan(0.35)
-	})
+	for (const [width, height] of [
+		[390, 844],
+		[1440, 900],
+		[2560, 1080],
+	])
+		test(`real follow handoff at ${width}×${height} stays still with an offset pointer, and pad look-ahead springs instead of snapping`, () => {
+			const hero = { x: -43, z: 0 },
+				pointer = { x: -30, z: 8 }
+			const aspect = width / height
+			const landing = descentFrame(1, hero, front.loading, kit.follow, FLOOR, aspect)
+			const nearLanding = descentFrame(0.999, hero, front.loading, kit.follow, FLOOR, aspect)
+			expect(
+				new THREE.Vector3().copy(nearLanding.eye).distanceTo(new THREE.Vector3().copy(landing.eye)),
+			).toBeLessThan(0.001)
+			const follow = createFollow(kit.follow)
+			follow.frame(0, hero, null, { aspect })
+			const next = follow.frame(1 / 60, hero, pointer, { pad: false, aspect })
+			expect(
+				new THREE.Vector3().copy(next.eye).distanceTo(new THREE.Vector3().copy(landing.eye)),
+			).toBeLessThan(1e-8)
+			expect(next.fov).toBe(landing.fov)
+			const pad = follow.frame(1 / 60, hero, pointer, { pad: true, aspect })
+			expect(
+				new THREE.Vector3().copy(pad.eye).distanceTo(new THREE.Vector3().copy(landing.eye)),
+			).toBeLessThan(0.35)
+		})
 	test('an unskipped three-second build still gets the full ready dwell', () => {
 		const gate = createLoadingState(front.loading)
 		gate.step(3)

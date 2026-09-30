@@ -312,7 +312,7 @@ test('E shows a delayed control zone, clamps its range, then hits and slows enem
 	}
 	expect(sim.zones).toHaveLength(0)
 	expect(d.hp).toBe(d.maxHp - tune.rain.damage)
-	expect(d.slowUntil).toBeGreaterThan(sim.tick)
+	expect(d.slow.until).toBeGreaterThan(sim.tick)
 	expect(facts.find((f) => f.type === 'hit')?.slot).toBe('slot3')
 	expect(facts.some((f) => f.type === 'impact')).toBe(true)
 	step()
@@ -343,15 +343,15 @@ test('at 144 Hz an ordered hero and the follow camera advance evenly', () => {
 		d.sparring = false
 		d.body.place(-20, d.body.position.y, 12)
 	}
-	h.body.place(0, h.body.position.y, 8)
+	h.body.place(8, h.body.position.y, 0)
 	const follow = createFollow()
 	const rendered = []
 	const framed = []
 	app.system('present', ({ dt }) => {
-		rendered.push(h.body.mesh.position.z)
-		framed.push(follow.frame(dt, h.body.mesh.position, null).target.z)
+		rendered.push(h.body.mesh.position.x)
+		framed.push(follow.frame(dt, h.body.mesh.position, null).target.x)
 	})
-	app.intents.feed(ID, { ...neutralFrame(), order: { x: 0, z: -12 } })
+	app.intents.feed(ID, { ...neutralFrame(), order: { x: -12, z: 0 } })
 	for (let i = 0; i < 144 * 3; i++) app.frame(1 / 144)
 	const even = (zs, from, to) => {
 		const steps = zs.slice(from + 1, to).map((z, i) => z - zs[from + i])
@@ -370,9 +370,9 @@ test('follow framing leans a quarter of the way to the aim, capped at 3 m, and s
 	expect(follow.goal({ x: 0, z: 0 }, { x: 4, z: 0 })).toEqual({ x: 1, z: 0 })
 	const far = follow.goal({ x: 0, z: 0 }, { x: 0, z: -40 })
 	expect(Math.hypot(far.x, far.z)).toBeCloseTo(tune.follow.lookCap, 9)
-	const first = follow.frame(1 / 144, { x: 5, z: 5 }, null)
-	expect(first.target).toMatchObject({ x: 5, z: 5 })
-	expect(first.eye).toMatchObject({ x: 5, y: tune.follow.height, z: 5 + tune.follow.back })
+	const first = follow.frame(1 / 144, { x: 5, z: 3 }, null)
+	expect(first.target).toMatchObject({ x: 5, z: 3 })
+	expect(first.eye).toMatchObject({ x: 5, y: tune.follow.height, z: 3 + tune.follow.back })
 	const moved = follow.frame(1 / 144, { x: 10, z: 5 }, null).target.x
 	expect(moved).toBeGreaterThan(5)
 	expect(moved).toBeLessThan(6)

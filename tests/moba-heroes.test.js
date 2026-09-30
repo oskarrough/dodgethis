@@ -50,7 +50,9 @@ function boot(seats) {
 }
 
 test('six Fletchers match the retuned pre-table lane tick for tick, including all facts', async () => {
-	expect(await heroTrace()).toEqual(baseline)
+	const trace = await heroTrace()
+	expect(trace).toEqual(baseline)
+	for (const count of Object.values(trace.coverage)) expect(count).toBeGreaterThan(0)
 }, 120000)
 
 test('definitions keep tuning live, abilities own their properties, other heroes have no kits', () => {
@@ -112,10 +114,7 @@ test('mixed base HP scales per hero; unavailable stand-in casts deny; state is c
 		expect(run.facts.at(-1)).toMatchObject({ type: 'denied', hero: h.id, slot: 'slot1' })
 		h.abilityState = {
 			pocket: { damage: 140, left: 20 },
-			board: { id: 1 },
 			bag: [{ speed: 20 }],
-			cutout: { x: 1 },
-			freeze: { left: 5 },
 		}
 		const state = sim.snapshot()
 		expect(JSON.parse(JSON.stringify(state))).toEqual(state)

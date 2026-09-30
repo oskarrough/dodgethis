@@ -3,6 +3,7 @@ import { createShadows } from '../../core/shadows.js'
 import { tune as coreTune } from '../../core/tune.js'
 import { tune } from './tune.js'
 import { buildMap, FLOOR } from './map.js'
+import { castAbility } from './ability.js'
 import { createSim } from './sim.js'
 import { createFollow } from './follow.js'
 import { createCameraControls } from './camera-controls.js'
@@ -16,6 +17,11 @@ import { createBallView } from './ball-view.js'
 import { createFeedback } from './feedback.js'
 
 const FACTS = [
+	'boardExpired',
+	'caught',
+	'catchExpired',
+	'channelCancelled',
+	'channelEnd',
 	'ballContested',
 	'ballWarn',
 	'ballSpawn',
@@ -94,7 +100,13 @@ export default function moba(app) {
 			const feedback = createFeedback({
 				juice,
 				sfx,
-				camera: app.camera,
+				camera: {
+					...app.camera,
+					kick(amount) {
+						follow.reserveKick(amount * coreTune.camera.fovKick)
+						app.camera.kick(amount)
+					},
+				},
 				input,
 				view,
 				skillsView,
@@ -115,7 +127,12 @@ export default function moba(app) {
 				const frame = app.intents.get(local)
 				const pad = onPad()
 				const aim = pad && Object.keys(frame.held).length ? frame.aim : null
-				return follow.frame(dt, hero.body.mesh.position, aim, { ...cameraControls.read(), pad })
+				return follow.frame(dt, hero.body.mesh.position, aim, {
+					...cameraControls.read(),
+					pad,
+					aspect: app.camera.view.aspect,
+					cameraFov: app.camera.view.fov,
+				})
 			})
 
 			run.system('simulate', (dt) => sim.step(dt))
@@ -140,11 +157,14 @@ export default function moba(app) {
 				audio.setAudioListener(p)
 				if (
 					!hero.dead &&
+					sim.tick >= hero.freezeUntil &&
 					hero.body.animate(step, hero.cast || hero.attack || hero.ballThrow ? 1 : 0)
 				)
 					sfx.step(p)
 				for (const d of [...sim.heroes.slice(1), ...sim.dummies])
-					if (!d.dead) d.body.animate(step, d.ballThrow ? 1 : 0)
+					if (!d.dead && sim.tick >= (d.freezeUntil ?? 0)) d.body.animate(step, d.ballThrow ? 1 : 0)
+				for (const h of [...sim.heroes, ...sim.dummies])
+					if (!h.dead) h.body.poseAbility?.(h.cast, frozen ? 0 : alpha)
 				const target =
 					!sim.ball.carrying(hero) && !onPad() && frame.aim ? sim.pick(hero.team, frame.aim) : null
 				const hovered = target && locate(target.id)
@@ -156,14 +176,22 @@ export default function moba(app) {
 				})
 				ballView.update(sim, frozen ? 0 : alpha, local, frame.aim, app.camera.view)
 				sim.laneView.update(sim.lane, sim.heroes, frozen ? 0 : alpha, locate, step)
+				const lineAbility = hero.cast
+					? castAbility(hero)
+					: Object.entries(hero.definition.abilities).find(
+							([slot, ability]) => frame.held[slot] && ability?.held === 'line',
+						)?.[1]
 				const gone = view.update(step, {
 					live: new Set(sim.shots.map((s) => s.id)),
 					hero: p,
-					aim: hero.cast?.slot === 'slot1' ? hero.cast.target : frame.aim,
+					aim: hero.cast && lineAbility?.tell === 'line' ? hero.cast.target : frame.aim,
+					lineStats: lineAbility?.stats,
+					obstacles: sim.obstacles,
 					held:
 						!hero.dead &&
 						!sim.ball.carrying(hero) &&
-						(frame.held.slot1 || hero.cast?.slot === 'slot1'),
+						!!lineAbility &&
+						(lineAbility.held === 'line' || lineAbility.tell === 'line'),
 					units: [...sim.heroes, ...sim.lane.minions, ...sim.lane.structures],
 					hovered,
 					locate,
@@ -172,6 +200,9 @@ export default function moba(app) {
 					hero: p,
 					aim: frame.aim,
 					held: hero.dead || sim.ball.carrying(hero) ? {} : frame.held,
+					unit: hero,
+					obstacles: sim.obstacles,
+					boards: sim.boards,
 					zones: sim.zones,
 					casters: [...sim.heroes, ...sim.dummies].filter((unit) => unit.team !== hero.team),
 					alpha: frozen ? 0 : alpha,

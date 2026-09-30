@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { makeStyleMaterial } from '../../core/stylepass.js'
 import { tune } from './tune.js'
+import { castAbility } from './ability.js'
 import { heroDefinition } from './heroes.js'
 
 // Same costume on the lane body and the select replica. The capsule collider
@@ -13,6 +14,7 @@ export function dressHero(body, heroId = 'fletcher', team = 'A') {
 	hidden.forEach(([part]) => (part.visible = false))
 	const teamMaterial = makeStyleMaterial(team === 'A' ? 'teamA' : 'teamB')
 	const cream = makeStyleMaterial('cream')
+	const fins = makeStyleMaterial(team === 'A' ? 'teamA' : 'teamB', { side: THREE.DoubleSide })
 	const ink = makeStyleMaterial('ink', { flat: true })
 	const foot = makeStyleMaterial(team === 'A' ? 'teamA' : 'teamB', { flat: true })
 	const geometries = []
@@ -82,6 +84,7 @@ export function dressHero(body, heroId = 'fletcher', team = 'A') {
 			const arrow = new THREE.Group()
 			arrow.position.set(offset * t.arrowSpacing, t.arrowY, t.quiverZ)
 			arrow.rotation.z = -offset * t.arrowFan
+			arrow.rotation.x = t.arrowTilt
 			body.visual.add(arrow)
 			roots.push(arrow)
 			part(
@@ -92,14 +95,17 @@ export function dressHero(body, heroId = 'fletcher', team = 'A') {
 				0,
 				arrow,
 			)
-			part(
-				new THREE.ConeGeometry(t.fletchingRadius, t.fletchingHeight, 4),
-				teamMaterial,
-				0,
-				t.arrowHeight / 2,
-				0,
-				arrow,
-			)
+			for (let fin = 0; fin < t.finCount; fin++) {
+				const mesh = part(
+					new THREE.PlaneGeometry(t.fletchingRadius * 2, t.fletchingHeight),
+					fins,
+					0,
+					t.arrowHeight / 2,
+					0,
+					arrow,
+				)
+				mesh.rotation.y = (fin * Math.PI) / t.finCount
+			}
 		}
 	} else if (heroId === 'mitts') {
 		body.visual.geometry = own(rounded(t.mittsWidth, t.mittsDepth, t.mittsHeight))
@@ -108,7 +114,7 @@ export function dressHero(body, heroId = 'fletcher', team = 'A') {
 			rounded(t.gloveWidth, t.gloveDepth, t.fingerRadius * 2),
 			teamMaterial,
 			t.gloveX,
-			0,
+			discY + t.mittsHeight / 2,
 			t.gloveZ,
 		)
 		for (let i = 0; i < t.fingerCount; i++)
@@ -116,14 +122,14 @@ export function dressHero(body, heroId = 'fletcher', team = 'A') {
 				new THREE.SphereGeometry(t.fingerRadius, 8, 6),
 				teamMaterial,
 				t.gloveX + (i - (t.fingerCount - 1) / 2) * t.fingerSpacing,
-				0,
+				discY + t.mittsHeight / 2,
 				t.gloveZ - t.gloveDepth / 2,
 			)
 		part(
 			new THREE.SphereGeometry(t.fingerRadius, 8, 6),
 			teamMaterial,
 			t.gloveX - t.gloveWidth / 2 - t.fingerRadius,
-			0,
+			discY + t.mittsHeight / 2,
 			t.gloveZ + t.gloveDepth / 2,
 		)
 	} else if (heroId === 'carom') {
@@ -188,13 +194,55 @@ export function dressHero(body, heroId = 'fletcher', team = 'A') {
 			t.megaphoneZ - t.megaphoneLength / 2 - t.discBorder / 4,
 		).rotation.y = Math.PI
 	}
+	// Move geometry, not the animated root: core's capsule centre is still physics.
+	body.visual.geometry.computeBoundingBox()
+	body.visual.geometry.translate(0, discY - body.visual.geometry.boundingBox.min.y, 0)
+	if (heroId !== 'fletcher') {
+		const border = part(body.visual.geometry.clone(), ink)
+		border.geometry.computeBoundingBox()
+		const bounds = border.geometry.boundingBox
+		const height = bounds.max.y - bounds.min.y
+		border.scale.set(
+			1 + t.discBorder / (bounds.max.x - bounds.min.x),
+			1 - t.discBorder / height,
+			1 + t.discBorder / (bounds.max.z - bounds.min.z),
+		)
+		border.position.y = discY * (1 - border.scale.y)
+	}
+	const drawn = part(
+		new THREE.CylinderGeometry(t.arrowRadius, t.arrowRadius, t.arrowHeight, 4).rotateX(Math.PI / 2),
+		cream,
+		0,
+		0,
+		-t.arrowHeight / 2,
+	)
+	drawn.name = 'moba-drawn-arrow'
+	drawn.visible = false
+	body.drawPose = (progress) => {
+		progress = Math.max(0, Math.min(1, progress))
+		drawn.visible = progress > 0
+		if (!drawn.visible) return
+		body.visual.rotation.x = -tune.abilityView.drawLean * progress
+		body.visual.rotation.z = -tune.abilityView.drawTurn * progress
+		drawn.position.z = -t.arrowHeight / 2 + tune.abilityView.drawPull * progress
+	}
+	body.poseAbility = (cast, alpha = 0) => {
+		const ability = castAbility({ cast, definition: heroDefinition(heroId) })
+		body.drawPose(
+			ability?.effects?.pose === 'draw'
+				? Math.max(1 / Math.max(1, cast.total), 1 - (cast.left - alpha) / Math.max(1, cast.total))
+				: 0,
+		)
+	}
 	let disposed = false
 	return () => {
 		if (disposed) return
 		disposed = true
 		for (const root of roots) root.removeFromParent()
 		for (const g of geometries) g.dispose()
-		for (const material of [teamMaterial, cream, ink, foot]) material.dispose()
+		for (const material of [teamMaterial, cream, fins, ink, foot]) material.dispose()
+		delete body.drawPose
+		delete body.poseAbility
 		body.visual.geometry = original
 		hidden.forEach(([part, visible]) => (part.visible = visible))
 	}

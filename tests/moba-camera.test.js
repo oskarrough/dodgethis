@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import { createFollow } from '../src/plugins/moba/follow.js'
+import { createFollow, viewFootprint } from '../src/plugins/moba/follow.js'
 import { createCameraControls } from '../src/plugins/moba/camera-controls.js'
 import { createCursor } from '../src/plugins/moba/cursor.js'
 import { FLOOR } from '../src/plugins/moba/map.js'
@@ -66,14 +66,17 @@ test('pan speed is tunable and clamps at all floor edges', () => {
 	follow.frame(0, hero, null)
 	expect(follow.frame(0.1, hero, null, { pan: { x: 1, z: 0 } }).target.x).toBe(1)
 	expect(follow.frame(100, hero, null, { pan: { x: 1, z: 1 } }).target).toMatchObject({
-		x: FLOOR.halfX,
-		z: FLOOR.halfZ,
+		x: FLOOR.halfX - viewFootprint(tune.follow, 1).halfX - tune.follow.viewPadding,
+		z: FLOOR.halfZ - viewFootprint(tune.follow, 1).maxZ - tune.follow.viewPadding,
 	})
 	expect(follow.frame(100, hero, null, { pan: { x: -1, z: -1 } }).target).toMatchObject({
-		x: -FLOOR.halfX,
-		z: -FLOOR.halfZ,
+		x: -FLOOR.halfX + viewFootprint(tune.follow, 1).halfX + tune.follow.viewPadding,
+		z: -FLOOR.halfZ - viewFootprint(tune.follow, 1).minZ + tune.follow.viewPadding,
 	})
-	expect(follow.frame(1, hero, null).target).toMatchObject({ x: -FLOOR.halfX, z: -FLOOR.halfZ })
+	expect(follow.frame(1, hero, null).target).toMatchObject({
+		x: -FLOOR.halfX + viewFootprint(tune.follow, 1).halfX + tune.follow.viewPadding,
+		z: -FLOOR.halfZ - viewFootprint(tune.follow, 1).minZ + tune.follow.viewPadding,
+	})
 })
 
 test('diagonal pan has the same speed, Space wins over arrows, blur releases keys', () => {
@@ -81,12 +84,12 @@ test('diagonal pan has the same speed, Space wins over arrows, blur releases key
 	const controller = new AbortController()
 	const follow = createFollow()
 	const controls = createCameraControls(target, controller.signal, follow)
-	const hero = { x: 0, z: 0 }
+	const hero = { x: 0, z: 3.4 }
 	follow.frame(0, hero, null)
 	key(target, 'ArrowRight')
 	key(target, 'ArrowUp')
-	const at = follow.frame(0.1, hero, null, controls.read()).target
-	expect(Math.hypot(at.x, at.z)).toBeCloseTo(2)
+	const at = follow.frame(0.04, hero, null, controls.read()).target
+	expect(Math.hypot(at.x - hero.x, at.z - hero.z)).toBeCloseTo(0.8)
 	key(target, 'Space')
 	expect(follow.frame(0.1, hero, null, controls.read()).target).toMatchObject(hero)
 	target.dispatchEvent(new Event('blur'))

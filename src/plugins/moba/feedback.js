@@ -1,4 +1,6 @@
 import * as THREE from 'three'
+import { abilityOf } from './ability.js'
+import { heroDefinition } from './heroes.js'
 import { tune } from './tune.js'
 
 // Moba's fact switch (docs/moba-plan.md, "Hit feedback"): each fact becomes juice-kit verbs, sfx, rumble, pings and HUD.
@@ -40,12 +42,17 @@ export function createFeedback({ juice, sfx, camera, input, view, skillsView, hu
 		const tick = fact.tick ?? sim.tick
 		if (sounded.get(name) === tick) return
 		sounded.set(name, tick)
-		sfx[name](fact.point, gain)
+		sfx[name]?.(fact.point, gain)
 	}
 
 	function present(fact) {
 		const mine = fact.hero === local || fact.source === local
 		const onMe = fact.target === local
+		const source = unitOf(fact.hero ?? fact.source)
+		const ability =
+			abilityOf(fact.ability, source) ??
+			(fact.ability ? null : (source?.definition ?? heroDefinition()).abilities[fact.slot])
+		const effects = ability?.effects ?? {}
 		switch (fact.type) {
 			case 'ballContested':
 				hud.banner?.('Ball contested! Clear the plaza')
@@ -128,19 +135,20 @@ export function createFeedback({ juice, sfx, camera, input, view, skillsView, hu
 				return
 			}
 			case 'cast':
-				unitOf(fact.hero)?.body.squash(
-					{
-						primary: tune.juice.attackSquash,
-						slot1: tune.juice.castSquash,
-						slot2: tune.juice.vaultSquash,
-						slot3: tune.juice.rainSquash,
-					}[fact.slot] ?? 0,
+				source?.body.squash(
+					fact.slot === 'primary'
+						? tune.juice.attackSquash
+						: ({
+								draw: tune.juice.castSquash,
+								vault: tune.juice.vaultSquash,
+								rain: tune.juice.rainSquash,
+							}[effects.pose] ?? 0),
 				)
-				if (fact.slot === 'slot2') {
-					skillsView.vault(fact.point, fact.direction)
-					cue('vault', fact, mine ? 1 : 0.45)
+				if (effects.cast) cue(effects.cast, fact, mine ? 1 : 0.45)
+				if (effects.effect === 'vault') {
+					skillsView?.vault(fact.point, fact.direction, ability.stats)
 					juice.burst(fact.point, { ...fact.direction, y: 0 }, { count: 8, streak: true })
-				} else if (fact.slot === 'slot3' && mine) skillsView.rain(fact.target)
+				} else if (effects.effect === 'rain' && mine) skillsView?.rain(fact.target, ability.stats)
 				return
 			case 'projectile': {
 				const shot = sim.shots.find((s) => s.id === fact.id)
@@ -151,7 +159,7 @@ export function createFeedback({ juice, sfx, camera, input, view, skillsView, hu
 						? fact.slot
 						: fact.slot === 'primary'
 							? 'attack'
-							: 'loose',
+							: effects.projectile,
 					fact,
 					mine ? 1 : 0.45,
 				)
@@ -224,7 +232,7 @@ export function createFeedback({ juice, sfx, camera, input, view, skillsView, hu
 					{ x: 0, y: 1, z: 0 },
 					{ count: 20, speed: 3, life: 0.35, size: 0.1 },
 				)
-				cue('rain', fact) // once per tick, including multi-target impacts
+				cue(effects.impact, fact) // once per tick, including multi-target impacts
 				return
 			case 'hit': {
 				view.unbolt(fact.projectile)
@@ -234,13 +242,13 @@ export function createFeedback({ juice, sfx, camera, input, view, skillsView, hu
 					unit.body.squash(0.28)
 				}
 				juice.burst(fact.point, fact.direction, { count: 6, speed: 1.4, life: 0.3, size: 0.07 })
-				if (fact.slot !== 'slot3' && fact.slot !== 'ball')
+				if (fact.slot !== 'ball' && !effects.impact)
 					cue(
 						['tower', 'fort', 'core', 'melee', 'ranged', 'wizard'].includes(fact.slot)
 							? fact.slot
 							: fact.slot === 'primary'
 								? 'attackHit'
-								: 'looseHit',
+								: effects.hit,
 						fact,
 					)
 				if (onMe) {
@@ -299,6 +307,14 @@ export function createFeedback({ juice, sfx, camera, input, view, skillsView, hu
 				juice.burst({ ...fact.point, y: 0.2 }, { x: 0, y: 1, z: 0 }, { count: 5, speed: 0.8 })
 				return
 			}
+			case 'boardExpired':
+			case 'caught':
+			case 'catchExpired':
+			case 'channelCancelled':
+			case 'channelEnd':
+				juice.burst(fact.point, { x: 0, y: 1, z: 0 }, tune.juice[fact.type])
+				cue(fact.type, fact, mine ? 1 : 0.45)
+				return
 			case 'denied':
 				if (fact.hero === local) hud.deny(fact.slot)
 				return

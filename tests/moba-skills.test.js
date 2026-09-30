@@ -68,7 +68,10 @@ test('Rain freezes and range-clamps its target, telegraphs before hitting, then 
 	step()
 	expect(sim.zones).toHaveLength(0)
 	expect(facts.filter((f) => f.type === 'hit')).toHaveLength(1)
-	expect(d.slowUntil).toBe(sim.tick + Math.round(tune.rain.duration / STEP))
+	expect(d.slow).toEqual({
+		until: sim.tick + Math.round(tune.rain.duration / STEP),
+		factor: 1 - tune.rain.slow,
+	})
 	step()
 	expect(d.body.speedMul).toBeCloseTo((tune.dummies.speed / tune.hero.speed) * 0.7)
 	step(Math.round(tune.rain.duration / STEP))

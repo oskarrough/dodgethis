@@ -16,9 +16,20 @@ const loose = ability('loose', 'shot', {
 	bounce: false,
 	catchable: true,
 	aimAssist: true,
+	tell: 'line',
+	held: 'line',
+	effects: { cast: 'nock', projectile: 'loose', hit: 'looseHit', pose: 'draw' },
 })
-const vault = ability('vault', 'dash')
-const rain = ability('rain', 'zone', { heal: false })
+const vault = ability('vault', 'dash', {
+	held: 'arrow',
+	effects: { cast: 'vault', effect: 'vault', pose: 'vault' },
+})
+const rain = ability('rain', 'zone', {
+	heal: false,
+	tell: 'circle',
+	held: 'circle',
+	effects: { impact: 'rain', effect: 'rain', pose: 'rain' },
+})
 export const HEROES = {
 	fletcher: {
 		id: 'fletcher',
@@ -32,7 +43,7 @@ export const HEROES = {
 		abilities: { slot1: loose, slot2: vault, slot3: rain, slot4: null },
 		traits: {
 			onHit({ source, shot, target, ticks }) {
-				if (shot.ability === loose.id && target.hero && !source.dead)
+				if (shot.traitProcs !== false && shot.ability === loose.id && target.hero && !source.dead)
 					source.cd[1] = Math.max(0, source.cd[1] - ticks(tune.momentum.reduction))
 			},
 		},
@@ -61,5 +72,5 @@ export function heroDefinition(id = 'fletcher') {
 }
 
 export function freshAbilityState() {
-	return { pocket: null, board: null, bag: [], cutout: null, freeze: null }
+	return { pocket: null, bag: [] }
 }

@@ -146,7 +146,7 @@ export const tune = {
 	},
 	base: { x: 44, heal: 0.1 },
 	scripted: { think: 0.1, tell: 0.3, retreat: 0.35, recover: 0.9, file: 2, hold: 3 },
-	proof: { batch: 3600, afterKill: 1, siegeLimit: 600, trace: 128 },
+	proof: { batch: 3600, afterKill: 1, siegeLimit: 600, trace: 128, queryBudgetMs: 2 },
 	hud: { bannerLife: 2.5 },
 	match: { objective: 180, late: 600 },
 	waves: {
@@ -301,6 +301,8 @@ export const tune = {
 		arrowCount: 3,
 		arrowSpacing: 0.22,
 		arrowFan: 0.42,
+		arrowTilt: (35 * Math.PI) / 180,
+		finCount: 2,
 		arrowRadius: 0.045,
 		arrowHeight: 1.1,
 		arrowY: 0.55,
@@ -314,7 +316,7 @@ export const tune = {
 		gloveDepth: 0.5,
 		gloveX: 0.55,
 		gloveZ: -0.25,
-		fingerRadius: 0.11,
+		fingerRadius: 0.16,
 		fingerCount: 4,
 		fingerSpacing: 0.14,
 		caromRadius: 0.55,
@@ -325,7 +327,7 @@ export const tune = {
 		racketY: 0.55,
 		racketHandle: 0.5,
 		racketHandleRadius: 0.05,
-		skipWidth: 0.9,
+		skipWidth: 1.3,
 		skipDepth: 0.25,
 		skipHeight: 1.5,
 		megaphoneRadius: 0.28,
@@ -357,6 +359,18 @@ export const tune = {
 	},
 	respawn: { base: 6, perLevel: 2 },
 	momentum: { reduction: 2 },
+	catching: { returnTell: 0.5, pocketLife: 6, bagLimit: 6 },
+	abilityView: {
+		tellY: 0.029,
+		fillLift: 0.001,
+		castLife: 0.15,
+		streakLife: 0.25,
+		drawLean: 0.14,
+		drawTurn: 0.18,
+		drawPull: 0.18,
+	},
+	heroProof: { pixels: 20, canvas: 80, zoom: 4 },
+
 	// Q, Loose: a line skillshot, first hit.
 	loose: {
 		damage: 140,
@@ -388,6 +402,10 @@ export const tune = {
 		assistBend: 0.6, // …by this fraction of the gap
 	},
 	follow: {
+		viewPadding: 1.25,
+		minHeight: 1,
+		minFov: 0.01,
+		fitIterations: 24,
 		maxStep: 1 / 60, // camera/FOV spring integration, independent of render frequency
 		pan: 20, // metres per second; free camera stays inside the floor
 		height: 20,
@@ -408,6 +426,15 @@ export const tune = {
 		respawn: 2,
 	},
 	sounds: {
+		boardExpired: { freq: 950, slideTo: 420, type: 'triangle', dur: 0.18, gain: 0.08 },
+		nock: { freq: 180, slideTo: 480, type: 'triangle', dur: 0.08, gain: 0.12 },
+		returnNock: { freq: 300, slideTo: 500, type: 'sine', dur: 0.12, gain: 0.12 },
+		returnShot: { freq: 650, slideTo: 220, type: 'triangle', dur: 0.16, gain: 0.14 },
+		returnHit: { freq: 350, slideTo: 75, type: 'square', dur: 0.12, gain: 0.2 },
+		caught: { freq: 850, slideTo: 240, type: 'sine', dur: 0.16, gain: 0.16 },
+		catchExpired: { freq: 280, slideTo: 120, type: 'sine', dur: 0.1, gain: 0.08 },
+		channelCancelled: { freq: 210, slideTo: 100, type: 'triangle', dur: 0.12, gain: 0.1 },
+		channelEnd: { freq: 520, slideTo: 700, type: 'triangle', dur: 0.12, gain: 0.12 },
 		ballContested: { freq: 650, slideTo: 350, type: 'triangle', dur: 0.25, gain: 0.16 },
 		ballWarn: { freq: 1800, slideTo: 2100, type: 'sine', dur: 0.5, gain: 0.24 },
 		ballSpawn: { freq: 200, slideTo: 1000, type: 'triangle', dur: 0.35, gain: 0.25 },
@@ -443,6 +470,11 @@ export const tune = {
 		vault: { freq: 180, slideTo: 720, type: 'triangle', dur: 0.12, gain: 0.12 },
 	},
 	juice: {
+		boardExpired: { count: 6, speed: 0.9, life: 0.5, size: 0.08 },
+		caught: { count: 10, speed: 1.8, life: 0.4, size: 0.1 },
+		catchExpired: { count: 3, speed: 0.6, life: 0.3, size: 0.06 },
+		channelCancelled: { count: 5, speed: 1.1, life: 0.25, size: 0.09 },
+		channelEnd: { count: 8, speed: 2, life: 0.35, size: 0.08 },
 		ballGoal: {
 			freeze: 0.09,
 			shake: 0.7,

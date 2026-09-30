@@ -507,7 +507,7 @@ test('feedback tiers distinguish remote pokes, local hits, damage taken and take
 		feedback.present({ type: 'projectile', hero: 'local', id: -1, slot: 'slot1', point: hit.point })
 		expect(sounds).toEqual(['attack', 'loose'])
 		sounds.length = 0
-		feedback.present({ type: 'impact', hit: true, point: hit.point })
+		feedback.present({ type: 'impact', ability: 'rain', hit: true, point: hit.point })
 		feedback.present({ ...hit, slot: 'slot3' })
 		feedback.present({ ...hit, slot: 'slot3' })
 		expect(sounds).toEqual(['rain'])

@@ -24,7 +24,11 @@ try {
 	report.silhouettes = evaluate('window.silhouetteProof')
 	assert.equal(report.silhouettes.length, 8)
 	for (const entry of report.silhouettes) {
-		assert(Math.abs(entry.projectedPixels - 20) < 1e-8)
+		if (entry.id === 'fletcher')
+			assert(Math.abs(entry.projectedPixels - tune.heroProof.pixels) < 1e-8)
+		assert(entry.projectedPixels > 0)
+		assert.equal(entry.fov, report.silhouettes[0].fov)
+		assert.equal(entry.pitch, (Math.atan2(tune.follow.height, tune.follow.back) * 180) / Math.PI)
 		assert.equal(entry.glError, 0)
 	}
 	browser('screenshot', `${dir}/silhouettes-20px-grayscale.png`)

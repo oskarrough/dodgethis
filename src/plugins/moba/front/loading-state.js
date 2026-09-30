@@ -1,3 +1,6 @@
+import { clampView } from '../follow.js'
+import { tune as kit } from '../tune.js'
+
 // Render-time gates: readiness has its own dwell, independent of the total hold.
 export function createLoadingState(tune) {
 	let phase = 'hold',
@@ -50,8 +53,15 @@ export function descentFrame(progress, hero, start, follow, bounds, aspect = 1) 
 		t = ease(p)
 	const mix = (a, b, weight = t) => a + (b - a) * weight
 	const clamp = (v, half) => Math.max(-half, Math.min(half, v))
-	const x = clamp(hero.x, bounds.halfX),
-		z = clamp(hero.z, bounds.halfZ)
+	const landing = clampView(
+		{ x: clamp(hero.x, bounds.halfX), z: clamp(hero.z, bounds.halfZ) },
+		follow,
+		aspect,
+	)
+	const x = landing.x,
+		z = landing.z
+	const finalHeight = Math.max(follow.minHeight ?? kit.follow.minHeight, follow.height)
+	const finalBack = Math.max(0, follow.back)
 	const back = Math.max(
 		start.back,
 		(bounds.halfX * start.fitMargin) /
@@ -67,13 +77,13 @@ export function descentFrame(progress, hero, start, follow, bounds, aspect = 1) 
 	const height =
 		p <= start.riseEnd
 			? mix(start.height, start.arcHeight, ease(p / start.riseEnd))
-			: mix(start.arcHeight, follow.height, ease((p - start.riseEnd) / (1 - start.riseEnd)))
+			: mix(start.arcHeight, finalHeight, ease((p - start.riseEnd) / (1 - start.riseEnd)))
 	const initialPitch = Math.atan2(start.height - start.targetY, back)
-	const finalPitch = Math.atan2(follow.height, follow.back)
+	const finalPitch = Math.atan2(finalHeight, finalBack)
 	const pitch = mix(initialPitch, finalPitch, ease(p / start.pitchEnd))
 	return {
 		eye: { x: target.x, y: height, z: target.z + (height - target.y) / Math.tan(pitch) },
 		target,
-		fov: mix(start.fov, follow.fov),
+		fov: mix(start.fov, landing.fov),
 	}
 }
