@@ -2,7 +2,7 @@
 
 - `agent-browser` is installed; use it for browser testing. Its key presses don't reach the game, so dispatch synthetic KeyboardEvents. In a prod build `window.game` appears only after a Backquote toggles diagnostics.
 - Don't use `jj restore`; parallel agents may be working in this checkout.
-- Commit only your own files, always with a message: `jj commit <paths> -m "…"`. Leave other threads' changes in the working copy; never create an empty-described commit.
+- Commit only your own files, always with a message: `jj commit <paths> -m "…"`. Run `bunx oxfmt <paths>` first, docs included; `bun run check` fails on unformatted markdown. Then `jj bookmark set moba -r @-`. Leave other threads' changes in the working copy; never create an empty-described commit.
 - Deploys happen automatically when `main` moves on GitHub (Cloudflare Workers build). Never run `wrangler deploy` by hand. `bun run build` runs `bun run check` first, so a lint or test failure blocks the deploy. MOBA work lives on the `moba` branch; don't merge it into main without Oskar.
 
 ## Layout

@@ -1,2 +1,3 @@
 Model: Opus 5.5 design, then GPT 6.1 build, then a Sonnet smoke with screenshots. After: 01. Direction is in docs/moba-look.md.
 Nice graphics. Push the comic-sticker look (`redesign.md`, `core/stylepass.js`) for the moba: the map's ground art, structure silhouettes, minion and hero readability at a distance, ability VFX, a UI skin. At most 50 lines of direction in `docs/moba-look.md`, then build it in slices. Readability beats decoration; 60 fps on a mid laptop.
+Off the map's edge, show the front end's desert (the lane is a paper plate floating in it, per the crane shot), so the void is never blue.

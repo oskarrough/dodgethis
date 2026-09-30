@@ -1,1 +1,2 @@
 Queued briefs for the moba, in order. The loop skill takes the lowest number whose "after" is met, spawns it with the model named on line 1, and deletes the file once it lands. Reviews use `review.md` with the reverse model.
+Feature freeze (Oskar, 2026-09-30): after 04c, only 04d (agent play) and fixes until agents can play a whole match; 05 and up wait. Once 04d lands, its review is fixed and a final smoke passes, the loop stops and hands over for human playtesting; the heartbeat must not start new briefs.
