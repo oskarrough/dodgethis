@@ -42,6 +42,28 @@ Tell the three tiers apart from above. Walls are `scenery`, and team colour goes
 
 **Budget.** 60 fps on a mid laptop, measured as the p95 of the whole frame (CPU plus GPU) in a crowded fight at 2560 × 1440: six heroes, two waves and a tower. The pass already caps DPR at 1.5. If the frame goes over 16.7 ms, drop DPR to 1.0 first, then halftone on units, then the minion props. Merge static geometry per role, instance minions, and skip shadow maps; a shadow is a printed ink ellipse. The new palette roles are `road` and `hedge`, and nothing else.
 
+## Tooltips and scoreboard
+
+For the stat nerds, and nothing the sim doesn't already know. Every number is computed at display time from the hero table (`heroes.js`), `tune` and the snapshot, so a `&debug` edit or a level-up redraws the open card. Nothing is typed into a string.
+
+- **One source of numbers.** `front/stats.js` moves to `plugins/moba/stats.js` and goes generic: `heroStats(definition, level)` walks `definition.abilities` instead of assuming Loose, Vault and Rain, and `unitStats`, `ballStats` and `timeToKill(hp, dps)` join it. Level scaling reads `tune.levels`; `front/tune.js` drops its copy of `growth` and `cap`. Pure `tipLines(subject, tier, snapshot)` returns the card's lines, and the Numbers panel prints the same full-tier lines, so the two can't disagree.
+- **Two tiers.** Tier one is the name and one plain line for everyone: "Loose · 140 damage line shot, every 4 s. Hero hits cut Vault by 2 s." Tier two, shown while Alt is held or after a second press, is the full sheet: current level, the next level's delta and level 10, then derived values.
+- **Skills** (HUD slots): damage, range, radius, speed, cast point, cooldown, damage per cooldown (Loose 35/s), structure damage at `waves.abilityStructure` (Loose 35 a hit), and the dodge deadline at `preview.distance`, stepped at 60 Hz by `escapeTime` with sidestep time and margin. R shows "unlocks at level 10" until it does.
+- **Heroes:** HP, speed, level, basic DPS (90/s), respawn time at this level, and time to kill each tier with basics alone (tower 26.7 s at level 1, 19.6 s at 10). Art-only heroes show base HP and speed and "kit not built".
+- **Structures:** HP, damage per shot, rate, range, tell, the XP it pays, how long your hero survives inside its ring (12.7 s at level 1), your time to kill it, and what one Ball does to it (720 to a tower).
+- **Minions:** HP, DPS (melee 12/s), range, XP, the 12 m soak radius, and your basics to kill. **Ball:** 300 damage, stun, silence, 30% of structure max HP, range, speed, carry speed, pickup channel, and the life left on this Ball, live.
+- **Input.** Mouse hover picks a HUD slot, or a unit within `orders.pick` of the cursor; Alt calls `preventDefault` so Firefox's menu bar stays shut. On the pad, holding Y for 0.35 s inspects whatever the right stick aims at (your own hero at rest), d-pad left and right step through the other units in view, and a second Y opens tier two. B closes. HUD slots become buttons with `aria-describedby`, so a screen reader gets tier one. The card is the UI skin's cream sticker, 320 px wide, anchored above the slot or beside the unit and clamped to the viewport. It never takes pointer events and never pauses the sim.
+
+**Scoreboard.** Hold Tab, or View on the pad, for a cream sticker table: two team blocks, each headed by its level and XP to the next, one row per hero with portrait, takedowns, deaths, hero damage, siege damage, Ball hits and XP soaked. Tab never moves focus in the match. The post-match table is this one in ligne claire, fed by the same tally.
+
+- **Facts only.** A pure `tally(stats, fact)` folds sim facts: `hit` from a hero onto a hero is hero damage and onto a structure is siege (Ball structure hits included); a hero `death` credits one death, and a takedown to the killer and every hero that hit the victim in the previous 10 s; `ballHit` counts Ball hits. One sim change: lane soak XP names its heroes, `{ type: 'xp', soakers: [ids] }`, and each soaker is credited the full amount, since team XP is shared.
+- **Online.** The host folds its own facts, and the tally rides the snapshot as `stats`, so a dropped envelope or a late join can't skew a guest's table. Guests render tooltips from the same shipped `tune`; the tune GUI is off in online sessions, so no one reads a local edit. Restart zeroes the tally.
+
+**Build order.**
+
+1. **Stats and tooltips.** The shared module, both tiers, HUD slots, world picks, pad Y. Tests: pure values against hand numbers (Loose 35/s, tower 26.7 s and 19.6 s, Ball 720); the dodge deadline checked from both sides of the threshold tick; editing `loose.damage` redraws an open card; Numbers and tier two print identical lines; a guest given the host's snapshot builds identical lines. Screenshots at 1440 × 900 with a slot card, a tower card in tier two, and a pad-opened minion card.
+2. **Scoreboard.** The `soakers` field, `tally`, the snapshot field, `validFact`, the Tab and View table. Tests: a scripted two-on-one kill credits two takedowns and one death; tower hits count as siege, not hero damage; soak outside 12 m credits nobody; the facts fold equals the snapshot tally; a guest shows the host's table; restart empties it. The six-Fletcher fixture regenerates only for the new `xp` field, and the commit says so.
+
 ## Build order
 
 One thread per slice. Each passes `bun run check` with the dodgeball characterization unchanged, restarts with every pool emptied, and holds even 144 Hz pose steps. Judge the look from default-camera screenshots at 1440 × 900.
