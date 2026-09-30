@@ -38,8 +38,10 @@ export function createAgentPerception() {
 				pos: position(u),
 				hp: u.hp,
 				dead: u.dead,
+				respawnTick: u.respawnTick,
 				cast: u.cast && structuredClone(u.cast),
 				attack: u.attack && structuredClone(u.attack),
+				ballThrow: u.ballThrow && structuredClone(u.ballThrow),
 				vulnerable: !u.structure || sim.lane.vulnerable(u),
 			})
 			history.push({
@@ -66,13 +68,14 @@ export function observation(sim, id, perceived, reasons = ['decision']) {
 	const h = sim.heroes.find((u) => u.id === id)
 	const p = position(h)
 	const left = (t) => n(Math.max(0, t - sim.tick) * STEP)
+	const age = `stale=${n((sim.tick - perceived.tick) * STEP)}s`
 	const relative = (u) =>
-		`${point(u.pos)} ${n(distance(p, u.pos))}m@${n((Math.atan2(u.pos.z - p.z, u.pos.x - p.x) * 180) / Math.PI)}`
+		`${point(u.pos)} ${age} ${n(distance(p, u.pos))}m@${n((Math.atan2(u.pos.z - p.z, u.pos.x - p.x) * 180) / Math.PI)}`
 	const order =
 		h.order?.kind === 'attack'
 			? `attack:${h.order.target}`
 			: h.order?.goal
-				? `move:${point(h.order.goal)}`
+				? `${h.order.kind}:${point(h.order.goal)}`
 				: 'none'
 	const b = perceived.ball
 	const ball = b
@@ -91,6 +94,11 @@ export function observation(sim, id, perceived, reasons = ['decision']) {
 	const threats = []
 	for (const u of [...perceived.heroes, ...perceived.minions, ...perceived.structures]) {
 		if (u.dead || u.team === h.team) continue
+		if (u.ballThrow)
+			threats.push({
+				id: `${u.id}:ball`,
+				text: `${u.id}:ball dir=${n(u.ballThrow.dir.x)},${n(u.ballThrow.dir.z)} in=${left(u.ballThrow.endTick)}s`,
+			})
 		if (u.cast)
 			threats.push({
 				id: u.id,
@@ -127,7 +135,7 @@ export function observation(sim, id, perceived, reasons = ['decision']) {
 				.sort(compare)
 				.map(
 					(u) =>
-						`${u.id} ${point(u.pos)} hp=${Math.ceil(u.hp)} ${u.dead ? 'down' : u.vulnerable ? 'open' : 'shield'}`,
+						`${u.id} ${point(u.pos)} ${age} hp=${Math.ceil(u.hp)} ${u.dead ? 'down' : u.vulnerable ? 'open' : 'shield'}`,
 				),
 		],
 		[
@@ -135,7 +143,10 @@ export function observation(sim, id, perceived, reasons = ['decision']) {
 			perceived.heroes
 				.filter((u) => u.id !== id)
 				.sort(compare)
-				.map((u) => `${u.id} ${u.dead ? 'dead' : `${relative(u)} hp=${Math.ceil(u.hp)}`}`),
+				.map(
+					(u) =>
+						`${u.id} ${u.dead ? `dead respawn=${left(u.respawnTick)}s ${age}` : `${relative(u)} hp=${Math.ceil(u.hp)}`}`,
+				),
 		],
 		[
 			'nearby',
@@ -181,8 +192,9 @@ export function agentAction(sim, id, perceived, input) {
 	}
 	const fields = {
 		move: ['x', 'y'],
+		'attack-move': ['x', 'y'],
 		attack: ['target'],
-		cast: ['slot', 'x', 'y'],
+		cast: ['slot', 'x', 'y', 'target'],
 		stop: [],
 		pickup: [],
 		throw: ['x', 'y'],
@@ -195,7 +207,8 @@ export function agentAction(sim, id, perceived, input) {
 	if (h.dead && input.action !== 'wait') throw new Error('Dead: wait for respawn')
 	switch (input.action) {
 		case 'move':
-			frame.order = at()
+		case 'attack-move':
+			frame.order = { ...at(), kind: input.action }
 			break
 		case 'attack': {
 			const seen = [...perceived.heroes, ...perceived.minions, ...perceived.structures].find(
@@ -214,7 +227,15 @@ export function agentAction(sim, id, perceived, input) {
 			const slot = { Q: 'slot1', W: 'slot2', E: 'slot3' }[input.slot]
 			if (!slot) throw new Error('slot must be Q, W or E')
 			if (sim.ball.carrying(h)) throw new Error('Carrying: use throw')
-			frame.aim = at()
+			if (input.target !== undefined) {
+				if (input.x !== undefined || input.y !== undefined)
+					throw new Error('Use target or x,y, not both')
+				const seen = [...perceived.heroes, ...perceived.minions, ...perceived.structures].find(
+					(u) => u.id === input.target && !u.dead,
+				)
+				if (!seen) throw new Error('Target is not a perceived living unit')
+				frame.aim = { ...seen.pos }
+			} else frame.aim = at()
 			frame.pressed = [{ action: slot, at: frame.aim }]
 			break
 		}
@@ -243,14 +264,71 @@ export function agentAction(sim, id, perceived, input) {
 			seconds = input.seconds
 	}
 	if (!validIntent(frame)) throw new Error('Invalid intent')
-	return { frame, ticks: ticks(seconds) }
+	return { frame, ticks: ticks(seconds), waiting: input.action === 'wait' }
+}
+
+// Tell identities use the perceived deadline, not the changing countdown.
+function aimedTells(h, perceived) {
+	const p = position(h),
+		tells = new Set()
+	for (const u of [...perceived.heroes, ...perceived.minions, ...perceived.structures]) {
+		if (u.dead || u.team === h.team) continue
+		if (u.attack?.target === h.id && (!u.attack.phase || u.attack.phase === 'windup'))
+			tells.add(`${u.id}:basic:${perceived.tick + u.attack.left}`)
+		if (u.ballThrow) {
+			const { dir, endTick } = u.ballThrow
+			const dx = p.x - u.pos.x,
+				dz = p.z - u.pos.z
+			const along = dx * dir.x + dz * dir.z
+			if (
+				along >= 0 &&
+				along <= tune.ball.range &&
+				Math.abs(dx * dir.z - dz * dir.x) <= tune.ball.radius + h.body.radius
+			)
+				tells.add(`${u.id}:ball:${endTick}`)
+		}
+		if (!u.cast) continue
+		const c = u.cast
+		let aimed = distance(p, c.target) <= tune.rain.radius + h.body.radius
+		if (c.ability === 'loose') {
+			const dx = c.target.x - u.pos.x,
+				dz = c.target.z - u.pos.z
+			const len = Math.hypot(dx, dz) || 1
+			const along = ((p.x - u.pos.x) * dx + (p.z - u.pos.z) * dz) / len
+			const across = Math.abs((p.x - u.pos.x) * dz - (p.z - u.pos.z) * dx) / len
+			aimed = along >= 0 && along <= tune.loose.range && across <= tune.loose.radius + h.body.radius
+		}
+		if (aimed) tells.add(`${u.id}:${c.ability}:${perceived.tick + c.left}`)
+	}
+	for (const z of perceived.zones)
+		if (z.team !== h.team && distance(p, z) <= (z.radius ?? tune.rain.radius) + h.body.radius)
+			tells.add(`zone-${z.id}`)
+	return tells
 }
 
 export function createAgentDecisions(seats) {
-	const clocks = new Map(seats.map((id) => [id, { due: 0, previous: null }]))
+	const clocks = new Map(
+		seats.map((id) => [
+			id,
+			{
+				due: 0,
+				previous: null,
+				waiting: false,
+				pending: new Map(),
+				interrupted: new Set(),
+			},
+		]),
+	)
 	return {
-		acted(id, tick, delay) {
-			clocks.get(id).due = tick + delay
+		acted(id, tick, delay, waiting = false) {
+			const clock = clocks.get(id)
+			// Re-waiting after an interruption keeps the original window and its coalescing.
+			if (!(waiting && clock.waiting && tick < clock.due)) {
+				clock.due = tick + delay
+				clock.pending.clear()
+				clock.interrupted.clear()
+			}
+			clock.waiting = waiting
 		},
 		due(sim, perceived, facts = []) {
 			const due = []
@@ -260,31 +338,53 @@ export function createAgentDecisions(seats) {
 					hp: h.hp,
 					dead: h.dead,
 					cd: h.cd.slice(),
-					ball: perceived.ball?.id + ':' + perceived.ball?.state,
+					tells: aimedTells(h, perceived),
+					ball: perceived.ball && perceived.ball.state !== 'warning' ? perceived.ball.id : null,
 				}
 				const old = clock.previous
-				const reasons = []
+				const events = []
+				const add = (kind, text = kind, critical = false) => events.push({ kind, text, critical })
 				if (old) {
-					if (
-						state.hp < old.hp ||
-						facts.some((f) => f.type === 'hit' && f.target === id && f.damage > 0)
-					)
-						reasons.push('damage')
-					if (state.dead !== old.dead) reasons.push(state.dead ? 'death' : 'respawn')
-					if (state.cd.some((cd, i) => !cd && old.cd[i])) reasons.push('ready')
-					if (state.ball !== old.ball && perceived.ball?.state === 'loose') reasons.push('ball')
-					for (const fact of facts) {
-						if (fact.hero === id && ['denied', 'ballDenied'].includes(fact.type)) {
+					const hits = facts.filter((f) => f.type === 'hit' && f.target === id && f.damage > 0)
+					if (state.hp < old.hp || hits.length)
+						add(
+							'damage',
+							'damage',
+							hits.some((f) => f.damage > h.maxHp * tune.agents.interruptDamage),
+						)
+					if (state.dead !== old.dead) add(state.dead ? 'death' : 'respawn', undefined, state.dead)
+					if (state.cd.some((cd, i) => !cd && old.cd[i])) add('ready')
+					if (state.ball && state.ball !== old.ball) add('ball', 'ball', true)
+					if ([...state.tells].some((tell) => !old.tells.has(tell))) add('tell', 'tell', true)
+					for (const f of facts) {
+						if (f.hero === id && ['denied', 'ballDenied'].includes(f.type)) {
 							const verb =
-								{ slot1: 'Q', slot2: 'W', slot3: 'E', primary: 'attack' }[fact.slot] ?? 'throw'
-							reasons.push(`denied:${verb}`)
+								{ slot1: 'Q', slot2: 'W', slot3: 'E', primary: 'attack' }[f.slot] ?? 'throw'
+							add(`denied:${verb}`, `denied:${verb}:${f.reason ?? 'illegal'}`)
 						}
-						if (fact.type === 'blocked' && fact.source === id) reasons.push('blocked')
+						if (f.type === 'blocked' && f.source === id)
+							add('blocked', `blocked:${f.ability ?? f.slot ?? 'shot'}:${f.reason ?? 'obstacle'}`)
 					}
 				}
 				clock.previous = state
-				if (sim.tick >= clock.due || reasons.length)
+				const interrupts = []
+				for (const event of events) {
+					const pending = clock.pending.get(event.kind)
+					clock.pending.set(event.kind, { text: event.text, count: (pending?.count ?? 0) + 1 })
+					if ((!clock.waiting || event.critical) && !clock.interrupted.has(event.kind)) {
+						interrupts.push(event.text)
+						clock.interrupted.add(event.kind)
+					}
+				}
+				if (sim.tick >= clock.due || interrupts.length) {
+					const reasons =
+						sim.tick >= clock.due
+							? [...clock.pending.values()].map(
+									({ text, count }) => text + (count > 1 ? `(${count})` : ''),
+								)
+							: interrupts
 					due.push({ id, reasons: reasons.length ? reasons : ['decision'] })
+				}
 			}
 			return due
 		},

@@ -37,7 +37,7 @@ function act(run, id, input) {
 }
 
 test('one-screen help teaches all verbs, units, seat protocol and replay', () => {
-	expect(HELP.trim().split('\n').length).toBeLessThanOrEqual(24)
+	expect(HELP.trim().split('\n').length).toBeLessThanOrEqual(30)
 	for (const action of ['move', 'attack', 'cast', 'stop', 'pickup', 'throw', 'wait'])
 		expect(HELP).toContain(`"action":"${action}"`)
 	expect(HELP).toContain('metres')
@@ -51,6 +51,8 @@ test('verbs produce ordinary intents; malformed, hidden and shielded orders are 
 	try {
 		for (const input of [
 			{ action: 'move', x: 0, y: 1 },
+			{ action: 'attack-move', x: 0, y: 1 },
+			{ action: 'cast', slot: 'Q', target: 'B2' },
 			{ action: 'attack', target: 'tower-B' },
 			{ action: 'cast', slot: 'Q', x: 0, y: 0 },
 			{ action: 'cast', slot: 'W', x: -44, y: -1.5 },
@@ -74,6 +76,8 @@ test('verbs produce ordinary intents; malformed, hidden and shielded orders are 
 			{ action: 'throw', x: 0, y: 0 },
 			{ action: 'pickup' },
 			{ action: 'cast', slot: 'R', x: 0, y: 0 },
+			{ action: 'cast', slot: 'Q', target: 'B2', x: 0, y: 0 },
+			{ action: 'cast', slot: 'Q', target: 'missing' },
 		])
 			expect(() => act(run, 'A1', input)).toThrow()
 		run.step([['A1', act(run, 'A1', { action: 'cast', slot: 'Q', x: -40, y: -1.5 })]])
@@ -82,6 +86,37 @@ test('verbs produce ordinary intents; malformed, hidden and shielded orders are 
 		expect(run.sim.heroes.find((h) => h.id === 'A1').order).toBeNull()
 		// Q is committed, exactly as for a human. Stop clears orders, not its cast point.
 		expect(run.sim.heroes.find((h) => h.id === 'A1').cast.left).toBe(16)
+	} finally {
+		run.close()
+	}
+})
+
+test('explicit movement never resolves a click as attack; attack-move engages and resumes', () => {
+	const run = match(agentRoster({ seats: ['A1'], idle: ['A2', 'A3', 'B1', 'B2', 'B3'] }))
+	try {
+		const perceived = run.perception.read()
+		const aim = act(run, 'A1', { action: 'cast', slot: 'Q', target: 'B2' }).aim
+		run.sim.heroes.find((h) => h.id === 'B2').body.position.x = 30
+		expect(act(run, 'A1', { action: 'cast', slot: 'Q', target: 'B2' }).aim).toEqual(aim)
+		const enemy = perceived.heroes.find((u) => u.id === 'B2')
+		enemy.dead = true
+		enemy.respawnTick = 600
+		expect(observation(run.sim, 'A1', perceived)).toContain('B2 dead respawn=10s stale=0s')
+		run.step([['A1', act(run, 'A1', { action: 'move', x: 18, y: 0 })]])
+		const hero = run.sim.heroes.find((h) => h.id === 'A1')
+		expect(hero.order.kind).toBe('move')
+		expect(hero.attack).toBeNull()
+		run.step([['A1', act(run, 'A1', { action: 'attack-move', x: 18, y: 0 })]])
+		const goal = { ...hero.order.goal }
+		while (hero.order?.kind !== 'attack' && !hero.dead && run.sim.tick < 1800) run.step()
+		expect(hero.order).toMatchObject({ kind: 'attack', target: 'tower-B', resume: goal })
+		// Removing the target tests resumption, not a fabricated match win.
+		run.sim.lane.structures.find((u) => u.id === 'tower-B').dead = true
+		while (hero.order.kind === 'attack') run.step()
+		expect(hero.order.kind).toBe('attack-move')
+		run.step([['A1', act(run, 'A1', { action: 'cast', slot: 'Q', x: 20, y: 0 })]])
+		run.step([['A1', act(run, 'A1', { action: 'cast', slot: 'Q', x: 20, y: 0 })]])
+		expect(run.facts.some((f) => f.type === 'denied' && f.reason === 'cooldown')).toBe(true)
 	} finally {
 		run.close()
 	}
@@ -128,30 +163,67 @@ test('observations are lagged, bounded, ordered and independent between sims', (
 	}
 }, 20000)
 
-test('long waits interrupt per seat for damage, ready, death, respawn and delayed Ball spawn', () => {
+test('waits coalesce minor events; only death, aimed tells, large hits and new Ball spawn interrupt', () => {
 	const run = match()
 	try {
 		const decisions = createAgentDecisions(['A1', 'B2'])
 		expect(decisions.due(run.sim, run.perception.read()).map((s) => s.id)).toEqual(['A1', 'B2'])
-		decisions.acted('A1', 0, 1800)
-		decisions.acted('B2', 0, 1800)
+		decisions.acted('A1', 0, 1800, true)
+		decisions.acted('B2', 0, 1800, true)
 		const h = run.sim.heroes.find((u) => u.id === 'B2')
 		h.cd[0] = 1
 		expect(decisions.due(run.sim, run.perception.read())).toEqual([])
 		h.cd[0] = 0
 		h.hp -= 1
-		expect(decisions.due(run.sim, run.perception.read())).toEqual([
-			{ id: 'B2', reasons: ['damage', 'ready'] },
-		])
+		expect(decisions.due(run.sim, run.perception.read())).toEqual([])
 		h.dead = true
 		expect(decisions.due(run.sim, run.perception.read())[0].reasons).toEqual(['death'])
 		h.dead = false
-		expect(decisions.due(run.sim, run.perception.read())[0].reasons).toEqual(['respawn'])
+		expect(decisions.due(run.sim, run.perception.read())).toEqual([])
 		const perceived = { ...run.perception.read(), ball: { id: 1, state: 'loose' } }
 		expect(decisions.due(run.sim, perceived).map((s) => s.reasons)).toEqual([['ball'], ['ball']])
+		expect(decisions.due(run.sim, { ...perceived, ball: { id: 1, state: 'channel' } })).toEqual([])
+		expect(decisions.due(run.sim, perceived)).toEqual([])
+		expect(decisions.due(run.sim, perceived, [{ type: 'hit', target: 'A1', damage: 140 }])).toEqual(
+			[],
+		)
 		expect(
-			decisions.due(run.sim, perceived, [{ type: 'hit', target: 'A1', damage: 10 }])[0].reasons,
+			decisions.due(run.sim, perceived, [{ type: 'hit', target: 'A1', damage: 141 }])[0].reasons,
 		).toEqual(['damage'])
+		decisions.acted('A1', 1, 1800, true)
+		expect(decisions.due(run.sim, perceived, [{ type: 'hit', target: 'A1', damage: 141 }])).toEqual(
+			[],
+		)
+		const enemy = perceived.heroes.find((u) => u.id === 'B1')
+		enemy.attack = { target: 'A2', phase: 'windup', left: 20 }
+		expect(decisions.due(run.sim, perceived)).toEqual([])
+		enemy.attack.target = 'A1'
+		expect(decisions.due(run.sim, perceived)[0].reasons).toEqual(['tell'])
+		enemy.attack.left--
+		expect(decisions.due(run.sim, perceived)).toEqual([])
+		expect(
+			decisions.due(run.sim, perceived, [
+				{ type: 'blocked', source: 'A1', ability: 'loose', reason: 'board' },
+				{ type: 'denied', hero: 'A1', slot: 'slot1', reason: 'cooldown' },
+			]),
+		).toEqual([])
+		const expired = decisions.due({ ...run.sim, tick: 1800 }, perceived)
+		expect(expired.find((s) => s.id === 'A1').reasons).toContain('damage(3)')
+		expect(expired.find((s) => s.id === 'A1').reasons).toContain('blocked:loose:board')
+		expect(expired.find((s) => s.id === 'A1').reasons).toContain('denied:Q:cooldown')
+		expect(expired.find((s) => s.id === 'B2').reasons).toContain('respawn')
+		const fresh = createAgentDecisions(['A1'])
+		fresh.due(run.sim, perceived)
+		fresh.acted('A1', run.sim.tick, 1800, true)
+		enemy.attack = null
+		enemy.pos = { x: -45, z: -1.5 }
+		enemy.ballThrow = { dir: { x: 1, z: 0 }, endTick: 60 }
+		expect(fresh.due(run.sim, perceived)).toEqual([])
+		enemy.ballThrow.dir.x = -1
+		expect(fresh.due(run.sim, perceived)[0].reasons).toEqual(['tell'])
+		expect(observation(run.sim, 'A1', { ...perceived, ball: null })).toContain(
+			'B1:ball dir=-1,0 in=1s',
+		)
 	} finally {
 		run.close()
 	}
@@ -227,27 +299,12 @@ test('replay preserves every combat snapshot and fact, including bot tells', () 
 }, 120000)
 
 test.if(process.env.SLOW === '1')(
-	'a scripted agent plays through stdin and wins against idle enemies; every run saves a replay',
+	'a scripted agent wins a normal 3v3 through stdin in under 200 decisions; replay reproduces it',
 	async () => {
 		const directory = await mkdtemp(tmpdir() + '/moba-agent-')
 		const filename = directory + '/win.json'
 		const child = Bun.spawn(
-			[
-				'bun',
-				'scripts/play.js',
-				'--seed',
-				'2',
-				'--seat',
-				'A1',
-				'--idle',
-				'B1',
-				'--idle',
-				'B2',
-				'--idle',
-				'B3',
-				'--replay',
-				filename,
-			],
+			['bun', 'scripts/play.js', '--seed', '2', '--seat', 'A1', '--replay', filename],
 			{ stdin: 'pipe', stdout: 'pipe', stderr: 'pipe' },
 		)
 		let buffer = '',
@@ -255,6 +312,7 @@ test.if(process.env.SLOW === '1')(
 			result = '',
 			maxBytes = 0,
 			attacks = 0,
+			decisions = 0,
 			retry = false
 		try {
 			for await (const chunk of child.stdout) {
@@ -275,11 +333,12 @@ test.if(process.env.SLOW === '1')(
 						block += line + '\n'
 						continue
 					}
+					decisions++
 					maxBytes = Math.max(maxBytes, Buffer.byteLength(block.trim()))
 					const target = ['tower-B', 'fort-B', 'core-B'].find((id) =>
 						new RegExp(id + ' [^;\\n]+ open').test(block),
 					)
-					let action = { action: 'wait', seconds: 1 }
+					let action = { action: 'wait', seconds: 30 }
 					if (!retry && !block.includes(' dead ') && target) {
 						const x = { 'tower-B': 18, 'fort-B': 29, 'core-B': 40 }[target]
 						if (block.includes('carrying=')) action = { action: 'throw', x, y: 0 }
@@ -297,8 +356,15 @@ test.if(process.env.SLOW === '1')(
 			expect(result).toContain('matchOver')
 			expect(result).toContain('winner=A')
 			expect(attacks).toBeGreaterThan(0)
+			expect(decisions).toBeLessThan(200)
+			console.log(
+				`Agent proof: ${decisions} decisions; ${result.trim()} (normal bot heroes, live waves/structures)`,
+			)
 			expect(maxBytes).toBeLessThanOrEqual(1000)
 			const tape = readReplay(await Bun.file(filename).json())
+			expect(decisions).toBe(
+				(await Bun.file(filename + '.actions.jsonl').text()).trim().split('\n').length,
+			)
 			expect(tape.result.winner).toBe('A')
 			expect(tape.result.reason).toBe('matchOver')
 			// Re-run the actual agent inputs with fresh autonomous bots, then compare the tape.
@@ -316,9 +382,10 @@ test.if(process.env.SLOW === '1')(
 					live.step(inputs)
 					playback.step()
 					for (const fact of live.facts) events.add(fact.type)
-					expect(replayHash([playback.sim.snapshot(), playback.facts])).toBe(
-						replayHash([live.sim.snapshot(), live.facts]),
-					)
+					expect(playback.facts).toEqual(live.facts)
+					// Tick-perfect snapshots are covered by the short replay test; sample the whole match.
+					if (live.sim.tick % Math.round(1 / STEP) === 0)
+						expect(replayHash(playback.sim.snapshot())).toBe(replayHash(live.sim.snapshot()))
 				}
 				expect(replayHash(live.sim.snapshot())).toBe(tape.result.hash)
 				expect(replayHash(playback.sim.snapshot())).toBe(tape.result.hash)
@@ -342,5 +409,5 @@ test.if(process.env.SLOW === '1')(
 			await rm(directory, { recursive: true, force: true })
 		}
 	},
-	120000,
+	180000,
 )

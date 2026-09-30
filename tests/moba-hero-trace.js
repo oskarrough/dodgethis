@@ -101,6 +101,8 @@ export async function heroTrace() {
 				)
 					coverage.momentum++
 				delete fact.ability
+				// Diagnostic reasons are new; this fixture locks combat, not CLI explanations.
+				if (fact.type === 'denied' || fact.type === 'blocked') delete fact.reason
 			}
 			const state = legacyState(sim.snapshot())
 			digest.update(JSON.stringify([state, facts]))

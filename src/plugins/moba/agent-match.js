@@ -15,6 +15,7 @@ export function createAgentMatch({
 	smooth,
 	present = () => {},
 	replay = null,
+	onInputs = () => {},
 }) {
 	const intents = createIntents()
 	intents.use('pointClick')
@@ -80,7 +81,11 @@ export function createAgentMatch({
 			}
 			const tick = sim.tick
 			sim.step()
-			if (!replay && feeds.length) inputs.push([tick, feeds])
+			if (!replay && feeds.length) {
+				const record = [tick, feeds]
+				inputs.push(record)
+				onInputs(record)
+			}
 			intents.age(STEP)
 			perception.capture(sim)
 			return true

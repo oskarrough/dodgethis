@@ -56,6 +56,8 @@ export function validIntent(frame) {
 	if (!plain(frame) || !point(frame.move) || Math.hypot(frame.move.x, frame.move.z) > 1.001)
 		return false
 	if (!pointOrNull(frame.order) || !pointOrNull(frame.aim) || !plain(frame.held)) return false
+	if (frame.order?.kind !== undefined && !['move', 'attack-move'].includes(frame.order.kind))
+		return false
 	if (!Object.entries(frame.held).every(([a, v]) => ACTIONS.includes(a) && v === true)) return false
 	if (!Array.isArray(frame.pressed) || frame.pressed.length > MAX_EDGES) return false
 	if (!frame.pressed.every((e) => plain(e) && ACTIONS.includes(e.action) && pointOrNull(e.at)))

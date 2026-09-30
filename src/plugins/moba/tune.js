@@ -225,6 +225,7 @@ export const tune = {
 	agents: {
 		decision: 0.5,
 		maxWait: 30,
+		interruptDamage: 0.1,
 		nearby: 12,
 		observationBytes: 1000,
 		precision: 10,

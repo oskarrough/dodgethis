@@ -320,11 +320,16 @@ export function createSim({
 	}
 
 	function issue(h, point) {
-		const target = ball?.carrying(h) ? null : pick(h.team, point)
+		const target = ball?.carrying(h) || point.kind ? null : pick(h.team, point)
 		const repeat = t - h.lastOrder <= ticks(0.15)
 		h.lastOrder = t
 		if (target) {
-			if (h.order?.kind !== 'attack' || h.order.target !== target.id || offPath(h))
+			if (
+				h.order?.kind !== 'attack' ||
+				h.order.target !== target.id ||
+				h.order.resume ||
+				offPath(h)
+			)
 				h.order = { kind: 'attack', target: target.id, goal: null, path: null }
 			present({
 				type: 'order',
@@ -338,12 +343,12 @@ export function createSim({
 		}
 		const goal = clampWalkable(point, profile.radius, tune.orders.clearance, obstacles)
 		if (
-			h.order?.kind !== 'move' ||
+			h.order?.kind !== (point.kind ?? 'move') ||
 			Math.hypot(h.order.goal.x - goal.x, h.order.goal.z - goal.z) >= tune.collision.epsilon ||
 			offPath(h)
 		)
-			h.order = { kind: 'move', target: null, goal, path: plan(h, goal) }
-		present({ type: 'order', hero: h.id, kind: 'move', target: null, point: goal, repeat })
+			h.order = { kind: point.kind ?? 'move', target: null, goal, path: plan(h, goal) }
+		present({ type: 'order', hero: h.id, kind: h.order.kind, target: null, point: goal, repeat })
 	}
 
 	// Pad A: the best target in a 45° cone around the aim, within 1.5 × attack range, nearest first.
@@ -415,15 +420,35 @@ export function createSim({
 			return body.update({ x: 0, z: 0 }, dt, 0) // rooted for the cast point, stopped dead
 		const stick = Math.hypot(frame.move.x, frame.move.z)
 		if (stick > 0.01) return body.update(frame.move, dt)
-		const o = h.order
+		let o = h.order
+		if (o?.kind === 'attack-move' && !ball?.carrying(h)) {
+			const target = enemiesOf(h.team)
+				.filter(
+					(e) =>
+						(!lane || lane.vulnerable(e.unit)) &&
+						Math.hypot(e.x - body.position.x, e.z - body.position.z) <=
+							(h.definition.basic?.range ?? 0),
+				)
+				.sort(
+					(a, b) =>
+						Math.hypot(a.x - body.position.x, a.z - body.position.z) -
+							Math.hypot(b.x - body.position.x, b.z - body.position.z) ||
+						String(a.id).localeCompare(String(b.id)),
+				)[0]
+			if (target)
+				h.order = o = { kind: 'attack', target: target.id, goal: null, path: null, resume: o.goal }
+		}
 		let s = null
-		if (o?.kind === 'move') {
+		if (o?.kind === 'move' || o?.kind === 'attack-move') {
 			s = steer(h, o.goal, true, dt)
 			if (!s) h.order = null
 		} else if (o?.kind === 'attack') {
 			const target = find(o.target)
-			if (!target) h.order = null
-			else {
+			if (!target) {
+				if (o.resume)
+					h.order = { kind: 'attack-move', target: null, goal: o.resume, path: plan(h, o.resume) }
+				else h.order = null
+			} else {
 				const tp = target.body.position
 				const p = body.position
 				if (
@@ -516,7 +541,7 @@ export function createSim({
 		const ability = h.definition.abilities[slot]
 		if (!ability) {
 			intents.consume(h.id, slot)
-			present({ type: 'denied', hero: h.id, slot })
+			present({ type: 'denied', hero: h.id, slot, reason: 'no-ability' })
 			return
 		}
 		const returning = ability.returnsPocket && h.abilityState.pocket
@@ -531,7 +556,19 @@ export function createSim({
 			)
 			if (wait * STEP >= SCHEMES.pointClick.windows[slot] - 1e-9) {
 				intents.consume(h.id, slot)
-				present({ type: 'denied', hero: h.id, slot })
+				present({
+					type: 'denied',
+					hero: h.id,
+					slot,
+					reason:
+						h.cd[i] > 0
+							? 'cooldown'
+							: h.cast
+								? 'casting'
+								: h.attack?.phase === 'windup'
+									? 'windup'
+									: 'dashing',
+				})
 				return
 			}
 		}
@@ -697,10 +734,10 @@ export function createSim({
 				h.catchWindow = null
 				h.abilityState.bag = []
 			}
-			if (frame.order) present({ type: 'denied', hero: h.id, slot: 'primary' })
+			if (frame.order) present({ type: 'denied', hero: h.id, slot: 'primary', reason: 'disabled' })
 			for (const e of frame.pressed.slice()) {
 				intents.consume(h.id, e.action)
-				present({ type: 'denied', hero: h.id, slot: e.action })
+				present({ type: 'denied', hero: h.id, slot: e.action, reason: 'disabled' })
 			}
 			h.body.update({ x: 0, z: 0 }, dt, 0)
 			return
@@ -737,7 +774,7 @@ export function createSim({
 		}
 		if (frame.order) issue(h, frame.order)
 		if (Math.hypot(frame.move.x, frame.move.z) > 0.01) h.order = null
-		if (frame.order && h.order?.kind === 'move') h.attack = null
+		if (frame.order && ['move', 'attack-move'].includes(h.order?.kind)) h.attack = null
 		if (!heldBall) casts(h, frame)
 		if (h.cast?.left === 0) release(h)
 		h.body.speedMul =
@@ -1196,6 +1233,7 @@ export function createSim({
 			else
 				present({
 					type: 'blocked',
+					reason: 'board',
 					source: shot.owner,
 					projectile: shot.id,
 					ability: shot.ability,
@@ -1388,6 +1426,8 @@ export function createSim({
 			if (r.blocked)
 				present({
 					type: 'blocked',
+					reason: 'obstacle',
+					ability: shot.ability,
 					source: shot.owner,
 					projectile: shot.id,
 					slot: shot.slot,
@@ -1531,6 +1571,7 @@ export function createSim({
 					kind: h.order.kind,
 					target: h.order.target,
 					goal: h.order.goal && { x: q(h.order.goal.x), z: q(h.order.goal.z) },
+					...(h.order.resume ? { resume: { ...h.order.resume } } : {}),
 				},
 				cast: h.cast && { ...structuredClone(h.cast), yaw: q(h.cast.yaw) },
 				cd: h.cd.slice(),
