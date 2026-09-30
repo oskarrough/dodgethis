@@ -25,17 +25,27 @@ In Völkerball, the players you knock out go and stand behind your back line and
 
 The moment: dead, you sprint the touchline, snipe the enemy who's limping home on 40 HP, and pop back in four seconds early.
 
-### 3. Mitts, the catcher [big]
+### 3. The Ball drops in [small]
 
-The answer to plan question 1: a second hero, built to counter the Fletcher's skillshots rather than to copy them. 1300 HP, 5.0 m/s, short basic attack.
+The Ball shouldn't appear; it should arrive. Smash's falling crates, a gym teacher's lob from the far end of the yard.
 
-- **Trait, Pocket:** holds one caught projectile. While something is pocketed, the mitt glows in its owner's colour.
-- **Q, Toss:** a rubber ball, range 9, 20 m/s, 120 damage, that bounces once off a pillar, hedge or structure and keeps its remaining range. With something pocketed, Q throws that instead, with its original stats, in her colours.
-- **W, Catch:** a 0.4 s window in a 90° cone toward the aim. The first enemy skillshot to enter is caught (no damage) and pocketed. Cooldown 7, halved on a catch. It catches the Ball too.
-- **E, Duck:** 0.5 s crouch at half speed; line skillshots pass overhead. The playground dodge, finally a button.
-- **R, Dodge This:** a 2 s channel that catches everything in front of her, then fires the lot back in a fan on release. The announcer yells the name of the game.
+- Over the 30 s warning, a printed ink shadow grows in the plaza ring from nothing to the Ball's 1.4 m. In the last 1 s the Ball streaks in from the top of the screen and lands on the spawn tick.
+- A hero whose disc overlaps the landing is bonked: 1 s stun, no damage, a "BONK" stamp and circling stars.
+- It then bounces once, 3 m toward the team that has lost more structures (seeded on a tie), and the normal 0.75 s pickup starts where it rests.
+- Standing dead centre is greedy and loses the race; the edge of the shadow is where you want to be. The shadow is a 30 s tell on a fixed tick, so it costs guests nothing online.
 
-The moment: the enemy Fletcher looses Volley down the lane, Mitts steps in front of her team, catches it and sends it back through all three of them.
+The moment: six heroes jostle on the rim of the shadow, one gets impatient and steps in, and the whole room hears the bonk. Rides on the Ball (built) and 05's juice pass.
+
+### 4. The crane shot [medium]
+
+The front end is a Moebius desert with a huge pale sun; the game is a top-down paper strip. They should be the same world, seen from two heights.
+
+- On the core kill, while `matchOver` holds the sim, the camera pitches from top-down to nearly level and pulls back over 2.5 s. The canvas already clears transparent, so the front end's SVG sky, sun and mesas, mounted behind it, show wherever the map ends.
+- The lane turns out to be a printed plate floating over the desert, like dodgeball's original court, with the winners small against the sun and the core's rubble still settling.
+- Reverse it at match start: 1.5 s from the sky down onto your hero before 0:00, so no control is lost. Render-only, so it survives shared play, unlike the slow-motion shatter.
+- It answers brief 03's question: the looks don't converge or split; the front end is the long shot and the game is the close-up.
+
+The moment: the last Q hits the crystal, the camera rises, and the fight you just played is a thin cream line under a giant sun. Rides on 03's post-match slice and lane slice 6.
 
 ## One-liners
 
@@ -43,11 +53,9 @@ The moment: the enemy Fletcher looses Volley down the lane, Mitts steps in front
 - **Ink stamps [small]:** hits print comic words on the ground ("THWOK", "WHIFF" on a near miss) that fade over 20 s, so the lane keeps a record of the fight.
 - **The PE teacher [small]:** the announcer is a whistle and a speech bubble. "Hustle!" when a team hides under its tower, "Last one standing!", "Walk it off" on respawn.
 - **Picked last [small]:** before the match, two bot captains pick teams on the plaza. Whoever's picked last gets +5% damage for the game, and a sad trombone.
-- **Underdog spawn [small]:** the Ball spawns off-centre toward the team that has lost more structures, 2 m per structure. A geometric comeback, not a numeric one.
 - **High five [small]:** two allies pressing mount beside each other slap hands: a crack, a sticker burst, 2 s of +20% speed for both.
 - **Comic-strip recap [medium]:** the match ends on three halftone panels frozen from the biggest `present` facts (a catch, a multi-hit, the core), ready to screenshot.
-- **Red light, green light [medium]:** a map event. A giant ref cutout at mid turns round, and anyone who moves during red is frozen for 1 s. A game about constant motion, asking you to stand still.
 - **Hot potato [medium]:** a ticking ball sticks to the last hero it touched. Tag an enemy to pass it; it blows at zero for 25% HP.
+- **The crowd [medium]:** cardboard kids line the boundary, heads turning to follow the Ball and the loudest fact, "ooh" on a near miss. The fight off-screen is wherever they're all looking; the dead stand among them.
 - **Rally [medium]:** a tennis ball crosses the centreline. If it bounces twice on your half, your front structure takes 400; any hit sends it back. Pong, inside a MOBA.
-- **Banks [big]:** a hero whose skillshots bank off pillars and hedges, +50% damage per cushion, which turns the plaza into a pool table.
 - **The old court [big]:** after 10:00 the plaza lifts into the original floating dodgethis court with void edges. Ball hits knock back 3 m, and anyone knocked off hangs in the air, looks at the camera, and drops.
