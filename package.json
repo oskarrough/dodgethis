@@ -9,6 +9,7 @@
 		"preview": "vite preview",
 		"check": "oxlint && oxfmt --check && bun test",
 		"test": "bun test",
+		"test:slow": "SLOW=1 bun test",
 		"bench": "bun scripts/bench.js",
 		"deploy": "wrangler deploy"
 	},

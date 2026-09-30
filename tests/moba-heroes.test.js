@@ -49,11 +49,15 @@ function boot(seats) {
 	}
 }
 
-test('six Fletchers match the retuned pre-table lane tick for tick, including all facts', async () => {
-	const trace = await heroTrace()
-	expect(trace).toEqual(baseline)
-	for (const count of Object.values(trace.coverage)) expect(count).toBeGreaterThan(0)
-}, 120000)
+test.if(process.env.SLOW === '1')(
+	'six Fletchers match the retuned pre-table lane tick for tick, including all facts',
+	async () => {
+		const trace = await heroTrace()
+		expect(trace).toEqual(baseline)
+		for (const count of Object.values(trace.coverage)) expect(count).toBeGreaterThan(0)
+	},
+	120000,
+)
 
 test('definitions keep tuning live, abilities own their properties, other heroes have no kits', () => {
 	expect(HEROES.fletcher.abilities.slot1).toMatchObject({

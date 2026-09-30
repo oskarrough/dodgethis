@@ -1,6 +1,6 @@
 # Verify multiplayer
 
-Run `bun test`, `bunx oxlint`, `bunx oxfmt --check`, and `bun run build` from the repository root. Tests use real Rapier worlds for gameplay and replica checks, and fake PeerJS connections/clocks for transport failure cases.
+Run `bun run check` from the repository root for lint, formatting and the fast tests, including a short seeded MOBA match. Run `bun run test:slow` once per checkpoint: `SLOW=1 bun test` includes every fast test plus whole-match and multi-Hz proofs with their original assertions. `bun run build` also runs the fast check. Tests use real Rapier worlds for gameplay and replica checks, and fake PeerJS connections/clocks for transport failure cases.
 
 Automated coverage includes roster/controller assignment, shared human actions, input ownership and validation, charge authority, stale match/round/sequence rejection, neutral input timeout, host-only state, snapshot validation/interpolation, event deduplication, round scoring, connection cancellation, and cleanup.
 

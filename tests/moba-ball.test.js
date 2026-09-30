@@ -258,23 +258,27 @@ test('death drops carried Ball, lifetime persists, and re-pickup waits exactly o
 	expect(f.ball.state).toBeNull()
 })
 
-test('real fast-forwarded scripted match picks up and scores a vulnerable structure', () => {
-	boot(['B'])
-	while (sim.tick < ticks(900) && !sim.lane.match.winner) step()
-	console.log(
-		'Ball real-play proof:',
-		JSON.stringify({
-			winSeconds: sim.tick * STEP,
-			hits: facts
-				.filter((f) => f.type === 'ballHit')
-				.map((f) => ({ seconds: f.tick * STEP, target: f.target })),
-		}),
-	)
-	expect(facts.some((f) => f.type === 'ballPickup' && f.hero === 'B')).toBe(true)
-	expect(facts.some((f) => f.type === 'ballHit' && f.kind === 'structure')).toBe(true)
-	expect(sim.lane.match.winner).toBe('B')
-	expect(facts.every(validFact)).toBe(true)
-}, 30000)
+test.if(process.env.SLOW === '1')(
+	'real fast-forwarded scripted match picks up and scores a vulnerable structure',
+	() => {
+		boot(['B'])
+		while (sim.tick < ticks(900) && !sim.lane.match.winner) step()
+		console.log(
+			'Ball real-play proof:',
+			JSON.stringify({
+				winSeconds: sim.tick * STEP,
+				hits: facts
+					.filter((f) => f.type === 'ballHit')
+					.map((f) => ({ seconds: f.tick * STEP, target: f.target })),
+			}),
+		)
+		expect(facts.some((f) => f.type === 'ballPickup' && f.hero === 'B')).toBe(true)
+		expect(facts.some((f) => f.type === 'ballHit' && f.kind === 'structure')).toBe(true)
+		expect(sim.lane.match.winner).toBe('B')
+		expect(facts.every(validFact)).toBe(true)
+	},
+	30000,
+)
 
 function earlyBall() {
 	const first = tune.ball.first

@@ -307,86 +307,100 @@ test('fort/core domes, distinct poses, cracks and globe interpolation dispose cl
 	expect(core.body.cracks.every((c) => c.visible)).toBe(true)
 })
 
-test('five-minute intent-driven scripted match: whole population stays walkable, no stuck units, sane shared XP', () => {
-	sim.dispose()
-	unbuild()
-	world.free()
-	boot(['A', 'B'])
-	const histories = new Map()
-	const xp = { A: 0, B: 0 }
-	for (let t = 0; t < ticks(300); t++) {
-		step()
-		if (t % ticks(1) !== 0) continue
-		for (const hero of sim.heroes) expect(validIntent(intents.get(hero.id))).toBe(true)
-		for (const unit of [...sim.heroes, ...sim.lane.minions]) {
-			if (unit.dead) {
-				histories.delete(unit.id)
-				continue
+test.if(process.env.SLOW === '1')(
+	'five-minute intent-driven scripted match: whole population stays walkable, no stuck units, sane shared XP',
+	() => {
+		sim.dispose()
+		unbuild()
+		world.free()
+		boot(['A', 'B'])
+		const histories = new Map()
+		const xp = { A: 0, B: 0 }
+		for (let t = 0; t < ticks(300); t++) {
+			step()
+			if (t % ticks(1) !== 0) continue
+			for (const hero of sim.heroes) expect(validIntent(intents.get(hero.id))).toBe(true)
+			for (const unit of [...sim.heroes, ...sim.lane.minions]) {
+				if (unit.dead) {
+					histories.delete(unit.id)
+					continue
+				}
+				const p = unit.body.position
+				expect(Number.isFinite(p.x) && Number.isFinite(p.z) && Number.isFinite(unit.hp)).toBe(true)
+				expect(walkable(p.x, p.z, unit.body.radius, 0, sim.obstacles)).toBe(true)
+				const old = histories.get(unit.id)
+				if (!old || Math.hypot(p.x - old.x, p.z - old.z) >= 2)
+					histories.set(unit.id, { x: p.x, z: p.z, t })
+				else if (t - old.t >= ticks(30)) {
+					// Holding a base, waiting behind a guard or fighting is not a stuck route.
+					const target = sim.find(unit.kind ? unit.target : unit.order?.target)
+					const fighting =
+						target &&
+						inReach(
+							unit,
+							target,
+							unit.kind ? tune.minions[unit.kind].range : tune.orders.attackRange,
+						)
+					expect(
+						fighting ||
+							(!unit.kind &&
+								(unit.order === null ||
+									Math.hypot(unit.order.goal.x - p.x, unit.order.goal.z - p.z) <=
+										tune.orders.arrival)),
+					).toBe(true)
+					histories.set(unit.id, { x: p.x, z: p.z, t })
+				}
 			}
-			const p = unit.body.position
-			expect(Number.isFinite(p.x) && Number.isFinite(p.z) && Number.isFinite(unit.hp)).toBe(true)
-			expect(walkable(p.x, p.z, unit.body.radius, 0, sim.obstacles)).toBe(true)
-			const old = histories.get(unit.id)
-			if (!old || Math.hypot(p.x - old.x, p.z - old.z) >= 2)
-				histories.set(unit.id, { x: p.x, z: p.z, t })
-			else if (t - old.t >= ticks(30)) {
-				// Holding a base, waiting behind a guard or fighting is not a stuck route.
-				const target = sim.find(unit.kind ? unit.target : unit.order?.target)
-				const fighting =
-					target &&
-					inReach(unit, target, unit.kind ? tune.minions[unit.kind].range : tune.orders.attackRange)
-				expect(
-					fighting ||
-						(!unit.kind &&
-							(unit.order === null ||
-								Math.hypot(unit.order.goal.x - p.x, unit.order.goal.z - p.z) <=
-									tune.orders.arrival)),
-				).toBe(true)
-				histories.set(unit.id, { x: p.x, z: p.z, t })
+			for (const team of ['A', 'B']) {
+				const state = sim.lane.teams[team]
+				expect(state.xp).toBeGreaterThanOrEqual(xp[team])
+				expect(state.xp).toBeLessThan(15000)
+				expect(state.level).toBeGreaterThanOrEqual(1)
+				expect(state.level).toBeLessThanOrEqual(tune.levels.cap)
+				xp[team] = state.xp
 			}
 		}
+		expect(sim.tick).toBe(ticks(300))
+		// M4 fortifies early guns; tactical-bot tests own the core-kill proof.
+		expect(sim.lane.structures.some((s) => s.hp < s.maxHp)).toBe(true)
 		for (const team of ['A', 'B']) {
-			const state = sim.lane.teams[team]
-			expect(state.xp).toBeGreaterThanOrEqual(xp[team])
-			expect(state.xp).toBeLessThan(15000)
-			expect(state.level).toBeGreaterThanOrEqual(1)
-			expect(state.level).toBeLessThanOrEqual(tune.levels.cap)
-			xp[team] = state.xp
+			expect(xp[team]).toBeGreaterThan(8 * 270)
+			expect(sim.lane.teams[team].level).toBeGreaterThan(3)
+			expect(facts.some((f) => f.type === 'cast' && f.hero === team && f.slot === 'slot1')).toBe(
+				true,
+			)
 		}
-	}
-	expect(sim.tick).toBe(ticks(300))
-	// M4 fortifies early guns; tactical-bot tests own the core-kill proof.
-	expect(sim.lane.structures.some((s) => s.hp < s.maxHp)).toBe(true)
-	for (const team of ['A', 'B']) {
-		expect(xp[team]).toBeGreaterThan(8 * 270)
-		expect(sim.lane.teams[team].level).toBeGreaterThan(3)
-		expect(facts.some((f) => f.type === 'cast' && f.hero === team && f.slot === 'slot1')).toBe(true)
-	}
-	expect(facts.every(validFact)).toBe(true)
-	console.log('five-minute XP', sim.lane.teams, 'living minions', sim.lane.minions.length)
-}, 60000)
+		expect(facts.every(validFact)).toBe(true)
+		console.log('five-minute XP', sim.lane.teams, 'living minions', sim.lane.minions.length)
+	},
+	60000,
+)
 
 for (const [scripted, limit] of [
 	[['B'], 600],
 	[['A', 'B'], 1200],
 ])
-	test(`real play ${scripted.length === 1 ? 'scripted vs idle' : 'scripted vs scripted'} destroys a core before ${limit / 60} minutes`, () => {
-		sim.dispose()
-		unbuild()
-		world.free()
-		boot(scripted)
-		while (!sim.lane.match.winner && sim.tick < ticks(limit)) step()
-		expect(sim.lane.match.winner).not.toBeNull()
-		if (scripted.length === 1) expect(sim.lane.match.winner).toBe('B')
-		const winner = sim.lane.match.winner
-		const defeated = winner === 'A' ? 'B' : 'A'
-		expect(
-			facts.filter((f) => f.type === 'structureDown' && f.team === winner).map((f) => f.target),
-		).toEqual(['tower', 'fort', 'core'].map((kind) => `${kind}-${defeated}`))
-		expect(facts.filter((f) => f.type === 'matchOver')).toHaveLength(1)
-		expect(facts.every(validFact)).toBe(true)
-		console.log('real-play win', scripted, sim.tick * STEP, sim.lane.teams)
-	}, 120000)
+	test.if(process.env.SLOW === '1')(
+		`real play ${scripted.length === 1 ? 'scripted vs idle' : 'scripted vs scripted'} destroys a core before ${limit / 60} minutes`,
+		() => {
+			sim.dispose()
+			unbuild()
+			world.free()
+			boot(scripted)
+			while (!sim.lane.match.winner && sim.tick < ticks(limit)) step()
+			expect(sim.lane.match.winner).not.toBeNull()
+			if (scripted.length === 1) expect(sim.lane.match.winner).toBe('B')
+			const winner = sim.lane.match.winner
+			const defeated = winner === 'A' ? 'B' : 'A'
+			expect(
+				facts.filter((f) => f.type === 'structureDown' && f.team === winner).map((f) => f.target),
+			).toEqual(['tower', 'fort', 'core'].map((kind) => `${kind}-${defeated}`))
+			expect(facts.filter((f) => f.type === 'matchOver')).toHaveLength(1)
+			expect(facts.every(validFact)).toBe(true)
+			console.log('real-play win', scripted, sim.tick * STEP, sim.lane.teams)
+		},
+		120000,
+	)
 
 test('shielded structures are not picks; unlock restores picking and a shield hit flashes only its dome', () => {
 	const fort = structure('fort')

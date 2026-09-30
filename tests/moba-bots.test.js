@@ -243,58 +243,81 @@ test('two real sims with the same participant ids have independent brains, strea
 	}
 })
 
+test('seed 2 runs a short normal-bot match through the first wave', () => {
+	const result = match(2, { limit: 1800 })
+	expect(result.snapshot.t).toBe(1800)
+	expect(result.invalid).toBe(0)
+	expect(result.frames).toBeGreaterThan(result.snapshot.t)
+	expect(result.snapshot.heroes).toHaveLength(6)
+	expect(result.snapshot.minions.length).toBeGreaterThan(0)
+	expect(result.snapshot.match.winner).toBeNull()
+})
+
+// Whole matches and cross-refresh traces run once per checkpoint via test:slow.
 let reference
 for (const seed of [1, 2, 3])
-	test(`six table-built normal bots, seed ${seed}, finish by a core kill with both sides scoring`, () => {
-		const result = match(seed, { trace: seed === 2 })
-		if (seed === 2) reference = result
-		if (!result.snapshot.match.winner)
+	test.if(process.env.SLOW === '1')(
+		`six table-built normal bots, seed ${seed}, finish by a core kill with both sides scoring`,
+		() => {
+			const result = match(seed, { trace: seed === 2 })
+			if (seed === 2) reference = result
+			if (!result.snapshot.match.winner)
+				console.log(
+					'timeout',
+					seed,
+					result.scores,
+					result.snapshot.structures.map((s) => [s.id, s.hp]),
+					result.snapshot.heroes.map((h) => [h.id, h.hp, h.pos]),
+				)
+			expect(result.invalid).toBe(0)
+			expect(result.frames).toBeGreaterThan(result.snapshot.t)
+			expect(result.snapshot.heroes).toHaveLength(6)
+			expect(result.snapshot.heroes.every((h) => h.heroId === 'fletcher')).toBe(true)
+			expect(result.snapshot.match.winner).not.toBeNull()
+			expect(result.snapshot.t).toBeLessThanOrEqual(54000)
+			expect(result.facts.filter((f) => f.type === 'matchOver')).toHaveLength(1)
+			const loser = result.snapshot.match.winner === 'A' ? 'B' : 'A'
+			expect(result.snapshot.structures.find((s) => s.id === `core-${loser}`)).toMatchObject({
+				dead: true,
+				hp: 0,
+			})
+			expect(result.scores.A).toBeGreaterThan(0)
+			expect(result.scores.B).toBeGreaterThan(0)
+			expect(result.botP99Ms).toBeLessThan(1)
 			console.log(
-				'timeout',
-				seed,
-				result.scores,
-				result.snapshot.structures.map((s) => [s.id, s.hp]),
-				result.snapshot.heroes.map((h) => [h.id, h.hp, h.pos]),
+				`bots seed ${seed}: ${(result.snapshot.t * STEP).toFixed(2)} s, scores ${JSON.stringify(result.scores)}, bot-team p99 ${result.botP99Ms.toFixed(3)} ms`,
 			)
-		expect(result.invalid).toBe(0)
-		expect(result.frames).toBeGreaterThan(result.snapshot.t)
-		expect(result.snapshot.heroes).toHaveLength(6)
-		expect(result.snapshot.heroes.every((h) => h.heroId === 'fletcher')).toBe(true)
-		expect(result.snapshot.match.winner).not.toBeNull()
-		expect(result.snapshot.t).toBeLessThanOrEqual(54000)
-		expect(result.facts.filter((f) => f.type === 'matchOver')).toHaveLength(1)
-		const loser = result.snapshot.match.winner === 'A' ? 'B' : 'A'
-		expect(result.snapshot.structures.find((s) => s.id === `core-${loser}`)).toMatchObject({
-			dead: true,
-			hp: 0,
-		})
-		expect(result.scores.A).toBeGreaterThan(0)
-		expect(result.scores.B).toBeGreaterThan(0)
-		expect(result.botP99Ms).toBeLessThan(1)
-		console.log(
-			`bots seed ${seed}: ${(result.snapshot.t * STEP).toFixed(2)} s, scores ${JSON.stringify(result.scores)}, bot-team p99 ${result.botP99Ms.toFixed(3)} ms`,
-		)
-	}, 180000)
+		},
+		180000,
+	)
 
 for (const hz of [30, 144])
-	test(`seed 2 has identical EVERY-tick snapshots and facts at ${hz} Hz and 60 Hz`, () => {
-		const result = match(2, { hz, trace: true })
-		expect(result.hashes).toEqual(reference.hashes)
-		expect(result.snapshot).toEqual(reference.snapshot)
-		expect(result.facts).toEqual(reference.facts)
-	}, 180000)
-
-test('default Practice with the human seat idle in base survives eight minutes, then ends naturally', () => {
-	const result = match(tune.bots.seed, { idle: true })
-	expect(result.snapshot.t * STEP).toBeGreaterThan(480)
-	expect(result.snapshot.match.winner).not.toBeNull()
-	expect(result.snapshot.heroes.find((h) => h.id === 'local').pos.x).toBeCloseTo(
-		-tune.map.spawnX,
-		2,
+	test.if(process.env.SLOW === '1')(
+		`seed 2 has identical EVERY-tick snapshots and facts at ${hz} Hz and 60 Hz`,
+		() => {
+			const result = match(2, { hz, trace: true })
+			expect(result.hashes).toEqual(reference.hashes)
+			expect(result.snapshot).toEqual(reference.snapshot)
+			expect(result.facts).toEqual(reference.facts)
+		},
+		180000,
 	)
-	expect(result.invalid).toBe(0)
-	console.log(`idle local seat: ${(result.snapshot.t * STEP).toFixed(2)} s`)
-}, 180000)
+
+test.if(process.env.SLOW === '1')(
+	'default Practice with the human seat idle in base survives eight minutes, then ends naturally',
+	() => {
+		const result = match(tune.bots.seed, { idle: true })
+		expect(result.snapshot.t * STEP).toBeGreaterThan(480)
+		expect(result.snapshot.match.winner).not.toBeNull()
+		expect(result.snapshot.heroes.find((h) => h.id === 'local').pos.x).toBeCloseTo(
+			-tune.map.spawnX,
+			2,
+		)
+		expect(result.invalid).toBe(0)
+		console.log(`idle local seat: ${(result.snapshot.t * STEP).toFixed(2)} s`)
+	},
+	180000,
+)
 
 function fixture() {
 	const h = {

@@ -226,117 +226,121 @@ test('replay preserves every combat snapshot and fact, including bot tells', () 
 	}
 }, 120000)
 
-test('a scripted agent plays through stdin and wins against idle enemies; every run saves a replay', async () => {
-	const directory = await mkdtemp(tmpdir() + '/moba-agent-')
-	const filename = directory + '/win.json'
-	const child = Bun.spawn(
-		[
-			'bun',
-			'scripts/play.js',
-			'--seed',
-			'2',
-			'--seat',
-			'A1',
-			'--idle',
-			'B1',
-			'--idle',
-			'B2',
-			'--idle',
-			'B3',
-			'--replay',
-			filename,
-		],
-		{ stdin: 'pipe', stdout: 'pipe', stderr: 'pipe' },
-	)
-	let buffer = '',
-		block = '',
-		result = '',
-		maxBytes = 0,
-		attacks = 0,
-		retry = false
-	try {
-		for await (const chunk of child.stdout) {
-			buffer += new TextDecoder().decode(chunk)
-			let end
-			while ((end = buffer.indexOf('\n')) >= 0) {
-				const line = buffer.slice(0, end)
-				buffer = buffer.slice(end + 1)
-				if (line.startsWith('result ')) {
-					result = line
-					continue
-				}
-				if (line.startsWith('error ')) {
-					retry = true
-					continue
-				}
-				if (!line.startsWith('act ')) {
-					block += line + '\n'
-					continue
-				}
-				maxBytes = Math.max(maxBytes, Buffer.byteLength(block.trim()))
-				const target = ['tower-B', 'fort-B', 'core-B'].find((id) =>
-					new RegExp(id + ' [^;\\n]+ open').test(block),
-				)
-				let action = { action: 'wait', seconds: 1 }
-				if (!retry && !block.includes(' dead ') && target) {
-					const x = { 'tower-B': 18, 'fort-B': 29, 'core-B': 40 }[target]
-					if (block.includes('carrying=')) action = { action: 'throw', x, y: 0 }
-					else if (!block.includes('order=attack:' + target)) {
-						action = { action: 'attack', target }
-						attacks++
-					} else action = { action: 'wait', seconds: 30 }
-				}
-				child.stdin.write(JSON.stringify(action) + '\n')
-				block = ''
-				retry = false
-			}
-		}
-		expect(await child.exited).toBe(0)
-		expect(result).toContain('matchOver')
-		expect(result).toContain('winner=A')
-		expect(attacks).toBeGreaterThan(0)
-		expect(maxBytes).toBeLessThanOrEqual(1000)
-		const tape = readReplay(await Bun.file(filename).json())
-		expect(tape.result.winner).toBe('A')
-		expect(tape.result.reason).toBe('matchOver')
-		// Re-run the actual agent inputs with fresh autonomous bots, then compare the tape.
-		const live = match(tape.roster),
-			playback = match(tape.roster, tape)
-		const events = new Set(),
-			agentIds = new Set(tape.roster.filter((s) => s.controller === 'agent').map((s) => s.id))
-		let cursor = 0
+test.if(process.env.SLOW === '1')(
+	'a scripted agent plays through stdin and wins against idle enemies; every run saves a replay',
+	async () => {
+		const directory = await mkdtemp(tmpdir() + '/moba-agent-')
+		const filename = directory + '/win.json'
+		const child = Bun.spawn(
+			[
+				'bun',
+				'scripts/play.js',
+				'--seed',
+				'2',
+				'--seat',
+				'A1',
+				'--idle',
+				'B1',
+				'--idle',
+				'B2',
+				'--idle',
+				'B3',
+				'--replay',
+				filename,
+			],
+			{ stdin: 'pipe', stdout: 'pipe', stderr: 'pipe' },
+		)
+		let buffer = '',
+			block = '',
+			result = '',
+			maxBytes = 0,
+			attacks = 0,
+			retry = false
 		try {
-			while (playback.sim.tick < tape.result.ticks) {
-				const record = tape.inputs[cursor]
-				const inputs =
-					record?.[0] === live.sim.tick ? record[1].filter(([id]) => agentIds.has(id)) : []
-				if (record?.[0] === live.sim.tick) cursor++
-				live.step(inputs)
-				playback.step()
-				for (const fact of live.facts) events.add(fact.type)
-				expect(replayHash([playback.sim.snapshot(), playback.facts])).toBe(
-					replayHash([live.sim.snapshot(), live.facts]),
-				)
+			for await (const chunk of child.stdout) {
+				buffer += new TextDecoder().decode(chunk)
+				let end
+				while ((end = buffer.indexOf('\n')) >= 0) {
+					const line = buffer.slice(0, end)
+					buffer = buffer.slice(end + 1)
+					if (line.startsWith('result ')) {
+						result = line
+						continue
+					}
+					if (line.startsWith('error ')) {
+						retry = true
+						continue
+					}
+					if (!line.startsWith('act ')) {
+						block += line + '\n'
+						continue
+					}
+					maxBytes = Math.max(maxBytes, Buffer.byteLength(block.trim()))
+					const target = ['tower-B', 'fort-B', 'core-B'].find((id) =>
+						new RegExp(id + ' [^;\\n]+ open').test(block),
+					)
+					let action = { action: 'wait', seconds: 1 }
+					if (!retry && !block.includes(' dead ') && target) {
+						const x = { 'tower-B': 18, 'fort-B': 29, 'core-B': 40 }[target]
+						if (block.includes('carrying=')) action = { action: 'throw', x, y: 0 }
+						else if (!block.includes('order=attack:' + target)) {
+							action = { action: 'attack', target }
+							attacks++
+						} else action = { action: 'wait', seconds: 30 }
+					}
+					child.stdin.write(JSON.stringify(action) + '\n')
+					block = ''
+					retry = false
+				}
 			}
-			expect(replayHash(live.sim.snapshot())).toBe(tape.result.hash)
-			expect(replayHash(playback.sim.snapshot())).toBe(tape.result.hash)
-			for (const type of ['death', 'spawn', 'matchOver']) expect(events.has(type)).toBe(true)
+			expect(await child.exited).toBe(0)
+			expect(result).toContain('matchOver')
+			expect(result).toContain('winner=A')
+			expect(attacks).toBeGreaterThan(0)
+			expect(maxBytes).toBeLessThanOrEqual(1000)
+			const tape = readReplay(await Bun.file(filename).json())
+			expect(tape.result.winner).toBe('A')
+			expect(tape.result.reason).toBe('matchOver')
+			// Re-run the actual agent inputs with fresh autonomous bots, then compare the tape.
+			const live = match(tape.roster),
+				playback = match(tape.roster, tape)
+			const events = new Set(),
+				agentIds = new Set(tape.roster.filter((s) => s.controller === 'agent').map((s) => s.id))
+			let cursor = 0
+			try {
+				while (playback.sim.tick < tape.result.ticks) {
+					const record = tape.inputs[cursor]
+					const inputs =
+						record?.[0] === live.sim.tick ? record[1].filter(([id]) => agentIds.has(id)) : []
+					if (record?.[0] === live.sim.tick) cursor++
+					live.step(inputs)
+					playback.step()
+					for (const fact of live.facts) events.add(fact.type)
+					expect(replayHash([playback.sim.snapshot(), playback.facts])).toBe(
+						replayHash([live.sim.snapshot(), live.facts]),
+					)
+				}
+				expect(replayHash(live.sim.snapshot())).toBe(tape.result.hash)
+				expect(replayHash(playback.sim.snapshot())).toBe(tape.result.hash)
+				for (const type of ['death', 'spawn', 'matchOver']) expect(events.has(type)).toBe(true)
+			} finally {
+				live.close()
+				playback.close()
+			}
+			const partialFile = directory + '/partial.json'
+			const eof = Bun.spawn(['bun', 'scripts/play.js', '--replay', partialFile], {
+				stdin: 'pipe',
+				stdout: 'pipe',
+				stderr: 'pipe',
+			})
+			eof.stdin.end()
+			await new Response(eof.stdout).text()
+			expect(await eof.exited).toBe(0)
+			expect((await Bun.file(partialFile).json()).result.reason).toBe('eof')
 		} finally {
-			live.close()
-			playback.close()
+			child.kill()
+			await rm(directory, { recursive: true, force: true })
 		}
-		const partialFile = directory + '/partial.json'
-		const eof = Bun.spawn(['bun', 'scripts/play.js', '--replay', partialFile], {
-			stdin: 'pipe',
-			stdout: 'pipe',
-			stderr: 'pipe',
-		})
-		eof.stdin.end()
-		await new Response(eof.stdout).text()
-		expect(await eof.exited).toBe(0)
-		expect((await Bun.file(partialFile).json()).result.reason).toBe('eof')
-	} finally {
-		child.kill()
-		await rm(directory, { recursive: true, force: true })
-	}
-}, 120000)
+	},
+	120000,
+)
