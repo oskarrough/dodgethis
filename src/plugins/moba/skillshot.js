@@ -10,6 +10,29 @@ export function closest(ax, az, bx, bz, cx, cz) {
 	return { t, d: Math.hypot(ax + dx * t - cx, az + dz * t - cz) }
 }
 
+// Both ordinary shots and the Ball offer the same pre-collision segment to the
+// catch/Backboard resolver. true consumes; false leaves a possibly redirected shot.
+export function interceptShot(shot, dt, intercept, context) {
+	if (!intercept) return false
+	const travel = Math.min(shot.speed * dt, shot.range - shot.travelled)
+	const from = { x: shot.x, z: shot.z }
+	const to = { x: shot.x + shot.dx * travel, z: shot.z + shot.dz * travel }
+	// A glove or board beyond cover must not intercept through the wall.
+	const obstacle = shot.target
+		? null
+		: sweepObstacles(
+				from,
+				to,
+				shot.radius,
+				(context.obstacles ?? OBSTACLES).filter((o) => !['tower', 'fort', 'core'].includes(o.kind)),
+			)
+	const edge = mapExit(from, to, shot.radius)
+	const at = Math.min(obstacle ?? 1, edge ?? 1)
+	to.x = from.x + (to.x - from.x) * at
+	to.z = from.z + (to.z - from.z) * at
+	return intercept({ ...context, shot, from, to }) === true
+}
+
 // Advance one shot by `dt` against `targets` ({ id, x, z, radius }). Returns { hit, point } for the first body touched,
 // { expired } once the range is spent, and lists `nearMisses` it passed within `nearMiss` of without touching.
 export function stepShot(shot, dt, targets, nearMiss, obstacles = OBSTACLES) {

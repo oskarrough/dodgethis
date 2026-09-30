@@ -69,7 +69,18 @@ export function createScriptedHero(id) {
 				return
 			}
 		}
-		if (!retreating && ball && ['loose', 'channel'].includes(ball.state)) {
+		if (
+			!retreating &&
+			ball &&
+			['loose', 'channel'].includes(ball.state) &&
+			!sim.heroes.some(
+				(u) =>
+					!u.dead &&
+					u.team !== h.team &&
+					Math.hypot(u.body.position.x - ball.pos.x, u.body.position.z - ball.pos.z) <=
+						tune.ball.pickup + tune.orders.attackRange,
+			)
+		) {
 			const distance = Math.hypot(ball.pos.x - p.x, ball.pos.z - p.z)
 			if (distance <= tune.ball.pickup) {
 				if (h.order || h.attack || h.cast) frame.pressed = [{ action: 'stop' }]

@@ -16,8 +16,8 @@ export function createLaneView(scene, smooth = null) {
 		const visual = new THREE.Group()
 		mesh.add(visual)
 		const owned = []
-		const material = (role) => {
-			const m = makeStyleMaterial(role)
+		const material = (role, flat = false) => {
+			const m = makeStyleMaterial(role, { flat })
 			owned.push(m)
 			return m
 		}
@@ -158,8 +158,8 @@ export function createLaneView(scene, smooth = null) {
 			tell.name = `moba-${kind}-tell`
 			tell.rotation.x = -Math.atan2(tune.follow.height, tune.follow.back)
 			tell.position.y = halfHeight + v.tellLift
-			const back = new THREE.Mesh(shape, ink),
-				fill = new THREE.Mesh(shape, cream)
+			const back = new THREE.Mesh(shape, material('ink', true)),
+				fill = new THREE.Mesh(shape, material('cream', true))
 			fill.position.z = v.tellLayer
 			tell.add(back, fill)
 			tell.visible = false

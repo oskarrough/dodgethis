@@ -9,7 +9,7 @@ import { SCHEMES } from '../../core/intents.js'
 import { tune, profile } from './tune.js'
 import { OBSTACLES, SPAWN, FLOOR, clampWalkable, clampMap, segmentClear } from './obstacles.js'
 import { createPathPlanner, pursue } from './path.js'
-import { stepShot } from './skillshot.js'
+import { interceptShot, stepShot } from './skillshot.js'
 
 const SLOTS = ['slot1', 'slot2', 'slot3', 'slot4', 'slot5']
 const ticks = (seconds) => Math.max(0, Math.round(seconds / STEP))
@@ -35,6 +35,7 @@ export function createSim({
 	rng = Math.random,
 	lane: withLane = false,
 	scripted = [],
+	intercept = null,
 }) {
 	const laneView = withLane ? createLaneView(scene, smooth) : null
 	const towerObstacles = withLane
@@ -905,6 +906,18 @@ export function createSim({
 				shot.dx = (target.x - shot.x) / length
 				shot.dz = (target.z - shot.z) / length
 			} else targets = (shotTargets.get(shot.team) ?? []).filter((unit) => !unit.unit.dead)
+			if (interceptShot(shot, dt, intercept, { kind: 'projectile', tick: t, ball, obstacles })) {
+				present({
+					type: 'expired',
+					source: shot.owner,
+					projectile: shot.id,
+					reason: 'intercepted',
+					point: { x: shot.x, y: tune.loose.height, z: shot.z },
+					direction: { x: shot.dx, y: 0, z: shot.dz },
+				})
+				shots.splice(i, 1)
+				continue
+			}
 			const r = stepShot(
 				shot,
 				dt,
@@ -942,7 +955,7 @@ export function createSim({
 				})
 			if (r.hit || r.expired) shots.splice(i, 1)
 		}
-		if (!lane?.match.winner) ball?.finish(dt)
+		if (!lane?.match.winner) ball?.finish(dt, intercept)
 	}
 
 	// The pad's right stick for hero `id` (docs/moba-plan.md, "Controls"): range × remap, a 10° assist toward enemy heroes on Q,

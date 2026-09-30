@@ -18,11 +18,14 @@ export function createFeedback({ juice, sfx, camera, input, view, skillsView, hu
 
 	// Your own takedowns get a short hitstop; the core ignores it when the session is shared.
 	let stop = 0
+	let freeze = 0
 	function beat(dt) {
 		const elapsed = Math.max(0, Math.min(dt, 0.1))
-		const slowed = Math.min(stop, elapsed)
-		stop = Math.max(0, stop - elapsed)
-		return elapsed > 0 ? 1 - (slowed / elapsed) * 0.9 : 1
+		const frozen = Math.min(freeze, elapsed)
+		freeze = Math.max(0, freeze - elapsed)
+		const slowed = Math.min(stop, elapsed - frozen)
+		stop = Math.max(0, stop - (elapsed - frozen))
+		return elapsed > 0 ? 1 - (frozen + slowed * 0.9) / elapsed : 1
 	}
 
 	const unitOf = (id) =>
@@ -44,6 +47,11 @@ export function createFeedback({ juice, sfx, camera, input, view, skillsView, hu
 		const mine = fact.hero === local || fact.source === local
 		const onMe = fact.target === local
 		switch (fact.type) {
+			case 'ballContested':
+				hud.banner?.('Ball contested! Clear the plaza')
+				view.ping('move', fact.point)
+				cue('ballContested', fact)
+				return
 			case 'ballWarn':
 				hud.banner?.(`Ball at mid in ${Math.ceil(fact.seconds)} s`)
 				cue('ballWarn', fact)
@@ -57,7 +65,9 @@ export function createFeedback({ juice, sfx, camera, input, view, skillsView, hu
 				cue('ballChannel', fact, mine ? 1 : 0.4)
 				return
 			case 'ballPickup':
-				hud.banner?.(`Team ${fact.team} has the Ball!`)
+				hud.banner?.(
+					`${mine ? 'You have' : fact.team === unitOf(local)?.team ? 'Your team has' : 'Enemy has'} the Ball!`,
+				)
 				unitOf(fact.hero)?.body.squash(tune.ballView.pickupSquash)
 				cue('ballPickup', fact)
 				return
@@ -70,14 +80,22 @@ export function createFeedback({ juice, sfx, camera, input, view, skillsView, hu
 				cue('ballThrow', fact)
 				return
 			case 'ballHit':
-				juice.burst(
-					fact.point,
-					{ x: 0, y: 1, z: 0 },
-					fact.kind === 'structure' ? tune.juice.ballConfetti : tune.juice.ballBurst,
-				)
-				if (fact.kind === 'structure')
-					hud.banner?.(`Ball hit! Guns silenced for ${tune.ball.silence} s`)
-				cue('ballHit', fact)
+				if (fact.kind === 'structure') {
+					const friendly = unitOf(fact.hero)?.team === unitOf(local)?.team
+					hud.banner?.(
+						`${friendly ? 'GOAL!' : 'Enemy scored!'} Guns silenced for ${tune.ball.silence} s`,
+					)
+					freeze = Math.max(freeze, tune.juice.ballGoal.freeze)
+					camera.shake(tune.juice.ballGoal.shake)
+					camera.kick(tune.juice.ballGoal.kick)
+					if (mine || onMe || unitOf(fact.target)?.team === unitOf(local)?.team)
+						input.rumble(
+							tune.juice.ballGoal.rumbleLow,
+							tune.juice.ballGoal.rumbleHigh,
+							tune.juice.ballGoal.rumbleMs,
+						)
+				} else juice.burst(fact.point, { x: 0, y: 1, z: 0 }, tune.juice.ballBurst)
+				cue(fact.kind === 'structure' ? 'ballGoal' : 'ballHit', fact)
 				return
 			case 'ballBounce':
 				if (fact.reason === 'shielded') sim.laneView?.shield(unitOf(fact.target)?.body)
@@ -306,6 +324,7 @@ export function createFeedback({ juice, sfx, camera, input, view, skillsView, hu
 		beat,
 		reset() {
 			stop = 0
+			freeze = 0
 			aggroPingTick = -1
 			sounded.clear()
 		},

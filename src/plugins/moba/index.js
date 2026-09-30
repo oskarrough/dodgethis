@@ -16,6 +16,7 @@ import { createBallView } from './ball-view.js'
 import { createFeedback } from './feedback.js'
 
 const FACTS = [
+	'ballContested',
 	'ballWarn',
 	'ballSpawn',
 	'ballChannel',
@@ -153,7 +154,7 @@ export default function moba(app) {
 					pad: onPad(),
 					paused: frozen,
 				})
-				ballView.update(sim, frozen ? 0 : alpha, local, frame.aim)
+				ballView.update(sim, frozen ? 0 : alpha, local, frame.aim, app.camera.view)
 				sim.laneView.update(sim.lane, sim.heroes, frozen ? 0 : alpha, locate, step)
 				const gone = view.update(step, {
 					live: new Set(sim.shots.map((s) => s.id)),
@@ -193,6 +194,10 @@ export default function moba(app) {
 					elapsed: sim.tick * app.clock.step,
 					teams: sim.lane.teams,
 					carryingBall: sim.ball.carrying(hero),
+					ballPop:
+						sim.ball.state && sim.ball.state.state !== 'warning'
+							? Math.max(0, sim.ball.state.popAt - sim.tick - (frozen ? 0 : alpha)) * app.clock.step
+							: null,
 					nextBall: (sim.ball.nextBall - sim.tick - (frozen ? 0 : alpha)) * app.clock.step,
 					nextWave: (sim.lane.nextWave - sim.tick - (frozen ? 0 : alpha)) * app.clock.step,
 					winner: sim.lane.match.winner,
@@ -427,6 +432,7 @@ export default function moba(app) {
 					sim,
 					proof: { ...tune.proof, step: app.clock.step },
 					ballFacts,
+					ballView,
 					snapshot: () => sim.snapshot(),
 					focus: (point) => follow.focus(point),
 					// Proof uses the real app loop: intents, fixed simulation, smoothing and feedback.

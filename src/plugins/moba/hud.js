@@ -90,6 +90,7 @@ export function createHud() {
 				teams,
 				nextWave,
 				nextBall,
+				ballPop,
 				carryingBall,
 				winner,
 			},
@@ -97,7 +98,7 @@ export function createHud() {
 			if (teams) {
 				const seconds = Math.floor(elapsed)
 				const clock = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`
-				const status = `A level ${teams.A.level} · ${clock} · B level ${teams.B.level} · wave ${Math.max(0, Math.ceil(nextWave))}s${nextBall === undefined ? '' : ` · Ball ${Math.max(0, Math.ceil(nextBall))}s`}`
+				const status = `A level ${teams.A.level} · ${clock} · B level ${teams.B.level} · wave ${Math.max(0, Math.ceil(nextWave))}s${ballPop != null ? ` · Ball pops in ${Math.ceil(ballPop)}s` : nextBall === undefined ? '' : ` · Ball ${Math.max(0, Math.ceil(nextBall))}s`}`
 				if (status !== shownScore) score.textContent = shownScore = status
 			}
 			if (winner) {

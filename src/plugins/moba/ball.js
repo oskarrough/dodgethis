@@ -1,6 +1,6 @@
 import { STEP } from '../../core/app.js'
 import { tune } from './tune.js'
-import { stepShot } from './skillshot.js'
+import { interceptShot, stepShot } from './skillshot.js'
 import { clampWalkable } from './obstacles.js'
 
 const ticks = (s) => Math.max(1, Math.round(s / STEP))
@@ -15,7 +15,9 @@ export function createBall({ heroes, lane, obstacles, present, damage }) {
 	const fact = (type, extra = {}) =>
 		present({ type, id: ball.id, point: { ...ball.pos, y: tune.ballView.height }, ...extra })
 	const carrying = (h) => ball?.state === 'carried' && ball.carrier === h.id
-	function drop(reason) {
+	function drop(reason, point = null) {
+		if (!ball || ball.state === 'warning') return false
+		if (point) ball.pos = pos(point)
 		const h = heroes.find((u) => u.id === ball.carrier)
 		if (h) {
 			ball.pos = pos(h.body.position)
@@ -28,6 +30,7 @@ export function createBall({ heroes, lane, obstacles, present, damage }) {
 		ball.shot = null
 		ball.pickableAt = now + ticks(tune.ball.lock)
 		fact('ballDrop', { reason })
+		return true
 	}
 	function interrupt(h, reason) {
 		if (ball?.channel?.hero !== h.id) return
@@ -81,17 +84,33 @@ export function createBall({ heroes, lane, obstacles, present, damage }) {
 			else ball.pos = pos(h.body.position)
 		}
 	}
+	// Catch/redirect resolvers call this before collision; lifetime is never refreshed.
+	function give(h, reason = 'caught') {
+		if (!ball || ball.state === 'warning' || now >= ball.popAt || h.dead || !heroes.includes(h))
+			return false
+		const previous = heroes.find((u) => u.id === ball.carrier)
+		if (previous) previous.ballThrow = null
+		h.ballThrow = null
+		h.cast = null
+		h.attack = null
+		h.order = null
+		h.body.cancelDash?.()
+		ball.state = 'carried'
+		ball.carrier = h.id
+		ball.team = h.team
+		ball.pos = pos(h.body.position)
+		ball.channel = null
+		ball.shot = null
+		ball.contested = false
+		fact('ballPickup', { hero: h.id, team: h.team, reason })
+		return true
+	}
 	function control(h, frame, intents, facing) {
 		if (!carrying(h)) return false
 		h.cast = null
 		h.attack = null
 		const edges = frame.pressed.filter((e) => e.action === 'primary' || e.action.startsWith('slot'))
-		if (
-			h.ballThrow &&
-			(frame.order ||
-				Math.hypot(frame.move.x, frame.move.z) > tune.collision.epsilon ||
-				frame.pressed.some((e) => ['stop', 'cancel'].includes(e.action)))
-		) {
+		if (h.ballThrow && frame.pressed.some((e) => ['stop', 'cancel'].includes(e.action))) {
 			h.ballThrow = null
 			fact('ballDenied', { hero: h.id, reason: 'cancelled' })
 		}
@@ -117,7 +136,12 @@ export function createBall({ heroes, lane, obstacles, present, damage }) {
 			ball.pos = pos(h.body.position)
 			ball.state = 'flying'
 			ball.carrier = null
+			ball.releaseTick = now
+			ball.releasePos = { ...ball.pos }
+			ball.team = h.team
 			ball.shot = {
+				id: ball.id,
+				slot: 'ball',
 				owner: h.id,
 				team: h.team,
 				x: ball.pos.x,
@@ -135,10 +159,17 @@ export function createBall({ heroes, lane, obstacles, present, damage }) {
 		}
 		return true
 	}
-	function finish(dt) {
+	function finish(dt, intercept = null) {
 		if (!ball || ball.state === 'warning') return
 		if (ball.state === 'flying') {
 			const shot = ball.shot
+			if (interceptShot(shot, dt, intercept, { kind: 'ball', tick: now, ball: api, obstacles })) {
+				if (ball?.state === 'flying') {
+					fact('ballPop', { reason: 'intercepted' })
+					ball = null
+				}
+				return
+			}
 			const targets = [...heroes, ...lane.structures]
 				.filter((u) => !u.dead && u.team !== shot.team)
 				.map((u) => ({
@@ -195,18 +226,31 @@ export function createBall({ heroes, lane, obstacles, present, damage }) {
 			Math.hypot(h.body.position.x - ball.pos.x, h.body.position.z - ball.pos.z) <=
 				tune.ball.pickup &&
 			Math.hypot(h.body.velocity.x, h.body.velocity.z) <= tune.ball.still
+		const candidates = heroes.filter(eligible)
+		const contested = new Set(candidates.map((h) => h.team)).size > 1
+		if (contested && now >= ball.pickableAt) {
+			if (ball.channel)
+				interrupt(
+					heroes.find((h) => h.id === ball.channel.hero),
+					'contested',
+				)
+			if (!ball.contested) fact('ballContested')
+			ball.contested = true
+			return
+		}
+		ball.contested = false
 		if (ball.channel) {
 			const h = heroes.find((u) => u.id === ball.channel.hero)
 			if (!eligible(h)) interrupt(h, 'moved')
 			else if (now >= ball.channel.endTick) {
-				ball.state = 'carried'
-				ball.carrier = h.id
-				ball.channel = null
-				h.order = null
-				fact('ballPickup', { hero: h.id, team: h.team })
+				give(h, 'pickup')
 			}
 		} else if (now >= ball.pickableAt) {
-			const h = heroes.find(eligible)
+			const h = candidates.sort(
+				(a, b) =>
+					Math.hypot(a.body.position.x - ball.pos.x, a.body.position.z - ball.pos.z) -
+					Math.hypot(b.body.position.x - ball.pos.x, b.body.position.z - ball.pos.z),
+			)[0]
 			if (h) {
 				ball.state = 'channel'
 				ball.channel = { hero: h.id, endTick: now + ticks(tune.ball.channel), startTick: now }
@@ -214,7 +258,9 @@ export function createBall({ heroes, lane, obstacles, present, damage }) {
 			}
 		}
 	}
-	return {
+	const api = {
+		drop,
+		give,
 		begin,
 		finish,
 		control,
@@ -228,4 +274,5 @@ export function createBall({ heroes, lane, obstacles, present, damage }) {
 			return nextBall
 		},
 	}
+	return api
 }

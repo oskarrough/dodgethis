@@ -5,13 +5,13 @@ import { tune } from './tune.js'
 import { clampMap } from './obstacles.js'
 
 // Opaque print geometry; tick interpolation owns every fill and projectile position.
-export function createBallView(scene) {
+export function createBallView(scene, rng = Math.random) {
 	const v = tune.ballView
 	const owned = []
 	const root = new THREE.Group()
 	scene.add(root)
 	const material = (role) => {
-		const m = makeStyleMaterial(role)
+		const m = makeStyleMaterial(role, { flat: true })
 		owned.push(m)
 		return m
 	}
@@ -36,19 +36,23 @@ export function createBallView(scene) {
 	const channel = ring(v.channelRadius, v.fillY, accent)
 	const ball = new THREE.Group()
 	root.add(ball)
-	const sphere = mesh(new THREE.SphereGeometry(v.radius, v.segments, v.segments / 2), cream, ball)
+	mesh(new THREE.SphereGeometry(v.radius, v.segments, v.segments / 2), cream, ball)
 	for (const rotation of [0, Math.PI / 2]) {
 		const seam = mesh(new THREE.TorusGeometry(v.radius, v.seamWidth, 8, v.segments), ink, ball)
 		seam.rotation.y = rotation
 	}
 	const shadow = mesh(new THREE.CircleGeometry(v.radius, v.segments), ink)
 	shadow.rotation.x = -Math.PI / 2
-	shadow.scale.y = v.shadowLength
 	shadow.position.y = v.shadowY
-	const aim = mesh(new THREE.PlaneGeometry(1, v.aimWidth), accent)
+	const teamRing = mesh(
+		new THREE.TorusGeometry(v.teamRingRadius, v.teamRingWidth, 8, v.segments),
+		cream,
+		ball,
+	)
+	const aim = mesh(new THREE.PlaneGeometry(1, 1), cream)
 	aim.rotation.x = -Math.PI / 2
 	aim.position.y = v.aimFillY
-	const aimOutline = mesh(new THREE.PlaneGeometry(1, v.ringWidth), ink)
+	const aimOutline = mesh(new THREE.PlaneGeometry(1, 1), ink)
 	aimOutline.rotation.x = -Math.PI / 2
 	aimOutline.position.y = v.aimY
 	const gags = new Map()
@@ -63,6 +67,7 @@ export function createBallView(scene) {
 		return chip
 	})
 	let burst = null
+	let flights = []
 	let previous = null
 	let current = null
 	let lastTick = -1
@@ -80,10 +85,23 @@ export function createBallView(scene) {
 	return {
 		root,
 		present(fact) {
-			if (fact.type === 'ballHit' && fact.kind === 'structure')
+			if (fact.type === 'ballHit' && fact.kind === 'structure') {
 				burst = { point: fact.point, tick: fact.tick }
+				const c = tune.ballConfetti
+				flights = chips.map(() => {
+					const angle = rng() * Math.PI * 2
+					const speed = c.speed * (c.speedMin + (1 - c.speedMin) * rng())
+					return {
+						vx: Math.cos(angle) * speed,
+						vz: Math.sin(angle) * speed,
+						vy: c.lift * (c.liftMin + (1 - c.liftMin) * rng()),
+						spin: (rng() * 2 - 1) * c.spin,
+						angle,
+					}
+				})
+			}
 		},
-		update(sim, alpha, local, target) {
+		update(sim, alpha, local, target, camera = null) {
 			const state = sim.ball.state
 			if (sim.tick !== lastTick) {
 				previous = current
@@ -91,7 +109,11 @@ export function createBallView(scene) {
 				lastTick = sim.tick
 			}
 			warning.visible = fill.visible = state?.state === 'warning'
-			ball.visible = shadow.visible = !!state && state.state !== 'warning'
+			ball.visible = !!state && state.state !== 'warning'
+			shadow.visible = !!state && ['loose', 'flying'].includes(state.state)
+			teamRing.visible = !!state?.team && ['carried', 'flying'].includes(state.state)
+			if (teamRing.visible) teamRing.material = teams[state.team]
+			if (camera) teamRing.quaternion.copy(camera.quaternion)
 			channel.visible = state?.state === 'channel'
 			aim.visible = aimOutline.visible = false
 			if (state) {
@@ -99,15 +121,33 @@ export function createBallView(scene) {
 					sweep(fill, (sim.tick + alpha - state.warnAt) / Math.max(1, state.spawnAt - state.warnAt))
 				const carrier = sim.heroes.find((h) => h.id === state.carrier)
 				const from =
-					previous?.id === state.id && previous.state === state.state ? previous.pos : state.pos
+					state.state === 'flying' && state.releaseTick === sim.tick
+						? state.releasePos
+						: previous?.id === state.id
+							? previous.pos
+							: state.pos
 				const x = carrier
 					? carrier.body.mesh.position.x
 					: THREE.MathUtils.lerp(from.x, state.pos.x, alpha)
 				const z = carrier
 					? carrier.body.mesh.position.z
 					: THREE.MathUtils.lerp(from.z, state.pos.z, alpha)
-				ball.position.set(x, carrier ? v.carryHeight : v.height, z)
-				sphere.material = carrier ? teams[carrier.team] : cream
+				const descent =
+					state.state === 'flying'
+						? Math.max(
+								0,
+								Math.min(
+									1,
+									((sim.tick - state.releaseTick + alpha) * STEP) / Math.max(STEP, v.flightEase),
+								),
+							)
+						: 1
+				const eased = descent * descent * (3 - 2 * descent)
+				ball.position.set(
+					x,
+					carrier ? v.carryHeight : THREE.MathUtils.lerp(v.carryHeight, v.height, eased),
+					z,
+				)
 				shadow.position.x = x
 				shadow.position.z = z
 				channel.position.x = x
@@ -135,6 +175,9 @@ export function createBallView(scene) {
 							z: p.z + (dir.z / length) * tune.ball.range,
 						})
 						aimOutline.visible = true
+						aimOutline.scale.y = tune.ball.radius * 2 + v.aimBorder * 2
+						aim.material = teams[aimer.team]
+						aim.scale.y = tune.ball.radius * 2
 						aimOutline.scale.x = Math.hypot(fullEnd.x - p.x, fullEnd.z - p.z)
 						aimOutline.rotation.z = -Math.atan2(fullEnd.z - p.z, fullEnd.x - p.x)
 						aimOutline.position.set((p.x + fullEnd.x) / 2, v.aimY, (p.z + fullEnd.z) / 2)
@@ -156,14 +199,9 @@ export function createBallView(scene) {
 				const c = tune.ballConfetti
 				confetti.position.set(burst.point.x, burst.point.y, burst.point.z)
 				for (const [i, chip] of chips.entries()) {
-					const angle = (i * Math.PI * 2) / chips.length
-					const speed = c.speed * (((i % 3) + 1) / 3)
-					chip.position.set(
-						Math.cos(angle) * speed * age,
-						c.lift * age - (c.gravity * age * age) / 2,
-						Math.sin(angle) * speed * age,
-					)
-					chip.rotation.set(age * c.spin, angle + age * c.spin, angle)
+					const f = flights[i]
+					chip.position.set(f.vx * age, f.vy * age - (c.gravity * age * age) / 2, f.vz * age)
+					chip.rotation.set(age * f.spin, f.angle + age * f.spin, f.angle)
 				}
 			}
 			for (const u of sim.lane.structures) {

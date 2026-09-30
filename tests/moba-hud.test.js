@@ -78,6 +78,14 @@ test('Momentum text follows live tuning and unchanged HUD frames do not rewrite 
 		hud.update(0, { ...frame, respawn: 7.4 })
 		expect(health.textContent).toBe('Respawn in 8 s')
 		expect(health.writes).toBe(3)
+		hud.update(0, { ...frame, nextBall: 147, ballPop: 42.4 })
+		expect(score.textContent).toContain('Ball pops in 43s')
+		expect(score.textContent).not.toContain('Ball 147s')
+		const writes = score.writes
+		hud.update(0, { ...frame, nextBall: 146.9, ballPop: 42.2 })
+		expect(score.writes).toBe(writes)
+		hud.update(0, { ...frame, nextBall: 146, ballPop: null })
+		expect(score.textContent).toContain('Ball 146s')
 	} finally {
 		hud.dispose()
 		tune.momentum.reduction = old
