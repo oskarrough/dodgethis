@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- MOBA is reachable from the hub, with pause and result menus, off-screen Ball and hero arrows, tighter mouse following, clearer controls and compact hero selection.
+
 - Added 3v3 MOBA Practice: you and two allied hero bots against three enemy bots, with easy, normal and hard opponents.
 
 - Added a pastel desert mode screen for MOBA Practice, with keyboard, mouse and controller navigation and self-hosted lettering.

@@ -150,6 +150,10 @@
 .front-prompts span {
 	white-space: nowrap;
 }
+.front-prompts span + span::before {
+	content: '|';
+	margin-right: 1em;
+}
 @media (max-width: 700px) {
 	.moba-front footer {
 		align-items: flex-start;

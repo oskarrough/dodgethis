@@ -27,6 +27,7 @@ export function createMatchFlow({
 	session = SOLO,
 	actions = createActions(),
 	onMenu = () => {},
+	hubPortal = null,
 }) {
 	// --- Game state machine (Godot framing) -----------------------------------
 	// phase drives the frame loop and which overlay is up (menu → playing → roundOver → … → matchOver); match holds the best-of-N score, `round` is the live scene or null.
@@ -153,6 +154,7 @@ export function createMatchFlow({
 		]) {
 			portals.push(createPortal(ctx.scene, { x: s.x, z: -3, enemies: s.enemies }))
 		}
+		if (hubPortal) portals.push(createPortal(ctx.scene, { ...tune.hubPortal, ...hubPortal }))
 	}
 
 	function clearPortals() {
@@ -172,7 +174,11 @@ export function createMatchFlow({
 		const p = round.localPlayer.position
 		for (const portal of portals) {
 			if (portal.trigger(p.x, p.z)) {
-				teleportTo(portal.enemies)
+				if (portal.onSelect) {
+					sfx.portal()
+					clearActions()
+					portal.onSelect()
+				} else teleportTo(portal.enemies)
 				return
 			}
 		}

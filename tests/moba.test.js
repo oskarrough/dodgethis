@@ -373,7 +373,7 @@ test('follow framing leans a quarter of the way to the aim, capped at 3 m, and s
 	const first = follow.frame(1 / 144, { x: 5, z: 3 }, null)
 	expect(first.target).toMatchObject({ x: 5, z: 3 })
 	expect(first.eye).toMatchObject({ x: 5, y: tune.follow.height, z: 3 + tune.follow.back })
-	const moved = follow.frame(1 / 144, { x: 10, z: 5 }, null).target.x
+	const moved = follow.frame(1 / 144, { x: 10, z: 5 }, null, { pad: true }).target.x
 	expect(moved).toBeGreaterThan(5)
 	expect(moved).toBeLessThan(6)
 	follow.snap()

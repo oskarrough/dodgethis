@@ -241,6 +241,10 @@ test('death drops carried Ball, lifetime persists, and re-pickup waits exactly o
 	const popAt = f.ball.state.popAt
 	f.a.dead = true
 	f.ball.hurt(f.a)
+	expect(f.facts.find((e) => e.type === 'ballDrop')).toMatchObject({
+		hero: f.a.id,
+		reason: 'death',
+	})
 	const unlock = f.ball.state.pickableAt
 	f.a.dead = false
 	f.ball.begin(unlock - 1)
@@ -726,13 +730,21 @@ test('Ball possession announcements are relative; a structure goal shakes, freez
 			point: { x: 0, y: 1, z: 0 },
 		}
 		feedback.present(goal)
-		expect(banners.at(-1)).toBe('GOAL! Guns silenced for 6 s')
+		expect(banners.at(-1)).toBe('GOAL! Tower silenced 6 s')
 		expect(shakes).toContain(tune.juice.ballGoal.shake)
 		expect(feedback.beat(STEP)).toBe(0)
 		feedback.present(goal)
 		expect(sounds.filter((s) => s === 'goal')).toHaveLength(1)
 		feedback.reset()
 		expect(feedback.beat(STEP)).toBe(1)
+		feedback.present({
+			type: 'ballDrop',
+			hero: 'local',
+			reason: 'death',
+			tick: 3,
+			point: goal.point,
+		})
+		expect(banners.at(-1)).toBe('You died carrying the Ball · Ball dropped')
 	} finally {
 		if (previous === undefined) delete globalThis.document
 		else globalThis.document = previous

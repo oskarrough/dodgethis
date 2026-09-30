@@ -19,16 +19,12 @@ const CSS = `
 .moba-banner[hidden] { display: none; }
 @media (max-width: 600px) { .moba-help { white-space: normal !important; text-align: center; max-width: 94vw; } .moba-health { font-size: 12px; text-align: center; width: 94vw; } .moba-score { font-size: 13px; } }
 .moba-help { font: 12px/1.4 system-ui, sans-serif; color: var(--ui-text); opacity: 0.75; width: min(94vw, 700px); text-align: center; white-space: normal; }
-.moba-paused { position: fixed; inset: 0; display: grid; place-items: center; z-index: 10; pointer-events: none;
-	font: 48px/1 var(--ui-font); color: var(--ui-text); -webkit-text-stroke: 6px var(--ui-cream); paint-order: stroke fill;
-	background: rgba(143, 215, 255, 0.35); }
-.moba-paused[hidden] { display: none; }
 `
 const HELP = {
 	keyboard:
 		'RMB move / attack · Q loose · W vault · E rain · S stop · arrows pan · hold Space follow · Esc pause',
 	gamepad:
-		'L stick move · hold RB / RT / LB to aim Q / W / E, release to fire · A attack · B cancel',
+		'L stick move · hold RB / RT / LB to aim Q / W / E, release to fire · A attack · B cancel · Start pause',
 }
 
 export function createHud() {
@@ -44,12 +40,8 @@ export function createHud() {
 	banner.hidden = true
 	let bannerLeft = 0
 	let shownScore = ''
-	const paused = document.createElement('div')
-	paused.className = 'moba-paused'
-	paused.textContent = 'PAUSED'
-	paused.hidden = true
 	document.head.append(style)
-	document.body.append(root, paused, score, banner)
+	document.body.append(root, score, banner)
 	const slots = [...root.querySelectorAll('.moba-slot')].map((slot) => ({
 		slot,
 		key: slot.querySelector('.key'),
@@ -82,7 +74,6 @@ export function createHud() {
 				cooldowns,
 				totals,
 				device,
-				pausedNow,
 				hp,
 				maxHp,
 				respawn,
@@ -92,20 +83,17 @@ export function createHud() {
 				nextBall,
 				ballPop,
 				carryingBall,
-				winner,
+				localTeam = 'A',
 			},
 		) {
 			if (teams) {
 				const seconds = Math.floor(elapsed)
 				const clock = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`
-				const status = `A level ${teams.A.level} · ${clock} · B level ${teams.B.level} · wave ${Math.max(0, Math.ceil(nextWave))}s${ballPop != null ? ` · Ball pops in ${Math.ceil(ballPop)}s` : nextBall === undefined ? '' : ` · Ball ${Math.max(0, Math.ceil(nextBall))}s`}`
+				const enemyTeam = localTeam === 'A' ? 'B' : 'A'
+				const status = `Your team level ${teams[localTeam].level} · ${clock} · Enemy level ${teams[enemyTeam].level} · wave ${Math.max(0, Math.ceil(nextWave))}s${ballPop != null ? ` · Ball pops in ${Math.ceil(ballPop)}s` : nextBall === undefined ? '' : ` · Ball ${Math.max(0, Math.ceil(nextBall))}s`}`
 				if (status !== shownScore) score.textContent = shownScore = status
 			}
-			if (winner) {
-				const text = `Team ${winner} wins · R / Start to restart`
-				if (banner.textContent !== text) banner.textContent = text
-				banner.hidden = false
-			} else if (bannerLeft > 0 && (bannerLeft -= dt) <= 0) banner.hidden = true
+			if (bannerLeft > 0 && (bannerLeft -= dt) <= 0) banner.hidden = true
 			const text =
 				respawn !== null
 					? `Respawn in ${Math.ceil(respawn)} s`
@@ -136,15 +124,13 @@ export function createHud() {
 					s.key.textContent = (device === 'gamepad' ? ['RB', 'RT', 'LB'] : ['Q', 'W', 'E'])[i]
 			}
 			const controls = carryingBall
-				? `Ball: ${tune.ball.range} m throw · ${tune.ball.silence} s silence · ${device === 'gamepad' ? 'A or any shoulder release' : 'Q / W / E / primary'} throws toward aim · ${tune.ball.carrySpeed * 100}% speed`
-				: `${HELP[device] ?? HELP.keyboard} · Ball: stand still ${tune.ball.channel} s to pick up`
+				? `Ball: ${tune.ball.range} m throw · ${tune.ball.silence} s silence · ${device === 'gamepad' ? 'A or release RB / RT / LB to throw' : 'Q/W/E or click to throw'} toward aim · ${tune.ball.carrySpeed * 100}% speed`
+				: `${HELP[device] ?? HELP.keyboard} · Ball: stand still ${tune.ball.channel} s to pick up · ${tune.ball.range} m throw`
 			if (controls !== shownHelp) help.textContent = shownHelp = controls
-			paused.hidden = !pausedNow
 		},
 		dispose() {
 			style.remove()
 			root.remove()
-			paused.remove()
 			score.remove()
 			banner.remove()
 		},

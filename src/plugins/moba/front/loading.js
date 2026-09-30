@@ -42,7 +42,7 @@ export function startLoading(app, { el, backdrop, returnHero, buildWait = 0 }) {
 			`<div class="front-loading-team ${team}" aria-label="${team === 'A' ? 'Your' : 'Opposing'} ridge">${Array.from({ length: 3 }, (_, i) => `<svg viewBox="0 0 40 76" aria-label="${i ? 'Unoccupied seat' : 'Fletcher'}" class="${i ? 'vacant' : ''}"><path d="M12 20 Q7 4 20 3 Q33 4 28 20 L24 27 L32 48 L27 54 L28 76 H22 L19 54 L16 76 H10 L12 52 L7 46 L16 27Z"/><path d="M30 28 Q41 44 30 58 M30 28 V58" fill="none"/></svg>`).join('')}</div>`
 		const ui = document.createElement('section')
 		ui.className = 'front-loading-ui'
-		ui.innerHTML = `<h1>${tune.loading.mapName}</h1><p class="front-load-status" aria-live="polite">Preparing the view</p>${figures('A')}${figures('B')}<footer><button class="front-back">Back</button><button class="front-skip">Skip the hold</button><p class="front-prompts"></p></footer>`
+		ui.innerHTML = `<h1>${tune.loading.mapName}</h1><p class="front-load-status" aria-live="polite">Preparing the view</p>${figures('A')}${figures('B')}<footer><button class="front-back">Back</button><button class="front-skip">Start now</button><p class="front-prompts"></p></footer>`
 		function positionFigures() {
 			const size = Math.max(
 				tune.loading.figureWidth.min,
@@ -152,10 +152,10 @@ export function startLoading(app, { el, backdrop, returnHero, buildWait = 0 }) {
 			device = next
 			ui.querySelector('.front-prompts').textContent =
 				next === 'gamepad'
-					? 'A · skip hold   B · back'
+					? 'A · start now | B · back'
 					: next === 'mouse'
-						? 'Click · skip hold / back'
-						: 'Enter · skip hold   Esc · back'
+						? 'Click · start now | Back · hero select'
+						: 'Enter · start now | Esc · back'
 		}
 		const controls = createControls({
 			count: buttons.length,
@@ -214,7 +214,7 @@ export function startLoading(app, { el, backdrop, returnHero, buildWait = 0 }) {
 			const state = gate.state
 			const text = !state.ready
 				? state.skipped
-					? 'Hold skipped · preparing the view'
+					? 'Starting soon · preparing the view'
 					: 'Preparing the view'
 				: state.phase === 'hold'
 					? 'Ready to descend'

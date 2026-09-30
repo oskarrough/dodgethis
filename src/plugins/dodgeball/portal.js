@@ -10,24 +10,26 @@ const INK = hex('ink')
 const CREAM = hex('cream')
 
 // Canvas label outlines the difficulty number in cream and ink.
-function makeLabel(enemies, color) {
+function makeLabel(enemies, color, label = String(enemies), labelSize = 150) {
 	const c = document.createElement('canvas')
-	c.width = 256
-	c.height = 256
+	const dpr = globalThis.devicePixelRatio || 1
+	c.width = 256 * dpr
+	c.height = 256 * dpr
 	const g = c.getContext('2d')
+	g.scale(dpr, dpr)
 	g.textAlign = 'center'
 	g.textBaseline = 'middle'
 	g.lineJoin = 'round'
 
-	g.font = '150px "Ranchers", "Darumadrop One", system-ui, sans-serif'
+	g.font = `${labelSize}px "Ranchers", "Darumadrop One", system-ui, sans-serif`
 	g.lineWidth = 30
 	g.strokeStyle = CREAM
-	g.strokeText(String(enemies), 128, 128)
+	g.strokeText(label, 128, 128)
 	g.lineWidth = 14
 	g.strokeStyle = INK
-	g.strokeText(String(enemies), 128, 128)
+	g.strokeText(label, 128, 128)
 	g.fillStyle = color
-	g.fillText(String(enemies), 128, 128)
+	g.fillText(label, 128, 128)
 
 	const tex = new THREE.CanvasTexture(c)
 	tex.colorSpace = THREE.SRGBColorSpace
@@ -89,7 +91,7 @@ export function buildPortalPad(enemies) {
 	return group
 }
 
-export function createPortal(scene, { x, z, enemies }) {
+export function createPortal(scene, { x, z, enemies, label, labelSize, onSelect }) {
 	const color = hex(PORTAL_ROLES[enemies] || 'portalSpicy')
 	const group = buildPortalPad(enemies)
 	group.position.set(x, 0.05, z)
@@ -123,8 +125,8 @@ export function createPortal(scene, { x, z, enemies }) {
 		sp.sprite.position.set(Math.cos(sp.angle) * sp.r, sp.y, Math.sin(sp.angle) * sp.r)
 	}
 
-	const label = makeLabel(enemies, color)
-	group.add(label)
+	const labelSprite = makeLabel(enemies, color, label, labelSize)
+	group.add(labelSprite)
 
 	scene.add(group)
 
@@ -156,9 +158,9 @@ export function createPortal(scene, { x, z, enemies }) {
 		wake += ((near ? 1 : 0) - wake) * Math.min(1, dt * 9)
 
 		// The label bobs, lifts, and grows on wake while the pad stays fixed to avoid coplanar overlap.
-		label.position.y = 2.25 + 0.1 * Math.sin(t * 2 + phase) + wake * 0.3
+		labelSprite.position.y = 2.25 + 0.1 * Math.sin(t * 2 + phase) + wake * 0.3
 		const ls = 2.6 * (1 + wake * 0.18)
-		label.scale.set(ls, ls, 1)
+		labelSprite.scale.set(ls, ls, 1)
 
 		for (const sp of sparkles) {
 			sp.y += dt * sp.speed * (1 + wake * 1.6)
@@ -181,5 +183,5 @@ export function createPortal(scene, { x, z, enemies }) {
 		})
 	}
 
-	return { enemies, trigger, update, dispose }
+	return { enemies, onSelect, trigger, update, dispose }
 }

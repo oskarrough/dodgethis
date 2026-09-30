@@ -23,6 +23,12 @@ A fresh Astra review found and prompted fixes for send-failure reentrancy during
 
 The deployed site had different pre-existing arrow tuning from this checkout during testing. No multiplayer change altered `tune.js`; speed comparisons should use matching tuning. Multiple simultaneous automated browsers also reduced the software-rendered host frame rate; closing unused sessions improved it. Snapshot cadence is bounded by the host frame loop.
 
+## MOBA playability checks recorded on 2026-09-30
+
+`node scripts/verify-moba-playability.mjs <preview URL> <shots directory>` checks a frozen production build. The recorded pass used the playability changes with `6eaf363e`'s bots, keeping the parallel bot review out of the proof. Keyboard, mouse and pad completed selection, loading, pause, resume and exit; both the physical hub portal and the Play MOBA button worked. Hero select, Numbers, pause and the panned-away hero marker were captured at 390×844, 1280×577, 1440×900 and 2560×1080 without overlapping the footer.
+
+Real seeded 3v3 play reached VICTORY at tick 50955 (14:09), without injected shots or damage. The live Ball marker, frozen result and clean Again were asserted. The browser reported no errors. `bun run check` passed 451 tests with both dodgeball characterization snapshots unchanged. Screenshots and the machine-readable report are in `/tmp/playability-shots/` on the build machine.
+
 ## Two-device check
 
 Use the same build on both devices, preferably with one device on home Wi-Fi and the other on mobile data. Host a lobby on one, join its code on the other, and complete a human-only match. Repeat with allied humans against bots and mixed teams. Compare scores, deaths, pickups, and bow/bowl ownership; test leaving/rejoining and host departure.

@@ -26,28 +26,47 @@ export function createPips() {
 	const point = new THREE.Vector3()
 	const local = new THREE.Vector3()
 	return {
-		update(camera, units, team) {
+		update(camera, units, team, { hero = null, ball = null, carrying = false } = {}) {
 			const live = new Set()
-			for (const unit of units) {
-				if (unit.dead || unit.team === team) continue
+			const targets = units.filter((unit) => !unit.dead && unit.team !== team)
+			if (hero && !hero.dead)
+				targets.push({
+					id: 'marker:hero',
+					label: carrying ? 'You + Ball' : 'You',
+					point: hero.body.mesh.position,
+				})
+			if (ball) targets.push({ id: 'marker:ball', label: 'Ball', point: ball })
+			for (const unit of targets) {
 				live.add(unit.id)
 				let pip = pips.get(unit.id)
 				if (!pip) {
 					pip = document.createElement('span')
-					pip.style.cssText = `position:absolute;border:2px solid ${hex('ink')};border-radius:50%;background:${hex(unit.team === 'A' ? 'teamA' : 'teamB')};transform:translate(-50%,-50%)`
+					pip.style.cssText = `position:absolute;border:2px solid ${hex('ink')};border-radius:50%;background:${hex(unit.label ? 'cream' : unit.team === 'A' ? 'teamA' : 'teamB')};transform:translate(-50%,-50%)`
+					if (unit.label) {
+						pip.dataset.marker = unit.label
+						pip.style.cssText += `;border-width:${tune.pips.markerBorder}px;border-radius:${tune.pips.markerCorner}px;padding:${tune.pips.markerPadding}px ${tune.pips.markerPadding * 2}px;white-space:nowrap;box-shadow:${tune.pips.markerBorder}px ${tune.pips.markerBorder}px 0 ${hex('ink')};font:${tune.pips.markerFont}px/1 var(--ui-font);color:${hex('ink')}`
+					}
 					root.append(pip)
 					pips.set(unit.id, pip)
 				}
 				// Mesh positions already contain render interpolation, never read sim positions here.
-				point.copy(unit.body.mesh.position)
+				point.copy(unit.point ?? unit.body.mesh.position)
 				point.y = tune.pips.height
 				local.copy(point).applyMatrix4(camera.matrixWorldInverse)
 				const at = edgePip(point.project(camera), local.z >= 0)
 				pip.hidden = !at
 				if (!at) continue
-				pip.style.width = pip.style.height = `${tune.pips.size}px`
-				pip.style.left = `${(at.x + 1) * 50}%`
-				pip.style.top = `${(1 - at.y) * 50}%`
+				if (unit.label) {
+					const angle = Math.atan2(-at.y, at.x)
+					const direction = ['→', '↘', '↓', '↙', '←', '↖', '↑', '↗'][
+						((Math.round(angle / (Math.PI / 4)) % 8) + 8) % 8
+					]
+					const text = `${direction} ${unit.label}`
+					if (pip.textContent !== text) pip.textContent = text
+				} else pip.style.width = pip.style.height = `${tune.pips.size}px`
+				const margin = unit.label ? tune.pips.markerMargin : 0
+				pip.style.left = `clamp(${margin}px, ${(at.x + 1) * 50}%, calc(100% - ${margin}px))`
+				pip.style.top = `clamp(${margin}px, ${(1 - at.y) * 50}%, calc(100% - ${margin}px))`
 			}
 			for (const [id, pip] of pips)
 				if (!live.has(id)) {

@@ -98,7 +98,13 @@ export function createFollow(t = tune.follow) {
 			at.z = Math.max(-FLOOR.halfZ, Math.min(FLOOR.halfZ, at.z + (pan.z / length) * t.pan * dt))
 			vel.x = vel.z = 0
 		} else if (!free || centred) {
-			// Exact critically damped step: ~90% of a step change is covered in `response` seconds.
+			// Mouse orders use the already interpolated hero directly: no second lagging spring.
+			if (!pad) {
+				at.x = g.x
+				at.z = g.z
+				vel.x = vel.z = 0
+			}
+			// Pad look-ahead stays critically damped.
 			const w = 3.9 / Math.max(0.01, t.response)
 			const decay = Math.exp(-w * dt)
 			for (const k of ['x', 'z']) {

@@ -25,7 +25,7 @@
 	left: 57%;
 	right: 7%;
 	top: 18%;
-	bottom: 16%;
+	bottom: max(110px, 16%);
 	display: flex;
 	flex-direction: column;
 	pointer-events: none;
@@ -35,7 +35,10 @@
 	pointer-events: auto;
 }
 .front-kit {
-	flex-shrink: 0;
+	pointer-events: auto;
+	min-height: 0;
+	overflow-y: auto;
+	scrollbar-width: thin;
 }
 .front-hero-name {
 	font-weight: 300;
@@ -85,6 +88,7 @@
 	padding: 0.25em;
 }
 .front-ready {
+	flex-shrink: 0;
 	margin-top: auto;
 	padding-top: 1em;
 	display: flex;
@@ -167,7 +171,7 @@
 		font-size: 0.75em;
 	}
 	.front-hero {
-		bottom: 15%;
+		bottom: max(130px, 15%);
 	}
 	.front-seats {
 		gap: 0.4em;
@@ -198,7 +202,19 @@
 }
 @media (max-height: 740px) and (min-width: 701px) {
 	.front-hero {
-		top: 8%;
+		top: 6%;
+	}
+	.front-kit {
+		font-size: 0.9em;
+	}
+	.front-hero-name {
+		margin-bottom: 0.3em;
+	}
+	.front-ready {
+		padding-top: 0.5em;
+	}
+	.front-seat {
+		width: 28px;
 	}
 	.moba-front .front-slot {
 		padding: 0.3em 0;

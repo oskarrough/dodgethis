@@ -37,6 +37,8 @@ Tell the three tiers apart from above. Walls are `scenery`, and team colour goes
 
 ## UI skin
 
+- Off-screen Ball and local-hero markers are labelled cream arrow stickers, using the interpolated rendered positions. They stay inside the viewport at narrow widths. Arrow keys pan; Space brings the hero back. Mouse follow tracks the interpolated hero directly without an extra spring; held pad aim retains its spring.
+- Pause and the interim match result use `core/overlay.js` cards, with keyboard, mouse and pad navigation. Both freeze the world; the result says VICTORY or DEFEAT relative to you. Death carrying the Ball explicitly says it dropped.
 - The HUD is cream stickers with 3 px ink borders and hard offset shadows, like the slots already have. Cooldowns are an ink sweep plus whole seconds and a gold pop when ready (built). Your HP is a sticker bar above the slots, matching the world bar's colour and ticks.
 - Top centre is a scalloped clock sticker, with the next wave or Ball underneath. Beside it, each team gets a row of tower, fort and core icons in inline SVG, drawn in the same silhouettes and greying out as they fall. That row is the lane map. A tooltip is a cream card on hover or focus: the name in `--ui-font` and one line of numbers.
 

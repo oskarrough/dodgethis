@@ -16,6 +16,7 @@ import { createPips } from './pips.js'
 import { createSounds } from './sounds.js'
 import { createBallView } from './ball-view.js'
 import { createFeedback } from './feedback.js'
+import { createMatchMenu } from './menu.js'
 
 const FACTS = [
 	'boardExpired',
@@ -80,7 +81,7 @@ export default function moba(app) {
 			const hud = createHud()
 			const pips = createPips()
 			const follow = createFollow()
-			const cameraControls = createCameraControls(window, run.signal, follow)
+			const cameraControls = createCameraControls(window, run.signal, follow, () => !menu.frozen())
 			const cursor = createCursor(app.renderer.domElement)
 			const query = new URLSearchParams(window.location.search)
 			const difficulty = ['easy', 'normal', 'hard'].includes(query.get('bots'))
@@ -122,10 +123,9 @@ export default function moba(app) {
 			})
 			app.clock.reset()
 
-			let paused = false
-			run.clock.pause(() => paused)
+			const menu = createMatchMenu({ app, run, sim, hero, clearCamera: cameraControls.clear })
 			run.clock.scale(feedback.beat)
-			run.intents.suspend(() => paused || coreTune.physics.paused)
+			run.intents.suspend(() => coreTune.physics.paused)
 			run.input.stickAim((dir, magnitude, slot) => sim.stickAim(local, dir, magnitude, slot))
 
 			const onPad = () => input.activeDevice() === 'gamepad'
@@ -156,7 +156,8 @@ export default function moba(app) {
 				return unit?.body.mesh.position ?? null
 			}
 			run.system('present', ({ dt, gameDt, alpha }) => {
-				const frozen = paused || coreTune.physics.paused
+				menu.result()
+				const frozen = menu.frozen() || coreTune.physics.paused
 				const step = frozen ? 0 : gameDt
 				const frame = app.intents.get(local)
 				const p = hero.body.mesh.position
@@ -242,9 +243,8 @@ export default function moba(app) {
 							: null,
 					nextBall: (sim.ball.nextBall - sim.tick - (frozen ? 0 : alpha)) * app.clock.step,
 					nextWave: (sim.lane.nextWave - sim.tick - (frozen ? 0 : alpha)) * app.clock.step,
-					winner: sim.lane.match.winner,
+					localTeam: hero.team,
 					device: input.activeDevice(),
-					pausedNow: paused,
 					hp: hero.hp,
 					maxHp: hero.maxHp,
 					respawn: hero.dead
@@ -253,33 +253,19 @@ export default function moba(app) {
 				})
 				// The camera's explicit FOV spring needs bounded integration steps on slow renderers.
 				let cameraLeft = frozen ? 0 : dt
-				do {
+				while (cameraLeft > 0) {
 					const cameraStep = Math.min(cameraLeft, tune.follow.maxStep)
 					app.camera.update(cameraStep)
 					cameraLeft -= cameraStep
-				} while (cameraLeft > 0)
-				pips.update(app.camera.view, [...sim.heroes, ...sim.dummies], hero.team)
+				}
+				pips.update(app.camera.view, [...sim.heroes, ...sim.dummies], hero.team, {
+					hero,
+					ball: sim.ball.carrying(hero) ? null : ballView.markerPosition,
+					carrying: sim.ball.carrying(hero),
+				})
 			})
 
-			function togglePause() {
-				if (!app.session.actions.includes('pause')) return
-				paused = !paused
-				cameraControls.clear()
-				sfx[paused ? 'menuOpen' : 'menuClose']()
-			}
-			run.on('menu', () => {
-				if (sim.lane.match.winner) app.modes.start('moba')
-				else togglePause()
-			})
 			run.on('blur', () => app.intents.cancel(local))
-			const onKey = (e) => {
-				if (e.defaultPrevented || e.code === 'Backquote') return
-				if (e.type === 'keydown' && !e.repeat && e.code === 'KeyR' && sim.lane.match.winner)
-					app.modes.start('moba')
-				if (e.type === 'keydown' && !e.repeat && e.code === 'Escape') togglePause()
-			}
-			window.addEventListener('keydown', onKey, { signal: run.signal })
-			window.addEventListener('keyup', onKey, { signal: run.signal })
 
 			run.debug.tune('tower', tune.tower, (f, t) => {
 				f.add(t, 'hp', 100, 6000, 100).name('HP (applies on restart)')
@@ -453,7 +439,7 @@ export default function moba(app) {
 				f.add(t, 'height', 5, 40, 0.5)
 				f.add(t, 'back', 0, 30, 0.5)
 				f.add(t, 'fov', 20, 70, 1)
-				f.add(t, 'response', 0.02, 0.6, 0.01).name('response (s)')
+				f.add(t, 'response', 0.02, 0.6, 0.01).name('pad response (s)')
 				f.add(t, 'lookAhead', 0, 0.6, 0.01).name('pad look ahead ×')
 				f.add(t, 'lookCap', 0, 8, 0.25).name('pad look cap (m)')
 			})
@@ -497,9 +483,7 @@ export default function moba(app) {
 					fastForward({ ticks, target = null }) {
 						if (!Number.isInteger(ticks) || ticks < 0 || ticks > tune.proof.batch)
 							throw new Error('Invalid proof step count')
-						const wasPaused = paused
 						const wasPhysicsPaused = coreTune.physics.paused
-						paused = false
 						coreTune.physics.paused = false
 						try {
 							for (let i = 0; i < ticks; i++) {
@@ -507,7 +491,6 @@ export default function moba(app) {
 								app.frame(app.clock.step)
 							}
 						} finally {
-							paused = wasPaused
 							coreTune.physics.paused = wasPhysicsPaused
 						}
 						return {

@@ -84,6 +84,9 @@ export function createBallView(scene, rng = Math.random) {
 	}
 	return {
 		root,
+		get markerPosition() {
+			return ball.visible ? ball.position : null
+		},
 		present(fact) {
 			if (fact.type === 'ballHit' && fact.kind === 'structure') {
 				burst = { point: fact.point, tick: fact.tick }

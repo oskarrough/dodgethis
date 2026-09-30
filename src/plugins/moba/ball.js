@@ -29,7 +29,7 @@ export function createBall({ heroes, lane, obstacles, present, damage }) {
 		ball.channel = null
 		ball.shot = null
 		ball.pickableAt = now + ticks(tune.ball.lock)
-		fact('ballDrop', { reason })
+		fact('ballDrop', { reason, hero: h?.id ?? null })
 		return true
 	}
 	function interrupt(h, reason) {

@@ -110,6 +110,25 @@ test('mouse follow stays on the hero, pad retains held-aim framing and ignores p
 	expect(at).toMatchObject({ x: 3, z: 3 })
 })
 
+test('mouse follow has no extra lag and suspended menus cannot pan or recenter', () => {
+	const target = new EventTarget()
+	const controller = new AbortController()
+	const follow = createFollow()
+	let enabled = true
+	const controls = createCameraControls(target, controller.signal, follow, () => enabled)
+	const hero = { x: 0, z: 0 }
+	follow.frame(0, hero, null)
+	hero.x = 4
+	expect(follow.frame(1 / 144, hero, null).target.x).toBe(4)
+	key(target, 'ArrowRight')
+	enabled = false
+	key(target, 'ArrowRight', 'keyup')
+	key(target, 'ArrowLeft')
+	key(target, 'Space')
+	expect(controls.read()).toEqual({ centred: false, pan: { x: 0, z: 0 } })
+	controller.abort()
+})
+
 test('native cursor selects move, attack, targeting; restores on pause, pad and disposal', () => {
 	const canvas = { style: { cursor: 'auto' } }
 	const cursor = createCursor(canvas)

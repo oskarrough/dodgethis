@@ -90,7 +90,7 @@ export function createFeedback({ juice, sfx, camera, input, view, skillsView, hu
 				if (fact.kind === 'structure') {
 					const friendly = unitOf(fact.hero)?.team === unitOf(local)?.team
 					hud.banner?.(
-						`${friendly ? 'GOAL!' : 'Enemy scored!'} Guns silenced for ${tune.ball.silence} s`,
+						`${friendly ? 'GOAL!' : 'Enemy scored!'} ${unitOf(fact.target)?.kind === 'fort' ? 'Fort' : unitOf(fact.target)?.kind === 'core' ? 'Core' : 'Tower'} silenced ${tune.ball.silence} s`,
 					)
 					freeze = Math.max(freeze, tune.juice.ballGoal.freeze)
 					camera.shake(tune.juice.ballGoal.shake)
@@ -110,6 +110,8 @@ export function createFeedback({ juice, sfx, camera, input, view, skillsView, hu
 				cue('ballBounce', fact)
 				return
 			case 'ballDrop':
+				if (mine && fact.reason === 'death')
+					hud.banner?.('You died carrying the Ball · Ball dropped')
 				juice.burst(fact.point, { x: 0, y: 1, z: 0 }, tune.juice.ballDrop)
 				cue('ballDrop', fact)
 				return
@@ -188,7 +190,9 @@ export function createFeedback({ juice, sfx, camera, input, view, skillsView, hu
 				cue('shielded', fact)
 				return
 			case 'levelUp':
-				hud.banner?.(`Team ${fact.team} level ${fact.level}`)
+				hud.banner?.(
+					`${fact.team === unitOf(local)?.team ? 'Your team' : 'Enemy'} level ${fact.level}`,
+				)
 				juice.burst(fact.point, { x: 0, y: 1, z: 0 }, tune.juice.levelUp)
 				cue('levelUp', fact)
 				return
@@ -201,7 +205,6 @@ export function createFeedback({ juice, sfx, camera, input, view, skillsView, hu
 				cue('globe', fact)
 				return
 			case 'matchOver':
-				hud.banner?.(`Team ${fact.team} wins · R / Start to restart`)
 				juice.burst(fact.point, { x: 0, y: 1, z: 0 }, tune.juice.matchOver)
 				cue('matchOver', fact)
 				camera.kick(tune.juice.winKick)

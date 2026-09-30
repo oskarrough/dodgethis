@@ -1,0 +1,73 @@
+// Match cards use the shared sticker overlay, including its mouse/keyboard focus.
+export function createMatchMenu({ app, run, sim, hero, clearCamera }) {
+	let paused = false
+	let resultShown = false
+	let backHeld = false
+	const frozen = () => paused || !!sim.lane.match.winner
+	const resetInput = () => {
+		app.intents.cancel(hero.id)
+		clearCamera()
+	}
+	function leave(heroSelect) {
+		resetInput()
+		app.modes.start('moba-front', { options: { hero: heroSelect } })
+	}
+	const restart = () => {
+		resetInput()
+		app.modes.start('moba')
+	}
+	function toggle() {
+		if (sim.lane.match.winner || !app.session.actions.includes('pause')) return
+		paused = !paused
+		resetInput()
+		app.audio.setMusicScene(paused ? 'paused' : 'play')
+		if (!paused) return app.overlay.hide()
+		app.overlay.show({
+			title: 'PAUSED',
+			subtitle: 'Esc / B / Start · resume',
+			actions: [
+				{ label: 'Resume', onSelect: toggle },
+				{ label: 'Restart', key: 'KeyR', keyLabel: 'R', onSelect: restart },
+				{ label: 'Hero select', onSelect: () => leave(true) },
+				{ label: 'Modes', onSelect: () => leave(false) },
+			],
+		})
+	}
+	function result() {
+		if (!sim.lane.match.winner || resultShown) return
+		resultShown = true
+		resetInput()
+		app.audio.setMusicScene('paused')
+		app.overlay.show({
+			title: sim.lane.match.winner === hero.team ? 'VICTORY' : 'DEFEAT',
+			subtitle: sim.lane.match.winner === hero.team ? 'Enemy core destroyed' : 'Your core fell',
+			actions: [
+				{ label: 'Again', key: 'KeyR', keyLabel: 'R', onSelect: restart },
+				{ label: 'Hero', onSelect: () => leave(true) },
+				{ label: 'Modes', onSelect: () => leave(false) },
+			],
+		})
+	}
+	run.clock.pause(frozen)
+	run.intents.suspend(frozen)
+	run.on('menu', toggle)
+	window.addEventListener(
+		'keydown',
+		(event) => {
+			if (event.defaultPrevented || event.repeat || event.code !== 'Escape') return
+			toggle()
+		},
+		{ signal: run.signal },
+	)
+	run.system('input', () => {
+		const back = !!app.input.pad()?.buttons[1]
+		const pressed = back && !backHeld
+		backHeld = back
+		const input = app.input.consumeMenuInput()
+		if (!app.overlay.visible) return
+		if (pressed && paused && !sim.lane.match.winner) toggle()
+		else app.overlay.handleGamepad(input)
+	})
+	run.signal.addEventListener('abort', () => app.overlay.hide(), { once: true })
+	return { frozen, result }
+}

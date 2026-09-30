@@ -43,7 +43,16 @@ export const tune = {
 		],
 	},
 	collision: { epsilon: 1e-6, separation: 1e-3, clampPasses: 8 },
-	pips: { inset: 0.92, size: 12, height: 1.1 },
+	pips: {
+		inset: 0.92,
+		size: 12,
+		height: 1.1,
+		markerMargin: 48,
+		markerFont: 14,
+		markerBorder: 2,
+		markerCorner: 8,
+		markerPadding: 4,
+	},
 	// The hero's movement profile (core/body.js). Obedience first: full speed in ~25 ms, a dead stop, no air.
 	tower: {
 		x: 18,

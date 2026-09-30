@@ -117,13 +117,14 @@ test('Q margin includes flight, excludes the demonstration hold, and crosses zer
 	const front = structuredClone(tune)
 	const s = heroStats(values, front)
 	expect(s.q.margin).toBeCloseTo(0.5444444444444444, 10)
-	expect(numberLines(s, 8).join(' ')).toContain('0.544 s to spare at 8 m')
+	expect(numberLines(s, 8).join(' ')).toContain('Dodge Loose: moving from rest')
+	expect(numberLines(s, 8).join(' ')).not.toContain('to spare')
 	const threshold = (s.q.sidestep - s.q.warning) * values.loose.speed
 	front.preview.distance = threshold - 1e-5
 	const short = heroStats(values, front)
 	expect(short.q.margin).toBeLessThan(0)
 	expect(travelAt(short.q.warning + short.q.flight, values.hero)).toBeLessThan(short.q.clear)
-	expect(numberLines(short, front.preview.distance).join(' ')).toContain('too late')
+	expect(numberLines(short, front.preview.distance).join(' ')).not.toContain('too late')
 	front.preview.distance = threshold + 1e-5
 	const long = heroStats(values, front)
 	expect(long.q.margin).toBeGreaterThan(0)

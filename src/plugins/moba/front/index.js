@@ -228,6 +228,7 @@ export function mobaFront(app) {
 						}
 						if (document.activeElement !== buttons[index])
 							buttons[index].focus({ preventScroll: true })
+						buttons[index].scrollIntoView({ block: 'nearest', inline: 'nearest' })
 					},
 					activate,
 					back: showModes,

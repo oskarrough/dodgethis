@@ -23,7 +23,7 @@ import { createSandbox } from './sandbox.js'
 const CHARGE_STEP = 0.16
 
 // Dodgeball: the court, its presentation and debug tools live as long as the plugin; the match flow lives as long as a run of the mode.
-export default function dodgeball(app) {
+export default function dodgeball(app, { hubPortal = null } = {}) {
 	const { scene, world, RAPIER, input, audio, overlay, camera } = app
 	const { sfx } = audio
 	const { combat } = app.debug
@@ -336,6 +336,7 @@ export default function dodgeball(app) {
 		if (flow.phase === 'menu') {
 			const pick = /^Digit([1-3])$/.exec(e.code)
 			if (pick) flow.enterPortal(Number(pick[1]))
+			if (e.code === 'Digit4' && hubPortal) hubPortal.onSelect()
 			return
 		}
 		if (flow.phase !== 'playing') return
@@ -352,6 +353,14 @@ export default function dodgeball(app) {
 		scheme: 'direct',
 		start(run, { roster }) {
 			const session = app.session
+			if (hubPortal && !session.shared) {
+				const entry = document.createElement('button')
+				entry.className = 'sticker online-entry hub-mode-entry'
+				entry.textContent = `Play ${hubPortal.label}`
+				entry.onclick = hubPortal.onSelect
+				splashEl.append(entry)
+				run.signal.addEventListener('abort', () => entry.remove(), { once: true })
+			}
 			court.setShown(true)
 			actions = createActions()
 			flow = createMatchFlow({
@@ -369,6 +378,7 @@ export default function dodgeball(app) {
 					court.setLayout(layout)
 				},
 				onMenu: () => app.emit('menu'),
+				hubPortal,
 			})
 
 			// The round steps while it is live: the hub or a match in play, nothing modal on top.
@@ -413,6 +423,8 @@ export default function dodgeball(app) {
 				if (live) {
 					godmodeFx.update(dt, flow.round.localPlayer)
 					if (flow.phase === 'menu') flow.checkPortals()
+					// A destination portal can dispose this run during the proximity check.
+					if (run.signal.aborted) return
 				} else godmodeFx.update(0, flow.phase === 'paused' ? flow.round?.localPlayer : null)
 
 				// Hub player proximity drives portal wake pops; outside the hub the portal list is empty.

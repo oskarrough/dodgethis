@@ -65,10 +65,10 @@ test('Momentum text follows live tuning and unchanged HUD frames do not rewrite 
 		hud.update(0, frame)
 		expect(health.writes).toBe(1)
 		const score = nodes.find((node) => node.className === 'moba-score')
-		expect(score.textContent).toBe('A level 2 · 1:05 · B level 1 · wave 10s')
+		expect(score.textContent).toBe('Your team level 2 · 1:05 · Enemy level 1 · wave 10s')
 		expect(score.writes).toBe(1)
 		hud.update(0, { ...frame, elapsed: 66, nextWave: 9 })
-		expect(score.textContent).toBe('A level 2 · 1:06 · B level 1 · wave 9s')
+		expect(score.textContent).toBe('Your team level 2 · 1:06 · Enemy level 1 · wave 9s')
 		expect(score.writes).toBe(2)
 		tune.momentum.reduction = 1.25
 		hud.update(0, frame)
@@ -86,6 +86,12 @@ test('Momentum text follows live tuning and unchanged HUD frames do not rewrite 
 		expect(score.writes).toBe(writes)
 		hud.update(0, { ...frame, nextBall: 146, ballPop: null })
 		expect(score.textContent).toContain('Ball 146s')
+		hud.update(0, { ...frame, localTeam: 'B', carryingBall: true, device: 'mouse' })
+		expect(score.textContent).toContain('Your team level 1')
+		expect(help.textContent).toContain('Q/W/E or click to throw')
+		hud.update(0, { ...frame, device: 'gamepad' })
+		expect(help.textContent).toContain('Start pause')
+		expect(help.textContent).toContain(`${tune.ball.range} m throw`)
 	} finally {
 		hud.dispose()
 		tune.momentum.reduction = old

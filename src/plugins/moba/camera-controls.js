@@ -1,5 +1,5 @@
 // Local camera gestures never become gameplay intents.
-export function createCameraControls(target, signal, follow) {
+export function createCameraControls(target, signal, follow, enabled = () => true) {
 	const keys = new Set()
 	let centred = false
 	const arrows = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown']
@@ -14,7 +14,7 @@ export function createCameraControls(target, signal, follow) {
 			if (e.code === 'Space') centred = false
 			return
 		}
-		if (e.defaultPrevented && e.code !== 'Space') return
+		if (e.defaultPrevented || !enabled()) return
 		if (e.target?.closest?.('input, textarea, select, [contenteditable]')) return
 		e.preventDefault()
 		if (e.code === 'Space') {
