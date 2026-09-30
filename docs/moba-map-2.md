@@ -31,7 +31,7 @@ z +15 ┌ base  fort    tower ══════════ north lane ══�
 | Time       | Phase  | What changes                                                                    |
 | ---------- | ------ | ------------------------------------------------------------------------------- |
 | 0:00–3:00  | Early  | Both lanes; first half waves 0:15                                               |
-| 3:00–10:00 | Rounds | Hoist 30 s, round up to 60 s, lull to the next hoist; the HUD counts to either |
+| 3:00–10:00 | Rounds | Hoist 30 s, round up to 60 s, lull to the next hoist; the HUD counts to either  |
 | 10:00–     | Late   | Waves every 20 s, brute alternating lanes; a hoist every 1:30 on the same clock |
 
 ## Why these numbers
