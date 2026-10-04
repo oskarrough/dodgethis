@@ -1,93 +1,35 @@
 import { beforeEach, afterEach, expect, test } from 'bun:test'
-import * as THREE from 'three'
-import RAPIER from '@dimforge/rapier3d-compat'
-import { STEP } from '../src/core/app.js'
-import { createIntents, neutralFrame, validIntent } from '../src/core/intents.js'
-import { createSim } from '../src/plugins/moba/sim.js'
-import { buildColliders, walkable } from '../src/plugins/moba/obstacles.js'
+import { bootMoba, shot as harnessShot, STEP, ticks } from './moba-harness.js'
+import { neutralFrame, validIntent } from '../src/core/intents.js'
+import { walkable } from '../src/plugins/moba/obstacles.js'
 import { validFact } from '../src/plugins/moba/index.js'
 import { createFeedback } from '../src/plugins/moba/feedback.js'
 import { createJuice } from '../src/core/juice.js'
 import { inReach } from '../src/plugins/moba/lane.js'
 import { tune } from '../src/plugins/moba/tune.js'
 
-await RAPIER.init({})
-let sim, world, intents, facts, unbuild, scene
-const ticks = (seconds) => Math.round(seconds / STEP)
-function boot(
-	scripted = [],
-	seats = [
-		{ id: 'A', team: 'A' },
-		{ id: 'B', team: 'B' },
-	],
-) {
-	world = new RAPIER.World({ x: 0, y: -9.81, z: 0 })
-	world.timestep = STEP
-	unbuild = buildColliders(world, RAPIER)
-	intents = createIntents()
-	intents.use('pointClick')
-	facts = []
-	scene = new THREE.Scene()
-	sim = createSim({
-		scene,
-		world,
-		RAPIER,
-		intents,
-		lane: true,
-		heroes: seats,
-		scripted,
-		present: (fact) => facts.push(fact),
-	})
+let harness, sim, intents, facts, scene
+function boot(scripted = [], heroes) {
+	harness?.dispose()
+	harness = bootMoba({ heroes, scripted })
+	;({ sim, intents, facts, scene } = harness)
 }
-function step(n = 1) {
-	for (let i = 0; i < n; i++) {
-		sim.step()
-		intents.age(STEP)
-	}
-}
-function shot(target, damage, team = 'A', slot = 'primary', owner = team) {
-	const p = target.body.position
-	sim.shots.push({
-		id: 100000 + sim.tick,
-		owner,
-		team,
-		slot,
-		target: target.id,
-		x: p.x,
-		z: p.z,
-		dx: 1,
-		dz: 0,
-		speed: 24,
-		radius: 0.12,
-		range: 200,
-		travelled: 0,
-		passed: [],
-		damage,
-	})
-}
+const step = (n) => harness.step(n)
+const shot = (target, damage, team = 'A', slot = 'primary', owner = team) =>
+	harnessShot(sim, target, damage, { owner, team, slot, target: target.id })
 const structure = (kind, team = 'B') =>
 	sim.lane.structures.find((u) => u.kind === kind && u.team === team)
 beforeEach(() => boot())
 afterEach(() => {
-	sim.dispose()
-	unbuild()
-	world.free()
+	harness.dispose()
+	harness = null
 })
 
 test('Ball slice restores full structure HP regardless of defending team size', () => {
 	for (const u of sim.lane.structures) expect(u.maxHp).toBeCloseTo(tune[u.kind].hp)
-	sim.dispose()
-	unbuild()
-	world.free()
 	boot(
 		[],
-		[
-			{ id: 'a1', team: 'A' },
-			{ id: 'a2', team: 'A' },
-			{ id: 'a3', team: 'A' },
-			{ id: 'b1', team: 'B' },
-			{ id: 'b2', team: 'B' },
-		],
+		['a1', 'a2', 'a3', 'b1', 'b2'].map((id) => ({ id, team: id[0].toUpperCase() })),
 	)
 	for (const u of sim.lane.structures) expect(u.maxHp).toBeCloseTo(tune[u.kind].hp)
 })
@@ -310,9 +252,6 @@ test('fort/core domes, distinct poses, cracks and globe interpolation dispose cl
 test.if(process.env.SLOW === '1')(
 	'five-minute intent-driven scripted match: whole population stays walkable, no stuck units, sane shared XP',
 	() => {
-		sim.dispose()
-		unbuild()
-		world.free()
 		boot(['A', 'B'])
 		const histories = new Map()
 		const xp = { A: 0, B: 0 }
@@ -383,9 +322,6 @@ for (const [scripted, limit] of [
 	test.if(process.env.SLOW === '1')(
 		`real play ${scripted.length === 1 ? 'scripted vs idle' : 'scripted vs scripted'} destroys a core before ${limit / 60} minutes`,
 		() => {
-			sim.dispose()
-			unbuild()
-			world.free()
 			boot(scripted)
 			while (!sim.lane.match.winner && sim.tick < ticks(limit)) step()
 			expect(sim.lane.match.winner).not.toBeNull()

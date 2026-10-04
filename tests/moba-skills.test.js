@@ -1,54 +1,23 @@
 import { afterEach, beforeEach, expect, test } from 'bun:test'
-import * as THREE from 'three'
-import RAPIER from '@dimforge/rapier3d-compat'
-import { STEP } from '../src/core/app.js'
-import { createIntents, neutralFrame } from '../src/core/intents.js'
-import { createSim } from '../src/plugins/moba/sim.js'
+import { bootMoba, RAPIER, STEP } from './moba-harness.js'
 import { createSkillsView } from '../src/plugins/moba/skills-view.js'
 import { createFeedback } from '../src/plugins/moba/feedback.js'
 import { tune } from '../src/plugins/moba/tune.js'
 
-await RAPIER.init({})
-let world, scene, intents, sim, facts
+let harness, world, scene, sim, facts
 beforeEach(() => {
-	world = new RAPIER.World({ x: 0, y: -9.81, z: 0 })
-	world.timestep = STEP
-	world.createCollider(RAPIER.ColliderDesc.cuboid(20, 0.5, 20).setTranslation(0, -0.5, 0))
-	scene = new THREE.Scene()
-	intents = createIntents()
-	intents.use('pointClick')
-	facts = []
-	sim = createSim({
-		scene,
-		world,
-		RAPIER,
-		intents,
-		heroes: [{ id: 'local', team: 'A' }],
-		present: (f) => facts.push(f),
-		rng: () => 0.5,
-	})
+	harness = bootMoba({ map: 'floor', heroes: [{ id: 'local', team: 'A' }], rng: () => 0.5 })
+	;({ world, scene, sim, facts } = harness)
 	sim.heroes[0].body.place(0, 1.05, 8)
 	for (const d of sim.dummies) {
 		d.sparring = false
 		d.body.place(-15, 1.05, 18)
 	}
 })
-afterEach(() => {
-	sim.dispose()
-	world.free()
-})
-function step(n = 1) {
-	for (let i = 0; i < n; i++) {
-		sim.step()
-		intents.age(STEP)
-	}
-}
-function feed(overrides) {
-	intents.feed('local', { ...neutralFrame(), ...overrides })
-}
-function press(action, at) {
-	feed({ pressed: [{ action, at }] })
-}
+afterEach(() => harness.dispose())
+const step = (n) => harness.step(n)
+const feed = (frame) => harness.feed('local', frame)
+const press = (action, at) => harness.press('local', action, at)
 const h = () => sim.heroes[0]
 
 test('Rain freezes and range-clamps its target, telegraphs before hitting, then slows and recovers', () => {

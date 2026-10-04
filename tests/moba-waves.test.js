@@ -1,8 +1,7 @@
-import { beforeEach, afterEach, expect, test } from 'bun:test'
+import { afterEach, beforeEach, expect, test } from 'bun:test'
 import * as THREE from 'three'
-import RAPIER from '@dimforge/rapier3d-compat'
-import { STEP } from '../src/core/app.js'
-import { createIntents, neutralFrame } from '../src/core/intents.js'
+import { bootMoba, RAPIER, shot, STEP, ticks } from './moba-harness.js'
+import { createIntents } from '../src/core/intents.js'
 import { createSmoother } from '../src/core/smooth.js'
 import { createSim } from '../src/plugins/moba/sim.js'
 import { buildColliders, OBSTACLES, walkable, segmentClear } from '../src/plugins/moba/obstacles.js'
@@ -11,67 +10,19 @@ import { validFact } from '../src/plugins/moba/index.js'
 import { createPathPlanner } from '../src/plugins/moba/path.js'
 import { tune } from '../src/plugins/moba/tune.js'
 
-await RAPIER.init({})
-let sim, world, facts, intents, smoother, scene, unbuild
-const ticks = (s) => Math.round(s / STEP)
-function step(n = 1) {
-	for (let i = 0; i < n; i++) {
-		sim.step()
-		intents.age(STEP)
-		smoother.capture()
-	}
-}
-function feed(id, frame) {
-	intents.feed(id, { ...neutralFrame(), ...frame })
-}
-function shoot(target, damage, owner = 'A', team = 'A', slot = 'primary') {
-	const p = target.body.position
-	sim.shots.push({
-		id: 100000 + sim.tick,
-		owner,
-		team,
-		slot,
-		target: target.id,
-		x: p.x,
-		z: p.z,
-		dx: 1,
-		dz: 0,
-		speed: 24,
-		radius: 0.12,
-		range: 200,
-		travelled: 0,
-		passed: [],
-		damage,
-	})
-}
+let harness, sim, facts, smoother, scene
+const step = (n) => harness.step(n, () => smoother.capture())
+const feed = (id, frame) => harness.feed(id, frame)
+const shoot = (target, damage, owner = 'A', team = 'A', slot = 'primary') =>
+	shot(sim, target, damage, { owner, team, slot, target: target.id })
 beforeEach(() => {
-	world = new RAPIER.World({ x: 0, y: -9.81, z: 0 })
-	world.timestep = STEP
-	unbuild = buildColliders(world, RAPIER)
-	scene = new THREE.Scene()
 	smoother = createSmoother()
-	intents = createIntents()
-	intents.use('pointClick')
-	facts = []
-	sim = createSim({
-		scene,
-		world,
-		RAPIER,
-		intents,
-		heroes: [
-			{ id: 'A', team: 'A' },
-			{ id: 'B', team: 'B' },
-		],
-		lane: true,
+	harness = bootMoba({
 		smooth: Object.assign((o, read) => smoother.add(o, read), { snap: (o) => smoother.snap(o) }),
-		present: (fact) => facts.push(fact),
 	})
+	;({ sim, facts, scene } = harness)
 })
-afterEach(() => {
-	sim?.dispose()
-	unbuild()
-	world.free()
-})
+afterEach(() => harness?.dispose())
 
 test('first wave at 15 s, six per side; every 30 s thereafter (second at 45 s), meet near mid by 28 s', () => {
 	step(ticks(15) - 1)
@@ -442,8 +393,8 @@ test('two lane sims and a training sim own independent obstacles through kills a
 		step()
 		expect(walkable(18, 0, 0.45, 0, sim.obstacles)).toBe(true)
 		expect(segmentClear({ x: 16, z: 0 }, { x: 20, z: 0 }, 0, second.obstacles)).toBe(false)
-		sim.dispose()
-		sim = null
+		harness.dispose()
+		harness = null
 		for (let i = 0; i < ticks(28); i++) second.step()
 		expect(second.lane.minions).toHaveLength(12)
 		expect(second.lane.minions.every((u) => Math.abs(u.body.position.x) < 6)).toBe(true)
