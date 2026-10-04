@@ -71,7 +71,7 @@ export function createDebugPanel() {
 	const gui = new GUI({ title: 'dodgethis / debug' })
 	const folders = new Map()
 	function folder(name) {
-		if (!folders.has(name)) folders.set(name, gui.addFolder(name))
+		if (!folders.has(name)) folders.set(name, gui.addFolder(name).close())
 		return folders.get(name)
 	}
 	// Remove only what this registration added; drop the folder once it is empty.
