@@ -6,8 +6,8 @@ import { createAgentMatch, readReplay, replayHash } from './agent-match.js'
 import { createView } from './view.js'
 import { createSkillsView } from './skills-view.js'
 import { createBallView } from './ball-view.js'
-import { createFollow } from './follow.js'
-import { createHud, ballPopIn } from './hud.js'
+import { createFollow, stepCamera } from './follow.js'
+import { createHud, matchFrame } from './hud.js'
 import { createSounds } from './sounds.js'
 import { createFeedback } from './feedback.js'
 import { tune } from './tune.js'
@@ -150,30 +150,10 @@ export function mobaReplay(app) {
 				juice.update(elapsed)
 				app.audio.setAudioListener(p)
 				hud.update(dt, {
-					hero,
-					sim,
-					step: app.clock.step,
-					cooldowns: hero.cd.slice(0, 3).map((cd) => Math.max(0, cd - blend) * app.clock.step),
-					totals: [tune.loose.cooldown, tune.vault.cooldown, tune.rain.cooldown],
-					elapsed: sim.tick * app.clock.step,
-					teams: sim.lane.teams,
-					carryingBall: sim.ball.carrying(hero),
-					ballPop: ballPopIn(sim.ball, sim.tick, blend, app.clock.step),
-					nextBall: (sim.ball.nextBall - sim.tick - blend) * app.clock.step,
-					nextWave: (sim.lane.nextWave - sim.tick - blend) * app.clock.step,
-					localTeam: hero.team,
+					...matchFrame(sim, hero, blend, app.clock.step),
 					device: app.input.activeDevice(),
-					hp: hero.hp,
-					maxHp: hero.maxHp,
-					respawn: hero.dead
-						? Math.max(0, hero.respawnTick - sim.tick - blend) * app.clock.step
-						: null,
 				})
-				for (let left = frozen() ? 0 : dt; left > 0;) {
-					const step = Math.min(left, tune.follow.maxStep)
-					app.camera.update(step)
-					left -= step
-				}
+				stepCamera(app.camera, frozen() ? 0 : dt)
 				if (!complete && ended()) {
 					complete = true
 					const verified =

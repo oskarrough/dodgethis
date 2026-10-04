@@ -120,6 +120,27 @@ export const ballPopIn = (ball, tick, blend, step) =>
 		? Math.max(0, Math.min(ball.state.popAt, ball.nextBall) - tick - blend) * step
 		: null
 
+// The HUD's view of a running match for the local hero, `blend` ticks past the last step.
+export function matchFrame(sim, hero, blend, step) {
+	const until = (tick) => (tick - sim.tick - blend) * step
+	return {
+		hero,
+		sim,
+		step,
+		cooldowns: hero.cd.slice(0, 3).map((cd) => Math.max(0, cd - blend) * step),
+		elapsed: sim.tick * step,
+		teams: sim.lane.teams,
+		carryingBall: sim.ball.carrying(hero),
+		ballPop: ballPopIn(sim.ball, sim.tick, blend, step),
+		nextBall: until(sim.ball.nextBall),
+		nextWave: until(sim.lane.nextWave),
+		localTeam: hero.team,
+		hp: hero.hp,
+		maxHp: hero.maxHp,
+		respawn: hero.dead ? Math.max(0, until(hero.respawnTick)) : null,
+	}
+}
+
 export function createHud() {
 	// Unchanged values never touch the DOM. Keyed per node, then per field.
 	const shown = new WeakMap()
@@ -424,7 +445,6 @@ export function createHud() {
 		update(dt, frame) {
 			const {
 				cooldowns,
-				totals,
 				device = 'keyboard',
 				hp,
 				maxHp,
@@ -560,7 +580,7 @@ export function createHud() {
 			const keys = KEYS[device] ?? KEYS.keyboard
 			for (const [i, s] of slots.entries()) {
 				const ability = definition.abilities[s.action]
-				const total = ability?.stats.cooldown ?? totals?.[i] ?? 0
+				const total = ability?.stats.cooldown ?? 0
 				const cooldown = cooldowns?.[i] ?? 0
 				if (s.deniedFor > 0 && (s.deniedFor -= dt) <= 0) s.slot.classList.remove('denied')
 				put(s.icon, 'icon', ability?.id ?? 'empty', (id) => (s.icon.innerHTML = ICONS[id] ?? ''))

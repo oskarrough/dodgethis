@@ -183,3 +183,9 @@ export function createFollow(t = tune.follow) {
 		},
 	}
 }
+
+// The camera's explicit FOV spring needs bounded integration steps on slow renderers.
+export function stepCamera(camera, dt) {
+	for (let left = dt; left > 0; left -= tune.follow.maxStep)
+		camera.update(Math.min(left, tune.follow.maxStep))
+}

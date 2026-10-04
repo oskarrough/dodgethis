@@ -6,12 +6,12 @@ import { buildMap, FLOOR } from './map.js'
 import { castAbility } from './ability.js'
 import { createSim } from './sim.js'
 import { practiceRoster } from './bots.js'
-import { createFollow } from './follow.js'
+import { createFollow, stepCamera } from './follow.js'
 import { createCameraControls } from './camera-controls.js'
 import { createCursor } from './cursor.js'
 import { createView } from './view.js'
 import { createSkillsView } from './skills-view.js'
-import { createHud, ballPopIn } from './hud.js'
+import { createHud, matchFrame } from './hud.js'
 import { createPips } from './pips.js'
 import { createSounds } from './sounds.js'
 import { createBallView } from './ball-view.js'
@@ -189,6 +189,7 @@ export default function moba(app) {
 				menu.result(controls.paused ? 0 : dt)
 				const frozen = menu.frozen() || controls.paused
 				const presentationFrozen = menu.presentationFrozen() || controls.paused
+				const blend = frozen ? 0 : alpha
 				const step = presentationFrozen ? 0 : sim.lane.match.winner ? dt : gameDt
 				const frame = app.intents.get(local)
 				const p = hero.body.mesh.position
@@ -203,7 +204,7 @@ export default function moba(app) {
 					if (!d.dead && sim.tick >= (d.freezeUntil ?? 0))
 						d.body.animate(step, d.cast || d.attack || d.ballThrow ? 1 : 0)
 				for (const h of [...sim.heroes, ...sim.dummies])
-					if (!h.dead) h.body.poseAbility?.(h.cast, frozen ? 0 : alpha)
+					if (!h.dead) h.body.poseAbility?.(h.cast, blend)
 				const target =
 					!sim.ball.carrying(hero) && !onPad() && frame.aim ? sim.pick(hero.team, frame.aim) : null
 				const hovered = target && locate(target.id)
@@ -215,14 +216,13 @@ export default function moba(app) {
 				})
 				ballView.update(
 					sim,
-					frozen ? 0 : alpha,
+					blend,
 					local,
 					frame.aim,
 					app.camera.view,
-					sim.tick +
-						(sim.lane.match.winner ? menu.endingTime() / app.clock.step : frozen ? 0 : alpha),
+					sim.tick + (sim.lane.match.winner ? menu.endingTime() / app.clock.step : blend),
 				)
-				sim.laneView.update(sim.lane, sim.heroes, frozen ? 0 : alpha, locate, step, hero.team)
+				sim.laneView.update(sim.lane, sim.heroes, blend, locate, step, hero.team)
 				const lineAbility = hero.cast
 					? castAbility(hero)
 					: Object.entries(hero.definition.abilities).find(
@@ -252,7 +252,7 @@ export default function moba(app) {
 					boards: sim.boards,
 					zones: sim.zones,
 					casters: [...sim.heroes, ...sim.dummies].filter((unit) => unit.team !== hero.team),
-					alpha: frozen ? 0 : alpha,
+					alpha: blend,
 				})
 				feedback.fizzle(gone)
 				juice.update(step)
@@ -264,37 +264,13 @@ export default function moba(app) {
 					}
 				})
 				hud.update(dt, {
-					hero,
-					sim,
+					...matchFrame(sim, hero, blend, app.clock.step),
 					aim: frame.aim,
 					camera: app.camera.view,
 					pad: input.pad(),
-					step: app.clock.step,
-					cooldowns: hero.cd
-						.slice(0, 3)
-						.map((cd) => Math.max(0, cd - (frozen ? 0 : alpha)) * app.clock.step),
-					totals: [tune.loose.cooldown, tune.vault.cooldown, tune.rain.cooldown],
-					elapsed: sim.tick * app.clock.step,
-					teams: sim.lane.teams,
-					carryingBall: sim.ball.carrying(hero),
-					ballPop: ballPopIn(sim.ball, sim.tick, frozen ? 0 : alpha, app.clock.step),
-					nextBall: (sim.ball.nextBall - sim.tick - (frozen ? 0 : alpha)) * app.clock.step,
-					nextWave: (sim.lane.nextWave - sim.tick - (frozen ? 0 : alpha)) * app.clock.step,
-					localTeam: hero.team,
 					device: input.activeDevice(),
-					hp: hero.hp,
-					maxHp: hero.maxHp,
-					respawn: hero.dead
-						? Math.max(0, hero.respawnTick - sim.tick - (frozen ? 0 : alpha)) * app.clock.step
-						: null,
 				})
-				// The camera's explicit FOV spring needs bounded integration steps on slow renderers.
-				let cameraLeft = presentationFrozen ? 0 : dt
-				while (cameraLeft > 0) {
-					const cameraStep = Math.min(cameraLeft, tune.follow.maxStep)
-					app.camera.update(cameraStep)
-					cameraLeft -= cameraStep
-				}
+				stepCamera(app.camera, presentationFrozen ? 0 : dt)
 				pips.update(app.camera.view, [...sim.heroes, ...sim.dummies], hero.team, {
 					hero,
 					ball: sim.ball.carrying(hero) ? null : ballView.markerPosition,
