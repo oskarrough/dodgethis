@@ -1,7 +1,53 @@
 // --- Tunables ----------------------------------------------------------------
 // Moba's live values (docs/moba-plan.md, "Feel numbers"), shared by the debug GUI, the sim and DOM-free tests. Metres and seconds.
 export const tune = {
-	testing: { speed: 1, speedMin: 0.25, speedMax: 4, speedStep: 0.25, seedMax: 0xffffffff },
+	testing: {
+		speed: 1,
+		speedMin: 0.25,
+		speedMax: 16,
+		speedStep: 0.25,
+		seedMax: 0xffffffff,
+		rosterMax: 24,
+	},
+	onboarding: {
+		objectiveLife: 7,
+		youLife: 8,
+		timerLife: 12,
+		xpLife: 9,
+		walkDistance: 10,
+		arrowFade: 0.8,
+		frameInset: 0.65,
+		crowdRadius: 4,
+		crowdCount: 2,
+		ringRadius: 0.85,
+		ringWidth: 0.18,
+		ringY: 0.18,
+		ringBorderY: 0.165,
+		segments: 64,
+		arrowY: 0.2,
+		arrowOffset: 1.5,
+		arrowLength: 2.5,
+		arrowWidth: 0.7,
+		arrowHead: 0.8,
+		stipplePixels: 2,
+		labelHeight: 1.3,
+		levelLife: 2.2,
+		levelRise: 1.2,
+		levelPulse: 0.55,
+		pointerMargin: 64,
+		pointerTop: 115,
+		pointerBottom: 180,
+		stickerBorder: 3,
+		stickerShadow: 4,
+		stickerCorner: 12,
+		stickerPadding: 8,
+		font: 16,
+		objectiveFont: 26,
+		objectiveTop: 118,
+		hintBottom: 160,
+		hintWidth: 520,
+		timerFont: 10,
+	},
 	// Static layout and dressing: applies on mode restart.
 	map: {
 		halfX: 52,
@@ -237,6 +283,7 @@ export const tune = {
 	hud: {
 		bannerLife: 2.5,
 		ending: 1.5,
+		recapSources: 3,
 		hoverDelay: 0.25, // a world unit's card opens after the cursor rests this long
 		longPress: 0.4, // touch hold that opens a HUD card
 		inspectHold: 0.35, // pad Y hold that opens a card
@@ -567,6 +614,9 @@ export const tune = {
 		fitIterations: 24,
 		maxStep: 1 / 60, // camera/FOV spring integration, independent of render frequency
 		pan: 20, // metres per second; free camera stays inside the floor
+		edgePan: true,
+		edgeBand: 32, // CSS pixels; capped to half the viewport on tiny windows
+		edgeSpeed: 1, // fraction of pan speed; smoothstep from the band's inner boundary
 		height: 20,
 		back: 12.5, // pitch = atan(height / back) ≈ 58°
 		fov: 40,

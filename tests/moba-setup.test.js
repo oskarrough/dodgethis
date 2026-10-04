@@ -3,7 +3,13 @@ import { parseMatchSetup, wantsDirectPlay, matchLink } from '../src/plugins/moba
 import { tune } from '../src/plugins/moba/tune.js'
 import { HEROES, heroDefinition } from '../src/plugins/moba/heroes.js'
 
-const defaults = { map: 'lane', difficulty: 'easy', heroId: 'fletcher', seed: tune.bots.seed }
+const defaults = {
+	map: 'lane',
+	difficulty: 'easy',
+	heroId: 'fletcher',
+	seed: tune.bots.seed,
+	edgePan: true,
+}
 test('missing params use the front-screen defaults without warnings', () => {
 	const warnings = []
 	expect(parseMatchSetup(new URLSearchParams(), {}, (w) => warnings.push(w))).toEqual(defaults)

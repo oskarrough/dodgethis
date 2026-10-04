@@ -16,6 +16,7 @@ import { createPips } from './pips.js'
 import { createSounds } from './sounds.js'
 import { createBallView } from './ball-view.js'
 import { createFeedback } from './feedback.js'
+import { createOnboarding } from './onboarding.js'
 import { createMatchMenu } from './menu.js'
 import { parseMatchSetup } from './setup.js'
 import { createMatchDebug } from './debug.js'
@@ -88,11 +89,13 @@ export default function moba(app) {
 				window,
 				run.signal,
 				follow,
-				() => !app.clock.paused,
+				() => !app.clock.paused && !controls.paused && !menu.frozen() && !app.overlay.visible,
+				() => input.activeDevice(),
 			)
 			const cursor = createCursor(app.renderer.domElement)
 			const query = new URLSearchParams(window.location.search)
 			const setup = parseMatchSetup(query, options.setup ?? options)
+			tune.follow.edgePan = setup.edgePan
 			const difficulty = setup.difficulty
 			const seats = practiceRoster(local, difficulty)
 			seats.find((seat) => seat.id === local).heroId = setup.heroId
@@ -113,6 +116,7 @@ export default function moba(app) {
 			})
 			const ballView = createBallView(scene)
 			const hero = sim.heroes.find((h) => h.id === local)
+			const onboarding = createOnboarding({ scene, sim, hero })
 			const feedback = createFeedback({
 				juice,
 				sfx,
@@ -163,16 +167,23 @@ export default function moba(app) {
 				const frame = app.intents.get(local)
 				const pad = onPad() && !sim.lane.match.winner
 				const aim = pad && Object.keys(frame.held).length ? frame.aim : null
-				return follow.frame(dt, hero.body.mesh.position, aim, {
-					...cameraControls.read(),
-					pad,
-					aspect: app.camera.view.aspect,
-					cameraFov: app.camera.view.fov,
-				})
+				return follow.frame(
+					dt,
+					hero.body.mesh.position,
+					aim,
+					menu.cameraControls({
+						...cameraControls.read(),
+						pad,
+						aspect: app.camera.view.aspect,
+						cameraFov: app.camera.view.fov,
+						edgeInset: onboarding.cameraInset(),
+					}),
+				)
 			})
 
 			run.system('simulate', (dt) => sim.step(dt))
 			run.on('present', feedback.present)
+			run.on('present', onboarding.present)
 			run.on('present', ballView.present)
 			const ballFacts = []
 			run.on('present', (fact) => {
@@ -186,7 +197,7 @@ export default function moba(app) {
 				return unit?.body.mesh.position ?? null
 			}
 			run.system('present', ({ dt, gameDt, alpha }) => {
-				menu.result(controls.paused ? 0 : dt)
+				menu.result(controls.paused ? 0 : dt, alpha)
 				const frozen = menu.frozen() || controls.paused
 				const presentationFrozen = menu.presentationFrozen() || controls.paused
 				const blend = frozen ? 0 : alpha
@@ -276,8 +287,14 @@ export default function moba(app) {
 				stepCamera(app.camera, presentationFrozen ? 0 : dt)
 				pips.update(app.camera.view, [...sim.heroes, ...sim.dummies], hero.team, {
 					hero,
-					ball: sim.ball.carrying(hero) ? null : ballView.markerPosition,
+					ball: null, // Onboarding owns the team-coloured objective pointer.
 					carrying: sim.ball.carrying(hero),
+				})
+				onboarding.update({
+					camera: app.camera.view,
+					alpha: blend,
+					ballPosition: ballView.markerPosition,
+					frozen,
 				})
 			})
 
@@ -291,6 +308,15 @@ export default function moba(app) {
 				f.add(t, 'tooltipMode', TOOLTIP_MODES).name('world tooltips')
 				f.add(t, 'hoverDelay', 0, 2, 0.05).name('hover delay')
 				f.add(t, 'patientDelay', 0, 3, 0.05).name('patient delay')
+			})
+			run.debug.tune('edge pan', tune.follow, (f, t) => {
+				f.add(t, 'edgePan')
+					.name('enabled')
+					.onChange((value) => {
+						setup.edgePan = value
+					})
+				f.add(t, 'edgeBand', 8, 128, 1).name('band (px)')
+				f.add(t, 'edgeSpeed', 0, 1, 0.01).name('speed × pan')
 			})
 			run.debug.expose({
 				moba: {
@@ -326,6 +352,7 @@ export default function moba(app) {
 			})
 
 			run.signal.addEventListener('abort', () => {
+				onboarding.dispose()
 				cursor.dispose()
 				feedback.reset()
 				ballView.dispose()

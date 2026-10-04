@@ -99,14 +99,16 @@ export function createSim({
 		return body
 	}
 
-	const heroes = seats.map(({ id, team, heroId = 'fletcher' }, i) => {
+	const training = {
+		local: null,
+		noCooldowns: false,
+		godMode: false,
+		waves: true,
+		botsEnabled: true,
+	}
+	let trainingSerial = 0
+	function makeHero({ id, team, heroId = 'fletcher' }, spawn) {
 		const definition = heroDefinition(heroId)
-		const teamSeats = seats.filter((seat) => seat.team === team)
-		const index = seats.slice(0, i).filter((seat) => seat.team === team).length
-		const spawn = {
-			x: team === 'A' ? SPAWN.x : -SPAWN.x,
-			z: SPAWN.z + (index - (teamSeats.length - 1) / 2) * tune.map.spawnSpacing,
-		}
 		const body = bodyAt(spawn.x, spawn.z, team, definition)
 		return {
 			id,
@@ -142,6 +144,14 @@ export function createSim({
 			stall: 0,
 			lastRemaining: null,
 		}
+	}
+	const heroes = seats.map((seat, i) => {
+		const teamSeats = seats.filter((s) => s.team === seat.team)
+		const index = seats.slice(0, i).filter((s) => s.team === seat.team).length
+		return makeHero(seat, {
+			x: seat.team === 'A' ? SPAWN.x : -SPAWN.x,
+			z: SPAWN.z + (index - (teamSeats.length - 1) / 2) * tune.map.spawnSpacing,
+		})
 	})
 	for (const h of heroes) h.body.face(dirOf(h.yaw))
 	const dummies = (withLane ? [] : DUMMY_POSTS).map((post, i) => ({
@@ -166,6 +176,7 @@ export function createSim({
 	const lane = withLane
 		? createLane({
 				heroes,
+				wavesEnabled: () => training.waves,
 				present,
 				makeBody: laneView.makeBody,
 				obstacles,
@@ -713,7 +724,9 @@ export function createSim({
 	}
 
 	function control(h, dt) {
-		for (let i = 0; i < h.cd.length; i++) if (h.cd[i] > 0) h.cd[i]--
+		for (let i = 0; i < h.cd.length; i++)
+			if (training.noCooldowns && h.id === training.local) h.cd[i] = 0
+			else if (h.cd[i] > 0) h.cd[i]--
 		if (h.dead) {
 			intents.cancel(h.id)
 			if (t >= h.respawnTick) respawn(h)
@@ -967,6 +980,16 @@ export function createSim({
 
 	function hit(shot, target, point) {
 		const unit = target.unit
+		if (training.godMode && unit.id === training.local) {
+			present({
+				type: 'shielded',
+				source: shot.owner,
+				target: unit.id,
+				projectile: shot.id,
+				point: { x: point.x, y: tune.loose.height, z: point.z },
+			})
+			return
+		}
 		if (shot.slot === 'ball' && target.hero) unit.body.cancelDash()
 		const direction = { x: shot.dx, y: 0, z: shot.dz }
 		const at = { x: point.x, y: tune.loose.height, z: point.z }
@@ -986,11 +1009,13 @@ export function createSim({
 			shot.damage ??
 			(tune[shot.ability]?.damage ?? ability?.stats.damage ?? tune.loose.damage) *
 				(1 + tune.levels.growth * ((source?.level ?? 1) - 1))
-		const damage =
+		const damage = Math.min(
+			unit.hp,
 			rawDamage *
-			(unit.structure && (shot.isAbility || shot.slot.startsWith('slot'))
-				? tune.waves.abilityStructure
-				: 1)
+				(unit.structure && (shot.isAbility || shot.slot.startsWith('slot'))
+					? tune.waves.abilityStructure
+					: 1),
+		)
 		lane?.help(find(shot.owner), unit, t)
 		if (shot.slow) unit.slow = { until: t + ticks(shot.slow.duration), factor: shot.slow.factor }
 		unit.hp = Math.max(0, unit.hp - damage)
@@ -1025,11 +1050,12 @@ export function createSim({
 		unit.body.retire()
 		if (unit.kind) {
 			unit.attack = null
-			lane.reward(unit, shot.team ?? (unit.team === 'A' ? 'B' : 'A'), t)
+			lane.reward(unit, shot.team ?? (unit.team === 'A' ? 'B' : 'A'), t, shot.owner)
 			present({ type: 'death', source: shot.owner, target: unit.id, point: at, direction })
 			return
 		}
-		if (lane && !unit.post) lane.reward(unit, shot.team ?? (unit.team === 'A' ? 'B' : 'A'), t)
+		if (lane && !unit.post)
+			lane.reward(unit, shot.team ?? (unit.team === 'A' ? 'B' : 'A'), t, shot.owner)
 		unit.respawnTick =
 			t +
 			ticks(
@@ -1367,10 +1393,15 @@ export function createSim({
 		typeof seat === 'string' ? { ...seats.find((s) => s.id === seat) } : seat,
 	)
 	const botIds = new Set(botSeats.map((s) => s.id))
-	const botTeam = botSeats.length && withLane ? createBots(botSeats, seed) : null
+	let botTeam = botSeats.length && withLane ? createBots(botSeats, seed) : null
+	const rebuildBots = () => {
+		botIds.clear()
+		for (const seat of botSeats) botIds.add(seat.id)
+		botTeam = botSeats.length && withLane ? createBots(botSeats, seed) : null
+	}
 	function step(dt = STEP) {
 		if (lane?.match.winner) return
-		if (driveBots) botTeam?.step(api, intents)
+		if (driveBots && training.botsEnabled) botTeam?.step(api, intents)
 		for (const brain of brains) brain({ heroes, lane, ball, tick: t }, intents)
 		t++
 		for (let i = boards.length - 1; i >= 0; i--)
@@ -1535,6 +1566,7 @@ export function createSim({
 			if (r.hit || r.expired) shots.splice(i, 1)
 		}
 		if (!lane?.match.winner) ball?.finish(dt, resolveInterception)
+		if (training.noCooldowns) heroes.find((h) => h.id === training.local)?.cd.fill(0)
 	}
 
 	// The pad's right stick for hero `id` (docs/moba-plan.md, "Controls"): range × remap, a 10° assist toward enemy heroes on Q,
@@ -1742,7 +1774,95 @@ export function createSim({
 		ball,
 		obstacles,
 		find,
-		bots: botTeam,
+		get bots() {
+			return botTeam
+		},
+		training,
+		setTraining(values) {
+			Object.assign(training, values)
+			const local = heroes.find((h) => h.id === training.local)
+			if (training.noCooldowns && local) local.cd.fill(0)
+			if (!training.botsEnabled)
+				for (const id of botIds) {
+					intents.cancel(id)
+					const hero = heroes.find((h) => h.id === id)
+					if (hero) hero.order = null
+				}
+		},
+		setLevel(id, level) {
+			const hero = heroes.find((h) => h.id === id)
+			if (!hero || !Number.isInteger(level) || level < tune.hero.level || level > tune.levels.cap)
+				return false
+			const team = lane?.teams[hero.team]
+			if (team) {
+				team.level = level
+				team.xp = 0
+				for (let n = 1; n < level; n++)
+					team.xp += tune.levels.first + tune.levels.increment * (n - 1)
+			}
+			for (const unit of heroes.filter((h) => h.team === hero.team)) {
+				const fraction = unit.hp / unit.maxHp
+				unit.level = level
+				unit.maxHp = unit.definition.base.hp * (1 + tune.levels.growth * (level - 1))
+				unit.hp = unit.dead ? 0 : unit.maxHp * fraction
+			}
+			present({ type: 'levelUp', team: hero.team, level, point: { ...hero.body.position } })
+			return true
+		},
+		spawnHero({ team, heroId, bot = false, difficulty = 'normal' }, nearId) {
+			if (
+				!['A', 'B'].includes(team) ||
+				!heroDefinition(heroId).playable ||
+				heroes.length >= tune.testing.rosterMax
+			)
+				return false
+			const local = heroes.find((h) => h.id === nearId)
+			const origin = local?.body.position ?? { x: 0, z: 0 }
+			const count = heroes.filter((h) => h.team === team).length
+			const spawn = clampWalkable(
+				{
+					x: origin.x + (team === local?.team ? -1 : 1) * tune.map.spawnSpacing,
+					z: origin.z + count * tune.map.spawnSpacing,
+				},
+				profile.radius,
+				tune.orders.clearance,
+				obstacles,
+			)
+			const seat = { id: `try-${++trainingSerial}`, team, heroId, difficulty }
+			const hero = makeHero(seat, spawn)
+			const level = lane?.teams[team].level ?? tune.hero.level
+			hero.level = level
+			hero.maxHp = hero.hp = hero.definition.base.hp * (1 + tune.levels.growth * (level - 1))
+			hero.body.face(dirOf(hero.yaw))
+			heroes.push(hero)
+			if (bot) {
+				botSeats.push(seat)
+				rebuildBots()
+			}
+			present({ type: 'spawn', hero: hero.id, point: { ...hero.body.position } })
+			return hero
+		},
+		clearHeroes(team, exceptId) {
+			for (let i = heroes.length - 1; i >= 0; i--) {
+				const hero = heroes[i]
+				if (hero.team !== team || hero.id === exceptId) continue
+				ball?.hurt(hero)
+				cancelChannel(hero, 'clear')
+				intents.cancel(hero.id)
+				hero.corpse?.dispose()
+				if (!hero.dead) hero.body.dispose()
+				heroes.splice(i, 1)
+				const index = botSeats.findIndex((s) => s.id === hero.id)
+				if (index >= 0) botSeats.splice(index, 1)
+				for (let j = boards.length - 1; j >= 0; j--)
+					if (boards[j].owner === hero.id) boards.splice(j, 1)
+				for (let j = zones.length - 1; j >= 0; j--)
+					if (zones[j].owner === hero.id) zones.splice(j, 1)
+				for (let j = shots.length - 1; j >= 0; j--)
+					if (shots[j].owner === hero.id || shots[j].target === hero.id) shots.splice(j, 1)
+			}
+			rebuildBots()
+		},
 		step,
 		stickAim,
 		respawnNow(id) {

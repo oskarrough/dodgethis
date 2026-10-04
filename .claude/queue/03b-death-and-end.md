@@ -1,16 +1,12 @@
-Model: Opus 5.5 (taste: design and build in one thread). After: nothing.
-Goal: an in-game HUD worthy of SC2, Heroes of the Storm or League. The current top panel is one sentence in a pill ("Your team level 1 · 0:06 · Enemy level 1 · wave 9s · Ball 174s"). Oskar: "pretty terrible, but easy to improve."
+Model: GPT 6.1. After: 03a. From the smoke (items 2, 3).
+Goal: dying and losing teach you something, the way Heroes of the Storm's death recap and end screen do.
 
-- Top bar: team levels as big badges either side of a central clock, kills or score, and the next-wave and Ball timers as icons with countdown rings. Glanceable in 200 ms.
-- Ability bar: icons with cooldown sweeps, mana cost and key labels; the hero portrait with HP and mana.
-- Tooltips everywhere in game (ability bar, structures, minions, top-bar icons): a nice-looking, reusable `src/plugins/moba/tooltip.js` with exact numbers read live from tune. Hover or long-press, pad-friendly. Hero select will reuse it later.
-- Comic-sticker look per docs/moba-look.md. Update its HUD lines briefly.
-  Files you own: src/plugins/moba/{hud.js,pips.js,tooltip.js,menu.css} plus any new HUD css.
-  Done-check: 1440 and 390 screenshots mid-match from a fresh `/`; tooltip test that the numbers match tune; HUD writes only on change.
-  Shared checkout, parallel writers: other threads are editing other files right now. Edit only the files you own (listed above); if you must touch another, make a small surgical edit and re-read it first. A failing check in a file you do not own is not yours: say so in the report. Do not commit; the orchestrator mashes the checkpoint commit.
-  Report in 3 lines.
+- Death: the screen desaturates, a "Killed by <Tower / Fletcher bot / minions>" card shows the last 3 damage sources with their numbers (from facts), then a respawn countdown sticker. The camera stays free to look around.
+- End screen: Victory or Defeat as a big sticker, then a per-hero table (kills, deaths, damage to heroes and structures, XP contribution) from the match facts, plus "Again (R)" and "Back" as tasty sticker buttons like the difficulty tiles.
+  Files you own: menu.js, menu.css, a new src/plugins/moba/recap.js, and a surgical hook in index.js. Proof by play from a fresh /. No new unit tests. Commit with a player-facing message.
+  Build rules, appended to every build brief. Each one comes from a finding an earlier review caught.
 
-Build rules, appended to every build brief. Each one comes from a finding an earlier review caught.
+No new unit tests for now (Oskar, 2026-10-04): prove a change by playing it, in a headless match or a browser trace. Keep the existing suite green; delete a test rather than nurse it when a deliberate change makes it obsolete. Rules below that ask for tests mean a quick proof.
 
 - Everything drawn moves with render interpolation: telegraphs, fills and timers blend with `alpha`, not just bodies.
 - Every number lives in the plugin's tune.js, and every slider has a sane range (fractions 0–1, times at least one step). No slider value may produce NaN or reverse movement.
@@ -20,7 +16,7 @@ Build rules, appended to every build brief. Each one comes from a finding an ear
 - Path and replan work happens once per event, not every tick.
 - Update the docs line your change contradicts, and add tests for tricky state (timers, windows, mode toggles).
 - Every enemy attack or cast has a visible tell of at least 0.3 s, and every action gets its own pose. No shared squash.
-- Input is never swallowed: stop and move cancel windups, and a new order cancels the backswing. A buffered press that can't become legal flashes a deny.
+- Input is never swallowed: stop and move cancel windups (a windup is any cast point or basic-attack windup; a cancelled cast point refunds its cooldown), and a new order cancels the backswing. A buffered press that can't become legal flashes a deny.
 - Tune sliders apply live, or are labelled "applies on restart". HUD text is built from tune, never hard-coded, and written only when it changes.
 - Test death and respawn in the middle of every timed state (dash, windup, cast, projectile in flight), and drive dodge tests through intents, not teleports.
 - Style materials are opaque ID writes. Anything translucent (telegraph fills, trails) goes in the forward layer with `depthWrite=false`, or uses opaque stipple.

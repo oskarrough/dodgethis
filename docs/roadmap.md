@@ -8,13 +8,14 @@ A small, toy-like hero brawler that grew out of dodgeball, set in the world over
 
 ## Now
 
-- Console-feel menus, a real HUD with tooltips, a sensible hero select ([moba-front.md](moba-front.md), [moba-look.md](moba-look.md)).
-- Mitts, the second playable hero ([moba-heroes.md](moba-heroes.md)).
-- A test link plus a Try Mode debug panel, so any setup is one URL away.
-- Combat logs in DuckDB and a balance farm of headless bot matches.
+- The first minute of a match: who you are, where to go, what wins. Death recap and an end screen that teach.
+- Feel: one signature moment and a juice pass.
+- Tooltips that stay out of the way (prototypes to choose from), edge pan, Try Mode.
+- Ship the MOBA to main, live.
 
 ## Next
 
+- Balance from the farm once bots play every kit properly; Mitts tuning.
 - The lobby: hero select you run around in, LittleBigPlanet-pod style ([moba-lobby.md](moba-lobby.md)).
 - Carom and Skip, then Yo-yo and Mascot: six built heroes, ten designed at most.
 - Juice and sound everywhere; the frozen briefs come back one by one.
@@ -33,7 +34,7 @@ A small, toy-like hero brawler that grew out of dodgeball, set in the world over
 
 ## Changelog
 
-- 2026-10: playtest round: Oskar's feedback drives the queue; parallel agents on the WSL box.
+- 2026-10-04: playtest round. Console-style splash and difficulty, hero roster, a new HUD with tooltips, Mitts playable, a test link and debug panel, combat logs and the balance farm, world and lobby designs. Parallel agents on the WSL box.
 - 2026-09 (late): the MOBA: core split into plugins, lane, bots and 3v3, hero definitions, front-end slices, agents that play and replay whole matches.
 - 2026-09 (early): online dodgeball with lobbies, court themes, adaptive music, obstacle layouts.
 - 2026-08: the portal hub, Quake-style movement, charge bow, gym scoreboard HUD.

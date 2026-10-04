@@ -1,6 +1,0 @@
-Model: Opus 5.5 creative, no src edits. After: nothing.
-Goal: our own world and fantasy, so heroes have the pull of Heroes of the Storm characters without borrowing Blizzard. Oskar loves HotS heroes (big readable personalities, a universe behind each one) but "we do need to create our own world fantasy here."
-Start from what's true: the game came from dodgeball; the heroes are Fletcher, Mitts, Carom and Skip (docs/moba-heroes.md); the look is Moebius line plus toy materials (docs/moba-look.md, docs/moba-front.md, docs/moba-lobby.md); Oskar's references are Disney, Pixar, Toy Story, Sackboy, Moebius. Find the premise that makes all of that one world: why these figures fight, what the Ball is, what the lane and the cores are, where the desert came from.
-Ban the obvious: no generic high fantasy, no "toys come alive at night", no dodgeball-as-sport-league framing unless you twist it hard.
-Write docs/world.md, at most 50 lines: three premises in a paragraph each, then your pick developed into the place, the factions, a voice line or two per existing hero, and what it changes in the art and the next six heroes (one line each, ranked; the roster caps at 10). Mark what's settled and what's for Oskar to choose.
-Report in 3 lines.

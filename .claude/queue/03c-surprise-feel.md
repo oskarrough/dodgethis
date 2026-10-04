@@ -1,16 +1,8 @@
-Model: GPT 6.1. After: nothing.
-Goal: hero select makes sense. Oskar: "after choosing difficulty I'm presented with Fletcher. Is this a char, are there others? I can hover the abilities but nothing happens when clicking. And the ability animation shouldn't make the character jump around when it switches."
-
-- Show it's a roster: Fletcher selectable, plus Mitts, Carom and Skip (docs/moba-heroes.md) as locked "soon" cards with silhouettes. The screen reads as character select at a glance.
-- Clicking (or pad-confirming) an ability selects it: the preview plays that ability and the detail panel shows its numbers from tune. Hover previews and click pins.
-- Preview switching keeps the hero planted: no position or scale pop between abilities. Blend or reset in place.
-- Don't build tooltips. The HUD thread owns src/plugins/moba/tooltip.js.
-  Files you own: src/plugins/moba/front/{hero.js,hero.css,preview.js,stats.js,portrait.js}.
-  Done-check: test that click selects and the preview changes ability; a test or measurement that the hero root doesn't move across switches; 1440 screenshot of a pinned ability.
-  Shared checkout, parallel writers: other threads are editing other files right now. Edit only the files you own (listed above); if you must touch another, make a small surgical edit and re-read it first. A failing check in a file you do not own is not yours: say so in the report. Do not commit; the orchestrator mashes the checkpoint commit.
-  Report in 3 lines.
-
+Model: Opus 5.5, design and build in one thread. After: 03b (shares feedback.js).
+Oskar, going to sleep: "make it fun, make it feel nice, surprise me." Give the match one signature feel moment plus a juice pass that a player notices within a minute. Ideas to beat: HotS-style kill callouts with an announcer-ish synth sting, hitstop on big hits, a structure that crumbles into cardboard, a Ball goal that feels like a stadium moment. Ban the obvious screen shake on everything. Name the taste (Toy Story, Sackboy, Moebius), then pick and build. Smoothness is sacred: no judder, no input lag. Proof by play from a fresh /, with screenshots or a short frame strip. No new unit tests. Commit with a player-facing message.
 Build rules, appended to every build brief. Each one comes from a finding an earlier review caught.
+
+No new unit tests for now (Oskar, 2026-10-04): prove a change by playing it, in a headless match or a browser trace. Keep the existing suite green; delete a test rather than nurse it when a deliberate change makes it obsolete. Rules below that ask for tests mean a quick proof.
 
 - Everything drawn moves with render interpolation: telegraphs, fills and timers blend with `alpha`, not just bodies.
 - Every number lives in the plugin's tune.js, and every slider has a sane range (fractions 0–1, times at least one step). No slider value may produce NaN or reverse movement.
@@ -20,7 +12,7 @@ Build rules, appended to every build brief. Each one comes from a finding an ear
 - Path and replan work happens once per event, not every tick.
 - Update the docs line your change contradicts, and add tests for tricky state (timers, windows, mode toggles).
 - Every enemy attack or cast has a visible tell of at least 0.3 s, and every action gets its own pose. No shared squash.
-- Input is never swallowed: stop and move cancel windups, and a new order cancels the backswing. A buffered press that can't become legal flashes a deny.
+- Input is never swallowed: stop and move cancel windups (a windup is any cast point or basic-attack windup; a cancelled cast point refunds its cooldown), and a new order cancels the backswing. A buffered press that can't become legal flashes a deny.
 - Tune sliders apply live, or are labelled "applies on restart". HUD text is built from tune, never hard-coded, and written only when it changes.
 - Test death and respawn in the middle of every timed state (dash, windup, cast, projectile in flight), and drive dodge tests through intents, not teleports.
 - Style materials are opaque ID writes. Anything translucent (telegraph fills, trails) goes in the forward layer with `depthWrite=false`, or uses opaque stipple.
