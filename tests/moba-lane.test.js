@@ -1,9 +1,5 @@
 import { expect, test } from 'bun:test'
-import * as THREE from 'three'
-import RAPIER from '@dimforge/rapier3d-compat'
-import { STEP } from '../src/core/app.js'
-import { createIntents, neutralFrame } from '../src/core/intents.js'
-import { createSim } from '../src/plugins/moba/sim.js'
+import { bootMoba } from './moba-harness.js'
 import { buildMap } from '../src/plugins/moba/map.js'
 import { tune } from '../src/plugins/moba/tune.js'
 import {
@@ -21,7 +17,6 @@ import { stepShot } from '../src/plugins/moba/skillshot.js'
 import { edgePip } from '../src/plugins/moba/pips.js'
 import { createFollow, clampView } from '../src/plugins/moba/follow.js'
 
-await RAPIER.init({})
 const options = { radius: tune.hero.radius, ...tune.orders }
 
 function shot(x, z, dx, dz, slot = 'slot1') {
@@ -139,34 +134,18 @@ test('every grid edge and shortcut stays outside every box, including routes int
 })
 
 test('intent movement, ordered paths and Vault all respect the same hedge colliders; basics walk around cover', () => {
-	const world = new RAPIER.World({ x: 0, y: -9.81, z: 0 })
-	world.timestep = STEP
-	const scene = new THREE.Scene()
-	const unbuild = buildMap(scene, world, RAPIER)
-	const intents = createIntents()
-	intents.use('pointClick')
-	const facts = []
-	const sim = createSim({
-		scene,
-		world,
-		RAPIER,
-		intents,
+	const harness = bootMoba({
+		map: buildMap,
 		heroes: [
 			{ id: 'local', team: 'A' },
 			{ id: 'remote', team: 'B' },
 		],
-		present: (f) => facts.push(f),
 		rng: () => 0.5,
 	})
+	const { sim, scene, facts, step } = harness
 	const h = sim.heroes[0]
 	const enemy = sim.heroes[1]
-	const feed = (frame) => intents.feed(h.id, { ...neutralFrame(), ...frame })
-	const step = (n) => {
-		for (let i = 0; i < n; i++) {
-			sim.step()
-			intents.age(STEP)
-		}
-	}
+	const feed = (frame) => harness.feed(h.id, frame)
 	try {
 		expect(h.spawn).toEqual({ x: -48, z: 0 })
 		expect(enemy.spawn).toEqual({ x: 48, z: 0 })
@@ -200,10 +179,8 @@ test('intent movement, ordered paths and Vault all respect the same hedge collid
 		const meshes = scene.getObjectByName('moba-map').children
 		expect(meshes.every((mesh) => !mesh.material.transparent)).toBe(true)
 	} finally {
-		sim.dispose()
-		unbuild()
+		harness.dispose()
 		expect(scene.children).toHaveLength(0)
-		world.free()
 	}
 })
 
