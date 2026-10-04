@@ -145,7 +145,7 @@ export function mobaReplay(app) {
 					alpha: blend,
 				})
 				ballView.update(sim, blend, local, null, app.camera.view)
-				sim.laneView.update(sim.lane, sim.heroes, blend, locate, elapsed)
+				sim.laneView.update(sim.lane, sim.heroes, blend, locate, elapsed, hero.team)
 				feedback.fizzle(gone)
 				juice.update(elapsed)
 				app.audio.setAudioListener(p)

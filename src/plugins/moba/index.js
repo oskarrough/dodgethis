@@ -221,7 +221,7 @@ export default function moba(app) {
 					sim.tick +
 						(sim.lane.match.winner ? menu.endingTime() / app.clock.step : frozen ? 0 : alpha),
 				)
-				sim.laneView.update(sim.lane, sim.heroes, frozen ? 0 : alpha, locate, step)
+				sim.laneView.update(sim.lane, sim.heroes, frozen ? 0 : alpha, locate, step, hero.team)
 				const lineAbility = hero.cast
 					? castAbility(hero)
 					: Object.entries(hero.definition.abilities).find(

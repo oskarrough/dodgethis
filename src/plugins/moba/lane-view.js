@@ -275,7 +275,7 @@ export function createLaneView(scene, smooth = null) {
 	scene.add(group)
 	const marks = new Map()
 	const globeMarks = new Map()
-	function update(lane, heroes, alpha, locate, dt = 0) {
+	function update(lane, heroes, alpha, locate, dt = 0, localTeam = null) {
 		const v = tune.laneView
 		cameraFacing.setFromAxisAngle(pitchAxis, -Math.atan2(tune.follow.height, tune.follow.back))
 		for (const unit of [...lane.structures, ...lane.minions]) {
@@ -387,7 +387,7 @@ export function createLaneView(scene, smooth = null) {
 				mesh = new THREE.Mesh(
 					new THREE.OctahedronGeometry(tune.globes.radius),
 					makeStyleMaterial(
-						globe.team === heroes[0]?.team ? (globe.team === 'A' ? 'teamA' : 'teamB') : 'ink',
+						globe.team === localTeam ? (globe.team === 'A' ? 'teamA' : 'teamB') : 'ink',
 					),
 				)
 				group.add(mesh)
