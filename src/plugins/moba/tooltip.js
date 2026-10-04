@@ -282,10 +282,11 @@ export function cardHtml(card) {
 
 // One floating card. `show(card, anchor)`: anchor is a screen point { x, y } the card sits above
 // (below when there is no room), clamped inside the viewport. No pointer events, never pauses.
-export function createTooltip(parent = document.body) {
+// A docked anchor ({ left, top } or { left, bottom }) pins the card's corner instead of floating it.
+export function createTooltip(parent = document.body, id = 'moba-tip') {
 	const root = document.createElement('div')
 	root.className = 'moba-tip'
-	root.id = 'moba-tip'
+	root.id = id
 	root.setAttribute('role', 'tooltip')
 	root.hidden = true
 	parent.append(root)
@@ -308,19 +309,18 @@ export function createTooltip(parent = document.body) {
 			const vw = globalThis.innerWidth ?? 1024
 			const vh = globalThis.innerHeight ?? 768
 			const margin = 8
-			const x = Math.round(Math.max(margin, Math.min(vw - width - margin, anchor.x - width / 2)))
+			const docked = anchor.left !== undefined
+			const left = docked ? anchor.left : anchor.x - width / 2
+			const x = Math.round(Math.max(margin, Math.min(vw - width - margin, left)))
 			const above = anchor.y - height - 14
 			const below = anchor.y + 18
 			// Above when it fits, else below when it fits, else pinned inside the viewport (CSS caps the height).
-			const y = Math.round(
-				Math.max(
-					margin,
-					Math.min(
-						vh - height - margin,
-						above >= margin || below + height > vh - margin ? above : below,
-					),
-				),
-			)
+			const wanted = docked
+				? (anchor.top ?? vh - height - anchor.bottom)
+				: above >= margin || below + height > vh - margin
+					? above
+					: below
+			const y = Math.round(Math.max(margin, Math.min(vh - height - margin, wanted)))
 			const at = `${x},${y}`
 			if (at !== shownAt) {
 				shownAt = at
@@ -329,6 +329,12 @@ export function createTooltip(parent = document.body) {
 		},
 		hide() {
 			if (!root.hidden) root.hidden = true
+		},
+		// Fading keeps the card in place but transparent; CSS animates the opacity.
+		fade(on) {
+			if (root.classList.contains('away') === on) return
+			if (on) root.classList.add('away')
+			else root.classList.remove('away')
 		},
 		dispose() {
 			root.remove()

@@ -55,6 +55,8 @@ function helpGlyphs(device, abilities, carrying) {
 		.join('')
 }
 const KEY_INSPECT = 'KeyI'
+// How hovering a world unit shows it. tune.hud.tooltipMode picks one; `?tooltips=<mode>` sets it from a link.
+export const TOOLTIP_MODES = ['quiet', 'nameplate', 'docked', 'patient', 'card']
 const PAD_INSPECT = 3
 const PAD_LEFT = 14
 const PAD_RIGHT = 15
@@ -286,14 +288,38 @@ export function createHud() {
 	banner.hidden = true
 	document.body.append(top, root, banner)
 	const tip = createTooltip(document.body)
+	// World units get their own card and a slim nameplate, so a slot card never fights a unit card.
+	const worldTip = createTooltip(document.body, 'moba-tip-world')
+	const plate = el('div', 'moba-plate')
+	plate.hidden = true
+	plate.setAttribute('aria-hidden', 'true')
+	const plateName = el('span', '', plate)
+	const plateBar = el('i', '', plate)
+	const plateHp = el('b', '', plate)
+	document.body.append(plate)
 	let bannerLeft = 0
+	const linked = new URLSearchParams(globalThis.location?.search ?? '').get('tooltips')
+	if (TOOLTIP_MODES.includes(linked)) tune.hud.tooltipMode = linked
 
-	const pointer = { x: 0, y: 0 }
+	// `moved` marks a real pointer move since the last frame: a unit walking under a still cursor opens nothing.
+	const pointer = { x: 0, y: 0, moved: false }
+	// Browsers also fire pointermove under a still cursor when the page relayouts, so compare coordinates.
 	const onMove = (e) => {
+		if (e.clientX === pointer.x && e.clientY === pointer.y) return
 		pointer.x = e.clientX
 		pointer.y = e.clientY
+		pointer.moved = true
 	}
 	globalThis.window?.addEventListener('pointermove', onMove, { passive: true })
+	let alt = false
+	const onAlt = (e) => {
+		if (e.key !== 'Alt') return
+		if (e.type === 'keydown') e.preventDefault() // keeps Firefox's menu bar shut
+		alt = e.type === 'keydown'
+	}
+	const onBlur = () => (alt = false)
+	for (const type of ['keydown', 'keyup']) globalThis.window?.addEventListener(type, onAlt)
+	globalThis.window?.addEventListener('blur', onBlur)
 
 	// Takedowns from death edges: a hero alive last frame and dead now was downed by the other team.
 	const kills = { A: 0, B: 0 }
@@ -435,7 +461,7 @@ export function createHud() {
 	}
 
 	function updateTip(dt, frame) {
-		const { sim, aim, camera, pad, device } = frame
+		const { sim, aim, camera, pad } = frame
 		// Pad: Y held past the threshold opens the cursor, release closes it; the d-pad steps.
 		const buttons = pad?.buttons ?? []
 		const edge = (i) => buttons[i] && !previousPad[i]
@@ -468,18 +494,70 @@ export function createHud() {
 			}
 		} else if (press && press.held >= tune.hud.longPress) ({ source, anchor } = press)
 		else if (hover) ({ source, anchor } = hover)
-		else if (sim && aim && device !== 'gamepad') {
-			const unit = pickUnit(sim, aim)
-			if (unit !== world?.unit) world = unit ? { unit, dwell: 0 } : null
-			else if (world) world.dwell += dt
-			if (world && world.dwell >= tune.hud.hoverDelay) {
-				source = { kind: 'unit', unit: world.unit }
-				anchor = { x: pointer.x, y: pointer.y - 16 }
-			}
-		} else world = null
 		const card = source && cardFor(source, frame)
 		if (card) tip.show(card, anchor)
 		else tip.hide()
+		updateWorld(dt, frame, !source && !hover && !press && !inspect.by)
+	}
+
+	// World hover, per tune.hud.tooltipMode. HUD-slot cards above never change with the mode.
+	let busyFade = 0
+	const heroAt = { x: NaN, z: NaN }
+	function updateWorld(dt, frame, free) {
+		const { sim, aim, camera, device, hero } = frame
+		const mode = tune.hud.tooltipMode
+		const moved = pointer.moved
+		pointer.moved = false
+		if (!free || !sim || !aim || device === 'gamepad') world = null
+		else if (moved) {
+			const unit = pickUnit(sim, aim)
+			if (unit !== world?.unit) world = unit ? { unit, dwell: 0 } : null
+			else if (world && mode === 'patient') world.dwell = 0 // patient: only a resting cursor counts
+		} else if (world && (world.unit.dead || pickUnit(sim, aim) !== world.unit)) world = null
+		if (world) world.dwell += dt
+		const p = hero?.body.position // the sim body: the mesh sways even at rest
+		const walking = !!p && (Math.abs(p.x - heroAt.x) > 1e-3 || Math.abs(p.z - heroAt.z) > 1e-3)
+		if (p) Object.assign(heroAt, { x: p.x, z: p.z })
+		const busy = walking || !!hero?.cast || !!hero?.attack
+
+		const unit = world?.unit
+		const delay = mode === 'patient' ? tune.hud.patientDelay : tune.hud.hoverDelay
+		const ready = !!unit && world.dwell >= delay
+		const card = ready ? cardFor({ kind: 'unit', unit }, frame) : null
+		const plated = !!card && (mode === 'quiet' || mode === 'nameplate')
+		// The nameplate rides above the unit's rendered head: name and exact HP, nothing else.
+		if (plated && camera) {
+			const at = screenOf(unit, camera)
+			text(plateName, card.title)
+			text(plateHp, `${Math.round(unit.hp)} / ${Math.round(unit.maxHp)}`)
+			prop(plateBar, '--f', String(ring(unit.hp, unit.maxHp)))
+			data(plate, 'team', unit.team)
+			put(plate, 'at', `${Math.round(at.x)},${Math.round(at.y - 34)}`, (v) => {
+				const [x, y] = v.split(',')
+				plate.style.transform = `translate(${x}px, ${y}px) translate(-50%, -100%)`
+			})
+		}
+		put(plate, 'hidden', !plated || !camera, (v) => (plate.hidden = v))
+
+		let anchor = null
+		if (!card) busyFade = 0
+		else if (mode === 'card') anchor = { x: pointer.x, y: pointer.y - 16 }
+		else if (mode === 'docked' || (mode === 'quiet' && alt)) anchor = dock()
+		else if (mode === 'nameplate' && alt && camera) anchor = screenOf(unit, camera)
+		else if (mode === 'patient') {
+			busyFade = busy ? busyFade + dt : 0
+			if (busyFade < tune.hud.fade) anchor = { x: pointer.x, y: pointer.y - 16 }
+		}
+		worldTip.fade(mode === 'patient' && busy)
+		if (anchor) worldTip.show(card, anchor)
+		else worldTip.hide()
+	}
+	// The dock: bottom-left on wide screens, under the top bar on narrow ones. Never the middle of the fight.
+	function dock() {
+		const vw = globalThis.innerWidth ?? 1024
+		if (vw >= 720) return { left: 12, bottom: 12 }
+		const r = top.getBoundingClientRect?.()
+		return { left: 8, top: (r?.bottom ?? 100) + 8 }
 	}
 
 	return {
@@ -678,6 +756,10 @@ export function createHud() {
 		dispose() {
 			globalThis.window?.removeEventListener('pointermove', onMove)
 			globalThis.window?.removeEventListener('keydown', onKey)
+			for (const type of ['keydown', 'keyup']) globalThis.window?.removeEventListener(type, onAlt)
+			globalThis.window?.removeEventListener('blur', onBlur)
+			worldTip.dispose()
+			plate.remove()
 			top.remove()
 			root.remove()
 			banner.remove()

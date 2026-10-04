@@ -394,19 +394,26 @@ test('tooltips open on slot hover, touch long-press, world rest and pad inspect,
 		hud.update(0, frameOf(w))
 		expect(tip.hidden).toBe(true)
 
-		// The cursor resting on a minion opens its card after `hoverDelay`.
+		// In 'card' mode, a cursor that moved onto a minion opens its card after `hoverDelay`.
+		const mode = tune.hud.tooltipMode
+		tune.hud.tooltipMode = 'card'
+		const worldTip = body().all((n) => n.id === 'moba-tip-world')[0]
 		const aim = { x: 3.2, z: 2 }
+		globalThis.window.dispatchEvent(
+			Object.assign(new Event('pointermove'), { clientX: 500, clientY: 400 }),
+		)
 		hud.update(0, frameOf(w, { aim }))
 		hud.update(tune.hud.hoverDelay / 2, frameOf(w, { aim }))
-		expect(tip.hidden).toBe(true)
+		expect(worldTip.hidden).toBe(true)
 		hud.update(tune.hud.hoverDelay, frameOf(w, { aim }))
-		expect(tip.innerHTML).toContain('Enemy melee')
-		expect(tip.innerHTML).toContain(
+		expect(worldTip.innerHTML).toContain('Enemy melee')
+		expect(worldTip.innerHTML).toContain(
 			`<dd>${tune.minions.melee.damage} · ${tune.minions.melee.rate}/s</dd>`,
 		)
 		w.minion.dead = true
 		hud.update(0, frameOf(w, { aim }))
-		expect(tip.hidden).toBe(true)
+		expect(worldTip.hidden).toBe(true)
+		tune.hud.tooltipMode = mode
 
 		// Pad: hold Y past `inspectHold` for your own hero at rest, d-pad right steps to Q.
 		const pad = (y, right = false) => ({

@@ -11,7 +11,7 @@ import { createCameraControls } from './camera-controls.js'
 import { createCursor } from './cursor.js'
 import { createView } from './view.js'
 import { createSkillsView } from './skills-view.js'
-import { createHud, matchFrame } from './hud.js'
+import { createHud, matchFrame, TOOLTIP_MODES } from './hud.js'
 import { createPips } from './pips.js'
 import { createSounds } from './sounds.js'
 import { createBallView } from './ball-view.js'
@@ -282,6 +282,11 @@ export default function moba(app) {
 			run.on('blur', () => app.intents.cancel(local))
 
 			addSliders(run.debug, sliderSections(tune, setup), app.clock.step)
+			run.debug.tune('hud', tune.hud, (f, t) => {
+				f.add(t, 'tooltipMode', TOOLTIP_MODES).name('world tooltips')
+				f.add(t, 'hoverDelay', 0, 2, 0.05).name('hover delay')
+				f.add(t, 'patientDelay', 0, 3, 0.05).name('patient delay')
+			})
 			run.debug.expose({
 				moba: {
 					sim,

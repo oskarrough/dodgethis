@@ -242,6 +242,11 @@ export const tune = {
 		inspectHold: 0.35, // pad Y hold that opens a card
 		hpTick: 200, // HP per tick on the portrait bar
 		warn: 5, // timers pulse in their last seconds
+		// World-unit hover: 'quiet' (nameplate, Alt for the docked card), 'nameplate' (Alt for the card beside it),
+		// 'docked' (card in a fixed corner), 'patient' (slow card that fades while you act), 'card' (the old floating card).
+		tooltipMode: 'quiet',
+		patientDelay: 0.9, // 'patient': the cursor must rest this long
+		fade: 0.2, // 'patient': fade-out while you move or cast
 	},
 	match: { objective: 180, late: 480, lateGunDamage: 0.25 },
 	waves: {
