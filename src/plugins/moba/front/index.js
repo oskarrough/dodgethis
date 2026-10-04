@@ -182,8 +182,11 @@ export function mobaFront(app) {
 				screen = next
 				pointerMoved = false
 				el.dataset.screen = next
-				// A reload lands on the same screen: the splash has no mode yet.
+				// Menus preserve the selection, never the direct-play bypass.
 				const url = new URL(location.href)
+				url.searchParams.delete('play')
+				url.searchParams.set('hero', setup.heroId)
+				url.searchParams.set('bots', difficulty)
 				if (next === 'modes') url.searchParams.delete('mode')
 				else url.searchParams.set('mode', 'moba')
 				if (url.href !== location.href) history.replaceState(null, '', url)
@@ -220,7 +223,12 @@ export function mobaFront(app) {
 						backButton,
 					].filter((button) => !button.hidden)
 				setDevice(device, true)
-				bindControls(focus)
+				bindControls(
+					focus ??
+						(next === 'hero'
+							? buttons.findIndex((button) => button.dataset.hero === card.heroId)
+							: 0),
+				)
 			}
 			function back() {
 				if (screen === 'hero') show('difficulty', difficultyIndex())
@@ -256,14 +264,20 @@ export function mobaFront(app) {
 						gain: tune.pick.gain,
 						type: 'triangle',
 					})
-					return show('hero', 0)
+					return show('hero')
 				}
 				if (button.dataset.hero) {
-					if (button.dataset.hero === card.heroId) return
+					if (button.dataset.hero === card.heroId)
+						return controls.point(
+							buttons.findIndex((button) => button.classList.contains('front-lock')),
+						)
 					preview.dispose()
 					card.choose(button.dataset.hero)
 					preview = createPreview(app, run, card.heroId)
 					setup.heroId = card.heroId
+					const url = new URL(location.href)
+					url.searchParams.set('hero', setup.heroId)
+					history.replaceState(null, '', url)
 					return
 				}
 				if (button.dataset.slot) return card.select(button.dataset.slot)
@@ -374,7 +388,7 @@ export function mobaFront(app) {
 			}
 			show(
 				options.hero ? 'hero' : options.screen === 'difficulty' ? 'difficulty' : 'modes',
-				options.screen === 'difficulty' ? difficultyIndex() : 0,
+				options.screen === 'difficulty' ? difficultyIndex() : undefined,
 			)
 			window.addEventListener('keydown', (event) => controls.key(event), { signal: run.signal })
 			run.system('input', () => {
