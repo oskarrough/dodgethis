@@ -12,6 +12,7 @@ export function createMatchMenu({
 	focusCore = () => {},
 	ready = () => true,
 	difficulty = 'easy',
+	setup = { difficulty },
 }) {
 	let paused = false
 	let resultShown = false
@@ -24,11 +25,11 @@ export function createMatchMenu({
 	}
 	function leave(heroSelect) {
 		resetInput()
-		app.modes.start('moba-front', { options: { hero: heroSelect, difficulty } })
+		app.modes.start('moba-front', { options: { hero: heroSelect, setup } })
 	}
 	const restart = () => {
 		resetInput()
-		app.modes.start('moba', { options: { difficulty } })
+		app.modes.start('moba', { options: { setup } })
 	}
 	function toggle() {
 		if (!ready() || sim.lane.match.winner || !app.session.actions.includes('pause')) return
@@ -98,6 +99,9 @@ export function createMatchMenu({
 	})
 	run.signal.addEventListener('abort', () => app.overlay.hide(), { once: true })
 	return {
+		resume() {
+			if (paused) toggle()
+		},
 		frozen,
 		result,
 		presentationFrozen: () => paused || resultShown,

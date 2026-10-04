@@ -1,4 +1,5 @@
 import { STEP } from '../../../core/app.js'
+import { heroDefinition } from '../heroes.js'
 import { stepHorizontalVelocity } from '../../../core/move.js'
 
 // Fractional final tick uses the same velocity integration as the body at 60 Hz.
@@ -31,8 +32,21 @@ export function escapeTime(distance, profile) {
 	return elapsed
 }
 
-export function heroStats(kit, front, level = 1) {
+export function heroStats(kit, front, level = 1, heroId = 'fletcher') {
 	const mul = 1 + front.level.growth * (Math.max(1, Math.min(front.level.cap, level)) - 1)
+	if (heroId !== 'fletcher') {
+		const definition = heroDefinition(heroId)
+		return {
+			level,
+			hp: definition.base.hp * mul,
+			speed: definition.base.speed,
+			attack: (definition.basic?.damage ?? 0) * mul,
+			attackRange: definition.basic?.range ?? 0,
+			attackRate: definition.basic?.rate ?? 0,
+			abilities: definition.abilities,
+			pocketLife: kit.catching.pocketLife,
+		}
+	}
 	const qClear = kit.loose.radius + kit.hero.radius
 	const rainClear = kit.rain.radius + kit.hero.radius
 	return {
@@ -77,6 +91,64 @@ export function kitLines(s) {
 		`${Math.round(s.e.damage)} damage · ${Math.round(s.e.slow * 100)}% slow for ${s.e.duration} s · ${s.e.cooldown} s recharge.`,
 		`Not built yet · planned for level ${s.r.unlock}.`,
 	]
+}
+
+// Selected-ability panel, not a tooltip. All gameplay values come from live tune.
+export function abilityLines(s, slot, heroId = 'fletcher') {
+	if (heroId !== 'fletcher' && slot) {
+		if (slot === 'Trait')
+			return [`Pocket · hold a caught shot for ${s.pocketLife} s, then send it back with Toss.`]
+		const ability = s.abilities[`slot${['Q', 'W', 'E', 'R'].indexOf(slot) + 1}`]
+		if (!ability) return ['Not playable yet.']
+		const units = {
+			range: 'm',
+			radius: 'm',
+			speed: 'm/s',
+			cooldown: 's',
+			castPoint: 's',
+			time: 's',
+			duration: 's',
+			prone: 's',
+		}
+		return Object.entries(ability.stats)
+			.filter(([, value]) => typeof value === 'number')
+			.map(
+				([key, value]) =>
+					`${key.replace(/([A-Z])/g, ' $1')} · ${value}${units[key] ? ' ' + units[key] : ''}`,
+			)
+	}
+	switch (slot) {
+		case 'Trait':
+			return [`Hero hits with Loose reduce Vault's recharge by ${s.momentum} s.`]
+		case 'Q':
+			return [
+				`${Math.round(s.q.damage)} damage · ${s.q.cooldown} s recharge`,
+				`${s.q.range} m range · ${s.q.radius} m radius · ${s.q.speed} m/s`,
+				`${s.q.castPoint} s windup · stops on the first hit`,
+			]
+		case 'W':
+			return [
+				`${s.w.range} m dash · ${s.w.time} s travel · ${s.w.cooldown} s recharge`,
+				'Dash toward your aim. The stationary preview shows the Vault pose and path.',
+			]
+		case 'E':
+			return [
+				`${Math.round(s.e.damage)} damage · ${s.e.cooldown} s recharge`,
+				`${s.e.range} m reach · ${s.e.radius} m radius · ${s.e.delay} s delay`,
+				`${Math.round(s.e.slow * 100)}% slow for ${s.e.duration} s`,
+			]
+		case 'R':
+			return [
+				`Planned · not playable yet · unlock at level ${s.r.unlock}`,
+				`${Math.round(s.r.damage)} damage · ${s.r.cooldown} s recharge`,
+				`${s.r.range} m range · ${s.r.radius} m radius · ${s.r.speed} m/s · ${s.r.castPoint} s windup`,
+			]
+		default:
+			return [
+				`${Math.round(s.hp)} HP · ${s.speed} m/s`,
+				`Basic attack · ${Math.round(s.attack)} damage · ${s.attackRange} m range · ${s.attackRate}/s`,
+			]
+	}
 }
 
 const n = (v) => Number(v.toFixed(3))

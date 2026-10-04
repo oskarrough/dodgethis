@@ -13,9 +13,11 @@ const key = (code, shiftKey = false) =>
 	evaluate(
 		`window.dispatchEvent(new KeyboardEvent('keydown',{code:${JSON.stringify(code)},shiftKey:${shiftKey},bubbles:true,cancelable:true}));true`,
 	)
+// Every run starts where a player does: a fresh / on the splash.
 function boot() {
-	browser('open', new URL('/?mode=moba', base).href)
-	browser('wait', '.moba-front')
+	browser('open', 'about:blank')
+	browser('open', new URL('/', base).href)
+	browser('wait', '.front-tile')
 	key('Backquote')
 	evaluate('window.probe=window.game;true')
 	key('Backquote')
@@ -32,29 +34,79 @@ function pad(button) {
 	evaluate(`mockPad.buttons[${button}].pressed=false`)
 	wait(100)
 }
+const screen = () => evaluate('document.querySelector(".moba-front")?.dataset.screen ?? null')
 const report = {}
 boot()
-key('Tab')
-key('Tab', true)
+report.splash =
+	evaluate(
+		`[...document.querySelectorAll('.front-modes .front-tile')].map((tile) => tile.dataset.mode).join()`,
+	) === 'dodgeball,moba'
+key('ArrowRight')
+key('Enter')
 key('Enter')
 wait(200)
-report.keyboard = evaluate('!!probe.moba && !document.querySelector(".moba-front")')
-boot()
+report.keyboard = screen() === 'hero' && evaluate('probe.front.difficulty') === 'easy'
 key('Escape')
-wait(100)
-report.keyboardBack = evaluate('!!document.querySelector(".splash:not([hidden])")')
+const afterOne = screen()
+key('Escape')
+const afterTwo = screen()
+key('Escape')
+report.keyboardBack = afterOne === 'difficulty' && afterTwo === 'modes' && screen() === 'modes'
 boot()
-browser('click', '.front-practice')
+browser('click', '.front-tile[data-mode=moba]')
+browser('click', '.front-tile[data-difficulty=hard]')
 wait(200)
-report.mouse = evaluate('!!probe.moba && !document.querySelector(".moba-front")')
+report.mouse = screen() === 'hero' && evaluate('probe.front.difficulty') === 'hard'
+browser('click', '.front-return')
+browser('click', '.front-return')
+report.mouseBack = screen() === 'modes' && evaluate('location.search') === ''
+// Readable on every tile state: resting, focused (flooded) and the remembered difficulty.
+report.contrast = evaluate(`(() => {
+	const rgb = (value) => {
+		const srgb = /color\\(srgb ([\\d.]+) ([\\d.]+) ([\\d.]+)/.exec(value)
+		return srgb ? srgb.slice(1).map((c) => c * 255) : value.match(/[\\d.]+/g).slice(0, 3).map(Number)
+	}
+	const lum = (c) => {
+		const [r, g, b] = c.map((v) => ((v /= 255) <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4))
+		return 0.2126 * r + 0.7152 * g + 0.0722 * b
+	}
+	const ratio = (a, b) => {
+		const [x, y] = [lum(rgb(a)), lum(rgb(b))].sort((p, q) => q - p)
+		return (x + 0.05) / (y + 0.05)
+	}
+	return [...document.querySelectorAll('.front-tile')].flatMap((tile) =>
+		[false, true].map((selected) => {
+			const was = tile.classList.contains('selected')
+			tile.classList.toggle('selected', selected)
+			const face = tile.querySelector('.front-tile-face')
+			const fill = selected ? getComputedStyle(face, '::before').backgroundColor : getComputedStyle(face).backgroundColor
+			const label = getComputedStyle(tile.querySelector('.front-tile-line'))
+			const line = label.color
+			const behind = label.backgroundColor.endsWith(', 0)') ? fill : label.backgroundColor
+			tile.classList.toggle('selected', was)
+			return { tile: tile.dataset.mode ?? tile.dataset.difficulty, selected, ratio: +ratio(behind, line).toFixed(2) }
+		}),
+	)
+})()`)
 boot()
-browser('click', '.front-back')
-wait(100)
-report.mouseBack = evaluate('!!document.querySelector(".splash:not([hidden])")')
+browser('click', '.front-tile[data-mode=dodgeball]')
+wait(1500)
+report.dodgeball = evaluate(
+	`!document.querySelector('.moba-front') && !document.querySelector('.mode-picker, [data-mode]') && !document.querySelector('.hub-exit').hidden && location.search === '?mode=dodgeball'`,
+)
+key('Escape')
+wait(300)
+report.hubKeyboardBack = screen() === 'modes'
+browser('click', '.front-tile[data-mode=dodgeball]')
+wait(1500)
+browser('click', '.hub-exit')
+wait(300)
+report.hubMouseBack = screen() === 'modes'
 boot()
 installPad()
-pad(13)
-pad(12)
+pad(15)
+pad(0)
+report.pad = screen() === 'difficulty'
 report.screens = []
 for (const [width, height] of [
 	[1440, 900],
@@ -65,21 +117,23 @@ for (const [width, height] of [
 	wait(300)
 	report.screens.push(
 		evaluate(
-			`({size:[innerWidth,innerHeight],circle:(()=>{const m=document.querySelector('.front-backdrop circle').getScreenCTM();return m.a/m.d})(),prompts:document.querySelectorAll('.front-prompts span').length})`,
+			`({size:[innerWidth,innerHeight],circle:(()=>{const m=document.querySelector('.front-backdrop circle').getScreenCTM();return m.a/m.d})(),prompts:document.querySelectorAll('.front-prompts span').length,back:document.querySelector('.front-return-key').textContent})`,
 		),
 	)
 	browser('screenshot', `${dir}/front-${width}x${height}.png`)
 }
-evaluate('mockPad.buttons[0].pressed=true')
-wait(300)
-report.pad = evaluate('!!probe.moba && !document.querySelector(".moba-front")')
-report.heldConfirmConsumed = evaluate(
-	'!probe.moba.sim.heroes[0].attack && !probe.moba.sim.heroes[0].cast',
-)
-boot()
-installPad()
 pad(1)
-report.padBack = evaluate('!!document.querySelector(".splash:not([hidden])")')
+report.padBack = screen() === 'modes'
+pad(1)
+report.padBackOnSplash = screen() === 'modes'
+pad(14)
+pad(0)
+wait(1500)
+evaluate('mockPad.buttons[8].pressed=true')
+wait(200)
+evaluate('mockPad.buttons[8].pressed=false')
+wait(300)
+report.hubPadBack = screen() === 'modes'
 boot()
 report.reversal = evaluate(
 	`(async()=>{const sky=document.querySelector('.front-sky-next');const first=probe.front.crossfade(true);await new Promise(r=>setTimeout(r,350));const before=+getComputedStyle(sky).opacity;const second=probe.front.crossfade(false);const after=+getComputedStyle(sky).opacity;await Promise.all([first,second]);return {before,after,landed:+getComputedStyle(sky).opacity}})()`,
@@ -175,15 +229,24 @@ writeFileSync(`${dir}/results.json`, JSON.stringify(report, null, 2) + '\n')
 console.log(JSON.stringify(report, null, 2))
 if (
 	![
+		'splash',
 		'keyboard',
 		'keyboardBack',
 		'mouse',
 		'mouseBack',
+		'dodgeball',
+		'hubKeyboardBack',
+		'hubMouseBack',
 		'pad',
 		'padBack',
-		'heldConfirmConsumed',
+		'padBackOnSplash',
+		'hubPadBack',
 	].every((key) => report[key]) ||
-	report.screens.some((screen) => Math.abs(screen.circle - 1) > 0.00001 || screen.prompts !== 3) ||
+	report.contrast.some((state) => state.ratio < 4.5) ||
+	report.screens.some(
+		(screen) =>
+			Math.abs(screen.circle - 1) > 0.00001 || screen.prompts !== 2 || screen.back !== 'B',
+	) ||
 	Math.abs(report.reversal.before - report.reversal.after) > 0.02 ||
 	report.reversal.landed !== 0 ||
 	report.fadeMotion.during !== report.fadeMotion.before ||

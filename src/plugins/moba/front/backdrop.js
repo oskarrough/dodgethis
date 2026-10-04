@@ -55,7 +55,7 @@ const selectionPlanes = [
 	<path fill="none" d="M0 863 Q201 810 390 846 Q510 880 640 874 M30 881 Q189 843 330 864"/>`,
 ]
 
-export function createBackdrop(root) {
+export function createBackdrop() {
 	const el = document.createElement('div')
 	el.className = 'front-backdrop'
 	el.setAttribute('aria-hidden', 'true')
@@ -107,9 +107,6 @@ export function createBackdrop(root) {
 	function resize() {
 		const shot = projectFrame(innerWidth, innerHeight)
 		scale = shot.scale
-		root.style.setProperty('--front-scale', scale)
-		root.style.setProperty('--front-sign-x', `${shot.signX}px`)
-		root.style.setProperty('--front-ground', `${shot.ground}px`)
 		for (const pattern of el.querySelectorAll('pattern'))
 			pattern.setAttribute('patternTransform', `scale(${1 / scale})`)
 		for (const path of el.querySelectorAll('g path'))
@@ -142,10 +139,6 @@ export function createBackdrop(root) {
 			const depth = ((index + 1) / layers.length) * tune.parallax.depth
 			layer.style.transform = `translate3d(${pointer.x * innerWidth * depth}px, ${pointer.y * innerHeight * depth}px, 0)`
 		})
-		// The sign is planted in the ridge, so it shares that plane's translation.
-		const ridgeDepth = (3 / layers.length) * tune.parallax.depth
-		root.style.setProperty('--front-sign-dx', `${pointer.x * innerWidth * ridgeDepth}px`)
-		root.style.setProperty('--front-sign-dy', `${pointer.y * innerHeight * ridgeDepth}px`)
 		if (!settled) frame = requestAnimationFrame(move)
 	}
 	function parallax(event) {

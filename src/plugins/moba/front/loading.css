@@ -53,9 +53,26 @@
 .front-loading-team .vacant {
 	opacity: 0.4;
 }
-.front-skip.selected {
-	text-decoration: underline;
-	text-underline-offset: 0.4em;
+.front-loading-ui .front-skip {
+	margin-left: auto;
+	padding: 0.35em 0.9em 0.2em;
+	border: 4px solid var(--ui-text);
+	border-radius: 999px;
+	background: var(--ui-cream);
+	box-shadow: 4px 5px 0 var(--ui-text);
+	font: 400 clamp(24px, 2.2vw, 36px) / 1 var(--ui-font);
+	transition: transform var(--tile-snap) cubic-bezier(0.2, 1.9, 0.45, 1);
+}
+.front-loading-ui .front-skip.selected {
+	background: var(--ui-button);
+	transform: translate(-2px, -3px) scale(var(--tile-scale)) rotate(-2deg);
+}
+.front-loading-ui .front-skip:disabled {
+	opacity: 0.4;
+	transform: none;
+}
+.front-loading-ui .front-prompts {
+	margin-left: 0;
 }
 .moba-loading > :not(.moba-front):not(script):not(.lil-gui) {
 	visibility: hidden;
