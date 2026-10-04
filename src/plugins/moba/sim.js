@@ -142,7 +142,11 @@ export function createSim({
 			lastRemaining: null,
 		}
 	})
-	for (const h of heroes) h.body.face(dirOf(h.yaw))
+	for (const h of heroes) {
+		h.body.face(dirOf(h.yaw))
+		h.body.mobaUnit = h
+		h.body.mobaTick = t
+	}
 	const dummies = (withLane ? [] : DUMMY_POSTS).map((post, i) => ({
 		id: `dummy${i + 1}`,
 		team: 'B',
@@ -483,10 +487,12 @@ export function createSim({
 									: h.definition.basic.windup,
 							),
 						}
+						if (h.definition.basic.id) h.attack.total = h.attack.left
 						h.yaw = yawOf(tp.x - p.x, tp.z - p.z)
 						present({
 							type: 'cast',
 							hero: h.id,
+							...(h.definition.basic.id && { ability: h.definition.basic.id }),
 							slot: 'primary',
 							point: { x: p.x, y: p.y, z: p.z },
 							direction: dirOf(h.yaw),
@@ -627,7 +633,6 @@ export function createSim({
 		const skill = ability.stats
 		h.cast = null
 		h.lastRemaining = null
-		const p = h.body.position
 		if (frozen) {
 			launchShot(h, dir, {
 				...frozen,
@@ -684,16 +689,9 @@ export function createSim({
 			})
 			return
 		}
-		const shot = {
-			id: ++shotIds,
-			owner: h.id,
-			team: h.team,
-			slot,
-			x: p.x,
-			z: p.z,
-			dx: dir.x,
-			dz: dir.z,
+		launchShot(h, dir, {
 			ability: ability.id,
+			slot,
 			pierce: ability.pierce,
 			heal: ability.heal,
 			bounce: ability.bounce,
@@ -703,19 +701,7 @@ export function createSim({
 			speed: skill.speed,
 			radius: skill.radius,
 			range: skill.range,
-			travelled: 0,
-			passed: [h.id],
 			damage: skill.damage * (1 + tune.levels.growth * ((h.level ?? tune.hero.level) - 1)),
-		}
-		shots.push(shot)
-		present({
-			type: 'projectile',
-			id: shot.id,
-			hero: h.id,
-			ability: ability.id,
-			slot,
-			point: { x: p.x, y: tune.loose.height, z: p.z },
-			direction: { x: dir.x, z: dir.z },
 		})
 	}
 
@@ -741,6 +727,22 @@ export function createSim({
 			}
 			h.body.update({ x: 0, z: 0 }, dt, 0)
 			return
+		}
+		if (h.cast && frame.pressed.some((e) => ['stop', 'cancel'].includes(e.action))) {
+			const cast = h.cast,
+				ability = castAbility(h)
+			h.cast = null
+			const slotIndex = SLOTS.indexOf(cast.slot)
+			if (slotIndex >= 0) h.cd[slotIndex] = 0 // a cancelled cast point costs nothing
+			if (cast.pocket && cast.pocket.until > t) h.abilityState.pocket = cast.pocket
+			ability?.onCancel?.(traitContext(h, { ...cast, reason: 'input' }))
+			present({
+				type: 'denied',
+				hero: h.id,
+				ability: cast.ability,
+				slot: cast.slot,
+				reason: 'cancelled',
+			})
 		}
 		if (
 			h.channel &&
@@ -856,6 +858,10 @@ export function createSim({
 		unit.body = bodyAt(spawn.x, spawn.z, unit.team, unit.definition)
 		if (unit.definition) unit.abilityState = freshAbilityState()
 		unit.body.face(dirOf(unit.yaw))
+		if (unit.definition) {
+			unit.body.mobaUnit = unit
+			unit.body.mobaTick = t
+		}
 		unit.dead = false
 		if (unit.post) unit.maxHp = tune.dummies.hp
 		unit.hp = unit.maxHp
@@ -893,6 +899,7 @@ export function createSim({
 			id: ++shotIds,
 			owner: h.id,
 			team: h.team,
+			...(h.definition.basic.id && { ability: h.definition.basic.id }),
 			slot: 'primary',
 			target: target.id,
 			x: p.x,
@@ -906,7 +913,26 @@ export function createSim({
 			passed: [],
 			damage: h.definition.basic.damage * (1 + tune.levels.growth * (h.level - 1)),
 		}
-		shots.push(shot)
+		if (h.definition.basic.kind === 'melee') {
+			const inReach =
+				!target.dead &&
+				Math.hypot(tp.x - p.x, tp.z - p.z) <=
+					h.definition.basic.range + (target.kind ? target.body.radius : 0) &&
+				segmentClear(
+					p,
+					tp,
+					h.definition.basic.radius,
+					obstacles.filter((o) => o.id !== target.id),
+				)
+			present({
+				type: 'impact',
+				hero: h.id,
+				ability: shot.ability,
+				hit: inReach,
+				point: { x: tp.x, y: tune.loose.height, z: tp.z },
+			})
+			if (inReach) hit(shot, { id: target.id, unit: target, hero: !target.kind }, tp)
+		} else shots.push(shot)
 		h.attackTick = t + ticks(1 / h.definition.basic.rate)
 		h.attack = {
 			target: target.id,
@@ -914,6 +940,7 @@ export function createSim({
 			left: ticks(h.definition.basic.backswing),
 			startedTick: t,
 		}
+		if (h.definition.basic.kind === 'melee') return
 		present({
 			type: 'projectile',
 			id: shot.id,
@@ -1029,6 +1056,7 @@ export function createSim({
 	}
 
 	function stepHeroState(hero, dt) {
+		hero.body.mobaTick = t
 		if (hero.stance) {
 			const stance = hero.stance
 			const ability = abilityOf(stance.ability, hero)
@@ -1104,6 +1132,9 @@ export function createSim({
 			stats.range <= 0
 		)
 			throw new Error('Shots need a direction and finite nonnegative stats (positive speed/range)')
+		// Preserve already-unit aim directions bit for bit (the legacy trace
+		// includes unrounded fact directions), while normalising API callers.
+		const divisor = Math.abs(length - 1) < tune.collision.epsilon ? 1 : length
 		const shot = {
 			...structuredClone(stats),
 			id: ++shotIds,
@@ -1111,8 +1142,8 @@ export function createSim({
 			team: hero.team,
 			x: p.x,
 			z: p.z,
-			dx: dir.x / length,
-			dz: dir.z / length,
+			dx: dir.x / divisor,
+			dz: dir.z / divisor,
 			travelled: 0,
 			passed: [hero.id],
 		}
@@ -1144,7 +1175,8 @@ export function createSim({
 		const length = Math.hypot(direction.x, direction.z)
 		if (!length) return false
 		const dir = { x: direction.x / length, z: direction.z / length }
-		const shot = hero.abilityState.pocket.shot
+		const pocket = hero.abilityState.pocket
+		const shot = pocket.shot
 		hero.abilityState.pocket = null
 		hero.attack = null
 		const total = ticks(tune.catching.returnTell)
@@ -1152,6 +1184,7 @@ export function createSim({
 			ability: 'return',
 			slot,
 			shot,
+			pocket,
 			dir,
 			target: clampMap({
 				x: hero.body.position.x + dir.x * shot.range,
@@ -1222,6 +1255,39 @@ export function createSim({
 		contacts.sort((a, b) => a.at - b.at || String(a.id).localeCompare(String(b.id)))
 		const contact = contacts[0]
 		if (!contact) return intercept?.({ ...context, heroes, boards, cutouts, launchShot }) === true
+		// Bodies, gloves and boards use the same clipped segment. A glove behind
+		// another body cannot erase its hit, even when both contacts fit one tick.
+		const targets =
+			context.targets ??
+			enemiesOf(shot.team).filter(
+				(unit) =>
+					!unit.unit.dead &&
+					(context.kind === 'ball'
+						? unit.hero || unit.unit.structure
+						: !shot.heroOnly || unit.hero),
+			)
+		const earlier = targets
+			.filter((unit) => !shot.passed?.includes(unit.id))
+			.map((target) => ({
+				target,
+				at: sweepHit(from.x, from.z, to.x, to.z, target.x, target.z, target.radius + shot.radius),
+			}))
+			.filter(
+				(entry) =>
+					entry.at !== null &&
+					(entry.at < contact.at ||
+						(entry.at === contact.at &&
+							String(entry.target.id).localeCompare(String(contact.id)) < 0)),
+			)
+			.sort((a, b) => a.at - b.at || String(a.target.id).localeCompare(String(b.target.id)))
+		if (earlier.length && !shot.pierce) return false
+		for (const entry of earlier) {
+			shot.passed.push(entry.target.id)
+			hit(shot, entry.target, {
+				x: from.x + (to.x - from.x) * entry.at,
+				z: from.z + (to.z - from.z) * entry.at,
+			})
+		}
 		const point = {
 			x: from.x + (to.x - from.x) * contact.at,
 			z: from.z + (to.z - from.z) * contact.at,
@@ -1263,6 +1329,7 @@ export function createSim({
 					until: t + ticks(window.pocketLife ?? tune.catching.pocketLife),
 				}
 		}
+		hero.definition.traits.onCatch?.(traitContext(hero, { source: shot, window }))
 		if (window.resetSlot) hero.cd[SLOTS.indexOf(window.resetSlot)] = ticks(window.resetCooldown)
 		if (window.mode !== 'bag') hero.catchWindow = null
 		present({
@@ -1394,6 +1461,7 @@ export function createSim({
 					tick: t,
 					ball,
 					obstacles,
+					targets,
 				})
 			) {
 				present({
@@ -1657,6 +1725,12 @@ export function createSim({
 		bots: botTeam,
 		step,
 		stickAim,
+		respawnNow(id) {
+			const hero = heroes.find((h) => h.id === id)
+			if (!hero?.dead || lane?.match.winner) return false
+			respawn(hero)
+			return true
+		},
 		pick,
 		snapshot,
 		dispose,

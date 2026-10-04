@@ -75,7 +75,7 @@ test('definitions keep tuning live, abilities own their properties, other heroes
 	} finally {
 		tune.loose.speed = previous
 	}
-	for (const id of ['mitts', 'carom', 'skip']) {
+	for (const id of ['carom', 'skip']) {
 		expect(HEROES[id].basic).toBeNull()
 		expect(Object.values(HEROES[id].abilities).every((a) => a === null)).toBe(true)
 		expect(HEROES[id].traits).toEqual({})
@@ -112,10 +112,10 @@ test('mixed base HP scales per hero; unavailable stand-in casts deny; state is c
 			expect(h.body.radius).toBe(tune.hero.radius)
 		}
 		const h = sim.heroes[1]
-		intents.feed(h.id, { ...neutralFrame(), pressed: [{ action: 'slot1', at: { x: 0, z: 0 } }] })
+		intents.feed(h.id, { ...neutralFrame(), pressed: [{ action: 'slot4', at: { x: 0, z: 0 } }] })
 		run.step()
 		expect(h.cast).toBeNull()
-		expect(run.facts.at(-1)).toMatchObject({ type: 'denied', hero: h.id, slot: 'slot1' })
+		expect(run.facts.at(-1)).toMatchObject({ type: 'denied', hero: h.id, slot: 'slot4' })
 		h.abilityState = {
 			pocket: { damage: 140, left: 20 },
 			bag: [{ speed: 20 }],

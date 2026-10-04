@@ -82,10 +82,13 @@ test('verbs produce ordinary intents; malformed, hidden and shielded orders are 
 			expect(() => act(run, 'A1', input)).toThrow()
 		run.step([['A1', act(run, 'A1', { action: 'cast', slot: 'Q', x: -40, y: -1.5 })]])
 		expect(run.sim.heroes.find((h) => h.id === 'A1').cast.ability).toBe('loose')
+		expect(run.sim.heroes.find((h) => h.id === 'A1').cd.some((c) => c > 0)).toBe(true)
 		run.step([['A1', act(run, 'A1', { action: 'stop' })]])
 		expect(run.sim.heroes.find((h) => h.id === 'A1').order).toBeNull()
-		// Q is committed, exactly as for a human. Stop clears orders, not its cast point.
-		expect(run.sim.heroes.find((h) => h.id === 'A1').cast.left).toBe(16)
+		// Stop aborts a cast point, as for a human, and refunds its cooldown.
+		const a1 = run.sim.heroes.find((h) => h.id === 'A1')
+		expect(a1.cast).toBeNull()
+		expect(a1.cd.every((c) => c === 0)).toBe(true)
 	} finally {
 		run.close()
 	}

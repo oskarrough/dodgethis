@@ -11,9 +11,11 @@ export function abilityOf(id, unit = null) {
 			effects: { cast: 'returnNock', projectile: 'returnShot', hit: 'returnHit', pose: 'draw' },
 		}
 	return (
-		Object.values(unit?.definition?.abilities ?? {}).find((a) => a?.id === id) ??
+		[unit?.definition?.basic, ...Object.values(unit?.definition?.abilities ?? {})].find(
+			(a) => a?.id === id,
+		) ??
 		Object.values(HEROES)
-			.flatMap((h) => Object.values(h.abilities))
+			.flatMap((h) => [h.basic, ...Object.values(h.abilities)])
 			.find((a) => a?.id === id) ??
 		null
 	)
@@ -26,7 +28,12 @@ export function castAbility(unit) {
 			kind: 'shot',
 			tell: 'line',
 			stats: unit.cast.shot,
-			effects: { cast: 'returnNock', projectile: 'returnShot', hit: 'returnHit', pose: 'draw' },
+			effects: {
+				cast: 'returnNock',
+				projectile: 'returnShot',
+				hit: 'returnHit',
+				pose: unit.definition?.returnPose ?? 'draw',
+			},
 		}
 	return abilityOf(unit.cast?.ability, unit) ?? unit.definition?.abilities[unit.cast?.slot] ?? null
 }

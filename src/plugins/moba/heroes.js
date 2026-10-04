@@ -1,7 +1,7 @@
 import { tune } from './tune.js'
 
 // Definitions stay plugin-local. Getters keep live tuning live; mutable state
-// belongs to each sim hero, never to this table. Other heroes are art stand-ins.
+// belongs to each sim hero, never to this table. A basic and abilities make a kit.
 const ability = (id, kind, properties = {}) => ({
 	id,
 	kind,
@@ -30,6 +30,53 @@ const rain = ability('rain', 'zone', {
 	held: 'circle',
 	effects: { impact: 'rain', effect: 'rain', pose: 'rain' },
 })
+const toss = ability('toss', 'shot', {
+	pierce: false,
+	heal: false,
+	bounce: false,
+	catchable: true,
+	returnsPocket: true,
+	aimAssist: true,
+	tell: 'line',
+	held: 'line',
+	effects: { cast: 'tossWindup', projectile: 'toss', hit: 'tossHit', pose: 'toss' },
+})
+const catchStance = ability('catch', 'stance', {
+	held: 'cone',
+	effects: { cast: 'catch', effect: 'catch', pose: 'catch' },
+	onStart({ hero, sim, ability, slot }) {
+		sim.openCatch(hero, {
+			ability: ability.id,
+			duration: ability.stats.duration,
+			radius: ability.stats.radius,
+			angle: ability.stats.angle,
+			acceptBall: true,
+			resetSlot: slot,
+			resetCooldown: ability.stats.resetCooldown,
+		})
+	},
+})
+const dive = ability('dive', 'dash', {
+	held: 'arrow',
+	effects: { cast: 'dive', effect: 'dive', pose: 'dive' },
+	onRelease({ hero, sim, ability }) {
+		sim.openCatch(hero, {
+			ability: ability.id,
+			duration: ability.stats.time + ability.stats.prone,
+			radius: ability.stats.radius,
+			angle: ability.stats.angle,
+			acceptBall: false,
+		})
+	},
+	onDashEnd({ hero, tick, ticks }) {
+		hero.proneUntil = tick + ticks(tune.dive.prone)
+		if (hero.catchWindow) hero.catchWindow.until = hero.proneUntil
+	},
+})
+const gloveSlap = ability('gloveSlap', 'melee', {
+	tell: 'line',
+	effects: { cast: 'slapWindup', impact: 'slap', pose: 'slap' },
+})
 export const HEROES = {
 	fletcher: {
 		id: 'fletcher',
@@ -48,12 +95,33 @@ export const HEROES = {
 			},
 		},
 	},
+	mitts: {
+		id: 'mitts',
+		silhouette: 'square',
+		get base() {
+			return { ...tune.hero, ...tune.heroes.mitts }
+		},
+		get basic() {
+			return { ...gloveSlap, ...tune.gloveSlap }
+		},
+		abilities: { slot1: toss, slot2: catchStance, slot3: dive, slot4: null },
+		returnPose: 'toss',
+		traits: {
+			onCatch({ hero, source }) {
+				if (hero.abilityState.pocket) hero.abilityState.pocket.team = source.team
+			},
+			onDeath({ hero }) {
+				hero.body.cancelDash()
+				hero.dashAbility = null
+			},
+		},
+	},
 	...Object.fromEntries(
-		['mitts', 'carom', 'skip'].map((id) => [
+		['carom', 'skip'].map((id) => [
 			id,
 			{
 				id,
-				silhouette: id === 'mitts' ? 'square' : id === 'carom' ? 'triangle' : 'bar',
+				silhouette: id === 'carom' ? 'triangle' : 'bar',
 				get base() {
 					return { ...tune.hero, ...tune.heroes[id] }
 				},
@@ -64,6 +132,12 @@ export const HEROES = {
 		]),
 	),
 }
+
+for (const definition of Object.values(HEROES))
+	Object.defineProperty(definition, 'playable', {
+		enumerable: true,
+		get: () => !!definition.basic && Object.values(definition.abilities).some(Boolean),
+	})
 
 export function heroDefinition(id = 'fletcher') {
 	const definition = HEROES[id]
