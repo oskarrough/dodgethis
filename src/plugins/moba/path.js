@@ -1,5 +1,4 @@
 import { OBSTACLES, FLOOR, walkable, clampWalkable, segmentClear } from './obstacles.js'
-export { segmentClear } from './obstacles.js'
 
 // Cache the static grid for a run. Live radius/clearance/grid changes invalidate it on the next order, not on a tick.
 export function createPathPlanner(options, obstacles = OBSTACLES) {
@@ -9,12 +8,6 @@ export function createPathPlanner(options, obstacles = OBSTACLES) {
 			grid = buildGrid(next, obstacles)
 		return route(from, to, grid)
 	}
-}
-
-let defaultPlanner
-export function planPath(from, to, options) {
-	defaultPlanner ??= createPathPlanner(options)
-	return defaultPlanner(from, to, options)
 }
 
 function buildGrid({ radius, clearance, grid }, obstacles) {

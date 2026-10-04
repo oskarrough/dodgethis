@@ -16,7 +16,7 @@ import {
 	sweepObstacles,
 	projectMap,
 } from '../src/plugins/moba/obstacles.js'
-import { planPath } from '../src/plugins/moba/path.js'
+import { createPathPlanner } from '../src/plugins/moba/path.js'
 import { stepShot } from '../src/plugins/moba/skillshot.js'
 import { edgePip } from '../src/plugins/moba/pips.js'
 import { createFollow, clampView } from '../src/plugins/moba/follow.js'
@@ -111,8 +111,9 @@ test('every grid edge and shortcut stays outside every box, including routes int
 			{ x: 48, z: 0 },
 		],
 	)
+	const planPath = createPathPlanner(options)
 	for (const [start, goal] of journeys) {
-		const path = planPath(start, goal, options)
+		const path = planPath(start, goal)
 		expect(path.length).toBeGreaterThan(0)
 		let from = start
 		for (const to of path) {
@@ -134,7 +135,7 @@ test('every grid edge and shortcut stays outside every box, including routes int
 		expect(from.z).toBeCloseTo(goal.z)
 	}
 	// An illegal start cannot be rescued by returning a straight line through solid cover.
-	expect(planPath({ x: 18, z: 7 }, { x: 18, z: 10 }, options)).toEqual([])
+	expect(planPath({ x: 18, z: 7 }, { x: 18, z: 10 })).toEqual([])
 })
 
 test('intent movement, ordered paths and Vault all respect the same hedge colliders; basics walk around cover', () => {

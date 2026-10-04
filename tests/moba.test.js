@@ -9,8 +9,8 @@ import { createIntents, neutralFrame } from '../src/core/intents.js'
 import { createSim } from '../src/plugins/moba/sim.js'
 import { tune } from '../src/plugins/moba/tune.js'
 import { PILLARS, clampWalkable, walkable } from '../src/plugins/moba/map.js'
-import { buildColliders } from '../src/plugins/moba/obstacles.js'
-import { planPath, segmentClear } from '../src/plugins/moba/path.js'
+import { buildColliders, segmentClear } from '../src/plugins/moba/obstacles.js'
+import { createPathPlanner } from '../src/plugins/moba/path.js'
 import { closest, stepShot, sweepHit } from '../src/plugins/moba/skillshot.js'
 
 // The feel slice's headless checks (docs/moba-plan.md, M1): no overshoot on arrival, reversal time, buffer timing, order resumption, swept hits.
@@ -97,16 +97,11 @@ test('orders path around pillars and clicks off the walkable area clamp to it', 
 	expect(Math.hypot(pos().x - goal.x, pos().z - goal.z)).toBeLessThan(tune.orders.arrival)
 	expect(steps).toBeLessThan(((8 + Math.PI * pillar.r) / tune.hero.speed) * 60 + 10)
 
-	const path = planPath(
-		{ x: -10, z: -4 },
-		{ x: 0, z: -4 },
-		{ radius: 0.45, clearance: 0.1, grid: 0.5 },
-	)
+	const planPath = createPathPlanner({ radius: 0.45, clearance: 0.1, grid: 0.5 })
+	const path = planPath({ x: -10, z: -4 }, { x: 0, z: -4 })
 	for (let i = 0, from = { x: -10, z: -4 }; i < path.length; from = path[i++])
 		expect(segmentClear(from, path[i], 0.5)).toBe(true)
-	expect(
-		planPath({ x: 0, z: 10 }, { x: 5, z: 12 }, { radius: 0.45, clearance: 0.1, grid: 0.5 }),
-	).toEqual([{ x: 5, z: 12 }])
+	expect(planPath({ x: 0, z: 10 }, { x: 5, z: 12 })).toEqual([{ x: 5, z: 12 }])
 	expect(walkable(...Object.values(clampWalkable({ x: pillar.x, z: pillar.z }, 0.45)), 0.45)).toBe(
 		true,
 	)

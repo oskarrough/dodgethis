@@ -1,18 +1,18 @@
+const valid = ({ line, hatch, alpha }) =>
+	Number.isFinite(line) &&
+	line > 0 &&
+	Number.isFinite(hatch) &&
+	hatch >= 0 &&
+	hatch <= 1 &&
+	typeof alpha === 'boolean'
+
 // Nestable overrides; disposing an older scope must not undo a newer one.
 export function createStylePresets(apply) {
 	const defaults = { line: 1, hatch: 0, alpha: false }
 	const stack = []
 	return (preset) => {
 		const next = { ...(stack.at(-1)?.value ?? defaults), ...preset }
-		if (
-			!Number.isFinite(next.line) ||
-			next.line <= 0 ||
-			!Number.isFinite(next.hatch) ||
-			next.hatch < 0 ||
-			next.hatch > 1 ||
-			typeof next.alpha !== 'boolean'
-		)
-			throw new Error('Invalid style preset')
+		if (!valid(next)) throw new Error('Invalid style preset')
 		const entry = { value: next }
 		stack.push(entry)
 		apply(next)
@@ -23,15 +23,7 @@ export function createStylePresets(apply) {
 			apply(stack.at(-1)?.value ?? defaults)
 		}
 		restore.update = ({ line, hatch, alpha }) => {
-			if (
-				!Number.isFinite(line) ||
-				line <= 0 ||
-				!Number.isFinite(hatch) ||
-				hatch < 0 ||
-				hatch > 1 ||
-				typeof alpha !== 'boolean'
-			)
-				throw new Error('Invalid style preset')
+			if (!valid({ line, hatch, alpha })) throw new Error('Invalid style preset')
 			if (!stack.includes(entry)) return
 			entry.value = { line, hatch, alpha }
 			if (stack.at(-1) === entry) apply(entry.value)
