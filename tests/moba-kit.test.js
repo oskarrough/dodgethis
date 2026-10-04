@@ -1,75 +1,31 @@
 import { afterEach, beforeEach, expect, test } from 'bun:test'
-import * as THREE from 'three'
-import RAPIER from '@dimforge/rapier3d-compat'
 import { STEP } from '../src/core/app.js'
-import { createIntents, neutralFrame } from '../src/core/intents.js'
-import { createSim } from '../src/plugins/moba/sim.js'
 import { createSkillsView } from '../src/plugins/moba/skills-view.js'
 import { createView } from '../src/plugins/moba/view.js'
 import { createFeedback } from '../src/plugins/moba/feedback.js'
 import { validFact } from '../src/plugins/moba/index.js'
 import { tune } from '../src/plugins/moba/tune.js'
+import { bootMoba, shot as shotAt, ticks } from './moba-harness.js'
 
-await RAPIER.init({})
-let world, scene, intents, sim, facts, oldSpeed
-const ticks = (s) => Math.round(s / STEP)
+let scene, intents, sim, facts, oldSpeed, harness
 const hero = () => sim.heroes[0]
 const dummy = () => sim.dummies[0]
-function feed(frame = {}) {
-	intents.feed('local', { ...neutralFrame(), ...frame })
-}
-function step(n = 1) {
-	for (let i = 0; i < n; i++) {
-		sim.step()
-		intents.age(STEP)
-	}
-}
-function shot(damage, owner = 'dummy1', team = 'B', slot = 'slot1') {
-	const p = hero().body.position
-	sim.shots.push({
-		id: 1000 + sim.tick,
-		owner,
-		team,
-		slot,
-		x: p.x,
-		z: p.z,
-		dx: 1,
-		dz: 0,
-		speed: 24,
-		radius: 0.3,
-		range: 11,
-		travelled: 0,
-		passed: [],
-		damage,
-	})
-}
+const feed = (frame) => harness.feed('local', frame)
+const step = (n) => harness.step(n)
+const shot = (damage, owner = 'dummy1', team = 'B', slot = 'slot1') =>
+	shotAt(sim, hero(), damage, { id: 1000 + sim.tick, owner, team, slot, radius: 0.3, range: 11 })
 beforeEach(() => {
 	oldSpeed = tune.dummies.speed
 	tune.dummies.speed = 0
-	world = new RAPIER.World({ x: 0, y: -9.81, z: 0 })
-	world.timestep = STEP
-	world.createCollider(RAPIER.ColliderDesc.cuboid(20, 0.5, 20).setTranslation(0, -0.5, 0))
-	scene = new THREE.Scene()
-	intents = createIntents()
-	intents.use('pointClick')
-	facts = []
-	sim = createSim({
-		scene,
-		world,
-		RAPIER,
-		intents,
-		heroes: [{ id: 'local', team: 'A' }],
-		present: (f) => facts.push(f),
-		rng: () => 0.5,
-	})
+	harness = bootMoba({ map: 'floor', heroes: [{ id: 'local', team: 'A' }], rng: () => 0.5 })
+	;({ scene, intents, sim, facts } = harness)
 	hero().body.place(0, 1.05, 8)
 	dummy().body.place(4, 1.05, 8)
 	for (const d of sim.dummies) d.sparring = false
 	sim.dummies[1].body.place(-15, 1.05, -18)
 })
 afterEach(() => {
-	sim.dispose()
-	world.free()
+	harness.dispose()
 	tune.dummies.speed = oldSpeed
 })
 
