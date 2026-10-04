@@ -138,7 +138,7 @@ export function createFeedback({ juice, sfx, camera, input, view, skillsView, hu
 			}
 			case 'cast':
 				source?.body.squash(
-					fact.slot === 'primary'
+					fact.slot === 'primary' && !effects.pose
 						? tune.juice.attackSquash
 						: ({
 								draw: tune.juice.castSquash,
@@ -151,10 +151,14 @@ export function createFeedback({ juice, sfx, camera, input, view, skillsView, hu
 					skillsView?.vault(fact.point, fact.direction, ability.stats)
 					juice.burst(fact.point, { ...fact.direction, y: 0 }, { count: 8, streak: true })
 				} else if (effects.effect === 'rain' && mine) skillsView?.rain(fact.target, ability.stats)
+				else if (tune.juice[effects.effect])
+					juice.burst(fact.point, { ...fact.direction, y: 0 }, tune.juice[effects.effect])
 				return
 			case 'projectile': {
 				const shot = sim.shots.find((s) => s.id === fact.id)
 				if (shot) view.bolt(shot, fact.point)
+				if (tune.juice[effects.projectile])
+					juice.burst(fact.point, { ...fact.direction, y: 0 }, tune.juice[effects.projectile])
 				unitOf(fact.hero)?.body.kick(0.18)
 				cue(
 					['tower', 'fort', 'core', 'ranged', 'wizard'].includes(fact.slot)
@@ -233,7 +237,7 @@ export function createFeedback({ juice, sfx, camera, input, view, skillsView, hu
 				juice.burst(
 					fact.point,
 					{ x: 0, y: 1, z: 0 },
-					{ count: 20, speed: 3, life: 0.35, size: 0.1 },
+					tune.juice[effects.impact] ?? { count: 20, speed: 3, life: 0.35, size: 0.1 },
 				)
 				cue(effects.impact, fact) // once per tick, including multi-target impacts
 				return
@@ -244,7 +248,11 @@ export function createFeedback({ juice, sfx, camera, input, view, skillsView, hu
 					juice.flash(unit.body.visual, tune.juice.flash)
 					unit.body.squash(0.28)
 				}
-				juice.burst(fact.point, fact.direction, { count: 6, speed: 1.4, life: 0.3, size: 0.07 })
+				juice.burst(
+					fact.point,
+					fact.direction,
+					tune.juice[effects.hit] ?? { count: 6, speed: 1.4, life: 0.3, size: 0.07 },
+				)
 				if (fact.slot !== 'ball' && !effects.impact)
 					cue(
 						['tower', 'fort', 'core', 'melee', 'ranged', 'wizard', 'brute'].includes(fact.slot)

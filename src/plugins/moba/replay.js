@@ -150,6 +150,9 @@ export function mobaReplay(app) {
 				juice.update(elapsed)
 				app.audio.setAudioListener(p)
 				hud.update(dt, {
+					hero,
+					sim,
+					step: app.clock.step,
 					cooldowns: hero.cd.slice(0, 3).map((cd) => Math.max(0, cd - blend) * app.clock.step),
 					totals: [tune.loose.cooldown, tune.vault.cooldown, tune.rain.cooldown],
 					elapsed: sim.tick * app.clock.step,
