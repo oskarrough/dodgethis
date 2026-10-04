@@ -229,6 +229,7 @@ export default function moba(app) {
 							([slot, ability]) => frame.held[slot] && ability?.held === 'line',
 						)?.[1]
 				const gone = view.update(step, {
+					localTeam: hero.team,
 					live: new Set(sim.shots.map((s) => s.id)),
 					hero: p,
 					aim: hero.cast && lineAbility?.tell === 'line' ? hero.cast.target : frame.aim,

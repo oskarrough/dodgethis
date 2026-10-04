@@ -66,7 +66,7 @@ export function createView(scene, smooth) {
 	const barBack = flat('ink')
 	const barColors = { A: flat('teamA'), B: flat('teamB') }
 	const tickGeometry = own(new THREE.PlaneGeometry(0.018, 0.16))
-	function health(units) {
+	function health(units, localTeam) {
 		const live = new Set(units.map((u) => u.id))
 		for (const [id, bar] of bars)
 			if (!live.has(id)) {
@@ -99,7 +99,7 @@ export function createView(scene, smooth) {
 					ctx.fillRect(0, 0, canvas.width, canvas.height)
 					ctx.fillStyle = '#26445f'
 					ctx.fillText(
-						`${unit.team} ${unit.kind.toUpperCase()}`,
+						`${unit.team === localTeam ? 'Your' : 'Enemy'} ${unit.kind}`,
 						canvas.width / 2,
 						canvas.height * tune.laneView.xpBaseline,
 					)
@@ -199,9 +199,20 @@ export function createView(scene, smooth) {
 	// Per rendered frame. `live` is the set of shot ids still flying; the rest are returned so feedback can fizzle them.
 	function update(
 		dt,
-		{ live, hero, aim, held, hovered, locate, units = [], lineStats = tune.loose, obstacles },
+		{
+			live,
+			hero,
+			aim,
+			held,
+			hovered,
+			locate,
+			units = [],
+			lineStats = tune.loose,
+			obstacles,
+			localTeam = 'A',
+		},
 	) {
-		health(units)
+		health(units, localTeam)
 		for (let i = xpLabels.length - 1; i >= 0; i--) {
 			const label = xpLabels[i]
 			label.life -= dt

@@ -125,6 +125,7 @@ export function mobaReplay(app) {
 					}
 				const p = hero.body.mesh.position
 				const gone = view.update(elapsed, {
+					localTeam: hero.team,
 					live: new Set(sim.shots.map((s) => s.id)),
 					hero: p,
 					aim: null,

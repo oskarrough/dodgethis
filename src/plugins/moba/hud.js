@@ -26,13 +26,35 @@ import {
 
 const SLOTS = ['slot1', 'slot2', 'slot3']
 const KEYS = { keyboard: ['Q', 'W', 'E'], gamepad: ['RB', 'RT', 'LB'] }
-// Controls line from the hero's own kit, for the active device.
-function helpText(device, abilities) {
+// Key-glyph stickers from the hero's own kit, for the active device. Numbers live in the cards.
+function helpGlyphs(device, abilities, carrying) {
 	const names = SLOTS.map((slot) => abilityName(abilities?.[slot]).toLowerCase())
-	return device === 'gamepad'
-		? `L stick move · hold RB / RT / LB to aim ${names.join(' / ')}, release to fire · A attack · B cancel · hold Y inspect · Start pause`
-		: `RMB move / attack · ${KEYS.keyboard.map((key, i) => `${key} ${names[i]}`).join(' · ')} · S stop · arrows pan · hold Space follow · hover for details · Esc pause`
+	const pad = device === 'gamepad'
+	const slots = carrying
+		? [[pad ? ['A', ...KEYS.gamepad] : [...KEYS.keyboard, 'LMB'], 'throw Ball']]
+		: KEYS[pad ? 'gamepad' : 'keyboard'].map((key, i) => [[key], names[i]])
+	const glyphs = pad
+		? [
+				[['L'], 'move'],
+				...slots,
+				[['A'], 'attack'],
+				[['B'], 'cancel'],
+				[['Y'], 'inspect'],
+				[['Start'], 'pause'],
+			]
+		: [
+				[['RMB'], 'move'],
+				...slots,
+				[['S'], 'stop'],
+				[['Space'], 'follow'],
+				[['I'], 'inspect'],
+				[['Esc'], 'pause'],
+			]
+	return glyphs
+		.map(([keys, label]) => `<span>${keys.map((k) => `<kbd>${k}</kbd>`).join('')}${label}</span>`)
+		.join('')
 }
+const KEY_INSPECT = 'KeyI'
 const PAD_INSPECT = 3
 const PAD_LEFT = 14
 const PAD_RIGHT = 15
@@ -160,7 +182,9 @@ export function createHud() {
 	// Hover, long-press and focus targets. The card itself takes no pointer events.
 	let hover = null
 	let press = null
+	const sourceOf = new Map()
 	const hot = (node, source) => {
+		sourceOf.set(node, source)
 		node.classList.add('hot')
 		node.setAttribute('aria-describedby', 'moba-tip')
 		const anchor = () => {
@@ -211,7 +235,7 @@ export function createHud() {
 		const xp = el('i', 'moba-ring', level)
 		const levelNumber = el('b', '', level)
 		level.setAttribute('aria-label', which === 'mine' ? 'Your team level' : 'Enemy team level')
-		sides[which] = { node, structures, killCount, level, xp, levelNumber }
+		sides[which] = { node, structures, kills, killCount, level, xp, levelNumber }
 	}
 	side('mine')
 	const clockNode = hot(el('div', 'moba-clock', top), { kind: 'clock' })
@@ -274,10 +298,41 @@ export function createHud() {
 	// Takedowns from death edges: a hero alive last frame and dead now was downed by the other team.
 	const kills = { A: 0, B: 0 }
 	const wasDead = new Map()
-	// Pad inspect: hold Y, d-pad steps through the aimed unit and the three slots.
-	let inspectHeld = 0
-	let inspectIndex = 0
+	// One inspect cursor for keys and pad: I toggles it, or hold Y; arrows or the d-pad step through
+	// the aimed unit (your hero at rest) and then every HUD target a mouse can hover.
+	const inspect = { by: null, index: 0, held: 0 }
 	let previousPad = []
+	let targets = []
+	const available = (i) => i === 0 || !targets[i - 1].classList?.contains('none')
+	function step(direction) {
+		const count = targets.length + 1
+		do inspect.index = (inspect.index + direction + count) % count
+		while (!available(inspect.index))
+	}
+	const onKey = (e) => {
+		if (e.type !== 'keydown' || e.target?.closest?.('input, textarea, select, [contenteditable]'))
+			return
+		if (e.code === KEY_INSPECT && !e.repeat) {
+			inspect.by = inspect.by === 'keys' ? null : 'keys'
+			inspect.index = 0
+		} else if (inspect.by === 'keys' && (e.code === 'ArrowLeft' || e.code === 'ArrowRight')) {
+			e.preventDefault() // steps the cursor instead of panning; the keyup still reaches the camera
+			step(e.code === 'ArrowRight' ? 1 : -1)
+		}
+	}
+	globalThis.window?.addEventListener('keydown', onKey)
+	targets = [
+		...slots.map((s) => s.slot),
+		portrait,
+		trait,
+		clockNode,
+		wave.node,
+		ball.node,
+		...['mine', 'theirs'].flatMap((which) => {
+			const { level, kills, structures } = sides[which]
+			return [level, kills, ...['tower', 'fort', 'core'].map((k) => structures[k].icon)]
+		}),
+	]
 	let world = null
 	const projected = new THREE.Vector3()
 
@@ -381,31 +436,35 @@ export function createHud() {
 
 	function updateTip(dt, frame) {
 		const { sim, aim, camera, pad, device } = frame
-		// Pad: Y held past the threshold opens the aimed unit (your hero at rest); d-pad steps on.
+		// Pad: Y held past the threshold opens the cursor, release closes it; the d-pad steps.
 		const buttons = pad?.buttons ?? []
 		const edge = (i) => buttons[i] && !previousPad[i]
-		if (buttons[PAD_INSPECT]) inspectHeld += dt
-		else inspectHeld = inspectIndex = 0
-		const inspecting = inspectHeld >= tune.hud.inspectHold
-		if (inspecting && edge(PAD_RIGHT)) inspectIndex = (inspectIndex + 1) % 4
-		if (inspecting && edge(PAD_LEFT)) inspectIndex = (inspectIndex + 3) % 4
+		inspect.held = buttons[PAD_INSPECT] ? inspect.held + dt : 0
+		if (inspect.held >= tune.hud.inspectHold && inspect.by !== 'pad') {
+			inspect.by = 'pad'
+			inspect.index = 0
+		} else if (!buttons[PAD_INSPECT] && inspect.by === 'pad') inspect.by = null
+		if (inspect.by === 'pad' && edge(PAD_RIGHT)) step(1)
+		if (inspect.by === 'pad' && edge(PAD_LEFT)) step(-1)
 		previousPad = buttons.slice()
 		if (press) press.held += dt
+		if (inspect.by && !available(inspect.index)) step(1)
+		const picked = inspect.by && inspect.index > 0 ? targets[inspect.index - 1] : null
+		for (const node of targets) flag(node, 'inspected', node === picked)
 
 		let source = null
 		let anchor = null
-		if (inspecting) {
-			if (inspectIndex === 0 && sim) {
+		if (inspect.by) {
+			if (picked) {
+				const r = picked.getBoundingClientRect?.()
+				source = sourceOf.get(picked)
+				anchor = r ? { x: r.left + r.width / 2, y: r.top } : { x: 0, y: 0 }
+			} else if (sim) {
 				const unit = (aim && pickUnit(sim, aim)) ?? frame.hero
 				if (unit && !unit.dead) {
 					source = { kind: 'unit', unit }
 					anchor = camera ? screenOf(unit, camera) : { x: 0, y: 0 }
 				}
-			} else if (inspectIndex > 0) {
-				const s = slots[inspectIndex - 1]
-				const r = s.slot.getBoundingClientRect?.()
-				source = { kind: 'slot', index: inspectIndex - 1 }
-				anchor = r ? { x: r.left + r.width / 2, y: r.top } : { x: 0, y: 0 }
 			}
 		} else if (press && press.held >= tune.hud.longPress) ({ source, anchor } = press)
 		else if (hover) ({ source, anchor } = hover)
@@ -602,10 +661,9 @@ export function createHud() {
 					cooldown > 0 ? (cooldown > 1 ? String(Math.ceil(cooldown)) : cooldown.toFixed(1)) : '',
 				)
 			}
-			const controls = carryingBall
-				? `Ball: ${tune.ball.range} m throw · ${tune.ball.silence} s silence · ${device === 'gamepad' ? 'A or release RB / RT / LB to throw' : 'Q/W/E or click to throw'} toward aim · ${tune.ball.carrySpeed * 100}% speed`
-				: `${helpText(device, definition.abilities)} · Ball: stand still ${tune.ball.channel} s to pick up · ${tune.ball.range} m throw`
-			text(help, controls)
+			put(help, 'html', helpGlyphs(device, definition.abilities, !!carryingBall), (html) => {
+				help.innerHTML = html
+			})
 
 			updateTip(dt, {
 				...frame,
@@ -619,6 +677,7 @@ export function createHud() {
 		},
 		dispose() {
 			globalThis.window?.removeEventListener('pointermove', onMove)
+			globalThis.window?.removeEventListener('keydown', onKey)
 			top.remove()
 			root.remove()
 			banner.remove()

@@ -233,7 +233,7 @@ test('unchanged HUD frames write nothing; a ticking second rewrites only what mo
 		expect(writes - before).toBeLessThanOrEqual(1) // the ring, never the text
 		hud.update(0, frameOf(w, { carryingBall: true }))
 		expect(body().find('ball').dataset.state).toBe('carried')
-		expect(body().find('moba-help').textContent).toContain('Q/W/E or click to throw')
+		expect(body().find('moba-help').innerHTML).toContain('<kbd>LMB</kbd>throw Ball')
 	} finally {
 		hud.dispose()
 	}
@@ -280,8 +280,11 @@ test('kit, trait and controls come from the local hero, and read tuning live', (
 			const names = Object.values(HEROES[heroId].abilities)
 				.slice(0, 3)
 				.map((a) => a.id)
-			const help = body().find('moba-help').textContent
-			expect(help).toContain(`Q ${names[0]} · W ${names[1]} · E ${names[2]}`)
+			const help = body().find('moba-help').innerHTML
+			expect(help).toContain(
+				names.map((n, i) => `<kbd>${'QWE'[i]}</kbd>${n}`).join('</span><span>'),
+			)
+			expect(help).toContain('<kbd>I</kbd>inspect')
 			const icons = body().all((n) => n.classes.has('icon'))
 			expect(icons.map((n) => n.innerHTML.length > 0)).toEqual([true, true, true])
 			const trait = body().find('moba-trait')
@@ -297,8 +300,9 @@ test('kit, trait and controls come from the local hero, and read tuning live', (
 				expect(help).not.toContain('loose')
 			}
 			hud.update(0, frameOf(w, { device: 'gamepad' }))
-			expect(body().find('moba-help').textContent).toContain(`aim ${names.join(' / ')}`)
-			expect(body().find('moba-help').textContent).toContain('hold Y inspect')
+			const padHelp = body().find('moba-help').innerHTML
+			expect(padHelp).toContain(`<kbd>RB</kbd>${names[0]}`)
+			expect(padHelp).toContain('<kbd>Y</kbd>inspect')
 			expect(
 				body()
 					.all((n) => n.classes.has('key'))
