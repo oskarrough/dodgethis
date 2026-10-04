@@ -112,12 +112,12 @@ test('preview timers interpolate at 144 Hz, switch cleanly and dispose mid-cast 
 			for (let i = 0; i < 180; i++) preview.update(1 / 144)
 			expect(sounds).toBe(before + 1)
 			preview.start('E')
-			preview.update(0.7)
+			preview.update(tune.preview.hold + kit.rain.delay / 2)
 			let fill
 			scene.traverse((object) => {
 				if (
 					object.geometry?.type === 'CircleGeometry' &&
-					object.position.x === -tune.preview.rainDistance
+					object.parent.parent?.scale.x === tune.preview.zoneScale
 				)
 					fill = object
 			})
