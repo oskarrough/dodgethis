@@ -23,7 +23,7 @@ import { createSandbox } from './sandbox.js'
 const CHARGE_STEP = 0.16
 
 // Dodgeball: the court, its presentation and debug tools live as long as the plugin; the match flow lives as long as a run of the mode.
-export default function dodgeball(app, { hubPortal = null, hubExit = null } = {}) {
+export default function dodgeball(app, { hubExit = null } = {}) {
 	const { scene, world, RAPIER, input, audio, overlay, camera } = app
 	const { sfx } = audio
 	const { combat } = app.debug
@@ -349,7 +349,6 @@ export default function dodgeball(app, { hubPortal = null, hubExit = null } = {}
 		if (flow.phase === 'menu') {
 			const pick = /^Digit([1-3])$/.exec(e.code)
 			if (pick) flow.enterPortal(Number(pick[1]))
-			if (e.code === 'Digit4' && hubPortal) hubPortal.onSelect()
 			return
 		}
 		if (flow.phase !== 'playing') return
@@ -366,14 +365,6 @@ export default function dodgeball(app, { hubPortal = null, hubExit = null } = {}
 		scheme: 'direct',
 		start(run, { roster }) {
 			const session = app.session
-			if (hubPortal && !session.shared) {
-				const entry = document.createElement('button')
-				entry.className = 'sticker online-entry hub-mode-entry'
-				entry.textContent = `Play ${hubPortal.label}`
-				entry.onclick = hubPortal.onSelect
-				splashEl.querySelector('.hub-actions').append(entry)
-				run.signal.addEventListener('abort', () => entry.remove(), { once: true })
-			}
 			if (hubExit && !session.shared) {
 				exitEl.hidden = false
 				exitEl.onclick = leaveHub
@@ -398,7 +389,6 @@ export default function dodgeball(app, { hubPortal = null, hubExit = null } = {}
 					court.setLayout(layout)
 				},
 				onMenu: () => app.emit('menu'),
-				hubPortal,
 			})
 
 			// The round steps while it is live: the hub or a match in play, nothing modal on top.

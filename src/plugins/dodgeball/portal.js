@@ -3,6 +3,7 @@ import { sfx } from '../../core/audio.js'
 import { hex } from '../../core/style.js'
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'
 import { makeStyleMaterial, FORWARD_LAYER } from '../../core/stylepass.js'
+import { tune } from './tune.js'
 
 // A portal is a comic sticker-style court pad whose trigger starts a match; it avoids dizzying rotation and instead wakes with breathing, label bobbing, rising sparkles, and squash-stretch.
 const PORTAL_ROLES = { 1: 'portalChill', 2: 'portalSpicy', 3: 'portalChaos' }
@@ -91,10 +92,38 @@ export function buildPortalPad(enemies) {
 	return group
 }
 
-export function createPortal(scene, { x, z, enemies, label, labelSize, onSelect }) {
+export function createPortal(scene, { x, z, enemies, label, labelSize }) {
 	const color = hex(PORTAL_ROLES[enemies] || 'portalSpicy')
 	const group = buildPortalPad(enemies)
 	group.position.set(x, 0.05, z)
+
+	// Printed on the floor, pointing from the player toward the hole; no collider or moving sim state.
+	const hint = tune.hubHint
+	const halfWidth = hint.width / 2
+	const halfLength = hint.length / 2
+	const shaft = halfWidth * hint.shaftRatio
+	const shoulder = halfLength - hint.length * hint.headRatio
+	const arrow = new THREE.Shape()
+	arrow.moveTo(-shaft, -halfLength)
+	arrow.lineTo(shaft, -halfLength)
+	arrow.lineTo(shaft, shoulder)
+	arrow.lineTo(halfWidth, shoulder)
+	arrow.lineTo(0, halfLength)
+	arrow.lineTo(-halfWidth, shoulder)
+	arrow.lineTo(-shaft, shoulder)
+	arrow.closePath()
+	for (const [role, y, scale] of [
+		['ink', hint.inkY, hint.outlineScale],
+		['cream', hint.fillY, 1],
+	]) {
+		const geometry = new THREE.ShapeGeometry(arrow)
+		geometry.rotateX(-Math.PI / 2)
+		geometry.scale(scale, 1, scale)
+		const print = new THREE.Mesh(geometry, makeStyleMaterial(role, { flat: true }))
+		print.name = `portal-walk-${role}`
+		print.position.set(0, y, hint.z)
+		group.add(print)
+	}
 
 	// Star sparkles drifting up out of the hole — upward motion, zero rotation.
 	const sparkles = []
@@ -183,5 +212,5 @@ export function createPortal(scene, { x, z, enemies, label, labelSize, onSelect 
 		})
 	}
 
-	return { enemies, onSelect, trigger, update, dispose }
+	return { enemies, trigger, update, dispose }
 }
