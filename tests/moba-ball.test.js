@@ -1,10 +1,7 @@
 import { afterEach, expect, test } from 'bun:test'
 import * as THREE from 'three'
-import RAPIER from '@dimforge/rapier3d-compat'
 import { STEP } from '../src/core/app.js'
-import { createIntents, neutralFrame, pointClick } from '../src/core/intents.js'
-import { createSim } from '../src/plugins/moba/sim.js'
-import { buildColliders } from '../src/plugins/moba/obstacles.js'
+import { neutralFrame, pointClick } from '../src/core/intents.js'
 import { createBall } from '../src/plugins/moba/ball.js'
 import { interceptShot } from '../src/plugins/moba/skillshot.js'
 import { createBallView } from '../src/plugins/moba/ball-view.js'
@@ -12,45 +9,17 @@ import { validFact } from '../src/plugins/moba/index.js'
 import { createFeedback } from '../src/plugins/moba/feedback.js'
 import { styleId } from '../src/core/stylepass.js'
 import { tune } from '../src/plugins/moba/tune.js'
+import { bootMoba, ticks } from './moba-harness.js'
 
-await RAPIER.init({})
-const ticks = (s) => Math.round(s / STEP)
-let sim, world, intents, facts, unbuild
+let harness, sim, intents, facts
 function boot(scripted = [], intercept = null) {
-	world = new RAPIER.World({ x: 0, y: -9.81, z: 0 })
-	world.timestep = STEP
-	unbuild = buildColliders(world, RAPIER)
-	intents = createIntents()
-	intents.use('pointClick')
-	facts = []
-	sim = createSim({
-		scene: new THREE.Scene(),
-		world,
-		RAPIER,
-		intents,
-		lane: true,
-		heroes: [
-			{ id: 'A', team: 'A' },
-			{ id: 'B', team: 'B' },
-		],
-		scripted,
-		intercept,
-		present: (f) => facts.push(f),
-	})
+	harness = bootMoba({ scripted, intercept })
+	;({ sim, intents, facts } = harness)
 }
-function step(n = 1) {
-	for (let i = 0; i < n; i++) {
-		sim.step()
-		intents.age(STEP)
-	}
-}
+const step = (n = 1) => harness.step(n)
 afterEach(() => {
-	if (sim) {
-		sim.dispose()
-		unbuild()
-		world.free()
-		sim = null
-	}
+	harness?.dispose()
+	harness = null
 })
 function fixture() {
 	const hero = (id, team, x) => ({

@@ -1,38 +1,22 @@
 import { expect, test } from 'bun:test'
-import * as THREE from 'three'
-import RAPIER from '@dimforge/rapier3d-compat'
-import { STEP } from '../src/core/app.js'
-import { createIntents, neutralFrame } from '../src/core/intents.js'
-import { createSim } from '../src/plugins/moba/sim.js'
+import { neutralFrame } from '../src/core/intents.js'
 import { practiceRoster } from '../src/plugins/moba/bots.js'
-import { buildColliders } from '../src/plugins/moba/obstacles.js'
 import { tune } from '../src/plugins/moba/tune.js'
-
-await RAPIER.init({})
+import { bootMoba, STEP } from './moba-harness.js'
 
 // Half-second decisions, no dodge prediction, no Ball routine, no injected damage.
 // Follow the wave, attack screened structures, clear creeps, retreat below 55% HP, stop at firing range rather than chase into melee.
 test.if(process.env.SLOW === '1')(
 	'a cautious human wins the default easy Practice through ordinary intents',
 	() => {
-		const world = new RAPIER.World({ x: 0, y: -9.81, z: 0 })
-		world.timestep = STEP
-		const unbuild = buildColliders(world, RAPIER)
-		const intents = createIntents()
-		intents.use('pointClick')
 		const seats = practiceRoster('new-player')
 		let deaths = 0,
 			earlyDeaths = 0,
 			hits = 0,
 			casts = 0
-		const sim = createSim({
-			scene: new THREE.Scene(),
-			world,
-			RAPIER,
-			intents,
+		const { sim, intents, dispose } = bootMoba({
 			heroes: seats,
 			bots: seats.filter((seat) => seat.id !== 'new-player'),
-			lane: true,
 			present(fact) {
 				if (fact.type === 'death' && fact.target === 'new-player') {
 					deaths++
@@ -122,9 +106,7 @@ test.if(process.env.SLOW === '1')(
 				true,
 			)
 		} finally {
-			sim.dispose()
-			unbuild()
-			world.free()
+			dispose()
 		}
 	},
 	120000,
