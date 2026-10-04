@@ -746,7 +746,7 @@ test('Ball preparation keeps three files spread instead of stacking at the picku
 			brain = createBot({ id: 'bot', team: 'A', file }, 1)
 		f.h.body.position = { x: -20, z: file }
 		f.perceived.heroes[0].pos = { ...f.h.body.position }
-		f.sim.ball.state = { state: 'warning', spawnAt: 1300, pos: { x: 0, z: 0 } }
+		f.perceived.ball = { state: 'warning', spawnAt: 1300, pos: { x: 0, z: 0 } }
 		const frame = brain.frame(f.sim, f.perceived)
 		expect(frame.order).toEqual({ x: -tune.bots.shadowRange, z: file })
 		goals.push(frame.order)
@@ -760,7 +760,7 @@ test('a nearby enemy takes priority over the Ball countdown', () => {
 	enemy.pos = { x: 3, z: 0 }
 	f.sim.heroes[1].body.position = { ...enemy.pos }
 	f.h.cd = [100, 100, 100, 0, 0]
-	f.sim.ball.state = { state: 'warning', spawnAt: 1300, pos: { x: 0, z: 0 } }
+	f.perceived.ball = { state: 'warning', spawnAt: 1300, pos: { x: 0, z: 0 } }
 	const frame = f.think()
 	expect(f.brain.state).toBe('fight')
 	expect(frame.order).toEqual(enemy.pos)

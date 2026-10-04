@@ -8,7 +8,7 @@ Build rules, appended to every build brief. Each one comes from a finding an ear
 - Path and replan work happens once per event, not every tick.
 - Update the docs line your change contradicts, and add tests for tricky state (timers, windows, mode toggles).
 - Every enemy attack or cast has a visible tell of at least 0.3 s, and every action gets its own pose. No shared squash.
-- Input is never swallowed: stop and move cancel windups, and a new order cancels the backswing. A buffered press that can't become legal flashes a deny.
+- Input is never swallowed: stop and move cancel windups (a windup is any cast point or basic-attack windup; a cancelled cast point refunds its cooldown), and a new order cancels the backswing. A buffered press that can't become legal flashes a deny.
 - Tune sliders apply live, or are labelled "applies on restart". HUD text is built from tune, never hard-coded, and written only when it changes.
 - Test death and respawn in the middle of every timed state (dash, windup, cast, projectile in flight), and drive dodge tests through intents, not teleports.
 - Style materials are opaque ID writes. Anything translucent (telegraph fills, trails) goes in the forward layer with `depthWrite=false`, or uses opaque stipple.

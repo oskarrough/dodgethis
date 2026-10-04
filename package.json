@@ -11,19 +11,21 @@
 		"test": "bun test",
 		"test:slow": "SLOW=1 bun test",
 		"bench": "bun scripts/bench.js",
+		"farm": "bun scripts/farm.js",
+		"balance": "duckdb -no-init -bail -markdown -f scripts/balance.sql",
 		"deploy": "wrangler deploy"
 	},
 	"dependencies": {
-		"@dimforge/rapier3d": "0.20.0",
+		"@dimforge/rapier3d": "0.21.0",
 		"lil-gui": "^0.21.0",
-		"three": "^0.185.1"
+		"three": "^0.186.1"
 	},
 	"devDependencies": {
-		"@dimforge/rapier3d-compat": "^0.20.0",
-		"oxfmt": "^0.67.0",
-		"oxlint": "^1.82.0",
-		"vite": "^8.2.2",
+		"@dimforge/rapier3d-compat": "^0.21.0",
+		"oxfmt": "^0.71.0",
+		"oxlint": "^1.86.0",
+		"vite": "^8.3.2",
 		"vite-plugin-wasm": "^3.6.0",
-		"wrangler": "^4.129.1"
+		"wrangler": "^4.147.0"
 	}
 }

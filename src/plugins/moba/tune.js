@@ -1,6 +1,7 @@
 // --- Tunables ----------------------------------------------------------------
 // Moba's live values (docs/moba-plan.md, "Feel numbers"), shared by the debug GUI, the sim and DOM-free tests. Metres and seconds.
 export const tune = {
+	testing: { speed: 1, speedMin: 0.25, speedMax: 4, speedStep: 0.25, seedMax: 0xffffffff },
 	// Static layout and dressing: applies on mode restart.
 	map: {
 		halfX: 52,
@@ -233,7 +234,15 @@ export const tune = {
 	},
 	scripted: { think: 0.1, tell: 0.3, retreat: 0.35, recover: 0.9, file: 2, hold: 3 },
 	proof: { batch: 3600, afterKill: 1, siegeLimit: 600, trace: 128, queryBudgetMs: 2 },
-	hud: { bannerLife: 2.5, ending: 1.5 },
+	hud: {
+		bannerLife: 2.5,
+		ending: 1.5,
+		hoverDelay: 0.25, // a world unit's card opens after the cursor rests this long
+		longPress: 0.4, // touch hold that opens a HUD card
+		inspectHold: 0.35, // pad Y hold that opens a card
+		hpTick: 200, // HP per tick on the portrait bar
+		warn: 5, // timers pulse in their last seconds
+	},
 	match: { objective: 180, late: 480, lateGunDamage: 0.25 },
 	waves: {
 		first: 15,
@@ -470,6 +479,36 @@ export const tune = {
 	respawn: { base: 6, perLevel: 2 },
 	momentum: { reduction: 2 },
 	catching: { returnTell: 0.5, pocketLife: 6, bagLimit: 6 },
+	gloveSlap: { damage: 110, rate: 1, windup: 0.3, backswing: 0.25, range: 3, radius: 0.35 },
+	toss: { damage: 120, castPoint: 0.35, range: 9, speed: 20, radius: 0.35, cooldown: 5 },
+	catch: {
+		castPoint: 0,
+		duration: 1,
+		radius: 2,
+		angle: 100,
+		speedFactor: 0.5,
+		cooldown: 10,
+		resetCooldown: 3,
+	},
+	dive: { castPoint: 0, range: 4, time: 0.25, prone: 0.4, radius: 2, angle: 360, cooldown: 12 },
+	mittsView: {
+		segments: 48,
+		arcInset: 0.94,
+		arcBorder: 0.018,
+		arcLift: 0.005,
+		catchY: 0.11,
+		catchFillY: 0.125,
+		diveY: 0.14,
+		pocketY: 0.015,
+		pocketRadius: 0.6,
+		pocketWidth: 0.055,
+		gloveLift: 0.5,
+		gloveTurn: 0.5,
+		tossPull: 0.45,
+		slapReach: 0.5,
+		diveLean: 0.7,
+		proneTurn: Math.PI / 2,
+	},
 	abilityView: {
 		tellY: 0.029,
 		fillLift: 0.001,
@@ -537,6 +576,13 @@ export const tune = {
 		respawn: 2,
 	},
 	sounds: {
+		slapWindup: { freq: 140, slideTo: 250, type: 'triangle', dur: 0.15, gain: 0.1 },
+		slap: { freq: 100, slideTo: 55, type: 'square', dur: 0.1, gain: 0.18 },
+		tossWindup: { freq: 230, slideTo: 390, type: 'sine', dur: 0.18, gain: 0.12 },
+		toss: { freq: 520, slideTo: 170, type: 'triangle', dur: 0.13, gain: 0.15 },
+		tossHit: { freq: 190, slideTo: 60, type: 'sawtooth', dur: 0.12, gain: 0.18 },
+		catch: { freq: 430, slideTo: 900, type: 'sine', dur: 0.18, gain: 0.14 },
+		dive: { freq: 130, slideTo: 580, type: 'sawtooth', dur: 0.2, gain: 0.13 },
 		boardExpired: { freq: 950, slideTo: 420, type: 'triangle', dur: 0.18, gain: 0.08 },
 		nock: { freq: 180, slideTo: 480, type: 'triangle', dur: 0.08, gain: 0.12 },
 		returnNock: { freq: 300, slideTo: 500, type: 'sine', dur: 0.12, gain: 0.12 },
@@ -582,6 +628,11 @@ export const tune = {
 		vault: { freq: 180, slideTo: 720, type: 'triangle', dur: 0.12, gain: 0.12 },
 	},
 	juice: {
+		slap: { count: 5, speed: 1.2, life: 0.2, size: 0.13 },
+		toss: { count: 4, speed: 1.4, life: 0.3, size: 0.08 },
+		tossHit: { count: 8, speed: 1.8, life: 0.3, size: 0.09 },
+		catch: { count: 6, speed: 0.7, life: 0.35, size: 0.08 },
+		dive: { count: 10, speed: 2.4, life: 0.35, size: 0.07, streak: true },
 		boardExpired: { count: 6, speed: 0.9, life: 0.5, size: 0.08 },
 		caught: { count: 10, speed: 1.8, life: 0.4, size: 0.1 },
 		catchExpired: { count: 3, speed: 0.6, life: 0.3, size: 0.06 },

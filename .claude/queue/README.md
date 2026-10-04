@@ -1,2 +1,4 @@
 Queued briefs for the moba, in order. The loop skill takes the lowest number whose "after" is met, spawns it with the model named on line 1, and deletes the file once it lands. Reviews use `review.md` with the reverse model.
-Feature freeze (Oskar, 2026-09-30): after 04c, only 04d (agent play) and fixes until agents can play a whole match; 05 and up wait. Oskar, later that day: stop once the running thread (04f) finishes; no second playtest. The loop stops and hands over for human playtesting; the heartbeat must not start new briefs.
+Playtest round (Oskar, 2026-10-04): the freeze is over. Oskar's feedback becomes 01x briefs and goes first; the host is the 12-core WSL box, so independent briefs run in parallel.
+Online stays later: Oskar plays solo for weeks first. Highlights are shelved (low prio).
+Balance runs: about 20 matches (Oskar), not hundreds.

@@ -23,7 +23,7 @@ import { createSandbox } from './sandbox.js'
 const CHARGE_STEP = 0.16
 
 // Dodgeball: the court, its presentation and debug tools live as long as the plugin; the match flow lives as long as a run of the mode.
-export default function dodgeball(app, { hubPortal = null } = {}) {
+export default function dodgeball(app, { hubPortal = null, hubExit = null } = {}) {
 	const { scene, world, RAPIER, input, audio, overlay, camera } = app
 	const { sfx } = audio
 	const { combat } = app.debug
@@ -31,6 +31,7 @@ export default function dodgeball(app, { hubPortal = null } = {}) {
 	const scoreEl = document.querySelector('.score')
 	const fadeEl = document.querySelector('.fade')
 	const splashEl = document.querySelector('.splash')
+	const exitEl = splashEl.querySelector('.hub-exit')
 	const hitConfirmation = document.querySelector('.hit-confirmation')
 	const hitmarker = document.querySelector('.hitmarker')
 
@@ -195,7 +196,18 @@ export default function dodgeball(app, { hubPortal = null } = {}) {
 		aim.target(target, meter.perfect)
 	}
 
+	// The hub's way out: Esc, the pad's View button (B is dash here) or the round arrow.
+	const canExit = () =>
+		!!hubExit && !app.session.shared && flow?.phase === 'menu' && !flow.transitioning
+	function leaveHub() {
+		if (!canExit()) return
+		sfx.menuClose()
+		hubExit.onSelect()
+	}
 	function updateHud() {
+		const exitKey = input.activeDevice() === 'gamepad' ? 'View' : 'Esc'
+		const keyEl = exitEl.querySelector('kbd')
+		if (keyEl.textContent !== exitKey) keyEl.textContent = exitKey
 		let music =
 			flow.phase === 'menu'
 				? 'hub'
@@ -330,6 +342,7 @@ export default function dodgeball(app, { hubPortal = null } = {}) {
 		if (e.code === 'Escape') {
 			if (flow.phase === 'playing' || flow.phase === 'paused') flow.togglePause()
 			else if (flow.phase !== 'menu') flow.transition('BACK TO THE COURT', flow.enterHub)
+			else leaveHub()
 			return
 		}
 		// Number keys enter the matching difficulty portal.
@@ -361,6 +374,13 @@ export default function dodgeball(app, { hubPortal = null } = {}) {
 				splashEl.querySelector('.hub-actions').append(entry)
 				run.signal.addEventListener('abort', () => entry.remove(), { once: true })
 			}
+			if (hubExit && !session.shared) {
+				exitEl.hidden = false
+				exitEl.onclick = leaveHub
+				exitEl.onpointerenter = () => sfx.hover()
+				run.signal.addEventListener('abort', () => (exitEl.hidden = true), { once: true })
+			}
+			let exitHeld = !!input.pad()?.buttons[8]
 			court.setShown(true)
 			actions = createActions()
 			flow = createMatchFlow({
@@ -394,6 +414,9 @@ export default function dodgeball(app, { hubPortal = null } = {}) {
 			run.intents.suspend(() => !playable() || coreTune.physics.paused)
 
 			run.system('input', () => {
+				const exitPressed = !!input.pad()?.buttons[8]
+				if (exitPressed && !exitHeld) leaveHub()
+				exitHeld = exitPressed
 				const menuInput = input.consumeMenuInput()
 				// A native modal (another plugin's panel) sits above the verdict card and takes the pad.
 				if (!flow.transitioning && !document.querySelector('dialog[open]'))

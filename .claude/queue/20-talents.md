@@ -1,0 +1,2 @@
+Model: Opus 5.5 design. After: Carom and Skip are built and the balance farm runs. Oskar, 2026-10-04: "a very important moba concept... big one, not sure we need it yet."
+HotS-style talent tiers (pick one of three at levels 1, 4, 7, 10...). Design the effect system they need (modifiers on ability properties, procs, quest stacks) against the existing trait hooks, the pick UI, bot picks, and how the farm measures each talent's win rate. Do it once the kits have settled, not before.

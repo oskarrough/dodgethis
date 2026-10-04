@@ -17,6 +17,8 @@ import { createSounds } from './sounds.js'
 import { createBallView } from './ball-view.js'
 import { createFeedback } from './feedback.js'
 import { createMatchMenu } from './menu.js'
+import { parseMatchSetup } from './setup.js'
+import { createMatchDebug } from './debug.js'
 
 const FACTS = [
 	'boardExpired',
@@ -81,12 +83,18 @@ export default function moba(app) {
 			const hud = createHud()
 			const pips = createPips()
 			const follow = createFollow()
-			const cameraControls = createCameraControls(window, run.signal, follow, () => !menu.frozen())
+			const cameraControls = createCameraControls(
+				window,
+				run.signal,
+				follow,
+				() => !app.clock.paused,
+			)
 			const cursor = createCursor(app.renderer.domElement)
 			const query = new URLSearchParams(window.location.search)
-			const requested = options.difficulty ?? query.get('bots')
-			const difficulty = ['easy', 'normal', 'hard'].includes(requested) ? requested : 'easy'
+			const setup = parseMatchSetup(query, options.setup ?? options)
+			const difficulty = setup.difficulty
 			const seats = practiceRoster(local, difficulty)
+			seats.find((seat) => seat.id === local).heroId = setup.heroId
 			const botsOnly = query.has('debug') && query.has('bots-only')
 			const sim = createSim({
 				scene,
@@ -100,6 +108,7 @@ export default function moba(app) {
 				smooth: run.smooth,
 				present: run.present,
 				lane: true,
+				seed: setup.seed,
 			})
 			const ballView = createBallView(scene)
 			const hero = sim.heroes.find((h) => h.id === local)
@@ -131,6 +140,18 @@ export default function moba(app) {
 				focusCore: follow.focus,
 				ready: options.ready,
 				difficulty,
+				setup,
+			})
+			const controls = createMatchDebug({
+				app,
+				run,
+				sim,
+				local,
+				menu,
+				setup,
+				botsOnly,
+				ready: options.ready,
+				clearCamera: cameraControls.clear,
 			})
 			run.clock.scale(feedback.beat)
 			run.intents.suspend(() => coreTune.physics.paused)
@@ -164,9 +185,9 @@ export default function moba(app) {
 				return unit?.body.mesh.position ?? null
 			}
 			run.system('present', ({ dt, gameDt, alpha }) => {
-				menu.result(coreTune.physics.paused ? 0 : dt)
-				const frozen = menu.frozen() || coreTune.physics.paused
-				const presentationFrozen = menu.presentationFrozen() || coreTune.physics.paused
+				menu.result(controls.paused ? 0 : dt)
+				const frozen = menu.frozen() || controls.paused
+				const presentationFrozen = menu.presentationFrozen() || controls.paused
 				const step = presentationFrozen ? 0 : sim.lane.match.winner ? dt : gameDt
 				const frame = app.intents.get(local)
 				const p = hero.body.mesh.position
@@ -242,6 +263,12 @@ export default function moba(app) {
 					}
 				})
 				hud.update(dt, {
+					hero,
+					sim,
+					aim: frame.aim,
+					camera: app.camera.view,
+					pad: input.pad(),
+					step: app.clock.step,
 					cooldowns: hero.cd
 						.slice(0, 3)
 						.map((cd) => Math.max(0, cd - (frozen ? 0 : alpha)) * app.clock.step),
@@ -351,7 +378,7 @@ export default function moba(app) {
 					}
 				})
 			run.debug.tune('bots', tune.bots, (f, t) => {
-				f.add(t, 'seed', 0, 10000, 1).name('seed (applies on restart)')
+				f.add(setup, 'seed', 0, tune.testing.seedMax, 1).name('seed (applies on restart)')
 				f.add(t, 'thinkTicks', 1, 60, 1)
 				f.add(t, 'rainHeroes', 1, 3, 1)
 				f.add(t, 'bruteEscort', 1, 3, 1)
@@ -496,6 +523,8 @@ export default function moba(app) {
 			run.debug.expose({
 				moba: {
 					sim,
+					setup,
+					controls,
 					proof: { ...tune.proof, step: app.clock.step, botsOnly },
 					ballFacts,
 					ballView,

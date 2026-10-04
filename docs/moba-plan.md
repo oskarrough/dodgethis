@@ -4,7 +4,7 @@ A small Heroes of the Storm-style mode: the smallest thing that already feels li
 
 ## Scope
 
-- **Match:** 3v3 (human + 2 bot allies vs 3 bots), all the same hero. Destroy the enemy core. 8–12 minutes. Boots with `?mode=moba` until the hub plugin exists.
+- **Match:** 3v3 (human + 2 bot allies vs 3 bots), all the same hero. Destroy the enemy core. 8–12 minutes. `?mode=moba` opens selection; `?mode=moba&play` starts immediately.
 - **Map:** one flat lane along x, 104 × 26 m, with hedged flanks and six pillars; layout and structure positions are specified in [moba-lane.md](moba-lane.md). The full lane is built: towers, forts, cores, waves, shared levels, killer-team globes, base healing and a core-kill win. Practice is a human plus two allied hero bots against three enemy hero bots, all Fletcher seats built from the hero table. Bots feed the same fixed-tick intents as players.
 - **Structures** (no ammo; HotS removed it in 2017). Each is invulnerable until the one in front falls. Abilities deal 25% to structures; a kill is worth 300 XP.
 
@@ -39,6 +39,10 @@ Early gun damage is shown above. At 8:00 guns deal 25% of it, waves accelerate a
 - **Bots (built):** hero bots play through `app.intents` exactly like players; see [Hero bots](#hero-bots-m4).
 - **Cut:** talents (Oskar's call), mana, items, extra lanes, mercenary camps, hearthstone, gates, fountains, shift-queue, attack-move, minimap, catch-up XP, and more than one hero.
 
+## Playtest links
+
+`?mode=moba&play&map=lane&bots=easy&hero=fletcher&seed=2&debug` skips selection and loading. `map=lane` is the only map; `hero=<id>` accepts hero definitions marked playable (default Fletcher); `bots=easy|normal|hard` defaults to Easy, and `seed=0…4294967295` defaults to the current bot seed (initially 2). Missing values use defaults; invalid values warn in the console and fall back. `play` (empty, `1` or `true`) starts a match; `play=0|false` opens selection. `debug` or Backquote shows match controls: pause/resume, one-tick step, 0.25×–4× speed, copy setup link, respawn a dead local hero and reset cooldowns. Copy link includes debug and restarts the setup, not the current tick or tune edits. There is no mana. Restart keeps the setup.
+
 ## Controls
 
 The mode declares the `pointClick` scheme. Moba sees one frame per participant, `{ move, order, aim, held, pressed: [{ action, at }], released }`, and one cast rule for both devices: a `slotN` press edge whose `at` is the aim at that moment.
@@ -70,7 +74,7 @@ Obedience from HotS, springs and juice from dodgethis. Everything below is moba'
 - **Facing is cosmetic.** Yaw turns at 1080°/s and snaps to the cast direction when a cast starts. Nothing waits on it.
 - **Pathing (moba-side):** go straight if the segment clears every static circle. Otherwise A* on a 0.5 m grid of the static layout, then string-pulling. Follow a carrot 0.8 m ahead. In the last metre the wish speed is `min(speed, dist/dt)`, with an arrival radius of 0.05 m: no overshoot, no easing. Repath if progress stays under 30% for 0.25 s. Clicks off the walkable area clamp to the nearest walkable point. The body gets a wish vector plus a max speed.
 - **Click ping:** a team-coloured ring that contracts over 0.25 s, plus a tick sound. Attack orders ping red on the target.
-- **Casts:** the hero is rooted for the cast point and the aim is frozen at `at`. Movement during a cast point is kept, and the previous order resumes at release. Only channels (mount, and R's cast) cancel on move, stop or cancel. Abilities have no backswing. Basic attacks have 0.15 s windup and 0.25 s backswing. Stop and movement (stick or a move order) cancel the windup without firing; any new order, stop, stick movement or casting cancels the backswing (stutter-step). Slot presses during windup buffer for the first tick of backswing, or flash denied if they cannot become legal within the buffer.
+- **Casts:** the hero is rooted for the cast point and the aim is frozen at `at`. Movement during a cast point is kept, and the previous order resumes at release. Stop and cancel abort a cast point without firing and refund its cooldown, so a cast can be faked out as in HotS. Channels (mount, and R's cast) also cancel on move. Abilities have no backswing. Basic attacks have 0.15 s windup and 0.25 s backswing. Stop and movement (stick or a move order) cancel the windup without firing; any new order, stop, stick movement or casting cancels the backswing (stutter-step). Slot presses during windup buffer for the first tick of backswing, or flash denied if they cannot become legal within the buffer.
 - **Buffering:** the core buffers slot edges for 0.15 s. Moba keeps one slot where the latest press wins, fires it on the first legal tick, and clears it on stop or death. A press on cooldown outside the buffer flashes the HUD icon for 60 ms.
 - **Skillshots** are swept circles, not Rapier bodies. They're registered with `app.smooth`. Q's measured dodge deadline at 8 m is about 0.52 s, including its 0.3 s cast point. Tune projectile speed before anything else.
 - **Telegraphs:** your own indicators while held: a line for Q and R, a circle for W, an arrow for E. Enemies see W's circle for its full 0.7 s, filling toward impact, and R's line during its cast point. Q nocks at the press and holds an interpolated draw pose through its 0.3 s cast point. Its enemy ground line clips at cover and the map edge, alongside the yaw snap; the released shot has a bright trail. The sparring dummy freezes its aim and shows enemies a filling line for 0.4 s before releasing Q; basic attacks have their own pose. A near miss within 0.8 m plays the "close" cue for both players (moba has its own detector).

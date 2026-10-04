@@ -1,6 +1,7 @@
 import { STEP } from '../../core/app.js'
 import { neutralFrame } from '../../core/intents.js'
 import { tune } from './tune.js'
+import { abilityOf } from './ability.js'
 import { clampWalkable, segmentClear, sweepHit, sweepObstacles, walkable } from './obstacles.js'
 
 const ticks = (s) => Math.max(1, Math.round(s / STEP))
@@ -76,14 +77,14 @@ function view(sim, births) {
 				if (!births.has(s)) births.set(s, sim.tick)
 				return { ...s, releaseTick: births.get(s) }
 			}),
-		ball: sim.ball.state?.state === 'flying' ? structuredClone(sim.ball.state) : null,
+		ball: sim.ball.state ? structuredClone(sim.ball.state) : null,
 		zones: sim.zones.map((z) => ({ ...z })),
 		globes: sim.lane.globes.map((g) => ({ ...g, pos: { ...g.pos } })),
 	}
 }
 
-// The sole perception boundary. Own state and the public objective are live;
-// all hostile geometry, including dodge and first-hit tests, comes from this ring.
+// The sole perception boundary. Only own state is live; every threat and
+// objective, including the Ball, comes from this ring.
 export function createBots(seats, seed = tune.bots.seed) {
 	const history = []
 	const births = new WeakMap()
@@ -180,7 +181,8 @@ export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed, b
 			const cast = (slot, at) => {
 				if (
 					!h.definition.abilities[slot] ||
-					h.cd[Number(slot.slice(-1)) - 1] ||
+					(h.cd[Number(slot.slice(-1)) - 1] &&
+						!(h.definition.abilities[slot]?.returnsPocket && h.abilityState?.pocket)) ||
 					h.cast ||
 					h.ballThrow
 				)
@@ -219,8 +221,8 @@ export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed, b
 			// One judgement per windup/shot, retained until its threat is gone.
 			const threats = []
 			for (const u of enemies)
-				if (u.cast && ['loose', 'volley'].includes(u.cast.ability)) {
-					const s = tune[u.cast.ability]
+				if (u.cast && (u.cast.shot || abilityOf(u.cast.ability)?.kind === 'shot')) {
+					const s = u.cast.shot ?? abilityOf(u.cast.ability).stats
 					threats.push({
 						key: `${u.id}:${u.cast.ability}:${perceived.tick + u.cast.left}`,
 						from: u.pos,
@@ -229,6 +231,7 @@ export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed, b
 						radius: s.radius,
 						delay: u.cast.left * STEP,
 						speed: s.speed,
+						catchable: u.cast.shot ? true : abilityOf(u.cast.ability).catchable,
 					})
 				}
 			for (const s of perceived.shots.filter((s) => s.team !== team))
@@ -240,8 +243,9 @@ export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed, b
 					radius: s.radius,
 					speed: s.speed,
 					delay: 0,
+					catchable: s.catchable,
 				})
-			const ball = sim.ball.state
+			const ball = perceived.ball
 			if (perceived.ball?.state === 'flying' && perceived.ball.team !== team) {
 				const s = perceived.ball.shot
 				threats.push({
@@ -252,6 +256,7 @@ export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed, b
 					radius: s.radius,
 					speed: s.speed,
 					delay: 0,
+					ball: true,
 				})
 			}
 			for (const z of perceived.zones.filter((z) => z.team !== team))
@@ -311,6 +316,22 @@ export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed, b
 				}
 				impact -= (now - perceived.tick) * STEP
 				if (impact <= 0) continue
+				const catchAbility = Object.entries(h.definition.abilities).find(
+					([, a]) => a?.id === 'catch',
+				)
+				if (
+					catchAbility &&
+					!sim.ball.carrying(h) &&
+					!h.catchWindow &&
+					(threat.catchable || threat.ball)
+				) {
+					const [slot, ability] = catchAbility
+					const atArc = impact - ability.stats.radius / threat.speed
+					if (atArc >= 0 && atArc < ability.stats.duration && cast(slot, threat.from)) {
+						state = 'catch'
+						return frame
+					}
+				}
 				if (!judged.has(threat.key))
 					judged.set(threat.key, { try: random() < k.dodge, at: now + ticks(k.dodgeReaction) })
 				const roll = judged.get(threat.key)
@@ -522,7 +543,10 @@ export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed, b
 					u.team !== team &&
 					homeGuard &&
 					distance(u.pos, homeGuard.pos) <= tune[homeGuard.kind].range &&
-					distance(u.pos, p) <= (h.definition.abilities.slot3?.stats.range ?? 0),
+					distance(u.pos, p) <=
+						(h.definition.abilities.slot3?.kind === 'zone'
+							? h.definition.abilities.slot3.stats.range
+							: 0),
 			)
 			if (invaders.length && (!target || advantage < -k.aggression)) {
 				state = 'defend'
@@ -539,7 +563,8 @@ export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed, b
 			if (target && advantage >= -k.aggression) {
 				state = 'fight'
 				holdUntil = now + ticks(b.hold)
-				const rain = h.definition.abilities.slot3?.stats
+				const rain =
+					h.definition.abilities.slot3?.kind === 'zone' ? h.definition.abilities.slot3.stats : null
 				let predicted = {
 					x: target.pos.x + target.vel.x * (rain?.delay ?? 0),
 					z: target.pos.z + target.vel.z * (rain?.delay ?? 0),
@@ -573,7 +598,11 @@ export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed, b
 					cast('slot3', predicted)
 				)
 					return frame
-				const loose = h.definition.abilities.slot1?.stats
+				const shotAbility = h.definition.abilities.slot1
+				const loose =
+					shotAbility?.returnsPocket && h.abilityState?.pocket
+						? h.abilityState.pocket.shot
+						: shotAbility?.stats
 				if (
 					loose &&
 					distance(p, target.pos) <= loose.range &&

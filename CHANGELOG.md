@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- Added direct MOBA playtest links and debug controls for pause, single-step, speed, copying the setup, respawning and resetting cooldowns.
+
 - Added an always-visible mode picker for switching between dodgeball and MOBA without reloading.
 
 - MOBA is reachable from the hub, with pause and result menus, off-screen Ball and hero arrows, tighter mouse following, clearer controls and compact hero selection.

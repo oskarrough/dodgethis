@@ -220,6 +220,17 @@ export function createApp(services = {}) {
 					acc = 0
 					smoother.snapAll()
 				},
+				// Diagnostics only: bypass solo holds for one tick, without spending frame debt.
+				// The caller must reject loading and terminal match states.
+				stepOnce() {
+					if (session.shared || !session.authoritative || !current || !held()) return false
+					acc = 0
+					runPhase('simulate', STEP)
+					intents.age(STEP)
+					smoother.snapAll()
+					smoother.capture()
+					return true
+				},
 				get paused() {
 					return held()
 				},

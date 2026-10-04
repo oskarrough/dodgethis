@@ -4,6 +4,14 @@ Run `bun run check` from the repository root for lint, formatting and the fast t
 
 Automated coverage includes roster/controller assignment, shared human actions, input ownership and validation, charge authority, stale match/round/sequence rejection, neutral input timeout, host-only state, snapshot validation/interpolation, event deduplication, round scoring, connection cancellation, and cleanup.
 
+## Combat logs
+
+Run `bun scripts/farm.js --matches 200 --heroes fletcher,mitts --difficulty hard --jobs 10`, then `bun run balance`. Workers play ordinary seeded bot matches through `createAgentMatch`; they rotate all ordered team-kit pairs, including mirrors, and skip Mitts with a warning if her definition is absent. Logs live in gitignored `runs/<date>/<match>.jsonl`; only completed files enter queries. Use `--help` for seed, duration limit and output options.
+
+Each fact has effective damage (HP removed, excluding overkill), actor seat/kit, ability and position, with the original fact retained. A single match row records the roster and result; a timeout has no winner and is excluded from win rates, but counted in match length. `createAgentMatch` exposes `logRows` by default, or streams rows through `onLog` without retaining them. Browser download UI is not wired yet.
+
+[The DuckDB queries](../scripts/balance.sql) report hero/team appearances, ordered matchups, damage per hero-seat minute, kill participation, match length and side bias, separated by difficulty and map. Kill participation counts the killer or a damaging hit in the preceding ten seconds of that victim's life. These are bot-only balance samples, not evidence that a human can win. Move old tuning revisions out of `runs/` when comparing balance: the default report reads every dated directory.
+
 ## Browser checks recorded on 2026-09-09
 
 Independent `agent-browser` sessions connected through the real public PeerJS signaling service on the development build:
@@ -38,6 +46,10 @@ Regression tests cover loading's ownership of controller input, ignored Start be
 The review browser artifacts are in `/tmp/playability-review-shots/`. Mouse, keyboard and pad entry/loading/menu/exit checks passed, including the moved physical portal, the unobstructed central dodgeball portal, hidden splash during the match, and A-to-skip while Start is ignored during loading. Mode, hero and Numbers layouts were captured at all four sizes; pause was captured at 1440×900. A separate six-bot browser run reached VICTORY at tick 74562 (20:43). The winning snapshot stayed unchanged during ending presentation, the team-blue result appeared, and Again started at tick zero with no shots or winner. That browser reported no errors; its record is `result-report.json` in the same directory.
 
 The single full working-copy test run, including the parallel agent-play tests, took 476.18 seconds: 464 passed, one camera test failed, and both dodgeball snapshots were unchanged. `bun run check` took 481 seconds overall. The failure exposed an unreachable corner focus driving the lens to its minimum; the fallback was corrected and all 35 camera/loading/menu/ending/overlay/lane tests then passed in 2.78 seconds. Lint and formatting passed separately. The full suite was not rerun.
+
+## MOBA debug-link proof
+
+`node scripts/verify-moba-debug.mjs <preview URL> <artifact directory>` checks direct setup links and bad-value warnings, then enters from a fresh `/` through the MOBA tile, Easy and hero lock. It sends a real mouse order and fast-forwards the ordinary app loop with the local human seat, without injected damage. It asserts a frozen pause snapshot, exactly one tick per step, clipboard success and live speed changes, then saves `debug-1440.png` and `report.json`. The recorded production pass captured tick 1337 with all 12 first-wave minions alive and no browser errors. DOM-free coverage is in `tests/moba-setup.test.js` and `tests/moba-debug.test.js`.
 
 ## Two-device check
 
