@@ -3,6 +3,7 @@ import * as THREE from 'three'
 import RAPIER from '@dimforge/rapier3d-compat'
 import { createApp, STEP } from '../src/core/app.js'
 import { tune as coreTune } from '../src/core/tune.js'
+import { tune } from '../src/plugins/moba/tune.js'
 import { createSim } from '../src/plugins/moba/sim.js'
 import { practiceRoster } from '../src/plugins/moba/bots.js'
 import { buildColliders } from '../src/plugins/moba/obstacles.js'
@@ -112,7 +113,8 @@ test('speed is per-run, bounded, and live; a new mode removes old holds and scal
 	const warnings = []
 	console.warn = (...args) => warnings.push(args)
 	try {
-		for (const v of [0, -1, NaN, Infinity, 4.1]) one.controls.speed = v
+		for (const v of [0, -1, NaN, Infinity, tune.testing.speedMax + tune.testing.speedStep])
+			one.controls.speed = v
 	} finally {
 		console.warn = warn
 	}
