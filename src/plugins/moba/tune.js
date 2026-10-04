@@ -685,6 +685,48 @@ export const tune = {
 		looseHit: { freq: 240, slideTo: 45, type: 'square', dur: 0.18, gain: 0.24 },
 		rain: { freq: 90, slideTo: 480, type: 'sine', dur: 0.3, gain: 0.23 },
 		vault: { freq: 180, slideTo: 720, type: 'triangle', dur: 0.12, gain: 0.12 },
+		// The ref's pea whistle: tweets warble between freq and slideTo; dur is the long final blast.
+		whistle: { freq: 2250, slideTo: 2400, type: 'sine', dur: 0.34, gain: 0.07 },
+		cardSlap: { freq: 150, slideTo: 55, type: 'square', dur: 0.07, gain: 0.13 },
+		squeak: { freq: 1250, slideTo: 2150, type: 'triangle', dur: 0.07, gain: 0.05 },
+	},
+	// Hero takedowns are a playground ruling: a rubber "OUT!" stamp printed under the victim and the ref's whistle.
+	out: {
+		stampY: 0.045, // its own print height, above juice marks (0.03) and below tells
+		width: 3.4, // m; the stamp is twice as wide as tall
+		slam: 0.12, // s from slamScale down to 1
+		slamScale: 1.7,
+		squish: 0.06, // the rubber gives this much as it lands
+		tilt: 7, // degrees either way
+		opacity: 0.92,
+		life: 20, // s until the print has faded away
+		hold: 0.4, // fraction of life printed at full strength
+		max: 8, // prints kept; the oldest is reused
+		streak: 6, // s between takedowns by one team that still count as a streak
+		tweet: 0.09, // s per short tweet; one per streak step, up to 3, before the long blast
+		warble: 0.03, // s per warble half
+		kick: 1.5, // camera kick when your own stamp lands
+		splat: { count: 12, speed: 2.4, life: 0.35, size: 0.09 },
+	},
+	// Every unit death tips over like a cardboard standee (s, except flat, rebound and tint).
+	card: {
+		fall: 0.24,
+		bounce: 0.14,
+		press: 0.1,
+		hold: 0.7,
+		fade: 0.4,
+		flat: 0.2,
+		rebound: 0.08,
+		tint: 0.45,
+	},
+	// Your sneakers squeak when you reverse at a run; capped so dodging back and forth stays quiet.
+	squeak: {
+		turn: 125, // degrees of direction change between ticks
+		speed: 0.75, // fraction of top speed you must be running at
+		window: 0.25, // s a run is remembered through the near stop of a reversal
+		cooldown: 0.7, // s between squeaks
+		fatigue: 3, // s window; each squeak inside it makes the next one quieter
+		quieter: 0.5, // gain multiplier per recent squeak
 	},
 	juice: {
 		slap: { count: 5, speed: 1.2, life: 0.2, size: 0.13 },

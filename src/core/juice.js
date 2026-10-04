@@ -140,10 +140,24 @@ export function createJuice(scene, { deathPace = () => 1, hitFlash = () => 0.07 
 	}
 
 	// Play `mesh` out as a corpse: it leaves its parent for the scene and owns fresh materials from here on.
-	function retire(mesh, { fell = false, radius = 0.4 } = {}) {
+	// `style: 'card'` with `card` timings and a hit `direction` tips the corpse over like a cardboard standee.
+	function retire(
+		mesh,
+		{ fell = false, radius = 0.4, style = null, direction = null, card = null } = {},
+	) {
 		for (const [material, f] of flashes) unflashUnder(mesh, material, f)
 		scene.attach(mesh) // preserve world pose, free the logical root from death motion
-		deaths.push(startDeath(mesh, { fell, radius, flash: hitFlash(), pace: deathPace }))
+		deaths.push(
+			startDeath(mesh, {
+				fell,
+				radius,
+				flash: hitFlash(),
+				pace: deathPace,
+				style,
+				direction,
+				card,
+			}),
+		)
 	}
 	function unflashUnder(mesh, material, f) {
 		let owned = false

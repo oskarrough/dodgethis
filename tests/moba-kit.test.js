@@ -482,12 +482,12 @@ test('feedback tiers distinguish remote pokes, local hits, damage taken and take
 		expect(shakes.at(-1)).toBe(0.15)
 		expect(rumbles.at(-1)).toEqual([0.2, 0.3, 60])
 		feedback.present({ ...hit, type: 'death', source: 'local' })
-		expect(kicks).toEqual([2])
+		expect(kicks).toEqual([]) // the takedown kick waits for the OUT! stamp to land
 		expect(feedback.beat(0.02)).toBeCloseTo(0.1)
 		feedback.reset()
 		feedback.present({ ...hit, type: 'death', target: 'local' })
 		expect(feedback.beat(0.02)).toBe(1)
-		expect(kicks).toEqual([2])
+		expect(kicks).toEqual([])
 	} finally {
 		if (previous === undefined) delete globalThis.document
 		else globalThis.document = previous

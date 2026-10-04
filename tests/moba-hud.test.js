@@ -440,9 +440,15 @@ test('MOBA combat cues have separate synth presets and read tuning live', () => 
 	const calls = []
 	const sounds = createSounds({ sfx: { step() {} }, blip: (options) => calls.push(options) })
 	const point = { x: 2, z: 3 }
-	for (const name of Object.keys(tune.sounds)) sounds[name](point)
-	expect(calls).toHaveLength(Object.keys(tune.sounds).length)
-	expect(new Set(calls.map((c) => `${c.freq}:${c.slideTo}:${c.type}:${c.dur}`)).size).toBe(
+	// The whistle is several blips; each cue is told apart by its first.
+	const firsts = []
+	for (const name of Object.keys(tune.sounds)) {
+		const before = calls.length
+		sounds[name](point)
+		firsts.push(calls[before])
+	}
+	expect(firsts.every(Boolean)).toBe(true)
+	expect(new Set(firsts.map((c) => `${c.freq}:${c.slideTo}:${c.type}:${c.dur}`)).size).toBe(
 		Object.keys(tune.sounds).length,
 	)
 	expect(calls.every((c) => c.point === point)).toBe(true)

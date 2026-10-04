@@ -111,18 +111,45 @@ const STYLES = {
 	},
 }
 
-// Styles eligible for a normal (arrow) elimination. 'sink' is fall-only.
+// Tips over like a cardboard standee: pivots on its foot away from the hit, slaps flat with a small bounce,
+// is pressed into the print and fades. Timings are seconds from `card` (fall, bounce, press, hold, fade); flat, rebound and tint are fractions.
+function cardPose(mesh, seconds, ctx) {
+	const c = ctx.card
+	const fall = clamp01(seconds / c.fall)
+	const bounce = clamp01((seconds - c.fall) / c.bounce)
+	const press = clamp01((seconds - c.fall - c.bounce) / c.press)
+	const angle = (Math.PI / 2) * (fall * fall - c.rebound * Math.sin(Math.PI * bounce))
+	ctx.tip.quaternion.setFromAxisAngle(ctx.axis, angle)
+	ctx.press.scale.y = 1 - (1 - c.flat) * easeOutCubic(press)
+	fade(ctx, 1 - clamp01((seconds - c.fall - c.bounce - c.press - c.hold) / c.fade))
+}
+
+// Styles eligible for a normal (arrow) elimination. 'sink' is fall-only; 'card' is asked for by name.
 const PICKABLE = ['melt', 'crumble', 'topple', 'implode', 'vortex', 'ascend']
 
 // The unit owns the replacement corpse materials and disposes them on reset.
 // `flash` is seconds of pure cream before the tint; `pace()` multiplies the length, read live.
 export function startDeath(
 	mesh,
-	{ fell = false, radius = 0.4, flash: hitFlash = 0.07, pace = () => 1 } = {},
+	{
+		fell = false,
+		radius = 0.4,
+		flash: hitFlash = 0.07,
+		pace = () => 1,
+		style = null,
+		direction = null,
+		card = null,
+	} = {},
 ) {
 	mesh.visible = true
-	const squash = fell ? 1 : 0.65
-	mesh.scale.set(fell ? 1 : 1.2, squash, fell ? 1 : 1.2)
+	const name = fell
+		? 'sink'
+		: style === 'card' && card
+			? 'card'
+			: PICKABLE[(Math.random() * PICKABLE.length) | 0]
+	const squash = fell || name === 'card' ? 1 : 0.65
+	const wide = fell || name === 'card' ? 1 : 1.2
+	mesh.scale.set(wide, squash, wide)
 	mesh.position.y *= squash
 	const baseY = mesh.position.y
 
@@ -137,7 +164,7 @@ export function startDeath(
 			transparent: true,
 			depthWrite: false,
 		})
-		material.color.lerp(DARK, 0.85)
+		material.color.lerp(DARK, name === 'card' ? card.tint : 0.85) // a card keeps its print colour
 		o.material = material
 		o.layers.set(FORWARD_LAYER)
 		previous.dispose()
@@ -145,9 +172,22 @@ export function startDeath(
 		material.color.copy(CREAM) // hit flash: the first frames print pure cream before the tint sets in
 	})
 
-	const name = fell ? 'sink' : PICKABLE[(Math.random() * PICKABLE.length) | 0]
-	const style = STYLES[name]
 	const ctx = { baseY, radius, mats, fell }
+	if (name === 'card') {
+		// press (unrotated, at the foot) → tip (rotates) → mesh, so pressing flattens straight down after the fall.
+		const parent = mesh.parent
+		ctx.press = new THREE.Group()
+		ctx.tip = new THREE.Group()
+		ctx.press.position.set(mesh.position.x, 0, mesh.position.z)
+		parent?.add(ctx.press)
+		ctx.press.add(ctx.tip)
+		ctx.tip.attach(mesh)
+		const length = Math.hypot(direction?.x ?? 0, direction?.z ?? 0)
+		const [dx, dz] = length > 1e-6 ? [direction.x / length, direction.z / length] : [1, 0]
+		ctx.axis = new THREE.Vector3(dz, 0, -dx) // up × direction: the top falls along the hit
+		ctx.card = card
+	}
+	const total = name === 'card' ? card.fall + card.bounce + card.press + card.hold + card.fade : 0
 
 	let t = 0
 	let done = false
@@ -155,10 +195,23 @@ export function startDeath(
 
 	function update(dt) {
 		if (done) return
-		t += dt / (style.dur * Math.max(0.1, pace()))
+		if (name === 'card') {
+			t += dt / Math.max(0.001, total * Math.max(0.1, pace()))
+			cardPose(mesh, clamp01(t) * total, ctx)
+			tint(ctx, 0) // back to the print colour once the hit flash ends
+			flash -= dt
+			if (flash > 0) for (const m of mats) m.mat.color.copy(CREAM)
+			if (t >= 1) {
+				done = true
+				mesh.visible = false
+				ctx.press.removeFromParent()
+			}
+			return
+		}
+		t += dt / (STYLES[name].dur * Math.max(0.1, pace()))
 		const tc = clamp01(t)
 		mesh.scale.set(1, 1, 1)
-		style.apply(mesh, tc, ctx)
+		STYLES[name].apply(mesh, tc, ctx)
 		flash -= dt
 		if (flash > 0) for (const m of mats) m.mat.color.copy(CREAM)
 		if (!fell) {

@@ -1,11 +1,23 @@
 import * as THREE from 'three'
+import { STEP } from '../../core/app.js'
 import { abilityOf } from './ability.js'
 import { heroDefinition } from './heroes.js'
 import { tune } from './tune.js'
 
 // Moba's fact switch (docs/moba-plan.md, "Hit feedback"): each fact becomes juice-kit verbs, sfx, rumble, pings and HUD.
 // `local` is this machine's participant id; facts about anyone else get the quieter version.
-export function createFeedback({ juice, sfx, camera, input, view, skillsView, hud, sim, local }) {
+export function createFeedback({
+	juice,
+	sfx,
+	camera,
+	input,
+	view,
+	skillsView,
+	hud,
+	sim,
+	local,
+	stamps,
+}) {
 	const hitmarker = document.querySelector('.hitmarker')
 	const _hm = new THREE.Vector3()
 	function hitmark(kind, point) {
@@ -38,11 +50,86 @@ export function createFeedback({ juice, sfx, camera, input, view, skillsView, hu
 
 	let aggroPingTick = -1
 	const sounded = new Map()
-	function cue(name, fact, gain = 1) {
+	function cue(name, fact, gain = 1, ...extra) {
 		const tick = fact.tick ?? sim.tick
 		if (sounded.get(name) === tick) return
 		sounded.set(name, tick)
-		sfx[name]?.(fact.point, gain)
+		sfx[name]?.(fact.point, gain, ...extra)
+	}
+
+	// A hero takedown is a playground ruling: an "OUT!" stamp in the takers' colour, the ref's whistle and,
+	// unless you're the one out (the recap says so), a banner relative to you. Streaks count per team.
+	const streaks = new Map() // team → { count, tick }
+	const titleCase = (word) => word[0].toUpperCase() + word.slice(1)
+	function who(unit, subject) {
+		const localTeam = unitOf(local)?.team
+		const said = (text) => (subject ? titleCase(text) : text)
+		if (!unit) return said('the enemy')
+		if (unit.id === local) return said('you')
+		const side = unit.team === localTeam ? 'ally' : 'enemy'
+		if (unit.definition) return said(`${side} ${titleCase(unit.definition.id)}`)
+		if (unit.structure) return said(`${unit.team === localTeam ? 'your' : 'enemy'} ${unit.kind}`)
+		return said(`${side} minions`)
+	}
+	function ruling(fact, unit, mine, onMe) {
+		const taker = unitOf(fact.source)
+		const team = taker?.team ?? (unit.team === 'A' ? 'B' : 'A')
+		const tick = fact.tick ?? sim.tick
+		const last = streaks.get(team)
+		const count = last && (tick - last.tick) * STEP <= tune.out.streak ? last.count + 1 : 1
+		streaks.set(team, { count, tick })
+		const hero = sim.heroes.includes(unit)
+		const side = sim.heroes.filter((h) => h.team === unit.team)
+		const wiped = hero && side.length > 1 && side.every((h) => h.dead)
+		stamps?.stamp(fact.point, {
+			text: wiped ? 'ALL OUT!' : count > 1 ? `${count} OUT!` : 'OUT!',
+			team,
+			tilt: ((tick * 7919) % 201) / 100 - 1,
+			onLand(at) {
+				juice.burst({ x: at.x, y: 0.1, z: at.z }, { x: 0, y: 1, z: 0 }, tune.out.splat)
+				if (mine && !onMe) camera.kick(tune.out.kick)
+			},
+		})
+		cue('whistle', fact, mine || onMe ? 1 : 0.5, wiped ? 3 : count)
+		if (hero && !onMe)
+			hud.banner?.(
+				!wiped
+					? `${who(taker, true)} got ${who(unit)} out`
+					: unit.team === unitOf(local)?.team
+						? 'All out! Your whole team is out'
+						: 'All out! The whole enemy team is out',
+			)
+	}
+
+	// Your sneakers squeak when you reverse out of a run: read once per sim tick against the last running velocity,
+	// since a reversal passes through a near stop. A cooldown and fatigue keep it rare.
+	const squeak = { tick: -1, x: 0, z: 0, ran: -Infinity, at: -Infinity, recent: [] }
+	function stride(hero) {
+		if (!hero || sim.tick === squeak.tick) return
+		squeak.tick = sim.tick
+		const seconds = sim.tick * STEP
+		const { speed, window, cooldown, fatigue, quieter } = tune.squeak
+		const top = (hero.definition?.base?.speed ?? tune.hero.speed) * (hero.body.speedMul ?? 1)
+		const v = hero.dead ? { x: 0, z: 0 } : hero.body.velocity
+		const now = Math.hypot(v.x, v.z)
+		const was = Math.hypot(squeak.x, squeak.z)
+		const turned =
+			seconds - squeak.ran <= window &&
+			now >= speed * top * 0.5 &&
+			(squeak.x * v.x + squeak.z * v.z) / Math.max(1e-6, was * now) <=
+				Math.cos((tune.squeak.turn * Math.PI) / 180)
+		if (now >= speed * top) {
+			squeak.x = v.x
+			squeak.z = v.z
+			squeak.ran = seconds
+		}
+		if (!turned || seconds - squeak.at < cooldown) return
+		squeak.ran = -Infinity
+		squeak.recent = squeak.recent.filter((at) => seconds - at < fatigue)
+		const gain = quieter ** squeak.recent.length
+		squeak.recent.push(seconds)
+		squeak.at = seconds
+		sfx.squeak(hero.body.mesh.position, gain, 0.85 + 0.3 * Math.min(1, was / Math.max(1e-3, top)))
 	}
 
 	function present(fact) {
@@ -293,7 +380,13 @@ export function createFeedback({ juice, sfx, camera, input, view, skillsView, hu
 				const unit = unitOf(fact.target)
 				const corpse = unit?.corpse ?? unit?.body
 				if (unit?.structure) return // The sim already replaced it with solid rubble.
-				if (corpse) juice.retire(corpse.visual, { radius: corpse.radius })
+				if (corpse)
+					juice.retire(corpse.visual, {
+						radius: corpse.radius,
+						style: 'card',
+						direction: fact.direction,
+						card: tune.card,
+					})
 				juice.burst(fact.point, fact.direction, {
 					count: 12,
 					speed: 3,
@@ -302,14 +395,16 @@ export function createFeedback({ juice, sfx, camera, input, view, skillsView, hu
 					size: 0.1,
 					sizeStep: 0.025,
 				})
+				cue('cardSlap', fact, mine || onMe ? 1 : 0.4)
+				if (unit && (sim.heroes.includes(unit) || sim.dummies.includes(unit)))
+					ruling(fact, unit, mine, onMe)
 				if (onMe) {
 					camera.shake(tune.juice.shakeTakedown)
 					input.rumble(0.35, 0.6, 85)
 				}
+				// Your takedown: hitstop now, then the camera kicks when the stamp lands. No shake.
 				if (mine && !onMe) {
-					camera.kick(2)
 					stop = tune.juice.hitstop
-					camera.shake(tune.juice.shakeTakedown)
 					hitmark('kill', fact.point)
 					input.rumble(0.35, 0.6, 85)
 				}
@@ -351,11 +446,18 @@ export function createFeedback({ juice, sfx, camera, input, view, skillsView, hu
 		present,
 		fizzle,
 		beat,
+		stride,
 		reset() {
 			stop = 0
 			freeze = 0
 			aggroPingTick = -1
 			sounded.clear()
+			streaks.clear()
+			stamps?.reset()
+			squeak.tick = -1
+			squeak.x = squeak.z = 0
+			squeak.ran = squeak.at = -Infinity
+			squeak.recent.length = 0
 		},
 	}
 }

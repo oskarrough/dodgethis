@@ -10,6 +10,7 @@ import { createFollow, stepCamera } from './follow.js'
 import { createHud, matchFrame } from './hud.js'
 import { createSounds } from './sounds.js'
 import { createFeedback } from './feedback.js'
+import { createStamps } from './stamps.js'
 import { tune } from './tune.js'
 import './replay.css'
 
@@ -42,6 +43,7 @@ export function mobaReplay(app) {
 			const ballView = createBallView(scene)
 			const hud = createHud()
 			const juice = createJuice(scene)
+			const stamps = createStamps(scene)
 			const sfx = createSounds(app.audio)
 			const follow = createFollow()
 			const match = createAgentMatch({
@@ -67,6 +69,7 @@ export function mobaReplay(app) {
 				hud,
 				sim,
 				local,
+				stamps,
 			})
 			let paused = false,
 				complete = false
@@ -150,6 +153,7 @@ export function mobaReplay(app) {
 				sim.laneView.update(sim.lane, sim.heroes, blend, locate, elapsed, hero.team)
 				feedback.fizzle(gone)
 				juice.update(elapsed)
+				stamps.update(elapsed)
 				app.audio.setAudioListener(p)
 				hud.update(dt, {
 					...matchFrame(sim, hero, blend, app.clock.step),
@@ -204,6 +208,7 @@ export function mobaReplay(app) {
 					ballView.dispose()
 					hud.dispose()
 					juice.dispose()
+					stamps.dispose()
 					unbuild()
 					world.free()
 				},

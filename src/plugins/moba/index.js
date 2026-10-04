@@ -16,6 +16,7 @@ import { createPips } from './pips.js'
 import { createSounds } from './sounds.js'
 import { createBallView } from './ball-view.js'
 import { createFeedback } from './feedback.js'
+import { createStamps } from './stamps.js'
 import { createOnboarding } from './onboarding.js'
 import { createMatchMenu } from './menu.js'
 import { parseMatchSetup } from './setup.js'
@@ -77,6 +78,7 @@ export default function moba(app) {
 			audio.setMusicScene('play')
 			const unbuild = buildMap(scene, world, RAPIER)
 			const juice = createJuice(scene)
+			const stamps = createStamps(scene)
 			const shadows = createShadows(scene, {
 				onGround: (x, z) => Math.abs(x) <= FLOOR.halfX && Math.abs(z) <= FLOOR.halfZ,
 			})
@@ -133,6 +135,7 @@ export default function moba(app) {
 				hud,
 				sim,
 				local,
+				stamps,
 			})
 			app.clock.reset()
 
@@ -270,6 +273,8 @@ export default function moba(app) {
 				})
 				feedback.fizzle(gone)
 				juice.update(step)
+				stamps.update(step)
+				feedback.stride(hero)
 				shadows.update((cast) => {
 					for (const d of [...sim.heroes, ...sim.dummies]) {
 						if (d.dead) continue
@@ -361,6 +366,7 @@ export default function moba(app) {
 				hud.dispose()
 				pips.dispose()
 				juice.dispose()
+				stamps.dispose()
 				shadows.dispose()
 				sim.dispose()
 				unbuild()
