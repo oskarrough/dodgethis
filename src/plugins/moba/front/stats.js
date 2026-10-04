@@ -100,22 +100,27 @@ export function abilityLines(s, slot, heroId = 'fletcher') {
 			return [`Pocket · hold a caught shot for ${s.pocketLife} s, then send it back with Toss.`]
 		const ability = s.abilities[`slot${['Q', 'W', 'E', 'R'].indexOf(slot) + 1}`]
 		if (!ability) return ['Not playable yet.']
-		const units = {
-			range: 'm',
-			radius: 'm',
-			speed: 'm/s',
-			cooldown: 's',
-			castPoint: 's',
-			time: 's',
-			duration: 's',
-			prone: 's',
+		const labels = {
+			damage: ['damage', ''],
+			range: ['range', ' m'],
+			radius: ['radius', ' m'],
+			speed: ['speed', ' m/s'],
+			angle: ['arc', '°'],
+			castPoint: ['windup', ' s'],
+			time: ['travel', ' s'],
+			duration: ['lasts', ' s'],
+			prone: ['prone', ' s'],
+			cooldown: ['recharge', ' s'],
 		}
-		return Object.entries(ability.stats)
+		const parts = Object.entries(ability.stats)
 			.filter(([, value]) => typeof value === 'number')
-			.map(
-				([key, value]) =>
-					`${key.replace(/([A-Z])/g, ' $1')} · ${value}${units[key] ? ' ' + units[key] : ''}`,
-			)
+			.map(([key, value]) => {
+				const [label, unit] = labels[key] ?? [key.replace(/([A-Z])/g, ' $1').toLowerCase(), '']
+				return `${value}${unit} ${label}`
+			})
+		return Array.from({ length: Math.ceil(parts.length / 3) }, (_, i) =>
+			parts.slice(i * 3, i * 3 + 3).join(' · '),
+		)
 	}
 	switch (slot) {
 		case 'Trait':
@@ -128,8 +133,8 @@ export function abilityLines(s, slot, heroId = 'fletcher') {
 			]
 		case 'W':
 			return [
-				`${s.w.range} m dash · ${s.w.time} s travel · ${s.w.cooldown} s recharge`,
-				'Dash toward your aim. The stationary preview shows the Vault pose and path.',
+				`${s.w.range} m dash toward your aim · ${s.w.time} s travel`,
+				`${s.w.cooldown} s recharge`,
 			]
 		case 'E':
 			return [

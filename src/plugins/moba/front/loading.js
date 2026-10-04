@@ -51,7 +51,7 @@ export function startLoading(
 			'section',
 			'front-loading-ui',
 			null,
-			`<h1>${tune.loading.mapName}</h1><p class="front-load-status" aria-live="polite">Preparing the view</p>${figures('A')}${figures('B')}<footer><button class="front-back front-return" aria-label="Back to hero select"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M27 10 L10 24 L27 38 L27 30 L38 30 L38 18 L27 18Z"/></svg><kbd class="front-return-key"></kbd></button><button class="front-skip">Start now</button><p class="front-prompts"></p></footer>`,
+			`<h1>${tune.loading.mapName}</h1><p class="front-load-status" aria-live="polite">Preparing the view</p>${figures('A')}${figures('B')}<footer><button class="front-back front-return" aria-label="Back to hero select"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M27 10 L10 24 L27 38 L27 30 L38 30 L38 18 L27 18Z"/></svg><kbd class="front-return-key"></kbd></button><button class="front-skip front-sticker front-cta"><span class="front-card-face"></span><span>Start now</span></button><p class="front-prompts"></p></footer>`,
 		)
 		function positionFigures() {
 			const size = Math.max(

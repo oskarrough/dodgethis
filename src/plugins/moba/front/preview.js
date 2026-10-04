@@ -64,6 +64,8 @@ export function createPreview(app, run, heroId = 'fletcher') {
 	const heroic = new THREE.Mesh(line, cream)
 	heroic.position.y = tune.preview.tellY
 	const heroicBolt = new THREE.Mesh(new THREE.SphereGeometry(1, 12, 8), cream)
+	// three.js hides only on visible === false, so these start hidden and are set to booleans.
+	heroic.visible = heroicBolt.visible = false
 	scene.add(patch, shadow, heroic, heroicBolt)
 	const poses = new Map()
 	const view = createView(scene, (object, read) => {
@@ -267,7 +269,7 @@ export function createPreview(app, run, heroId = 'fletcher') {
 					: [],
 			alpha,
 		})
-		heroic.visible = slot && ability?.id === 'volley' && t < warning
+		heroic.visible = !!(slot && ability?.id === 'volley' && t < warning)
 		heroic.rotation.y = Math.atan2(dir.x, dir.z) + Math.PI
 		heroic.scale.set(tune.volley.radius * 2, 1, tune.volley.range)
 		heroic.position.set(
@@ -276,7 +278,7 @@ export function createPreview(app, run, heroId = 'fletcher') {
 			(dir.z * tune.volley.range) / 2,
 		)
 		heroic.material = t < tune.preview.hold ? cream : enemy
-		heroicBolt.visible = slot && ability?.id === 'volley' && fired && age < flight
+		heroicBolt.visible = !!(slot && ability?.id === 'volley' && fired && age < flight)
 		heroicBolt.scale.setScalar(tune.volley.radius)
 		heroicBolt.position.set(
 			dir.x * Math.min(tune.volley.range, age * tune.volley.speed),

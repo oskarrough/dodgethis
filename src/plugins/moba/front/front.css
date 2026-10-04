@@ -257,6 +257,116 @@
 	width: min(60%, 16vh);
 }
 
+/* The sticker every card is cut from: hard ink shadow, opaque face, stitched seam,
+   and a flood of --sticker-flood that rises when the sticker is chosen. */
+.front-sticker {
+	--sticker-color: var(--ui-cream);
+	--sticker-flood: var(--ui-button);
+	--sticker-radius: clamp(14px, 1.6vw, 24px);
+	--sticker-shadow: 5px;
+	position: relative;
+	background: transparent;
+	transition: transform var(--tile-snap) cubic-bezier(0.2, 1.9, 0.45, 1);
+	-webkit-tap-highlight-color: transparent;
+	user-select: none;
+}
+.front-sticker::before,
+.front-card-face,
+.front-card-face::before,
+.front-card-face::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	border-radius: var(--sticker-radius);
+}
+.front-sticker::before {
+	background: var(--ui-text);
+	transform: translate(var(--sticker-shadow), var(--sticker-shadow));
+	transition: transform var(--tile-snap) cubic-bezier(0.2, 1.9, 0.45, 1);
+}
+.front-card-face {
+	overflow: hidden;
+	border: clamp(3px, 0.28vw, 4px) solid var(--ui-text);
+	background-color: var(--sticker-color);
+	background-image: radial-gradient(
+		color-mix(in srgb, var(--ui-text) 14%, transparent) 0.6px,
+		transparent 0.8px
+	);
+	background-size: 5px 5px;
+}
+.front-card-face::before {
+	inset: -2px;
+	border-radius: 0;
+	background: var(--sticker-flood);
+	transform: scaleY(0);
+	transform-origin: bottom;
+	transition: transform var(--tile-snap) cubic-bezier(0.3, 1.3, 0.5, 1);
+}
+.front-card-face::after {
+	inset: 5px;
+	border: 2px dashed color-mix(in srgb, var(--ui-text) 40%, transparent);
+	border-radius: calc(var(--sticker-radius) - 5px);
+}
+.front-sticker > :not(.front-card-face) {
+	position: relative;
+}
+.front-sticker:is(.selected, .flooded) > .front-card-face::before {
+	transform: scaleY(1);
+}
+.front-sticker.selected {
+	--sticker-shadow: calc(5px + var(--tile-lift) * 0.6);
+	z-index: 1;
+	transform: translate(calc(var(--tile-lift) * -0.3), calc(var(--tile-lift) * -0.6))
+		rotate(calc(var(--tile-tilt) * -0.8)) scale(var(--tile-scale));
+}
+.front-sticker:active {
+	--sticker-shadow: 1px;
+	transform: translate(3px, 4px) scale(0.96);
+	transition-duration: var(--tile-press);
+}
+.front-sticker:active::before {
+	transition-duration: var(--tile-press);
+}
+
+/* Primary actions (Lock in, Start now): the juiciest sticker on any screen. */
+.moba-front .front-cta {
+	--sticker-color: var(--ui-button);
+	--sticker-flood: var(--ui-red);
+	--sticker-radius: clamp(18px, 1.8vw, 28px);
+	--sticker-shadow: 7px;
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4em;
+	padding: 0.32em 0.7em 0.28em;
+	font: 400 clamp(36px, 3.8vw, 64px) / 1 var(--ui-font);
+	color: var(--ui-text);
+	transform: rotate(-2deg);
+}
+.front-cta > .front-card-face {
+	border-width: clamp(4px, 0.35vw, 6px);
+}
+.front-cta.selected {
+	--sticker-shadow: calc(7px + var(--tile-lift));
+	transform: translate(calc(var(--tile-lift) * -0.5), calc(var(--tile-lift) * -1)) rotate(1deg)
+		scale(calc(var(--tile-scale) + 0.04));
+}
+.front-cta.selected > :not(.front-card-face, kbd) {
+	color: var(--ui-cream);
+	-webkit-text-stroke: 0.08em var(--ui-text);
+	paint-order: stroke fill;
+}
+.front-cta:disabled {
+	cursor: default;
+	--sticker-color: color-mix(in srgb, var(--ui-button) 30%, var(--ui-cream));
+	transform: rotate(-2deg);
+}
+.moba-front .front-cta kbd {
+	font-size: 0.38em;
+}
+.moba-front:not([data-device='keyboard'], [data-device='gamepad']) .front-cta kbd {
+	display: none;
+}
+
 .moba-front footer {
 	position: absolute;
 	bottom: max(20px, 4vh);
@@ -384,6 +494,9 @@
 	.front-tile::before,
 	.front-tile svg,
 	.front-tile-face::before,
+	.front-sticker,
+	.front-sticker::before,
+	.front-card-face::before,
 	.front-return {
 		transition-duration: 0s;
 	}
