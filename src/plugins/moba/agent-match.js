@@ -4,6 +4,7 @@ import { createSim } from './sim.js'
 import { createAgentPerception } from './agents.js'
 import { tune } from './tune.js'
 import { FLOOR } from './obstacles.js'
+import { HEROES } from './heroes.js'
 
 // Sparse input tape: a neutral continuous sample goes to every seat each tick.
 // Presses remain in the ordinary store until consumed or aged, just as in the app.
@@ -18,6 +19,9 @@ export function createAgentMatch({
 	replay = null,
 	onInputs = () => {},
 	matchId = crypto.randomUUID(),
+	runId = matchId,
+	commit = null,
+	tuneHash = replayHash(tune),
 	onLog = null,
 	recordInputs = true,
 }) {
@@ -28,20 +32,11 @@ export function createAgentMatch({
 		facts = []
 	const logRows = []
 	const seats = new Map(roster.map((seat) => [seat.id, seat]))
-	const health = new Map()
-	let loggedResult = false,
-		passiveLevelUp = false
+	let loggedResult = false
 	const log = (row) => {
 		if (onLog) onLog(row)
 		else logRows.push(row)
 	}
-	const units = () => [...sim.heroes, ...sim.lane.structures, ...sim.lane.minions]
-	const baseHealing = (unit, maxHp) =>
-		!unit.kind &&
-		!unit.dead &&
-		(unit.team === 'A' ? -unit.body.position.x : unit.body.position.x) >= tune.base.x
-			? maxHp * tune.base.heal * STEP
-			: 0
 	function logFact(fact) {
 		const actor = fact.hero ?? fact.source ?? null
 		const seat = seats.get(actor)
@@ -50,32 +45,8 @@ export function createAgentMatch({
 			fact.projectile == null ? null : sim.shots.find((shot) => shot.id === fact.projectile)
 		const slot = fact.slot ?? shot?.slot
 		const target = typeof fact.target === 'string' ? fact.target : null
-		// The sim reports attempted damage. Observe HP between hits, including
-		// lane healing/level growth, so overkill never enters balance totals.
-		if (fact.type === 'xp') passiveLevelUp = !!fact.passive
-		if (fact.type === 'levelUp') {
-			for (const hero of sim.heroes.filter((hero) => hero.team === fact.team)) {
-				const previous = health.get(hero.id)
-				if (!previous) continue
-				const growth = hero.maxHp - previous.maxHp
-				previous.hp = Math.min(
-					hero.maxHp,
-					previous.hp + (hero.dead ? 0 : growth) + (passiveLevelUp ? baseHealing(hero, growth) : 0),
-				)
-				previous.maxHp = hero.maxHp
-			}
-		}
-		if (fact.type === 'spawn') {
-			const spawned = sim.find(target)
-			if (spawned) health.set(target, { hp: spawned.hp, maxHp: spawned.maxHp })
-		}
-		const previous = health.get(target)
-		if (fact.heal && previous) previous.hp = Math.min(previous.maxHp, previous.hp + fact.heal)
-		const damage =
-			fact.type === 'hit'
-				? Math.max(0, Math.min(fact.damage, previous?.hp ?? fact.damage + fact.hp))
-				: 0
-		if (fact.type === 'hit' && previous) previous.hp = fact.hp
+		// Damage facts already carry HP actually removed, including lethal hits.
+		const damage = fact.type === 'hit' ? fact.damage : 0
 		const position = fact.point ?? unit?.body.position ?? null
 		log({
 			tick: fact.tick,
@@ -111,6 +82,9 @@ export function createAgentMatch({
 			hero: null,
 			team: null,
 			kind: 'match',
+			run_id: runId,
+			commit,
+			tune_hash: tuneHash,
 			target: null,
 			effective_damage: 0,
 			ability_id: null,
@@ -134,12 +108,13 @@ export function createAgentMatch({
 		lane: true,
 		smooth,
 		bots: roster.filter((seat) => seat.controller === 'bot'),
-		driveBots: !replay,
+		driveBots: !replay || replay.botReplay === true,
 		intents: {
 			...intents,
 			feed(id, frame) {
 				if (
 					recordInputs &&
+					!replay?.botReplay &&
 					(frame.order ||
 						frame.aim ||
 						frame.pressed.length ||
@@ -184,12 +159,6 @@ export function createAgentMatch({
 				intents.feed(id, frame)
 			}
 			const tick = sim.tick
-			health.clear()
-			for (const unit of units())
-				health.set(unit.id, {
-					hp: Math.min(unit.maxHp, unit.hp + baseHealing(unit, unit.maxHp)),
-					maxHp: unit.maxHp,
-				})
 			sim.step()
 			if (sim.lane.match.winner) logResult('matchOver')
 			if (!replay && recordInputs && feeds.length) {
@@ -234,7 +203,8 @@ export function readReplay(value) {
 		!Array.isArray(value.inputs) ||
 		!Number.isSafeInteger(value.result?.ticks) ||
 		value.result.ticks < 0 ||
-		typeof value.result.hash !== 'string'
+		typeof value.result.hash !== 'string' ||
+		(value.botReplay !== undefined && typeof value.botReplay !== 'boolean')
 	)
 		throw new Error('Invalid replay')
 	if (JSON.stringify(value.tuning) !== JSON.stringify(tune))
@@ -245,11 +215,16 @@ export function readReplay(value) {
 			(id, i) =>
 				value.roster[i]?.id === id &&
 				value.roster[i].team === id[0] &&
-				value.roster[i].heroId === 'fletcher' &&
+				Object.hasOwn(HEROES, value.roster[i].heroId) &&
 				['agent', 'bot', 'idle'].includes(value.roster[i].controller),
 		)
 	)
 		throw new Error('Invalid replay roster')
+	if (
+		value.botReplay &&
+		(value.inputs.length || value.roster.some((seat) => seat.controller !== 'bot'))
+	)
+		throw new Error('Bot replays require an all-bot roster and no recorded inputs')
 	let previous = -1
 	for (const record of value.inputs) {
 		if (

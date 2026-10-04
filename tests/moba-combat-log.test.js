@@ -194,8 +194,8 @@ test('a fast bot match writes valid JSONL, capped effective damage and exactly o
 		}
 		for (const damage of damageByTarget.values())
 			expect(damage).toBeLessThanOrEqual(1 + Number.EPSILON)
-		expect(structureHits.some((row) => row.fact.damage > row.effective_damage)).toBe(true)
-		expect(await readdir(directory)).toEqual(['fast.jsonl'])
+		expect(structureHits.every((row) => row.fact.damage === row.effective_damage)).toBe(true)
+		expect(await readdir(directory)).toEqual(['fast.jsonl', 'fast.tape.json'])
 	} finally {
 		for (const [kind, hp] of saved) tune[kind].hp = hp
 		await rm(directory, { recursive: true, force: true })

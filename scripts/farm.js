@@ -1,4 +1,6 @@
-import { mkdir, rename } from 'node:fs/promises'
+import { mkdir, rename, writeFile } from 'node:fs/promises'
+import { createHash } from 'node:crypto'
+import { spawnSync } from 'node:child_process'
 import { openSync, writeSync, closeSync } from 'node:fs'
 import { join } from 'node:path'
 import { parseArgs } from 'node:util'
@@ -24,10 +26,20 @@ export function farmRoster(heroes, difficulty, index) {
 }
 
 // RAPIER.init() belongs to the caller, once per worker. No rendering or injected damage.
-export async function runFarmMatch({ directory, matchId, seed, roster, maxSeconds }) {
+export async function runFarmMatch({
+	directory,
+	matchId,
+	seed,
+	roster,
+	maxSeconds,
+	runId = matchId,
+	commit = null,
+}) {
 	await mkdir(directory, { recursive: true })
 	const filename = join(directory, `${matchId}.jsonl`)
 	const partial = filename + '.partial'
+	const tapeFilename = join(directory, `${matchId}.tape.json`)
+	const tuneHash = createHash('sha256').update(JSON.stringify(tune)).digest('hex')
 	const file = openSync(partial, 'wx')
 	let buffer = ''
 	const flush = () => {
@@ -49,6 +61,9 @@ export async function runFarmMatch({ directory, matchId, seed, roster, maxSecond
 			roster,
 			seed,
 			matchId,
+			runId,
+			commit,
+			tuneHash,
 			recordInputs: false,
 			onLog(row) {
 				buffer += JSON.stringify(row) + '\n'
@@ -58,6 +73,11 @@ export async function runFarmMatch({ directory, matchId, seed, roster, maxSecond
 		while (match.sim.tick < Math.ceil(maxSeconds / STEP) && match.step()) {}
 		const reason = match.sim.lane.match.winner ? 'matchOver' : 'limit'
 		const tape = match.finish(reason)
+		tape.botReplay = true
+		tape.run_id = runId
+		tape.commit = commit
+		tape.tune_hash = tuneHash
+		await writeFile(tapeFilename + '.partial', JSON.stringify(tape) + '\n', { flag: 'wx' })
 		result = {
 			matchId,
 			seed,
@@ -65,6 +85,7 @@ export async function runFarmMatch({ directory, matchId, seed, roster, maxSecond
 			duration: tape.result.ticks * STEP,
 			reason,
 			filename,
+			tapeFilename,
 		}
 		flush()
 	} finally {
@@ -73,7 +94,8 @@ export async function runFarmMatch({ directory, matchId, seed, roster, maxSecond
 		unbuild?.()
 		world.free()
 	}
-	// Queries never see a worker's half-written match.
+	// A queryable log always has its complete replay alongside it.
+	await rename(tapeFilename + '.partial', tapeFilename)
 	await rename(partial, filename)
 	return result
 }
@@ -83,7 +105,7 @@ export async function farm(argv = process.argv.slice(2)) {
 		args: argv,
 		options: {
 			help: { type: 'boolean' },
-			matches: { type: 'string', default: '200' },
+			matches: { type: 'string', default: '20' },
 			heroes: { type: 'string', default: 'fletcher,mitts' },
 			difficulty: { type: 'string', default: 'hard' },
 			jobs: { type: 'string', default: '10' },
@@ -94,16 +116,16 @@ export async function farm(argv = process.argv.slice(2)) {
 	})
 	if (values.help) {
 		console.log(
-			'bun scripts/farm.js --matches 200 --heroes fletcher,mitts --difficulty hard --jobs 10\nOptional: --seed uint32 --max-seconds N --out directory; timeouts are logged, not wins.',
+			'bun scripts/farm.js --matches 20 --heroes fletcher,mitts --difficulty hard --jobs 10\nCounts round up to full matchup rotations; each rotation shares a seed.\nOptional: --seed uint32 --max-seconds N --out directory; timeouts are logged, not wins.',
 		)
 		return
 	}
-	const matches = Number(values.matches),
+	const requestedMatches = Number(values.matches),
 		jobs = Number(values.jobs),
 		seed = Number(values.seed),
 		maxSeconds = Number(values['max-seconds'])
 	for (const [name, value] of [
-		['matches', matches],
+		['matches', requestedMatches],
 		['jobs', jobs],
 	])
 		if (!Number.isSafeInteger(value) || value < 1)
@@ -128,7 +150,22 @@ export async function farm(argv = process.argv.slice(2)) {
 		console.warn('Mitts is not available in this checkout; skipping her matchups.')
 	}
 	if (!heroes.length) throw new Error('No available heroes requested')
+	const pairs = heroes.length ** 2
+	const matches = Math.ceil(requestedMatches / pairs) * pairs
+	if (!Number.isSafeInteger(matches) || seed + matches / pairs - 1 > 0xffffffff)
+		throw new Error('Match count exceeds the available uint32 seeds')
+	if (matches !== requestedMatches)
+		console.log(
+			`Rounded ${requestedMatches} matches up to ${matches} for complete ${pairs}-match rotations.`,
+		)
+	const revision = spawnSync('jj', ['log', '-r', '@', '--no-graph', '-T', 'commit_id'], {
+		encoding: 'utf8',
+	})
+	const commit = revision.stdout?.trim()
+	if (revision.status !== 0 || !/^[0-9a-f]{40}$/.test(commit ?? ''))
+		throw new Error('Cannot record the farm commit: jj log failed')
 	const runId = crypto.randomUUID()
+	console.log(`run=${runId} commit=${commit} matches=${matches}`)
 	const workers = []
 	let completed = 0,
 		wins = 0
@@ -149,6 +186,7 @@ export async function farm(argv = process.argv.slice(2)) {
 								maxSeconds,
 								directory: values.out,
 								runId,
+								commit,
 							},
 						})
 						workers.push(worker)
@@ -178,9 +216,13 @@ if (!isMainThread) {
 		parentPort.postMessage(
 			await runFarmMatch({
 				...workerData,
-				seed: (workerData.seed + index) >>> 0,
+				seed: workerData.seed + Math.floor(index / workerData.heroes.length ** 2),
 				matchId: `${workerData.runId}-${String(index + 1).padStart(5, '0')}`,
-				roster: farmRoster(workerData.heroes, workerData.difficulty, index),
+				roster: farmRoster(
+					workerData.heroes,
+					workerData.difficulty,
+					index % workerData.heroes.length ** 2,
+				),
 			}),
 		)
 	}
