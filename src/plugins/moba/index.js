@@ -11,7 +11,7 @@ import { createCameraControls } from './camera-controls.js'
 import { createCursor } from './cursor.js'
 import { createView } from './view.js'
 import { createSkillsView } from './skills-view.js'
-import { createHud } from './hud.js'
+import { createHud, ballPopIn } from './hud.js'
 import { createPips } from './pips.js'
 import { createSounds } from './sounds.js'
 import { createBallView } from './ball-view.js'
@@ -276,15 +276,7 @@ export default function moba(app) {
 					elapsed: sim.tick * app.clock.step,
 					teams: sim.lane.teams,
 					carryingBall: sim.ball.carrying(hero),
-					ballPop:
-						sim.ball.state && sim.ball.state.state !== 'warning'
-							? Math.max(
-									0,
-									Math.min(sim.ball.state.popAt, sim.ball.nextBall) -
-										sim.tick -
-										(frozen ? 0 : alpha),
-								) * app.clock.step
-							: null,
+					ballPop: ballPopIn(sim.ball, sim.tick, frozen ? 0 : alpha, app.clock.step),
 					nextBall: (sim.ball.nextBall - sim.tick - (frozen ? 0 : alpha)) * app.clock.step,
 					nextWave: (sim.lane.nextWave - sim.tick - (frozen ? 0 : alpha)) * app.clock.step,
 					localTeam: hero.team,

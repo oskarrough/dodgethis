@@ -7,7 +7,7 @@ import { createView } from './view.js'
 import { createSkillsView } from './skills-view.js'
 import { createBallView } from './ball-view.js'
 import { createFollow } from './follow.js'
-import { createHud } from './hud.js'
+import { createHud, ballPopIn } from './hud.js'
 import { createSounds } from './sounds.js'
 import { createFeedback } from './feedback.js'
 import { tune } from './tune.js'
@@ -158,10 +158,7 @@ export function mobaReplay(app) {
 					elapsed: sim.tick * app.clock.step,
 					teams: sim.lane.teams,
 					carryingBall: sim.ball.carrying(hero),
-					ballPop:
-						sim.ball.state && sim.ball.state.state !== 'warning'
-							? Math.max(0, sim.ball.state.popAt - sim.tick - blend) * app.clock.step
-							: null,
+					ballPop: ballPopIn(sim.ball, sim.tick, blend, app.clock.step),
 					nextBall: (sim.ball.nextBall - sim.tick - blend) * app.clock.step,
 					nextWave: (sim.lane.nextWave - sim.tick - blend) * app.clock.step,
 					localTeam: hero.team,

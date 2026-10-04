@@ -114,6 +114,12 @@ function el(tag, className, parent, html) {
 const ring = (left, total) =>
 	total > 0 ? Math.round(Math.max(0, Math.min(1, left / total)) * 200) / 200 : 0
 
+// Seconds until a live Ball pops: at its own pop time, or sooner if the next spawn replaces it. Null while none is live.
+export const ballPopIn = (ball, tick, blend, step) =>
+	ball.state && ball.state.state !== 'warning'
+		? Math.max(0, Math.min(ball.state.popAt, ball.nextBall) - tick - blend) * step
+		: null
+
 export function createHud() {
 	// Unchanged values never touch the DOM. Keyed per node, then per field.
 	const shown = new WeakMap()

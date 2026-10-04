@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, expect, test } from 'bun:test'
-import { createHud } from '../src/plugins/moba/hud.js'
+import { ballPopIn, createHud } from '../src/plugins/moba/hud.js'
 import { HEROES } from '../src/plugins/moba/heroes.js'
 import { createSounds } from '../src/plugins/moba/sounds.js'
 import { tune } from '../src/plugins/moba/tune.js'
@@ -444,4 +444,15 @@ test('MOBA combat cues have separate synth presets and read tuning live', () => 
 	} finally {
 		tune.sounds.attack.freq = old
 	}
+})
+
+test('a live Ball counts down to its pop, or to the next spawn when that comes first', () => {
+	const live = (popAt, nextBall) => ({ state: { state: 'live', popAt }, nextBall })
+	expect(ballPopIn(live(500, 900), 100, 0, 1 / 60)).toBeCloseTo(400 / 60)
+	expect(ballPopIn(live(500, 400), 100, 0.5, 1 / 60)).toBeCloseTo(299.5 / 60)
+	expect(ballPopIn(live(500, 400), 600, 0, 1 / 60)).toBe(0)
+	expect(
+		ballPopIn({ state: { state: 'warning', popAt: 500 }, nextBall: 400 }, 100, 0, 1),
+	).toBeNull()
+	expect(ballPopIn({ state: null, nextBall: 400 }, 100, 0, 1)).toBeNull()
 })
