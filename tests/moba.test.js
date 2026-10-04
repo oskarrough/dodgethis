@@ -1,12 +1,12 @@
 import { afterEach, beforeEach, expect, test } from 'bun:test'
 import * as THREE from 'three'
-import RAPIER from '@dimforge/rapier3d-compat'
-import { createApp, STEP } from '../src/core/app.js'
+import { createApp } from '../src/core/app.js'
 import { createJuice } from '../src/core/juice.js'
 import { makeStyleMaterial, styleId } from '../src/core/stylepass.js'
 import { createFollow } from '../src/plugins/moba/follow.js'
-import { createIntents, neutralFrame } from '../src/core/intents.js'
+import { neutralFrame } from '../src/core/intents.js'
 import { createSim } from '../src/plugins/moba/sim.js'
+import { RAPIER, STEP, bootMoba } from './moba-harness.js'
 import { tune } from '../src/plugins/moba/tune.js'
 import { PILLARS, clampWalkable, walkable } from '../src/plugins/moba/map.js'
 import { buildColliders, segmentClear } from '../src/plugins/moba/obstacles.js'
@@ -14,51 +14,29 @@ import { createPathPlanner } from '../src/plugins/moba/path.js'
 import { closest, stepShot, sweepHit } from '../src/plugins/moba/skillshot.js'
 
 // The feel slice's headless checks (docs/moba-plan.md, M1): no overshoot on arrival, reversal time, buffer timing, order resumption, swept hits.
-await RAPIER.init({})
-let scene, world, intents, facts, sim
+let harness, facts, sim
 const ID = 'local'
 beforeEach(() => {
-	scene = new THREE.Scene()
-	world = new RAPIER.World({ x: 0, y: -9.81, z: 0 })
-	world.timestep = STEP
-	const floor = world.createRigidBody(RAPIER.RigidBodyDesc.fixed())
-	world.createCollider(RAPIER.ColliderDesc.cuboid(20, 0.5, 20).setTranslation(0, -0.5, 0), floor)
-	intents = createIntents()
-	intents.use('pointClick')
-	facts = []
 	let seed = 1
-	sim = createSim({
-		scene,
-		world,
-		RAPIER,
-		intents,
+	harness = bootMoba({
+		map: 'floor',
 		heroes: [{ id: ID, team: 'A' }],
-		present: (f) => facts.push(f),
 		rng: () => (seed = (seed * 16807) % 2147483647) / 2147483647,
 	})
+	;({ facts, sim } = harness)
 	for (const d of sim.dummies) {
 		d.sparring = false
 		d.body.place(-15 + d.post.x * 0.1, 1.05, 18)
 	} // parked out of the way unless a test wants them
 })
-afterEach(() => {
-	sim.dispose()
-	world.free()
-})
+afterEach(() => harness.dispose())
 
 const hero = () => sim.heroes[0]
 const pos = () => ({ x: hero().body.position.x, z: hero().body.position.z })
-function feed(overrides = {}) {
-	intents.feed(ID, { ...neutralFrame(), ...overrides })
-}
-function step(n = 1) {
-	for (let i = 0; i < n; i++) {
-		sim.step(STEP)
-		intents.age(STEP)
-	}
-}
+const feed = (overrides) => harness.feed(ID, overrides)
+const step = (n) => harness.step(n)
 const place = (x, z) => hero().body.place(x, hero().body.position.y, z)
-const press = (action, at = null) => feed({ pressed: [{ action, at }] })
+const press = (action, at) => harness.press(ID, action, at)
 const casts = () => facts.filter((f) => f.type === 'cast')
 
 test('an order arrives exactly: full speed until the last step, no overshoot, stopped dead', () => {

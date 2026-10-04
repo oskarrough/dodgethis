@@ -1,51 +1,14 @@
 import { expect, test } from 'bun:test'
 import * as THREE from 'three'
-import RAPIER from '@dimforge/rapier3d-compat'
-import { STEP } from '../src/core/app.js'
-import { createIntents, neutralFrame } from '../src/core/intents.js'
+import { neutralFrame } from '../src/core/intents.js'
 import { createBody } from '../src/core/body.js'
-import { createSim } from '../src/plugins/moba/sim.js'
-import { buildColliders } from '../src/plugins/moba/obstacles.js'
 import { HEROES, freshAbilityState } from '../src/plugins/moba/heroes.js'
 import { dressHero } from '../src/plugins/moba/hero-view.js'
 import { dressPortrait } from '../src/plugins/moba/front/portrait.js'
 import { tune } from '../src/plugins/moba/tune.js'
+import { STEP, bootMoba } from './moba-harness.js'
 
-await RAPIER.init({})
-function boot(seats) {
-	const scene = new THREE.Scene()
-	const world = new RAPIER.World({ x: 0, y: -9.81, z: 0 })
-	world.timestep = STEP
-	const unbuild = buildColliders(world, RAPIER)
-	const intents = createIntents()
-	intents.use('pointClick')
-	const facts = []
-	const sim = createSim({
-		scene,
-		world,
-		RAPIER,
-		intents,
-		lane: true,
-		heroes: seats,
-		present: (f) => facts.push(f),
-	})
-	return {
-		sim,
-		intents,
-		facts,
-		step(n = 1) {
-			for (let i = 0; i < n; i++) {
-				sim.step()
-				intents.age(STEP)
-			}
-		},
-		dispose() {
-			sim.dispose()
-			unbuild()
-			world.free()
-		},
-	}
-}
+const boot = (heroes) => bootMoba({ heroes })
 
 test('definitions keep tuning live, abilities own their properties, other heroes have no kits', () => {
 	expect(HEROES.fletcher.abilities.slot1).toMatchObject({

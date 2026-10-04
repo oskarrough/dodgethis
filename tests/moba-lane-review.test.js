@@ -1,10 +1,6 @@
-import { afterEach, beforeEach, expect, test } from 'bun:test'
-import * as THREE from 'three'
-import RAPIER from '@dimforge/rapier3d-compat'
-import { STEP } from '../src/core/app.js'
-import { createIntents, neutralFrame } from '../src/core/intents.js'
+import { afterEach, expect, test } from 'bun:test'
+import { STEP, bootMoba } from './moba-harness.js'
 import { createPathPlanner, pursue } from '../src/plugins/moba/path.js'
-import { createSim } from '../src/plugins/moba/sim.js'
 import { createFeedback } from '../src/plugins/moba/feedback.js'
 import { createView } from '../src/plugins/moba/view.js'
 import { buildMap } from '../src/plugins/moba/map.js'
@@ -13,47 +9,20 @@ import { walkable, segmentClear, PILLARS } from '../src/plugins/moba/obstacles.j
 import { stepShot } from '../src/plugins/moba/skillshot.js'
 import { tune } from '../src/plugins/moba/tune.js'
 
-await RAPIER.init({})
 const options = { radius: tune.hero.radius, ...tune.orders }
-let scene, world, intents, sim, facts, unbuild
-beforeEach(() => {
-	scene = new THREE.Scene()
-	world = new RAPIER.World({ x: 0, y: -9.81, z: 0 })
-	world.timestep = STEP
-	intents = createIntents()
-	intents.use('pointClick')
-	facts = []
-})
+let harness, scene, sim, facts
 afterEach(() => {
-	sim?.dispose()
-	sim = null
-	unbuild?.()
-	unbuild = null
-	world.free()
+	harness?.dispose()
+	harness = null
 })
 function start(heroes = [{ id: 'local', team: 'A' }]) {
-	unbuild = buildMap(scene, world, RAPIER)
-	sim = createSim({
-		scene,
-		world,
-		RAPIER,
-		intents,
-		heroes,
-		present: (fact) => facts.push(fact),
-		rng: () => 0.5,
-	})
+	harness = bootMoba({ map: buildMap, heroes, rng: () => 0.5 })
+	;({ scene, sim, facts } = harness)
 	for (const d of sim.dummies) d.sparring = false
 	return sim.heroes[0]
 }
-function feed(frame) {
-	intents.feed('local', { ...neutralFrame(), ...frame })
-}
-function step(n = 1) {
-	for (let i = 0; i < n; i++) {
-		sim.step()
-		intents.age(STEP)
-	}
-}
+const feed = (frame) => harness.feed('local', frame)
+const step = (n) => harness.step(n)
 
 test('cached plans fit the fixed-step budget for hedge detours and cross-map throat routes', () => {
 	const plan = createPathPlanner(options)

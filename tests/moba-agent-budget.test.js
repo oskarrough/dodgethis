@@ -1,13 +1,11 @@
 import { test, expect } from 'bun:test'
 import * as THREE from 'three'
-import RAPIER from '@dimforge/rapier3d-compat'
-import { STEP } from '../src/core/app.js'
 import { buildColliders } from '../src/plugins/moba/obstacles.js'
 import { agentRoster, createAgentPerception, observation } from '../src/plugins/moba/agents.js'
 import { createAgentMatch } from '../src/plugins/moba/agent-match.js'
 import { tune } from '../src/plugins/moba/tune.js'
+import { RAPIER, STEP, median } from './moba-harness.js'
 
-await RAPIER.init({})
 test('agent perception plus text fits a measured median query budget for the whole wave', () => {
 	const world = new RAPIER.World({ x: 0, y: -9.81, z: 0 })
 	world.timestep = STEP
@@ -32,8 +30,7 @@ test('agent perception plus text fits a measured median query budget for the who
 			for (const { id } of match.tape.roster) observation(match.sim, id, perception.read())
 			samples.push(performance.now() - start)
 		}
-		samples.sort((a, b) => a - b)
-		expect(samples[Math.floor(samples.length / 2)]).toBeLessThan(tune.proof.queryBudgetMs)
+		expect(median(samples)).toBeLessThan(tune.proof.queryBudgetMs)
 	} finally {
 		match.dispose()
 		unbuild()

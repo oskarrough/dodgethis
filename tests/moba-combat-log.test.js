@@ -3,16 +3,13 @@ import { mkdtemp, readFile, readdir, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import * as THREE from 'three'
-import RAPIER from '@dimforge/rapier3d-compat'
-import { STEP } from '../src/core/app.js'
 import { neutralFrame } from '../src/core/intents.js'
 import { tune } from '../src/plugins/moba/tune.js'
 import { buildColliders } from '../src/plugins/moba/obstacles.js'
 import { agentRoster } from '../src/plugins/moba/agents.js'
 import { createAgentMatch, replayHash } from '../src/plugins/moba/agent-match.js'
 import { farm, farmRoster, runFarmMatch } from '../scripts/farm.js'
-
-await RAPIER.init({})
+import { RAPIER, STEP, median } from './moba-harness.js'
 
 test('farm rotates both sides and mirrors without changing seat/controller assignments', () => {
 	const pairs = []
@@ -140,8 +137,7 @@ test('streaming and retained logs leave two live sims identical and fit a median
 		expect(sink.match.logRows).toHaveLength(0)
 		expect(sink.match.tape.inputs).toHaveLength(0)
 		expect(retained.match.tape.inputs.length).toBeGreaterThan(0)
-		samples.sort((a, b) => a - b)
-		expect(samples[Math.floor(samples.length / 2)]).toBeLessThan(tune.proof.queryBudgetMs)
+		expect(median(samples)).toBeLessThan(tune.proof.queryBudgetMs)
 	} finally {
 		retained.close()
 		sink.close()
