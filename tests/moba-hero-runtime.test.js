@@ -1,51 +1,26 @@
 import { expect, test } from 'bun:test'
-import * as THREE from 'three'
-import RAPIER from '@dimforge/rapier3d-compat'
-import { STEP } from '../src/core/app.js'
-import { createIntents, neutralFrame } from '../src/core/intents.js'
-import { createSim } from '../src/plugins/moba/sim.js'
-import { buildColliders } from '../src/plugins/moba/obstacles.js'
 import { tune } from '../src/plugins/moba/tune.js'
 import { createSkillsView } from '../src/plugins/moba/skills-view.js'
 import { createFeedback } from '../src/plugins/moba/feedback.js'
 import { validFact } from '../src/plugins/moba/index.js'
+import { STEP, bootMoba, median } from './moba-harness.js'
 
-await RAPIER.init({})
 function fixture(check, firstBall = null) {
 	const first = tune.ball.first
 	if (firstBall !== null) tune.ball.first = firstBall
-	const world = new RAPIER.World({ x: 0, y: -9.81, z: 0 })
-	world.timestep = STEP
-	const unbuild = buildColliders(world, RAPIER),
-		intents = createIntents(),
-		facts = [],
-		scene = new THREE.Scene()
-	intents.use('pointClick')
-	const sim = createSim({
-		scene,
-		world,
-		RAPIER,
-		intents,
-		lane: true,
+	const h = bootMoba({
 		heroes: [
 			{ id: 'a', team: 'A' },
 			{ id: 'b', team: 'B', heroId: 'mitts' },
 		],
-		present: (f) => facts.push(f),
 	})
+	const { sim } = h
 	tune.ball.first = first
 	const [a, b] = sim.heroes
 	a.body.place(0, 1.05, 9)
 	b.body.place(8, 1.05, 9)
 	b.yaw = Math.PI / 2
 	b.body.face({ x: -1, z: 0 })
-	const step = (n = 1) => {
-		for (let i = 0; i < n; i++) {
-			sim.step()
-			intents.age(STEP)
-		}
-	}
-	const feed = (id, extra) => intents.feed(id, { ...neutralFrame(), ...extra })
 	const launch = (stats = {}) =>
 		sim.launchShot(
 			a,
@@ -65,11 +40,19 @@ function fixture(check, firstBall = null) {
 			},
 		)
 	try {
-		check({ sim, a, b, scene, intents, facts, step, feed, launch })
+		check({
+			sim,
+			a,
+			b,
+			scene: h.scene,
+			intents: h.intents,
+			facts: h.facts,
+			step: h.step,
+			feed: h.feed,
+			launch,
+		})
 	} finally {
-		sim.dispose()
-		unbuild()
-		world.free()
+		h.dispose()
 		tune.ball.first = first
 	}
 }
@@ -489,7 +472,6 @@ test('catch and board query work fits a 2 ms median tick with 24 simultaneous sh
 			step(32)
 			times.push((performance.now() - start) / 32)
 		}
-		times.sort((a, b) => a - b)
-		expect(times[Math.floor(times.length / 2)]).toBeLessThan(tune.proof.queryBudgetMs)
-		console.log('hero query median ms/tick', times[Math.floor(times.length / 2)])
+		expect(median(times)).toBeLessThan(tune.proof.queryBudgetMs)
+		console.log('hero query median ms/tick', median(times))
 	}))

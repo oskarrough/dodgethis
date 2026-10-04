@@ -1,19 +1,12 @@
 import { expect, test } from 'bun:test'
-import * as THREE from 'three'
-import RAPIER from '@dimforge/rapier3d-compat'
-import { STEP } from '../src/core/app.js'
-import { createIntents, neutralFrame } from '../src/core/intents.js'
-import { createSim } from '../src/plugins/moba/sim.js'
 import { createBots } from '../src/plugins/moba/bots.js'
-import { buildColliders } from '../src/plugins/moba/obstacles.js'
 import { createSkillsView } from '../src/plugins/moba/skills-view.js'
 import { HEROES } from '../src/plugins/moba/heroes.js'
 import { tune } from '../src/plugins/moba/tune.js'
 import { styleId } from '../src/core/stylepass.js'
 import { parseMatchSetup } from '../src/plugins/moba/setup.js'
+import { STEP, bootMoba, ticks } from './moba-harness.js'
 
-await RAPIER.init({})
-const ticks = (s) => Math.round(s / STEP)
 function fixture(
 	check,
 	{
@@ -27,24 +20,8 @@ function fixture(
 ) {
 	const previous = tune.ball.first
 	tune.ball.first = ball
-	const scene = new THREE.Scene(),
-		world = new RAPIER.World({ x: 0, y: -9.81, z: 0 })
-	world.timestep = STEP
-	const unbuild = buildColliders(world, RAPIER),
-		intents = createIntents(),
-		facts = []
-	intents.use('pointClick')
-	const sim = createSim({
-		scene,
-		world,
-		RAPIER,
-		intents,
-		heroes: seats,
-		bots,
-		lane: true,
-		seed: 2,
-		present: (f) => facts.push(f),
-	})
+	const h = bootMoba({ heroes: seats, bots, seed: 2 })
+	const { sim, scene, intents, facts, step } = h
 	tune.ball.first = previous
 	const [a, b] = sim.heroes
 	if (!bots.length) {
@@ -53,21 +30,13 @@ function fixture(
 		b.yaw = Math.PI / 2
 		b.body.face({ x: -1, z: 0 })
 	}
-	const feed = (hero, frame) => intents.feed(hero.id, { ...neutralFrame(), ...frame })
+	const feed = (hero, frame) => h.feed(hero.id, frame)
 	const press = (hero, action, at = a.body.position) =>
-		feed(hero, { pressed: [{ action, at: { x: at.x, z: at.z } }] })
-	const step = (n = 1) => {
-		for (let i = 0; i < n; i++) {
-			sim.step()
-			intents.age(STEP)
-		}
-	}
+		h.press(hero.id, action, { x: at.x, z: at.z })
 	try {
 		check({ sim, a, b, scene, intents, facts, feed, press, step })
 	} finally {
-		sim.dispose()
-		unbuild()
-		world.free()
+		h.dispose()
 		tune.ball.first = previous
 	}
 }
