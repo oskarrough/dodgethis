@@ -86,6 +86,7 @@ export function createFollow(t = tune.follow) {
 	let lastFov = t.fov
 	let fresh = true
 	let free = false
+	let freeZoom = 0
 	const eye = { x: 0, y: 0, z: 0 }
 	const target = { x: 0, y: 0, z: 0 }
 
@@ -110,7 +111,14 @@ export function createFollow(t = tune.follow) {
 		dt,
 		hero,
 		aim,
-		{ pan = null, centred = false, pad = false, aspect = 1, cameraFov = lastFov } = {},
+		{
+			pan = null,
+			centred = false,
+			pad = false,
+			aspect = 1,
+			cameraFov = lastFov,
+			edgeInset = t.edgeInset,
+		} = {},
 	) {
 		if (pad) free = false
 		const panning = !centred && !pad && pan && (pan.x || pan.z)
@@ -122,6 +130,8 @@ export function createFollow(t = tune.follow) {
 			fresh = false
 		}
 		if (panning) {
+			// Keep the departure lens: widening it here makes the map clamp jump before any pan.
+			if (!free) freeZoom = t.fov - lastFov
 			free = true
 			const length = Math.max(1, Math.hypot(pan.x, pan.z))
 			at.x = Math.max(-FLOOR.halfX, Math.min(FLOOR.halfX, at.x + (pan.x / length) * t.pan * dt))
@@ -146,13 +156,16 @@ export function createFollow(t = tune.follow) {
 		}
 		const bounded = clampView(
 			at,
-			t,
+			free && !centred
+				? { ...t, fov: Math.max(tune.follow.minFov, t.fov - freeZoom) }
+				: { ...t, edgeInset },
 			aspect,
 			Math.max(0, cameraFov - lastFov) + pendingKick,
 			free && !centred ? null : hero,
 		)
 		pendingKick = 0
 		lastFov = bounded.fov
+		if (centred) freeZoom = t.fov - bounded.fov
 		if (bounded.x !== at.x) vel.x = 0
 		if (bounded.z !== at.z) vel.z = 0
 		at.x = bounded.x
@@ -172,6 +185,7 @@ export function createFollow(t = tune.follow) {
 			pendingKick += Math.max(0, amount)
 		},
 		focus(point) {
+			freeZoom = 0
 			Object.assign(at, clampMap(point))
 			vel.x = vel.z = 0
 			free = true
