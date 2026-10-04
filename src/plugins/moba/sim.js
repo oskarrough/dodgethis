@@ -136,17 +136,14 @@ export function createSim({
 			stunUntil: 0,
 			ballThrow: null,
 			cd: SLOTS.map(() => 0),
+			cancelUntil: SLOTS.map(() => 0),
 			judged: new WeakSet(), // slot edges already checked against the cooldown
 			lastOrder: -Infinity,
 			stall: 0,
 			lastRemaining: null,
 		}
 	})
-	for (const h of heroes) {
-		h.body.face(dirOf(h.yaw))
-		h.body.mobaUnit = h
-		h.body.mobaTick = t
-	}
+	for (const h of heroes) h.body.face(dirOf(h.yaw))
 	const dummies = (withLane ? [] : DUMMY_POSTS).map((post, i) => ({
 		id: `dummy${i + 1}`,
 		team: 'B',
@@ -556,6 +553,7 @@ export function createSim({
 			h.judged.add(latest)
 			const wait = Math.max(
 				returning ? 0 : h.cd[i],
+				h.cancelUntil[i] - t,
 				h.cast?.left ?? 0,
 				h.attack?.phase === 'windup' ? h.attack.left - 1 : 0,
 				ticks(h.body.dashTime),
@@ -567,7 +565,7 @@ export function createSim({
 					hero: h.id,
 					slot,
 					reason:
-						h.cd[i] > 0
+						h.cd[i] > 0 || h.cancelUntil[i] > t
 							? 'cooldown'
 							: h.cast
 								? 'casting'
@@ -579,7 +577,13 @@ export function createSim({
 			}
 		}
 		if (h.attack?.phase === 'windup' && h.attack.left <= 1) basicAttack(h)
-		if (h.cast || h.attack?.phase === 'windup' || h.body.dashing || (!returning && h.cd[i] > 0))
+		if (
+			h.cast ||
+			h.attack?.phase === 'windup' ||
+			h.body.dashing ||
+			h.cancelUntil[i] > t ||
+			(!returning && h.cd[i] > 0)
+		)
 			return
 		h.attack = null // abilities cut the backswing, not the windup
 		intents.consume(h.id, slot)
@@ -600,6 +604,8 @@ export function createSim({
 		h.cast = {
 			ability: ability.id,
 			slot,
+			cooldownBefore: h.cd[i],
+			startedTick: t,
 			dir,
 			target,
 			yaw: yawOf(dir.x, dir.z),
@@ -650,6 +656,7 @@ export function createSim({
 			h.stance = {
 				ability: ability.id,
 				until: t + ticks(skill.duration),
+				dir: { ...dir },
 				factor: skill.speedFactor ?? 1,
 			}
 			ability.onStart?.(context)
@@ -733,8 +740,18 @@ export function createSim({
 				ability = castAbility(h)
 			h.cast = null
 			const slotIndex = SLOTS.indexOf(cast.slot)
-			if (slotIndex >= 0) h.cd[slotIndex] = 0 // a cancelled cast point costs nothing
-			if (cast.pocket && cast.pocket.until > t) h.abilityState.pocket = cast.pocket
+			if (slotIndex >= 0) {
+				const lockout = Math.max(1, ticks(tune.cast.cancelLockout))
+				h.cancelUntil[slotIndex] = t + lockout
+				h.cd[slotIndex] = Math.max(
+					lockout,
+					(cast.cooldownBefore ?? 0) - (t - (cast.startedTick ?? t)),
+				)
+			}
+			if (cast.pocket) {
+				if (cast.pocket.until > t) h.abilityState.pocket = cast.pocket
+				else present({ type: 'catchExpired', hero: h.id, point: { ...h.body.position } })
+			}
 			ability?.onCancel?.(traitContext(h, { ...cast, reason: 'input' }))
 			present({
 				type: 'denied',
@@ -858,10 +875,7 @@ export function createSim({
 		unit.body = bodyAt(spawn.x, spawn.z, unit.team, unit.definition)
 		if (unit.definition) unit.abilityState = freshAbilityState()
 		unit.body.face(dirOf(unit.yaw))
-		if (unit.definition) {
-			unit.body.mobaUnit = unit
-			unit.body.mobaTick = t
-		}
+		if (unit.definition) unit.cancelUntil = SLOTS.map(() => 0)
 		unit.dead = false
 		if (unit.post) unit.maxHp = tune.dummies.hp
 		unit.hp = unit.maxHp
@@ -1056,7 +1070,6 @@ export function createSim({
 	}
 
 	function stepHeroState(hero, dt) {
-		hero.body.mobaTick = t
 		if (hero.stance) {
 			const stance = hero.stance
 			const ability = abilityOf(stance.ability, hero)
@@ -1107,8 +1120,13 @@ export function createSim({
 			window.radius < 0
 		)
 			throw new Error('Catch windows need a finite duration >= one step and nonnegative radius')
+		const direction = window.dir ?? dirOf(hero.yaw)
+		const length = Math.hypot(direction.x, direction.z)
+		if (!Number.isFinite(length) || length === 0)
+			throw new Error('Catch windows need a finite direction')
 		hero.catchWindow = {
 			...window,
+			dir: { x: direction.x / length, z: direction.z / length },
 			until: t + ticks(window.duration),
 			radius: Math.max(0, window.radius),
 			angle: Math.max(0, Math.min(360, window.angle ?? 360)),
@@ -1132,9 +1150,6 @@ export function createSim({
 			stats.range <= 0
 		)
 			throw new Error('Shots need a direction and finite nonnegative stats (positive speed/range)')
-		// Preserve already-unit aim directions bit for bit (the legacy trace
-		// includes unrounded fact directions), while normalising API callers.
-		const divisor = Math.abs(length - 1) < tune.collision.epsilon ? 1 : length
 		const shot = {
 			...structuredClone(stats),
 			id: ++shotIds,
@@ -1142,8 +1157,8 @@ export function createSim({
 			team: hero.team,
 			x: p.x,
 			z: p.z,
-			dx: dir.x / divisor,
-			dz: dir.z / divisor,
+			dx: dir.x / length,
+			dz: dir.z / length,
 			travelled: 0,
 			passed: [hero.id],
 		}
@@ -1162,10 +1177,12 @@ export function createSim({
 
 	function throwCaught(id, direction, slot = 'slot1') {
 		const hero = typeof id === 'string' ? heroes.find((h) => h.id === id) : id
+		const slotIndex = SLOTS.indexOf(slot)
 		if (
 			!hero ||
 			hero.dead ||
 			!hero.abilityState.pocket ||
+			t < (hero.cancelUntil[slotIndex] ?? 0) ||
 			hero.cast ||
 			hero.channel ||
 			hero.body.dashing ||
@@ -1183,6 +1200,8 @@ export function createSim({
 		hero.cast = {
 			ability: 'return',
 			slot,
+			cooldownBefore: hero.cd[slotIndex] ?? 0,
+			startedTick: t,
 			shot,
 			pocket,
 			dir,
@@ -1243,7 +1262,7 @@ export function createSim({
 			if (at === null) continue
 			const x = from.x + (to.x - from.x) * at - p.x,
 				z = from.z + (to.z - from.z) * at - p.z
-			const dir = dirOf(hero.yaw),
+			const dir = window.dir,
 				length = Math.hypot(x, z)
 			if (
 				window.angle < 360 &&
@@ -1643,6 +1662,7 @@ export function createSim({
 				},
 				cast: h.cast && { ...structuredClone(h.cast), yaw: q(h.cast.yaw) },
 				cd: h.cd.slice(),
+				cancelUntil: h.cancelUntil.slice(),
 				slow: { ...h.slow },
 				freezeUntil: h.freezeUntil,
 				proneUntil: h.proneUntil,

@@ -162,6 +162,7 @@ for (const action of ['stop', 'cancel'])
 			expect(
 				facts.some((f) => f.type === 'denied' && f.reason === 'cancelled' && f.ability === 'toss'),
 			).toBe(true)
+			step(ticks(tune.cast.cancelLockout))
 			b.abilityState.pocket = {
 				team: 'A',
 				shot: { damage: 320, speed: 18, radius: 0.8, range: 12, pierce: true },
@@ -379,8 +380,15 @@ test('Catch arc, Pocket countdown and all glove poses use render alpha and per-o
 			step(20)
 			const update = (alpha) => {
 				b.body.animate(0)
-				b.body.poseAbility(b.cast, alpha)
-				view.update(0, { hero: b.body.mesh.position, held: {}, unit: b, casters: [a], alpha })
+				b.body.poseAbility(b.cast, alpha, b, sim.tick)
+				view.update(0, {
+					hero: b.body.mesh.position,
+					held: {},
+					unit: b,
+					casters: [a],
+					alpha,
+					tick: sim.tick,
+				})
 			}
 			update(0)
 			const arc = scene.getObjectByName('moba-catch-window')

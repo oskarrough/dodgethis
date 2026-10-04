@@ -83,7 +83,7 @@ export function createScriptedHero(id) {
 		) {
 			const distance = Math.hypot(ball.pos.x - p.x, ball.pos.z - p.z)
 			if (distance <= tune.ball.pickup) {
-				if (h.order || h.attack || h.cast) frame.pressed = [{ action: 'stop' }]
+				if (!h.cast && !h.ballThrow && (h.order || h.attack)) frame.pressed = [{ action: 'stop' }]
 			} else if (
 				!h.order ||
 				h.order.kind !== 'move' ||

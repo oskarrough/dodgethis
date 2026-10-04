@@ -252,7 +252,7 @@ export function dressHero(body, heroId = 'fletcher', team = 'A') {
 		body.visual.rotation.z = -tune.abilityView.drawTurn * progress
 		drawn.position.z = -t.arrowHeight / 2 + tune.abilityView.drawPull * progress
 	}
-	body.poseAbility = (cast, alpha = 0) => {
+	body.poseAbility = (cast, alpha = 0, unit = null, tick = 0) => {
 		const ability = castAbility({ cast, definition: heroDefinition(heroId) })
 		body.drawPose(
 			ability?.effects?.pose === 'draw'
@@ -260,10 +260,9 @@ export function dressHero(body, heroId = 'fletcher', team = 'A') {
 				: 0,
 		)
 		if (!glove) return
-		const unit = body.mobaUnit,
-			tick = (body.mobaTick ?? 0) + alpha,
+		const time = tick + alpha,
 			v = tune.mittsView
-		const pocket = unit?.abilityState.pocket
+		const pocket = unit?.abilityState?.pocket
 		gloveMaterial.uniforms.uStyleId.value = styleId(
 			(pocket?.team ?? team) === 'A' ? 'teamA' : 'teamB',
 		)
@@ -272,7 +271,7 @@ export function dressHero(body, heroId = 'fletcher', team = 'A') {
 		if (pocket) {
 			const fraction = Math.max(
 				0,
-				Math.min(1, ((pocket.until - tick) * STEP) / tune.catching.pocketLife),
+				Math.min(1, ((pocket.until - time) * STEP) / tune.catching.pocketLife),
 			)
 			const positions = pocketRing.geometry.attributes.position
 			for (let i = 0; i <= v.segments; i++) {
@@ -303,10 +302,13 @@ export function dressHero(body, heroId = 'fletcher', team = 'A') {
 		} else if (unit?.stance?.ability === 'catch') {
 			glove.position.y = v.gloveLift
 			glove.rotation.z = -v.gloveTurn
-		} else if (unit?.body.dashing && unit.dashAbility === 'dive') {
+			const direction = unit.catchWindow?.dir ?? unit.stance.dir
+			if (direction)
+				glove.rotation.y = Math.atan2(direction.x, direction.z) + Math.PI - body.mesh.rotation.y
+		} else if (unit?.body?.dashing && unit.dashAbility === 'dive') {
 			body.visual.rotation.x = -v.diveLean
 			glove.position.z = -v.tossPull
-		} else if (tick < (unit?.proneUntil ?? 0)) {
+		} else if (time < (unit?.proneUntil ?? 0)) {
 			body.visual.rotation.x = -v.proneTurn
 		} else if (unit?.attack) {
 			const attack = unit.attack

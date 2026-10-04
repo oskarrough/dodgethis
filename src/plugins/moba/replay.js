@@ -121,7 +121,7 @@ export function mobaReplay(app) {
 				for (const h of sim.heroes)
 					if (!h.dead) {
 						h.body.animate(elapsed, h.cast || h.attack || h.ballThrow ? 1 : 0)
-						h.body.poseAbility?.(h.cast, blend)
+						h.body.poseAbility?.(h.cast, blend, h, sim.tick)
 					}
 				const p = hero.body.mesh.position
 				const gone = view.update(elapsed, {
@@ -140,6 +140,7 @@ export function mobaReplay(app) {
 					aim: null,
 					held: {},
 					unit: hero,
+					tick: sim.tick,
 					casters: sim.heroes,
 					zones: sim.zones,
 					obstacles: sim.obstacles,

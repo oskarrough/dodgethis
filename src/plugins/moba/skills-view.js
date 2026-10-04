@@ -37,6 +37,16 @@ export function createSkillsView(scene) {
 	const gold = makeStyleMaterial('ammo', { flat: true })
 	const enemy = makeStyleMaterial('teamB', { flat: true })
 	const ink = makeStyleMaterial('ink', { flat: true })
+	// Opaque ID writes, with holes that leave the ground visible. Alpha belongs
+	// to the forward layer, never the style buffer.
+	const catchFill = makeStyleMaterial('cream', { flat: true })
+	catchFill.uniforms.uStipplePixels = { value: tune.mittsView.stipplePixels }
+	catchFill.fragmentShader =
+		'uniform float uStipplePixels;\n' +
+		catchFill.fragmentShader.replace(
+			'void main() {',
+			'void main() { if (mod(floor(gl_FragCoord.x / uStipplePixels) + floor(gl_FragCoord.y / uStipplePixels), 2.0) < 1.0) discard;',
+		)
 	const mesh = (geometry, material, parent = group) => {
 		const m = new THREE.Mesh(geometry, material)
 		parent.add(m)
@@ -90,7 +100,18 @@ export function createSkillsView(scene) {
 	}
 	function update(
 		dt,
-		{ hero, aim, held, zones = [], unit = null, casters = [], obstacles = OBSTACLES, alpha = 0 },
+		{
+			hero,
+			aim,
+			held,
+			zones = [],
+			unit = null,
+			casters = [],
+			units = casters,
+			obstacles = OBSTACLES,
+			alpha = 0,
+			tick = 0,
+		},
 	) {
 		if (castCircle) {
 			castLeft = Math.max(0, castLeft - dt)
@@ -216,7 +237,8 @@ export function createSkillsView(scene) {
 				tell.fill.scale.setScalar(stats.radius * progress)
 			}
 		}
-		const catching = [...casters, ...(unit && !casters.includes(unit) ? [unit] : [])].filter(
+		catchFill.uniforms.uStipplePixels.value = Math.max(1, tune.mittsView.stipplePixels)
+		const catching = [...units, ...(unit && !units.includes(unit) ? [unit] : [])].filter(
 			(u) => !u.dead && u.catchWindow,
 		)
 		const catchingIds = new Set(catching.map((u) => u.id))
@@ -234,32 +256,43 @@ export function createSkillsView(scene) {
 				const root = new THREE.Group()
 				root.name = 'moba-catch-window'
 				group.add(root)
-				const edge = mesh(coneGeometry.clone(), cream, root)
+				const edge = mesh(coneGeometry.clone(), catchFill, root)
 				const timer = mesh(coneGeometry.clone(), gold, root)
 				const border = mesh(coneGeometry.clone(), ink, root)
+				const sides = [mesh(lineGeometry, ink, root), mesh(lineGeometry, ink, root)]
+				for (const side of sides)
+					side.position.y = tune.mittsView.catchFillY - tune.mittsView.catchY
 				edge.position.y = tune.mittsView.arcLift
 				timer.position.y = tune.mittsView.catchFillY - tune.mittsView.catchY
-				catchTells.set(u.id, (tell = { root, edge, timer, border }))
+				catchTells.set(u.id, (tell = { root, edge, timer, border, sides }))
 			}
 			const window = u.catchWindow,
 				angle = (window.angle * Math.PI) / 180
-			const left = window.until - (u.body.mobaTick ?? 0) - alpha
-			arc(tell.edge.geometry, angle)
+			const left = window.until - tick - alpha
+			const radius = Math.max(tune.collision.epsilon, window.radius)
+			const edgeWidth = Math.min(radius, tune.mittsView.edgeWidth) / radius
+			arc(tell.edge.geometry, angle, 1, 0, 1 - edgeWidth)
+			arc(tell.border.geometry, angle, 1, 1 - edgeWidth, 1)
+			const timerInset = 1 + tune.mittsView.timerGap / radius
 			arc(
-				tell.border.geometry,
+				tell.timer.geometry,
 				angle,
-				1,
-				tune.mittsView.arcInset - tune.mittsView.arcBorder,
-				1 + tune.mittsView.arcBorder,
+				Math.max(0, Math.min(1, (left * STEP) / window.duration)),
+				timerInset,
+				timerInset + tune.mittsView.timerWidth / radius,
 			)
-			arc(tell.timer.geometry, angle, Math.max(0, Math.min(1, (left * STEP) / window.duration)))
-			tell.timer.scale.setScalar(tune.mittsView.arcInset)
+			for (let i = 0; i < tell.sides.length; i++) {
+				tell.sides[i].visible = window.angle < 360
+				tell.sides[i].rotation.y = ((i ? 1 : -1) * angle) / 2
+				tell.sides[i].scale.set(edgeWidth, 1, 1)
+			}
 			tell.root.position.set(
 				u.body.mesh.position.x,
 				window.ability === 'dive' ? tune.mittsView.diveY : tune.mittsView.catchY,
 				u.body.mesh.position.z,
 			)
-			tell.root.rotation.y = u.body.mesh.rotation.y
+			const direction = window.dir
+			tell.root.rotation.y = direction ? Math.atan2(direction.x, direction.z) + Math.PI : u.yaw
 			tell.root.scale.setScalar(window.radius)
 		}
 		for (let i = streaks.length - 1; i >= 0; i--) {
@@ -292,6 +325,7 @@ export function createSkillsView(scene) {
 				gold,
 				enemy,
 				ink,
+				catchFill,
 			])
 				owned.dispose()
 		},

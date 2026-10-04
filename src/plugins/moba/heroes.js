@@ -42,11 +42,14 @@ const toss = ability('toss', 'shot', {
 	effects: { cast: 'tossWindup', projectile: 'toss', hit: 'tossHit', pose: 'toss' },
 })
 const catchStance = ability('catch', 'stance', {
+	catchesShots: true,
+	acceptBall: true,
 	held: 'cone',
 	effects: { cast: 'catch', effect: 'catch', pose: 'catch' },
-	onStart({ hero, sim, ability, slot }) {
+	onStart({ hero, sim, ability, slot, dir }) {
 		sim.openCatch(hero, {
 			ability: ability.id,
+			dir,
 			duration: ability.stats.duration,
 			radius: ability.stats.radius,
 			angle: ability.stats.angle,
@@ -57,6 +60,8 @@ const catchStance = ability('catch', 'stance', {
 	},
 })
 const dive = ability('dive', 'dash', {
+	catchesShots: true,
+	acceptBall: false,
 	held: 'arrow',
 	effects: { cast: 'dive', effect: 'dive', pose: 'dive' },
 	onRelease({ hero, sim, ability }) {

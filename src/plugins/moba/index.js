@@ -204,7 +204,7 @@ export default function moba(app) {
 					if (!d.dead && sim.tick >= (d.freezeUntil ?? 0))
 						d.body.animate(step, d.cast || d.attack || d.ballThrow ? 1 : 0)
 				for (const h of [...sim.heroes, ...sim.dummies])
-					if (!h.dead) h.body.poseAbility?.(h.cast, blend)
+					if (!h.dead) h.body.poseAbility?.(h.cast, blend, h, sim.tick)
 				const target =
 					!sim.ball.carrying(hero) && !onPad() && frame.aim ? sim.pick(hero.team, frame.aim) : null
 				const hovered = target && locate(target.id)
@@ -249,6 +249,8 @@ export default function moba(app) {
 					aim: frame.aim,
 					held: hero.dead || sim.ball.carrying(hero) ? {} : frame.held,
 					unit: hero,
+					units: [...sim.heroes, ...sim.dummies],
+					tick: sim.tick,
 					obstacles: sim.obstacles,
 					boards: sim.boards,
 					zones: sim.zones,
@@ -282,6 +284,9 @@ export default function moba(app) {
 			run.on('blur', () => app.intents.cancel(local))
 
 			addSliders(run.debug, sliderSections(tune, setup), app.clock.step)
+			run.debug.tune('cast', tune.cast, (f, t) => {
+				f.add(t, 'cancelLockout', app.clock.step, 2, app.clock.step).name('cancel lockout (s)')
+			})
 			run.debug.tune('hud', tune.hud, (f, t) => {
 				f.add(t, 'tooltipMode', TOOLTIP_MODES).name('world tooltips')
 				f.add(t, 'hoverDelay', 0, 2, 0.05).name('hover delay')

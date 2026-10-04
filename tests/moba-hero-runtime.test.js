@@ -133,8 +133,8 @@ test('sim-owned catch freezes a shot, Q returns it through a 0.5 s tell even on 
 for (const condition of ['expired', 'flank', 'homing', 'uncatchable'])
 	test(`catch rejects ${condition}, never consumes a basic or an invalid window`, () =>
 		fixture(({ sim, b, launch, step, facts }) => {
-			sim.openCatch(b, { duration: condition === 'expired' ? 0.1 : 1, radius: 2, angle: 100 })
 			if (condition === 'flank') b.yaw = -Math.PI / 2
+			sim.openCatch(b, { duration: condition === 'expired' ? 0.1 : 1, radius: 2, angle: 100 })
 			launch(
 				condition === 'homing'
 					? { target: 'b', slot: 'primary' }

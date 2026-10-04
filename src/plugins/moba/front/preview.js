@@ -231,19 +231,25 @@ export function createPreview(app, run, heroId = 'fletcher') {
 				: null
 		const catchWindow =
 			slot && (ability?.id === 'catch' || ability?.id === 'dive') && fired && age < flight
-				? { radius: stats.radius, angle: stats.angle }
+				? {
+						radius: stats.radius,
+						angle: stats.angle,
+						dir,
+						duration: flight,
+						until: (warning + flight) / STEP,
+					}
 				: null
 		if (heroId !== 'fletcher') {
 			// Costume pose hooks read this presentation-only state, not a live hero.
-			body.mobaTick = ticks
-			body.mobaUnit = {
+			const poseUnit = {
 				abilityState: { pocket: null },
-				stance: slot && ability?.id === 'catch' && age < flight ? { ability: ability.id } : null,
+				stance:
+					slot && ability?.id === 'catch' && age < flight ? { ability: ability.id, dir } : null,
 				body: { dashing: !!(slot && ability?.kind === 'dash' && fired && age < stats.time) },
 				dashAbility: ability?.id,
 				proneUntil: slot && stats?.prone && age >= stats.time && age < flight ? ticks + 1 : 0,
 			}
-			body.poseAbility(cast, alpha)
+			body.poseAbility(cast, alpha, poseUnit, ticks)
 		}
 		const zone = ability?.kind === 'zone'
 		const scale = tune.preview.zoneScale
@@ -258,6 +264,7 @@ export function createPreview(app, run, heroId = 'fletcher') {
 			hero: zone ? { x: -aim.x / scale, y: 0, z: -aim.z / scale } : body.mesh.position,
 			aim: stageAim,
 			unit: { definition },
+			tick: ticks,
 			held: Object.fromEntries(
 				Object.entries(definition.abilities).map(([key, a]) => [
 					key,

@@ -154,6 +154,11 @@ export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed, b
 				k = knobs(),
 				p = position(h),
 				now = sim.tick
+			const abilities = Object.entries(h.definition.abilities).filter(([, a]) => a)
+			const [shotSlot, shotAbility] = abilities.find(([, a]) => a.kind === 'shot') ?? []
+			const [zoneSlot, zoneAbility] = abilities.find(([, a]) => a.kind === 'zone') ?? []
+			const [dashSlot, dashAbility] = abilities.find(([, a]) => a.kind === 'dash') ?? []
+			const catchAbility = abilities.find(([, a]) => a.kind === 'stance' && a.catchesShots)
 			const own = perceived.heroes.filter((u) => !u.dead && u.team === team)
 			const enemies = perceived.heroes.filter((u) => !u.dead && u.team !== team)
 			const minions = perceived.minions
@@ -181,6 +186,7 @@ export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed, b
 			const cast = (slot, at) => {
 				if (
 					!h.definition.abilities[slot] ||
+					(h.cancelUntil?.[Number(slot.slice(-1)) - 1] ?? 0) > now ||
 					(h.cd[Number(slot.slice(-1)) - 1] &&
 						!(h.definition.abilities[slot]?.returnsPocket && h.abilityState?.pocket)) ||
 					h.cast ||
@@ -202,9 +208,13 @@ export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed, b
 					const scale = 1 + tune.levels.growth * (h.level - 1)
 					const burst =
 						scale *
-						(h.definition.basic?.damage * b.burstWindow +
-							(h.cd[0] ? 0 : (h.definition.abilities.slot1?.stats.damage ?? 0)) +
-							(h.cd[2] ? 0 : (h.definition.abilities.slot3?.stats.damage ?? 0)))
+						((h.definition.basic?.damage ?? 0) * b.burstWindow +
+							abilities
+								.filter(
+									([slot, a]) =>
+										['shot', 'zone'].includes(a.kind) && !h.cd[Number(slot.slice(-1)) - 1],
+								)
+								.reduce((damage, [, a]) => damage + (a.stats.damage ?? 0), 0))
 					return (
 						victims.some((u) => u.hp <= burst) &&
 						h.hp -
@@ -316,14 +326,23 @@ export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed, b
 				}
 				impact -= (now - perceived.tick) * STEP
 				if (impact <= 0) continue
-				const catchAbility = Object.entries(h.definition.abilities).find(
-					([, a]) => a?.id === 'catch',
-				)
+				const window = h.catchWindow
+				if (window && !threat.centre && (threat.catchable || (threat.ball && window.acceptBall))) {
+					const dx = threat.from.x - p.x,
+						dz = threat.from.z - p.z,
+						length = Math.hypot(dx, dz)
+					const front =
+						window.angle >= 360 ||
+						(dx * window.dir.x + dz * window.dir.z) / (length || 1) >=
+							Math.cos((window.angle * Math.PI) / 360)
+					const atArc = Math.max(0, impact - window.radius / threat.speed)
+					if (front && atArc < (window.until - now) * STEP) continue
+				}
 				if (
 					catchAbility &&
 					!sim.ball.carrying(h) &&
 					!h.catchWindow &&
-					(threat.catchable || threat.ball)
+					(threat.catchable || (threat.ball && catchAbility[1].acceptBall))
 				) {
 					const [slot, ability] = catchAbility
 					const atArc = impact - ability.stats.radius / threat.speed
@@ -347,18 +366,16 @@ export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed, b
 					move(goal)
 				} else if (
 					!sim.ball.carrying(h) &&
-					h.definition.abilities.slot2?.kind === 'dash' &&
-					travel <= h.definition.abilities.slot2.stats.range &&
-					h.definition.abilities.slot2.stats.castPoint +
-						travel /
-							(h.definition.abilities.slot2.stats.range /
-								Math.max(STEP, h.definition.abilities.slot2.stats.time)) <=
+					dashAbility &&
+					travel <= dashAbility.stats.range &&
+					dashAbility.stats.castPoint +
+						travel / (dashAbility.stats.range / Math.max(STEP, dashAbility.stats.time)) <=
 						impact &&
 					safe(goal) &&
-					cast('slot2', goal)
+					cast(dashSlot, goal)
 				) {
 					dodgeGoal = goal
-					dodgeUntil = now + ticks(h.definition.abilities.slot2.stats.time)
+					dodgeUntil = now + ticks(dashAbility.stats.time)
 				} else continue
 				state = 'dodge'
 				return frame
@@ -459,11 +476,7 @@ export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed, b
 			const rivals = near(
 				enemies.filter(canFocus),
 				p,
-				Math.max(
-					b.fightRange,
-					h.definition.abilities.slot1?.stats.range ?? 0,
-					h.definition.abilities.slot3?.stats.range ?? 0,
-				),
+				Math.max(b.fightRange, shotAbility?.stats.range ?? 0, zoneAbility?.stats.range ?? 0),
 			).sort((a, c) => effective(a) - effective(c) || a.id.localeCompare(c.id))
 			let target =
 				(ball?.state === 'carried' && ball.team !== team
@@ -475,6 +488,25 @@ export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed, b
 				targetId = target?.id ?? null
 				stickyUntil = now + ticks(b.sticky)
 				seenAt = now
+			}
+			// Spend an already-paid minion screen before staging for a future Ball.
+			// Otherwise late warnings can repeatedly pull the sieger off an open core.
+			const opening = structures[0]
+			const screen = opening ? near(wave, opening.pos, tune[opening.kind].range) : []
+			const screenStrength = screen.reduce(
+				(n, u) => n + (u.kind === 'brute' ? b.bruteEscort : 1),
+				0,
+			)
+			if (
+				file === b.siegeFile &&
+				opening &&
+				screenStrength >= b.siegeMinions &&
+				minions.some((u) => u.id === opening.target && u.team === team) &&
+				!(ball?.state === 'carried' && ball.team !== team && target?.id === ball.carrier)
+			) {
+				state = 'push'
+				attack(opening)
+				return frame
 			}
 			const preparing = ball?.state === 'warning' && ball.spawnAt - now <= ticks(b.ballPrepare)
 			const objective = ball && ['loose', 'channel'].includes(ball.state)
@@ -494,18 +526,20 @@ export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed, b
 						distance(a.pos, ball.pos) - distance(c.pos, ball.pos) || a.id.localeCompare(c.id),
 				)[0]
 				if (
-					preparing ||
+					(preparing && nearest?.id === id) ||
 					(contest &&
 						nearest?.id === id &&
 						!near(enemies, ball.pos, tune.ball.pickup + h.body.radius).length)
 				) {
 					state = 'ball'
 					if (objective && distance(p, ball.pos) <= tune.ball.pickup) {
-						if (h.order || h.attack || h.cast) frame.pressed = [{ action: 'stop', at: null }]
+						// Preserve the committed tell; ordinary orders may still replan.
+						if (!h.cast && !h.ballThrow && (h.order || h.attack))
+							frame.pressed = [{ action: 'stop', at: null }]
 					} else move(preparing ? { x: ball.pos.x + side * b.shadowRange, z: file } : ball.pos)
 					return frame
 				}
-				if (!target) {
+				if (objective && !target) {
 					state = 'ball'
 					move({ x: ball.pos.x + side * b.shadowRange, z: file })
 					return frame
@@ -520,41 +554,21 @@ export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed, b
 							z: target.pos.z + ((p.z - target.pos.z) / targetDistance) * attackReach,
 						}
 					: p
-			const opening = structures[0]
-			const screen = opening ? near(wave, opening.pos, tune[opening.kind].range) : []
-			const screenStrength = screen.reduce(
-				(n, u) => n + (u.kind === 'brute' ? b.bruteEscort : 1),
-				0,
-			)
-			if (
-				file === b.siegeFile &&
-				opening &&
-				screenStrength >= b.siegeMinions &&
-				minions.some((u) => u.id === opening.target && u.team === team) &&
-				!(ball?.state === 'carried' && ball.team !== team && target?.id === ball.carrier)
-			) {
-				state = 'push'
-				attack(opening)
-				return frame
-			}
 			const homeGuard = perceived.structures.find((u) => !u.dead && u.team === team)
 			const invaders = minions.filter(
 				(u) =>
 					u.team !== team &&
 					homeGuard &&
 					distance(u.pos, homeGuard.pos) <= tune[homeGuard.kind].range &&
-					distance(u.pos, p) <=
-						(h.definition.abilities.slot3?.kind === 'zone'
-							? h.definition.abilities.slot3.stats.range
-							: 0),
+					distance(u.pos, p) <= (zoneAbility?.stats.range ?? 0),
 			)
 			if (invaders.length && (!target || advantage < -k.aggression)) {
 				state = 'defend'
 				const focus = invaders.sort((a, c) => a.hp - c.hp || a.id.localeCompare(c.id))[0]
 				if (
 					invaders.length >= b.clearMinions &&
-					distance(p, focus.pos) <= (h.definition.abilities.slot3?.stats.range ?? 0) &&
-					cast('slot3', focus.pos)
+					distance(p, focus.pos) <= (zoneAbility?.stats.range ?? 0) &&
+					cast(zoneSlot, focus.pos)
 				)
 					return frame
 				attack(focus)
@@ -563,8 +577,7 @@ export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed, b
 			if (target && advantage >= -k.aggression) {
 				state = 'fight'
 				holdUntil = now + ticks(b.hold)
-				const rain =
-					h.definition.abilities.slot3?.kind === 'zone' ? h.definition.abilities.slot3.stats : null
+				const rain = zoneAbility?.stats
 				let predicted = {
 					x: target.pos.x + target.vel.x * (rain?.delay ?? 0),
 					z: target.pos.z + target.vel.z * (rain?.delay ?? 0),
@@ -595,10 +608,9 @@ export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed, b
 						predictedHeroes.filter((u) => distance(u.pos, predicted) <= rain.radius + u.radius),
 						rain.radius,
 					) &&
-					cast('slot3', predicted)
+					cast(zoneSlot, predicted)
 				)
 					return frame
-				const shotAbility = h.definition.abilities.slot1
 				const loose =
 					shotAbility?.returnsPocket && h.abilityState?.pocket
 						? h.abilityState.pocket.shot
@@ -631,11 +643,11 @@ export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed, b
 						!first.u.kind &&
 						(cover === null || first.t < cover) &&
 						safe(p, [first.u]) &&
-						cast('slot1', aim)
+						cast(shotSlot, aim)
 					)
 						return frame
 				}
-				const dash = h.definition.abilities.slot2
+				const dash = dashAbility
 				if (
 					dash?.kind === 'dash' &&
 					target.hp < target.maxHp * b.chaseHp &&
@@ -652,7 +664,7 @@ export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed, b
 						tune.orders.clearance,
 						sim.obstacles,
 					)
-					if (safe(landing, [target]) && cast('slot2', landing)) return frame
+					if (safe(landing, [target]) && cast(dashSlot, landing)) return frame
 				}
 				if (safe(attackSpot, [target])) {
 					if (h.attack?.phase === 'backswing') move({ x: p.x + side * b.stutter, z: p.z })
@@ -662,7 +674,7 @@ export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed, b
 			}
 			if (target && !safe(attackSpot, [target])) {
 				state = 'backoff'
-				const reach = (h.definition.abilities.slot1?.stats.range ?? b.fightRange) + b.stutter
+				const reach = (shotAbility?.stats.range ?? b.fightRange) + b.stutter
 				const d = targetDistance || 1
 				move({
 					x: target.pos.x + ((p.x - target.pos.x || side) / d) * reach,
