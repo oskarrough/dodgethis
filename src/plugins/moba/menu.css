@@ -30,3 +30,209 @@
 	letter-spacing: 0;
 	color: var(--ui-text);
 }
+
+/* The world loses its colour, not its camera or its live HUD. */
+canvas.moba-dead-world {
+	filter: grayscale(1);
+}
+.moba-death {
+	position: fixed;
+	z-index: 5;
+	top: 120px;
+	left: 22px;
+	width: min(330px, calc(100vw - 44px));
+	box-sizing: border-box;
+	padding: 16px 20px;
+	color: var(--ui-text);
+	background: var(--ui-cream);
+	border: 3px solid var(--ui-text);
+	border-radius: 20px;
+	box-shadow: 5px 6px 0 var(--ui-text);
+	font:
+		400 18px / 1.3 'Josefin Sans',
+		sans-serif;
+	font-variant-numeric: tabular-nums;
+	pointer-events: none;
+	transform: rotate(-1deg);
+}
+.moba-death[hidden] {
+	display: none;
+}
+.moba-death h2 {
+	margin: 0;
+	font: 400 30px / 1.1 var(--ui-font);
+}
+.moba-death ol {
+	padding: 0;
+	margin: 14px 0;
+	list-style: none;
+}
+.moba-death li {
+	display: flex;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 6px 0;
+	border-bottom: 1px dashed var(--ui-text);
+}
+.moba-recap-caption {
+	margin: 8px 0 0;
+	font-size: 14px;
+}
+.moba-respawn-sticker {
+	display: inline-block;
+	margin: 0;
+	padding: 8px 14px;
+	background: var(--ui-gold);
+	border: 3px solid var(--ui-text);
+	border-radius: 12px;
+	box-shadow: 3px 3px 0 var(--ui-text);
+	font: 400 26px / 1 var(--ui-font);
+	transform: rotate(2deg);
+}
+.overlay:is([data-theme='moba-victory'], [data-theme='moba-defeat']) {
+	overflow: auto;
+	padding: 20px;
+	box-sizing: border-box;
+}
+.overlay:is([data-theme='moba-victory'], [data-theme='moba-defeat']) .dialog-card {
+	width: min(920px, 100%);
+	max-width: none;
+	box-sizing: border-box;
+	padding: 28px;
+}
+.moba-results {
+	margin-top: 22px;
+	font:
+		400 18px / 1.4 'Josefin Sans',
+		sans-serif;
+	font-variant-numeric: tabular-nums;
+	text-align: left;
+}
+.moba-results table {
+	width: 100%;
+	border-collapse: collapse;
+}
+.moba-results caption {
+	font: 400 28px / 1.2 var(--ui-font);
+	text-align: left;
+	margin-bottom: 10px;
+}
+.moba-results :is(th, td) {
+	padding: 8px 10px;
+	border-bottom: 1px solid color-mix(in srgb, var(--ui-text) 20%, transparent);
+	text-align: right;
+}
+.moba-results th:first-child {
+	text-align: left;
+}
+.moba-results thead th {
+	font-size: 14px;
+}
+.moba-result-team th {
+	background: color-mix(in srgb, var(--ui-blue) 22%, var(--ui-cream));
+	font-weight: 700;
+}
+.moba-result-team:has(~ tr[data-local='true']) th {
+	background: color-mix(in srgb, var(--ui-gold) 35%, var(--ui-cream));
+}
+.moba-results tr[data-local='true'] {
+	background: color-mix(in srgb, var(--ui-gold) 20%, var(--ui-cream));
+}
+.moba-result-note {
+	margin: 12px 0 0;
+	font-size: 13px;
+}
+.overlay:has(.moba-results) .actions .cursor {
+	display: none;
+}
+.overlay:has(.moba-results) .actions .label {
+	margin-left: 0;
+}
+/* Same hard shadow, stitched edge and rising flood as the difficulty tiles. */
+.overlay:has(.moba-results) .actions .sticker {
+	--flood: var(--ui-blue);
+	--sticker-radius: 18px;
+	--sticker-lift: 6px;
+	--sticker-pad-y: 22px;
+	--sticker-pad-x: 34px;
+	isolation: isolate;
+	overflow: hidden;
+	min-width: 180px;
+	font-size: clamp(26px, 3vw, 42px);
+	text-transform: none;
+	background: var(--ui-cream);
+	transform: rotate(var(--tile-tilt));
+	transition:
+		transform var(--tile-snap) cubic-bezier(0.2, 1.9, 0.45, 1),
+		box-shadow var(--tile-snap);
+}
+.overlay:has(.moba-results) .actions .sticker:first-child {
+	--flood: var(--ui-gold);
+	transform: rotate(calc(-1 * var(--tile-tilt)));
+}
+.overlay:has(.moba-results) .actions .sticker::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+	background: var(--flood);
+	transform: scaleY(0);
+	transform-origin: bottom;
+	transition: transform var(--tile-snap) cubic-bezier(0.3, 1.3, 0.5, 1);
+}
+.overlay:has(.moba-results) .actions .sticker::after {
+	content: '';
+	position: absolute;
+	inset: 5px;
+	border: 2px dashed color-mix(in srgb, var(--ui-text) 45%, transparent);
+	border-radius: 10px;
+	pointer-events: none;
+}
+.overlay:has(.moba-results) .actions .sticker:is(.selected, :focus-visible) {
+	background: var(--ui-cream);
+	transform: translate(-3px, -6px) rotate(0deg) scale(var(--tile-scale));
+	box-shadow: 9px 12px 0 var(--ui-text);
+	outline: none;
+}
+.overlay:has(.moba-results) .actions .sticker.selected::before {
+	transform: scaleY(1);
+}
+.overlay:has(.moba-results) .actions .sticker:active {
+	transform: translate(3px, 4px) scale(0.97);
+	box-shadow: 2px 2px 0 var(--ui-text);
+	transition-duration: var(--tile-press);
+}
+@media (max-width: 700px) {
+	.moba-death {
+		top: 116px;
+		left: 14px;
+		width: min(300px, calc(100vw - 28px));
+		padding: 12px 16px;
+	}
+	.overlay:has(.moba-results) {
+		padding: 12px;
+	}
+	.overlay:has(.moba-results) .dialog-card {
+		padding: 18px 10px;
+	}
+	.moba-results {
+		font-size: 13px;
+	}
+	.moba-results :is(th, td) {
+		padding: 7px 3px;
+	}
+	.moba-results thead th {
+		font-size: 11px;
+	}
+	.overlay:has(.moba-results) .actions .sticker {
+		min-width: 130px;
+		--sticker-pad-x: 22px;
+		--sticker-pad-y: 18px;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	.overlay:has(.moba-results) .actions .sticker,
+	.overlay:has(.moba-results) .actions .sticker::before {
+		transition: none;
+	}
+}

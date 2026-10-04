@@ -22,6 +22,7 @@ export function createLane({
 	makeBody,
 	removeTower,
 	obstacles,
+	wavesEnabled = () => true,
 }) {
 	const pathOptions = (radius = tune.waves.radius) => ({ radius, ...tune.orders })
 	const planners = new Map()
@@ -157,10 +158,18 @@ export function createLane({
 			})
 		}
 	}
-	function addXp(team, amount, point, passive = false) {
+	function addXp(team, amount, point, passive = false, contributions = {}) {
 		const state = teams[team]
 		state.xp += amount
-		present({ type: 'xp', team, amount, total: state.xp, passive, point: { ...point } })
+		present({
+			type: 'xp',
+			team,
+			amount,
+			total: state.xp,
+			passive,
+			contributions,
+			point: { ...point },
+		})
 		let threshold = 0
 		for (let level = 1; level < tune.levels.cap; level++) {
 			threshold += tune.levels.first + tune.levels.increment * (level - 1)
@@ -175,10 +184,20 @@ export function createLane({
 			present({ type: 'levelUp', team, level: state.level, point: { ...point } })
 		}
 	}
-	function reward(unit, killerTeam, t) {
+	function reward(unit, killerTeam, t, source) {
+		// A last-hit earns siege/takedown credit; minion soak is shared equally
+		// by the heroes who earned it. Passive and lane-only kills have no hero credit.
+		const killer = heroes.find((hero) => hero.id === source && hero.team === killerTeam)
+		const credit = (amount) => (killer ? { [killer.id]: amount } : {})
 		if (unit.structure) {
 			removeTower(unit)
-			addXp(killerTeam, tune.waves.structureXp, unit.body.position)
+			addXp(
+				killerTeam,
+				tune.waves.structureXp,
+				unit.body.position,
+				false,
+				credit(tune.waves.structureXp),
+			)
 			present({
 				type: 'structureDown',
 				target: unit.id,
@@ -200,11 +219,23 @@ export function createLane({
 				killerTeam,
 				tune.levels.takedown + tune.levels.victimLevel * unit.level,
 				unit.body.position,
+				false,
+				credit(tune.levels.takedown + tune.levels.victimLevel * unit.level),
 			)
-		} else if (
-			heroes.some((h) => !h.dead && h.team !== unit.team && distance(unit, h) <= tune.waves.soak)
-		) {
-			addXp(unit.team === 'A' ? 'B' : 'A', tune.minions[unit.kind].xp, unit.body.position)
+		} else {
+			const soaking = heroes.filter(
+				(h) => !h.dead && h.team !== unit.team && distance(unit, h) <= tune.waves.soak,
+			)
+			if (soaking.length) {
+				const amount = tune.minions[unit.kind].xp
+				addXp(
+					unit.team === 'A' ? 'B' : 'A',
+					amount,
+					unit.body.position,
+					false,
+					Object.fromEntries(soaking.map((h) => [h.id, amount / soaking.length])),
+				)
+			}
 		}
 		if (unit.kind === 'wizard') {
 			const globe = {
@@ -271,7 +302,7 @@ export function createLane({
 			}
 		}
 		if (t >= nextWave) {
-			spawn(t)
+			if (wavesEnabled()) spawn(t)
 			nextWave += ticks(t * STEP >= tune.match.late ? tune.waves.lateInterval : tune.waves.interval)
 		}
 		const candidates = [...minions, ...structures, ...heroes]

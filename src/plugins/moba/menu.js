@@ -1,5 +1,6 @@
 import { tune } from './tune.js'
 import { hex } from '../../core/style.js'
+import { createRecap } from './recap.js'
 import './menu.css'
 
 // Simulation stops on the winning tick; presentation finishes before the result card.
@@ -14,6 +15,8 @@ export function createMatchMenu({
 	difficulty = 'easy',
 	setup = { difficulty },
 }) {
+	const recap = createRecap({ sim, hero, canvas: app.renderer?.domElement })
+	run.on('present', recap.present)
 	let paused = false
 	let resultShown = false
 	let backHeld = false
@@ -51,7 +54,13 @@ export function createMatchMenu({
 			],
 		})
 	}
-	function result(dt = 0) {
+	function result(dt = 0, alpha = 0) {
+		recap.update({
+			alpha: frozen() ? 0 : alpha,
+			step: app.clock.step,
+			device: app.input.activeDevice?.(),
+			hidden: app.overlay.visible,
+		})
 		if (!sim.lane.match.winner || resultShown) return
 		if (endingElapsed === null) {
 			endingElapsed = 0
@@ -72,10 +81,10 @@ export function createMatchMenu({
 			subtitle: sim.lane.match.winner === hero.team ? 'Enemy core destroyed' : 'Your core fell',
 			actions: [
 				{ label: 'Again', key: 'KeyR', keyLabel: 'R', onSelect: restart },
-				{ label: 'Hero', onSelect: () => leave(true) },
-				{ label: 'Modes', onSelect: () => leave(false) },
+				{ label: 'Back', onSelect: () => leave(false) },
 			],
 		})
+		if (app.renderer) recap.showTable(document.querySelector('.overlay .dialog-card'))
 	}
 	run.clock.pause(frozen)
 	run.intents.suspend(frozen)
@@ -97,13 +106,29 @@ export function createMatchMenu({
 		if (pressed && paused && !sim.lane.match.winner) toggle()
 		else app.overlay.handleGamepad(input)
 	})
-	run.signal.addEventListener('abort', () => app.overlay.hide(), { once: true })
+	run.signal.addEventListener(
+		'abort',
+		() => {
+			recap.dispose()
+			app.overlay.hide()
+		},
+		{ once: true },
+	)
 	return {
 		resume() {
 			if (paused) toggle()
 		},
 		frozen,
 		result,
+		cameraControls(controls) {
+			if (!hero.dead || frozen() || app.input.activeDevice() !== 'gamepad') return controls
+			return {
+				...controls,
+				pad: false,
+				pan: app.input.moveVector(),
+				centred: !!app.input.pad()?.buttons[10],
+			}
+		},
 		presentationFrozen: () => paused || resultShown,
 		endingTime: () => endingElapsed ?? 0,
 	}

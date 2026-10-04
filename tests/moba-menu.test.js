@@ -146,7 +146,7 @@ test.each([
 	expect(focused).toEqual([{ x: 40, z: 0 }])
 	for (let i = 0; i < 91; i++) app.frame(STEP)
 	expect(overlay.card.title).toBe(title)
-	expect(overlay.card.actions.map((a) => a.label)).toEqual(['Again', 'Hero', 'Modes'])
+	expect(overlay.card.actions.map((a) => a.label)).toEqual(['Again', 'Back'])
 	const old = sim
 	for (let i = 0; i < 20; i++) app.frame(STEP)
 	expect(old.tick).toBe(0)
@@ -190,11 +190,11 @@ test('loading owns controller gestures and Start cannot leave a pause queued aft
 	expect(overlay.card.spaceConfirm).toBe(false)
 })
 
-test('fresh results offer hero and modes and no previous menu listener survives', () => {
+test('fresh results go back and no previous menu listener survives', () => {
 	sim.lane.match.winner = 'B'
 	for (let i = 0; i < 92; i++) app.frame(STEP)
-	overlay.card.actions.find((a) => a.label === 'Hero').onSelect()
-	expect(target).toBe('hero')
+	overlay.card.actions.find((a) => a.label === 'Back').onSelect()
+	expect(target).toBe('modes')
 	escape()
 	expect(overlay.visible).toBe(false)
 })
