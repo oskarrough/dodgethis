@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { hex } from '../../core/style.js'
+import { el } from '../../core/dom.js'
 import { tune } from './tune.js'
 
 // NDC → inset screen edge. Points behind the eye need their projected direction reversed.
@@ -17,8 +18,7 @@ export function edgePip(point, behind = false) {
 }
 
 export function createPips() {
-	const root = document.createElement('div')
-	root.className = 'moba-pips'
+	const root = el('div', 'moba-pips')
 	root.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:3'
 	root.setAttribute('aria-hidden', 'true')
 	document.body.append(root)
@@ -40,13 +40,12 @@ export function createPips() {
 				live.add(unit.id)
 				let pip = pips.get(unit.id)
 				if (!pip) {
-					pip = document.createElement('span')
+					pip = el('span', null, root)
 					pip.style.cssText = `position:absolute;border:2px solid ${hex('ink')};border-radius:50%;background:${hex(unit.label ? 'cream' : unit.team === 'A' ? 'teamA' : 'teamB')};transform:translate(-50%,-50%)`
 					if (unit.label) {
 						pip.dataset.marker = unit.label
 						pip.style.cssText += `;border-width:${tune.pips.markerBorder}px;border-radius:${tune.pips.markerCorner}px;padding:${tune.pips.markerPadding}px ${tune.pips.markerPadding * 2}px;white-space:nowrap;box-shadow:${tune.pips.markerBorder}px ${tune.pips.markerBorder}px 0 ${hex('ink')};font:${tune.pips.markerFont}px/1 var(--ui-font);color:${hex('ink')}`
 					}
-					root.append(pip)
 					pips.set(unit.id, pip)
 				}
 				// Mesh positions already contain render interpolation, never read sim positions here.

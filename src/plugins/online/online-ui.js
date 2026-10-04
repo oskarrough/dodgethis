@@ -1,13 +1,12 @@
+import { el } from '../../core/dom.js'
 import { MAX_BOTS } from './online-session.js'
 
 // `inMatch()` is true while a match runs under the panel: Escape then resumes it rather than leaving.
 export function createOnlineUi(session, { inMatch = () => false } = {}) {
 	// The entry button lives in the playable hub's splash markup.
 	const entry = document.querySelector('.splash .online-entry')
-	const panel = document.createElement('dialog')
-	panel.className = 'online-panel dialog-card'
+	const panel = el('dialog', 'online-panel dialog-card', document.body)
 	panel.setAttribute('aria-labelledby', 'online-title')
-	document.body.append(panel)
 	let busy = false
 	let error = ''
 	let joinCode = ''
@@ -46,12 +45,11 @@ export function createOnlineUi(session, { inMatch = () => false } = {}) {
 		panel.close()
 	}
 	function button(text, action, disabled = false) {
-		const el = document.createElement('button')
-		el.type = 'button'
-		el.className = 'sticker'
-		el.textContent = text
-		el.disabled = disabled || busy
-		el.onclick = async () => {
+		const btn = el('button', 'sticker')
+		btn.type = 'button'
+		btn.textContent = text
+		btn.disabled = disabled || busy
+		btn.onclick = async () => {
 			error = ''
 			busy = true
 			render()
@@ -64,7 +62,7 @@ export function createOnlineUi(session, { inMatch = () => false } = {}) {
 			busy = false
 			render()
 		}
-		return el
+		return btn
 	}
 	function render(state = session.state, message = '') {
 		if (message) error = message
@@ -76,11 +74,9 @@ export function createOnlineUi(session, { inMatch = () => false } = {}) {
 			? `${state.public ? 'Public' : 'Private'} lobby · ${state.code}`
 			: 'Play online'
 		children.push(heading)
-		const actions = document.createElement('div')
-		actions.className = 'actions'
+		const actions = el('div', 'actions')
 		if (!state) {
-			const choices = document.createElement('div')
-			choices.className = 'online-choices'
+			const choices = el('div', 'online-choices')
 			const quick = document.createElement('section')
 			quick.append(
 				button('Find a game', () => {
@@ -100,11 +96,9 @@ export function createOnlineUi(session, { inMatch = () => false } = {}) {
 					button('Start a public game', () => session.host(true)),
 				)
 			}
-			const friends = document.createElement('section')
-			friends.innerHTML = '<h2>Your own game</h2>'
+			const friends = el('section', null, null, '<h2>Your own game</h2>')
 			if (creating) {
-				const visibility = document.createElement('div')
-				visibility.className = 'online-visibility'
+				const visibility = el('div', 'online-visibility')
 				for (const [name, description, isPublic] of [
 					['Public', 'Anyone can join', true],
 					['Private', 'Invite code only', false],
@@ -151,8 +145,7 @@ export function createOnlineUi(session, { inMatch = () => false } = {}) {
 			choices.append(quick, friends)
 			children.push(choices)
 		} else {
-			const hint = document.createElement('p')
-			hint.className = 'line'
+			const hint = el('p', 'line')
 			hint.textContent = `Share code ${state.code} with friends. ${state.humans.length}/8 humans connected.`
 			children.push(hint)
 			const editable = session.net.isHost && state.phase === 'lobby'
@@ -209,8 +202,7 @@ export function createOnlineUi(session, { inMatch = () => false } = {}) {
 				)
 				if (session.net.isHost)
 					actions.append(button('Start match', () => session.start(), !canStart))
-				const hint = document.createElement('p')
-				hint.className = 'line'
+				const hint = el('p', 'line')
 				hint.textContent = !canStart
 					? 'Both teams need at least one human or bot.'
 					: session.net.isHost
@@ -222,8 +214,7 @@ export function createOnlineUi(session, { inMatch = () => false } = {}) {
 				if (session.net.isHost) actions.append(button('Back to lobby', () => session.backToLobby()))
 			}
 		}
-		const status = document.createElement('p')
-		status.className = 'line'
+		const status = el('p', 'line')
 		status.setAttribute('role', 'status')
 		status.textContent = error || (busy ? 'Connecting…' : state?.message || '')
 		const back = button(

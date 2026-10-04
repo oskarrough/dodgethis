@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { PALETTE } from '../../../core/style.js'
+import { el as make } from '../../../core/dom.js'
 import { tune as kit } from '../tune.js'
 import { FLOOR } from '../obstacles.js'
 import { createControls } from './controls.js'
@@ -46,9 +47,12 @@ export function startLoading(
 		el.replaceChildren(backdrop.el)
 		const figures = (team) =>
 			`<div class="front-loading-team ${team}" aria-label="${team === 'A' ? 'Your' : 'Opposing'} ridge">${Array.from({ length: 3 }, (_, i) => `<svg viewBox="0 0 40 76" aria-label="${i ? 'Unoccupied seat' : 'Fletcher'}" class="${i ? 'vacant' : ''}"><path d="M12 20 Q7 4 20 3 Q33 4 28 20 L24 27 L32 48 L27 54 L28 76 H22 L19 54 L16 76 H10 L12 52 L7 46 L16 27Z"/><path d="M30 28 Q41 44 30 58 M30 28 V58" fill="none"/></svg>`).join('')}</div>`
-		const ui = document.createElement('section')
-		ui.className = 'front-loading-ui'
-		ui.innerHTML = `<h1>${tune.loading.mapName}</h1><p class="front-load-status" aria-live="polite">Preparing the view</p>${figures('A')}${figures('B')}<footer><button class="front-back front-return" aria-label="Back to hero select"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M27 10 L10 24 L27 38 L27 30 L38 30 L38 18 L27 18Z"/></svg><kbd class="front-return-key"></kbd></button><button class="front-skip">Start now</button><p class="front-prompts"></p></footer>`
+		const ui = make(
+			'section',
+			'front-loading-ui',
+			null,
+			`<h1>${tune.loading.mapName}</h1><p class="front-load-status" aria-live="polite">Preparing the view</p>${figures('A')}${figures('B')}<footer><button class="front-back front-return" aria-label="Back to hero select"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M27 10 L10 24 L27 38 L27 30 L38 30 L38 18 L27 18Z"/></svg><kbd class="front-return-key"></kbd></button><button class="front-skip">Start now</button><p class="front-prompts"></p></footer>`,
+		)
 		function positionFigures() {
 			const size = Math.max(
 				tune.loading.figureWidth.min,

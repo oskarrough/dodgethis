@@ -1,4 +1,5 @@
 import { hex } from '../../../core/style.js'
+import { el as make } from '../../../core/dom.js'
 import { tune } from './tune.js'
 import { easePointer, projectFrame, ridgePath } from './geometry.js'
 
@@ -56,8 +57,7 @@ const selectionPlanes = [
 ]
 
 export function createBackdrop() {
-	const el = document.createElement('div')
-	el.className = 'front-backdrop'
+	const el = make('div', 'front-backdrop')
 	el.setAttribute('aria-hidden', 'true')
 	el.style.setProperty('--front-ink', hex('ink'))
 	for (const [name, role, weight] of [

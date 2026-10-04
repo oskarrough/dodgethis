@@ -1,5 +1,6 @@
 // Full-screen non-playing modal with persistent cursor navigation by keyboard or gamepad; actions are { label, key?, keyLabel?, onSelect }, where key is a KeyboardEvent.code and keyLabel is its button hint.
 import { sfx } from './audio.js'
+import { el as make } from './dom.js'
 
 export function createOverlay(selector = '.overlay') {
 	const el = document.querySelector(selector)
@@ -38,13 +39,12 @@ export function createOverlay(selector = '.overlay') {
 		index = 0
 		if (el.hidden) previousFocus = document.activeElement
 		el.classList.toggle('clear', clear)
-		const card = document.createElement('div')
-		card.className = 'card dialog-card'
+		const card = make('div', 'card dialog-card')
 		card.setAttribute('role', 'dialog')
 		card.setAttribute('aria-modal', 'true')
 
 		if (title) {
-			const h = document.createElement('h1')
+			const h = make('h1')
 			h.id = 'overlay-title'
 			h.textContent = title
 			card.setAttribute('aria-labelledby', h.id)
@@ -53,30 +53,21 @@ export function createOverlay(selector = '.overlay') {
 			card.setAttribute('aria-label', 'Game menu')
 		}
 		if (subtitle) {
-			const s = document.createElement('p')
-			s.className = 'sub'
+			const s = make('p', 'sub')
 			s.textContent = subtitle
 			card.append(s)
 		}
 		for (const ln of lines) {
-			const p = document.createElement('p')
-			p.className = 'line'
+			const p = make('p', 'line')
 			p.textContent = ln
 			card.append(p)
 		}
 		if (acts.length) {
-			const row = document.createElement('div')
-			row.className = 'actions'
+			const row = make('div', 'actions')
 			acts.forEach((a, i) => {
-				const b = document.createElement('button')
-				b.className = 'sticker'
-				const cursor = document.createElement('span')
-				cursor.className = 'cursor'
-				cursor.setAttribute('aria-hidden', 'true')
-				cursor.textContent = '▶'
-				const label = document.createElement('span')
-				label.className = 'label'
-				b.append(cursor, label)
+				const b = make('button', 'sticker')
+				make('span', 'cursor', b, '▶').setAttribute('aria-hidden', 'true')
+				make('span', 'label', b)
 				b.addEventListener('pointerenter', () => {
 					if (guardPointer && !pointerMoved) return
 					setIndex(i)

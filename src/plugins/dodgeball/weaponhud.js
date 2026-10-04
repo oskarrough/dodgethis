@@ -1,6 +1,7 @@
 import { WEAPONS } from './weapons.js'
 import { tune } from './tune.js'
 import { hex } from '../../core/style.js'
+import { el } from '../../core/dom.js'
 
 const ORDER = Object.keys(WEAPONS)
 
@@ -9,40 +10,30 @@ export function createWeaponHud({ onSelect } = {}) {
 	const root = document.querySelector('.weapons')
 	const slots = new Map()
 	let pickupUntil = 0
-	const controls = document.createElement('div')
-	controls.className = 'controls'
-	const chargeWrap = document.createElement('div')
-	chargeWrap.className = 'charge'
+	const controls = el('div', 'controls')
+	const chargeWrap = el('div', 'charge')
 
-	const track = document.createElement('div')
-	track.className = 'charge-track'
-	const perfectZone = document.createElement('div')
-	perfectZone.className = 'charge-perfect'
-	const fill = document.createElement('div')
-	fill.className = 'charge-fill'
-	track.append(perfectZone, fill)
+	const track = el('div', 'charge-track', chargeWrap)
+	const perfectZone = el('div', 'charge-perfect', track)
+	const fill = el('div', 'charge-fill', track)
+	const chargeLabel = el('div', 'charge-label', chargeWrap)
 
-	const chargeLabel = document.createElement('div')
-	chargeLabel.className = 'charge-label'
-	chargeWrap.append(track, chargeLabel)
+	const armed = el('div', 'armed off', null, 'UNARMED')
 
-	const armed = document.createElement('div')
-	armed.className = 'armed off'
-	armed.textContent = 'UNARMED'
-
-	const row = document.createElement('div')
-	row.className = 'slots'
+	const row = el('div', 'slots')
 	for (const id of ORDER) {
 		const def = WEAPONS[id]
-		const btn = document.createElement('button')
+		const btn = el(
+			'button',
+			'slot sticker',
+			row,
+			`<span class="key">${def.key}</span>` + `<span class="name">${def.label}</span>`,
+		)
 		btn.type = 'button'
-		btn.className = 'slot sticker'
 		btn.dataset.weapon = id
 		btn.style.setProperty('--accent', hex(def.role))
-		btn.innerHTML = `<span class="key">${def.key}</span>` + `<span class="name">${def.label}</span>`
 		btn.addEventListener('click', () => onSelect?.(id))
 		slots.set(id, btn)
-		row.append(btn)
 	}
 
 	root.append(armed, row, chargeWrap, controls)
