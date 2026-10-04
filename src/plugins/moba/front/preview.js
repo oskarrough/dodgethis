@@ -73,6 +73,10 @@ export function createPreview(app, run, heroId = 'fletcher') {
 		return () => poses.delete(object)
 	})
 	let skills = createSkillsView(scene)
+	// Zones play on their own toy-scale stage beside the hero, so a 2.5 m Rain never swallows the frame.
+	const zoneStage = new THREE.Group()
+	scene.add(zoneStage)
+	let zoneSkills = createSkillsView(zoneStage)
 	let slot = null
 	let ticks = 0
 	let acc = 0
@@ -109,6 +113,8 @@ export function createPreview(app, run, heroId = 'fletcher') {
 		view.reset()
 		skills.dispose()
 		skills = createSkillsView(scene)
+		zoneSkills.dispose()
+		zoneSkills = createSkillsView(zoneStage)
 		body.visual.rotation.set(0, 0, 0)
 		body.drawPose(0)
 		heroic.visible = heroicBolt.visible = false
@@ -160,7 +166,7 @@ export function createPreview(app, run, heroId = 'fletcher') {
 				view.bolt(shot, { x: 0, z: 0 })
 			}
 			if (ability.kind === 'dash') skills.vault({ x: 0, z: 0 }, dir, stats)
-			if (ability.kind === 'zone') skills.rain(aim, stats)
+			if (ability.kind === 'zone') zoneSkills.rain({ x: 0, z: 0 }, stats)
 		}
 		if (ability && t > warning + flight + tune.preview.settle) slot = null
 		app.camera.update(dt)
@@ -239,9 +245,18 @@ export function createPreview(app, run, heroId = 'fletcher') {
 			}
 			body.poseAbility(cast, alpha)
 		}
-		skills.update(dt, {
-			hero: body.mesh.position,
-			aim,
+		const zone = ability?.kind === 'zone'
+		const scale = tune.preview.zoneScale
+		zoneStage.position.set(aim.x, 0, aim.z)
+		zoneStage.scale.setScalar(scale)
+		const stageAim = zone ? { x: 0, z: 0 } : aim
+		const stage = zone ? zoneSkills : skills
+		// The idle stage still steps, so its held markers and fades clear.
+		const idle = zone ? skills : zoneSkills
+		idle.update(dt, { hero: body.mesh.position, aim: null, held: {}, alpha })
+		stage.update(dt, {
+			hero: zone ? { x: -aim.x / scale, y: 0, z: -aim.z / scale } : body.mesh.position,
+			aim: stageAim,
 			unit: { definition },
 			held: Object.fromEntries(
 				Object.entries(definition.abilities).map(([key, a]) => [
@@ -251,7 +266,16 @@ export function createPreview(app, run, heroId = 'fletcher') {
 			),
 			casters:
 				cast || catchWindow
-					? [{ id: 'preview-caster', body, definition, dead: false, cast, catchWindow }]
+					? [
+							{
+								id: 'preview-caster',
+								body,
+								definition,
+								dead: false,
+								cast: cast && zone ? { ...cast, target: stageAim } : cast,
+								catchWindow,
+							},
+						]
 					: [],
 			zones:
 				slot && ability?.kind === 'zone' && fired && age <= flight
@@ -260,8 +284,8 @@ export function createPreview(app, run, heroId = 'fletcher') {
 								id: 'preview-zone',
 								ability: ability.id,
 								stats,
-								x: aim.x,
-								z: aim.z,
+								x: stageAim.x,
+								z: stageAim.z,
 								left: (warning + stats.delay) / STEP - ticks,
 								total: stats.delay / STEP,
 							},
@@ -332,6 +356,7 @@ export function createPreview(app, run, heroId = 'fletcher') {
 			app.setPalette({})
 			view.dispose()
 			skills.dispose()
+			zoneSkills.dispose()
 			undress()
 			body.dispose()
 			app.scene.remove(scene)

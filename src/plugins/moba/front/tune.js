@@ -70,7 +70,8 @@ export const tune = {
 	},
 	preview: {
 		distance: 8,
-		rainDistance: 3,
+		rainDistance: 1.8,
+		zoneScale: 0.35,
 		hold: 0.65,
 		settle: 0.8,
 		idle: 0.035,
