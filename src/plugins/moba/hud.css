@@ -1,0 +1,770 @@
+/* Match HUD: cream stickers, 3 px ink, hard offset shadows. Toy-like: chunky, rounded, a little tilted, pressable. */
+.moba-top,
+.moba-hud,
+.moba-tip {
+	--ink: var(--ui-text);
+	--cream: var(--ui-cream);
+	--gold: var(--ui-gold);
+	--stone: #d9d2bd;
+	font: var(--fs-base) / 1 var(--ui-font);
+	color: var(--ink);
+}
+.moba-top [data-team='A'],
+.moba-hud[data-team='A'],
+.moba-tip[data-tone='A'] {
+	--tone: var(--team-a, #5db4ff);
+}
+.moba-top [data-team='B'],
+.moba-hud[data-team='B'],
+.moba-tip[data-tone='B'] {
+	--tone: var(--team-b, #ff5d5d);
+}
+.moba-top svg .tone,
+.moba-hud svg .tone {
+	fill: var(--tone, var(--ui-blue));
+	stroke: var(--ink);
+	stroke-width: 3;
+	stroke-linejoin: round;
+}
+.moba-top svg .cream,
+.moba-hud svg .cream {
+	fill: var(--cream);
+	stroke: var(--ink);
+	stroke-width: 3;
+}
+.moba-top svg .gold,
+.moba-hud svg .gold {
+	fill: var(--gold);
+	stroke: var(--ink);
+	stroke-width: 3;
+	stroke-linejoin: round;
+}
+.moba-top svg .stone {
+	fill: var(--stone);
+	stroke: var(--ink);
+	stroke-width: 3;
+	stroke-linejoin: round;
+}
+.moba-top svg .ink-line,
+.moba-hud svg .ink-line {
+	fill: none;
+	stroke: var(--ink);
+	stroke-width: 4;
+	stroke-linecap: round;
+}
+.moba-top .hot,
+.moba-hud .hot {
+	pointer-events: auto;
+	cursor: help;
+}
+.moba-sr {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+}
+
+/* --- Top bar --- */
+.moba-top {
+	position: fixed;
+	top: 10px;
+	left: 50%;
+	transform: translateX(-50%);
+	z-index: 4;
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+	pointer-events: none;
+	white-space: nowrap;
+}
+.moba-side {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+.moba-side.theirs,
+.moba-side.theirs .moba-forts {
+	flex-direction: row-reverse;
+}
+.moba-forts {
+	display: flex;
+	gap: 3px;
+	padding: 4px 6px;
+	background: var(--cream);
+	border: 3px solid var(--ink);
+	border-radius: 12px;
+	box-shadow: 3px 3px 0 var(--ink);
+}
+.moba-fort {
+	position: relative;
+	width: 28px;
+	height: 30px;
+}
+.moba-fort svg {
+	width: 28px;
+	height: 28px;
+	display: block;
+	transition:
+		filter 0.3s,
+		opacity 0.3s,
+		transform 0.3s;
+}
+.moba-fort i {
+	position: absolute;
+	left: 3px;
+	right: 3px;
+	bottom: -1px;
+	height: 4px;
+	border-radius: 2px;
+	background: linear-gradient(90deg, var(--tone) calc(var(--f, 1) * 100%), rgba(38, 68, 95, 0.2) 0);
+}
+.moba-fort.shielded svg {
+	filter: drop-shadow(0 0 0 var(--cream)) drop-shadow(0 0 2px var(--cream));
+	opacity: 0.8;
+}
+.moba-fort.shielded::after {
+	content: '';
+	position: absolute;
+	inset: -2px -1px 2px;
+	border: 2px dashed var(--ink);
+	border-radius: 50% 50% 8px 8px;
+	opacity: 0.45;
+}
+.moba-fort.down svg {
+	filter: grayscale(1);
+	opacity: 0.35;
+	transform: rotate(-12deg) translateY(4px) scale(0.85);
+}
+.moba-fort.down i {
+	opacity: 0;
+}
+.moba-kills {
+	display: grid;
+	justify-items: center;
+	gap: 1px;
+	min-width: 34px;
+	padding: 4px 6px 3px;
+	background: var(--cream);
+	border: 3px solid var(--ink);
+	border-radius: 12px;
+	box-shadow: 3px 3px 0 var(--ink);
+}
+.moba-kills b {
+	font-size: 24px;
+	font-weight: 400;
+}
+.moba-kills small {
+	font:
+		700 9px / 1 system-ui,
+		sans-serif;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	opacity: 0.7;
+}
+.moba-level {
+	position: relative;
+	width: 64px;
+	height: 64px;
+	display: grid;
+	place-items: center;
+	filter: drop-shadow(3px 3px 0 var(--ink));
+}
+.moba-side.mine .moba-level {
+	transform: rotate(-4deg);
+}
+.moba-side.theirs .moba-level {
+	transform: rotate(4deg);
+}
+.moba-level > svg {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+}
+.moba-ring {
+	position: absolute;
+	border-radius: 50%;
+	background: conic-gradient(
+		var(--ring, var(--gold)) calc(var(--f, 0) * 1turn),
+		rgba(38, 68, 95, 0.18) 0
+	);
+	-webkit-mask: radial-gradient(circle, transparent 57%, #000 58%);
+	mask: radial-gradient(circle, transparent 57%, #000 58%);
+}
+.moba-level .moba-ring {
+	inset: 11px;
+}
+.moba-level::before {
+	content: '';
+	position: absolute;
+	inset: 11px;
+	border-radius: 50%;
+	background: var(--cream);
+	border: 2px solid var(--ink);
+	box-sizing: border-box;
+}
+.moba-level b {
+	position: relative;
+	font-size: 26px;
+	font-weight: 400;
+	margin-top: 2px;
+}
+.moba-clock {
+	display: grid;
+	justify-items: center;
+	gap: 6px;
+	padding: 6px 12px 7px;
+	background: var(--cream);
+	border: 3px solid var(--ink);
+	border-radius: 18px;
+	box-shadow: 3px 4px 0 var(--ink);
+	transform: rotate(-0.6deg);
+}
+.moba-clock > b {
+	font-size: 30px;
+	font-weight: 400;
+	letter-spacing: 0.02em;
+	font-variant-numeric: tabular-nums;
+}
+.moba-timers {
+	display: flex;
+	gap: 10px;
+}
+.moba-timer {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+.moba-timer .moba-ring {
+	position: relative;
+	width: 30px;
+	height: 30px;
+	-webkit-mask: none;
+	mask: none;
+	display: grid;
+	place-items: center;
+	background:
+		radial-gradient(circle, var(--cream) 58%, transparent 59%),
+		conic-gradient(var(--ring, var(--ink)) calc(var(--f, 0) * 1turn), rgba(38, 68, 95, 0.15) 0);
+	box-shadow: 0 0 0 2px var(--ink);
+}
+.moba-timer svg {
+	width: 22px;
+	height: 22px;
+}
+.moba-timer.wave {
+	--tone: var(--team-a, #5db4ff);
+}
+.moba-top[data-local='B'] .moba-timer.wave {
+	--tone: var(--team-b, #ff5d5d);
+}
+.moba-timer b {
+	min-width: 1.6em;
+	font-size: 18px;
+	font-weight: 400;
+	font-variant-numeric: tabular-nums;
+	text-align: left;
+}
+.moba-timer.ball[data-state='live'] {
+	--ring: var(--gold);
+}
+.moba-timer.ball[data-state='carried'] {
+	--ring: var(--gold);
+}
+.moba-timer.ball[data-state='off'] {
+	display: none;
+}
+.moba-timer.warn .moba-ring {
+	animation: moba-warn 0.8s ease-in-out infinite alternate;
+}
+@keyframes moba-warn {
+	to {
+		transform: scale(1.14);
+		box-shadow:
+			0 0 0 2px var(--ink),
+			0 0 0 5px var(--gold);
+	}
+}
+
+/* --- Bottom: portrait and slots --- */
+.moba-hud {
+	position: fixed;
+	bottom: 12px;
+	left: 50%;
+	transform: translateX(-50%);
+	z-index: 3;
+	display: grid;
+	justify-items: center;
+	gap: 8px;
+	pointer-events: none;
+}
+.moba-bar {
+	display: flex;
+	align-items: flex-end;
+	gap: 12px;
+}
+.moba-portrait {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 7px 12px 7px 7px;
+	background: var(--cream);
+	border: 3px solid var(--ink);
+	border-radius: 18px;
+	box-shadow: 4px 4px 0 var(--ink);
+	transform: rotate(-0.8deg);
+}
+.moba-avatar {
+	position: relative;
+	width: 58px;
+	height: 58px;
+	border: 3px solid var(--ink);
+	border-radius: 50%;
+	background: radial-gradient(circle at 35% 30%, #fff 0 20%, #f3ecd6 60%);
+	box-sizing: border-box;
+	display: grid;
+	place-items: center;
+	overflow: visible;
+}
+.moba-avatar svg {
+	width: 46px;
+	height: 46px;
+	transition: filter 0.2s;
+}
+.moba-lv {
+	position: absolute;
+	right: -7px;
+	bottom: -6px;
+	min-width: 22px;
+	height: 22px;
+	box-sizing: border-box;
+	padding: 0 4px;
+	display: grid;
+	place-items: center;
+	font-size: 15px;
+	font-weight: 400;
+	color: var(--ink);
+	background: var(--gold);
+	border: 2px solid var(--ink);
+	border-radius: 11px;
+}
+.moba-respawn {
+	position: absolute;
+	inset: 0;
+	display: none;
+	place-items: center;
+	font-size: 26px;
+	font-weight: 400;
+	color: var(--cream);
+	-webkit-text-stroke: 1px var(--ink);
+	paint-order: stroke fill;
+	text-shadow: 2px 2px 0 var(--ink);
+}
+.moba-portrait.dead .moba-avatar svg {
+	filter: grayscale(1) opacity(0.45);
+}
+.moba-portrait.dead .moba-respawn {
+	display: grid;
+}
+.moba-vitals {
+	display: grid;
+	gap: 5px;
+	width: 190px;
+}
+.moba-name {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	font-size: 18px;
+}
+.moba-trait {
+	display: inline-flex;
+	align-items: center;
+	gap: 2px;
+	padding: 1px 6px 1px 2px;
+	font:
+		700 11px / 1 system-ui,
+		sans-serif;
+	background: var(--cream);
+	border: 2px solid var(--ink);
+	border-radius: 9px;
+}
+.moba-trait.none {
+	display: none;
+}
+.moba-trait svg {
+	width: 16px;
+	height: 16px;
+}
+.moba-meter {
+	position: relative;
+	height: 16px;
+	border: 2px solid var(--ink);
+	border-radius: 7px;
+	overflow: hidden;
+	background: rgba(38, 68, 95, 0.16);
+	display: grid;
+	place-items: center;
+}
+.moba-meter::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+	width: calc(var(--f, 1) * 100%);
+	background: var(--tone);
+	transition: width 0.12s linear;
+}
+.moba-health::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	background: repeating-linear-gradient(
+		90deg,
+		transparent 0 calc(var(--tick, 14%) - 2px),
+		rgba(38, 68, 95, 0.55) calc(var(--tick, 14%) - 2px) var(--tick, 14%)
+	);
+}
+.moba-meter span {
+	position: relative;
+	z-index: 1;
+	font:
+		700 11px / 1 system-ui,
+		sans-serif;
+	color: var(--ink);
+	text-shadow:
+		0 0 2px var(--cream),
+		0 0 2px var(--cream),
+		0 0 2px var(--cream);
+	white-space: nowrap;
+}
+.moba-xp {
+	height: 11px;
+}
+.moba-xp::before {
+	background: var(--gold);
+}
+.moba-xp span {
+	font-size: 9px;
+}
+.moba-slots {
+	display: flex;
+	gap: 9px;
+}
+.moba-slot {
+	position: relative;
+	width: 64px;
+	height: 64px;
+	padding: 0;
+	box-sizing: border-box;
+	display: grid;
+	place-items: center;
+	background: var(--cream);
+	border: 3px solid var(--ink);
+	border-radius: 16px;
+	box-shadow: 3px 4px 0 var(--ink);
+	overflow: hidden;
+	color: var(--ink);
+	font: inherit;
+	transition:
+		transform 0.06s,
+		box-shadow 0.06s;
+}
+.moba-slot:nth-child(1) {
+	transform: rotate(-2deg);
+}
+.moba-slot:nth-child(3) {
+	transform: rotate(2deg);
+}
+.moba-slot:hover {
+	transform: translate(-1px, -2px) rotate(0deg);
+	box-shadow: 4px 6px 0 var(--ink);
+}
+.moba-slot .icon svg {
+	width: 44px;
+	height: 44px;
+	display: block;
+	transition: filter 0.1s;
+}
+.moba-slot.cooling .icon svg {
+	filter: saturate(0.3);
+}
+.moba-slot .sweep {
+	position: absolute;
+	inset: 0;
+	background: conic-gradient(rgba(38, 68, 95, 0.62) var(--cd, 0turn), transparent 0);
+}
+.moba-slot .key {
+	position: absolute;
+	top: 2px;
+	left: 3px;
+	min-width: 18px;
+	padding: 2px 4px;
+	box-sizing: border-box;
+	font:
+		700 11px / 1 system-ui,
+		sans-serif;
+	color: var(--cream);
+	background: var(--ink);
+	border-radius: 6px;
+	text-align: center;
+}
+.moba-slot .left {
+	position: absolute;
+	inset: 0;
+	display: grid;
+	place-items: center;
+	font-size: 28px;
+	color: var(--cream);
+	-webkit-text-stroke: 1px var(--ink);
+	paint-order: stroke fill;
+	text-shadow: 2px 2px 0 var(--ink);
+}
+.moba-slot.ball::after {
+	content: '';
+	position: absolute;
+	right: 4px;
+	bottom: 4px;
+	width: 14px;
+	height: 14px;
+	border-radius: 50%;
+	background: var(--gold);
+	border: 2px solid var(--ink);
+}
+.moba-slot.denied {
+	background: var(--ui-red);
+	transform: scale(1.08);
+}
+.moba-slot.ready {
+	animation: moba-ready 0.25s ease-out;
+}
+@keyframes moba-ready {
+	from {
+		box-shadow:
+			0 0 0 8px var(--gold),
+			3px 4px 0 var(--ink);
+	}
+}
+.moba-help {
+	font:
+		12px / 1.4 system-ui,
+		sans-serif;
+	color: var(--ink);
+	max-width: min(94vw, 760px);
+	box-sizing: border-box;
+	padding: 2px 10px;
+	text-align: center;
+	white-space: normal;
+	background: rgba(255, 253, 244, 0.82);
+	border-radius: 9px;
+}
+.moba-banner {
+	position: fixed;
+	top: 28%;
+	left: 50%;
+	transform: translateX(-50%) rotate(-1deg);
+	text-align: center;
+	padding: 12px 16px;
+	background: var(--ui-cream);
+	border: 3px solid var(--ui-text);
+	border-radius: 14px;
+	box-shadow: 4px 4px 0 var(--ui-text);
+	z-index: 5;
+	font: var(--fs-base) / 1.4 var(--ui-font);
+	color: var(--ui-text);
+}
+.moba-banner[hidden] {
+	display: none;
+}
+
+/* --- Tooltip card --- */
+.moba-tip {
+	position: fixed;
+	left: 0;
+	top: 0;
+	z-index: 6;
+	width: min(300px, calc(100vw - 16px));
+	max-height: calc(100vh - 16px);
+	overflow: hidden;
+	box-sizing: border-box;
+	padding: 10px 12px 11px;
+	background: var(--cream);
+	border: 3px solid var(--ink);
+	border-top: 7px solid var(--tone, var(--ink));
+	border-radius: 14px;
+	box-shadow: 4px 5px 0 var(--ink);
+	pointer-events: none;
+	will-change: transform;
+}
+.moba-tip[hidden] {
+	display: none;
+}
+.moba-tip header {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 8px;
+	margin-bottom: 4px;
+}
+.moba-tip-title {
+	font-size: 22px;
+}
+.moba-tip-tag {
+	padding: 2px 7px;
+	font:
+		700 12px / 1.2 system-ui,
+		sans-serif;
+	color: var(--cream);
+	background: var(--ink);
+	border-radius: 8px;
+}
+.moba-tip p {
+	margin: 0 0 6px;
+	font:
+		13px / 1.35 system-ui,
+		sans-serif;
+}
+.moba-tip dl {
+	display: grid;
+	grid-template-columns: auto 1fr;
+	gap: 3px 12px;
+	margin: 0;
+	padding-top: 6px;
+	border-top: 2px dashed rgba(38, 68, 95, 0.3);
+	font:
+		12px / 1.25 system-ui,
+		sans-serif;
+}
+.moba-tip dt {
+	opacity: 0.7;
+}
+.moba-tip dd {
+	margin: 0;
+	font-weight: 700;
+	text-align: right;
+	font-variant-numeric: tabular-nums;
+}
+.moba-tip .moba-tip-note {
+	margin: 6px 0 0;
+	font-size: 12px;
+	font-style: italic;
+	opacity: 0.85;
+}
+
+/* --- Narrow screens: same pieces, smaller; structure rows step under the badges. --- */
+@media (max-width: 720px) {
+	.moba-top {
+		top: 6px;
+		gap: 5px;
+	}
+	.moba-side,
+	.moba-side.theirs {
+		display: grid;
+		grid-template-columns: auto auto;
+		justify-items: center;
+		gap: 4px;
+	}
+	.moba-side .moba-forts {
+		grid-row: 2;
+		grid-column: 1 / 3;
+		padding: 2px 4px;
+		border-width: 2px;
+		box-shadow: 2px 2px 0 var(--ink);
+	}
+	.moba-side.mine .moba-level,
+	.moba-side.theirs .moba-kills {
+		grid-column: 2;
+		grid-row: 1;
+	}
+	.moba-side.mine .moba-kills,
+	.moba-side.theirs .moba-level {
+		grid-column: 1;
+		grid-row: 1;
+	}
+	.moba-fort,
+	.moba-fort svg {
+		width: 18px;
+		height: 19px;
+	}
+	.moba-level {
+		width: 46px;
+		height: 46px;
+	}
+	.moba-level .moba-ring,
+	.moba-level::before {
+		inset: 8px;
+	}
+	.moba-level b {
+		font-size: 19px;
+	}
+	.moba-kills {
+		min-width: 24px;
+		padding: 3px 4px 2px;
+	}
+	.moba-kills b {
+		font-size: 18px;
+	}
+	.moba-clock {
+		padding: 4px 7px 5px;
+		gap: 4px;
+	}
+	.moba-clock > b {
+		font-size: 22px;
+	}
+	.moba-timers {
+		gap: 5px;
+	}
+	.moba-timer .moba-ring {
+		width: 24px;
+		height: 24px;
+	}
+	.moba-timer svg {
+		width: 17px;
+		height: 17px;
+	}
+	.moba-timer b {
+		font-size: 14px;
+	}
+	.moba-hud {
+		bottom: 6px;
+		width: 100vw;
+	}
+	.moba-bar {
+		gap: 6px;
+	}
+	.moba-portrait {
+		padding: 4px 7px 4px 4px;
+		gap: 6px;
+	}
+	.moba-avatar,
+	.moba-avatar svg {
+		width: 42px;
+		height: 42px;
+	}
+	.moba-vitals {
+		width: 108px;
+	}
+	.moba-name {
+		font-size: 14px;
+	}
+	.moba-slot {
+		width: 50px;
+		height: 50px;
+		border-radius: 13px;
+	}
+	.moba-slot .icon svg {
+		width: 34px;
+		height: 34px;
+	}
+	.moba-slot .left {
+		font-size: 22px;
+	}
+	.moba-slots {
+		gap: 5px;
+	}
+	.moba-help {
+		font-size: 10px;
+		max-width: calc(100vw - 112px);
+	}
+}
