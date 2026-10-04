@@ -12,40 +12,9 @@ Each fact has effective damage (HP removed, excluding overkill), actor seat/kit,
 
 [The DuckDB queries](../scripts/balance.sql) report hero/team appearances, ordered matchups, damage per hero-seat minute, kill participation, match length and side bias, separated by difficulty and map. Kill participation counts the killer or a damaging hit in the preceding ten seconds of that victim's life. These are bot-only balance samples, not evidence that a human can win. Move old tuning revisions out of `runs/` when comparing balance: the default report reads every dated directory.
 
-## Browser checks recorded on 2026-09-09
+## MOBA playability
 
-Independent `agent-browser` sessions connected through the real public PeerJS signaling service on the development build:
-
-- Host and guest joined by code, agreed on roster/team/bot changes; guest settings remained disabled.
-- Human-only match: actual guest mouse bow shots eliminated the host in two rounds. Both browsers ended at A 0–2 B with matching projectile IDs and ownership.
-- Two allied humans versus three bots: identical completed-round score, deaths, positions, and held-arrow IDs. Three host brains; zero guest brains or player bodies.
-- One human plus one bot per team: identical completed-round score and living/dead participants. Two host brains; zero guest brains or player bodies.
-- Guest left mid-match: host returned to lobby with a reset message and no remaining match entities. Rejoin used a fresh peer ID and the next match started at 0–0.
-- Third browser attempting a mid-match join received a readable refusal.
-- Host left: guest session ended with a readable message.
-- Leaving online and selecting a solo portal started the existing one-human/one-bot match.
-
-A separate remote machine also loaded `http://100.118.74.88:5173` through Tailscale, joined the host, and exercised human movement, dash and shooting. The user reported that it felt local. The first round ended at A 1–0 B after the guest fell; the guest later left and the host correctly reset. WebRTC reported a direct server-reflexive candidate pair, approximately 13–14 ms RTT, with no TURN relay. Device/browser and internet connection types were not supplied; mixed-team and full-match completion above were tested in the independent automated browser sessions.
-
-A fresh Astra review found and prompted fixes for send-failure reentrancy during start and frame updates, plus debug GUI mutation bypasses. Browser fault injection verified that a guest send failure returns to the menu while rendering continues, and a failure during the host start broadcast cannot resurrect an aborted match. Direct online single-stepping is rejected and the debug GUI is inert.
-
-The deployed site had different pre-existing arrow tuning from this checkout during testing. No multiplayer change altered `tune.js`; speed comparisons should use matching tuning. Multiple simultaneous automated browsers also reduced the software-rendered host frame rate; closing unused sessions improved it. Snapshot cadence is bounded by the host frame loop.
-
-## MOBA playability checks recorded on 2026-09-30
-
-`node scripts/verify-moba-playability.mjs <preview URL> <shots directory>` checks a frozen production build. The recorded pass used the playability changes with `6eaf363e`'s bots, keeping the parallel bot review out of the proof. Keyboard, mouse and pad completed selection, loading, pause, resume and exit; both the physical hub portal and the Play MOBA button worked. Hero select, Numbers, pause and the panned-away hero marker were captured at 390×844, 1280×577, 1440×900 and 2560×1080 without overlapping the footer.
-
-Six bots playing a seeded 3v3 reached VICTORY at tick 50955 (14:09), without injected shots or damage. The local seat was also bot-controlled; this was not evidence that a human could win. The live Ball marker, frozen result and clean Again were asserted. The browser reported no errors. `bun run check` passed 451 tests with both dodgeball characterization snapshots unchanged. Screenshots and the machine-readable report are in `/tmp/playability-shots/` on the build machine.
-
-## MOBA playability review corrections
-
-`tests/moba-practice.test.js` runs a cautious scripted human through ordinary point-click orders and skill presses in default Easy Practice. Decisions arrive every half-second: follow the wave, fire from range, attack structures behind allied creeps, and retreat below 55% HP. It does not control the Ball, predict dodges or inject damage. Seed 2 reached victory at 14:41 with zero deaths, 180 casts and 324 hit facts from the human. This establishes that this policy can win, not that an actual first-time player has been playtested.
-
-Regression tests cover loading's ownership of controller input, ignored Start before landing, Resume-first focus, passive pointer hover, Space rejection, both relative result cards, a frozen winning simulation, presentation-timed core shatter, and visible base spawns for both teams at all four viewport sizes. The historical 14:09 result remains explicitly a six-bot match.
-
-The review browser artifacts are in `/tmp/playability-review-shots/`. Mouse, keyboard and pad entry/loading/menu/exit checks passed, including the moved physical portal, the unobstructed central dodgeball portal, hidden splash during the match, and A-to-skip while Start is ignored during loading. Mode, hero and Numbers layouts were captured at all four sizes; pause was captured at 1440×900. A separate six-bot browser run reached VICTORY at tick 74562 (20:43). The winning snapshot stayed unchanged during ending presentation, the team-blue result appeared, and Again started at tick zero with no shots or winner. That browser reported no errors; its record is `result-report.json` in the same directory.
-
-The single full working-copy test run, including the parallel agent-play tests, took 476.18 seconds: 464 passed, one camera test failed, and both dodgeball snapshots were unchanged. `bun run check` took 481 seconds overall. The failure exposed an unreachable corner focus driving the lens to its minimum; the fallback was corrected and all 35 camera/loading/menu/ending/overlay/lane tests then passed in 2.78 seconds. Lint and formatting passed separately. The full suite was not rerun.
+`node scripts/verify-moba-playability.mjs <preview URL> <shots directory>` checks a frozen production build: keyboard, mouse and pad get through selection, loading, pause, resume and exit; the hub portal and the Play MOBA button both work; hero select, Numbers, pause and the panned-away marker fit at four viewport sizes; a six-bot seeded 3v3 reaches the result card, the frozen result and a clean Again, with no browser errors. `tests/moba-practice.test.js` plays a cautious scripted human through ordinary orders in Easy Practice and wins, which shows the policy can win, not that a first-time player has been playtested.
 
 ## MOBA debug-link proof
 
@@ -57,12 +26,6 @@ Use the same build on both devices, preferably with one device on home Wi-Fi and
 
 Record device/browser versions, network types, final scores, whether a relay was used, and visible delay or disconnects. If a pair cannot connect, verify [signaling and TURN configuration](network.md); success on one machine does not establish connectivity through independent NATs.
 
-## Browser checks recorded on 2026-09-28 (protocol 2)
+## Recorded browser checks
 
-After online became a plugin, two `agent-browser` sessions on the dev server, through the public PeerJS signalling service:
-
-- Solo: portal entry, walking, a charged bow shot with the charge HUD, a lost round, next round, pause and resume, `R` restart, godmode and infinite-ammo keys, `game.preset('duel')` and `game.hub()`.
-- Host and guest joined by code. Human-only match: guest movement and a charged guest shot (local charge preview, host-owned arrow on team B); the host walked off the court and both screens scored 0–1 with the right cards; the host's Next round rebuilt the guest's round with matching unit ids.
-- Escape mid-match opened the online menu (Resume, Leave match, and Back to lobby for the host); the host kept simulating under it. Back to lobby returned both to the lobby with a reset message.
-- One human plus one bot per team: two host brains; no guest brains or bodies.
-- Guest left mid-match: host back in the lobby with "A player left"; the guest's solo portal then started a normal match. Host left mid-match: the guest's session ended with a readable message. Leaving online restored solo cheats.
+On 2026-09-09 and again on 2026-09-28 (protocol 2), independent `agent-browser` sessions on the dev build, through the public PeerJS signalling service, covered join by code, human-only, allied-human and one-human-plus-one-bot matches with matching scores and entities on both sides, mid-match leave and rejoin, host departure, refusal of a third joiner, and returning to solo. A remote machine over Tailscale played a match with a direct connection and no TURN relay. The 2026-09-30 playability pass and review fixed the loading, focus and camera issues the checks found.

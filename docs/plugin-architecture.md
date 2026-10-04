@@ -1,6 +1,6 @@
 # Plugin architecture
 
-The contract for [core-split.md](core-split.md). The MOBA side is in [moba-plan.md](moba-plan.md).
+The contract between core and plugins. The MOBA side is in [moba-plan.md](moba-plan.md).
 
 ## The architecture
 
