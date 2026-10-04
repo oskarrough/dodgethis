@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+- MOBA matches now introduce your hero and the goal, point you up the lane, explain team XP, celebrate levels and track the Ball in its carrier's colour.
+
 - Added direct MOBA playtest links and debug controls for pause, single-step, speed, copying the setup, respawning and resetting cooldowns.
 
 - Added an always-visible mode picker for switching between dodgeball and MOBA without reloading.

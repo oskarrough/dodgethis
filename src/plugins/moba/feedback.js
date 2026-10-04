@@ -193,13 +193,15 @@ export function createFeedback({ juice, sfx, camera, input, view, skillsView, hu
 				sim.laneView?.shield(unitOf(fact.target)?.body)
 				cue('shielded', fact)
 				return
-			case 'levelUp':
-				hud.banner?.(
-					`${fact.team === unitOf(local)?.team ? 'Your team' : 'Enemy'} level ${fact.level}`,
-				)
-				juice.burst(fact.point, { x: 0, y: 1, z: 0 }, tune.juice.levelUp)
-				cue('levelUp', fact)
+			case 'levelUp': {
+				const hero = unitOf(local)
+				if (fact.team !== hero?.team) return
+				// Shared XP may level us at base: the pop and sound belong at our hero, not the kill.
+				const point = hero.body.mesh.position
+				if (!hero.dead) juice.burst(point, { x: 0, y: 1, z: 0 }, tune.juice.levelUp)
+				cue('levelUp', { ...fact, point })
 				return
+			}
 			case 'globe':
 				if (fact.state === 'expired') {
 					view.ping('move', fact.point)
