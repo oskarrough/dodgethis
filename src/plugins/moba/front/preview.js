@@ -5,24 +5,26 @@ import { STEP } from '../../../core/app.js'
 import { makeStyleMaterial } from '../../../core/stylepass.js'
 import { createView } from '../view.js'
 import { createSkillsView } from '../skills-view.js'
+import { heroDefinition } from '../heroes.js'
 import { tune as kit } from '../tune.js'
 import { tune } from './tune.js'
 import { dressPortrait } from './portrait.js'
 
-// Presentation-only replica, with the match's Q bolt and Q/W/E indicators.
-// Its own tick clock can animate while the real sim and input stay suspended.
-export function createPreview(app, run) {
+// The select stage has a fixed camera and planted root. Actions move the child
+// pose and their effects, never the actor or its screen scale when switching.
+export function createPreview(app, run, heroId = 'fletcher') {
+	const definition = heroDefinition(heroId)
 	const old = app.scene.children.map((child) => [child, child.visible])
 	old.forEach(([child]) => (child.visible = false))
 	const scene = new THREE.Group()
 	app.scene.add(scene)
-	const body = createBody(scene, null, null, { profile: kit.hero, replica: true })
-	const undress = dressPortrait(body)
+	const body = createBody(scene, null, null, { profile: definition.base, replica: true })
+	const undress = dressPortrait(body, heroId)
 	app.setPalette({
 		...Object.fromEntries(
 			Object.entries(PALETTE).map(([role, color]) => [
 				role,
-				role === 'ink' || role === 'cream' || role === 'teamA'
+				['ink', 'cream', 'teamA'].includes(role)
 					? color
 					: new THREE.Color(color)
 							.lerp(new THREE.Color(PALETTE.cream), tune.preview.pastel)
@@ -72,23 +74,30 @@ export function createPreview(app, run) {
 	let slot = null
 	let ticks = 0
 	let acc = 0
-	let idle = 0
 	let fired = false
 	let shot = null
 	let elapsed = 0
 	let frozen = false
-	let zoom = 0
 	const dir = new THREE.Vector3(tune.preview.direction.x, 0, tune.preview.direction.z).normalize()
-	const reduced = matchMedia('(prefers-reduced-motion: reduce)')
 	const restore = run.setStylePreset({ line: tune.preview.line, hatch: 1, alpha: true })
 	const unframe = run.camera.frame(() => ({
 		eye: new THREE.Vector3(0, tune.preview.cameraHeight, tune.preview.cameraBack),
 		target: new THREE.Vector3(0, 1, 0),
-		fov:
-			innerWidth < 700
-				? tune.preview.mobileFov + zoom * (tune.preview.mobileSkillFov - tune.preview.mobileFov)
-				: tune.preview.fov + zoom * (tune.preview.skillFov - tune.preview.fov),
+		fov: innerWidth < 700 ? tune.preview.mobileFov : tune.preview.fov,
 	}))
+	const abilityFor = (key) =>
+		definition.abilities[`slot${['Q', 'W', 'E', 'R'].indexOf(key) + 1}`] ??
+		(heroId === 'fletcher' && key === 'R'
+			? { id: 'volley', kind: 'shot', stats: tune.volley, effects: { pose: 'volley' } }
+			: null)
+	const durationOf = (ability) =>
+		ability?.kind === 'dash'
+			? ability.stats.time + (ability.stats.prone ?? 0)
+			: ability?.kind === 'zone'
+				? ability.stats.delay
+				: ability?.kind === 'shot'
+					? ability.stats.range / ability.stats.speed
+					: (ability?.stats.duration ?? 0)
 	function stop() {
 		slot = null
 		frozen = false
@@ -99,9 +108,11 @@ export function createPreview(app, run) {
 		skills.dispose()
 		skills = createSkillsView(scene)
 		body.visual.rotation.set(0, 0, 0)
+		body.drawPose(0)
+		heroic.visible = heroicBolt.visible = false
 	}
 	function start(next) {
-		if (next === 'Trait') {
+		if (!abilityFor(next)) {
 			stop()
 			return false
 		}
@@ -112,7 +123,6 @@ export function createPreview(app, run) {
 	}
 	function update(dt) {
 		if (frozen) return
-		idle += dt
 		acc += dt
 		while (acc >= STEP) {
 			ticks++
@@ -120,44 +130,42 @@ export function createPreview(app, run) {
 		}
 		const alpha = acc / STEP
 		const t = (elapsed = (ticks + alpha) * STEP)
-		const skill =
-			slot === 'Q' ? kit.loose : slot === 'W' ? kit.vault : slot === 'E' ? kit.rain : tune.volley
-		const warning = tune.preview.hold + (skill.castPoint ?? 0)
+		const ability = abilityFor(slot)
+		const stats = ability?.stats
+		const warning = tune.preview.hold + (stats?.castPoint ?? 0)
 		const age = Math.max(0, t - warning)
-		const flight =
-			slot === 'W' ? skill.time : slot === 'E' ? skill.delay : skill.range / skill.speed
+		const flight = durationOf(ability)
 		const distance =
-			slot === 'E' ? Math.min(kit.rain.range, tune.preview.rainDistance) : tune.preview.distance
+			ability?.kind === 'zone'
+				? Math.min(stats.range, tune.preview.rainDistance)
+				: tune.preview.distance
 		const aim = { x: dir.x * distance, z: dir.z * distance }
-		if (slot && !fired && t >= warning) {
+		if (ability && !fired && t >= warning) {
 			fired = true
-			app.audio.blip(
-				slot === 'Q'
-					? kit.sounds.loose
-					: slot === 'W'
-						? kit.sounds.vault
-						: slot === 'E'
-							? kit.sounds.rain
-							: tune.preview.volleySound,
-			)
-			if (slot === 'Q') {
-				shot = { id: 'preview', slot: 'slot1', team: 'A', x: 0, z: 0, dx: dir.x, dz: dir.z }
+			const sound = ability.id === 'volley' ? tune.preview.volleySound : kit.sounds[ability.id]
+			if (sound) app.audio.blip(sound)
+			if (ability.kind === 'shot' && ability.id !== 'volley') {
+				shot = {
+					id: 'preview',
+					ability: ability.id,
+					stats,
+					team: 'A',
+					x: 0,
+					z: 0,
+					dx: dir.x,
+					dz: dir.z,
+				}
 				view.bolt(shot, { x: 0, z: 0 })
 			}
-			if (slot === 'W') skills.vault({ x: 0, z: 0 }, dir)
-			if (slot === 'E') skills.rain(aim)
+			if (ability.kind === 'dash') skills.vault({ x: 0, z: 0 }, dir, stats)
+			if (ability.kind === 'zone') skills.rain(aim, stats)
 		}
-		if (t > warning + flight + tune.preview.settle) slot = null
-		zoom = slot
-			? Math.min(1, t / tune.preview.hold) *
-				(1 - Math.max(0, Math.min(1, (age - flight) / tune.preview.settle)))
-			: 0
+		if (ability && t > warning + flight + tune.preview.settle) slot = null
 		app.camera.update(dt)
 		const floorTilt = innerWidth < 700 ? tune.preview.mobileFloorTilt : 0
 		patch.rotation.x = shadow.rotation.x = floorTilt
 		shadow.position.y = tune.preview.shadowY - Math.tan(floorTilt) * tune.preview.shadowOffset
 		const camera = app.camera.view
-		// Full-size alpha canvas: project the replica, never stretch its silhouette.
 		const ndc = new THREE.Vector3(
 			innerWidth < 700 ? tune.preview.mobileX : tune.preview.x,
 			innerWidth < 700 ? tune.preview.mobileY : tune.preview.y,
@@ -168,32 +176,25 @@ export function createPreview(app, run) {
 			.clone()
 			.addScaledVector(direction, -camera.position.z / direction.z)
 		scene.position.set(anchor.x, anchor.y - 1, 0)
-		body.mesh.position.set(
-			slot === 'W' ? dir.x * Math.min(1, age / skill.time) * kit.vault.range : 0,
-			kit.hero.radius +
-				kit.hero.halfHeight +
-				(reduced.matches ? 0 : Math.sin(idle * tune.preview.idleRate) * tune.preview.idle),
-			slot === 'W' ? dir.z * Math.min(1, age / skill.time) * kit.vault.range : 0,
-		)
+		body.mesh.position.set(0, body.radius + body.halfHeight, 0)
 		body.face(tune.preview.facing)
-		body.animate(
-			dt,
-			slot === 'Q' && t >= tune.preview.hold && t < warning
-				? (t - tune.preview.hold) / skill.castPoint
-				: 0,
-		)
+		const draw =
+			slot && ability?.effects?.pose === 'draw' && t >= tune.preview.hold && t < warning
+				? (t - tune.preview.hold) / stats.castPoint
+				: 0
+		body.animate(dt, draw)
 		if (!slot) body.visual.rotation.set(0, 0, 0)
-		if (slot === 'W')
+		else if (ability.kind === 'dash')
 			body.visual.rotation.z =
-				-tune.preview.vaultPose * Math.sin(Math.min(1, age / skill.time) * Math.PI)
-		if (slot === 'E')
+				-tune.preview.vaultPose * Math.sin(Math.min(1, age / stats.time) * Math.PI)
+		else if (ability.kind === 'zone')
 			body.visual.rotation.x =
 				-tune.preview.rainPose * Math.sin((Math.min(1, t / warning) * Math.PI) / 2)
-		if (slot === 'R')
+		else if (ability.id === 'volley')
 			body.visual.rotation.z =
 				tune.preview.volleyPose * Math.sin((Math.min(1, t / warning) * Math.PI) / 2)
 		if (shot) {
-			const travelled = Math.min(kit.loose.range, age * kit.loose.speed)
+			const travelled = Math.min(shot.stats.range, age * shot.stats.speed)
 			shot.x = dir.x * travelled
 			shot.z = dir.z * travelled
 		}
@@ -203,50 +204,70 @@ export function createPreview(app, run) {
 			object.quaternion.copy(pose.quaternion)
 		}
 		view.update(dt, {
-			live: new Set(slot === 'Q' && fired && age < flight ? ['preview'] : []),
+			live: new Set(slot && shot && fired && age < flight ? ['preview'] : []),
 			hero: body.mesh.position,
 			aim,
-			held: slot === 'Q' && t < tune.preview.hold,
+			held: !!(slot && ability?.held === 'line' && t < tune.preview.hold),
+			lineStats: stats ?? kit.loose,
 			locate: () => null,
 		})
+		const cast =
+			slot && t >= tune.preview.hold && t < warning
+				? {
+						ability: ability.id,
+						yaw: Math.atan2(dir.x, dir.z) + Math.PI,
+						target: aim,
+						total: stats.castPoint / STEP,
+						left: warning / STEP - ticks,
+					}
+				: null
+		const catchWindow =
+			slot && (ability?.id === 'catch' || ability?.id === 'dive') && fired && age < flight
+				? { radius: stats.radius, angle: stats.angle }
+				: null
+		if (heroId !== 'fletcher') {
+			// Costume pose hooks read this presentation-only state, not a live hero.
+			body.mobaTick = ticks
+			body.mobaUnit = {
+				abilityState: { pocket: null },
+				stance: slot && ability?.id === 'catch' && age < flight ? { ability: ability.id } : null,
+				body: { dashing: !!(slot && ability?.kind === 'dash' && fired && age < stats.time) },
+				dashAbility: ability?.id,
+				proneUntil: slot && stats?.prone && age >= stats.time && age < flight ? ticks + 1 : 0,
+			}
+			body.poseAbility(cast, alpha)
+		}
 		skills.update(dt, {
 			hero: body.mesh.position,
 			aim,
-			held: {
-				slot2: slot === 'W' && t < tune.preview.hold,
-				slot3: slot === 'E' && t < tune.preview.hold,
-			},
+			unit: { definition },
+			held: Object.fromEntries(
+				Object.entries(definition.abilities).map(([key, a]) => [
+					key,
+					!!(slot && a?.id === ability?.id && t < tune.preview.hold),
+				]),
+			),
 			casters:
-				slot === 'Q' && t >= tune.preview.hold && t < warning
-					? [
-							{
-								id: 'preview-caster',
-								body,
-								dead: false,
-								cast: {
-									slot: 'slot1',
-									yaw: Math.atan2(dir.x, dir.z) + Math.PI,
-									total: kit.loose.castPoint / STEP,
-									left: warning / STEP - ticks,
-								},
-							},
-						]
+				cast || catchWindow
+					? [{ id: 'preview-caster', body, definition, dead: false, cast, catchWindow }]
 					: [],
 			zones:
-				slot === 'E' && fired && age <= flight
+				slot && ability?.kind === 'zone' && fired && age <= flight
 					? [
 							{
-								id: 'preview-rain',
+								id: 'preview-zone',
+								ability: ability.id,
+								stats,
 								x: aim.x,
 								z: aim.z,
-								left: (warning + kit.rain.delay) / STEP - ticks,
-								total: kit.rain.delay / STEP,
+								left: (warning + stats.delay) / STEP - ticks,
+								total: stats.delay / STEP,
 							},
 						]
 					: [],
 			alpha,
 		})
-		heroic.visible = slot === 'R' && t < warning
+		heroic.visible = slot && ability?.id === 'volley' && t < warning
 		heroic.rotation.y = Math.atan2(dir.x, dir.z) + Math.PI
 		heroic.scale.set(tune.volley.radius * 2, 1, tune.volley.range)
 		heroic.position.set(
@@ -255,7 +276,7 @@ export function createPreview(app, run) {
 			(dir.z * tune.volley.range) / 2,
 		)
 		heroic.material = t < tune.preview.hold ? cream : enemy
-		heroicBolt.visible = slot === 'R' && fired && age < flight
+		heroicBolt.visible = slot && ability?.id === 'volley' && fired && age < flight
 		heroicBolt.scale.setScalar(tune.volley.radius)
 		heroicBolt.position.set(
 			dir.x * Math.min(tune.volley.range, age * tune.volley.speed),
@@ -266,20 +287,22 @@ export function createPreview(app, run) {
 	return {
 		start,
 		stop,
+		update,
 		freeze(value = true) {
 			frozen = value
 		},
 		get state() {
-			const skill =
-				slot === 'Q' ? kit.loose : slot === 'W' ? kit.vault : slot === 'E' ? kit.rain : tune.volley
-			const warning = tune.preview.hold + (skill.castPoint ?? 0)
-			const duration =
-				slot === 'W' ? skill.time : slot === 'E' ? skill.delay : skill.range / skill.speed
+			const ability = abilityFor(slot)
+			const warning = tune.preview.hold + (ability?.stats.castPoint ?? 0)
 			const bolt = [...poses.keys()][0]
 			scene.updateMatrixWorld(true)
 			const point = bolt?.getWorldPosition(new THREE.Vector3()).project(app.camera.view)
+			const root = body.mesh.getWorldPosition(new THREE.Vector3())
+			const screen = root.clone().project(app.camera.view)
 			return {
 				slot,
+				heroId,
+				ability: ability?.id ?? null,
 				elapsed,
 				phase: !slot
 					? 'idle'
@@ -287,18 +310,20 @@ export function createPreview(app, run) {
 						? 'aim'
 						: elapsed < warning
 							? 'cast'
-							: elapsed < warning + duration
+							: elapsed < warning + durationOf(ability)
 								? 'flight'
 								: 'settle',
-				bolt: slot === 'Q' && poses.size > 0,
+				bolt: !!(slot && ability?.kind === 'shot' && poses.size > 0),
 				screenBolt: point
 					? { x: ((point.x + 1) * innerWidth) / 2, y: ((1 - point.y) * innerHeight) / 2 }
 					: null,
+				root: root.toArray(),
+				scale: body.mesh.getWorldScale(new THREE.Vector3()).toArray(),
+				screenRoot: { x: ((screen.x + 1) * innerWidth) / 2, y: ((1 - screen.y) * innerHeight) / 2 },
 				rotation: body.visual.rotation.toArray().slice(0, 3),
 				tell: !!scene.getObjectByName('moba-enemy-tell'),
 			}
 		},
-		update,
 		dispose() {
 			restore()
 			unframe()

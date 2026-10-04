@@ -36,13 +36,37 @@ export function createSkillsView(scene) {
 	const cream = makeStyleMaterial('cream', { flat: true })
 	const gold = makeStyleMaterial('ammo', { flat: true })
 	const enemy = makeStyleMaterial('teamB', { flat: true })
+	const ink = makeStyleMaterial('ink', { flat: true })
 	const mesh = (geometry, material, parent = group) => {
 		const m = new THREE.Mesh(geometry, material)
 		parent.add(m)
 		return m
 	}
+	const coneGeometry = new THREE.RingGeometry(
+		tune.mittsView.arcInset,
+		1,
+		tune.mittsView.segments,
+	).rotateX(-Math.PI / 2)
 	const heldCircle = mesh(ring, cream),
 		heldArrow = mesh(arrowGeometry, cream)
+	let heldCone = null
+	function arc(geometry, angle, fraction = 1, inset = tune.mittsView.arcInset, outer = 1) {
+		const positions = geometry.attributes.position,
+			segments = tune.mittsView.segments
+		for (let i = 0; i <= segments; i++) {
+			const theta = -angle / 2 + (i / segments) * angle * fraction
+			for (let row = 0; row < 2; row++) {
+				const radius = row ? outer : inset
+				positions.setXYZ(
+					row * (segments + 1) + i,
+					-Math.sin(theta) * radius,
+					0,
+					-Math.cos(theta) * radius,
+				)
+			}
+		}
+		positions.needsUpdate = true
+	}
 	const tells = new Map(),
 		enemyTells = new Map(),
 		catchTells = new Map(),
@@ -76,12 +100,21 @@ export function createSkillsView(scene) {
 		const holding = Object.entries(definition.abilities).filter(([slot, a]) => held[slot] && a)
 		const circle = holding.find(([, a]) => a.held === 'circle')?.[1]
 		const dash = holding.find(([, a]) => a.held === 'arrow')?.[1]
+		const cone = holding.find(([, a]) => a.held === 'cone')?.[1]
+		if (cone && !heldCone) heldCone = mesh(coneGeometry, ink)
+		if (heldCone) heldCone.visible = !!(cone && aim)
 		heldCircle.visible = !!(circle && aim)
 		heldArrow.visible = !!(dash && aim)
 		if (aim) {
 			const dx = aim.x - hero.x,
 				dz = aim.z - hero.z,
 				distance = Math.hypot(dx, dz)
+			if (cone) {
+				arc(coneGeometry, (cone.stats.angle * Math.PI) / 180)
+				heldCone.position.set(hero.x, tune.mittsView.catchY, hero.z)
+				heldCone.rotation.y = Math.atan2(dx, dz) + Math.PI
+				heldCone.scale.setScalar(cone.stats.radius)
+			}
 			if (circle) {
 				const stats = circle.stats,
 					reach = Math.min(1, stats.range / (distance || 1))
@@ -124,9 +157,25 @@ export function createSkillsView(scene) {
 				stats.radius * Math.max(0.01, Math.min(1, 1 - (z.left - alpha) / Math.max(1, z.total))),
 			)
 		}
-		const casting = casters.filter(
-			(u) => !u.dead && u.cast && (castAbility(u) ?? heroDefinition().abilities[u.cast.slot])?.tell,
-		)
+		const casting = casters
+			.map((u) =>
+				u.attack?.phase === 'windup' && u.definition?.basic?.tell
+					? {
+							...u,
+							cast: {
+								ability: u.definition.basic.id,
+								slot: 'primary',
+								left: u.attack.left,
+								total: u.attack.total,
+								yaw: u.yaw,
+							},
+						}
+					: u,
+			)
+			.filter(
+				(u) =>
+					!u.dead && u.cast && (castAbility(u) ?? heroDefinition().abilities[u.cast.slot])?.tell,
+			)
 		const castingIds = new Set(casting.map((u) => u.id))
 		for (const [id, tell] of enemyTells)
 			if (!castingIds.has(id)) {
@@ -167,36 +216,51 @@ export function createSkillsView(scene) {
 				tell.fill.scale.setScalar(stats.radius * progress)
 			}
 		}
-		const catching = casters.filter((u) => !u.dead && u.catchWindow)
+		const catching = [...casters, ...(unit && !casters.includes(unit) ? [unit] : [])].filter(
+			(u) => !u.dead && u.catchWindow,
+		)
 		const catchingIds = new Set(catching.map((u) => u.id))
 		for (const [id, tell] of catchTells)
 			if (!catchingIds.has(id)) {
-				group.remove(tell)
-				tell.geometry.dispose()
+				group.remove(tell.root)
+				tell.edge.geometry.dispose()
+				tell.timer.geometry.dispose()
+				tell.border.geometry.dispose()
 				catchTells.delete(id)
 			}
 		for (const u of catching) {
 			let tell = catchTells.get(u.id)
-			if (tell && tell.userData.angle !== u.catchWindow.angle) {
-				group.remove(tell)
-				tell.geometry.dispose()
-				tell = null
-			}
 			if (!tell) {
-				const angle = (u.catchWindow.angle * Math.PI) / 180
-				tell = mesh(
-					new THREE.RingGeometry(0.94, 1, 48, 1, -angle / 2, angle)
-						.rotateX(-Math.PI / 2)
-						.rotateY(Math.PI / 2),
-					cream,
-				)
-				tell.name = 'moba-catch-window'
-				tell.userData.angle = u.catchWindow.angle
-				catchTells.set(u.id, tell)
+				const root = new THREE.Group()
+				root.name = 'moba-catch-window'
+				group.add(root)
+				const edge = mesh(coneGeometry.clone(), cream, root)
+				const timer = mesh(coneGeometry.clone(), gold, root)
+				const border = mesh(coneGeometry.clone(), ink, root)
+				edge.position.y = tune.mittsView.arcLift
+				timer.position.y = tune.mittsView.catchFillY - tune.mittsView.catchY
+				catchTells.set(u.id, (tell = { root, edge, timer, border }))
 			}
-			tell.position.set(u.body.mesh.position.x, tune.abilityView.tellY, u.body.mesh.position.z)
-			tell.rotation.y = u.body.mesh.rotation.y
-			tell.scale.setScalar(u.catchWindow.radius)
+			const window = u.catchWindow,
+				angle = (window.angle * Math.PI) / 180
+			const left = window.until - (u.body.mobaTick ?? 0) - alpha
+			arc(tell.edge.geometry, angle)
+			arc(
+				tell.border.geometry,
+				angle,
+				1,
+				tune.mittsView.arcInset - tune.mittsView.arcBorder,
+				1 + tune.mittsView.arcBorder,
+			)
+			arc(tell.timer.geometry, angle, Math.max(0, Math.min(1, (left * STEP) / window.duration)))
+			tell.timer.scale.setScalar(tune.mittsView.arcInset)
+			tell.root.position.set(
+				u.body.mesh.position.x,
+				window.ability === 'dive' ? tune.mittsView.diveY : tune.mittsView.catchY,
+				u.body.mesh.position.z,
+			)
+			tell.root.rotation.y = u.body.mesh.rotation.y
+			tell.root.scale.setScalar(window.radius)
 		}
 		for (let i = streaks.length - 1; i >= 0; i--) {
 			const s = streaks[i]
@@ -213,8 +277,22 @@ export function createSkillsView(scene) {
 		rain,
 		dispose() {
 			scene.remove(group)
-			for (const tell of catchTells.values()) tell.geometry.dispose()
-			for (const owned of [ring, disc, arrowGeometry, lineGeometry, cream, gold, enemy])
+			for (const tell of catchTells.values()) {
+				tell.edge.geometry.dispose()
+				tell.timer.geometry.dispose()
+				tell.border.geometry.dispose()
+			}
+			for (const owned of [
+				ring,
+				disc,
+				arrowGeometry,
+				coneGeometry,
+				lineGeometry,
+				cream,
+				gold,
+				enemy,
+				ink,
+			])
 				owned.dispose()
 		},
 	}

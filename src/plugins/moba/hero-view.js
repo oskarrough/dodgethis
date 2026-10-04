@@ -1,6 +1,7 @@
 import * as THREE from 'three'
-import { makeStyleMaterial } from '../../core/stylepass.js'
+import { makeStyleMaterial, styleId } from '../../core/stylepass.js'
 import { tune } from './tune.js'
+import { STEP } from '../../core/app.js'
 import { castAbility } from './ability.js'
 import { heroDefinition } from './heroes.js'
 
@@ -17,6 +18,10 @@ export function dressHero(body, heroId = 'fletcher', team = 'A') {
 	const fins = makeStyleMaterial(team === 'A' ? 'teamA' : 'teamB', { side: THREE.DoubleSide })
 	const ink = makeStyleMaterial('ink', { flat: true })
 	const foot = makeStyleMaterial(team === 'A' ? 'teamA' : 'teamB', { flat: true })
+	const gloveMaterial = makeStyleMaterial(team === 'A' ? 'teamA' : 'teamB')
+	const pocketMaterial = makeStyleMaterial('ammo', { flat: true })
+	let glove = null,
+		pocketRing = null
 	const geometries = []
 	const roots = []
 	const own = (g) => {
@@ -50,7 +55,7 @@ export function dressHero(body, heroId = 'fletcher', team = 'A') {
 	}
 	body.mesh.name = `moba-${heroId}`
 	const discY = -body.radius - body.halfHeight + t.discY
-	part(
+	const footDisc = part(
 		new THREE.CircleGeometry(body.radius, t.segments).rotateX(-Math.PI / 2),
 		foot,
 		0,
@@ -109,28 +114,49 @@ export function dressHero(body, heroId = 'fletcher', team = 'A') {
 		}
 	} else if (heroId === 'mitts') {
 		body.visual.geometry = own(rounded(t.mittsWidth, t.mittsDepth, t.mittsHeight))
+		glove = new THREE.Group()
+		glove.name = 'moba-glove'
+		body.visual.add(glove)
+		roots.push(glove)
+		pocketRing = part(
+			new THREE.RingGeometry(
+				tune.mittsView.pocketRadius - tune.mittsView.pocketWidth,
+				tune.mittsView.pocketRadius,
+				tune.mittsView.segments,
+			).rotateX(-Math.PI / 2),
+			pocketMaterial,
+			0,
+			tune.mittsView.pocketY,
+			0,
+			footDisc,
+		)
+		pocketRing.name = 'moba-pocket-ring'
+		pocketRing.visible = false
 		// Palm ends before the thumb: the intervening gap is real geometry, not paint.
 		part(
 			rounded(t.gloveWidth, t.gloveDepth, t.fingerRadius * 2),
-			teamMaterial,
+			gloveMaterial,
 			t.gloveX,
 			discY + t.mittsHeight / 2,
 			t.gloveZ,
+			glove,
 		)
 		for (let i = 0; i < t.fingerCount; i++)
 			part(
 				new THREE.SphereGeometry(t.fingerRadius, 8, 6),
-				teamMaterial,
+				gloveMaterial,
 				t.gloveX + (i - (t.fingerCount - 1) / 2) * t.fingerSpacing,
 				discY + t.mittsHeight / 2,
 				t.gloveZ - t.gloveDepth / 2,
+				glove,
 			)
 		part(
 			new THREE.SphereGeometry(t.fingerRadius, 8, 6),
-			teamMaterial,
+			gloveMaterial,
 			t.gloveX - t.gloveWidth / 2 - t.fingerRadius,
 			discY + t.mittsHeight / 2,
 			t.gloveZ + t.gloveDepth / 2,
+			glove,
 		)
 	} else if (heroId === 'carom') {
 		const shape = new THREE.Shape()
@@ -233,6 +259,61 @@ export function dressHero(body, heroId = 'fletcher', team = 'A') {
 				? Math.max(1 / Math.max(1, cast.total), 1 - (cast.left - alpha) / Math.max(1, cast.total))
 				: 0,
 		)
+		if (!glove) return
+		const unit = body.mobaUnit,
+			tick = (body.mobaTick ?? 0) + alpha,
+			v = tune.mittsView
+		const pocket = unit?.abilityState.pocket
+		gloveMaterial.uniforms.uStyleId.value = styleId(
+			(pocket?.team ?? team) === 'A' ? 'teamA' : 'teamB',
+		)
+		gloveMaterial.uniforms.uFlat.value = pocket ? 1 : 0
+		pocketRing.visible = !!pocket
+		if (pocket) {
+			const fraction = Math.max(
+				0,
+				Math.min(1, ((pocket.until - tick) * STEP) / tune.catching.pocketLife),
+			)
+			const positions = pocketRing.geometry.attributes.position
+			for (let i = 0; i <= v.segments; i++) {
+				const angle = (i / v.segments) * Math.PI * 2 * fraction
+				for (let row = 0; row < 2; row++) {
+					const radius = v.pocketRadius - (1 - row) * v.pocketWidth
+					positions.setXYZ(
+						row * (v.segments + 1) + i,
+						Math.cos(angle) * radius,
+						0,
+						-Math.sin(angle) * radius,
+					)
+				}
+			}
+			positions.needsUpdate = true
+		}
+		glove.position.set(0, 0, 0)
+		glove.rotation.set(0, 0, 0)
+		body.visual.rotation.x = 0
+		body.visual.rotation.z = 0
+		const pose = ability?.effects?.pose
+		const progress = cast
+			? Math.max(0, Math.min(1, 1 - (cast.left - alpha) / Math.max(1, cast.total)))
+			: 0
+		if (pose === 'toss') {
+			glove.position.z = v.tossPull * progress
+			glove.rotation.y = v.gloveTurn * progress
+		} else if (unit?.stance?.ability === 'catch') {
+			glove.position.y = v.gloveLift
+			glove.rotation.z = -v.gloveTurn
+		} else if (unit?.body.dashing && unit.dashAbility === 'dive') {
+			body.visual.rotation.x = -v.diveLean
+			glove.position.z = -v.tossPull
+		} else if (tick < (unit?.proneUntil ?? 0)) {
+			body.visual.rotation.x = -v.proneTurn
+		} else if (unit?.attack) {
+			const attack = unit.attack
+			const reach =
+				attack.phase === 'windup' ? 1 - (attack.left - alpha) / Math.max(1, attack.total) : 1
+			glove.position.z = -v.slapReach * Math.max(0, Math.min(1, reach))
+		}
 	}
 	let disposed = false
 	return () => {
@@ -240,7 +321,8 @@ export function dressHero(body, heroId = 'fletcher', team = 'A') {
 		disposed = true
 		for (const root of roots) root.removeFromParent()
 		for (const g of geometries) g.dispose()
-		for (const material of [teamMaterial, cream, fins, ink, foot]) material.dispose()
+		for (const material of [teamMaterial, cream, fins, ink, foot, gloveMaterial, pocketMaterial])
+			material.dispose()
 		delete body.drawPose
 		delete body.poseAbility
 		body.visual.geometry = original

@@ -92,7 +92,7 @@ export const tune = {
 		x: -0.16,
 		y: -0.4,
 		mobileX: 0.5,
-		mobileY: 0.68,
+		mobileY: 0.3,
 		patch: 0.8,
 		patchY: 0.002,
 		shadowY: 0.006,
@@ -108,4 +108,10 @@ export const tune = {
 	parallax: { depth: 0.012, response: 0.18, settle: 0.05 },
 	confirm: { frequencies: [261.63, 329.63, 392], dur: 0.65, gain: 0.055 },
 	back: { freq: 174.61, slideTo: 130.81, dur: 0.25, gain: 0.055 },
+	// Menu tiles: the response is a spring, not a fade.
+	tile: { snap: 0.12, press: 0.06, scale: 1.06, lift: 8, tilt: 2.5 },
+	move: { freq: 880, slideTo: 1175, dur: 0.045, gain: 0.03, type: 'square' },
+	enter: { frequencies: [392, 587.33], gap: 0.06, dur: 0.3, gain: 0.05, type: 'triangle' },
+	pick: { frequencies: [523.25, 659.25, 783.99], slide: 1.5, dur: 0.22, gain: 0.05 },
+	deny: { freq: 116.54, slideTo: 98, dur: 0.16, gain: 0.06, type: 'square', shake: 0.24 },
 }

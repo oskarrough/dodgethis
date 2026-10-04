@@ -24,7 +24,8 @@
 .front-hero {
 	left: 57%;
 	right: 7%;
-	top: 18%;
+	top: 12%;
+	font-size: 0.95em;
 	bottom: max(110px, 16%);
 	display: flex;
 	flex-direction: column;
@@ -41,9 +42,103 @@
 	scrollbar-width: thin;
 }
 .front-hero-name {
-	font-weight: 300;
-	font-size: 1.8em;
-	margin: 0 0 0.8em 2.2em;
+	font: 400 2em / 1 var(--ui-font);
+	margin: 0 0 0.55em;
+}
+.front-hero-name small {
+	display: block;
+	font-size: 0.42em;
+	margin-top: 0.3em;
+}
+.front-roster {
+	position: fixed;
+	left: 7%;
+	top: 10%;
+	width: 43%;
+}
+.front-roster h1 {
+	font: 400 clamp(28px, 3.4vw, 54px) / 1.1 var(--ui-font);
+	margin: 0;
+}
+.front-roster > p {
+	font-size: 0.78em;
+	margin: 0.6em 0 1.3em;
+}
+.front-roster-cards {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 0.7em;
+}
+.moba-front .front-roster-card {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: end;
+	background: color-mix(in srgb, var(--ui-cream) 65%, transparent);
+	border: 2px solid var(--ui-text);
+	border-radius: 12px;
+	box-shadow: 3px 4px var(--ui-text);
+	padding: 0.8em 0.3em;
+	text-align: center;
+	font: inherit;
+	gap: 0.3em;
+}
+.front-roster-card svg {
+	width: 44px;
+	height: 54px;
+	margin-bottom: 0.45em;
+	fill: var(--ui-text);
+	stroke: var(--ui-text);
+	stroke-width: 1.5;
+}
+.front-roster-card small {
+	font-size: 0.6em;
+}
+.front-roster-card[aria-disabled] {
+	opacity: 0.55;
+}
+.moba-front .front-roster-card[aria-pressed='true'] {
+	border-color: var(--ui-text);
+	box-shadow: inset 0 -3px var(--ui-text);
+}
+.front-ability-detail {
+	margin: 0.8em 0 0;
+	padding: 0.7em 0 0.4em;
+	border-top: 1px solid color-mix(in srgb, var(--ui-text) 30%, transparent);
+	min-height: 0;
+}
+.front-ability-detail h2 {
+	font-weight: 400;
+	font-size: 1em;
+	margin: 0;
+}
+.front-detail-status,
+.front-pin-help {
+	font-size: 0.65em;
+	margin: 0.6em 0;
+}
+.front-detail-lines {
+	font-size: 0.78em;
+	line-height: 1.5;
+}
+.front-detail-lines p {
+	margin: 0.45em 0;
+}
+.moba-front .front-slot.pinned {
+	box-shadow: inset 3px 0 var(--ui-text);
+	padding-left: 0.7em;
+}
+.moba-front .front-roster-card:is(:hover, :focus-visible, .selected),
+.moba-front .front-slot:is(:hover, :focus-visible, .previewing),
+.moba-front .front-numbers:is(:hover, :focus-visible, .selected),
+.moba-front .front-lock:is(:hover, :focus-visible, .selected) {
+	background: var(--ui-blue);
+	color: var(--ui-cream);
+	transform: scale(1.04);
+}
+.front-roster-card:is(:hover, :focus-visible, .selected) svg {
+	fill: var(--ui-cream);
+	stroke: var(--ui-cream);
 }
 .moba-front .front-slot {
 	display: flex;
@@ -51,7 +146,8 @@
 	gap: 1.2em;
 	width: 100%;
 	text-align: left;
-	padding: 0.55em 0;
+	padding: 0.25em 0.5em;
+	border-radius: 8px;
 	background: transparent;
 }
 .front-key {
@@ -61,30 +157,25 @@
 }
 .front-skill-name {
 	display: inline;
-	font-weight: 400;
+	font: 400 1.2em / 1 var(--ui-font);
 }
 .front-description {
-	display: block;
+	display: none;
 	font-size: 0.78em;
 	line-height: 1.4;
 	margin-top: 0.2em;
 }
-.front-slot.selected .front-skill-name,
-.front-numbers.selected,
-.front-lock.selected {
-	text-decoration: underline;
-	text-underline-offset: 0.35em;
-	text-decoration-thickness: 1px;
-}
 .moba-front .front-numbers {
-	margin: 0.6em 0 0 3.2em;
+	margin: 0.2em 0 0;
 	background: transparent;
-	padding: 0.5em 0;
-	font-size: 0.85em;
+	padding: 0.4em 0.6em;
+	border-radius: 8px;
+	font: 400 1em / 1 var(--ui-font);
 }
 .moba-front .front-lock {
 	font: 400 2em / 1 var(--ui-font);
 	background: transparent;
+	border-radius: 8px;
 	padding: 0.25em;
 }
 .front-ready {
@@ -148,7 +239,7 @@
 	max-height: 42vh;
 }
 .front-hero.numbers-open {
-	top: 10%;
+	top: 12%;
 }
 .numbers-open .front-hero-name {
 	margin-bottom: 0;
@@ -157,15 +248,56 @@
 	.front-hero {
 		left: 7%;
 		right: 7%;
-		top: 37%;
+		top: 40%;
+	}
+	.front-roster {
+		top: 5%;
+		width: 86%;
+	}
+	.front-roster h1 {
+		font-size: 1.4em;
+	}
+	.front-roster > p {
+		margin-bottom: 0.6em;
+	}
+	.front-roster-cards {
+		gap: 0.4em;
+	}
+	.moba-front .front-roster-card {
+		font-size: 0.8em;
+		padding: 0.45em 0.15em;
+	}
+	.front-roster-card svg {
+		width: 33px;
+		height: 40px;
+		margin: 0;
+	}
+	.front-ability-detail {
+		min-height: 0;
+	}
+	.front-ready {
+		padding-top: 0.5em;
+	}
+	.front-roster-card small {
+		font-size: max(10px, 0.75em);
+	}
+	.front-pin-help {
+		font-size: 0.8em;
 	}
 	.front-hero-name {
 		font-size: 1.25em;
 		margin-bottom: 0.3em;
 	}
 	.moba-front .front-slot {
-		padding: 0.35em 0;
-		gap: 0.8em;
+		display: inline-flex;
+		width: auto;
+		padding: 0.4em 0.3em;
+		gap: 0.3em;
+		margin-right: 0.5em;
+		font-size: 0.9em;
+	}
+	.front-key {
+		width: auto;
 	}
 	.front-description {
 		font-size: 0.75em;
@@ -197,7 +329,7 @@
 		line-height: 1.25;
 	}
 	.front-hero.numbers-open {
-		top: 26%;
+		top: 38%;
 	}
 }
 @media (max-height: 740px) and (min-width: 701px) {
