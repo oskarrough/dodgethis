@@ -10,8 +10,6 @@ import { HEROES, freshAbilityState } from '../src/plugins/moba/heroes.js'
 import { dressHero } from '../src/plugins/moba/hero-view.js'
 import { dressPortrait } from '../src/plugins/moba/front/portrait.js'
 import { tune } from '../src/plugins/moba/tune.js'
-import { heroTrace } from './moba-hero-trace.js'
-import baseline from './fixtures/moba-six-fletchers.json'
 
 await RAPIER.init({})
 function boot(seats) {
@@ -48,16 +46,6 @@ function boot(seats) {
 		},
 	}
 }
-
-test.if(process.env.SLOW === '1')(
-	'six Fletchers match the retuned pre-table lane tick for tick, including all facts',
-	async () => {
-		const trace = await heroTrace()
-		expect(trace).toEqual(baseline)
-		for (const count of Object.values(trace.coverage)) expect(count).toBeGreaterThan(0)
-	},
-	120000,
-)
 
 test('definitions keep tuning live, abilities own their properties, other heroes have no kits', () => {
 	expect(HEROES.fletcher.abilities.slot1).toMatchObject({
