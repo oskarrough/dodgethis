@@ -75,6 +75,8 @@ export const tune = {
 		capScale: 0.8,
 		capHeight: 0.04,
 		printLayers: { road: 0.015, dots: 0.03, plaza: 0.045, marks: 0.06, seams: 0.075 },
+		// Ground markers (pings, hover, aim line) must sit above every print layer
+		markerLayers: { aim: 0.09, aimTip: 0.092, hover: 0.095, ping: 0.1 },
 		lineWidth: 0.06,
 		dashLength: 1,
 		dashSpacing: 2,

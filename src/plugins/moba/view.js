@@ -31,7 +31,7 @@ export function createView(scene, smooth) {
 		const p = pings[nextPing]
 		nextPing = (nextPing + 1) % pings.length
 		p.mesh.material = ringMaterials[kind]
-		p.mesh.position.set(point.x, 0.02, point.z)
+		p.mesh.position.set(point.x, tune.map.markerLayers.ping, point.z)
 		p.life = PING
 		p.size = size
 		p.follow = follow
@@ -233,13 +233,13 @@ export function createView(scene, smooth) {
 			}
 			if (p.follow) {
 				const at = locate(p.follow)
-				if (at) p.mesh.position.set(at.x, 0.02, at.z)
+				if (at) p.mesh.position.set(at.x, tune.map.markerLayers.ping, at.z)
 			}
 			const s = p.life / PING
 			p.mesh.scale.setScalar(p.size * (0.3 + 0.9 * s))
 		}
 		hover.visible = !!hovered
-		if (hovered) hover.position.set(hovered.x, 0.018, hovered.z)
+		if (hovered) hover.position.set(hovered.x, tune.map.markerLayers.hover, hovered.z)
 
 		const showLine = !!(held && aim && hero)
 		line.visible = tip.visible = showLine
@@ -252,10 +252,10 @@ export function createView(scene, smooth) {
 				x: hero.x - Math.sin(yaw) * length,
 				z: hero.z - Math.cos(yaw) * length,
 			})
-			line.position.set(hero.x, 0.016, hero.z)
+			line.position.set(hero.x, tune.map.markerLayers.aim, hero.z)
 			line.rotation.y = yaw
 			line.scale.set(lineStats.radius * 2, 1, length)
-			tip.position.set(end.x, 0.017, end.z)
+			tip.position.set(end.x, tune.map.markerLayers.aimTip, end.z)
 			tip.rotation.y = yaw
 		}
 
