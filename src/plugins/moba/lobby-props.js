@@ -352,17 +352,10 @@ export function createLobbyStands(scene, el, gallery, readySeats, local, onReady
 				: owner
 					? owner.heroId.replace(/^./, (c) => c.toUpperCase())
 					: 'Open'
-			const help = mine
-				? device === 'gamepad'
-					? 'A · Start'
-					: device === 'touch'
-						? 'Stand here'
-						: 'Enter'
-				: owner?.bot
-					? 'bot'
-					: 'seat'
+			const key = mine ? (device === 'gamepad' ? 'Start' : device === 'touch' ? '' : 'Enter') : ''
+			const help = mine ? (device === 'touch' ? 'Stand here' : 'go') : owner?.bot ? 'bot' : 'seat'
 			if (p.label.firstChild.textContent !== title) p.label.firstChild.textContent = title
-			if (p.label.lastChild.textContent !== help) p.label.lastChild.textContent = help
+			setHelp(p.label.lastChild, key, help)
 		}
 	}
 	// Presentation-only inspection targets: these never enter the sim's unit database.
@@ -408,32 +401,37 @@ export function createLobbyStands(scene, el, gallery, readySeats, local, onReady
 			)
 	const point = new THREE.Vector3()
 	let device = 'keyboard'
+	// A key sticker on the prop it acts on; written only when it changes.
+	function setHelp(el, key, text) {
+		const html = key ? `<kbd>${key}</kbd> ${text}` : text
+		if (el.dataset.help !== html) {
+			el.dataset.help = html
+			el.innerHTML = html
+		}
+	}
 	function labels() {
 		for (const stand of stands) {
-			const text = stand.selected.visible
-				? device === 'touch'
-					? 'Picked'
-					: `${device === 'gamepad' ? '✛↑' : 'H'} next`
-				: stand.playable
-					? 'Walk here'
-					: 'soon'
-			const small = stand.label.querySelector('small')
-			if (small.textContent !== text) small.textContent = text
+			const picked = stand.selected.visible
+			setHelp(
+				stand.label.querySelector('small'),
+				picked && device !== 'touch' ? (device === 'gamepad' ? '✛↑' : 'H') : '',
+				picked ? (device === 'touch' ? 'Picked' : 'next') : stand.playable ? 'Walk here' : 'soon',
+			)
 		}
-		const help =
-			device === 'touch' ? 'Shoot to choose' : `Shoot · ${device === 'gamepad' ? '✛↓' : 'G'} next`
-		if (galleryHelp.textContent !== help) galleryHelp.textContent = help
+		setHelp(
+			galleryHelp,
+			device === 'touch' ? '' : device === 'gamepad' ? '✛↓' : 'G',
+			device === 'touch' ? 'Shoot to choose' : 'next difficulty',
+		)
 		for (const p of galleryProps) {
 			const chosen = p.stand.id === gallery.difficulty
 			p.pad.visible = chosen
 			p.label.dataset.picked = String(chosen)
-			const text = chosen
-				? device === 'touch'
-					? 'Picked'
-					: `${device === 'gamepad' ? '✛↓' : 'G'} next`
-				: 'Shoot here'
-			const small = p.label.querySelector('small')
-			if (small.textContent !== text) small.textContent = text
+			setHelp(
+				p.label.querySelector('small'),
+				chosen && device !== 'touch' ? (device === 'gamepad' ? '✛↓' : 'G') : '',
+				chosen ? (device === 'touch' ? 'Picked' : 'next') : 'Shoot here',
+			)
 		}
 	}
 	return {
