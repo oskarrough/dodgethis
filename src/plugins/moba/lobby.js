@@ -5,6 +5,7 @@ import { tune } from './tune.js'
 import { tune as frontTune } from './front/tune.js'
 import { createBackdrop } from './front/backdrop.js'
 import { startLoading } from './front/loading.js'
+import { createLobbyStands } from './lobby-props.js'
 import './lobby.css'
 
 // The plaza uses the match's simulation and presentation, but owns navigation and framing.
@@ -37,15 +38,57 @@ export function createLobby({ app, run, sim, hero, setup, options }) {
 	)
 	run.camera.frame(() => {
 		const c = tune.lobby.camera
+		// Fit the whole playable plaza, not only its far half. Portrait widens the lens,
+		// never stretching scenery or moving the marks outside the visible ground.
+		const scale = Math.max(1, c.fitAspect / Math.max(c.minAspect, innerWidth / innerHeight))
+		const back = c.back
 		const target = clampMap({
 			x: Math.max(-tune.lobby.bounds.halfX, Math.min(tune.lobby.bounds.halfX, c.x)),
-			z: Math.max(-tune.lobby.bounds.halfZ, Math.min(tune.lobby.bounds.halfZ, c.z)),
+			z: Math.max(
+				-tune.lobby.bounds.halfZ,
+				Math.min(tune.lobby.bounds.halfZ, c.z, tune.lobby.bounds.halfZ - back),
+			),
 		})
-		const eye = clampMap({ x: target.x, z: target.z + c.back })
-		return { eye: { ...eye, y: c.height }, target: { ...target, y: 0 }, fov: c.fov }
+		const eye = clampMap({ x: target.x, z: target.z + back })
+		const fov = (Math.atan(Math.tan((c.fov * Math.PI) / 360) * scale) * 360) / Math.PI
+		return { eye: { ...eye, y: c.height }, target: { ...target, y: 0 }, fov }
 	})
 	el.style.setProperty('--lobby-sky-lift', `${-tune.lobby.skyLift}px`)
 	app.camera.update(0)
+	const props = createLobbyStands(app.scene, el)
+	let occupied = null
+	let pickSoundTick = null
+	let denySoundTick = null
+	const syncPick = () => {
+		setup.heroId = hero.heroId
+		setup.picks[hero.id] = { ...setup.picks[hero.id], heroId: hero.heroId }
+		props.select(hero.heroId)
+		const url = new URL(location.href)
+		url.searchParams.set('hero', hero.heroId)
+		history.replaceState(null, '', url)
+	}
+	syncPick()
+	run.on('present', (fact) => {
+		if (fact.type !== 'swap' || fact.hero !== hero.id) return
+		syncPick()
+		if (pickSoundTick !== fact.tick) {
+			pickSoundTick = fact.tick
+			app.audio.blip(tune.lobby.stands.pickSound)
+		}
+	})
+	function denyStand(id) {
+		props.deny(id, sim.tick)
+		if (denySoundTick !== sim.tick) {
+			denySoundTick = sim.tick
+			app.audio.blip(tune.lobby.stands.denySound)
+		}
+	}
+	function cycleHero() {
+		const playable = props.stands.filter((stand) => stand.playable)
+		const index = playable.findIndex((stand) => stand.id === hero.heroId)
+		const next = playable[(index + 1) % playable.length]
+		if (!sim.swapHero(hero.id, next.id)) denyStand(next.id)
+	}
 
 	let ending = false
 	let transferred = false
@@ -61,16 +104,23 @@ export function createLobby({ app, run, sim, hero, setup, options }) {
 		})
 	function back() {
 		if (ending) return
-		if (Object.keys(app.intents.get(hero.id).held).length) {
+		if (
+			hero.cast ||
+			hero.channel ||
+			hero.stance ||
+			Object.keys(app.intents.get(hero.id).held).length
+		) {
 			app.intents.cancel(hero.id)
 			return
 		}
+		syncPick()
 		ending = true
 		app.audio.blip({ ...frontTune.back, type: 'sine' })
 		returnHero()
 	}
 	function ready() {
 		if (ending) return
+		syncPick()
 		ending = transferred = true
 		app.audio.blip(frontTune.loading.skip)
 		startLoading(app, {
@@ -80,7 +130,7 @@ export function createLobby({ app, run, sim, hero, setup, options }) {
 			difficulty: setup.difficulty,
 			buildWait: options.buildWait,
 			// A cancelled descent returns to practice, with the same map and pick.
-			returnHero: () => app.modes.start('moba-lobby', { options: { setup } }),
+			returnHero: () => app.modes.start('moba-lobby', { options: { setup, el, backdrop } }),
 		})
 	}
 	backButton.onclick = back
@@ -90,6 +140,11 @@ export function createLobby({ app, run, sim, hero, setup, options }) {
 		(event) => {
 			heldKeys.add(event.code)
 			if (event.repeat || blockedKeys.has(event.code) || event.target?.closest?.('.lil-gui')) return
+			if (event.code === 'KeyH') {
+				event.preventDefault()
+				cycleHero()
+				return
+			}
 			const digit = /^Digit([1-5])$/.exec(event.code)
 			if (digit) {
 				event.preventDefault()
@@ -116,13 +171,16 @@ export function createLobby({ app, run, sim, hero, setup, options }) {
 		const down = (i) => buttons[i] && !previous[i]
 		const cancel = down(1)
 		const start = down(9)
+		const cycle = down(12)
 		previous = buttons.slice()
 		if (cancel) back()
 		else if (start) ready()
+		else if (cycle) cycleHero()
 		const nextDevice = app.input.activeDevice()
 		if (device === nextDevice) return
 		device = nextDevice
 		el.dataset.device = device
+		props.setDevice(device)
 		backButton.querySelector('kbd').textContent = device === 'gamepad' ? 'B' : 'Esc'
 		startButton.querySelector('kbd').textContent = device === 'gamepad' ? 'Start' : 'Enter'
 	})
@@ -134,12 +192,15 @@ export function createLobby({ app, run, sim, hero, setup, options }) {
 		f.add(c, 'z', -tune.lobby.bounds.halfZ, tune.lobby.bounds.halfZ, 0.1)
 		f.add(c, 'height', 1, 30, 0.1)
 		f.add(c, 'back', 0, 13, 0.1)
-		f.add(c, 'fov', 20, 70, 1)
+		f.add(c, 'fov', 20, 90, 1)
 	})
-	run.debug.expose({ lobby: { sim, setup, snapshot: sim.snapshot } })
+	run.debug.expose({
+		lobby: { sim, setup, layout: tune.lobby, stands: props.stands, snapshot: sim.snapshot },
+	})
 	run.signal.addEventListener(
 		'abort',
 		() => {
+			props.dispose()
 			canvas.classList.remove('front-canvas')
 			parent.insertBefore(canvas, next)
 			el.remove()
@@ -152,6 +213,61 @@ export function createLobby({ app, run, sim, hero, setup, options }) {
 		frozen: () => false,
 		presentationFrozen: () => false,
 		result() {},
+		prepareInput() {
+			const frame = app.intents.get(hero.id)
+			if (!frame.order || frame.order.kind) return
+			// A dummy's projected torso can overlap a pad. Choosing a stand means walking,
+			// not accidentally chasing the sparring dummy standing in front of it.
+			if (
+				props.stands.some(
+					(stand) =>
+						Math.hypot(frame.order.x - stand.x, frame.order.z - stand.z) <=
+						tune.lobby.stands.radius,
+				)
+			)
+				frame.order = { ...frame.order, kind: 'move' }
+		},
+		// At a fixed-step boundary, using the previous step's position. Stop must reach
+		// the sim before intents age; queueing it after sim.step would drop a one-step edge.
+		step() {
+			if (hero.dead) {
+				occupied = null
+				return
+			}
+			const p = hero.body.position,
+				v = tune.lobby.stands
+			if (occupied && Math.hypot(p.x - occupied.x, p.z - occupied.z) <= v.radius + v.exitMargin)
+				return
+			occupied = null
+			let stand = null,
+				nearest = v.radius
+			for (const candidate of props.stands) {
+				const distance = Math.hypot(p.x - candidate.x, p.z - candidate.z)
+				if (distance < nearest || (distance === nearest && (!stand || candidate.id < stand.id))) {
+					stand = candidate
+					nearest = distance
+				}
+			}
+			if (!stand) return
+			occupied = stand
+			if (sim.swapHero(hero.id, stand.id)) return
+			denyStand(stand.id)
+			// A real, collision-clamped bump, not a teleport or another ability's cast.
+			const dx = p.x - stand.x,
+				dz = p.z - stand.z
+			const length = Math.hypot(dx, dz)
+			const frame = app.intents.get(hero.id)
+			if (frame.order && Math.hypot(frame.order.x - stand.x, frame.order.z - stand.z) <= v.radius)
+				frame.order = null
+			run.intents.press(hero.id, 'stop')
+			hero.body.dash(length ? { x: dx / length, z: dz / length } : { x: 0, z: 1 }, {
+				distance: v.nudgeDistance,
+				time: v.nudgeTime,
+			})
+		},
+		update(alpha) {
+			props.update(sim.tick + alpha, app.camera.view, app.clock.step)
+		},
 		hudFrame(alpha) {
 			const step = app.clock.step
 			return {

@@ -133,12 +133,15 @@ export function mobaFront(app, map) {
 			app.audio.setMusicScene('wind')
 			const el = options.el ?? document.createElement('main')
 			el.className = 'moba-front'
-			el.innerHTML = `<h1 class="front-heading"></h1>
+			el.innerHTML = `<h1 class="front-heading"></h1><p class="front-notice" role="status" hidden></p>
 				<div class="front-tiles front-modes" role="group" aria-label="Game mode">${modes.map(tileMarkup).join('')}</div>
 				<div class="front-tiles front-difficulty" role="group" aria-label="Opponent difficulty">${levels.map(tileMarkup).join('')}</div>
 				<footer><button type="button" class="front-back front-return" aria-label="Back">
 					<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M27 10 L10 24 L27 38 L27 30 L38 30 L38 18 L27 18Z"/></svg><kbd class="front-return-key"></kbd></button>
 				<p class="front-prompts" aria-live="polite"></p></footer>`
+			const notice = el.querySelector('.front-notice')
+			notice.textContent = options.notice ?? ''
+			notice.hidden = !options.notice
 			const backdrop = options.backdrop ?? createBackdrop()
 			activeBackdrop = backdrop
 			el.prepend(backdrop.el)

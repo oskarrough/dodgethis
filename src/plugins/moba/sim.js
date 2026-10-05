@@ -100,10 +100,10 @@ export function createSim({
 					margin,
 				)
 			: clampMap(point, margin)
-	const walkGoal = (point) =>
+	const walkGoal = (point, radius = profile.radius) =>
 		clampWalkable(
-			clampBounds(point, profile.radius + tune.orders.clearance + tune.collision.separation),
-			profile.radius,
+			clampBounds(point, radius + tune.orders.clearance + tune.collision.separation),
+			radius,
 			tune.orders.clearance,
 			pathObstacles,
 		)
@@ -361,10 +361,7 @@ export function createSim({
 		h.stall = 0
 		h.lastRemaining = null
 		return {
-			points: [
-				{ x: p.x, z: p.z },
-				...planPath(p, goal, { radius: profile.radius, ...tune.orders }),
-			],
+			points: [{ x: p.x, z: p.z }, ...planPath(p, goal, { radius: h.body.radius, ...tune.orders })],
 			leg: 0,
 		}
 	}
@@ -1153,8 +1150,13 @@ export function createSim({
 	function swapHero(id, heroId) {
 		const hero = heroes.find((h) => h.id === id)
 		const definition = HEROES[heroId]
-		if (!hero || hero.dead || !definition?.playable || lane?.match.winner) {
-			present({ type: 'denied', hero: id, slot: 'swap', reason: 'unavailable' })
+		if (!lobby || !hero || hero.dead || !definition?.playable || lane?.match.winner) {
+			present({
+				type: 'denied',
+				hero: id,
+				slot: 'swap',
+				reason: lobby ? 'unavailable' : 'not-lobby',
+			})
 			return false
 		}
 		const from = hero.heroId
@@ -1162,6 +1164,7 @@ export function createSim({
 			...(hero.swapAim?.blocked ?? []),
 			...Object.keys(intents.get(id).held).filter((slot) => SLOTS.includes(slot)),
 		])
+		const moveOrder = ['move', 'attack-move'].includes(hero.order?.kind) ? hero.order : null
 		const position = { ...hero.body.position }
 		// Read before stopping: cancelDash clears walking velocity too. Dash momentum is not walking.
 		const velocity = hero.body.dashing ? { x: 0, y: 0, z: 0 } : hero.body.velocity
@@ -1183,7 +1186,7 @@ export function createSim({
 		hero.hp = hero.maxHp * fraction
 		hero.abilityState = freshAbilityState()
 		hero.attack = null
-		hero.attackTick = t
+		hero.attackTick = 0
 		hero.order = null
 		hero.cast = null
 		hero.stance = null
@@ -1201,9 +1204,16 @@ export function createSim({
 		hero.lastOrder = -Infinity
 		hero.stall = 0
 		hero.lastRemaining = null
-		intents.cancel(id)
-		intents.get(id).aim = null
-		hero.swapAim = heldSlots.size ? { blocked: heldSlots, sample: intents.get(id).held } : null
+		if (moveOrder) {
+			const goal = walkGoal(moveOrder.goal, hero.body.radius)
+			hero.order = { kind: moveOrder.kind, target: null, goal, path: plan(hero, goal) }
+		}
+		// Cancel only queued actions, not the device: held RMB and pad movement must survive the cut.
+		const frame = intents.get(id)
+		for (const edge of frame.pressed.slice()) intents.consume(id, edge.action)
+		frame.aim = null
+		frame.held = {}
+		hero.swapAim = heldSlots.size ? { blocked: heldSlots, sample: frame.held } : null
 		// The same fact is available to frame-driven views without requiring a second event bus.
 		hero.swapFact = { type: 'swap', hero: id, from, heroId, point: position, tick: t }
 		present(hero.swapFact)
@@ -1229,12 +1239,18 @@ export function createSim({
 	}
 
 	function stepHeroState(hero, dt) {
+		const frame = intents.get(hero.id)
 		if (hero.stance) {
 			const stance = hero.stance
 			const ability = abilityOf(stance.ability, hero)
-			if (stance.until <= t) {
+			const cancelled = frame.pressed.some((e) => e.action === 'cancel')
+			if (stance.until <= t || cancelled) {
 				hero.stance = null
 				ability?.onEnd?.(traitContext(hero, { stance }))
+				if (cancelled && hero.catchWindow) {
+					hero.catchWindow = null
+					present({ type: 'catchExpired', hero: hero.id, point: { ...hero.body.position } })
+				}
 			} else ability?.onTick?.(traitContext(hero, { stance, dt }))
 		}
 		if (hero.catchWindow && hero.catchWindow.until <= t) hero.catchWindow = null
@@ -1244,7 +1260,6 @@ export function createSim({
 		}
 		if (!hero.channel || hero.dead) return
 		const channel = hero.channel
-		const frame = intents.get(hero.id)
 		if (
 			(abilityOf(channel.ability, hero)?.cancelOnMove &&
 				(frame.order || Math.hypot(frame.move.x, frame.move.z) > 0.01)) ||

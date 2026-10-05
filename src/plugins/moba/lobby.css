@@ -37,3 +37,39 @@
 .front-lobby kbd {
 	margin-left: 0.5em;
 }
+.lobby-stand-label {
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 1;
+	padding: 0.2em 0.5em;
+	border: 0.12em solid var(--ui-text);
+	border-radius: 0.25em;
+	background: var(--ui-cream);
+	text-align: center;
+	font-size: clamp(10px, 1vw, 14px);
+	line-height: 1.1;
+	pointer-events: none;
+}
+.lobby-stand-label small {
+	display: block;
+	font-size: 0.7em;
+}
+.lobby-stand-label[data-picked='true'] {
+	background: var(--ui-gold);
+}
+.lobby-stand-label[data-playable='false'] span {
+	opacity: 0.6;
+}
+.moba-front .front-notice {
+	position: absolute;
+	z-index: 1;
+	top: 22%;
+	left: 5%;
+	right: 5%;
+	padding: 0.5em;
+	background: var(--ui-cream);
+	border: 0.12em solid var(--ui-text);
+	border-radius: 0.25em;
+	text-align: center;
+}

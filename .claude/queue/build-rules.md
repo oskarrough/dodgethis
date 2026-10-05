@@ -40,3 +40,6 @@ No new unit tests for now (Oskar, 2026-10-04): prove a change by playing it, in 
 - Bots read every threat (including the Ball) from the lagged view; nothing live but their own body.
 - A proof says how it was made: a bots-only fast-forward proves nothing about a human playing.
 - Proof screenshots start from a fresh `/`, the way a player arrives, not from a deep link.
+- A new screen or mode handles shared sessions or refuses them with a notice; a guest never sits on a frozen screen.
+- Hand-offs between screens pass live resources (backdrop, map, current pick) along; never rebuild one while the old copy still listens.
+- A camera that doesn't follow shows every place the player can walk, at 390 and 1440.

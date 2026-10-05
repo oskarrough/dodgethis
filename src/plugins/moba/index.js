@@ -75,6 +75,26 @@ export default function moba(app, map) {
 		scheme: 'pointClick',
 		start(run, { options = {} } = {}) {
 			const isLobby = !!options.lobby
+			if (isLobby && app.session.shared) {
+				// Mode start must finish before its replacement can abort it. No map/sim is built.
+				queueMicrotask(() => {
+					if (!run.signal.aborted)
+						app.modes.start('moba-front', {
+							options: {
+								...options,
+								hero: false,
+								screen: 'difficulty',
+								notice: tune.lobby.onlineNotice,
+							},
+						})
+				})
+				return {
+					epoch: 0,
+					snapshot: () => ({ screen: 'unavailable' }),
+					apply: () => false,
+					validFact: () => false,
+				}
+			}
 			const local = app.session.local[0]
 			app.setPalette({})
 			document.documentElement.style.removeProperty('--page-bg')
@@ -215,7 +235,11 @@ export default function moba(app, map) {
 					)
 				})
 
-			run.system('simulate', (dt) => sim.step(dt))
+			if (lobby) run.system('intents', lobby.prepareInput)
+			run.system('simulate', (dt) => {
+				lobby?.step()
+				sim.step(dt)
+			})
 			run.on('present', feedback.present)
 			if (onboarding) run.on('present', onboarding.present)
 			if (ballView) run.on('present', ballView.present)
@@ -326,6 +350,7 @@ export default function moba(app, map) {
 					device: input.activeDevice(),
 				})
 				stepCamera(app.camera, presentationFrozen ? 0 : dt)
+				lobby?.update(blend)
 				pips.update(app.camera.view, [...sim.heroes, ...sim.dummies], hero.team, {
 					hero,
 					ball: null, // Onboarding owns the team-coloured objective pointer.
