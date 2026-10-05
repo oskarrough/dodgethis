@@ -1,14 +1,6 @@
 import { expect, test } from 'bun:test'
-import * as THREE from 'three'
-import {
-	heroStats,
-	travelAt,
-	escapeTime,
-	kitLines,
-	numberLines,
-} from '../src/plugins/moba/front/stats.js'
+import { heroStats, travelAt, escapeTime, numberLines } from '../src/plugins/moba/front/stats.js'
 import { createControls } from '../src/plugins/moba/front/controls.js'
-import { createPreview } from '../src/plugins/moba/front/preview.js'
 import { tune as kit } from '../src/plugins/moba/tune.js'
 import { tune } from '../src/plugins/moba/front/tune.js'
 
@@ -30,7 +22,6 @@ test('all kit numbers are pure and live; level scaling is additive and warning i
 	expect(ten.r.damage).toBeCloseTo(435.2, 10)
 	expect(ten.q.warning).toBe(one.q.warning)
 	values.loose.damage = 230
-	expect(kitLines(heroStats(values, tune))[1]).toContain('230 damage')
 	expect(numberLines(heroStats(values, tune, 10), 8).join(' ')).toContain('313 damage')
 })
 
@@ -80,58 +71,4 @@ test('held B survives a screen rebind, and every kit control confirms only itsel
 		controls.key({ code: 'Enter', preventDefault() {} })
 	}
 	expect(activated).toEqual([0, 1, 2, 3, 4, 5, 6, 7])
-})
-
-test('preview timers interpolate at 144 Hz, switch cleanly and dispose mid-cast without touching physics', () => {
-	const saved = [globalThis.innerWidth, globalThis.innerHeight, globalThis.matchMedia]
-	globalThis.innerWidth = 1440
-	globalThis.innerHeight = 900
-	globalThis.matchMedia = () => ({ matches: false })
-	try {
-		const scene = new THREE.Scene()
-		const outside = new THREE.Group()
-		scene.add(outside)
-		const camera = new THREE.PerspectiveCamera(35, 1440 / 900, 0.1, 200)
-		camera.position.set(0, 3.5, 8)
-		camera.lookAt(0, 1, 0)
-		camera.updateMatrixWorld()
-		let sounds = 0
-		let restored = 0
-		const app = {
-			scene,
-			setPalette() {},
-			camera: { view: camera, update() {} },
-			audio: { blip: () => sounds++ },
-		}
-		const run = { setStylePreset: () => () => restored++, camera: { frame: () => () => {} } }
-		for (const slot of ['Q', 'W', 'E', 'R']) {
-			const preview = createPreview(app, run)
-			expect(outside.visible).toBe(false)
-			const before = sounds
-			preview.start(slot)
-			for (let i = 0; i < 180; i++) preview.update(1 / 144)
-			expect(sounds).toBe(before + 1)
-			preview.start('E')
-			preview.update(tune.preview.hold + kit.rain.delay / 2)
-			let fill
-			scene.traverse((object) => {
-				if (
-					object.geometry?.type === 'CircleGeometry' &&
-					object.parent.parent?.scale.x === tune.preview.zoneScale
-				)
-					fill = object
-			})
-			const previous = fill.scale.x
-			preview.update(1 / 144)
-			expect(fill.scale.x).toBeGreaterThan(previous)
-			expect(fill.scale.x - previous).toBeCloseTo(kit.rain.radius / kit.rain.delay / 144, 10)
-			expect(sounds).toBe(before + 2)
-			preview.dispose()
-			expect(scene.children).toEqual([outside])
-			expect(outside.visible).toBe(true)
-		}
-		expect(restored).toBe(4)
-	} finally {
-		;[globalThis.innerWidth, globalThis.innerHeight, globalThis.matchMedia] = saved
-	}
 })

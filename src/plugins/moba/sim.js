@@ -4,6 +4,7 @@ import { sweepHit, sweepObstacles } from './obstacles.js'
 import { dressHero } from './hero-view.js'
 import { createBall } from './ball.js'
 import { createBots } from './bots.js'
+import { createReadySeats } from './lobby-state.js'
 import { createScriptedHero } from './scripted.js'
 import { createLane } from './lane.js'
 import { createLaneView } from './lane-view.js'
@@ -41,6 +42,7 @@ export function createSim({
 	spawns = null, // { participantId: { x, z } }; copied for death/recovery.
 	bounds = null, // { halfX, halfZ }; body centres stay one radius inside.
 	respawn: respawnSeconds = null, // Hero recovery override, in seconds; dummies keep their timer.
+	readyRoster = [], // Full lobby seats; humans are the hero participants, the rest are cardboard bots.
 	lobby = false, // Combat allegiance A for heroes, B for dummies; seatTeam retains the pick.
 	scripted = [],
 	bots = [],
@@ -128,9 +130,10 @@ export function createSim({
 	const boards = []
 	const cutouts = []
 	const bodyAt = (x, z, team, definition = heroDefinition()) => {
+		const point = bounds ? clampBounds({ x, z }, definition.base.radius) : { x, z }
 		const body = createBody(scene, world, RAPIER, {
 			profile: definition.base,
-			position: [x, 0, z],
+			position: [point.x, 0, point.z],
 			color: team === 'A' ? PALETTE.teamA : PALETTE.teamB,
 			bounds: (radius) => ({
 				x: (bounds?.halfX ?? FLOOR.halfX) - radius,
@@ -171,14 +174,14 @@ export function createSim({
 		botsEnabled: true,
 	}
 	let trainingSerial = 0
-	function makeHero({ id, team: seatTeam, heroId = 'fletcher' }, spawn) {
+	function makeHero({ id, team: seatTeam, heroId = 'fletcher', joinOrder = 0 }, spawn) {
 		const team = lobby ? 'A' : seatTeam
 		const definition = heroDefinition(heroId)
 		const body = bodyAt(spawn.x, spawn.z, team, definition)
 		return {
 			id,
 			team,
-			...(lobby && { seatTeam }),
+			...(lobby && { seatTeam, joinOrder, readyWalk: false }),
 			heroId,
 			definition,
 			abilityState: freshAbilityState(),
@@ -214,14 +217,34 @@ export function createSim({
 	const heroes = seats.map((seat, i) => {
 		const teamSeats = seats.filter((s) => s.team === seat.team)
 		const index = seats.slice(0, i).filter((s) => s.team === seat.team).length
-		return makeHero(seat, {
-			...(spawns?.[seat.id] ?? {
-				x: seat.team === 'A' ? SPAWN.x : -SPAWN.x,
-				z: SPAWN.z + (index - (teamSeats.length - 1) / 2) * tune.map.spawnSpacing,
-			}),
-		})
+		return makeHero(
+			{ ...seat, joinOrder: seat.joinOrder ?? i },
+			{
+				...(spawns?.[seat.id] ?? {
+					x: seat.team === 'A' ? SPAWN.x : -SPAWN.x,
+					z: SPAWN.z + (index - (teamSeats.length - 1) / 2) * tune.map.spawnSpacing,
+				}),
+			},
+		)
 	})
 	for (const h of heroes) h.body.face(dirOf(h.yaw))
+	const readySeats = lobby ? createReadySeats({ present }) : null
+	if (readySeats)
+		for (const [joinOrder, participant] of (readyRoster.length ? readyRoster : seats).entries()) {
+			const box = readySeats.seats.find((s) => s.team === participant.team && !s.occupant)
+			const human = heroes.find((h) => h.id === participant.id)
+			if (box)
+				readySeats.claim(
+					box.id,
+					{
+						...participant,
+						heroId: human?.heroId ?? participant.heroId ?? 'fletcher',
+						joinOrder: human?.joinOrder ?? joinOrder + heroes.length,
+						bot: !human,
+					},
+					t,
+				)
+		}
 	const dummies = (withLane ? [] : DUMMY_POSTS).map((post, i) => ({
 		id: `dummy${i + 1}`,
 		team: 'B',
@@ -792,7 +815,10 @@ export function createSim({
 			speed: skill.speed,
 			radius: skill.radius,
 			range: skill.range,
-			damage: skill.damage * (1 + tune.levels.growth * ((h.level ?? tune.hero.level) - 1)),
+			damage:
+				lobby && h.sparring
+					? tune.lobby.practice.damage
+					: skill.damage * (1 + tune.levels.growth * ((h.level ?? tune.hero.level) - 1)),
 		})
 		if (castFootprint) footprints.set(shot, castFootprint)
 	}
@@ -843,11 +869,55 @@ export function createSim({
 			if (training.noCooldowns && h.id === training.local) h.cd[i] = 0
 			else if (h.cd[i] > 0) h.cd[i]--
 		if (h.dead) {
+			if (readySeats) {
+				readySeats.cancel(h.id, t)
+				h.readyWalk = false
+			}
 			intents.cancel(h.id)
 			if (t >= h.respawnTick) respawn(h)
 			return
 		}
 		const frame = intents.get(h.id)
+		if (readySeats) {
+			const box = readySeats.seatOf(h.id)
+			const cancel = frame.pressed.some((e) => ['cancel', 'stop'].includes(e.action))
+			const movement =
+				Math.hypot(frame.move.x, frame.move.z) > 0 ||
+				(frame.order &&
+					(!box || Math.hypot(frame.order.x - box.x, frame.order.z - box.z) > tune.orders.arrival))
+			if (cancel || (h.readyWalk && movement)) {
+				if (h.readyWalk || box?.enteredAt != null) present({ type: 'readyCancel', hero: h.id })
+				if (h.readyWalk) h.order = null
+				h.readyWalk = false
+				readySeats.cancel(h.id, t)
+			}
+			if (frame.pressed.some((e) => e.action === 'ready')) {
+				intents.consume(h.id, 'ready')
+				if (box && !cancel) {
+					readySeats.resume(h.id)
+					if (!h.readyWalk) {
+						h.readyWalk = true
+						issue(h, { x: box.x, z: box.z, kind: 'move' })
+						present({
+							type: 'readyWalk',
+							hero: h.id,
+							seat: box.id,
+							point: { x: box.x, y: 0, z: box.z },
+						})
+					}
+				}
+			}
+			// Occupancy may have claimed a different box in the preceding physics step.
+			if (
+				h.readyWalk &&
+				!movement &&
+				!cancel &&
+				box &&
+				h.order?.goal &&
+				Math.hypot(h.order.goal.x - box.x, h.order.goal.z - box.z) > tune.orders.arrival
+			)
+				issue(h, { x: box.x, z: box.z, kind: 'move' })
+		}
 		const swapAim = h.swapAim
 		if (swapAim && swapAim.sample !== frame.held) {
 			// Samples own a fresh held map. Process it once even when a render drives several ticks.
@@ -971,8 +1041,8 @@ export function createSim({
 				dir: { x: dx / length, z: dz / length },
 				target: { x: target.x, z: target.z },
 				yaw: yawOf(dx, dz),
-				left: ticks(tune.dummies.tell),
-				total: ticks(tune.dummies.tell),
+				left: ticks(lobby ? tune.lobby.practice.tell : tune.dummies.tell),
+				total: ticks(lobby ? tune.lobby.practice.tell : tune.dummies.tell),
 			}
 			d.castTick = t + ticks(tune.dummies.castEvery)
 			present({
@@ -1281,12 +1351,15 @@ export function createSim({
 		}
 		// Cancel only queued actions, not the device: held RMB and pad movement must survive the cut.
 		const frame = intents.get(id)
-		for (const edge of frame.pressed.slice()) intents.consume(id, edge.action)
+		for (const edge of frame.pressed.slice())
+			if (edge.action !== 'ready') intents.consume(id, edge.action)
 		frame.aim = null
 		frame.held = {}
 		hero.swapAim = heldSlots.size ? { blocked: heldSlots, sample: frame.held } : null
 		// The same fact is available to frame-driven views without requiring a second event bus.
 		hero.swapFact = { type: 'swap', hero: id, from, heroId, point: position, tick: t }
+		const box = readySeats?.seatOf(id)
+		if (box) readySeats.claim(box.id, { ...box.occupant, heroId }, t)
 		present(hero.swapFact)
 		return true
 	}
@@ -1314,7 +1387,7 @@ export function createSim({
 		if (hero.stance) {
 			const stance = hero.stance
 			const ability = abilityOf(stance.ability, hero)
-			const cancelled = frame.pressed.some((e) => e.action === 'cancel')
+			const cancelled = lobby && frame.pressed.some((e) => e.action === 'cancel')
 			if (stance.until <= t || cancelled) {
 				hero.stance = null
 				ability?.onEnd?.(traitContext(hero, { stance }))
@@ -1815,6 +1888,10 @@ export function createSim({
 			if (r.hit || r.expired) shots.splice(i, 1)
 		}
 		if (!lane?.match.winner) ball?.finish(dt, resolveInterception)
+		if (readySeats) {
+			readySeats.step(t, STEP, heroes)
+			for (const h of heroes) h.seatTeam = readySeats.seatOf(h.id)?.team ?? h.seatTeam
+		}
 		if (training.noCooldowns) heroes.find((h) => h.id === training.local)?.cd.fill(0)
 	}
 
@@ -1918,10 +1995,11 @@ export function createSim({
 					}
 				: {}),
 			map: FLOOR.id,
+			...(readySeats && { readySeats: structuredClone(readySeats.seats) }),
 			heroes: heroes.map((h) => ({
 				id: h.id,
 				team: h.team,
-				...(lobby && { seatTeam: h.seatTeam }),
+				...(lobby && { seatTeam: h.seatTeam, joinOrder: h.joinOrder, readyWalk: h.readyWalk }),
 				heroId: h.heroId,
 				abilityState: structuredClone(h.abilityState),
 				hp: h.hp,
@@ -2017,6 +2095,7 @@ export function createSim({
 		boards,
 		cutouts,
 		openCatch,
+		readySeats,
 		swapHero,
 		throwCaught,
 		launchShot,

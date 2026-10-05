@@ -91,8 +91,6 @@ export default function moba(app, map) {
 						app.modes.start('moba-front', {
 							options: {
 								...options,
-								hero: false,
-								screen: 'difficulty',
 								notice: tune.lobby.onlineNotice,
 							},
 						})
@@ -115,7 +113,7 @@ export default function moba(app, map) {
 			})
 			const view = createView(scene, run.smooth)
 			const skillsView = createSkillsView(scene)
-			const hud = createHud()
+			const hud = createHud({ lobby: isLobby })
 			const pips = createPips()
 			const follow = createFollow()
 			const cameraControls = createCameraControls(
@@ -148,7 +146,12 @@ export default function moba(app, map) {
 				: practiceRoster(local, difficulty, setup.picks)
 			setup.heroId = seats.find((seat) => seat.id === local).heroId
 			const gallery = isLobby
-				? createDifficultyGallery({ local, difficulty, present: run.present })
+				? createDifficultyGallery({
+						local,
+						difficulty,
+						present: run.present,
+						dummies: () => sim.dummies,
+					})
 				: null
 			const botsOnly = query.has('debug') && query.has('bots-only')
 			const sim = map.start(run, (world) =>
@@ -167,7 +170,8 @@ export default function moba(app, map) {
 					lane: !isLobby,
 					...(isLobby && {
 						lobby: true,
-						spawns: { [local]: tune.lobby.marks[0] },
+						readyRoster: practiceRoster(local, difficulty, setup.picks),
+						spawns: { [local]: tune.lobby.marks[setup.picks[local].team === 'B' ? 3 : 0] },
 						bounds: tune.lobby.bounds,
 						respawn: tune.lobby.respawn,
 						footprint: gallery.contact,
@@ -227,7 +231,11 @@ export default function moba(app, map) {
 					})
 			run.clock.scale(feedback.beat)
 			run.intents.suspend(() => coreTune.physics.paused)
-			run.input.stickAim((dir, magnitude, slot) => sim.stickAim(local, dir, magnitude, slot))
+			run.input.stickAim((dir, magnitude, slot) =>
+				lobby && input.pad()?.buttons[3]
+					? lobby.inspectAim(dir, magnitude)
+					: sim.stickAim(local, dir, magnitude, slot),
+			)
 
 			const onPad = () => input.activeDevice() === 'gamepad'
 			if (!isLobby)
@@ -338,6 +346,7 @@ export default function moba(app, map) {
 					held: hero.dead || sim.ball?.carrying(hero) ? {} : frame.held,
 					unit: hero,
 					units: [...sim.heroes, ...sim.dummies],
+					lobby: isLobby,
 					tick: sim.tick,
 					obstacles: sim.obstacles,
 					boards: sim.boards,
@@ -361,7 +370,10 @@ export default function moba(app, map) {
 					aim: frame.aim,
 					camera: app.camera.view,
 					pad: input.pad(),
-					device: input.activeDevice(),
+					device:
+						lobby?.touchMode() && input.activeDevice() !== 'gamepad'
+							? 'touch'
+							: input.activeDevice(),
 				})
 				stepCamera(app.camera, presentationFrozen ? 0 : dt)
 				lobby?.update(blend)

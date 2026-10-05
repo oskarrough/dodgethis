@@ -107,6 +107,7 @@ export function createSkillsView(scene) {
 			held,
 			zones = [],
 			unit = null,
+			lobby = false,
 			casters = [],
 			units = casters,
 			obstacles = OBSTACLES,
@@ -230,7 +231,9 @@ export function createSkillsView(scene) {
 				enemyTells.set(caster.id, (tell = { root, edge, fill, kind: ability.tell }))
 			}
 			const p = ability.tell === 'circle' ? caster.cast.target : caster.body.mesh.position
-			tell.root.position.set(p.x, tune.abilityView.tellY, p.z)
+			tell.edge.material = lobby ? ink : enemy
+			tell.fill.material = lobby ? enemy : cream
+			tell.root.position.set(p.x, lobby ? tune.lobby.practice.tellY : tune.abilityView.tellY, p.z)
 			tell.root.rotation.y = caster.cast.yaw
 			const total =
 				caster.cast.total ??

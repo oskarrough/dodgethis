@@ -6,15 +6,15 @@ import { closest } from './skillshot.js'
 
 // DOM-free picking: the sim offers only the footprint that actually happened,
 // clipped by cover/body contact, and retains a successful result on its cast token.
-export function createDifficultyGallery({ local, difficulty, present }) {
+export function createDifficultyGallery({ local, difficulty, present, dummies = () => [] }) {
 	const v = tune.lobby.gallery
 	const standees = ['easy', 'normal', 'hard'].map((id, i) => ({
 		id,
 		x: v.x + (i - 1) * v.spacing,
 		z: v.z,
 		radius: v.radius,
-		from: 0,
-		to: 0,
+		from: id === difficulty ? 0 : -Math.PI / 2,
+		to: id === difficulty ? 0 : -Math.PI / 2,
 		changedAt: -Infinity,
 	}))
 	let picked = difficulty
@@ -24,8 +24,8 @@ export function createDifficultyGallery({ local, difficulty, present }) {
 		const ease = 1 - (1 - age) ** 3
 		return stand.from + (stand.to - stand.from) * (ease + Math.sin(age * Math.PI) * v.overshoot)
 	}
-	function aimsAt(aim) {
-		return !!aim && standees.some((s) => Math.hypot(aim.x - s.x, aim.z - s.z) <= v.aimRadius)
+	function aimsAt(aim, radius = v.aimRadius) {
+		return !!aim && standees.some((s) => Math.hypot(aim.x - s.x, aim.z - s.z) <= radius)
 	}
 	function contact(f) {
 		if (f.hero !== local || !aimsAt(f.aim)) return false
@@ -34,7 +34,16 @@ export function createDifficultyGallery({ local, difficulty, present }) {
 		let best = null,
 			nearest = Infinity
 		for (const s of standees) {
-			if (Math.hypot(f.aim.x - s.x, f.aim.z - s.z) > v.aimRadius) continue
+			const aimDistance = Math.hypot(f.aim.x - s.x, f.aim.z - s.z)
+			if (aimDistance > v.aimRadius) continue
+			if (
+				dummies().some(
+					(d) =>
+						!d.dead &&
+						Math.hypot(f.aim.x - d.body.position.x, f.aim.z - d.body.position.z) < aimDistance,
+				)
+			)
+				continue
 			let distance = f.from
 				? closest(f.from.x, f.from.z, f.to.x, f.to.z, s.x, s.z).d - f.radius
 				: Math.hypot(s.x - f.point.x, s.z - f.point.z) - f.radius
@@ -92,155 +101,6 @@ export function createDifficultyGallery({ local, difficulty, present }) {
 		angle,
 		get difficulty() {
 			return picked
-		},
-	}
-}
-
-// Seat ids name boxes; participant ids name their occupants. The host can feed
-// contested claims through this same function later (tick, then join order, then id).
-export function createReadySeats({ present }) {
-	const v = tune.lobby.ready
-	const seats = ['A', 'B'].flatMap((team) =>
-		Array.from({ length: 3 }, (_, index) => ({
-			id: `${team}:${index}`,
-			team,
-			x: (team === 'A' ? -1 : 1) * v.x,
-			z: v.z + (index - 1) * v.spacing,
-			occupant: null,
-			claimTick: null,
-			inside: false,
-			enteredAt: null,
-			full: false,
-			blocked: false,
-		})),
-	)
-	let humans = []
-	const seatOf = (id) => seats.find((s) => s.occupant?.id === id)
-	const contains = (seat, p) =>
-		!!p && Math.abs(p.x - seat.x) <= v.width / 2 && Math.abs(p.z - seat.z) <= v.depth / 2
-	const fact = (type, seat, tick) =>
-		present({
-			type,
-			hero: seat.occupant.id,
-			seat: seat.id,
-			tick,
-			point: { x: seat.x, y: v.fillY, z: seat.z },
-		})
-	function reset(seat) {
-		seat.enteredAt = null
-		seat.inside = false
-		seat.full = !!seat.occupant?.bot
-	}
-	function claim(seatId, participant, tick) {
-		const seat = seats.find((s) => s.id === seatId)
-		if (
-			!seat ||
-			!participant?.id ||
-			!HEROES[participant.heroId]?.playable ||
-			!Number.isInteger(tick) ||
-			tick < 0 ||
-			!Number.isInteger(participant.joinOrder) ||
-			participant.joinOrder < 0
-		)
-			return false
-		const current = seat.occupant
-		if (current?.id === participant.id) {
-			if (current.heroId !== participant.heroId || current.bot !== !!participant.bot) {
-				const changedKind = current.bot !== !!participant.bot
-				current.heroId = participant.heroId
-				current.bot = !!participant.bot
-				current.joinOrder = participant.joinOrder
-				if (changedKind) reset(seat)
-				fact('seatClaim', seat, tick)
-			}
-			return true
-		}
-		const wins =
-			!current ||
-			(current.bot && !participant.bot) ||
-			(current.bot === !!participant.bot &&
-				(tick < seat.claimTick ||
-					(tick === seat.claimTick &&
-						(participant.joinOrder < current.joinOrder ||
-							(participant.joinOrder === current.joinOrder && participant.id < current.id)))))
-		if (!wins) {
-			present({ type: 'seatDenied', hero: participant.id, seat: seatId, tick })
-			return false
-		}
-		const previous = seatOf(participant.id)
-		if (previous) {
-			previous.occupant = null
-			previous.claimTick = null
-			previous.blocked = false
-			reset(previous)
-		}
-		seat.occupant = {
-			id: participant.id,
-			heroId: participant.heroId,
-			bot: !!participant.bot,
-			joinOrder: participant.joinOrder,
-		}
-		seat.claimTick = tick
-		seat.blocked = false
-		reset(seat)
-		fact('seatClaim', seat, tick)
-		return true
-	}
-	return {
-		seats,
-		seatOf,
-		contains,
-		claim,
-		cancel(id, tick) {
-			const seat = seatOf(id)
-			if (!seat) return
-			if (seat.enteredAt !== null) fact('seatEmpty', seat, tick)
-			reset(seat)
-			seat.blocked = true // cancelling inside a box cannot load a second later
-		},
-		resume(id) {
-			const seat = seatOf(id)
-			if (seat) seat.blocked = false
-		},
-		step(tick, step, heroes) {
-			humans = heroes.map((h) => h.id)
-			for (const seat of seats) {
-				if (!seat.occupant || seat.occupant.bot) continue
-				const hero = heroes.find((h) => h.id === seat.occupant.id)
-				const inside = hero && !hero.dead && contains(seat, hero.body.position)
-				if (!inside) {
-					if (seat.enteredAt !== null) fact('seatEmpty', seat, tick)
-					reset(seat)
-					seat.blocked = false
-					continue
-				}
-				seat.inside = true
-				if (seat.blocked) continue
-				if (seat.enteredAt === null) {
-					seat.enteredAt = tick
-					fact('seatEnter', seat, tick)
-				}
-				if (!seat.full && (tick - seat.enteredAt) * step >= v.fillTime) {
-					seat.full = true
-					fact('seatReady', seat, tick)
-				}
-			}
-		},
-		progress(seat, tick, step) {
-			return seat.full
-				? 1
-				: seat.enteredAt === null
-					? 0
-					: Math.max(0, Math.min(1, ((tick - seat.enteredAt) * step) / v.fillTime))
-		},
-		allReady() {
-			return (
-				humans.length > 0 &&
-				humans.every((id) => {
-					const seat = seatOf(id)
-					return seat && !seat.occupant.bot && seat.full
-				})
-			)
 		},
 	}
 }
@@ -333,7 +193,9 @@ export function createLobbyStands(scene, el, gallery, readySeats, local, onReady
 		const group = new THREE.Group()
 		group.position.set(x, 0, v.z)
 		root.add(group)
+		group.scale.setScalar(v.cardScale)
 		const card = cutout(definition, group)
+		card.rotation.x = v.tilt
 		const pad = mesh(new THREE.CircleGeometry(v.radius, v.segments), cream, root)
 		pad.rotation.x = -Math.PI / 2
 		pad.position.set(x, v.padY, v.z + v.padForward)
@@ -493,7 +355,9 @@ export function createLobbyStands(scene, el, gallery, readySeats, local, onReady
 			const help = mine
 				? device === 'gamepad'
 					? 'A · Start'
-					: 'Enter'
+					: device === 'touch'
+						? 'Stand here'
+						: 'Enter'
 				: owner?.bot
 					? 'bot'
 					: 'seat'
@@ -501,25 +365,73 @@ export function createLobbyStands(scene, el, gallery, readySeats, local, onReady
 			if (p.label.lastChild.textContent !== help) p.label.lastChild.textContent = help
 		}
 	}
+	// Presentation-only inspection targets: these never enter the sim's unit database.
+	const inspectables = []
+	const bounds = new THREE.Box3()
+	function inspectTarget(id, card, position, build, visible = () => true) {
+		inspectables.push({
+			id,
+			position,
+			card: build,
+			visible,
+			bounds() {
+				card.updateWorldMatrix(true, true)
+				bounds.setFromObject(card)
+				position.x = (bounds.min.x + bounds.max.x) / 2
+				position.y = bounds.max.y
+				position.z = (bounds.min.z + bounds.max.z) / 2
+				return bounds
+			},
+		})
+	}
+	for (const stand of stands)
+		inspectTarget('stand:' + stand.id, stand.card, { x: stand.x, y: 0, z: v.z }, () => ({
+			type: 'stand',
+			heroId: stand.id,
+			playable: stand.playable,
+			selected: stand.selected.visible,
+		}))
+	for (const p of galleryProps)
+		inspectTarget('difficulty:' + p.stand.id, p.card, { x: p.stand.x, y: 0, z: p.stand.z }, () => ({
+			type: 'difficulty',
+			difficulty: p.stand.id,
+			selected: p.stand.id === gallery.difficulty,
+		}))
+	for (const p of seatProps)
+		for (const card of p.cards)
+			inspectTarget(
+				'bot:' + p.seat.id + ':' + card.id,
+				card.group,
+				{ x: p.seat.x, y: r.cardY, z: p.seat.z },
+				() => ({ type: 'bot', heroId: card.id, seat: p.seat.id }),
+				() => card.group.visible,
+			)
 	const point = new THREE.Vector3()
 	let device = 'keyboard'
 	function labels() {
 		for (const stand of stands) {
 			const text = stand.selected.visible
-				? `${device === 'gamepad' ? '✛↑' : 'H'} next`
+				? device === 'touch'
+					? 'Picked'
+					: `${device === 'gamepad' ? '✛↑' : 'H'} next`
 				: stand.playable
 					? 'Walk here'
 					: 'soon'
 			const small = stand.label.querySelector('small')
 			if (small.textContent !== text) small.textContent = text
 		}
-		const help = `Shoot · ${device === 'gamepad' ? '✛↓' : 'G'} next`
+		const help =
+			device === 'touch' ? 'Shoot to choose' : `Shoot · ${device === 'gamepad' ? '✛↓' : 'G'} next`
 		if (galleryHelp.textContent !== help) galleryHelp.textContent = help
 		for (const p of galleryProps) {
 			const chosen = p.stand.id === gallery.difficulty
 			p.pad.visible = chosen
 			p.label.dataset.picked = String(chosen)
-			const text = chosen ? `${device === 'gamepad' ? '✛↓' : 'G'} next` : 'Shoot here'
+			const text = chosen
+				? device === 'touch'
+					? 'Picked'
+					: `${device === 'gamepad' ? '✛↓' : 'G'} next`
+				: 'Shoot here'
 			const small = p.label.querySelector('small')
 			if (small.textContent !== text) small.textContent = text
 		}
@@ -528,6 +440,7 @@ export function createLobbyStands(scene, el, gallery, readySeats, local, onReady
 		stands,
 		galleryProps,
 		seatProps,
+		inspectables,
 		syncSeats,
 		selectDifficulty: labels,
 		select(id) {
@@ -561,7 +474,11 @@ export function createLobbyStands(scene, el, gallery, readySeats, local, onReady
 				p.label.style.transform = `translate(${((point.x + 1) * innerWidth) / 2}px, ${((1 - point.y) * innerHeight) / 2}px) translate(-50%, -50%)`
 			}
 			point
-				.set(tune.lobby.gallery.x, tune.lobby.gallery.helpY, tune.lobby.gallery.z)
+				.set(
+					tune.lobby.gallery.x,
+					tune.lobby.gallery.helpY,
+					tune.lobby.gallery.z + tune.lobby.gallery.helpForward,
+				)
 				.project(camera)
 			galleryHelp.style.transform = `translate(${((point.x + 1) * innerWidth) / 2}px, ${((1 - point.y) * innerHeight) / 2}px) translate(-50%, -50%)`
 			for (const p of galleryProps) {

@@ -13,7 +13,7 @@ import './loading.css'
 // modes.start; the MOBA map scope keeps the terrain and world for the next run.
 export function startLoading(
 	app,
-	{ el, backdrop, returnHero, buildWait = 0, difficulty = 'easy', setup },
+	{ el, backdrop, returnLobby, buildWait = 0, difficulty = 'easy', setup, device: initialDevice },
 ) {
 	let dispose
 	dispose = app.use((scope) => {
@@ -64,7 +64,7 @@ export function startLoading(
 			'section',
 			'front-loading-ui',
 			null,
-			`<h1>${tune.loading.mapName}</h1><p class="front-load-status" aria-live="polite">Preparing the view</p>${figures('A')}${figures('B')}<footer><button class="front-back front-return" aria-label="Back to hero select"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M27 10 L10 24 L27 38 L27 30 L38 30 L38 18 L27 18Z"/></svg><kbd class="front-return-key"></kbd></button><button class="front-skip front-sticker front-cta"><span class="front-card-face"></span><span>Start now</span></button><p class="front-prompts"></p></footer>`,
+			`<h1>${tune.loading.mapName}</h1><p class="front-load-status" aria-live="polite">Preparing the view</p>${figures('A')}${figures('B')}<footer><button class="front-back front-return" aria-label="Back to plaza"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M27 10 L10 24 L27 38 L27 30 L38 30 L38 18 L27 18Z"/></svg><kbd class="front-return-key"></kbd></button><button class="front-skip front-sticker front-cta"><span class="front-card-face"></span><span>Start now</span></button><p class="front-prompts"></p></footer>`,
 		)
 		function positionFigures() {
 			const size = Math.max(
@@ -161,7 +161,7 @@ export function startLoading(
 			backdrop.resume()
 			// Cleanup before the new preview installs its palette and framing.
 			dispose()
-			returnHero()
+			returnLobby(device || initialDevice || app.input.activeDevice())
 		}
 		const buttons = [...ui.querySelectorAll('button')]
 		function skip() {
@@ -199,15 +199,18 @@ export function startLoading(
 			back: cancel,
 			device: setDevice,
 		})
-		setDevice(app.input.activeDevice())
+		setDevice(
+			initialDevice ??
+				(matchMedia('(any-hover: none)').matches ? 'touch' : app.input.activeDevice()),
+		)
 		buttons.forEach((button, index) => {
-			button.onpointermove = () => {
+			button.onpointermove = (event) => {
 				if (button.disabled) return
-				setDevice('mouse')
+				setDevice(event.pointerType === 'touch' ? 'touch' : 'mouse')
 				controls.point(index)
 			}
-			button.onclick = () => {
-				setDevice('mouse')
+			button.onclick = (event) => {
+				setDevice(event.pointerType === 'touch' ? 'touch' : 'mouse')
 				controls.point(index)
 				if (index === 0) cancel()
 				else skip()

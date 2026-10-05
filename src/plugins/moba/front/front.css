@@ -25,6 +25,27 @@
 		sans-serif;
 	font-variant-numeric: tabular-nums;
 }
+.moba-front .front-canvas {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 0;
+	pointer-events: none;
+	background: transparent;
+}
+.front-notice {
+	position: absolute;
+	z-index: 1;
+	top: 22%;
+	left: 5%;
+	right: 5%;
+	padding: 0.5em;
+	background: var(--ui-cream);
+	border: 0.12em solid var(--ui-text);
+	border-radius: 0.25em;
+	text-align: center;
+}
 .front-backdrop,
 .front-backdrop > * {
 	position: absolute;
@@ -130,15 +151,11 @@
 .front-tile:nth-child(2n) {
 	--tile-rest: 1;
 }
-.front-tile[data-mode='dodgeball'],
-.front-tile[data-difficulty='hard'] {
+.front-tile[data-mode='dodgeball'] {
 	--tile-color: var(--ui-red);
 }
 .front-tile[data-mode='moba'] {
 	--tile-color: var(--ui-blue);
-}
-.front-tile[data-difficulty='easy'] {
-	--tile-color: #3fbf8a;
 }
 /* Hard ink shadow, then the card, then a flood that rises from the bottom edge. */
 .front-tile::before,
@@ -193,7 +210,7 @@
 	stroke-linejoin: round;
 	transition: transform var(--tile-snap) cubic-bezier(0.2, 1.9, 0.45, 1);
 }
-.front-tile svg path:not(.front-glyph-fill, .front-pip-on) {
+.front-tile svg path:not(.front-glyph-fill) {
 	fill: none;
 }
 .front-tile .front-glyph-fill {
@@ -232,9 +249,6 @@
 .front-tile.selected svg {
 	transform: rotate(calc(var(--tile-rest) * -8deg)) scale(1.08);
 }
-.front-tile .front-pip-on {
-	fill: var(--ui-text);
-}
 .front-tile.selected .front-glyph-fill {
 	fill: var(--ui-cream);
 }
@@ -248,13 +262,6 @@
 }
 .front-tile[aria-pressed='true']:not(.selected) .front-tile-face {
 	background-color: color-mix(in srgb, var(--tile-color) 34%, var(--ui-cream));
-}
-.front-difficulty .front-tile {
-	flex-basis: min(27vw, 400px);
-	max-height: 400px;
-}
-.front-difficulty .front-tile svg {
-	width: min(60%, 16vh);
 }
 
 /* The sticker every card is cut from: hard ink shadow, opaque face, stitched seam,
@@ -328,7 +335,7 @@
 	transition-duration: var(--tile-press);
 }
 
-/* Primary actions (Lock in, Start now): the juiciest sticker on any screen. */
+/* Ready and loading share the primary-action sticker. */
 .moba-front .front-cta {
 	--sticker-color: var(--ui-button);
 	--sticker-flood: var(--ui-red);
@@ -456,8 +463,7 @@
 		gap: 22px;
 		padding: clamp(110px, 18vh, 150px) 7vw clamp(96px, 14vh, 130px);
 	}
-	.front-tile,
-	.front-difficulty .front-tile {
+	.front-tile {
 		flex: 1 1 0;
 		width: 100%;
 		max-height: 220px;
@@ -467,8 +473,7 @@
 		column-gap: 16px;
 		padding: 16px 24px;
 	}
-	.front-tile svg,
-	.front-difficulty .front-tile svg {
+	.front-tile svg {
 		grid-area: 1 / 1 / 5 / 2;
 		width: min(22vw, 12vh);
 	}

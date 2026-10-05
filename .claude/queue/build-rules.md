@@ -44,3 +44,4 @@ No new unit tests for now (Oskar, 2026-10-04): prove a change by playing it, in 
 - Hand-offs between screens pass live resources (backdrop, map, current pick) along; never rebuild one while the old copy still listens.
 - A camera that doesn't follow shows every place the player can walk, at 390 and 1440.
 - Rate limits use a token bucket, not a fixed window: a reliable channel delivers a stall's backlog at once, and that must drain, not lock the player out.
+- Prove "never triggers" cases with real aim points (where a player's cursor lands on a body), not exact centres.

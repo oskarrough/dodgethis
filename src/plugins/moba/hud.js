@@ -28,6 +28,7 @@ const SLOTS = ['slot1', 'slot2', 'slot3']
 const KEYS = { keyboard: ['Q', 'W', 'E'], gamepad: ['RB', 'RT', 'LB'] }
 // Key-glyph stickers from the hero's own kit, for the active device. Numbers live in the cards.
 function helpGlyphs(device, abilities, carrying, lobby = false) {
+	if (lobby && device === 'touch') return ''
 	const names = SLOTS.map((slot) => abilityName(abilities?.[slot]).toLowerCase())
 	const pad = device === 'gamepad'
 	const slots = carrying
@@ -41,15 +42,29 @@ function helpGlyphs(device, abilities, carrying, lobby = false) {
 				[['B'], lobby ? 'cancel / back' : 'cancel'],
 				[['Y'], 'inspect'],
 				[['Start'], lobby ? 'ready' : 'pause'],
+				...(lobby
+					? [
+							[['✛↑'], 'hero'],
+							[['✛↓'], 'difficulty'],
+							[['View'], 'numbers'],
+						]
+					: []),
 			]
 		: [
 				[['RMB'], 'move'],
 				...slots,
 				[['S'], 'stop'],
 				...(lobby ? [] : [[['Space'], 'follow']]),
-				[['I'], 'inspect'],
+				[[lobby ? 'Alt' : 'I'], 'inspect'],
 				[['Esc'], lobby ? 'cancel / back' : 'pause'],
-				...(lobby ? [[['Enter'], 'ready']] : []),
+				...(lobby
+					? [
+							[['H'], 'hero'],
+							[['G'], 'difficulty'],
+							[['Enter'], 'ready'],
+							[['N'], 'numbers'],
+						]
+					: []),
 			]
 	return glyphs
 		.map(([keys, label]) => `<span>${keys.map((k) => `<kbd>${k}</kbd>`).join('')}${label}</span>`)
@@ -166,8 +181,9 @@ export function matchFrame(sim, hero, blend, step) {
 	}
 }
 
-export function createHud() {
+export function createHud({ lobby = false } = {}) {
 	// Unchanged values never touch the DOM. Keyed per node, then per field.
+	const touchScreen = globalThis.matchMedia?.('(any-hover: none)').matches ?? false
 	const shown = new WeakMap()
 	function put(node, field, value, write) {
 		let fields = shown.get(node)
@@ -195,8 +211,13 @@ export function createHud() {
 			return r ? { x: r.left + r.width / 2, y: r.top } : { x: 0, y: 0 }
 		}
 		node.addEventListener('pointerenter', (e) => {
-			if (e.pointerType === 'mouse') hover = { source, anchor: anchor() }
+			if (e.pointerType === 'mouse' && !lobby && !touchScreen) hover = { source, anchor: anchor() }
 		})
+		node.addEventListener('pointermove', (e) => {
+			if ((lobby || touchScreen) && e.pointerType === 'mouse' && (e.movementX || e.movementY))
+				hover = { source, anchor: anchor() }
+		})
+		source.node = node
 		node.addEventListener('pointerleave', () => {
 			if (hover?.source === source) hover = null
 		})
@@ -307,6 +328,7 @@ export function createHud() {
 	const pointer = { x: 0, y: 0, moved: false }
 	// Browsers also fire pointermove under a still cursor when the page relayouts, so compare coordinates.
 	const onMove = (e) => {
+		if (e.pointerType === 'touch') return
 		if (e.clientX === pointer.x && e.clientY === pointer.y) return
 		pointer.x = e.clientX
 		pointer.y = e.clientY
@@ -331,7 +353,9 @@ export function createHud() {
 	const inspect = { by: null, index: 0, held: 0 }
 	let previousPad = []
 	let targets = []
-	const available = (i) => i === 0 || !targets[i - 1].classList?.contains('none')
+	const available = (i) =>
+		i === 0 ||
+		(!targets[i - 1].classList?.contains('none') && !targets[i - 1].closest?.('[hidden]'))
 	function step(direction) {
 		const count = targets.length + 1
 		do inspect.index = (inspect.index + direction + count) % count
@@ -364,7 +388,46 @@ export function createHud() {
 	let world = null
 	const projected = new THREE.Vector3()
 
-	function pickUnit(sim, aim) {
+	function pickUnit(sim, aim, frame) {
+		// Cardboard is picked against its rendered bounds, not an imaginary combat body.
+		// This also covers a gallery card lying flat after a shot.
+		let prop = null,
+			nearest = Infinity
+		let cursorX = pointer.x,
+			cursorY = pointer.y
+		if (frame?.device === 'gamepad' && frame.camera) {
+			projected.set(aim.x, 0, aim.z).project(frame.camera)
+			cursorX = ((projected.x + 1) * innerWidth) / 2
+			cursorY = ((1 - projected.y) * innerHeight) / 2
+		}
+		for (const candidate of frame?.inspectables ?? []) {
+			if (!candidate.visible()) continue
+			if (!frame.camera) continue
+			const box = candidate.bounds()
+			let left = Infinity,
+				right = -Infinity,
+				top = Infinity,
+				bottom = -Infinity
+			for (const x of [box.min.x, box.max.x])
+				for (const y of [box.min.y, box.max.y])
+					for (const z of [box.min.z, box.max.z]) {
+						projected.set(x, y, z).project(frame.camera)
+						if (projected.z < -1 || projected.z > 1) continue
+						const sx = ((projected.x + 1) * innerWidth) / 2,
+							sy = ((1 - projected.y) * innerHeight) / 2
+						left = Math.min(left, sx)
+						right = Math.max(right, sx)
+						top = Math.min(top, sy)
+						bottom = Math.max(bottom, sy)
+					}
+			if (cursorX < left || cursorX > right || cursorY < top || cursorY > bottom) continue
+			const gap = Math.hypot(cursorX - (left + right) / 2, cursorY - (top + bottom) / 2)
+			if (gap < nearest || (gap === nearest && candidate.id < prop.id)) {
+				prop = candidate
+				nearest = gap
+			}
+		}
+		if (prop) return prop
 		let best = null
 		let bestGap = Infinity
 		const units = [
@@ -388,7 +451,7 @@ export function createHud() {
 	}
 
 	function screenOf(unit, camera) {
-		const p = unit.body.mesh?.position ?? unit.body.position
+		const p = unit.position ?? unit.body.mesh?.position ?? unit.body.position
 		projected.set(p.x, p.y ?? 0, p.z).project(camera)
 		const w = globalThis.innerWidth ?? 1024
 		const h = globalThis.innerHeight ?? 768
@@ -412,7 +475,7 @@ export function createHud() {
 				})
 			}
 			case 'portrait':
-				return hero ? heroCard(hero, { localTeam, localId: hero.id }) : null
+				return hero ? heroCard(hero, { localTeam, localId: hero.id, lobby: frame.lobby }) : null
 			case 'trait':
 				return traitCard(frame.heroId)
 			case 'level':
@@ -453,6 +516,65 @@ export function createHud() {
 			case 'unit': {
 				const unit = source.unit
 				if (!unit || unit.dead) return null
+				if (unit.card) {
+					const prop = unit.card()
+					if (prop.type === 'difficulty')
+						return {
+							title: prop.difficulty[0].toUpperCase() + prop.difficulty.slice(1),
+							tag: prop.selected ? 'picked' : 'difficulty',
+							summary: 'Aim here and hit the cardboard with a real cast to pick these bots.',
+							rows: [],
+							notes: ['G / d-pad down shoots the next choice.'],
+						}
+					const definition = heroDefinition(prop.heroId)
+					const trait = heroTrait(prop.heroId)
+					return {
+						title: prop.heroId[0].toUpperCase() + prop.heroId.slice(1),
+						tag:
+							prop.type === 'bot'
+								? 'bot · ' + prop.seat
+								: !prop.playable
+									? 'soon'
+									: prop.selected
+										? 'picked'
+										: 'hero stand',
+						summary:
+							prop.type === 'bot'
+								? 'Ready bot in Team ' + prop.seat[0] + '. Cardboard, not a sparring target.'
+								: prop.playable
+									? 'Walk onto the pad to play this hero.'
+									: 'This hero is not playable yet.',
+						rows:
+							prop.playable || prop.type === 'bot'
+								? [
+										['Speed', definition.base.speed + ' m/s'],
+										['Basic', definition.basic.damage + ' · ' + definition.basic.range + ' m'],
+									]
+								: [],
+						notes: [
+							trait ? trait.name + ': ' + trait.summary : null,
+							...Object.values(definition.abilities)
+								.filter(Boolean)
+								.map((a) => abilityName(a)),
+						].filter(Boolean),
+					}
+				}
+				if (frame.lobby && sim.dummies.includes(unit)) {
+					const card = heroCard(unit, { localTeam, localId: hero?.id })
+					card.title = 'Sparring dummy'
+					card.summary =
+						sim.dummies.indexOf(unit) === 0
+							? `Practice your kit. This dummy casts harmless Loose back: dodge its ${tune.lobby.practice.tell} s tell.`
+							: 'Practice your kit on this stuffed target.'
+					card.rows = card.rows.map((row) =>
+						row[0] === 'Respawn'
+							? ['Respawn', tune.dummies.respawn + ' s']
+							: row[0] === 'Speed'
+								? ['Speed', tune.dummies.speed + ' m/s']
+								: row,
+					)
+					return card
+				}
 				if (unit.structure)
 					return structureCard(unit, {
 						localTeam,
@@ -469,6 +591,18 @@ export function createHud() {
 
 	function updateTip(dt, frame) {
 		const { sim, aim, camera, pad } = frame
+		if (frame.device === 'touch' || hover?.source.node?.closest?.('[hidden]')) hover = null
+		if (press?.source.node?.closest?.('[hidden]')) press = null
+		if (frame.inspectionDisabled) {
+			inspect.by = null
+			inspect.held = 0
+			world = null
+			previousPad = pad?.buttons.slice() ?? []
+			tip.hide()
+			worldTip.hide()
+			plate.hidden = true
+			return
+		}
 		// Pad: Y held past the threshold opens the cursor, release closes it; the d-pad steps.
 		const buttons = pad?.buttons ?? []
 		const edge = (i) => buttons[i] && !previousPad[i]
@@ -493,7 +627,7 @@ export function createHud() {
 				source = sourceOf.get(picked)
 				anchor = r ? { x: r.left + r.width / 2, y: r.top } : { x: 0, y: 0 }
 			} else if (sim) {
-				const unit = (aim && pickUnit(sim, aim)) ?? frame.hero
+				const unit = (aim && pickUnit(sim, aim, frame)) ?? frame.hero
 				if (unit && !unit.dead) {
 					source = { kind: 'unit', unit }
 					anchor = camera ? screenOf(unit, camera) : { x: 0, y: 0 }
@@ -515,12 +649,12 @@ export function createHud() {
 		const mode = tune.hud.tooltipMode
 		const moved = pointer.moved
 		pointer.moved = false
-		if (!free || !sim || !aim || device === 'gamepad') world = null
+		if (!free || !sim || !aim || device === 'gamepad' || device === 'touch') world = null
 		else if (moved) {
-			const unit = pickUnit(sim, aim)
+			const unit = pickUnit(sim, aim, frame)
 			if (unit !== world?.unit) world = unit ? { unit, dwell: 0 } : null
 			else if (world && mode === 'patient') world.dwell = 0 // patient: only a resting cursor counts
-		} else if (world && (world.unit.dead || pickUnit(sim, aim) !== world.unit)) world = null
+		} else if (world && (world.unit.dead || pickUnit(sim, aim, frame) !== world.unit)) world = null
 		if (world) world.dwell += dt
 		const p = hero?.body.position // the sim body: the mesh sways even at rest
 		const walking = !!p && (Math.abs(p.x - heroAt.x) > 1e-3 || Math.abs(p.z - heroAt.z) > 1e-3)
@@ -536,8 +670,9 @@ export function createHud() {
 		if (plated && camera) {
 			const at = screenOf(unit, camera)
 			text(plateName, card.title)
-			text(plateHp, `${Math.round(unit.hp)} / ${Math.round(unit.maxHp)}`)
-			prop(plateBar, '--f', String(ring(unit.hp, unit.maxHp)))
+			plateHp.hidden = plateBar.hidden = !!unit.card
+			text(plateHp, unit.card ? '' : `${Math.round(unit.hp)} / ${Math.round(unit.maxHp)}`)
+			if (!unit.card) prop(plateBar, '--f', String(ring(unit.hp, unit.maxHp)))
 			data(plate, 'team', unit.team)
 			put(plate, 'at', `${Math.round(at.x)},${Math.round(at.y - 34)}`, (v) => {
 				const [x, y] = v.split(',')
@@ -605,6 +740,11 @@ export function createHud() {
 			} = frame
 			if (hero?.swapFact && hero.swapFact !== lastSwap) {
 				lastSwap = hero.swapFact
+				if (frame.lobby) {
+					banner.textContent = 'Now playing ' + hero.heroId.replace(/^./, (c) => c.toUpperCase())
+					banner.hidden = false
+					bannerLeft = tune.lobby.swapBanner
+				}
 				// Labels/icons read the new definition below; old denial and ready pulses do not transfer.
 				for (const s of slots) {
 					s.deniedFor = 0
@@ -741,6 +881,7 @@ export function createHud() {
 				if (s.deniedFor > 0 && (s.deniedFor -= dt) <= 0) s.slot.classList.remove('denied')
 				put(s.icon, 'icon', ability?.id ?? 'empty', (id) => (s.icon.innerHTML = ICONS[id] ?? ''))
 				text(s.key, keys[i])
+				put(s.key, 'touch', device === 'touch', (v) => (s.key.style.display = v ? 'none' : ''))
 				flag(s.slot, 'ball', !!carryingBall)
 				const fraction = total > 0 ? ring(cooldown, total) : 0
 				if (fraction !== s.fraction) {

@@ -4,7 +4,6 @@ import { neutralFrame } from '../src/core/intents.js'
 import { createBody } from '../src/core/body.js'
 import { HEROES, freshAbilityState } from '../src/plugins/moba/heroes.js'
 import { dressHero } from '../src/plugins/moba/hero-view.js'
-import { dressPortrait } from '../src/plugins/moba/front/portrait.js'
 import { tune } from '../src/plugins/moba/tune.js'
 import { STEP, bootMoba } from './moba-harness.js'
 
@@ -118,16 +117,6 @@ test('lane and replica share geometry; four stand-ins have distinct bodies and p
 		expect(body.mesh.children).toHaveLength(3)
 		expect(body.visual.getObjectByName('shoes').visible).toBe(false)
 		expect(body.visual.children.length).toBeGreaterThan(2)
-		if (id === 'fletcher') {
-			const replica = createBody(scene, null, null, { profile: tune.hero, replica: true })
-			const unportrait = dressPortrait(replica)
-			expect(replica.visual.geometry.parameters).toEqual(body.visual.geometry.parameters)
-			expect(replica.visual.children.map((p) => p.geometry?.type)).toEqual(
-				body.visual.children.map((p) => p.geometry?.type),
-			)
-			unportrait()
-			replica.dispose()
-		}
 		undress()
 		undress()
 		expect(body.visual.geometry).toBe(original)

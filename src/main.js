@@ -18,7 +18,7 @@ try {
 					const url = new URL(location.href)
 					url.searchParams.set('mode', 'moba')
 					history.replaceState(null, '', url)
-					scope.modes.start('moba-front', { options: { screen: 'difficulty' } })
+					scope.modes.start('moba-lobby')
 				},
 			},
 			hubExit: { onSelect: () => scope.modes.start('moba-front') },
@@ -36,8 +36,8 @@ try {
 		app.modes.start('moba-replay', { options: { replay: await loadReplay(query.get('replay')) } })
 	} else if (query.get('mode') === 'moba') {
 		const setup = parseMatchSetup(query)
-		app.modes.start(wantsDirectPlay(query) ? 'moba' : 'moba-front', {
-			options: { setup, screen: 'difficulty' },
+		app.modes.start(wantsDirectPlay(query) ? 'moba' : 'moba-lobby', {
+			options: { setup },
 		})
 	} else if (query.get('mode') === 'dodgeball') app.modes.start('dodgeball')
 	// A fresh visit lands on the splash, where the mode is chosen.

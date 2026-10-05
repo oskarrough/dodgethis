@@ -2,7 +2,7 @@ import { tune } from './tune.js'
 
 // A cream sticker card for the stat nerds. Builders are pure: they read live state and `tune`
 // on every call, so an open card follows a `&debug` edit or a level-up. The card element only
-// rewrites when the built content changes. Hero select can reuse both halves.
+// rewrites when the built content changes. Plaza inspection uses the same builders.
 
 const round = (v) => Math.round(v)
 const n = (v) => String(Number(Number(v).toFixed(2)))
@@ -98,7 +98,7 @@ export function abilityCard(ability, { level = 1, key = '' } = {}) {
 	}
 }
 
-export function heroCard(hero, { localTeam, localId } = {}) {
+export function heroCard(hero, { localTeam, localId, lobby = false } = {}) {
 	const def = hero.definition
 	const basic = def?.basic
 	const level = hero.level ?? 1
@@ -111,7 +111,10 @@ export function heroCard(hero, { localTeam, localId } = {}) {
 		rows.push(['Basic attack', `${round(damage)} · ${n(basic.range)} m · ${n(basic.rate)}/s`])
 		rows.push(['Sustained DPS', n(damage * basic.rate)])
 	}
-	rows.push(['Respawn', `${n(tune.respawn.base + tune.respawn.perLevel * level)} s`])
+	rows.push([
+		'Respawn',
+		`${n(lobby ? tune.lobby.respawn : tune.respawn.base + tune.respawn.perLevel * level)} s`,
+	])
 	const who = hero.id === localId ? 'You' : hero.team === localTeam ? 'Ally' : 'Enemy'
 	return {
 		title: title(hero.heroId ?? def?.id ?? 'hero'),

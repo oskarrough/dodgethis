@@ -5,8 +5,8 @@ import { tune } from './tune.js'
 import { tune as frontTune } from './front/tune.js'
 import { createBackdrop } from './front/backdrop.js'
 import { startLoading } from './front/loading.js'
-import { createLobbyStands, createReadySeats } from './lobby-props.js'
-import { practiceRoster } from './bots.js'
+import { createLobbyStands } from './lobby-props.js'
+import { createNumbers } from './front/numbers.js'
 import './lobby.css'
 
 // The plaza uses the match's simulation and presentation, but owns navigation and framing.
@@ -19,13 +19,13 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 	el.className = 'moba-front front-lobby'
 	el.dataset.screen = 'plaza'
 	el.setAttribute('aria-label', 'Try your hero in the plaza')
-	el.innerHTML = `<footer><button type="button" class="front-back front-return" aria-label="Back to hero select">Back <kbd></kbd></button><button type="button" class="front-sticker front-cta" aria-label="Walk to your Ready box"><span class="front-card-face"></span><span>Ready</span><kbd></kbd></button></footer>`
+	el.innerHTML = `<footer><button type="button" class="front-back front-return" aria-label="Back to splash">Back <kbd></kbd></button><button type="button" class="front-sticker front-cta" aria-label="Walk to your Ready box"><span class="front-card-face"></span><span>Ready</span><kbd></kbd></button></footer><button type="button" class="lobby-numbers-open" aria-label="Hero numbers"># <kbd>N</kbd></button>`
 	el.prepend(backdrop.el, canvas)
 	canvas.classList.add('front-canvas')
 	canvas.inert = false
 	document.body.append(el)
 	app.audio.setMusicScene('wind')
-	run.setStylePreset({ line: frontTune.preview.line, hatch: 1, alpha: true })
+	run.setStylePreset({ line: tune.lobby.style.line, hatch: 1, alpha: true })
 	const cream = new THREE.Color(PALETTE.cream)
 	app.setPalette(
 		Object.fromEntries(
@@ -33,7 +33,7 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 				role,
 				['ink', 'cream'].includes(role)
 					? color
-					: new THREE.Color(color).lerp(cream, frontTune.preview.pastel).getHex(),
+					: new THREE.Color(color).lerp(cream, tune.lobby.style.pastel).getHex(),
 			]),
 		),
 	)
@@ -43,34 +43,72 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 		// never stretching scenery or moving the marks outside the visible ground.
 		const scale = Math.max(1, c.fitAspect / Math.max(c.minAspect, innerWidth / innerHeight))
 		const back = c.back
-		const target = clampMap({
+		let target = clampMap({
 			x: Math.max(-tune.lobby.bounds.halfX, Math.min(tune.lobby.bounds.halfX, c.x)),
 			z: Math.max(-tune.lobby.bounds.halfZ, Math.min(tune.lobby.bounds.halfZ, c.z)),
 		})
+		const hud = document.querySelector('.moba-hud')
+		const safeBottom = Math.max(
+			tune.lobby.hud.margin,
+			(hud?.getBoundingClientRect().top ?? innerHeight) - tune.lobby.hud.margin,
+		)
+		const distance = Math.hypot(c.height, back),
+			sin = c.height / distance,
+			cos = back / distance
+		const baseZ = target.z
+		let tangent = Math.tan((c.fov * Math.PI) / 360) * scale
+		for (let i = 0; i < c.fitPasses; i++) {
+			const pixels = innerHeight / (2 * tangent)
+			const dz = tune.lobby.bounds.halfZ - baseZ
+			const bottom = innerHeight / 2 + (pixels * sin * dz) / (distance - cos * dz)
+			const k = (safeBottom - innerHeight / 2) / pixels
+			if (bottom > safeBottom && sin + k * cos > tune.collision.epsilon)
+				target = clampMap({
+					...target,
+					z: tune.lobby.bounds.halfZ - (k * distance) / (sin + k * cos),
+				})
+			const far = -tune.lobby.bounds.halfZ - target.z
+			const head = (hero.body.radius + hero.body.halfHeight) * 2
+			const top =
+				innerHeight / 2 + (pixels * (sin * far - cos * head)) / (distance - cos * far - sin * head)
+			if (top >= 0) break
+			tangent *= c.fitGrowth
+		}
 		const eye = clampMap({ x: target.x, z: target.z + back })
-		const fov = (Math.atan(Math.tan((c.fov * Math.PI) / 360) * scale) * 360) / Math.PI
+		const fov = (Math.atan(tangent) * 360) / Math.PI
 		return { eye: { ...eye, y: c.height }, target: { ...target, y: 0 }, fov }
 	})
 	el.style.setProperty('--lobby-sky-lift', `${-tune.lobby.skyLift}px`)
 	app.camera.update(0)
-	const readySeats = createReadySeats({ present: run.present })
-	const roster = practiceRoster(hero.id, setup.difficulty, setup.picks)
-	for (const [joinOrder, seat] of roster.entries()) {
-		const box = readySeats.seats.filter((b) => b.team === seat.team).find((b) => !b.occupant)
-		readySeats.claim(
-			box.id,
-			{
-				id: seat.id,
-				heroId: seat.heroId,
-				joinOrder,
-				bot: !sim.heroes.some((h) => h.id === seat.id),
-			},
-			sim.tick,
-		)
-	}
+	let touch = options.device ? options.device === 'touch' : matchMedia('(any-hover: none)').matches
+	const readySeats = sim.readySeats
 	const props = createLobbyStands(app.scene, el, gallery, readySeats, hero.id, ready)
 	props.syncSeats()
-	let readyWalk = false
+	const numbers = createNumbers(hero, (open) => {
+		if (!open)
+			blockedPad = new Set((app.input.pad()?.buttons ?? []).flatMap((held, i) => (held ? [i] : [])))
+		numbers.update(
+			0,
+			app.input.pad(),
+			touch && app.input.activeDevice() !== 'gamepad' ? 'touch' : app.input.activeDevice(),
+		)
+		app.intents.cancel(hero.id)
+		app.input.consumeMenuInput()
+		run.clock.reset()
+		app.audio.blip(tune.lobby.inspect[open ? 'openSound' : 'closeSound'])
+	})
+	const numbersButton = el.querySelector('.lobby-numbers-open')
+	numbersButton.onclick = () => numbers.toggle()
+	run.clock.pause(() => numbers.open)
+	run.intents.suspend(() => numbers.open)
+	run.system('present', ({ dt }) =>
+		numbers.update(
+			dt,
+			app.input.pad(),
+			touch && app.input.activeDevice() !== 'gamepad' ? 'touch' : app.input.activeDevice(),
+		),
+	)
+	let inspectionAim = null
 	let readyPrimary = false
 	let loadingQueued = false
 	const readySounds = new Map()
@@ -85,8 +123,6 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 		setup.heroId = hero.heroId
 		setup.picks[hero.id] = { ...setup.picks[hero.id], heroId: hero.heroId }
 		props.select(hero.heroId)
-		const box = readySeats.seatOf(hero.id)
-		if (box) readySeats.claim(box.id, { ...box.occupant, heroId: hero.heroId }, sim.tick)
 		const url = new URL(location.href)
 		url.searchParams.set('hero', hero.heroId)
 		history.replaceState(null, '', url)
@@ -102,11 +138,14 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 	run.on('present', (fact) => {
 		if (
 			galleryShot?.projectile != null &&
-			fact.type === 'expired' &&
+			['expired', 'hit', 'blocked'].includes(fact.type) &&
 			fact.projectile === galleryShot.projectile
 		)
 			finishGalleryShot()
-		if (fact.type === 'seatClaim') props.syncSeats()
+		if (fact.type === 'seatClaim') {
+			props.syncSeats()
+			setup.picks[hero.id].team = readySeats.seatOf(hero.id)?.team ?? setup.picks[hero.id].team
+		}
 		if (fact.hero !== hero.id) return
 		const sound = {
 			readyWalk: 'walkSound',
@@ -154,7 +193,6 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 	}
 
 	function cycleDifficulty() {
-		if (readyWalk) cancelReady(false)
 		if (hero.dead || galleryShot) {
 			run.present({
 				type: 'denied',
@@ -165,6 +203,9 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 			})
 			return
 		}
+		const frame = app.intents.get(hero.id)
+		while (frame.pressed.some((e) => e.action === 'ready')) run.intents.consume(hero.id, 'ready')
+		readyQueued = false
 		const i = gallery.standees.findIndex((s) => s.id === gallery.difficulty)
 		galleryShot = { stand: gallery.standees[(i + 1) % gallery.standees.length], projectile: null }
 		// One path plan per shortcut. Get a clear line of fire rather than shooting through pillars.
@@ -177,17 +218,33 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 	const heldKeys = new Set(options.heldKeys ?? [])
 	const blockedKeys = new Set(heldKeys)
 	let previous = app.input.pad()?.buttons.slice() ?? []
+	let blockedPad = new Set(previous.flatMap((held, i) => (held ? [i] : [])))
 	const backButton = el.querySelector('.front-return')
 	const startButton = el.querySelector('.front-cta')
-	const returnHero = () =>
-		app.modes.start('moba-front', {
-			options: { hero: true, setup, heldKeys: [...heldKeys] },
-		})
+	const returnSplash = () =>
+		app.modes.start('moba-front', { options: { setup, heldKeys: [...heldKeys] } })
 	function back() {
 		if (ending) return
-		if (readyQueued || readyWalk || readySeats.seatOf(hero.id)?.enteredAt != null) {
+		if (numbers.open) {
+			numbers.toggle()
+			return
+		}
+		if (
+			readyQueued ||
+			hero.readyWalk ||
+			readySeats.seatOf(hero.id)?.enteredAt != null ||
+			app.intents.get(hero.id).pressed.some((e) => e.action === 'ready')
+		) {
 			app.intents.cancel(hero.id)
 			cancelReady()
+			return
+		}
+		if (galleryShot) {
+			galleryShot = null
+			readyQueued = false
+			app.intents.get(hero.id).order = null
+			app.intents.cancel(hero.id)
+			run.intents.press(hero.id, 'stop')
 			return
 		}
 		if (
@@ -202,11 +259,11 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 		syncPick()
 		ending = true
 		app.audio.blip({ ...frontTune.back, type: 'sine' })
-		returnHero()
+		returnSplash()
 	}
 	function cancelReady(stop = true) {
-		readyWalk = readyQueued = false
-		readySeats.cancel(hero.id, sim.tick)
+		readyQueued = false
+		run.intents.press(hero.id, 'cancel')
 		if (stop) {
 			const frame = app.intents.get(hero.id),
 				box = readySeats.seatOf(hero.id)
@@ -218,10 +275,9 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 				frame.order = null
 			run.intents.press(hero.id, 'stop')
 		}
-		run.present({ type: 'readyCancel', hero: hero.id, tick: sim.tick })
 	}
 	function ready() {
-		if (ending || hero.dead) return
+		if (ending || hero.dead || numbers.open) return
 		if (galleryShot) {
 			readyQueued = true
 			return
@@ -229,17 +285,7 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 		readyQueued = false
 		const box = readySeats.seatOf(hero.id)
 		if (!box) return
-		readySeats.resume(hero.id)
-		if (readyWalk) return
-		readyWalk = true
-		app.intents.get(hero.id).order = { x: box.x, z: box.z, kind: 'move' }
-		run.present({
-			type: 'readyWalk',
-			hero: hero.id,
-			seat: box.id,
-			point: { x: box.x, y: 0, z: box.z },
-			tick: sim.tick,
-		})
+		run.intents.press(hero.id, 'ready')
 	}
 	function beginLoading() {
 		if (ending || !readySeats.allReady() || galleryShot) return
@@ -260,17 +306,36 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 			setup,
 			difficulty: setup.difficulty,
 			buildWait: options.buildWait,
+			device: touch ? 'touch' : device,
 			// A cancelled descent returns to practice, with the same map and pick.
-			returnHero: () => app.modes.start('moba-lobby', { options: { setup, el, backdrop } }),
+			returnLobby: (device) =>
+				app.modes.start('moba-lobby', { options: { setup, el, backdrop, device } }),
 		})
 	}
+	window.addEventListener('pointerdown', (e) => (touch = e.pointerType === 'touch'), {
+		signal: run.signal,
+	})
+	window.addEventListener(
+		'pointermove',
+		(e) => {
+			if (e.pointerType === 'mouse') touch = false
+		},
+		{ signal: run.signal },
+	)
 	backButton.onclick = back
 	startButton.onclick = ready
 	window.addEventListener(
 		'keydown',
 		(event) => {
 			heldKeys.add(event.code)
+			if (event.code !== 'Backquote') touch = false
+			if (numbers.key(event)) return
 			if (event.repeat || blockedKeys.has(event.code) || event.target?.closest?.('.lil-gui')) return
+			if (event.code === 'KeyN') {
+				event.preventDefault()
+				numbers.toggle()
+				return
+			}
 			if (event.code === 'KeyH') {
 				event.preventDefault()
 				cycleHero()
@@ -299,6 +364,7 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 		(event) => {
 			heldKeys.delete(event.code)
 			blockedKeys.delete(event.code)
+			numbers.key(event)
 		},
 		{ signal: run.signal },
 	)
@@ -316,20 +382,31 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 			Math.hypot(hero.body.position.x - box.x, hero.body.position.z - box.z) <=
 				tune.lobby.ready.promptRadius &&
 			!Object.keys(app.intents.get(hero.id).held).length
+		const view = down(8)
 		previous = buttons.slice()
+		if (view || (numbers.open && cancel)) {
+			numbers.toggle()
+			return
+		}
+		if (numbers.open) return
 		if (cancel) back()
 		else if (start || readyA) {
 			readyPrimary = !!readyA
 			ready()
 		} else if (cycle) cycleHero()
 		else if (difficulty) cycleDifficulty()
-		const nextDevice = app.input.activeDevice()
+		const nextDevice =
+			touch && app.input.activeDevice() !== 'gamepad' ? 'touch' : app.input.activeDevice()
 		if (device === nextDevice) return
 		device = nextDevice
 		el.dataset.device = device
 		props.setDevice(device)
-		backButton.querySelector('kbd').textContent = device === 'gamepad' ? 'B' : 'Esc'
-		startButton.querySelector('kbd').textContent = device === 'gamepad' ? 'Start' : 'Enter'
+		numbersButton.querySelector('kbd').textContent =
+			device === 'gamepad' ? 'View' : device === 'touch' ? '' : 'N'
+		backButton.querySelector('kbd').textContent =
+			device === 'gamepad' ? 'B' : device === 'touch' ? '' : 'Esc'
+		startButton.querySelector('kbd').textContent =
+			device === 'gamepad' ? 'Start' : device === 'touch' ? '' : 'Enter'
 	})
 	// Screen changes drop pending casts/orders. The device reset requires a fresh press;
 	// inherited navigation keys and the initial pad buttons also have their own release guard.
@@ -350,9 +427,11 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 			gallery,
 			galleryProps: props.galleryProps,
 			readySeats,
+			numbers,
+			inspectables: props.inspectables,
 			seatProps: props.seatProps,
 			get readyWalk() {
-				return readyWalk
+				return hero.readyWalk
 			},
 			snapshot: sim.snapshot,
 		},
@@ -360,6 +439,7 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 	run.signal.addEventListener(
 		'abort',
 		() => {
+			numbers.dispose()
 			props.dispose()
 			canvas.classList.remove('front-canvas')
 			parent.insertBefore(canvas, next)
@@ -370,26 +450,45 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 		{ once: true },
 	)
 	return {
-		frozen: () => false,
-		presentationFrozen: () => false,
+		frozen: () => numbers.open,
+		presentationFrozen: () => numbers.open,
 		result() {},
+		touchMode: () => touch,
+		inspectAim(dir, magnitude) {
+			if (!dir) return inspectionAim ?? sim.stickAim(hero.id, null, 0, null)
+			const p = hero.body.position,
+				range = magnitude * tune.lobby.inspect.range
+			inspectionAim = {
+				x: Math.max(
+					-tune.lobby.bounds.halfX,
+					Math.min(tune.lobby.bounds.halfX, p.x + dir.x * range),
+				),
+				z: Math.max(
+					-tune.lobby.bounds.halfZ,
+					Math.min(tune.lobby.bounds.halfZ, p.z + dir.z * range),
+				),
+			}
+			return inspectionAim
+		},
 		prepareInput() {
 			const frame = app.intents.get(hero.id)
+			// Core may cache the last pad sample until release after a modal reset.
+			// Drop inherited kit edges too, without swallowing the releases.
+			const buttons = app.input.pad()?.buttons ?? []
+			const kit = { 0: 'primary', 4: 'slot3', 5: 'slot1', 6: 'slot4', 7: 'slot2' }
+			for (const i of blockedPad) {
+				const action = kit[i]
+				if (action) {
+					delete frame.held[action]
+					while (frame.pressed.some((e) => e.action === action))
+						run.intents.consume(hero.id, action)
+				}
+				if (!buttons[i]) blockedPad.delete(i)
+			}
 			if (readyPrimary) {
 				run.intents.consume(hero.id, 'primary')
 				readyPrimary = false
 			}
-			const box = readySeats.seatOf(hero.id)
-			const movement =
-				Math.hypot(frame.move.x, frame.move.z) > 0 ||
-				(frame.order &&
-					(!box || Math.hypot(frame.order.x - box.x, frame.order.z - box.z) > tune.orders.arrival))
-			if (
-				(readyWalk && movement) ||
-				((readyWalk || box?.enteredAt != null) &&
-					frame.pressed.some((e) => ['stop', 'cancel'].includes(e.action)))
-			)
-				cancelReady(!movement)
 			if (
 				galleryShot?.projectile === null &&
 				(frame.pressed.some((e) => ['stop', 'cancel'].includes(e.action)) ||
@@ -413,7 +512,10 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 			if (!frame.order) return
 			if (!frame.order.kind && readySeats.seats.some((s) => readySeats.contains(s, frame.order)))
 				frame.order = { ...frame.order, kind: 'move' }
-			if (gallery.aimsAt(frame.order) && !frame.order.kind) {
+			if (
+				gallery.aimsAt(frame.order, tune.lobby.gallery.radius + tune.orders.pick) &&
+				!frame.order.kind
+			) {
 				run.intents.press(hero.id, 'primary', frame.order)
 				frame.order = null
 				return
@@ -448,6 +550,7 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 						{ x: aim.x - p.x, z: aim.z - p.z },
 						{
 							...tune.lobby.gallery.shot,
+							range: Math.min(tune.lobby.gallery.shot.range, Math.hypot(aim.x - p.x, aim.z - p.z)),
 							ability: 'galleryShot',
 							slot: 'gallery',
 							aim,
@@ -461,7 +564,7 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 				}
 			}
 			if (hero.dead) {
-				if (readyWalk) cancelReady()
+				if (hero.readyWalk) cancelReady()
 				if (galleryShot?.projectile === null) {
 					galleryShot = null
 					readyQueued = false
@@ -508,7 +611,6 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 			})
 		},
 		afterStep() {
-			readySeats.step(sim.tick, app.clock.step, sim.heroes)
 			if (readySeats.allReady() && !galleryShot && !loadingQueued) {
 				loadingQueued = true
 				// Leave the fixed step before aborting its sim and transferring the map/backdrop.
@@ -525,6 +627,8 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 			const step = app.clock.step
 			return {
 				lobby: true,
+				inspectionDisabled: numbers.open || blockedPad.has(3),
+				inspectables: props.inspectables,
 				hero,
 				sim,
 				step,
