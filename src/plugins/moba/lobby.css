@@ -38,25 +38,36 @@
 	margin-left: 0.5em;
 }
 .lobby-stand-label {
+	white-space: nowrap;
 	position: absolute;
 	top: 0;
 	left: 0;
 	z-index: 1;
-	padding: 0.2em 0.5em;
-	border: 0.12em solid var(--ui-text);
-	border-radius: 0.25em;
+	padding: 0.22em 0.55em 0.18em;
+	border: clamp(3px, 0.28vw, 4px) solid var(--ui-text);
+	border-radius: clamp(10px, 1.1vw, 16px);
 	background: var(--ui-cream);
+	box-shadow: 3px 4px 0 var(--ui-text);
+	rotate: -2deg;
 	text-align: center;
-	font-size: clamp(10px, 1vw, 14px);
-	line-height: 1.1;
+	font: 400 clamp(11px, 1.05vw, 17px) / 1 var(--ui-font);
 	pointer-events: none;
+}
+.lobby-stand-label:nth-of-type(even) {
+	rotate: 2deg;
 }
 .lobby-stand-label small {
 	display: block;
-	font-size: 0.7em;
+	margin-top: 0.15em;
+	font-size: 0.5em;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
 }
 .lobby-stand-label[data-picked='true'] {
 	background: var(--ui-gold);
+	box-shadow: 6px 8px 0 var(--ui-text);
+	rotate: 0deg;
+	scale: 1.08;
 }
 .lobby-stand-label[data-playable='false'] span {
 	opacity: 0.6;
@@ -65,23 +76,37 @@
 	padding: 0.1em 0.2em;
 	line-height: 1;
 }
+.lobby-stand-label[data-hero] small {
+	display: none;
+}
+.lobby-gallery-label {
+	translate: 0 2.6em;
+}
 .lobby-gallery-label small {
 	display: none;
 }
 .lobby-gallery-help {
 	border: 0;
+	box-shadow: none;
+	background: transparent;
+	font-size: clamp(10px, 0.9vw, 13px);
+	translate: 0 6.4em;
 }
 .moba-front .lobby-seat-label {
-	padding: 0.2em 0.4em;
-	font: inherit;
-	font-size: clamp(10px, 1vw, 14px);
-	border: 0.12em solid var(--ui-text);
-	border-radius: 0.25em;
 	background: var(--ui-cream);
-	line-height: 1.1;
+	font: 400 clamp(10px, 0.9vw, 14px) / 1 var(--ui-font);
+}
+.moba-front .lobby-seat-label[data-mine='false'] small {
+	display: none;
+}
+.moba-front .lobby-seat-label[data-seat='B:1'] {
+	translate: -55% 0;
 }
 .moba-front .lobby-seat-label[data-mine='true'] {
-	background: var(--ui-gold);
+	translate: 0 -1.5em;
+	background: var(--ui-button);
+	font-size: clamp(13px, 1.3vw, 21px);
+	z-index: 2;
 	pointer-events: auto;
 	cursor: pointer;
 }
