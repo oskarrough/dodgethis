@@ -17,6 +17,8 @@ export async function createBrowserApp() {
 	applyCssVariables() // one palette drives both the WebGL world and the HTML chrome
 	const { RAPIER, world } = await initPhysics()
 	world.timestep = STEP
+	const debugWorlds = []
+	const activeWorld = () => debugWorlds.at(-1)?.world ?? world
 	const view = createRenderer()
 	const perf = createPerformanceMonitor()
 	const stats = { fps: 0, perf: null }
@@ -61,7 +63,24 @@ export async function createBrowserApp() {
 		input,
 		audio,
 		overlay: createOverlay(),
-		debug: { panel, perf, stats, combat: createCombatLog(), log },
+		debug: {
+			panel,
+			perf,
+			stats,
+			combat: createCombatLog(),
+			log,
+			world(world) {
+				const entry = { world }
+				debugWorlds.push(entry)
+				world.gravity = { x: 0, y: tune.physics.gravity, z: 0 }
+				return () => {
+					const index = debugWorlds.indexOf(entry)
+					if (index < 0) return
+					debugWorlds.splice(index, 1)
+					activeWorld().gravity = { x: 0, y: tune.physics.gravity, z: 0 }
+				}
+			},
+		},
 	})
 	log.info('booted', { renderer: 'style-pass', physics: 'rapier' })
 
@@ -93,7 +112,7 @@ export async function createBrowserApp() {
 	app.scene.add(debugLines)
 	function drawColliders() {
 		if (!debugLines.visible) return
-		const { vertices, colors } = world.debugRender()
+		const { vertices, colors } = activeWorld().debugRender()
 		// Reuse same-sized GPU buffers; replacing attributes leaks old buffers until geometry disposal.
 		const pos = debugGeom.getAttribute('position')
 		if (pos && pos.array.length === vertices.length) {
@@ -110,7 +129,9 @@ export async function createBrowserApp() {
 	}
 
 	app.debug.tune('physics', tune.physics, (f, t) => {
-		f.add(t, 'gravity', -30, 0, 0.1).onChange(() => (world.gravity = { x: 0, y: t.gravity, z: 0 }))
+		f.add(t, 'gravity', -30, 0, 0.1).onChange(
+			() => (activeWorld().gravity = { x: 0, y: t.gravity, z: 0 }),
+		)
 		f.add(t, 'timeScale', 0, 2, 0.05)
 		f.add(t, 'paused')
 	})
@@ -158,7 +179,9 @@ export async function createBrowserApp() {
 		renderer: view.renderer,
 		scene: app.scene,
 		camera: view.camera,
-		world,
+		get world() {
+			return activeWorld()
+		},
 		async benchmark({ seconds = 10, warmup = 2 } = {}) {
 			if (
 				![seconds, warmup].every(Number.isFinite) ||

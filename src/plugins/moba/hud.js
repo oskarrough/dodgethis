@@ -27,7 +27,7 @@ import {
 const SLOTS = ['slot1', 'slot2', 'slot3']
 const KEYS = { keyboard: ['Q', 'W', 'E'], gamepad: ['RB', 'RT', 'LB'] }
 // Key-glyph stickers from the hero's own kit, for the active device. Numbers live in the cards.
-function helpGlyphs(device, abilities, carrying) {
+function helpGlyphs(device, abilities, carrying, lobby = false) {
 	const names = SLOTS.map((slot) => abilityName(abilities?.[slot]).toLowerCase())
 	const pad = device === 'gamepad'
 	const slots = carrying
@@ -38,17 +38,18 @@ function helpGlyphs(device, abilities, carrying) {
 				[['L'], 'move'],
 				...slots,
 				[['A'], 'attack'],
-				[['B'], 'cancel'],
+				[['B'], lobby ? 'cancel / back' : 'cancel'],
 				[['Y'], 'inspect'],
-				[['Start'], 'pause'],
+				[['Start'], lobby ? 'ready' : 'pause'],
 			]
 		: [
 				[['RMB'], 'move'],
 				...slots,
 				[['S'], 'stop'],
-				[['Space'], 'follow'],
+				...(lobby ? [] : [[['Space'], 'follow']]),
 				[['I'], 'inspect'],
-				[['Esc'], 'pause'],
+				[['Esc'], lobby ? 'cancel / back' : 'pause'],
+				...(lobby ? [[['Enter'], 'ready']] : []),
 			]
 	return glyphs
 		.map(([keys, label]) => `<span>${keys.map((k) => `<kbd>${k}</kbd>`).join('')}${label}</span>`)
@@ -298,6 +299,7 @@ export function createHud() {
 	const plateHp = el('b', '', plate)
 	document.body.append(plate)
 	let bannerLeft = 0
+	let lastSwap = null
 	const linked = new URLSearchParams(globalThis.location?.search ?? '').get('tooltips')
 	if (TOOLTIP_MODES.includes(linked)) tune.hud.tooltipMode = linked
 
@@ -365,7 +367,12 @@ export function createHud() {
 	function pickUnit(sim, aim) {
 		let best = null
 		let bestGap = Infinity
-		const units = [...sim.heroes, ...(sim.lane?.minions ?? []), ...(sim.lane?.structures ?? [])]
+		const units = [
+			...sim.heroes,
+			...(sim.dummies ?? []),
+			...(sim.lane?.minions ?? []),
+			...(sim.lane?.structures ?? []),
+		]
 		for (const unit of units) {
 			if (unit.dead) continue
 			const p = unit.body.mesh?.position ?? unit.body.position
@@ -596,6 +603,17 @@ export function createHud() {
 				hero,
 				sim,
 			} = frame
+			if (hero?.swapFact && hero.swapFact !== lastSwap) {
+				lastSwap = hero.swapFact
+				// Labels/icons read the new definition below; old denial and ready pulses do not transfer.
+				for (const s of slots) {
+					s.deniedFor = 0
+					s.fraction = -1
+					s.slot.classList.remove('denied', 'ready')
+				}
+				tip.hide()
+				worldTip.hide()
+			}
 			const enemy = localTeam === 'A' ? 'B' : 'A'
 			if (sim)
 				for (const h of sim.heroes) {
@@ -603,7 +621,8 @@ export function createHud() {
 					wasDead.set(h.id, !!h.dead)
 				}
 
-			// Top bar.
+			// Practice has no lane status; the portrait, kit and tooltips stay real.
+			put(top, 'hidden', !!frame.lobby, (hidden) => (top.hidden = hidden))
 			if (teams) {
 				for (const [which, team] of [
 					['mine', localTeam],
@@ -739,9 +758,14 @@ export function createHud() {
 					cooldown > 0 ? (cooldown > 1 ? String(Math.ceil(cooldown)) : cooldown.toFixed(1)) : '',
 				)
 			}
-			put(help, 'html', helpGlyphs(device, definition.abilities, !!carryingBall), (html) => {
-				help.innerHTML = html
-			})
+			put(
+				help,
+				'html',
+				helpGlyphs(device, definition.abilities, !!carryingBall, !!frame.lobby),
+				(html) => {
+					help.innerHTML = html
+				},
+			)
 
 			updateTip(dt, {
 				...frame,

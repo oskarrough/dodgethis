@@ -9,8 +9,8 @@ import { projectRidge } from './geometry.js'
 import { tune } from './tune.js'
 import './loading.css'
 
-// Parent-owned presentation scope survives starting the real match. The match itself
-// owns every body, map mesh and collider; cancellation aborts it through modes.start.
+// Presentation survives starting the match. Cancellation aborts its sim through
+// modes.start; the MOBA map scope keeps the terrain and world for the next run.
 export function startLoading(
 	app,
 	{ el, backdrop, returnHero, buildWait = 0, difficulty = 'easy', setup },
@@ -38,7 +38,10 @@ export function startLoading(
 		})
 		const parent = canvas.parentNode
 		const next = canvas.nextSibling
-		const hero = localLoadingHero(match.snapshot(), app.session.local[0])
+		const snapshot = match.snapshot()
+		const local = app.session.local[0]
+		const localTeam = snapshot.heroes.find((hero) => hero.id === local).team
+		const hero = localLoadingHero(snapshot, local)
 		const cameras = [app.camera.view, app.camera.aim]
 		const previousFar = cameras.map((camera) => camera.far)
 		app.audio.setMusicScene('wind')
@@ -46,7 +49,17 @@ export function startLoading(
 		el.setAttribute('aria-label', 'Loading the lane')
 		el.replaceChildren(backdrop.el)
 		const figures = (team) =>
-			`<div class="front-loading-team ${team}" aria-label="${team === 'A' ? 'Your' : 'Opposing'} ridge">${Array.from({ length: 3 }, (_, i) => `<svg viewBox="0 0 40 76" aria-label="${i ? 'Unoccupied seat' : 'Fletcher'}" class="${i ? 'vacant' : ''}"><path d="M12 20 Q7 4 20 3 Q33 4 28 20 L24 27 L32 48 L27 54 L28 76 H22 L19 54 L16 76 H10 L12 52 L7 46 L16 27Z"/><path d="M30 28 Q41 44 30 58 M30 28 V58" fill="none"/></svg>`).join('')}</div>`
+			`<div class="front-loading-team ${team}" aria-label="${team === localTeam ? 'Your' : 'Opposing'} ridge">${snapshot.heroes
+				.filter((hero) => hero.team === team)
+				.map((hero) => {
+					const name = hero.heroId[0].toUpperCase() + hero.heroId.slice(1)
+					const shape =
+						hero.heroId === 'mitts'
+							? '<path d="M10 6 H30 V26 L35 32 L37 48 L30 52 L28 76 H22 L20 54 L17 76 H10 L12 52 L3 48 L5 32 L10 26Z"/>'
+							: '<path d="M12 20 Q7 4 20 3 Q33 4 28 20 L24 27 L32 48 L27 54 L28 76 H22 L19 54 L16 76 H10 L12 52 L7 46 L16 27Z"/><path d="M30 28 Q41 44 30 58 M30 28 V58" fill="none"/>'
+					return `<svg viewBox="0 0 40 76" data-hero="${hero.heroId}" aria-label="${name}${hero.id === local ? ' (you)' : ''}">${shape}</svg>`
+				})
+				.join('')}</div>`
 		const ui = make(
 			'section',
 			'front-loading-ui',

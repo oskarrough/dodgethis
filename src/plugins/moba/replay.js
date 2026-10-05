@@ -34,6 +34,7 @@ export function mobaReplay(app) {
 			const { scene } = app
 			const world = new RAPIER.World({ x: 0, y: coreTune.physics.gravity, z: 0 })
 			world.timestep = app.clock.step
+			run.debug.world(world)
 			app.setPalette({})
 			app.overlay.hide()
 			document.body.classList.add('moba-replay')

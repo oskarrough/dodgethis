@@ -135,6 +135,14 @@ export function createBody(
 			return retired
 		},
 		update,
+		// Explicit motion transfer for a body replacement; never starts or redirects a dash.
+		setVelocity(velocity) {
+			if (!['x', 'y', 'z'].every((axis) => Number.isFinite(velocity[axis])))
+				throw new Error('Body velocity must have finite x, y and z')
+			vx = velocity.x
+			vy = velocity.y
+			vz = velocity.z
+		},
 		jump,
 		consumeLanding,
 		dash,

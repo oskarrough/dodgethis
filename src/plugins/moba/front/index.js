@@ -3,7 +3,6 @@ import { createControls } from './controls.js'
 import { tune } from './tune.js'
 import { createHeroCard, registerKitTune } from './hero.js'
 import { createPreview } from './preview.js'
-import { startLoading } from './loading.js'
 import { parseMatchSetup } from '../setup.js'
 import './front.css'
 import './hero.css'
@@ -40,7 +39,7 @@ function tileMarkup(tile) {
 	return `<button type="button" class="front-tile" ${data}><span class="front-tile-face"></span><svg viewBox="0 0 64 64" aria-hidden="true">${tile.glyph}</svg><span class="front-tile-name">${tile.name}</span><span class="front-tile-line">${tile.line}</span></button>`
 }
 
-// One backdrop through modes and selection; only the replica preview requests WebGL.
+// One backdrop through modes and selection; Lock in hands the picked hero to the plaza.
 export function mobaFront(app, map) {
 	registerKitTune(app)
 	let activeBackdrop = null
@@ -108,6 +107,14 @@ export function mobaFront(app, map) {
 			let preview = null
 			let card = null
 			let screen = 'modes'
+			const heldKeys = new Set(options.heldKeys ?? [])
+			window.addEventListener('keydown', (event) => heldKeys.add(event.code), {
+				capture: true,
+				signal: run.signal,
+			})
+			window.addEventListener('keyup', (event) => heldKeys.delete(event.code), {
+				signal: run.signal,
+			})
 			const setup = parseMatchSetup(new URLSearchParams(location.search), options.setup ?? options)
 			const local = app.session.local[0]
 			setup.heroId = setup.picks?.[local]?.heroId ?? setup.heroId
@@ -305,16 +312,14 @@ export function mobaFront(app, map) {
 					[local]: { ...setup.picks?.[local], heroId: setup.heroId },
 				}
 				transferred = true
-				startLoading(app, {
-					el,
-					backdrop,
-					buildWait: options.buildWait ?? buildWait,
-					difficulty,
-					setup: { ...setup, difficulty },
-					returnHero: () =>
-						app.modes.start('moba-front', {
-							options: { hero: true, el, backdrop, setup: { ...setup, difficulty } },
-						}),
+				app.modes.start('moba-lobby', {
+					options: {
+						el,
+						backdrop,
+						heldKeys: [...heldKeys],
+						buildWait: options.buildWait ?? buildWait,
+						setup: { ...setup, difficulty },
+					},
 				})
 			}
 			let leaving = false

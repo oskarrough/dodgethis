@@ -1,0 +1,39 @@
+.moba-front.front-lobby {
+	z-index: 0;
+}
+.moba-top[hidden],
+.front-lobby .front-distant-fletcher {
+	display: none;
+}
+.moba-front.front-lobby footer {
+	top: max(20px, 4vh);
+	bottom: auto;
+}
+.front-lobby .front-mode-world {
+	transform: translateY(var(--lobby-sky-lift));
+}
+.moba-front.front-lobby .front-canvas {
+	pointer-events: auto;
+}
+.front-lobby footer {
+	pointer-events: none;
+}
+.front-lobby footer button {
+	pointer-events: auto;
+}
+.front-lobby .front-return {
+	width: auto;
+	padding: 0.5em 1em;
+}
+.front-lobby .front-cta {
+	position: absolute;
+	right: 0;
+	bottom: 0;
+	padding: 0.5em 1em;
+	background: var(--ui-cream);
+	border: 0.15em solid var(--ui-text);
+	border-radius: 0.5em;
+}
+.front-lobby kbd {
+	margin-left: 0.5em;
+}

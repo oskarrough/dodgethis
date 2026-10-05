@@ -88,6 +88,22 @@ export const tune = {
 			{ x: 5, z: -10 },
 		],
 	},
+	// Lobby sim options apply on creation; map/match/training defaults do not read these.
+	lobby: {
+		// Fixed plaza framing, live; height/back retain the lane's 58° pitch.
+		camera: { x: 0, z: -8, height: 16, back: 10, fov: 50 },
+		skyLift: 400, // SVG world units; lift the desert's planet into the plaza's top third.
+		bounds: { halfX: 12, halfZ: 13 },
+		respawn: 0.5,
+		marks: [
+			{ x: -6, z: -2 },
+			{ x: -6, z: 0 },
+			{ x: -6, z: 2 },
+			{ x: 6, z: -2 },
+			{ x: 6, z: 0 },
+			{ x: 6, z: 2 },
+		],
+	},
 	collision: { epsilon: 1e-6, separation: 1e-3, clampPasses: 8 },
 	pips: {
 		inset: 0.92,

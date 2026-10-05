@@ -82,7 +82,8 @@ export function createSkillsView(scene) {
 		catchTells = new Map(),
 		streaks = []
 	let castCircle = null,
-		castLeft = 0
+		castLeft = 0,
+		lastSwap = null
 
 	function rain(point, stats = tune.rain) {
 		if (!castCircle) castCircle = mesh(ring, cream)
@@ -113,6 +114,13 @@ export function createSkillsView(scene) {
 			tick = 0,
 		},
 	) {
+		if (unit?.swapFact && unit.swapFact !== lastSwap) {
+			lastSwap = unit.swapFact
+			// Cancelled local poses leave no kit cue; released zones keep their own tells below.
+			castLeft = 0
+			for (const streak of streaks) group.remove(streak.mesh)
+			streaks.length = 0
+		}
 		if (castCircle) {
 			castLeft = Math.max(0, castLeft - dt)
 			castCircle.visible = castLeft > 0

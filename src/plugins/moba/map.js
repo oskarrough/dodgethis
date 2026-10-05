@@ -13,29 +13,26 @@ export function createMapScope(scene, RAPIER, step) {
 	let world = null
 	let unbuild = null
 	let live = null
-	let gravity = coreTune.physics.gravity
 	return {
 		start(run, create) {
 			if (live) throw new Error('MOBA already has a live sim')
 			if (!world) {
-				gravity = coreTune.physics.gravity
-				world = new RAPIER.World({ x: 0, y: gravity, z: 0 })
+				world = new RAPIER.World({ x: 0, y: coreTune.physics.gravity, z: 0 })
 				world.timestep = step
 				unbuild = buildMap(scene, world, RAPIER)
 			}
+			const releaseWorld = run.debug.world(world)
 			live = create(world)
 			const owned = live
-			// The shell's gravity slider still targets dodgeball's world; keep this world live too.
-			run.system('simulate', () => {
-				if (gravity === coreTune.physics.gravity) return
-				gravity = coreTune.physics.gravity
-				world.gravity = { x: 0, y: gravity, z: 0 }
-			})
 			run.signal.addEventListener(
 				'abort',
 				() => {
-					owned.dispose()
 					live = null
+					try {
+						owned.dispose()
+					} finally {
+						releaseWorld?.()
+					}
 				},
 				{ once: true },
 			)

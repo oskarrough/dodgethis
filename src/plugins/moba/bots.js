@@ -26,19 +26,26 @@ export function interceptTime(from, target, speed) {
 
 export function practiceRoster(local = 'local', difficulty = 'easy', picks = {}) {
 	const localTeam = picks[local]?.team ?? 'A'
-	return ['A', 'B'].flatMap((team) =>
-		Array.from({ length: 3 }, (_, i) => {
-			const id = team === 'A' && i === 0 ? local : `bot-${team}-${i}`
-			const pickedTeam = picks[id]?.team ?? team
-			return {
-				id,
-				team: pickedTeam,
-				heroId: picks[id]?.heroId ?? 'fletcher',
-				file: (i - 1) * tune.bots.fileSpacing,
-				difficulty: pickedTeam === localTeam ? 'normal' : difficulty,
-			}
-		}),
-	)
+	const claimed = [local, ...Object.keys(picks).filter((id) => id !== local)]
+	return ['A', 'B'].flatMap((team) => {
+		const ids = claimed.filter(
+			(id) =>
+				(picks[id]?.team ?? (id === local ? localTeam : id.startsWith('bot-B-') ? 'B' : 'A')) ===
+				team,
+		)
+		if (ids.length > 3) throw new Error(`MOBA team ${team} has more than three picks`)
+		for (let i = team === localTeam ? 1 : 0; ids.length < 3; i++) {
+			const id = `bot-${team}-${i}`
+			if (!claimed.includes(id)) ids.push(id)
+		}
+		return ids.map((id, i) => ({
+			id,
+			team,
+			heroId: picks[id]?.heroId ?? 'fletcher',
+			file: (i - 1) * tune.bots.fileSpacing,
+			difficulty: team === localTeam ? 'normal' : difficulty,
+		}))
+	})
 }
 
 // Fork by participant, not roster order. No stream or mutable brain is shared by sims.

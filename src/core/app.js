@@ -280,6 +280,11 @@ export function createApp(services = {}) {
 				...debugServices,
 				game,
 				tunables,
+				world(world) {
+					const remove = debugServices.world?.(world)
+					if (remove) onAbort(signal, remove)
+					return remove
+				},
 				// A named tune section: shown in game.tune and, given `build(folder)`, as a GUI folder.
 				tune(name, object, build) {
 					claimProperties(tunables, { [name]: object }, signal, 'Tune section')

@@ -17,7 +17,7 @@ export function parseMatchSetup(query, options = {}, warn = console.warn) {
 			Object.entries(options.picks).map(([id, pick]) => [
 				id,
 				{
-					heroId: read('hero', pick.heroId, 'fletcher', playable),
+					heroId: read('hero', pick.heroId, undefined, playable),
 					...(pick.team == null
 						? {}
 						: {

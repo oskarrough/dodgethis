@@ -10,21 +10,7 @@ import online from './plugins/online/index.js'
 try {
 	const app = await createBrowserApp()
 	const map = createMapScope(app.scene, app.RAPIER, app.clock.step)
-	// Composition releases MOBA resources after the old run aborts, before another mode boots.
-	const use = (plugin) =>
-		app.use((scope) => {
-			const define = scope.modes.define
-			scope.modes.define = (id, mode) =>
-				define(id, {
-					...mode,
-					start(run, args) {
-						if (id !== 'moba' && id !== 'moba-front') map.dispose()
-						return mode.start(run, args)
-					},
-				})
-			return plugin(scope)
-		})
-	use((scope) =>
+	app.use((scope) =>
 		dodgeball(scope, {
 			hubPortal: {
 				label: 'MOBA',
@@ -38,15 +24,15 @@ try {
 			hubExit: { onSelect: () => scope.modes.start('moba-front') },
 		}),
 	)
-	use((scope) => moba(scope, map))
-	use((scope) => mobaFront(scope, map))
-	use(online)
+	app.use((scope) => moba(scope, map))
+	app.use((scope) => mobaFront(scope, map))
+	app.use(online)
 	// Registered last so app teardown aborts every run before freeing the shared world.
 	app.use(() => () => map.dispose())
 	const query = new URLSearchParams(location.search)
 	if (query.get('mode') === 'moba' && query.has('replay')) {
 		const { mobaReplay, loadReplay } = await import('./plugins/moba/replay.js')
-		use(mobaReplay)
+		app.use(mobaReplay)
 		app.modes.start('moba-replay', { options: { replay: await loadReplay(query.get('replay')) } })
 	} else if (query.get('mode') === 'moba') {
 		const setup = parseMatchSetup(query)

@@ -1,4 +1,4 @@
-import { heroDefinition, freshAbilityState } from './heroes.js'
+import { HEROES, heroDefinition, freshAbilityState } from './heroes.js'
 import { abilityOf, castAbility, slowFactor } from './ability.js'
 import { sweepHit, sweepObstacles } from './obstacles.js'
 import { dressHero } from './hero-view.js'
@@ -38,6 +38,10 @@ export function createSim({
 	present: emit = () => {},
 	rng = Math.random,
 	lane: withLane = false,
+	spawns = null, // { participantId: { x, z } }; copied for death/recovery.
+	bounds = null, // { halfX, halfZ }; body centres stay one radius inside.
+	respawn: respawnSeconds = null, // Hero recovery override, in seconds; dummies keep their timer.
+	lobby = false, // Combat allegiance A for heroes, B for dummies; seatTeam retains the pick.
 	scripted = [],
 	bots = [],
 	seed = tune.bots.seed,
@@ -69,7 +73,41 @@ export function createSim({
 			),
 		]),
 	)
-	let planPath = createPathPlanner({ radius: profile.radius, ...tune.orders }, obstacles)
+	// Planner-only walls keep paths inside the optional plaza without changing shot collisions.
+	const pathObstacles = bounds
+		? [
+				...obstacles,
+				...['x', 'z'].flatMap((axis) => {
+					const other = axis === 'x' ? 'z' : 'x'
+					const half = bounds[axis === 'x' ? 'halfX' : 'halfZ']
+					const edge = FLOOR[axis === 'x' ? 'halfX' : 'halfZ']
+					return [-1, 1].map((side) => ({
+						[axis]: (side * (half + edge)) / 2,
+						[other]: 0,
+						[axis === 'x' ? 'halfX' : 'halfZ']: (edge - half) / 2,
+						[other === 'x' ? 'halfX' : 'halfZ']: FLOOR[other === 'x' ? 'halfX' : 'halfZ'],
+					}))
+				}),
+			]
+		: obstacles
+	const clampBounds = (point, margin = 0) =>
+		bounds
+			? clampMap(
+					{
+						x: Math.max(-bounds.halfX + margin, Math.min(bounds.halfX - margin, point.x)),
+						z: Math.max(-bounds.halfZ + margin, Math.min(bounds.halfZ - margin, point.z)),
+					},
+					margin,
+				)
+			: clampMap(point, margin)
+	const walkGoal = (point) =>
+		clampWalkable(
+			clampBounds(point, profile.radius + tune.orders.clearance + tune.collision.separation),
+			profile.radius,
+			tune.orders.clearance,
+			pathObstacles,
+		)
+	let planPath = createPathPlanner({ radius: profile.radius, ...tune.orders }, pathObstacles)
 	let t = 0
 	const present = (fact) => emit({ ...fact, tick: t })
 	let shotIds = 0
@@ -82,9 +120,23 @@ export function createSim({
 			profile: definition.base,
 			position: [x, 0, z],
 			color: team === 'A' ? PALETTE.teamA : PALETTE.teamB,
-			bounds: (radius) => ({ x: FLOOR.halfX - radius, z: FLOOR.halfZ - radius }),
+			bounds: (radius) => ({
+				x: (bounds?.halfX ?? FLOOR.halfX) - radius,
+				z: (bounds?.halfZ ?? FLOOR.halfZ) - radius,
+			}),
 			smooth,
 		})
+		if (bounds) {
+			// Clamp the pending physics step, not the synced/rendered pose: interpolation stays intact.
+			const update = body.update
+			body.update = (...args) => {
+				update(...args)
+				if (body.retired) return
+				const next = body.rigidBody.nextTranslation()
+				const point = clampBounds(next, body.radius)
+				body.rigidBody.setNextKinematicTranslation({ ...point, y: next.y })
+			}
+		}
 		const undress = dressHero(body, definition.id, team)
 		const retire = body.retire
 		body.retire = () => {
@@ -107,12 +159,14 @@ export function createSim({
 		botsEnabled: true,
 	}
 	let trainingSerial = 0
-	function makeHero({ id, team, heroId = 'fletcher' }, spawn) {
+	function makeHero({ id, team: seatTeam, heroId = 'fletcher' }, spawn) {
+		const team = lobby ? 'A' : seatTeam
 		const definition = heroDefinition(heroId)
 		const body = bodyAt(spawn.x, spawn.z, team, definition)
 		return {
 			id,
 			team,
+			...(lobby && { seatTeam }),
 			heroId,
 			definition,
 			abilityState: freshAbilityState(),
@@ -149,8 +203,10 @@ export function createSim({
 		const teamSeats = seats.filter((s) => s.team === seat.team)
 		const index = seats.slice(0, i).filter((s) => s.team === seat.team).length
 		return makeHero(seat, {
-			x: seat.team === 'A' ? SPAWN.x : -SPAWN.x,
-			z: SPAWN.z + (index - (teamSeats.length - 1) / 2) * tune.map.spawnSpacing,
+			...(spawns?.[seat.id] ?? {
+				x: seat.team === 'A' ? SPAWN.x : -SPAWN.x,
+				z: SPAWN.z + (index - (teamSeats.length - 1) / 2) * tune.map.spawnSpacing,
+			}),
 		})
 	})
 	for (const h of heroes) h.body.face(dirOf(h.yaw))
@@ -187,7 +243,7 @@ export function createSim({
 					const collider = towerColliders.get(unit.id)
 					if (collider) world.removeCollider(collider, true)
 					towerColliders.delete(unit.id)
-					planPath = createPathPlanner({ radius: profile.radius, ...tune.orders }, obstacles)
+					planPath = createPathPlanner({ radius: profile.radius, ...tune.orders }, pathObstacles)
 				},
 				damage(source, target, damage) {
 					hit(
@@ -353,7 +409,7 @@ export function createSim({
 			})
 			return
 		}
-		const goal = clampWalkable(point, profile.radius, tune.orders.clearance, obstacles)
+		const goal = walkGoal(point)
 		if (
 			h.order?.kind !== (point.kind ?? 'move') ||
 			Math.hypot(h.order.goal.x - goal.x, h.order.goal.z - goal.z) >= tune.collision.epsilon ||
@@ -512,7 +568,7 @@ export function createSim({
 						!o.path ||
 						Math.hypot(tp.x - o.goal.x, tp.z - o.goal.z) > tune.orders.replanDistance
 					) {
-						o.goal = clampWalkable(tp, profile.radius, tune.orders.clearance, obstacles)
+						o.goal = walkGoal(tp)
 						o.path = plan(h, o.goal)
 					}
 					s = steer(h, o.goal, false, dt)
@@ -733,6 +789,21 @@ export function createSim({
 			return
 		}
 		const frame = intents.get(h.id)
+		const swapAim = h.swapAim
+		if (swapAim && swapAim.sample !== frame.held) {
+			// Samples own a fresh held map. Process it once even when a render drives several ticks.
+			swapAim.sample = frame.held
+			for (const slot of swapAim.blocked) {
+				for (const edge of frame.pressed.filter((e) => e.action === slot)) {
+					intents.consume(h.id, edge.action)
+					present({ type: 'denied', hero: h.id, slot, reason: 'swap-held' })
+				}
+				if (!frame.held[slot]) swapAim.blocked.delete(slot)
+				else delete frame.held[slot]
+			}
+			if (swapAim.blocked.size) frame.aim = null
+			else h.swapAim = null
+		}
 		if (t < h.stunUntil || t < h.freezeUntil || t < h.proneUntil) {
 			cancelChannel(h, 'disabled')
 			h.body.cancelDash()
@@ -1059,7 +1130,9 @@ export function createSim({
 		unit.respawnTick =
 			t +
 			ticks(
-				unit.post ? tune.dummies.respawn : tune.respawn.base + tune.respawn.perLevel * unit.level,
+				unit.post
+					? tune.dummies.respawn
+					: (respawnSeconds ?? tune.respawn.base + tune.respawn.perLevel * unit.level),
 			)
 		unit.cast = null
 		if (!unit.post) {
@@ -1075,6 +1148,66 @@ export function createSim({
 			intents.cancel(unit.id)
 		}
 		present({ type: 'death', source: shot.owner, target: target.id, point: at, direction })
+	}
+
+	function swapHero(id, heroId) {
+		const hero = heroes.find((h) => h.id === id)
+		const definition = HEROES[heroId]
+		if (!hero || hero.dead || !definition?.playable || lane?.match.winner) {
+			present({ type: 'denied', hero: id, slot: 'swap', reason: 'unavailable' })
+			return false
+		}
+		const from = hero.heroId
+		const heldSlots = new Set([
+			...(hero.swapAim?.blocked ?? []),
+			...Object.keys(intents.get(id).held).filter((slot) => SLOTS.includes(slot)),
+		])
+		const position = { ...hero.body.position }
+		// Read before stopping: cancelDash clears walking velocity too. Dash momentum is not walking.
+		const velocity = hero.body.dashing ? { x: 0, y: 0, z: 0 } : hero.body.velocity
+		const speed = Math.hypot(velocity.x, velocity.z)
+		const scale = speed ? Math.min(1, definition.base.speed / speed) : 1
+		const fraction = hero.hp / hero.maxHp
+		if (hero.cast)
+			castAbility(hero)?.onCancel?.(traitContext(hero, { ...hero.cast, reason: 'swap' }))
+		cancelChannel(hero, 'swap')
+		hero.body.cancelDash()
+		hero.body.dispose()
+		hero.heroId = heroId
+		hero.definition = definition
+		hero.body = bodyAt(position.x, position.z, hero.team, definition)
+		hero.body.place(position.x, position.y, position.z)
+		hero.body.setVelocity({ x: velocity.x * scale, y: velocity.y, z: velocity.z * scale })
+		hero.body.face(dirOf(hero.yaw))
+		hero.maxHp = definition.base.hp * (1 + tune.levels.growth * (hero.level - 1))
+		hero.hp = hero.maxHp * fraction
+		hero.abilityState = freshAbilityState()
+		hero.attack = null
+		hero.attackTick = t
+		hero.order = null
+		hero.cast = null
+		hero.stance = null
+		hero.channel = null
+		hero.catchWindow = null
+		hero.dashAbility = null
+		hero.ballThrow = null
+		hero.slow = { until: 0, factor: 1 }
+		hero.freezeUntil = 0
+		hero.proneUntil = 0
+		hero.stunUntil = 0
+		hero.cd.fill(0)
+		hero.cancelUntil.fill(0)
+		hero.judged = new WeakSet()
+		hero.lastOrder = -Infinity
+		hero.stall = 0
+		hero.lastRemaining = null
+		intents.cancel(id)
+		intents.get(id).aim = null
+		hero.swapAim = heldSlots.size ? { blocked: heldSlots, sample: intents.get(id).held } : null
+		// The same fact is available to frame-driven views without requiring a second event bus.
+		hero.swapFact = { type: 'swap', hero: id, from, heroId, point: position, tick: t }
+		present(hero.swapFact)
+		return true
 	}
 
 	function traitContext(hero, extra = {}) {
@@ -1672,6 +1805,7 @@ export function createSim({
 			heroes: heroes.map((h) => ({
 				id: h.id,
 				team: h.team,
+				...(lobby && { seatTeam: h.seatTeam }),
 				heroId: h.heroId,
 				abilityState: structuredClone(h.abilityState),
 				hp: h.hp,
@@ -1767,6 +1901,7 @@ export function createSim({
 		boards,
 		cutouts,
 		openCatch,
+		swapHero,
 		throwCaught,
 		launchShot,
 		lane,

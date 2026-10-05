@@ -22,6 +22,7 @@ import { createMatchMenu } from './menu.js'
 import { parseMatchSetup } from './setup.js'
 import { createMatchDebug } from './debug.js'
 import { addSliders, sliderSections } from './sliders.js'
+import { createLobby } from './lobby.js'
 
 const FACTS = [
 	'boardExpired',
@@ -58,6 +59,7 @@ const FACTS = [
 	'structureDown',
 	'shielded',
 	'levelUp',
+	'swap',
 	'globe',
 	'matchOver',
 ]
@@ -69,9 +71,10 @@ export default function moba(app, map) {
 	const sfx = createSounds(audio)
 	let runs = 0
 
-	app.modes.define('moba', {
+	const definition = {
 		scheme: 'pointClick',
 		start(run, { options = {} } = {}) {
+			const isLobby = !!options.lobby
 			const local = app.session.local[0]
 			app.setPalette({})
 			document.documentElement.style.removeProperty('--page-bg')
@@ -91,6 +94,7 @@ export default function moba(app, map) {
 				run.signal,
 				follow,
 				() =>
+					!isLobby &&
 					(options.ready?.() ?? true) &&
 					!app.clock.paused &&
 					!controls.paused &&
@@ -104,10 +108,15 @@ export default function moba(app, map) {
 			tune.follow.edgePan = setup.edgePan
 			const difficulty = setup.difficulty
 			setup.picks = {
-				[local]: { heroId: setup.heroId, team: 'A' },
 				...setup.picks,
+				[local]: {
+					heroId: setup.picks?.[local]?.heroId ?? setup.heroId,
+					team: setup.picks?.[local]?.team ?? 'A',
+				},
 			}
-			const seats = practiceRoster(local, difficulty, setup.picks)
+			const seats = isLobby
+				? [{ id: local, team: setup.picks[local].team ?? 'A', heroId: setup.picks[local].heroId }]
+				: practiceRoster(local, difficulty, setup.picks)
 			setup.heroId = seats.find((seat) => seat.id === local).heroId
 			const botsOnly = query.has('debug') && query.has('bots-only')
 			const sim = map.start(run, (world) =>
@@ -117,18 +126,25 @@ export default function moba(app, map) {
 					RAPIER,
 					intents: run.intents,
 					heroes: seats,
-					bots: app.session.authoritative
-						? seats.filter((seat) => botsOnly || seat.id !== local)
-						: [],
+					bots:
+						!isLobby && app.session.authoritative
+							? seats.filter((seat) => botsOnly || seat.id !== local)
+							: [],
 					smooth: run.smooth,
 					present: run.present,
-					lane: true,
+					lane: !isLobby,
+					...(isLobby && {
+						lobby: true,
+						spawns: { [local]: tune.lobby.marks[0] },
+						bounds: tune.lobby.bounds,
+						respawn: tune.lobby.respawn,
+					}),
 					seed: setup.seed,
 				}),
 			)
-			const ballView = createBallView(scene)
+			const ballView = isLobby ? null : createBallView(scene)
 			const hero = sim.heroes.find((h) => h.id === local)
-			const onboarding = createOnboarding({ scene, sim, hero })
+			const onboarding = isLobby ? null : createOnboarding({ scene, sim, hero })
 			const feedback = createFeedback({
 				juice,
 				sfx,
@@ -149,54 +165,60 @@ export default function moba(app, map) {
 			})
 			app.clock.reset()
 
-			const menu = createMatchMenu({
-				app,
-				run,
-				sim,
-				hero,
-				clearCamera: cameraControls.clear,
-				focusCore: follow.focus,
-				ready: options.ready,
-				difficulty,
-				setup,
-			})
-			const controls = createMatchDebug({
-				app,
-				run,
-				sim,
-				local,
-				menu,
-				setup,
-				botsOnly,
-				ready: options.ready,
-				clearCamera: cameraControls.clear,
-			})
+			const lobby = isLobby ? createLobby({ app, run, sim, hero, setup, options }) : null
+			const menu =
+				lobby ??
+				createMatchMenu({
+					app,
+					run,
+					sim,
+					hero,
+					clearCamera: cameraControls.clear,
+					focusCore: follow.focus,
+					ready: options.ready,
+					difficulty,
+					setup,
+				})
+			const controls = isLobby
+				? { paused: false }
+				: createMatchDebug({
+						app,
+						run,
+						sim,
+						local,
+						menu,
+						setup,
+						botsOnly,
+						ready: options.ready,
+						clearCamera: cameraControls.clear,
+					})
 			run.clock.scale(feedback.beat)
 			run.intents.suspend(() => coreTune.physics.paused)
 			run.input.stickAim((dir, magnitude, slot) => sim.stickAim(local, dir, magnitude, slot))
 
 			const onPad = () => input.activeDevice() === 'gamepad'
-			run.camera.frame((dt) => {
-				const frame = app.intents.get(local)
-				const pad = onPad() && !sim.lane.match.winner
-				const aim = pad && Object.keys(frame.held).length ? frame.aim : null
-				return follow.frame(
-					dt,
-					hero.body.mesh.position,
-					aim,
-					menu.cameraControls({
-						...cameraControls.read(),
-						pad,
-						aspect: app.camera.view.aspect,
-						cameraFov: app.camera.view.fov,
-					}),
-				)
-			})
+			if (!isLobby)
+				run.camera.frame((dt) => {
+					const frame = app.intents.get(local)
+					const pad = onPad() && !sim.lane.match.winner
+					const aim = pad && Object.keys(frame.held).length ? frame.aim : null
+					return follow.frame(
+						dt,
+						hero.body.mesh.position,
+						aim,
+						menu.cameraControls({
+							...cameraControls.read(),
+							pad,
+							aspect: app.camera.view.aspect,
+							cameraFov: app.camera.view.fov,
+						}),
+					)
+				})
 
 			run.system('simulate', (dt) => sim.step(dt))
 			run.on('present', feedback.present)
-			run.on('present', onboarding.present)
-			run.on('present', ballView.present)
+			if (onboarding) run.on('present', onboarding.present)
+			if (ballView) run.on('present', ballView.present)
 			const ballFacts = []
 			run.on('present', (fact) => {
 				if (!fact.type.startsWith('ball')) return
@@ -213,7 +235,7 @@ export default function moba(app, map) {
 				const frozen = menu.frozen() || controls.paused
 				const presentationFrozen = menu.presentationFrozen() || controls.paused
 				const blend = frozen ? 0 : alpha
-				const step = presentationFrozen ? 0 : sim.lane.match.winner ? dt : gameDt
+				const step = presentationFrozen ? 0 : sim.lane?.match.winner ? dt : gameDt
 				const frame = app.intents.get(local)
 				const p = hero.body.mesh.position
 				audio.setAudioListener(p)
@@ -229,7 +251,7 @@ export default function moba(app, map) {
 				for (const h of [...sim.heroes, ...sim.dummies])
 					if (!h.dead) h.body.poseAbility?.(h.cast, blend, h, sim.tick)
 				const target =
-					!sim.ball.carrying(hero) && !onPad() && frame.aim ? sim.pick(hero.team, frame.aim) : null
+					!sim.ball?.carrying(hero) && !onPad() && frame.aim ? sim.pick(hero.team, frame.aim) : null
 				const hovered = target && locate(target.id)
 				cursor.update({
 					enemy: !!target,
@@ -237,15 +259,15 @@ export default function moba(app, map) {
 					pad: onPad(),
 					paused: frozen,
 				})
-				ballView.update(
+				ballView?.update(
 					sim,
 					blend,
 					local,
 					frame.aim,
 					app.camera.view,
-					sim.tick + (sim.lane.match.winner ? menu.endingTime() / app.clock.step : blend),
+					sim.tick + (sim.lane?.match.winner ? menu.endingTime() / app.clock.step : blend),
 				)
-				sim.laneView.update(sim.lane, sim.heroes, blend, locate, step, hero.team)
+				sim.laneView?.update(sim.lane, sim.heroes, blend, locate, step, hero.team)
 				const lineAbility = hero.cast
 					? castAbility(hero)
 					: Object.entries(hero.definition.abilities).find(
@@ -260,17 +282,22 @@ export default function moba(app, map) {
 					obstacles: sim.obstacles,
 					held:
 						!hero.dead &&
-						!sim.ball.carrying(hero) &&
+						!sim.ball?.carrying(hero) &&
 						!!lineAbility &&
 						(lineAbility.held === 'line' || lineAbility.tell === 'line'),
-					units: [...sim.heroes, ...sim.lane.minions, ...sim.lane.structures],
+					units: [
+						...sim.heroes,
+						...sim.dummies,
+						...(sim.lane?.minions ?? []),
+						...(sim.lane?.structures ?? []),
+					],
 					hovered,
 					locate,
 				})
 				skillsView.update(step, {
 					hero: p,
 					aim: frame.aim,
-					held: hero.dead || sim.ball.carrying(hero) ? {} : frame.held,
+					held: hero.dead || sim.ball?.carrying(hero) ? {} : frame.held,
 					unit: hero,
 					units: [...sim.heroes, ...sim.dummies],
 					tick: sim.tick,
@@ -292,7 +319,7 @@ export default function moba(app, map) {
 					}
 				})
 				hud.update(dt, {
-					...matchFrame(sim, hero, blend, app.clock.step),
+					...(lobby ? lobby.hudFrame(blend) : matchFrame(sim, hero, blend, app.clock.step)),
 					aim: frame.aim,
 					camera: app.camera.view,
 					pad: input.pad(),
@@ -302,12 +329,12 @@ export default function moba(app, map) {
 				pips.update(app.camera.view, [...sim.heroes, ...sim.dummies], hero.team, {
 					hero,
 					ball: null, // Onboarding owns the team-coloured objective pointer.
-					carrying: sim.ball.carrying(hero),
+					carrying: sim.ball?.carrying(hero) ?? false,
 				})
-				onboarding.update({
+				onboarding?.update({
 					camera: app.camera.view,
 					alpha: blend,
-					ballPosition: ballView.markerPosition,
+					ballPosition: ballView?.markerPosition,
 					frozen,
 				})
 			})
@@ -332,44 +359,45 @@ export default function moba(app, map) {
 				f.add(t, 'edgeBand', 8, 128, 1).name('band (px)')
 				f.add(t, 'edgeSpeed', 0, 1, 0.01).name('speed × pan')
 			})
-			run.debug.expose({
-				moba: {
-					sim,
-					setup,
-					controls,
-					proof: { ...tune.proof, step: app.clock.step, botsOnly },
-					ballFacts,
-					ballView,
-					snapshot: () => sim.snapshot(),
-					focus: (point) => follow.focus(point),
-					// Proof uses the real app loop: intents, fixed simulation, smoothing and feedback.
-					fastForward({ ticks, target = null }) {
-						if (!Number.isInteger(ticks) || ticks < 0 || ticks > tune.proof.batch)
-							throw new Error('Invalid proof step count')
-						const wasPhysicsPaused = coreTune.physics.paused
-						coreTune.physics.paused = false
-						try {
-							for (let i = 0; i < ticks; i++) {
-								if (target && sim.lane.structures.find((s) => s.id === target)?.dead) break
-								app.frame(app.clock.step)
+			if (!isLobby)
+				run.debug.expose({
+					moba: {
+						sim,
+						setup,
+						controls,
+						proof: { ...tune.proof, step: app.clock.step, botsOnly },
+						ballFacts,
+						ballView,
+						snapshot: () => sim.snapshot(),
+						focus: (point) => follow.focus(point),
+						// Proof uses the real app loop: intents, fixed simulation, smoothing and feedback.
+						fastForward({ ticks, target = null }) {
+							if (!Number.isInteger(ticks) || ticks < 0 || ticks > tune.proof.batch)
+								throw new Error('Invalid proof step count')
+							const wasPhysicsPaused = coreTune.physics.paused
+							coreTune.physics.paused = false
+							try {
+								for (let i = 0; i < ticks; i++) {
+									if (target && sim.lane.structures.find((s) => s.id === target)?.dead) break
+									app.frame(app.clock.step)
+								}
+							} finally {
+								coreTune.physics.paused = wasPhysicsPaused
 							}
-						} finally {
-							coreTune.physics.paused = wasPhysicsPaused
-						}
-						return {
-							tick: sim.tick,
-							winner: sim.lane.match.winner,
-							dead: target ? !!sim.lane.structures.find((s) => s.id === target)?.dead : false,
-						}
+							return {
+								tick: sim.tick,
+								winner: sim.lane.match.winner,
+								dead: target ? !!sim.lane.structures.find((s) => s.id === target)?.dead : false,
+							}
+						},
 					},
-				},
-			})
+				})
 
 			run.signal.addEventListener('abort', () => {
-				onboarding.dispose()
+				onboarding?.dispose()
 				cursor.dispose()
 				feedback.reset()
-				ballView.dispose()
+				ballView?.dispose()
 				view.dispose()
 				skillsView.dispose()
 				hud.dispose()
@@ -386,6 +414,12 @@ export default function moba(app, map) {
 				validFact,
 			}
 		},
+	}
+	app.modes.define('moba', definition)
+	app.modes.define('moba-lobby', {
+		...definition,
+		start: (run, { options = {} } = {}) =>
+			definition.start(run, { options: { ...options, lobby: true } }),
 	})
 }
 
