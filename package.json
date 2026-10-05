@@ -7,7 +7,7 @@
 		"dev": "vite",
 		"build": "bun run check && vite build",
 		"preview": "vite preview",
-		"check": "oxlint && oxfmt --check && bun test",
+		"check": "oxlint --quiet && oxfmt --check && bun test --parallel --only-failures",
 		"test": "bun test",
 		"test:slow": "SLOW=1 bun test",
 		"bench": "bun scripts/bench.js",

@@ -124,7 +124,7 @@ Map, Ball and structure rules come from [moba-lane.md](moba-lane.md). A bot is a
 | `aggression`    | 0.3  | 0.6    | 0.9  | Disadvantage a bot will still fight at      |
 | `catchRate`     | 0.1  | 0.3    | 0.5  | Ball catch chance                           |
 
-**Test** (`tests/moba-bots.test.js`):
+**Test** (the bots test, since retired):
 
 - **Match:** a headless match on six bot heroes, all normal, with seeds 1, 2 and 3, stepped for at most 54 000 ticks. Each seed must end in `matchOver` from a core kill. Every bot frame must be accepted by `readIntent` (`validIntent` remains a compatibility predicate for recorded frames).
 - **Determinism:** seed 2 runs through the real app clock at 60, 30 and 144 Hz. Every tick's complete snapshot and facts must hash identically; final states and objective facts are compared too.
@@ -133,7 +133,7 @@ Map, Ball and structure rules come from [moba-lane.md](moba-lane.md). A bot is a
 - **Fixtures:** retreat latches from 34% to 90% HP through a dodge; a carrier never sends a non-throw edge and throws at the right reach; no tower aggro unless the kill exception holds; an attack order survives its target moving 3 m; a blocked or too-late dodge falls back to Vault, or to nothing; a close Q and a centre-of-Rain escape.
 - **If a seed runs long,** the lane doc's rule applies: shorten the Ball interval first, then bring the late phase and brutes forward.
 
-Proof: `tests/moba-bots.test.js` checks all three seeds, both sides scoring, fixed-tick frame validity, every living unit's walkability, stalled brains, a late-phase median tick budget, close-Q and centre-Rain dodge intents, a committed failed dodge roll across release, the intercept equation, separate sims and pause clocks, retreat/death, carried edges, stable attack orders and protected targets. A one-off browser proof, since retired, captured genuine six-hero combat at mid at 390, 1440 and 2560×1080 with the real camera, all six hero centres in frame. Debug-only `?mode=moba&debug&bots-only` gives the local seat a normal brain for proofs like it.
+Proof: the retired bots test checked all three seeds, both sides scoring, fixed-tick frame validity, every living unit's walkability, stalled brains, a late-phase median tick budget, close-Q and centre-Rain dodge intents, a committed failed dodge roll across release, the intercept equation, separate sims and pause clocks, retreat/death, carried edges, stable attack orders and protected targets. A one-off browser proof, since retired, captured genuine six-hero combat at mid at 390, 1440 and 2560×1080 with the real camera, all six hero centres in frame. Debug-only `?mode=moba&debug&bots-only` gives the local seat a normal brain for proofs like it.
 
 ## Shared play (M6)
 

@@ -1,6 +1,6 @@
 # Verify multiplayer
 
-Run `bun run check` from the repository root for lint, formatting and the fast tests, including a short seeded MOBA match. Run `bun run test:slow` once per checkpoint: `SLOW=1 bun test` includes every fast test plus whole-match and multi-Hz proofs with their original assertions. `bun run build` also runs the fast check. Tests use real Rapier worlds for gameplay and replica checks, and fake PeerJS connections/clocks for transport failure cases.
+Run `bun run check` from the repository root for lint, formatting and the tests; it runs files in parallel and prints only failures. Tests cover logic and contracts (engine, net, input, geometry, setup links, the agent protocol), not tuning, timing budgets or visuals: prove those by playing. `bun run test:slow` adds the long agent-session proof. `bun run build` also runs the fast check. Tests use real Rapier worlds for gameplay and replica checks, and fake PeerJS connections/clocks for transport failure cases.
 
 Automated coverage includes roster/controller assignment, shared human actions, input ownership and validation, charge authority, stale match/round/sequence rejection, neutral input timeout, host-only state, snapshot validation/interpolation, event deduplication, round scoring, connection cancellation, and cleanup.
 
@@ -16,11 +16,11 @@ Each fact has effective damage (HP removed, excluding overkill), actor seat/kit,
 
 ## MOBA playability
 
-`node scripts/verify-moba-playability.mjs <preview URL> <shots directory>` checks a frozen production build: keyboard, mouse and pad get through selection, loading, pause, resume and exit; the hub portal and the Play MOBA button both work; hero select, Numbers, pause and the panned-away marker fit at four viewport sizes; a six-bot seeded 3v3 reaches the result card, the frozen result and a clean Again, with no browser errors. `tests/moba-practice.test.js` plays a cautious scripted human through ordinary orders in Easy Practice and wins, which shows the policy can win, not that a first-time player has been playtested.
+`node scripts/verify-moba-playability.mjs <preview URL> <shots directory>` checks a frozen production build: keyboard, mouse and pad get through selection, loading, pause, resume and exit; the hub portal and the Play MOBA button both work; hero select, Numbers, pause and the panned-away marker fit at four viewport sizes; a six-bot seeded 3v3 reaches the result card, the frozen result and a clean Again, with no browser errors.
 
 ## MOBA debug-link proof
 
-`node scripts/verify-moba-debug.mjs <preview URL> <artifact directory>` checks direct setup links and bad-value warnings, then enters from a fresh `/` through the MOBA tile, Easy and hero lock. It sends a real mouse order and fast-forwards the ordinary app loop with the local human seat, without injected damage. It asserts a frozen pause snapshot, exactly one tick per step, clipboard success and live speed changes, then saves `debug-1440.png` and `report.json`. The recorded production pass captured tick 1337 with all 12 first-wave minions alive and no browser errors. DOM-free coverage is in `tests/moba-setup.test.js` and `tests/moba-debug.test.js`.
+`node scripts/verify-moba-debug.mjs <preview URL> <artifact directory>` checks direct setup links and bad-value warnings, then enters from a fresh `/` through the MOBA tile, Easy and hero lock. It sends a real mouse order and fast-forwards the ordinary app loop with the local human seat, without injected damage. It asserts a frozen pause snapshot, exactly one tick per step, clipboard success and live speed changes, then saves `debug-1440.png` and `report.json`. The recorded production pass captured tick 1337 with all 12 first-wave minions alive and no browser errors. DOM-free coverage of setup links is in `tests/moba-setup.test.js`.
 
 ## MOBA pre-ship polish
 
