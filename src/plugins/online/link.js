@@ -115,7 +115,7 @@ export function createLink({
 		const frame = intents.drain(local)
 		const time = now()
 		const key = JSON.stringify(frame)
-		const edges = frame.pressed.length > 0 || frame.released.length > 0
+		const edges = !!frame.order || frame.pressed.length > 0 || frame.released.length > 0
 		if (!edges && (key === lastKey ? time - lastSent < 0.1 : time - lastSent < MIN_GAP)) return
 		lastSent = time
 		lastKey = key

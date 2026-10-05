@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, expect, test } from 'bun:test'
 import { DEFAULT_PEER_OPTIONS, MAX_PLAYERS, Net, PROTO } from '../src/plugins/online/net.js'
+import { tune } from '../src/plugins/online/tune.js'
 
 class Emitter {
 	listeners = new Map()
@@ -293,7 +294,7 @@ test.each([undefined, 0, PROTO + 1])(
 		expect(conn.sent[0].d.reason).toContain('version mismatch')
 		hello(conn)
 		expect(joins).toBe(0)
-		clock.tick(100)
+		clock.tick(tune.input.closeDelay)
 		expect(conn.closed).toBe(true)
 	},
 )
@@ -312,7 +313,7 @@ test('host validates hello version, ignores repeated hello, and rejects duplicat
 	hello(first)
 	const duplicate = incoming(server, 'same')
 	expect(duplicate.sent[0].d.reason).toContain('already connected')
-	clock.tick(100)
+	clock.tick(tune.input.closeDelay)
 	expect(joins).toBe(1)
 	expect(server.conns.get('same')).toBe(first)
 	expect(first.closed).toBe(false)
@@ -398,7 +399,7 @@ test('startup, join, and host handshake timeouts all clean up', async () => {
 	const conn = incoming(server)
 	clock.tick(30)
 	expect(conn.sent.at(-1).d.reason).toContain('handshake timed out')
-	clock.tick(100)
+	clock.tick(tune.input.closeDelay)
 	expect(conn.closed).toBe(true)
 	expect(server.peerIds).toHaveLength(0)
 	expect(server._pending.size).toBe(0)
@@ -477,7 +478,7 @@ test('refused connection cleanup is safe even when close emits on every call', a
 		calls++
 		if (calls < 10) conn.emit('close')
 	}
-	clock.tick(100)
+	clock.tick(tune.input.closeDelay)
 	expect(calls).toBe(1)
 })
 

@@ -4,6 +4,9 @@ import { tune } from './tune.js'
 // 3: raw strings let us bound guest traffic before parsing JSON.
 export const PROTO = 3
 export const MAX_PLAYERS = 8
+export const REMOVAL_MESSAGES = Object.freeze({
+	'input-abuse': 'Player removed: invalid or excessive input.',
+})
 const PREFIX = 'dodgethis-'
 const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
 const CONTROL = new Set(['hello', 'welcome', 'refused'])
@@ -239,6 +242,9 @@ export class Net {
 			)
 			conn.on('data', (raw) => {
 				if (generation !== this._generation || !this._connections.has(conn)) return
+				// Protocol 2 sends an object into our raw channel, which RTC coerces to this string.
+				if (!settled && raw === '[object Object]')
+					return finish(new Error('Game version mismatch; everyone must refresh the page'))
 				const message = this._read(conn, raw)
 				if (settled) {
 					// The lobby may close between welcome and our hello acknowledgement.
@@ -247,7 +253,7 @@ export class Net {
 							typeof message.d?.reason === 'string'
 								? message.d.reason.slice(0, 200)
 								: 'The lobby refused the connection'
-						this._disconnect(reason)
+						this._disconnect(reason, message.d?.code)
 					} else this._route(conn, message)
 					return
 				}
@@ -343,18 +349,19 @@ export class Net {
 		})
 	}
 
-	_refuse(conn, reason, generation) {
+	_refuse(conn, reason, generation, code) {
 		if (this._pending.get(conn.peer) === conn) this._pending.delete(conn.peer)
 		this._connections.add(conn)
 		const current = () => generation === this._generation && this._connections.has(conn)
 		const refuse = () => {
 			if (!current()) return
 			try {
-				conn.send(JSON.stringify({ t: 'refused', d: { v: PROTO, reason } }))
+				const message = { t: 'refused', d: { v: PROTO, reason, ...(code ? { code } : {}) } }
+				conn.send(conn.serialization === 'raw' ? JSON.stringify(message) : message)
 			} catch {
 				/* close still informs the guest */
 			}
-			// Give the reliable data channel a moment to deliver the readable refusal.
+			// The guest closes after reading the notice; only a non-cooperating guest needs this fallback.
 			if (current()) this._timeout(conn, tune.input.closeDelay, () => this._close(conn))
 		}
 		conn.on('close', () => {
@@ -375,19 +382,17 @@ export class Net {
 			const time = performance.now() / 1000
 			if (budget?.dropped) return null
 			if (!budget) {
-				budget = { at: time, count: 0, dirty: false, rejected: -Infinity, timer: null }
+				budget = { at: time, tokens: tune.input.burst, dirty: [] }
 				this._inputs.set(conn, budget)
 			}
-			if (time - budget.at >= tune.input.rateWindow) {
-				if (!budget.dirty || time - budget.rejected >= tune.input.rateWindow) {
-					this.timers.clearTimeout(budget.timer)
-					budget.timer = null
-				}
-				budget.at = time
-				budget.count = 0
-				budget.dirty = false
-			}
-			if (++budget.count > tune.input.rate || !this._withinCap(raw)) {
+			budget.tokens = Math.min(
+				tune.input.burst,
+				budget.tokens + (time - budget.at) * tune.input.rate,
+			)
+			budget.at = time
+			const allowed = budget.tokens >= 1
+			if (allowed) budget.tokens--
+			if (!allowed || !this._withinCap(raw)) {
 				this._reject(conn)
 				return null
 			}
@@ -422,22 +427,18 @@ export class Net {
 	_reject(conn) {
 		const budget = this._inputs.get(conn)
 		if (!this.isHost || !budget || budget.dropped) return
-		budget.dirty = true
-		budget.rejected = performance.now() / 1000
-		if (budget.timer !== null) return
-		// Start at the first dirty rate window, not at its 121st packet. Valid frames cannot wash a flood clean.
-		const delay = Math.max(0, budget.at + tune.input.rejectionWindow - budget.rejected)
-		budget.timer = this.timers.setTimeout(() => {
-			budget.timer = null
-			if (!this._connections.has(conn)) return
-			if (performance.now() / 1000 - budget.rejected >= tune.input.rateWindow) return
-			const reason = 'Player removed: invalid or excessive input. Match cancelled.'
-			budget.dropped = true
-			const established = this.conns.get(conn.peer) === conn
-			if (established) this.conns.delete(conn.peer)
-			this._refuse(conn, reason, this._generation)
-			if (established) this.onPeerLeave?.(conn.peer, reason)
-		}, delay * 1000)
+		const window = Math.floor(performance.now() / 1000 / tune.input.dirtyWindow)
+		if (budget.dirty.at(-1) === window) return
+		// A quiet window ages history, rather than washing repeated abuse clean.
+		budget.dirty = budget.dirty.filter((w) => window - w < tune.input.historyWindows)
+		budget.dirty.push(window)
+		if (budget.dirty.length < tune.input.rejectionWindows) return
+		budget.dropped = true
+		const established = this.conns.get(conn.peer) === conn
+		if (established) this.conns.delete(conn.peer)
+		const code = 'input-abuse'
+		this._refuse(conn, REMOVAL_MESSAGES[code], this._generation, code)
+		if (established) this.onPeerLeave?.(conn.peer, code)
 	}
 
 	_route(conn, message) {
@@ -491,9 +492,9 @@ export class Net {
 		if (this.isHost) this.onPeerLeave?.(conn.peer)
 		else this._disconnect('The host connection was lost; session ended')
 	}
-	_disconnect(message) {
+	_disconnect(message, code) {
 		this.leave()
-		this.onDisconnect?.(message)
+		this.onDisconnect?.(message, code)
 	}
 	_timeout(key, delay, callback) {
 		this._clearTimeout(key)
@@ -512,8 +513,6 @@ export class Net {
 	}
 	_close(conn) {
 		this._clearTimeout(conn)
-		const budget = this._inputs.get(conn)
-		if (budget) this.timers.clearTimeout(budget.timer)
 		this._inputs.delete(conn)
 		if (this._pending.get(conn.peer) === conn) this._pending.delete(conn.peer)
 		this._connections.delete(conn)

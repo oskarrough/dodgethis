@@ -1,5 +1,6 @@
 import { createLobbyDirectory } from './lobby-directory.js'
 import { validateRoster } from '../../core/roster.js'
+import { REMOVAL_MESSAGES } from './net.js'
 
 export const MAX_BOTS = 12
 const teams = ['A', 'B']
@@ -65,23 +66,28 @@ export function createOnlineSession(
 		state.humans.push({ id: peerId, peerId, team, controller: 'human' })
 		publish()
 	}
-	net.onPeerLeave = (peerId, reason) => {
+	net.onPeerLeave = (peerId, code) => {
 		if (!net.isHost || !state) return
 		state.humans = state.humans.filter((p) => p.peerId !== peerId)
+		const reason = Object.hasOwn(REMOVAL_MESSAGES, code) ? REMOVAL_MESSAGES[code] : null
 		if (reason) state.message = reason
 		if (state.phase === 'match') {
 			state.phase = 'lobby'
 			state.matchId = null
-			state.message = reason || 'A player left. Match cancelled; scores reset.'
+			state.message = reason
+				? `${reason} Match cancelled.`
+				: 'A player left. Match cancelled; scores reset.'
 			net.accepting = true
 			onAbort(state.message)
 		}
 		publish()
 	}
-	net.onDisconnect = (message) => {
+	net.onDisconnect = (message, code) => {
 		generation++
 		directory.stop()
-		const reason = message || 'The host left. Session ended.'
+		const removal = Object.hasOwn(REMOVAL_MESSAGES, code) ? REMOVAL_MESSAGES[code] : null
+		const notice = removal || message || 'The host left. Session ended.'
+		const reason = removal && state?.phase === 'match' ? `${notice} Match cancelled.` : notice
 		settleRoster(new Error(reason))
 		net.leave()
 		state = null
