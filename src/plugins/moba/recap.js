@@ -7,12 +7,13 @@ const number = (value) => value.toLocaleString(undefined, { maximumFractionDigit
 
 // One run's facts, not a second combat simulation. Only the local death gets a card.
 export function createRecap({ sim, hero, canvas }) {
-	const rows = new Map(
-		sim.heroes.map((unit) => [
-			unit.id,
-			{ unit, kills: 0, deaths: 0, heroDamage: 0, structureDamage: 0, xp: 0 },
-		]),
-	)
+	const rows = new Map()
+	function syncHeroes() {
+		for (const unit of sim.heroes)
+			if (!rows.has(unit.id))
+				rows.set(unit.id, { unit, kills: 0, deaths: 0, heroDamage: 0, structureDamage: 0, xp: 0 })
+	}
+	syncHeroes()
 	const structures = new Map(sim.lane.structures.map((unit) => [unit.id, unit.kind]))
 	const recent = []
 	let death = null
@@ -32,12 +33,15 @@ export function createRecap({ sim, hero, canvas }) {
 	const heroName = (unit) => titleCase(unit.definition?.id ?? unit.heroId ?? 'fletcher')
 	const sourceName = (id) => {
 		const row = rows.get(id)
-		if (row) return `${heroName(row.unit)}${id === hero.id ? ' (you)' : ' bot'}`
+		if (row)
+			return `${heroName(row.unit)}${id === hero.id ? ' (you)' : sim.bots?.brains.some((bot) => bot.id === id) ? ' bot' : ''}`
 		if (structures.has(id)) return titleCase(structures.get(id))
 		if (id?.startsWith('minion-')) return 'Minions'
-		return 'Unknown source'
+		if (id?.startsWith('dummy')) return 'Training dummy'
+		return id ? titleCase(id) : 'Environment'
 	}
 	function present(fact) {
+		syncHeroes()
 		const source = rows.get(fact.source)
 		const target = rows.get(fact.target)
 		if (fact.type === 'hit') {
@@ -95,6 +99,7 @@ export function createRecap({ sim, hero, canvas }) {
 	}
 	function showTable(card) {
 		if (!card) return
+		syncHeroes()
 		for (const [key, value] of Object.entries(frontTune.tile)) {
 			const unit = ['snap', 'press'].includes(key)
 				? 's'

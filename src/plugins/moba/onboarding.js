@@ -114,10 +114,6 @@ void main() {
 		node.style.transform = 'translate(-50%,-100%)'
 	}
 	return {
-		cameraInset() {
-			const progress = Math.min(1, distance / t.walkDistance)
-			return t.frameInset + (tune.follow.edgeInset - t.frameInset) * progress
-		},
 		present(fact) {
 			if (fact.team !== hero.team) return
 			if (fact.type === 'xp' && fact.passive && xpAt === null) {

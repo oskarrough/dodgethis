@@ -1,8 +1,8 @@
 import { tune } from './tune.js'
 import { FLOOR, clampMap } from './obstacles.js'
 
-// Ground intersections of the four view corners. Pitch stays fixed; if a live
-// camera tune cannot fit the court, reduce FOV rather than show off-map void.
+// Ground intersections of the four view corners. Pitch stays fixed; oversized
+// live camera tunes still fit the lane's width without changing scale near a base.
 export function viewFootprint(t, aspect, fov = t.fov) {
 	const height = Math.max(t.minHeight ?? tune.follow.minHeight, t.height)
 	const back = Math.max(0, t.back)
@@ -17,7 +17,7 @@ export function viewFootprint(t, aspect, fov = t.fov) {
 	}
 }
 
-export function clampView(point, t, aspect = 1, reserve = 0, focus = null) {
+export function clampView(point, t, aspect = 1, reserve = 0) {
 	let fov = t.fov + reserve,
 		footprint = viewFootprint(t, aspect, fov)
 	const padding = t.viewPadding ?? tune.follow.viewPadding
@@ -34,46 +34,9 @@ export function clampView(point, t, aspect = 1, reserve = 0, focus = null) {
 		fov = low
 		footprint = viewFootprint(t, aspect, fov)
 	}
-	const bounded = (angle, centre = point) => {
-		const footprint = viewFootprint(t, aspect, angle)
-		return {
-			x: Math.max(
-				-FLOOR.halfX + footprint.halfX + padding,
-				Math.min(FLOOR.halfX - footprint.halfX - padding, centre.x),
-			),
-			z: Math.max(
-				-FLOOR.halfZ - footprint.minZ + padding,
-				Math.min(FLOOR.halfZ - footprint.maxZ - padding, centre.z),
-			),
-		}
-	}
-	let at = bounded(fov)
-	if (focus) {
-		// Narrow the lens near a base rather than show void or lose the hero off-screen.
-		const visible = (angle) => {
-			const at = bounded(angle, focus)
-			const height = Math.max(t.minHeight ?? tune.follow.minHeight, t.height)
-			const back = Math.max(0, t.back)
-			const distance = Math.hypot(height, back)
-			const dz = focus.z - at.z
-			const depth = (height * height + back * (back - dz)) / distance
-			const tangent = Math.tan((angle * Math.PI) / 360)
-			const x = (focus.x - at.x) / (depth * Math.max(0.01, aspect) * tangent)
-			const y = (height * dz) / (distance * depth * tangent)
-			return Math.max(Math.abs(x), Math.abs(y)) <= (t.edgeInset ?? tune.follow.edgeInset)
-		}
-		if (!visible(fov) && visible(tune.follow.minFov)) {
-			let low = tune.follow.minFov,
-				high = fov
-			for (let i = 0; i < tune.follow.fitIterations; i++) {
-				const middle = (low + high) / 2
-				if (visible(middle)) low = middle
-				else high = middle
-			}
-			fov = low
-			at = bounded(fov)
-		}
-	}
+	// Clamp the camera's ground target, not its whole footprint. Hiding the boundary
+	// by narrowing the lens magnified the core and pushed the opening hero aside.
+	const at = clampMap(point, padding)
 	return { ...at, fov: Math.max(tune.follow.minFov, fov - reserve) }
 }
 
@@ -111,19 +74,14 @@ export function createFollow(t = tune.follow) {
 		dt,
 		hero,
 		aim,
-		{
-			pan = null,
-			centred = false,
-			pad = false,
-			aspect = 1,
-			cameraFov = lastFov,
-			edgeInset = t.edgeInset,
-		} = {},
+		{ pan = null, centred = false, pad = false, aspect = 1, cameraFov = lastFov } = {},
 	) {
 		if (pad) free = false
 		const panning = !centred && !pad && pan && (pan.x || pan.z)
 		const g = goal(hero, pad && !centred ? aim : null)
 		if (fresh) {
+			// The loading crane's lens is not a gameplay FOV kick.
+			cameraFov = lastFov
 			at.x = g.x
 			at.z = g.z
 			vel.x = vel.z = 0
@@ -156,12 +114,9 @@ export function createFollow(t = tune.follow) {
 		}
 		const bounded = clampView(
 			at,
-			free && !centred
-				? { ...t, fov: Math.max(tune.follow.minFov, t.fov - freeZoom) }
-				: { ...t, edgeInset },
+			free && !centred ? { ...t, fov: Math.max(tune.follow.minFov, t.fov - freeZoom) } : t,
 			aspect,
 			Math.max(0, cameraFov - lastFov) + pendingKick,
-			free && !centred ? null : hero,
 		)
 		pendingKick = 0
 		lastFov = bounded.fov

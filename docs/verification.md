@@ -20,6 +20,12 @@ Each fact has effective damage (HP removed, excluding overkill), actor seat/kit,
 
 `node scripts/verify-moba-debug.mjs <preview URL> <artifact directory>` checks direct setup links and bad-value warnings, then enters from a fresh `/` through the MOBA tile, Easy and hero lock. It sends a real mouse order and fast-forwards the ordinary app loop with the local human seat, without injected damage. It asserts a frozen pause snapshot, exactly one tick per step, clipboard success and live speed changes, then saves `debug-1440.png` and `report.json`. The recorded production pass captured tick 1337 with all 12 first-wave minions alive and no browser errors. DOM-free coverage is in `tests/moba-setup.test.js` and `tests/moba-debug.test.js`.
 
+## MOBA pre-ship polish
+
+`node scripts/verify-moba-polish.mjs <preview URL> <artifact directory>` enters from fresh `/` for every play flow. It checks that only picked selections enter the URL, then traces human RMB movement, follow, manual pan and Space at 390, 1440 and 2560×1080. Ordinary app-loop fast-forward captures lethal damage from a practice Fletcher bot and a Mitts bot spawned through Try Mode, with named recap rows and no injected damage. It saves the opening frames, both death cards and `report.json`; incoming selection links are checked separately.
+
+Synthetic Space events must bubble from the body, not target `window`: the camera's capture listener must run before core input suppresses page scrolling. Consume a mouse order for one frame before parking the pointer, since the input loop reads the pointer's current ground position. The frozen-build pass captured both named bot kills, a hero-centred FOV of 40 at all three sizes, and no browser errors. Camera bounds cover the ground target; the map boundary may be visible at base without changing the match scale.
+
 ## Two-device check
 
 Use the same build on both devices, preferably with one device on home Wi-Fi and the other on mobile data. Host a lobby on one, join its code on the other, and complete a human-only match. Repeat with allied humans against bots and mixed teams. Compare scores, deaths, pickups, and bow/bowl ownership; test leaving/rejoining and host departure.

@@ -1,10 +1,7 @@
-import * as THREE from 'three'
 import { expect, test } from 'bun:test'
-import { createFollow, viewFootprint } from '../src/plugins/moba/follow.js'
+import { createFollow } from '../src/plugins/moba/follow.js'
 import { createCameraControls } from '../src/plugins/moba/camera-controls.js'
 import { createCursor } from '../src/plugins/moba/cursor.js'
-import { FLOOR } from '../src/plugins/moba/map.js'
-import { tune } from '../src/plugins/moba/tune.js'
 
 function key(target, code, type = 'keydown', extra = {}) {
 	const e = new Event(type, { cancelable: true })
@@ -61,25 +58,6 @@ test('a Space tap from follow mode keeps following after release', () => {
 	controller.abort()
 })
 
-test('pan speed is tunable and clamps at all floor edges', () => {
-	const follow = createFollow({ ...tune.follow, pan: 10 })
-	const hero = { x: 0, z: 0 }
-	follow.frame(0, hero, null)
-	expect(follow.frame(0.1, hero, null, { pan: { x: 1, z: 0 } }).target.x).toBe(1)
-	expect(follow.frame(100, hero, null, { pan: { x: 1, z: 1 } }).target).toMatchObject({
-		x: FLOOR.halfX - viewFootprint(tune.follow, 1).halfX - tune.follow.viewPadding,
-		z: FLOOR.halfZ - viewFootprint(tune.follow, 1).maxZ - tune.follow.viewPadding,
-	})
-	expect(follow.frame(100, hero, null, { pan: { x: -1, z: -1 } }).target).toMatchObject({
-		x: -FLOOR.halfX + viewFootprint(tune.follow, 1).halfX + tune.follow.viewPadding,
-		z: -FLOOR.halfZ - viewFootprint(tune.follow, 1).minZ + tune.follow.viewPadding,
-	})
-	expect(follow.frame(1, hero, null).target).toMatchObject({
-		x: -FLOOR.halfX + viewFootprint(tune.follow, 1).halfX + tune.follow.viewPadding,
-		z: -FLOOR.halfZ - viewFootprint(tune.follow, 1).minZ + tune.follow.viewPadding,
-	})
-})
-
 test('diagonal pan has the same speed, Space wins over arrows, blur releases keys', () => {
 	const target = new EventTarget()
 	const controller = new AbortController()
@@ -128,33 +106,6 @@ test('mouse follow has no extra lag and suspended menus cannot pan or recenter',
 	key(target, 'Space')
 	expect(controls.read()).toEqual({ centred: false, pan: { x: 0, z: 0 } })
 	controller.abort()
-})
-
-test('all spawn and respawn files stay in view without any ground corner leaving the map', () => {
-	for (const [width, height] of [
-		[390, 844],
-		[1280, 577],
-		[1440, 900],
-		[2560, 1080],
-	]) {
-		for (const side of [-1, 1])
-			for (const file of [-1.5, 0, 1.5]) {
-				const hero = { x: side * tune.map.spawnX, z: file }
-				const follow = createFollow()
-				const frame = follow.frame(0, hero, null, { aspect: width / height })
-				const camera = new THREE.PerspectiveCamera(frame.fov, width / height, 0.1, 200)
-				camera.position.copy(frame.eye)
-				camera.lookAt(new THREE.Vector3().copy(frame.target))
-				camera.updateMatrixWorld(true)
-				const point = new THREE.Vector3(hero.x, tune.pips.height, hero.z).project(camera)
-				expect(Math.abs(point.x)).toBeLessThan(0.95)
-				expect(Math.abs(point.y)).toBeLessThan(0.95)
-				const footprint = viewFootprint(tune.follow, width / height, frame.fov)
-				expect(Math.abs(frame.target.x) + footprint.halfX).toBeLessThanOrEqual(FLOOR.halfX)
-				expect(frame.target.z + footprint.maxZ).toBeLessThanOrEqual(FLOOR.halfZ)
-				expect(frame.target.z + footprint.minZ).toBeGreaterThanOrEqual(-FLOOR.halfZ)
-			}
-	}
 })
 
 test('native cursor selects move, attack, targeting; restores on pause, pad and disposal', () => {

@@ -16,7 +16,6 @@ export const tune = {
 		xpLife: 9,
 		walkDistance: 10,
 		arrowFade: 0.8,
-		frameInset: 0.65,
 		crowdRadius: 4,
 		crowdCount: 2,
 		ringRadius: 0.85,
@@ -608,7 +607,6 @@ export const tune = {
 	},
 	follow: {
 		viewPadding: 1.25,
-		edgeInset: 0.85,
 		minHeight: 1,
 		minFov: 0.01,
 		fitIterations: 24,

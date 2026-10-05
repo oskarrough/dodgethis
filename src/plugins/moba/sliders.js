@@ -167,7 +167,6 @@ export function sliderSections(tune, setup) {
 			back: [0, 30, 0.5],
 			fov: [20, 70, 1],
 			response: [0.02, 0.6, 0.01, 'pad response (s)'],
-			edgeInset: [0.5, 0.95, 0.01, 'base framing ×'],
 			lookAhead: [0, 0.6, 0.01, 'pad look ahead ×'],
 			lookCap: [0, 8, 0.25, 'pad look cap (m)'],
 		},

@@ -110,6 +110,9 @@ export function mobaFront(app) {
 			let screen = 'modes'
 			const setup = parseMatchSetup(new URLSearchParams(location.search), options.setup ?? options)
 			let difficulty = setup.difficulty
+			const picked = new Set(
+				['hero', 'bots'].filter((key) => new URLSearchParams(location.search).has(key)),
+			)
 			run.renderDemand(() => screen === 'hero')
 			run.system('present', ({ dt }) => {
 				preview?.update(dt)
@@ -185,8 +188,8 @@ export function mobaFront(app) {
 				// Menus preserve the selection, never the direct-play bypass.
 				const url = new URL(location.href)
 				url.searchParams.delete('play')
-				url.searchParams.set('hero', setup.heroId)
-				url.searchParams.set('bots', difficulty)
+				if (picked.has('hero')) url.searchParams.set('hero', setup.heroId)
+				if (picked.has('bots')) url.searchParams.set('bots', difficulty)
 				if (next === 'modes') url.searchParams.delete('mode')
 				else url.searchParams.set('mode', 'moba')
 				if (url.href !== location.href) history.replaceState(null, '', url)
@@ -256,6 +259,7 @@ export function mobaFront(app) {
 				}
 				if (button.dataset.difficulty) {
 					difficulty = button.dataset.difficulty
+					picked.add('bots')
 					const freq = tune.pick.frequencies[difficultyIndex()]
 					app.audio.blip({
 						freq,
@@ -267,6 +271,10 @@ export function mobaFront(app) {
 					return show('hero')
 				}
 				if (button.dataset.hero) {
+					picked.add('hero')
+					const url = new URL(location.href)
+					url.searchParams.set('hero', button.dataset.hero)
+					history.replaceState(null, '', url)
 					if (button.dataset.hero === card.heroId)
 						return controls.point(
 							buttons.findIndex((button) => button.classList.contains('front-lock')),
@@ -275,9 +283,6 @@ export function mobaFront(app) {
 					card.choose(button.dataset.hero)
 					preview = createPreview(app, run, card.heroId)
 					setup.heroId = card.heroId
-					const url = new URL(location.href)
-					url.searchParams.set('hero', setup.heroId)
-					history.replaceState(null, '', url)
 					return
 				}
 				if (button.dataset.slot) return card.select(button.dataset.slot)
@@ -288,6 +293,10 @@ export function mobaFront(app) {
 				}
 				for (const freq of tune.confirm.frequencies)
 					app.audio.blip({ freq, dur: tune.confirm.dur, gain: tune.confirm.gain, type: 'sine' })
+				picked.add('hero')
+				const url = new URL(location.href)
+				url.searchParams.set('hero', setup.heroId)
+				history.replaceState(null, '', url)
 				transferred = true
 				startLoading(app, {
 					el,

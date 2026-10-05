@@ -91,7 +91,12 @@ export default function moba(app) {
 				window,
 				run.signal,
 				follow,
-				() => !app.clock.paused && !controls.paused && !menu.frozen() && !app.overlay.visible,
+				() =>
+					(options.ready?.() ?? true) &&
+					!app.clock.paused &&
+					!controls.paused &&
+					!menu.frozen() &&
+					!app.overlay.visible,
 				() => input.activeDevice(),
 			)
 			const cursor = createCursor(app.renderer.domElement)
@@ -179,7 +184,6 @@ export default function moba(app) {
 						pad,
 						aspect: app.camera.view.aspect,
 						cameraFov: app.camera.view.fov,
-						edgeInset: onboarding.cameraInset(),
 					}),
 				)
 			})
