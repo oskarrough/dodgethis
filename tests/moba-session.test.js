@@ -60,10 +60,10 @@ test('separate shell processes start, act, retry and stop a frozen session; both
 				'act',
 				'--session',
 				name,
-				'{"action":"move","x":40,"y":4}',
+				'{"action":"move","x":40,"y":5}',
 			])
 			expect(next).toContain('seat B2 t=0.5s')
-			expect(next).toContain('order=move:40,4')
+			expect(next).toContain('order=move:40,5')
 			const waited = await call(directory, [
 				'act',
 				'--session',

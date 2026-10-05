@@ -408,7 +408,7 @@ export function createLane({
 			if (tower) continue
 			const goal = target?.body.position ??
 				unit.returnGoal ?? {
-					x: unit.team === 'A' ? tune.waves.spawnX : -tune.waves.spawnX,
+					x: (unit.team === 'A' ? 1 : -1) * (tune.core.x - tune.core.radius - 1),
 					z: unit.file,
 				}
 			if (
