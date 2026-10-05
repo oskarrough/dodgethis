@@ -229,6 +229,7 @@ export function createLobbyStands(scene, el, gallery, readySeats, local, onReady
 			selected,
 			label,
 			deniedAt: -Infinity,
+			pickedAt: -Infinity,
 		}
 	})
 	const galleryProps = gallery.standees.map((stand) => {
@@ -453,6 +454,10 @@ export function createLobbyStands(scene, el, gallery, readySeats, local, onReady
 			labels()
 			syncSeats()
 		},
+		pick(id, tick) {
+			const stand = stands.find((s) => s.id === id)
+			if (stand) stand.pickedAt = tick
+		},
 		deny(id, tick) {
 			stands.find((stand) => stand.id === id).deniedAt = tick
 		},
@@ -492,6 +497,14 @@ export function createLobbyStands(scene, el, gallery, readySeats, local, onReady
 					f > 0
 						? Math.sin((age / v.wobbleTime) * v.wobbleTurns * Math.PI * 2) * v.wobbleAngle * f
 						: 0
+				// Squash flat, then spring back with a decaying overshoot (a damped cosine).
+				const since = (tick - stand.pickedAt) * step
+				const k = since / v.squashTime
+				const squash =
+					k >= 0 && k < 1
+						? v.squashDepth * (1 - k) ** 2 * Math.cos(k * v.squashBounces * Math.PI * 2)
+						: 0
+				stand.card.scale.set(1 + squash * 0.5, 1 - squash, 1)
 				point.set(stand.x, v.labelY, v.z + v.labelForward).project(camera)
 				stand.label.hidden = point.z < -1 || point.z > 1
 				stand.label.style.transform = `translate(${((point.x + 1) * innerWidth) / 2}px, ${((1 - point.y) * innerHeight) / 2}px) translate(-50%, -50%)`

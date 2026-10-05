@@ -80,7 +80,7 @@
 	display: none;
 }
 .lobby-gallery-label {
-	translate: 0 2.6em;
+	translate: 0 3.4em;
 }
 .lobby-gallery-label small {
 	display: none;
@@ -106,7 +106,7 @@
 	translate: -55% 0;
 }
 .moba-front .lobby-seat-label[data-mine='true'] {
-	translate: 0 -1.5em;
+	translate: 0 -2em;
 	background: var(--ui-button);
 	font-size: clamp(13px, 1.3vw, 21px);
 	z-index: 2;
@@ -225,4 +225,23 @@
 	border-radius: 0.25em;
 	background: var(--ui-gold);
 	font: inherit;
+}
+/* Neighbouring stand labels stagger so they never sit on one another when the court is small. */
+.lobby-stand-label[data-hero='mitts'] {
+	translate: 0 -1.5em;
+}
+@media (max-width: 600px) {
+	.lobby-stand-label[data-hero] {
+		font-size: 0.85em;
+	}
+	.lobby-stand-label[data-hero='fletcher'] {
+		translate: -0.4em 1.1em;
+	}
+	.lobby-gallery-label[data-difficulty='hard'] {
+		translate: 0 4.4em;
+	}
+}
+/* Bot seats read as a quiet name tag so the right-hand column never runs labels together. */
+.lobby-seat-label[data-mine='false'] {
+	font-size: clamp(9px, 0.85vw, 14px);
 }

@@ -114,6 +114,7 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 	const readySounds = new Map()
 	let occupied = null
 	let pickSoundTick = null
+	let flipTick = -Infinity
 	let denySoundTick = null
 	let gallerySoundTick = null
 	let shotSoundTick = null
@@ -173,6 +174,8 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 		}
 		if (fact.type !== 'swap') return
 		syncPick()
+		flipTick = fact.tick
+		props.pick(fact.heroId, fact.tick)
 		if (pickSoundTick !== fact.tick) {
 			pickSoundTick = fact.tick
 			app.audio.blip(tune.lobby.stands.pickSound)
@@ -622,6 +625,11 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 		},
 		update(alpha) {
 			props.update(sim.tick + alpha, app.camera.view, app.clock.step)
+			// The new body comes round from edge-on, widening past full and settling.
+			const f = tune.lobby.stands
+			const k = ((sim.tick + alpha - flipTick) * app.clock.step) / f.flipTime
+			const turn = k >= 0 && k < 1 ? 1 - (1 - k) ** 3 + Math.sin(k * Math.PI) * f.flipOvershoot : 1
+			hero.body.mesh.scale.x = f.flipEdge + (1 - f.flipEdge) * turn
 		},
 		hudFrame(alpha) {
 			const step = app.clock.step
