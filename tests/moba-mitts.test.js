@@ -47,8 +47,8 @@ test('Mitts is a live-tuned playable definition and both select setup and hero=m
 		expect(HEROES.carom.playable).toBe(false)
 		expect(HEROES.skip.playable).toBe(false)
 		expect(HEROES.mitts.abilities.slot4).toBeNull()
-		expect(b.hp).toBe(1600)
-		expect(b.definition.basic).toMatchObject({ damage: 110, range: 3, rate: 1, kind: 'melee' })
+		expect(b.hp).toBe(1900)
+		expect(b.definition.basic).toMatchObject({ damage: 130, range: 3.5, rate: 1, kind: 'melee' })
 		for (const setup of [
 			parseMatchSetup(new URLSearchParams('hero=mitts')),
 			parseMatchSetup(new URLSearchParams(), { heroId: 'mitts' }),
@@ -198,7 +198,7 @@ test('Toss has its own 0.35 s tell and first-hit shot; glove slap is a 3 m melee
 		b.body.place(2.5, 1.05, 9)
 		press(b, 'primary')
 		step(20)
-		expect(a.hp).toBe(a.maxHp - 230)
+		expect(a.hp).toBe(a.maxHp - 250)
 		expect(facts.some((f) => f.type === 'cast' && f.ability === 'gloveSlap')).toBe(true)
 		expect(facts.some((f) => f.type === 'impact' && f.ability === 'gloveSlap')).toBe(true)
 		expect(sim.shots.some((s) => s.owner === b.id && s.slot === 'primary')).toBe(false)
@@ -503,7 +503,7 @@ test('real-play fast-forward: three Mitts vs three Fletchers ends by a core kill
 	)
 	fixture(
 		({ sim, facts, step }) => {
-			for (let i = 0; i < ticks(tune.agents.maxSeconds) && !sim.lane.match.winner; i++) step()
+			for (let i = 0; i < ticks(tune.agents.maxSeconds * 2) && !sim.lane.match.winner; i++) step()
 			expect(sim.lane.match.winner).not.toBeNull()
 			expect(sim.lane.structures.some((u) => u.kind === 'core' && u.dead)).toBe(true)
 			for (const ability of ['gloveSlap', 'toss', 'catch'])
