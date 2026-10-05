@@ -530,27 +530,12 @@ export function createHud({ lobby = false } = {}) {
 					const trait = heroTrait(prop.heroId)
 					return {
 						title: prop.heroId[0].toUpperCase() + prop.heroId.slice(1),
-						tag:
-							prop.type === 'bot'
-								? 'bot · ' + prop.seat
-								: !prop.playable
-									? 'soon'
-									: prop.selected
-										? 'picked'
-										: 'hero stand',
-						summary:
-							prop.type === 'bot'
-								? 'Ready bot in Team ' + prop.seat[0] + '. Cardboard, not a sparring target.'
-								: prop.playable
-									? 'Walk onto the pad to play this hero.'
-									: 'This hero is not playable yet.',
-						rows:
-							prop.playable || prop.type === 'bot'
-								? [
-										['Speed', definition.base.speed + ' m/s'],
-										['Basic', definition.basic.damage + ' · ' + definition.basic.range + ' m'],
-									]
-								: [],
+						tag: 'bot · ' + prop.seat,
+						summary: 'Ready bot in Team ' + prop.seat[0] + '. Cardboard, not a sparring target.',
+						rows: [
+							['Speed', definition.base.speed + ' m/s'],
+							['Basic', definition.basic.damage + ' · ' + definition.basic.range + ' m'],
+						],
 						notes: [
 							trait ? trait.name + ': ' + trait.summary : null,
 							...Object.values(definition.abilities)
@@ -737,11 +722,6 @@ export function createHud({ lobby = false } = {}) {
 			} = frame
 			if (hero?.swapFact && hero.swapFact !== lastSwap) {
 				lastSwap = hero.swapFact
-				if (frame.lobby) {
-					banner.textContent = 'Now playing ' + hero.heroId.replace(/^./, (c) => c.toUpperCase())
-					banner.hidden = false
-					bannerLeft = tune.lobby.swapBanner
-				}
 				// Labels/icons read the new definition below; old denial and ready pulses do not transfer.
 				for (const s of slots) {
 					s.deniedFor = 0

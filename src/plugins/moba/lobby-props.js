@@ -105,11 +105,11 @@ export function createDifficultyGallery({ local, difficulty, present, dummies = 
 	}
 }
 
-// Handmade cutouts, not combatants. All animation reads the interpolated sim clock.
-export function createLobbyStands(scene, el, gallery, readySeats, local, onReady) {
-	const v = tune.lobby.stands
+// Handmade cardboard props, not combatants. All animation reads the interpolated sim clock.
+export function createLobbyProps(scene, el, gallery, readySeats, local, onReady) {
+	const v = tune.lobby.cutout
 	const root = new THREE.Group()
-	root.name = 'lobby-stands'
+	root.name = 'lobby-props'
 	scene.add(root)
 	const owned = []
 	const material = (role) => {
@@ -188,50 +188,6 @@ export function createLobbyStands(scene, el, gallery, readySeats, local, onReady
 		return card
 	}
 	const definitions = Object.values(HEROES)
-	const stands = definitions.map((definition, i) => {
-		const x = (i - (definitions.length - 1) / 2) * v.spacing
-		const group = new THREE.Group()
-		group.position.set(x, 0, v.z)
-		root.add(group)
-		group.scale.setScalar(v.cardScale)
-		const card = cutout(definition, group)
-		card.rotation.x = v.tilt
-		const pad = mesh(new THREE.CircleGeometry(v.radius, v.segments), cream, root)
-		pad.rotation.x = -Math.PI / 2
-		pad.position.set(x, v.padY, v.z + v.padForward)
-		const ring = mesh(
-			new THREE.RingGeometry(v.radius - v.ringWidth, v.radius, v.segments),
-			ink,
-			root,
-		)
-		ring.rotation.x = -Math.PI / 2
-		ring.position.set(x, v.ringY, pad.position.z)
-		const selected = mesh(
-			new THREE.RingGeometry(v.radius - v.selectedWidth, v.radius, v.segments),
-			picked,
-			root,
-		)
-		selected.rotation.x = -Math.PI / 2
-		selected.position.set(x, v.selectedY, pad.position.z)
-		selected.visible = false
-		const label = document.createElement('div')
-		label.className = 'lobby-stand-label'
-		label.dataset.hero = definition.id
-		label.dataset.playable = String(definition.playable)
-		label.innerHTML = `<span>${definition.id.replace(/^./, (c) => c.toUpperCase())}</span><small>${definition.playable ? 'Walk here' : 'soon'}</small>`
-		el.append(label)
-		return {
-			id: definition.id,
-			playable: definition.playable,
-			x,
-			z: pad.position.z,
-			card,
-			selected,
-			label,
-			deniedAt: -Infinity,
-			pickedAt: -Infinity,
-		}
-	})
 	const galleryProps = gallery.standees.map((stand) => {
 		const g = tune.lobby.gallery
 		const group = new THREE.Group()
@@ -259,14 +215,14 @@ export function createLobbyStands(scene, el, gallery, readySeats, local, onReady
 		pad.rotation.x = -Math.PI / 2
 		pad.position.set(stand.x, g.ringY, stand.z)
 		const label = document.createElement('div')
-		label.className = 'lobby-stand-label lobby-gallery-label'
+		label.className = 'lobby-label lobby-gallery-label'
 		label.dataset.difficulty = stand.id
 		label.innerHTML = `<span>${stand.id.replace(/^./, (c) => c.toUpperCase())}</span><small>Shoot here</small>`
 		el.append(label)
 		return { stand, card, pad, label }
 	})
 	const galleryHelp = document.createElement('div')
-	galleryHelp.className = 'lobby-stand-label lobby-gallery-help'
+	galleryHelp.className = 'lobby-label lobby-gallery-help'
 	el.append(galleryHelp)
 	// The six recovery marks are real ground prints, so their camera fit is visible too.
 	const mark = tune.lobby.mark
@@ -333,7 +289,7 @@ export function createLobbyStands(scene, el, gallery, readySeats, local, onReady
 			})
 		const label = document.createElement('button')
 		label.type = 'button'
-		label.className = 'lobby-stand-label lobby-seat-label'
+		label.className = 'lobby-label lobby-seat-label'
 		label.dataset.seat = seat.id
 		label.onclick = onReady
 		label.innerHTML = '<span></span><small></small>'
@@ -348,11 +304,7 @@ export function createLobbyStands(scene, el, gallery, readySeats, local, onReady
 			p.fill.material = mine ? picked : seatColors[p.seat.team]
 			p.label.dataset.mine = String(mine)
 			p.label.disabled = !mine
-			const title = mine
-				? 'Ready'
-				: owner
-					? owner.heroId.replace(/^./, (c) => c.toUpperCase())
-					: 'Open'
+			const title = mine ? 'Ready' : owner ? 'Bot' : 'Open'
 			const key = mine ? (device === 'gamepad' ? 'Start' : device === 'touch' ? '' : 'Enter') : ''
 			const help = mine ? (device === 'touch' ? 'Stand here' : 'go') : owner?.bot ? 'bot' : 'seat'
 			if (p.label.firstChild.textContent !== title) p.label.firstChild.textContent = title
@@ -378,13 +330,6 @@ export function createLobbyStands(scene, el, gallery, readySeats, local, onReady
 			},
 		})
 	}
-	for (const stand of stands)
-		inspectTarget('stand:' + stand.id, stand.card, { x: stand.x, y: 0, z: v.z }, () => ({
-			type: 'stand',
-			heroId: stand.id,
-			playable: stand.playable,
-			selected: stand.selected.visible,
-		}))
 	for (const p of galleryProps)
 		inspectTarget('difficulty:' + p.stand.id, p.card, { x: p.stand.x, y: 0, z: p.stand.z }, () => ({
 			type: 'difficulty',
@@ -411,14 +356,6 @@ export function createLobbyStands(scene, el, gallery, readySeats, local, onReady
 		}
 	}
 	function labels() {
-		for (const stand of stands) {
-			const picked = stand.selected.visible
-			setHelp(
-				stand.label.querySelector('small'),
-				picked && device !== 'touch' ? (device === 'gamepad' ? '✛↑' : 'H') : '',
-				picked ? (device === 'touch' ? 'Picked' : 'next') : stand.playable ? 'Walk here' : 'soon',
-			)
-		}
 		setHelp(
 			galleryHelp,
 			device === 'touch' ? '' : device === 'gamepad' ? '✛↓' : 'G',
@@ -436,30 +373,15 @@ export function createLobbyStands(scene, el, gallery, readySeats, local, onReady
 		}
 	}
 	return {
-		stands,
 		galleryProps,
 		seatProps,
 		inspectables,
 		syncSeats,
 		selectDifficulty: labels,
-		select(id) {
-			for (const stand of stands) {
-				stand.selected.visible = stand.id === id
-				stand.label.dataset.picked = String(stand.id === id)
-			}
-			labels()
-		},
 		setDevice(next) {
 			device = next
 			labels()
 			syncSeats()
-		},
-		pick(id, tick) {
-			const stand = stands.find((s) => s.id === id)
-			if (stand) stand.pickedAt = tick
-		},
-		deny(id, tick) {
-			stands.find((stand) => stand.id === id).deniedAt = tick
 		},
 		update(tick, camera, step) {
 			for (const p of seatProps) {
@@ -490,29 +412,9 @@ export function createLobbyStands(scene, el, gallery, readySeats, local, onReady
 				p.label.hidden = point.z < -1 || point.z > 1
 				p.label.style.transform = `translate(${((point.x + 1) * innerWidth) / 2}px, ${((1 - point.y) * innerHeight) / 2}px) translate(-50%, -50%)`
 			}
-			for (const stand of stands) {
-				const age = (tick - stand.deniedAt) * step
-				const f = Math.max(0, 1 - age / v.wobbleTime)
-				stand.card.rotation.z =
-					f > 0
-						? Math.sin((age / v.wobbleTime) * v.wobbleTurns * Math.PI * 2) * v.wobbleAngle * f
-						: 0
-				// Squash flat, then spring back with a decaying overshoot (a damped cosine).
-				const since = (tick - stand.pickedAt) * step
-				const k = since / v.squashTime
-				const squash =
-					k >= 0 && k < 1
-						? v.squashDepth * (1 - k) ** 2 * Math.cos(k * v.squashBounces * Math.PI * 2)
-						: 0
-				stand.card.scale.set(1 + squash * 0.5, 1 - squash, 1)
-				point.set(stand.x, v.labelY, v.z + v.labelForward).project(camera)
-				stand.label.hidden = point.z < -1 || point.z > 1
-				stand.label.style.transform = `translate(${((point.x + 1) * innerWidth) / 2}px, ${((1 - point.y) * innerHeight) / 2}px) translate(-50%, -50%)`
-			}
 		},
 		dispose() {
 			root.removeFromParent()
-			for (const stand of stands) stand.label.remove()
 			for (const p of galleryProps) p.label.remove()
 			galleryHelp.remove()
 			for (const p of seatProps) p.label.remove()

@@ -95,7 +95,6 @@ export const tune = {
 		style: { line: 0.65, pastel: 0.65 },
 		practice: { damage: 0, tell: 0.8, tellY: 0.23 },
 		hud: { margin: 16 },
-		swapBanner: 1.2,
 		inspect: {
 			range: 16,
 			scrollSpeed: 480,
@@ -115,15 +114,8 @@ export const tune = {
 			fitPasses: 6,
 			fitGrowth: 1.2,
 		},
-		// Static cardboard geometry applies on lobby restart; triggers and feedback are live.
-		stands: {
-			spacing: 1.5,
-			z: 2.8,
-			cardScale: 0.5,
-			tilt: -Math.PI / 4,
-			padForward: 0.5,
-			radius: 0.8,
-			exitMargin: 0.25,
+		// Cardboard cutouts of the ready-line bots; geometry applies on lobby restart.
+		cutout: {
 			width: 1.8,
 			height: 2.2,
 			thickness: 0.08,
@@ -138,27 +130,13 @@ export const tune = {
 			footHeight: 0.08,
 			footDepth: 0.65,
 			segments: 24,
-			ringWidth: 0.05,
-			selectedWidth: 0.15,
-			padY: 0.09,
-			ringY: 0.105,
-			selectedY: 0.12,
-			labelY: 0.1,
-			labelForward: 1.1,
-			wobbleTime: 0.4,
-			wobbleTurns: 3,
-			wobbleAngle: 0.18,
-			// Feel: a cutout turning round on a pin (the new hero comes round edge-on to full width),
-			// and a stand that squashes and settles when it is picked.
+		},
+		// Picking from the hero row: the new body comes round edge-on, like a cutout turned on a pin.
+		pick: {
 			flipTime: 0.25,
 			flipEdge: 0.06,
 			flipOvershoot: 0.12,
-			squashTime: 0.45,
-			squashDepth: 0.22,
-			squashBounces: 1.5,
-			nudgeDistance: 1.3,
-			nudgeTime: 0.18,
-			pickSound: { freq: 620, slideTo: 980, dur: 0.14, gain: 0.08, type: 'triangle' },
+			sound: { freq: 620, slideTo: 980, dur: 0.14, gain: 0.08, type: 'triangle' },
 			denySound: { freq: 120, slideTo: 70, dur: 0.18, gain: 0.1, type: 'square' },
 		},
 		ready: {

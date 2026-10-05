@@ -5,7 +5,9 @@ import { tune } from './tune.js'
 import { tune as frontTune } from './front/tune.js'
 import { createBackdrop } from './front/backdrop.js'
 import { startLoading } from './front/loading.js'
-import { createLobbyStands } from './lobby-props.js'
+import { createLobbyProps } from './lobby-props.js'
+import { HEROES } from './heroes.js'
+import { ICONS } from './hud.js'
 import { createNumbers } from './front/numbers.js'
 import './lobby.css'
 
@@ -19,7 +21,7 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 	el.className = 'moba-front front-lobby'
 	el.dataset.screen = 'plaza'
 	el.setAttribute('aria-label', 'Try your hero in the plaza')
-	el.innerHTML = `<footer><button type="button" class="front-back front-return" aria-label="Back to splash">Back <kbd></kbd></button><button type="button" class="front-sticker front-cta" aria-label="Walk to your Ready box"><span class="front-card-face"></span><span>Ready</span><kbd></kbd></button></footer><button type="button" class="lobby-numbers-open" aria-label="Hero numbers"># <kbd>N</kbd></button>`
+	el.innerHTML = `<footer><button type="button" class="front-back front-return" aria-label="Back to splash">Back <kbd></kbd></button><button type="button" class="front-sticker front-cta" aria-label="Walk to your Ready box"><span class="front-card-face"></span><span>Ready</span><kbd></kbd></button></footer><button type="button" class="lobby-numbers-open" aria-label="Hero numbers"># <kbd>N</kbd></button><nav class="lobby-heroes" aria-label="Pick a hero"><span class="lobby-heroes-title">Choose your fighter <kbd>H</kbd></span><div class="lobby-hero-tiles"></div></nav><div class="lobby-pick-stamp" aria-live="polite"></div>`
 	el.prepend(backdrop.el, canvas)
 	canvas.classList.add('front-canvas')
 	canvas.inert = false
@@ -82,8 +84,21 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 	app.camera.update(0)
 	let touch = options.device ? options.device === 'touch' : matchMedia('(any-hover: none)').matches
 	const readySeats = sim.readySeats
-	const props = createLobbyStands(app.scene, el, gallery, readySeats, hero.id, ready)
+	const props = createLobbyProps(app.scene, el, gallery, readySeats, hero.id, ready)
 	props.syncSeats()
+	const heroRow = el.querySelector('.lobby-heroes')
+	const heroTiles = heroRow.querySelector('.lobby-hero-tiles')
+	const stamp = el.querySelector('.lobby-pick-stamp')
+	const heroButtons = Object.values(HEROES).map((definition) => {
+		const button = document.createElement('button')
+		button.type = 'button'
+		button.dataset.hero = definition.id
+		button.disabled = !definition.playable
+		button.innerHTML = `<span class="lobby-hero-face">${ICONS[definition.id] ?? ''}</span><span class="lobby-hero-name">${definition.id}</span><b class="lobby-hero-p1">P1</b>${definition.playable ? '' : '<small>soon</small>'}`
+		button.onclick = () => pickHero(definition.id)
+		heroTiles.append(button)
+		return button
+	})
 	const numbers = createNumbers(hero, (open) => {
 		if (!open)
 			blockedPad = new Set((app.input.pad()?.buttons ?? []).flatMap((held, i) => (held ? [i] : [])))
@@ -112,7 +127,6 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 	let readyPrimary = false
 	let loadingQueued = false
 	const readySounds = new Map()
-	let occupied = null
 	let pickSoundTick = null
 	let flipTick = -Infinity
 	let denySoundTick = null
@@ -123,7 +137,8 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 	const syncPick = () => {
 		setup.heroId = hero.heroId
 		setup.picks[hero.id] = { ...setup.picks[hero.id], heroId: hero.heroId }
-		props.select(hero.heroId)
+		for (const button of heroButtons)
+			button.setAttribute('aria-pressed', String(button.dataset.hero === hero.heroId))
 		const url = new URL(location.href)
 		url.searchParams.set('hero', hero.heroId)
 		history.replaceState(null, '', url)
@@ -175,24 +190,27 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 		if (fact.type !== 'swap') return
 		syncPick()
 		flipTick = fact.tick
-		props.pick(fact.heroId, fact.tick)
+		// Restart the slam: a fresh class on the next frame replays the animation.
+		stamp.textContent = fact.heroId + '!'
+		stamp.dataset.hero = fact.heroId
+		stamp.classList.remove('slam')
+		void stamp.offsetWidth
+		stamp.classList.add('slam')
 		if (pickSoundTick !== fact.tick) {
 			pickSoundTick = fact.tick
-			app.audio.blip(tune.lobby.stands.pickSound)
+			app.audio.blip(tune.lobby.pick.sound)
 		}
 	})
-	function denyStand(id) {
-		props.deny(id, sim.tick)
-		if (denySoundTick !== sim.tick) {
-			denySoundTick = sim.tick
-			app.audio.blip(tune.lobby.stands.denySound)
-		}
+	function pickHero(id) {
+		if (ending || numbers.open || id === hero.heroId) return
+		if (sim.swapHero(hero.id, id) || denySoundTick === sim.tick) return
+		denySoundTick = sim.tick
+		app.audio.blip(tune.lobby.pick.denySound)
 	}
 	function cycleHero() {
-		const playable = props.stands.filter((stand) => stand.playable)
-		const index = playable.findIndex((stand) => stand.id === hero.heroId)
-		const next = playable[(index + 1) % playable.length]
-		if (!sim.swapHero(hero.id, next.id)) denyStand(next.id)
+		const playable = Object.values(HEROES).filter((definition) => definition.playable)
+		const index = playable.findIndex((definition) => definition.id === hero.heroId)
+		pickHero(playable[(index + 1) % playable.length].id)
 	}
 
 	function cycleDifficulty() {
@@ -410,6 +428,8 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 			device === 'gamepad' ? 'B' : device === 'touch' ? '' : 'Esc'
 		startButton.querySelector('kbd').textContent =
 			device === 'gamepad' ? 'Start' : device === 'touch' ? '' : 'Enter'
+		heroRow.querySelector('kbd').textContent =
+			device === 'gamepad' ? '✛↑' : device === 'touch' ? '' : 'H'
 	})
 	// Screen changes drop pending casts/orders. The device reset requires a fresh press;
 	// inherited navigation keys and the initial pad buttons also have their own release guard.
@@ -426,7 +446,7 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 			sim,
 			setup,
 			layout: tune.lobby,
-			stands: props.stands,
+			heroButtons,
 			gallery,
 			galleryProps: props.galleryProps,
 			readySeats,
@@ -523,17 +543,6 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 				frame.order = null
 				return
 			}
-			if (frame.order.kind) return
-			// A dummy's projected torso can overlap a pad. Choosing a stand means walking,
-			// not accidentally chasing the sparring dummy standing in front of it.
-			if (
-				props.stands.some(
-					(stand) =>
-						Math.hypot(frame.order.x - stand.x, frame.order.z - stand.z) <=
-						tune.lobby.stands.radius,
-				)
-			)
-				frame.order = { ...frame.order, kind: 'move' }
 		},
 		// At a fixed-step boundary, using the previous step's position. Stop must reach
 		// the sim before intents age; queueing it after sim.step would drop a one-step edge.
@@ -579,39 +588,7 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 						tick: sim.tick,
 					})
 				}
-				occupied = null
-				return
 			}
-			const p = hero.body.position,
-				v = tune.lobby.stands
-			if (occupied && Math.hypot(p.x - occupied.x, p.z - occupied.z) <= v.radius + v.exitMargin)
-				return
-			occupied = null
-			let stand = null,
-				nearest = v.radius
-			for (const candidate of props.stands) {
-				const distance = Math.hypot(p.x - candidate.x, p.z - candidate.z)
-				if (distance < nearest || (distance === nearest && (!stand || candidate.id < stand.id))) {
-					stand = candidate
-					nearest = distance
-				}
-			}
-			if (!stand) return
-			occupied = stand
-			if (sim.swapHero(hero.id, stand.id)) return
-			denyStand(stand.id)
-			// A real, collision-clamped bump, not a teleport or another ability's cast.
-			const dx = p.x - stand.x,
-				dz = p.z - stand.z
-			const length = Math.hypot(dx, dz)
-			const frame = app.intents.get(hero.id)
-			if (frame.order && Math.hypot(frame.order.x - stand.x, frame.order.z - stand.z) <= v.radius)
-				frame.order = null
-			run.intents.press(hero.id, 'stop')
-			hero.body.dash(length ? { x: dx / length, z: dz / length } : { x: 0, z: 1 }, {
-				distance: v.nudgeDistance,
-				time: v.nudgeTime,
-			})
 		},
 		afterStep() {
 			if (readySeats.allReady() && !galleryShot && !loadingQueued) {
@@ -626,7 +603,7 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 		update(alpha) {
 			props.update(sim.tick + alpha, app.camera.view, app.clock.step)
 			// The new body comes round from edge-on, widening past full and settling.
-			const f = tune.lobby.stands
+			const f = tune.lobby.pick
 			const k = ((sim.tick + alpha - flipTick) * app.clock.step) / f.flipTime
 			const turn = k >= 0 && k < 1 ? 1 - (1 - k) ** 3 + Math.sin(k * Math.PI) * f.flipOvershoot : 1
 			hero.body.mesh.scale.x = f.flipEdge + (1 - f.flipEdge) * turn

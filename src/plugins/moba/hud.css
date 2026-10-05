@@ -20,20 +20,23 @@
 	--tone: var(--team-b, #ff5d5d);
 }
 .moba-top svg .tone,
-.moba-hud svg .tone {
+.moba-hud svg .tone,
+.lobby-heroes svg .tone {
 	fill: var(--tone, var(--ui-blue));
 	stroke: var(--ink);
 	stroke-width: 3;
 	stroke-linejoin: round;
 }
 .moba-top svg .cream,
-.moba-hud svg .cream {
+.moba-hud svg .cream,
+.lobby-heroes svg .cream {
 	fill: var(--cream);
 	stroke: var(--ink);
 	stroke-width: 3;
 }
 .moba-top svg .gold,
-.moba-hud svg .gold {
+.moba-hud svg .gold,
+.lobby-heroes svg .gold {
 	fill: var(--gold);
 	stroke: var(--ink);
 	stroke-width: 3;
@@ -46,7 +49,8 @@
 	stroke-linejoin: round;
 }
 .moba-top svg .ink-line,
-.moba-hud svg .ink-line {
+.moba-hud svg .ink-line,
+.lobby-heroes svg .ink-line {
 	fill: none;
 	stroke: var(--ink);
 	stroke-width: 4;
