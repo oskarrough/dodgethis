@@ -9,7 +9,7 @@ import { createLobbyStands } from './lobby-props.js'
 import './lobby.css'
 
 // The plaza uses the match's simulation and presentation, but owns navigation and framing.
-export function createLobby({ app, run, sim, hero, setup, options }) {
+export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 	const backdrop = options.backdrop ?? createBackdrop()
 	const el = options.el ?? document.createElement('main')
 	const canvas = app.renderer.domElement
@@ -44,10 +44,7 @@ export function createLobby({ app, run, sim, hero, setup, options }) {
 		const back = c.back
 		const target = clampMap({
 			x: Math.max(-tune.lobby.bounds.halfX, Math.min(tune.lobby.bounds.halfX, c.x)),
-			z: Math.max(
-				-tune.lobby.bounds.halfZ,
-				Math.min(tune.lobby.bounds.halfZ, c.z, tune.lobby.bounds.halfZ - back),
-			),
+			z: Math.max(-tune.lobby.bounds.halfZ, Math.min(tune.lobby.bounds.halfZ, c.z)),
 		})
 		const eye = clampMap({ x: target.x, z: target.z + back })
 		const fov = (Math.atan(Math.tan((c.fov * Math.PI) / 360) * scale) * 360) / Math.PI
@@ -55,10 +52,14 @@ export function createLobby({ app, run, sim, hero, setup, options }) {
 	})
 	el.style.setProperty('--lobby-sky-lift', `${-tune.lobby.skyLift}px`)
 	app.camera.update(0)
-	const props = createLobbyStands(app.scene, el)
+	const props = createLobbyStands(app.scene, el, gallery)
 	let occupied = null
 	let pickSoundTick = null
 	let denySoundTick = null
+	let gallerySoundTick = null
+	let shotSoundTick = null
+	let galleryShot = null
+	let readyQueued = false
 	const syncPick = () => {
 		setup.heroId = hero.heroId
 		setup.picks[hero.id] = { ...setup.picks[hero.id], heroId: hero.heroId }
@@ -68,8 +69,35 @@ export function createLobby({ app, run, sim, hero, setup, options }) {
 		history.replaceState(null, '', url)
 	}
 	syncPick()
+	function finishGalleryShot() {
+		galleryShot = null
+		if (readyQueued)
+			queueMicrotask(() => {
+				if (!run.signal.aborted) ready()
+			})
+	}
 	run.on('present', (fact) => {
-		if (fact.type !== 'swap' || fact.hero !== hero.id) return
+		if (
+			galleryShot?.projectile != null &&
+			fact.type === 'expired' &&
+			fact.projectile === galleryShot.projectile
+		)
+			finishGalleryShot()
+		if (fact.hero !== hero.id) return
+		if (fact.type === 'pick') {
+			if (fact.ability === 'galleryShot') finishGalleryShot()
+			setup.difficulty = fact.difficulty
+			props.selectDifficulty()
+			const url = new URL(location.href)
+			url.searchParams.set('bots', fact.difficulty)
+			history.replaceState(null, '', url)
+			if (gallerySoundTick !== fact.tick) {
+				gallerySoundTick = fact.tick
+				app.audio.blip(tune.lobby.gallery.pickSound)
+			}
+			return
+		}
+		if (fact.type !== 'swap') return
 		syncPick()
 		if (pickSoundTick !== fact.tick) {
 			pickSoundTick = fact.tick
@@ -88,6 +116,23 @@ export function createLobby({ app, run, sim, hero, setup, options }) {
 		const index = playable.findIndex((stand) => stand.id === hero.heroId)
 		const next = playable[(index + 1) % playable.length]
 		if (!sim.swapHero(hero.id, next.id)) denyStand(next.id)
+	}
+
+	function cycleDifficulty() {
+		if (hero.dead || galleryShot) {
+			run.present({
+				type: 'denied',
+				hero: hero.id,
+				slot: 'primary',
+				reason: 'gallery-busy',
+				tick: sim.tick,
+			})
+			return
+		}
+		const i = gallery.standees.findIndex((s) => s.id === gallery.difficulty)
+		galleryShot = { stand: gallery.standees[(i + 1) % gallery.standees.length], projectile: null }
+		// One path plan per shortcut. Get a clear line of fire rather than shooting through pillars.
+		app.intents.get(hero.id).order = { ...tune.lobby.gallery.firingMark, kind: 'move' }
 	}
 
 	let ending = false
@@ -120,6 +165,10 @@ export function createLobby({ app, run, sim, hero, setup, options }) {
 	}
 	function ready() {
 		if (ending) return
+		if (galleryShot) {
+			readyQueued = true
+			return
+		}
 		syncPick()
 		ending = transferred = true
 		app.audio.blip(frontTune.loading.skip)
@@ -143,6 +192,11 @@ export function createLobby({ app, run, sim, hero, setup, options }) {
 			if (event.code === 'KeyH') {
 				event.preventDefault()
 				cycleHero()
+				return
+			}
+			if (event.code === 'KeyG') {
+				event.preventDefault()
+				cycleDifficulty()
 				return
 			}
 			const digit = /^Digit([1-5])$/.exec(event.code)
@@ -172,10 +226,12 @@ export function createLobby({ app, run, sim, hero, setup, options }) {
 		const cancel = down(1)
 		const start = down(9)
 		const cycle = down(12)
+		const difficulty = down(13)
 		previous = buttons.slice()
 		if (cancel) back()
 		else if (start) ready()
 		else if (cycle) cycleHero()
+		else if (difficulty) cycleDifficulty()
 		const nextDevice = app.input.activeDevice()
 		if (device === nextDevice) return
 		device = nextDevice
@@ -195,7 +251,15 @@ export function createLobby({ app, run, sim, hero, setup, options }) {
 		f.add(c, 'fov', 20, 90, 1)
 	})
 	run.debug.expose({
-		lobby: { sim, setup, layout: tune.lobby, stands: props.stands, snapshot: sim.snapshot },
+		lobby: {
+			sim,
+			setup,
+			layout: tune.lobby,
+			stands: props.stands,
+			gallery,
+			galleryProps: props.galleryProps,
+			snapshot: sim.snapshot,
+		},
 	})
 	run.signal.addEventListener(
 		'abort',
@@ -215,7 +279,33 @@ export function createLobby({ app, run, sim, hero, setup, options }) {
 		result() {},
 		prepareInput() {
 			const frame = app.intents.get(hero.id)
-			if (!frame.order || frame.order.kind) return
+			if (
+				galleryShot?.projectile === null &&
+				(frame.pressed.some((e) => ['stop', 'cancel'].includes(e.action)) ||
+					Math.hypot(frame.move.x, frame.move.z) > 0 ||
+					(frame.order &&
+						Math.hypot(
+							frame.order.x - tune.lobby.gallery.firingMark.x,
+							frame.order.z - tune.lobby.gallery.firingMark.z,
+						) > tune.orders.arrival))
+			) {
+				galleryShot = null
+				readyQueued = false
+				run.present({
+					type: 'denied',
+					hero: hero.id,
+					slot: 'primary',
+					reason: 'gallery-cancelled',
+					tick: sim.tick,
+				})
+			}
+			if (!frame.order) return
+			if (gallery.aimsAt(frame.order) && !frame.order.kind) {
+				run.intents.press(hero.id, 'primary', frame.order)
+				frame.order = null
+				return
+			}
+			if (frame.order.kind) return
 			// A dummy's projected torso can overlap a pad. Choosing a stand means walking,
 			// not accidentally chasing the sparring dummy standing in front of it.
 			if (
@@ -230,7 +320,45 @@ export function createLobby({ app, run, sim, hero, setup, options }) {
 		// At a fixed-step boundary, using the previous step's position. Stop must reach
 		// the sim before intents age; queueing it after sim.step would drop a one-step edge.
 		step() {
+			if (galleryShot && galleryShot.projectile === null && !hero.dead) {
+				const p = hero.body.position,
+					mark = tune.lobby.gallery.firingMark
+				if (
+					Math.hypot(p.x - mark.x, p.z - mark.z) <= tune.orders.arrival &&
+					!hero.cast &&
+					!hero.body.dashing
+				) {
+					const aim = { x: galleryShot.stand.x, z: galleryShot.stand.z }
+					hero.yaw = Math.atan2(aim.x - p.x, aim.z - p.z) + Math.PI
+					const shot = sim.launchShot(
+						hero,
+						{ x: aim.x - p.x, z: aim.z - p.z },
+						{
+							...tune.lobby.gallery.shot,
+							ability: 'galleryShot',
+							slot: 'gallery',
+							aim,
+						},
+					)
+					if (shotSoundTick !== sim.tick) {
+						shotSoundTick = sim.tick
+						app.audio.blip(tune.lobby.gallery.shotSound)
+					}
+					galleryShot.projectile = shot.id
+				}
+			}
 			if (hero.dead) {
+				if (galleryShot?.projectile === null) {
+					galleryShot = null
+					readyQueued = false
+					run.present({
+						type: 'denied',
+						hero: hero.id,
+						slot: 'primary',
+						reason: 'gallery-dead',
+						tick: sim.tick,
+					})
+				}
 				occupied = null
 				return
 			}

@@ -2,9 +2,102 @@ import * as THREE from 'three'
 import { makeStyleMaterial } from '../../core/stylepass.js'
 import { HEROES } from './heroes.js'
 import { tune } from './tune.js'
+import { closest } from './skillshot.js'
+
+// DOM-free picking: the sim offers only the footprint that actually happened,
+// clipped by cover/body contact, and retains a successful result on its cast token.
+export function createDifficultyGallery({ local, difficulty, present }) {
+	const v = tune.lobby.gallery
+	const standees = ['easy', 'normal', 'hard'].map((id, i) => ({
+		id,
+		x: v.x + (i - 1) * v.spacing,
+		z: v.z,
+		radius: v.radius,
+		from: 0,
+		to: 0,
+		changedAt: -Infinity,
+	}))
+	let picked = difficulty
+	function angle(stand, tick, step) {
+		if (!Number.isFinite(stand.changedAt)) return stand.to
+		const age = Math.max(0, Math.min(1, ((tick - stand.changedAt) * step) / v.settleTime))
+		const ease = 1 - (1 - age) ** 3
+		return stand.from + (stand.to - stand.from) * (ease + Math.sin(age * Math.PI) * v.overshoot)
+	}
+	function aimsAt(aim) {
+		return !!aim && standees.some((s) => Math.hypot(aim.x - s.x, aim.z - s.z) <= v.aimRadius)
+	}
+	function contact(f) {
+		if (f.hero !== local || !aimsAt(f.aim)) return false
+		if (f.phase === 'aim') return true
+		const centre = f.from ? { x: (f.from.x + f.to.x) / 2, z: (f.from.z + f.to.z) / 2 } : f.point
+		let best = null,
+			nearest = Infinity
+		for (const s of standees) {
+			if (Math.hypot(f.aim.x - s.x, f.aim.z - s.z) > v.aimRadius) continue
+			let distance = f.from
+				? closest(f.from.x, f.from.z, f.to.x, f.to.z, s.x, s.z).d - f.radius
+				: Math.hypot(s.x - f.point.x, s.z - f.point.z) - f.radius
+			if (f.dir && f.angle < 360) {
+				const dx = s.x - f.point.x,
+					dz = s.z - f.point.z
+				const len = Math.hypot(dx, dz)
+				const half = (f.angle * Math.PI) / 360
+				if ((dx * f.dir.x + dz * f.dir.z) / (len || 1) < Math.cos(half)) {
+					distance = Math.min(
+						...[-1, 1].map((sign) => {
+							const a = Math.atan2(f.dir.x, f.dir.z) + sign * half
+							return closest(
+								f.point.x,
+								f.point.z,
+								f.point.x + Math.sin(a) * f.radius,
+								f.point.z + Math.cos(a) * f.radius,
+								s.x,
+								s.z,
+							).d
+						}),
+					)
+				}
+			}
+			if (distance > s.radius) continue
+			const d = Math.hypot(s.x - centre.x, s.z - centre.z)
+			if (d < nearest || (d === nearest && (!best || s.id < best.id))) {
+				best = s
+				nearest = d
+			}
+		}
+		if (!best) return false
+		picked = best.id
+		for (const s of standees) {
+			s.from = angle(s, f.tick, f.step)
+			s.to = s.id === picked ? 0 : -Math.PI / 2
+			s.changedAt = f.tick
+		}
+		present({
+			type: 'pick',
+			hero: local,
+			difficulty: picked,
+			cast: f.cast,
+			ability: f.ability,
+			footprint: f.kind,
+			point: { x: best.x, y: 0, z: best.z },
+			tick: f.tick,
+		})
+		return true
+	}
+	return {
+		standees,
+		aimsAt,
+		contact,
+		angle,
+		get difficulty() {
+			return picked
+		},
+	}
+}
 
 // Handmade cutouts, not combatants. All animation reads the interpolated sim clock.
-export function createLobbyStands(scene, el) {
+export function createLobbyStands(scene, el, gallery) {
 	const v = tune.lobby.stands
 	const root = new THREE.Group()
 	root.name = 'lobby-stands'
@@ -123,6 +216,42 @@ export function createLobbyStands(scene, el) {
 			deniedAt: -Infinity,
 		}
 	})
+	const galleryProps = gallery.standees.map((stand) => {
+		const g = tune.lobby.gallery
+		const group = new THREE.Group()
+		group.position.set(stand.x, v.footHeight, stand.z)
+		root.add(group)
+		const card = new THREE.Group()
+		group.add(card)
+		const board = mesh(new THREE.BoxGeometry(g.width, g.height, v.thickness), cardboard, card)
+		board.position.y = g.height / 2
+		const print = mesh(
+			new THREE.PlaneGeometry(g.width - v.thickness, g.height - v.thickness),
+			cream,
+			card,
+		)
+		print.position.set(0, g.height / 2, v.thickness / 2 + g.printGap)
+		for (const [i, mat] of [ink, cream, picked].entries()) {
+			const target = mesh(new THREE.CircleGeometry(g.radius * (1 - i / 3), v.segments), mat, card)
+			target.position.set(0, g.height / 2, v.thickness / 2 + g.printGap * (i + 2))
+		}
+		const pad = mesh(
+			new THREE.RingGeometry(g.radius, g.radius + g.ringWidth, v.segments),
+			picked,
+			root,
+		)
+		pad.rotation.x = -Math.PI / 2
+		pad.position.set(stand.x, g.ringY, stand.z)
+		const label = document.createElement('div')
+		label.className = 'lobby-stand-label lobby-gallery-label'
+		label.dataset.difficulty = stand.id
+		label.innerHTML = `<span>${stand.id.replace(/^./, (c) => c.toUpperCase())}</span><small>Shoot here</small>`
+		el.append(label)
+		return { stand, card, pad, label }
+	})
+	const galleryHelp = document.createElement('div')
+	galleryHelp.className = 'lobby-stand-label lobby-gallery-help'
+	el.append(galleryHelp)
 	// The six recovery marks are real ground prints, so their camera fit is visible too.
 	const mark = tune.lobby.mark
 	for (const position of tune.lobby.marks) {
@@ -149,9 +278,21 @@ export function createLobbyStands(scene, el) {
 			const small = stand.label.querySelector('small')
 			if (small.textContent !== text) small.textContent = text
 		}
+		const help = `Shoot · ${device === 'gamepad' ? '✛↓' : 'G'} next`
+		if (galleryHelp.textContent !== help) galleryHelp.textContent = help
+		for (const p of galleryProps) {
+			const chosen = p.stand.id === gallery.difficulty
+			p.pad.visible = chosen
+			p.label.dataset.picked = String(chosen)
+			const text = chosen ? `${device === 'gamepad' ? '✛↓' : 'G'} next` : 'Shoot here'
+			const small = p.label.querySelector('small')
+			if (small.textContent !== text) small.textContent = text
+		}
 	}
 	return {
 		stands,
+		galleryProps,
+		selectDifficulty: labels,
 		select(id) {
 			for (const stand of stands) {
 				stand.selected.visible = stand.id === id
@@ -167,6 +308,16 @@ export function createLobbyStands(scene, el) {
 			stands.find((stand) => stand.id === id).deniedAt = tick
 		},
 		update(tick, camera, step) {
+			point
+				.set(tune.lobby.gallery.x, tune.lobby.gallery.helpY, tune.lobby.gallery.z)
+				.project(camera)
+			galleryHelp.style.transform = `translate(${((point.x + 1) * innerWidth) / 2}px, ${((1 - point.y) * innerHeight) / 2}px) translate(-50%, -50%)`
+			for (const p of galleryProps) {
+				p.card.rotation.x = gallery.angle(p.stand, tick, step)
+				point.set(p.stand.x, tune.lobby.gallery.labelY, p.stand.z).project(camera)
+				p.label.hidden = point.z < -1 || point.z > 1
+				p.label.style.transform = `translate(${((point.x + 1) * innerWidth) / 2}px, ${((1 - point.y) * innerHeight) / 2}px) translate(-50%, -50%)`
+			}
 			for (const stand of stands) {
 				const age = (tick - stand.deniedAt) * step
 				const f = Math.max(0, 1 - age / v.wobbleTime)
@@ -182,6 +333,8 @@ export function createLobbyStands(scene, el) {
 		dispose() {
 			root.removeFromParent()
 			for (const stand of stands) stand.label.remove()
+			for (const p of galleryProps) p.label.remove()
+			galleryHelp.remove()
 			for (const item of owned) item.dispose()
 		},
 	}

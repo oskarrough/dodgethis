@@ -61,6 +61,16 @@
 .lobby-stand-label[data-playable='false'] span {
 	opacity: 0.6;
 }
+.lobby-gallery-label {
+	padding: 0.1em 0.2em;
+	line-height: 1;
+}
+.lobby-gallery-label small {
+	display: none;
+}
+.lobby-gallery-help {
+	border: 0;
+}
 .moba-front .front-notice {
 	position: absolute;
 	z-index: 1;

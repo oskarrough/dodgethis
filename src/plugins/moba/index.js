@@ -23,6 +23,7 @@ import { parseMatchSetup } from './setup.js'
 import { createMatchDebug } from './debug.js'
 import { addSliders, sliderSections } from './sliders.js'
 import { createLobby } from './lobby.js'
+import { createDifficultyGallery } from './lobby-props.js'
 
 const FACTS = [
 	'boardExpired',
@@ -60,6 +61,7 @@ const FACTS = [
 	'shielded',
 	'levelUp',
 	'swap',
+	'pick',
 	'globe',
 	'matchOver',
 ]
@@ -138,6 +140,9 @@ export default function moba(app, map) {
 				? [{ id: local, team: setup.picks[local].team ?? 'A', heroId: setup.picks[local].heroId }]
 				: practiceRoster(local, difficulty, setup.picks)
 			setup.heroId = seats.find((seat) => seat.id === local).heroId
+			const gallery = isLobby
+				? createDifficultyGallery({ local, difficulty, present: run.present })
+				: null
 			const botsOnly = query.has('debug') && query.has('bots-only')
 			const sim = map.start(run, (world) =>
 				createSim({
@@ -158,6 +163,7 @@ export default function moba(app, map) {
 						spawns: { [local]: tune.lobby.marks[0] },
 						bounds: tune.lobby.bounds,
 						respawn: tune.lobby.respawn,
+						footprint: gallery.contact,
 					}),
 					seed: setup.seed,
 				}),
@@ -185,7 +191,7 @@ export default function moba(app, map) {
 			})
 			app.clock.reset()
 
-			const lobby = isLobby ? createLobby({ app, run, sim, hero, setup, options }) : null
+			const lobby = isLobby ? createLobby({ app, run, sim, hero, setup, options, gallery }) : null
 			const menu =
 				lobby ??
 				createMatchMenu({

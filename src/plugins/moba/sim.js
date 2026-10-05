@@ -47,6 +47,7 @@ export function createSim({
 	seed = tune.bots.seed,
 	driveBots = true, // Replay retains controller identity (and its tells), but supplies recorded frames.
 	intercept = null,
+	footprint = null, // Lobby observer: aimed props and real, clipped cast footprints.
 }) {
 	const laneView = withLane ? createLaneView(scene, smooth) : null
 	const towerObstacles = withLane
@@ -110,6 +111,17 @@ export function createSim({
 	let planPath = createPathPlanner({ radius: profile.radius, ...tune.orders }, pathObstacles)
 	let t = 0
 	const present = (fact) => emit({ ...fact, tick: t })
+	const footprints = new WeakMap()
+	let castIds = 0
+	function trace(h, action, aim, ability) {
+		if (footprint && aim)
+			footprints.set(action, { cast: ++castIds, hero: h.id, aim: { ...aim }, ability, started: t })
+	}
+	function touch(action, shape) {
+		const cast = footprints.get(action)
+		if (!cast || cast.picked) return
+		cast.picked = footprint({ ...cast, ...shape, phase: 'touch', tick: t, step: STEP }) === true
+	}
 	let shotIds = 0
 	const shots = []
 	const zones = []
@@ -550,6 +562,7 @@ export function createSim({
 						}
 						if (h.definition.basic.id) h.attack.total = h.attack.left
 						h.yaw = yawOf(tp.x - p.x, tp.z - p.z)
+						trace(h, h.attack, tp, h.definition.basic.id)
 						present({
 							type: 'cast',
 							hero: h.id,
@@ -658,7 +671,7 @@ export function createSim({
 		const len = Math.hypot(dx, dz)
 		const dir = len > 1e-4 ? { x: dx / len, z: dz / len } : dirOf(h.yaw)
 		if (returning) {
-			throwCaught(h, dir, slot)
+			throwCaught(h, dir, slot, at)
 			return
 		}
 		const skill = ability.stats
@@ -684,6 +697,7 @@ export function createSim({
 					: skill.castPoint,
 			),
 		}
+		trace(h, h.cast, at ?? target, ability.id)
 		h.yaw = h.cast.yaw
 		h.cd[i] = ticks(skill.cooldown)
 		present({
@@ -698,13 +712,14 @@ export function createSim({
 	}
 
 	function release(h) {
+		const castFootprint = footprints.get(h.cast)
 		const { slot, dir, target, shot: frozen } = h.cast
 		const ability = castAbility(h) ?? heroDefinition().abilities[slot]
 		const skill = ability.stats
 		h.cast = null
 		h.lastRemaining = null
 		if (frozen) {
-			launchShot(h, dir, {
+			const shot = launchShot(h, dir, {
 				...frozen,
 				ability: 'return',
 				slot,
@@ -713,6 +728,7 @@ export function createSim({
 				catchable: true,
 				isAbility: true,
 			})
+			if (castFootprint) footprints.set(shot, castFootprint)
 			return
 		}
 		const context = traitContext(h, { ability, dir, target, slot })
@@ -724,6 +740,7 @@ export function createSim({
 				factor: skill.speedFactor ?? 1,
 			}
 			ability.onStart?.(context)
+			if (castFootprint && h.catchWindow) footprints.set(h.catchWindow, castFootprint)
 			return
 		}
 		if (ability.kind === 'channel') {
@@ -739,11 +756,13 @@ export function createSim({
 			return
 		}
 		ability.onRelease?.(context)
+		if (castFootprint && h.catchWindow) footprints.set(h.catchWindow, castFootprint)
 		if (ability.kind === 'dash') {
 			// Whole fixed steps avoid overshooting the advertised distance on the final dash tick.
 			const time = Math.max(1, Math.ceil(skill.time / STEP)) * STEP - 1e-9
 			h.dashAbility = ability.id
 			h.body.dash(dir, { distance: skill.range, time })
+			if (castFootprint) footprints.set(h.body, castFootprint)
 			return
 		}
 		if (ability.kind === 'zone') {
@@ -758,9 +777,10 @@ export function createSim({
 				ability: ability.id,
 				slot,
 			})
+			if (castFootprint) footprints.set(zones.at(-1), castFootprint)
 			return
 		}
-		launchShot(h, dir, {
+		const shot = launchShot(h, dir, {
 			ability: ability.id,
 			slot,
 			pierce: ability.pierce,
@@ -774,6 +794,48 @@ export function createSim({
 			range: skill.range,
 			damage: skill.damage * (1 + tune.levels.growth * ((h.level ?? tune.hero.level) - 1)),
 		})
+		if (castFootprint) footprints.set(shot, castFootprint)
+	}
+
+	// A prop is an aim point, never an enemy or a unit in the target database.
+	function aimBasic(h, at) {
+		if (!at || !footprint?.({ phase: 'aim', hero: h.id, aim: at })) return false
+		if (h.attack?.phase === 'windup') return true
+		const p = h.body.position,
+			basic = h.definition.basic
+		const reason =
+			h.cast || h.channel || h.body.dashing
+				? 'casting'
+				: t < h.attackTick
+					? 'cooldown'
+					: !basic || Math.hypot(at.x - p.x, at.z - p.z) > basic.range
+						? 'range'
+						: !segmentClear(p, at, basic.radius, obstacles)
+							? 'blocked'
+							: null
+		if (reason) {
+			present({ type: 'denied', hero: h.id, slot: 'primary', reason })
+			return true
+		}
+		h.order = null
+		h.attack = {
+			point: { ...at },
+			phase: 'windup',
+			left: ticks(basic.windup),
+			total: ticks(basic.windup),
+		}
+		h.yaw = yawOf(at.x - p.x, at.z - p.z)
+		trace(h, h.attack, at, basic.id)
+		present({
+			type: 'cast',
+			hero: h.id,
+			ability: basic.id,
+			slot: 'primary',
+			point: { ...p },
+			direction: dirOf(h.yaw),
+			target: { ...at },
+		})
+		return true
 	}
 
 	function control(h, dt) {
@@ -868,7 +930,7 @@ export function createSim({
 				intents.consume(h.id, 'stop')
 			} else if (e.action === 'cancel') intents.consume(h.id, 'cancel') // channels arrive with mount and R
 			else if (e.action === 'primary') {
-				if (!heldBall) attackAhead(h, e.at)
+				if (!heldBall && !aimBasic(h, e.at)) attackAhead(h, e.at)
 				intents.consume(h.id, 'primary')
 			}
 		}
@@ -983,12 +1045,12 @@ export function createSim({
 			return
 		}
 		const target = find(attack.target)
-		if (!target) {
+		if (!target && !attack.point) {
 			h.attack = null
 			return
 		}
 		const p = h.body.position,
-			tp = target.body.position
+			tp = attack.point ?? target.body.position
 		const length = Math.hypot(tp.x - p.x, tp.z - p.z) || 1
 		const shot = {
 			id: ++shotIds,
@@ -996,29 +1058,38 @@ export function createSim({
 			team: h.team,
 			...(h.definition.basic.id && { ability: h.definition.basic.id }),
 			slot: 'primary',
-			target: target.id,
+			...(target && { target: target.id }),
 			x: p.x,
 			z: p.z,
 			dx: (tp.x - p.x) / length,
 			dz: (tp.z - p.z) / length,
 			speed: h.definition.basic.speed,
 			radius: h.definition.basic.radius,
-			range: FLOOR.halfX * 4,
+			range: attack.point ? h.definition.basic.range : FLOOR.halfX * 4,
 			travelled: 0,
 			passed: [],
 			damage: h.definition.basic.damage * (1 + tune.levels.growth * (h.level - 1)),
 		}
+		const castFootprint = footprints.get(attack)
+		if (castFootprint) footprints.set(shot, castFootprint)
 		if (h.definition.basic.kind === 'melee') {
 			const inReach =
-				!target.dead &&
+				!(target?.dead ?? false) &&
 				Math.hypot(tp.x - p.x, tp.z - p.z) <=
-					h.definition.basic.range + (target.kind ? target.body.radius : 0) &&
+					h.definition.basic.range + (target?.kind ? target.body.radius : 0) &&
 				segmentClear(
 					p,
 					tp,
 					h.definition.basic.radius,
-					obstacles.filter((o) => o.id !== target.id),
+					obstacles.filter((o) => o.id !== target?.id),
 				)
+			if (inReach)
+				touch(shot, {
+					kind: 'basic',
+					from: { ...p },
+					to: { ...tp },
+					radius: h.definition.basic.radius,
+				})
 			present({
 				type: 'impact',
 				hero: h.id,
@@ -1026,11 +1097,11 @@ export function createSim({
 				hit: inReach,
 				point: { x: tp.x, y: tune.loose.height, z: tp.z },
 			})
-			if (inReach) hit(shot, { id: target.id, unit: target, hero: !target.kind }, tp)
+			if (inReach && target) hit(shot, { id: target.id, unit: target, hero: !target.kind }, tp)
 		} else shots.push(shot)
 		h.attackTick = t + ticks(1 / h.definition.basic.rate)
 		h.attack = {
-			target: target.id,
+			target: target?.id ?? null,
 			phase: 'backswing',
 			left: ticks(h.definition.basic.backswing),
 			startedTick: t,
@@ -1337,6 +1408,7 @@ export function createSim({
 			passed: [hero.id],
 		}
 		shots.push(shot)
+		if (stats.aim) trace(hero, shot, stats.aim, stats.ability)
 		present({
 			type: 'projectile',
 			id: shot.id,
@@ -1349,7 +1421,7 @@ export function createSim({
 		return shot
 	}
 
-	function throwCaught(id, direction, slot = 'slot1') {
+	function throwCaught(id, direction, slot = 'slot1', aim = null) {
 		const hero = typeof id === 'string' ? heroes.find((h) => h.id === id) : id
 		const slotIndex = SLOTS.indexOf(slot)
 		if (
@@ -1387,6 +1459,7 @@ export function createSim({
 			left: total,
 			total,
 		}
+		trace(hero, hero.cast, aim ?? hero.cast.target, 'return')
 		present({
 			type: 'cast',
 			hero: hero.id,
@@ -1566,6 +1639,7 @@ export function createSim({
 		lane?.step(t, dt)
 		if (lane?.match.winner) return
 		const dashEnds = []
+		const dashFrom = footprint ? new Map(heroes.map((h) => [h.id, { ...h.body.position }])) : null
 		for (const h of heroes) {
 			const dashing = h.body.dashing
 			stepHeroState(h, dt)
@@ -1580,6 +1654,27 @@ export function createSim({
 		for (const h of heroes) {
 			if (h.dead) continue
 			h.body.sync()
+			const dashCast = footprints.get(h.body)
+			if (
+				dashFrom &&
+				dashCast &&
+				(h.body.dashing || dashEnds.includes(h) || dashCast.started === t)
+			)
+				touch(h.body, {
+					kind: h.body.dashing ? 'path' : 'landing',
+					from: dashFrom.get(h.id),
+					to: { ...h.body.position },
+					radius: abilityOf(h.dashAbility, h)?.stats.radius ?? h.body.radius,
+				})
+			if (!h.body.dashing) footprints.delete(h.body)
+			if (footprint && h.catchWindow)
+				touch(h.catchWindow, {
+					kind: 'catch',
+					point: { ...h.body.position },
+					radius: h.catchWindow.radius,
+					dir: h.catchWindow.dir,
+					angle: h.catchWindow.angle,
+				})
 			face(h, dt)
 		}
 		for (const d of dummies) if (!d.dead) d.body.sync()
@@ -1592,6 +1687,7 @@ export function createSim({
 			const zone = zones[i]
 			if (--zone.left > 0) continue
 			const skill = tune[zone.ability ?? 'rain']
+			touch(zone, { kind: 'zone', point: { x: zone.x, z: zone.z }, radius: skill.radius })
 			const targets = enemiesOf(zone.team).filter(
 				(e) => Math.hypot(e.x - zone.x, e.z - zone.z) <= skill.radius + e.radius,
 			)
@@ -1628,6 +1724,7 @@ export function createSim({
 		for (let i = shots.length - 1; i >= 0; i--) {
 			if (lane?.match.winner) break
 			const shot = shots[i]
+			const from = footprint ? { x: shot.x, z: shot.z } : null
 			let targets
 			if (shot.target) {
 				const candidate = shotTargetById.get(shot.target)
@@ -1662,6 +1759,8 @@ export function createSim({
 					targets,
 				})
 			) {
+				if (from)
+					touch(shot, { kind: 'shot', from, to: { x: shot.x, z: shot.z }, radius: shot.radius })
 				present({
 					type: 'expired',
 					source: shot.owner,
@@ -1680,6 +1779,8 @@ export function createSim({
 				shot.target ? -Infinity : tune.loose.nearMiss,
 				obstacles,
 			)
+			if (from)
+				touch(shot, { kind: 'shot', from, to: { x: shot.x, z: shot.z }, radius: shot.radius })
 			for (const n of r.nearMisses)
 				present({
 					type: 'nearMiss',
