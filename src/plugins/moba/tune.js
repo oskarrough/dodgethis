@@ -582,7 +582,7 @@ export const tune = {
 		turnRate: 1080, // degrees per second; facing is cosmetic and nothing waits on it
 	},
 	heroes: {
-		mitts: { hp: 1600, speed: 5 },
+		mitts: { hp: 1900, speed: 5.6 },
 		carom: { hp: 1300, speed: 5 },
 		skip: { hp: 1450, speed: 5 },
 	},
@@ -660,7 +660,7 @@ export const tune = {
 	momentum: { reduction: 2 },
 	cast: { cancelLockout: 0.75 },
 	catching: { returnTell: 0.5, pocketLife: 6, bagLimit: 6 },
-	gloveSlap: { damage: 110, rate: 1, windup: 0.3, backswing: 0.25, range: 3, radius: 0.35 },
+	gloveSlap: { damage: 130, rate: 1, windup: 0.2, backswing: 0.25, range: 3.5, radius: 0.35 },
 	toss: { damage: 120, castPoint: 0.35, range: 9, speed: 20, radius: 0.35, cooldown: 5 },
 	catch: {
 		castPoint: 0,

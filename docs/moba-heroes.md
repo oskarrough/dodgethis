@@ -31,7 +31,7 @@ Abilities identify their `tell`, `held` shape and `effects`, independent of thei
 
 ## Mitts, the keeper
 
-Frontline counter to skillshots. She stands in front of her team, takes shots and sends them back. Weak to Rain, basics and flanks. 1600 HP, 5.0 m/s. Basic: a glove slap, 3 m range, 110 damage, 1/s.
+Frontline counter to skillshots. She stands in front of her team, takes shots and sends them back. Weak to Rain, basics and flanks. 1900 HP, 5.6 m/s. Basic: a glove slap, 3.5 m range, 130 damage, 1/s.
 
 | Key   | Name       | Numbers                                                                                                                                                                                                                                                                                                                                                                                                          |
 | ----- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
