@@ -57,7 +57,7 @@ export function createMapScope(scene, RAPIER, step) {
 }
 
 // Printed road, shaded flanks and low cover; all collision geometry comes from obstacles.js.
-// The 'plaza' kind draws only a small walled tabletop and the pillars around the pick screen.
+// The 'plaza' kind draws only a small walled tabletop and no pillars.
 export function buildMap(scene, world, RAPIER, kind = 'lane') {
 	const m = tune.map
 	const group = new THREE.Group()
@@ -241,7 +241,7 @@ export function buildMap(scene, world, RAPIER, kind = 'lane') {
 	}
 	if (kind === 'plaza') buildPlaza()
 	else buildLane()
-	for (const p of PILLARS) {
+	for (const p of kind === 'plaza' ? [] : PILLARS) {
 		add(
 			new THREE.CylinderGeometry(p.r, p.r, m.pillarHeight, m.pillarSegments),
 			scenery,
@@ -257,7 +257,7 @@ export function buildMap(scene, world, RAPIER, kind = 'lane') {
 			p.z,
 		)
 	}
-	const uncollide = buildColliders(world, RAPIER)
+	const uncollide = buildColliders(world, RAPIER, kind === 'plaza' ? BOXES : undefined)
 	scene.add(group)
 	return () => {
 		scene.remove(group)

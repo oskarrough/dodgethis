@@ -13,7 +13,15 @@ import { PALETTE } from '../../core/style.js'
 import { STEP } from '../../core/app.js'
 import { SCHEMES } from '../../core/intents.js'
 import { tune, profile } from './tune.js'
-import { OBSTACLES, SPAWN, FLOOR, clampWalkable, clampMap, segmentClear } from './obstacles.js'
+import {
+	OBSTACLES,
+	BOXES,
+	SPAWN,
+	FLOOR,
+	clampWalkable,
+	clampMap,
+	segmentClear,
+} from './obstacles.js'
 import { createPathPlanner, pursue } from './path.js'
 import { interceptShot, stepShot } from './skillshot.js'
 
@@ -63,7 +71,8 @@ export function createSim({
 				})),
 			)
 		: []
-	const obstacles = [...OBSTACLES, ...towerObstacles]
+	// The plaza has no pillars; its hedges sit outside the bounds.
+	const obstacles = [...(lobby ? BOXES : OBSTACLES), ...towerObstacles]
 	const towerColliders = new Map(
 		towerObstacles.map((o) => [
 			o.id,
@@ -1026,6 +1035,7 @@ export function createSim({
 		)[0]
 		if (
 			d.sparring &&
+			!lobby &&
 			!d.cast &&
 			t >= d.castTick &&
 			target &&

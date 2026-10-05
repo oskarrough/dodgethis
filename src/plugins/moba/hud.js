@@ -562,10 +562,7 @@ export function createHud({ lobby = false } = {}) {
 				if (frame.lobby && sim.dummies.includes(unit)) {
 					const card = heroCard(unit, { localTeam, localId: hero?.id })
 					card.title = 'Sparring dummy'
-					card.summary =
-						sim.dummies.indexOf(unit) === 0
-							? `Practice your kit. This dummy casts harmless Loose back: dodge its ${tune.lobby.practice.tell} s tell.`
-							: 'Practice your kit on this stuffed target.'
+					card.summary = 'Practice your kit on this stuffed target.'
 					card.rows = card.rows.map((row) =>
 						row[0] === 'Respawn'
 							? ['Respawn', tune.dummies.respawn + ' s']

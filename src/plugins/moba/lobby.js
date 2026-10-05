@@ -211,7 +211,7 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 		readyQueued = false
 		const i = gallery.standees.findIndex((s) => s.id === gallery.difficulty)
 		galleryShot = { stand: gallery.standees[(i + 1) % gallery.standees.length], projectile: null }
-		// One path plan per shortcut. Get a clear line of fire rather than shooting through pillars.
+		// One path plan per shortcut. Walk to the firing mark first.
 		app.intents.get(hero.id).order = { ...tune.lobby.gallery.firingMark, kind: 'move' }
 	}
 

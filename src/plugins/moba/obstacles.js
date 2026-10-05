@@ -171,7 +171,7 @@ export function segmentClear(a, b, inflate = 0, obstacles = OBSTACLES) {
 }
 
 // Rapier movement and analytical queries consume the same descriptors.
-export function buildColliders(world, RAPIER) {
+export function buildColliders(world, RAPIER, obstacles = OBSTACLES) {
 	const body = world.createRigidBody(RAPIER.RigidBodyDesc.fixed())
 	// Small, coplanar terrain triangles avoid capsule-sweep jitter on one lane-sized slab.
 	const rows = Math.ceil((FLOOR.halfZ * 2) / m.groundGrid)
@@ -184,7 +184,7 @@ export function buildColliders(world, RAPIER) {
 		}),
 		body,
 	)
-	for (const o of OBSTACLES) {
+	for (const o of obstacles) {
 		const h = o.r !== undefined ? m.pillarHeight : o.kind === 'hedge' ? m.hedgeHeight : m.wallHeight
 		const shape =
 			o.r !== undefined
