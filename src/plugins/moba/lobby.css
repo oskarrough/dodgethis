@@ -68,6 +68,9 @@
 .lobby-gallery-label small {
 	display: none;
 }
+.lobby-gallery-label[data-picked='true'] small:has(kbd) {
+	display: block;
+}
 .lobby-gallery-help {
 	border: 0;
 }
@@ -189,4 +192,12 @@
 	border: 0.12em solid var(--ui-text);
 	border-radius: 0.25em;
 	text-align: center;
+}
+.lobby-stand-label kbd {
+	margin: 0 0.2em 0 0;
+	padding: 0 0.3em;
+	border: 0.1em solid var(--ui-text);
+	border-radius: 0.25em;
+	background: var(--ui-gold);
+	font: inherit;
 }
