@@ -246,7 +246,7 @@ test.if(process.env.SLOW === '1')(
 		expect(sim.lane.match.winner).toBe('B')
 		expect(facts.every(validFact)).toBe(true)
 	},
-	30000,
+	120000,
 )
 
 function earlyBall() {

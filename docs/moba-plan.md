@@ -14,7 +14,7 @@ A small Heroes of the Storm-style mode: the smallest thing that already feels li
 | Fort  | 5000 | 320    | 1/s  | 8.5   | same                       |
 | Core  | 6000 | 360    | 1/s  | 9     | same; death ends the match |
 
-Early gun damage is shown above. At 8:00 guns deal 25% of it, waves accelerate and brutes join. The stronger early guns protect a weak human's team; late pressure stops mirror bots from defending forever. Structure HP and the Ball's damage fraction are unchanged.
+Early gun damage is shown above. At 6:00 guns deal 5% of it, waves accelerate and brutes join. The stronger early guns protect a weak human's team; late pressure stops mirror bots from defending forever. Structure HP and the Ball's damage fraction are unchanged.
 
 - **Minions:** a wave every 30 s from each core, first at 0:15. Each wave is 3 melee, 2 ranged and 1 wizard; the wizard drops a regen globe (+15% max HP, killing team only, 15 s lifetime). They walk the centreline and take the nearest enemy within 6 m: minion, then structure, then hero. They are plain agents, not character controllers. A dying minion's XP goes to the enemy team if any enemy hero is within 12 m, which replaces last-hitting.
 
@@ -95,7 +95,7 @@ Obedience from HotS, springs and juice from dodgethis. Everything below is moba'
 
 Built in `src/plugins/moba/bots.js`. Practice uses match seed 2; enemies take the signboard's difficulty or `?bots=easy|normal|hard`, with easy as the default; allies stay normal. The roster and every bot's abilities come from the hero table. The scripted controller remains only for older characterization fixtures. Live difficulty knobs have their own GUI folders; seed and lane files apply on restart. `catchRate` is reserved for a hero with a catch kit; Fletcher has none.
 
-Siege tuning from real play: early structure guns are doubled, the late phase starts at 8:00 with quarter-strength guns and a 3500 HP brute, waves come every 15 s, and the Ball interval is 150 s early / 30 s late. Minions gain 4% HP and damage per whole minute. A disadvantaged bot uses Rain to clear a wave attacking its frontmost friendly structure. These changes keep default Practice with an idle local seat alive past eight minutes while letting seeded mirror matches finish.
+Siege tuning from real play: early structure guns are doubled, the late phase starts at 6:00 with one-twentieth-strength guns and a 3500 HP brute, waves come every 15 s, and the Ball interval is 150 s early / 30 s late. Minions gain 4% HP and damage per whole minute. A disadvantaged bot uses Rain to clear a wave attacking its frontmost friendly structure. These changes keep default Practice with an idle local seat alive past eight minutes while letting seeded mirror matches finish.
 
 Map, Ball and structure rules come from [moba-lane.md](moba-lane.md). A bot is a brain per hero id that writes a `pointClick` frame with `app.intents.feed(id, frame)` at the top of moba's `simulate`, before any hero reads its intents. That keeps bots on the fixed tick, independent of render rate, paused while the sim is held, and absent on replicas. The sim can't tell a bot from a mouse player: `order` to move or attack, `aim` plus a `slotN` press whose `at` is the aim, never `move` or `held`. It reads sim state through a read-only view and never writes it. It thinks every 6th tick, staggered by id, and feeds its current frame on the ticks between. Randomness comes from one seeded stream per bot, forked from the match seed, so changing one bot doesn't reshuffle the others.
 

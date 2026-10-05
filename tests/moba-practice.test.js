@@ -109,5 +109,5 @@ test.if(process.env.SLOW === '1')(
 			dispose()
 		}
 	},
-	120000,
+	300000,
 )

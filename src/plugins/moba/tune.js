@@ -423,7 +423,7 @@ export const tune = {
 		patientDelay: 0.9, // 'patient': the cursor must rest this long
 		fade: 0.2, // 'patient': fade-out while you move or cast
 	},
-	match: { objective: 180, late: 480, lateGunDamage: 0.25 },
+	match: { objective: 180, late: 360, lateGunDamage: 0.05 },
 	waves: {
 		first: 15,
 		interval: 30,

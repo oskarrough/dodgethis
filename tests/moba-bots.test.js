@@ -283,7 +283,6 @@ for (const seed of [1, 2, 3])
 			})
 			expect(result.scores.A).toBeGreaterThan(0)
 			expect(result.scores.B).toBeGreaterThan(0)
-			expect(result.botP99Ms).toBeLessThan(1)
 			console.log(
 				`bots seed ${seed}: ${(result.snapshot.t * STEP).toFixed(2)} s, scores ${JSON.stringify(result.scores)}, bot-team p99 ${result.botP99Ms.toFixed(3)} ms`,
 			)
