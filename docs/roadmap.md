@@ -8,7 +8,6 @@ A small, toy-like hero brawler that grew out of dodgeball, set in the world over
 
 ## Now
 
-- Ship the MOBA to main, live (waiting on Oskar's go).
 - Pick a tooltip mode from the five prototypes (`?tooltips=`).
 
 ## Next
@@ -32,7 +31,7 @@ A small, toy-like hero brawler that grew out of dodgeball, set in the world over
 
 ## Changelog
 
-- 2026-10-05 (night): the first minute of a match (goal callout, lane arrow, "You" ring), death recap and end screen, OUT! stamps with a ref's whistle and cardboard deaths, quiet tooltips with Alt for detail, edge pan, Try Mode, a hero-select toybox, Mitts reviewed and fixed, and a cleanup 2,600 lines lighter.
+- 2026-10-05: shipped to main. Overnight: the first minute of a match (goal callout, lane arrow, "You" ring), death recap and end screen, OUT! stamps with a ref's whistle and cardboard deaths, quiet tooltips with Alt for detail, edge pan, Try Mode, a hero-select toybox, Mitts reviewed and fixed, and a cleanup 2,600 lines lighter.
 - 2026-10-04: playtest round. Console-style splash and difficulty, hero roster, a new HUD with tooltips, Mitts playable, a test link and debug panel, combat logs and the balance farm, world and lobby designs. Parallel agents on the WSL box.
 - 2026-09 (late): the MOBA: core split into plugins, lane, bots and 3v3, hero definitions, front-end slices, agents that play and replay whole matches.
 - 2026-09 (early): online dodgeball with lobbies, court themes, adaptive music, obstacle layouts.
