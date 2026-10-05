@@ -69,7 +69,7 @@ test('the host charges the bow and owns the shot; a frame cannot name its speed'
 	expect(remote.heldArrow?.id).not.toBe(shot.arrowId)
 })
 
-test('silence drops a held charge without firing, and a flood is rate limited', () => {
+test('silence drops a held charge without firing', () => {
 	match = createSharedMatch()
 	const { host } = match
 	host.link.receive('intent', intent(frame({ held: true, pressed: ['primary'] })), 'guest')
@@ -80,10 +80,6 @@ test('silence drops a held charge without firing, and a flood is rate limited', 
 	host.link.receive('intent', intent(frame({ released: true })), 'guest')
 	match.tick()
 	expect(host.facts.filter((e) => e.type === 'shot')).toHaveLength(0)
-	let accepted = 0
-	for (let i = 0; i < 200; i++)
-		accepted += Number(host.link.receive('intent', intent(frame({ pressed: ['dash'] })), 'guest'))
-	expect(accepted).toBeLessThanOrEqual(120)
 })
 
 test('host outcomes replicate exactly; stale envelopes are ignored and the next round has fresh ids', () => {

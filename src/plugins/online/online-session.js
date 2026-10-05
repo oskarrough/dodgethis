@@ -65,13 +65,14 @@ export function createOnlineSession(
 		state.humans.push({ id: peerId, peerId, team, controller: 'human' })
 		publish()
 	}
-	net.onPeerLeave = (peerId) => {
+	net.onPeerLeave = (peerId, reason) => {
 		if (!net.isHost || !state) return
 		state.humans = state.humans.filter((p) => p.peerId !== peerId)
+		if (reason) state.message = reason
 		if (state.phase === 'match') {
 			state.phase = 'lobby'
 			state.matchId = null
-			state.message = 'A player left. Match cancelled; scores reset.'
+			state.message = reason || 'A player left. Match cancelled; scores reset.'
 			net.accepting = true
 			onAbort(state.message)
 		}
@@ -89,8 +90,11 @@ export function createOnlineSession(
 		onChange(null, reason)
 	}
 	net.on('lobby', (incoming, from) => {
+		if (net.isHost) {
+			net.reject?.(from)
+			return
+		}
 		if (
-			net.isHost ||
 			from !== net.hostId ||
 			!validLobby(incoming, net.hostId, net.id) ||
 			incoming.revision <= lastRevision
@@ -109,13 +113,18 @@ export function createOnlineSession(
 	// Guests send intent frames; the host sends state envelopes.
 	for (const type of ['intent', 'state'])
 		net.on(type, (data, from) => {
-			if (!state || state.phase !== 'match') return
+			if (!state || state.phase !== 'match') {
+				net.reject?.(from)
+				return
+			}
 			if (
 				net.isHost
 					? type !== 'intent' || !state.humans.some((p) => p.peerId === from)
 					: type !== 'state' || from !== net.hostId
-			)
+			) {
+				net.reject?.(from)
 				return
+			}
 			onMessage(type, data, from)
 		})
 	return {

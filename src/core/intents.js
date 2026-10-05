@@ -35,6 +35,7 @@ const LIMIT = 1000
 const point = (p) =>
 	!!p &&
 	typeof p === 'object' &&
+	!Array.isArray(p) &&
 	Number.isFinite(p.x) &&
 	Number.isFinite(p.z) &&
 	Math.abs(p.x) <= LIMIT &&
@@ -51,20 +52,34 @@ export const neutralFrame = () => ({
 	released: [],
 })
 
-// An untrusted frame, checked whole: finite points, a move no longer than 1, and only known actions.
-export function validIntent(frame) {
+// Read an untrusted frame into owned data: finite points, a move no longer than 1, and only known actions.
+export function readIntent(frame) {
 	if (!plain(frame) || !point(frame.move) || Math.hypot(frame.move.x, frame.move.z) > 1.001)
-		return false
-	if (!pointOrNull(frame.order) || !pointOrNull(frame.aim) || !plain(frame.held)) return false
+		return null
+	if (!pointOrNull(frame.order) || !pointOrNull(frame.aim) || !plain(frame.held)) return null
 	if (frame.order?.kind !== undefined && !['move', 'attack-move'].includes(frame.order.kind))
-		return false
-	if (!Object.entries(frame.held).every(([a, v]) => ACTIONS.includes(a) && v === true)) return false
-	if (!Array.isArray(frame.pressed) || frame.pressed.length > MAX_EDGES) return false
+		return null
+	if (!Object.entries(frame.held).every(([a, v]) => ACTIONS.includes(a) && v === true)) return null
+	if (!Array.isArray(frame.pressed) || frame.pressed.length > MAX_EDGES) return null
 	if (!frame.pressed.every((e) => plain(e) && ACTIONS.includes(e.action) && pointOrNull(e.at)))
-		return false
-	if (!Array.isArray(frame.released) || frame.released.length > MAX_EDGES) return false
-	return frame.released.every((a) => ACTIONS.includes(a))
+		return null
+	if (!Array.isArray(frame.released) || frame.released.length > MAX_EDGES) return null
+	if (!frame.released.every((a) => ACTIONS.includes(a))) return null
+	const copyPoint = (p) => (p === null ? null : { x: p.x, z: p.z })
+	const order = copyPoint(frame.order)
+	if (order && frame.order.kind !== undefined) order.kind = frame.order.kind
+	return {
+		move: copyPoint(frame.move),
+		order,
+		aim: copyPoint(frame.aim),
+		held: { ...frame.held },
+		pressed: frame.pressed.map((e) => ({ action: e.action, at: copyPoint(e.at) })),
+		released: frame.released.slice(),
+	}
 }
+
+// Compatibility for recorded frames and existing mode callers; the wire uses readIntent, never check-then-clone.
+export const validIntent = (frame) => readIntent(frame) !== null
 
 // The `direct` scheme: WASD or the left stick moves, the pointer's ground point aims, the button is primary, Shift dashes, Space jumps.
 // `device` is core/input.js (or a fake); `ground()` returns the pointer's ground point or null.

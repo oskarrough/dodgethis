@@ -1,10 +1,9 @@
-import { neutralFrame, validIntent } from '../../core/intents.js'
+import { neutralFrame, readIntent } from '../../core/intents.js'
 
 export const INPUT_TIMEOUT = 0.5
 export const HOST_TIMEOUT = 10
 export const SEND_INTERVAL = 1 / 20
 const MAX_FACTS = 256
-const MAX_RATE = 120 // intent messages per seat per second
 const MIN_GAP = 0.014 // a changed frame waits this long after the last send: every frame at 60 Hz, every third at 144
 const safeInt = (n) => Number.isSafeInteger(n) && n >= 0
 
@@ -29,7 +28,7 @@ export function createLink({
 		host
 			? roster
 					.filter((p) => p.controller === 'human' && p.id !== local)
-					.map((p) => [p.id, { seq: -1, seen: now(), silent: false, rateAt: now(), count: 0 }])
+					.map((p) => [p.id, { seq: -1, seen: now(), silent: false }])
 			: [],
 	)
 	let seq = 0
@@ -48,19 +47,20 @@ export function createLink({
 
 	function receiveIntent(message, from) {
 		const seat = seats.get(from)
-		if (!seat || !message || message.matchId !== matchId || !safeInt(message.seq)) return false
-		if (message.seq <= seat.seq || !validIntent(message.frame)) return false
-		const time = now()
-		if (time - seat.rateAt >= 1) {
-			seat.rateAt = time
-			seat.count = 0
+		const reject = () => {
+			net.reject?.(from)
+			return false
 		}
-		if (++seat.count > MAX_RATE) return false
+		if (!seat || !message || message.matchId !== matchId || !safeInt(message.seq)) return reject()
+		if (message.seq <= seat.seq) return reject()
+		const frame = readIntent(message.frame)
+		if (!frame) return reject()
+		const time = now()
 		seat.seq = message.seq
 		seat.seen = time
 		seat.silent = false
 		stats.intents++
-		intents.feed(from, structuredClone(message.frame))
+		intents.feed(from, frame)
 		return true
 	}
 

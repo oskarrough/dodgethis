@@ -10,6 +10,8 @@ class Emitter {
 	}
 	emit(type, ...args) {
 		const listeners = [...(this.listeners.get(type) ?? [])]
+		// Fixtures speak the protocol's raw-string wire, while assertions keep readable decoded messages.
+		if (type === 'data' && typeof args[0] !== 'string') args[0] = JSON.stringify(args[0])
 		for (const fn of listeners) fn(...args)
 	}
 }
@@ -45,13 +47,14 @@ class Connection extends Emitter {
 		super()
 		this.peer = peer
 		this.metadata = metadata
+		this.serialization = 'raw'
 		this.open = false
 		this.closed = false
 		this.sent = []
 	}
 	send(message) {
 		if (!this.open || this.failSend) throw new Error('Data channel closed')
-		this.sent.push(structuredClone(message))
+		this.sent.push(typeof message === 'string' ? JSON.parse(message) : structuredClone(message))
 		// Synchronous delivery intentionally stresses welcome/hello adoption order.
 		this.other?.emit('data', structuredClone(message))
 	}
@@ -198,7 +201,7 @@ test('private host and guest exchange welcome/hello with protocol metadata and r
 	const outgoing = client.conns.get(server.id)
 	expect(outgoing.options).toEqual({
 		reliable: true,
-		serialization: 'json',
+		serialization: 'raw',
 		metadata: { v: PROTO },
 	})
 	expect(outgoing.sent).toEqual([{ t: 'hello', d: { v: PROTO } }])

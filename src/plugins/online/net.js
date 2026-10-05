@@ -1,6 +1,8 @@
 // Private, host-and-spoke PeerJS transport. Lobby/game authority lives in the session model.
-// 2: intent frames and state envelopes replaced input packets and snapshots.
-export const PROTO = 2
+import { tune } from './tune.js'
+
+// 3: raw strings let us bound guest traffic before parsing JSON.
+export const PROTO = 3
 export const MAX_PLAYERS = 8
 const PREFIX = 'dodgethis-'
 const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
@@ -81,6 +83,7 @@ export class Net {
 		this._connections = new Set()
 		this._pending = new Map()
 		this._timeouts = new Map()
+		this._inputs = new Map()
 		this._cancelOperation = null
 	}
 
@@ -132,7 +135,7 @@ export class Net {
 			this.hostId = PREFIX + code
 			const conn = this.peer.connect(this.hostId, {
 				reliable: true,
-				serialization: 'json',
+				serialization: 'raw',
 				metadata: { v: PROTO },
 			})
 			await this._joinConnection(conn, generation)
@@ -234,8 +237,9 @@ export class Net {
 			this._timeout(conn, this.joinTimeout, () =>
 				finish(new Error('No answer from that lobby; check the code or your connection')),
 			)
-			conn.on('data', (message) => {
+			conn.on('data', (raw) => {
 				if (generation !== this._generation || !this._connections.has(conn)) return
+				const message = this._read(conn, raw)
 				if (settled) {
 					// The lobby may close between welcome and our hello acknowledgement.
 					if (message?.t === 'refused' && this.conns.get(conn.peer) === conn) {
@@ -281,7 +285,8 @@ export class Net {
 
 	_incoming(conn, generation) {
 		let reason
-		if (conn.metadata?.v !== PROTO) reason = 'Game version mismatch; everyone must refresh the page'
+		if (conn.metadata?.v !== PROTO || conn.serialization !== 'raw')
+			reason = 'Game version mismatch; everyone must refresh the page'
 		else if (!this.accepting) reason = 'That lobby is closed; a match may already be running'
 		else if (typeof conn.peer !== 'string' || !conn.peer || conn.peer === this.id)
 			reason = 'Invalid peer identity'
@@ -309,8 +314,9 @@ export class Net {
 			welcomed = true
 			this._send(conn, { t: 'welcome', d: { v: PROTO, hostId: this.id } })
 		})
-		conn.on('data', (message) => {
+		conn.on('data', (raw) => {
 			if (!current()) return
+			const message = this._read(conn, raw)
 			if (this.conns.get(conn.peer) === conn) {
 				this._route(conn, message)
 				return
@@ -344,12 +350,12 @@ export class Net {
 		const refuse = () => {
 			if (!current()) return
 			try {
-				conn.send({ t: 'refused', d: { v: PROTO, reason } })
+				conn.send(JSON.stringify({ t: 'refused', d: { v: PROTO, reason } }))
 			} catch {
 				/* close still informs the guest */
 			}
 			// Give the reliable data channel a moment to deliver the readable refusal.
-			if (current()) this._timeout(conn, 100, () => this._close(conn))
+			if (current()) this._timeout(conn, tune.input.closeDelay, () => this._close(conn))
 		}
 		conn.on('close', () => {
 			if (current()) this._close(conn)
@@ -362,6 +368,78 @@ export class Net {
 		else conn.on('open', refuse)
 	}
 
+	// The host charges EVERY raw message before touching JSON, even unknown types and malformed input.
+	_read(conn, raw) {
+		if (this.isHost) {
+			let budget = this._inputs.get(conn)
+			const time = performance.now() / 1000
+			if (budget?.dropped) return null
+			if (!budget) {
+				budget = { at: time, count: 0, dirty: false, rejected: -Infinity, timer: null }
+				this._inputs.set(conn, budget)
+			}
+			if (time - budget.at >= tune.input.rateWindow) {
+				if (!budget.dirty || time - budget.rejected >= tune.input.rateWindow) {
+					this.timers.clearTimeout(budget.timer)
+					budget.timer = null
+				}
+				budget.at = time
+				budget.count = 0
+				budget.dirty = false
+			}
+			if (++budget.count > tune.input.rate || !this._withinCap(raw)) {
+				this._reject(conn)
+				return null
+			}
+		} else if (typeof raw !== 'string') return null
+		try {
+			const message = JSON.parse(raw)
+			if (!message || typeof message !== 'object' || Array.isArray(message)) {
+				this._reject(conn)
+				return null
+			}
+			return message
+		} catch {
+			this._reject(conn)
+			return null
+		}
+	}
+
+	_withinCap(raw) {
+		// Cheap code-unit limit first; never encode an arbitrarily large payload.
+		return (
+			typeof raw === 'string' &&
+			raw.length <= tune.input.cap &&
+			new TextEncoder().encode(raw).byteLength <= tune.input.cap
+		)
+	}
+
+	reject(peerId) {
+		const conn = this.conns.get(peerId)
+		if (conn) this._reject(conn)
+	}
+
+	_reject(conn) {
+		const budget = this._inputs.get(conn)
+		if (!this.isHost || !budget || budget.dropped) return
+		budget.dirty = true
+		budget.rejected = performance.now() / 1000
+		if (budget.timer !== null) return
+		// Start at the first dirty rate window, not at its 121st packet. Valid frames cannot wash a flood clean.
+		const delay = Math.max(0, budget.at + tune.input.rejectionWindow - budget.rejected)
+		budget.timer = this.timers.setTimeout(() => {
+			budget.timer = null
+			if (!this._connections.has(conn)) return
+			if (performance.now() / 1000 - budget.rejected >= tune.input.rateWindow) return
+			const reason = 'Player removed: invalid or excessive input. Match cancelled.'
+			budget.dropped = true
+			const established = this.conns.get(conn.peer) === conn
+			if (established) this.conns.delete(conn.peer)
+			this._refuse(conn, reason, this._generation)
+			if (established) this.onPeerLeave?.(conn.peer, reason)
+		}, delay * 1000)
+	}
+
 	_route(conn, message) {
 		if (this.conns.get(conn.peer) !== conn) return
 		if (!message || typeof message !== 'object' || Array.isArray(message)) return
@@ -370,15 +448,19 @@ export class Net {
 			!message.t ||
 			message.t.length > 64 ||
 			CONTROL.has(message.t)
-		)
+		) {
+			this._reject(conn)
 			return
-		this.handlers.get(message.t)?.(message.d, conn.peer)
+		}
+		const handler = this.handlers.get(message.t)
+		if (!handler) this._reject(conn)
+		else handler(message.d, conn.peer)
 	}
 
 	_send(conn, message) {
 		if (!conn.open) return false
 		try {
-			conn.send(message)
+			conn.send(JSON.stringify(message))
 			return true
 		} catch {
 			this._drop(conn)
@@ -430,6 +512,9 @@ export class Net {
 	}
 	_close(conn) {
 		this._clearTimeout(conn)
+		const budget = this._inputs.get(conn)
+		if (budget) this.timers.clearTimeout(budget.timer)
+		this._inputs.delete(conn)
 		if (this._pending.get(conn.peer) === conn) this._pending.delete(conn.peer)
 		this._connections.delete(conn)
 		try {

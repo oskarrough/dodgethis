@@ -184,7 +184,7 @@ export function createApp(services = {}) {
 			// Frames by participant id. The core feeds session.local[0] from the device and online feeds remote seats; modes read, consume and cancel.
 			intents: {
 				get: (id) => intents.get(id),
-				// Merge an untrusted frame for a participant no device here drives; check it with validIntent first.
+				// Merge an untrusted frame for a participant no device here drives; copy it with readIntent first.
 				feed: (id, frame) => intents.feed(id, frame),
 				consume: (id, action) => intents.consume(id, action),
 				drain: (id) => intents.drain(id),
