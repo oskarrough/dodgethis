@@ -2,7 +2,7 @@ import { createJuice } from '../../core/juice.js'
 import { createShadows } from '../../core/shadows.js'
 import { tune as coreTune } from '../../core/tune.js'
 import { tune } from './tune.js'
-import { buildMap, FLOOR } from './map.js'
+import { FLOOR } from './map.js'
 import { castAbility } from './ability.js'
 import { createSim } from './sim.js'
 import { practiceRoster } from './bots.js'
@@ -63,9 +63,9 @@ const FACTS = [
 ]
 
 // Practice: a player plus two allies against three intent-driven hero bots.
-// Boots with ?mode=moba. Everything lives as long as a run of the mode.
-export default function moba(app) {
-	const { scene, world, RAPIER, input, audio } = app
+// Boots with ?mode=moba. The map scope outlives individual gameplay runs.
+export default function moba(app, map) {
+	const { scene, RAPIER, input, audio } = app
 	const sfx = createSounds(audio)
 	let runs = 0
 
@@ -76,7 +76,6 @@ export default function moba(app) {
 			app.setPalette({})
 			document.documentElement.style.removeProperty('--page-bg')
 			audio.setMusicScene('play')
-			const unbuild = buildMap(scene, world, RAPIER)
 			const juice = createJuice(scene)
 			const stamps = createStamps(scene)
 			const shadows = createShadows(scene, {
@@ -104,23 +103,29 @@ export default function moba(app) {
 			const setup = parseMatchSetup(query, options.setup ?? options)
 			tune.follow.edgePan = setup.edgePan
 			const difficulty = setup.difficulty
-			const seats = practiceRoster(local, difficulty)
-			seats.find((seat) => seat.id === local).heroId = setup.heroId
+			setup.picks = {
+				[local]: { heroId: setup.heroId, team: 'A' },
+				...setup.picks,
+			}
+			const seats = practiceRoster(local, difficulty, setup.picks)
+			setup.heroId = seats.find((seat) => seat.id === local).heroId
 			const botsOnly = query.has('debug') && query.has('bots-only')
-			const sim = createSim({
-				scene,
-				world,
-				RAPIER,
-				intents: run.intents,
-				heroes: seats,
-				bots: app.session.authoritative
-					? seats.filter((seat) => botsOnly || seat.id !== local)
-					: [],
-				smooth: run.smooth,
-				present: run.present,
-				lane: true,
-				seed: setup.seed,
-			})
+			const sim = map.start(run, (world) =>
+				createSim({
+					scene,
+					world,
+					RAPIER,
+					intents: run.intents,
+					heroes: seats,
+					bots: app.session.authoritative
+						? seats.filter((seat) => botsOnly || seat.id !== local)
+						: [],
+					smooth: run.smooth,
+					present: run.present,
+					lane: true,
+					seed: setup.seed,
+				}),
+			)
 			const ballView = createBallView(scene)
 			const hero = sim.heroes.find((h) => h.id === local)
 			const onboarding = createOnboarding({ scene, sim, hero })
@@ -372,8 +377,6 @@ export default function moba(app) {
 				juice.dispose()
 				stamps.dispose()
 				shadows.dispose()
-				sim.dispose()
-				unbuild()
 			})
 
 			return {

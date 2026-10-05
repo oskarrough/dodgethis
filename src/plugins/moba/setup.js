@@ -10,7 +10,24 @@ export function parseMatchSetup(query, options = {}, warn = console.warn) {
 		return fallback
 	}
 	const seed = options.seed ?? query.get('seed')
+	const playable = (id) => Object.hasOwn(HEROES, id) && heroDefinition(id).playable === true
+	const picks =
+		options.picks &&
+		Object.fromEntries(
+			Object.entries(options.picks).map(([id, pick]) => [
+				id,
+				{
+					heroId: read('hero', pick.heroId, 'fletcher', playable),
+					...(pick.team == null
+						? {}
+						: {
+								team: read('team', pick.team, 'A', (v) => ['A', 'B'].includes(v)),
+							}),
+				},
+			]),
+		)
 	return {
+		...(picks ? { picks } : {}),
 		...(options.tryMode ? { tryMode: parseTrySetup(query, options.tryMode, warn) } : {}),
 		edgePan: [true, '1', 'true'].includes(
 			read('edgePan', options.edgePan ?? query.get('edgePan'), tune.follow.edgePan, (v) =>
@@ -21,12 +38,7 @@ export function parseMatchSetup(query, options = {}, warn = console.warn) {
 		difficulty: read('bots', options.difficulty ?? query.get('bots'), 'easy', (v) =>
 			['easy', 'normal', 'hard'].includes(v),
 		),
-		heroId: read(
-			'hero',
-			options.heroId ?? query.get('hero'),
-			'fletcher',
-			(v) => Object.hasOwn(HEROES, v) && heroDefinition(v).playable === true,
-		),
+		heroId: read('hero', options.heroId ?? query.get('hero'), 'fletcher', playable),
 		seed: Number(
 			read(
 				'seed',

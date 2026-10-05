@@ -24,15 +24,20 @@ export function interceptTime(from, target, speed) {
 	return roots.length ? Math.min(...roots) : Math.sqrt(c) / speed
 }
 
-export function practiceRoster(local = 'local', difficulty = 'easy') {
+export function practiceRoster(local = 'local', difficulty = 'easy', picks = {}) {
+	const localTeam = picks[local]?.team ?? 'A'
 	return ['A', 'B'].flatMap((team) =>
-		Array.from({ length: 3 }, (_, i) => ({
-			id: team === 'A' && i === 0 ? local : `bot-${team}-${i}`,
-			team,
-			heroId: 'fletcher',
-			file: (i - 1) * tune.bots.fileSpacing,
-			difficulty: team === 'A' ? 'normal' : difficulty,
-		})),
+		Array.from({ length: 3 }, (_, i) => {
+			const id = team === 'A' && i === 0 ? local : `bot-${team}-${i}`
+			const pickedTeam = picks[id]?.team ?? team
+			return {
+				id,
+				team: pickedTeam,
+				heroId: picks[id]?.heroId ?? 'fletcher',
+				file: (i - 1) * tune.bots.fileSpacing,
+				difficulty: pickedTeam === localTeam ? 'normal' : difficulty,
+			}
+		}),
 	)
 }
 

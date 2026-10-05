@@ -2,9 +2,54 @@ import * as THREE from 'three'
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js'
 import { makeStyleMaterial } from '../../core/stylepass.js'
+import { tune as coreTune } from '../../core/tune.js'
 import { tune } from './tune.js'
 import { FLOOR, PILLARS, BOXES, buildColliders } from './obstacles.js'
 export { FLOOR, PILLARS, SPAWN, walkable, clampWalkable } from './obstacles.js'
+
+// Selection, loading and gameplay share this owner, not the browser's dodgeball world.
+// The kernel aborts the previous run before starting its successor.
+export function createMapScope(scene, RAPIER, step) {
+	let world = null
+	let unbuild = null
+	let live = null
+	let gravity = coreTune.physics.gravity
+	return {
+		start(run, create) {
+			if (live) throw new Error('MOBA already has a live sim')
+			if (!world) {
+				gravity = coreTune.physics.gravity
+				world = new RAPIER.World({ x: 0, y: gravity, z: 0 })
+				world.timestep = step
+				unbuild = buildMap(scene, world, RAPIER)
+			}
+			live = create(world)
+			const owned = live
+			// The shell's gravity slider still targets dodgeball's world; keep this world live too.
+			run.system('simulate', () => {
+				if (gravity === coreTune.physics.gravity) return
+				gravity = coreTune.physics.gravity
+				world.gravity = { x: 0, y: gravity, z: 0 }
+			})
+			run.signal.addEventListener(
+				'abort',
+				() => {
+					owned.dispose()
+					live = null
+				},
+				{ once: true },
+			)
+			return owned
+		},
+		dispose() {
+			if (live) throw new Error('Dispose the MOBA sim before its map')
+			unbuild?.()
+			unbuild = null
+			world?.free()
+			world = null
+		},
+	}
+}
 
 // Printed road, shaded flanks and low cover; all collision geometry comes from obstacles.js.
 export function buildMap(scene, world, RAPIER) {

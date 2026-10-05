@@ -41,7 +41,7 @@ function tileMarkup(tile) {
 }
 
 // One backdrop through modes and selection; only the replica preview requests WebGL.
-export function mobaFront(app) {
+export function mobaFront(app, map) {
 	registerKitTune(app)
 	let activeBackdrop = null
 	let activeFront = null
@@ -109,6 +109,8 @@ export function mobaFront(app) {
 			let card = null
 			let screen = 'modes'
 			const setup = parseMatchSetup(new URLSearchParams(location.search), options.setup ?? options)
+			const local = app.session.local[0]
+			setup.heroId = setup.picks?.[local]?.heroId ?? setup.heroId
 			let difficulty = setup.difficulty
 			const picked = new Set(
 				['hero', 'bots'].filter((key) => new URLSearchParams(location.search).has(key)),
@@ -183,6 +185,7 @@ export function mobaFront(app) {
 					el.classList.remove('selecting-hero')
 				}
 				screen = next
+				if (next === 'modes') map.dispose()
 				pointerMoved = false
 				el.dataset.screen = next
 				// Menus preserve the selection, never the direct-play bypass.
@@ -297,6 +300,10 @@ export function mobaFront(app) {
 				const url = new URL(location.href)
 				url.searchParams.set('hero', setup.heroId)
 				history.replaceState(null, '', url)
+				setup.picks = {
+					...setup.picks,
+					[local]: { ...setup.picks?.[local], heroId: setup.heroId },
+				}
 				transferred = true
 				startLoading(app, {
 					el,

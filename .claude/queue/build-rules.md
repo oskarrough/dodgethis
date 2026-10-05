@@ -1,6 +1,6 @@
 Build rules, appended to every build brief. Each one comes from a finding an earlier review caught.
 
-No new unit tests for now (Oskar, 2026-10-04): prove a change by playing it, in a headless match or a browser trace. Keep the existing suite green; delete a test rather than nurse it when a deliberate change makes it obsolete. Rules below that ask for tests mean a quick proof.
+No new unit tests for now (Oskar, 2026-10-04): prove a change by playing it, in a headless match or a browser trace. Keep the existing suite green; delete a test rather than nurse it when a deliberate change makes it obsolete. Rules below that ask for tests mean a quick proof. A surgical edit outside your owned files (a setter, an export, a hook) is fine without asking; name it in the report.
 
 - Everything drawn moves with render interpolation: telegraphs, fills and timers blend with `alpha`, not just bodies.
 - Every number lives in the plugin's tune.js, and every slider has a sane range (fractions 0–1, times at least one step). No slider value may produce NaN or reverse movement.

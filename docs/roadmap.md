@@ -9,18 +9,18 @@ A small, toy-like hero brawler that grew out of dodgeball, set in the world over
 ## Now
 
 - Pick a tooltip mode from the five prototypes (`?tooltips=`).
+- The lobby, slice by slice: hero select you run around in, LittleBigPlanet-pod style ([moba-lobby.md](moba-lobby.md)).
 
 ## Next
 
 - Balance from the farm once bots play every kit properly; Mitts tuning.
-- The lobby: hero select you run around in, LittleBigPlanet-pod style ([moba-lobby.md](moba-lobby.md)).
+- Online MOBA through the existing rooms, then the lobby's online seats.
 - Carom and Skip, then Yo-yo and Mascot: six built heroes, ten designed at most.
 - Juice and sound everywhere; the frozen briefs come back one by one.
 - The world shows up in the art: the Yard in the sky, schoolyard tarmac, keeps.
 
 ## Later
 
-- Online with friends: the lobby with other players walking around in it, then full shared matches ([moba-plan.md](moba-plan.md#shared-play-m6)).
 - The heroic layer: mounts and R abilities (M5).
 - Talents, once the kits settle and the farm can measure them.
 - A second map ([moba-map-2.md](moba-map-2.md)), 5v5.

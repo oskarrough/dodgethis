@@ -4,8 +4,8 @@ A small Heroes of the Storm-style mode: the smallest thing that already feels li
 
 ## Scope
 
-- **Match:** 3v3 (human + 2 bot allies vs 3 bots), all the same hero. Destroy the enemy core. 8–12 minutes. `?mode=moba` opens selection; `?mode=moba&play` starts immediately.
-- **Map:** one flat lane along x, 104 × 26 m, with hedged flanks and six pillars; layout and structure positions are specified in [moba-lane.md](moba-lane.md). The full lane is built: towers, forts, cores, waves, shared levels, killer-team globes, base healing and a core-kill win. Practice is a human plus two allied hero bots against three enemy hero bots, all Fletcher seats built from the hero table. Bots feed the same fixed-tick intents as players.
+- **Match:** 3v3 (human + 2 bot allies vs 3 bots), with per-seat playable hero picks. Destroy the enemy core. 8–12 minutes. `?mode=moba` opens selection; `?mode=moba&play` starts immediately.
+- **Map:** one flat lane along x, 104 × 26 m, with hedged flanks and six pillars; layout and structure positions are specified in [moba-lane.md](moba-lane.md). The full lane is built: towers, forts, cores, waves, shared levels, killer-team globes, base healing and a core-kill win. Practice is a human plus two allied hero bots against three enemy hero bots, seats built from the hero table, defaulting to Fletcher where no pick was made. The map and its Rapier world survive loading cancellation and match restarts; returning to modes or leaving MOBA frees them. Only one sim owns the world at a time. Bots feed the same fixed-tick intents as players.
 - **Structures** (no ammo; HotS removed it in 2017). Each is invulnerable until the one in front falls. Abilities deal 25% to structures; a kill is worth 300 XP.
 
 |       | HP   | Damage | Rate | Range | Targets                    |
@@ -37,7 +37,7 @@ Early gun damage is shown above. At 8:00 guns deal 25% of it, waves accelerate a
 | Mount | —        | 1 s channel, then `speedMul` 1.3. Movement cancels the channel; damage, attacking or casting dismounts                    |
 
 - **Bots (built):** hero bots play through `app.intents` exactly like players; see [Hero bots](#hero-bots-m4).
-- **Cut:** talents (Oskar's call), mana, items, extra lanes, mercenary camps, hearthstone, gates, fountains, shift-queue, attack-move, minimap, catch-up XP, and more than one hero.
+- **Cut:** talents (Oskar's call), mana, items, extra lanes, mercenary camps, hearthstone, gates, fountains, shift-queue, attack-move, minimap, catch-up XP, and heroes not yet marked playable.
 
 ## Playtest links
 
