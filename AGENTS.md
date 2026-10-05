@@ -1,5 +1,6 @@
 # Agent notes
 
+- Use jujutsu version control when `jj` is available
 - `agent-browser` is installed; use it for browser testing. Its key presses don't reach the game, so dispatch synthetic KeyboardEvents. In a prod build `window.game` appears only after a Backquote toggles diagnostics.
 - Don't use `jj restore`; parallel agents may be working in this checkout.
 - Commit only if your brief says so (parallel builds leave it to the orchestrator), and then only your own files, always with a message: `jj commit <paths> -m "…"`. Run `bunx oxfmt <paths>` first, docs included; `bun run check` fails on unformatted markdown. Then `jj bookmark set moba -r @-`. `jj commit <path>` takes every hunk in that file, other threads' edits included, so commit a file only when all its changes are yours and otherwise leave it to the orchestrator. Leave other threads' changes in the working copy; never create an empty-described commit.
