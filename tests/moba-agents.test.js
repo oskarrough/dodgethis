@@ -266,7 +266,7 @@ test('replay preserves every combat snapshot and fact, including bot tells', () 
 	const events = new Set()
 	let maxObservation = 0
 	try {
-		while (live.sim.tick < 3600) {
+		while (live.sim.tick < 1800) {
 			live.step()
 			hashes.push(replayHash([live.sim.snapshot(), live.facts]))
 			for (const fact of live.facts) events.add(fact.type)

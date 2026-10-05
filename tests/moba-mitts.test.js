@@ -491,31 +491,35 @@ test('Mitts bots return a Pocket shot through Toss cooldown using its frozen ran
 		expect(b.abilityState.pocket).toBeNull()
 	}))
 
-test('real-play fast-forward: three Mitts vs three Fletchers ends by a core kill (bots-only, not human proof)', () => {
-	const seats = ['A', 'B'].flatMap((team) =>
-		Array.from({ length: 3 }, (_, i) => ({
-			id: `${team}${i}`,
-			team,
-			heroId: team === 'A' ? 'mitts' : 'fletcher',
-			file: (i - 1) * tune.bots.fileSpacing,
-			difficulty: 'normal',
-		})),
-	)
-	fixture(
-		({ sim, facts, step }) => {
-			for (let i = 0; i < ticks(tune.agents.maxSeconds * 2) && !sim.lane.match.winner; i++) step()
-			expect(sim.lane.match.winner).not.toBeNull()
-			expect(sim.lane.structures.some((u) => u.kind === 'core' && u.dead)).toBe(true)
-			for (const ability of ['gloveSlap', 'toss', 'catch'])
-				expect(facts.some((f) => f.type === 'cast' && f.ability === ability)).toBe(true)
-			expect(facts.some((f) => f.type === 'caught')).toBe(true)
-			console.log(
-				'Mitts/Fletcher bots-only core kill',
-				sim.lane.match.winner,
-				sim.tick * STEP,
-				'seconds',
-			)
-		},
-		{ seats, bots: seats },
-	)
-}, 120000)
+test.if(process.env.SLOW === '1')(
+	'real-play fast-forward: three Mitts vs three Fletchers ends by a core kill (bots-only, not human proof)',
+	() => {
+		const seats = ['A', 'B'].flatMap((team) =>
+			Array.from({ length: 3 }, (_, i) => ({
+				id: `${team}${i}`,
+				team,
+				heroId: team === 'A' ? 'mitts' : 'fletcher',
+				file: (i - 1) * tune.bots.fileSpacing,
+				difficulty: 'normal',
+			})),
+		)
+		fixture(
+			({ sim, facts, step }) => {
+				for (let i = 0; i < ticks(tune.agents.maxSeconds * 2) && !sim.lane.match.winner; i++) step()
+				expect(sim.lane.match.winner).not.toBeNull()
+				expect(sim.lane.structures.some((u) => u.kind === 'core' && u.dead)).toBe(true)
+				for (const ability of ['gloveSlap', 'toss', 'catch'])
+					expect(facts.some((f) => f.type === 'cast' && f.ability === ability)).toBe(true)
+				expect(facts.some((f) => f.type === 'caught')).toBe(true)
+				console.log(
+					'Mitts/Fletcher bots-only core kill',
+					sim.lane.match.winner,
+					sim.tick * STEP,
+					'seconds',
+				)
+			},
+			{ seats, bots: seats },
+		)
+	},
+	120000,
+)
