@@ -5,8 +5,6 @@ import { tune } from './tune.js'
 
 export function createLaneView(scene, smooth = null) {
 	const bodies = new Set()
-	const cameraFacing = new THREE.Quaternion()
-	const pitchAxis = new THREE.Vector3(1, 0, 0)
 	function makeBody(x, z, team, kind) {
 		const v = tune.laneView
 		const tower = ['tower', 'fort', 'core'].includes(kind)
@@ -148,28 +146,6 @@ export function createLaneView(scene, smooth = null) {
 			}
 			mesh.add(dome)
 		}
-		let tell = null
-		if (!tower) {
-			const shape =
-				kind === 'brute'
-					? new THREE.CircleGeometry(v.tellSize / 2, 4)
-					: kind === 'melee'
-						? new THREE.CircleGeometry(v.tellSize / 2, 3)
-						: kind === 'ranged'
-							? new THREE.PlaneGeometry(v.tellSize, v.tellSize * v.tellRangedHeight)
-							: new THREE.CircleGeometry(v.tellSize / 2, 5)
-			owned.push(shape)
-			tell = new THREE.Group()
-			tell.name = `moba-${kind}-tell`
-			tell.rotation.x = -Math.atan2(tune.follow.height, tune.follow.back)
-			tell.position.y = halfHeight + v.tellLift
-			const back = new THREE.Mesh(shape, material('ink', true)),
-				fill = new THREE.Mesh(shape, material('cream', true))
-			fill.position.z = v.tellLayer
-			tell.add(back, fill)
-			tell.visible = false
-			mesh.add(tell)
-		}
 		const pose = {
 			position: new THREE.Vector3(x, halfHeight, z),
 			quaternion: new THREE.Quaternion(),
@@ -243,6 +219,8 @@ export function createLaneView(scene, smooth = null) {
 			},
 			squeeze: 0,
 			recoil: 0,
+			strike: 0,
+			windup: 0,
 			squash(amount) {
 				body.squeeze = amount
 			},
@@ -263,7 +241,6 @@ export function createLaneView(scene, smooth = null) {
 			dome,
 			crystal,
 			cracks,
-			tell,
 			helpTether,
 			aggroFlash: 0,
 			shieldFlash: 0,
@@ -277,15 +254,15 @@ export function createLaneView(scene, smooth = null) {
 	const globeMarks = new Map()
 	function update(lane, heroes, alpha, locate, dt = 0, localTeam = null) {
 		const v = tune.laneView
-		cameraFacing.setFromAxisAngle(pitchAxis, -Math.atan2(tune.follow.height, tune.follow.back))
 		for (const unit of [...lane.structures, ...lane.minions]) {
 			unit.body.animateShatter?.(dt)
 			unit.body.squeeze *= Math.exp(-v.feedbackDecay * dt)
 			unit.body.recoil *= Math.exp(-v.feedbackDecay * dt)
+			unit.body.strike *= Math.exp(-v.strikeDecay * dt)
 			const progress = unit.attack
 				? 1 - Math.max(0, unit.attack.left - alpha) / unit.attack.total
 				: 0
-			// Separate attack silhouettes: drum charge, shield jab, stick lean, hat lift.
+			// Separate attack silhouettes: drum charge, shield jab, club swing, stick lean, hat hop.
 			const visual = unit.body.visual
 			visual.scale.set(1, 1, 1)
 			visual.rotation.x = 0
@@ -304,18 +281,22 @@ export function createLaneView(scene, smooth = null) {
 			if (unit.kind === 'tower') visual.scale.x = visual.scale.z = 1 + progress * v.towerCharge
 			else if (unit.kind === 'fort') visual.rotation.x = progress * v.fortPose
 			else if (unit.kind === 'core') visual.position.y = progress * v.corePose
-			else if (unit.kind === 'melee') visual.rotation.x = progress * v.meleePose
-			else if (unit.kind === 'brute') visual.rotation.z = progress * v.brutePose
-			else if (unit.kind === 'ranged') visual.rotation.x = -progress * v.rangedPose
-			else visual.position.y = progress * v.wizardPose
+			else {
+				// Minions wind up like cartoons: pull back and crouch, hang at the peak, then snap through.
+				if (!unit.attack && unit.body.windup > v.strikeFrom) unit.body.strike = 1
+				unit.body.windup = progress
+				const held = Math.min(1, progress / v.windupHold)
+				const back = held * held * (3 - 2 * held)
+				const swing = unit.body.strike * v.strikeReach - back
+				const crouch = back * v.windupSquash
+				visual.scale.set(1 + crouch / 2, 1 - crouch, 1 + crouch / 2)
+				if (unit.kind === 'melee') visual.rotation.x = swing * v.meleePose
+				else if (unit.kind === 'brute') visual.rotation.z = swing * v.brutePose
+				else if (unit.kind === 'ranged') visual.rotation.x = swing * v.rangedPose
+				else visual.position.y = unit.body.strike * v.wizardPose
+			}
 			visual.scale.y *= Math.max(0.1, 1 - unit.body.squeeze)
 			visual.position.z = unit.body.recoil
-			const tell = unit.body.tell
-			if (tell) {
-				tell.visible = !unit.dead && !!unit.attack
-				tell.quaternion.copy(unit.body.mesh.quaternion).invert().multiply(cameraFacing)
-				tell.children[1].scale.setScalar(v.tellInset * (v.tellStart + (1 - v.tellStart) * progress))
-			}
 			unit.body.aggroFlash = Math.max(0, unit.body.aggroFlash - dt)
 			const flash = unit.body.aggroFlash / v.aggroLife
 			const helpTether = unit.body.helpTether
