@@ -346,6 +346,12 @@ export function createLobbyProps(scene, el, gallery, readySeats, local, onReady)
 				() => card.group.visible,
 			)
 	const point = new THREE.Vector3()
+	// Left/top, not a transform: the labels' tilt and scale turn about their own centre,
+	// and would swing a transform's screen offset with them.
+	function place(label) {
+		label.style.left = `${((point.x + 1) * innerWidth) / 2}px`
+		label.style.top = `${((1 - point.y) * innerHeight) / 2}px`
+	}
 	let device = 'keyboard'
 	// A key sticker on the prop it acts on; written only when it changes.
 	function setHelp(el, key, text) {
@@ -396,7 +402,7 @@ export function createLobbyProps(scene, el, gallery, readySeats, local, onReady)
 						p.seat.z + r.labelForward,
 					)
 					.project(camera)
-				p.label.style.transform = `translate(${((point.x + 1) * innerWidth) / 2}px, ${((1 - point.y) * innerHeight) / 2}px) translate(-50%, -50%)`
+				place(p.label)
 			}
 			point
 				.set(
@@ -405,12 +411,12 @@ export function createLobbyProps(scene, el, gallery, readySeats, local, onReady)
 					tune.lobby.gallery.z + tune.lobby.gallery.helpForward,
 				)
 				.project(camera)
-			galleryHelp.style.transform = `translate(${((point.x + 1) * innerWidth) / 2}px, ${((1 - point.y) * innerHeight) / 2}px) translate(-50%, -50%)`
+			place(galleryHelp)
 			for (const p of galleryProps) {
 				p.card.rotation.x = gallery.angle(p.stand, tick, step)
 				point.set(p.stand.x, tune.lobby.gallery.labelY, p.stand.z).project(camera)
 				p.label.hidden = point.z < -1 || point.z > 1
-				p.label.style.transform = `translate(${((point.x + 1) * innerWidth) / 2}px, ${((1 - point.y) * innerHeight) / 2}px) translate(-50%, -50%)`
+				place(p.label)
 			}
 		},
 		dispose() {

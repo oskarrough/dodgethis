@@ -264,6 +264,7 @@
 	position: absolute;
 	top: 0;
 	left: 0;
+	transform: translate(-50%, -50%);
 	z-index: 1;
 	padding: 0.22em 0.55em 0.18em;
 	border: clamp(3px, 0.28vw, 4px) solid var(--ui-text);
@@ -309,7 +310,7 @@
 	box-shadow: none;
 	background: transparent;
 	font-size: clamp(10px, 0.9vw, 13px);
-	translate: 0 6.4em;
+	translate: 0 4em;
 }
 .moba-front .lobby-seat-label {
 	background: var(--ui-cream);
@@ -443,6 +444,9 @@
 	font: inherit;
 }
 @media (max-width: 600px) {
+	.lobby-gallery-help {
+		translate: 0 6.4em;
+	}
 	.lobby-gallery-label[data-difficulty='hard'] {
 		translate: 0 4.4em;
 	}
