@@ -20,7 +20,7 @@ export function requestSession(directory, request) {
 	return new Promise((resolve, reject) => {
 		const socket = createConnection(join(directory, 'socket'))
 		let text = ''
-		socket.on('connect', () => socket.end(JSON.stringify(request) + '\n'))
+		socket.on('connect', () => socket.write(JSON.stringify(request) + '\n'))
 		socket.on('data', (chunk) => {
 			text += chunk
 		})
@@ -92,10 +92,11 @@ export async function sessionTransport(directory) {
 	const server = createServer({ allowHalfOpen: true }, (socket) => {
 		let buffer = ''
 		socket.on('error', () => {})
+		let handled = false
 		socket.on('data', (chunk) => {
 			buffer += chunk
-		})
-		socket.on('end', () => {
+			if (handled || !buffer.includes('\n')) return
+			handled = true
 			let request
 			try {
 				request = JSON.parse(buffer)
