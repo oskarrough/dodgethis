@@ -13,13 +13,20 @@ export function createMapScope(scene, RAPIER, step) {
 	let world = null
 	let unbuild = null
 	let live = null
+	let built = null
 	return {
-		start(run, create) {
+		// `kind` picks the terrain: the lane for a match, the small plaza for the pick screen.
+		// Switching rebuilds the terrain on the same world; the previous run is already aborted.
+		start(run, create, kind = 'lane') {
 			if (live) throw new Error('MOBA already has a live sim')
 			if (!world) {
 				world = new RAPIER.World({ x: 0, y: coreTune.physics.gravity, z: 0 })
 				world.timestep = step
-				unbuild = buildMap(scene, world, RAPIER)
+			}
+			if (built !== kind) {
+				unbuild?.()
+				unbuild = buildMap(scene, world, RAPIER, kind)
+				built = kind
 			}
 			const releaseWorld = run.debug.world(world)
 			live = create(world)
@@ -42,6 +49,7 @@ export function createMapScope(scene, RAPIER, step) {
 			if (live) throw new Error('Dispose the MOBA sim before its map')
 			unbuild?.()
 			unbuild = null
+			built = null
 			world?.free()
 			world = null
 		},
@@ -49,7 +57,8 @@ export function createMapScope(scene, RAPIER, step) {
 }
 
 // Printed road, shaded flanks and low cover; all collision geometry comes from obstacles.js.
-export function buildMap(scene, world, RAPIER) {
+// The 'plaza' kind draws only a small walled tabletop and the pillars around the pick screen.
+export function buildMap(scene, world, RAPIER, kind = 'lane') {
 	const m = tune.map
 	const group = new THREE.Group()
 	group.name = 'moba-map'
@@ -75,122 +84,163 @@ export function buildMap(scene, world, RAPIER) {
 		add(mergeGeometries(geometries), mat, 0, 0, 0).name = name
 		for (const g of geometries) g.dispose()
 	}
-	add(
-		new THREE.BoxGeometry(FLOOR.halfX * 2, FLOOR.thickness, FLOOR.halfZ * 2),
-		shade,
-		0,
-		-FLOOR.thickness / 2,
-		0,
-	)
-	add(
-		new THREE.PlaneGeometry(FLOOR.halfX * 2, m.hedgeInnerZ * 2).rotateX(-Math.PI / 2),
-		cream,
-		0,
-		m.printLayers.road,
-		0,
-	)
-	for (const side of [-1, 1]) {
-		// The base throat is wider than the central road.
+	const buildPlaza = () => {
+		const f = tune.lobby.floor
+		const hx = tune.lobby.bounds.halfX + f.pad
+		const hz = tune.lobby.bounds.halfZ + f.pad
+		add(new THREE.BoxGeometry(hx * 2, FLOOR.thickness, hz * 2), shade, 0, -FLOOR.thickness / 2, 0)
 		add(
-			new THREE.PlaneGeometry(FLOOR.halfX - m.baseWallX, m.throat * 2).rotateX(-Math.PI / 2),
+			new THREE.PlaneGeometry(hx * 2, hz * 2).rotateX(-Math.PI / 2),
 			cream,
-			(side * (FLOOR.halfX + m.baseWallX)) / 2,
+			0,
+			m.printLayers.plaza,
+			0,
+		)
+		const rim = []
+		for (const [w, d, x, z] of [
+			[hx * 2, m.lineWidth, 0, -hz + m.lineWidth / 2],
+			[hx * 2, m.lineWidth, 0, hz - m.lineWidth / 2],
+			[m.lineWidth, hz * 2, -hx + m.lineWidth / 2, 0],
+			[m.lineWidth, hz * 2, hx - m.lineWidth / 2, 0],
+		])
+			rim.push(
+				new THREE.PlaneGeometry(w, d).rotateX(-Math.PI / 2).translate(x, m.printLayers.seams, z),
+			)
+		print(rim, ink, 'moba-plaza-rim')
+		// A low scalloped hedge along the far and side edges frames the court like the lane's.
+		for (const [x, z, halfX, halfZ] of [
+			[0, -hz - f.lip, hx + f.lip, f.lip],
+			[-hx - f.lip, 0, f.lip, hz],
+			[hx + f.lip, 0, f.lip, hz],
+		])
+			add(
+				new RoundedBoxGeometry(halfX * 2, m.hedgeHeight, halfZ * 2, 1, f.lip),
+				shade,
+				x,
+				m.hedgeHeight / 2,
+				z,
+			)
+	}
+	const buildLane = () => {
+		add(
+			new THREE.BoxGeometry(FLOOR.halfX * 2, FLOOR.thickness, FLOOR.halfZ * 2),
+			shade,
+			0,
+			-FLOOR.thickness / 2,
+			0,
+		)
+		add(
+			new THREE.PlaneGeometry(FLOOR.halfX * 2, m.hedgeInnerZ * 2).rotateX(-Math.PI / 2),
+			cream,
+			0,
 			m.printLayers.road,
 			0,
 		)
-		const team = material(side < 0 ? 'teamA' : 'teamB', { flat: true })
-		const kerbs = []
-		for (let x = m.dashSpacing; x < FLOOR.halfX; x += m.dashSpacing)
-			for (const flank of [-1, 1])
-				kerbs.push(
-					new THREE.PlaneGeometry(m.dashLength, m.lineWidth * 2)
-						.rotateX(-Math.PI / 2)
-						.translate(side * x, m.printLayers.marks, flank * (m.hedgeInnerZ - m.lineWidth)),
-				)
-		print(kerbs, team, `moba-kerbs-${side}`)
-	}
-	const dashes = []
-	for (let x = -FLOOR.halfX + m.dashSpacing; x < FLOOR.halfX; x += m.dashSpacing)
-		dashes.push(
-			new THREE.PlaneGeometry(m.dashLength, m.lineWidth)
-				.rotateX(-Math.PI / 2)
-				.translate(x, m.printLayers.marks, 0),
+		for (const side of [-1, 1]) {
+			// The base throat is wider than the central road.
+			add(
+				new THREE.PlaneGeometry(FLOOR.halfX - m.baseWallX, m.throat * 2).rotateX(-Math.PI / 2),
+				cream,
+				(side * (FLOOR.halfX + m.baseWallX)) / 2,
+				m.printLayers.road,
+				0,
+			)
+			const team = material(side < 0 ? 'teamA' : 'teamB', { flat: true })
+			const kerbs = []
+			for (let x = m.dashSpacing; x < FLOOR.halfX; x += m.dashSpacing)
+				for (const flank of [-1, 1])
+					kerbs.push(
+						new THREE.PlaneGeometry(m.dashLength, m.lineWidth * 2)
+							.rotateX(-Math.PI / 2)
+							.translate(side * x, m.printLayers.marks, flank * (m.hedgeInnerZ - m.lineWidth)),
+					)
+			print(kerbs, team, `moba-kerbs-${side}`)
+		}
+		const dashes = []
+		for (let x = -FLOOR.halfX + m.dashSpacing; x < FLOOR.halfX; x += m.dashSpacing)
+			dashes.push(
+				new THREE.PlaneGeometry(m.dashLength, m.lineWidth)
+					.rotateX(-Math.PI / 2)
+					.translate(x, m.printLayers.marks, 0),
+			)
+		print(dashes, ink, 'moba-centreline')
+		const dots = []
+		for (let x = -m.baseWallX; x <= m.baseWallX; x += m.dotSpacing)
+			for (const side of [-1, 1])
+				for (let z = m.hedgeOuterZ + m.dotSpacing; z < FLOOR.halfZ; z += m.dotSpacing)
+					dots.push(
+						new THREE.CircleGeometry(m.dotRadius, m.printSegments)
+							.rotateX(-Math.PI / 2)
+							.translate(x, m.printLayers.dots, side * z),
+					)
+		print(dots, ink, 'moba-halftone')
+		add(
+			new THREE.CircleGeometry(m.plazaRadius, m.printSegments).rotateX(-Math.PI / 2),
+			cream,
+			0,
+			m.printLayers.plaza,
+			0,
 		)
-	print(dashes, ink, 'moba-centreline')
-	const dots = []
-	for (let x = -m.baseWallX; x <= m.baseWallX; x += m.dotSpacing)
-		for (const side of [-1, 1])
-			for (let z = m.hedgeOuterZ + m.dotSpacing; z < FLOOR.halfZ; z += m.dotSpacing)
-				dots.push(
-					new THREE.CircleGeometry(m.dotRadius, m.printSegments)
-						.rotateX(-Math.PI / 2)
-						.translate(x, m.printLayers.dots, side * z),
-				)
-	print(dots, ink, 'moba-halftone')
-	add(
-		new THREE.CircleGeometry(m.plazaRadius, m.printSegments).rotateX(-Math.PI / 2),
-		cream,
-		0,
-		m.printLayers.plaza,
-		0,
-	)
-	add(
-		new THREE.RingGeometry(m.plazaRadius - m.lineWidth, m.plazaRadius, m.printSegments).rotateX(
-			-Math.PI / 2,
-		),
-		ink,
-		0,
-		m.printLayers.seams,
-		0,
-	)
-	// Printed dodgeball centre: a ring and crossing seams, not an objective yet.
-	add(
-		new THREE.RingGeometry(
-			m.plazaRadius / 3 - m.lineWidth,
-			m.plazaRadius / 3,
-			m.printSegments,
-		).rotateX(-Math.PI / 2),
-		ink,
-		0,
-		m.printLayers.seams,
-		0,
-	)
-	for (const yaw of [0, Math.PI / 2]) {
-		const seam = add(
-			new THREE.PlaneGeometry((m.plazaRadius * 2) / 3, m.lineWidth).rotateX(-Math.PI / 2),
+		add(
+			new THREE.RingGeometry(m.plazaRadius - m.lineWidth, m.plazaRadius, m.printSegments).rotateX(
+				-Math.PI / 2,
+			),
 			ink,
 			0,
 			m.printLayers.seams,
 			0,
 		)
-		seam.rotation.y = yaw
-	}
-	for (const b of BOXES) {
-		const h = b.kind === 'hedge' ? m.hedgeHeight : m.wallHeight
-		const trunk = b.kind === 'hedge' ? h - m.scallopRadius : h
+		// Printed dodgeball centre: a ring and crossing seams, not an objective yet.
 		add(
-			new RoundedBoxGeometry(
-				b.halfX * 2,
-				trunk,
-				b.halfZ * 2,
-				1,
-				Math.min(m.scallopRadius, trunk / 2),
-			),
-			shade,
-			b.x,
-			trunk / 2,
-			b.z,
+			new THREE.RingGeometry(
+				m.plazaRadius / 3 - m.lineWidth,
+				m.plazaRadius / 3,
+				m.printSegments,
+			).rotateX(-Math.PI / 2),
+			ink,
+			0,
+			m.printLayers.seams,
+			0,
 		)
-		if (b.kind !== 'hedge') continue
-		for (let x = b.x - b.halfX + m.scallopRadius; x < b.x + b.halfX; x += m.scallopSpacing)
+		for (const yaw of [0, Math.PI / 2]) {
+			const seam = add(
+				new THREE.PlaneGeometry((m.plazaRadius * 2) / 3, m.lineWidth).rotateX(-Math.PI / 2),
+				ink,
+				0,
+				m.printLayers.seams,
+				0,
+			)
+			seam.rotation.y = yaw
+		}
+		for (const b of BOXES) {
+			const h = b.kind === 'hedge' ? m.hedgeHeight : m.wallHeight
+			const trunk = b.kind === 'hedge' ? h - m.scallopRadius : h
 			add(
-				new THREE.SphereGeometry(m.scallopRadius, m.pillarSegments, m.pillarSegments / 2),
+				new RoundedBoxGeometry(
+					b.halfX * 2,
+					trunk,
+					b.halfZ * 2,
+					1,
+					Math.min(m.scallopRadius, trunk / 2),
+				),
 				shade,
-				x,
-				h - m.scallopRadius,
+				b.x,
+				trunk / 2,
 				b.z,
 			)
+			if (b.kind !== 'hedge') continue
+			for (let x = b.x - b.halfX + m.scallopRadius; x < b.x + b.halfX; x += m.scallopSpacing)
+				add(
+					new THREE.SphereGeometry(m.scallopRadius, m.pillarSegments, m.pillarSegments / 2),
+					shade,
+					x,
+					h - m.scallopRadius,
+					b.z,
+				)
+		}
 	}
+	if (kind === 'plaza') buildPlaza()
+	else buildLane()
 	for (const p of PILLARS) {
 		add(
 			new THREE.CylinderGeometry(p.r, p.r, m.pillarHeight, m.pillarSegments),
