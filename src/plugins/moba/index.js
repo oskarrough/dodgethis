@@ -154,30 +154,33 @@ export default function moba(app, map) {
 					})
 				: null
 			const botsOnly = query.has('debug') && query.has('bots-only')
-			const sim = map.start(run, (world) =>
-				createSim({
-					scene,
-					world,
-					RAPIER,
-					intents: run.intents,
-					heroes: seats,
-					bots:
-						!isLobby && app.session.authoritative
-							? seats.filter((seat) => botsOnly || seat.id !== local)
-							: [],
-					smooth: run.smooth,
-					present: run.present,
-					lane: !isLobby,
-					...(isLobby && {
-						lobby: true,
-						readyRoster: practiceRoster(local, difficulty, setup.picks),
-						spawns: { [local]: tune.lobby.marks[setup.picks[local].team === 'B' ? 3 : 0] },
-						bounds: tune.lobby.bounds,
-						respawn: tune.lobby.respawn,
-						footprint: gallery.contact,
+			const sim = map.start(
+				run,
+				(world) =>
+					createSim({
+						scene,
+						world,
+						RAPIER,
+						intents: run.intents,
+						heroes: seats,
+						bots:
+							!isLobby && app.session.authoritative
+								? seats.filter((seat) => botsOnly || seat.id !== local)
+								: [],
+						smooth: run.smooth,
+						present: run.present,
+						lane: !isLobby,
+						...(isLobby && {
+							lobby: true,
+							readyRoster: practiceRoster(local, difficulty, setup.picks),
+							spawns: { [local]: tune.lobby.marks[setup.picks[local].team === 'B' ? 3 : 0] },
+							bounds: tune.lobby.bounds,
+							respawn: tune.lobby.respawn,
+							footprint: gallery.contact,
+						}),
+						seed: setup.seed,
 					}),
-					seed: setup.seed,
-				}),
+				isLobby ? 'plaza' : 'lane',
 			)
 			const ballView = isLobby ? null : createBallView(scene)
 			const hero = sim.heroes.find((h) => h.id === local)

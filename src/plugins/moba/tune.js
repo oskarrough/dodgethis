@@ -205,6 +205,8 @@ export const tune = {
 		skyLift: 400, // SVG world units; lift the desert's planet into the plaza's top third.
 		// These also clamp dummy bodies; keep the gallery >2 m from their actual lanes, not their authored posts.
 		bounds: { halfX: 4, halfZ: 6.2 },
+		// The plaza's own tabletop: ground past the walkable bounds, and the hedge lip around it.
+		floor: { pad: 1.2, lip: 0.3 },
 		onlineNotice: 'The online plaza is not ready yet. Play local practice.',
 		mark: { radius: 0.4, lineWidth: 0.04, y: 0.135, ringY: 0.15 },
 		respawn: 0.5,
