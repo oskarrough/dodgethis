@@ -62,6 +62,13 @@ const FACTS = [
 	'levelUp',
 	'swap',
 	'pick',
+	'seatClaim',
+	'seatDenied',
+	'seatEnter',
+	'seatEmpty',
+	'seatReady',
+	'readyWalk',
+	'readyCancel',
 	'globe',
 	'matchOver',
 ]
@@ -245,6 +252,7 @@ export default function moba(app, map) {
 			run.system('simulate', (dt) => {
 				lobby?.step()
 				sim.step(dt)
+				lobby?.afterStep()
 			})
 			run.on('present', feedback.present)
 			if (onboarding) run.on('present', onboarding.present)

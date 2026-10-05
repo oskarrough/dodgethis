@@ -43,3 +43,4 @@ No new unit tests for now (Oskar, 2026-10-04): prove a change by playing it, in 
 - A new screen or mode handles shared sessions or refuses them with a notice; a guest never sits on a frozen screen.
 - Hand-offs between screens pass live resources (backdrop, map, current pick) along; never rebuild one while the old copy still listens.
 - A camera that doesn't follow shows every place the player can walk, at 390 and 1440.
+- Rate limits use a token bucket, not a fixed window: a reliable channel delivers a stall's backlog at once, and that must drain, not lock the player out.

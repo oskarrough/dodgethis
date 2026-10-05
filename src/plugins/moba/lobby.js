@@ -5,7 +5,8 @@ import { tune } from './tune.js'
 import { tune as frontTune } from './front/tune.js'
 import { createBackdrop } from './front/backdrop.js'
 import { startLoading } from './front/loading.js'
-import { createLobbyStands } from './lobby-props.js'
+import { createLobbyStands, createReadySeats } from './lobby-props.js'
+import { practiceRoster } from './bots.js'
 import './lobby.css'
 
 // The plaza uses the match's simulation and presentation, but owns navigation and framing.
@@ -18,7 +19,7 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 	el.className = 'moba-front front-lobby'
 	el.dataset.screen = 'plaza'
 	el.setAttribute('aria-label', 'Try your hero in the plaza')
-	el.innerHTML = `<footer><button type="button" class="front-back front-return" aria-label="Back to hero select">Back <kbd></kbd></button><button type="button" class="front-sticker front-cta" aria-label="Start match"><span class="front-card-face"></span><span>Start</span><kbd></kbd></button></footer>`
+	el.innerHTML = `<footer><button type="button" class="front-back front-return" aria-label="Back to hero select">Back <kbd></kbd></button><button type="button" class="front-sticker front-cta" aria-label="Walk to your Ready box"><span class="front-card-face"></span><span>Ready</span><kbd></kbd></button></footer>`
 	el.prepend(backdrop.el, canvas)
 	canvas.classList.add('front-canvas')
 	canvas.inert = false
@@ -52,7 +53,27 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 	})
 	el.style.setProperty('--lobby-sky-lift', `${-tune.lobby.skyLift}px`)
 	app.camera.update(0)
-	const props = createLobbyStands(app.scene, el, gallery)
+	const readySeats = createReadySeats({ present: run.present })
+	const roster = practiceRoster(hero.id, setup.difficulty, setup.picks)
+	for (const [joinOrder, seat] of roster.entries()) {
+		const box = readySeats.seats.filter((b) => b.team === seat.team).find((b) => !b.occupant)
+		readySeats.claim(
+			box.id,
+			{
+				id: seat.id,
+				heroId: seat.heroId,
+				joinOrder,
+				bot: !sim.heroes.some((h) => h.id === seat.id),
+			},
+			sim.tick,
+		)
+	}
+	const props = createLobbyStands(app.scene, el, gallery, readySeats, hero.id, ready)
+	props.syncSeats()
+	let readyWalk = false
+	let readyPrimary = false
+	let loadingQueued = false
+	const readySounds = new Map()
 	let occupied = null
 	let pickSoundTick = null
 	let denySoundTick = null
@@ -64,6 +85,8 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 		setup.heroId = hero.heroId
 		setup.picks[hero.id] = { ...setup.picks[hero.id], heroId: hero.heroId }
 		props.select(hero.heroId)
+		const box = readySeats.seatOf(hero.id)
+		if (box) readySeats.claim(box.id, { ...box.occupant, heroId: hero.heroId }, sim.tick)
 		const url = new URL(location.href)
 		url.searchParams.set('hero', hero.heroId)
 		history.replaceState(null, '', url)
@@ -83,7 +106,19 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 			fact.projectile === galleryShot.projectile
 		)
 			finishGalleryShot()
+		if (fact.type === 'seatClaim') props.syncSeats()
 		if (fact.hero !== hero.id) return
+		const sound = {
+			readyWalk: 'walkSound',
+			seatEnter: 'enterSound',
+			seatReady: 'fullSound',
+			readyCancel: 'cancelSound',
+			seatEmpty: 'cancelSound',
+		}[fact.type]
+		if (sound && readySounds.get(sound) !== fact.tick) {
+			readySounds.set(sound, fact.tick)
+			app.audio.blip(tune.lobby.ready[sound])
+		}
 		if (fact.type === 'pick') {
 			if (fact.ability === 'galleryShot') finishGalleryShot()
 			setup.difficulty = fact.difficulty
@@ -119,6 +154,7 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 	}
 
 	function cycleDifficulty() {
+		if (readyWalk) cancelReady(false)
 		if (hero.dead || galleryShot) {
 			run.present({
 				type: 'denied',
@@ -149,6 +185,11 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 		})
 	function back() {
 		if (ending) return
+		if (readyQueued || readyWalk || readySeats.seatOf(hero.id)?.enteredAt != null) {
+			app.intents.cancel(hero.id)
+			cancelReady()
+			return
+		}
 		if (
 			hero.cast ||
 			hero.channel ||
@@ -163,13 +204,54 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 		app.audio.blip({ ...frontTune.back, type: 'sine' })
 		returnHero()
 	}
+	function cancelReady(stop = true) {
+		readyWalk = readyQueued = false
+		readySeats.cancel(hero.id, sim.tick)
+		if (stop) {
+			const frame = app.intents.get(hero.id),
+				box = readySeats.seatOf(hero.id)
+			if (
+				frame.order &&
+				box &&
+				Math.hypot(frame.order.x - box.x, frame.order.z - box.z) <= tune.orders.arrival
+			)
+				frame.order = null
+			run.intents.press(hero.id, 'stop')
+		}
+		run.present({ type: 'readyCancel', hero: hero.id, tick: sim.tick })
+	}
 	function ready() {
-		if (ending) return
+		if (ending || hero.dead) return
 		if (galleryShot) {
 			readyQueued = true
 			return
 		}
+		readyQueued = false
+		const box = readySeats.seatOf(hero.id)
+		if (!box) return
+		readySeats.resume(hero.id)
+		if (readyWalk) return
+		readyWalk = true
+		app.intents.get(hero.id).order = { x: box.x, z: box.z, kind: 'move' }
+		run.present({
+			type: 'readyWalk',
+			hero: hero.id,
+			seat: box.id,
+			point: { x: box.x, y: 0, z: box.z },
+			tick: sim.tick,
+		})
+	}
+	function beginLoading() {
+		if (ending || !readySeats.allReady() || galleryShot) return
 		syncPick()
+		setup.picks = Object.fromEntries(
+			readySeats.seats
+				.filter((s) => s.occupant)
+				.map((s) => {
+					const human = sim.heroes.find((h) => h.id === s.occupant.id)
+					return [s.occupant.id, { heroId: human?.heroId ?? s.occupant.heroId, team: s.team }]
+				}),
+		)
 		ending = transferred = true
 		app.audio.blip(frontTune.loading.skip)
 		startLoading(app, {
@@ -227,10 +309,19 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 		const start = down(9)
 		const cycle = down(12)
 		const difficulty = down(13)
+		const box = readySeats.seatOf(hero.id)
+		const readyA =
+			down(0) &&
+			box &&
+			Math.hypot(hero.body.position.x - box.x, hero.body.position.z - box.z) <=
+				tune.lobby.ready.promptRadius &&
+			!Object.keys(app.intents.get(hero.id).held).length
 		previous = buttons.slice()
 		if (cancel) back()
-		else if (start) ready()
-		else if (cycle) cycleHero()
+		else if (start || readyA) {
+			readyPrimary = !!readyA
+			ready()
+		} else if (cycle) cycleHero()
 		else if (difficulty) cycleDifficulty()
 		const nextDevice = app.input.activeDevice()
 		if (device === nextDevice) return
@@ -258,6 +349,11 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 			stands: props.stands,
 			gallery,
 			galleryProps: props.galleryProps,
+			readySeats,
+			seatProps: props.seatProps,
+			get readyWalk() {
+				return readyWalk
+			},
 			snapshot: sim.snapshot,
 		},
 	})
@@ -279,6 +375,21 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 		result() {},
 		prepareInput() {
 			const frame = app.intents.get(hero.id)
+			if (readyPrimary) {
+				run.intents.consume(hero.id, 'primary')
+				readyPrimary = false
+			}
+			const box = readySeats.seatOf(hero.id)
+			const movement =
+				Math.hypot(frame.move.x, frame.move.z) > 0 ||
+				(frame.order &&
+					(!box || Math.hypot(frame.order.x - box.x, frame.order.z - box.z) > tune.orders.arrival))
+			if (
+				(readyWalk && movement) ||
+				((readyWalk || box?.enteredAt != null) &&
+					frame.pressed.some((e) => ['stop', 'cancel'].includes(e.action)))
+			)
+				cancelReady(!movement)
 			if (
 				galleryShot?.projectile === null &&
 				(frame.pressed.some((e) => ['stop', 'cancel'].includes(e.action)) ||
@@ -300,6 +411,8 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 				})
 			}
 			if (!frame.order) return
+			if (!frame.order.kind && readySeats.seats.some((s) => readySeats.contains(s, frame.order)))
+				frame.order = { ...frame.order, kind: 'move' }
 			if (gallery.aimsAt(frame.order) && !frame.order.kind) {
 				run.intents.press(hero.id, 'primary', frame.order)
 				frame.order = null
@@ -348,6 +461,7 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 				}
 			}
 			if (hero.dead) {
+				if (readyWalk) cancelReady()
 				if (galleryShot?.projectile === null) {
 					galleryShot = null
 					readyQueued = false
@@ -392,6 +506,17 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 				distance: v.nudgeDistance,
 				time: v.nudgeTime,
 			})
+		},
+		afterStep() {
+			readySeats.step(sim.tick, app.clock.step, sim.heroes)
+			if (readySeats.allReady() && !galleryShot && !loadingQueued) {
+				loadingQueued = true
+				// Leave the fixed step before aborting its sim and transferring the map/backdrop.
+				queueMicrotask(() => {
+					loadingQueued = false
+					if (!run.signal.aborted) beginLoading()
+				})
+			}
 		},
 		update(alpha) {
 			props.update(sim.tick + alpha, app.camera.view, app.clock.step)
