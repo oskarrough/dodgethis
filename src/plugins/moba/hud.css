@@ -621,13 +621,9 @@
 	box-shadow: 4px 5px 0 var(--ink);
 	pointer-events: none;
 	will-change: transform;
-	transition: opacity 0.2s;
 }
 .moba-tip[hidden] {
 	display: none;
-}
-.moba-tip.away {
-	opacity: 0;
 }
 /* World nameplate: name and exact HP above the unit, small enough to leave the fight readable. */
 .moba-plate {
