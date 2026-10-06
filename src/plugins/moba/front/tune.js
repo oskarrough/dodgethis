@@ -15,18 +15,21 @@ export const tune = {
 		figureStart: [0.12, 0.65],
 		figureSpacing: 0.1,
 		duration: 0.8,
-		rasterFade: 0.15,
 		mapName: 'The paper lane',
 		height: 22,
 		back: 110,
 		fov: 55,
 		targetX: 0,
 		targetY: 8,
-		scale: 1.08,
 		line: 0.65,
 		pastel: 0.65,
 		skip: { freq: 520, slideTo: 740, dur: 0.12, gain: 0.035, type: 'sine' },
 		arrival: { freq: 110, slideTo: 55, dur: 0.4, gain: 0.06, type: 'sine' },
+		// The crane takes shot.apex.time: the plaza camera rises `rise` m and tilts to `pitch`°
+		// (negative looks up). The map name letters in from `nameAt` of the way, `letter` s apart.
+		// The canvas fades no lower than `floor`.
+		crane: { rise: 14, pitch: -12, nameAt: 0.3, letter: 0.03, letterTime: 0.35, floor: 0.02 },
+		drop: { freq: 660, slideTo: 330, dur: 0.5, gain: 0.03, type: 'triangle' },
 	},
 	level: { growth: 0.04, cap: 10 },
 	volley: {
@@ -41,6 +44,16 @@ export const tune = {
 	// The Numbers sheet's reference distance, not an animated portrait.
 	preview: { distance: 8 },
 	parallax: { depth: 0.012, response: 0.18, settle: 0.05 },
+	// Backdrop shots in the 1440 × 900 frame: `lift` raises it (negative tilts up to the sky),
+	// `zoom` scales on Fletcher's ridge point and `time` is the move into the shot. `depth`
+	// multiplies both per layer, far to near; `ease` is the in-out power every front move shares.
+	shot: {
+		ease: 3,
+		depth: [0.8, 0.9, 1, 1.1],
+		splash: { lift: 0, zoom: 1, time: 0.7 },
+		plaza: { lift: 400, zoom: 1.15, time: 0.7 },
+		apex: { lift: -480, zoom: 1, time: 0.6 },
+	},
 	back: { freq: 174.61, slideTo: 130.81, dur: 0.25, gain: 0.055 },
 	// Menu tiles: the response is a spring, not a fade.
 	tile: { snap: 0.12, press: 0.06, scale: 1.06, lift: 8, tilt: 2.5 },

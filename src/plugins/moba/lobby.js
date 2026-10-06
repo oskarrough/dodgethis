@@ -391,6 +391,8 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 	)
 	run.system('input', () => {
 		const buttons = app.input.pad()?.buttons ?? []
+		// The crane takes no input, pad included.
+		if (ending) return void (previous = buttons.slice())
 		const down = (i) => buttons[i] && !previous[i]
 		const cancel = down(1)
 		const start = down(9)

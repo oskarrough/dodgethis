@@ -45,3 +45,4 @@ No new unit tests for now (Oskar, 2026-10-04): prove a change by playing it, in 
 - A camera that doesn't follow shows every place the player can walk, at 390 and 1440.
 - Rate limits use a token bucket, not a fixed window: a reliable channel delivers a stall's backlog at once, and that must drain, not lock the player out.
 - Prove "never triggers" cases with real aim points (where a player's cursor lands on a body), not exact centres.
+- Parallel builders share the box: start your own dev server on a free port and stop only that PID. Never `pkill` vite or anything shared.

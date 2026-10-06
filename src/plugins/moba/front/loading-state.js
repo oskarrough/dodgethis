@@ -1,38 +1,39 @@
 import { clampView } from '../follow.js'
 import { tune as kit } from '../tune.js'
 
-// Render-time gates: readiness has its own dwell, independent of the total hold.
-export function createLoadingState(tune) {
-	let phase = 'hold',
-		elapsed = 0,
-		dwell = 0,
+// Render-time phases: the crane rises to the apex, the apex holds only while the lane
+// builds, then the descent lands. Nothing skips or cancels. `times()` is read live.
+export function createDescentState(times) {
+	let phase = 'crane',
+		crane = 0,
 		flight = 0,
-		ready = false,
-		skipped = false
+		arrived = false,
+		ready = false
 	return {
+		// The backdrop reached its apex shot.
+		arrive() {
+			arrived = true
+		},
+		// The lane is built; only meaningful once the match exists at the apex.
 		ready() {
-			ready = true
-		},
-		skip() {
-			if (phase === 'hold') skipped = true
-		},
-		cancel() {
-			if (phase !== 'landed') phase = 'cancelled'
+			if (phase === 'apex') ready = true
 		},
 		step(dt) {
-			if (!Number.isFinite(dt) || dt < 0) throw new Error('Invalid loading step')
-			if (phase === 'hold') {
-				elapsed += dt
-				if (ready) dwell += dt
-				if (ready && (skipped || (elapsed >= tune.hold && dwell >= tune.dwell))) phase = 'descent'
+			if (!Number.isFinite(dt) || dt < 0) throw new Error('Invalid descent step')
+			const { crane: craneTime, duration } = times()
+			if (phase === 'crane') {
+				crane = Math.min(1, crane + dt / Math.max(1 / 60, craneTime))
+				if (crane === 1 && arrived) phase = 'apex'
+			} else if (phase === 'apex') {
+				if (ready) phase = 'descent'
 			} else if (phase === 'descent') {
-				flight = Math.min(1, flight + dt / Math.max(1 / 60, tune.duration))
+				flight = Math.min(1, flight + dt / Math.max(1 / 60, duration))
 				if (flight === 1) phase = 'landed'
 			}
 			return phase
 		},
 		get state() {
-			return { phase, elapsed, dwell, progress: flight, ready, skipped, frozen: phase !== 'landed' }
+			return { phase, crane, progress: flight, ready, frozen: phase !== 'landed' }
 		},
 	}
 }

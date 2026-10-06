@@ -217,13 +217,10 @@ export function createLobbyProps(scene, el, gallery, readySeats, local, onReady)
 		const label = document.createElement('div')
 		label.className = 'lobby-label lobby-gallery-label'
 		label.dataset.difficulty = stand.id
-		label.innerHTML = `<span>${stand.id.replace(/^./, (c) => c.toUpperCase())}</span><small>Shoot here</small>`
+		label.innerHTML = `<span>${stand.id.replace(/^./, (c) => c.toUpperCase())}</span><small></small>`
 		el.append(label)
 		return { stand, card, pad, label }
 	})
-	const galleryHelp = document.createElement('div')
-	galleryHelp.className = 'lobby-label lobby-gallery-help'
-	el.append(galleryHelp)
 	// The six recovery marks are real ground prints, so their camera fit is visible too.
 	const mark = tune.lobby.mark
 	for (const position of tune.lobby.marks) {
@@ -304,11 +301,11 @@ export function createLobbyProps(scene, el, gallery, readySeats, local, onReady)
 			p.fill.material = mine ? picked : seatColors[p.seat.team]
 			p.label.dataset.mine = String(mine)
 			p.label.disabled = !mine
-			const title = mine ? 'Ready' : owner ? 'Bot' : 'Open'
-			const key = mine ? (device === 'gamepad' ? 'Start' : device === 'touch' ? '' : 'Enter') : ''
-			const help = mine ? (device === 'touch' ? 'Stand here' : 'go') : owner?.bot ? 'bot' : 'seat'
-			if (p.label.firstChild.textContent !== title) p.label.firstChild.textContent = title
-			setHelp(p.label.lastChild, key, help)
+			p.label.hidden = !mine
+			if (!mine) continue
+			const key = device === 'gamepad' ? 'Start' : device === 'touch' ? '' : 'Enter'
+			if (p.label.firstChild.textContent !== 'Ready') p.label.firstChild.textContent = 'Ready'
+			setHelp(p.label.lastChild, key, device === 'touch' ? 'Stand here' : 'go')
 		}
 	}
 	// Presentation-only inspection targets: these never enter the sim's unit database.
@@ -362,11 +359,6 @@ export function createLobbyProps(scene, el, gallery, readySeats, local, onReady)
 		}
 	}
 	function labels() {
-		setHelp(
-			galleryHelp,
-			device === 'touch' ? '' : device === 'gamepad' ? '✛↓' : 'G',
-			device === 'touch' ? 'Shoot to choose' : 'next difficulty',
-		)
 		for (const p of galleryProps) {
 			const chosen = p.stand.id === gallery.difficulty
 			p.pad.visible = chosen
@@ -374,7 +366,7 @@ export function createLobbyProps(scene, el, gallery, readySeats, local, onReady)
 			setHelp(
 				p.label.querySelector('small'),
 				chosen && device !== 'touch' ? (device === 'gamepad' ? '✛↓' : 'G') : '',
-				chosen ? (device === 'touch' ? 'Picked' : 'next') : 'Shoot here',
+				chosen ? (device === 'touch' ? 'Picked' : 'next') : '',
 			)
 		}
 	}
@@ -404,14 +396,6 @@ export function createLobbyProps(scene, el, gallery, readySeats, local, onReady)
 					.project(camera)
 				place(p.label)
 			}
-			point
-				.set(
-					tune.lobby.gallery.x,
-					tune.lobby.gallery.helpY,
-					tune.lobby.gallery.z + tune.lobby.gallery.helpForward,
-				)
-				.project(camera)
-			place(galleryHelp)
 			for (const p of galleryProps) {
 				p.card.rotation.x = gallery.angle(p.stand, tick, step)
 				point.set(p.stand.x, tune.lobby.gallery.labelY, p.stand.z).project(camera)
@@ -422,7 +406,6 @@ export function createLobbyProps(scene, el, gallery, readySeats, local, onReady)
 		dispose() {
 			root.removeFromParent()
 			for (const p of galleryProps) p.label.remove()
-			galleryHelp.remove()
 			for (const p of seatProps) p.label.remove()
 			for (const item of owned) item.dispose()
 		},

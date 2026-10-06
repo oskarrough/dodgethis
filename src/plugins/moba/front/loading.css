@@ -1,74 +1,48 @@
-.front-backdrop > .front-descent-raster {
-	inset: 0;
-	width: 100%;
-	height: 100%;
-	object-fit: fill;
-	transform-origin: 50% 75%;
-	will-change: transform;
+/* The crane: the plaza's chrome and the HUD fade with the canvas. */
+.front-craning > :not(.moba-front, script, .lil-gui),
+.front-craning .front-lobby > :not(.front-backdrop, .front-canvas) {
+	opacity: 0;
+	transition: opacity var(--crane-fade) ease-in;
 }
-.front-backdrop > svg[hidden] {
-	display: none;
-}
-.front-loading-ui {
-	position: absolute;
-	inset: 0;
-	z-index: 1;
+.moba-front.front-descent[data-phase='crane'] {
+	background: transparent;
 	pointer-events: none;
 }
-.front-loading-ui button {
-	pointer-events: auto;
-	background: transparent;
-}
-.front-loading-ui h1 {
+.front-descent-name {
 	position: absolute;
-	top: max(16px, 2vh);
+	z-index: 1;
+	top: 30%;
+	left: 4%;
+	right: 4%;
 	margin: 0;
-	line-height: 1.2;
-	left: 5%;
-	right: 5%;
 	text-align: center;
-	font-weight: 300;
-	font-size: clamp(28px, 3vw, 48px);
+	font: 400 clamp(40px, 7vw, 132px) / 1.1 var(--ui-font);
+	color: var(--ui-text);
+	pointer-events: none;
 }
-.front-load-status {
-	position: absolute;
-	top: calc(max(16px, 2vh) + clamp(28px, 3vw, 48px) * 1.2 + 2px);
-	margin: 0;
-	font-size: 14px;
-	line-height: 1.2;
-	width: 100%;
-	text-align: center;
+/* Lettered across the sky one stroke after another, as the crane arrives. */
+.front-descent-name span {
+	display: inline-block;
+	opacity: 0;
+	animation: front-letter var(--name-time) ease-out both;
+	animation-delay: calc(var(--name-at) + var(--i) * var(--name-letter));
 }
-.front-loading-team {
-	position: absolute;
-	inset: 0;
+@keyframes front-letter {
+	from {
+		opacity: 0;
+		transform: translateY(0.25em) rotate(-4deg);
+	}
+	to {
+		opacity: 1;
+		transform: none;
+	}
 }
-.front-loading-team svg {
-	position: absolute;
-	height: auto;
-	fill: var(--ui-cream);
-	stroke: var(--ui-text);
-	stroke-width: 0.75;
+@media (prefers-reduced-motion: reduce) {
+	.front-descent-name span {
+		animation: none;
+		opacity: 1;
+	}
 }
-.front-loading-team .vacant {
-	opacity: 0.4;
-}
-.moba-front .front-loading-ui .front-skip {
-	margin-left: auto;
-	font-size: clamp(30px, 3vw, 50px);
-}
-.front-loading-ui .front-prompts {
-	margin-left: 0;
-}
-.moba-loading > :not(.moba-front):not(script):not(.lil-gui) {
+.moba-descending > :not(.moba-front):not(script):not(.lil-gui) {
 	visibility: hidden;
-}
-@media (max-width: 700px) {
-	.front-loading-ui footer {
-		flex-direction: row;
-		flex-wrap: wrap;
-	}
-	.front-loading-ui .front-prompts {
-		width: 100%;
-	}
 }

@@ -14,12 +14,12 @@ const planes = [
 	<circle cx="566" cy="555" r="184" fill="var(--front-planet)" stroke="var(--front-ink)"/>
 	<path d="M405 645 Q447 689 518 714" fill="none" stroke="var(--front-planet-line)"/>
 	<path d="M395 631 Q429 677 491 703" fill="none" stroke="var(--front-planet-line)"/>`,
-	`<path fill="var(--front-far)" d="M0 732 L95 723 L133 685 L212 682 L232 631 L325 625 L355 655 L370 706 L450 724 L938 722 L989 680 L1022 626 L1090 622 L1124 659 L1142 714 L1440 731 V900 H0Z"/>
+	`<path fill="var(--front-far)" d="M0 732 L95 723 L133 685 L212 682 L232 631 L325 625 L355 655 L370 706 L450 724 L938 722 L989 680 L1022 626 L1090 622 L1124 659 L1142 714 L1440 731 V1500 H0Z"/>
 	<path fill="url(#vertical-1)" d="M325 625 L339 654 L349 699 L370 706 L355 655Z M1090 622 L1098 656 L1112 707 L1142 714 L1124 659Z"/>
 	<path fill="var(--front-mesa)" d="M1108 737 L1127 587 Q1135 546 1210 545 L1240 547 L1258 566 L1211 568 Q1163 570 1161 608 L1158 738Z M1274 585 L1303 594 L1320 741 L1283 740Z"/>
 	<path fill="url(#vertical-1)" d="M1127 587 L1141 603 L1128 738 L1108 737Z M1283 740 L1274 585 L1288 603 L1304 740Z"/>
 	<path fill="none" d="M1143 617 L1136 706 M1192 557 L1225 555 M1293 628 L1301 704"/>`,
-	`<path fill="var(--front-ridge)" d="${ridgePath} V900 H0Z"/>
+	`<path fill="var(--front-ridge)" d="${ridgePath} V1500 H0Z"/>
 	<path class="front-distant-fletcher" fill="var(--front-shadow)" stroke="none" d="M605 739 L620 739 L836 771 L819 774Z"/>
 	<path fill="none" d="M0 790 Q233 775 368 763 M385 759 Q492 740 557 746 M641 755 Q821 773 951 752"/>
 	<g class="front-distant-fletcher" fill="var(--front-ink)" stroke="none">
@@ -30,7 +30,7 @@ const planes = [
 	<path class="front-distant-fletcher" d="M623 679 Q641 700 625 719 M625 679 L625 719" fill="none" stroke-width="1.5"/>
 	<path class="front-distant-fletcher" d="M586 671 L594 691 M591 669 L598 689" fill="none" stroke-width="1.2"/>
 	<path fill="none" d="M439 784 Q549 769 644 783 M950 782 Q1151 763 1305 791"/>`,
-	`<path fill="var(--front-dune)" d="M0 853 Q211 799 394 835 Q624 889 836 831 Q1119 801 1440 862 V900 H0Z"/>
+	`<path fill="var(--front-dune)" d="M0 853 Q211 799 394 835 Q624 889 836 831 Q1119 801 1440 862 V1500 H0Z"/>
 	<g fill="none">
 		<path d="M0 863 Q201 810 390 846 Q626 901 840 842 Q1119 812 1440 873"/>
 		<path d="M0 875 Q204 823 388 858 Q626 914 844 854 Q1119 824 1440 885"/>
@@ -38,6 +38,30 @@ const planes = [
 		<path d="M58 888 Q188 862 289 878 M969 884 Q1110 865 1234 886"/>
 	</g>`,
 ]
+
+// Fletcher's ridge point: shots zoom on it, so the plaza's tabletop lands where he stood.
+const focus = { x: 606, y: 740 }
+const shots = ['splash', 'plaza', 'apex']
+
+// One in-out curve for every front move: backdrop shots, the plaza's camera intro and the crane.
+export function easeShot(t) {
+	const k = Math.max(1, tune.shot.ease)
+	const x = Math.max(0, Math.min(1, t))
+	return x < 0.5 ? 2 ** (k - 1) * x ** k : 1 - (-2 * x + 2) ** k / 2
+}
+
+// The sky is three frames tall so a shot can carry it a full screen either way.
+const band = (a, b, c) =>
+	`linear-gradient(to bottom, ${[
+		[a, 0],
+		[a, 42],
+		[b, 44],
+		[b, 71],
+		[c, 73],
+		[c, 100],
+	]
+		.map(([color, stop]) => `var(--front-${color}) ${((100 + stop) / 3).toFixed(3)}%`)
+		.join(', ')})`
 
 export function createBackdrop() {
 	const el = make('div', 'front-backdrop')
@@ -76,53 +100,115 @@ export function createBackdrop() {
 			)
 			.join('')
 	const layers = [...el.querySelectorAll('svg')]
-	const sky = el.querySelector('.front-sky-next')
+	const skies = [...el.querySelectorAll('.front-sky')]
+	const sky = skies[1]
+	skies[0].style.background = band('lilac', 'mint', 'peach')
+	sky.style.background = band('peach', 'lilac', 'mint')
+	for (const layer of skies) {
+		layer.style.top = '-100%'
+		layer.style.height = '300%'
+	}
+	layers.forEach((layer) => (layer.style.overflow = 'visible'))
+	const patterns = layers.map((layer) => [...layer.querySelectorAll('pattern')])
 	const reduced = matchMedia('(prefers-reduced-motion: reduce)')
 	const pointer = { x: 0, y: 0, targetX: 0, targetY: 0 }
+	// `pose` is where the shot is now, `move` the ease under way from `from` to `name`.
+	const pose = { lift: 0, zoom: 1 }
+	let current = 'splash'
+	let move = null
 	let fade = null
 	let frame = null
 	let last = 0
 	let scale = 1
+	let lifted = 1
 	let disposed = false
-	let still = false
-	let raster = null
-	let preparation = 0
+	const layerPose = (depth) => ({
+		lift: pose.lift * depth,
+		zoom: 1 + (pose.zoom - 1) * depth,
+	})
+	const depthOf = (index) => Math.max(0, tune.shot.depth[index] ?? 1)
+	function place() {
+		layers.forEach((layer, index) => {
+			const { lift, zoom } = layerPose(depthOf(index))
+			const parallax = ((index + 1) / layers.length) * tune.parallax.depth
+			const x = pointer.x * innerWidth * parallax
+			const y = pointer.y * innerHeight * parallax - lift * lifted
+			layer.style.transform = `translate3d(${x}px, ${y}px, 0) scale(${zoom})`
+		})
+		const far = layerPose(depthOf(0))
+		for (const layer of skies)
+			layer.style.transform = `translate3d(0, ${-far.lift * lifted}px, 0) scale(${far.zoom})`
+		el.dataset.shot = move ? `${current}-moving` : current
+	}
+	// Hatching stays one device line thick: re-counter-scale once a move settles, never per frame.
+	function settle() {
+		layers.forEach((layer, index) => {
+			const { zoom } = layerPose(depthOf(index))
+			for (const pattern of patterns[index])
+				pattern.setAttribute('patternTransform', `scale(${1 / (scale * zoom)})`)
+			layer.style.willChange = 'auto'
+		})
+		for (const layer of skies) layer.style.willChange = ''
+	}
 	function resize() {
 		const shot = projectFrame(innerWidth, innerHeight)
 		scale = shot.scale
-		for (const pattern of el.querySelectorAll('pattern'))
-			pattern.setAttribute('patternTransform', `scale(${1 / scale})`)
+		// Lift is in the 1440 × 900 frame's units, so a shot frames every aspect alike.
+		lifted = (innerHeight * 1.1) / 900
+		// Every layer and the sky zoom about Fletcher's point.
+		const o = shot.point(focus.x, focus.y)
+		// Layers sit 5% outside the viewport; the sky starts a frame above it.
+		for (const layer of layers)
+			layer.style.transformOrigin = `${o.x + innerWidth * 0.05}px ${o.y + innerHeight * 0.05}px`
+		for (const layer of skies) layer.style.transformOrigin = `${o.x}px ${o.y + innerHeight}px`
 		for (const path of el.querySelectorAll('g path'))
 			path.setAttribute('vector-effect', 'non-scaling-stroke')
+		place()
+		if (!move) settle()
 	}
 	function wake() {
-		if (disposed || still || reduced.matches || frame !== null || fade?.playState === 'running')
-			return
+		if (disposed || frame !== null) return
 		last = performance.now()
-		frame = requestAnimationFrame(move)
+		frame = requestAnimationFrame(step)
 	}
-	function move(now) {
+	function step(now) {
 		frame = null
 		const dt = (now - last) / 1000
 		last = now
+		if (reduced.matches) pointer.targetX = pointer.targetY = 0
 		pointer.x = easePointer(pointer.x, pointer.targetX, dt, tune.parallax.response)
 		pointer.y = easePointer(pointer.y, pointer.targetY, dt, tune.parallax.response)
-		const settled =
+		const still =
+			reduced.matches ||
 			Math.max(
 				Math.abs(pointer.x - pointer.targetX) * innerWidth,
 				Math.abs(pointer.y - pointer.targetY) * innerHeight,
 			) *
 				tune.parallax.depth <
-			tune.parallax.settle
-		if (settled) {
+				tune.parallax.settle
+		if (still) {
 			pointer.x = pointer.targetX
 			pointer.y = pointer.targetY
 		}
-		layers.forEach((layer, index) => {
-			const depth = ((index + 1) / layers.length) * tune.parallax.depth
-			layer.style.transform = `translate3d(${pointer.x * innerWidth * depth}px, ${pointer.y * innerHeight * depth}px, 0)`
-		})
-		if (!settled) frame = requestAnimationFrame(move)
+		let arrived = null
+		if (move) {
+			move.elapsed += dt
+			const t = move.time > 0 ? Math.min(1, move.elapsed / move.time) : 1
+			const e = easeShot(t)
+			const to = tune.shot[current]
+			pose.lift = move.from.lift + (to.lift - move.from.lift) * e
+			pose.zoom = move.from.zoom + (to.zoom - move.from.zoom) * e
+			if (t >= 1) {
+				arrived = move
+				move = null
+			}
+		}
+		place()
+		if (arrived) {
+			settle()
+			arrived.resolve(true)
+		}
+		if (move || !still) frame = requestAnimationFrame(step)
 	}
 	function parallax(event) {
 		pointer.targetX = Math.max(-1, Math.min(1, (event.clientX / innerWidth) * 2 - 1))
@@ -130,94 +216,66 @@ export function createBackdrop() {
 		wake()
 	}
 	function motionPreference() {
-		if (frame !== null) cancelAnimationFrame(frame)
-		frame = null
-		if (reduced.matches) {
-			pointer.x = pointer.y = pointer.targetX = pointer.targetY = 0
-			move(performance.now())
-		} else wake()
+		if (reduced.matches && move) jump()
+		wake()
+	}
+	function jump() {
+		const to = tune.shot[current]
+		pose.lift = to.lift
+		pose.zoom = to.zoom
+		const arrived = move
+		move = null
+		place()
+		settle()
+		arrived?.resolve(true)
 	}
 	resize()
 	window.addEventListener('resize', resize)
 	window.addEventListener('pointermove', parallax)
 	reduced.addEventListener('change', motionPreference)
-	return {
+	const api = {
 		el,
-		async prepareDescent() {
-			const generation = ++preparation
-			still = true
-			sky.style.willChange = 'auto'
-			fade?.cancel()
-			if (frame !== null) cancelAnimationFrame(frame)
-			frame = null
-			layers.forEach((layer) => (layer.style.transform = 'none'))
-			const canvas = document.createElement('canvas')
-			const dpr = devicePixelRatio
-			canvas.width = Math.ceil(innerWidth * dpr)
-			canvas.height = Math.ceil(innerHeight * dpr)
-			const context = canvas.getContext('2d')
-			const colors = getComputedStyle(el)
-			for (const layer of layers) {
-				const copy = layer.cloneNode(true)
-				copy.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
-				copy.setAttribute('width', canvas.width * 1.1)
-				copy.setAttribute('height', canvas.height * 1.1)
-				copy.removeAttribute('style')
-				for (const node of copy.querySelectorAll('[stroke-width]'))
-					node.setAttribute('stroke-width', Number(node.getAttribute('stroke-width')) * dpr)
-				copy.querySelectorAll('[fill^="url"]').forEach((node) => node.remove())
-				copy.querySelectorAll('.front-distant-fletcher').forEach((node) => node.remove())
-				let svg = new XMLSerializer().serializeToString(copy)
-				svg = svg.replace(/var\((--[\w-]+)\)/g, (_, key) => {
-					context.fillStyle = colors.getPropertyValue(key)
-					return context.fillStyle
-				})
-				const image = new Image()
-				image.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg)
-				await image.decode()
-				if (disposed || generation !== preparation) return false
-				context.drawImage(image, -canvas.width * 0.05, -canvas.height * 0.05)
-			}
-			raster = new Image()
-			raster.className = 'front-descent-raster'
-			raster.src = canvas.toDataURL()
-			await raster.decode()
-			if (disposed || generation !== preparation) return false
-			el.append(raster)
-			await raster.animate([{ opacity: 0 }, { opacity: 1 }], {
-				duration: tune.loading.rasterFade * 1000,
-				fill: 'forwards',
-			}).finished
-			if (disposed || generation !== preparation) return false
-			layers.forEach((layer) => (layer.hidden = true))
-			return true
+		get shotName() {
+			return current
 		},
-		descent(progress) {
-			if (!raster) return
-			raster.style.transform = `scale(${1 + (tune.loading.scale - 1) * progress})`
-			el.style.opacity = String(1 - progress)
-		},
-		resume() {
-			preparation++
-			still = false
-			sky.style.willChange = ''
-			raster?.remove()
-			raster = null
+		// Ease every layer to a named shot from wherever it is now, so a reversal mid-move
+		// turns round in place. Resolves true on arrival, false if a later shot replaced it.
+		shot(name, { instant = false } = {}) {
+			if (!shots.includes(name)) throw new Error(`Unknown backdrop shot: ${name}`)
+			if (disposed) return Promise.resolve(false)
 			el.style.opacity = ''
-			layers.forEach((layer) => (layer.hidden = false))
-			wake()
+			move?.resolve(false)
+			current = name
+			const { promise, resolve } = Promise.withResolvers()
+			move = { from: { ...pose }, elapsed: 0, time: tune.shot[name].time, resolve }
+			if (instant || reduced.matches) jump()
+			else {
+				for (const layer of [...layers, ...skies]) layer.style.willChange = 'transform'
+				wake()
+			}
+			return promise
+		},
+		// The descent: the backdrop thins away as the lane comes up through it.
+		fade(progress) {
+			const p = Math.max(0, Math.min(1, Number(progress) || 0))
+			el.style.opacity = String(1 - p)
 		},
 		retune() {
 			if (fade?.playState === 'running')
 				fade.effect.updateTiming({ duration: reduced.matches ? 0 : tune.skyFade * 1000 })
+			if (!move) {
+				const to = tune.shot[current]
+				pose.lift = to.lift
+				pose.zoom = to.zoom
+				place()
+				settle()
+			}
 			wake()
 		},
 		crossfade(dusk = true) {
 			// Read the live opacity before cancel exposes the previous underlying target.
 			const from = Number(getComputedStyle(sky).opacity)
 			fade?.cancel()
-			if (frame !== null) cancelAnimationFrame(frame)
-			frame = null
 			sky.style.opacity = dusk ? '1' : '0'
 			const animation = sky.animate([{ opacity: from }, { opacity: dusk ? 1 : 0 }], {
 				duration: reduced.matches ? 0 : tune.skyFade * 1000,
@@ -225,20 +283,24 @@ export function createBackdrop() {
 			})
 			fade = animation
 			return animation.finished.then(
-				() => {
-					if (fade === animation) wake()
-				},
+				() => {},
 				() => {},
 			)
 		},
 		dispose() {
 			disposed = true
+			move?.resolve(false)
+			move = null
 			fade?.cancel()
 			if (frame !== null) cancelAnimationFrame(frame)
 			window.removeEventListener('resize', resize)
 			window.removeEventListener('pointermove', parallax)
 			reduced.removeEventListener('change', motionPreference)
+			if (globalThis.frontBackdrop === api) delete globalThis.frontBackdrop
 			el.remove()
 		},
 	}
+	// Dev hook for stepping shots by hand: frontBackdrop.shot('apex').
+	if (import.meta.env?.DEV) globalThis.frontBackdrop = api
+	return api
 }

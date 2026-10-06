@@ -39,32 +39,25 @@ function helpGlyphs(device, abilities, carrying, lobby = false) {
 				[['L'], 'move'],
 				...slots,
 				[['A'], 'attack'],
-				[['B'], lobby ? 'cancel / back' : 'cancel'],
-				[['Y'], 'inspect'],
-				[['Start'], lobby ? 'ready' : 'pause'],
 				...(lobby
-					? [
-							[['✛↑'], 'hero'],
-							[['✛↓'], 'difficulty'],
-							[['View'], 'numbers'],
-						]
-					: []),
+					? []
+					: [
+							[['B'], 'cancel'],
+							[['Y'], 'inspect'],
+							[['Start'], 'pause'],
+						]),
 			]
 		: [
 				[['RMB'], 'move'],
 				...slots,
 				[['S'], 'stop'],
-				...(lobby ? [] : [[['Space'], 'follow']]),
-				[[lobby ? 'Alt' : 'I'], 'inspect'],
-				[['Esc'], lobby ? 'cancel / back' : 'pause'],
 				...(lobby
-					? [
-							[['H'], 'hero'],
-							[['G'], 'difficulty'],
-							[['Enter'], 'ready'],
-							[['N'], 'numbers'],
-						]
-					: []),
+					? []
+					: [
+							[['Space'], 'follow'],
+							[['I'], 'inspect'],
+							[['Esc'], 'pause'],
+						]),
 			]
 	return glyphs
 		.map(([keys, label]) => `<span>${keys.map((k) => `<kbd>${k}</kbd>`).join('')}${label}</span>`)

@@ -27,13 +27,22 @@ export function mobaFront(app, map) {
 	let activeFront = null
 	app.debug.tune('front', tune, (folder, values) => {
 		const loading = folder.addFolder('loading')
-		for (const key of ['hold', 'dwell', 'duration', 'rasterFade'])
-			loading
-				.add(values.loading, key, app.clock.step, 3, app.clock.step)
-				.name(key === 'rasterFade' ? 'raster fade (next loading)' : key)
+		for (const key of ['hold', 'dwell', 'duration'])
+			loading.add(values.loading, key, app.clock.step, 3, app.clock.step)
 		for (const key of ['line', 'pastel'])
 			loading.add(values.loading, key, key === 'line' ? 0.1 : 0, 1, 0.01)
-		loading.add(values.loading, 'scale', 1, 1.1, 0.01)
+		const shots = folder.addFolder('backdrop shots (next move)')
+		shots.add(values.shot, 'ease', 1, 5, 0.1).name('ease power')
+		for (const name of ['splash', 'plaza', 'apex']) {
+			shots.add(values.shot[name], 'lift', -800, 800, 10).name(name + ' lift')
+			shots.add(values.shot[name], 'zoom', 1, 1.5, 0.01).name(name + ' zoom')
+			shots
+				.add(values.shot[name], 'time', app.clock.step, 2, app.clock.step)
+				.name(name + ' time (s)')
+		}
+		values.shot.depth.forEach((_, i) =>
+			shots.add(values.shot.depth, i, 0, 2, 0.05).name(`layer ${i + 1} depth`),
+		)
 		loading.add(values.loading, 'height', 20, 40, 1)
 		loading.add(values.loading, 'arcHeight', 40, 80, 1)
 		loading.add(values.loading, 'riseEnd', 0.1, 0.6, 0.01)
