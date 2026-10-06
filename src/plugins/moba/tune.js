@@ -179,8 +179,6 @@ export const tune = {
 			height: 1.7,
 			printGap: 0.015,
 			labelY: 0.1,
-			helpY: 0.1,
-			helpForward: 1,
 			settleTime: 0.35,
 			overshoot: 0.12,
 			ringY: 0.18,

@@ -2,8 +2,6 @@
 export const tune = {
 	skyFade: 0.8,
 	loading: {
-		hold: 1.8,
-		dwell: 0.8,
 		uiFadeEnd: 0.28,
 		arcHeight: 50,
 		riseEnd: 0.35,
@@ -11,9 +9,6 @@ export const tune = {
 		fitMargin: 1.18,
 		minAspect: 0.1,
 		farMargin: 100,
-		figureWidth: { min: 24, max: 65, fraction: 0.04 },
-		figureStart: [0.12, 0.65],
-		figureSpacing: 0.1,
 		duration: 0.8,
 		mapName: 'The paper lane',
 		height: 22,

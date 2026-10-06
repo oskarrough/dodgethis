@@ -4,9 +4,9 @@ import { el as make } from '../../../core/dom.js'
 import { tune as kit } from '../tune.js'
 import { FLOOR } from '../obstacles.js'
 import { easeShot } from './backdrop.js'
-import { createDescentState, descentFrame, localLoadingHero } from './loading-state.js'
+import { createDescentState, descentFrame, localLoadingHero } from './descent-state.js'
 import { tune } from './tune.js'
-import './loading.css'
+import './descent.css'
 
 // The crane and descent: one camera move from the plaza to the match that takes no input.
 // The plaza run lives until the apex, where the match starts behind the sky. The MOBA map

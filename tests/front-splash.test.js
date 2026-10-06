@@ -36,7 +36,7 @@ test('a fresh visit boots to the splash; deep links still reach each mode', () =
 })
 
 test('menu and loading chrome have no link styling', () => {
-	for (const path of ['src/plugins/moba/front/front.css', 'src/plugins/moba/front/loading.css']) {
+	for (const path of ['src/plugins/moba/front/front.css', 'src/plugins/moba/front/descent.css']) {
 		expect(read(path)).not.toContain('text-decoration')
 		expect(read(path)).not.toContain('underline')
 	}

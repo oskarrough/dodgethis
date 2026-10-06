@@ -27,7 +27,7 @@ export function mobaFront(app, map) {
 	let activeFront = null
 	app.debug.tune('front', tune, (folder, values) => {
 		const loading = folder.addFolder('loading')
-		for (const key of ['hold', 'dwell', 'duration'])
+		for (const key of ['duration'])
 			loading.add(values.loading, key, app.clock.step, 3, app.clock.step)
 		for (const key of ['line', 'pastel'])
 			loading.add(values.loading, key, key === 'line' ? 0.1 : 0, 1, 0.01)

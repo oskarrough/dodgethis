@@ -133,13 +133,6 @@
 .lobby-gallery-label[data-picked='true'] small:has(kbd) {
 	display: block;
 }
-.lobby-gallery-help {
-	border: 0;
-	box-shadow: none;
-	background: transparent;
-	font-size: clamp(10px, 0.9vw, 13px);
-	translate: 0 4em;
-}
 .moba-front .lobby-seat-label {
 	background: var(--ui-cream);
 	font: 400 clamp(10px, 0.9vw, 14px) / 1 var(--ui-font);
@@ -258,9 +251,6 @@
 	font: inherit;
 }
 @media (max-width: 600px) {
-	.lobby-gallery-help {
-		translate: 0 6.4em;
-	}
 	.lobby-gallery-label[data-difficulty='hard'] {
 		translate: 0 4.4em;
 	}
