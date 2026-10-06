@@ -5,6 +5,7 @@
 	"type": "module",
 	"scripts": {
 		"dev": "vite",
+		"dev:agent": "sh scripts/dev-agent.sh",
 		"build": "bun run check && vite build",
 		"preview": "vite preview",
 		"check": "oxlint --quiet && oxfmt --check && bun test --parallel --only-failures",

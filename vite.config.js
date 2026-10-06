@@ -27,6 +27,10 @@ export default defineConfig({
 		// domain and its subdomains. Dev server only — this is not a build setting.
 		allowedHosts: ['.localhost', '.ts.net'],
 		proxy: { '/api': 'http://127.0.0.1:8787' },
+		// The shared agent server (`bun run dev:agent`) never pushes reloads: parallel
+		// threads edit one checkout, and a reload mid-proof wipes the page under them.
+		// Edits still invalidate modules, so a manual reload serves fresh code.
+		hmr: process.env.DEV_AGENT ? false : undefined,
 	},
 	build: {
 		target: 'esnext',
