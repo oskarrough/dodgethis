@@ -13,10 +13,12 @@ const evaluate = (source) => JSON.parse(browser('eval', source))
 const assert = (source, message) => {
 	if (!evaluate(source)) throw new Error(message)
 }
-const key = (code, types = ['keydown', 'keyup']) =>
+// A production build shows window.dt (src/core/proof.js) after one Backquote; it stays when the HUD hides again.
+const reveal = () =>
 	evaluate(
-		`(()=>{for(const type of ${JSON.stringify(types)})window.dispatchEvent(new KeyboardEvent(type,{code:'${code}',bubbles:true,cancelable:true}));return true})()`,
+		"for(const type of ['keydown','keyup'])window.dispatchEvent(new KeyboardEvent(type,{code:'Backquote'}));true",
 	)
+const key = (code) => evaluate(`dt.key('${code}')`)
 const hero = "g.moba.sim.heroes.find(h=>h.id==='local')"
 const report = {
 	method:
@@ -41,8 +43,8 @@ function start(width, height, difficulty = 'normal') {
 		'--fn',
 		'!!document.querySelector(".moba-onboarding")&&!document.querySelector(".moba-front")',
 	)
-	key('Backquote')
-	browser('wait', '--fn', '!!window.game?.moba')
+	reveal()
+	browser('wait', '--fn', 'dt.screen()==="match"')
 	evaluate('window.g=game;g.moba.controls.paused=true;true')
 	assert(
 		"new URLSearchParams(location.search).get('hero')==='fletcher'",

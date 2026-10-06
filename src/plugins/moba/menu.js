@@ -130,6 +130,7 @@ export function createMatchMenu({
 			}
 		},
 		presentationFrozen: () => paused || resultShown,
+		screen: () => (resultShown ? 'result' : paused ? 'paused' : 'match'),
 		endingTime: () => endingElapsed ?? 0,
 	}
 }

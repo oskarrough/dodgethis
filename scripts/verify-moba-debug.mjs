@@ -13,9 +13,10 @@ const evaluate = (source) => JSON.parse(browser('eval', source))
 const assert = (source, message) => {
 	if (!evaluate(source)) throw new Error(message)
 }
-const key = (code) =>
+// A production build shows window.dt (src/core/proof.js) after one Backquote; it stays when the HUD hides again.
+const reveal = () =>
 	evaluate(
-		`(()=>{for(const type of ['keydown','keyup'])window.dispatchEvent(new KeyboardEvent(type,{code:'${code}',bubbles:true,cancelable:true}));return true})()`,
+		"for(const type of ['keydown','keyup'])window.dispatchEvent(new KeyboardEvent(type,{code:'Backquote'}));true",
 	)
 const button = (name) => browser('find', 'role', 'button', 'click', '--name', name, '--exact')
 const checkbox = () =>
@@ -56,8 +57,8 @@ try {
 		'--fn',
 		'!document.querySelector(".moba-front") && (!document.querySelector(".splash") || document.querySelector(".splash").hidden)',
 	)
-	key('Backquote')
-	browser('wait', '--fn', '!!window.game?.moba')
+	reveal()
+	browser('wait', '--fn', 'dt.screen()==="match"')
 	// A real mouse order points at a projected patch of lane, not at a synthetic sim coordinate.
 	report.humanStart = evaluate(`(()=>{
 		const hero=game.moba.sim.heroes.find(h=>h.id==='local');

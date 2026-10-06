@@ -413,6 +413,10 @@ export default function moba(app, map) {
 			})
 			if (!isLobby)
 				run.debug.expose({
+					// Names for window.dt: the match runs under the descent until it lands.
+					get screen() {
+						return (options.ready?.() ?? true) ? menu.screen() : 'descent'
+					},
 					moba: {
 						sim,
 						setup,

@@ -13,7 +13,8 @@
 - `bun run dev:agent` prints the shared agent server's URL, starting it if nothing answers. Every thread reuses it; never stop it. It doesn't live-reload, so other threads' edits can't wipe your page: reload yourself when you want fresh code. A boot error after a reload may be another thread's half-done edit; read `agent-browser errors` before blaming yours.
 - `export AGENT_BROWSER_SESSION=$BB_THREAD_ID` first. Without it every thread drives the same browser tab.
 - Wait on conditions (`agent-browser wait --fn "<js>"`, `wait <selector>`), never `sleep`. Before a screenshot, resize, park the mouse in a corner, and assert the state you claim.
-- agent-browser key presses don't reach the game; dispatch synthetic KeyboardEvents on `window`. In dev `window.game` is always there; in a prod build only after a Backquote toggles diagnostics.
+- Drive the game through `window.dt` (`src/core/proof.js`), since agent-browser's own key presses don't reach it: `dt.key('KeyH', { hold, until })`, `dt.pad.press('start')`, `dt.pad.stick(x, y)`, `dt.device()`, `dt.game` (window.game), and `dt.screen()`, which names splash, plaza, descent, match, paused or result (else the mode id). In dev both are always there; a prod build shows them after a Backquote toggles diagnostics, and `dt` stays when it toggles back.
+- The template, no sleeps: `open $URL/` → `wait --fn "window.dt?.screen()==='splash'"` → `eval "dt.key('ArrowRight')"` → `eval "dt.key('Enter')"` → `wait --fn "dt.screen()==='plaza'"` → `eval "dt.key('KeyH')"` → `eval "dt.key('Enter')"` → `wait --timeout 60000 --fn "dt.screen()==='match'"`. `?mode=moba&play&hero=mitts&bots=hard` skips straight to `match`: a fast setup, not a proof of the route.
 - Frozen builds (`bunx vite build --outDir /tmp/<slug>`) are for checkpoint smokes the orchestrator runs, not for builders.
 
 ## Layout

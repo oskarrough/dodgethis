@@ -10,6 +10,7 @@ import { createPerformanceMonitor } from './performance.js'
 import { FORWARD_LAYER } from './stylepass.js'
 import { applyCssVariables } from './style.js'
 import { log, createCombatLog, createDebugPanel } from './debug.js'
+import { createProofApi } from './proof.js'
 import { tune } from './tune.js'
 
 // The browser shell: builds the DOM services, runs the requestAnimationFrame loop, and owns diagnostics, mute and the collider overlay.
@@ -156,8 +157,10 @@ export async function createBrowserApp() {
 	})
 
 	// --- Diagnostics: Backquote toggles the HUD, combat log, GUI and window.game --
+	// window.dt (core/proof.js) stays once shown, so a proof can hide the HUD for a screenshot.
 	const hud = document.querySelector('.hud')
 	const combatEl = document.querySelector('.combat')
+	const proof = createProofApi(app, input)
 	let diagnostics = new URLSearchParams(location.search).has('debug')
 	function setDiagnostics(enabled) {
 		diagnostics = enabled
@@ -167,6 +170,7 @@ export async function createBrowserApp() {
 		else panel.hide()
 		if (enabled || import.meta.env.DEV) window.game = app.debug.game
 		else delete window.game
+		if (enabled || import.meta.env.DEV) window.dt = proof
 	}
 	setDiagnostics(diagnostics)
 	window.addEventListener('keydown', (e) => {

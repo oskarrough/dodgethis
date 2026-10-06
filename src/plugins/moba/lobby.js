@@ -458,6 +458,9 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 		f.add(c, 'fov', 20, 90, 1)
 	})
 	run.debug.expose({
+		get screen() {
+			return ending ? 'descent' : 'plaza'
+		},
 		lobby: {
 			sim,
 			setup,

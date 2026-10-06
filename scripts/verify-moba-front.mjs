@@ -9,30 +9,18 @@ const browser = (...args) =>
 	execFileSync('agent-browser', ['--session', 'front', ...args], { encoding: 'utf8' }).trim()
 const evaluate = (script) => JSON.parse(browser('eval', script))
 const wait = (ms) => browser('wait', String(ms))
-const key = (code, shiftKey = false) =>
-	evaluate(
-		`window.dispatchEvent(new KeyboardEvent('keydown',{code:${JSON.stringify(code)},shiftKey:${shiftKey},bubbles:true,cancelable:true}));true`,
-	)
-// Every run starts where a player does: a fresh / on the splash.
+// window.dt (src/core/proof.js) drives keys and the pad.
+const key = (code) => evaluate(`dt.key('${code}')`)
+const pad = (button) => evaluate(`dt.pad.press('${button}')`)
+// Every run starts where a player does: a fresh / on the splash. A production build shows
+// window.dt after one Backquote; it stays when the HUD hides again.
 function boot() {
 	browser('open', 'about:blank')
 	browser('open', new URL('/', base).href)
 	browser('wait', '.front-tile')
-	key('Backquote')
-	evaluate('window.probe=window.game;true')
-	key('Backquote')
-}
-function installPad() {
 	evaluate(
-		`window.mockPad={connected:true,axes:[0,0,0,0],buttons:Array.from({length:17},()=>({pressed:false}))};Object.defineProperty(navigator,'getGamepads',{value:()=>[mockPad],configurable:true});true`,
+		"for(const type of ['keydown','keyup','keydown','keyup'])window.dispatchEvent(new KeyboardEvent(type,{code:'Backquote'}));true",
 	)
-	wait(100)
-}
-function pad(button) {
-	evaluate(`mockPad.buttons[${button}].pressed=true`)
-	wait(100)
-	evaluate(`mockPad.buttons[${button}].pressed=false`)
-	wait(100)
 }
 const screen = () => evaluate('document.querySelector(".moba-front")?.dataset.screen ?? null')
 const report = {}
@@ -45,7 +33,7 @@ key('ArrowRight')
 key('Enter')
 key('Enter')
 wait(200)
-report.keyboard = screen() === 'hero' && evaluate('probe.front.difficulty') === 'easy'
+report.keyboard = screen() === 'hero' && evaluate('dt.game.front.difficulty') === 'easy'
 key('Escape')
 const afterOne = screen()
 key('Escape')
@@ -56,7 +44,7 @@ boot()
 browser('click', '.front-tile[data-mode=moba]')
 browser('click', '.front-tile[data-difficulty=hard]')
 wait(200)
-report.mouse = screen() === 'hero' && evaluate('probe.front.difficulty') === 'hard'
+report.mouse = screen() === 'hero' && evaluate('dt.game.front.difficulty') === 'hard'
 browser('click', '.front-return')
 browser('click', '.front-return')
 report.mouseBack = screen() === 'modes' && evaluate('location.search') === ''
@@ -103,9 +91,8 @@ browser('click', '.hub-exit')
 wait(300)
 report.hubMouseBack = screen() === 'modes'
 boot()
-installPad()
-pad(15)
-pad(0)
+pad('right')
+pad('a')
 report.pad = screen() === 'difficulty'
 report.screens = []
 for (const [width, height] of [
@@ -122,31 +109,29 @@ for (const [width, height] of [
 	)
 	browser('screenshot', `${dir}/front-${width}x${height}.png`)
 }
-pad(1)
+pad('b')
 report.padBack = screen() === 'modes'
-pad(1)
+pad('b')
 report.padBackOnSplash = screen() === 'modes'
-pad(14)
-pad(0)
+pad('left')
+pad('a')
 wait(1500)
-evaluate('mockPad.buttons[8].pressed=true')
-wait(200)
-evaluate('mockPad.buttons[8].pressed=false')
+evaluate("dt.pad.press('back',{hold:200})")
 wait(300)
 report.hubPadBack = screen() === 'modes'
 boot()
 report.reversal = evaluate(
-	`(async()=>{const sky=document.querySelector('.front-sky-next');const first=probe.front.crossfade(true);await new Promise(r=>setTimeout(r,350));const before=+getComputedStyle(sky).opacity;const second=probe.front.crossfade(false);const after=+getComputedStyle(sky).opacity;await Promise.all([first,second]);return {before,after,landed:+getComputedStyle(sky).opacity}})()`,
+	`(async()=>{const sky=document.querySelector('.front-sky-next');const first=dt.game.front.crossfade(true);await new Promise(r=>setTimeout(r,350));const before=+getComputedStyle(sky).opacity;const second=dt.game.front.crossfade(false);const after=+getComputedStyle(sky).opacity;await Promise.all([first,second]);return {before,after,landed:+getComputedStyle(sky).opacity}})()`,
 )
 report.fadeMotion = evaluate(`(async()=>{
 	const ridge=document.querySelectorAll('.front-backdrop svg')[2];
 	const x=()=>new DOMMatrix(getComputedStyle(ridge).transform).m41;
-	const before=x();const fade=probe.front.crossfade(true);
+	const before=x();const fade=dt.game.front.crossfade(true);
 	window.dispatchEvent(new PointerEvent('pointermove',{clientX:innerWidth,clientY:innerHeight,bubbles:true}));
 	await new Promise(r=>setTimeout(r,150));const during=x();
 	await fade;await new Promise(requestAnimationFrame);const first=x();
 	await new Promise(r=>setTimeout(r,2200));const settled=x();
-	await probe.front.crossfade(false);
+	await dt.game.front.crossfade(false);
 	return {before,during,first,settled};
 })()`)
 const ws = new WebSocket(browser('get', 'cdp-url'))
@@ -208,12 +193,12 @@ await traceStart()
 evaluate(sweep)
 await traceStop(`${dir}/pointer-sweep-dpr2.json`)
 report.pointer = evaluate(
-	'({viewport:[innerWidth,innerHeight,devicePixelRatio],draw:probe.renderer.info.render.calls,animations:document.getAnimations().length})',
+	'({viewport:[innerWidth,innerHeight,devicePixelRatio],draw:dt.game.renderer.info.render.calls,animations:document.getAnimations().length})',
 )
 await traceStart()
 wait(10000)
 await traceStop(`${dir}/idle.json`)
-report.idleDraw = evaluate('probe.renderer.info.render.calls')
+report.idleDraw = evaluate('dt.game.renderer.info.render.calls')
 for (const file of ['pointer-sweep-dpr2.json', 'idle.json']) {
 	const events = JSON.parse(readFileSync(`${dir}/${file}`, 'utf8')).traceEvents
 	report[file] = Object.fromEntries(

@@ -291,6 +291,7 @@ export function mobaFront(app, map) {
 			)
 			run.system('input', () => controls.pad(app.input.consumeMenuInput(), app.input.pad()))
 			run.debug.expose({
+				screen: 'splash',
 				front: {
 					crossfade: backdrop.crossfade,
 					get screen() {
