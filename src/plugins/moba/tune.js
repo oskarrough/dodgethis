@@ -190,7 +190,8 @@ export const tune = {
 			shotSound: { freq: 790, slideTo: 350, dur: 0.09, gain: 0.07, type: 'sine' },
 			pickSound: { freq: 240, slideTo: 90, dur: 0.22, gain: 0.12, type: 'triangle' },
 		},
-		skyLift: 400, // SVG world units; lift the desert's planet into the plaza's top third.
+		// The plaza's camera starts `distance`× back along its view ray; the canvas fades in from `fadeFrom` of the move.
+		intro: { distance: 4, fadeFrom: 0.6 },
 		// These also clamp dummy bodies; keep the gallery >2 m from their actual lanes, not their authored posts.
 		bounds: { halfX: 4, halfZ: 6.2 },
 		// The plaza's own tabletop: ground past the walkable bounds, and the hedge lip around it.

@@ -83,6 +83,8 @@ export function mobaFront(app, map) {
 			['tilt', 0, 8, 0.5],
 		])
 			tile.add(values.tile, key, min, max, step).onChange(() => activeFront?.retune())
+		tile.add(values.tile, 'drop', app.clock.step, 1, app.clock.step).name('drop out (s)')
+		tile.add(values.tile, 'pop', app.clock.step, 1, app.clock.step).name('pop in (s)')
 		tile.add(values.deny, 'shake', app.clock.step, 1, app.clock.step).name('deny shake (s)')
 	})
 
@@ -122,21 +124,46 @@ export function mobaFront(app, map) {
 			el.className = 'moba-front'
 			el.dataset.screen = 'modes'
 			el.setAttribute('aria-label', 'Choose a mode')
-			el.innerHTML = `<h1 class="front-heading">Dodge this</h1><p class="front-notice" role="status" hidden></p>
+			// Everything but the backdrop moves as one sticker sheet: it drops out under the plaza
+			// shot and pops back in on return.
+			el.innerHTML = `<div class="front-chrome"><h1 class="front-heading">Dodge this</h1><p class="front-notice" role="status" hidden></p>
 				<div class="front-tiles front-modes" role="group" aria-label="Game mode">${modes.map((tile) => `<button type="button" class="front-tile" data-mode="${tile.mode}"><span class="front-tile-face"></span><svg viewBox="0 0 64 64" aria-hidden="true">${tile.glyph}</svg><span class="front-tile-name">${tile.name}</span><span class="front-tile-line">${tile.line}</span></button>`).join('')}</div>
-				<footer><p class="front-prompts" aria-live="polite"></p></footer>`
+				<footer><p class="front-prompts" aria-live="polite"></p></footer></div>`
+			const chrome = el.querySelector('.front-chrome')
 			const notice = el.querySelector('.front-notice')
 			notice.textContent = options.notice ?? ''
 			notice.hidden = !options.notice
-			const backdrop = createBackdrop()
+			// The plaza hands its backdrop back on Esc; only a cold entry builds one.
+			const backdrop = options.backdrop ?? createBackdrop()
 			activeBackdrop = backdrop
 			el.prepend(backdrop.el)
+			const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches
+			let pop = null
+			if (options.backdrop) {
+				backdrop.shot('splash')
+				// The tiles land as the camera settles.
+				const time = reduced ? 0 : tune.tile.pop
+				pop = chrome.animate(
+					[{ translate: '0 100vh' }, { translate: '0 -3vh', offset: 0.7 }, { translate: '0 0' }],
+					{
+						duration: time * 1000,
+						delay: reduced ? 0 : Math.max(0, tune.shot.splash.time - time) * 1000,
+						easing: 'cubic-bezier(0.2, 0.8, 0.4, 1)',
+						fill: 'backwards',
+					},
+				)
+			}
 			const outside = [...document.body.children].filter(
 				(child) => child.tagName !== 'SCRIPT' && !child.matches('.lil-gui'),
 			)
 			const inert = outside.map((child) => child.inert)
 			outside.forEach((child) => (child.inert = true))
 			document.body.append(el)
+			// The plaza takes `el` and the backdrop in it; the tiles fall away above it on their own sheet.
+			const sheet = document.createElement('div')
+			sheet.className = 'moba-front front-leaving'
+			sheet.inert = true
+			sheet.setAttribute('aria-hidden', 'true')
 			const front = {
 				retune() {
 					for (const [key, unit] of [
@@ -146,7 +173,8 @@ export function mobaFront(app, map) {
 						['lift', 'px'],
 						['tilt', 'deg'],
 					])
-						el.style.setProperty('--tile-' + key, tune.tile[key] + unit)
+						for (const target of [el, sheet])
+							target.style.setProperty('--tile-' + key, tune.tile[key] + unit)
 				},
 			}
 			activeFront = front
@@ -166,13 +194,30 @@ export function mobaFront(app, map) {
 						app.audio.blip({ ...tune.enter, freq, delay: i * tune.enter.gap }),
 					)
 					transferred = true
+					dropTiles()
 					app.modes.start('moba-lobby', {
-						options: { el, backdrop, setup, heldKeys: [...heldKeys], buildWait, device },
+						options: { el, backdrop, setup, heldKeys: [...heldKeys], device },
 					})
+					document.body.append(sheet)
 				} else {
 					app.audio.sfx.switch()
 					app.modes.start(mode)
 				}
+			}
+			function dropTiles() {
+				if (pop?.playState === 'running') pop.commitStyles()
+				pop?.cancel()
+				sheet.append(chrome)
+				chrome
+					.animate([{ translate: '0 100vh', rotate: '4deg' }], {
+						duration: (reduced ? 0 : tune.tile.drop) * 1000,
+						easing: 'cubic-bezier(0.5, 0, 0.9, 0.4)',
+						fill: 'forwards',
+					})
+					.finished.then(
+						() => sheet.remove(),
+						() => sheet.remove(),
+					)
 			}
 			function deny() {
 				app.audio.blip(tune.deny)
@@ -228,7 +273,8 @@ export function mobaFront(app, map) {
 					activate(index)
 				}
 			})
-			controls.point(0)
+			// Back from the plaza, the MOBA tile is still the one in hand.
+			controls.point(options.backdrop ? buttons.findIndex((b) => b.dataset.mode === 'moba') : 0)
 			window.addEventListener(
 				'keydown',
 				(event) => {
@@ -244,14 +290,9 @@ export function mobaFront(app, map) {
 				{ signal: run.signal },
 			)
 			run.system('input', () => controls.pad(app.input.consumeMenuInput(), app.input.pad()))
-			let buildWait = 0
 			run.debug.expose({
 				front: {
 					crossfade: backdrop.crossfade,
-					waitForBuild(seconds) {
-						if (!Number.isFinite(seconds) || seconds < 0) throw new Error('Invalid build wait')
-						buildWait = seconds
-					},
 					get screen() {
 						return 'modes'
 					},
@@ -262,8 +303,11 @@ export function mobaFront(app, map) {
 				() => {
 					if (activeBackdrop === backdrop) activeBackdrop = null
 					if (activeFront === front) activeFront = null
-					if (!transferred) backdrop.dispose()
-					el.remove()
+					// Handed over, `el` and its backdrop belong to the plaza and stay in the document.
+					if (!transferred) {
+						backdrop.dispose()
+						el.remove()
+					}
 					outside.forEach((child, i) => (child.inert = inert[i]))
 				},
 				{ once: true },

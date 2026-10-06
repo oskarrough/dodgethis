@@ -3,11 +3,11 @@ import { PALETTE } from '../../core/style.js'
 import { clampMap } from './obstacles.js'
 import { tune } from './tune.js'
 import { tune as frontTune } from './front/tune.js'
-import { createBackdrop } from './front/backdrop.js'
+import { createBackdrop, easeShot } from './front/backdrop.js'
 import { startLoading } from './front/loading.js'
 import { createLobbyProps } from './lobby-props.js'
 import { HEROES } from './heroes.js'
-import { ICONS } from './hud.js'
+import { createHeroStrip } from './lobby-heroes.js'
 import { createNumbers } from './front/numbers.js'
 import './lobby.css'
 
@@ -21,7 +21,7 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 	el.className = 'moba-front front-lobby'
 	el.dataset.screen = 'plaza'
 	el.setAttribute('aria-label', 'Try your hero in the plaza')
-	el.innerHTML = `<footer><button type="button" class="front-back front-return" aria-label="Back to splash">Back <kbd></kbd></button><button type="button" class="front-sticker front-cta" aria-label="Walk to your Ready box"><span class="front-card-face"></span><span>Ready</span><kbd></kbd></button></footer><button type="button" class="lobby-numbers-open" aria-label="Hero numbers"># <kbd>N</kbd></button><nav class="lobby-heroes" aria-label="Pick a hero"><span class="lobby-heroes-title">Choose your fighter <kbd>H</kbd></span><div class="lobby-hero-tiles"></div></nav><div class="lobby-pick-stamp" aria-live="polite"></div>`
+	el.innerHTML = `<button type="button" class="front-return" aria-label="Back to splash"><span aria-hidden="true">←</span><kbd></kbd></button><div class="lobby-pick-stamp" aria-live="polite"></div>`
 	el.prepend(backdrop.el, canvas)
 	canvas.classList.add('front-canvas')
 	canvas.inert = false
@@ -39,6 +39,25 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 			]),
 		),
 	)
+	// The plaza opens by flying in along the camera's own view ray, on the backdrop's shot
+	// ease and time; the canvas fades up over the last 40% of the move.
+	const intro = { time: frontTune.shot.plaza.time, t: 0 }
+	if (matchMedia('(prefers-reduced-motion: reduce)').matches || !(intro.time > 0))
+		intro.t = intro.time
+	const fadeIntro = () => {
+		const k = Math.min(1, intro.t / intro.time)
+		canvas.style.opacity =
+			k >= 1
+				? ''
+				: String(Math.max(0, (k - tune.lobby.intro.fadeFrom) / (1 - tune.lobby.intro.fadeFrom)))
+	}
+	fadeIntro()
+	backdrop.shot('plaza', { instant: intro.t >= intro.time })
+	run.system('present', ({ dt }) => {
+		if (intro.t >= intro.time) return
+		intro.t = Math.min(intro.time, intro.t + dt)
+		fadeIntro()
+	})
 	run.camera.frame(() => {
 		const c = tune.lobby.camera
 		// Fit the whole playable plaza, not only its far half. Portrait widens the lens,
@@ -78,26 +97,27 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 		}
 		const eye = clampMap({ x: target.x, z: target.z + back })
 		const fov = (Math.atan(tangent) * 360) / Math.PI
-		return { eye: { ...eye, y: c.height }, target: { ...target, y: 0 }, fov }
+		const out =
+			1 + (tune.lobby.intro.distance - 1) * (1 - easeShot(Math.min(1, intro.t / intro.time)))
+		const far = clampMap({
+			x: target.x + (eye.x - target.x) * out,
+			z: target.z + (eye.z - target.z) * out,
+		})
+		return { eye: { ...far, y: c.height * out }, target: { ...target, y: 0 }, fov }
 	})
-	el.style.setProperty('--lobby-sky-lift', `${-tune.lobby.skyLift}px`)
 	app.camera.update(0)
+	let mouse = false
 	let touch = options.device ? options.device === 'touch' : matchMedia('(any-hover: none)').matches
 	const readySeats = sim.readySeats
 	const props = createLobbyProps(app.scene, el, gallery, readySeats, hero.id, ready)
 	props.syncSeats()
-	const heroRow = el.querySelector('.lobby-heroes')
-	const heroTiles = heroRow.querySelector('.lobby-hero-tiles')
 	const stamp = el.querySelector('.lobby-pick-stamp')
-	const heroButtons = Object.values(HEROES).map((definition) => {
-		const button = document.createElement('button')
-		button.type = 'button'
-		button.dataset.hero = definition.id
-		button.disabled = !definition.playable
-		button.innerHTML = `<span class="lobby-hero-face">${ICONS[definition.id] ?? ''}</span><span class="lobby-hero-name">${definition.id}</span><b class="lobby-hero-p1">P1</b>${definition.playable ? '' : '<small>soon</small>'}`
-		button.onclick = () => pickHero(definition.id)
-		heroTiles.append(button)
-		return button
+	const strip = createHeroStrip({
+		el,
+		heroes: HEROES,
+		current: hero.heroId,
+		pick: (id) => pickHero(id),
+		openNumbers: () => numbers.toggle(),
 	})
 	const numbers = createNumbers(hero, (open) => {
 		if (!open)
@@ -112,8 +132,6 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 		run.clock.reset()
 		app.audio.blip(tune.lobby.inspect[open ? 'openSound' : 'closeSound'])
 	})
-	const numbersButton = el.querySelector('.lobby-numbers-open')
-	numbersButton.onclick = () => numbers.toggle()
 	run.clock.pause(() => numbers.open)
 	run.intents.suspend(() => numbers.open)
 	run.system('present', ({ dt }) =>
@@ -137,8 +155,7 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 	const syncPick = () => {
 		setup.heroId = hero.heroId
 		setup.picks[hero.id] = { ...setup.picks[hero.id], heroId: hero.heroId }
-		for (const button of heroButtons)
-			button.setAttribute('aria-pressed', String(button.dataset.hero === hero.heroId))
+		strip.sync(hero.heroId)
 		const url = new URL(location.href)
 		url.searchParams.set('hero', hero.heroId)
 		history.replaceState(null, '', url)
@@ -241,9 +258,10 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 	let previous = app.input.pad()?.buttons.slice() ?? []
 	let blockedPad = new Set(previous.flatMap((held, i) => (held ? [i] : [])))
 	const backButton = el.querySelector('.front-return')
-	const startButton = el.querySelector('.front-cta')
-	const returnSplash = () =>
-		app.modes.start('moba-front', { options: { setup, heldKeys: [...heldKeys] } })
+	const returnSplash = () => {
+		transferred = true
+		app.modes.start('moba-front', { options: { setup, backdrop, heldKeys: [...heldKeys] } })
+	}
 	function back() {
 		if (ending) return
 		if (numbers.open) {
@@ -326,30 +344,31 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 			backdrop,
 			setup,
 			difficulty: setup.difficulty,
-			buildWait: options.buildWait,
-			device: touch ? 'touch' : device,
-			// A cancelled descent returns to practice, with the same map and pick.
-			returnLobby: (device) =>
-				app.modes.start('moba-lobby', { options: { setup, el, backdrop, device } }),
 		})
 	}
-	window.addEventListener('pointerdown', (e) => (touch = e.pointerType === 'touch'), {
-		signal: run.signal,
-	})
+	window.addEventListener(
+		'pointerdown',
+		(e) => {
+			touch = e.pointerType === 'touch'
+			mouse = e.pointerType === 'mouse'
+		},
+		{ signal: run.signal },
+	)
 	window.addEventListener(
 		'pointermove',
 		(e) => {
-			if (e.pointerType === 'mouse') touch = false
+			if (e.pointerType !== 'mouse') return
+			touch = false
+			mouse = true
 		},
 		{ signal: run.signal },
 	)
 	backButton.onclick = back
-	startButton.onclick = ready
 	window.addEventListener(
 		'keydown',
 		(event) => {
 			heldKeys.add(event.code)
-			if (event.code !== 'Backquote') touch = false
+			if (event.code !== 'Backquote') touch = mouse = false
 			if (numbers.key(event)) return
 			if (event.repeat || blockedKeys.has(event.code) || event.target?.closest?.('.lil-gui')) return
 			if (event.code === 'KeyN') {
@@ -418,20 +437,15 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 			ready()
 		} else if (cycle) cycleHero()
 		else if (difficulty) cycleDifficulty()
-		const nextDevice =
-			touch && app.input.activeDevice() !== 'gamepad' ? 'touch' : app.input.activeDevice()
+		const pad = app.input.activeDevice() === 'gamepad'
+		const nextDevice = pad ? 'gamepad' : touch ? 'touch' : mouse ? 'mouse' : 'keyboard'
 		if (device === nextDevice) return
 		device = nextDevice
 		el.dataset.device = device
 		props.setDevice(device)
-		numbersButton.querySelector('kbd').textContent =
-			device === 'gamepad' ? 'View' : device === 'touch' ? '' : 'N'
+		strip.setDevice(device)
 		backButton.querySelector('kbd').textContent =
-			device === 'gamepad' ? 'B' : device === 'touch' ? '' : 'Esc'
-		startButton.querySelector('kbd').textContent =
-			device === 'gamepad' ? 'Start' : device === 'touch' ? '' : 'Enter'
-		heroRow.querySelector('kbd').textContent =
-			device === 'gamepad' ? '✛↑' : device === 'touch' ? '' : 'H'
+			device === 'gamepad' ? 'B' : device === 'keyboard' ? 'Esc' : ''
 	})
 	// Screen changes drop pending casts/orders. The device reset requires a fresh press;
 	// inherited navigation keys and the initial pad buttons also have their own release guard.
@@ -448,7 +462,7 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 			sim,
 			setup,
 			layout: tune.lobby,
-			heroButtons,
+			strip,
 			gallery,
 			galleryProps: props.galleryProps,
 			readySeats,
@@ -465,6 +479,7 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 		'abort',
 		() => {
 			numbers.dispose()
+			strip.dispose()
 			props.dispose()
 			canvas.classList.remove('front-canvas')
 			parent.insertBefore(canvas, next)

@@ -186,12 +186,9 @@ evaluate('probe.front.waitForBuild(3);true')
 pad(0)
 pad(9)
 assert('document.querySelector(".overlay").hidden', 'Start paused the loading match')
+// The crane takes no input: A, like Start, is swallowed until the descent lands.
 pad(0)
-assert('probe.loading.state.skipped', 'Pad A failed to skip the loading hold')
-assert(
-	'document.querySelector(".front-prompts").textContent.includes("A ·")',
-	'Loading never switched to pad prompts',
-)
+assert('!!document.querySelector(".front-descent")', 'Pad A cut the crane short')
 browser('screenshot', `${dir}/loading-pad.png`)
 waitForMatch()
 assert(

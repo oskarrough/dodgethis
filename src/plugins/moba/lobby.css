@@ -5,192 +5,32 @@
 .front-lobby .front-distant-fletcher {
 	display: none;
 }
-.moba-front.front-lobby footer {
-	top: max(20px, 4vh);
-	bottom: auto;
-}
-.front-lobby .front-mode-world {
-	transform: translateY(var(--lobby-sky-lift));
-}
 .moba-front.front-lobby .front-canvas {
 	pointer-events: auto;
 }
-.front-lobby footer {
-	pointer-events: none;
-}
-.front-lobby footer button {
-	pointer-events: auto;
-}
 .front-lobby .front-return {
-	width: auto;
-	padding: 0.5em 1em;
-}
-.front-lobby .front-cta {
 	position: absolute;
-	right: 0;
-	bottom: 0;
-	padding: 0.5em 1em;
-	background: var(--ui-cream);
-	border: 0.15em solid var(--ui-text);
+	top: max(20px, 4vh);
+	left: max(16px, 3vw);
+	z-index: 1;
+	display: flex;
+	align-items: center;
+	gap: 0.4em;
+	width: auto;
+	padding: 0.25em 0.7em;
+	border: 0.12em solid var(--ui-text);
 	border-radius: 0.5em;
+	background: var(--ui-cream);
+	box-shadow: 3px 4px 0 var(--ui-text);
+	color: var(--ui-text);
+	font: 400 clamp(18px, 1.8vw, 28px) / 1 var(--ui-font);
+	cursor: pointer;
+}
+.front-lobby .front-return kbd:empty {
+	display: none;
 }
 .front-lobby kbd {
 	margin-left: 0.5em;
-}
-.lobby-heroes {
-	position: absolute;
-	top: max(14px, 2.5vh);
-	left: 50%;
-	translate: -50% 0;
-	z-index: 1;
-	display: grid;
-	justify-items: center;
-	gap: 0.35em;
-	font: 400 clamp(13px, 1.2vw, 20px) / 1 var(--ui-font);
-	color: var(--ui-text);
-}
-.lobby-heroes-title {
-	padding: 0.15em 0.6em;
-	background: var(--ui-text);
-	color: var(--ui-cream);
-	font-size: 0.8em;
-	letter-spacing: 0.06em;
-	text-transform: uppercase;
-	transform: skewX(-12deg);
-}
-.lobby-heroes-title kbd {
-	color: var(--ui-text);
-}
-.lobby-heroes-title kbd:empty {
-	display: none;
-}
-.lobby-hero-tiles {
-	display: flex;
-	gap: 0.35em;
-}
-/* Fighting-game select tiles: slanted, colour-blocked, a name bar along the bottom. */
-.moba-front .lobby-heroes button {
-	--hero: var(--ui-muted);
-	position: relative;
-	display: grid;
-	grid-template-rows: 1fr auto;
-	width: 5.2em;
-	height: 5.4em;
-	padding: 0;
-	overflow: visible;
-	border: clamp(3px, 0.3vw, 5px) solid var(--ui-text);
-	border-radius: 0.3em;
-	background:
-		repeating-linear-gradient(-45deg, transparent 0 0.5em, rgb(255 255 255 / 0.18) 0.5em 1em),
-		var(--hero);
-	box-shadow: 4px 5px 0 var(--ui-text);
-	color: var(--ui-cream);
-	font: inherit;
-	cursor: pointer;
-	transform: skewX(-8deg);
-	transition:
-		transform 0.12s cubic-bezier(0.3, 1.8, 0.5, 1),
-		box-shadow 0.12s;
-}
-.moba-front .lobby-heroes button[data-hero='fletcher'] {
-	--hero: var(--ui-blue);
-}
-.moba-front .lobby-heroes button[data-hero='mitts'] {
-	--hero: var(--ui-red);
-}
-.moba-front .lobby-heroes button[data-hero='carom'] {
-	--hero: var(--ui-green);
-}
-.moba-front .lobby-heroes button > * {
-	transform: skewX(8deg);
-}
-.lobby-hero-face {
-	display: grid;
-	place-items: center;
-}
-.lobby-hero-face svg {
-	display: block;
-	width: 3.2em;
-	height: 3.2em;
-	--tone: var(--ui-cream);
-	filter: drop-shadow(2px 2px 0 var(--ui-text));
-}
-.lobby-hero-name {
-	margin: 0 -0.15em -0.1em;
-	padding: 0.25em 0 0.2em;
-	background: var(--ui-text);
-	font-size: 0.85em;
-	letter-spacing: 0.04em;
-	text-transform: uppercase;
-	text-align: center;
-	transform: none;
-}
-.lobby-hero-p1 {
-	position: absolute;
-	top: -0.75em;
-	left: -0.6em;
-	padding: 0.15em 0.35em;
-	border: 3px solid var(--ui-text);
-	border-radius: 50% 50% 50% 0;
-	background: var(--ui-red);
-	color: var(--ui-cream);
-	font-size: 0.75em;
-	font-weight: 400;
-	opacity: 0;
-	scale: 0;
-	transition:
-		scale 0.18s cubic-bezier(0.3, 1.8, 0.5, 1),
-		opacity 0.1s;
-}
-.moba-front .lobby-heroes button:hover:not(:disabled),
-.moba-front .lobby-heroes button:focus-visible {
-	transform: skewX(-8deg) translateY(-4px) rotate(-2deg);
-	box-shadow: 6px 9px 0 var(--ui-text);
-	outline: none;
-}
-.moba-front .lobby-heroes button[aria-pressed='true'] {
-	border-color: var(--ui-gold);
-	box-shadow:
-		0 0 0 3px var(--ui-text),
-		6px 8px 0 3px var(--ui-text);
-	transform: skewX(-8deg) scale(1.12);
-	z-index: 1;
-}
-.moba-front .lobby-heroes button[aria-pressed='true'] .lobby-hero-name {
-	background: var(--ui-gold);
-	color: var(--ui-text);
-}
-.moba-front .lobby-heroes button[aria-pressed='true'] .lobby-hero-p1 {
-	opacity: 1;
-	scale: 1;
-}
-.moba-front .lobby-heroes button:disabled {
-	cursor: not-allowed;
-	box-shadow: 2px 3px 0 var(--ui-text);
-	background:
-		repeating-linear-gradient(-45deg, transparent 0 0.5em, rgb(38 68 95 / 0.12) 0.5em 1em),
-		var(--ui-cream);
-	color: var(--ui-muted);
-}
-.moba-front .lobby-heroes button:disabled svg {
-	filter: brightness(0) opacity(0.35);
-}
-.moba-front .lobby-heroes button:disabled .lobby-hero-name {
-	background: var(--ui-muted);
-	color: var(--ui-cream);
-}
-.lobby-heroes small {
-	position: absolute;
-	top: 35%;
-	left: 50%;
-	translate: -50% 0;
-	padding: 0.15em 0.35em;
-	border: 2px solid var(--ui-text);
-	background: var(--ui-button);
-	color: var(--ui-text);
-	font-size: 0.6em;
-	text-transform: uppercase;
-	rotate: -12deg;
 }
 /* The pick slam: the name lands huge, overshoots, holds, and slides off. */
 .lobby-pick-stamp {
@@ -245,18 +85,6 @@
 @media (prefers-reduced-motion: reduce) {
 	.lobby-pick-stamp.slam {
 		animation-duration: 0.01s;
-	}
-	.moba-front .lobby-heroes button {
-		transition: none;
-	}
-}
-@media (max-width: 700px) {
-	.lobby-heroes {
-		top: calc(max(94px, 12vh) + 52px);
-		font-size: 11px;
-	}
-	.lobby-heroes-title {
-		display: none;
 	}
 }
 .lobby-label {
@@ -332,20 +160,6 @@
 }
 .moba-front .lobby-seat-label:focus-visible {
 	outline: 0.2em solid var(--ui-text);
-}
-.moba-front .lobby-numbers-open {
-	position: absolute;
-	top: max(94px, 12vh);
-	left: 5vw;
-	z-index: 1;
-	padding: 0.2em 0.5em;
-	border: 2px solid var(--ui-text);
-	border-radius: 8px;
-	background: var(--ui-cream);
-	font: 400 24px / 1 var(--ui-font);
-}
-.lobby-numbers-open kbd:empty {
-	display: none;
 }
 .lobby-numbers {
 	position: fixed;
@@ -454,4 +268,8 @@
 /* Bot seats read as a quiet name tag so the right-hand column never runs labels together. */
 .lobby-seat-label[data-mine='false'] {
 	font-size: clamp(9px, 0.85vw, 14px);
+}
+.front-lobby .front-return kbd {
+	margin-left: 0;
+	font-size: 0.6em;
 }
