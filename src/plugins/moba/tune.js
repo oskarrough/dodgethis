@@ -402,16 +402,11 @@ export const tune = {
 		bannerLife: 2.5,
 		ending: 1.5,
 		recapSources: 3,
-		hoverDelay: 0.25, // a world unit's card opens after the cursor rests this long
+		hoverDelay: 0.25, // a world unit's nameplate opens after the cursor rests this long
 		longPress: 0.4, // touch hold that opens a HUD card
 		inspectHold: 0.35, // pad Y hold that opens a card
 		hpTick: 200, // HP per tick on the portrait bar
 		warn: 5, // timers pulse in their last seconds
-		// World-unit hover: 'quiet' (nameplate, Alt for the docked card), 'nameplate' (Alt for the card beside it),
-		// 'docked' (card in a fixed corner), 'patient' (slow card that fades while you act), 'card' (the old floating card).
-		tooltipMode: 'quiet',
-		patientDelay: 0.9, // 'patient': the cursor must rest this long
-		fade: 0.2, // 'patient': fade-out while you move or cast
 	},
 	match: { objective: 180, late: 360, lateGunDamage: 0.05 },
 	waves: {

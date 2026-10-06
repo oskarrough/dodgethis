@@ -71,8 +71,6 @@ function helpGlyphs(device, abilities, carrying, lobby = false) {
 		.join('')
 }
 const KEY_INSPECT = 'KeyI'
-// How hovering a world unit shows it. tune.hud.tooltipMode picks one; `?tooltips=<mode>` sets it from a link.
-export const TOOLTIP_MODES = ['quiet', 'nameplate', 'docked', 'patient', 'card']
 const PAD_INSPECT = 3
 const PAD_LEFT = 14
 const PAD_RIGHT = 15
@@ -321,8 +319,6 @@ export function createHud({ lobby = false } = {}) {
 	document.body.append(plate)
 	let bannerLeft = 0
 	let lastSwap = null
-	const linked = new URLSearchParams(globalThis.location?.search ?? '').get('tooltips')
-	if (TOOLTIP_MODES.includes(linked)) tune.hud.tooltipMode = linked
 
 	// `moved` marks a real pointer move since the last frame: a unit walking under a still cursor opens nothing.
 	const pointer = { x: 0, y: 0, moved: false }
@@ -623,33 +619,23 @@ export function createHud({ lobby = false } = {}) {
 		updateWorld(dt, frame, !source && !hover && !press && !inspect.by)
 	}
 
-	// World hover, per tune.hud.tooltipMode. HUD-slot cards above never change with the mode.
-	let busyFade = 0
-	const heroAt = { x: NaN, z: NaN }
+	// World hover: a slim nameplate over the unit; hold Alt for its full card in the dock.
 	function updateWorld(dt, frame, free) {
-		const { sim, aim, camera, device, hero } = frame
-		const mode = tune.hud.tooltipMode
+		const { sim, aim, camera, device } = frame
 		const moved = pointer.moved
 		pointer.moved = false
 		if (!free || !sim || !aim || device === 'gamepad' || device === 'touch') world = null
 		else if (moved) {
 			const unit = pickUnit(sim, aim, frame)
 			if (unit !== world?.unit) world = unit ? { unit, dwell: 0 } : null
-			else if (world && mode === 'patient') world.dwell = 0 // patient: only a resting cursor counts
 		} else if (world && (world.unit.dead || pickUnit(sim, aim, frame) !== world.unit)) world = null
 		if (world) world.dwell += dt
-		const p = hero?.body.position // the sim body: the mesh sways even at rest
-		const walking = !!p && (Math.abs(p.x - heroAt.x) > 1e-3 || Math.abs(p.z - heroAt.z) > 1e-3)
-		if (p) Object.assign(heroAt, { x: p.x, z: p.z })
-		const busy = walking || !!hero?.cast || !!hero?.attack
 
 		const unit = world?.unit
-		const delay = mode === 'patient' ? tune.hud.patientDelay : tune.hud.hoverDelay
-		const ready = !!unit && world.dwell >= delay
+		const ready = !!unit && world.dwell >= tune.hud.hoverDelay
 		const card = ready ? cardFor({ kind: 'unit', unit }, frame) : null
-		const plated = !!card && (mode === 'quiet' || mode === 'nameplate')
 		// The nameplate rides above the unit's rendered head: name and exact HP, nothing else.
-		if (plated && camera) {
+		if (card && camera) {
 			const at = screenOf(unit, camera)
 			text(plateName, card.title)
 			plateHp.hidden = plateBar.hidden = !!unit.card
@@ -661,19 +647,9 @@ export function createHud({ lobby = false } = {}) {
 				plate.style.transform = `translate(${x}px, ${y}px) translate(-50%, -100%)`
 			})
 		}
-		put(plate, 'hidden', !plated || !camera, (v) => (plate.hidden = v))
+		put(plate, 'hidden', !card || !camera, (v) => (plate.hidden = v))
 
-		let anchor = null
-		if (!card) busyFade = 0
-		else if (mode === 'card') anchor = { x: pointer.x, y: pointer.y - 16 }
-		else if (mode === 'docked' || (mode === 'quiet' && alt)) anchor = dock()
-		else if (mode === 'nameplate' && alt && camera) anchor = screenOf(unit, camera)
-		else if (mode === 'patient') {
-			busyFade = busy ? busyFade + dt : 0
-			if (busyFade < tune.hud.fade) anchor = { x: pointer.x, y: pointer.y - 16 }
-		}
-		worldTip.fade(mode === 'patient' && busy)
-		if (anchor) worldTip.show(card, anchor)
+		if (card && alt) worldTip.show(card, dock())
 		else worldTip.hide()
 	}
 	// The dock: bottom-left on wide screens, under the top bar on narrow ones. Never the middle of the fight.

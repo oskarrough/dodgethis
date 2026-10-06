@@ -8,7 +8,6 @@ A small, toy-like hero brawler that grew out of dodgeball, set in the world over
 
 ## Now
 
-- Pick a tooltip mode from the five prototypes (`?tooltips=`).
 - Oskar plays the plaza; then its feel pass (the flip, squash, sounds, a calmer layout).
 
 ## Next

@@ -333,12 +333,6 @@ export function createTooltip(parent = document.body, id = 'moba-tip') {
 		hide() {
 			if (!root.hidden) root.hidden = true
 		},
-		// Fading keeps the card in place but transparent; CSS animates the opacity.
-		fade(on) {
-			if (root.classList.contains('away') === on) return
-			if (on) root.classList.add('away')
-			else root.classList.remove('away')
-		},
 		dispose() {
 			root.remove()
 		},
