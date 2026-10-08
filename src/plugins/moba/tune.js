@@ -314,6 +314,7 @@ export const tune = {
 		history: 2,
 		fileSpacing: 3,
 		retreatHp: 0.35,
+		meleeRetreatHp: 0.5,
 		recoverHp: 0.9,
 		retreatDisadvantage: 1,
 		supportRange: 12,
@@ -552,7 +553,7 @@ export const tune = {
 		turnRate: 1080, // degrees per second; facing is cosmetic and nothing waits on it
 	},
 	heroes: {
-		mitts: { hp: 1900, speed: 5.6 },
+		mitts: { hp: 2200, speed: 5.6 },
 		carom: { hp: 1300, speed: 5 },
 		skip: { hp: 1450, speed: 5 },
 	},

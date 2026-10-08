@@ -80,7 +80,10 @@ export function sliderSections(tune, setup) {
 			rainHeroes: [1, 3, 1],
 			bruteEscort: [1, 3, 1],
 			siegeFile: [-4, 4, 1],
-			...each(['retreatHp', 'recoverHp', 'ballHp', 'chaseHp', 'siegeLowHp'], () => [0, 1, 0.01]),
+			...each(
+				['retreatHp', 'meleeRetreatHp', 'recoverHp', 'ballHp', 'chaseHp', 'siegeLowHp'],
+				() => [0, 1, 0.01],
+			),
 			openingX: [0, 17, 0.5],
 			fileSpacing: [0, 4, 0.1, 'files (applies on restart)'],
 		},

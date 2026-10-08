@@ -182,6 +182,7 @@ export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed, b
 			const [shotSlot, shotAbility] = abilities.find(([, a]) => a.kind === 'shot') ?? []
 			const [zoneSlot, zoneAbility] = abilities.find(([, a]) => a.kind === 'zone') ?? []
 			const [dashSlot, dashAbility] = abilities.find(([, a]) => a.kind === 'dash') ?? []
+			const melee = h.definition.basic?.kind === 'melee'
 			const catchAbility = abilities.find(([, a]) => a.kind === 'stance' && a.catchesShots)
 			const own = perceived.heroes.filter((u) => !u.dead && u.team === team)
 			const enemies = perceived.heroes.filter((u) => !u.dead && u.team !== team)
@@ -250,7 +251,41 @@ export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed, b
 							h.maxHp * b.retreatHp
 					)
 				})
-			if (h.hp < h.maxHp * b.retreatHp) healing = true
+			// Q at a hero, led and jittered; holds fire when a minion, guard or wall would take it first.
+			// With a caught shot in the pocket, Toss throws that back instead.
+			const shoot = (target) => {
+				const loose =
+					shotAbility?.returnsPocket && h.abilityState?.pocket
+						? h.abilityState.pocket.shot
+						: shotAbility?.stats
+				if (!loose || distance(p, target.pos) > loose.range || target.dashing) return false
+				const lead = interceptTime(p, target, loose.speed) * (1 + normal() * k.leadError)
+				const dx = target.pos.x + target.vel.x * lead - p.x,
+					dz = target.pos.z + target.vel.z * lead - p.z,
+					angle = normal() * k.jitter
+				const aim = {
+					x: p.x + dx * Math.cos(angle) - dz * Math.sin(angle),
+					z: p.z + dx * Math.sin(angle) + dz * Math.cos(angle),
+				}
+				const candidates = [...enemies, ...minions.filter((u) => u.team !== team), ...guards]
+				const first = candidates
+					.map((u) => ({
+						u,
+						t: sweepHit(p.x, p.z, aim.x, aim.z, u.pos.x, u.pos.z, u.radius + loose.radius),
+					}))
+					.filter((hit) => hit.t !== null)
+					.sort((a, c) => a.t - c.t || a.u.id.localeCompare(c.u.id))[0]
+				const cover = sweepObstacles(p, aim, loose.radius, sim.obstacles)
+				return (
+					!!first &&
+					!first.u.kind &&
+					(cover === null || first.t < cover) &&
+					safe(p, [first.u]) &&
+					cast(shotSlot, aim)
+				)
+			}
+			// Melee fights inside the wave and walks out through it, so it leaves earlier.
+			if (h.hp < h.maxHp * (melee ? b.meleeRetreatHp : b.retreatHp)) healing = true
 			if (h.hp >= h.maxHp * b.recoverHp) healing = false
 			retreat = healing || advantage < -k.aggression - b.retreatDisadvantage
 
@@ -411,6 +446,17 @@ export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed, b
 				return frame
 			}
 			dodgeGoal = null
+			// A caught shot is free damage with a short fuse: throw it back from any state.
+			if (h.abilityState?.pocket && !sim.ball.carrying(h)) {
+				const mark = enemies
+					.filter((u) => distance(u.pos, p) <= h.abilityState.pocket.shot.range)
+					.sort((a, c) => effective(a) - effective(c) || a.id.localeCompare(c.id))
+					.find(shoot)
+				if (mark) {
+					state = 'return'
+					return frame
+				}
+			}
 			if (retreat) {
 				state = 'retreat'
 				const globe = perceived.globes.find(
@@ -594,7 +640,7 @@ export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed, b
 					u.team !== team &&
 					homeGuard &&
 					distance(u.pos, homeGuard.pos) <= tune[homeGuard.kind].range &&
-					distance(u.pos, p) <= (zoneAbility?.stats.range ?? 0),
+					distance(u.pos, p) <= (zoneAbility?.stats.range ?? b.fightRange),
 			)
 			if (invaders.length && (!target || advantage < -k.aggression)) {
 				state = 'defend'
@@ -645,42 +691,7 @@ export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed, b
 					cast(zoneSlot, predicted)
 				)
 					return frame
-				const loose =
-					shotAbility?.returnsPocket && h.abilityState?.pocket
-						? h.abilityState.pocket.shot
-						: shotAbility?.stats
-				if (
-					loose &&
-					distance(p, target.pos) <= loose.range &&
-					now - seenAt >= ticks(k.reaction) &&
-					!target.dashing
-				) {
-					const lead = interceptTime(p, target, loose.speed) * (1 + normal() * k.leadError)
-					const dx = target.pos.x + target.vel.x * lead - p.x,
-						dz = target.pos.z + target.vel.z * lead - p.z,
-						angle = normal() * k.jitter
-					const aim = {
-						x: p.x + dx * Math.cos(angle) - dz * Math.sin(angle),
-						z: p.z + dx * Math.sin(angle) + dz * Math.cos(angle),
-					}
-					const candidates = [...enemies, ...minions.filter((u) => u.team !== team), ...guards]
-					const first = candidates
-						.map((u) => ({
-							u,
-							t: sweepHit(p.x, p.z, aim.x, aim.z, u.pos.x, u.pos.z, u.radius + loose.radius),
-						}))
-						.filter((hit) => hit.t !== null)
-						.sort((a, c) => a.t - c.t || a.u.id.localeCompare(c.u.id))[0]
-					const cover = sweepObstacles(p, aim, loose.radius, sim.obstacles)
-					if (
-						first &&
-						!first.u.kind &&
-						(cover === null || first.t < cover) &&
-						safe(p, [first.u]) &&
-						cast(shotSlot, aim)
-					)
-						return frame
-				}
+				if (now - seenAt >= ticks(k.reaction) && shoot(target)) return frame
 				const dash = dashAbility
 				if (
 					dash?.kind === 'dash' &&
@@ -749,7 +760,9 @@ export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed, b
 			const creep = minions
 				.filter(
 					(u) =>
-						u.team !== team && distance(u.pos, p) <= (h.definition.basic?.range ?? 0) + u.radius,
+						u.team !== team &&
+						distance(u.pos, p) <=
+							(melee ? b.fightRange : (h.definition.basic?.range ?? 0)) + u.radius,
 				)
 				.sort((a, c) => a.hp - c.hp || a.id.localeCompare(c.id))[0]
 			if (creep && safe(p)) attack(creep)
