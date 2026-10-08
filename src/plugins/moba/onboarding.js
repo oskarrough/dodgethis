@@ -7,6 +7,9 @@ import { clampMap } from './obstacles.js'
 import { edgePip } from './pips.js'
 import { tune } from './tune.js'
 
+const arrowFor = (angle) =>
+	['→', '↘', '↓', '↙', '←', '↖', '↑', '↗'][((Math.round(angle / (Math.PI / 4)) % 8) + 8) % 8]
+
 // Render-only guidance. All lifetime and movement state belongs to this match.
 export function createOnboarding({ scene, sim, hero }) {
 	const t = tune.onboarding
@@ -26,7 +29,14 @@ export function createOnboarding({ scene, sim, hero }) {
 	level.setAttribute('role', 'status')
 	const hint = sticker('moba-xp-hint', '')
 	hint.style.cssText += `;left:50%;bottom:${t.hintBottom}px;transform:translateX(-50%);width:max-content;max-width:min(${t.hintWidth}px,calc(100% - ${t.stickerPadding * 4}px))`
+	const ballHint = sticker(
+		'moba-ball-hint',
+		`The Ball is up at mid. Throw it at their tower: −${Math.round(tune.ball.structureDamage * 100)}% HP and ${tune.ball.silence} s of silent guns.`,
+	)
+	ballHint.setAttribute('role', 'status')
+	ballHint.style.cssText += `;left:50%;bottom:${t.hintBottom}px;transform:translateX(-50%) rotate(1deg);width:max-content;max-width:min(${t.hintWidth}px,calc(100% - ${t.stickerPadding * 4}px))`
 	const pointer = sticker('moba-ball-pointer', '')
+	pointer.style.whiteSpace = 'nowrap'
 	const timerLabels = ['wave', 'ball'].map((kind) => {
 		const parent = document.querySelector(`.moba-timer.${kind}`)
 		const previousPosition = parent.style.position
@@ -91,12 +101,14 @@ void main() {
 	shape.closePath()
 	const arrow = mesh(new THREE.ShapeGeometry(shape), arrowMaterial)
 	const point = new THREE.Vector3(),
-		local = new THREE.Vector3()
+		local = new THREE.Vector3(),
+		goal = new THREE.Vector3()
 	let previous = null
 	let distance = 0
 	let fadedAt = null
 	let xpAt = null
 	let levelAt = null
+	let ballAt = null
 	let previousMaxHp = hero.maxHp
 	let wasDead = hero.dead
 	const startTick = sim.tick
@@ -172,8 +184,37 @@ void main() {
 			place(you, p, camera, t.labelHeight)
 			you.hidden ||= hero.dead || (elapsed >= t.youLife && !crowded) || pop > 0
 			for (const label of timerLabels) label.hidden = elapsed >= t.timerLife
+			if (sim.ball?.state && sim.ball.state.state !== 'warning' && ballAt === null) ballAt = tick
+			ballHint.hidden =
+				ballAt === null || (tick - ballAt) * STEP >= t.ballHintLife || !!sim.lane.match.winner
 			pointer.hidden = true
-			if (!ballPosition || sim.lane.match.winner) return
+			if (sim.lane.match.winner) return
+			// Carrying, the pointer swaps the Ball for where to throw it.
+			const goalUnit =
+				sim.ball?.carrying(hero) &&
+				sim.lane.structures.find((u) => !u.dead && u.team !== hero.team && sim.lane.vulnerable(u))
+			if (goalUnit) {
+				goal.set(goalUnit.body.position.x, 0, goalUnit.body.position.z)
+				pointer.style.background = hex('ammo')
+				const lift = t.goalLift[goalUnit.kind]
+				point.set(goal.x, lift, goal.z)
+				local.copy(point).applyMatrix4(camera.matrixWorldInverse)
+				const edge = edgePip(point.project(camera), local.z >= 0)
+				const name = goalUnit.kind === 'tower' ? 'Their tower' : 'Their core'
+				if (!edge) {
+					place(pointer, goal, camera, lift)
+					text(pointer, `Throw here ↓`)
+					return
+				}
+				pointer.hidden = false
+				const angle = Math.atan2(-edge.y, edge.x)
+				text(pointer, `${arrowFor(angle)} ${name}`)
+				pointer.style.left = `clamp(${t.pointerMargin}px,${(edge.x + 1) * 50}%,calc(100% - ${t.pointerMargin}px))`
+				pointer.style.top = `clamp(${t.pointerTop}px,${(1 - edge.y) * 50}%,calc(100% - ${t.pointerBottom}px))`
+				pointer.style.transform = 'translate(-50%,-50%)'
+				return
+			}
+			if (!ballPosition) return
 			const carrier = sim.find(sim.ball.state.carrier)
 			point.copy(ballPosition)
 			local.copy(point).applyMatrix4(camera.matrixWorldInverse)
@@ -182,9 +223,7 @@ void main() {
 			pointer.hidden = false
 			pointer.style.background = hex(carrier ? (carrier.team === 'A' ? 'teamA' : 'teamB') : 'ammo')
 			const angle = Math.atan2(-edge.y, edge.x)
-			const directionLabel = ['→', '↘', '↓', '↙', '←', '↖', '↑', '↗'][
-				((Math.round(angle / (Math.PI / 4)) % 8) + 8) % 8
-			]
+			const directionLabel = arrowFor(angle)
 			text(
 				pointer,
 				`${directionLabel} ${carrier ? (carrier.id === hero.id ? 'Your Ball' : carrier.team === hero.team ? 'Your team’s Ball' : 'Enemy Ball') : 'Ball'}`,
