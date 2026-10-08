@@ -557,35 +557,6 @@
 			3px 4px 0 var(--ink);
 	}
 }
-.moba-help {
-	display: flex;
-	flex-wrap: wrap;
-	justify-content: center;
-	gap: 4px 10px;
-	max-width: min(94vw, 760px);
-	font:
-		700 11px / 1 system-ui,
-		sans-serif;
-	color: var(--ink);
-}
-.moba-help span {
-	display: inline-flex;
-	align-items: center;
-	gap: 3px;
-	padding: 2px 6px 2px 2px;
-	background: var(--cream);
-	border: 2px solid var(--ink);
-	border-radius: 8px;
-}
-.moba-help kbd {
-	min-width: 14px;
-	padding: 2px 4px;
-	font: inherit;
-	text-align: center;
-	color: var(--cream);
-	background: var(--ink);
-	border-radius: 5px;
-}
 .moba-top .inspected,
 .moba-hud .inspected {
 	outline: 3px solid var(--gold);
@@ -841,9 +812,64 @@
 	.moba-slots {
 		gap: 5px;
 	}
-	.moba-help {
-		gap: 3px 5px;
-		font-size: 10px;
-		max-width: calc(100vw - 72px);
-	}
+}
+/* The inspect tile: the back button's twin in the top-right corner, its key stuck top-left. */
+.moba-inspect {
+	position: fixed;
+	top: max(14px, 1.6vw);
+	right: max(14px, 1.6vw);
+	z-index: 6;
+	display: grid;
+	place-items: center;
+	width: clamp(38px, 3.2vw, 52px);
+	height: clamp(38px, 3.2vw, 52px);
+	padding: 0;
+	border: 3px solid var(--ui-text);
+	border-radius: 10px;
+	background: var(--ui-cream);
+	box-shadow: 3px 4px 0 var(--ui-text);
+	color: var(--ui-text);
+	cursor: pointer;
+	transition: transform 0.12s cubic-bezier(0.2, 1.9, 0.45, 1);
+}
+.moba-inspect[hidden] {
+	display: none;
+}
+.moba-inspect svg {
+	display: block;
+	width: 62%;
+	height: 62%;
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 3.2;
+	stroke-linecap: round;
+}
+.moba-inspect kbd {
+	position: absolute;
+	top: -10px;
+	left: -9px;
+	padding: 0.1em 0.35em 0;
+	border: 2px solid var(--ui-text);
+	border-radius: 0.55em;
+	background: var(--ui-cream);
+	box-shadow: 2px 3px 0 var(--ui-text);
+	/* The display font draws I like a 1. */
+	font:
+		800 clamp(11px, 0.85vw, 14px) / 1.2 system-ui,
+		sans-serif;
+	rotate: -8deg;
+}
+.moba-inspect kbd:empty {
+	display: none;
+}
+.moba-inspect:hover,
+.moba-inspect:focus-visible {
+	outline: none;
+	background: var(--ui-button);
+	transform: translate(-1px, -2px) rotate(4deg);
+}
+.moba-inspect[aria-pressed='true'] {
+	background: var(--ui-gold);
+	transform: translate(2px, 3px);
+	box-shadow: 1px 1px 0 var(--ui-text);
 }

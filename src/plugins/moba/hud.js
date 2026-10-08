@@ -26,36 +26,6 @@ import {
 
 const SLOTS = ['slot1', 'slot2', 'slot3']
 const KEYS = { keyboard: ['Q', 'W', 'E'], gamepad: ['RB', 'RT', 'LB'] }
-// Key-glyph stickers from the hero's own kit, for the active device. Numbers live in the cards.
-// The plaza shows none: its ability tiles already carry their keys.
-function helpGlyphs(device, abilities, carrying, lobby = false) {
-	if (lobby) return ''
-	const names = SLOTS.map((slot) => abilityName(abilities?.[slot]).toLowerCase())
-	const pad = device === 'gamepad'
-	const slots = carrying
-		? [[pad ? ['A', ...KEYS.gamepad] : [...KEYS.keyboard, 'LMB'], 'throw Ball']]
-		: KEYS[pad ? 'gamepad' : 'keyboard'].map((key, i) => [[key], names[i]])
-	const glyphs = pad
-		? [
-				[['L'], 'move'],
-				...slots,
-				[['A'], 'attack'],
-				[['B'], 'cancel'],
-				[['Y'], 'inspect'],
-				[['Start'], 'pause'],
-			]
-		: [
-				[['RMB'], 'move'],
-				...slots,
-				[['S'], 'stop'],
-				[['Space'], 'follow'],
-				[['I'], 'inspect'],
-				[['Esc'], 'pause'],
-			]
-	return glyphs
-		.map(([keys, label]) => `<span>${keys.map((k) => `<kbd>${k}</kbd>`).join('')}${label}</span>`)
-		.join('')
-}
 const KEY_INSPECT = 'KeyI'
 const PAD_INSPECT = 3
 const PAD_LEFT = 14
@@ -256,7 +226,7 @@ export function createHud({ lobby = false } = {}) {
 	const ball = timer('ball')
 	side('theirs')
 
-	// --- Bottom: portrait, slots, help ---
+	// --- Bottom: portrait and slots ---
 	const root = el('div', 'moba-hud')
 	const bar = el('div', 'moba-bar', root)
 	// The plaza parks your unit frame top-left beside Back, so the action bar centres alone.
@@ -288,7 +258,6 @@ export function createHud({ lobby = false } = {}) {
 		const left = el('span', 'left', slot)
 		return { action, slot, icon, key, left, deniedFor: 0, fraction: -1 }
 	})
-	const help = el('div', 'moba-help', root)
 	const banner = el('div', 'moba-banner')
 	banner.hidden = true
 	document.body.append(top, root, banner)
@@ -355,6 +324,19 @@ export function createHud({ lobby = false } = {}) {
 		}
 	}
 	globalThis.window?.addEventListener('keydown', onKey)
+	// The match's way into inspect without a legend: a corner tile that toggles it, its key stuck on.
+	const lens = lobby ? null : el('button', 'moba-inspect')
+	if (lens) {
+		lens.type = 'button'
+		lens.setAttribute('aria-label', 'Inspect')
+		lens.innerHTML =
+			'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="7"/><path d="M15.2 15.2 21 21"/></svg><kbd></kbd>'
+		lens.onclick = () => {
+			inspect.by = inspect.by ? null : 'keys'
+			inspect.index = 0
+		}
+		document.body.append(lens)
+	}
 	targets = [
 		...slots.map((s) => s.slot),
 		portrait,
@@ -557,6 +539,12 @@ export function createHud({ lobby = false } = {}) {
 		const { sim, aim, camera, pad } = frame
 		if (frame.device === 'touch' || hover?.source.node?.closest?.('[hidden]')) hover = null
 		if (press?.source.node?.closest?.('[hidden]')) press = null
+		if (lens) {
+			put(lens, 'hidden', !!frame.inspectionDisabled, (hidden) => (lens.hidden = hidden))
+			const key = { gamepad: 'Y', touch: '' }[frame.device] ?? 'I'
+			put(lens.lastChild, 'key', key, (k) => (lens.lastChild.textContent = k))
+			put(lens, 'pressed', String(!!inspect.by), (v) => lens.setAttribute('aria-pressed', v))
+		}
 		if (frame.inspectionDisabled) {
 			inspect.by = null
 			inspect.held = 0
@@ -839,14 +827,6 @@ export function createHud({ lobby = false } = {}) {
 					cooldown > 0 ? (cooldown > 1 ? String(Math.ceil(cooldown)) : cooldown.toFixed(1)) : '',
 				)
 			}
-			put(
-				help,
-				'html',
-				helpGlyphs(device, definition.abilities, !!carryingBall, !!frame.lobby),
-				(html) => {
-					help.innerHTML = html
-				},
-			)
 
 			updateTip(dt, {
 				...frame,
@@ -868,6 +848,7 @@ export function createHud({ lobby = false } = {}) {
 			top.remove()
 			root.remove()
 			unitFrame?.remove()
+			lens?.remove()
 			banner.remove()
 			tip.dispose()
 		},
