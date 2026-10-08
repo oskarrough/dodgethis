@@ -71,16 +71,30 @@ export function applyVariant(variant) {
 	}
 }
 
-// Per-team hero deaths and hero damage, counted from the combat log as it streams. A team's kills are the other's deaths.
+// Per-team hero deaths, hero damage and hero hits on structures, counted from the combat log as it streams.
+// A team's kills are the other's deaths. `firstTower` is the second the first tower fell, or null.
 function summaryStats(roster) {
 	const team = new Map(roster.map((seat) => [seat.id, seat.team]))
-	const totals = { A: { deaths: 0, damage: 0 }, B: { deaths: 0, damage: 0 } }
+	const totals = {
+		A: { deaths: 0, damage: 0, structureHits: 0 },
+		B: { deaths: 0, damage: 0, structureHits: 0 },
+		firstTower: null,
+	}
 	return {
 		totals,
 		add(row) {
 			const actor = team.get(row.seat)
-			if (row.kind === 'hit' && actor) totals[actor].damage += row.effective_damage
+			if (row.kind === 'hit' && actor) {
+				totals[actor].damage += row.effective_damage
+				if (/^(tower|core)-/.test(row.target ?? '')) totals[actor].structureHits++
+			}
 			if (row.kind === 'death' && team.has(row.target)) totals[team.get(row.target)].deaths++
+			if (
+				row.kind === 'structureDown' &&
+				row.target.startsWith('tower') &&
+				totals.firstTower === null
+			)
+				totals.firstTower = row.tick * STEP
 		},
 	}
 }
@@ -174,21 +188,32 @@ function rollupMatch(rows, result) {
 		decided: 0,
 		aWins: 0,
 		seconds: 0,
-		A: { deaths: 0, damage: 0 },
-		B: { deaths: 0, damage: 0 },
+		towers: 0,
+		towerSeconds: 0,
+		A: { deaths: 0, damage: 0, structureHits: 0 },
+		B: { deaths: 0, damage: 0, structureHits: 0 },
 	}
 	rows.set(key, row)
 	row.n++
 	row.seconds += result.duration
 	if (result.winner) row.decided++
 	if (result.winner === 'A') row.aWins++
+	if (result.stats.firstTower !== null) {
+		row.towers++
+		row.towerSeconds += result.stats.firstTower
+	}
 	for (const team of ['A', 'B']) {
 		row[team].deaths += result.stats[team].deaths
 		row[team].damage += result.stats[team].damage
+		row[team].structureHits += result.stats[team].structureHits
 	}
 }
 
-// One row per variant and ordered matchup: team A's win rate, kills (the other team's deaths), deaths and hero damage per match.
+// One row per variant and ordered matchup: team A's win rate, kills (the other team's deaths), deaths, hero damage
+// and hero hits on structures per match, and when the first tower fell (mean over matches where one did).
+const clock = (seconds) =>
+	`${Math.floor(seconds / 60)}:${String(Math.round(seconds % 60)).padStart(2, '0')}`
+
 function summaryTable(variants, rollup) {
 	const header = [
 		'variant',
@@ -198,6 +223,8 @@ function summaryTable(variants, rollup) {
 		'A win %',
 		'kills A-B',
 		'dmg A-B',
+		'struct hits A-B',
+		'1st tower m:ss',
 		'minutes',
 	]
 	const lines = []
@@ -212,6 +239,8 @@ function summaryTable(variants, rollup) {
 				r.decided ? ((100 * r.aWins) / r.decided).toFixed(1) : '-',
 				`${(r.B.deaths / r.n).toFixed(1)}-${(r.A.deaths / r.n).toFixed(1)}`,
 				`${avg(r.A.damage)}-${avg(r.B.damage)}`,
+				`${(r.A.structureHits / r.n).toFixed(1)}-${(r.B.structureHits / r.n).toFixed(1)}`,
+				r.towers ? clock(r.towerSeconds / r.towers) : '-',
 				(r.seconds / r.n / 60).toFixed(1),
 			])
 		}
@@ -289,12 +318,16 @@ export async function farm(argv = process.argv.slice(2)) {
 		console.log(
 			`Rounded ${requestedMatches} matches up to ${matches} for complete ${pairs}-match rotations.`,
 		)
-	const revision = spawnSync('jj', ['log', '-r', '@', '--no-graph', '-T', 'commit_id'], {
-		encoding: 'utf8',
-	})
-	const commit = revision.stdout?.trim()
-	if (revision.status !== 0 || !/^[0-9a-f]{40}$/.test(commit ?? ''))
-		throw new Error('Cannot record the farm commit: jj log failed')
+	// Plain git worktrees have no jj repo; fall back to git's HEAD.
+	const head = (command, args) => {
+		const revision = spawnSync(command, args, { encoding: 'utf8' })
+		const id = revision.stdout?.trim()
+		return revision.status === 0 && /^[0-9a-f]{40}$/.test(id ?? '') ? id : null
+	}
+	const commit =
+		head('jj', ['log', '-r', '@', '--no-graph', '-T', 'commit_id']) ??
+		head('git', ['rev-parse', 'HEAD'])
+	if (!commit) throw new Error('Cannot record the farm commit: jj log and git rev-parse failed')
 	const runId = crypto.randomUUID()
 	const tasks = variants.length * matches
 	console.log(

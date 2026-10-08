@@ -77,6 +77,7 @@ function view(sim, births) {
 		dashing: !!u.body.dashing,
 		target: u.target,
 		vulnerable: !u.structure || sim.lane.vulnerable(u),
+		silent: (u.silentUntil ?? 0) > sim.tick,
 	})
 	return {
 		tick: sim.tick,
@@ -211,6 +212,8 @@ export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed, b
 			}
 			const safe = (at, victims = [], radius = 0) =>
 				guards.every((g) => {
+					// A silenced guard can't call for help.
+					if (g.silent) return true
 					const range = tune[g.kind].range
 					if (
 						distance(g.pos, at) > range + h.body.radius ||
@@ -497,23 +500,44 @@ export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed, b
 				stickyUntil = now + ticks(b.sticky)
 				seenAt = now
 			}
-			// Spend an already-paid minion screen before staging for a future Ball.
-			// Otherwise late warnings can repeatedly pull the sieger off an open core.
-			const opening = structures[0]
-			const screen = opening ? near(wave, opening.pos, tune[opening.kind].range) : []
-			const screenStrength = screen.reduce(
-				(n, u) => n + (u.kind === 'brute' ? b.bruteEscort : 1),
+			const attackReach = (h.definition.basic?.range ?? 0) + (target?.radius ?? 0)
+			const targetDistance = target ? distance(p, target.pos) : 0
+			const attackSpot =
+				targetDistance > attackReach
+					? {
+							x: target.pos.x + ((p.x - target.pos.x) / targetDistance) * attackReach,
+							z: target.pos.z + ((p.z - target.pos.z) / targetDistance) * attackReach,
+						}
+					: p
+			// Commit to a siege while the guard can't shoot back at us: silenced, or
+			// shooting a friendly wave that is thick enough, or thin but the guard is nearly down.
+			// Spend an already-paid screen before staging for a future Ball.
+			const siege = structures[0]
+			const escort = siege ? near(wave, siege.pos, tune[siege.kind].range) : []
+			const escortStrength = escort.reduce(
+				(count, u) => count + (u.kind === 'brute' ? b.bruteEscort : 1),
 				0,
 			)
+			const tanked = siege && minions.some((u) => u.id === siege.target && u.team === team)
+			const sieging =
+				siege &&
+				(siege.silent ||
+					(tanked &&
+						(escortStrength >= b.siegeMinions ||
+							(escortStrength > 0 && siege.hp <= siege.maxHp * b.siegeLowHp))))
+			// Only the centre file ignores a low hero it can safely finish.
+			const finish =
+				file !== b.siegeFile &&
+				target &&
+				target.hp < target.maxHp * b.chaseHp &&
+				safe(attackSpot, [target])
 			if (
-				file === b.siegeFile &&
-				opening &&
-				screenStrength >= b.siegeMinions &&
-				minions.some((u) => u.id === opening.target && u.team === team) &&
+				sieging &&
+				!finish &&
 				!(ball?.state === 'carried' && ball.team !== team && target?.id === ball.carrier)
 			) {
 				state = 'push'
-				attack(opening)
+				attack(siege)
 				return frame
 			}
 			const preparing = ball?.state === 'warning' && ball.spawnAt - now <= ticks(b.ballPrepare)
@@ -553,15 +577,6 @@ export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed, b
 					return frame
 				}
 			}
-			const attackReach = (h.definition.basic?.range ?? 0) + (target?.radius ?? 0)
-			const targetDistance = target ? distance(p, target.pos) : 0
-			const attackSpot =
-				targetDistance > attackReach
-					? {
-							x: target.pos.x + ((p.x - target.pos.x) / targetDistance) * attackReach,
-							z: target.pos.z + ((p.z - target.pos.z) / targetDistance) * attackReach,
-						}
-					: p
 			const homeGuard = perceived.structures.find((u) => !u.dead && u.team === team)
 			const invaders = minions.filter(
 				(u) =>
@@ -695,17 +710,7 @@ export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed, b
 				move({ x: ball.pos.x - side * b.escortAhead, z: ball.pos.z + file })
 				return frame
 			}
-			const siege = structures[0]
-			const escort = siege ? near(wave, siege.pos, tune[siege.kind].range) : []
-			const escortStrength = escort.reduce(
-				(count, u) => count + (u.kind === 'brute' ? b.bruteEscort : 1),
-				0,
-			)
-			if (
-				siege &&
-				escortStrength >= b.siegeMinions &&
-				minions.some((u) => u.id === siege.target && u.team === team)
-			) {
+			if (sieging) {
 				state = 'push'
 				attack(siege)
 				return frame
@@ -715,11 +720,7 @@ export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed, b
 				return frame
 			}
 			state = 'lane'
-			if (
-				siege &&
-				distance(p, siege.pos) <= tune[siege.kind].range + h.body.radius &&
-				escortStrength < b.siegeMinions
-			) {
+			if (siege && distance(p, siege.pos) <= tune[siege.kind].range + h.body.radius) {
 				move({
 					x: siege.pos.x + side * (tune[siege.kind].range + h.body.radius + b.siegeBackoff),
 					z: file,
@@ -731,6 +732,9 @@ export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed, b
 			)[0]
 			const guard = perceived.structures.find((u) => !u.dead && u.team === team)
 			const goal = { x: (front?.pos.x ?? guard?.pos.x ?? h.spawn.x) + side * b.laneBehind, z: file }
+			// While no enemy minion is on our half, hold the plaza edge instead of waiting at home.
+			if (!minions.some((u) => u.team !== team && side * u.pos.x > 0))
+				goal.x = side * Math.min(side * goal.x, b.openingX)
 			const creep = minions
 				.filter(
 					(u) =>

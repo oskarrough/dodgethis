@@ -345,6 +345,8 @@ export const tune = {
 		bruteEscort: 2,
 		siegeMinions: 2,
 		siegeBackoff: 1,
+		siegeLowHp: 0.35,
+		openingX: 8,
 		easy: {
 			focusUntil: 300,
 			humanAttackers: 1,
