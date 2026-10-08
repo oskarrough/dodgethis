@@ -6,6 +6,7 @@ import { tune as frontTune } from './front/tune.js'
 import { createBackdrop, easeShot } from './front/backdrop.js'
 import { startLoading } from './front/descent.js'
 import { createLobbyProps } from './lobby-props.js'
+import { createLobbyFloor } from './lobby-floor.js'
 import { HEROES } from './heroes.js'
 import { createHeroStrip } from './lobby-heroes.js'
 import { createNumbers } from './front/numbers.js'
@@ -21,7 +22,7 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 	el.className = 'moba-front front-lobby'
 	el.dataset.screen = 'plaza'
 	el.setAttribute('aria-label', 'Try your hero in the plaza')
-	el.innerHTML = `<button type="button" class="front-return" aria-label="Back to splash"><span aria-hidden="true">←</span><kbd></kbd></button><div class="lobby-pick-stamp" aria-live="polite"></div>`
+	el.innerHTML = `<button type="button" class="front-return" aria-label="Back to splash"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12H5m6-7-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg><kbd></kbd></button><button type="button" class="lobby-difficulty"><kbd></kbd>Bots <b></b></button><div class="lobby-pick-stamp" aria-live="polite"></div>`
 	el.prepend(backdrop.el, canvas)
 	canvas.classList.add('front-canvas')
 	canvas.inert = false
@@ -33,7 +34,7 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 		Object.fromEntries(
 			Object.entries(PALETTE).map(([role, color]) => [
 				role,
-				['ink', 'cream'].includes(role)
+				['ink', 'cream', 'portalChill', 'portalSpicy', 'portalChaos'].includes(role)
 					? color
 					: new THREE.Color(color).lerp(cream, tune.lobby.style.pastel).getHex(),
 			]),
@@ -58,6 +59,16 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 		intro.t = Math.min(intro.time, intro.t + dt)
 		fadeIntro()
 	})
+	// The camera holds on the props and slides only once you walk out past them.
+	const follow = { x: 0, z: 0 }
+	run.system('present', ({ dt }) => {
+		const f = tune.lobby.frame,
+			p = hero.body.position
+		const past = (v, edge) => Math.sign(v) * Math.max(0, Math.abs(v) - edge)
+		const k = 1 - Math.exp(-f.followEase * dt)
+		follow.x += (past(p.x, f.followX) - follow.x) * k
+		follow.z += (past(p.z, f.halfZ) - follow.z) * k
+	})
 	run.camera.frame(() => {
 		const c = tune.lobby.camera
 		// Fit the whole playable plaza, not only its far half. Portrait widens the lens,
@@ -66,7 +77,7 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 		const back = c.back
 		let target = clampMap({
 			x: Math.max(-tune.lobby.bounds.halfX, Math.min(tune.lobby.bounds.halfX, c.x)),
-			z: Math.max(-tune.lobby.bounds.halfZ, Math.min(tune.lobby.bounds.halfZ, c.z)),
+			z: Math.max(-tune.lobby.frame.halfZ, Math.min(tune.lobby.frame.halfZ, c.z)),
 		})
 		const hud = document.querySelector('.moba-hud')
 		const safeBottom = Math.max(
@@ -80,15 +91,15 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 		let tangent = Math.tan((c.fov * Math.PI) / 360) * scale
 		for (let i = 0; i < c.fitPasses; i++) {
 			const pixels = innerHeight / (2 * tangent)
-			const dz = tune.lobby.bounds.halfZ - baseZ
+			const dz = tune.lobby.frame.halfZ - baseZ
 			const bottom = innerHeight / 2 + (pixels * sin * dz) / (distance - cos * dz)
 			const k = (safeBottom - innerHeight / 2) / pixels
 			if (bottom > safeBottom && sin + k * cos > tune.collision.epsilon)
 				target = clampMap({
 					...target,
-					z: tune.lobby.bounds.halfZ - (k * distance) / (sin + k * cos),
+					z: tune.lobby.frame.halfZ - (k * distance) / (sin + k * cos),
 				})
-			const far = -tune.lobby.bounds.halfZ - target.z
+			const far = -tune.lobby.frame.halfZ - target.z
 			const head = (hero.body.radius + hero.body.halfHeight) * 2
 			const top =
 				innerHeight / 2 + (pixels * (sin * far - cos * head)) / (distance - cos * far - sin * head)
@@ -103,13 +114,18 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 			x: target.x + (eye.x - target.x) * out,
 			z: target.z + (eye.z - target.z) * out,
 		})
-		return { eye: { ...far, y: c.height * out }, target: { ...target, y: 0 }, fov }
+		return {
+			eye: { x: far.x + follow.x, y: c.height * out, z: far.z + follow.z },
+			target: { x: target.x + follow.x, y: 0, z: target.z + follow.z },
+			fov,
+		}
 	})
 	app.camera.update(0)
 	let mouse = false
 	let touch = options.device ? options.device === 'touch' : matchMedia('(any-hover: none)').matches
 	const readySeats = sim.readySeats
-	const props = createLobbyProps(app.scene, el, gallery, readySeats, hero.id, ready)
+	const props = createLobbyProps(app.scene, el, gallery, readySeats, hero.id)
+	const floor = createLobbyFloor(app.scene, app.renderer)
 	props.syncSeats()
 	const stamp = el.querySelector('.lobby-pick-stamp')
 	const strip = createHeroStrip({
@@ -195,6 +211,7 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 			if (fact.ability === 'galleryShot') finishGalleryShot()
 			setup.difficulty = fact.difficulty
 			props.selectDifficulty()
+			syncDifficulty()
 			const url = new URL(location.href)
 			url.searchParams.set('bots', fact.difficulty)
 			history.replaceState(null, '', url)
@@ -258,6 +275,13 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 	let previous = app.input.pad()?.buttons.slice() ?? []
 	let blockedPad = new Set(previous.flatMap((held, i) => (held ? [i] : [])))
 	const backButton = el.querySelector('.front-return')
+	// The plaza's one difficulty readout: the targets are how you pick, this names the key.
+	const difficultyButton = el.querySelector('.lobby-difficulty')
+	difficultyButton.onclick = () => cycleDifficulty()
+	function syncDifficulty() {
+		difficultyButton.querySelector('b').textContent = gallery.difficulty
+	}
+	syncDifficulty()
 	const returnSplash = () => {
 		transferred = true
 		app.modes.start('moba-front', { options: { setup, backdrop, heldKeys: [...heldKeys] } })
@@ -442,10 +466,11 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 		if (device === nextDevice) return
 		device = nextDevice
 		el.dataset.device = device
-		props.setDevice(device)
 		strip.setDevice(device)
 		backButton.querySelector('kbd').textContent =
 			device === 'gamepad' ? 'B' : device === 'keyboard' ? 'Esc' : ''
+		difficultyButton.querySelector('kbd').textContent =
+			device === 'gamepad' ? '✛↓' : device === 'keyboard' ? 'G' : ''
 	})
 	// Screen changes drop pending casts/orders. The device reset requires a fresh press;
 	// inherited navigation keys and the initial pad buttons also have their own release guard.
@@ -484,6 +509,7 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 			numbers.dispose()
 			strip.dispose()
 			props.dispose()
+			floor.dispose()
 			canvas.classList.remove('front-canvas')
 			parent.insertBefore(canvas, next)
 			el.remove()

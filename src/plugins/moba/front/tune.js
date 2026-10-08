@@ -38,7 +38,7 @@ export const tune = {
 	},
 	// The Numbers sheet's reference distance, not an animated portrait.
 	preview: { distance: 8 },
-	parallax: { depth: 0.012, response: 0.18, settle: 0.05 },
+	parallax: { depth: 0.009, response: 0.18, settle: 0.05 },
 	// Backdrop shots in the 1440 × 900 frame: `lift` raises it (negative tilts up to the sky),
 	// `zoom` scales on Fletcher's ridge point and `time` is the move into the shot. `depth`
 	// multiplies both per layer, far to near; `ease` is the in-out power every front move shares.

@@ -175,6 +175,7 @@ export default function moba(app, map) {
 							readyRoster: practiceRoster(local, difficulty, setup.picks),
 							spawns: { [local]: tune.lobby.marks[setup.picks[local].team === 'B' ? 3 : 0] },
 							bounds: tune.lobby.bounds,
+							posts: tune.lobby.dummyPosts,
 							respawn: tune.lobby.respawn,
 							footprint: gallery.contact,
 						}),

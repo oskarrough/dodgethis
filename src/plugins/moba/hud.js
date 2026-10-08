@@ -27,8 +27,9 @@ import {
 const SLOTS = ['slot1', 'slot2', 'slot3']
 const KEYS = { keyboard: ['Q', 'W', 'E'], gamepad: ['RB', 'RT', 'LB'] }
 // Key-glyph stickers from the hero's own kit, for the active device. Numbers live in the cards.
+// The plaza shows none: its ability tiles already carry their keys.
 function helpGlyphs(device, abilities, carrying, lobby = false) {
-	if (lobby && device === 'touch') return ''
+	if (lobby) return ''
 	const names = SLOTS.map((slot) => abilityName(abilities?.[slot]).toLowerCase())
 	const pad = device === 'gamepad'
 	const slots = carrying
@@ -39,25 +40,17 @@ function helpGlyphs(device, abilities, carrying, lobby = false) {
 				[['L'], 'move'],
 				...slots,
 				[['A'], 'attack'],
-				...(lobby
-					? []
-					: [
-							[['B'], 'cancel'],
-							[['Y'], 'inspect'],
-							[['Start'], 'pause'],
-						]),
+				[['B'], 'cancel'],
+				[['Y'], 'inspect'],
+				[['Start'], 'pause'],
 			]
 		: [
 				[['RMB'], 'move'],
 				...slots,
 				[['S'], 'stop'],
-				...(lobby
-					? []
-					: [
-							[['Space'], 'follow'],
-							[['I'], 'inspect'],
-							[['Esc'], 'pause'],
-						]),
+				[['Space'], 'follow'],
+				[['I'], 'inspect'],
+				[['Esc'], 'pause'],
 			]
 	return glyphs
 		.map(([keys, label]) => `<span>${keys.map((k) => `<kbd>${k}</kbd>`).join('')}${label}</span>`)

@@ -147,21 +147,12 @@ export const tune = {
 			width: 1.5,
 			depth: 1.3,
 			fillTime: 1,
-			lineX: 3.35,
-			lineLength: 5.5,
-			lineWidth: 0.08,
-			lineInkWidth: 0.18,
 			borderWidth: 0.045,
 			boxY: 0.19,
 			borderY: 0.185,
 			fillY: 0.195,
-			lineInkY: 0.2,
-			lineY: 0.205,
 			cardY: 0.21,
 			cardScale: 0.36,
-			labelY: 0.1,
-			labelForward: 0.4,
-			labelOutward: 1.25,
 			promptRadius: 1.5,
 			walkSound: { freq: 440, slideTo: 560, dur: 0.1, gain: 0.06, type: 'sine' },
 			enterSound: { freq: 680, slideTo: 760, dur: 0.12, gain: 0.05, type: 'triangle' },
@@ -190,13 +181,20 @@ export const tune = {
 		},
 		// The plaza's camera starts `distance`× back along its view ray; the canvas fades in from `fadeFrom` of the move.
 		intro: { distance: 4, fadeFrom: 0.6 },
-		// These also clamp dummy bodies; keep the gallery >2 m from their actual lanes, not their authored posts.
-		bounds: { halfX: 4, halfZ: 6.2 },
-		// The plaza's own tabletop: ground past the walkable bounds, and the hedge lip around it.
-		floor: { pad: 1.2, lip: 0.3 },
+		// Where you can walk: far past the props, so the void feels open. The floor's collider ends at 13.
+		bounds: { halfX: 12, halfZ: 12 },
+		// The props the camera frames; it slides to follow once you leave `followX` or this depth.
+		frame: { halfZ: 6.2, followX: 5, followEase: 6 },
+		// The plaza's training dummies strafe `dummies.span` either side of these; keep the gallery >2 m off.
+		dummyPosts: [
+			{ x: -1.5, z: -5.8 },
+			{ x: 1.5, z: -5.8 },
+		],
+		// The plaza is a void: one ground wide enough that its edge never shows, and its paper.
+		floor: { size: 400 },
 		onlineNotice: 'The online plaza is not ready yet. Play local practice.',
-		mark: { radius: 0.4, lineWidth: 0.04, y: 0.135, ringY: 0.15 },
 		respawn: 0.5,
+		// Where you spawn and recover: index 0 for team A, 3 for team B. Not drawn.
 		marks: [
 			{ x: -1.4, z: -1.25 },
 			{ x: -1.4, z: 0 },

@@ -57,7 +57,7 @@ export function createMapScope(scene, RAPIER, step) {
 }
 
 // Printed road, shaded flanks and low cover; all collision geometry comes from obstacles.js.
-// The 'plaza' kind draws only a small walled tabletop and no pillars.
+// The 'plaza' kind draws only an endless cream ground: no walls, no pillars.
 export function buildMap(scene, world, RAPIER, kind = 'lane') {
 	const m = tune.map
 	const group = new THREE.Group()
@@ -85,41 +85,8 @@ export function buildMap(scene, world, RAPIER, kind = 'lane') {
 		for (const g of geometries) g.dispose()
 	}
 	const buildPlaza = () => {
-		const f = tune.lobby.floor
-		const hx = tune.lobby.bounds.halfX + f.pad
-		const hz = tune.lobby.bounds.halfZ + f.pad
-		add(new THREE.BoxGeometry(hx * 2, FLOOR.thickness, hz * 2), shade, 0, -FLOOR.thickness / 2, 0)
-		add(
-			new THREE.PlaneGeometry(hx * 2, hz * 2).rotateX(-Math.PI / 2),
-			cream,
-			0,
-			m.printLayers.plaza,
-			0,
-		)
-		const rim = []
-		for (const [w, d, x, z] of [
-			[hx * 2, m.lineWidth, 0, -hz + m.lineWidth / 2],
-			[hx * 2, m.lineWidth, 0, hz - m.lineWidth / 2],
-			[m.lineWidth, hz * 2, -hx + m.lineWidth / 2, 0],
-			[m.lineWidth, hz * 2, hx - m.lineWidth / 2, 0],
-		])
-			rim.push(
-				new THREE.PlaneGeometry(w, d).rotateX(-Math.PI / 2).translate(x, m.printLayers.seams, z),
-			)
-		print(rim, ink, 'moba-plaza-rim')
-		// A low scalloped hedge along the far and side edges frames the court like the lane's.
-		for (const [x, z, halfX, halfZ] of [
-			[0, -hz - f.lip, hx + f.lip, f.lip],
-			[-hx - f.lip, 0, f.lip, hz],
-			[hx + f.lip, 0, f.lip, hz],
-		])
-			add(
-				new RoundedBoxGeometry(halfX * 2, m.hedgeHeight, halfZ * 2, 1, f.lip),
-				shade,
-				x,
-				m.hedgeHeight / 2,
-				z,
-			)
+		const size = tune.lobby.floor.size
+		add(new THREE.PlaneGeometry(size, size).rotateX(-Math.PI / 2), cream, 0, m.printLayers.plaza, 0)
 	}
 	const buildLane = () => {
 		add(

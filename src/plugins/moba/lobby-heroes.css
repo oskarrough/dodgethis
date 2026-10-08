@@ -1,13 +1,16 @@
-/* The plaza's hero strip: fighting-game tiles docked beside the HUD's hero card. */
+/* The plaza's hero strip: fighting-game tiles stacked down the left edge. */
 .lobby-hero-strip {
-	--strip-h: 84px;
+	--tile: clamp(52px, min(6.5vw, 10vh), 92px);
 	position: fixed;
+	top: 50%;
+	left: max(14px, 1.6vw);
 	z-index: 4;
 	display: flex;
-	align-items: flex-end;
-	gap: calc(var(--strip-h) * 0.08);
-	height: var(--strip-h);
-	font: 400 calc(var(--strip-h) * 0.15) / 1 var(--ui-font);
+	flex-direction: column;
+	align-items: flex-start;
+	gap: calc(var(--tile) * 0.14);
+	translate: 0 -50%;
+	font: 400 calc(var(--tile) * 0.2) / 1 var(--ui-font);
 	color: var(--ui-text);
 }
 .lobby-hero-strip svg .tone {
@@ -40,7 +43,7 @@
 	left: -0.6em;
 	z-index: 2;
 	margin: 0;
-	font-size: max(12px, 0.9em);
+	font-size: clamp(12px, 0.9vw, 15px);
 	rotate: -8deg;
 }
 .moba-front .lobby-hero-strip-key:empty {
@@ -52,8 +55,8 @@
 	display: grid;
 	grid-template-rows: 1fr auto;
 	flex: none;
-	width: calc(var(--strip-h) * 0.5);
-	height: calc(var(--strip-h) * 0.62);
+	width: var(--tile);
+	height: calc(var(--tile) * 1.1);
 	padding: 0;
 	border: clamp(2px, calc(var(--strip-h) * 0.035), 4px) solid var(--ui-text);
 	border-radius: 0.3em;
@@ -65,7 +68,8 @@
 	transform: skewX(-8deg);
 	transition:
 		transform 0.12s cubic-bezier(0.3, 1.8, 0.5, 1),
-		box-shadow 0.12s;
+		box-shadow 0.12s,
+		translate 0.18s cubic-bezier(0.3, 1.8, 0.5, 1);
 }
 .moba-front .lobby-hero-strip button[data-hero='fletcher'] {
 	--hero: var(--ui-blue);
@@ -76,8 +80,14 @@
 .moba-front .lobby-hero-strip button[data-hero='carom'] {
 	--hero: var(--ui-green);
 }
-.moba-front .lobby-hero-strip button > * {
+/* Face and text stand upright; the name bar keeps the frame's slant. */
+.moba-front .lobby-hero-strip-face,
+.moba-front .lobby-hero-strip-name > span,
+.moba-front .lobby-hero-strip small {
 	transform: skewX(8deg);
+}
+.lobby-hero-strip-name > span {
+	display: inline-block;
 }
 .lobby-hero-strip-face {
 	display: grid;
@@ -92,7 +102,6 @@
 	filter: drop-shadow(1px 2px 0 var(--ui-text));
 }
 .lobby-hero-strip-name {
-	display: none;
 	padding: 0.2em 0 0.15em;
 	background: var(--ui-text);
 	font-size: 0.85em;
@@ -105,10 +114,9 @@
 	transform: skewX(-8deg) translateY(-3px) rotate(-2deg);
 	box-shadow: 4px 7px 0 var(--ui-text);
 }
-/* Yours: full height, gold frame, name bar. */
+/* Yours: slid out from the edge, gold frame, gold name bar. */
 .moba-front .lobby-hero-strip button[aria-pressed='true'] {
-	width: calc(var(--strip-h) * 0.8);
-	height: var(--strip-h);
+	translate: calc(var(--tile) * 0.18) 0;
 	border-color: var(--ui-gold);
 	box-shadow:
 		0 0 0 3px var(--ui-text),
@@ -116,7 +124,6 @@
 	z-index: 1;
 }
 .moba-front .lobby-hero-strip button[aria-pressed='true'] .lobby-hero-strip-name {
-	display: block;
 	background: var(--ui-gold);
 	color: var(--ui-text);
 }
@@ -131,9 +138,13 @@
 .moba-front .lobby-hero-strip button[aria-disabled='true'] svg {
 	filter: brightness(0) opacity(0.3);
 }
+.moba-front .lobby-hero-strip button[aria-disabled='true'] .lobby-hero-strip-name {
+	background: var(--ui-muted);
+	color: var(--ui-cream);
+}
 .lobby-hero-strip small {
 	position: absolute;
-	top: 50%;
+	top: 40%;
 	left: 50%;
 	translate: -50% -50%;
 	padding: 0.1em 0.3em;

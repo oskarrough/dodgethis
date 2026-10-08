@@ -8,29 +8,59 @@
 .moba-front.front-lobby .front-canvas {
 	pointer-events: auto;
 }
-.front-lobby .front-return {
+/* The overlay's corner buttons: square-ish tiles with their key stuck on the top-left corner,
+   like the ability slots. */
+.front-lobby .front-return,
+.front-lobby .lobby-difficulty {
 	position: absolute;
-	top: max(20px, 4vh);
-	left: max(16px, 3vw);
-	z-index: 1;
+	top: max(14px, 1.6vw);
+	z-index: 4;
 	display: flex;
 	align-items: center;
-	gap: 0.4em;
-	width: auto;
-	padding: 0.25em 0.7em;
-	border: 0.12em solid var(--ui-text);
-	border-radius: 0.5em;
+	justify-content: center;
+	height: clamp(38px, 3.2vw, 52px);
+	padding: 0 0.6em;
+	border: 3px solid var(--ui-text);
+	border-radius: 0.4em;
 	background: var(--ui-cream);
 	box-shadow: 3px 4px 0 var(--ui-text);
 	color: var(--ui-text);
-	font: 400 clamp(18px, 1.8vw, 28px) / 1 var(--ui-font);
+	font: 400 clamp(16px, 1.4vw, 22px) / 1 var(--ui-font);
 	cursor: pointer;
 }
-.front-lobby .front-return kbd:empty {
-	display: none;
+.front-lobby .front-return {
+	left: max(14px, 1.6vw);
+	aspect-ratio: 1;
+	padding: 0;
 }
-.front-lobby kbd {
-	margin-left: 0.5em;
+.front-lobby .front-return svg {
+	display: block;
+	width: 55%;
+	height: 55%;
+}
+.front-lobby .lobby-difficulty {
+	right: max(14px, 1.6vw);
+	gap: 0.35em;
+}
+.front-lobby .lobby-difficulty b {
+	font-weight: 400;
+	text-transform: capitalize;
+}
+.front-lobby .front-return kbd,
+.front-lobby .lobby-difficulty kbd {
+	position: absolute;
+	top: -0.7em;
+	left: -0.6em;
+	min-width: 0;
+	margin: 0;
+	padding: 0.1em 0.35em 0;
+	border-width: 2px;
+	font-size: clamp(12px, 0.9vw, 15px);
+	rotate: -8deg;
+}
+.front-lobby .front-return kbd:empty,
+.front-lobby .lobby-difficulty kbd:empty {
+	display: none;
 }
 /* The pick slam: the name lands huge, overshoots, holds, and slides off. */
 .lobby-pick-stamp {
@@ -87,72 +117,24 @@
 		animation-duration: 0.01s;
 	}
 }
+/* Difficulty words read as paint under each target, not as buttons. */
 .lobby-label {
-	white-space: nowrap;
 	position: absolute;
 	top: 0;
 	left: 0;
-	transform: translate(-50%, -50%);
 	z-index: 1;
-	padding: 0.22em 0.55em 0.18em;
-	border: clamp(3px, 0.28vw, 4px) solid var(--ui-text);
-	border-radius: clamp(10px, 1.1vw, 16px);
-	background: var(--ui-cream);
-	box-shadow: 3px 4px 0 var(--ui-text);
-	rotate: -2deg;
-	text-align: center;
-	font: 400 clamp(11px, 1.05vw, 17px) / 1 var(--ui-font);
+	transform: translate(-50%, -50%);
+	translate: 0 2.6em;
+	color: var(--ui-text);
+	font: 400 clamp(13px, 1.25vw, 20px) / 1 var(--ui-font);
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	white-space: nowrap;
+	opacity: 0.45;
 	pointer-events: none;
 }
-.lobby-label:nth-of-type(even) {
-	rotate: 2deg;
-}
-.lobby-label small {
-	display: block;
-	margin-top: 0.15em;
-	font-size: 0.5em;
-	letter-spacing: 0.04em;
-	text-transform: uppercase;
-}
 .lobby-label[data-picked='true'] {
-	background: var(--ui-gold);
-	box-shadow: 6px 8px 0 var(--ui-text);
-	rotate: 0deg;
-	scale: 1.08;
-}
-.lobby-gallery-label {
-	padding: 0.1em 0.2em;
-	line-height: 1;
-}
-.lobby-gallery-label {
-	translate: 0 3.4em;
-}
-.lobby-gallery-label small {
-	display: none;
-}
-.lobby-gallery-label[data-picked='true'] small:has(kbd) {
-	display: block;
-}
-.moba-front .lobby-seat-label {
-	background: var(--ui-cream);
-	font: 400 clamp(10px, 0.9vw, 14px) / 1 var(--ui-font);
-}
-.moba-front .lobby-seat-label[data-mine='false'] small {
-	display: none;
-}
-.moba-front .lobby-seat-label[data-seat='B:1'] {
-	translate: -55% 0;
-}
-.moba-front .lobby-seat-label[data-mine='true'] {
-	translate: 0 -2em;
-	background: var(--ui-button);
-	font-size: clamp(13px, 1.3vw, 21px);
-	z-index: 2;
-	pointer-events: auto;
-	cursor: pointer;
-}
-.moba-front .lobby-seat-label:focus-visible {
-	outline: 0.2em solid var(--ui-text);
+	opacity: 1;
 }
 .lobby-numbers {
 	position: fixed;
@@ -241,25 +223,4 @@
 	border: 0.12em solid var(--ui-text);
 	border-radius: 0.25em;
 	text-align: center;
-}
-.lobby-label kbd {
-	margin: 0 0.2em 0 0;
-	padding: 0 0.3em;
-	border: 0.1em solid var(--ui-text);
-	border-radius: 0.25em;
-	background: var(--ui-gold);
-	font: inherit;
-}
-@media (max-width: 600px) {
-	.lobby-gallery-label[data-difficulty='hard'] {
-		translate: 0 4.4em;
-	}
-}
-/* Bot seats read as a quiet name tag so the right-hand column never runs labels together. */
-.lobby-seat-label[data-mine='false'] {
-	font-size: clamp(9px, 0.85vw, 14px);
-}
-.front-lobby .front-return kbd {
-	margin-left: 0;
-	font-size: 0.6em;
 }

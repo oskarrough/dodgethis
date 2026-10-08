@@ -49,6 +49,7 @@ export function createSim({
 	lane: withLane = false,
 	spawns = null, // { participantId: { x, z } }; copied for death/recovery.
 	bounds = null, // { halfX, halfZ }; body centres stay one radius inside.
+	posts = DUMMY_POSTS, // Where the training dummies strafe; the plaza brings its own.
 	respawn: respawnSeconds = null, // Hero recovery override, in seconds; dummies keep their timer.
 	readyRoster = [], // Full lobby seats; humans are the hero participants, the rest are cardboard bots.
 	lobby = false, // Combat allegiance A for heroes, B for dummies; seatTeam retains the pick.
@@ -254,7 +255,7 @@ export function createSim({
 					t,
 				)
 		}
-	const dummies = (withLane ? [] : DUMMY_POSTS).map((post, i) => ({
+	const dummies = (withLane ? [] : posts).map((post, i) => ({
 		id: `dummy${i + 1}`,
 		team: 'B',
 		post,

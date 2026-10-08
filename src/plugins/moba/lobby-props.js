@@ -106,7 +106,7 @@ export function createDifficultyGallery({ local, difficulty, present, dummies = 
 }
 
 // Handmade cardboard props, not combatants. All animation reads the interpolated sim clock.
-export function createLobbyProps(scene, el, gallery, readySeats, local, onReady) {
+export function createLobbyProps(scene, el, gallery, readySeats, local) {
 	const v = tune.lobby.cutout
 	const root = new THREE.Group()
 	root.name = 'lobby-props'
@@ -121,6 +121,11 @@ export function createLobbyProps(scene, el, gallery, readySeats, local, onReady)
 		cream = material('cream'),
 		cardboard = material('ammoShaft')
 	const colors = { circle: material('teamA'), square: material('bowl') }
+	const difficultyColors = {
+		easy: material('portalChill'),
+		normal: material('portalSpicy'),
+		hard: material('portalChaos'),
+	}
 	const picked = material('ammo')
 	function mesh(geometry, mat, parent) {
 		owned.push(geometry)
@@ -199,7 +204,7 @@ export function createLobbyProps(scene, el, gallery, readySeats, local, onReady)
 		board.position.y = g.height / 2
 		const print = mesh(
 			new THREE.PlaneGeometry(g.width - v.thickness, g.height - v.thickness),
-			cream,
+			difficultyColors[stand.id],
 			card,
 		)
 		print.position.set(0, g.height / 2, v.thickness / 2 + g.printGap)
@@ -217,40 +222,12 @@ export function createLobbyProps(scene, el, gallery, readySeats, local, onReady)
 		const label = document.createElement('div')
 		label.className = 'lobby-label lobby-gallery-label'
 		label.dataset.difficulty = stand.id
-		label.innerHTML = `<span>${stand.id.replace(/^./, (c) => c.toUpperCase())}</span><small></small>`
+		label.textContent = stand.id
 		el.append(label)
 		return { stand, card, pad, label }
 	})
-	// The six recovery marks are real ground prints, so their camera fit is visible too.
-	const mark = tune.lobby.mark
-	for (const position of tune.lobby.marks) {
-		const fill = mesh(new THREE.CircleGeometry(mark.radius, v.segments), cream, root)
-		fill.rotation.x = -Math.PI / 2
-		fill.position.set(position.x, mark.y, position.z)
-		const border = mesh(
-			new THREE.RingGeometry(mark.radius - mark.lineWidth, mark.radius, v.segments),
-			ink,
-			root,
-		)
-		border.rotation.x = -Math.PI / 2
-		border.position.set(position.x, mark.ringY, position.z)
-	}
 	const r = tune.lobby.ready
 	const seatColors = { A: material('teamA'), B: material('teamB') }
-	for (const sign of [-1, 1]) {
-		const line = mesh(
-			new THREE.PlaneGeometry(r.lineInkWidth, r.lineLength).rotateX(-Math.PI / 2),
-			ink,
-			root,
-		)
-		line.position.set(sign * r.lineX, r.lineInkY, r.z)
-		const chalk = mesh(
-			new THREE.PlaneGeometry(r.lineWidth, r.lineLength).rotateX(-Math.PI / 2),
-			cream,
-			root,
-		)
-		chalk.position.set(sign * r.lineX, r.lineY, r.z)
-	}
 	const seatProps = readySeats.seats.map((seat) => {
 		const group = new THREE.Group()
 		group.position.set(seat.x, 0, seat.z)
@@ -284,14 +261,7 @@ export function createLobbyProps(scene, el, gallery, readySeats, local, onReady)
 				cutout(definition, g, seatColors[seat.team])
 				return { id: definition.id, group: g }
 			})
-		const label = document.createElement('button')
-		label.type = 'button'
-		label.className = 'lobby-label lobby-seat-label'
-		label.dataset.seat = seat.id
-		label.onclick = onReady
-		label.innerHTML = '<span></span><small></small>'
-		el.append(label)
-		return { seat, fill, cards, label }
+		return { seat, fill, cards }
 	})
 	function syncSeats() {
 		for (const p of seatProps) {
@@ -299,13 +269,6 @@ export function createLobbyProps(scene, el, gallery, readySeats, local, onReady)
 				mine = owner?.id === local
 			for (const card of p.cards) card.group.visible = !!owner?.bot && owner.heroId === card.id
 			p.fill.material = mine ? picked : seatColors[p.seat.team]
-			p.label.dataset.mine = String(mine)
-			p.label.disabled = !mine
-			p.label.hidden = !mine
-			if (!mine) continue
-			const key = device === 'gamepad' ? 'Start' : device === 'touch' ? '' : 'Enter'
-			if (p.label.firstChild.textContent !== 'Ready') p.label.firstChild.textContent = 'Ready'
-			setHelp(p.label.lastChild, key, device === 'touch' ? 'Stand here' : 'go')
 		}
 	}
 	// Presentation-only inspection targets: these never enter the sim's unit database.
@@ -349,52 +312,26 @@ export function createLobbyProps(scene, el, gallery, readySeats, local, onReady)
 		label.style.left = `${((point.x + 1) * innerWidth) / 2}px`
 		label.style.top = `${((1 - point.y) * innerHeight) / 2}px`
 	}
-	let device = 'keyboard'
-	// A key sticker on the prop it acts on; written only when it changes.
-	function setHelp(el, key, text) {
-		const html = key ? `<kbd>${key}</kbd> ${text}` : text
-		if (el.dataset.help !== html) {
-			el.dataset.help = html
-			el.innerHTML = html
-		}
-	}
 	function labels() {
 		for (const p of galleryProps) {
 			const chosen = p.stand.id === gallery.difficulty
 			p.pad.visible = chosen
 			p.label.dataset.picked = String(chosen)
-			setHelp(
-				p.label.querySelector('small'),
-				chosen && device !== 'touch' ? (device === 'gamepad' ? '✛↓' : 'G') : '',
-				chosen ? (device === 'touch' ? 'Picked' : 'next') : '',
-			)
 		}
 	}
+	labels()
 	return {
 		galleryProps,
 		seatProps,
 		inspectables,
 		syncSeats,
 		selectDifficulty: labels,
-		setDevice(next) {
-			device = next
-			labels()
-			syncSeats()
-		},
 		update(tick, camera, step) {
 			for (const p of seatProps) {
 				const progress = readySeats.progress(p.seat, tick, step)
 				p.fill.visible = progress > 0
 				p.fill.scale.x = progress
 				p.fill.position.x = ((progress - 1) * (r.width - r.borderWidth * 2)) / 2
-				point
-					.set(
-						p.seat.x + (p.seat.team === 'A' ? -1 : 1) * r.labelOutward,
-						r.labelY,
-						p.seat.z + r.labelForward,
-					)
-					.project(camera)
-				place(p.label)
 			}
 			for (const p of galleryProps) {
 				p.card.rotation.x = gallery.angle(p.stand, tick, step)
@@ -406,7 +343,6 @@ export function createLobbyProps(scene, el, gallery, readySeats, local, onReady)
 		dispose() {
 			root.removeFromParent()
 			for (const p of galleryProps) p.label.remove()
-			for (const p of seatProps) p.label.remove()
 			for (const item of owned) item.dispose()
 		},
 	}
