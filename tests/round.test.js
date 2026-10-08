@@ -202,6 +202,10 @@ describe('contact facts', () => {
 	})
 
 	test('shot, pickup and dash feedback each emit once, after the state actually changes', () => {
+		// Keep randomly scattered spare ammo out of the pickup pool: this fixture
+		// checks feedback for retrieving the shot, not which grounded arrow is nearest.
+		round.units[1].heldArrow = round.arrows[1]
+		round.arrows[1].hold()
 		const shot = round.human.heldArrow
 		round.looseHuman({ x: 0, z: -1 }, 15)
 		round.looseHuman({ x: 0, z: -1 }, 15) // empty-handed: no second shot
@@ -214,7 +218,7 @@ describe('contact facts', () => {
 		round.step(1 / 60, STILL)
 		round.step(1 / 60, STILL)
 		expect(ctx.actions.map((event) => event.type)).toEqual(['shot', 'pickup'])
-		expect(round.human.heldArrow).toBe(shot)
+		expect(round.human.heldArrow?.id).toBe(shot.id)
 		expect(ctx.actions[1].source.isHuman).toBe(true)
 		// A dash reports once too, and only when it was accepted, with its latched direction.
 		round.human.aim.set(1, 0, 0)
