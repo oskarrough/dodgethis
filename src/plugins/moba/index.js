@@ -110,7 +110,7 @@ export default function moba(app, map) {
 			const local = app.session.local[0]
 			app.setPalette(
 				isFlagfall
-					? tune.flagfall.palette
+					? { ...tune.overthrowTerrain.palette, ...tune.flagfall.palette }
 					: !isLobby && setup.map === 'overthrow'
 						? tune.overthrowTerrain.palette
 						: {},
@@ -504,7 +504,7 @@ export default function moba(app, map) {
 				})
 
 			run.signal.addEventListener('abort', () => {
-				if (!isLobby && setup.map === 'overthrow') app.setPalette({})
+				if (!isLobby) app.setPalette({})
 				onboarding?.dispose()
 				cursor.dispose()
 				feedback.reset()

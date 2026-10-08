@@ -285,16 +285,14 @@ function rockGeometry(outline, s) {
 
 // Four broken runs rather than a perimeter cage. The safe rectangle is inside every possible
 // torn outline; reserve the widest foot plus the bow before placing anything on it.
-function createFences() {
-	const s = tune.lobby.fence,
-		floor = tune.lobby.floor
+export function createFences(floor, s, y, name, depthMaterial = null) {
 	const clearance =
 		floor.jag + s.edgeMargin + Math.max(s.capRadius, s.bollardRadius) + Math.abs(s.bow)
 	const halfX = floor.halfX - clearance,
 		halfZ = floor.halfZ - clearance
 	const group = new THREE.Group()
-	group.name = 'lobby-fences'
-	group.position.y = tune.map.printLayers.lobby
+	group.name = name
+	group.position.y = y
 	const batches = { posts: [], caps: [], bollards: [], wire: [] }
 	const wire = []
 	const up = new THREE.Vector3(0, 1, 0)
@@ -389,15 +387,25 @@ function createFences() {
 			colors.push(color.r * shade, color.g * shade, color.b * shade)
 		}
 		geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3))
-		const mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ vertexColors: true }))
+		const mesh = new THREE.Mesh(
+			geometry,
+			new THREE.MeshBasicMaterial({
+				vertexColors: true,
+				depthWrite: !depthMaterial,
+				polygonOffset: !!depthMaterial,
+				polygonOffsetFactor: -1,
+				polygonOffsetUnits: -4,
+			}),
+		)
 		mesh.layers.set(FORWARD_LAYER)
 		group.add(mesh)
+		if (depthMaterial) group.add(new THREE.Mesh(geometry, depthMaterial))
 	}
 	const geometry = new THREE.BufferGeometry()
 	geometry.setAttribute('position', new THREE.Float32BufferAttribute(wire, 3))
 	const mesh = new THREE.LineSegments(
 		geometry,
-		new THREE.LineBasicMaterial({ color: s.colors.wire }),
+		new THREE.LineBasicMaterial({ color: s.colors.wire, depthWrite: !depthMaterial }),
 	)
 	mesh.layers.set(FORWARD_LAYER)
 	group.add(mesh)
@@ -442,7 +450,7 @@ export function createLobbyFloor(scene, renderer) {
 	rock.layers.set(FORWARD_LAYER)
 	rock.renderOrder = -3
 	rock.frustumCulled = false
-	const fences = createFences()
+	const fences = createFences(s, tune.lobby.fence, tune.map.printLayers.lobby, 'lobby-fences')
 	scene.add(sheet, rock, fences)
 	return {
 		dispose() {

@@ -27,8 +27,9 @@ The slowly animating ring around the ball spawn is the reference for information
 ## Ground and lane markings
 
 - Overthrow is pale tarmac with quiet chalk sidelines, service lines and a centre circle, on a finite torn rock edge above a colder violet/teal surround. Terrain uses lineless forward colour over matching opaque depth geometry; no imported textures, cracks, dashed ink centreline or flank dots. Its presentation controls apply on restart and never change walking bounds or cover.
+- Flagfall calls the same terrain, chalk, torn edge, fences and cover builders with its two-lane layout. The yard, both lanes and base courtyards share one pale tarmac surface. Beyond the edge are low dusk-violet dunes, taking only the value and mood of the rejected fight concept's background. There is no approved Flagfall concept to follow. Camera, units and HUD stay shared; `match-terrain.js` owns the common match skin and `tune.flagfall` its layout and background.
 - Small team kerbs retain ownership along the lane. The bases keep their team hatching and structures their printed team pads, so home, healing and targets stay readable. The animated Ball-spawn ring remains unchanged over the chalk circle. The court is the brightest world surface; friendly tells keep their ink keyline (see VFX).
-- Hedges use the new `hedge` role: a deeper, bluer green than the flanks, with a scalloped top, so cover reads as a wall against shots. Pillars stay `scenery` with cream caps.
+- Both maps share scalloped hedges and rounded cover in `courtShade`, with Overthrow's muted green scenery palette. Pillars stay `scenery` with cream caps.
 
 ## Structure silhouettes
 

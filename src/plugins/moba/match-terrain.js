@@ -1,18 +1,22 @@
 import * as THREE from 'three'
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'
 import { FORWARD_LAYER, makeStyleMaterial } from '../../core/stylepass.js'
-import { floorOutline, floorShape } from './lobby-floor.js'
-import { FLOOR } from './obstacles.js'
-import { tune } from './tune.js'
+import { createFences, floorOutline, floorShape } from './lobby-floor.js'
 
 // A presentation skin, never a source of walking bounds or colliders. The torn edge sits
 // outside the entire playable rectangle even at the extremes of the restart controls.
-export function createOverthrowTerrain(parent) {
-	const s = tune.overthrowTerrain
-	const m = tune.map
+export function createMatchTerrain(
+	parent,
+	layout,
+	s,
+	chalkLayout,
+	{ background, fence, footprints } = {},
+) {
+	const bounds = layout.bounds
+	const name = layout.name.toLowerCase()
 	const extent = {
-		halfX: FLOOR.halfX + s.margin + s.jag,
-		halfZ: FLOOR.halfZ + s.margin + s.jag,
+		halfX: bounds.halfX + s.margin + s.jag,
+		halfZ: bounds.halfZ + s.margin + s.jag,
 		jag: s.jag,
 		step: s.step,
 		seed: s.seed,
@@ -56,7 +60,7 @@ float courtPatch(vec2 p) {
 	const rock = own(
 		new THREE.MeshBasicMaterial({ vertexColors: true, depthWrite: false, side: THREE.DoubleSide }),
 	)
-	const surround = flat(s.colors.surround)
+	const surround = flat(background?.colors.surround ?? s.colors.surround)
 	const mesa = flat(s.colors.mesa)
 	const depth = own(makeStyleMaterial('cream', { flat: true }))
 	const rockDepth = own(makeStyleMaterial('scenery', { flat: true }))
@@ -78,7 +82,7 @@ float courtPatch(vec2 p) {
 		material.polygonOffsetFactor = -1
 		material.polygonOffsetUnits = -4
 	}
-	surface(floorShape(extent), ground, 'overthrow-tarmac', 0, s.groundY, 0, depth)
+	surface(floorShape(extent), ground, `${name}-tarmac`, 0, s.groundY, 0, depth)
 	const outline = floorOutline(extent)
 	const positions = [],
 		colors = []
@@ -118,63 +122,110 @@ float courtPatch(vec2 p) {
 	rim.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
 	rim.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3))
 	rim.computeVertexNormals()
-	surface(rim, rock, 'overthrow-rock', 0, 0, 0)
+	surface(rim, rock, `${name}-rock`, 0, 0, 0)
 	surface(
 		new THREE.PlaneGeometry(s.surroundSize, s.surroundSize).rotateX(-Math.PI / 2),
 		surround,
-		'overthrow-surround',
+		`${name}-surround`,
 		0,
 		-s.surroundDrop,
 		0,
 	)
-	// Quiet, low mesas below the court. No team colours, ammo gold or outline pass.
-	const mesas = []
-	for (let row = 1; row <= s.mesaRows; row++) {
-		for (
-			let x = -FLOOR.halfX - s.mesaSpacing;
-			x <= FLOOR.halfX + s.mesaSpacing;
-			x += s.mesaSpacing
-		) {
-			for (const side of [-1, 1]) {
-				const height = s.mesaHeight * (1 + Math.sin(x + row) * s.mesaVariation)
-				mesas.push(
-					new THREE.CylinderGeometry(
-						s.mesaRadius,
-						s.mesaRadius * s.mesaTaper,
-						height,
-						s.mesaSegments,
-					).translate(
-						x + Math.sin(row) * s.mesaRadius,
-						-s.surroundDrop + height / 2,
-						side * (extent.halfZ + row * s.mesaSpacing),
-					),
-				)
+	// The setting changes, never the stage. Quiet dunes or mesas below the same torn edge.
+	if (background) {
+		const geometry = new THREE.PlaneGeometry(
+			s.surroundSize,
+			s.surroundSize,
+			background.segments,
+			background.segments,
+		).rotateX(-Math.PI / 2)
+		const points = geometry.attributes.position
+		const duneColors = []
+		const low = new THREE.Color(background.colors.low)
+		const high = new THREE.Color(background.colors.high)
+		for (let i = 0; i < points.count; i++) {
+			const x = points.getX(i),
+				z = points.getZ(i)
+			const phase = z / background.wavelength + background.bend * Math.sin(x / background.sweep)
+			const wave = (1 + Math.sin(phase)) / 2
+			const height = background.height * wave * wave
+			points.setY(i, -s.surroundDrop + height)
+			tint.copy(low).lerp(high, wave * background.contrast)
+			duneColors.push(tint.r, tint.g, tint.b)
+		}
+		geometry.setAttribute('color', new THREE.Float32BufferAttribute(duneColors, 3))
+		geometry.computeVertexNormals()
+		surface(geometry, rock, `${name}-dunes`, 0, 0, 0)
+	} else {
+		const mesas = []
+		for (let row = 1; row <= s.mesaRows; row++) {
+			for (
+				let x = -bounds.halfX - s.mesaSpacing;
+				x <= bounds.halfX + s.mesaSpacing;
+				x += s.mesaSpacing
+			) {
+				for (const side of [-1, 1]) {
+					const height = s.mesaHeight * (1 + Math.sin(x + row) * s.mesaVariation)
+					mesas.push(
+						new THREE.CylinderGeometry(
+							s.mesaRadius,
+							s.mesaRadius * s.mesaTaper,
+							height,
+							s.mesaSegments,
+						).translate(
+							x + Math.sin(row) * s.mesaRadius,
+							-s.surroundDrop + height / 2,
+							side * (extent.halfZ + row * s.mesaSpacing),
+						),
+					)
+				}
 			}
 		}
+		surface(mergeGeometries(mesas), mesa, `${name}-mesas`, 0, 0, 0)
+		for (const geometry of mesas) geometry.dispose()
 	}
-	surface(mergeGeometries(mesas), mesa, 'overthrow-mesas', 0, 0, 0)
-	for (const geometry of mesas) geometry.dispose()
 	const strokes = []
 	const line = (width, length, x, z) =>
 		strokes.push(
 			new THREE.PlaneGeometry(width, length).rotateX(-Math.PI / 2).translate(x, s.chalkY, z),
 		)
-	// Chalk describes a court, not a road diagram: sidelines, service lines and a
-	// centre circle. The live Ball warning/orbit is still owned by ball-view.js.
-	for (const side of [-1, 1]) {
-		line((FLOOR.halfX - s.courtInset) * 2, s.chalkWidth, 0, side * (FLOOR.halfZ - s.courtInset))
-		line(s.chalkWidth, (FLOOR.halfZ - s.courtInset) * 2, side * (FLOOR.halfX - s.courtInset), 0)
-		line(s.chalkWidth, m.hedgeInnerZ * 2, side * m.hedgeInnerX, 0)
+	// Every map authors court marks, not a second ground renderer.
+	for (const { width, length, x, z } of chalkLayout.lines) line(width, length, x, z)
+	for (const { radius, x, z } of chalkLayout.circles)
+		strokes.push(
+			new THREE.RingGeometry(radius - s.chalkWidth, radius, s.chalkSegments)
+				.rotateX(-Math.PI / 2)
+				.translate(x, s.chalkY, z),
+		)
+	if (footprints)
+		for (const point of [
+			...layout.structures,
+			...layout.posts.map((p) => ({ ...p, kind: 'post' })),
+		]) {
+			const radius = footprints.radii[point.kind]
+			const geometry = own(
+				new THREE.RingGeometry(radius - footprints.footprintWidth, radius, s.chalkSegments).rotateX(
+					-Math.PI / 2,
+				),
+			)
+			const footprint = new THREE.Mesh(geometry, chalk)
+			footprint.name = `${name}-${point.kind}-footprint`
+			footprint.position.set(point.x, footprints.layers.chalk, point.z)
+			footprint.layers.set(FORWARD_LAYER)
+			footprint.renderOrder = -3
+			meshes.push(footprint)
+		}
+	if (fence) {
+		const fences = createFences(extent, fence, s.groundY, `${name}-fences`, rockDepth)
+		fences.traverse((object) => {
+			if (object.geometry) own(object.geometry)
+			if (object.material) own(object.material)
+		})
+		meshes.push(fences)
 	}
-	line(s.chalkWidth, (FLOOR.halfZ - s.courtInset) * 2, 0, 0)
-	strokes.push(
-		new THREE.RingGeometry(m.plazaRadius - s.chalkWidth, m.plazaRadius, s.chalkSegments)
-			.rotateX(-Math.PI / 2)
-			.translate(0, s.chalkY, 0),
-	)
 	const marks = new THREE.Mesh(own(mergeGeometries(strokes)), chalk)
 	for (const geometry of strokes) geometry.dispose()
-	marks.name = 'overthrow-chalk'
+	marks.name = `${name}-chalk`
 	marks.layers.set(FORWARD_LAYER)
 	marks.renderOrder = -3
 	meshes.push(marks)

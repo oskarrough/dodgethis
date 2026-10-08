@@ -92,7 +92,7 @@ export const tune = {
 			{ x: 5, z: -10 },
 		],
 	},
-	// Overthrow presentation only; all geometry and colours apply on map restart.
+	// Shared match presentation, first built for Overthrow; applies on map restart.
 	overthrowTerrain: {
 		margin: 1.6,
 		jag: 0.8,
@@ -127,10 +127,36 @@ export const tune = {
 		},
 		palette: { page: 0x555669, courtShade: 0x708883, scenery: 0x899b9b },
 	},
-	// Flagfall blockout: layout and ground prints apply on restart. No lane simulation.
+	// Flagfall walkabout: shared schoolyard terrain, its own layout and dusk dunes.
+	// Layout, background and ground prints apply on restart. No lane simulation.
 	flagfall: {
 		name: 'Flagfall',
-		palette: { court: 0xe0c79e, courtShade: 0xc8b195, scenery: 0xbfa989 },
+		palette: { page: 0x59516f },
+		background: {
+			segments: 120,
+			height: 3.5,
+			wavelength: 9,
+			sweep: 35,
+			bend: 1.6,
+			contrast: 0.65,
+			colors: { surround: '#59516f', low: '#59516f', high: '#726583' },
+		},
+		// Broken fence runs on the safe rim, not colliders or a new fence style.
+		fence: {
+			runs: [
+				{ from: [-0.96, -1], to: [-0.7, -1] },
+				{ from: [-0.28, -1], to: [0.28, -1] },
+				{ from: [0.7, -1], to: [0.96, -1] },
+				{ from: [-1, -0.28], to: [-1, 0.28] },
+				{ from: [1, -0.28], to: [1, 0.28] },
+			],
+			bollards: [
+				[-0.5, -1],
+				[0.5, -1],
+				[-0.5, 1],
+				[0.5, 1],
+			],
+		},
 		bounds: { halfX: 52, halfZ: 20 },
 		lane: { innerZ: 10, outerZ: 20, centreZ: 15 },
 		yard: { halfX: 28, halfZ: 8 },
@@ -158,12 +184,9 @@ export const tune = {
 			{ x: 2, z: -4 },
 		],
 		print: {
-			layers: { sand: 0, lanes: 0.015, yard: 0.03, hatch: 0.045, marks: 0.06, chalk: 0.075 },
-			hatchSpacing: 0.8,
-			hatchWidth: 0.035,
+			layers: { marks: 0.06, chalk: 0.075 },
 			kerbWidth: 0.08,
 			footprintWidth: 0.12,
-			footprintOutline: 0.025,
 			radii: { tower: 1.4, fort: 2, core: 2.6, post: 0.6 },
 			poleRadius: 0.08,
 			poleHeight: 6,
