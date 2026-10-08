@@ -1,28 +1,28 @@
 import { OBSTACLES, FLOOR, walkable, clampWalkable, segmentClear } from './obstacles.js'
 
 // Cache the static grid for a run. Live radius/clearance/grid changes invalidate it on the next order, not on a tick.
-export function createPathPlanner(options, obstacles = OBSTACLES) {
-	let grid = buildGrid(options, obstacles)
+export function createPathPlanner(options, obstacles = OBSTACLES, bounds = FLOOR) {
+	let grid = buildGrid(options, obstacles, bounds)
 	return (from, to, next = options) => {
 		if (next.radius !== grid.radius || next.clearance !== grid.clearance || next.grid !== grid.grid)
-			grid = buildGrid(next, obstacles)
+			grid = buildGrid(next, obstacles, bounds)
 		return route(from, to, grid)
 	}
 }
 
-function buildGrid({ radius, clearance, grid }, obstacles) {
-	const nx = Math.ceil((FLOOR.halfX * 2) / grid)
-	const nz = Math.ceil((FLOOR.halfZ * 2) / grid)
+function buildGrid({ radius, clearance, grid }, obstacles, bounds) {
+	const nx = Math.ceil((bounds.halfX * 2) / grid)
+	const nz = Math.ceil((bounds.halfZ * 2) / grid)
 	const point = (c) => ({
-		x: ((c % nx) + 0.5) * grid - FLOOR.halfX,
-		z: (Math.floor(c / nx) + 0.5) * grid - FLOOR.halfZ,
+		x: ((c % nx) + 0.5) * grid - bounds.halfX,
+		z: (Math.floor(c / nx) + 0.5) * grid - bounds.halfZ,
 	})
 	const open = new Uint8Array(nx * nz)
 	// Mark an entire cell free, not merely its centre: this also protects edges near circle tangencies.
 	const margin = radius + clearance + grid * Math.SQRT1_2
 	for (let c = 0; c < open.length; c++) {
 		const p = point(c)
-		open[c] = walkable(p.x, p.z, margin, 0, obstacles) ? 1 : 0
+		open[c] = walkable(p.x, p.z, margin, 0, obstacles, bounds) ? 1 : 0
 	}
 	// A* scratch, reset on every search.
 	const scratch = {
@@ -31,18 +31,25 @@ function buildGrid({ radius, clearance, grid }, obstacles) {
 		closed: new Uint8Array(nx * nz),
 		heap: { f: [], c: [] },
 	}
-	return { radius, clearance, grid, nx, nz, point, open, obstacles, scratch }
+	return { radius, clearance, grid, nx, nz, point, open, obstacles, bounds, scratch }
 }
 
-function route(from, to, { radius, clearance, grid, nx, nz, point, open, obstacles, scratch }) {
-	if (!walkable(from.x, from.z, radius, 0, obstacles)) return []
+function route(
+	from,
+	to,
+	{ radius, clearance, grid, nx, nz, point, open, obstacles, bounds, scratch },
+) {
+	if (!walkable(from.x, from.z, radius, 0, obstacles, bounds)) return []
 	const inflate = radius + clearance
-	const firstMargin = walkable(from.x, from.z, radius, clearance, obstacles) ? inflate : radius
-	to = clampWalkable(to, radius, clearance, obstacles)
-	if (firstMargin === inflate && segmentClear(from, to, inflate, obstacles)) return [{ ...to }]
+	const firstMargin = walkable(from.x, from.z, radius, clearance, obstacles, bounds)
+		? inflate
+		: radius
+	to = clampWalkable(to, radius, clearance, obstacles, bounds)
+	if (firstMargin === inflate && segmentClear(from, to, inflate, obstacles, bounds))
+		return [{ ...to }]
 	const nearestOpen = (p, margin) => {
-		const ci = Math.max(0, Math.min(nx - 1, Math.floor((p.x + FLOOR.halfX) / grid)))
-		const cj = Math.max(0, Math.min(nz - 1, Math.floor((p.z + FLOOR.halfZ) / grid)))
+		const ci = Math.max(0, Math.min(nx - 1, Math.floor((p.x + bounds.halfX) / grid)))
+		const cj = Math.max(0, Math.min(nz - 1, Math.floor((p.z + bounds.halfZ) / grid)))
 		for (let r = 0; r < Math.max(nx, nz); r++) {
 			const candidates = []
 			for (let j = Math.max(0, cj - r); j <= Math.min(nz - 1, cj + r); j++)
@@ -56,7 +63,7 @@ function route(from, to, { radius, clearance, grid, nx, nz, point, open, obstacl
 					pb = point(b)
 				return Math.hypot(pa.x - p.x, pa.z - p.z) - Math.hypot(pb.x - p.x, pb.z - p.z)
 			})
-			for (const c of candidates) if (segmentClear(p, point(c), margin, obstacles)) return c
+			for (const c of candidates) if (segmentClear(p, point(c), margin, obstacles, bounds)) return c
 		}
 		return -1
 	}
@@ -71,7 +78,7 @@ function route(from, to, { radius, clearance, grid, nx, nz, point, open, obstacl
 	let i = firstMargin === inflate ? 0 : 1
 	while (i < points.length - 1) {
 		let j = points.length - 1
-		while (j > i && !segmentClear(points[i], points[j], inflate, obstacles)) j--
+		while (j > i && !segmentClear(points[i], points[j], inflate, obstacles, bounds)) j--
 		if (j === i) return []
 		pulled.push({ ...points[j] })
 		i = j

@@ -49,6 +49,7 @@ export function createSim({
 	lane: withLane = false,
 	spawns = null, // { participantId: { x, z } }; copied for death/recovery.
 	bounds = null, // { halfX, halfZ }; body centres stay one radius inside.
+	obstacles: mapObstacles = null, // The active terrain; defaults preserve the lane and plaza.
 	posts = DUMMY_POSTS, // Where the training dummies strafe; the plaza brings its own.
 	respawn: respawnSeconds = null, // Hero recovery override, in seconds; dummies keep their timer.
 	readyRoster = [], // Full lobby seats; humans are the hero participants, the rest are cardboard bots.
@@ -73,7 +74,10 @@ export function createSim({
 			)
 		: []
 	// The plaza has no pillars; its hedges sit outside the bounds.
-	const obstacles = [...(lobby ? BOXES : OBSTACLES), ...towerObstacles]
+	const obstacles = [...(mapObstacles ?? (lobby ? BOXES : OBSTACLES)), ...towerObstacles]
+	const floor = bounds ?? FLOOR
+	// The plaza limits walking, not casts: preserve its existing open shooting field.
+	const field = lobby ? FLOOR : floor
 	const towerColliders = new Map(
 		towerObstacles.map((o) => [
 			o.id,
@@ -86,41 +90,16 @@ export function createSim({
 			),
 		]),
 	)
-	// Planner-only walls keep paths inside the optional plaza without changing shot collisions.
-	const pathObstacles = bounds
-		? [
-				...obstacles,
-				...['x', 'z'].flatMap((axis) => {
-					const other = axis === 'x' ? 'z' : 'x'
-					const half = bounds[axis === 'x' ? 'halfX' : 'halfZ']
-					const edge = FLOOR[axis === 'x' ? 'halfX' : 'halfZ']
-					return [-1, 1].map((side) => ({
-						[axis]: (side * (half + edge)) / 2,
-						[other]: 0,
-						[axis === 'x' ? 'halfX' : 'halfZ']: (edge - half) / 2,
-						[other === 'x' ? 'halfX' : 'halfZ']: FLOOR[other === 'x' ? 'halfX' : 'halfZ'],
-					}))
-				}),
-			]
-		: obstacles
-	const clampBounds = (point, margin = 0) =>
-		bounds
-			? clampMap(
-					{
-						x: Math.max(-bounds.halfX + margin, Math.min(bounds.halfX - margin, point.x)),
-						z: Math.max(-bounds.halfZ + margin, Math.min(bounds.halfZ - margin, point.z)),
-					},
-					margin,
-				)
-			: clampMap(point, margin)
+	const clampBounds = (point, margin = 0) => clampMap(point, margin, floor)
 	const walkGoal = (point, radius = profile.radius) =>
 		clampWalkable(
 			clampBounds(point, radius + tune.orders.clearance + tune.collision.separation),
 			radius,
 			tune.orders.clearance,
-			pathObstacles,
+			obstacles,
+			floor,
 		)
-	let planPath = createPathPlanner({ radius: profile.radius, ...tune.orders }, pathObstacles)
+	let planPath = createPathPlanner({ radius: profile.radius, ...tune.orders }, obstacles, floor)
 	let t = 0
 	const present = (fact) => emit({ ...fact, tick: t })
 	const footprints = new WeakMap()
@@ -288,7 +267,7 @@ export function createSim({
 					const collider = towerColliders.get(unit.id)
 					if (collider) world.removeCollider(collider, true)
 					towerColliders.delete(unit.id)
-					planPath = createPathPlanner({ radius: profile.radius, ...tune.orders }, pathObstacles)
+					planPath = createPathPlanner({ radius: profile.radius, ...tune.orders }, obstacles, floor)
 				},
 				damage(source, target, damage) {
 					hit(
@@ -321,7 +300,7 @@ export function createSim({
 						dz: (tp.z - p.z) / length,
 						speed: source.structure ? stats.speed : stats.shotSpeed,
 						radius: tune.attack.radius,
-						range: FLOOR.halfX * 4,
+						range: field.halfX * 4,
 						travelled: 0,
 						passed: [],
 						damage: stats.damage,
@@ -570,6 +549,7 @@ export function createSim({
 						tp,
 						h.definition.basic.radius,
 						obstacles.filter((o) => o.id !== target.id),
+						field,
 					)
 				) {
 					o.path = null
@@ -710,7 +690,7 @@ export function createSim({
 		const skill = ability.stats
 		cancelChannel(h, 'cast')
 		const reach = Math.min(len, skill.range ?? 0)
-		const target = clampMap({ x: p.x + dir.x * reach, z: p.z + dir.z * reach })
+		const target = clampMap({ x: p.x + dir.x * reach, z: p.z + dir.z * reach }, 0, field)
 		h.cast = {
 			ability: ability.id,
 			slot,
@@ -846,7 +826,7 @@ export function createSim({
 					? 'cooldown'
 					: !basic || Math.hypot(at.x - p.x, at.z - p.z) > basic.range
 						? 'range'
-						: !segmentClear(p, at, basic.radius, obstacles)
+						: !segmentClear(p, at, basic.radius, obstacles, field)
 							? 'blocked'
 							: null
 		if (reason) {
@@ -1146,7 +1126,7 @@ export function createSim({
 			dz: (tp.z - p.z) / length,
 			speed: h.definition.basic.speed,
 			radius: h.definition.basic.radius,
-			range: attack.point ? h.definition.basic.range : FLOOR.halfX * 4,
+			range: attack.point ? h.definition.basic.range : field.halfX * 4,
 			travelled: 0,
 			passed: [],
 			damage: h.definition.basic.damage * (1 + tune.levels.growth * (h.level - 1)),
@@ -1163,6 +1143,7 @@ export function createSim({
 					tp,
 					h.definition.basic.radius,
 					obstacles.filter((o) => o.id !== target?.id),
+					field,
 				)
 			if (inReach)
 				touch(shot, {
@@ -1544,10 +1525,14 @@ export function createSim({
 			shot,
 			pocket,
 			dir,
-			target: clampMap({
-				x: hero.body.position.x + dir.x * shot.range,
-				z: hero.body.position.z + dir.z * shot.range,
-			}),
+			target: clampMap(
+				{
+					x: hero.body.position.x + dir.x * shot.range,
+					z: hero.body.position.z + dir.z * shot.range,
+				},
+				0,
+				field,
+			),
 			yaw: yawOf(dir.x, dir.z),
 			left: total,
 			total,
@@ -1849,6 +1834,7 @@ export function createSim({
 					tick: t,
 					ball,
 					obstacles,
+					bounds: field,
 					targets,
 				})
 			) {
@@ -1871,6 +1857,7 @@ export function createSim({
 				targets,
 				shot.target ? -Infinity : tune.loose.nearMiss,
 				obstacles,
+				field,
 			)
 			if (from)
 				touch(shot, { kind: 'shot', from, to: { x: shot.x, z: shot.z }, radius: shot.radius })
@@ -1938,7 +1925,7 @@ export function createSim({
 			}
 			if (best) return { x: best.x, z: best.z }
 			const f = dirOf(h.yaw)
-			return clampMap({ x: p.x + f.x * range, z: p.z + f.z * range })
+			return clampMap({ x: p.x + f.x * range, z: p.z + f.z * range }, 0, field)
 		}
 		let angle = Math.atan2(dir.x, dir.z)
 		if (ability?.aimAssist) {
@@ -1958,7 +1945,11 @@ export function createSim({
 		}
 		const u = Math.max(0, Math.min(1, (magnitude - a.inMin) / Math.max(1e-6, a.inMax - a.inMin)))
 		const reach = range * (a.outMin + (1 - a.outMin) * u)
-		return clampMap({ x: p.x + Math.sin(angle) * reach, z: p.z + Math.cos(angle) * reach })
+		return clampMap(
+			{ x: p.x + Math.sin(angle) * reach, z: p.z + Math.cos(angle) * reach },
+			0,
+			field,
+		)
 	}
 
 	function snapshot() {
@@ -2014,7 +2005,7 @@ export function createSim({
 						})),
 					}
 				: {}),
-			map: FLOOR.id,
+			map: floor.id ?? FLOOR.id,
 			...(readySeats && { readySeats: structuredClone(readySeats.seats) }),
 			heroes: heroes.map((h) => ({
 				id: h.id,
@@ -2123,6 +2114,7 @@ export function createSim({
 		laneView,
 		ball,
 		obstacles,
+		bounds: field,
 		find,
 		get bots() {
 			return botTeam
@@ -2177,6 +2169,7 @@ export function createSim({
 				profile.radius,
 				tune.orders.clearance,
 				obstacles,
+				floor,
 			)
 			const seat = { id: `try-${++trainingSerial}`, team, heroId, difficulty }
 			const hero = makeHero(seat, spawn)

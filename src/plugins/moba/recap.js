@@ -14,7 +14,7 @@ export function createRecap({ sim, hero, canvas }) {
 				rows.set(unit.id, { unit, kills: 0, deaths: 0, heroDamage: 0, structureDamage: 0, xp: 0 })
 	}
 	syncHeroes()
-	const structures = new Map(sim.lane.structures.map((unit) => [unit.id, unit.kind]))
+	const structures = new Map((sim.lane?.structures ?? []).map((unit) => [unit.id, unit.kind]))
 	const recent = []
 	let death = null
 	let root, heading, hits, countdown, help
@@ -81,7 +81,7 @@ export function createRecap({ sim, hero, canvas }) {
 	}
 	function update({ alpha, step, device, hidden = false }) {
 		if (!root) return
-		const dead = hero.dead && !sim.lane.match.winner
+		const dead = hero.dead && !sim.lane?.match.winner
 		canvas.classList.toggle('moba-dead-world', dead)
 		root.hidden = !dead || !death || hidden
 		if (root.hidden) return

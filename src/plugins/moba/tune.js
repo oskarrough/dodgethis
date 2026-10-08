@@ -51,6 +51,7 @@ export const tune = {
 	},
 	// Static layout and dressing: applies on mode restart.
 	map: {
+		name: 'Overthrow',
 		halfX: 52,
 		halfZ: 13,
 		thickness: 1,
@@ -90,6 +91,48 @@ export const tune = {
 			{ x: -3, z: -7 },
 			{ x: 5, z: -10 },
 		],
+	},
+	// Sandlot blockout: layout and ground prints apply on restart. No lane simulation.
+	sandlot: {
+		name: 'Flagfall',
+		palette: { court: 0xe0c79e, courtShade: 0xc8b195, scenery: 0xbfa989 },
+		bounds: { halfX: 52, halfZ: 20 },
+		lane: { innerZ: 10, outerZ: 20, centreZ: 15 },
+		yard: { halfX: 28, halfZ: 8 },
+		baseBlock: { innerX: 28, outerX: 38, halfZ: 10 },
+		baseX: 46,
+		hedge: {
+			innerZ: 8,
+			outerZ: 10,
+			runs: [
+				[4, 12],
+				[18, 28],
+			],
+		},
+		pillarRadius: 1.1,
+		yardPillars: { x: 7, z: 2 },
+		towerPillars: { x: 13, z: 13 },
+		spawns: { A: { x: -49, z: 0 }, B: { x: 49, z: 0 } },
+		structures: { towerX: 18, fortX: 32, coreX: 42 },
+		posts: [
+			{ x: -16, z: 3 },
+			{ x: 16, z: -3 },
+		],
+		dummyPosts: [
+			{ x: -2, z: -4 },
+			{ x: 2, z: -4 },
+		],
+		print: {
+			layers: { sand: 0, lanes: 0.015, yard: 0.03, hatch: 0.045, marks: 0.06, chalk: 0.075 },
+			hatchSpacing: 0.8,
+			hatchWidth: 0.035,
+			kerbWidth: 0.08,
+			footprintWidth: 0.12,
+			footprintOutline: 0.025,
+			radii: { tower: 1.4, fort: 2, core: 2.6, post: 0.6 },
+			poleRadius: 0.08,
+			poleHeight: 6,
+		},
 	},
 	// Lobby sim options apply on creation; map/match/training defaults do not read these.
 	lobby: {

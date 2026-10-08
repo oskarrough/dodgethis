@@ -1,4 +1,4 @@
-import { OBSTACLES, sweepHit, sweepObstacles, mapExit } from './obstacles.js'
+import { OBSTACLES, FLOOR, sweepHit, sweepObstacles, mapExit } from './obstacles.js'
 export { sweepHit } from './obstacles.js'
 
 // Closest approach of a→b to a point: the fraction along it and the distance.
@@ -26,7 +26,7 @@ export function interceptShot(shot, dt, intercept, context) {
 				shot.radius,
 				(context.obstacles ?? OBSTACLES).filter((o) => !['tower', 'core'].includes(o.kind)),
 			)
-	const edge = mapExit(from, to, shot.radius)
+	const edge = mapExit(from, to, shot.radius, context.bounds)
 	const at = Math.min(obstacle ?? 1, edge ?? 1)
 	to.x = from.x + (to.x - from.x) * at
 	to.z = from.z + (to.z - from.z) * at
@@ -43,7 +43,7 @@ export function interceptShot(shot, dt, intercept, context) {
 
 // Advance one shot by `dt` against `targets` ({ id, x, z, radius }). Returns { hit, point } for the first body touched,
 // { expired } once the range is spent, and lists `nearMisses` it passed within `nearMiss` of without touching.
-export function stepShot(shot, dt, targets, nearMiss, obstacles = OBSTACLES) {
+export function stepShot(shot, dt, targets, nearMiss, obstacles = OBSTACLES, bounds = FLOOR) {
 	const step = Math.min(shot.speed * dt, shot.range - shot.travelled)
 	const ax = shot.x
 	const az = shot.z
@@ -61,7 +61,7 @@ export function stepShot(shot, dt, targets, nearMiss, obstacles = OBSTACLES) {
 				shot.radius,
 				obstacles.filter((o) => !['tower', 'core'].includes(o.kind)),
 			)
-	const edge = mapExit(from, to, shot.radius)
+	const edge = mapExit(from, to, shot.radius, bounds)
 	const blocked = obstacle === null ? edge : edge === null ? obstacle : Math.min(obstacle, edge)
 	let at = blocked ?? Infinity
 	const hits = []

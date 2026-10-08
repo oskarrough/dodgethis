@@ -121,11 +121,11 @@ export function matchFrame(sim, hero, blend, step) {
 		step,
 		cooldowns: hero.cd.slice(0, 3).map((cd) => Math.max(0, cd - blend) * step),
 		elapsed: sim.tick * step,
-		teams: sim.lane.teams,
-		carryingBall: sim.ball.carrying(hero),
-		ballPop: ballPopIn(sim.ball, sim.tick, blend, step),
-		nextBall: until(sim.ball.nextBall),
-		nextWave: until(sim.lane.nextWave),
+		teams: sim.lane?.teams,
+		carryingBall: sim.ball?.carrying(hero) ?? false,
+		ballPop: sim.ball ? ballPopIn(sim.ball, sim.tick, blend, step) : null,
+		nextBall: sim.ball ? until(sim.ball.nextBall) : undefined,
+		nextWave: sim.lane ? until(sim.lane.nextWave) : undefined,
 		localTeam: hero.team,
 		hp: hero.hp,
 		maxHp: hero.maxHp,
@@ -133,8 +133,8 @@ export function matchFrame(sim, hero, blend, step) {
 	}
 }
 
-export function createHud({ lobby = false } = {}) {
-	const minimap = lobby ? null : createMinimap(ICONS)
+export function createHud({ lobby = false, bounds, name } = {}) {
+	const minimap = lobby ? null : createMinimap(ICONS, bounds, name)
 	// Unchanged values never touch the DOM. Keyed per node, then per field.
 	const touchScreen = globalThis.matchMedia?.('(any-hover: none)').matches ?? false
 	const shown = new WeakMap()
@@ -231,9 +231,8 @@ export function createHud({ lobby = false } = {}) {
 	// --- Bottom: portrait and slots ---
 	const root = el('div', 'moba-hud')
 	const bar = el('div', 'moba-bar', root)
-	// The plaza parks your unit frame top-left beside Back, so the action bar centres alone.
-	const unitFrame = lobby ? el('div', 'moba-hud moba-unit') : null
-	const portrait = hot(el('div', 'moba-portrait', unitFrame ?? bar), { kind: 'portrait' })
+	const unitFrame = el('div', 'moba-hud moba-unit')
+	const portrait = hot(el('div', 'moba-portrait', unitFrame), { kind: 'portrait' })
 	const avatar = el('div', 'moba-avatar', portrait)
 	const face = el('span', '', avatar)
 	const heroLevel = el('b', 'moba-lv', avatar)
@@ -262,8 +261,7 @@ export function createHud({ lobby = false } = {}) {
 	})
 	const banner = el('div', 'moba-banner')
 	banner.hidden = true
-	document.body.append(top, root, banner)
-	if (unitFrame) document.body.append(unitFrame)
+	document.body.append(top, root, unitFrame, banner)
 	const tip = createTooltip(document.body)
 	// World units get their own card and a slim nameplate, so a slot card never fights a unit card.
 	const worldTip = createTooltip(document.body, 'moba-tip-world')
@@ -692,7 +690,12 @@ export function createHud({ lobby = false } = {}) {
 				}
 
 			// Practice has no lane status; the portrait, kit and tooltips stay real.
-			put(top, 'hidden', !!frame.lobby, (hidden) => (top.hidden = hidden))
+			put(top, 'hidden', !teams, (hidden) => (top.hidden = hidden))
+			for (const node of [heroLevel, xpBar])
+				put(node, 'hidden', !teams && !frame.lobby, (hidden) => {
+					node.hidden = hidden
+					node.style.display = hidden ? 'none' : ''
+				})
 			if (teams) {
 				for (const [which, team] of [
 					['mine', localTeam],
@@ -763,7 +766,7 @@ export function createHud({ lobby = false } = {}) {
 			// Portrait.
 			const level = hero?.level ?? teams?.[localTeam].level ?? 1
 			data(root, 'team', localTeam)
-			if (unitFrame) data(unitFrame, 'team', localTeam)
+			data(unitFrame, 'team', localTeam)
 			data(top, 'local', localTeam)
 			const definition = hero?.definition ?? heroDefinition()
 			const heroId = hero?.heroId ?? definition.id
@@ -851,7 +854,7 @@ export function createHud({ lobby = false } = {}) {
 			plate.remove()
 			top.remove()
 			root.remove()
-			unitFrame?.remove()
+			unitFrame.remove()
 			lens?.remove()
 			banner.remove()
 			tip.dispose()

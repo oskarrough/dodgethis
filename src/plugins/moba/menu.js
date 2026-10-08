@@ -21,7 +21,7 @@ export function createMatchMenu({
 	let resultShown = false
 	let backHeld = false
 	let endingElapsed = null
-	const frozen = () => paused || !!sim.lane.match.winner
+	const frozen = () => paused || !!sim.lane?.match.winner
 	const resetInput = () => {
 		app.intents.cancel(hero.id)
 		clearCamera()
@@ -37,7 +37,7 @@ export function createMatchMenu({
 	const resumeHint = () =>
 		app.input.activeDevice() === 'gamepad' ? 'B to resume' : 'Esc to resume'
 	function toggle() {
-		if (!ready() || sim.lane.match.winner || !app.session.actions.includes('pause')) return
+		if (!ready() || sim.lane?.match.winner || !app.session.actions.includes('pause')) return
 		paused = !paused
 		resetInput()
 		app.audio.setMusicScene(paused ? 'paused' : 'play')
@@ -61,7 +61,7 @@ export function createMatchMenu({
 			device: app.input.activeDevice?.(),
 			hidden: app.overlay.visible,
 		})
-		if (!sim.lane.match.winner || resultShown) return
+		if (!sim.lane?.match.winner || resultShown) return
 		if (endingElapsed === null) {
 			endingElapsed = 0
 			resetInput()
@@ -73,12 +73,12 @@ export function createMatchMenu({
 		resultShown = true
 		app.audio.setMusicScene('paused')
 		app.overlay.show({
-			title: sim.lane.match.winner === hero.team ? 'VICTORY' : 'DEFEAT',
-			theme: sim.lane.match.winner === hero.team ? 'moba-victory' : 'moba-defeat',
-			accent: hex(sim.lane.match.winner === 'A' ? 'teamA' : 'teamB'),
+			title: sim.lane?.match.winner === hero.team ? 'VICTORY' : 'DEFEAT',
+			theme: sim.lane?.match.winner === hero.team ? 'moba-victory' : 'moba-defeat',
+			accent: hex(sim.lane?.match.winner === 'A' ? 'teamA' : 'teamB'),
 			pointerGuard: true,
 			spaceConfirm: false,
-			subtitle: sim.lane.match.winner === hero.team ? 'Enemy core destroyed' : 'Your core fell',
+			subtitle: sim.lane?.match.winner === hero.team ? 'Enemy core destroyed' : 'Your core fell',
 			actions: [
 				{ label: 'Again', key: 'KeyR', keyLabel: 'R', onSelect: restart },
 				{ label: 'Return to lobby', onSelect: leave },
@@ -108,7 +108,7 @@ export function createMatchMenu({
 			if (hint && hint.textContent !== text) hint.textContent = text
 		}
 		const input = app.input.consumeMenuInput()
-		if (pressed && paused && !sim.lane.match.winner) toggle()
+		if (pressed && paused && !sim.lane?.match.winner) toggle()
 		else app.overlay.handleGamepad(input)
 	})
 	run.signal.addEventListener(

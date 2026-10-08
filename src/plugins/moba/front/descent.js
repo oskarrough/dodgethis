@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { PALETTE } from '../../../core/style.js'
 import { el as make } from '../../../core/dom.js'
 import { tune as kit } from '../tune.js'
-import { FLOOR } from '../obstacles.js'
+import { mapLayout } from '../obstacles.js'
 import { easeShot } from './backdrop.js'
 import { createDescentState, descentFrame, localLoadingHero } from './descent-state.js'
 import { tune } from './tune.js'
@@ -49,7 +49,9 @@ export function startLoading(app, { el: plaza, backdrop, difficulty = 'easy', se
 		const pitch = Math.asin(-look.y)
 		const lens = aim.fov
 
-		const name = tune.loading.mapName
+		const layout = mapLayout(setup?.map)
+		const palette = setup?.map === 'sandlot' ? kit.sandlot.palette : {}
+		const name = layout.name
 		const orbit = tune.loading.orbit
 		const root = make(
 			'main',
@@ -103,11 +105,11 @@ export function startLoading(app, { el: plaza, backdrop, difficulty = 'easy', se
 		// Registered after the match's follow camera, so it wins until landing.
 		function descend() {
 			const aspect = innerWidth / innerHeight
-			const establishing = descentFrame(0, hero, tune.loading, kit.follow, FLOOR, aspect)
+			const establishing = descentFrame(0, hero, tune.loading, kit.follow, layout.bounds, aspect)
 			const far = Math.max(
 				...previousFar,
 				Math.hypot(establishing.eye.y, establishing.eye.z) +
-					Math.hypot(FLOOR.halfX, FLOOR.halfZ) +
+					Math.hypot(layout.bounds.halfX, layout.bounds.halfZ) +
 					tune.loading.farMargin,
 			)
 			for (const camera of cameras)
@@ -115,7 +117,14 @@ export function startLoading(app, { el: plaza, backdrop, difficulty = 'easy', se
 					camera.far = far
 					camera.updateProjectionMatrix()
 				}
-			return descentFrame(gate.state.progress, hero, tune.loading, kit.follow, FLOOR, aspect)
+			return descentFrame(
+				gate.state.progress,
+				hero,
+				tune.loading,
+				kit.follow,
+				layout.bounds,
+				aspect,
+			)
 		}
 
 		// At the apex the canvas is clear: swap the plaza run for the match behind the sky.
@@ -151,7 +160,10 @@ export function startLoading(app, { el: plaza, backdrop, difficulty = 'easy', se
 		}
 
 		const colors = Object.fromEntries(
-			Object.entries(PALETTE).map(([role, value]) => [role, new THREE.Color(value)]),
+			Object.entries({ ...PALETTE, ...palette }).map(([role, value]) => [
+				role,
+				new THREE.Color(value),
+			]),
 		)
 		const cream = new THREE.Color(PALETTE.cream)
 		function draw({ phase, crane: rise, progress }) {
@@ -192,7 +204,7 @@ export function startLoading(app, { el: plaza, backdrop, difficulty = 'easy', se
 					Object.entries(colors).map(([role, color]) => [
 						role,
 						role === 'ink' || role === 'cream'
-							? PALETTE[role]
+							? (palette[role] ?? PALETTE[role])
 							: color
 									.clone()
 									.lerp(cream, tune.loading.pastel * (1 - eased))
@@ -301,7 +313,7 @@ export function startLoading(app, { el: plaza, backdrop, difficulty = 'easy', se
 			if (!ending) backdrop.dispose()
 			restore?.()
 			unframe()
-			if (match) app.setPalette({})
+			if (match) app.setPalette(palette)
 			cameras.forEach((camera, index) => {
 				camera.far = previousFar[index]
 				camera.updateProjectionMatrix()

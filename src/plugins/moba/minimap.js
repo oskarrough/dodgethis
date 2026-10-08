@@ -1,7 +1,7 @@
 import { FLOOR } from './obstacles.js'
 
 // A presentation-only map: the same rendered positions as the world, no input or snapshots.
-export function createMinimap(icons) {
+export function createMinimap(icons, bounds = FLOOR, name = 'Lane') {
 	const ns = 'http://www.w3.org/2000/svg'
 	const make = (tag, attributes, parent) => {
 		const node = document.createElementNS(ns, tag)
@@ -9,15 +9,15 @@ export function createMinimap(icons) {
 		parent?.append(node)
 		return node
 	}
-	const scale = 100 / (FLOOR.halfX * 2)
-	const height = FLOOR.halfZ * 2 * scale
+	const scale = 100 / (bounds.halfX * 2)
+	const height = bounds.halfZ * 2 * scale
 	const root = make('svg', {
 		class: 'moba-minimap',
 		viewBox: `0 0 100 ${height}`,
 		width: 100,
 		height,
 		role: 'img',
-		'aria-label': 'Lane minimap: heroes and buildings. Your hero has a cream ring.',
+		'aria-label': `${name} minimap: heroes and buildings. Your hero has a cream ring.`,
 	})
 	// The floating footprint keeps the lane's real proportions, with no enclosing disc.
 	make(
@@ -26,8 +26,8 @@ export function createMinimap(icons) {
 			class: 'minimap-floor',
 			x: 0,
 			y: 0,
-			width: FLOOR.halfX * 2 * scale,
-			height: FLOOR.halfZ * 2 * scale,
+			width: bounds.halfX * 2 * scale,
+			height: bounds.halfZ * 2 * scale,
 			rx: 1,
 		},
 		root,
@@ -41,9 +41,10 @@ export function createMinimap(icons) {
 	document.body.append(root)
 	return {
 		update({ sim, hero, lobby }) {
-			root.style.display = lobby || !sim?.lane ? 'none' : ''
-			if (lobby || !sim?.lane) return
-			const units = [...sim.lane.structures, ...sim.heroes]
+			const hidden = lobby || !sim
+			if (root.style.display !== (hidden ? 'none' : '')) root.style.display = hidden ? 'none' : ''
+			if (hidden) return
+			const units = [...(sim.lane?.structures ?? []), ...sim.heroes, ...sim.dummies]
 			const ids = new Set(units.map((unit) => unit.id))
 			for (const [id, marker] of markers) {
 				if (ids.has(id)) continue

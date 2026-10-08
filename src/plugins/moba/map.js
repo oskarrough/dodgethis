@@ -5,7 +5,7 @@ import { makeStyleMaterial } from '../../core/stylepass.js'
 import { tune as coreTune } from '../../core/tune.js'
 import { tune } from './tune.js'
 import { slabShape } from './lobby-floor.js'
-import { FLOOR, PILLARS, BOXES, buildColliders } from './obstacles.js'
+import { FLOOR, mapLayout, buildColliders } from './obstacles.js'
 export { FLOOR, PILLARS, SPAWN, walkable, clampWalkable } from './obstacles.js'
 
 // Selection, loading and gameplay share this owner, not the browser's dodgeball world.
@@ -16,7 +16,7 @@ export function createMapScope(scene, RAPIER, step) {
 	let live = null
 	let built = null
 	return {
-		// `kind` picks the terrain: the lane for a match, the small plaza for the pick screen.
+		// `kind` picks the terrain: lane, Sandlot walkabout, or the plaza pick screen.
 		// Switching rebuilds the terrain on the same world; the previous run is already aborted.
 		start(run, create, kind = 'lane') {
 			if (live) throw new Error('MOBA already has a live sim')
@@ -24,8 +24,8 @@ export function createMapScope(scene, RAPIER, step) {
 				world = new RAPIER.World({ x: 0, y: coreTune.physics.gravity, z: 0 })
 				world.timestep = step
 			}
-			// The plaza rebuilds every start: its slab outline reads tune.lobby.slab, which may have changed.
-			if (built !== kind || kind === 'plaza') {
+			// Authored plaza/Sandlot layouts read tune on restart; rebuild visuals and colliders together.
+			if (built !== kind || kind === 'plaza' || kind === 'sandlot') {
 				unbuild?.()
 				unbuild = buildMap(scene, world, RAPIER, kind)
 				built = kind
@@ -58,10 +58,11 @@ export function createMapScope(scene, RAPIER, step) {
 	}
 }
 
-// Printed road, shaded flanks and low cover; all collision geometry comes from obstacles.js.
+// Ground prints and cover share the active layout's collision descriptors.
 // The 'plaza' kind draws only the Slab's cream ground: no walls, no pillars.
 export function buildMap(scene, world, RAPIER, kind = 'lane') {
 	const m = tune.map
+	const layout = mapLayout(kind)
 	const group = new THREE.Group()
 	group.name = 'moba-map'
 	const owned = []
@@ -181,36 +182,136 @@ export function buildMap(scene, world, RAPIER, kind = 'lane') {
 			)
 			seam.rotation.y = yaw
 		}
-		for (const b of BOXES) {
-			const h = b.kind === 'hedge' ? m.hedgeHeight : m.wallHeight
-			const trunk = b.kind === 'hedge' ? h - m.scallopRadius : h
-			add(
-				new RoundedBoxGeometry(
-					b.halfX * 2,
-					trunk,
-					b.halfZ * 2,
-					1,
-					Math.min(m.scallopRadius, trunk / 2),
-				),
-				shade,
-				b.x,
-				trunk / 2,
-				b.z,
+	}
+	const buildSandlot = () => {
+		const s = tune.sandlot
+		const layers = s.print.layers
+		const sand = material('court', { flat: true })
+		const yard = material('courtShade', { flat: true })
+		const plane = (width, depth, mat, x, y, z) =>
+			add(new THREE.PlaneGeometry(width, depth).rotateX(-Math.PI / 2), mat, x, y, z)
+		plane(s.bounds.halfX * 2, s.bounds.halfZ * 2, sand, 0, layers.sand, 0)
+		plane(s.yard.halfX * 2, s.yard.halfZ * 2, yard, 0, layers.yard, 0)
+		const strokes = []
+		for (let z = -s.yard.halfZ; z < s.yard.halfZ; z += s.print.hatchSpacing)
+			strokes.push(
+				new THREE.PlaneGeometry(s.yard.halfX * 2, s.print.hatchWidth)
+					.rotateX(-Math.PI / 2)
+					.translate(0, layers.hatch, z),
 			)
-			if (b.kind !== 'hedge') continue
-			for (let x = b.x - b.halfX + m.scallopRadius; x < b.x + b.halfX; x += m.scallopSpacing)
-				add(
-					new THREE.SphereGeometry(m.scallopRadius, m.pillarSegments, m.pillarSegments / 2),
-					shade,
-					x,
-					h - m.scallopRadius,
-					b.z,
+		print(strokes, ink, 'sandlot-yard-hatching')
+		for (const side of [-1, 1]) {
+			plane(
+				s.bounds.halfX * 2,
+				s.lane.outerZ - s.lane.innerZ,
+				cream,
+				0,
+				layers.lanes,
+				side * s.lane.centreZ,
+			)
+			// Open courtyards connect both lanes behind the base blocks.
+			plane(
+				s.bounds.halfX - s.baseBlock.outerX,
+				s.lane.innerZ * 2,
+				cream,
+				(side * (s.bounds.halfX + s.baseBlock.outerX)) / 2,
+				layers.lanes,
+				0,
+			)
+			const team = material(side < 0 ? 'teamA' : 'teamB', { flat: true })
+			const kerbs = []
+			for (let x = m.dashSpacing; x < s.baseBlock.outerX; x += m.dashSpacing)
+				for (const flank of [-1, 1])
+					kerbs.push(
+						new THREE.PlaneGeometry(m.dashLength, s.print.kerbWidth)
+							.rotateX(-Math.PI / 2)
+							.translate(side * x, layers.marks, flank * (s.lane.innerZ + s.print.kerbWidth)),
+					)
+			print(kerbs, team, `sandlot-kerbs-${side}`)
+			for (const flank of [-1, 1])
+				plane(
+					s.bounds.halfX - s.baseX,
+					s.print.kerbWidth,
+					team,
+					(side * (s.bounds.halfX + s.baseX)) / 2,
+					layers.marks,
+					flank * s.lane.innerZ,
 				)
 		}
+		// Future buildings are chalk only: no body, target or collider.
+		for (const point of [
+			...layout.structures,
+			...layout.posts.map((p) => ({ ...p, kind: 'post' })),
+		]) {
+			const radius = s.print.radii[point.kind]
+			// White chalk needs a keyline on the cream trodden lanes and courtyards.
+			add(
+				new THREE.RingGeometry(
+					radius - s.print.footprintWidth - s.print.footprintOutline,
+					radius + s.print.footprintOutline,
+					m.printSegments,
+				).rotateX(-Math.PI / 2),
+				ink,
+				point.x,
+				layers.marks,
+				point.z,
+			)
+			const footprint = add(
+				new THREE.RingGeometry(radius - s.print.footprintWidth, radius, m.printSegments).rotateX(
+					-Math.PI / 2,
+				),
+				cream,
+				point.x,
+				layers.chalk,
+				point.z,
+			)
+			footprint.name = `sandlot-${point.kind}-footprint`
+		}
+		for (const post of layout.posts)
+			add(
+				new THREE.CylinderGeometry(
+					s.print.poleRadius,
+					s.print.poleRadius,
+					s.print.poleHeight,
+					m.pillarSegments,
+				),
+				scenery,
+				post.x,
+				s.print.poleHeight / 2,
+				post.z,
+			)
 	}
 	if (kind === 'plaza') buildPlaza()
+	else if (kind === 'sandlot') buildSandlot()
 	else buildLane()
-	for (const p of kind === 'plaza' ? [] : PILLARS) {
+	for (const b of layout.boxes) {
+		const h = b.kind === 'hedge' ? m.hedgeHeight : m.wallHeight
+		const trunk = b.kind === 'hedge' ? h - m.scallopRadius : h
+		add(
+			new RoundedBoxGeometry(
+				b.halfX * 2,
+				trunk,
+				b.halfZ * 2,
+				1,
+				Math.min(m.scallopRadius, trunk / 2),
+			),
+			kind === 'sandlot' ? scenery : shade,
+			b.x,
+			trunk / 2,
+			b.z,
+		)
+		if (b.kind !== 'hedge') continue
+		for (let x = b.x - b.halfX + m.scallopRadius; x < b.x + b.halfX; x += m.scallopSpacing)
+			add(
+				new THREE.SphereGeometry(m.scallopRadius, m.pillarSegments, m.pillarSegments / 2),
+				kind === 'sandlot' ? scenery : shade,
+				x,
+				h - m.scallopRadius,
+				b.z,
+			)
+	}
+
+	for (const p of layout.pillars) {
 		add(
 			new THREE.CylinderGeometry(p.r, p.r, m.pillarHeight, m.pillarSegments),
 			scenery,
@@ -226,7 +327,12 @@ export function buildMap(scene, world, RAPIER, kind = 'lane') {
 			p.z,
 		)
 	}
-	const uncollide = buildColliders(world, RAPIER, kind === 'plaza' ? BOXES : undefined)
+	const uncollide = buildColliders(
+		world,
+		RAPIER,
+		layout.obstacles,
+		kind === 'plaza' ? undefined : layout.bounds,
+	)
 	scene.add(group)
 	return () => {
 		scene.remove(group)

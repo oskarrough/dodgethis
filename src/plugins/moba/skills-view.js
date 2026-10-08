@@ -4,10 +4,10 @@ import { STEP } from '../../core/app.js'
 import { tune } from './tune.js'
 import { abilityOf, castAbility } from './ability.js'
 import { heroDefinition } from './heroes.js'
-import { clampMap, projectMap, OBSTACLES, sweepObstacles, mapExit } from './obstacles.js'
+import { clampMap, projectMap, OBSTACLES, FLOOR, sweepObstacles, mapExit } from './obstacles.js'
 
 // Presentation reads ability identity and stats, never what happens to occupy Q/W/E.
-export function lineReach(point, yaw, stats, obstacles = OBSTACLES) {
+export function lineReach(point, yaw, stats, obstacles = OBSTACLES, bounds = FLOOR) {
 	const end = { x: point.x - Math.sin(yaw) * stats.range, z: point.z - Math.cos(yaw) * stats.range }
 	const blocked = sweepObstacles(
 		point,
@@ -15,7 +15,7 @@ export function lineReach(point, yaw, stats, obstacles = OBSTACLES) {
 		stats.radius,
 		obstacles.filter((o) => !['tower', 'core'].includes(o.kind)),
 	)
-	return stats.range * Math.min(blocked ?? 1, mapExit(point, end, stats.radius) ?? 1)
+	return stats.range * Math.min(blocked ?? 1, mapExit(point, end, stats.radius, bounds) ?? 1)
 }
 
 // Ground tells lie just above the map's top print layer (and under the cursor markers);
@@ -148,6 +148,7 @@ export function createSkillsView(scene) {
 			casters = [],
 			units = casters,
 			obstacles = OBSTACLES,
+			bounds = FLOOR,
 			alpha = 0,
 			tick = 0,
 		},
@@ -185,17 +186,21 @@ export function createSkillsView(scene) {
 			if (circle) {
 				const stats = circle.stats,
 					reach = Math.min(1, stats.range / (distance || 1))
-				const at = clampMap({ x: hero.x + dx * reach, z: hero.z + dz * reach })
+				const at = clampMap({ x: hero.x + dx * reach, z: hero.z + dz * reach }, 0, bounds)
 				heldCircle.position.set(at.x, GROUND, at.z)
 				heldCircle.scale.setScalar(stats.radius)
 			}
 			if (dash) {
 				heldArrow.position.set(hero.x, GROUND + 0.001, hero.z)
 				heldArrow.rotation.y = Math.atan2(dx, dz) + Math.PI
-				const end = projectMap(hero, {
-					x: hero.x + (dx / (distance || 1)) * dash.stats.range,
-					z: hero.z + (dz / (distance || 1)) * dash.stats.range,
-				})
+				const end = projectMap(
+					hero,
+					{
+						x: hero.x + (dx / (distance || 1)) * dash.stats.range,
+						z: hero.z + (dz / (distance || 1)) * dash.stats.range,
+					},
+					bounds,
+				)
 				heldArrow.scale.set(1, 1, Math.hypot(end.x - hero.x, end.z - hero.z))
 			}
 		}
@@ -304,7 +309,7 @@ export function createSkillsView(scene) {
 				Math.max(1, Math.round((stats.castPoint ?? tune.catching.returnTell) / STEP))
 			const progress = Math.max(0, Math.min(1, 1 - (caster.cast.left - alpha) / total))
 			if (ability.tell === 'line') {
-				const length = lineReach(p, caster.cast.yaw, stats, obstacles)
+				const length = lineReach(p, caster.cast.yaw, stats, obstacles, bounds)
 				tell.edge.scale.set(stats.radius * 2, 1, length)
 				tell.fill.scale.set(stats.radius, 1, length * progress)
 			} else {

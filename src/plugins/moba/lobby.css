@@ -1,6 +1,14 @@
 .moba-front.front-lobby {
 	z-index: 0;
 }
+.front-lobby .back-button {
+	top: calc(max(14px, 1.6vw) + 100px);
+}
+@media (max-width: 720px) {
+	.front-lobby .back-button {
+		top: 114px;
+	}
+}
 .moba-top[hidden],
 .front-lobby .front-distant-fletcher {
 	display: none;

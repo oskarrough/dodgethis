@@ -74,7 +74,7 @@
 .moba-minimap {
 	position: fixed;
 	top: 14px;
-	left: 14px;
+	right: 14px;
 	width: clamp(168px, 15vw, 216px);
 	height: auto;
 	z-index: 3;
@@ -129,8 +129,6 @@
 }
 @media (max-width: 720px) {
 	.moba-minimap {
-		top: 196px;
-		left: 10px;
 		width: 168px;
 	}
 }
@@ -374,7 +372,7 @@
 .moba-hud.moba-unit {
 	top: max(14px, 1.6vw);
 	bottom: auto;
-	left: calc(max(14px, 1.6vw) + clamp(38px, 3.2vw, 52px) + 20px);
+	left: max(14px, 1.6vw);
 	width: auto;
 	transform: none;
 	justify-items: start;
@@ -772,7 +770,7 @@
 /* --- Narrow screens: same pieces, smaller; structure rows step under the badges. --- */
 @media (max-width: 720px) {
 	.moba-top {
-		top: 6px;
+		top: 158px;
 		gap: 5px;
 	}
 	.moba-side,
@@ -881,11 +879,11 @@
 		gap: 5px;
 	}
 }
-/* The inspect tile: the back button's twin in the top-right corner, its key stuck top-left. */
+/* Inspect sits beside the minimap, or beneath it on narrow screens. */
 .moba-inspect {
 	position: fixed;
 	top: max(14px, 1.6vw);
-	right: max(14px, 1.6vw);
+	right: calc(14px + clamp(168px, 15vw, 216px) + 20px);
 	z-index: 6;
 	display: grid;
 	place-items: center;
@@ -899,6 +897,12 @@
 	color: var(--ui-text);
 	cursor: pointer;
 	transition: transform 0.12s cubic-bezier(0.2, 1.9, 0.45, 1);
+}
+@media (max-width: 720px) {
+	.moba-inspect {
+		top: 100px;
+		right: 14px;
+	}
 }
 .moba-inspect[hidden] {
 	display: none;

@@ -2,7 +2,7 @@ import { createJuice } from '../../core/juice.js'
 import { createShadows } from '../../core/shadows.js'
 import { tune as coreTune } from '../../core/tune.js'
 import { tune } from './tune.js'
-import { FLOOR } from './map.js'
+import { mapLayout, FLOOR } from './obstacles.js'
 import { castAbility } from './ability.js'
 import { createSim } from './sim.js'
 import { practiceRoster } from './bots.js'
@@ -84,7 +84,12 @@ export default function moba(app, map) {
 		scheme: 'pointClick',
 		start(run, { options = {} } = {}) {
 			const isLobby = !!options.lobby
-			if (isLobby && app.session.shared) {
+			const query = new URLSearchParams(window.location.search)
+			const setup = parseMatchSetup(query, options.setup ?? options)
+			const isSandlot = !isLobby && setup.map === 'sandlot'
+			const kind = isLobby ? 'plaza' : setup.map
+			const layout = mapLayout(kind)
+			if ((isLobby || isSandlot) && app.session.shared) {
 				// Mode start must finish before its replacement can abort it. No map/sim is built.
 				queueMicrotask(() => {
 					if (!run.signal.aborted)
@@ -103,19 +108,20 @@ export default function moba(app, map) {
 				}
 			}
 			const local = app.session.local[0]
-			app.setPalette({})
+			app.setPalette(isSandlot ? tune.sandlot.palette : {})
 			document.documentElement.style.removeProperty('--page-bg')
 			audio.setMusicScene('play')
 			const juice = createJuice(scene)
 			const stamps = createStamps(scene)
+			const ground = isLobby ? FLOOR : layout.bounds
 			const shadows = createShadows(scene, {
-				onGround: (x, z) => Math.abs(x) <= FLOOR.halfX && Math.abs(z) <= FLOOR.halfZ,
+				onGround: (x, z) => Math.abs(x) <= ground.halfX && Math.abs(z) <= ground.halfZ,
 			})
 			const view = createView(scene, run.smooth)
 			const skillsView = createSkillsView(scene)
-			const hud = createHud({ lobby: isLobby })
+			const hud = createHud({ lobby: isLobby, bounds: layout.bounds, name: layout.name })
 			const pips = createPips()
-			const follow = createFollow()
+			const follow = createFollow(tune.follow, layout.bounds)
 			const cameraControls = createCameraControls(
 				window,
 				run.signal,
@@ -130,8 +136,6 @@ export default function moba(app, map) {
 				() => input.activeDevice(),
 			)
 			const cursor = createCursor(app.renderer.domElement)
-			const query = new URLSearchParams(window.location.search)
-			const setup = parseMatchSetup(query, options.setup ?? options)
 			tune.follow.edgePan = setup.edgePan
 			const difficulty = setup.difficulty
 			// Without an explicit seed each match draws one, so bots and the enemy's random hero vary; copied links keep it.
@@ -144,9 +148,16 @@ export default function moba(app, map) {
 					team: setup.picks?.[local]?.team ?? 'A',
 				},
 			}
-			const seats = isLobby
-				? [{ id: local, team: setup.picks[local].team ?? 'A', heroId: setup.picks[local].heroId }]
-				: practiceRoster(local, difficulty, setup.picks, setup.seed)
+			const seats =
+				isLobby || isSandlot
+					? [
+							{
+								id: local,
+								team: isSandlot ? 'A' : (setup.picks[local].team ?? 'A'),
+								heroId: setup.picks[local].heroId,
+							},
+						]
+					: practiceRoster(local, difficulty, setup.picks, setup.seed)
 			setup.heroId = seats.find((seat) => seat.id === local).heroId
 			const gallery = isLobby
 				? createDifficultyGallery({
@@ -167,12 +178,18 @@ export default function moba(app, map) {
 						intents: run.intents,
 						heroes: seats,
 						bots:
-							!isLobby && app.session.authoritative
+							!isLobby && !isSandlot && app.session.authoritative
 								? seats.filter((seat) => botsOnly || seat.id !== local)
 								: [],
 						smooth: run.smooth,
 						present: run.present,
-						lane: !isLobby,
+						lane: !isLobby && !isSandlot,
+						...(isSandlot && {
+							obstacles: layout.obstacles,
+							bounds: layout.bounds,
+							spawns: { [local]: layout.spawns.A },
+							posts: tune.sandlot.dummyPosts,
+						}),
 						...(isLobby && {
 							lobby: true,
 							readyRoster: practiceRoster(local, difficulty, setup.picks, setup.seed),
@@ -184,11 +201,11 @@ export default function moba(app, map) {
 						}),
 						seed: setup.seed,
 					}),
-				isLobby ? 'plaza' : 'lane',
+				kind,
 			)
-			const ballView = isLobby ? null : createBallView(scene)
+			const ballView = isLobby || isSandlot ? null : createBallView(scene)
 			const hero = sim.heroes.find((h) => h.id === local)
-			const onboarding = isLobby ? null : createOnboarding({ scene, sim, hero })
+			const onboarding = isLobby || isSandlot ? null : createOnboarding({ scene, sim, hero })
 			const feedback = createFeedback({
 				juice,
 				sfx,
@@ -249,7 +266,7 @@ export default function moba(app, map) {
 			if (!isLobby)
 				run.camera.frame((dt) => {
 					const frame = app.intents.get(local)
-					const pad = onPad() && !sim.lane.match.winner
+					const pad = onPad() && !sim.lane?.match.winner
 					const aim = pad && Object.keys(frame.held).length ? frame.aim : null
 					return follow.frame(
 						dt,
@@ -333,6 +350,7 @@ export default function moba(app, map) {
 					aim: hero.cast && lineAbility?.tell === 'line' ? hero.cast.target : frame.aim,
 					lineStats: lineAbility?.stats,
 					obstacles: sim.obstacles,
+					bounds: sim.bounds,
 					held:
 						!hero.dead &&
 						!sim.ball?.carrying(hero) &&
@@ -349,6 +367,7 @@ export default function moba(app, map) {
 					units: [...sim.heroes, ...sim.dummies],
 					lobby: isLobby,
 					tick: sim.tick,
+					bounds: sim.bounds,
 					obstacles: sim.obstacles,
 					boards: sim.boards,
 					zones: sim.zones,
@@ -445,7 +464,7 @@ export default function moba(app, map) {
 							coreTune.physics.paused = false
 							try {
 								for (let i = 0; i < ticks; i++) {
-									if (target && sim.lane.structures.find((s) => s.id === target)?.dead) break
+									if (target && sim.lane?.structures.find((s) => s.id === target)?.dead) break
 									app.frame(app.clock.step)
 								}
 							} finally {
@@ -453,8 +472,8 @@ export default function moba(app, map) {
 							}
 							return {
 								tick: sim.tick,
-								winner: sim.lane.match.winner,
-								dead: target ? !!sim.lane.structures.find((s) => s.id === target)?.dead : false,
+								winner: sim.lane?.match.winner ?? null,
+								dead: target ? !!sim.lane?.structures.find((s) => s.id === target)?.dead : false,
 							}
 						},
 					},

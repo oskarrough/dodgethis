@@ -83,7 +83,7 @@ export function createMatchDebug({
 	let speed = initial.speed
 	const canPause = () => ready() && !app.session.shared && app.session.actions.includes('pause')
 	const allowed = () =>
-		canPause() && !sim.lane.match.winner && app.session.actions.includes('cheat')
+		canPause() && !sim.lane?.match.winner && app.session.actions.includes('cheat')
 	const hero = () => sim.heroes.find((h) => h.id === local)
 	const roster = () =>
 		sim.heroes

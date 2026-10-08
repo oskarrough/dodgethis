@@ -130,7 +130,7 @@ export function createView(scene, smooth) {
 	// Per rendered frame. `live` is the set of shot ids still flying; the rest are returned so feedback can fizzle them.
 	function update(
 		dt,
-		{ live, hero, aim, held, hovered, locate, lineStats = tune.loose, obstacles },
+		{ live, hero, aim, held, hovered, locate, lineStats = tune.loose, obstacles, bounds },
 	) {
 		for (let i = xpLabels.length - 1; i >= 0; i--) {
 			const label = xpLabels[i]
@@ -166,11 +166,15 @@ export function createView(scene, smooth) {
 			const dx = aim.x - hero.x
 			const dz = aim.z - hero.z
 			const yaw = Math.atan2(dx, dz) + Math.PI
-			const length = lineReach(hero, yaw, lineStats, obstacles)
-			const end = projectMap(hero, {
-				x: hero.x - Math.sin(yaw) * length,
-				z: hero.z - Math.cos(yaw) * length,
-			})
+			const length = lineReach(hero, yaw, lineStats, obstacles, bounds)
+			const end = projectMap(
+				hero,
+				{
+					x: hero.x - Math.sin(yaw) * length,
+					z: hero.z - Math.cos(yaw) * length,
+				},
+				bounds,
+			)
 			line.position.set(hero.x, tune.map.markerLayers.aim, hero.z)
 			line.rotation.y = yaw
 			line.scale.set(lineStats.radius * 2, 1, length)

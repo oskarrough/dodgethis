@@ -34,7 +34,9 @@ export function parseMatchSetup(query, options = {}, warn = console.warn) {
 				[true, false, '1', '0', 'true', 'false'].includes(v),
 			),
 		),
-		map: read('map', options.map ?? query.get('map'), 'lane', (v) => v === 'lane'),
+		map: read('map', options.map ?? query.get('map'), 'lane', (v) =>
+			['lane', 'sandlot'].includes(v),
+		),
 		difficulty: read('bots', options.difficulty ?? query.get('bots'), 'easy', (v) =>
 			['easy', 'normal', 'hard'].includes(v),
 		),

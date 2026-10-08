@@ -17,12 +17,12 @@ export function viewFootprint(t, aspect, fov = t.fov) {
 	}
 }
 
-export function clampView(point, t, aspect = 1, reserve = 0) {
+export function clampView(point, t, aspect = 1, reserve = 0, bounds = FLOOR) {
 	let fov = t.fov + reserve,
 		footprint = viewFootprint(t, aspect, fov)
 	const padding = t.viewPadding ?? tune.follow.viewPadding
 	const fits = (p) =>
-		p.halfX + padding <= FLOOR.halfX && p.maxZ - p.minZ + padding * 2 <= FLOOR.halfZ * 2
+		p.halfX + padding <= bounds.halfX && p.maxZ - p.minZ + padding * 2 <= bounds.halfZ * 2
 	if (!fits(footprint)) {
 		let low = tune.follow.minFov,
 			high = fov
@@ -36,13 +36,13 @@ export function clampView(point, t, aspect = 1, reserve = 0) {
 	}
 	// Clamp the camera's ground target, not its whole footprint. Hiding the boundary
 	// by narrowing the lens magnified the core and pushed the opening hero aside.
-	const at = clampMap(point, padding)
+	const at = clampMap(point, padding, bounds)
 	return { ...at, fov: Math.max(tune.follow.minFov, fov - reserve) }
 }
 
 // Follow framing: a critically damped spring on the rendered hero. Only pad aim gets look-ahead.
 // Runs per rendered frame, so it is as smooth as the interpolation it reads.
-export function createFollow(t = tune.follow) {
+export function createFollow(t = tune.follow, bounds = FLOOR) {
 	const at = { x: 0, z: 0 }
 	const vel = { x: 0, z: 0 }
 	let pendingKick = 0
@@ -66,7 +66,7 @@ export function createFollow(t = tune.follow) {
 				lz *= t.lookCap / l
 			}
 		}
-		return clampMap({ x: hero.x + lx, z: hero.z + lz })
+		return clampMap({ x: hero.x + lx, z: hero.z + lz }, 0, bounds)
 	}
 
 	// `aim` is a held pad aim, never the mouse. Pan is world-space; Space locks back onto the hero.
@@ -92,8 +92,8 @@ export function createFollow(t = tune.follow) {
 			if (!free) freeZoom = t.fov - lastFov
 			free = true
 			const length = Math.max(1, Math.hypot(pan.x, pan.z))
-			at.x = Math.max(-FLOOR.halfX, Math.min(FLOOR.halfX, at.x + (pan.x / length) * t.pan * dt))
-			at.z = Math.max(-FLOOR.halfZ, Math.min(FLOOR.halfZ, at.z + (pan.z / length) * t.pan * dt))
+			at.x = Math.max(-bounds.halfX, Math.min(bounds.halfX, at.x + (pan.x / length) * t.pan * dt))
+			at.z = Math.max(-bounds.halfZ, Math.min(bounds.halfZ, at.z + (pan.z / length) * t.pan * dt))
 			vel.x = vel.z = 0
 		} else if (!free || centred) {
 			// Mouse orders use the already interpolated hero directly: no second lagging spring.
@@ -117,6 +117,7 @@ export function createFollow(t = tune.follow) {
 			free && !centred ? { ...t, fov: Math.max(tune.follow.minFov, t.fov - freeZoom) } : t,
 			aspect,
 			Math.max(0, cameraFov - lastFov) + pendingKick,
+			bounds,
 		)
 		pendingKick = 0
 		lastFov = bounded.fov
@@ -141,7 +142,7 @@ export function createFollow(t = tune.follow) {
 		},
 		focus(point) {
 			freeZoom = 0
-			Object.assign(at, clampMap(point))
+			Object.assign(at, clampMap(point, 0, bounds))
 			vel.x = vel.z = 0
 			free = true
 			fresh = false

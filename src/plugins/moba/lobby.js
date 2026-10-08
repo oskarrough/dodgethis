@@ -176,6 +176,8 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 		strip.sync(hero.heroId)
 		const url = new URL(location.href)
 		url.searchParams.set('hero', hero.heroId)
+		url.searchParams.set('map', setup.map)
+		url.searchParams.set('bots', setup.difficulty)
 		history.replaceState(null, '', url)
 	}
 	syncPick()
@@ -483,7 +485,7 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 		const buttons = app.input.pad()?.buttons ?? []
 		// The crane takes no input, pad included.
 		if (ending) return void (previous = buttons.slice())
-		const down = (i) => buttons[i] && !previous[i]
+		const down = (i) => buttons[i] && !previous[i] && !blockedPad.has(i)
 		const cancel = down(1)
 		const start = down(9)
 		const cycle = down(12)

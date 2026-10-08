@@ -27,19 +27,78 @@ export const BOXES = [-1, 1].flatMap((side) =>
 )
 export const OBSTACLES = [...PILLARS, ...BOXES]
 
-export function clampMap(p, margin = 0) {
+// A run owns its footprint; the lane's exported defaults remain unchanged.
+export function mapLayout(kind = 'lane') {
+	if (kind === 'plaza')
+		return { name: 'The Slab', bounds: tune.lobby.bounds, obstacles: BOXES, boxes: [], pillars: [] }
+	if (kind !== 'sandlot')
+		return {
+			name: tune.map.name,
+			bounds: FLOOR,
+			obstacles: OBSTACLES,
+			boxes: BOXES,
+			pillars: PILLARS,
+		}
+	const s = tune.sandlot
+	const boxes = [-1, 1].flatMap((side) => [
+		{
+			kind: 'wall',
+			x: (side * (s.baseBlock.innerX + s.baseBlock.outerX)) / 2,
+			z: 0,
+			halfX: (s.baseBlock.outerX - s.baseBlock.innerX) / 2,
+			halfZ: s.baseBlock.halfZ,
+		},
+		...[-1, 1].flatMap((flank) =>
+			s.hedge.runs.map(([inner, outer]) => ({
+				kind: 'hedge',
+				x: (side * (inner + outer)) / 2,
+				z: (flank * (s.hedge.innerZ + s.hedge.outerZ)) / 2,
+				halfX: (outer - inner) / 2,
+				halfZ: (s.hedge.outerZ - s.hedge.innerZ) / 2,
+			})),
+		),
+	])
+	const pillars = [-1, 1].flatMap((side) =>
+		[-1, 1].flatMap((flank) => [
+			{ x: side * s.yardPillars.x, z: flank * s.yardPillars.z, r: s.pillarRadius },
+			{ x: side * s.towerPillars.x, z: flank * s.towerPillars.z, r: s.pillarRadius },
+		]),
+	)
+	const structures = [-1, 1].flatMap((side) => [
+		...['tower', 'fort'].flatMap((kind) =>
+			[-1, 1].map((flank) => ({
+				kind,
+				x: side * s.structures[`${kind}X`],
+				z: flank * s.lane.centreZ,
+			})),
+		),
+		{ kind: 'core', x: side * s.structures.coreX, z: 0 },
+	])
 	return {
-		x: Math.max(-FLOOR.halfX + margin, Math.min(FLOOR.halfX - margin, p.x)),
-		z: Math.max(-FLOOR.halfZ + margin, Math.min(FLOOR.halfZ - margin, p.z)),
+		name: s.name,
+		bounds: { id: kind, ...s.bounds },
+		boxes,
+		pillars,
+		obstacles: [...pillars, ...boxes],
+		spawns: s.spawns,
+		structures,
+		posts: s.posts,
+	}
+}
+
+export function clampMap(p, margin = 0, bounds = FLOOR) {
+	return {
+		x: Math.max(-bounds.halfX + margin, Math.min(bounds.halfX - margin, p.x)),
+		z: Math.max(-bounds.halfZ + margin, Math.min(bounds.halfZ - margin, p.z)),
 	}
 }
 
 // First exit from the map, preserving a shot/aim's heading rather than bending it along the edge.
-export function mapExit(a, b, margin = 0) {
+export function mapExit(a, b, margin = 0, bounds = FLOOR) {
 	let at = null
 	for (const [key, half] of [
-		['x', FLOOR.halfX - margin],
-		['z', FLOOR.halfZ - margin],
+		['x', bounds.halfX - margin],
+		['z', bounds.halfZ - margin],
 	]) {
 		if (Math.abs(a[key]) > half) return 0
 		if (Math.abs(b[key]) <= half) continue
@@ -49,14 +108,14 @@ export function mapExit(a, b, margin = 0) {
 	return at
 }
 
-export function projectMap(a, b) {
-	const t = mapExit(a, b) ?? 1
+export function projectMap(a, b, bounds = FLOOR) {
+	const t = mapExit(a, b, 0, bounds) ?? 1
 	return { x: a.x + (b.x - a.x) * t, z: a.z + (b.z - a.z) * t }
 }
 
-export function walkable(x, z, radius = 0, clearance = 0, obstacles = OBSTACLES) {
+export function walkable(x, z, radius = 0, clearance = 0, obstacles = OBSTACLES, bounds = FLOOR) {
 	const r = radius + clearance
-	if (Math.abs(x) > FLOOR.halfX - r || Math.abs(z) > FLOOR.halfZ - r) return false
+	if (Math.abs(x) > bounds.halfX - r || Math.abs(z) > bounds.halfZ - r) return false
 	return obstacles.every((o) =>
 		o.r !== undefined
 			? Math.hypot(x - o.x, z - o.z) >= o.r + r
@@ -67,9 +126,9 @@ export function walkable(x, z, radius = 0, clearance = 0, obstacles = OBSTACLES)
 	)
 }
 
-export function clampWalkable(point, radius, clearance = 0, obstacles = OBSTACLES) {
+export function clampWalkable(point, radius, clearance = 0, obstacles = OBSTACLES, bounds = FLOOR) {
 	const r = radius + clearance + tune.collision.separation
-	let p = clampMap(point, r)
+	let p = clampMap(point, r, bounds)
 	for (let pass = 0; pass < tune.collision.clampPasses; pass++) {
 		for (const o of obstacles) {
 			if (o.r !== undefined) {
@@ -96,14 +155,14 @@ export function clampWalkable(point, radius, clearance = 0, obstacles = OBSTACLE
 						{ x: o.x + o.halfX + r, z: p.z },
 						{ x: p.x, z: o.z - o.halfZ - r },
 						{ x: p.x, z: o.z + o.halfZ + r },
-					].filter((q) => Math.abs(q.x) <= FLOOR.halfX - r && Math.abs(q.z) <= FLOOR.halfZ - r)
+					].filter((q) => Math.abs(q.x) <= bounds.halfX - r && Math.abs(q.z) <= bounds.halfZ - r)
 					faces.sort((a, b) => Math.hypot(a.x - p.x, a.z - p.z) - Math.hypot(b.x - p.x, b.z - p.z))
 					p = faces[0] ?? p
 				}
 			}
-			p = clampMap(p, r)
+			p = clampMap(p, r, bounds)
 		}
-		if (walkable(p.x, p.z, radius, clearance, obstacles)) break
+		if (walkable(p.x, p.z, radius, clearance, obstacles, bounds)) break
 	}
 	return p
 }
@@ -166,13 +225,13 @@ export function sweepObstacles(a, b, radius = 0, obstacles = OBSTACLES) {
 	return at
 }
 
-export function segmentClear(a, b, inflate = 0, obstacles = OBSTACLES) {
-	if (Math.abs(b.x) > FLOOR.halfX - inflate || Math.abs(b.z) > FLOOR.halfZ - inflate) return false
+export function segmentClear(a, b, inflate = 0, obstacles = OBSTACLES, bounds = FLOOR) {
+	if (Math.abs(b.x) > bounds.halfX - inflate || Math.abs(b.z) > bounds.halfZ - inflate) return false
 	return sweepObstacles(a, b, Math.max(0, inflate - tune.collision.epsilon), obstacles) === null
 }
 
 // Rapier movement and analytical queries consume the same descriptors.
-export function buildColliders(world, RAPIER, obstacles = OBSTACLES) {
+export function buildColliders(world, RAPIER, obstacles = OBSTACLES, bounds = FLOOR) {
 	const body = world.createRigidBody(RAPIER.RigidBodyDesc.fixed())
 	// A flat arena needs no terrain triangles: their seams snag capsules and slow every sweep.
 	// The boundary colliders below contain the lane; the plaza also clamps its walking bounds.
@@ -188,18 +247,18 @@ export function buildColliders(world, RAPIER, obstacles = OBSTACLES) {
 	const w = m.boundaryThickness
 	for (const side of [-1, 1]) {
 		world.createCollider(
-			RAPIER.ColliderDesc.cuboid(w, m.wallHeight / 2, FLOOR.halfZ + w).setTranslation(
-				side * (FLOOR.halfX + w),
+			RAPIER.ColliderDesc.cuboid(w, m.wallHeight / 2, bounds.halfZ + w).setTranslation(
+				side * (bounds.halfX + w),
 				m.wallHeight / 2,
 				0,
 			),
 			body,
 		)
 		world.createCollider(
-			RAPIER.ColliderDesc.cuboid(FLOOR.halfX + w, m.wallHeight / 2, w).setTranslation(
+			RAPIER.ColliderDesc.cuboid(bounds.halfX + w, m.wallHeight / 2, w).setTranslation(
 				0,
 				m.wallHeight / 2,
-				side * (FLOOR.halfZ + w),
+				side * (bounds.halfZ + w),
 			),
 			body,
 		)

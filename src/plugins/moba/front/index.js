@@ -2,6 +2,7 @@ import { createBackdrop } from './backdrop.js'
 import { createControls } from './controls.js'
 import { tune } from './tune.js'
 import { parseMatchSetup } from '../setup.js'
+import { tune as mapTune } from '../tune.js'
 import './front.css'
 
 const modes = [
@@ -11,12 +12,24 @@ const modes = [
 		glyph:
 			'<circle cx="32" cy="32" r="22" class="front-glyph-fill"/><path d="M12 25 Q34 27 41 53 M25 10 Q24 33 11 41 M41 11 Q38 34 53 41"/>',
 	},
-	{
-		mode: 'moba',
-		name: 'MOBA',
-		glyph:
-			'<g transform="rotate(-30 32 32)"><path d="M22 6 Q54 32 22 58 Q44 32 22 6Z" class="front-glyph-fill"/><path d="M22 6 L22 58 M6 32 L50 32"/><path d="M48 25 L59 32 L48 39Z" class="front-glyph-fill"/><path d="M6 32 L2 26 M6 32 L2 38 M12 32 L8 26 M12 32 L8 38"/></g>',
-	},
+	...['lane', 'sandlot'].map((id) => {
+		const sandlot = id === 'sandlot'
+		const data = sandlot ? mapTune.sandlot.bounds : mapTune.map
+		const { halfX, halfZ } = data
+		const padding = tune.tile.outlinePadding
+		const rect = (x, z) => `<rect x="${-x}" y="${-z}" width="${x * 2}" height="${z * 2}"/>`
+		const plan = sandlot
+			? `${rect(mapTune.sandlot.yard.halfX, mapTune.sandlot.yard.halfZ)}${[-1, 1].map((side) => `<path d="M${-halfX},${side * mapTune.sandlot.lane.innerZ} H${halfX}"/>`).join('')}`
+			: `<path d="M${-halfX},0 H${halfX}"/>${[-1, 1].map((side) => `<path d="M${side * mapTune.map.baseWallX},${-halfZ} V${-mapTune.map.throat / 2} M${side * mapTune.map.baseWallX},${mapTune.map.throat / 2} V${halfZ}"/>`).join('')}`
+		const name = sandlot ? mapTune.sandlot.name : mapTune.map.name
+		return {
+			mode: 'moba',
+			map: id,
+			name,
+			viewBox: `${-halfX - padding} ${-halfZ - padding} ${(halfX + padding) * 2} ${(halfZ + padding) * 2}`,
+			glyph: `<g fill="none" stroke-width="${tune.tile.outlineWidth}">${rect(halfX, halfZ)}${plan}</g>`,
+		}
+	}),
 ]
 
 // The splash is the only menu before the playable plaza.
@@ -121,7 +134,7 @@ export function mobaFront(app, map) {
 			const el = document.createElement('main')
 			el.className = 'moba-front'
 			el.dataset.screen = 'modes'
-			el.setAttribute('aria-label', 'Choose a mode')
+			el.setAttribute('aria-label', 'Choose a game or map')
 			// Everything but the backdrop moves as one sticker sheet: it drops out under the plaza
 			// shot and pops back in on return.
 			// The title's o is the Ball; now and then one letter sidesteps a throw you never saw.
@@ -129,7 +142,7 @@ export function mobaFront(app, map) {
 				.map((c, i) => `<span class="front-letter${i === 1 ? ' front-ball' : ''}">${c}</span>`)
 				.join('')
 			el.innerHTML = `<div class="front-chrome"><h1 class="front-heading" aria-label="DodgeThis"><span aria-hidden="true">${title}</span></h1><p class="front-notice" role="status" hidden></p>
-				<div class="front-tiles front-modes" role="group" aria-label="Game mode">${modes.map((tile) => `<button type="button" class="front-tile" data-mode="${tile.mode}"><span class="front-tile-face"></span><svg viewBox="0 0 64 64" aria-hidden="true">${tile.glyph}</svg><span class="front-tile-name">${tile.name}</span></button>`).join('')}</div>
+				<div class="front-tiles front-modes" role="group" aria-label="Game or map">${modes.map((tile) => `<button type="button" class="front-tile" data-mode="${tile.mode}" ${tile.map ? `data-map="${tile.map}"` : ''}><span class="front-tile-face"></span><svg viewBox="${tile.viewBox ?? '0 0 64 64'}" aria-hidden="true">${tile.glyph}</svg>${tile.map ? '<small class="front-tile-kicker">MOBA</small>' : ''}<span class="front-tile-name">${tile.name}</span></button>`).join('')}</div>
 				<footer><p class="front-prompts" aria-live="polite"></p></footer></div>`
 			const chrome = el.querySelector('.front-chrome')
 			const notice = el.querySelector('.front-notice')
@@ -216,6 +229,10 @@ export function mobaFront(app, map) {
 				const mode = buttons[index].dataset.mode
 				const url = new URL(location.href)
 				url.searchParams.set('mode', mode)
+				if (mode === 'moba') {
+					setup.map = buttons[index].dataset.map
+					url.searchParams.set('map', setup.map)
+				}
 				history.replaceState(null, '', url)
 				if (mode === 'moba') {
 					tune.enter.frequencies.forEach((freq, i) =>
@@ -272,7 +289,10 @@ export function mobaFront(app, map) {
 				count: buttons.length,
 				initialBackHeld: !!app.input.pad()?.buttons[1],
 				focus(index) {
-					buttons.forEach((button, i) => button.classList.toggle('selected', i === index))
+					buttons.forEach((button, i) => {
+						button.classList.toggle('selected', i === index)
+						button.setAttribute('aria-current', String(i === index))
+					})
 					if (focused !== index && focused >= 0) app.audio.blip(tune.move)
 					focused = index
 					if (document.activeElement !== buttons[index])
@@ -301,8 +321,8 @@ export function mobaFront(app, map) {
 					activate(index)
 				}
 			})
-			// Back from the plaza, the MOBA tile is still the one in hand.
-			controls.point(options.backdrop ? buttons.findIndex((b) => b.dataset.mode === 'moba') : 0)
+			// Back from the plaza, the chosen map is still the one in hand.
+			controls.point(options.backdrop ? buttons.findIndex((b) => b.dataset.map === setup.map) : 0)
 			window.addEventListener(
 				'keydown',
 				(event) => {
