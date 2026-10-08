@@ -124,7 +124,11 @@ export function mobaFront(app, map) {
 			el.setAttribute('aria-label', 'Choose a mode')
 			// Everything but the backdrop moves as one sticker sheet: it drops out under the plaza
 			// shot and pops back in on return.
-			el.innerHTML = `<div class="front-chrome"><h1 class="front-heading">Dodge this</h1><p class="front-notice" role="status" hidden></p>
+			// The title's o is the Ball; now and then one letter sidesteps a throw you never saw.
+			const title = [...'DodgeThis']
+				.map((c, i) => `<span class="front-letter${i === 1 ? ' front-ball' : ''}">${c}</span>`)
+				.join('')
+			el.innerHTML = `<div class="front-chrome"><h1 class="front-heading" aria-label="DodgeThis"><span aria-hidden="true">${title}</span></h1><p class="front-notice" role="status" hidden></p>
 				<div class="front-tiles front-modes" role="group" aria-label="Game mode">${modes.map((tile) => `<button type="button" class="front-tile" data-mode="${tile.mode}"><span class="front-tile-face"></span><svg viewBox="0 0 64 64" aria-hidden="true">${tile.glyph}</svg><span class="front-tile-name">${tile.name}</span></button>`).join('')}</div>
 				<footer><p class="front-prompts" aria-live="polite"></p></footer></div>`
 			const chrome = el.querySelector('.front-chrome')
@@ -136,6 +140,32 @@ export function mobaFront(app, map) {
 			activeBackdrop = backdrop
 			el.prepend(backdrop.el)
 			const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches
+			if (!reduced) {
+				const letters = [...el.querySelectorAll('.front-letter')]
+				const ball = el.querySelector('.front-ball')
+				let blip = 0
+				const play = (target, name) => {
+					target.classList.remove(name)
+					void target.offsetWidth
+					target.classList.add(name)
+				}
+				const next = () => {
+					blip = setTimeout(
+						() => {
+							if (Math.random() < 0.3) play(ball, 'front-glint')
+							else {
+								const letter = letters[Math.floor(Math.random() * letters.length)]
+								letter.style.setProperty('--dodge', Math.random() < 0.5 ? -1 : 1)
+								play(letter, 'front-dodge')
+							}
+							next()
+						},
+						tune.title.calm[0] + Math.random() * (tune.title.calm[1] - tune.title.calm[0]),
+					)
+				}
+				next()
+				run.signal.addEventListener('abort', () => clearTimeout(blip))
+			}
 			let pop = null
 			if (options.backdrop) {
 				backdrop.shot('splash')

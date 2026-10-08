@@ -66,6 +66,8 @@ export const tune = {
 	back: { freq: 174.61, slideTo: 130.81, dur: 0.25, gain: 0.055 },
 	// Menu tiles: the response is a spring, not a fade. `drop` is the fall under the plaza shot,
 	// `pop` the spring back in as the splash shot lands.
+	// The title sits still for `calm` ms (min, max), then one letter dodges or the Ball glints.
+	title: { calm: [3500, 9000] },
 	tile: { snap: 0.12, press: 0.06, scale: 1.06, lift: 8, tilt: 2.5, drop: 0.2, pop: 0.35 },
 	move: { freq: 880, slideTo: 1175, dur: 0.045, gain: 0.03, type: 'square' },
 	enter: { frequencies: [392, 587.33], gap: 0.06, dur: 0.3, gain: 0.05, type: 'triangle' },
