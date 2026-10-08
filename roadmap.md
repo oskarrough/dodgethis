@@ -1,6 +1,6 @@
 # MOBA feedback roadmap
 
-Feedback collected on 2026-10-08. Unchecked items are goals, not completed work. The UI/gameplay batch landed on main in f921797d and is live. Oskar's first post-deployment feedback: "lol its super good". The combined production check passed: 296 tests, one skipped, no failures; lint, formatting and build passed. The first Slab lobby terrain pass is implemented: pale chalk-marked tarmac and stepped sandstone/violet rock over a dusk desert. Oskar’s visual judgment is next. Mitts' 25% damage reduction remains a playtest value; further card/feel tweaks can follow concrete feedback. The broader project roadmap lives in [docs/roadmap.md](docs/roadmap.md).
+Feedback collected on 2026-10-08. Unchecked items are goals, not completed work. The UI/gameplay batch landed on main in f921797d and is live. Oskar's first post-deployment feedback: "lol its super good". The combined production check passed: 296 tests, one skipped, no failures; lint, formatting and build passed. The first lobby terrain pass is live: pale chalk-marked tarmac and stepped sandstone/violet rock over a dusk desert. The approved DodgeThis home title is live too. Oskar’s terrain judgment is next. Mitts' 25% damage reduction remains a playtest value; further card/feel tweaks can follow concrete feedback. The broader project roadmap lives in [docs/roadmap.md](docs/roadmap.md).
 
 ## Visual direction
 
@@ -11,6 +11,10 @@ The feel reference is Super Smash Bros. Melee: extremely responsive controls, fa
 The supplied League of Legends and Heroes of the Storm screenshots are references for readable HP indicators and combat information, not a target for the game's visual style. Translate their clarity into our sketch drawing and crisp UI.
 
 Use the slowly animating ball-spawn ring at center court as the reference for communicating through the world. The game should "just be": animation, objects and symbols should carry information wherever they fit naturally.
+
+## Home title
+
+- [x] Redesign the home title at Oskar’s direct request: one word, DodgeThis, with the gold Ball as the first “o”, occasional letter dodges and Ball glints. Reduced motion keeps it still. Approved and landed in `a0853646`; desktop/phone checks and home-screen tests passed. Mode names stay unchanged.
 
 ## Lobby
 
@@ -71,9 +75,9 @@ Browser proof stays focused: one session, expand only the changed input or layou
 
 Ping Oskar when there is something useful to judge. Supply a working local dev URL and minimal route, a screenshot for layout or a short clip for motion, plus one concrete judgment. If automation setup stalls, report the missing proof and make manual review easy. Close the builder's browser afterwards; keep the shared dev server running.
 
-## Slab terrain and art direction
+## Overthrow terrain and art direction
 
-The early cream causeway/scalloped-trim pitch has been superseded in the art thread. The current target is our own setting from docs/world.md: the Slab, a schoolyard court on a mesa above a cold dusk desert, with warm low light, the Yard planet, torn edges and chain-link. Heroes are the lost props they carry; towers use sandcastle silhouettes. Keep the lit-stage readability and team discs/inked units.
+The early cream causeway/scalloped-trim pitch has been superseded in the art thread. The current target is our own setting from docs/world.md: Overthrow, a schoolyard court on a mesa above a cold dusk desert, with warm low light, the Yard planet, torn edges and chain-link. Heroes are the lost props they carry; towers use sandcastle silhouettes. Keep the lit-stage readability and team discs/inked units.
 
 Oskar has asked to start with the MOBA lobby's terrain and background, keeping characters and everything else as they are. The art director's warm fight concept K is the reference for the ground and mood. The first floor-and-edge pass is implemented in BB thread thr_p8g7giv53a; this does not lock the match terrain or character designs.
 
@@ -82,10 +86,22 @@ The chain is explicit: thr_4f8w6iasfh supplies prompts, style, taste and lore; t
 - [ ] Judge concept K as the world/cast target; strengthen team foot discs and unit ink, and cool/pale the court for separation.
 - [ ] Check the crowded fight in grayscale before locking the palette.
 - [x] Build the first lobby terrain pass: pale chalk-marked tarmac, a finite torn edge, lineless rock ledges and the existing desert visible beyond. All six seats, gallery and dummies stay inside safe bounds; geometry restart, disposal and slider limits are checked.
-- [ ] Judge the implemented lobby direction: does this feel like the world to walk into? The visible courses step outward; choose whether to keep the stacked slab or push toward K’s sheer cliff and haze.
-- [ ] After the slab shape is judged, add sagging chain-link and bollards along the lobby rim.
+- [ ] Judge the implemented lobby direction: does this feel like the world to walk into? The visible courses step outward; choose whether to keep the stacked floor or push toward K’s sheer cliff and haze.
+- [ ] After the floor shape is judged, add sagging chain-link and bollards along the lobby rim.
 - [ ] Carry the chosen world treatment into match terrain after a separate brief; preserve movement, timing and map layout.
+
+Terrain landed in `761026c4`, atomic headless replay publication in `464d016e`, and the approved title in `a0853646`. GitHub and Cloudflare passed the title checkpoint, and production now includes both Overthrow and the title. The live terrain bundle matches the verified local build; the local combined check passed all 296 tests, one skipped. Review the lobby at https://dodgethis.0sk.ar/?mode=moba&hero=fletcher or locally at http://127.0.0.1:5199/?mode=moba&hero=fletcher.
 
 The art-directed corrections are implemented: a lobby-scoped dusk backdrop, a visible front rock face and fewer/fainter cracks. The camera is unchanged. Debug controls sit in the hierarchy, safe slider ranges preserve the walk limits, and restarting rebuilds both the visible surface and its depth geometry. Default and real-walk edge frames at 1440×900, leave/re-entry and disposal passed; dummies remain at their authored posts. The director says the final first pass answers the value/raised-stage question; Oskar’s judgment is pending.
 
-Lobby proof: one default 1440×900 screenshot against K, plus one after walking to the edge. Oskar judges whether the lobby reads as a pale slab above the desert and the cutouts still stand out. A future match pass needs actual combat at the default camera; the side-view intro is an optional cheap extra.
+Lobby proof: one default 1440×900 screenshot against K, plus one after walking to the edge. Oskar judges whether the lobby reads as a pale floor above the desert and the cutouts still stand out. A future match pass needs actual combat at the default camera; the side-view intro is an optional cheap extra.
+
+## Flagfall and map selection
+
+The standalone Opus5.5 thread `thr_kzp3fgubvw` owns the second map. Its first checkpoint is live in `734a3334`: the splash offers Dodgeball, Overthrow and Flagfall, so map choice happens before lobby ready-up. Returning from the lobby preserves the selected map. The player frame is top-left in lobby and match; the match minimap is top-right.
+
+- [x] Audit the Flagfall design and ship the smallest walkabout: two lanes, central yard, cover and placeholder posts, with one human and two dummies. Structures, waves, capture-the-flag, bots and balance are still pending.
+- [x] Choose maps before ready-up through named splash tiles with chalk map plans; preserve selection on return. Fresh route, pad navigation and desktop/phone layouts proved.
+- [x] Define and complete the first walkabout and map-selection slices. Full check passed: 296 tests, one skipped; GitHub and Cloudflare passed.
+- [ ] Judge the walkabout and direct its terrain art from real screenshots, starting with the outer lanes. Continue in the standalone map thread.
+- [ ] Brief the separate structures/waves, flag objective and bot stages after the walkabout direction is settled.
