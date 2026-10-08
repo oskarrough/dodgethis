@@ -63,7 +63,7 @@ for (const [width, height] of [
 		'Plaza kept a removed control',
 	)
 	assert(
-		`(()=>{const r=s=>document.querySelector(s).getBoundingClientRect();const strip=r('.lobby-hero-strip'),back=r('.front-return');return strip.left>=0&&strip.bottom<=innerHeight&&strip.right<=innerWidth&&back.top>=0&&back.left>=0})()`,
+		`(()=>{const r=s=>document.querySelector(s).getBoundingClientRect();const strip=r('.lobby-hero-strip'),back=r('.back-button');return strip.left>=0&&strip.bottom<=innerHeight&&strip.right<=innerWidth&&back.top>=0&&back.left>=0})()`,
 		'Hero strip or back arrow left the frame',
 	)
 	browser('screenshot', `${dir}/plaza-${width}.png`)

@@ -31,6 +31,7 @@ export function startLoading(app, { el: plaza, backdrop, difficulty = 'easy', se
 		let ending = false
 		let built = false
 		let apexTime = 0
+		let previewTime = 0
 		let buildHold = 0
 		let drawn = ''
 		scope.clock.pause(() => true)
@@ -55,11 +56,12 @@ export function startLoading(app, { el: plaza, backdrop, difficulty = 'easy', se
 					(letter, i) =>
 						`<span aria-hidden="true" style="--i:${i}">${letter === ' ' ? '&nbsp;' : letter}</span>`,
 				)
-				.join('')}</h1>`,
+				.join('')}</h1><div class="front-descent-fuse" aria-hidden="true"><i></i></div>`,
 		)
 		root.dataset.phase = 'crane'
 		root.setAttribute('aria-label', 'Rising over the plaza')
 		const lettering = root.querySelector('.front-descent-name')
+		const fuse = root.querySelector('.front-descent-fuse')
 		const crane = tune.loading.crane
 		root.style.setProperty('--name-at', `${tune.shot.apex.time * crane.nameAt}s`)
 		root.style.setProperty('--name-letter', `${crane.letter}s`)
@@ -140,7 +142,7 @@ export function startLoading(app, { el: plaza, backdrop, difficulty = 'easy', se
 		)
 		const cream = new THREE.Color(PALETTE.cream)
 		function draw({ phase, crane: rise, progress }) {
-			const key = `${phase}:${rise}:${progress}`
+			const key = `${phase}:${rise}:${progress}:${previewTime}`
 			if (key === drawn) return
 			drawn = key
 			// Never fully clear: Chrome stops compositing an opacity-0 canvas, and the lane's
@@ -150,11 +152,14 @@ export function startLoading(app, { el: plaza, backdrop, difficulty = 'easy', se
 				canvas.style.opacity = String(floor + (1 - floor) * (1 - easeShot(rise)))
 				return
 			}
+			// The lane shows itself at the apex, still sketched; the dive then inks it in.
+			const shown = easeShot(Math.min(1, previewTime / Math.max(0.01, tune.loading.reveal)))
+			backdrop.fade(shown)
+			canvas.style.opacity = String(floor + (1 - floor) * shown)
+			fuse.style.setProperty('--burnt', String(Math.min(1, previewTime / tune.loading.preview)))
 			const eased = easeShot(progress)
-			backdrop.fade(eased)
-			canvas.style.opacity = String(floor + (1 - floor) * eased)
 			const name = Math.min(1, progress / Math.max(0.01, tune.loading.uiFadeEnd))
-			lettering.style.opacity = String(1 - easeShot(name))
+			lettering.style.opacity = fuse.style.opacity = String(1 - easeShot(name))
 			restore.update({
 				line: tune.loading.line + (1 - tune.loading.line) * eased,
 				hatch: 1 - eased,
@@ -188,7 +193,8 @@ export function startLoading(app, { el: plaza, backdrop, difficulty = 'easy', se
 			const before = gate.state.phase
 			if (before === 'apex') {
 				apexTime += dt
-				if (built && apexTime >= buildHold) gate.ready()
+				if (built && apexTime >= buildHold) previewTime += dt
+				if (previewTime >= tune.loading.preview) gate.ready()
 			}
 			if (!capturing) {
 				const remaining =

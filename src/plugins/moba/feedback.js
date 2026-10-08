@@ -237,8 +237,9 @@ export function createFeedback({
 				if (effects.effect === 'vault') {
 					skillsView?.vault(fact.point, fact.direction, ability.stats)
 					juice.burst(fact.point, { ...fact.direction, y: 0 }, { count: 8, streak: true })
-				} else if (effects.effect === 'rain' && mine) skillsView?.rain(fact.target, ability.stats)
-				else if (tune.juice[effects.effect])
+				} else if (effects.effect === 'rain') {
+					if (mine) skillsView?.rain(fact.target, ability.stats)
+				} else if (tune.juice[effects.effect])
 					juice.burst(fact.point, { ...fact.direction, y: 0 }, tune.juice[effects.effect])
 				return
 			case 'projectile': {
@@ -329,6 +330,7 @@ export function createFeedback({
 					tune.juice[effects.impact] ?? { count: 20, speed: 3, life: 0.35, size: 0.1 },
 				)
 				cue(effects.impact, fact) // once per tick, including multi-target impacts
+				if (mine && fact.hit && effects.impact === 'rain') camera.shake(tune.juice.shakeRain)
 				return
 			case 'hit': {
 				view.unbolt(fact.projectile)

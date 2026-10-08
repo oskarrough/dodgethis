@@ -18,6 +18,10 @@ export function lineReach(point, yaw, stats, obstacles = OBSTACLES) {
 	return stats.range * Math.min(blocked ?? 1, mapExit(point, end, stats.radius) ?? 1)
 }
 
+// Ground tells lie just above the map's top print layer (and under the cursor markers);
+// any lower and the lane's printed road and plaza paint over them.
+const GROUND = tune.map.printLayers.seams + 0.005
+
 export function createSkillsView(scene) {
 	const group = new THREE.Group()
 	scene.add(group)
@@ -33,6 +37,18 @@ export function createSkillsView(scene) {
 	arrow.lineTo(0.18, 0)
 	const arrowGeometry = new THREE.ShapeGeometry(arrow).rotateX(-Math.PI / 2)
 	const lineGeometry = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2).translate(0, 0, -0.5)
+	// One rain arrow: an ink shaft standing on its tip, a gold fletch on top.
+	const rainView = tune.abilityView.rain
+	const shaftGeometry = new THREE.BoxGeometry(0.04, rainView.shaft, 0.04).translate(
+		0,
+		rainView.shaft / 2,
+		0,
+	)
+	const fletchGeometry = new THREE.BoxGeometry(0.14, 0.16, 0.03).translate(
+		0,
+		rainView.shaft - 0.1,
+		0,
+	)
 	const cream = makeStyleMaterial('cream', { flat: true })
 	const gold = makeStyleMaterial('ammo', { flat: true })
 	const enemy = makeStyleMaterial('teamB', { flat: true })
@@ -87,14 +103,35 @@ export function createSkillsView(scene) {
 
 	function rain(point, stats = tune.rain) {
 		if (!castCircle) castCircle = mesh(ring, cream)
-		castCircle.position.set(point.x, 0.026, point.z)
+		castCircle.position.set(point.x, GROUND + 0.004, point.z)
 		castCircle.scale.setScalar(stats.radius)
 		castCircle.visible = true
 		castLeft = tune.abilityView.castLife
 	}
+	// Spread over the zone on a golden-angle spiral, turned by the zone id so no two rains match.
+	function rainArrows(zone, radius) {
+		const r = tune.abilityView.rain
+		const turn = [...String(zone.id)].reduce((sum, c) => sum + c.charCodeAt(0), 0)
+		return Array.from({ length: r.arrows }, (_, i) => {
+			const angle = turn + i * 2.39996,
+				reach = radius * 0.85 * Math.sqrt((i + 0.5) / r.arrows)
+			const root = new THREE.Group()
+			mesh(shaftGeometry, ink, root)
+			mesh(fletchGeometry, gold, root)
+			root.position.set(
+				zone.x + Math.cos(angle) * reach,
+				r.height,
+				zone.z + Math.sin(angle) * reach,
+			)
+			root.rotation.set(Math.sin(angle * 3) * 0.18, angle, Math.cos(angle * 5) * 0.18)
+			root.visible = false
+			group.add(root)
+			return { root, start: (r.stagger * ((i * 7) % r.arrows)) / r.arrows }
+		})
+	}
 	function vault(point, direction, stats = tune.vault) {
 		const m = mesh(arrowGeometry, gold)
-		m.position.set(point.x, 0.025, point.z)
+		m.position.set(point.x, GROUND + 0.003, point.z)
 		m.rotation.y = Math.atan2(direction.x, direction.z) + Math.PI
 		m.scale.set(1, 1, stats.range)
 		streaks.push({ mesh: m, left: tune.abilityView.streakLife })
@@ -149,11 +186,11 @@ export function createSkillsView(scene) {
 				const stats = circle.stats,
 					reach = Math.min(1, stats.range / (distance || 1))
 				const at = clampMap({ x: hero.x + dx * reach, z: hero.z + dz * reach })
-				heldCircle.position.set(at.x, 0.022, at.z)
+				heldCircle.position.set(at.x, GROUND, at.z)
 				heldCircle.scale.setScalar(stats.radius)
 			}
 			if (dash) {
-				heldArrow.position.set(hero.x, 0.023, hero.z)
+				heldArrow.position.set(hero.x, GROUND + 0.001, hero.z)
 				heldArrow.rotation.y = Math.atan2(dx, dz) + Math.PI
 				const end = projectMap(hero, {
 					x: hero.x + (dx / (distance || 1)) * dash.stats.range,
@@ -163,13 +200,30 @@ export function createSkillsView(scene) {
 			}
 		}
 		const live = new Set(zones.map((z) => z.id))
+		const r = tune.abilityView.rain
 		for (const [id, tell] of tells)
 			if (!live.has(id)) {
+				// Landed: flash the zone, snap a ring out, leave the arrows stuck where they fell.
 				if (!tell.done) {
-					tell.fill.scale.setScalar(tell.radius)
 					tell.done = true
-				} else {
-					group.remove(tell.edge, tell.fill)
+					tell.after = 0
+					tell.fill.scale.setScalar(tell.radius)
+					tell.shock = mesh(ring, ink)
+					tell.shock.position.set(tell.edge.position.x, GROUND + 0.005, tell.edge.position.z)
+					for (const a of tell.arrows) {
+						a.root.visible = true
+						a.root.position.y = -r.buried
+					}
+				}
+				tell.after += dt
+				const shock = Math.min(1, tell.after / r.shockLife)
+				tell.shock.visible = shock < 1
+				tell.shock.scale.setScalar(tell.radius * (1 + r.shockGrow * (1 - (1 - shock) ** 3)))
+				tell.edge.visible = tell.fill.visible = tell.after < r.flashLife
+				const sunk = Math.max(0, (tell.after - r.stickLife) / r.sink)
+				for (const a of tell.arrows) a.root.position.y = -r.buried - sunk * r.shaft
+				if (sunk >= 1) {
+					group.remove(tell.edge, tell.fill, tell.shock, ...tell.arrows.map((a) => a.root))
 					tells.delete(id)
 				}
 			}
@@ -177,15 +231,25 @@ export function createSkillsView(scene) {
 			const stats = abilityOf(z.ability ?? 'rain')?.stats ?? z.stats
 			if (!stats) continue
 			if (!tells.has(z.id))
-				tells.set(z.id, { edge: mesh(ring, gold), fill: mesh(disc, gold), done: false })
+				tells.set(z.id, {
+					edge: mesh(ring, gold),
+					fill: mesh(disc, gold),
+					done: false,
+					arrows: rainArrows(z, stats.radius),
+				})
 			const tell = tells.get(z.id)
 			tell.radius = stats.radius
-			tell.edge.position.set(z.x, 0.024, z.z)
-			tell.fill.position.set(z.x, 0.025, z.z)
+			tell.edge.position.set(z.x, GROUND + 0.002, z.z)
+			tell.fill.position.set(z.x, GROUND + 0.003, z.z)
 			tell.edge.scale.setScalar(stats.radius)
-			tell.fill.scale.setScalar(
-				stats.radius * Math.max(0.01, Math.min(1, 1 - (z.left - alpha) / Math.max(1, z.total))),
-			)
+			const progress = Math.max(0, Math.min(1, 1 - (z.left - alpha) / Math.max(1, z.total)))
+			tell.fill.scale.setScalar(stats.radius * Math.max(0.01, progress))
+			// Each arrow starts late by its stagger and accelerates, so all of them land on impact.
+			for (const a of tell.arrows) {
+				const fall = Math.max(0, (progress - a.start) / (1 - a.start))
+				a.root.visible = progress >= a.start
+				a.root.position.y = r.height * (1 - fall * fall)
+			}
 		}
 		const casting = casters
 			.map((u) =>
@@ -332,6 +396,8 @@ export function createSkillsView(scene) {
 				arrowGeometry,
 				coneGeometry,
 				lineGeometry,
+				shaftGeometry,
+				fletchGeometry,
 				cream,
 				gold,
 				enemy,

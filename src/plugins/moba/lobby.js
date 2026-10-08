@@ -22,7 +22,7 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 	el.className = 'moba-front front-lobby'
 	el.dataset.screen = 'plaza'
 	el.setAttribute('aria-label', 'Try your hero in the plaza')
-	el.innerHTML = `<button type="button" class="front-return" aria-label="Back to splash"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12H5m6-7-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg><kbd></kbd></button><button type="button" class="lobby-difficulty"><kbd></kbd>Bots <b></b></button><div class="lobby-pick-stamp" aria-live="polite"></div>`
+	el.innerHTML = `<button type="button" class="back-button" aria-label="Back to splash"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12H5m6-7-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg><kbd></kbd></button><button type="button" class="lobby-difficulty"><kbd></kbd>Bots <b></b></button><div class="lobby-pick-stamp" aria-live="polite"></div>`
 	el.prepend(backdrop.el, canvas)
 	canvas.classList.add('front-canvas')
 	canvas.inert = false
@@ -247,7 +247,50 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 		pickHero(playable[(index + 1) % playable.length].id)
 	}
 
+	// A right-click picks a target by the card you see, upright or knocked flat. The ground point
+	// under the cursor sits up to a card's height behind its foot, so a foot radius missed most clicks.
+	const cardPoint = new THREE.Vector3()
+	function cardAt(order) {
+		const camera = app.camera.view
+		cardPoint.set(order.x, 0, order.z).project(camera)
+		const cx = cardPoint.x,
+			cy = cardPoint.y
+		const pad = tune.lobby.gallery.clickPad
+		for (const p of props.galleryProps) {
+			p.card.updateWorldMatrix(true, true)
+			cardBox.setFromObject(p.card)
+			let left = Infinity,
+				right = -Infinity,
+				bottom = Infinity,
+				top = -Infinity
+			for (const x of [cardBox.min.x, cardBox.max.x])
+				for (const y of [cardBox.min.y, cardBox.max.y])
+					for (const z of [cardBox.min.z, cardBox.max.z]) {
+						cardPoint.set(x, y, z).project(camera)
+						left = Math.min(left, cardPoint.x)
+						right = Math.max(right, cardPoint.x)
+						bottom = Math.min(bottom, cardPoint.y)
+						top = Math.max(top, cardPoint.y)
+					}
+			if (cx >= left - pad && cx <= right + pad && cy >= bottom - pad && cy <= top + pad) return p
+		}
+		if (gallery.aimsAt(order, tune.lobby.gallery.radius + tune.orders.pick))
+			return props.galleryProps.reduce((a, b) =>
+				Math.hypot(order.x - a.stand.x, order.z - a.stand.z) <=
+				Math.hypot(order.x - b.stand.x, order.z - b.stand.z)
+					? a
+					: b,
+			)
+		return null
+	}
+	const cardBox = new THREE.Box3()
+
 	function cycleDifficulty() {
+		const i = gallery.standees.findIndex((s) => s.id === gallery.difficulty)
+		shootAt(gallery.standees[(i + 1) % gallery.standees.length])
+	}
+	// G and a right-click on a card share one route: walk to the firing mark, then shoot that card.
+	function shootAt(stand) {
 		if (hero.dead || galleryShot) {
 			run.present({
 				type: 'denied',
@@ -261,8 +304,7 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 		const frame = app.intents.get(hero.id)
 		while (frame.pressed.some((e) => e.action === 'ready')) run.intents.consume(hero.id, 'ready')
 		readyQueued = false
-		const i = gallery.standees.findIndex((s) => s.id === gallery.difficulty)
-		galleryShot = { stand: gallery.standees[(i + 1) % gallery.standees.length], projectile: null }
+		galleryShot = { stand, projectile: null }
 		// One path plan per shortcut. Walk to the firing mark first.
 		app.intents.get(hero.id).order = { ...tune.lobby.gallery.firingMark, kind: 'move' }
 	}
@@ -274,7 +316,7 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 	const blockedKeys = new Set(heldKeys)
 	let previous = app.input.pad()?.buttons.slice() ?? []
 	let blockedPad = new Set(previous.flatMap((held, i) => (held ? [i] : [])))
-	const backButton = el.querySelector('.front-return')
+	const backButton = el.querySelector('.back-button')
 	// The plaza's one difficulty readout: the targets are how you pick, this names the key.
 	const difficultyButton = el.querySelector('.lobby-difficulty')
 	difficultyButton.onclick = () => cycleDifficulty()
@@ -581,12 +623,10 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 			if (!frame.order) return
 			if (!frame.order.kind && readySeats.seats.some((s) => readySeats.contains(s, frame.order)))
 				frame.order = { ...frame.order, kind: 'move' }
-			if (
-				gallery.aimsAt(frame.order, tune.lobby.gallery.radius + tune.orders.pick) &&
-				!frame.order.kind
-			) {
-				run.intents.press(hero.id, 'primary', frame.order)
+			const card = !frame.order.kind && cardAt(frame.order)
+			if (card) {
 				frame.order = null
+				shootAt(card.stand)
 				return
 			}
 		},

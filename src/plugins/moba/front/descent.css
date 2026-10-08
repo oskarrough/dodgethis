@@ -11,7 +11,7 @@
 .front-descent-name {
 	position: absolute;
 	z-index: 1;
-	top: 30%;
+	top: 20%;
 	left: 4%;
 	right: 4%;
 	margin: 0;
@@ -36,6 +36,32 @@
 		opacity: 1;
 		transform: none;
 	}
+}
+/* The fuse to the drop: a cord under the name that burns from the left as the lane holds. */
+.front-descent-fuse {
+	position: absolute;
+	z-index: 1;
+	top: calc(20% + clamp(52px, 9vw, 165px));
+	left: 50%;
+	width: min(420px, 50vw);
+	height: 10px;
+	translate: -50% 0;
+	border: 3px solid var(--ui-text);
+	border-radius: 999px;
+	background: var(--ui-cream);
+	box-shadow: 2px 3px 0 var(--ui-text);
+	overflow: hidden;
+	pointer-events: none;
+}
+.front-descent[data-phase='crane'] .front-descent-fuse {
+	visibility: hidden;
+}
+.front-descent-fuse i {
+	position: absolute;
+	inset: 0;
+	background: var(--ui-gold);
+	transform-origin: right;
+	transform: scaleX(calc(1 - var(--burnt, 0)));
 }
 @media (prefers-reduced-motion: reduce) {
 	.front-descent-name span {

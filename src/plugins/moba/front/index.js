@@ -8,14 +8,12 @@ const modes = [
 	{
 		mode: 'dodgeball',
 		name: 'Dodgeball',
-		line: 'Court battles',
 		glyph:
 			'<circle cx="32" cy="32" r="22" class="front-glyph-fill"/><path d="M12 25 Q34 27 41 53 M25 10 Q24 33 11 41 M41 11 Q38 34 53 41"/>',
 	},
 	{
 		mode: 'moba',
 		name: 'MOBA',
-		line: 'Lane practice',
 		glyph:
 			'<g transform="rotate(-30 32 32)"><path d="M22 6 Q54 32 22 58 Q44 32 22 6Z" class="front-glyph-fill"/><path d="M22 6 L22 58 M6 32 L50 32"/><path d="M48 25 L59 32 L48 39Z" class="front-glyph-fill"/><path d="M6 32 L2 26 M6 32 L2 38 M12 32 L8 26 M12 32 L8 38"/></g>',
 	},
@@ -127,7 +125,7 @@ export function mobaFront(app, map) {
 			// Everything but the backdrop moves as one sticker sheet: it drops out under the plaza
 			// shot and pops back in on return.
 			el.innerHTML = `<div class="front-chrome"><h1 class="front-heading">Dodge this</h1><p class="front-notice" role="status" hidden></p>
-				<div class="front-tiles front-modes" role="group" aria-label="Game mode">${modes.map((tile) => `<button type="button" class="front-tile" data-mode="${tile.mode}"><span class="front-tile-face"></span><svg viewBox="0 0 64 64" aria-hidden="true">${tile.glyph}</svg><span class="front-tile-name">${tile.name}</span><span class="front-tile-line">${tile.line}</span></button>`).join('')}</div>
+				<div class="front-tiles front-modes" role="group" aria-label="Game mode">${modes.map((tile) => `<button type="button" class="front-tile" data-mode="${tile.mode}"><span class="front-tile-face"></span><svg viewBox="0 0 64 64" aria-hidden="true">${tile.glyph}</svg><span class="front-tile-name">${tile.name}</span></button>`).join('')}</div>
 				<footer><p class="front-prompts" aria-live="polite"></p></footer></div>`
 			const chrome = el.querySelector('.front-chrome')
 			const notice = el.querySelector('.front-notice')

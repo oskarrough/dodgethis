@@ -8,12 +8,12 @@
 .moba-front.front-lobby .front-canvas {
 	pointer-events: auto;
 }
-/* The overlay's corner buttons: square-ish tiles with their key stuck on the top-left corner,
-   like the ability slots. */
-.front-lobby .front-return,
+/* The difficulty chip mirrors the back button in the other corner, key stuck top-left. */
 .front-lobby .lobby-difficulty {
 	position: absolute;
 	top: max(14px, 1.6vw);
+	right: max(14px, 1.6vw);
+	gap: 0.35em;
 	z-index: 4;
 	display: flex;
 	align-items: center;
@@ -28,25 +28,10 @@
 	font: 400 clamp(16px, 1.4vw, 22px) / 1 var(--ui-font);
 	cursor: pointer;
 }
-.front-lobby .front-return {
-	left: max(14px, 1.6vw);
-	aspect-ratio: 1;
-	padding: 0;
-}
-.front-lobby .front-return svg {
-	display: block;
-	width: 55%;
-	height: 55%;
-}
-.front-lobby .lobby-difficulty {
-	right: max(14px, 1.6vw);
-	gap: 0.35em;
-}
 .front-lobby .lobby-difficulty b {
 	font-weight: 400;
 	text-transform: capitalize;
 }
-.front-lobby .front-return kbd,
 .front-lobby .lobby-difficulty kbd {
 	position: absolute;
 	top: -0.7em;
@@ -58,7 +43,6 @@
 	font-size: clamp(12px, 0.9vw, 15px);
 	rotate: -8deg;
 }
-.front-lobby .front-return kbd:empty,
 .front-lobby .lobby-difficulty kbd:empty {
 	display: none;
 }

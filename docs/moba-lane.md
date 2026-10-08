@@ -29,9 +29,9 @@ Every range is from the source's centre to the target's edge. Each structure is 
 
 |       | x   | HP   | Damage | Rate | Range | Radius |
 | ----- | --- | ---- | ------ | ---- | ----- | ------ |
-| Tower | ±18 | 2400 | 220    | 1/s  | 7.75  | 1.2    |
-| Fort  | ±29 | 5000 | 320    | 1/s  | 8.5   | 2.2    |
-| Core  | ±40 | 6000 | 360    | 1/s  | 9     | 2.5    |
+| Tower | ±18 | 2400 | 165    | 1/s  | 7.75  | 1.2    |
+| Fort  | ±29 | 5000 | 240    | 1/s  | 8.5   | 2.2    |
+| Core  | ±40 | 6000 | 270    | 1/s  | 9     | 2.5    |
 
 Damage in the table is early-phase damage. At 6:00 guns deal one twentieth of it. Early guns make a three-hero siege need its wave or the Ball; the late reduction lets bot matches close instead of trading defences forever.
 

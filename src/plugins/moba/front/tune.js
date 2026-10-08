@@ -9,7 +9,11 @@ export const tune = {
 		fitMargin: 1.18,
 		minAspect: 0.1,
 		farMargin: 100,
-		duration: 0.8,
+		duration: 1.1,
+		// Built, the whole lane holds in view for `preview` s, fading up over the first `reveal` s,
+		// while a fuse under its name burns down to the drop.
+		preview: 2.6,
+		reveal: 0.7,
 		mapName: 'The paper lane',
 		height: 22,
 		back: 110,

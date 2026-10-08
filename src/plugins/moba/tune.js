@@ -166,6 +166,7 @@ export const tune = {
 			spacing: 2.0,
 			radius: 0.4,
 			aimRadius: 2,
+			clickPad: 0.02, // right-clicks this far outside a card's screen box (in clip space) still pick it
 			width: 1.15,
 			height: 1.7,
 			printGap: 0.015,
@@ -219,7 +220,7 @@ export const tune = {
 	tower: {
 		x: 18,
 		hp: 2400,
-		damage: 220,
+		damage: 165,
 		rate: 1,
 		range: 7.75,
 		radius: 1.5,
@@ -230,7 +231,7 @@ export const tune = {
 	fort: {
 		x: 29,
 		hp: 5000,
-		damage: 320,
+		damage: 240,
 		rate: 1,
 		range: 8.5,
 		radius: 2.4,
@@ -241,7 +242,7 @@ export const tune = {
 	core: {
 		x: 40,
 		hp: 6000,
-		damage: 360,
+		damage: 270,
 		rate: 1,
 		range: 9,
 		radius: 3.5,
@@ -638,7 +639,7 @@ export const tune = {
 		radius: 0.12,
 		visualScale: 0.65,
 	},
-	respawn: { base: 6, perLevel: 2 },
+	respawn: { base: 8, perLevel: 2 },
 	momentum: { reduction: 2 },
 	cast: { cancelLockout: 0.75 },
 	catching: { returnTell: 0.5, pocketLife: 6, bagLimit: 6 },
@@ -676,19 +677,34 @@ export const tune = {
 		proneTurn: Math.PI / 2,
 	},
 	abilityView: {
-		tellY: 0.029,
+		tellY: 0.087, // above the map's print layers, under the cursor markers
 		fillLift: 0.001,
 		castLife: 0.15,
 		streakLife: 0.25,
 		drawLean: 0.14,
 		drawTurn: 0.18,
 		drawPull: 0.18,
+		// E, Rain: `arrows` drop from `height` m, staggered over the delay so all land on the beat.
+		// They stick `buried` m deep for `stickLife` s, then sink over `sink` s. On landing the
+		// zone flashes for `flashLife` s and an ink ring snaps out `shockGrow` × the radius.
+		rain: {
+			arrows: 10,
+			height: 7,
+			stagger: 0.45,
+			shaft: 0.8,
+			buried: 0.25,
+			stickLife: 1.5, // as long as the slow lasts
+			sink: 0.25,
+			flashLife: 0.12,
+			shockLife: 0.3,
+			shockGrow: 0.35,
+		},
 	},
 	heroProof: { pixels: 20, canvas: 80, zoom: 4 },
 
 	// Q, Loose: a line skillshot, first hit.
 	loose: {
-		damage: 140,
+		damage: 230, // about 2.5 autos: worth the aim, the miss risk and Mitts's catch
 		castPoint: 0.3,
 		range: 11,
 		speed: 20, // Ground line plus flight gives an 8 m dodge deadline of about 0.52 s.
@@ -873,6 +889,8 @@ export const tune = {
 		flash: 0.07,
 		hitstop: 0.065, // your own takedowns only; ignored when shared
 		shakeTaken: 0.15,
+		shakeRain: 0.12, // your rain landing on someone
+		rain: { count: 36, speed: 4.5, life: 0.45, size: 0.12 }, // the landing, not the cast
 		shakeTakedown: 0.3,
 	},
 }

@@ -262,7 +262,9 @@ export function createHud({ lobby = false } = {}) {
 	// --- Bottom: portrait, slots, help ---
 	const root = el('div', 'moba-hud')
 	const bar = el('div', 'moba-bar', root)
-	const portrait = hot(el('div', 'moba-portrait', bar), { kind: 'portrait' })
+	// The plaza parks your unit frame top-left beside Back, so the action bar centres alone.
+	const unitFrame = lobby ? el('div', 'moba-hud moba-unit') : null
+	const portrait = hot(el('div', 'moba-portrait', unitFrame ?? bar), { kind: 'portrait' })
 	const avatar = el('div', 'moba-avatar', portrait)
 	const face = el('span', '', avatar)
 	const heroLevel = el('b', 'moba-lv', avatar)
@@ -293,6 +295,7 @@ export function createHud({ lobby = false } = {}) {
 	const banner = el('div', 'moba-banner')
 	banner.hidden = true
 	document.body.append(top, root, banner)
+	if (unitFrame) document.body.append(unitFrame)
 	const tip = createTooltip(document.body)
 	// World units get their own card and a slim nameplate, so a slot card never fights a unit card.
 	const worldTip = createTooltip(document.body, 'moba-tip-world')
@@ -772,6 +775,7 @@ export function createHud({ lobby = false } = {}) {
 			// Portrait.
 			const level = hero?.level ?? teams?.[localTeam].level ?? 1
 			data(root, 'team', localTeam)
+			if (unitFrame) data(unitFrame, 'team', localTeam)
 			data(top, 'local', localTeam)
 			const definition = hero?.definition ?? heroDefinition()
 			const heroId = hero?.heroId ?? definition.id
@@ -866,6 +870,7 @@ export function createHud({ lobby = false } = {}) {
 			plate.remove()
 			top.remove()
 			root.remove()
+			unitFrame?.remove()
 			banner.remove()
 			tip.dispose()
 		},

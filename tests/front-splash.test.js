@@ -43,7 +43,7 @@ test('menu and loading chrome have no link styling', () => {
 })
 
 test('the hub has a way back to the splash, wired by composition', () => {
-	expect(read('index.html')).toContain('class="hub-exit"')
+	expect(read('index.html')).toContain('class="back-button hub-exit"')
 	expect(read('src/main.js')).toMatch(
 		/hubExit: \{ onSelect: \(\) => scope\.modes\.start\('moba-front'\) \}/,
 	)

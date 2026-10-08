@@ -233,12 +233,6 @@
 	paint-order: stroke fill;
 	letter-spacing: 0.01em;
 }
-.front-tile-line {
-	margin-top: 0.4em;
-	font-size: clamp(17px, 1.7vw, 28px);
-	font-weight: 400;
-	letter-spacing: 0.06em;
-}
 .front-tile.selected {
 	--tile-hot: 1;
 	--tile-shadow: calc(7px + var(--tile-lift));
@@ -248,13 +242,6 @@
 }
 .front-tile.selected .front-tile-face::before {
 	transform: scaleY(1);
-}
-/* Focused, the subtitle becomes a sewn-on label: legible on any flood colour. */
-.front-tile.selected .front-tile-line {
-	padding: 0.2em 0.6em 0.1em;
-	border-radius: 0.4em;
-	background: var(--ui-text);
-	color: var(--ui-cream);
 }
 .front-tile.selected svg {
 	transform: rotate(calc(var(--tile-rest) * -8deg)) scale(1.08);
@@ -284,22 +271,6 @@
 }
 .moba-front footer > * {
 	pointer-events: auto;
-}
-.front-return {
-	position: relative;
-	display: flex;
-	align-items: center;
-	gap: 0.5em;
-	padding: 0;
-	background: transparent;
-	transition: transform var(--tile-snap) cubic-bezier(0.2, 1.9, 0.45, 1);
-}
-.front-return:active {
-	transform: translate(2px, 3px) scale(0.95);
-	transition-duration: var(--tile-press);
-}
-.front-return kbd:empty {
-	display: none;
 }
 .moba-front kbd {
 	display: inline-block;
@@ -357,11 +328,6 @@
 		grid-area: 2 / 2;
 		font-size: clamp(34px, 10vw, 52px);
 	}
-	.front-tile-line {
-		grid-area: 3 / 2;
-		margin-top: 0.2em;
-		font-size: 15px;
-	}
 	.moba-front footer {
 		font-size: 14px;
 	}
@@ -374,8 +340,7 @@
 	.front-tile,
 	.front-tile::before,
 	.front-tile svg,
-	.front-tile-face::before,
-	.front-return {
+	.front-tile-face::before {
 		transition-duration: 0s;
 	}
 }
