@@ -1,6 +1,7 @@
 # Agent notes
 
 - Use jujutsu version control when `jj` is available
+- Keep learnings in the repo (docs, this file), never in a harness's private memory; Oskar works across many harnesses.
 - Don't use `jj restore`; parallel agents may be working in this checkout.
 - Commit only if your brief says so (parallel builds leave it to the orchestrator), and then only your own files, always with a message: `jj commit <paths> -m "…"`. Run `bunx oxfmt <paths>` first, docs included; `bun run check` fails on unformatted markdown. Then `jj bookmark set main -r @-`. `jj commit <path>` takes every hunk in that file, other threads' edits included, so commit a file only when all its changes are yours and otherwise leave it to the orchestrator. Leave other threads' changes in the working copy; never create an empty-described commit.
 - Don't write new unit tests yet; prove changes by playing them. Keep the existing suite green.

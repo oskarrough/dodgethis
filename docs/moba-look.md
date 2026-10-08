@@ -12,6 +12,16 @@ The slowly animating ring around the ball spawn is the reference for information
 
 **At a glance.** A skillshot game looks great when you can read the whole fight in half a second: the ground stays quiet, units are loud, and every telegraph is the exact shape of its hitbox. In this style that splits the world in two. The ground is _printed_: flat, low contrast, no shading, marks in ink. Anything that can hurt you or be hurt _stands up_: shaded, inked, and team coloured. Saturation is a budget: team red and blue plus ammo gold are the only loud colours, and scenery never uses them. Read from above: the camera sees roofs, hats and the floor under a unit, not faces.
 
+**Concept art.** Generated frames (e.g. GPT Sol through a Codex thread) explore a look before a builder spends a pass on it; they are targets, never imported assets. The recipe that produced the Slab frames:
+
+- Image 1 is a real game screenshot at the match camera. Ask for the same angle and an unchanged HUD.
+- Name what to take from inspiration images (value structure, light) and give the nouns from [world.md](world.md): the Slab, chalk court lines, chain-link, sandcastle towers, the Yard. Without them the model copies the references' ornament wholesale.
+- Value first: a pale, warm, lit stage over a darker, colder surround. Pale on pale fails, in the art and in the build.
+- State the colour budget in every prompt: red and blue for teams, gold for the Ball and ammo, scenery in violet, teal and sand.
+- Describe heroes as the object they are (quiver, mitt, racket, cardboard cutout), or they come out as generic kids. Then check for brown on beige: foot discs and ink carry the teams.
+- Ask for three frames: establishing shot, crowded fight at the match camera, side-view intro. The fight is the readability test; empty frames always flatter.
+- Add the buildability clause: simple stylised geometry, lineless world, inked units, no busy texture.
+
 **Rendering contract.** `makeStyleMaterial` writes opaque role IDs and ignores opacity. So anything translucent (tells, domes, the fill of a tint) is a plain colour material in the forward layer with `depthWrite = false`, or else opaque stippling. Blending an ID turns it into a different role; that's why the road draws orange today.
 
 ## Ground and lane markings
