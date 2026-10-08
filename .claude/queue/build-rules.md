@@ -34,6 +34,7 @@ No new unit tests for now (Oskar, 2026-10-04): prove a change by playing it, in 
 
 ## View, UI and screens
 
+- For MOBA concept art and terrain, read the Concept art recipe in [moba-look.md](../../docs/moba-look.md) and use our nouns from [world.md](../../docs/world.md). Judge the crowded fight as well as the establishing shot.
 - New MOBA debug folder names must be listed in `debugSections` (`sliders.js`), or the grouped panel hides them. Restart-only terrain controls must rebuild both visible geometry and its depth geometry, and keep walking bounds safe across their slider ranges.
 - Everything drawn moves with render interpolation: telegraphs, fills and timers blend with `alpha`, not just bodies.
 - Keyboard, mouse and pad get equal treatment: aim cues, cursors and help text cover all three.
