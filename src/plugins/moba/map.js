@@ -4,6 +4,7 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 import { makeStyleMaterial } from '../../core/stylepass.js'
 import { tune as coreTune } from '../../core/tune.js'
 import { tune } from './tune.js'
+import { slabShape } from './lobby-floor.js'
 import { FLOOR, PILLARS, BOXES, buildColliders } from './obstacles.js'
 export { FLOOR, PILLARS, SPAWN, walkable, clampWalkable } from './obstacles.js'
 
@@ -23,7 +24,8 @@ export function createMapScope(scene, RAPIER, step) {
 				world = new RAPIER.World({ x: 0, y: coreTune.physics.gravity, z: 0 })
 				world.timestep = step
 			}
-			if (built !== kind) {
+			// The plaza rebuilds every start: its slab outline reads tune.lobby.slab, which may have changed.
+			if (built !== kind || kind === 'plaza') {
 				unbuild?.()
 				unbuild = buildMap(scene, world, RAPIER, kind)
 				built = kind
@@ -57,7 +59,7 @@ export function createMapScope(scene, RAPIER, step) {
 }
 
 // Printed road, shaded flanks and low cover; all collision geometry comes from obstacles.js.
-// The 'plaza' kind draws only an endless cream ground: no walls, no pillars.
+// The 'plaza' kind draws only the Slab's cream ground: no walls, no pillars.
 export function buildMap(scene, world, RAPIER, kind = 'lane') {
 	const m = tune.map
 	const group = new THREE.Group()
@@ -85,8 +87,8 @@ export function buildMap(scene, world, RAPIER, kind = 'lane') {
 		for (const g of geometries) g.dispose()
 	}
 	const buildPlaza = () => {
-		const size = tune.lobby.floor.size
-		add(new THREE.PlaneGeometry(size, size).rotateX(-Math.PI / 2), cream, 0, m.printLayers.plaza, 0)
+		// The Slab's outline, not an endless plane: nothing is drawn beyond it, so the desert shows through.
+		add(slabShape(), cream, 0, m.printLayers.plaza, 0)
 	}
 	const buildLane = () => {
 		add(

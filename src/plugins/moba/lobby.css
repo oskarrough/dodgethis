@@ -210,3 +210,18 @@
 	border-radius: 0.25em;
 	text-align: center;
 }
+
+/* Dusk behind the Slab so the pale tarmac and its drop read: violet far ground, teal-blue dunes, lilac sky. */
+.front-lobby .front-backdrop {
+	--front-lilac: #b8abcf !important;
+	--front-mint: #a7a3c6 !important;
+	--front-peach: #c2aaca !important;
+	--front-planet: #f1eaf3 !important;
+	--front-planet-line: #d3c8de !important;
+	--front-cloud: #e4dcef !important;
+	--front-far: #6f6a8a !important;
+	--front-mesa: #625f82 !important;
+	--front-ridge: #58607e !important;
+	--front-dune: #4f5d70 !important;
+	--front-shadow: #3f4358 !important;
+}

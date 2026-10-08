@@ -183,8 +183,9 @@ export const tune = {
 		},
 		// The plaza's camera starts `distance`× back along its view ray; the canvas fades in from `fadeFrom` of the move.
 		intro: { distance: 4, fadeFrom: 0.6 },
-		// Where you can walk: far past the props, so the void feels open.
-		bounds: { halfX: 12, halfZ: 12 },
+		// Where you can walk: a rectangle kept over 1 m inside the slab's torn outline
+		// (slab.halfX/halfZ minus slab.jag, minus the 1 m). Gallery, seats, dummies and marks all sit inside it.
+		bounds: { halfX: 9, halfZ: 6.5 },
 		// The props the camera frames; it slides to follow once you leave `followX` or this depth.
 		frame: { halfZ: 6.2, followX: 5, followEase: 6 },
 		// The plaza's training dummies strafe `dummies.span` either side of these; keep the gallery >2 m off.
@@ -192,8 +193,37 @@ export const tune = {
 			{ x: -1.5, z: -5.8 },
 			{ x: 1.5, z: -5.8 },
 		],
-		// The plaza is a void: one ground wide enough that its edge never shows, and its paper.
-		floor: { size: 400 },
+		// The Slab: finite pale tarmac over a torn rock rim, floating over the desert. Geometry, texture and
+		// colours apply on restart. The outline only ever pulls in from the halfX/halfZ rectangle by up to `jag`.
+		slab: {
+			halfX: 11,
+			halfZ: 8.1,
+			jag: 0.6,
+			seed: 7,
+			step: 0.9, // metres between outline vertices
+			rockDepth: 3,
+			courses: 3,
+			courseInset: 0.3, // each rock course juts out this much further than the one above (the camera only sees outward steps), give or take half
+			courseJitter: 0.3,
+			pixelsPerMeter: 40,
+			colors: {
+				tarmac: '#f4ecda',
+				blotch: '#e4d9c3',
+				speck: '#9c8f7a',
+				crack: '#a39682',
+				chalk: '#ffffff',
+				ledge: '#e0c79e',
+				rock: '#c4a57c',
+				rockDark: '#6a6088',
+			},
+			speckles: 5200,
+			cracks: 13,
+			chalkWidth: 0.1,
+			seatPad: 0.12,
+			circle: { x: 0, z: -3.4, radius: 1.5 },
+			hopscotch: { x: -7.4, z: 0.2, cell: 0.95 },
+			arcRadius: 9, // gallery arc: a shallow curve 0.9 m behind the cards
+		},
 		onlineNotice: 'The online plaza is not ready yet. Play local practice.',
 		respawn: 0.5,
 		// Where you spawn and recover: index 0 for team A, 3 for team B. Not drawn.

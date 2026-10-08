@@ -517,6 +517,16 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 		f.add(c, 'back', 0, 13, 0.1)
 		f.add(c, 'fov', 20, 90, 1)
 	})
+	run.debug.tune('lobby slab (applies on restart)', tune.lobby.slab, (f, c) => {
+		// Never smaller than the walking bounds plus the jag and 1 m, so props and walking stay on the slab.
+		f.add(c, 'halfX', 11, 20, 0.1)
+		f.add(c, 'halfZ', 8.1, 20, 0.1)
+		f.add(c, 'jag', 0, 0.6, 0.05)
+		f.add(c, 'seed', 0, 999, 1)
+		f.add(c, 'rockDepth', 1, 10, 0.1)
+		f.add(c, 'courses', 1, 4, 1)
+		for (const k of Object.keys(c.colors)) f.addColor(c.colors, k)
+	})
 	run.debug.expose({
 		get screen() {
 			return ending ? 'descent' : 'plaza'

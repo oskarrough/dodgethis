@@ -259,7 +259,7 @@ export const debugSections = {
 		Camera: ['follow', 'edge pan', 'lobby camera'],
 		Input: ['stickAim', 'orders', 'pointClick'],
 	},
-	'Front / lobby': { Front: ['front'] },
+	'Front / lobby': { Front: ['front', 'lobby slab (applies on restart)'] },
 	Engine: { Diagnostics: ['physics', 'output', 'debug'] },
 }
 
