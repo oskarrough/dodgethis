@@ -1,8 +1,68 @@
 import { tune } from './tune.js'
 import { tune as coreTune } from '../../core/tune.js'
 import { HEROES } from './heroes.js'
-import { sliderSections } from './sliders.js'
+import { debugSections } from './sliders.js'
 import { matchLink, parseTrySetup } from './setup.js'
+
+// Register restoration before any run folders, so core can then remove empty folders.
+// Only DOM placement changes: lil-gui ownership remains with the original registration.
+export function createDebugLayout(run, isLobby) {
+	let restore = () => {}
+	run.signal.addEventListener('abort', () => restore(), { once: true })
+	return (root) => {
+		queueMicrotask(() => {
+			if (run.signal.aborted) return
+			const title = root._title
+			const closed = root._closed
+			const folders = root.folders.map((folder) => ({
+				folder,
+				closed: folder._closed,
+				hidden: folder._hidden,
+			}))
+			const tryMode = folders.find(({ folder }) => folder._title === 'Try Mode')?.folder
+			const tuneGroup = root.addFolder('Tune').close()
+			const destinations = new Map()
+			for (const [category, sections] of Object.entries(debugSections)) {
+				if (category === 'Front / lobby' && !isLobby) continue
+				let group
+				for (const [section, names] of Object.entries(sections)) {
+					const members = folders.filter(
+						({ folder }) =>
+							names.includes(folder._title) ||
+							(category === 'Presentation' &&
+								section === 'Audio' &&
+								folder._title.startsWith('sound ')),
+					)
+					if (!members.length) continue
+					group ??= tuneGroup.addFolder(category).close()
+					const nested = group.addFolder(section).close()
+					for (const { folder } of members) destinations.set(folder, nested)
+				}
+			}
+			for (const { folder } of folders) {
+				if (folder === tryMode) continue
+				folder.close()
+				const destination = destinations.get(folder)
+				if (destination) destination.$children.append(folder.domElement)
+				else folder.hide()
+			}
+			root.title(isLobby ? 'MOBA / lobby' : 'MOBA / Try Mode')
+			if (tryMode) {
+				root.$children.prepend(tryMode.domElement)
+				tryMode.open()
+			}
+			root.open()
+			restore = () => {
+				for (const { folder, closed, hidden } of folders) {
+					root.$children.append(folder.domElement)
+					folder.show(!hidden).open(!closed)
+				}
+				tuneGroup.destroy()
+				root.title(title).open(!closed)
+			}
+		})
+	}
+}
 
 export function createMatchDebug({
 	app,
@@ -209,20 +269,16 @@ export function createMatchDebug({
 	run.clock.scale(() => speed)
 	run.intents.suspend(() => paused)
 
-	// Restore DOM-only grouping before the debug service removes its run's folders.
-	let restorePanel = () => {}
 	const groups = []
 	run.signal.addEventListener(
 		'abort',
 		() => {
-			restorePanel()
 			for (const group of groups) group.destroy()
 		},
 		{ once: true },
 	)
 	run.debug.tune('Try Mode', controls, (folder, values) => {
 		const root = folder.parent
-		root.title('MOBA / Try Mode')
 		const group = (name) => {
 			const child = folder.addFolder(name)
 			groups.push(child)
@@ -283,41 +339,6 @@ export function createMatchDebug({
 		)
 		root.domElement.addEventListener('contextmenu', (event) => event.preventDefault(), {
 			signal: run.signal,
-		})
-
-		// Other plugin registrations are long-lived; hide them, don't destroy them.
-		queueMicrotask(() => {
-			if (run.signal.aborted) return
-			const tuneGroup = root.addFolder('Tune').close()
-			const active = new Set([
-				...sliderSections(tune, setup).map(([name]) => name),
-				'cast',
-				'hud',
-				'edge pan',
-				'kit',
-				'physics',
-				'pointClick',
-				'output',
-				'debug',
-			])
-			const oldTitle = 'dodgethis / debug'
-			const others = root.folders.filter((f) => f !== folder && f !== tuneGroup)
-			for (const other of others) {
-				other.close()
-				if (active.has(other._title)) tuneGroup.$children.append(other.domElement)
-				else other.hide()
-			}
-			root.$children.prepend(folder.domElement)
-			root.open()
-			folder.open()
-			restorePanel = () => {
-				for (const other of others) {
-					root.$children.append(other.domElement)
-					other.show()
-				}
-				tuneGroup.destroy()
-				root.title(oldTitle)
-			}
 		})
 	})
 	return controls

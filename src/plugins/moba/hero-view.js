@@ -13,6 +13,14 @@ export function dressHero(body, heroId = 'fletcher', team = 'A') {
 	const original = body.visual.geometry
 	const hidden = body.visual.children.map((part) => [part, part.visible])
 	hidden.forEach(([part]) => (part.visible = false))
+	const costume = new THREE.Group()
+	costume.name = 'moba-cast-pose'
+	body.visual.add(costume)
+	const torso = new THREE.Mesh(original, body.visual.material)
+	torso.castShadow = true
+	costume.add(torso)
+	body.visual.geometry = new THREE.BufferGeometry()
+	const empty = body.visual.geometry
 	const teamMaterial = makeStyleMaterial(team === 'A' ? 'teamA' : 'teamB')
 	const cream = makeStyleMaterial('cream')
 	const fins = makeStyleMaterial(team === 'A' ? 'teamA' : 'teamB', { side: THREE.DoubleSide })
@@ -28,7 +36,7 @@ export function dressHero(body, heroId = 'fletcher', team = 'A') {
 		geometries.push(g)
 		return g
 	}
-	function part(g, material, x = 0, y = 0, z = 0, parent = body.visual) {
+	function part(g, material, x = 0, y = 0, z = 0, parent = costume) {
 		const mesh = new THREE.Mesh(own(g), material)
 		mesh.position.set(x, y, z)
 		parent.add(mesh)
@@ -74,7 +82,7 @@ export function dressHero(body, heroId = 'fletcher', team = 'A') {
 		body.mesh,
 	)
 	if (heroId === 'fletcher') {
-		body.visual.geometry = own(
+		torso.geometry = own(
 			new THREE.CapsuleGeometry(t.bodyRadius, t.bodyHalfHeight * 2, 8, t.segments),
 		)
 		part(
@@ -90,7 +98,7 @@ export function dressHero(body, heroId = 'fletcher', team = 'A') {
 			arrow.position.set(offset * t.arrowSpacing, t.arrowY, t.quiverZ)
 			arrow.rotation.z = -offset * t.arrowFan
 			arrow.rotation.x = t.arrowTilt
-			body.visual.add(arrow)
+			costume.add(arrow)
 			roots.push(arrow)
 			part(
 				new THREE.CylinderGeometry(t.arrowRadius, t.arrowRadius, t.arrowHeight, 4),
@@ -113,10 +121,10 @@ export function dressHero(body, heroId = 'fletcher', team = 'A') {
 			}
 		}
 	} else if (heroId === 'mitts') {
-		body.visual.geometry = own(rounded(t.mittsWidth, t.mittsDepth, t.mittsHeight))
+		torso.geometry = own(rounded(t.mittsWidth, t.mittsDepth, t.mittsHeight))
 		glove = new THREE.Group()
 		glove.name = 'moba-glove'
-		body.visual.add(glove)
+		costume.add(glove)
 		roots.push(glove)
 		pocketRing = part(
 			new THREE.RingGeometry(
@@ -168,7 +176,7 @@ export function dressHero(body, heroId = 'fletcher', team = 'A') {
 			else shape.lineTo(x, z)
 		}
 		shape.closePath()
-		body.visual.geometry = own(
+		torso.geometry = own(
 			new THREE.ExtrudeGeometry(shape, {
 				depth: t.caromHeight,
 				bevelEnabled: true,
@@ -199,7 +207,7 @@ export function dressHero(body, heroId = 'fletcher', team = 'A') {
 			t.racketRadius + t.racketHandle / 2,
 		)
 	} else {
-		body.visual.geometry = own(new THREE.BoxGeometry(t.skipWidth, t.skipHeight, t.skipDepth))
+		torso.geometry = own(new THREE.BoxGeometry(t.skipWidth, t.skipHeight, t.skipDepth))
 		part(
 			new THREE.CylinderGeometry(
 				t.megaphoneRadius,
@@ -221,10 +229,10 @@ export function dressHero(body, heroId = 'fletcher', team = 'A') {
 		).rotation.y = Math.PI
 	}
 	// Move geometry, not the animated root: core's capsule centre is still physics.
-	body.visual.geometry.computeBoundingBox()
-	body.visual.geometry.translate(0, discY - body.visual.geometry.boundingBox.min.y, 0)
+	torso.geometry.computeBoundingBox()
+	torso.geometry.translate(0, discY - torso.geometry.boundingBox.min.y, 0)
 	if (heroId !== 'fletcher') {
-		const border = part(body.visual.geometry.clone(), ink)
+		const border = part(torso.geometry.clone(), ink)
 		border.geometry.computeBoundingBox()
 		const bounds = border.geometry.boundingBox
 		const height = bounds.max.y - bounds.min.y
@@ -244,24 +252,145 @@ export function dressHero(body, heroId = 'fletcher', team = 'A') {
 	)
 	drawn.name = 'moba-drawn-arrow'
 	drawn.visible = false
-	body.drawPose = (progress) => {
-		progress = Math.max(0, Math.min(1, progress))
-		drawn.visible = progress > 0
-		if (!drawn.visible) return
-		body.visual.rotation.x = -tune.abilityView.drawLean * progress
-		body.visual.rotation.z = -tune.abilityView.drawTurn * progress
-		drawn.position.z = -t.arrowHeight / 2 + tune.abilityView.drawPull * progress
+	let bow = null,
+		hand = null,
+		bowString = null,
+		drawArm = null
+	const armDirection = new THREE.Vector3(),
+		armUp = new THREE.Vector3(0, 1, 0)
+	if (heroId === 'fletcher') {
+		const a = tune.abilityView
+		bow = new THREE.Group()
+		bow.name = 'moba-bow'
+		costume.add(bow)
+		roots.push(bow)
+		const curve = new THREE.CatmullRomCurve3([
+			new THREE.Vector3(0, -a.bowHeight / 2, 0),
+			new THREE.Vector3(0, 0, -a.bowCurve),
+			new THREE.Vector3(0, a.bowHeight / 2, 0),
+		])
+		part(new THREE.TubeGeometry(curve, a.bowSegments, a.bowRadius, 4, false), ink, 0, 0, 0, bow)
+		hand = part(new THREE.SphereGeometry(a.handRadius, 8, 6), cream)
+		hand.name = 'moba-draw-hand'
+		part(new THREE.SphereGeometry(a.handRadius, 8, 6), cream, 0, 0, -a.bowCurve, bow)
+		drawArm = part(new THREE.CylinderGeometry(a.armRadius, a.armRadius, 1, 4), teamMaterial)
+		drawArm.name = 'moba-draw-arm'
+		// Two opaque ribbon triangles per string leg, updated in place.
+		const stringGeometry = new THREE.BufferGeometry()
+		stringGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(36), 3))
+		bowString = new THREE.Mesh(own(stringGeometry), fins)
+		bowString.frustumCulled = false
+		costume.add(bowString)
+		roots.push(bowString)
+	}
+	const definition = heroDefinition(heroId)
+	const resolver = { cast: null, definition }
+	let releasePose = null,
+		releaseTick = -Infinity,
+		lastTick = -Infinity
+	body.resetAbilityPose = () => {
+		releasePose = null
+		releaseTick = -Infinity
+		costume.rotation.set(0, 0, 0)
+		drawn.visible = false
+		if (glove) {
+			glove.position.set(0, 0, 0)
+			glove.rotation.set(0, 0, 0)
+			pocketRing.visible = false
+		}
+		body.poseAbility?.(null, 0, null, Number.isFinite(lastTick) ? lastTick : 0)
+	}
+	// Only a real projectile fact arms the snap. Cast disappearance is cancellation.
+	body.releaseAbilityPose = (pose, tick) => {
+		if ((pose === 'draw' && bow) || (pose === 'toss' && glove)) {
+			releasePose = pose
+			releaseTick = tick
+		}
 	}
 	body.poseAbility = (cast, alpha = 0, unit = null, tick = 0) => {
-		const ability = castAbility({ cast, definition: heroDefinition(heroId) })
-		body.drawPose(
-			ability?.effects?.pose === 'draw'
-				? Math.max(1 / Math.max(1, cast.total), 1 - (cast.left - alpha) / Math.max(1, cast.total))
-				: 0,
-		)
-		if (!glove) return
-		const time = tick + alpha,
+		if (tick < lastTick || unit?.dead) body.resetAbilityPose()
+		lastTick = tick
+		if (unit?.dead) return
+		resolver.cast = cast
+		const ability = castAbility(resolver)
+		const pose = ability?.effects?.pose
+		const progress = cast
+			? Math.max(0, Math.min(1, 1 - (cast.left - alpha) / Math.max(1, cast.total)))
+			: 0
+		const time = tick + alpha
+		const elapsed = Math.max(0, (time - releaseTick) * STEP)
+		const a = tune.abilityView,
 			v = tune.mittsView
+		const snap = releasePose === 'draw' ? a.drawSnap : v.tossSnap
+		const recover = releasePose === 'draw' ? a.drawRecover : v.tossRecover
+		const releasing =
+			!cast &&
+			!unit?.stance &&
+			!unit?.body?.dashing &&
+			!unit?.attack &&
+			releasePose &&
+			elapsed < Math.max(STEP, snap + recover)
+		const fire = releasing ? Math.min(1, elapsed / Math.max(STEP, snap)) : 0
+		const settle = releasing
+			? 1 - Math.max(0, Math.min(1, (elapsed - snap) / Math.max(STEP, recover)))
+			: 0
+		if (cast || !releasing) releasePose = null
+		costume.rotation.set(0, 0, 0)
+		drawn.visible = false
+		if (bow) {
+			drawArm.visible = true
+			bowString.visible = true
+			const pulling = pose === 'draw'
+			const reach = Math.max(STEP, Math.min(1, a.drawReach))
+			const fetching = pulling ? Math.min(1, progress / reach) : 0
+			const tension = pulling
+				? Math.max(0, Math.min(1, (progress - reach) / Math.max(STEP, 1 - reach)))
+				: 0
+			const released = releasing && releasePose === 'draw'
+			const pull = pulling ? tension : released ? (1 - fire) * settle : 0
+			bow.position.set(a.bowX, a.bowY, a.bowZ)
+			bow.rotation.y = a.drawTurn * pull
+			bow.scale.z = 1 + a.bowFlex * pull
+			// Hand travels from quiver to string before drawing it back.
+			hand.position.set(
+				pulling ? a.handX * fetching : a.handX,
+				pulling ? t.arrowY + (a.handY - t.arrowY) * fetching : a.handY,
+				pulling
+					? t.quiverZ + (a.bowZ - t.quiverZ) * fetching + a.drawPull * pull
+					: a.bowZ + a.drawPull * pull,
+			)
+			if (!pulling && !released) hand.position.set(a.handX, a.handY, t.quiverZ)
+			costume.rotation.x = -a.drawLean * pull + (released ? a.drawRecoil * fire * settle : 0)
+			costume.rotation.y = -a.drawTurn * pull
+			costume.rotation.z = -a.drawTurn * pull
+			drawn.visible = pulling && progress >= reach
+			drawn.position.set(hand.position.x, hand.position.y, hand.position.z - t.arrowHeight / 2)
+			armDirection.set(hand.position.x - a.handX, hand.position.y - a.handY, hand.position.z)
+			drawArm.position.set(
+				(a.handX + hand.position.x) / 2,
+				(a.handY + hand.position.y) / 2,
+				hand.position.z / 2,
+			)
+			drawArm.scale.y = armDirection.length()
+			if (drawArm.scale.y > 0)
+				drawArm.quaternion.setFromUnitVectors(armUp, armDirection.normalize())
+			const string = bowString.geometry.attributes.position
+			const middleX = pulling || released ? hand.position.x : a.bowX
+			const middleZ = a.bowZ + a.drawPull * pull
+			const width = a.bowRadius / 4
+			for (let leg = 0; leg < 2; leg++) {
+				const y = a.bowY + ((leg ? 1 : -1) * a.bowHeight) / 2,
+					i = leg * 6
+				string.setXYZ(i, a.bowX - width, y, a.bowZ)
+				string.setXYZ(i + 1, a.bowX + width, y, a.bowZ)
+				string.setXYZ(i + 2, middleX - width, a.bowY, middleZ)
+				string.setXYZ(i + 3, a.bowX + width, y, a.bowZ)
+				string.setXYZ(i + 4, middleX + width, a.bowY, middleZ)
+				string.setXYZ(i + 5, middleX - width, a.bowY, middleZ)
+			}
+			string.needsUpdate = true
+		}
+		if (!glove) return
 		const pocket = unit?.abilityState?.pocket
 		gloveMaterial.uniforms.uStyleId.value = styleId(
 			(pocket?.team ?? team) === 'A' ? 'teamA' : 'teamB',
@@ -290,15 +419,14 @@ export function dressHero(body, heroId = 'fletcher', team = 'A') {
 		}
 		glove.position.set(0, 0, 0)
 		glove.rotation.set(0, 0, 0)
-		body.visual.rotation.x = 0
-		body.visual.rotation.z = 0
-		const pose = ability?.effects?.pose
-		const progress = cast
-			? Math.max(0, Math.min(1, 1 - (cast.left - alpha) / Math.max(1, cast.total)))
-			: 0
-		if (pose === 'toss') {
-			glove.position.z = v.tossPull * progress
-			glove.rotation.y = v.gloveTurn * progress
+		if (pose === 'toss' || (releasing && releasePose === 'toss')) {
+			const windup = pose === 'toss' ? Math.sin((progress * Math.PI) / 2) : (1 - fire) * settle
+			glove.position.z = v.tossPull * windup - v.tossReach * fire * settle
+			glove.position.y = v.tossLift * windup
+			glove.rotation.y = v.gloveTurn * windup - v.tossTurn * fire * settle
+			glove.rotation.x = -v.tossTurn * fire * settle
+			costume.rotation.x = -v.tossLean * windup + v.tossLean * fire * settle
+			costume.rotation.y = -v.tossTurn * windup + v.tossTurn * fire * settle
 		} else if (unit?.stance?.ability === 'catch') {
 			glove.position.y = v.gloveLift
 			glove.rotation.z = -v.gloveTurn
@@ -306,10 +434,10 @@ export function dressHero(body, heroId = 'fletcher', team = 'A') {
 			if (direction)
 				glove.rotation.y = Math.atan2(direction.x, direction.z) + Math.PI - body.mesh.rotation.y
 		} else if (unit?.body?.dashing && unit.dashAbility === 'dive') {
-			body.visual.rotation.x = -v.diveLean
+			costume.rotation.x = -v.diveLean
 			glove.position.z = -v.tossPull
 		} else if (time < (unit?.proneUntil ?? 0)) {
-			body.visual.rotation.x = -v.proneTurn
+			costume.rotation.x = -v.proneTurn
 		} else if (unit?.attack) {
 			const attack = unit.attack
 			const reach =
@@ -317,15 +445,20 @@ export function dressHero(body, heroId = 'fletcher', team = 'A') {
 			glove.position.z = -v.slapReach * Math.max(0, Math.min(1, reach))
 		}
 	}
+	body.poseAbility(null)
 	let disposed = false
 	return () => {
 		if (disposed) return
 		disposed = true
+		body.resetAbilityPose()
 		for (const root of roots) root.removeFromParent()
 		for (const g of geometries) g.dispose()
 		for (const material of [teamMaterial, cream, fins, ink, foot, gloveMaterial, pocketMaterial])
 			material.dispose()
-		delete body.drawPose
+		costume.removeFromParent()
+		empty.dispose()
+		delete body.resetAbilityPose
+		delete body.releaseAbilityPose
 		delete body.poseAbility
 		body.visual.geometry = original
 		hidden.forEach(([part, visible]) => (part.visible = visible))

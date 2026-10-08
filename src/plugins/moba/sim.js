@@ -1229,9 +1229,18 @@ export function createSim({
 			shot.damage ??
 			(tune[shot.ability]?.damage ?? ability?.stats.damage ?? tune.loose.damage) *
 				(1 + tune.levels.growth * ((source?.level ?? 1) - 1))
+		const catchShield =
+			!unit.dead &&
+			unit.respawnTick == null &&
+			unit.stance?.ability === 'catch' &&
+			unit.stance.until > t &&
+			unit.catchWindow?.ability === 'catch' &&
+			unit.catchWindow.until > t &&
+			t >= Math.max(unit.stunUntil, unit.freezeUntil, unit.proneUntil)
 		const damage = Math.min(
 			unit.hp,
 			rawDamage *
+				(catchShield ? 1 - tune.catch.damageReduction : 1) *
 				(unit.structure && (shot.isAbility || shot.slot.startsWith('slot'))
 					? tune.waves.abilityStructure
 					: 1),

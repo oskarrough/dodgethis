@@ -122,6 +122,7 @@ export function sliderSections(tune, setup) {
 		},
 		respawn: { base: [T, 20, T], perLevel: [T, 5, T] },
 		momentum: { reduction: [0, 4, 0.25, 'Vault recharge (s)'] },
+		catch: { damageReduction: [0, 1, 0.01, 'landed damage reduction'] },
 		orders: {
 			pick: [0, 2, 0.05, 'attack pick (m)'],
 			carrot: [0.1, 3, 0.05, 'carrot (m)'],
@@ -233,6 +234,33 @@ export function sliderSections(tune, setup) {
 					? tune.sounds[name.slice(6)]
 					: (tune.minions[name] ?? tune[name])
 	return Object.entries(sections).map(([name, sliders]) => [name, object(name), sliders])
+}
+
+// Presentation paths only: registrations and their live tune objects stay unchanged.
+export const debugSections = {
+	'Heroes / abilities': {
+		Hero: ['hero', 'levels', 'respawn', 'momentum', 'dummies'],
+		Abilities: ['attack', 'cast', 'loose', 'rain', 'vault', 'catch', 'kit'],
+	},
+	'Match / lane': {
+		Match: ['match', 'Ball', 'globes'],
+		Structures: ['tower', 'core', 'base'],
+		Waves: ['waves', 'melee', 'ranged', 'wizard', 'brute'],
+	},
+	'Bots / difficulty': {
+		Bots: ['bots'],
+		Difficulty: ['bots easy', 'bots normal', 'bots hard'],
+	},
+	Presentation: {
+		Feedback: ['hud', 'out', 'card', 'juice'],
+		Audio: ['squeak'],
+	},
+	'Camera / input': {
+		Camera: ['follow', 'edge pan', 'lobby camera'],
+		Input: ['stickAim', 'orders', 'pointClick'],
+	},
+	'Front / lobby': { Front: ['front'] },
+	Engine: { Diagnostics: ['physics', 'output', 'debug'] },
 }
 
 // One GUI folder per section; T resolves to the run's clock step.

@@ -14,9 +14,10 @@ import './descent.css'
 export function startLoading(app, { el: plaza, backdrop, difficulty = 'easy', setup }) {
 	let dispose
 	dispose = app.use((scope) => {
+		const reduced = matchMedia('(prefers-reduced-motion: reduce)')
 		const gate = createDescentState(() => ({
-			crane: tune.shot.apex.time,
-			duration: tune.loading.duration,
+			crane: reduced.matches ? tune.loading.reducedDuration : tune.shot.apex.time,
+			duration: reduced.matches ? tune.loading.reducedDuration : tune.loading.duration,
 		}))
 		const canvas = app.renderer.domElement
 		const cameras = [app.camera.view, app.camera.aim]
@@ -31,7 +32,9 @@ export function startLoading(app, { el: plaza, backdrop, difficulty = 'easy', se
 		let ending = false
 		let built = false
 		let apexTime = 0
+		let revealTime = 0
 		let previewTime = 0
+		let ornamentTime = 0
 		let buildHold = 0
 		let drawn = ''
 		scope.clock.pause(() => true)
@@ -47,6 +50,7 @@ export function startLoading(app, { el: plaza, backdrop, difficulty = 'easy', se
 		const lens = aim.fov
 
 		const name = tune.loading.mapName
+		const orbit = tune.loading.orbit
 		const root = make(
 			'main',
 			'moba-front front-descent',
@@ -56,12 +60,21 @@ export function startLoading(app, { el: plaza, backdrop, difficulty = 'easy', se
 					(letter, i) =>
 						`<span aria-hidden="true" style="--i:${i}">${letter === ' ' ? '&nbsp;' : letter}</span>`,
 				)
-				.join('')}</h1><div class="front-descent-fuse" aria-hidden="true"><i></i></div>`,
+				.join(
+					'',
+				)}</h1><svg class="front-descent-orbit" aria-hidden="true" viewBox="${-orbit.size / 2} ${-orbit.size / 2} ${orbit.size} ${orbit.size}"><g transform="scale(1 ${orbit.flatten})"><circle r="${orbit.radius}" fill="none" stroke-width="${orbit.stroke}"/><g class="front-descent-marks">${orbit.angles
+				.map((angle) => {
+					const a = (angle * Math.PI) / 180
+					return `<circle cx="${Math.cos(a) * orbit.radius}" cy="${Math.sin(a) * orbit.radius}" r="${orbit.mark}"/>`
+				})
+				.join('')}</g></g></svg>`,
 		)
 		root.dataset.phase = 'crane'
 		root.setAttribute('aria-label', 'Rising over the plaza')
 		const lettering = root.querySelector('.front-descent-name')
-		const fuse = root.querySelector('.front-descent-fuse')
+		const ornament = root.querySelector('.front-descent-orbit')
+		const marks = root.querySelector('.front-descent-marks')
+		ornament.style.setProperty('--orbit-size', `${orbit.size}px`)
 		const crane = tune.loading.crane
 		root.style.setProperty('--name-at', `${tune.shot.apex.time * crane.nameAt}s`)
 		root.style.setProperty('--name-letter', `${crane.letter}s`)
@@ -142,7 +155,7 @@ export function startLoading(app, { el: plaza, backdrop, difficulty = 'easy', se
 		)
 		const cream = new THREE.Color(PALETTE.cream)
 		function draw({ phase, crane: rise, progress }) {
-			const key = `${phase}:${rise}:${progress}:${previewTime}`
+			const key = `${phase}:${rise}:${progress}:${revealTime}:${ornamentTime}`
 			if (key === drawn) return
 			drawn = key
 			// Never fully clear: Chrome stops compositing an opacity-0 canvas, and the lane's
@@ -153,13 +166,22 @@ export function startLoading(app, { el: plaza, backdrop, difficulty = 'easy', se
 				return
 			}
 			// The lane shows itself at the apex, still sketched; the dive then inks it in.
-			const shown = easeShot(Math.min(1, previewTime / Math.max(0.01, tune.loading.reveal)))
+			const shown =
+				reduced.matches && built && apexTime >= buildHold
+					? 1
+					: easeShot(
+							Math.min(1, revealTime / Math.max(tune.loading.reducedDuration, tune.loading.reveal)),
+						)
 			backdrop.fade(shown)
 			canvas.style.opacity = String(floor + (1 - floor) * shown)
-			fuse.style.setProperty('--burnt', String(Math.min(1, previewTime / tune.loading.preview)))
+			marks.setAttribute(
+				'transform',
+				`rotate(${reduced.matches ? 0 : (ornamentTime / Math.max(tune.loading.reducedDuration, orbit.period)) * 360})`,
+			)
 			const eased = easeShot(progress)
 			const name = Math.min(1, progress / Math.max(0.01, tune.loading.uiFadeEnd))
-			lettering.style.opacity = fuse.style.opacity = String(1 - easeShot(name))
+			lettering.style.opacity = String(1 - easeShot(name))
+			ornament.style.opacity = String(orbit.opacity * (1 - easeShot(name)))
 			restore.update({
 				line: tune.loading.line + (1 - tune.loading.line) * eased,
 				hatch: 1 - eased,
@@ -191,15 +213,25 @@ export function startLoading(app, { el: plaza, backdrop, difficulty = 'easy', se
 		scope.system('present', ({ dt }) => {
 			if (ending) return
 			const before = gate.state.phase
-			if (before === 'apex') {
+			if (!capturing) ornamentTime += dt
+			if (before === 'apex' && !capturing) {
 				apexTime += dt
-				if (built && apexTime >= buildHold) previewTime += dt
-				if (previewTime >= tune.loading.preview) gate.ready()
+				if (built && apexTime >= buildHold) {
+					const reveal = reduced.matches ? 0 : Math.max(0, tune.loading.reveal)
+					const revealing = Math.min(dt, Math.max(0, reveal - revealTime))
+					revealTime += revealing
+					previewTime += dt - revealing
+					if (previewTime >= tune.loading.preview) gate.ready()
+				}
 			}
 			if (!capturing) {
 				const remaining =
 					capture && gate.state.phase === 'descent'
-						? Math.max(0, (capture.progress - gate.state.progress) * tune.loading.duration)
+						? Math.max(
+								0,
+								(capture.progress - gate.state.progress) *
+									(reduced.matches ? tune.loading.reducedDuration : tune.loading.duration),
+							)
 						: dt
 				gate.step(Math.min(dt, remaining))
 			}
@@ -237,6 +269,8 @@ export function startLoading(app, { el: plaza, backdrop, difficulty = 'easy', se
 					return {
 						...gate.state,
 						apexTime,
+						revealTime,
+						previewTime,
 						built,
 						tick: match?.snapshot().t ?? null,
 						camera: app.camera.view.position.toArray(),

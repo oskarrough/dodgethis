@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { makeStyleMaterial } from '../../core/stylepass.js'
 import { HEROES } from './heroes.js'
+import { ICONS } from './hud.js'
 import { tune } from './tune.js'
 import { closest } from './skillshot.js'
 
@@ -106,7 +107,7 @@ export function createDifficultyGallery({ local, difficulty, present, dummies = 
 }
 
 // Handmade cardboard props, not combatants. All animation reads the interpolated sim clock.
-export function createLobbyProps(scene, el, gallery, readySeats, local) {
+export function createLobbyProps(scene, el, gallery, readySeats, local, heroFor = () => null) {
 	const v = tune.lobby.cutout
 	const root = new THREE.Group()
 	root.name = 'lobby-props'
@@ -121,11 +122,6 @@ export function createLobbyProps(scene, el, gallery, readySeats, local) {
 		cream = material('cream'),
 		cardboard = material('ammoShaft')
 	const colors = { circle: material('teamA'), square: material('bowl') }
-	const difficultyColors = {
-		easy: material('portalChill'),
-		normal: material('portalSpicy'),
-		hard: material('portalChaos'),
-	}
 	const picked = material('ammo')
 	function mesh(geometry, mat, parent) {
 		owned.push(geometry)
@@ -204,17 +200,17 @@ export function createLobbyProps(scene, el, gallery, readySeats, local) {
 		board.position.y = g.height / 2
 		const print = mesh(
 			new THREE.PlaneGeometry(g.width - v.thickness, g.height - v.thickness),
-			difficultyColors[stand.id],
+			cream,
 			card,
 		)
 		print.position.set(0, g.height / 2, v.thickness / 2 + g.printGap)
-		for (const [i, mat] of [ink, cream, picked].entries()) {
+		for (const [i, mat] of [ink, cream, ink].entries()) {
 			const target = mesh(new THREE.CircleGeometry(g.radius * (1 - i / 3), v.segments), mat, card)
 			target.position.set(0, g.height / 2, v.thickness / 2 + g.printGap * (i + 2))
 		}
 		const pad = mesh(
 			new THREE.RingGeometry(g.radius, g.radius + g.ringWidth, v.segments),
-			picked,
+			ink,
 			root,
 		)
 		pad.rotation.x = -Math.PI / 2
@@ -222,7 +218,7 @@ export function createLobbyProps(scene, el, gallery, readySeats, local) {
 		const label = document.createElement('div')
 		label.className = 'lobby-label lobby-gallery-label'
 		label.dataset.difficulty = stand.id
-		label.textContent = stand.id
+		label.append(document.createElement('kbd'), document.createTextNode(stand.id))
 		el.append(label)
 		return { stand, card, pad, label }
 	})
@@ -261,7 +257,15 @@ export function createLobbyProps(scene, el, gallery, readySeats, local) {
 				cutout(definition, g, seatColors[seat.team])
 				return { id: definition.id, group: g }
 			})
-		return { seat, fill, cards }
+		const label = document.createElement('div')
+		label.className = 'lobby-seat-label'
+		label.setAttribute('role', 'img')
+		const portrait = document.createElement('span')
+		portrait.setAttribute('aria-hidden', 'true')
+		const ownerLabel = document.createElement('small')
+		label.append(portrait, ownerLabel)
+		el.append(label)
+		return { seat, fill, cards, label, portrait, ownerLabel }
 	})
 	function syncSeats() {
 		for (const p of seatProps) {
@@ -269,6 +273,18 @@ export function createLobbyProps(scene, el, gallery, readySeats, local) {
 				mine = owner?.id === local
 			for (const card of p.cards) card.group.visible = !!owner?.bot && owner.heroId === card.id
 			p.fill.material = mine ? picked : seatColors[p.seat.team]
+			const heroId = heroFor(owner?.id)?.heroId ?? owner?.heroId
+			const name = heroId ?? 'Empty'
+			const who = mine ? 'You' : owner?.bot ? 'Bot' : owner ? 'Player' : 'Empty'
+			if (p.portrait.dataset.hero !== (heroId ?? '')) {
+				p.portrait.dataset.hero = heroId ?? ''
+				p.portrait.innerHTML = ICONS[heroId] ?? ''
+			}
+			const accessibleName = owner ? `${name}, ${who}` : 'Empty'
+			if (p.label.getAttribute('aria-label') !== accessibleName)
+				p.label.setAttribute('aria-label', accessibleName)
+			if (p.ownerLabel.textContent !== who) p.ownerLabel.textContent = who
+			p.label.dataset.local = String(mine)
 		}
 	}
 	// Presentation-only inspection targets: these never enter the sim's unit database.
@@ -317,6 +333,7 @@ export function createLobbyProps(scene, el, gallery, readySeats, local) {
 			const chosen = p.stand.id === gallery.difficulty
 			p.pad.visible = chosen
 			p.label.dataset.picked = String(chosen)
+			p.label.querySelector('kbd').hidden = !chosen
 		}
 	}
 	labels()
@@ -326,8 +343,17 @@ export function createLobbyProps(scene, el, gallery, readySeats, local) {
 		inspectables,
 		syncSeats,
 		selectDifficulty: labels,
+		setDevice(device) {
+			for (const p of galleryProps)
+				p.label.querySelector('kbd').textContent =
+					device === 'gamepad' ? '✛↓' : device === 'keyboard' ? 'G' : ''
+		},
 		update(tick, camera, step) {
+			syncSeats()
 			for (const p of seatProps) {
+				point.set(p.seat.x, r.fillY, p.seat.z).project(camera)
+				p.label.hidden = point.z < -1 || point.z > 1
+				place(p.label)
 				const progress = readySeats.progress(p.seat, tick, step)
 				p.fill.visible = progress > 0
 				p.fill.scale.x = progress
@@ -342,7 +368,7 @@ export function createLobbyProps(scene, el, gallery, readySeats, local) {
 		},
 		dispose() {
 			root.removeFromParent()
-			for (const p of galleryProps) p.label.remove()
+			for (const p of [...galleryProps, ...seatProps]) p.label.remove()
 			for (const item of owned) item.dispose()
 		},
 	}

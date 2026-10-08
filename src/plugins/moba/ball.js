@@ -198,7 +198,6 @@ export function createBall({ heroes, lane, obstacles, present, damage }) {
 						u.silentUntil = now + ticks(tune.ball.silence)
 						u.attack = null
 					} else {
-						u.stunUntil = now + ticks(tune.ball.stun)
 						u.cast = null
 						u.attack = null
 						u.ballThrow = null
@@ -209,6 +208,8 @@ export function createBall({ heroes, lane, obstacles, present, damage }) {
 						kind: u.structure ? 'structure' : 'hero',
 					})
 					damage(shot, u, u.structure ? u.maxHp * tune.ball.structureDamage : tune.ball.damage)
+					// The landed hit reads the stance before this impact's stun disables it.
+					if (!u.structure) u.stunUntil = now + ticks(tune.ball.stun)
 					if (u.structure) {
 						fact('ballPop', { reason: 'spent' })
 						ball = null

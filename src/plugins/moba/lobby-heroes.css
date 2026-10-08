@@ -1,6 +1,6 @@
 /* The plaza's hero strip: fighting-game tiles stacked down the left edge. */
 .lobby-hero-strip {
-	--tile: clamp(52px, min(6.5vw, 10vh), 92px);
+	--tile: clamp(62.4px, min(7.8vw, 12vh), 110.4px);
 	position: fixed;
 	top: 50%;
 	left: max(14px, 1.6vw);
@@ -13,24 +13,28 @@
 	font: 400 calc(var(--tile) * 0.2) / 1 var(--ui-font);
 	color: var(--ui-text);
 }
-.lobby-hero-strip svg .tone {
+.lobby-hero-strip svg .tone,
+.lobby-seat-label svg .tone {
 	fill: var(--ui-cream);
 	stroke: var(--ui-text);
 	stroke-width: 3;
 	stroke-linejoin: round;
 }
-.lobby-hero-strip svg .cream {
+.lobby-hero-strip svg .cream,
+.lobby-seat-label svg .cream {
 	fill: var(--ui-cream);
 	stroke: var(--ui-text);
 	stroke-width: 3;
 }
-.lobby-hero-strip svg .gold {
+.lobby-hero-strip svg .gold,
+.lobby-seat-label svg .gold {
 	fill: var(--ui-gold);
 	stroke: var(--ui-text);
 	stroke-width: 3;
 	stroke-linejoin: round;
 }
-.lobby-hero-strip svg .ink-line {
+.lobby-hero-strip svg .ink-line,
+.lobby-seat-label svg .ink-line {
 	fill: none;
 	stroke: var(--ui-text);
 	stroke-width: 4;
@@ -58,7 +62,7 @@
 	width: var(--tile);
 	height: calc(var(--tile) * 1.1);
 	padding: 0;
-	border: clamp(2px, calc(var(--strip-h) * 0.035), 4px) solid var(--ui-text);
+	border: clamp(3px, calc(var(--tile) * 0.035), 5px) solid var(--ui-text);
 	border-radius: 0.3em;
 	background:
 		repeating-linear-gradient(-45deg, transparent 0 0.5em, rgb(255 255 255 / 0.18) 0.5em 1em),

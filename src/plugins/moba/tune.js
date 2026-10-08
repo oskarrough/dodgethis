@@ -403,6 +403,19 @@ export const tune = {
 		hpTick: 200, // HP per tick on the portrait bar
 		warn: 5, // timers pulse in their last seconds
 	},
+	// Screen-space health bars: CSS pixels except lift (world metres).
+	healthBars: {
+		heroWidth: 88,
+		structureWidth: 104,
+		minorWidth: 42,
+		height: 10,
+		minorHeight: 6,
+		border: 2,
+		lift: 0.4,
+		gap: 5,
+		font: 10,
+		tickMinGap: 4,
+	},
 	match: { objective: 180, late: 360, lateGunDamage: 0.05 },
 	waves: {
 		first: 15,
@@ -637,6 +650,7 @@ export const tune = {
 	gloveSlap: { damage: 130, rate: 1, windup: 0.2, backswing: 0.25, range: 3.5, radius: 0.35 },
 	toss: { damage: 120, castPoint: 0.35, range: 9, speed: 20, radius: 0.35, cooldown: 5 },
 	catch: {
+		damageReduction: 0.25, // playtest starting value, not a balance claim
 		castPoint: 0,
 		duration: 1,
 		radius: 2,
@@ -662,7 +676,13 @@ export const tune = {
 		pocketWidth: 0.055,
 		gloveLift: 0.5,
 		gloveTurn: 0.5,
-		tossPull: 0.45,
+		tossPull: 0.65,
+		tossLift: 0.32,
+		tossLean: 0.22,
+		tossTurn: 0.38,
+		tossReach: 0.85,
+		tossSnap: 0.08,
+		tossRecover: 0.2,
 		slapReach: 0.5,
 		diveLean: 0.7,
 		proneTurn: Math.PI / 2,
@@ -674,7 +694,23 @@ export const tune = {
 		streakLife: 0.25,
 		drawLean: 0.14,
 		drawTurn: 0.18,
-		drawPull: 0.18,
+		drawPull: 0.48,
+		drawReach: 0.28, // fraction of cast spent reaching into the quiver
+		drawSnap: 0.05,
+		drawRecover: 0.18,
+		drawRecoil: 0.24,
+		bowX: -0.38,
+		bowY: 0.08,
+		bowZ: -0.52,
+		bowHeight: 0.95,
+		bowCurve: 0.22,
+		bowRadius: 0.035,
+		bowSegments: 12,
+		bowFlex: 0.1,
+		handRadius: 0.1,
+		handX: 0.24,
+		handY: 0.12,
+		armRadius: 0.055,
 		// E, Rain: `arrows` drop from `height` m, staggered over the delay so all land on the beat.
 		// They stick `buried` m deep for `stickLife` s, then sink over `sink` s. On landing the
 		// zone flashes for `flashLife` s and an ink ring snaps out `shockGrow` × the radius.
@@ -805,17 +841,17 @@ export const tune = {
 		cardSlap: { freq: 150, slideTo: 55, type: 'square', dur: 0.07, gain: 0.13 },
 		squeak: { freq: 1250, slideTo: 2150, type: 'triangle', dur: 0.07, gain: 0.05 },
 	},
-	// Hero takedowns are a playground ruling: a rubber "OUT!" stamp printed under the victim and the ref's whistle.
+	// Hero takedowns leave a small crossed-disc print under the victim, with the ref's whistle.
 	out: {
 		stampY: 0.045, // its own print height, above juice marks (0.03) and below tells
-		width: 3.4, // m; the stamp is twice as wide as tall
+		width: 1.35, // m; square symbol footprint
 		slam: 0.12, // s from slamScale down to 1
-		slamScale: 1.7,
-		squish: 0.06, // the rubber gives this much as it lands
+		slamScale: 1.15,
+		squish: 0.03, // slight give as the symbol settles
 		tilt: 7, // degrees either way
-		opacity: 0.92,
-		life: 20, // s until the print has faded away
-		hold: 0.4, // fraction of life printed at full strength
+		opacity: 0.72,
+		life: 2, // s until the print has faded away
+		hold: 0.2, // fraction of life printed at full strength
 		max: 8, // prints kept; the oldest is reused
 		streak: 6, // s between takedowns by one team that still count as a streak
 		tweet: 0.09, // s per short tweet; one per streak step, up to 3, before the long blast

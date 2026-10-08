@@ -1,0 +1,62 @@
+.moba-health-bars {
+	position: fixed;
+	pointer-events: none;
+	overflow: hidden;
+	z-index: 2;
+}
+.moba-unit-health {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: var(--width);
+	color: var(--ui-text);
+	font: var(--font) / 1 var(--ui-font);
+	text-align: center;
+}
+.moba-unit-health[hidden],
+.moba-health-label[hidden] {
+	display: none;
+}
+.moba-unit-health[data-team='A'] {
+	--tone: var(--team-a);
+}
+.moba-unit-health[data-team='B'] {
+	--tone: var(--team-b);
+}
+.moba-health-track {
+	box-sizing: border-box;
+	position: relative;
+	height: var(--height);
+	border: var(--border) solid var(--ui-text);
+	background: color-mix(in srgb, var(--ui-text) 75%, var(--ui-cream));
+}
+.moba-unit-health[data-local='true'] .moba-health-track {
+	box-shadow:
+		0 0 0 var(--border) var(--ui-cream),
+		0 0 0 calc(var(--border) * 2) var(--ui-text);
+}
+.moba-health-fill {
+	height: 100%;
+	background: var(--tone);
+}
+.moba-health-ticks {
+	position: absolute;
+	inset: 0;
+	background: repeating-linear-gradient(
+		to right,
+		transparent 0,
+		transparent calc(var(--tick-spacing) - 1px),
+		var(--ui-text) calc(var(--tick-spacing) - 1px),
+		var(--ui-text) var(--tick-spacing)
+	);
+}
+.moba-health-label {
+	display: block;
+	width: max-content;
+	max-width: 100%;
+	margin: 0 auto var(--gap);
+	padding: var(--border);
+	border: var(--border) solid var(--ui-text);
+	background: var(--ui-cream);
+	white-space: nowrap;
+}

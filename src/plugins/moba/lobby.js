@@ -22,7 +22,7 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 	el.className = 'moba-front front-lobby'
 	el.dataset.screen = 'plaza'
 	el.setAttribute('aria-label', 'Try your hero in the plaza')
-	el.innerHTML = `<button type="button" class="back-button" aria-label="Back to splash"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12H5m6-7-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg><kbd></kbd></button><button type="button" class="lobby-difficulty"><kbd></kbd>Bots <b></b></button><div class="lobby-pick-stamp" aria-live="polite"></div>`
+	el.innerHTML = `<button type="button" class="back-button" aria-label="Back to splash"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12H5m6-7-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg><kbd></kbd></button><div class="lobby-pick-stamp" aria-live="polite"></div>`
 	el.prepend(backdrop.el, canvas)
 	canvas.classList.add('front-canvas')
 	canvas.inert = false
@@ -124,7 +124,9 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 	let mouse = false
 	let touch = options.device ? options.device === 'touch' : matchMedia('(any-hover: none)').matches
 	const readySeats = sim.readySeats
-	const props = createLobbyProps(app.scene, el, gallery, readySeats, hero.id)
+	const props = createLobbyProps(app.scene, el, gallery, readySeats, hero.id, (id) =>
+		sim.heroes.find((h) => h.id === id),
+	)
 	const floor = createLobbyFloor(app.scene, app.renderer)
 	props.syncSeats()
 	const stamp = el.querySelector('.lobby-pick-stamp')
@@ -211,7 +213,6 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 			if (fact.ability === 'galleryShot') finishGalleryShot()
 			setup.difficulty = fact.difficulty
 			props.selectDifficulty()
-			syncDifficulty()
 			const url = new URL(location.href)
 			url.searchParams.set('bots', fact.difficulty)
 			history.replaceState(null, '', url)
@@ -317,13 +318,6 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 	let previous = app.input.pad()?.buttons.slice() ?? []
 	let blockedPad = new Set(previous.flatMap((held, i) => (held ? [i] : [])))
 	const backButton = el.querySelector('.back-button')
-	// The plaza's one difficulty readout: the targets are how you pick, this names the key.
-	const difficultyButton = el.querySelector('.lobby-difficulty')
-	difficultyButton.onclick = () => cycleDifficulty()
-	function syncDifficulty() {
-		difficultyButton.querySelector('b').textContent = gallery.difficulty
-	}
-	syncDifficulty()
 	const returnSplash = () => {
 		transferred = true
 		app.modes.start('moba-front', { options: { setup, backdrop, heldKeys: [...heldKeys] } })
@@ -511,8 +505,7 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 		strip.setDevice(device)
 		backButton.querySelector('kbd').textContent =
 			device === 'gamepad' ? 'B' : device === 'keyboard' ? 'Esc' : ''
-		difficultyButton.querySelector('kbd').textContent =
-			device === 'gamepad' ? '✛↓' : device === 'keyboard' ? 'G' : ''
+		props.setDevice(device)
 	})
 	// Screen changes drop pending casts/orders. The device reset requires a fresh press;
 	// inherited navigation keys and the initial pad buttons also have their own release guard.

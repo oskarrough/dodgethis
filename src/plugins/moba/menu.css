@@ -31,6 +31,11 @@
 	color: var(--ui-text);
 }
 
+.overlay[data-theme='moba-pause'] .actions {
+	flex-direction: column;
+	align-items: center;
+}
+
 /* The world loses its colour, not its camera or its live HUD. */
 canvas.moba-dead-world {
 	filter: grayscale(1);

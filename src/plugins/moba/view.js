@@ -4,6 +4,7 @@ import { makeStyleMaterial } from '../../core/stylepass.js'
 import { tune } from './tune.js'
 import { lineReach } from './skills-view.js'
 import { projectMap } from './obstacles.js'
+import { createHealthBars } from './health-bars.js'
 
 // Moba's own scene dressing: click pings, the hover ring, the held-aim indicator and the skillshot meshes. Local presentation only.
 export function createView(scene, smooth) {
@@ -60,78 +61,8 @@ export function createView(scene, smooth) {
 	tip.visible = false
 	group.add(tip)
 
-	// HP bars tick every 200 HP; they follow rendered poses, not physics ticks.
-	const bars = new Map()
-	const barGeometry = own(new THREE.PlaneGeometry(1, 0.16))
-	const barBack = flat('ink')
+	const health = createHealthBars()
 	const barColors = { A: flat('teamA'), B: flat('teamB') }
-	const tickGeometry = own(new THREE.PlaneGeometry(0.018, 0.16))
-	function health(units, localTeam) {
-		const live = new Set(units.map((u) => u.id))
-		for (const [id, bar] of bars)
-			if (!live.has(id)) {
-				group.remove(bar.root)
-				bars.delete(id)
-			}
-		for (const unit of units) {
-			let bar = bars.get(unit.id)
-			if (bar && bar.maxHp !== unit.maxHp) {
-				group.remove(bar.root)
-				bars.delete(unit.id)
-				bar = null
-			}
-			if (!bar) {
-				const root = new THREE.Group()
-				root.rotation.x = -Math.atan2(tune.follow.height, tune.follow.back)
-				const back = new THREE.Mesh(barGeometry, barBack)
-				back.scale.x = 1.8
-				const fill = new THREE.Mesh(barGeometry, barColors[unit.team])
-				fill.position.z = 0.005
-				root.add(back, fill)
-				if (unit.structure) {
-					const canvas = document.createElement('canvas')
-					canvas.width = tune.laneView.xpWidth
-					canvas.height = tune.laneView.xpHeight
-					const ctx = canvas.getContext('2d')
-					ctx.font = `bold ${tune.laneView.xpFont}px monospace`
-					ctx.textAlign = 'center'
-					ctx.fillStyle = '#fff9e8'
-					ctx.fillRect(0, 0, canvas.width, canvas.height)
-					ctx.fillStyle = '#26445f'
-					ctx.fillText(
-						`${unit.team === localTeam ? 'Your' : 'Enemy'} ${unit.kind}`,
-						canvas.width / 2,
-						canvas.height * tune.laneView.xpBaseline,
-					)
-					const texture = own(new THREE.CanvasTexture(canvas))
-					const material = own(new THREE.SpriteMaterial({ map: texture, depthWrite: false }))
-					const label = new THREE.Sprite(material)
-					label.name = 'moba-structure-label'
-					label.layers.set(FORWARD_LAYER)
-					label.scale.set(tune.laneView.labelWidth, tune.laneView.labelHeight, 1)
-					label.position.y = tune.laneView.labelLift
-					root.add(label)
-				}
-				for (let hp = 200; hp < unit.maxHp; hp += 200) {
-					const tick = new THREE.Mesh(tickGeometry, barBack)
-					tick.position.set(-0.9 + (1.8 * hp) / unit.maxHp, 0, 0.01)
-					root.add(tick)
-				}
-				group.add(root)
-				bars.set(unit.id, (bar = { root, fill, maxHp: unit.maxHp }))
-			}
-			bar.root.visible = !unit.dead
-			const p = unit.body.mesh.position
-			bar.root.position.set(
-				p.x,
-				p.y + unit.body.halfHeight + (unit.structure ? 0 : unit.body.radius) + 0.4,
-				p.z,
-			)
-			const width = (1.8 * unit.hp) / unit.maxHp
-			bar.fill.scale.x = Math.max(0.001, width)
-			bar.fill.position.x = -0.9 + width / 2
-		}
-	}
 
 	const xpLabels = []
 	function xp(amount, point) {
@@ -199,20 +130,8 @@ export function createView(scene, smooth) {
 	// Per rendered frame. `live` is the set of shot ids still flying; the rest are returned so feedback can fizzle them.
 	function update(
 		dt,
-		{
-			live,
-			hero,
-			aim,
-			held,
-			hovered,
-			locate,
-			units = [],
-			lineStats = tune.loose,
-			obstacles,
-			localTeam = 'A',
-		},
+		{ live, hero, aim, held, hovered, locate, lineStats = tune.loose, obstacles },
 	) {
-		health(units, localTeam)
 		for (let i = xpLabels.length - 1; i >= 0; i--) {
 			const label = xpLabels[i]
 			label.life -= dt
@@ -275,6 +194,7 @@ export function createView(scene, smooth) {
 	}
 
 	function reset() {
+		health.reset()
 		for (const label of xpLabels) {
 			group.remove(label.mesh)
 			label.texture.dispose()
@@ -291,11 +211,12 @@ export function createView(scene, smooth) {
 
 	function dispose() {
 		reset()
+		health.dispose()
 		scene.remove(group)
 		for (const x of owned) x.dispose()
 	}
 
-	return { ping, xp, bolt, unbolt, update, reset, dispose }
+	return { ping, xp, bolt, unbolt, update, health: health.update, reset, dispose }
 }
 
 const PING = 0.25

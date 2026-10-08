@@ -5,6 +5,8 @@ Build rules. Each one comes from a finding an earlier review caught. The orchest
 No new unit tests for now (Oskar, 2026-10-04): prove a change by playing it, in a headless match or a browser trace. Keep the existing suite green; delete a test rather than nurse it when a deliberate change makes it obsolete. Rules below that ask for tests mean a quick proof. A surgical edit outside your owned files (a setter, an export, a hook) is fine without asking; name it in the report.
 
 - Prove the change once: one device and one width, unless input or layout is the change. Then prove that axis, and only that one.
+- Keep browser proofs short and relevant: reuse the shared server, go to the screen changed, capture one useful layout screenshot or motion clip, then close your session. Full route proof belongs to a navigation/transition checkpoint, not every builder. If automation setup stalls, report the gap and give a working URL for manual review.
+- When Oskar's judgment is useful, report the actual local dev URL and shortest route plus one specific thing to judge. The coordinator pings him; don't leave review hidden in a long completion report.
 - A proof says how it was made: a bots-only fast-forward proves nothing about a human playing.
 - Every number lives in the plugin's tune.js, and every slider has a sane range (fractions 0–1, times at least one step). No slider value may produce NaN or reverse movement.
 - Tune sliders apply live, or are labelled "applies on restart". HUD text is built from tune, never hard-coded, and written only when it changes.
@@ -49,5 +51,5 @@ No new unit tests for now (Oskar, 2026-10-04): prove a change by playing it, in 
 - Previews stage actions across the frame, never straight away from the camera.
 - Hand-offs between screens pass live resources (backdrop, map, current pick) along; never rebuild one while the old copy still listens.
 - A new screen or mode handles shared sessions or refuses them with a notice; a guest never sits on a frozen screen.
-- Proof screenshots start from a fresh `/`, use the real game camera, and assert the state they claim (idle is idle, "mid-flight" waits for the flight).
+- Proof screenshots use the real game camera and assert the state they claim (idle is idle, "mid-flight" waits for the flight). Start from a fresh `/` when proving the route; targeted visual fixes may use a direct setup and must say how they got there.
 - Trace interactions (pointer sweeps, reversals mid-transition), not just idle.

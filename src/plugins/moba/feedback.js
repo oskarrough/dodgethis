@@ -57,7 +57,7 @@ export function createFeedback({
 		sfx[name]?.(fact.point, gain, ...extra)
 	}
 
-	// A hero takedown is a playground ruling: an "OUT!" stamp in the takers' colour, the ref's whistle and,
+	// A hero takedown leaves a crossed disc with the takers' accent, the ref's whistle and,
 	// unless you're the one out (the recap says so), a banner relative to you. Streaks count per team.
 	const streaks = new Map() // team → { count, tick }
 	const titleCase = (word) => word[0].toUpperCase() + word.slice(1)
@@ -82,7 +82,6 @@ export function createFeedback({
 		const side = sim.heroes.filter((h) => h.team === unit.team)
 		const wiped = hero && side.length > 1 && side.every((h) => h.dead)
 		stamps?.stamp(fact.point, {
-			text: wiped ? 'ALL OUT!' : count > 1 ? `${count} OUT!` : 'OUT!',
 			team,
 			tilt: ((tick * 7919) % 201) / 100 - 1,
 			onLand(at) {
@@ -243,6 +242,10 @@ export function createFeedback({
 					juice.burst(fact.point, { ...fact.direction, y: 0 }, tune.juice[effects.effect])
 				return
 			case 'projectile': {
+				source?.body.releaseAbilityPose?.(
+					fact.ability === 'return' ? (source.definition?.returnPose ?? 'draw') : effects.pose,
+					fact.tick ?? sim.tick,
+				)
 				const shot = sim.shots.find((s) => s.id === fact.id)
 				if (shot) view.bolt(shot, fact.point)
 				if (tune.juice[effects.projectile])
@@ -381,6 +384,7 @@ export function createFeedback({
 			case 'death': {
 				const unit = unitOf(fact.target)
 				const corpse = unit?.corpse ?? unit?.body
+				corpse?.resetAbilityPose?.()
 				if (unit?.structure) return // The sim already replaced it with solid rubble.
 				if (corpse)
 					juice.retire(corpse.visual, {
@@ -426,6 +430,7 @@ export function createFeedback({
 				cue(fact.type, fact, mine ? 1 : 0.45)
 				return
 			case 'denied':
+				if (fact.reason === 'cancelled') source?.body.resetAbilityPose?.()
 				if (fact.hero === local) hud.deny(fact.slot)
 				return
 		}
@@ -450,6 +455,8 @@ export function createFeedback({
 		beat,
 		stride,
 		reset() {
+			for (const hero of sim.heroes) hero.body.resetAbilityPose?.()
+			for (const dummy of sim.dummies) dummy.body.resetAbilityPose?.()
 			stop = 0
 			freeze = 0
 			aggroPingTick = -1

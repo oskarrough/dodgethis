@@ -26,14 +26,16 @@ export function createMatchMenu({
 		app.intents.cancel(hero.id)
 		clearCamera()
 	}
-	function leave(heroSelect) {
+	function leave() {
 		resetInput()
-		app.modes.start('moba-front', { options: { hero: heroSelect, setup } })
+		app.modes.start('moba-lobby', { options: { setup } })
 	}
 	const restart = () => {
 		resetInput()
 		app.modes.start('moba', { options: { setup } })
 	}
+	const resumeHint = () =>
+		app.input.activeDevice() === 'gamepad' ? 'B to resume' : 'Esc to resume'
 	function toggle() {
 		if (!ready() || sim.lane.match.winner || !app.session.actions.includes('pause')) return
 		paused = !paused
@@ -45,12 +47,10 @@ export function createMatchMenu({
 			theme: 'moba-pause',
 			pointerGuard: true,
 			spaceConfirm: false,
-			subtitle: 'Esc / B / Start · resume',
+			subtitle: resumeHint(),
 			actions: [
 				{ label: 'Resume', onSelect: toggle },
-				{ label: 'Restart', key: 'KeyR', keyLabel: 'R', onSelect: restart },
-				{ label: 'Hero select', onSelect: () => leave(true) },
-				{ label: 'Modes', onSelect: () => leave(false) },
+				{ label: 'Leave game', onSelect: leave },
 			],
 		})
 	}
@@ -81,7 +81,7 @@ export function createMatchMenu({
 			subtitle: sim.lane.match.winner === hero.team ? 'Enemy core destroyed' : 'Your core fell',
 			actions: [
 				{ label: 'Again', key: 'KeyR', keyLabel: 'R', onSelect: restart },
-				{ label: 'Back', onSelect: () => leave(false) },
+				{ label: 'Return to lobby', onSelect: leave },
 			],
 		})
 		if (app.renderer) recap.showTable(document.querySelector('.overlay .dialog-card'))
@@ -102,6 +102,11 @@ export function createMatchMenu({
 		const pressed = back && !backHeld
 		backHeld = back
 		if (!ready() || !app.overlay.visible) return
+		if (paused) {
+			const hint = document.querySelector('.overlay[data-theme="moba-pause"] .sub')
+			const text = resumeHint()
+			if (hint && hint.textContent !== text) hint.textContent = text
+		}
 		const input = app.input.consumeMenuInput()
 		if (pressed && paused && !sim.lane.match.winner) toggle()
 		else app.overlay.handleGamepad(input)

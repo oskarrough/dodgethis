@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import './hud.css'
 import { heroDefinition } from './heroes.js'
 import { tune } from './tune.js'
+import { createMinimap } from './minimap.js'
 import {
 	abilityCard,
 	ballCard,
@@ -133,6 +134,7 @@ export function matchFrame(sim, hero, blend, step) {
 }
 
 export function createHud({ lobby = false } = {}) {
+	const minimap = lobby ? null : createMinimap(ICONS)
 	// Unchanged values never touch the DOM. Keyed per node, then per field.
 	const touchScreen = globalThis.matchMedia?.('(any-hover: none)').matches ?? false
 	const shown = new WeakMap()
@@ -654,6 +656,7 @@ export function createHud({ lobby = false } = {}) {
 			return { ...kills }
 		},
 		update(dt, frame) {
+			minimap?.update(frame)
 			const {
 				cooldowns,
 				device = 'keyboard',
@@ -839,6 +842,7 @@ export function createHud({ lobby = false } = {}) {
 			})
 		},
 		dispose() {
+			minimap?.dispose()
 			globalThis.window?.removeEventListener('pointermove', onMove)
 			globalThis.window?.removeEventListener('keydown', onKey)
 			for (const type of ['keydown', 'keyup']) globalThis.window?.removeEventListener(type, onAlt)

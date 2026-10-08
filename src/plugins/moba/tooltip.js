@@ -24,6 +24,7 @@ const ABILITY_ROWS = [
 	['slow', 'Slow', (v, _, s) => `${pct(v)} for ${n(s.duration)} s`],
 	['duration', 'Window', (v, _, s) => (s.slow === undefined ? `${n(v)} s` : null)],
 	['speedFactor', 'Move speed', (v) => `${pct(v)} while open`],
+	['damageReduction', 'Damage reduction', (v) => `${pct(v)} while Catch is active`],
 	['prone', 'Prone after', (v) => `${n(v)} s`],
 	['cooldown', 'Cooldown', (v) => `${n(v)} s`],
 	['resetCooldown', 'After a catch', (v) => `cooldown drops to ${n(v)} s`],
@@ -39,7 +40,7 @@ const KIND = {
 const SUMMARY = {
 	toss: () => 'Line skillshot. With a caught shot in your pocket, Toss sends that back instead.',
 	catch: () =>
-		'Open your gloves: shots and the Ball entering the cone are caught into your pocket.',
+		`Catch the first skillshot or Ball entering your cone for no damage. Until caught or disabled, take ${pct(tune.catch.damageReduction)} less damage from hits that still land while Catch is active.`,
 	dive: () => 'Dive toward your aim, catching shots all around on the way, then lie prone.',
 }
 const NOTES = {

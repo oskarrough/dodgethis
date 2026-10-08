@@ -1,8 +1,8 @@
 import { clampView } from '../follow.js'
 import { tune as kit } from '../tune.js'
 
-// Render-time phases: the crane rises to the apex, the apex holds only while the lane
-// builds, then the descent lands. Nothing skips or cancels. `times()` is read live.
+// Render-time phases: the crane rises to the apex, the apex waits for the built lane's
+// visible preview, then the descent lands. Nothing skips or cancels. `times()` is read live.
 export function createDescentState(times) {
 	let phase = 'crane',
 		crane = 0,
@@ -14,7 +14,7 @@ export function createDescentState(times) {
 		arrive() {
 			arrived = true
 		},
-		// The lane is built; only meaningful once the match exists at the apex.
+		// Shader build, reveal and visible preview are complete at the apex.
 		ready() {
 			if (phase === 'apex') ready = true
 		},

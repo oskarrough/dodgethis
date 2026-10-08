@@ -20,7 +20,7 @@ import { createStamps } from './stamps.js'
 import { createOnboarding } from './onboarding.js'
 import { createMatchMenu } from './menu.js'
 import { parseMatchSetup } from './setup.js'
-import { createMatchDebug } from './debug.js'
+import { createDebugLayout, createMatchDebug } from './debug.js'
 import { addSliders, sliderSections } from './sliders.js'
 import { createLobby } from './lobby.js'
 import { createDifficultyGallery } from './lobby-props.js'
@@ -209,6 +209,7 @@ export default function moba(app, map) {
 			})
 			app.clock.reset()
 
+			const arrangeDebug = createDebugLayout(run, isLobby)
 			const lobby = isLobby ? createLobby({ app, run, sim, hero, setup, options, gallery }) : null
 			const menu =
 				lobby ??
@@ -327,7 +328,6 @@ export default function moba(app, map) {
 							([slot, ability]) => frame.held[slot] && ability?.held === 'line',
 						)?.[1]
 				const gone = view.update(step, {
-					localTeam: hero.team,
 					live: new Set(sim.shots.map((s) => s.id)),
 					hero: p,
 					aim: hero.cast && lineAbility?.tell === 'line' ? hero.cast.target : frame.aim,
@@ -338,12 +338,6 @@ export default function moba(app, map) {
 						!sim.ball?.carrying(hero) &&
 						!!lineAbility &&
 						(lineAbility.held === 'line' || lineAbility.tell === 'line'),
-					units: [
-						...sim.heroes,
-						...sim.dummies,
-						...(sim.lane?.minions ?? []),
-						...(sim.lane?.structures ?? []),
-					],
 					hovered,
 					locate,
 				})
@@ -384,6 +378,18 @@ export default function moba(app, map) {
 				})
 				stepCamera(app.camera, presentationFrozen ? 0 : dt)
 				lobby?.update(blend)
+				view.health(
+					[
+						...sim.heroes,
+						...sim.dummies,
+						...(sim.lane?.minions ?? []),
+						...(sim.lane?.structures ?? []),
+					],
+					app.camera.view,
+					app.renderer.domElement.getBoundingClientRect(),
+					local,
+					hero.team,
+				)
 				pips.update(app.camera.view, [...sim.heroes, ...sim.dummies], hero.team, {
 					hero,
 					ball: null, // Onboarding owns the team-coloured objective pointer.
@@ -405,6 +411,7 @@ export default function moba(app, map) {
 			})
 			run.debug.tune('hud', tune.hud, (f, t) => {
 				f.add(t, 'hoverDelay', 0, 2, 0.05).name('hover delay')
+				arrangeDebug(f.parent)
 			})
 			run.debug.tune('edge pan', tune.follow, (f, t) => {
 				f.add(t, 'edgePan')
