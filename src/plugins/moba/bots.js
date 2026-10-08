@@ -2,6 +2,7 @@ import { STEP } from '../../core/app.js'
 import { neutralFrame } from '../../core/intents.js'
 import { tune } from './tune.js'
 import { abilityOf } from './ability.js'
+import { HEROES } from './heroes.js'
 import { clampWalkable, segmentClear, sweepHit, sweepObstacles, walkable } from './obstacles.js'
 
 const ticks = (s) => Math.max(1, Math.round(s / STEP))
@@ -24,8 +25,16 @@ export function interceptTime(from, target, speed) {
 	return roots.length ? Math.min(...roots) : Math.sqrt(c) / speed
 }
 
-export function practiceRoster(local = 'local', difficulty = 'easy', picks = {}) {
+// Bots fill a team with Mitts and Fletcher; the enemy's third seat is a seeded random playable hero.
+export function practiceRoster(
+	local = 'local',
+	difficulty = 'easy',
+	picks = {},
+	seed = tune.bots.seed,
+) {
 	const localTeam = picks[local]?.team ?? 'A'
+	const playable = Object.keys(HEROES).filter((id) => HEROES[id].playable)
+	const random = botRandom(seed, 'practice-roster')
 	const claimed = [local, ...Object.keys(picks).filter((id) => id !== local)]
 	return ['A', 'B'].flatMap((team) => {
 		const ids = claimed.filter(
@@ -38,10 +47,12 @@ export function practiceRoster(local = 'local', difficulty = 'easy', picks = {})
 			const id = `bot-${team}-${i}`
 			if (!claimed.includes(id)) ids.push(id)
 		}
+		const lineup = ['mitts', 'fletcher', playable[Math.floor(random() * playable.length)]]
+		let next = 0
 		return ids.map((id, i) => ({
 			id,
 			team,
-			heroId: picks[id]?.heroId ?? 'fletcher',
+			heroId: picks[id]?.heroId ?? (picks[id] || id === local ? 'fletcher' : lineup[next++]),
 			file: (i - 1) * tune.bots.fileSpacing,
 			difficulty: team === localTeam ? 'normal' : difficulty,
 		}))

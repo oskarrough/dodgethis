@@ -39,6 +39,8 @@ export function parseMatchSetup(query, options = {}, warn = console.warn) {
 			['easy', 'normal', 'hard'].includes(v),
 		),
 		heroId: read('hero', options.heroId ?? query.get('hero'), 'fletcher', playable),
+		// Re-parsing a parsed setup keeps whether a seed was asked for, not just its value.
+		seeded: options.seeded ?? seed != null,
 		seed: Number(
 			read(
 				'seed',

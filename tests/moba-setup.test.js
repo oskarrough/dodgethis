@@ -8,6 +8,7 @@ const defaults = {
 	difficulty: 'easy',
 	heroId: 'fletcher',
 	seed: tune.bots.seed,
+	seeded: false,
 	edgePan: true,
 }
 test('missing params use the front-screen defaults without warnings', () => {

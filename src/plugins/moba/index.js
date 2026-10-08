@@ -134,6 +134,9 @@ export default function moba(app, map) {
 			const setup = parseMatchSetup(query, options.setup ?? options)
 			tune.follow.edgePan = setup.edgePan
 			const difficulty = setup.difficulty
+			// Without an explicit seed each match draws one, so bots and the enemy's random hero vary; copied links keep it.
+			if (!setup.seeded)
+				Object.assign(setup, { seed: (Math.random() * 2 ** 32) >>> 0, seeded: true })
 			setup.picks = {
 				...setup.picks,
 				[local]: {
@@ -143,7 +146,7 @@ export default function moba(app, map) {
 			}
 			const seats = isLobby
 				? [{ id: local, team: setup.picks[local].team ?? 'A', heroId: setup.picks[local].heroId }]
-				: practiceRoster(local, difficulty, setup.picks)
+				: practiceRoster(local, difficulty, setup.picks, setup.seed)
 			setup.heroId = seats.find((seat) => seat.id === local).heroId
 			const gallery = isLobby
 				? createDifficultyGallery({
@@ -172,7 +175,7 @@ export default function moba(app, map) {
 						lane: !isLobby,
 						...(isLobby && {
 							lobby: true,
-							readyRoster: practiceRoster(local, difficulty, setup.picks),
+							readyRoster: practiceRoster(local, difficulty, setup.picks, setup.seed),
 							spawns: { [local]: tune.lobby.marks[setup.picks[local].team === 'B' ? 3 : 0] },
 							bounds: tune.lobby.bounds,
 							posts: tune.lobby.dummyPosts,
