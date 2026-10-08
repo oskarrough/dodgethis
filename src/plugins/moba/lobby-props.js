@@ -346,7 +346,7 @@ export function createLobbyProps(scene, el, gallery, readySeats, local, heroFor 
 		setDevice(device) {
 			for (const p of galleryProps)
 				p.label.querySelector('kbd').textContent =
-					device === 'gamepad' ? '✛↓' : device === 'keyboard' ? 'G' : ''
+					device === 'gamepad' ? '✛↓' : device === 'keyboard' ? '←→' : ''
 		},
 		update(tick, camera, step) {
 			syncSeats()

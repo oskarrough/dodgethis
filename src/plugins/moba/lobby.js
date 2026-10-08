@@ -242,10 +242,10 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 		denySoundTick = sim.tick
 		app.audio.blip(tune.lobby.pick.denySound)
 	}
-	function cycleHero() {
+	function cycleHero(delta = 1) {
 		const playable = Object.values(HEROES).filter((definition) => definition.playable)
 		const index = playable.findIndex((definition) => definition.id === hero.heroId)
-		pickHero(playable[(index + 1) % playable.length].id)
+		pickHero(playable[(index + delta + playable.length) % playable.length].id)
 	}
 
 	// A right-click picks a target by the card you see, upright or knocked flat. The ground point
@@ -286,9 +286,9 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 	}
 	const cardBox = new THREE.Box3()
 
-	function cycleDifficulty() {
+	function cycleDifficulty(delta = 1) {
 		const i = gallery.standees.findIndex((s) => s.id === gallery.difficulty)
-		shootAt(gallery.standees[(i + 1) % gallery.standees.length])
+		shootAt(gallery.standees[(i + delta + gallery.standees.length) % gallery.standees.length])
 	}
 	// G and a right-click on a card share one route: walk to the firing mark, then shoot that card.
 	function shootAt(stand) {
@@ -428,22 +428,33 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 		'keydown',
 		(event) => {
 			heldKeys.add(event.code)
+			// Lobby arrows select options before the shared movement input sees them.
+			if (event.code.startsWith('Arrow')) {
+				event.preventDefault()
+				event.stopImmediatePropagation()
+			}
 			if (event.code !== 'Backquote') touch = mouse = false
 			if (numbers.key(event)) return
-			if (event.repeat || blockedKeys.has(event.code) || event.target?.closest?.('.lil-gui')) return
+			if (
+				ending ||
+				event.repeat ||
+				blockedKeys.has(event.code) ||
+				event.target?.closest?.('.lil-gui')
+			)
+				return
 			if (event.code === 'KeyN') {
 				event.preventDefault()
 				numbers.toggle()
 				return
 			}
-			if (event.code === 'KeyH') {
+			if (['KeyH', 'ArrowUp', 'ArrowDown'].includes(event.code)) {
 				event.preventDefault()
-				cycleHero()
+				cycleHero(event.code === 'ArrowUp' ? -1 : 1)
 				return
 			}
-			if (event.code === 'KeyG') {
+			if (['KeyG', 'ArrowLeft', 'ArrowRight'].includes(event.code)) {
 				event.preventDefault()
-				cycleDifficulty()
+				cycleDifficulty(event.code === 'ArrowLeft' ? -1 : 1)
 				return
 			}
 			const digit = /^Digit([1-5])$/.exec(event.code)
@@ -457,7 +468,7 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 			if (event.code === 'Escape') back()
 			else ready()
 		},
-		{ signal: run.signal },
+		{ signal: run.signal, capture: true },
 	)
 	window.addEventListener(
 		'keyup',
