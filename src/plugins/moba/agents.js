@@ -9,6 +9,16 @@ const compare = (a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)
 const position = (u) => ({ x: u.body.position.x, z: u.body.position.z })
 const distance = (a, b) => Math.hypot(a.x - b.x, a.z - b.z)
 
+// A deep copy of plain sim data (objects, arrays, numbers, strings) at a fraction of structuredClone's cost, which perception pays every tick.
+export function copyData(value) {
+	if (typeof value !== 'object' || value === null) return value
+	if (Array.isArray(value)) return value.map(copyData)
+	if (Object.getPrototypeOf(value) !== Object.prototype) return structuredClone(value)
+	const out = {}
+	for (const key in value) out[key] = copyData(value[key])
+	return out
+}
+
 export function agentRoster({ seats = ['A1'], idle = [], difficulty = 'normal' } = {}) {
 	const ids = ['A1', 'A2', 'A3', 'B1', 'B2', 'B3']
 	if (![...seats, ...idle].every((id) => ids.includes(id))) throw new Error('Seats are A1–B3')
@@ -39,9 +49,9 @@ export function createAgentPerception() {
 				hp: u.hp,
 				dead: u.dead,
 				respawnTick: u.respawnTick,
-				cast: u.cast && structuredClone(u.cast),
-				attack: u.attack && structuredClone(u.attack),
-				ballThrow: u.ballThrow && structuredClone(u.ballThrow),
+				cast: u.cast && copyData(u.cast),
+				attack: u.attack && copyData(u.attack),
+				ballThrow: u.ballThrow && copyData(u.ballThrow),
 				vulnerable: !u.structure || sim.lane.vulnerable(u),
 			})
 			history.push({
@@ -49,7 +59,7 @@ export function createAgentPerception() {
 				heroes: sim.heroes.map(unit),
 				minions: sim.lane.minions.filter((u) => !u.dead).map(unit),
 				structures: sim.lane.structures.map(unit),
-				ball: sim.ball.state && structuredClone(sim.ball.state),
+				ball: sim.ball.state && copyData(sim.ball.state),
 				nextBall: sim.ball.nextBall,
 				shots: sim.shots.map((s) => ({ ...s })),
 				zones: sim.zones.map((z) => ({ ...z })),

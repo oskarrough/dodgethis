@@ -71,11 +71,11 @@ export function createLane({
 			bestRank = Infinity,
 			bestDistance = Infinity
 		for (const candidate of candidates) {
-			if (candidate.dead || candidate.team === unit.team || !vulnerable(candidate)) continue
+			if (candidate.dead || candidate.team === unit.team) continue
 			const dx = candidate.body.position.x - unit.body.position.x,
 				dz = candidate.body.position.z - unit.body.position.z
 			const d = dx * dx + dz * dz
-			if (d > (range + candidate.body.radius) ** 2) continue
+			if (d > (range + candidate.body.radius) ** 2 || !vulnerable(candidate)) continue
 			const rank = candidate.structure ? 1 : candidate.kind ? 0 : 2
 			if (rank < bestRank || (rank === bestRank && d < bestDistance)) {
 				best = candidate

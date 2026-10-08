@@ -124,13 +124,15 @@ export function sweepHit(ax, az, bx, bz, cx, cz, r) {
 	return t >= 0 && t <= 1 ? t : null
 }
 
+// Slab test on x then z; hot enough in path planning that it allocates nothing.
 function sweepBox(a, b, x, z, hx, hz) {
 	let enter = 0,
 		leave = 1
-	for (const [start, delta, lo, hi] of [
-		[a.x, b.x - a.x, x - hx, x + hx],
-		[a.z, b.z - a.z, z - hz, z + hz],
-	]) {
+	for (let axis = 0; axis < 2; axis++) {
+		const start = axis ? a.z : a.x,
+			delta = axis ? b.z - a.z : b.x - a.x,
+			lo = axis ? z - hz : x - hx,
+			hi = axis ? z + hz : x + hx
 		if (Math.abs(delta) < tune.collision.epsilon) {
 			if (start < lo || start > hi) return null
 			continue
@@ -147,20 +149,19 @@ function sweepBox(a, b, x, z, hx, hz) {
 // Swept discs against circles and rounded boxes: exact corners, shared by shots and path edges.
 export function sweepObstacles(a, b, radius = 0, obstacles = OBSTACLES) {
 	let at = null
+	const keep = (t) => {
+		if (t !== null && (at === null || t < at)) at = t
+	}
 	for (const o of obstacles) {
-		const hits =
-			o.r !== undefined
-				? [sweepHit(a.x, a.z, b.x, b.z, o.x, o.z, o.r + radius)]
-				: [
-						sweepBox(a, b, o.x, o.z, o.halfX + radius, o.halfZ),
-						sweepBox(a, b, o.x, o.z, o.halfX, o.halfZ + radius),
-						...[-1, 1].flatMap((sx) =>
-							[-1, 1].map((sz) =>
-								sweepHit(a.x, a.z, b.x, b.z, o.x + sx * o.halfX, o.z + sz * o.halfZ, radius),
-							),
-						),
-					]
-		for (const t of hits) if (t !== null && (at === null || t < at)) at = t
+		if (o.r !== undefined) {
+			keep(sweepHit(a.x, a.z, b.x, b.z, o.x, o.z, o.r + radius))
+			continue
+		}
+		keep(sweepBox(a, b, o.x, o.z, o.halfX + radius, o.halfZ))
+		keep(sweepBox(a, b, o.x, o.z, o.halfX, o.halfZ + radius))
+		for (const sx of [-1, 1])
+			for (const sz of [-1, 1])
+				keep(sweepHit(a.x, a.z, b.x, b.z, o.x + sx * o.halfX, o.z + sz * o.halfZ, radius))
 	}
 	return at
 }

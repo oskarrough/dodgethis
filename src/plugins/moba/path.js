@@ -24,10 +24,17 @@ function buildGrid({ radius, clearance, grid }, obstacles) {
 		const p = point(c)
 		open[c] = walkable(p.x, p.z, margin, 0, obstacles) ? 1 : 0
 	}
-	return { radius, clearance, grid, nx, nz, point, open, obstacles }
+	// A* scratch, reset on every search.
+	const scratch = {
+		g: new Float32Array(nx * nz),
+		from: new Int32Array(nx * nz),
+		closed: new Uint8Array(nx * nz),
+		heap: { f: [], c: [] },
+	}
+	return { radius, clearance, grid, nx, nz, point, open, obstacles, scratch }
 }
 
-function route(from, to, { radius, clearance, grid, nx, nz, point, open, obstacles }) {
+function route(from, to, { radius, clearance, grid, nx, nz, point, open, obstacles, scratch }) {
 	if (!walkable(from.x, from.z, radius, 0, obstacles)) return []
 	const inflate = radius + clearance
 	const firstMargin = walkable(from.x, from.z, radius, clearance, obstacles) ? inflate : radius
@@ -56,7 +63,7 @@ function route(from, to, { radius, clearance, grid, nx, nz, point, open, obstacl
 	const start = nearestOpen(from, firstMargin),
 		goal = nearestOpen(to, inflate)
 	if (start < 0 || goal < 0) return []
-	const cells = astar(open, nx, nz, start, goal)
+	const cells = astar(open, nx, nz, start, goal, scratch)
 	if (!cells) return []
 	const points = [from, ...cells.map(point), to]
 	// A tight start rejoins a fully clear grid cell before any shortcut is considered.
@@ -73,7 +80,7 @@ function route(from, to, { radius, clearance, grid, nx, nz, point, open, obstacl
 }
 
 // 8-connected A* with no corner cutting; returns cell indices from start to goal, or null.
-function astar(open, n, rows, start, goal) {
+function astar(open, n, rows, start, goal, { g, from, closed, heap }) {
 	const gx = goal % n
 	const gz = (goal / n) | 0
 	const h = (c) => {
@@ -81,13 +88,14 @@ function astar(open, n, rows, start, goal) {
 		const dz = Math.abs(((c / n) | 0) - gz)
 		return Math.max(dx, dz) + (Math.SQRT2 - 1) * Math.min(dx, dz)
 	}
-	const g = new Float32Array(n * rows).fill(Infinity)
-	const from = new Int32Array(n * rows).fill(-1)
-	const closed = new Uint8Array(n * rows)
-	const heap = [[h(start), start]]
+	g.fill(Infinity)
+	from.fill(-1)
+	closed.fill(0)
+	heap.f.length = heap.c.length = 0
+	push(heap, h(start), start)
 	g[start] = 0
-	while (heap.length) {
-		const [, c] = pop(heap)
+	while (heap.f.length) {
+		const c = pop(heap)
 		if (c === goal) break
 		if (closed[c]) continue
 		closed[c] = 1
@@ -106,7 +114,7 @@ function astar(open, n, rows, start, goal) {
 				if (cost >= g[next]) continue
 				g[next] = cost
 				from[next] = c
-				push(heap, [cost + h(next), next])
+				push(heap, cost + h(next), next)
 			}
 	}
 	if (from[goal] < 0 && goal !== start) return null
@@ -115,34 +123,46 @@ function astar(open, n, rows, start, goal) {
 	return path.reverse()
 }
 
-function push(heap, item) {
-	heap.push(item)
-	let i = heap.length - 1
+// A binary min-heap on f, stored as two parallel arrays; ties resolve exactly as a heap of [f, cell] pairs did.
+function push({ f, c }, key, cell) {
+	f.push(key)
+	c.push(cell)
+	let i = f.length - 1
 	while (i > 0) {
 		const parent = (i - 1) >> 1
-		if (heap[parent][0] <= heap[i][0]) break
-		;[heap[parent], heap[i]] = [heap[i], heap[parent]]
+		if (f[parent] <= f[i]) break
+		swap(f, c, parent, i)
 		i = parent
 	}
 }
-function pop(heap) {
-	const top = heap[0]
-	const last = heap.pop()
-	if (heap.length) {
-		heap[0] = last
+function pop({ f, c }) {
+	const top = c[0]
+	const lastF = f.pop()
+	const lastC = c.pop()
+	if (f.length) {
+		f[0] = lastF
+		c[0] = lastC
 		let i = 0
 		for (;;) {
 			const l = i * 2 + 1
 			const r = l + 1
 			let m = i
-			if (l < heap.length && heap[l][0] < heap[m][0]) m = l
-			if (r < heap.length && heap[r][0] < heap[m][0]) m = r
+			if (l < f.length && f[l] < f[m]) m = l
+			if (r < f.length && f[r] < f[m]) m = r
 			if (m === i) break
-			;[heap[m], heap[i]] = [heap[i], heap[m]]
+			swap(f, c, m, i)
 			i = m
 		}
 	}
 	return top
+}
+function swap(f, c, a, b) {
+	const tf = f[a]
+	f[a] = f[b]
+	f[b] = tf
+	const tc = c[a]
+	c[a] = c[b]
+	c[b] = tc
 }
 
 // Pursuit along a polyline [from, ...waypoints]: the point `ahead` metres past the body's projection, and the distance left.

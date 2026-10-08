@@ -1,6 +1,7 @@
 import { STEP } from '../../core/app.js'
 import { neutralFrame } from '../../core/intents.js'
 import { tune } from './tune.js'
+import { copyData } from './agents.js'
 import { abilityOf } from './ability.js'
 import { HEROES } from './heroes.js'
 import { clampWalkable, segmentClear, sweepHit, sweepObstacles, walkable } from './obstacles.js'
@@ -84,7 +85,7 @@ function view(sim, births) {
 		pos: position(u),
 		radius: u.body.radius,
 		vel: { x: u.body.velocity?.x ?? 0, z: u.body.velocity?.z ?? 0 },
-		cast: u.cast && structuredClone(u.cast),
+		cast: u.cast && copyData(u.cast),
 		dashing: !!u.body.dashing,
 		target: u.target,
 		vulnerable: !u.structure || sim.lane.vulnerable(u),
@@ -101,7 +102,7 @@ function view(sim, births) {
 				if (!births.has(s)) births.set(s, sim.tick)
 				return { ...s, releaseTick: births.get(s) }
 			}),
-		ball: sim.ball.state ? structuredClone(sim.ball.state) : null,
+		ball: sim.ball.state ? copyData(sim.ball.state) : null,
 		zones: sim.zones.map((z) => ({ ...z })),
 		globes: sim.lane.globes.map((g) => ({ ...g, pos: { ...g.pos } })),
 	}

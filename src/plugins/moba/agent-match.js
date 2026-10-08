@@ -1,7 +1,7 @@
 import { STEP } from '../../core/app.js'
 import { createIntents, neutralFrame, validIntent } from '../../core/intents.js'
 import { createSim } from './sim.js'
-import { createAgentPerception } from './agents.js'
+import { copyData, createAgentPerception } from './agents.js'
 import { tune } from './tune.js'
 import { FLOOR } from './obstacles.js'
 import { HEROES } from './heroes.js'
@@ -68,7 +68,7 @@ export function createAgentMatch({
 						? 'ball'
 						: null),
 			position: position && { x: position.x, y: position.y ?? 0, z: position.z },
-			fact: structuredClone(fact),
+			fact: copyData(fact),
 		})
 	}
 	function logResult(reason) {
