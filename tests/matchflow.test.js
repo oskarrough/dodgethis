@@ -63,6 +63,11 @@ afterEach(() => {
 	tune.physics.paused = savedPause
 })
 
+async function settle() {
+	for (let i = 0; i < 200 && flow.transitioning; i++) await Bun.sleep(20)
+	expect(flow.transitioning).toBe(false)
+}
+
 function winRound() {
 	flow.round.removeUnit('B')
 	for (let i = 0; i < 180 && flow.phase === 'playing'; i++) flow.round.step(1 / 60, { x: 0, z: 0 })
@@ -82,7 +87,7 @@ test('a real round result scores once and cannot be restarted for another point'
 	expect(flow.match.round).toBe(1)
 	// Advancing is a fresh round; winning that round ends this best-of-three.
 	overlay.card.actions.find((action) => action.label === 'Next round').onSelect()
-	await Bun.sleep(400)
+	await settle()
 	expect(flow.round).not.toBe(first)
 	expect(first.units).toHaveLength(0)
 	expect(flow.match.round).toBe(2)
@@ -124,7 +129,7 @@ test('canceling or disposing a pending arrival prevents stale scene replacement'
 	expect(fade.classList.contains('active')).toBe(true)
 	flow.cancelTransition()
 	flow.transition('NEW ARRIVAL', () => flow.startMatch(2))
-	await Bun.sleep(400)
+	await settle()
 	expect(staleArrivals).toBe(0)
 	expect(flow.match.enemies).toBe(2)
 	expect(flow.round).not.toBe(original)
@@ -152,13 +157,13 @@ test('a roster match preserves local Team B identity through next round and rema
 	flow.endRound('B')
 	expect(overlay.card.title).toBe('ROUND WON')
 	overlay.card.actions.find((a) => a.label === 'Next round').onSelect()
-	await Bun.sleep(400)
+	await settle()
 	expect(flow.round.roster).toEqual(roster)
 	expect(flow.round.localPlayer.team).toBe('B')
 	flow.endRound('B')
 	expect(overlay.card.title).toBe('YOU WIN')
 	overlay.card.actions.find((a) => a.label === 'Rematch').onSelect()
-	await Bun.sleep(400)
+	await settle()
 	expect(flow.round.roster).toEqual(roster)
 	expect(flow.round.localPlayer.participantId).toBe('guest')
 	expect(flow.match.wins).toEqual({ A: 0, B: 0 })
