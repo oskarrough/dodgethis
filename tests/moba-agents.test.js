@@ -71,7 +71,7 @@ test('verbs produce ordinary intents; malformed, hidden and shielded orders are 
 			{ action: 'stop', extra: true },
 			{ action: 'wait', seconds: 0 },
 			{ action: 'wait', seconds: Infinity },
-			{ action: 'attack', target: 'fort-B' },
+			{ action: 'attack', target: 'core-B' },
 			{ action: 'attack', target: 'minion-999' },
 			{ action: 'throw', x: 0, y: 0 },
 			{ action: 'pickup' },
@@ -340,12 +340,12 @@ test.if(process.env.SLOW === '1')(
 					}
 					decisions++
 					maxBytes = Math.max(maxBytes, Buffer.byteLength(block.trim()))
-					const target = ['tower-B', 'fort-B', 'core-B'].find((id) =>
+					const target = ['tower-B', 'core-B'].find((id) =>
 						new RegExp(id + ' [^;\\n]+ open').test(block),
 					)
 					let action = { action: 'wait', seconds: 30 }
 					if (!retry && !block.includes(' dead ') && target) {
-						const x = { 'tower-B': 18, 'fort-B': 29, 'core-B': 40 }[target]
+						const x = { 'tower-B': 18, 'core-B': 40 }[target]
 						if (block.includes('carrying=')) action = { action: 'throw', x, y: 0 }
 						else if (!block.includes('order=attack:' + target)) {
 							action = { action: 'attack', target }

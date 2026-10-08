@@ -62,7 +62,7 @@ export function createSim({
 }) {
 	const laneView = withLane ? createLaneView(scene, smooth) : null
 	const towerObstacles = withLane
-		? ['tower', 'fort', 'core'].flatMap((kind) =>
+		? ['tower', 'core'].flatMap((kind) =>
 				['A', 'B'].map((team) => ({
 					id: `${kind}-${team}`,
 					kind,

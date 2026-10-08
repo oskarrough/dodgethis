@@ -5,14 +5,13 @@ A small Heroes of the Storm-style mode: the smallest thing that already feels li
 ## Scope
 
 - **Match:** 3v3 (human + 2 bot allies vs 3 bots), with per-seat playable hero picks. Destroy the enemy core. 8–12 minutes. `?mode=moba` opens selection; `?mode=moba&play` starts immediately.
-- **Map:** one flat lane along x, 104 × 26 m, with hedged flanks and six pillars; layout and structure positions are specified in [moba-lane.md](moba-lane.md). The full lane is built: towers, forts, cores, waves, shared levels, killer-team globes, base healing and a core-kill win. Practice is a human plus two allied hero bots against three enemy hero bots, seats built from the hero table, defaulting to Fletcher where no pick was made. The map and its Rapier world survive loading cancellation and match restarts; returning to modes or leaving MOBA frees them. Only one sim owns the world at a time. Bots feed the same fixed-tick intents as players.
-- **Structures** (no ammo; HotS removed it in 2017). Each is invulnerable until the one in front falls. Abilities deal 25% to structures; a kill is worth 300 XP.
+- **Map:** one flat lane along x, 104 × 26 m, with hedged flanks and six pillars; layout and structure positions are specified in [moba-lane.md](moba-lane.md). The full lane is built: towers, cores, waves, shared levels, killer-team globes, base healing and a core-kill win. Practice is a human plus two allied hero bots against three enemy hero bots, seats built from the hero table, defaulting to Fletcher where no pick was made. The map and its Rapier world survive loading cancellation and match restarts; returning to modes or leaving MOBA frees them. Only one sim owns the world at a time. Bots feed the same fixed-tick intents as players.
+- **Structures** (no ammo; HotS removed it in 2017). The core is invulnerable until its tower falls. Abilities deal 25% to structures; a kill is worth 300 XP.
 
 |       | HP   | Damage | Rate | Range | Targets                    |
 | ----- | ---- | ------ | ---- | ----- | -------------------------- |
-| Tower | 2400 | 220    | 1/s  | 7.75  | nearest minion, then hero  |
-| Fort  | 5000 | 320    | 1/s  | 8.5   | same                       |
-| Core  | 6000 | 360    | 1/s  | 9     | same; death ends the match |
+| Tower | 2400 | 165    | 1/s  | 7.75  | nearest minion, then hero  |
+| Core  | 6000 | 270    | 1/s  | 9     | same; death ends the match |
 
 Early gun damage is shown above. At 6:00 guns deal 5% of it, waves accelerate and brutes join. The stronger early guns protect a weak human's team; late pressure stops mirror bots from defending forever. Structure HP and the Ball's damage fraction are unchanged.
 
@@ -166,7 +165,7 @@ Each ends with `bun run check` green and is playable behind `?mode=moba`. Requir
 1. **Feel slice.** One hero on a flat 40 × 40 m floor with three pillars, and the court hidden. Build the `pointClick` scheme, `stickAim`, follow framing and the juice-kit extraction. RMB order with pathing, arrival and pings; left-stick move; Q with the cast rules and buffer; two strafing dummies that flash, cue near misses, go down after three Q hits and respawn 2 s later. Everything in the tune GUI. Headless tests: no overshoot on arrival, reversal time, buffer timing, order resumption, swept hits. Done when Oskar calls it smooth on mouse and pad at 144 Hz.
    Pulled forward from M2: W Vault (arrow, 4 m dash), E Rain (filling circle, delayed hit and slow), and three cooldowns; the feel slice swaps the planned W/E bindings, with W 3 s / E 6 s cooldowns. Q is unchanged; pad holds aim and releases fire.
 
-2. **Kit.** W, E, basic attacks with stutter-step, the trait, HP, death and respawn, a dummy that casts back, indicators, the cooldown HUD, hit-feedback tiers. Keeps the feel slice's W Vault / E Rain bindings and cooldowns; Momentum recharges Vault (now W), not Rain. Dummies have 1400 HP and keep their 2 s respawn; the hero uses `6 + 2 × level` s.
+2. **Kit.** W, E, basic attacks with stutter-step, the trait, HP, death and respawn, a dummy that casts back, indicators, the cooldown HUD, hit-feedback tiers. Keeps the feel slice's W Vault / E Rain bindings and cooldowns; Momentum recharges Vault (now W), not Rain. Dummies have 1400 HP and keep their 2 s respawn; the hero uses `8 + 2 × level` s.
 3. **Lane.** Map, structures, waves, the soak rule, levels, globes, base healing, win condition. 1v1 against a scripted hero, then 2v2.
 4. **Bots (built).** Hero bots and 3v3. A seeded headless bots-only match must end in a core kill within 15 simulated minutes.
 5. **HotS layer.** Mount and the R heroic.

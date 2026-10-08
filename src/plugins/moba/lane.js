@@ -37,8 +37,10 @@ export function createLane({
 	const minions = []
 	const teams = { A: { xp: 0, level: 1 }, B: { xp: 0, level: 1 } }
 	const globes = []
+	// Each enemy tower a team takes adds one minion to every later wave of theirs.
+	const reinforcements = { A: 0, B: 0 }
 	const match = { winner: null, endedTick: null, phase: 'early' }
-	const structures = ['tower', 'fort', 'core'].flatMap((kind) =>
+	const structures = ['tower', 'core'].flatMap((kind) =>
 		['A', 'B'].map((team) => ({
 			id: `${kind}-${team}`,
 			team,
@@ -59,9 +61,7 @@ export function createLane({
 	const vulnerable = (unit) =>
 		!unit.structure ||
 		unit.kind === 'tower' ||
-		structures.find(
-			(s) => s.team === unit.team && s.kind === (unit.kind === 'fort' ? 'tower' : 'fort'),
-		).dead
+		structures.find((s) => s.team === unit.team && s.kind === 'tower').dead
 	const find = (id) =>
 		minions.find((u) => u.id === id && !u.dead) ??
 		structures.find((u) => u.id === id && !u.dead) ??
@@ -93,11 +93,10 @@ export function createLane({
 				: ['melee', 'ranged', 'wizard']
 			).entries()) {
 				const stats = tune.minions[kind]
+				const count = stats.count + (kind === tune.waves.reinforcement ? reinforcements[team] : 0)
 				const growth = 1 + tune.waves.growth * Math.floor((t * STEP) / tune.waves.growthPeriod)
-				for (let file = 0; file < stats.count; file++) {
-					const z =
-						(stats.count === 2 ? file * 2 - 1 : file - (stats.count - 1) / 2) *
-						tune.waves.fileSpacing
+				for (let file = 0; file < count; file++) {
+					const z = (count === 2 ? file * 2 - 1 : file - (count - 1) / 2) * tune.waves.fileSpacing
 					const unit = {
 						id: `minion-${++serial}`,
 						team,
@@ -191,6 +190,7 @@ export function createLane({
 		const credit = (amount) => (killer ? { [killer.id]: amount } : {})
 		if (unit.structure) {
 			removeTower(unit)
+			if (unit.kind === 'tower') reinforcements[unit.team === 'A' ? 'B' : 'A']++
 			addXp(
 				killerTeam,
 				tune.waves.structureXp,
@@ -471,6 +471,7 @@ export function createLane({
 		teams,
 		globes,
 		match,
+		reinforcements,
 		vulnerable,
 		addXp,
 		find,

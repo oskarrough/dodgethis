@@ -41,7 +41,6 @@ const sound = {
 export function sliderSections(tune, setup) {
 	const sections = {
 		tower: structure([10, 25], 6000, 2, 300),
-		fort: structure([26, 43], 10000, 3, 400),
 		core: structure([26, 43], 10000, 3, 400),
 		levels: {
 			...each(['cap', 'first', 'increment'], (key) => [

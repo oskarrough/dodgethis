@@ -13,7 +13,7 @@ export function lineReach(point, yaw, stats, obstacles = OBSTACLES) {
 		point,
 		end,
 		stats.radius,
-		obstacles.filter((o) => !['tower', 'fort', 'core'].includes(o.kind)),
+		obstacles.filter((o) => !['tower', 'core'].includes(o.kind)),
 	)
 	return stats.range * Math.min(blocked ?? 1, mapExit(point, end, stats.radius) ?? 1)
 }

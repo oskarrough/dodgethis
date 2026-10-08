@@ -7,7 +7,7 @@ export function createLaneView(scene, smooth = null) {
 	const bodies = new Set()
 	function makeBody(x, z, team, kind) {
 		const v = tune.laneView
-		const tower = ['tower', 'fort', 'core'].includes(kind)
+		const tower = ['tower', 'core'].includes(kind)
 		const radius = tower ? tune[kind].radius : kind === 'brute' ? v.bruteRadius : tune.waves.radius
 		const height = kind === 'brute' ? v.bruteHeight : v.minionHeight
 		const halfHeight = tower ? v[`${kind}Height`] / 2 : height / 2
@@ -51,32 +51,6 @@ export function createLaneView(scene, smooth = null) {
 				crack.rotation.z = (sign * Math.PI) / 4
 				cracks.push(crack)
 			}
-		} else if (kind === 'fort') {
-			part(
-				new THREE.CylinderGeometry(radius, radius, v.fortHeight * v.fortDrum, v.crenels),
-				teamMaterial,
-				-halfHeight + (v.fortHeight * v.fortDrum) / 2,
-			)
-			for (let i = 0; i < v.crenels; i++) {
-				const angle = (i * Math.PI * 2) / v.crenels
-				const crenel = part(
-					new THREE.BoxGeometry(v.crenelSize, v.drumHeight, v.crenelSize),
-					cream,
-					-halfHeight + v.fortHeight * v.fortDrum,
-				)
-				crenel.position.x = Math.cos(angle) * radius
-				crenel.position.z = Math.sin(angle) * radius
-			}
-			part(
-				new THREE.CylinderGeometry(v.bannerPole, v.bannerPole, v.bannerHeight, v.flagSides),
-				ink,
-				halfHeight - v.bannerHeight / 2,
-			)
-			part(
-				new THREE.BoxGeometry(v.bannerWidth, v.bannerHeight, v.footHeight),
-				teamMaterial,
-				halfHeight - v.bannerHeight / 2,
-			).position.x = v.bannerWidth / 2
 		} else if (tower) {
 			part(
 				new THREE.CylinderGeometry(radius, radius, v.drumHeight, v.segments),
@@ -279,7 +253,6 @@ export function createLaneView(scene, smooth = null) {
 					crack.visible = unit.hp <= unit.maxHp * (1 - (i + 1) * v.coreCrack)
 			}
 			if (unit.kind === 'tower') visual.scale.x = visual.scale.z = 1 + progress * v.towerCharge
-			else if (unit.kind === 'fort') visual.rotation.x = progress * v.fortPose
 			else if (unit.kind === 'core') visual.position.y = progress * v.corePose
 			else {
 				// Minions wind up like cartoons: pull back and crouch, hang at the peak, then snap through.

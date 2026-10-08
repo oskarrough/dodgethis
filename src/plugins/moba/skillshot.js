@@ -24,7 +24,7 @@ export function interceptShot(shot, dt, intercept, context) {
 				from,
 				to,
 				shot.radius,
-				(context.obstacles ?? OBSTACLES).filter((o) => !['tower', 'fort', 'core'].includes(o.kind)),
+				(context.obstacles ?? OBSTACLES).filter((o) => !['tower', 'core'].includes(o.kind)),
 			)
 	const edge = mapExit(from, to, shot.radius)
 	const at = Math.min(obstacle ?? 1, edge ?? 1)
@@ -59,7 +59,7 @@ export function stepShot(shot, dt, targets, nearMiss, obstacles = OBSTACLES) {
 				from,
 				to,
 				shot.radius,
-				obstacles.filter((o) => !['tower', 'fort', 'core'].includes(o.kind)),
+				obstacles.filter((o) => !['tower', 'core'].includes(o.kind)),
 			)
 	const edge = mapExit(from, to, shot.radius)
 	const blocked = obstacle === null ? edge : edge === null ? obstacle : Math.min(obstacle, edge)

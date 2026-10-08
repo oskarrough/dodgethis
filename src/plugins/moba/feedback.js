@@ -177,7 +177,7 @@ export function createFeedback({
 				if (fact.kind === 'structure') {
 					const friendly = unitOf(fact.hero)?.team === unitOf(local)?.team
 					hud.banner?.(
-						`${friendly ? 'GOAL!' : 'Enemy scored!'} ${unitOf(fact.target)?.kind === 'fort' ? 'Fort' : unitOf(fact.target)?.kind === 'core' ? 'Core' : 'Tower'} silenced ${tune.ball.silence} s`,
+						`${friendly ? 'GOAL!' : 'Enemy scored!'} ${unitOf(fact.target)?.kind === 'core' ? 'Core' : 'Tower'} silenced ${tune.ball.silence} s`,
 					)
 					freeze = Math.max(freeze, tune.juice.ballGoal.freeze)
 					camera.shake(tune.juice.ballGoal.shake)
@@ -249,7 +249,7 @@ export function createFeedback({
 					juice.burst(fact.point, { ...fact.direction, y: 0 }, tune.juice[effects.projectile])
 				unitOf(fact.hero)?.body.kick(0.18)
 				cue(
-					['tower', 'fort', 'core', 'ranged', 'wizard'].includes(fact.slot)
+					['tower', 'core', 'ranged', 'wizard'].includes(fact.slot)
 						? fact.slot
 						: fact.slot === 'primary'
 							? 'attack'
@@ -346,7 +346,7 @@ export function createFeedback({
 				)
 				if (fact.slot !== 'ball' && !effects.impact)
 					cue(
-						['tower', 'fort', 'core', 'melee', 'ranged', 'wizard', 'brute'].includes(fact.slot)
+						['tower', 'core', 'melee', 'ranged', 'wizard', 'brute'].includes(fact.slot)
 							? fact.slot
 							: fact.slot === 'primary'
 								? 'attackHit'

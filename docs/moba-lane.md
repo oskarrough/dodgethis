@@ -14,10 +14,10 @@ M3 and M4 of [moba-plan.md](moba-plan.md). Where the numbers differ, this doc wi
 ```
 z +13 ┌──────────────── flank ────────────────┐
       │   ┌──hedge──┐   ( plaza )   ┌──hedge──┐   │
- base  core  fort  tower     ○ ● ○     tower  fort  core  base
+ base  core        tower     ○ ● ○     tower        core  base
       │   └──hedge──┘   (  r 9  )   └──hedge──┘   │
 z −13 └──────────────── flank ────────────────┘
-     −52 −40  −29  −18  −12   0   12  18   29  40   52
+     −52 −40        −18  −12   0   12  18        40   52
 ```
 
 - **Bounds:** 104 × 26 m. Walkable is the outer rectangle (|x| ≤ 52, |z| ≤ 13) minus the base walls (|x| > 28 and |z| > 8) and four hedges (12 ≤ |x| ≤ 24, 6 ≤ |z| ≤ 8). That leaves a lane 12 m wide, and a flank 5 m wide on each side, whose centre lines are 21 m apart so a flank fight stays near the lane camera's edge. Each flank opens into the plaza and into the lane just short of each fort; the fort-to-base throat is 16 m wide. The base is |x| ≥ 44: heroes spawn at ±48, and standing in your own base heals 10% of max HP per second.
@@ -25,12 +25,11 @@ z −13 └──────────────── flank ────�
 
 ## Structures
 
-Every range is from the source's centre to the target's edge. Each structure is invulnerable until the one in front of it falls, and shows a dashed cream dome while it is. Shielded structures are excluded from attack picks; a shielded skillshot hit pulses only that dome. Basic attacks and minions deal full damage to structures, abilities 25%. A structure kill gives the team 300 XP and leaves only opaque, non-colliding rubble; no hero/minion corpse effect. The Ball slice restores the full HP below in every roster size. Geometry and gun damage stay unchanged.
+Every range is from the source's centre to the target's edge. There is no fort or keep: each side has a tower and a core, and the core is invulnerable until its tower falls, and shows a dashed cream dome while it is. Shielded structures are excluded from attack picks; a shielded skillshot hit pulses only that dome. Basic attacks and minions deal full damage to structures, abilities 25%. A structure kill gives the team 300 XP and leaves only opaque, non-colliding rubble; no hero/minion corpse effect. The Ball slice restores the full HP below in every roster size. Geometry and gun damage stay unchanged.
 
 |       | x   | HP   | Damage | Rate | Range | Radius |
 | ----- | --- | ---- | ------ | ---- | ----- | ------ |
 | Tower | ±18 | 2400 | 165    | 1/s  | 7.75  | 1.2    |
-| Fort  | ±29 | 5000 | 240    | 1/s  | 8.5   | 2.2    |
 | Core  | ±40 | 6000 | 270    | 1/s  | 9     | 2.5    |
 
 Damage in the table is early-phase damage. At 6:00 guns deal one twentieth of it. Early guns make a three-hero siege need its wave or the Ball; the late reduction lets bot matches close instead of trading defences forever.
@@ -39,7 +38,7 @@ Damage in the table is early-phase damage. At 6:00 guns deal one twentieth of it
 
 ## Minions
 
-- **Waves:** from each core every 30 s, the first at 0:15. Each wave is 3 melee, 2 ranged and 1 wizard (stats in the plan). From 6:00 waves come every 15 s and a brute joins every wave: 3500 HP, 50 damage, double damage to structures, range 1.2, speed 3, 120 XP. Minion HP and damage gain 4% per whole minute, frozen for each wave. Each minion's snapshot carries `damageScale`. Brutes have a larger body and block helmet, a square tell, their own pose and hit cue, and a separate cached path grid for their radius.
+- **Waves:** from each core every 30 s, the first at 0:15. Each wave is 3 melee, 2 ranged and 1 wizard (stats in the plan). Taking the enemy tower adds a fourth melee to every later wave of the team that took it. From 6:00 waves come every 15 s and a brute joins every wave: 3500 HP, 50 damage, double damage to structures, range 1.2, speed 3, 120 XP. Minion HP and damage gain 4% per whole minute, frozen for each wave. Each minion's snapshot carries `damageScale`. Brutes have a larger body and block helmet, a square tell, their own pose and hit cue, and a separate cached path grid for their radius.
 - **Pathing:** they walk the centreline in three files (z −2, 0, +2), 1.2 m apart, and never enter the flanks. Aggro goes to the nearest enemy within 6 m: minion, then structure, then hero. The same call-for-help rule as structures pulls them onto a hero who hits an allied hero. Each chase records its starting point. After travelling more than 8 m from that point, or when its target dies, the minion returns to that x and its lane file. A fresh call-for-help overrides the return leg. Minions plan obstacle-safe routes on new goals or target displacement, not every tick, so all six pass their own tower.
 - **Soak and globes:** XP as in the plan (an enemy hero within 12 m). A wizard's globe goes to the team that killed it: that team sees it in its colour and can pick it up (1 m radius), the other sees it grey. +15% max HP, lasts 15 s.
 
@@ -49,7 +48,7 @@ Damage in the table is early-phase damage. At 6:00 guns deal one twentieth of it
 - **Carry:** a 0.75 s pickup while standing on it, interrupted by damage. Eligible heroes from both teams contest it: no channel starts or continues, and a contested cue plays once until the contest clears. Otherwise the nearest eligible hero starts the pickup. The carrier moves at ×0.85 and can't attack, cast or mount. Dying drops the Ball.
 - **Throw:** any slot or `primary` press throws toward the aim after a visible 0.3 s windup. Orders (including held RMB resends) queue through the windup. Only stop or cancel aborts it with a deny cue; death drops it. It's a line skillshot (range 5, 14 m/s, radius 0.7) that counts its first hit only. An enemy hero takes 300 damage and a 0.75 s stun, and the Ball drops there. A vulnerable enemy structure takes 30% of its max HP, its guns go silent for 6 s, and the Ball is spent in a confetti burst. An invulnerable structure, a hedge or a pillar bounces it to the ground, and a miss lands at full range. A dropped Ball can't be picked up for 1 s.
 - **Interception contract:** `createSim({ intercept })` sends ordinary projectiles and the Ball through the same pre-collision hook: `{ kind: 'projectile'|'ball', shot, from, to, tick, ball, obstacles }`. The swept segment stops at cover or the map boundary; catch cones test it before body damage. Return `true` to consume the flight, or mutate the shot and return `false` to redirect it. `ball.give(hero)` immediately carries it without a pickup channel or refreshed lifetime (false for dead heroes or an expired/missing Ball). Backboard calls `ball.drop('backboard', point)` and returns true; this preserves expiry and starts the one-second pickup lock. Mitts and Carom's actual abilities remain the hero slice.
-- **Why range 5:** it reaches a tower's centre from 6.9 m, a fort's from 7.9 m and a core's from 8.2 m. The guns reach a hero's centre from 8.2, 8.95 and 9.45 m, so scoring always means standing in range, and the defenders' best answer is a dodge. The Ball's 720 damage leaves a tower at 1,680 HP. Three heroes' basics plus a wave finish that in about 4.7 s, within the 6 s silence; one hero plus a wave needs about 9.5 s, so the guns resume before the solo siege finishes.
+- **Why range 5:** it reaches a tower's centre from 6.9 m and a core's from 8.2 m. The guns reach a hero's centre from 8.2 and 9.45 m, so scoring always means standing in range, and the defenders' best answer is a dodge. The Ball's 720 damage leaves a tower at 1,680 HP. Three heroes' basics plus a wave finish that in about 4.7 s, within the 6 s silence; one hero plus a wave needs about 9.5 s, so the guns resume before the solo siege finishes.
 
 ## Match timer and state
 
@@ -67,7 +66,7 @@ The comic-sticker style: flat role fills, ink outlines, cream highlights, halfto
 
 - **Ground:** the lane is a cream-printed road with a dashed ink centreline. The flanks are `courtShade` with halftone dots, so off-road reads as off-road. Each half of the road carries opaque team-coloured kerb marks; transparent tints cannot survive the palette style pass. The plaza is a printed dodgeball centre circle, a callback that costs nothing.
 - **Hedges** are rounded `courtShade` boxes with scalloped tops; **pillars** are the M1 cylinders. New palette roles: at most two in `core/style.js`, `road` and `hedge`. Off-screen enemy heroes get a pip at the screen edge, shipped with the flanks.
-- **Structures:** the tower is a squat drum, a tapered shaft and a team-coloured cone flag, 4 m tall. The fort is an octagonal drum with a low, wide wall, raised crenels and a team-coloured flag on a pole, 5 m. The core is a faceted team crystal spinning above a pedestal, 7 m tall and visible from mid; floating team/type labels distinguish tower, fort and core; it cracks (darker facets) at 66% and 33% HP. A silenced structure wears a cream gag of crossed tape.
+- **Structures:** the tower is a squat drum, a tapered shaft and a team-coloured cone flag, 4 m tall. The core is a faceted team crystal spinning above a pedestal, 7 m tall and visible from mid; floating team/type labels distinguish tower and core; it cracks (darker facets) at 66% and 33% HP. A silenced structure wears a cream gag of crossed tape.
 - **Minions** are the mannequin at 0.6 scale in team colour, told apart by one prop each: a shield disc (melee), a stick (ranged), a cone hat (wizard). The brute is at 1.0 scale with a block helmet. **The Ball** is a cream sphere 1.4 m across with ink seams and a team-coloured ring, held above the carrier. It has no carried shadow; loose or flying it has a flat ink disc. The 1.4 m team-coloured throw strip shows the actual collision width and fills over the windup. On release the sphere travels from its carrier's position and eases down over 0.1 s. Possession banners say you, your team or enemy; while live the HUD shows its remaining 45 s lifetime instead of the next spawn. A structure hit is a goal: scattered coloured confetti, a distinct scoring cue, a 0.09 s solo freeze-frame and screen shake.
 
 ## Build order

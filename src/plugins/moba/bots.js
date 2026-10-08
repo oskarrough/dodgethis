@@ -447,11 +447,7 @@ export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed, b
 					) {
 						const margin = h.body.radius + tune.orders.clearance
 						const x =
-							target.kind === 'tower'
-								? tune.map.hedgeInnerX - margin
-								: target.kind === 'fort'
-									? tune.map.hedgeOuterX + margin
-									: tune.map.baseWallX - margin
+							target.kind === 'tower' ? tune.map.hedgeInnerX - margin : tune.map.baseWallX - margin
 						flankGoal = {
 							x: Math.sign(target.pos.x) * x,
 							z: file < 0 ? -b.carrierFlank : b.carrierFlank,

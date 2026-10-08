@@ -136,8 +136,7 @@ export function structureCard(
 	const damage = t.damage * (late ? tune.match.lateGunDamage : 1)
 	const notes = []
 	if (late) notes.push(`Late game: guns at ${pct(tune.match.lateGunDamage)} of ${round(t.damage)}`)
-	if (!vulnerable)
-		notes.push(`Protected until its ${unit.kind === 'fort' ? 'tower' : 'fort'} falls`)
+	if (!vulnerable) notes.push('Protected until its tower falls')
 	if (unit.silentUntil > tick)
 		notes.push(`Silenced by the Ball for ${Math.ceil((unit.silentUntil - tick) * step)} s`)
 	return {

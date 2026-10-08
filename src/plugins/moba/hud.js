@@ -96,9 +96,6 @@ export const ICONS = {
 	tower: svg(
 		'<path class="stone" d="M16 44 L18 22 L30 22 L32 44 Z"/><path class="tone" d="M14 22 L24 6 L34 22 Z"/>',
 	),
-	fort: svg(
-		'<path class="stone" d="M9 44 L9 18 L14 18 L14 23 L19 23 L19 18 L24 18 L24 23 L29 23 L29 18 L34 18 L34 23 L39 23 L39 18 L39 44 Z"/><path class="ink-line" d="M24 18 L24 5"/><path class="tone" d="M25 5 L36 9 L25 13 Z"/>',
-	),
 	core: svg(
 		'<path class="stone" d="M10 44 L13 36 L35 36 L38 44 Z"/><path class="tone" d="M24 3 L36 19 L24 35 L12 19 Z"/><path class="ink-line" d="M12 19 L36 19 M24 3 L24 35"/>',
 	),
@@ -227,7 +224,7 @@ export function createHud({ lobby = false } = {}) {
 		const node = el('div', `moba-side ${which}`, top)
 		const forts = el('div', 'moba-forts', node)
 		const structures = {}
-		for (const kind of ['core', 'fort', 'tower']) {
+		for (const kind of ['core', 'tower']) {
 			const icon = hot(el('div', 'moba-fort', forts, ICONS[kind]), {
 				kind: 'structure',
 				which,
@@ -367,7 +364,7 @@ export function createHud({ lobby = false } = {}) {
 		ball.node,
 		...['mine', 'theirs'].flatMap((which) => {
 			const { level, kills, structures } = sides[which]
-			return [level, kills, ...['tower', 'fort', 'core'].map((k) => structures[k].icon)]
+			return [level, kills, ...['tower', 'core'].map((k) => structures[k].icon)]
 		}),
 	]
 	let world = null
@@ -716,7 +713,7 @@ export function createHud({ lobby = false } = {}) {
 					text(s.levelNumber, String(teams[team].level))
 					prop(s.xp, '--f', String(progress.need ? ring(progress.into, progress.need) : 1))
 					text(s.killCount, String(kills[team]))
-					for (const kind of ['tower', 'fort', 'core']) {
+					for (const kind of ['tower', 'core']) {
 						const unit = sim?.lane?.structures.find((u) => u.team === team && u.kind === kind)
 						if (!unit) continue
 						const { icon, bar: hpBar } = s.structures[kind]
