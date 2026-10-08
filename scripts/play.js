@@ -18,9 +18,9 @@ import {
 } from '../src/plugins/moba/agents.js'
 import { createAgentMatch } from '../src/plugins/moba/agent-match.js'
 
-export const HELP = `bun scripts/play.js [start --session s] --seed N --seat A1 [--seat B2 ...]
-bun scripts/play.js act --session s '{"action":"wait","seconds":30}'
-bun scripts/play.js stop --session s; start prints the first observation and daemon pid.
+export const HELP = `bun run play:headless [start --session s] --seed N --seat A1 [--seat B2 ...]
+bun run play:headless act --session s '{"action":"wait","seconds":30}'
+bun run play:headless stop --session s; start prints the first observation and daemon pid.
 Without start: read through "act <seat>", reply with ONE JSON line.
 Unassigned seats are bots. --idle B1 (repeatable) makes seats idle.
 --bots easy|normal|hard; --max-seconds N; --replay public/replays/name.json

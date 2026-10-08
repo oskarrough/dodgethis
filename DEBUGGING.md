@@ -96,7 +96,7 @@ restarts for growing resource counts. Use the browser performance profiler when
 CPU time is high, and check GPU/render resolution when frame time is high but CPU
 is low. Software-rendered headless Chromium cannot establish hardware FPS.
 
-Run `bun run bench` or `bun run bench crowd 17` for a browser-free CPU comparison.
+Run `bun run profile:dodgeball` or `bun run profile:dodgeball crowd 17` for a browser-free CPU comparison.
 It runs real Rapier and AI through three fresh seeded rounds and reports the live
 roster before and after each window. It excludes rendering and must not be reported
 as FPS. Run `bun test` and `bun run build` after gameplay changes.

@@ -4,11 +4,23 @@ Run `bun run check` from the repository root for lint, formatting and the tests;
 
 Automated coverage includes roster/controller assignment, shared human actions, input ownership and validation, charge authority, stale match/round/sequence rejection, neutral input timeout, host-only state, snapshot validation/interpolation, event deduplication, round scoring, connection cancellation, and cleanup.
 
-## Balance bench
+## Verification commands
 
-`bun run farm --summary` plays headless bot matches through `createAgentMatch` and prints tables instead of writing logs. It is the tool for balance and bot-logic questions; reach for it before writing a probe script, a `git archive` baseline or an env-var hack. These are bot-only samples, not evidence that a human can win.
+| Command                                                  | Purpose                                                                          |
+| -------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `bun test [file]`                                        | Existing logic and contract tests                                                |
+| `bun run test:slow`                                      | Include the long agent-session proof                                             |
+| `bun run play:headless --help`                           | Control a MOBA seat and save a replay; see [agent play](moba-agents.md)          |
+| `bun run simulate --help`                                | Bot matches, revision comparisons and balance reports                            |
+| `bun run simulate --logs runs`                           | Analyse saved combat logs with DuckDB                                            |
+| `bun run profile:dodgeball [preset] [seed]`              | Physics and AI tick time; defaults to 20v20, seed 42; excludes rendering and FPS |
+| `bun run verify:browser <preview URL> <shots directory>` | Browser controls, navigation, layouts and match completion                       |
 
-- Start small: `bun run farm --base --cross-only --matches 2 --max-seconds 30 --jobs 2 --report`. Summaries default to 4 matches and 2 workers; logs default to 20 matches. `--quick` is `--summary --cross-only --matches 4`.
+## Bot simulations
+
+`bun run simulate --summary` plays headless bot matches through `createAgentMatch` and prints tables instead of writing logs. It is the tool for balance and bot-logic questions; reach for it before writing a probe script, a `git archive` baseline or an env-var hack. These are bot-only samples, not evidence that a human can win.
+
+- Start small: `bun run simulate --base --cross-only --matches 2 --max-seconds 30 --jobs 2 --report`. Summaries default to 4 matches and 2 workers; logs default to 20 matches. `--quick` is `--summary --cross-only --matches 4`.
 - Teams: `--heroes fletcher,mitts` gives each team three of one hero; `mixed` is practice's `mitts,fletcher,random`. `--lineup mitts,fletcher,mitts` adds a team of those seats (repeatable); `random` draws a seeded playable hero, the same draw on every revision and variant. `--cross-only` skips mirrors. `--idle A1` leaves seats standing still. Scripted seats are not supported. `--practice` is practice's shape: an idle A1, allies on normal, enemies on `--difficulty`.
 - Counts round up to whole matchup rotations; every pairing and its side swap share a rotation's seed, and every variant and revision plays the same seeds.
 - `--set path=v[,v…]` overrides a `tune` number (a path under `tune.heroes` may drop that prefix; comma values sweep, several flags make a grid).
@@ -23,7 +35,7 @@ Automated coverage includes roster/controller assignment, shared human actions, 
 
 ## Combat logs
 
-Run `bun run farm` (no `--summary`) for 20 hard bot matches, then `bun run balance`, for questions the bench tables don't answer. Logs live in gitignored `runs/<date>/<match>.jsonl`; only completed files enter queries. Use `--help` for seed, duration limit and output options.
+Run `bun run simulate` (no `--summary`) for 20 hard bot matches, then `bun run simulate --logs runs`, for questions the simulation tables don't answer. Logs live in gitignored `runs/<date>/<match>.jsonl`; only completed files enter queries. Pass a log directory, a single `.jsonl` file or a quoted glob to `--logs`; directories are searched recursively. Saved-log analysis requires the DuckDB CLI. Use `--help` for seed, duration limit and output options.
 
 Each fact has effective damage (HP removed, excluding overkill), actor seat/kit, ability and position, with the original fact retained. A single match row records the roster, result, run id, working-copy commit and tuning hash; a timeout has no winner and is excluded from win rates, but counted in match length. `createAgentMatch` exposes `logRows` by default, or streams rows through `onLog` without retaining them. Each farm log has a compact `<match>.tape.json` alongside it: replay regenerates the seeded bots and checks the final snapshot hash. Copy it into `public/replays/` and open `?mode=moba&replay=/replays/<match>.tape.json` on the same tuning/build. Browser download UI is not wired yet.
 
@@ -33,9 +45,11 @@ Each fact has effective damage (HP removed, excluding overkill), actor seat/kit,
 
 The MOBA collision floor is one flat plane, bounded by the lane's wall colliders or the plaza's walking limits. It has no terrain grid or triangle seams. When changing it, check player movement, wall contact and dashes in both the plaza and a match; short bot timings measure simulation cost, not displayed FPS or balance. Floor changes can alter old seeded results, so record and replay tapes on the same build.
 
-`node scripts/verify-moba-playability.mjs <preview URL> <shots directory>` checks a frozen production build: keyboard, mouse and pad get through selection, loading, pause, resume and exit; the hub portal and the Play MOBA button both work; hero select, Numbers, pause and the panned-away marker fit at four viewport sizes; a six-bot seeded 3v3 reaches the result card, the frozen result and a clean Again, with no browser errors.
+`bun run verify:browser <preview URL> <shots directory>` proves the browser wiring on a production build: a fresh splash opens the MOBA plaza, hero and difficulty selections survive one real ready walk/crane/descent, mouse orders move the hero, and keyboard, mouse and mocked pad can pause or resume. It checks restart, retained hero selection, return to the splash and the Dodgeball portal. The same plaza is resized to four viewports to assert hero-strip and back-arrow bounds; screenshots support visual review rather than asserting every pixel.
 
-Synthetic Space events must bubble from the body, not target `window`: the camera's capture listener must run before core input suppresses page scrolling. Consume a mouse order for one frame before parking the pointer, since the input loop reads the pointer's current ground position. The frozen-build pass captured both named bot kills, a hero-centred FOV of 40 at all three sizes, and no browser errors. Camera bounds cover the ground target; the map boundary may be visible at base without changing the match scale.
+A separate direct-play match uses six normal bots and explicit seed 2. It advances the real app frame phases until a winner, checks the relative result card and frozen ended snapshot, then checks a clean Again and return to the splash. It proves result/restart integration, not human winnability, balance or rendered FPS. Both documents must have no browser errors. Independent entry routes for every input device and the old Ball/hero-marker screenshots are outside this smoke pass; use focused browser proofs when changing those features.
+
+The pass writes screenshots and `report.json`, including stage timings, command count, seed, roster, result and failure stage. It closes its own browser once on success or failure and has a 90-second wall-clock budget; the usual target is 20–40 seconds. Production animation timings and simulation rules are unchanged. Synthetic Space events bubble from the focused element through the camera's capture listener; mouse movement waits for actual displacement rather than a fixed delay.
 
 ## Two-device check
 

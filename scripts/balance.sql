@@ -1,8 +1,8 @@
--- Run from the repository root: bun run balance (DuckDB CLI, no database file).
+-- Run from the repository root: bun run simulate --logs runs (DuckDB CLI, no database file).
 -- Every aggregate is partitioned by run, commit and tuning; legacy logs stay individual.
 -- Explicit projection keeps empty/all-null fact columns and large logs readable.
 CREATE TEMP TABLE logs AS
-SELECT * FROM read_json('runs/*/*.jsonl', format = 'newline_delimited', columns = {
+SELECT * FROM read_json(getvariable('logs'), format = 'newline_delimited', columns = {
     tick: 'BIGINT', match_id: 'VARCHAR', seed: 'UBIGINT', seat: 'VARCHAR',
     hero: 'VARCHAR', team: 'VARCHAR', kind: 'VARCHAR', target: 'VARCHAR',
     effective_damage: 'DOUBLE', ability_id: 'VARCHAR',

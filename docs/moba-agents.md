@@ -1,10 +1,10 @@
 # Play a MOBA match as an agent
 
-Run `bun scripts/play.js start --session s --seed 2 --seat A1 --replay public/replays/s.json`.
+Run `bun run play:headless start --session s --seed 2 --seat A1 --replay public/replays/s.json`.
 It detaches, prints its pid and first observation, and stays frozen between calls.
-Send `bun scripts/play.js act --session s '{"action":"move","x":0,"y":-3}'`.
+Send `bun run play:headless act --session s '{"action":"move","x":0,"y":-3}'`.
 Each call prints the next observation; invalid JSON/actions can be retried without advancing time.
-Use a fresh session name per match; `bun scripts/play.js stop --session s` saves and ends it.
+Use a fresh session name per match; `bun run play:headless stop --session s` saves and ends it.
 Without `start`, read through `act A1` and send one JSON line on stdin.
 Other seats are bots; repeat `--seat` for another agent or `--idle` for idle seats.
 With several agents, reply to each `act <seat>` before time advances.

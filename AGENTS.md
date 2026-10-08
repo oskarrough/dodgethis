@@ -15,8 +15,8 @@
 
 ## Balance and bot experiments
 
-- `bun run farm --summary` is the bench: headless bot matches, compact tables, no logs. `--base` replays the same seeds on another revision and prints deltas with approximate 95% intervals and a verdict; `--report` adds per-ability, death-cause and bot-state sections; `--set bots.exp.<flag>=0,1` toggles a logic variant. Read the bench section of `docs/verification.md` before building your own harness, git archive or env-var hack.
-- Full logs (`bun run farm` without `--summary`) feed `bun run balance`, DuckDB over `runs/*.jsonl`, for questions the bench doesn't answer.
+- `bun run simulate --summary` runs bot simulations: headless bot matches, compact tables, no logs. `--base` replays the same seeds on another revision and prints deltas with approximate 95% intervals and a verdict; `--report` adds per-ability, death-cause and bot-state sections; `--set bots.exp.<flag>=0,1` toggles a logic variant. Read the simulation section of `docs/verification.md` before building your own harness, git archive or env-var hack.
+- Full logs (`bun run simulate` without `--summary`) feed `bun run simulate --logs runs`, DuckDB over saved match logs, for questions the simulation tables don't answer.
 
 ## Browser proofs
 

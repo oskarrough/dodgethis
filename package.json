@@ -11,9 +11,10 @@
 		"check": "oxlint --quiet && oxfmt --check && bun test --parallel --only-failures",
 		"test": "bun test",
 		"test:slow": "SLOW=1 bun test",
-		"bench": "bun scripts/bench.js",
-		"farm": "bun scripts/farm.js",
-		"balance": "duckdb -no-init -bail -markdown -f scripts/balance.sql",
+		"profile:dodgeball": "bun scripts/bench.js",
+		"simulate": "bun scripts/farm.js",
+		"play:headless": "bun scripts/play.js",
+		"verify:browser": "node scripts/verify-moba-playability.mjs",
 		"deploy": "wrangler deploy"
 	},
 	"dependencies": {

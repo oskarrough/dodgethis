@@ -1,7 +1,7 @@
-import { mkdir, rename, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, rename, writeFile } from 'node:fs/promises'
 import { createHash } from 'node:crypto'
 import { spawnSync } from 'node:child_process'
-import { existsSync, openSync, writeSync, closeSync } from 'node:fs'
+import { existsSync, statSync, openSync, writeSync, closeSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { parseArgs } from 'node:util'
@@ -247,8 +247,8 @@ export async function runFarmMatch({
 	return result
 }
 
-const HELP = `bun scripts/farm.js [options]   (bun run farm -- --help)
-Plays headless bot matches. Default: write logs and tapes for \`bun run balance\`; --summary prints tables.
+const HELP = `bun run simulate [options]
+Plays headless bot matches. Default: write logs and tapes for \`bun run simulate --logs runs\`; --summary prints tables.
 
 Teams
   --heroes fletcher,mitts   each team three of one hero; \`mixed\` is practice's mitts,fletcher,random
@@ -270,7 +270,9 @@ Comparing (all imply --summary)
 Machine
   --jobs N                  worker threads (default 2); a per-machine budget (FARM_CORES, default cores − 2) is
                             shared with other farms, which queue for it
-  --out dir                 log directory (default runs/<date>)`
+  --out dir                 log directory (default runs/<date>)
+Saved logs
+  --logs path               analyse saved logs with DuckDB instead of playing; directory, file or glob`
 
 // `--base` may come without a revision.
 function withBaseDefault(argv) {
@@ -284,6 +286,7 @@ export async function farm(argv = process.argv.slice(2)) {
 		args: withBaseDefault(argv),
 		options: {
 			help: { type: 'boolean' },
+			logs: { type: 'string' },
 			matches: { type: 'string' },
 			heroes: { type: 'string' },
 			lineup: { type: 'string', multiple: true, default: [] },
@@ -304,6 +307,28 @@ export async function farm(argv = process.argv.slice(2)) {
 		},
 	})
 	if (values.help) return console.log(HELP)
+	if (values.logs) {
+		const path =
+			existsSync(values.logs) && statSync(values.logs).isDirectory()
+				? join(values.logs, '**', '*.jsonl')
+				: values.logs
+		const sql = await readFile(new URL('./balance.sql', import.meta.url), 'utf8')
+		const result = spawnSync(
+			'duckdb',
+			[
+				'-no-init',
+				'-bail',
+				'-markdown',
+				'-c',
+				`SET VARIABLE logs = '${path.replaceAll("'", "''")}';\n${sql}`,
+			],
+			{ stdio: 'inherit' },
+		)
+		if (result.error)
+			throw new Error(`Saved-log analysis requires the DuckDB CLI: ${result.error.message}`)
+		if (result.status !== 0) throw new Error('Saved-log analysis failed')
+		return
+	}
 	const summary = !!(values.summary || values.quick || values.base || values.until || values.report)
 	const crossOnly = values['cross-only'] || values.quick
 	const requestedMatches = Number(values.matches ?? (summary ? 4 : 20)),

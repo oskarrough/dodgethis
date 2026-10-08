@@ -6,6 +6,12 @@ import { buildCourt } from '../src/plugins/dodgeball/court.js'
 import { tune } from '../src/core/tune.js'
 import { PRESETS, scenario } from '../src/plugins/dodgeball/scenario.js'
 
+if (process.argv.includes('--help')) {
+	console.log(
+		'bun run profile:dodgeball [preset] [seed]\nMeasures headless dodgeball physics and AI tick time (default: 20v20, seed 42). Does not measure rendering or FPS.',
+	)
+	process.exit(0)
+}
 await RAPIER.init({})
 const name = process.argv[2] ?? '20v20'
 if (!PRESETS[name]) throw new Error(`Unknown preset: ${name}`)
