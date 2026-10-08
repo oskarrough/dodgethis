@@ -1,4 +1,4 @@
-/* The plaza's hero strip: fighting-game tiles stacked down the left edge. */
+/* The lobby's hero strip: fighting-game tiles stacked down the left edge. */
 .lobby-hero-strip {
 	--tile: clamp(62.4px, min(7.8vw, 12vh), 110.4px);
 	position: fixed;

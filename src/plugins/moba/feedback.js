@@ -141,7 +141,7 @@ export function createFeedback({
 		const effects = ability?.effects ?? {}
 		switch (fact.type) {
 			case 'ballContested':
-				hud.banner?.('Ball contested! Clear the plaza')
+				hud.banner?.('Ball contested! Clear the lobby')
 				view.ping('move', fact.point)
 				cue('ballContested', fact)
 				return

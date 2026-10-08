@@ -6,7 +6,7 @@ import { mobaFront } from './plugins/moba/front/index.js'
 import { createMapScope } from './plugins/moba/map.js'
 import online from './plugins/online/index.js'
 
-// Composition owns the hub's cross-plugin destination; plugins never import each other.
+// Composition owns the lobby's cross-plugin destination; plugins never import each other.
 try {
 	const app = await createBrowserApp()
 	const map = createMapScope(app.scene, app.RAPIER, app.clock.step)
@@ -21,7 +21,7 @@ try {
 					scope.modes.start('moba-lobby')
 				},
 			},
-			hubExit: { onSelect: () => scope.modes.start('moba-front') },
+			lobbyExit: { onSelect: () => scope.modes.start('moba-front') },
 		}),
 	)
 	app.use((scope) => moba(scope, map))

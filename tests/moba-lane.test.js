@@ -38,7 +38,7 @@ function shot(x, z, dx, dz, slot = 'slot1') {
 }
 
 test('layout is 104 × 26, with four hedges, four base walls and six pillars', () => {
-	expect(FLOOR).toMatchObject({ id: 'lane', halfX: 52, halfZ: 13 })
+	expect(FLOOR).toMatchObject({ id: 'overthrow', halfX: 52, halfZ: 13 })
 	expect(BOXES.filter((b) => b.kind === 'hedge')).toHaveLength(4)
 	expect(BOXES.filter((b) => b.kind === 'wall')).toHaveLength(4)
 	expect(PILLARS).toHaveLength(6)

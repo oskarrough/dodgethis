@@ -55,7 +55,7 @@ export function createActions() {
 
 function apply(round, unit, seat, frame, dt, consume) {
 	const { meter } = seat
-	const armed = !round.hub
+	const armed = !round.lobby
 	const edge = (action) => frame.pressed.find((e) => e.action === action)
 	for (const { action } of frame.pressed) {
 		if (action === 'cancel') meter.cancel()

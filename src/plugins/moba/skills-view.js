@@ -19,7 +19,7 @@ export function lineReach(point, yaw, stats, obstacles = OBSTACLES, bounds = FLO
 }
 
 // Ground tells lie just above the map's top print layer (and under the cursor markers);
-// any lower and the lane's printed road and plaza paint over them.
+// any lower and the lane's printed road and lobby paint over them.
 const GROUND = tune.map.printLayers.seams + 0.005
 
 export function createSkillsView(scene) {

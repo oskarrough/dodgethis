@@ -106,7 +106,7 @@
 	inset: 0;
 	pointer-events: none;
 }
-/* The tiles' own sheet while they fall away over the plaza. */
+/* The tiles' own sheet while they fall away over the lobby. */
 .moba-front.front-leaving {
 	background: transparent;
 	pointer-events: none;

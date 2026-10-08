@@ -49,8 +49,8 @@ export function createSim({
 	lane: withLane = false,
 	spawns = null, // { participantId: { x, z } }; copied for death/recovery.
 	bounds = null, // { halfX, halfZ }; body centres stay one radius inside.
-	obstacles: mapObstacles = null, // The active terrain; defaults preserve the lane and plaza.
-	posts = DUMMY_POSTS, // Where the training dummies strafe; the plaza brings its own.
+	obstacles: mapObstacles = null, // The active terrain; defaults preserve the lane and lobby.
+	posts = DUMMY_POSTS, // Where the training dummies strafe; the lobby brings its own.
 	respawn: respawnSeconds = null, // Hero recovery override, in seconds; dummies keep their timer.
 	readyRoster = [], // Full lobby seats; humans are the hero participants, the rest are cardboard bots.
 	lobby = false, // Combat allegiance A for heroes, B for dummies; seatTeam retains the pick.
@@ -73,10 +73,10 @@ export function createSim({
 				})),
 			)
 		: []
-	// The plaza has no pillars; its hedges sit outside the bounds.
+	// The lobby has no pillars; its hedges sit outside the bounds.
 	const obstacles = [...(mapObstacles ?? (lobby ? BOXES : OBSTACLES)), ...towerObstacles]
 	const floor = bounds ?? FLOOR
-	// The plaza limits walking, not casts: preserve its existing open shooting field.
+	// The lobby limits walking, not casts: preserve its existing open shooting field.
 	const field = lobby ? FLOOR : floor
 	const towerColliders = new Map(
 		towerObstacles.map((o) => [

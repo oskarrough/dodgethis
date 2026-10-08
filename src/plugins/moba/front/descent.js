@@ -8,10 +8,10 @@ import { createDescentState, descentFrame, localLoadingHero } from './descent-st
 import { tune } from './tune.js'
 import './descent.css'
 
-// The crane and descent: one camera move from the plaza to the match that takes no input.
-// The plaza run lives until the apex, where the match starts behind the sky. The MOBA map
+// The crane and descent: one camera move from the lobby to the match that takes no input.
+// The lobby run lives until the apex, where the match starts behind the sky. The MOBA map
 // scope keeps the world, so the lane is rebuilt on it.
-export function startLoading(app, { el: plaza, backdrop, difficulty = 'easy', setup }) {
+export function startLoading(app, { el: lobby, backdrop, difficulty = 'easy', setup }) {
 	let dispose
 	dispose = app.use((scope) => {
 		const reduced = matchMedia('(prefers-reduced-motion: reduce)')
@@ -41,7 +41,7 @@ export function startLoading(app, { el: plaza, backdrop, difficulty = 'easy', se
 		scope.intents.suspend(() => true)
 		app.intents.cancel()
 
-		// The plaza camera as it stands now, with the look split into yaw and pitch.
+		// The lobby camera as it stands now, with the look split into yaw and pitch.
 		const aim = app.camera.aim
 		const from = aim.position.clone()
 		const look = aim.getWorldDirection(new THREE.Vector3())
@@ -50,7 +50,12 @@ export function startLoading(app, { el: plaza, backdrop, difficulty = 'easy', se
 		const lens = aim.fov
 
 		const layout = mapLayout(setup?.map)
-		const palette = setup?.map === 'sandlot' ? kit.sandlot.palette : {}
+		const palette =
+			setup?.map === 'flagfall'
+				? kit.flagfall.palette
+				: layout.bounds.id === 'overthrow'
+					? kit.overthrowTerrain.palette
+					: {}
 		const name = layout.name
 		const orbit = tune.loading.orbit
 		const root = make(
@@ -72,7 +77,7 @@ export function startLoading(app, { el: plaza, backdrop, difficulty = 'easy', se
 				.join('')}</g></g></svg>`,
 		)
 		root.dataset.phase = 'crane'
-		root.setAttribute('aria-label', 'Rising over the plaza')
+		root.setAttribute('aria-label', 'Rising over the lobby')
 		const lettering = root.querySelector('.front-descent-name')
 		const ornament = root.querySelector('.front-descent-orbit')
 		const marks = root.querySelector('.front-descent-marks')
@@ -84,7 +89,7 @@ export function startLoading(app, { el: plaza, backdrop, difficulty = 'easy', se
 		document.body.append(root)
 		document.body.style.setProperty('--crane-fade', `${tune.shot.apex.time}s`)
 		document.body.classList.add('front-craning')
-		if (plaza) plaza.inert = true
+		if (lobby) lobby.inert = true
 		backdrop.shot('apex').then(() => gate.arrive())
 
 		let unframe = scope.camera.frame(() => {
@@ -127,14 +132,14 @@ export function startLoading(app, { el: plaza, backdrop, difficulty = 'easy', se
 			)
 		}
 
-		// At the apex the canvas is clear: swap the plaza run for the match behind the sky.
+		// At the apex the canvas is clear: swap the lobby run for the match behind the sky.
 		function apex() {
 			match = app.modes.start('moba', {
 				session: app.session,
 				options: { setup, difficulty, ready: () => gate.state.phase === 'landed' && !capturing },
 			})
 			scope.clock.scale(() => 0)
-			if (plaza) plaza.inert = false
+			if (lobby) lobby.inert = false
 			parent = canvas.parentNode
 			next = canvas.nextSibling
 			root.prepend(backdrop.el, canvas)
@@ -323,7 +328,7 @@ export function startLoading(app, { el: plaza, backdrop, difficulty = 'easy', se
 				canvas.classList.remove('front-canvas')
 				parent.insertBefore(canvas, next)
 			}
-			if (plaza) plaza.inert = false
+			if (lobby) lobby.inert = false
 			document.body.classList.remove('front-craning', 'moba-descending')
 			document.body.style.removeProperty('--crane-fade')
 			root.remove()

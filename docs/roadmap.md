@@ -8,7 +8,7 @@ A small, toy-like hero brawler that grew out of dodgeball, set in the world over
 
 ## Now
 
-- Oskar plays the plaza; then its feel pass (the flip, squash, sounds, a calmer layout).
+- Oskar plays the lobby; then its feel pass (the flip, squash, sounds, a calmer layout).
 
 ## Next
 
@@ -30,7 +30,7 @@ A small, toy-like hero brawler that grew out of dodgeball, set in the world over
 
 ## Changelog
 
-- 2026-10-05 (later): the plaza replaces difficulty and hero select. Walk onto a stand to swap heroes, shoot a cutout to pick difficulty, stand in your chalk box to start. Online peers that flood get dropped. MOBA online is planned in eight slices.
+- 2026-10-05 (later): the lobby replaces difficulty and hero select. Walk onto a stand to swap heroes, shoot a cutout to pick difficulty, stand in your chalk box to start. Online peers that flood get dropped. MOBA online is planned in eight slices.
 - 2026-10-05: shipped to main. Overnight: the first minute of a match (goal callout, lane arrow, "You" ring), death recap and end screen, OUT! stamps with a ref's whistle and cardboard deaths, quiet tooltips with Alt for detail, edge pan, Try Mode, a hero-select toybox, Mitts reviewed and fixed, and a cleanup 2,600 lines lighter.
 - 2026-10-04: playtest round. Console-style splash and difficulty, hero roster, a new HUD with tooltips, Mitts playable, a test link and debug panel, combat logs and the balance farm, world and lobby designs. Parallel agents on the WSL box.
 - 2026-09 (late): the MOBA: core split into plugins, lane, bots and 3v3, hero definitions, front-end slices, agents that play and replay whole matches.

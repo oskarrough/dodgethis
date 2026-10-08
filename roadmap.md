@@ -1,6 +1,6 @@
 # MOBA feedback roadmap
 
-Feedback collected on 2026-10-08. Unchecked items are goals, not completed work. The UI/gameplay batch landed on main in f921797d and is live. Oskar's first post-deployment feedback: "lol its super good". The combined production check passed: 296 tests, one skipped, no failures; lint, formatting and build passed. The first lobby terrain pass is live: pale chalk-marked tarmac and stepped sandstone/violet rock over a dusk desert. The approved DodgeThis home title is live too. Oskar’s terrain judgment is next. Mitts' 25% damage reduction remains a playtest value; further card/feel tweaks can follow concrete feedback. The broader project roadmap lives in [docs/roadmap.md](docs/roadmap.md).
+Feedback collected on 2026-10-08. Unchecked items are goals, not completed work. The UI/gameplay batch landed on main in f921797d and is live. Oskar's first post-deployment feedback: "lol its super good". The combined production check passed: 296 tests, one skipped, no failures; lint, formatting and build passed. The first lobby terrain pass is live: pale chalk-marked tarmac and stepped sandstone/violet rock over a dusk desert. The approved DodgeThis home title is live too. Oskar’s terrain judgment is next. Oskar accepted Mitts' 25% damage reduction on 2026-10-09; further card/feel tweaks can follow concrete feedback. The broader project roadmap lives in [docs/roadmap.md](docs/roadmap.md).
 
 ## Visual direction
 
@@ -56,7 +56,7 @@ Landed on main: Resume and Leave game only; replay remains available as Again af
 
 ## Mitts gameplay ideas
 
-- [x] Explore W also acting as a shield that absorbs a percentage of incoming damage while active. Set the amount and exact behavior through playtesting. A tunable 25% reduction is implemented on main; active, expired/consumed/disabled windows, other attacks, Ball, death/respawn and a full headless match were proved. Independent code review found no defects; human balance judgment is pending.
+- [x] Explore W also acting as a shield that absorbs a percentage of incoming damage while active. Set the amount and exact behavior through playtesting. A tunable 25% reduction is implemented on main; active, expired/consumed/disabled windows, other attacks, Ball, death/respawn and a full headless match were proved. Independent code review found no defects; Oskar accepted the shield on 2026-10-09.
 - [x] Explore Mitts being able to "save" shots and arrows as well as ball hits. Existing Catch already intercepts hero skillshots: real Fletcher Loose and Mitts Toss were proved before and after the shield change, fully negating damage and filling Pocket. Basics/towers/minions remain outside full interception.
 
 ## Debug menu
@@ -87,14 +87,16 @@ The chain is explicit: thr_4f8w6iasfh supplies prompts, style, taste and lore; t
 - [ ] Check the crowded fight in grayscale before locking the palette.
 - [x] Build the first lobby terrain pass: pale chalk-marked tarmac, a finite torn edge, lineless rock ledges and the existing desert visible beyond. All six seats, gallery and dummies stay inside safe bounds; geometry restart, disposal and slider limits are checked.
 - [ ] Judge the implemented lobby direction: does this feel like the world to walk into? The visible courses step outward; choose whether to keep the stacked floor or push toward K’s sheer cliff and haze.
-- [ ] After the floor shape is judged, add sagging chain-link and bollards along the lobby rim.
-- [ ] Carry the chosen world treatment into match terrain after a separate brief; preserve movement, timing and map layout.
+- [x] Add sparse sagging chain-link and bollards along the lobby rim. Oskar approved proceeding on the current stacked floor; implemented in `thr_v44vxey6wv`. Default lobby, six occupant/dummy readability and leave/re-entry disposal proved; 78 targeted tests and owned-file lint/format passed. Human visual judgment is ready.
+- [x] Carry the pale court and dusk surround into Overthrow match terrain; preserve movement, timing and map layout. Implemented in `thr_893kthfc7g`: quiet chalk-marked tarmac, finite rock edge and low mesas over a cold surround. Real pad-driven combat with a 12-minion wave, grayscale readability, direct/descent agreement and restoration through lobby/splash/Flagfall proved. Restart applies changed geometry with stable resource counts; ground stays below existing shadow discs. 51 targeted tests passed and both characterization snapshots stayed identical. Flagfall remains separate; human visual judgment is ready.
 
 Terrain landed in `761026c4`, atomic headless replay publication in `464d016e`, and the approved title in `a0853646`. GitHub and Cloudflare passed the title checkpoint, and production now includes both Overthrow and the title. The live terrain bundle matches the verified local build; the local combined check passed all 296 tests, one skipped. Review the lobby at https://dodgethis.0sk.ar/?mode=moba&hero=fletcher or locally at http://127.0.0.1:5199/?mode=moba&hero=fletcher.
 
 The art-directed corrections are implemented: a lobby-scoped dusk backdrop, a visible front rock face and fewer/fainter cracks. The camera is unchanged. Debug controls sit in the hierarchy, safe slider ranges preserve the walk limits, and restarting rebuilds both the visible surface and its depth geometry. Default and real-walk edge frames at 1440×900, leave/re-entry and disposal passed; dummies remain at their authored posts. The director says the final first pass answers the value/raised-stage question; Oskar’s judgment is pending.
 
 Lobby proof: one default 1440×900 screenshot against K, plus one after walking to the edge. Oskar judges whether the lobby reads as a pale floor above the desert and the cutouts still stand out. A future match pass needs actual combat at the default camera; the side-view intro is an optional cheap extra.
+
+The fence and Overthrow terrain checkpoint passed the combined production build: 296 tests, one skipped, no failures, with lint and formatting clean. The released naming sweep is included: screens use lobby, map ids use overthrow/flagfall, and the dodgeball debug helper is enterLobby so it cannot collide with the MOBA lobby object. The two terrain briefs are complete; screenshots and before copies remain in their builder thread storage.
 
 ## Flagfall and map selection
 

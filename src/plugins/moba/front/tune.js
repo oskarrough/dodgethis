@@ -33,7 +33,7 @@ export const tune = {
 		pastel: 0.65,
 		skip: { freq: 520, slideTo: 740, dur: 0.12, gain: 0.035, type: 'sine' },
 		arrival: { freq: 110, slideTo: 55, dur: 0.4, gain: 0.06, type: 'sine' },
-		// The crane takes shot.apex.time: the plaza camera rises `rise` m and tilts to `pitch`°
+		// The crane takes shot.apex.time: the lobby camera rises `rise` m and tilts to `pitch`°
 		// (negative looks up). The map name letters in from `nameAt` of the way, `letter` s apart.
 		// The canvas fades no lower than `floor`.
 		crane: { rise: 14, pitch: -12, nameAt: 0.3, letter: 0.03, letterTime: 0.35, floor: 0.02 },
@@ -59,11 +59,11 @@ export const tune = {
 		ease: 3,
 		depth: [0.8, 0.9, 1, 1.1],
 		splash: { lift: 0, zoom: 1, time: 0.7 },
-		plaza: { lift: 400, zoom: 1.15, time: 0.7 },
+		lobby: { lift: 400, zoom: 1.15, time: 0.7 },
 		apex: { lift: -480, zoom: 1, time: 0.6 },
 	},
 	back: { freq: 174.61, slideTo: 130.81, dur: 0.25, gain: 0.055 },
-	// Menu tiles: the response is a spring, not a fade. `drop` is the fall under the plaza shot,
+	// Menu tiles: the response is a spring, not a fade. `drop` is the fall under the lobby shot,
 	// `pop` the spring back in as the splash shot lands.
 	// The title sits still for `calm` ms (min, max), then one letter dodges or the Ball glints.
 	title: { calm: [3500, 9000] },

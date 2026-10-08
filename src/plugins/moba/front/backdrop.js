@@ -39,11 +39,11 @@ const planes = [
 	</g>`,
 ]
 
-// Fletcher's ridge point: shots zoom on it, so the plaza's tabletop lands where he stood.
+// Fletcher's ridge point: shots zoom on it, so the lobby's tabletop lands where he stood.
 const focus = { x: 606, y: 740 }
-const shots = ['splash', 'plaza', 'apex']
+const shots = ['splash', 'lobby', 'apex']
 
-// One in-out curve for every front move: backdrop shots, the plaza's camera intro and the crane.
+// One in-out curve for every front move: backdrop shots, the lobby's camera intro and the crane.
 export function easeShot(t) {
 	const k = Math.max(1, tune.shot.ease)
 	const x = Math.max(0, Math.min(1, t))

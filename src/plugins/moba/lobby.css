@@ -219,7 +219,7 @@
 	text-align: center;
 }
 
-/* Dusk behind the Slab so the pale tarmac and its drop read: violet far ground, teal-blue dunes, lilac sky. */
+/* Dusk behind the lobby floor so the pale tarmac and its drop read: violet far ground, teal-blue dunes, lilac sky. */
 .front-lobby .front-backdrop {
 	--front-lilac: #b8abcf !important;
 	--front-mint: #a7a3c6 !important;

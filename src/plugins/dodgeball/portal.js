@@ -98,7 +98,7 @@ export function createPortal(scene, { x, z, enemies, label, labelSize }) {
 	group.position.set(x, 0.05, z)
 
 	// Printed on the floor, pointing from the player toward the hole; no collider or moving sim state.
-	const hint = tune.hubHint
+	const hint = tune.lobbyHint
 	const halfWidth = hint.width / 2
 	const halfLength = hint.length / 2
 	const shaft = halfWidth * hint.shaftRatio

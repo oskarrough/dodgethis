@@ -51,7 +51,7 @@ Frontline counter to skillshots. She stands in front of her team, takes shots an
 
 ## Carom, the trick shot
 
-Burst from odd angles. The Fletcher pokes you down the lane; Carom finishes you behind the pillar. Strongest in the plaza and near walls, weakest in the open road. He hits rubber balls with a squash racket. 1300 HP, the lowest, 5.0 m/s.
+Burst from odd angles. The Fletcher pokes you down the lane; Carom finishes you behind the pillar. Strongest in the lobby and near walls, weakest in the open road. He hits rubber balls with a squash racket. 1300 HP, the lowest, 5.0 m/s.
 
 | Key   | Name       | Numbers                                                                                                                                                                                                                                                                           |
 | ----- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -63,7 +63,7 @@ Burst from odd angles. The Fletcher pokes you down the lane; Carom finishes you 
 
 His own indicator for Q and R draws the full bounce path, so aiming at a wall is learnable in one game. The board is how he brings walls into the open road, and how he stops a Volley without catching it.
 
-**The moment:** the Fletcher limps home on 400 HP behind the far pillar. The red dotted line zigzags across the plaza, everyone scatters, and after five cushions it finds him for 500.
+**The moment:** the Fletcher limps home on 400 HP behind the far pillar. The red dotted line zigzags across the lobby, everyone scatters, and after five cushions it finds him for 500.
 
 **Counter-play:** fight him in the open road, where there's nothing to bank off. Every bank path is printed for its cast point, so step off the line. Walk through the board and shoot around its ends. Mitts catches his balls, frozen at the damage they'd banked. His only escape, Kick off, wants a wall nearby.
 

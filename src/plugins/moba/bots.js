@@ -755,7 +755,7 @@ export function createBot({ id, team, file = 0, difficulty = 'normal' }, seed, b
 			)[0]
 			const guard = perceived.structures.find((u) => !u.dead && u.team === team)
 			const goal = { x: (front?.pos.x ?? guard?.pos.x ?? h.spawn.x) + side * b.laneBehind, z: file }
-			// While no enemy minion is on our half, hold the plaza edge instead of waiting at home.
+			// While no enemy minion is on our half, hold the lobby edge instead of waiting at home.
 			if (!minions.some((u) => u.team !== team && side * u.pos.x > 0))
 				goal.x = side * Math.min(side * goal.x, b.openingX)
 			const creep = minions

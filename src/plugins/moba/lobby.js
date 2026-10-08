@@ -12,7 +12,7 @@ import { createHeroStrip } from './lobby-heroes.js'
 import { createNumbers } from './front/numbers.js'
 import './lobby.css'
 
-// The plaza uses the match's simulation and presentation, but owns navigation and framing.
+// The lobby uses the match's simulation and presentation, but owns navigation and framing.
 export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 	const backdrop = options.backdrop ?? createBackdrop()
 	const el = options.el ?? document.createElement('main')
@@ -20,8 +20,8 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 	const parent = canvas.parentNode
 	const next = canvas.nextSibling
 	el.className = 'moba-front front-lobby'
-	el.dataset.screen = 'plaza'
-	el.setAttribute('aria-label', 'Try your hero in the plaza')
+	el.dataset.screen = 'lobby'
+	el.setAttribute('aria-label', 'Try your hero in the lobby')
 	el.innerHTML = `<button type="button" class="back-button" aria-label="Back to splash"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12H5m6-7-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg><kbd></kbd></button><div class="lobby-pick-stamp" aria-live="polite"></div>`
 	el.prepend(backdrop.el, canvas)
 	canvas.classList.add('front-canvas')
@@ -40,9 +40,9 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 			]),
 		),
 	)
-	// The plaza opens by flying in along the camera's own view ray, on the backdrop's shot
+	// The lobby opens by flying in along the camera's own view ray, on the backdrop's shot
 	// ease and time; the canvas fades up over the last 40% of the move.
-	const intro = { time: frontTune.shot.plaza.time, t: 0 }
+	const intro = { time: frontTune.shot.lobby.time, t: 0 }
 	if (matchMedia('(prefers-reduced-motion: reduce)').matches || !(intro.time > 0))
 		intro.t = intro.time
 	const fadeIntro = () => {
@@ -53,7 +53,7 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 				: String(Math.max(0, (k - tune.lobby.intro.fadeFrom) / (1 - tune.lobby.intro.fadeFrom)))
 	}
 	fadeIntro()
-	backdrop.shot('plaza', { instant: intro.t >= intro.time })
+	backdrop.shot('lobby', { instant: intro.t >= intro.time })
 	run.system('present', ({ dt }) => {
 		if (intro.t >= intro.time) return
 		intro.t = Math.min(intro.time, intro.t + dt)
@@ -71,7 +71,7 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 	})
 	run.camera.frame(() => {
 		const c = tune.lobby.camera
-		// Fit the whole playable plaza, not only its far half. Portrait widens the lens,
+		// Fit the whole playable lobby, not only its far half. Portrait widens the lens,
 		// never stretching scenery or moving the marks outside the visible ground.
 		const scale = Math.max(1, c.fitAspect / Math.max(c.minAspect, innerWidth / innerHeight))
 		const back = c.back
@@ -530,8 +530,8 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 		f.add(c, 'back', 0, 13, 0.1)
 		f.add(c, 'fov', 20, 90, 1)
 	})
-	run.debug.tune('lobby slab (applies on restart)', tune.lobby.slab, (f, c) => {
-		// Never smaller than the walking bounds plus the jag and 1 m, so props and walking stay on the slab.
+	run.debug.tune('lobby floor (applies on restart)', tune.lobby.floor, (f, c) => {
+		// Never smaller than the walking bounds plus the jag and 1 m, so props and walking stay on the floor.
 		f.add(c, 'halfX', 11, 20, 0.1)
 		f.add(c, 'halfZ', 8.1, 20, 0.1)
 		f.add(c, 'jag', 0, 0.6, 0.05)
@@ -539,10 +539,18 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 		f.add(c, 'rockDepth', 1, 10, 0.1)
 		f.add(c, 'courses', 1, 4, 1)
 		for (const k of Object.keys(c.colors)) f.addColor(c.colors, k)
+		const scenery = tune.lobby.fence
+		f.add(scenery, 'height', 0.8, 1.8, 0.05).name('fence height')
+		f.add(scenery, 'sag', 0, 0.5, 0.05).name('fence sag')
+		f.add(scenery, 'bow', 0, 0.15, 0.01).name('fence bow')
+		f.add(scenery, 'diamond', 0.4, 1, 0.05).name('fence diamond')
+		f.add(scenery, 'panelWidth', 1.5, 4, 0.1).name('fence panel width')
+		f.add(scenery, 'bollardHeight', 0.4, 1, 0.05).name('bollard height')
+		for (const k of Object.keys(scenery.colors)) f.addColor(scenery.colors, k).name(`fence ${k}`)
 	})
 	run.debug.expose({
 		get screen() {
-			return ending ? 'descent' : 'plaza'
+			return ending ? 'descent' : 'lobby'
 		},
 		lobby: {
 			sim,

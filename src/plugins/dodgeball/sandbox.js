@@ -17,7 +17,7 @@ export function createSandbox(app, { flow, blocked, updateHud }) {
 		app.clock.reset()
 		tune.cheats.godmode = setup.godmode
 		tune.cheats.infiniteAmmo = setup.infiniteAmmo
-		if (setup.phase === 'menu') f.enterHub()
+		if (setup.phase === 'lobby') f.enterLobby()
 		else {
 			f.startMatch(setup.teamB, {
 				allies: setup.teamA - 1,
@@ -68,7 +68,7 @@ export function createSandbox(app, { flow, blocked, updateHud }) {
 		if (!Number.isInteger(ticks) || ticks < 1 || ticks > 3600)
 			throw new Error('ticks must be 1..3600')
 		const f = flow()
-		for (let i = 0; i < ticks && (f.phase === 'playing' || f.phase === 'menu'); i++) {
+		for (let i = 0; i < ticks && (f.phase === 'playing' || f.phase === 'lobby'); i++) {
 			f.round.step(app.clock.step, { x: 0, z: 0 })
 			f.round.lateUpdate()
 		}
@@ -111,7 +111,7 @@ export function createSandbox(app, { flow, blocked, updateHud }) {
 			app.clock.reset()
 		},
 		step,
-		hub: () => !blocked() && flow()?.enterHub(),
+		enterLobby: () => !blocked() && flow()?.enterLobby(),
 		restart: () => !blocked() && flow()?.restartRound(),
 	})
 

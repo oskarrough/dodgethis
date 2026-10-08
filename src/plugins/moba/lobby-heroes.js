@@ -1,7 +1,7 @@
 import { ICONS } from './hud.js'
 import './lobby-heroes.css'
 
-// The plaza's hero strip: one tile per hero, stacked down the left edge, apart from the
+// The lobby's hero strip: one tile per hero, stacked down the left edge, apart from the
 // HUD so it reads as a menu rather than part of your hero. Yours slides out, framed gold;
 // clicking it opens the numbers sheet. Locked tiles say "soon" and wobble.
 export function createHeroStrip({ el, heroes, current, pick, openNumbers }) {

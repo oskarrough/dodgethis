@@ -11,6 +11,7 @@ No new unit tests for now (Oskar, 2026-10-04): prove a change by playing it, in 
 - Every number lives in the plugin's tune.js, and every slider has a sane range (fractions 0–1, times at least one step). No slider value may produce NaN or reverse movement.
 - Tune sliders apply live, or are labelled "applies on restart". HUD text is built from tune, never hard-coded, and written only when it changes.
 - Update the docs line your change contradicts.
+- App-wide and run-owned debug APIs share one namespace: check both registrations before renaming a key, keep duplicate protection, and prove unregister/re-entry. Scope helpers by action or mode so a lobby object cannot collide with a lobby action.
 - The local hero is looked up by participant id, never heroes[0].
 - Browser work follows the "Browser proofs" lines in AGENTS.md: shared agent server, your own browser session, waits on conditions. Never `pkill` anything; you share the box.
 

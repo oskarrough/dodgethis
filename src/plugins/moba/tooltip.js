@@ -2,7 +2,7 @@ import { tune } from './tune.js'
 
 // A cream sticker card for the stat nerds. Builders are pure: they read live state and `tune`
 // on every call, so an open card follows a `&debug` edit or a level-up. The card element only
-// rewrites when the built content changes. Plaza inspection uses the same builders.
+// rewrites when the built content changes. Lobby inspection uses the same builders.
 
 const round = (v) => Math.round(v)
 const n = (v) => String(Number(Number(v).toFixed(2)))

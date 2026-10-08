@@ -1,11 +1,12 @@
 import * as THREE from 'three'
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'
 import { FORWARD_LAYER } from '../../core/stylepass.js'
 import { tune } from './tune.js'
 
-// The plaza's Slab: a finite piece of pale tarmac over a torn rock rim, floating above the desert
+// The lobby's floor: a finite piece of pale tarmac over a torn rock rim, floating above the desert
 // backdrop. The sheet and rock are forward-pass meshes, so the deferred pass keeps no ink on the
 // rim and the props still stand on it; the deferred ground underneath is the same outline
-// (see `slabShape`), kept so the plaza keeps its depth, and nothing is drawn beyond it.
+// (see `floorShape`), kept so the lobby keeps its depth, and nothing is drawn beyond it.
 
 function rng(seed) {
 	let a = seed >>> 0 || 1
@@ -20,7 +21,7 @@ function rng(seed) {
 
 // Counter-clockwise (seen from above, x right, z toward the camera) torn outline. Only ever pulls
 // in from the halfX/halfZ rectangle, by 0..jag, so the walkable rectangle can sit jag + 1 m inside.
-export function slabOutline(s = tune.lobby.slab) {
+export function floorOutline(s = tune.lobby.floor) {
 	const rand = rng(s.seed)
 	const corners = [
 		[-s.halfX, -s.halfZ],
@@ -68,9 +69,9 @@ export function slabOutline(s = tune.lobby.slab) {
 }
 
 // The ground the deferred pass draws and the sheet lies over.
-export function slabShape(s = tune.lobby.slab) {
+export function floorShape(s = tune.lobby.floor) {
 	// Shape x/y map to world x/z once the geometry is laid flat.
-	const outline = slabOutline(s)
+	const outline = floorOutline(s)
 	const shape = new THREE.Shape(outline.map((p) => new THREE.Vector2(p.x, -p.z)))
 	return new THREE.ShapeGeometry(shape).rotateX(-Math.PI / 2)
 }
@@ -169,7 +170,7 @@ function drawTexture(s) {
 	g.moveTo(px(ci.x - ci.radius), pz(ci.z))
 	g.lineTo(px(ci.x + ci.radius), pz(ci.z))
 	g.stroke()
-	// Hopscotch: 1, 2-3, 4-5 up the slab (toward -z).
+	// Hopscotch: 1, 2-3, 4-5 up the floor (toward -z).
 	const hs = s.hopscotch,
 		k = hs.cell
 	const cells = [
@@ -256,7 +257,7 @@ function rockGeometry(outline, s) {
 			const p1 = new THREE.Vector3(ring[j].x, top, ring[j].z)
 			const p2 = new THREE.Vector3(ring[j].x, bottom + drop[j], ring[j].z)
 			const p3 = new THREE.Vector3(ring[i].x, bottom + drop[i], ring[i].z)
-			// Wind so the face looks outward from the slab.
+			// Wind so the face looks outward from the floor.
 			quad(p0, p1, p2, p3, wallColor)
 			// The ledge below: a step from this course's foot to the next course's top.
 			if (c < s.courses - 1) {
@@ -282,15 +283,136 @@ function rockGeometry(outline, s) {
 	return geometry
 }
 
+// Four broken runs rather than a perimeter cage. The safe rectangle is inside every possible
+// torn outline; reserve the widest foot plus the bow before placing anything on it.
+function createFences() {
+	const s = tune.lobby.fence,
+		floor = tune.lobby.floor
+	const clearance =
+		floor.jag + s.edgeMargin + Math.max(s.capRadius, s.bollardRadius) + Math.abs(s.bow)
+	const halfX = floor.halfX - clearance,
+		halfZ = floor.halfZ - clearance
+	const group = new THREE.Group()
+	group.name = 'lobby-fences'
+	group.position.y = tune.map.printLayers.lobby
+	const batches = { posts: [], caps: [], bollards: [], wire: [] }
+	const wire = []
+	const up = new THREE.Vector3(0, 1, 0)
+	function rod(a, b, radius, batch) {
+		const direction = new THREE.Vector3().subVectors(b, a)
+		const geometry = new THREE.CylinderGeometry(
+			radius,
+			radius,
+			direction.length(),
+			s.radialSegments,
+		)
+		geometry.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(up, direction.normalize()))
+		geometry.translate((a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2)
+		batches[batch].push(geometry)
+	}
+	function upright(x, z, height, radius, capHeight, capRadius, batch) {
+		rod(new THREE.Vector3(x, 0, z), new THREE.Vector3(x, height, z), radius, batch)
+		rod(
+			new THREE.Vector3(x, height, z),
+			new THREE.Vector3(x, height + capHeight, z),
+			capRadius,
+			'caps',
+		)
+	}
+	for (const run of s.runs) {
+		const from = new THREE.Vector3(run.from[0] * halfX, 0, run.from[1] * halfZ)
+		const to = new THREE.Vector3(run.to[0] * halfX, 0, run.to[1] * halfZ)
+		const length = from.distanceTo(to)
+		const panels = Math.max(1, Math.ceil(length / s.panelWidth))
+		const width = length / panels
+		const normal = new THREE.Vector3(to.z - from.z, 0, from.x - to.x).normalize()
+		for (let i = 0; i <= panels; i++) {
+			const p = from.clone().lerp(to, i / panels)
+			upright(p.x, p.z, s.height + s.postExtra, s.postRadius, s.capHeight, s.capRadius, 'posts')
+		}
+		for (let panel = 0; panel < panels; panel++) {
+			// Warp the diamond grid with the rail: it hangs from the posts rather than a rigid rectangle.
+			const point = (x, y) => {
+				const t = x / width,
+					arch = 4 * t * (1 - t),
+					v = y / s.height
+				return from
+					.clone()
+					.lerp(to, (panel + t) / panels)
+					.addScaledVector(normal, s.bow * arch * v)
+					.setY(s.bottom + (s.height - s.bottom - s.sag * arch) * v)
+			}
+			for (let step = 0; step < s.curveSteps; step++)
+				rod(
+					point((width * step) / s.curveSteps, s.height),
+					point((width * (step + 1)) / s.curveSteps, s.height),
+					s.railRadius,
+					'wire',
+				)
+			for (const slope of [-1, 1]) {
+				for (let offset = -width; offset <= s.height + width; offset += s.diamond) {
+					const start = Math.max(0, slope === 1 ? -offset : offset - s.height)
+					const end = Math.min(width, slope === 1 ? s.height - offset : offset)
+					if (end <= start) continue
+					for (let step = 0; step < s.curveSteps; step++) {
+						const x0 = start + ((end - start) * step) / s.curveSteps
+						const x1 = start + ((end - start) * (step + 1)) / s.curveSteps
+						const a = point(x0, slope * x0 + offset),
+							b = point(x1, slope * x1 + offset)
+						wire.push(a.x, a.y, a.z, b.x, b.y, b.z)
+					}
+				}
+			}
+		}
+	}
+	for (const [x, z] of s.bollards)
+		upright(
+			x * halfX,
+			z * halfZ,
+			s.bollardHeight,
+			s.bollardRadius,
+			s.bollardCapHeight,
+			s.bollardRadius,
+			'bollards',
+		)
+	const light = new THREE.Vector3(-0.4, 0.8, 0.45).normalize()
+	for (const [batch, parts] of Object.entries(batches)) {
+		if (!parts.length) continue
+		const geometry = mergeGeometries(parts)
+		for (const part of parts) part.dispose()
+		const color = new THREE.Color(s.colors[batch])
+		const normals = geometry.attributes.normal,
+			colors = []
+		for (let i = 0; i < normals.count; i++) {
+			const shade =
+				0.78 + 0.32 * Math.max(0, new THREE.Vector3().fromBufferAttribute(normals, i).dot(light))
+			colors.push(color.r * shade, color.g * shade, color.b * shade)
+		}
+		geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3))
+		const mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ vertexColors: true }))
+		mesh.layers.set(FORWARD_LAYER)
+		group.add(mesh)
+	}
+	const geometry = new THREE.BufferGeometry()
+	geometry.setAttribute('position', new THREE.Float32BufferAttribute(wire, 3))
+	const mesh = new THREE.LineSegments(
+		geometry,
+		new THREE.LineBasicMaterial({ color: s.colors.wire }),
+	)
+	mesh.layers.set(FORWARD_LAYER)
+	group.add(mesh)
+	return group
+}
+
 export function createLobbyFloor(scene, renderer) {
-	const s = tune.lobby.slab
+	const s = tune.lobby.floor
 	const canvas = drawTexture(s)
 	const texture = new THREE.CanvasTexture(canvas)
 	texture.colorSpace = THREE.SRGBColorSpace
 	texture.anisotropy = renderer?.capabilities.getMaxAnisotropy() ?? 1
-	const outline = slabOutline(s)
-	// One non-repeating texture across the whole slab: UVs are world position over its extent.
-	const top = slabShape(s)
+	const outline = floorOutline(s)
+	// One non-repeating texture across the whole floor: UVs are world position over its extent.
+	const top = floorShape(s)
 	const pos = top.attributes.position,
 		uv = new Float32Array(pos.count * 2)
 	for (let i = 0; i < pos.count; i++) {
@@ -308,7 +430,7 @@ export function createLobbyFloor(scene, renderer) {
 	})
 	const sheet = new THREE.Mesh(top, topMaterial)
 	sheet.name = 'lobby-floor'
-	sheet.position.y = tune.map.printLayers.plaza
+	sheet.position.y = tune.map.printLayers.lobby
 	sheet.layers.set(FORWARD_LAYER)
 	sheet.renderOrder = -2 // under stamps and every other forward effect
 
@@ -316,13 +438,19 @@ export function createLobbyFloor(scene, renderer) {
 	const rockMaterial = new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide })
 	const rock = new THREE.Mesh(rockGeo, rockMaterial)
 	rock.name = 'lobby-rock'
-	rock.position.y = tune.map.printLayers.plaza - 0.01
+	rock.position.y = tune.map.printLayers.lobby - 0.01
 	rock.layers.set(FORWARD_LAYER)
 	rock.renderOrder = -3
 	rock.frustumCulled = false
-	scene.add(sheet, rock)
+	const fences = createFences()
+	scene.add(sheet, rock, fences)
 	return {
 		dispose() {
+			fences.removeFromParent()
+			fences.traverse((object) => {
+				object.geometry?.dispose()
+				object.material?.dispose()
+			})
 			sheet.removeFromParent()
 			rock.removeFromParent()
 			top.dispose()

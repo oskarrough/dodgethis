@@ -5,7 +5,7 @@ export const PRESETS = {
 	duel: { teamA: 1, teamB: 1 },
 	'20v20': { teamA: 20, teamB: 20 },
 	crowd: { teamA: 20, teamB: 20, arrows: 40 },
-	hub: { phase: 'menu' },
+	lobby: { phase: 'lobby' },
 	roundOver: { phase: 'roundOver' },
 	matchOver: { phase: 'matchOver' },
 }
@@ -39,7 +39,7 @@ export function scenario(options = {}) {
 	for (const key of ['ai', 'paused', 'godmode', 'infiniteAmmo']) {
 		if (typeof out[key] !== 'boolean') throw new Error(`${key} must be a boolean`)
 	}
-	if (!['playing', 'menu', 'roundOver', 'matchOver'].includes(out.phase))
+	if (!['playing', 'lobby', 'roundOver', 'matchOver'].includes(out.phase))
 		throw new Error('Unknown phase')
 	if (!['A', 'B'].includes(out.winner)) throw new Error('Unknown winner')
 	if (!Object.hasOwn(LAYOUTS, out.layout)) throw new Error('Unknown layout')

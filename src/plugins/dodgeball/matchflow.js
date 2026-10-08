@@ -14,7 +14,7 @@ const PHASES = ['playing', 'roundOver', 'matchOver']
 const count = (n, max = Number.MAX_SAFE_INTEGER) => Number.isSafeInteger(n) && n >= 0 && n <= max
 
 // Owns match lifetime, score, menus, and the input handoff between scenes.
-// `session` decides the rest: a solo flow has the hub, fades and pause; a shared one plays a fixed roster, and only its authority builds rounds.
+// `session` decides the rest: a solo flow has the lobby, fades and pause; a shared one plays a fixed roster, and only its authority builds rounds.
 export function createMatchFlow({
 	ctx,
 	overlay,
@@ -29,7 +29,7 @@ export function createMatchFlow({
 	onMenu = () => {},
 }) {
 	// --- Game state machine (Godot framing) -----------------------------------
-	// phase drives the frame loop and which overlay is up (menu → playing → roundOver → … → matchOver); match holds the best-of-N score, `round` is the live scene or null.
+	// phase drives the frame loop and which overlay is up (lobby → playing → roundOver → … → matchOver); match holds the best-of-N score, `round` is the live scene or null.
 	const { combat } = ctx
 	const { shared, authoritative } = session
 	const BEST_OF = 3
@@ -45,7 +45,7 @@ export function createMatchFlow({
 	}
 	let participants
 	let localParticipantId
-	let phase = 'menu'
+	let phase = 'lobby'
 	let round = null
 	let roundId = 0 // every round built, replays included; a replica rebuilds when it changes
 	let portals = []
@@ -119,18 +119,18 @@ export function createMatchFlow({
 				},
 				{ label: 'Restart round', key: 'KeyR', keyLabel: 'R', onSelect: restartRound },
 				{
-					label: 'Back to hub',
+					label: 'Back to lobby',
 					key: 'KeyM',
 					keyLabel: 'M',
-					onSelect: () => transition('BACK TO THE COURT', enterHub),
+					onSelect: () => transition('BACK TO THE COURT', enterLobby),
 				},
 			],
 		})
 	}
 
-	// --- The hub: a live, physical splash ------------------------------------
-	// The menu IS a hub round — no enemies, no scoring; free-roam and step into a portal to commit to a match.
-	function enterHub() {
+	// --- The lobby: a live, physical splash ------------------------------------
+	// The menu IS a lobby round — no enemies, no scoring; free-roam and step into a portal to commit to a match.
+	function enterLobby() {
 		clearActions()
 		resetPresentation()
 		if (round) {
@@ -139,11 +139,11 @@ export function createMatchFlow({
 		}
 		clearPortals()
 		overlay.hide()
-		phase = 'menu'
-		onTheme(0, 'open') // the hub round is always the open court
+		phase = 'lobby'
+		onTheme(0, 'open') // the lobby round is always the open court
 		// Re-showing restarts the CSS letter animations, so the title bounces in fresh.
 		splashEl.hidden = false
-		round = createRound(ctx, { enemies: 0, arrowCount: 0, roundNum: 0, hub: true })
+		round = createRound(ctx, { enemies: 0, arrowCount: 0, roundNum: 0, lobby: true })
 		onChange()
 		// Three difficulty portals; stepping in starts a best-of-3 match with that many enemies.
 		for (const s of [
@@ -166,7 +166,7 @@ export function createMatchFlow({
 		transition('ROUND 1', () => startMatch(enemies))
 	}
 
-	// Step-into-portal check, run each frame while roaming the hub.
+	// Step-into-portal check, run each frame while roaming the lobby.
 	function checkPortals() {
 		if (!round || !round.localPlayer || !round.localPlayer.alive) return
 		const p = round.localPlayer.position
@@ -217,7 +217,7 @@ export function createMatchFlow({
 		match.enemies = enemies
 	}
 
-	// A match on a fixed roster with no hub, as a shared session plays it. The authority builds rounds; a replica shows spawn poses until apply().
+	// A match on a fixed roster with no lobby, as a shared session plays it. The authority builds rounds; a replica shows spawn poses until apply().
 	function startRoster(roster) {
 		const localId = session.local[0]
 		const people = validateRoster(roster)
@@ -253,7 +253,7 @@ export function createMatchFlow({
 
 	// Replay the current round without touching the score (R / restart button).
 	function restartRound() {
-		if (match.round === 0 || roundScored || phase === 'menu') return
+		if (match.round === 0 || roundScored || phase === 'lobby') return
 		transition(`ROUND ${match.round} · AGAIN`, spawnRound)
 	}
 
@@ -264,7 +264,7 @@ export function createMatchFlow({
 		clearActions()
 		resetPresentation()
 		if (round) round.dispose()
-		clearPortals() // leave the hub's portals behind when a match begins
+		clearPortals() // leave the lobby's portals behind when a match begins
 		round = createRound(ctx, {
 			enemies: match.enemies,
 			allies: match.allies,
@@ -318,7 +318,7 @@ export function createMatchFlow({
 		showResult()
 	}
 
-	// The verdict card. Solo offers the hub; a shared match gives the next step to its authority alone, and everyone the menu.
+	// The verdict card. Solo offers the lobby; a shared match gives the next step to its authority alone, and everyone the menu.
 	function showResult() {
 		const over = phase === 'matchOver'
 		const won = lastWinner === (round?.localPlayer?.team ?? 'A')
@@ -357,11 +357,11 @@ export function createMatchFlow({
 			})
 			return
 		}
-		const hub = {
-			label: 'Back to hub',
+		const lobby = {
+			label: 'Back to lobby',
 			key: 'KeyM',
 			keyLabel: 'M',
-			onSelect: () => transition('BACK TO THE COURT', enterHub),
+			onSelect: () => transition('BACK TO THE COURT', enterLobby),
 		}
 		const harder =
 			over && match.enemies < 3 && match.allies === 0
@@ -375,7 +375,7 @@ export function createMatchFlow({
 		overlay.show({
 			title,
 			clear: !over,
-			actions: lastWinner === null ? [next] : [next, ...harder, hub],
+			actions: lastWinner === null ? [next] : [next, ...harder, lobby],
 		})
 	}
 
@@ -477,7 +477,7 @@ export function createMatchFlow({
 		},
 		match,
 		actions,
-		enterHub,
+		enterLobby,
 		startRoster,
 		step,
 		snapshot,

@@ -22,13 +22,13 @@ export function createRound(
 		hp = 1,
 		roundNum = 1,
 		onOver = () => {},
-		hub = false,
+		lobby = false,
 		seed,
 		roster,
 		localParticipantId,
 	} = {},
 ) {
-	if (!hub && arrowCount < 1) throw new Error('Combat rounds require at least one arrow')
+	if (!lobby && arrowCount < 1) throw new Error('Combat rounds require at least one arrow')
 	const explicitRoster = roster !== undefined
 	const participants = validateRoster(explicitRoster ? roster : createSoloRoster(enemies, allies))
 	if (!explicitRoster) localParticipantId ??= 'local'
@@ -91,7 +91,7 @@ export function createRound(
 	// Whiffs past enemies become their own feedback events, tracked across steps per arrow/unit pair.
 	const nearMiss = createNearMissTracker({ radius: tune.arrow.nearMiss })
 
-	if (hub) combat.push('hub — step into a portal to fight')
+	if (lobby) combat.push('lobby — step into a portal to fight')
 	else {
 		const opponentTeam = localPlayer.team === 'A' ? 'B' : 'A'
 		combat.push(
@@ -155,7 +155,7 @@ export function createRound(
 	// nock a fresh arrow so shooting never stalls on the scarce pool. A new arrow
 	// enters the pool each time, which is the point of "infinite".
 	function nockInfinite(unit) {
-		if (!tune.cheats.infiniteAmmo || hub || over || !unit.alive || unit.heldArrow) return
+		if (!tune.cheats.infiniteAmmo || lobby || over || !unit.alive || unit.heldArrow) return
 		const a = createArrow(scene, world, RAPIER, { position: [0, 0, 0], smooth })
 		a.hold()
 		unit.heldArrow = a
@@ -262,11 +262,13 @@ export function createRound(
 			if (!u.alive) continue
 			if (u.body.translation().y < ARENA.killY) {
 				// Godmode: scoop the human back onto the court instead of killing them.
-				if (u.isHuman && (tune.cheats.godmode || hub)) {
+				if (u.isHuman && (tune.cheats.godmode || lobby)) {
 					const [x, , z] = spawnPoint(u.team)
 					u.place(x, 2, z)
 					combat.push(
-						hub ? 'the void spat you back onto the field' : 'godmode — pulled you out of the lava',
+						lobby
+							? 'the void spat you back onto the field'
+							: 'godmode — pulled you out of the lava',
 						'pickup',
 					)
 					continue
@@ -287,7 +289,7 @@ export function createRound(
 	}
 
 	function checkWin() {
-		if (over || hub) return
+		if (over || lobby) return
 		let aliveA = 0
 		let aliveB = 0
 		for (const u of units) {
@@ -432,7 +434,7 @@ export function createRound(
 		human: localPlayer, // compatibility alias: not the only human, nor necessarily Team A
 		localPlayer,
 		localParticipantId,
-		hub,
+		lobby,
 		get roster() {
 			return units.map((u) => u.participant)
 		},

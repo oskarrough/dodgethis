@@ -25,7 +25,7 @@ const BOT_TALK = [botTalk1, botTalk2, botTalk3, botTalk4, botTalk5]
 let ctx = null
 let master = null
 let music = null
-let musicScene = 'hub'
+let musicScene = 'lobby'
 let musicEnabled = true
 let gestureReceived = false
 try {

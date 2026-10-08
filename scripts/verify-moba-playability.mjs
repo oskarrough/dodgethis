@@ -1,7 +1,8 @@
 // Production browser proof: bun run verify:browser <URL> <shots directory>
 import { execFileSync } from 'node:child_process'
-import { mkdirSync, writeFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join, resolve } from 'node:path'
 
 if (process.argv.includes('--help')) {
 	console.log(
@@ -13,6 +14,9 @@ const base = process.argv[2] ?? 'http://127.0.0.1:4802'
 const dir = resolve(process.argv[3] ?? '/tmp/playability-shots')
 mkdirSync(dir, { recursive: true })
 const session = `playability-proof-${process.pid}`
+// Keep the browser socket inside writable temporary storage, including agent sandboxes.
+const runtime = mkdtempSync(join(tmpdir(), 'dodgethis-browser-'))
+const browserEnv = { ...process.env, XDG_RUNTIME_DIR: runtime }
 const started = performance.now()
 const report = { passed: false, stages: [], layouts: [], commands: 0 }
 let stage = 'Startup'
@@ -23,6 +27,7 @@ const browser = (...args) => {
 		throw new Error('Browser proof exceeded its 90-second budget')
 	return execFileSync('agent-browser', ['--session', session, ...args], {
 		encoding: 'utf8',
+		env: browserEnv,
 		timeout: args[0] === 'close' ? 5000 : Math.max(1, Math.floor(Math.min(45000, remaining))),
 	}).trim()
 }
@@ -68,7 +73,7 @@ function shot(name) {
 }
 
 try {
-	timed('Splash and plaza', () => {
+	timed('Splash and lobby', () => {
 		browser('set', 'viewport', '1440', '900')
 		browser('open', base)
 		browser('wait', '.front-tile')
@@ -78,13 +83,13 @@ try {
 		browser('click', '.front-tile[data-mode=moba]')
 		browser('wait', '.front-lobby')
 		evaluate(`
-			proof.assert(dt.screen()==='plaza','Mouse MOBA tile failed');
+			proof.assert(dt.screen()==='lobby','Mouse MOBA tile failed');
 			proof.assert(dt.game.lobby.setup.difficulty==='easy','Practice did not default to easy');
-			proof.assert(!document.querySelector('.front-ready,.front-hero-row,.front-practice'),'Removed plaza controls returned');
+			proof.assert(!document.querySelector('.front-ready,.front-hero-row,.front-practice'),'Removed lobby controls returned');
 			return true;
 		`)
 	})
-	timed('Plaza layouts', () => {
+	timed('Lobby layouts', () => {
 		for (const [width, height] of [
 			[390, 844],
 			[1280, 577],
@@ -94,13 +99,13 @@ try {
 			browser('set', 'viewport', String(width), String(height))
 			evaluate(`
 				await proof.frame(); await proof.frame();
-				proof.assert(dt.screen()==='plaza','Resize left the plaza');
+				proof.assert(dt.screen()==='lobby','Resize left the lobby');
 				const r=s=>document.querySelector(s).getBoundingClientRect();
 				const strip=r('.lobby-hero-strip'),back=r('.back-button');
-				proof.assert(strip.left>=0&&strip.bottom<=innerHeight&&strip.right<=innerWidth&&back.top>=0&&back.left>=0,'Plaza controls left the frame');
+				proof.assert(strip.left>=0&&strip.bottom<=innerHeight&&strip.right<=innerWidth&&back.top>=0&&back.left>=0,'Lobby controls left the frame');
 				return true;
 			`)
-			shot(`plaza-${width}`)
+			shot(`lobby-${width}`)
 			report.layouts.push({ width, height })
 		}
 		browser('set', 'viewport', '1440', '900')
@@ -168,7 +173,7 @@ try {
 		`)
 		browser('wait', '.front-lobby')
 		evaluate(`
-			proof.assert(dt.screen()==='plaza'&&dt.game.lobby.setup.heroId==='mitts','Hero select lost the pick');
+			proof.assert(dt.screen()==='lobby'&&dt.game.lobby.setup.heroId==='mitts','Hero select lost the pick');
 			await dt.key('Escape'); proof.assert(dt.screen()==='splash','Esc did not return to splash');
 			return true;
 		`)
@@ -231,6 +236,7 @@ try {
 	timed('Cleanup', () => {
 		try {
 			browser('close')
+			rmSync(runtime, { recursive: true, force: true })
 		} catch (error) {
 			report.passed = false
 			report.cleanupError = error.message

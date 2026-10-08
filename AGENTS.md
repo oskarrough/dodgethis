@@ -27,10 +27,15 @@
 - `bun run dev:agent` prints the shared agent server's URL, starting it if nothing answers. Every thread reuses it; never stop it. It doesn't live-reload, so other threads' edits can't wipe your page: reload yourself when you want fresh code. A boot error after a reload may be another thread's half-done edit; read `agent-browser errors` before blaming yours.
 - `export AGENT_BROWSER_SESSION=$BB_THREAD_ID` first. Without it every thread drives the same browser tab.
 - Wait on conditions (`agent-browser wait --fn "<js>"`, `wait <selector>`), never `sleep`. Before a screenshot, resize, park the mouse in a corner, and assert the state you claim.
-- Drive the game through `window.dt` (`src/core/proof.js`), since agent-browser's own key presses don't reach it: `dt.key('KeyH', { hold, until })`, `dt.pad.press('start')`, `dt.pad.stick(x, y)`, `dt.device()`, `dt.game` (window.game), and `dt.screen()`, which names splash, plaza, descent, match, paused or result (else the mode id). In dev both are always there; a prod build shows them after a Backquote toggles diagnostics, and `dt` stays when it toggles back.
-- The template, no sleeps: `open $URL/` → `wait --fn "window.dt?.screen()==='splash'"` → `eval "dt.key('ArrowRight')"` → `eval "dt.key('Enter')"` → `wait --fn "dt.screen()==='plaza'"` → `eval "dt.key('KeyH')"` → `eval "dt.key('Enter')"` → `wait --timeout 60000 --fn "dt.screen()==='match'"`. `?mode=moba&play&hero=mitts&bots=hard` skips straight to `match`: a fast setup, not a proof of the route.
+- Drive the game through `window.dt` (`src/core/proof.js`), since agent-browser's own key presses don't reach it: `dt.key('KeyH', { hold, until })`, `dt.pad.press('start')`, `dt.pad.stick(x, y)`, `dt.device()`, `dt.game` (window.game), and `dt.screen()`, which names splash, lobby, descent, match, paused or result (else the mode id). In dev both are always there; a prod build shows them after a Backquote toggles diagnostics, and `dt` stays when it toggles back.
+- The template, no sleeps: `open $URL/` → `wait --fn "window.dt?.screen()==='splash'"` → `eval "dt.key('ArrowRight')"` → `eval "dt.key('Enter')"` → `wait --fn "dt.screen()==='lobby'"` → `eval "dt.key('KeyH')"` → `eval "dt.key('Enter')"` → `wait --timeout 60000 --fn "dt.screen()==='match'"`. `?mode=moba&play&hero=mitts&bots=hard` skips straight to `match`: a fast setup, not a proof of the route.
 - Reset match preserves Try Mode settings, including its paused state. Resume explicitly before waiting for a cast, movement or death; repeated resets do not fix a paused capture.
 - Frozen builds (`bunx vite build --outDir /tmp/<slug>`) are for checkpoint smokes the orchestrator runs, not for builders.
+
+## Vocabulary
+
+- Screens, in both modes: `splash` (home), `lobby` (walk around, pick, ready up), `match`, `paused`, `result`. `dt.screen()` reports them. The crane and descent are a transition, not a screen. Say screen, never scene: `scene` is the Three.js scene.
+- Maps are values of `setup.map` (`?map=`), chosen on the splash and played on the match screen: `overthrow` and `flagfall`. Each brings its own ground and rules. Don't use the old names Slab, Sandlot or plaza.
 
 ## Layout
 

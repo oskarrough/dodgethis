@@ -33,7 +33,7 @@ export function createScoreboard(el, court) {
 	}
 
 	function render(flow) {
-		const menu = flow.phase === 'menu'
+		const menu = flow.phase === 'lobby'
 		court.updateScore(menu ? 0 : flow.match.wins.A, menu ? 0 : flow.match.wins.B)
 		if (menu) {
 			el.hidden = true
@@ -53,7 +53,7 @@ export function createScoreboard(el, court) {
 
 	// Cheap per-frame refresh: only touch the DOM when someone actually goes out.
 	function sync(flow) {
-		if (flow.phase === 'menu' || !flow.round) return
+		if (flow.phase === 'lobby' || !flow.round) return
 		const key = `${roster(flow, 'A')}|${roster(flow, 'B')}`
 		if (key === lastRoster) return
 		lastRoster = key

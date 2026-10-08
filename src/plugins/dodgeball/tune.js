@@ -1,7 +1,7 @@
 // --- Tunables ----------------------------------------------------------------
 // Dodgeball's live game-feel values, shared by the debug GUI, game logic, and DOM-free tests. Core's live in src/core/tune.js.
 export const tune = {
-	hubHint: {
+	lobbyHint: {
 		width: 0.8,
 		length: 1.3,
 		shaftRatio: 0.38,

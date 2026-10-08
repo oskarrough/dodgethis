@@ -11,9 +11,9 @@ export { RAPIER, STEP }
 export const ticks = (seconds) => Math.round(seconds / STEP)
 export const median = (values) => [...values].sort((a, b) => a - b)[Math.floor(values.length / 2)]
 
-// `map`: 'lane' builds the map's colliders, 'floor' a bare 40 m slab, 'none' nothing, or a builder `(scene, world, RAPIER) => unbuild`.
+// `map`: 'overthrow' builds the map's colliders, 'floor' a bare 40 m slab, 'none' nothing, or a builder `(scene, world, RAPIER) => unbuild`.
 export function bootMoba({
-	map = 'lane',
+	map = 'overthrow',
 	heroes = [
 		{ id: 'A', team: 'A' },
 		{ id: 'B', team: 'B' },
@@ -24,7 +24,7 @@ export function bootMoba({
 	const world = new RAPIER.World({ x: 0, y: -9.81, z: 0 })
 	world.timestep = STEP
 	let unbuild = () => {}
-	if (map === 'lane') unbuild = buildColliders(world, RAPIER)
+	if (map === 'overthrow') unbuild = buildColliders(world, RAPIER)
 	if (typeof map === 'function') unbuild = map(scene, world, RAPIER)
 	if (map === 'floor')
 		world.createCollider(RAPIER.ColliderDesc.cuboid(20, 0.5, 20).setTranslation(0, -0.5, 0))
@@ -37,7 +37,7 @@ export function bootMoba({
 		RAPIER,
 		intents,
 		heroes,
-		lane: map === 'lane',
+		lane: map === 'overthrow',
 		present: (fact) => facts.push(fact),
 		...options,
 	})

@@ -23,7 +23,7 @@ import { createSandbox } from './sandbox.js'
 const CHARGE_STEP = 0.16
 
 // Dodgeball: the court, its presentation and debug tools live as long as the plugin; the match flow lives as long as a run of the mode.
-export default function dodgeball(app, { hubExit = null } = {}) {
+export default function dodgeball(app, { lobbyExit = null } = {}) {
 	const { scene, world, RAPIER, input, audio, overlay, camera } = app
 	const { sfx } = audio
 	const { combat } = app.debug
@@ -31,7 +31,7 @@ export default function dodgeball(app, { hubExit = null } = {}) {
 	const scoreEl = document.querySelector('.score')
 	const fadeEl = document.querySelector('.fade')
 	const splashEl = document.querySelector('.splash')
-	const exitEl = splashEl.querySelector('.hub-exit')
+	const exitEl = splashEl.querySelector('.lobby-exit')
 	const hitConfirmation = document.querySelector('.hit-confirmation')
 	const hitmarker = document.querySelector('.hitmarker')
 
@@ -196,21 +196,21 @@ export default function dodgeball(app, { hubExit = null } = {}) {
 		aim.target(target, meter.perfect)
 	}
 
-	// The hub's way out: Esc, the pad's View button (B is dash here) or the round arrow.
+	// The lobby's way out: Esc, the pad's View button (B is dash here) or the round arrow.
 	const canExit = () =>
-		!!hubExit && !app.session.shared && flow?.phase === 'menu' && !flow.transitioning
+		!!lobbyExit && !app.session.shared && flow?.phase === 'lobby' && !flow.transitioning
 	function leaveHub() {
 		if (!canExit()) return
 		sfx.menuClose()
-		hubExit.onSelect()
+		lobbyExit.onSelect()
 	}
 	function updateHud() {
 		const exitKey = input.activeDevice() === 'gamepad' ? 'View' : 'Esc'
 		const keyEl = exitEl.querySelector('kbd')
 		if (keyEl.textContent !== exitKey) keyEl.textContent = exitKey
 		let music =
-			flow.phase === 'menu'
-				? 'hub'
+			flow.phase === 'lobby'
+				? 'lobby'
 				: flow.phase === 'playing'
 					? 'play'
 					: flow.phase === 'paused'
@@ -228,8 +228,8 @@ export default function dodgeball(app, { hubExit = null } = {}) {
 		}
 		audio.setMusicScene(coreTune.physics.paused || flow.transitioning ? 'paused' : music)
 		const { weapon, meter: charge } = mySeat()
-		// Hub keeps the corner clear so the splash title owns it.
-		if (flow.phase === 'menu') {
+		// Lobby keeps the corner clear so the splash title owns it.
+		if (flow.phase === 'lobby') {
 			hud.textContent = ''
 			weaponHud.update({ weapon, charge, visible: false, holding: false })
 			return
@@ -341,12 +341,12 @@ export default function dodgeball(app, { hubExit = null } = {}) {
 		}
 		if (e.code === 'Escape') {
 			if (flow.phase === 'playing' || flow.phase === 'paused') flow.togglePause()
-			else if (flow.phase !== 'menu') flow.transition('BACK TO THE COURT', flow.enterHub)
+			else if (flow.phase !== 'lobby') flow.transition('BACK TO THE COURT', flow.enterLobby)
 			else leaveHub()
 			return
 		}
 		// Number keys enter the matching difficulty portal.
-		if (flow.phase === 'menu') {
+		if (flow.phase === 'lobby') {
 			const pick = /^Digit([1-3])$/.exec(e.code)
 			if (pick) flow.enterPortal(Number(pick[1]))
 			return
@@ -365,7 +365,7 @@ export default function dodgeball(app, { hubExit = null } = {}) {
 		scheme: 'direct',
 		start(run, { roster }) {
 			const session = app.session
-			if (hubExit && !session.shared) {
+			if (lobbyExit && !session.shared) {
 				exitEl.hidden = false
 				exitEl.onclick = leaveHub
 				exitEl.onpointerenter = () => sfx.hover()
@@ -391,11 +391,19 @@ export default function dodgeball(app, { hubExit = null } = {}) {
 				onMenu: () => app.emit('menu'),
 			})
 
-			// The round steps while it is live: the hub or a match in play, nothing modal on top.
+			run.debug.expose({
+				get screen() {
+					const { phase } = flow
+					if (phase === 'lobby' || phase === 'paused') return phase
+					return phase === 'matchOver' ? 'result' : 'match'
+				},
+			})
+
+			// The round steps while it is live: the lobby or a match in play, nothing modal on top.
 			let live = false
 			const playable = () =>
-				!!flow.round && !flow.transitioning && (flow.phase === 'playing' || flow.phase === 'menu')
-			run.clock.pause(() => !live || (flow.phase !== 'playing' && flow.phase !== 'menu'))
+				!!flow.round && !flow.transitioning && (flow.phase === 'playing' || flow.phase === 'lobby')
+			run.clock.pause(() => !live || (flow.phase !== 'playing' && flow.phase !== 'lobby'))
 			run.clock.scale((dt) => {
 				const stopped = flow.phase === 'paused' || flow.transitioning || coreTune.physics.paused
 				return stopped ? 1 : impact.step(dt)
@@ -435,15 +443,15 @@ export default function dodgeball(app, { hubExit = null } = {}) {
 				flow.round?.lateUpdate(performance.now() / 1000)
 				if (live) {
 					godmodeFx.update(dt, flow.round.localPlayer)
-					if (flow.phase === 'menu') flow.checkPortals()
+					if (flow.phase === 'lobby') flow.checkPortals()
 					// A destination portal can dispose this run during the proximity check.
 					if (run.signal.aborted) return
 				} else godmodeFx.update(0, flow.phase === 'paused' ? flow.round?.localPlayer : null)
 
-				// Hub player proximity drives portal wake pops; outside the hub the portal list is empty.
+				// Lobby player proximity drives portal wake pops; outside the lobby the portal list is empty.
 				const lp = flow.round?.localPlayer
-				const hubPlayer = flow.phase === 'menu' && lp && lp.alive ? lp.position : null
-				for (const p of flow.portals) p.update(dt, hubPlayer)
+				const lobbyPlayer = flow.phase === 'lobby' && lp && lp.alive ? lp.position : null
+				for (const p of flow.portals) p.update(dt, lobbyPlayer)
 
 				const frozen = flow.phase === 'paused' || flow.transitioning || coreTune.physics.paused
 				if (flow.round && !frozen)
@@ -458,7 +466,7 @@ export default function dodgeball(app, { hubExit = null } = {}) {
 									: 0
 								: (unit.windup ?? 0)
 						const stepped = unit.updateVisual(gameDt, windup)
-						if (stepped && mine && (flow.phase === 'playing' || flow.phase === 'menu'))
+						if (stepped && mine && (flow.phase === 'playing' || flow.phase === 'lobby'))
 							sfx.step(unit.position)
 					}
 				const round = flow.round
@@ -528,8 +536,8 @@ export default function dodgeball(app, { hubExit = null } = {}) {
 				}
 				flow.startRoster(roster)
 			} else {
-				flow.enterHub()
-				// A URL scenario sets up the first run only; later solo runs return to the hub.
+				flow.enterLobby()
+				// A URL scenario sets up the first run only; later solo runs return to the lobby.
 				if (!runs)
 					try {
 						const setup = scenarioFromURL(location.search)

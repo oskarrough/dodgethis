@@ -253,13 +253,14 @@ export const debugSections = {
 	},
 	Presentation: {
 		Feedback: ['hud', 'out', 'card', 'juice'],
+		Terrain: ['overthrow terrain (applies on restart)'],
 		Audio: ['squeak'],
 	},
 	'Camera / input': {
 		Camera: ['follow', 'edge pan', 'lobby camera'],
 		Input: ['stickAim', 'orders', 'pointClick'],
 	},
-	'Front / lobby': { Front: ['front', 'lobby slab (applies on restart)'] },
+	'Front / lobby': { Front: ['front', 'lobby floor (applies on restart)'] },
 	Engine: { Diagnostics: ['physics', 'output', 'debug'] },
 }
 

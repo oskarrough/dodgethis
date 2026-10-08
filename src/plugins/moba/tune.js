@@ -76,7 +76,7 @@ export const tune = {
 		pillarSegments: 24,
 		capScale: 0.8,
 		capHeight: 0.04,
-		printLayers: { road: 0.015, dots: 0.03, plaza: 0.045, marks: 0.06, seams: 0.075 },
+		printLayers: { road: 0.015, dots: 0.03, lobby: 0.045, marks: 0.06, seams: 0.075 },
 		// Ground markers (pings, hover, aim line) must sit above every print layer
 		markerLayers: { aim: 0.09, aimTip: 0.092, hover: 0.095, ping: 0.1 },
 		lineWidth: 0.06,
@@ -92,8 +92,43 @@ export const tune = {
 			{ x: 5, z: -10 },
 		],
 	},
-	// Sandlot blockout: layout and ground prints apply on restart. No lane simulation.
-	sandlot: {
+	// Overthrow presentation only; all geometry and colours apply on map restart.
+	overthrowTerrain: {
+		margin: 1.6,
+		jag: 0.8,
+		step: 3,
+		seed: 73,
+		rockDepth: 5,
+		rockFlare: 1.4,
+		rockBands: 3,
+		groundY: 0.005,
+		chalkY: 0.01,
+		patchScale: 3,
+		patchContrast: 0.025,
+		chalkWidth: 0.11,
+		courtInset: 1.4,
+		chalkSegments: 96,
+		surroundSize: 600,
+		surroundDrop: 12,
+		mesaSpacing: 22,
+		mesaRows: 3,
+		mesaRadius: 7,
+		mesaHeight: 5,
+		mesaVariation: 0.2,
+		mesaTaper: 1.3,
+		mesaSegments: 7,
+		colors: {
+			tarmac: '#e4dfcf',
+			chalk: '#f5f1e5',
+			rock: '#aaa49b',
+			rockDark: '#656575',
+			surround: '#555669',
+			mesa: '#536c6b',
+		},
+		palette: { page: 0x555669, courtShade: 0x708883, scenery: 0x899b9b },
+	},
+	// Flagfall blockout: layout and ground prints apply on restart. No lane simulation.
+	flagfall: {
 		name: 'Flagfall',
 		palette: { court: 0xe0c79e, courtShade: 0xc8b195, scenery: 0xbfa989 },
 		bounds: { halfX: 52, halfZ: 20 },
@@ -146,7 +181,7 @@ export const tune = {
 			openSound: { freq: 710, slideTo: 1060, dur: 0.12, gain: 0.045, type: 'sine' },
 			closeSound: { freq: 590, slideTo: 390, dur: 0.1, gain: 0.045, type: 'triangle' },
 		},
-		// Full playable plaza, live; height/back retain the lane's 58° pitch.
+		// Full playable lobby, live; height/back retain the lane's 58° pitch.
 		camera: {
 			x: 0,
 			z: 2.65,
@@ -224,21 +259,21 @@ export const tune = {
 			shotSound: { freq: 790, slideTo: 350, dur: 0.09, gain: 0.07, type: 'sine' },
 			pickSound: { freq: 240, slideTo: 90, dur: 0.22, gain: 0.12, type: 'triangle' },
 		},
-		// The plaza's camera starts `distance`× back along its view ray; the canvas fades in from `fadeFrom` of the move.
+		// The lobby's camera starts `distance`× back along its view ray; the canvas fades in from `fadeFrom` of the move.
 		intro: { distance: 4, fadeFrom: 0.6 },
-		// Where you can walk: a rectangle kept over 1 m inside the slab's torn outline
-		// (slab.halfX/halfZ minus slab.jag, minus the 1 m). Gallery, seats, dummies and marks all sit inside it.
+		// Where you can walk: a rectangle kept over 1 m inside the floor's torn outline
+		// (floor.halfX/halfZ minus floor.jag, minus the 1 m). Gallery, seats, dummies and marks all sit inside it.
 		bounds: { halfX: 9, halfZ: 6.5 },
 		// The props the camera frames; it slides to follow once you leave `followX` or this depth.
 		frame: { halfZ: 6.2, followX: 5, followEase: 6 },
-		// The plaza's training dummies strafe `dummies.span` either side of these; keep the gallery >2 m off.
+		// The lobby's training dummies strafe `dummies.span` either side of these; keep the gallery >2 m off.
 		dummyPosts: [
 			{ x: -1.5, z: -5.8 },
 			{ x: 1.5, z: -5.8 },
 		],
-		// The Slab: finite pale tarmac over a torn rock rim, floating over the desert. Geometry, texture and
+		// The lobby floor: finite pale tarmac over a torn rock rim, floating over the desert. Geometry, texture and
 		// colours apply on restart. The outline only ever pulls in from the halfX/halfZ rectangle by up to `jag`.
-		slab: {
+		floor: {
 			halfX: 11,
 			halfZ: 8.1,
 			jag: 0.6,
@@ -267,7 +302,41 @@ export const tune = {
 			hopscotch: { x: -7.4, z: 0.2, cell: 0.95 },
 			arcRadius: 9, // gallery arc: a shallow curve 0.9 m behind the cards
 		},
-		onlineNotice: 'The online plaza is not ready yet. Play local practice.',
+		// Schoolyard scenery only; all fence settings apply on restart. Coordinates are fractions
+		// of the safe rim rectangle, outside walking bounds even at the smallest supported floor.
+		fence: {
+			edgeMargin: 0.3,
+			height: 1.35,
+			bottom: 0.12,
+			sag: 0.32,
+			bow: 0.12,
+			postRadius: 0.12,
+			postExtra: 0.22,
+			capRadius: 0.16,
+			capHeight: 0.1,
+			railRadius: 0.025,
+			panelWidth: 2.4,
+			diamond: 0.65,
+			curveSteps: 12,
+			radialSegments: 8,
+			bollardRadius: 0.23,
+			bollardHeight: 0.8,
+			bollardCapHeight: 0.14,
+			colors: { posts: '#716b80', wire: '#89989a', bollards: '#8caaa3', caps: '#646779' },
+			runs: [
+				{ from: [-0.9, -1], to: [-0.42, -1] },
+				{ from: [0.35, -1], to: [0.88, -1] },
+				{ from: [-1, -0.7], to: [-1, -0.18] },
+				{ from: [1, 0.05], to: [1, 0.55] },
+			],
+			bollards: [
+				[-0.16, -1],
+				[0.1, -1],
+				[-1, 0.72],
+				[1, -0.72],
+			],
+		},
+		onlineNotice: 'The online lobby is not ready yet. Play local practice.',
 		respawn: 0.5,
 		// Where you spawn and recover: index 0 for team A, 3 for team B. Not drawn.
 		marks: [

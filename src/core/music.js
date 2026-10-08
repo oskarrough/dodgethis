@@ -1,6 +1,6 @@
 // A short Web Audio lookahead keeps the beat steady; a delayed tick skips missed notes.
 const PROFILES = {
-	hub: { bpm: 88, gain: 0.032 },
+	lobby: { bpm: 88, gain: 0.032 },
 	play: { bpm: 120, gain: 0.045 },
 	clutch: { bpm: 138, gain: 0.05 },
 	victory: { bpm: 118, gain: 0.045 },
@@ -18,7 +18,7 @@ export function createMusic(
 		stopTimer = clearInterval,
 	} = {},
 ) {
-	let scene = 'hub'
+	let scene = 'lobby'
 	let enabled = false
 	let timer = null
 	let step = 0
@@ -68,10 +68,10 @@ export function createMusic(
 					return
 				}
 			} else {
-				if (beat % (scene === 'hub' ? 4 : 2) === 0)
+				if (beat % (scene === 'lobby' ? 4 : 2) === 0)
 					note(root - 12 + (beat === 6 ? 7 : 0), at, eighth * 1.5, level * 0.85, 'sine')
 				const melody = MELODY[beat]
-				if (melody !== null && (scene !== 'hub' || beat % 2 === 0))
+				if (melody !== null && (scene !== 'lobby' || beat % 2 === 0))
 					note(root + melody, at, eighth * 1.1, level * 0.5)
 				if (scene === 'clutch' && beat % 2 === 1)
 					note(root + [12, 16, 19, 16][beat % 4], at, eighth * 0.5, level * 0.25)

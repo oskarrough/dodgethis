@@ -12,16 +12,16 @@ const modes = [
 		glyph:
 			'<circle cx="32" cy="32" r="22" class="front-glyph-fill"/><path d="M12 25 Q34 27 41 53 M25 10 Q24 33 11 41 M41 11 Q38 34 53 41"/>',
 	},
-	...['lane', 'sandlot'].map((id) => {
-		const sandlot = id === 'sandlot'
-		const data = sandlot ? mapTune.sandlot.bounds : mapTune.map
+	...['overthrow', 'flagfall'].map((id) => {
+		const flagfall = id === 'flagfall'
+		const data = flagfall ? mapTune.flagfall.bounds : mapTune.map
 		const { halfX, halfZ } = data
 		const padding = tune.tile.outlinePadding
 		const rect = (x, z) => `<rect x="${-x}" y="${-z}" width="${x * 2}" height="${z * 2}"/>`
-		const plan = sandlot
-			? `${rect(mapTune.sandlot.yard.halfX, mapTune.sandlot.yard.halfZ)}${[-1, 1].map((side) => `<path d="M${-halfX},${side * mapTune.sandlot.lane.innerZ} H${halfX}"/>`).join('')}`
+		const plan = flagfall
+			? `${rect(mapTune.flagfall.yard.halfX, mapTune.flagfall.yard.halfZ)}${[-1, 1].map((side) => `<path d="M${-halfX},${side * mapTune.flagfall.lane.innerZ} H${halfX}"/>`).join('')}`
 			: `<path d="M${-halfX},0 H${halfX}"/>${[-1, 1].map((side) => `<path d="M${side * mapTune.map.baseWallX},${-halfZ} V${-mapTune.map.throat / 2} M${side * mapTune.map.baseWallX},${mapTune.map.throat / 2} V${halfZ}"/>`).join('')}`
-		const name = sandlot ? mapTune.sandlot.name : mapTune.map.name
+		const name = flagfall ? mapTune.flagfall.name : mapTune.map.name
 		return {
 			mode: 'moba',
 			map: id,
@@ -32,7 +32,7 @@ const modes = [
 	}),
 ]
 
-// The splash is the only menu before the playable plaza.
+// The splash is the only menu before the playable lobby.
 export function mobaFront(app, map) {
 	let activeBackdrop = null
 	let activeFront = null
@@ -44,7 +44,7 @@ export function mobaFront(app, map) {
 			loading.add(values.loading, key, key === 'line' ? 0.1 : 0, 1, 0.01)
 		const shots = folder.addFolder('backdrop shots (next move)')
 		shots.add(values.shot, 'ease', 1, 5, 0.1).name('ease power')
-		for (const name of ['splash', 'plaza', 'apex']) {
+		for (const name of ['splash', 'lobby', 'apex']) {
 			shots.add(values.shot[name], 'lift', -800, 800, 10).name(name + ' lift')
 			shots.add(values.shot[name], 'zoom', 1, 1.5, 0.01).name(name + ' zoom')
 			shots
@@ -109,7 +109,7 @@ export function mobaFront(app, map) {
 				})
 				return {
 					epoch: 0,
-					snapshot: () => ({ screen: 'plaza' }),
+					snapshot: () => ({ screen: 'lobby' }),
 					apply: () => false,
 					validFact: () => false,
 				}
@@ -135,7 +135,7 @@ export function mobaFront(app, map) {
 			el.className = 'moba-front'
 			el.dataset.screen = 'modes'
 			el.setAttribute('aria-label', 'Choose a game or map')
-			// Everything but the backdrop moves as one sticker sheet: it drops out under the plaza
+			// Everything but the backdrop moves as one sticker sheet: it drops out under the lobby
 			// shot and pops back in on return.
 			// The title's o is the Ball; now and then one letter sidesteps a throw you never saw.
 			const title = [...'DodgeThis']
@@ -148,7 +148,7 @@ export function mobaFront(app, map) {
 			const notice = el.querySelector('.front-notice')
 			notice.textContent = options.notice ?? ''
 			notice.hidden = !options.notice
-			// The plaza hands its backdrop back on Esc; only a cold entry builds one.
+			// The lobby hands its backdrop back on Esc; only a cold entry builds one.
 			const backdrop = options.backdrop ?? createBackdrop()
 			activeBackdrop = backdrop
 			el.prepend(backdrop.el)
@@ -200,7 +200,7 @@ export function mobaFront(app, map) {
 			const inert = outside.map((child) => child.inert)
 			outside.forEach((child) => (child.inert = true))
 			document.body.append(el)
-			// The plaza takes `el` and the backdrop in it; the tiles fall away above it on their own sheet.
+			// The lobby takes `el` and the backdrop in it; the tiles fall away above it on their own sheet.
 			const sheet = document.createElement('div')
 			sheet.className = 'moba-front front-leaving'
 			sheet.inert = true
@@ -321,7 +321,7 @@ export function mobaFront(app, map) {
 					activate(index)
 				}
 			})
-			// Back from the plaza, the chosen map is still the one in hand.
+			// Back from the lobby, the chosen map is still the one in hand.
 			controls.point(options.backdrop ? buttons.findIndex((b) => b.dataset.map === setup.map) : 0)
 			window.addEventListener(
 				'keydown',
@@ -352,7 +352,7 @@ export function mobaFront(app, map) {
 				() => {
 					if (activeBackdrop === backdrop) activeBackdrop = null
 					if (activeFront === front) activeFront = null
-					// Handed over, `el` and its backdrop belong to the plaza and stay in the document.
+					// Handed over, `el` and its backdrop belong to the lobby and stay in the document.
 					if (!transferred) {
 						backdrop.dispose()
 						el.remove()

@@ -4,7 +4,8 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 import { makeStyleMaterial } from '../../core/stylepass.js'
 import { tune as coreTune } from '../../core/tune.js'
 import { tune } from './tune.js'
-import { slabShape } from './lobby-floor.js'
+import { floorShape } from './lobby-floor.js'
+import { createOverthrowTerrain } from './overthrow-terrain.js'
 import { FLOOR, mapLayout, buildColliders } from './obstacles.js'
 export { FLOOR, PILLARS, SPAWN, walkable, clampWalkable } from './obstacles.js'
 
@@ -16,16 +17,16 @@ export function createMapScope(scene, RAPIER, step) {
 	let live = null
 	let built = null
 	return {
-		// `kind` picks the terrain: lane, Sandlot walkabout, or the plaza pick screen.
+		// `kind` picks the terrain: lane, Flagfall walkabout, or the lobby pick screen.
 		// Switching rebuilds the terrain on the same world; the previous run is already aborted.
-		start(run, create, kind = 'lane') {
+		start(run, create, kind = 'overthrow') {
 			if (live) throw new Error('MOBA already has a live sim')
 			if (!world) {
 				world = new RAPIER.World({ x: 0, y: coreTune.physics.gravity, z: 0 })
 				world.timestep = step
 			}
-			// Authored plaza/Sandlot layouts read tune on restart; rebuild visuals and colliders together.
-			if (built !== kind || kind === 'plaza' || kind === 'sandlot') {
+			// Authored lobby/Flagfall layouts read tune on restart; rebuild visuals and colliders together.
+			if (built !== kind || kind === 'lobby' || kind === 'flagfall') {
 				unbuild?.()
 				unbuild = buildMap(scene, world, RAPIER, kind)
 				built = kind
@@ -41,6 +42,11 @@ export function createMapScope(scene, RAPIER, step) {
 						owned.dispose()
 					} finally {
 						releaseWorld?.()
+						if (kind === 'overthrow') {
+							unbuild?.()
+							unbuild = null
+							built = null
+						}
 					}
 				},
 				{ once: true },
@@ -59,8 +65,8 @@ export function createMapScope(scene, RAPIER, step) {
 }
 
 // Ground prints and cover share the active layout's collision descriptors.
-// The 'plaza' kind draws only the Slab's cream ground: no walls, no pillars.
-export function buildMap(scene, world, RAPIER, kind = 'lane') {
+// The 'lobby' kind draws only the lobby floor's cream ground: no walls, no pillars.
+export function buildMap(scene, world, RAPIER, kind = 'overthrow') {
 	const m = tune.map
 	const layout = mapLayout(kind)
 	const group = new THREE.Group()
@@ -87,34 +93,15 @@ export function buildMap(scene, world, RAPIER, kind = 'lane') {
 		add(mergeGeometries(geometries), mat, 0, 0, 0).name = name
 		for (const g of geometries) g.dispose()
 	}
-	const buildPlaza = () => {
-		// The Slab's outline, not an endless plane: nothing is drawn beyond it, so the desert shows through.
-		add(slabShape(), cream, 0, m.printLayers.plaza, 0)
+	const buildLobby = () => {
+		// The lobby floor's outline, not an endless plane: nothing is drawn beyond it, so the desert shows through.
+		add(floorShape(), cream, 0, m.printLayers.lobby, 0)
 	}
+	let unterrain = null
 	const buildLane = () => {
-		add(
-			new THREE.BoxGeometry(FLOOR.halfX * 2, FLOOR.thickness, FLOOR.halfZ * 2),
-			shade,
-			0,
-			-FLOOR.thickness / 2,
-			0,
-		)
-		add(
-			new THREE.PlaneGeometry(FLOOR.halfX * 2, m.hedgeInnerZ * 2).rotateX(-Math.PI / 2),
-			cream,
-			0,
-			m.printLayers.road,
-			0,
-		)
+		unterrain = createOverthrowTerrain(group)
+		// Ownership remains a small semantic print; it is not scenery.
 		for (const side of [-1, 1]) {
-			// The base throat is wider than the central road.
-			add(
-				new THREE.PlaneGeometry(FLOOR.halfX - m.baseWallX, m.throat * 2).rotateX(-Math.PI / 2),
-				cream,
-				(side * (FLOOR.halfX + m.baseWallX)) / 2,
-				m.printLayers.road,
-				0,
-			)
 			const team = material(side < 0 ? 'teamA' : 'teamB', { flat: true })
 			const kerbs = []
 			for (let x = m.dashSpacing; x < FLOOR.halfX; x += m.dashSpacing)
@@ -126,65 +113,9 @@ export function buildMap(scene, world, RAPIER, kind = 'lane') {
 					)
 			print(kerbs, team, `moba-kerbs-${side}`)
 		}
-		const dashes = []
-		for (let x = -FLOOR.halfX + m.dashSpacing; x < FLOOR.halfX; x += m.dashSpacing)
-			dashes.push(
-				new THREE.PlaneGeometry(m.dashLength, m.lineWidth)
-					.rotateX(-Math.PI / 2)
-					.translate(x, m.printLayers.marks, 0),
-			)
-		print(dashes, ink, 'moba-centreline')
-		const dots = []
-		for (let x = -m.baseWallX; x <= m.baseWallX; x += m.dotSpacing)
-			for (const side of [-1, 1])
-				for (let z = m.hedgeOuterZ + m.dotSpacing; z < FLOOR.halfZ; z += m.dotSpacing)
-					dots.push(
-						new THREE.CircleGeometry(m.dotRadius, m.printSegments)
-							.rotateX(-Math.PI / 2)
-							.translate(x, m.printLayers.dots, side * z),
-					)
-		print(dots, ink, 'moba-halftone')
-		add(
-			new THREE.CircleGeometry(m.plazaRadius, m.printSegments).rotateX(-Math.PI / 2),
-			cream,
-			0,
-			m.printLayers.plaza,
-			0,
-		)
-		add(
-			new THREE.RingGeometry(m.plazaRadius - m.lineWidth, m.plazaRadius, m.printSegments).rotateX(
-				-Math.PI / 2,
-			),
-			ink,
-			0,
-			m.printLayers.seams,
-			0,
-		)
-		// Printed dodgeball centre: a ring and crossing seams, not an objective yet.
-		add(
-			new THREE.RingGeometry(
-				m.plazaRadius / 3 - m.lineWidth,
-				m.plazaRadius / 3,
-				m.printSegments,
-			).rotateX(-Math.PI / 2),
-			ink,
-			0,
-			m.printLayers.seams,
-			0,
-		)
-		for (const yaw of [0, Math.PI / 2]) {
-			const seam = add(
-				new THREE.PlaneGeometry((m.plazaRadius * 2) / 3, m.lineWidth).rotateX(-Math.PI / 2),
-				ink,
-				0,
-				m.printLayers.seams,
-				0,
-			)
-			seam.rotation.y = yaw
-		}
 	}
-	const buildSandlot = () => {
-		const s = tune.sandlot
+	const buildFlagfall = () => {
+		const s = tune.flagfall
 		const layers = s.print.layers
 		const sand = material('court', { flat: true })
 		const yard = material('courtShade', { flat: true })
@@ -199,7 +130,7 @@ export function buildMap(scene, world, RAPIER, kind = 'lane') {
 					.rotateX(-Math.PI / 2)
 					.translate(0, layers.hatch, z),
 			)
-		print(strokes, ink, 'sandlot-yard-hatching')
+		print(strokes, ink, 'flagfall-yard-hatching')
 		for (const side of [-1, 1]) {
 			plane(
 				s.bounds.halfX * 2,
@@ -227,7 +158,7 @@ export function buildMap(scene, world, RAPIER, kind = 'lane') {
 							.rotateX(-Math.PI / 2)
 							.translate(side * x, layers.marks, flank * (s.lane.innerZ + s.print.kerbWidth)),
 					)
-			print(kerbs, team, `sandlot-kerbs-${side}`)
+			print(kerbs, team, `flagfall-kerbs-${side}`)
 			for (const flank of [-1, 1])
 				plane(
 					s.bounds.halfX - s.baseX,
@@ -265,7 +196,7 @@ export function buildMap(scene, world, RAPIER, kind = 'lane') {
 				layers.chalk,
 				point.z,
 			)
-			footprint.name = `sandlot-${point.kind}-footprint`
+			footprint.name = `flagfall-${point.kind}-footprint`
 		}
 		for (const post of layout.posts)
 			add(
@@ -281,8 +212,8 @@ export function buildMap(scene, world, RAPIER, kind = 'lane') {
 				post.z,
 			)
 	}
-	if (kind === 'plaza') buildPlaza()
-	else if (kind === 'sandlot') buildSandlot()
+	if (kind === 'lobby') buildLobby()
+	else if (kind === 'flagfall') buildFlagfall()
 	else buildLane()
 	for (const b of layout.boxes) {
 		const h = b.kind === 'hedge' ? m.hedgeHeight : m.wallHeight
@@ -295,7 +226,7 @@ export function buildMap(scene, world, RAPIER, kind = 'lane') {
 				1,
 				Math.min(m.scallopRadius, trunk / 2),
 			),
-			kind === 'sandlot' ? scenery : shade,
+			kind === 'flagfall' ? scenery : shade,
 			b.x,
 			trunk / 2,
 			b.z,
@@ -304,7 +235,7 @@ export function buildMap(scene, world, RAPIER, kind = 'lane') {
 		for (let x = b.x - b.halfX + m.scallopRadius; x < b.x + b.halfX; x += m.scallopSpacing)
 			add(
 				new THREE.SphereGeometry(m.scallopRadius, m.pillarSegments, m.pillarSegments / 2),
-				kind === 'sandlot' ? scenery : shade,
+				kind === 'flagfall' ? scenery : shade,
 				x,
 				h - m.scallopRadius,
 				b.z,
@@ -331,11 +262,12 @@ export function buildMap(scene, world, RAPIER, kind = 'lane') {
 		world,
 		RAPIER,
 		layout.obstacles,
-		kind === 'plaza' ? undefined : layout.bounds,
+		kind === 'lobby' ? undefined : layout.bounds,
 	)
 	scene.add(group)
 	return () => {
 		scene.remove(group)
+		unterrain?.()
 		for (const resource of owned) resource.dispose()
 		uncollide()
 	}

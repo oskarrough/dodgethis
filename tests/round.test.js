@@ -111,7 +111,7 @@ describe('headless round', () => {
 		const round = createRound(ctx, {
 			enemies: 0,
 			arrowCount: 0,
-			hub: true,
+			lobby: true,
 			onOver: () => overCalls++,
 		})
 		try {

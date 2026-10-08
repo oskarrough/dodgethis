@@ -86,10 +86,10 @@ export default function moba(app, map) {
 			const isLobby = !!options.lobby
 			const query = new URLSearchParams(window.location.search)
 			const setup = parseMatchSetup(query, options.setup ?? options)
-			const isSandlot = !isLobby && setup.map === 'sandlot'
-			const kind = isLobby ? 'plaza' : setup.map
+			const isFlagfall = !isLobby && setup.map === 'flagfall'
+			const kind = isLobby ? 'lobby' : setup.map
 			const layout = mapLayout(kind)
-			if ((isLobby || isSandlot) && app.session.shared) {
+			if ((isLobby || isFlagfall) && app.session.shared) {
 				// Mode start must finish before its replacement can abort it. No map/sim is built.
 				queueMicrotask(() => {
 					if (!run.signal.aborted)
@@ -108,7 +108,13 @@ export default function moba(app, map) {
 				}
 			}
 			const local = app.session.local[0]
-			app.setPalette(isSandlot ? tune.sandlot.palette : {})
+			app.setPalette(
+				isFlagfall
+					? tune.flagfall.palette
+					: !isLobby && setup.map === 'overthrow'
+						? tune.overthrowTerrain.palette
+						: {},
+			)
 			document.documentElement.style.removeProperty('--page-bg')
 			audio.setMusicScene('play')
 			const juice = createJuice(scene)
@@ -149,11 +155,11 @@ export default function moba(app, map) {
 				},
 			}
 			const seats =
-				isLobby || isSandlot
+				isLobby || isFlagfall
 					? [
 							{
 								id: local,
-								team: isSandlot ? 'A' : (setup.picks[local].team ?? 'A'),
+								team: isFlagfall ? 'A' : (setup.picks[local].team ?? 'A'),
 								heroId: setup.picks[local].heroId,
 							},
 						]
@@ -178,17 +184,17 @@ export default function moba(app, map) {
 						intents: run.intents,
 						heroes: seats,
 						bots:
-							!isLobby && !isSandlot && app.session.authoritative
+							!isLobby && !isFlagfall && app.session.authoritative
 								? seats.filter((seat) => botsOnly || seat.id !== local)
 								: [],
 						smooth: run.smooth,
 						present: run.present,
-						lane: !isLobby && !isSandlot,
-						...(isSandlot && {
+						lane: !isLobby && !isFlagfall,
+						...(isFlagfall && {
 							obstacles: layout.obstacles,
 							bounds: layout.bounds,
 							spawns: { [local]: layout.spawns.A },
-							posts: tune.sandlot.dummyPosts,
+							posts: tune.flagfall.dummyPosts,
 						}),
 						...(isLobby && {
 							lobby: true,
@@ -203,9 +209,9 @@ export default function moba(app, map) {
 					}),
 				kind,
 			)
-			const ballView = isLobby || isSandlot ? null : createBallView(scene)
+			const ballView = isLobby || isFlagfall ? null : createBallView(scene)
 			const hero = sim.heroes.find((h) => h.id === local)
-			const onboarding = isLobby || isSandlot ? null : createOnboarding({ scene, sim, hero })
+			const onboarding = isLobby || isFlagfall ? null : createOnboarding({ scene, sim, hero })
 			const feedback = createFeedback({
 				juice,
 				sfx,
@@ -227,6 +233,24 @@ export default function moba(app, map) {
 			app.clock.reset()
 
 			const arrangeDebug = createDebugLayout(run, isLobby)
+			if (!isLobby && setup.map === 'overthrow')
+				run.debug.tune('overthrow terrain (applies on restart)', tune.overthrowTerrain, (f, s) => {
+					for (const [key, min, max, step] of [
+						['margin', 0.5, 3, 0.1],
+						['jag', 0, 1.5, 0.1],
+						['step', 1, 6, 0.5],
+						['rockDepth', 1, 8, 0.5],
+						['rockFlare', 0, 3, 0.1],
+						['rockBands', 1, 5, 1],
+						['chalkWidth', 0.04, 0.2, 0.01],
+						['courtInset', 0.5, 3, 0.1],
+						['mesaRadius', 3, 9, 0.5],
+						['mesaHeight', 1, 6, 0.5],
+					])
+						f.add(s, key, min, max, step)
+					for (const key of Object.keys(s.colors)) f.addColor(s.colors, key)
+					for (const key of Object.keys(s.palette)) f.addColor(s.palette, key)
+				})
 			const lobby = isLobby ? createLobby({ app, run, sim, hero, setup, options, gallery }) : null
 			const menu =
 				lobby ??
@@ -480,6 +504,7 @@ export default function moba(app, map) {
 				})
 
 			run.signal.addEventListener('abort', () => {
+				if (!isLobby && setup.map === 'overthrow') app.setPalette({})
 				onboarding?.dispose()
 				cursor.dispose()
 				feedback.reset()

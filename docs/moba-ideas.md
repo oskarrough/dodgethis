@@ -29,7 +29,7 @@ The moment: dead, you sprint the touchline, snipe the enemy who's limping home o
 
 The Ball shouldn't appear; it should arrive. Smash's falling crates, a gym teacher's lob from the far end of the yard.
 
-- Over the 30 s warning, a printed ink shadow grows in the plaza ring from nothing to the Ball's 1.4 m. In the last 1 s the Ball streaks in from the top of the screen and lands on the spawn tick.
+- Over the 30 s warning, a printed ink shadow grows in the lobby ring from nothing to the Ball's 1.4 m. In the last 1 s the Ball streaks in from the top of the screen and lands on the spawn tick.
 - A hero whose disc overlaps the landing is bonked: 1 s stun, no damage, a "BONK" stamp and circling stars.
 - It then bounces once, 3 m toward the team that has lost more structures (seeded on a tie), and the normal 0.75 s pickup starts where it rests.
 - Standing dead centre is greedy and loses the race; the edge of the shadow is where you want to be. The shadow is a 30 s tell on a fixed tick, so it costs guests nothing online.
@@ -52,10 +52,10 @@ The moment: the last Q hits the crystal, the camera rises, and the fight you jus
 - **Sneaker squeaks [small]:** every reversal and hard stop squeaks, pitched by speed, so the instant movement is something you can hear.
 - **Ink stamps [small]:** hits print comic words on the ground ("THWOK", "WHIFF" on a near miss) that fade over 20 s, so the lane keeps a record of the fight.
 - **The PE teacher [small]:** the announcer is a whistle and a speech bubble. "Hustle!" when a team hides under its tower, "Last one standing!", "Walk it off" on respawn.
-- **Picked last [small]:** before the match, two bot captains pick teams on the plaza. Whoever's picked last gets +5% damage for the game, and a sad trombone.
+- **Picked last [small]:** before the match, two bot captains pick teams on the lobby. Whoever's picked last gets +5% damage for the game, and a sad trombone.
 - **High five [small]:** two allies pressing mount beside each other slap hands: a crack, a sticker burst, 2 s of +20% speed for both.
 - **Comic-strip recap [medium]:** the match ends on three halftone panels frozen from the biggest `present` facts (a catch, a multi-hit, the core), ready to screenshot.
 - **Hot potato [medium]:** a ticking ball sticks to the last hero it touched. Tag an enemy to pass it; it blows at zero for 25% HP.
 - **The crowd [medium]:** cardboard kids line the boundary, heads turning to follow the Ball and the loudest fact, "ooh" on a near miss. The fight off-screen is wherever they're all looking; the dead stand among them.
 - **Rally [medium]:** a tennis ball crosses the centreline. If it bounces twice on your half, your front structure takes 400; any hit sends it back. Pong, inside a MOBA.
-- **The old court [big]:** after 10:00 the plaza lifts into the original floating dodgethis court with void edges. Ball hits knock back 3 m, and anyone knocked off hangs in the air, looks at the camera, and drops.
+- **The old court [big]:** after 10:00 the lobby lifts into the original floating dodgethis court with void edges. Ball hits knock back 3 m, and anyone knocked off hangs in the air, looks at the camera, and drops.

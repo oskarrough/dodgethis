@@ -1,7 +1,7 @@
 import { tune } from './tune.js'
 
 const m = tune.map
-export const FLOOR = { id: 'lane', halfX: m.halfX, halfZ: m.halfZ, thickness: m.thickness }
+export const FLOOR = { id: 'overthrow', halfX: m.halfX, halfZ: m.halfZ, thickness: m.thickness }
 export const SPAWN = { x: -m.spawnX, z: 0 }
 export const PILLARS = [-1, 1].flatMap((side) => [
 	...[-1, 1].map((flank) => ({ x: side * m.pillarX, z: flank * m.pillarZ, r: m.pillarRadius })),
@@ -28,10 +28,10 @@ export const BOXES = [-1, 1].flatMap((side) =>
 export const OBSTACLES = [...PILLARS, ...BOXES]
 
 // A run owns its footprint; the lane's exported defaults remain unchanged.
-export function mapLayout(kind = 'lane') {
-	if (kind === 'plaza')
-		return { name: 'The Slab', bounds: tune.lobby.bounds, obstacles: BOXES, boxes: [], pillars: [] }
-	if (kind !== 'sandlot')
+export function mapLayout(kind = 'overthrow') {
+	if (kind === 'lobby')
+		return { name: 'Lobby', bounds: tune.lobby.bounds, obstacles: BOXES, boxes: [], pillars: [] }
+	if (kind !== 'flagfall')
 		return {
 			name: tune.map.name,
 			bounds: FLOOR,
@@ -39,7 +39,7 @@ export function mapLayout(kind = 'lane') {
 			boxes: BOXES,
 			pillars: PILLARS,
 		}
-	const s = tune.sandlot
+	const s = tune.flagfall
 	const boxes = [-1, 1].flatMap((side) => [
 		{
 			kind: 'wall',
@@ -234,7 +234,7 @@ export function segmentClear(a, b, inflate = 0, obstacles = OBSTACLES, bounds = 
 export function buildColliders(world, RAPIER, obstacles = OBSTACLES, bounds = FLOOR) {
 	const body = world.createRigidBody(RAPIER.RigidBodyDesc.fixed())
 	// A flat arena needs no terrain triangles: their seams snag capsules and slow every sweep.
-	// The boundary colliders below contain the lane; the plaza also clamps its walking bounds.
+	// The boundary colliders below contain the lane; the lobby also clamps its walking bounds.
 	world.createCollider(new RAPIER.ColliderDesc(new RAPIER.HalfSpace({ x: 0, y: 1, z: 0 })), body)
 	for (const o of obstacles) {
 		const h = o.r !== undefined ? m.pillarHeight : o.kind === 'hedge' ? m.hedgeHeight : m.wallHeight

@@ -69,12 +69,12 @@ test('a tap inside one step still shoots, because held says the release came las
 	r.dispose()
 })
 
-test('slots switch weapons in a match but not in the hub; the bowl fires on press', () => {
-	const hub = round({ enemies: 0, arrowCount: 0, hub: true })
+test('slots switch weapons in a match but not in the lobby; the bowl fires on press', () => {
+	const lobby = round({ enemies: 0, arrowCount: 0, lobby: true })
 	const actions = createActions()
-	run(hub, actions, frame({ pressed: [press('slot2')] }))
+	run(lobby, actions, frame({ pressed: [press('slot2')] }))
 	expect(actions.seat('local').weapon).toBe('bow')
-	hub.dispose()
+	lobby.dispose()
 	const r = round()
 	run(r, actions, frame({ pressed: [press('slot2')] }))
 	expect(actions.seat('local').weapon).toBe('bowl')

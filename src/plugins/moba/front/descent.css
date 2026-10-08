@@ -1,4 +1,4 @@
-/* The crane: the plaza's chrome and the HUD fade with the canvas. */
+/* The crane: the lobby's chrome and the HUD fade with the canvas. */
 .front-craning > :not(.moba-front, script, .lil-gui),
 .front-craning .front-lobby > :not(.front-backdrop, .front-canvas) {
 	opacity: 0;

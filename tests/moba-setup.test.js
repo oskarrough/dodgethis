@@ -4,7 +4,7 @@ import { tune } from '../src/plugins/moba/tune.js'
 import { HEROES, heroDefinition } from '../src/plugins/moba/heroes.js'
 
 const defaults = {
-	map: 'lane',
+	map: 'overthrow',
 	difficulty: 'easy',
 	heroId: 'fletcher',
 	seed: tune.bots.seed,
@@ -18,7 +18,7 @@ test('missing params use the front-screen defaults without warnings', () => {
 	expect(warnings).toEqual([])
 })
 test.each([
-	['map', 'lane', 'map', 'lane'],
+	['map', 'overthrow', 'map', 'overthrow'],
 	['bots', 'easy', 'difficulty', 'easy'],
 	['bots', 'normal', 'difficulty', 'normal'],
 	['bots', 'hard', 'difficulty', 'hard'],
