@@ -31,6 +31,8 @@ Each fact has effective damage (HP removed, excluding overkill), actor seat/kit,
 
 ## MOBA playability
 
+The MOBA collision floor is one flat plane, bounded by the lane's wall colliders or the plaza's walking limits. It has no terrain grid or triangle seams. When changing it, check player movement, wall contact and dashes in both the plaza and a match; short bot timings measure simulation cost, not displayed FPS or balance. Floor changes can alter old seeded results, so record and replay tapes on the same build.
+
 `node scripts/verify-moba-playability.mjs <preview URL> <shots directory>` checks a frozen production build: keyboard, mouse and pad get through selection, loading, pause, resume and exit; the hub portal and the Play MOBA button both work; hero select, Numbers, pause and the panned-away marker fit at four viewport sizes; a six-bot seeded 3v3 reaches the result card, the frozen result and a clean Again, with no browser errors.
 
 Synthetic Space events must bubble from the body, not target `window`: the camera's capture listener must run before core input suppresses page scrolling. Consume a mouse order for one frame before parking the pointer, since the input loop reads the pointer's current ground position. The frozen-build pass captured both named bot kills, a hero-centred FOV of 40 at all three sizes, and no browser errors. Camera bounds cover the ground target; the map boundary may be visible at base without changing the match scale.

@@ -54,7 +54,6 @@ export const tune = {
 		halfX: 52,
 		halfZ: 13,
 		thickness: 1,
-		groundGrid: 1,
 		baseWallX: 28,
 		throat: 8,
 		spawnX: 48,
@@ -184,7 +183,7 @@ export const tune = {
 		},
 		// The plaza's camera starts `distance`× back along its view ray; the canvas fades in from `fadeFrom` of the move.
 		intro: { distance: 4, fadeFrom: 0.6 },
-		// Where you can walk: far past the props, so the void feels open. The floor's collider ends at 13.
+		// Where you can walk: far past the props, so the void feels open.
 		bounds: { halfX: 12, halfZ: 12 },
 		// The props the camera frames; it slides to follow once you leave `followX` or this depth.
 		frame: { halfZ: 6.2, followX: 5, followEase: 6 },

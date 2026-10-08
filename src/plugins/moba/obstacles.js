@@ -174,17 +174,9 @@ export function segmentClear(a, b, inflate = 0, obstacles = OBSTACLES) {
 // Rapier movement and analytical queries consume the same descriptors.
 export function buildColliders(world, RAPIER, obstacles = OBSTACLES) {
 	const body = world.createRigidBody(RAPIER.RigidBodyDesc.fixed())
-	// Small, coplanar terrain triangles avoid capsule-sweep jitter on one lane-sized slab.
-	const rows = Math.ceil((FLOOR.halfZ * 2) / m.groundGrid)
-	const cols = Math.ceil((FLOOR.halfX * 2) / m.groundGrid)
-	world.createCollider(
-		RAPIER.ColliderDesc.heightfield(rows, cols, new Float32Array((rows + 1) * (cols + 1)), {
-			x: FLOOR.halfX * 2,
-			y: FLOOR.thickness,
-			z: FLOOR.halfZ * 2,
-		}),
-		body,
-	)
+	// A flat arena needs no terrain triangles: their seams snag capsules and slow every sweep.
+	// The boundary colliders below contain the lane; the plaza also clamps its walking bounds.
+	world.createCollider(new RAPIER.ColliderDesc(new RAPIER.HalfSpace({ x: 0, y: 1, z: 0 })), body)
 	for (const o of obstacles) {
 		const h = o.r !== undefined ? m.pillarHeight : o.kind === 'hedge' ? m.hedgeHeight : m.wallHeight
 		const shape =
