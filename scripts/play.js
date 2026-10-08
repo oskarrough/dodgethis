@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from 'node:fs/promises'
+import { mkdir, rename, writeFile } from 'node:fs/promises'
 import { dirname } from 'node:path'
 import { appendFileSync } from 'node:fs'
 import { sessionCommand, sessionDirectory, sessionTransport } from './play-session.js'
@@ -152,7 +152,8 @@ export async function play(argv = process.argv.slice(2)) {
 		process.removeListener('SIGTERM', interrupt)
 		lines?.close()
 		const replay = match.finish(reason)
-		await writeFile(filename, JSON.stringify(replay) + '\n')
+		await writeFile(filename + '.tmp', JSON.stringify(replay) + '\n')
+		await rename(filename + '.tmp', filename)
 		const result = `result ${reason} t=${match.sim.tick * STEP}s winner=${replay.result.winner ?? 'none'} replay=${filename}\n`
 		if (transport) await transport.close(result)
 		else output(result)
