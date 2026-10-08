@@ -309,6 +309,10 @@ export const tune = {
 	},
 	base: { x: 44, heal: 0.1 },
 	bots: {
+		// Logic experiments: bot code may read `tune.bots.exp.<flag>` (truthy or a number) to switch a
+		// behaviour variant; `bun run farm --set bots.exp.<flag>=0,1` sweeps it. Empty on main: land the
+		// winner as real code and delete its flag.
+		exp: {},
 		seed: 2,
 		thinkTicks: 6,
 		history: 2,

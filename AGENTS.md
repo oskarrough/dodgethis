@@ -8,6 +8,16 @@
 - The machine is shared: browser sessions and full checks starve each other (load past 12 turns timing tests into random failures). Open a browser only when the change is visual or someone asked, and close it when done.
 - Deploys happen automatically when `main` moves on GitHub (Cloudflare Workers build). Never run `wrangler deploy` by hand. `bun run build` runs `bun run check` first, so a lint or test failure blocks the deploy. MOBA work goes on `main`.
 
+## Git worktrees
+
+- A bb thread may land in a plain git worktree: no `node_modules`, no jj. Run `bun install` first (a second or two), then use git; the jj lines above don't apply.
+- To land: commit only your own files with a user-facing message, `git fetch origin && git rebase origin/main`, rerun the tests near your change, then `git push origin HEAD:main`. If the push is refused because main moved, fetch, rebase and push again. Never force-push.
+
+## Balance and bot experiments
+
+- `bun run farm --summary` is the bench: headless bot matches, compact tables, no logs. `--base` replays the same seeds on another revision and prints deltas with approximate 95% intervals and a verdict; `--report` adds per-ability, death-cause and bot-state sections; `--set bots.exp.<flag>=0,1` toggles a logic variant. Read the bench section of `docs/verification.md` before building your own harness, git archive or env-var hack.
+- Full logs (`bun run farm` without `--summary`) feed `bun run balance`, DuckDB over `runs/*.jsonl`, for questions the bench doesn't answer.
+
 ## Browser proofs
 
 - `bun run dev:agent` prints the shared agent server's URL, starting it if nothing answers. Every thread reuses it; never stop it. It doesn't live-reload, so other threads' edits can't wipe your page: reload yourself when you want fresh code. A boot error after a reload may be another thread's half-done edit; read `agent-browser errors` before blaming yours.

@@ -1,21 +1,62 @@
 import { mkdir, rename, writeFile } from 'node:fs/promises'
 import { createHash } from 'node:crypto'
 import { spawnSync } from 'node:child_process'
-import { openSync, writeSync, closeSync } from 'node:fs'
-import { availableParallelism } from 'node:os'
+import { existsSync, openSync, writeSync, closeSync } from 'node:fs'
 import { join } from 'node:path'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { parseArgs } from 'node:util'
 import { Worker, isMainThread, workerData, parentPort } from 'node:worker_threads'
-import * as THREE from 'three'
-import RAPIER from '@dimforge/rapier3d-compat'
-import { STEP } from '../src/core/app.js'
-import { tune as coreTune } from '../src/core/tune.js'
-import { tune } from '../src/plugins/moba/tune.js'
-import { HEROES } from '../src/plugins/moba/heroes.js'
-import { agentRoster } from '../src/plugins/moba/agents.js'
-import { botRandom } from '../src/plugins/moba/bots.js'
-import { buildColliders } from '../src/plugins/moba/obstacles.js'
-import { createAgentMatch } from '../src/plugins/moba/agent-match.js'
+import { coreBudget, reserveCores } from './bench/cores.js'
+import { addResult, emptyCell, reportSections, summarySections, undecided } from './bench/report.js'
+import { matchReport } from './bench/report.js'
+import { checkoutRevision, defaultBase } from './bench/revision.js'
+
+const ROOT = fileURLToPath(new URL('..', import.meta.url))
+// Fresh bb worktrees have no node_modules; say so instead of a resolver stack trace.
+if (!existsSync(join(ROOT, 'node_modules', 'three'))) {
+	console.error(
+		'node_modules is missing here. Run `bun install` first (fresh worktrees have none).',
+	)
+	process.exit(1)
+}
+const THREE = await import('three')
+const { default: RAPIER } = await import('@dimforge/rapier3d-compat')
+const { STEP } = await import('../src/core/app.js')
+const { tune } = await import('../src/plugins/moba/tune.js')
+const { HEROES } = await import('../src/plugins/moba/heroes.js')
+const { agentRoster } = await import('../src/plugins/moba/agents.js')
+const { botRandom } = await import('../src/plugins/moba/bots.js')
+
+// The game modules of one checkout. The working copy's are the ones imported above; a --base
+// revision's come from its unpacked tree, so each side plays its own sim, bots and tune.
+const loaded = new Map()
+export function gameModules(root = ROOT) {
+	if (!loaded.has(root)) {
+		const at = (path) => import(pathToFileURL(join(root, path)).href)
+		loaded.set(
+			root,
+			Promise.all(
+				[
+					'src/core/app.js',
+					'src/core/tune.js',
+					'src/plugins/moba/tune.js',
+					'src/plugins/moba/agents.js',
+					'src/plugins/moba/obstacles.js',
+					'src/plugins/moba/agent-match.js',
+				].map(at),
+			).then(([app, core, moba, agents, obstacles, match]) => ({
+				STEP: app.STEP,
+				coreTune: core.tune,
+				tune: moba.tune,
+				agentRoster: agents.agentRoster,
+				buildColliders: obstacles.buildColliders,
+				createAgentMatch: match.createAgentMatch,
+				baseline: new Map(),
+			})),
+		)
+	}
+	return loaded.get(root)
+}
 
 // Ordered team-kit pairs in rotation order; mirrors say nothing about a matchup, so a probe can drop them.
 export function farmPairs(heroes, crossOnly = false) {
@@ -46,13 +87,45 @@ export function farmRoster(heroes, difficulty, index, crossOnly = false, seed = 
 	}))
 }
 
+// Seats for one match on one checkout: its agentRoster places them, the lineups say who plays.
+// Idle seats stand still like a practice player who walked away; practice allies play normal.
+function matchRoster(mods, lineups, { difficulty, idle = [], practice = false }) {
+	return mods.agentRoster({ seats: [], idle, difficulty }).map((seat) => ({
+		...seat,
+		heroId: lineups[seat.team === 'A' ? 0 : 1][Number(seat.id[1]) - 1],
+		difficulty: practice && seat.team === 'A' ? 'normal' : seat.difficulty,
+	}))
+}
+
 // `--set mitts.speed=5.6`: a path into tune, or under tune.heroes when the first key isn't one.
-function tuneSlot(path) {
+// Paths through an `exp` object (`bots.exp.dive`) may name flags that don't exist yet.
+function tuneSlot(path, root = tune) {
+	if (
+		path.split('.').some((key) => !key || ['__proto__', 'constructor', 'prototype'].includes(key))
+	)
+		throw new Error(`--set ${path}: invalid tune path`)
 	for (const keys of [path.split('.'), ['heroes', ...path.split('.')]]) {
-		let node = tune
+		let node = root
 		for (const key of keys.slice(0, -1)) node = Object.hasOwn(node ?? {}, key) ? node[key] : null
 		const last = keys.at(-1)
 		if (node && typeof node[last] === 'number') return [node, last]
+	}
+	const keys = path.split('.')
+	const exp = keys.indexOf('exp')
+	if (exp >= 0 && exp < keys.length - 1) {
+		let node = root
+		for (const key of keys.slice(0, -1)) {
+			if (node[key] === undefined) node[key] = {}
+			node = node[key]
+			if (typeof node !== 'object' || node === null) break
+		}
+		const last = keys.at(-1)
+		if (
+			typeof node === 'object' &&
+			node &&
+			['number', 'undefined', 'boolean'].includes(typeof node[last])
+		)
+			return [node, last]
 	}
 	throw new Error(`--set ${path}: no numeric tune value at that path`)
 }
@@ -76,67 +149,18 @@ export function parseSets(sets) {
 export const variantLabel = (variant) =>
 	variant.map(([path, value]) => `${path}=${value}`).join(' ') || 'default'
 
-const baseline = new Map()
-export function applyVariant(variant) {
-	for (const [node, key, value] of baseline.values()) node[key] = value
+export function applyVariant(variant, mods = { tune, baseline: defaultBaseline }) {
+	for (const [node, key, value] of mods.baseline.values()) node[key] = value
 	for (const [path, value] of variant) {
-		const [node, key] = tuneSlot(path)
-		if (!baseline.has(path)) baseline.set(path, [node, key, node[key]])
+		const [node, key] = tuneSlot(path, mods.tune)
+		if (!mods.baseline.has(path)) mods.baseline.set(path, [node, key, node[key]])
 		node[key] = value
 	}
 }
-
-// Per-team hero deaths, hero damage and hero hits on structures, counted from the combat log as it streams.
-// A team's kills are the other's deaths. `firstTower` is the second the first tower fell, or null.
-// `seats` keeps the same counts per seat, plus damage to heroes and shots caught, for the per-hero table.
-function summaryStats(roster) {
-	const team = new Map(roster.map((seat) => [seat.id, seat.team]))
-	const totals = {
-		A: { deaths: 0, damage: 0, structureHits: 0 },
-		B: { deaths: 0, damage: 0, structureHits: 0 },
-		firstTower: null,
-		seats: roster.map((seat) => ({
-			id: seat.id,
-			heroId: seat.heroId,
-			deaths: 0,
-			damage: 0,
-			heroDamage: 0,
-			structureHits: 0,
-			catches: 0,
-		})),
-	}
-	const seats = new Map(totals.seats.map((seat) => [seat.id, seat]))
-	return {
-		totals,
-		add(row) {
-			const actor = team.get(row.seat)
-			if (row.kind === 'hit' && actor) {
-				const seat = seats.get(row.seat)
-				totals[actor].damage += row.effective_damage
-				seat.damage += row.effective_damage
-				if (team.has(row.target)) seat.heroDamage += row.effective_damage
-				if (/^(tower|core)-/.test(row.target ?? '')) {
-					totals[actor].structureHits++
-					seat.structureHits++
-				}
-			}
-			if (row.kind === 'caught' && seats.has(row.seat) && row.fact.ability)
-				seats.get(row.seat).catches++
-			if (row.kind === 'death' && team.has(row.target)) {
-				totals[team.get(row.target)].deaths++
-				seats.get(row.target).deaths++
-			}
-			if (
-				row.kind === 'structureDown' &&
-				row.target.startsWith('tower') &&
-				totals.firstTower === null
-			)
-				totals.firstTower = row.tick * STEP
-		},
-	}
-}
+const defaultBaseline = new Map()
 
 // RAPIER.init() belongs to the caller, once per worker. No rendering or injected damage.
+// `mods` picks the checkout whose game plays; the working copy by default.
 export async function runFarmMatch({
 	directory,
 	matchId,
@@ -146,14 +170,18 @@ export async function runFarmMatch({
 	runId = matchId,
 	commit = null,
 	summary = false,
+	sample = false,
+	mods,
 }) {
-	// A summary keeps only per-team counts: no log, no tape, nothing on disk.
-	const stats = summary ? summaryStats(roster) : null
+	mods ??= await gameModules()
+	const { STEP, coreTune, buildColliders, createAgentMatch } = mods
+	// A summary keeps only counters: no log, no tape, nothing on disk. `sample` adds per-tick bot states.
+	const stats = summary ? matchReport(roster, { STEP, towerRange: mods.tune.tower.range }) : null
 	if (!summary) await mkdir(directory, { recursive: true })
 	const filename = join(directory ?? '', `${matchId}.jsonl`)
 	const partial = filename + '.partial'
 	const tapeFilename = join(directory ?? '', `${matchId}.tape.json`)
-	const tuneHash = createHash('sha256').update(JSON.stringify(tune)).digest('hex')
+	const tuneHash = createHash('sha256').update(JSON.stringify(mods.tune)).digest('hex')
 	const file = summary ? null : openSync(partial, 'wx')
 	let buffer = ''
 	const flush = () => {
@@ -180,12 +208,13 @@ export async function runFarmMatch({
 			tuneHash,
 			recordInputs: false,
 			onLog(row) {
-				if (summary) return stats.add(row)
+				if (summary) return stats.row(row)
 				buffer += JSON.stringify(row) + '\n'
 				if (buffer.length >= 64 * 1024) flush()
 			},
 		})
-		while (match.sim.tick < Math.ceil(maxSeconds / STEP) && match.step()) {}
+		const limit = Math.ceil(maxSeconds / STEP)
+		while (match.sim.tick < limit && match.step()) if (sample && stats) stats.tick(match.sim)
 		const reason = match.sim.lane.match.winner ? 'matchOver' : 'limit'
 		const tape = match.finish(reason)
 		tape.botReplay = true
@@ -202,7 +231,7 @@ export async function runFarmMatch({
 			reason,
 			filename,
 			tapeFilename,
-			stats: stats?.totals,
+			report: stats?.report,
 		}
 		flush()
 	} finally {
@@ -218,161 +247,67 @@ export async function runFarmMatch({
 	return result
 }
 
-function rollupMatch(rows, heroes, result) {
-	const key = result.pair.join(' v ')
-	for (const seat of result.stats.seats) {
-		const hero = heroes.get(seat.heroId) ?? {
-			seats: 0,
-			decided: 0,
-			wins: 0,
-			deaths: 0,
-			damage: 0,
-			heroDamage: 0,
-			structureHits: 0,
-			catches: 0,
-		}
-		heroes.set(seat.heroId, hero)
-		hero.seats++
-		if (result.winner) hero.decided++
-		if (result.winner === seat.id[0]) hero.wins++
-		for (const stat of ['deaths', 'damage', 'heroDamage', 'structureHits', 'catches'])
-			hero[stat] += seat[stat]
-	}
-	const row = rows.get(key) ?? {
-		n: 0,
-		decided: 0,
-		aWins: 0,
-		seconds: 0,
-		towers: 0,
-		towerSeconds: 0,
-		A: { deaths: 0, damage: 0, structureHits: 0 },
-		B: { deaths: 0, damage: 0, structureHits: 0 },
-	}
-	rows.set(key, row)
-	row.n++
-	row.seconds += result.duration
-	if (result.winner) row.decided++
-	if (result.winner === 'A') row.aWins++
-	if (result.stats.firstTower !== null) {
-		row.towers++
-		row.towerSeconds += result.stats.firstTower
-	}
-	for (const team of ['A', 'B']) {
-		row[team].deaths += result.stats[team].deaths
-		row[team].damage += result.stats[team].damage
-		row[team].structureHits += result.stats[team].structureHits
-	}
-}
+const HELP = `bun scripts/farm.js [options]   (bun run farm -- --help)
+Plays headless bot matches. Default: write logs and tapes for \`bun run balance\`; --summary prints tables.
 
-// One row per variant and ordered matchup: team A's win rate, kills (the other team's deaths), deaths, hero damage
-// and hero hits on structures per match, and when the first tower fell (mean over matches where one did).
-const clock = (seconds) =>
-	`${Math.floor(seconds / 60)}:${String(Math.round(seconds % 60)).padStart(2, '0')}`
+Teams
+  --heroes fletcher,mitts   each team three of one hero; \`mixed\` is practice's mitts,fletcher,random
+  --lineup a,b,c            a team of those seats (repeatable); \`random\` draws a seeded playable hero
+  --cross-only              skip mirror matchups
+  --idle A1[,B2]            seats that stand still; --practice = idle A1, allies normal, enemies --difficulty
+  --difficulty hard         easy, normal or hard
+Sampling
+  --matches N               default 4 for summaries, 20 for logs; rounded up to full matchup rotations; each rotation shares a seed
+  --seed uint32  --max-seconds N  (a timeout has no winner)
+  --set path=v[,v...]       override a tune number per variant (repeatable; flags make a grid)
+                            bots.exp.<flag>=0,1 toggles a logic experiment; see docs/verification.md
+  --quick                   --summary --cross-only --matches 4
+Comparing (all imply --summary)
+  --base [rev]              play the same seeds on another revision too (default: @- in jj,
+                            HEAD with a dirty git tree, else origin/main) and print deltas
+  --until N                 keep adding --matches rounds until the headline intervals decide, up to N
+  --report                  per-ability, death-cause, damage-taken and bot-state sections
+Machine
+  --jobs N                  worker threads (default 2); a per-machine budget (FARM_CORES, default cores − 2) is
+                            shared with other farms, which queue for it
+  --out dir                 log directory (default runs/<date>)`
 
-function summaryTable(variants, rollup) {
-	const header = [
-		'variant',
-		'matchup (A v B)',
-		'matches',
-		'decided',
-		'A win %',
-		'kills A-B',
-		'dmg A-B',
-		'struct hits A-B',
-		'1st tower m:ss',
-		'minutes',
-	]
-	const lines = []
-	variants.forEach((variant, i) => {
-		for (const [key, r] of [...rollup[i]].sort()) {
-			const avg = (value) => Math.round(value / r.n)
-			lines.push([
-				variantLabel(variant),
-				key,
-				r.n,
-				r.decided,
-				r.decided ? ((100 * r.aWins) / r.decided).toFixed(1) : '-',
-				`${(r.B.deaths / r.n).toFixed(1)}-${(r.A.deaths / r.n).toFixed(1)}`,
-				`${avg(r.A.damage)}-${avg(r.B.damage)}`,
-				`${(r.A.structureHits / r.n).toFixed(1)}-${(r.B.structureHits / r.n).toFixed(1)}`,
-				r.towers ? clock(r.towerSeconds / r.towers) : '-',
-				(r.seconds / r.n / 60).toFixed(1),
-			])
-		}
-	})
-	return table(header, lines)
-}
-
-// One row per variant and hero, averaged per seat-match: win rate of the seat's team, all damage,
-// damage to heroes, deaths, hits on structures and enemy shots caught.
-function heroTable(variants, heroes) {
-	const header = [
-		'variant',
-		'hero',
-		'seats',
-		'win %',
-		'dmg',
-		'hero dmg',
-		'deaths',
-		'struct hits',
-		'catches',
-	]
-	const lines = []
-	variants.forEach((variant, i) => {
-		for (const [id, h] of [...heroes[i]].sort()) {
-			const per = (value, digits = 1) => (value / h.seats).toFixed(digits)
-			lines.push([
-				variantLabel(variant),
-				id,
-				h.seats,
-				h.decided ? ((100 * h.wins) / h.decided).toFixed(1) : '-',
-				per(h.damage, 0),
-				per(h.heroDamage, 0),
-				per(h.deaths),
-				per(h.structureHits),
-				per(h.catches),
-			])
-		}
-	})
-	return table(header, lines)
-}
-
-function table(header, lines) {
-	const widths = header.map((h, c) => Math.max(h.length, ...lines.map((l) => String(l[c]).length)))
-	const fmt = (cells) =>
-		cells
-			.map((cell, c) => String(cell).padEnd(widths[c]))
-			.join('  ')
-			.trimEnd()
-	return [fmt(header), fmt(widths.map((w) => '-'.repeat(w))), ...lines.map(fmt)].join('\n')
+// `--base` may come without a revision.
+function withBaseDefault(argv) {
+	const i = argv.indexOf('--base')
+	if (i < 0 || (argv[i + 1] !== undefined && !argv[i + 1].startsWith('--'))) return argv
+	return [...argv.slice(0, i + 1), defaultBase(ROOT), ...argv.slice(i + 1)]
 }
 
 export async function farm(argv = process.argv.slice(2)) {
 	const { values } = parseArgs({
-		args: argv,
+		args: withBaseDefault(argv),
 		options: {
 			help: { type: 'boolean' },
-			matches: { type: 'string', default: '20' },
+			matches: { type: 'string' },
 			heroes: { type: 'string' },
 			lineup: { type: 'string', multiple: true, default: [] },
 			difficulty: { type: 'string', default: 'hard' },
-			jobs: { type: 'string', default: String(availableParallelism()) },
+			jobs: { type: 'string' },
 			'cross-only': { type: 'boolean' },
 			summary: { type: 'boolean' },
+			quick: { type: 'boolean' },
+			report: { type: 'boolean' },
+			base: { type: 'string' },
+			until: { type: 'string' },
+			idle: { type: 'string', multiple: true, default: [] },
+			practice: { type: 'boolean' },
 			set: { type: 'string', multiple: true, default: [] },
 			seed: { type: 'string', default: String(tune.bots.seed) },
 			'max-seconds': { type: 'string', default: String(tune.agents.maxSeconds * 4) },
 			out: { type: 'string', default: `runs/${new Date().toISOString().slice(0, 10)}` },
 		},
 	})
-	if (values.help) {
-		console.log(
-			"bun scripts/farm.js --matches 20 --heroes fletcher,mitts --difficulty hard\nTeams: --heroes a,b gives each team three of one hero; --heroes mixed is practice's mitts,fletcher,random;\n  --lineup mitts,fletcher,mitts (repeatable) adds a team of those seats; random draws a seeded playable hero.\nCounts round up to full matchup rotations; each rotation shares a seed.\nOptional: --seed uint32 --max-seconds N --out directory; timeouts are logged, not wins.\nProbing: --jobs N (default: core count) --cross-only (skip mirrors) --summary (no logs or tapes; print a table)\n  --set mitts.speed=5.6 (repeatable; comma values sweep, several flags make a grid, one table row per variant).",
-		)
-		return
-	}
-	const requestedMatches = Number(values.matches),
-		jobs = Number(values.jobs),
+	if (values.help) return console.log(HELP)
+	const summary = !!(values.summary || values.quick || values.base || values.until || values.report)
+	const crossOnly = values['cross-only'] || values.quick
+	const requestedMatches = Number(values.matches ?? (summary ? 4 : 20)),
+		jobs = Number(values.jobs ?? Math.min(2, coreBudget())),
 		seed = Number(values.seed),
 		maxSeconds = Number(values['max-seconds'])
 	for (const [name, value] of [
@@ -387,6 +322,13 @@ export async function farm(argv = process.argv.slice(2)) {
 		throw new Error('max-seconds must be at least one step')
 	if (!['easy', 'normal', 'hard'].includes(values.difficulty))
 		throw new Error('difficulty must be easy, normal or hard')
+	const idle = [
+		...new Set([
+			...(values.practice ? ['A1'] : []),
+			...values.idle.flatMap((list) => list.split(',').map((id) => id.trim())),
+		]),
+	].filter(Boolean)
+	agentRoster({ seats: [], idle, difficulty: values.difficulty })
 	const requested = [
 		...new Set(
 			(values.heroes ?? (values.lineup.length ? '' : 'fletcher,mitts'))
@@ -410,12 +352,16 @@ export async function farm(argv = process.argv.slice(2)) {
 		console.warn('Mitts is not available in this checkout; skipping her matchups.')
 	}
 	if (!heroes.length) throw new Error('No available heroes requested')
-	const crossOnly = values['cross-only']
-	const pairs = farmPairs(heroes, crossOnly).length
+	const pairList = farmPairs(heroes, crossOnly)
+	const pairs = pairList.length
 	if (!pairs) throw new Error('--cross-only needs at least two heroes')
 	const variants = parseSets(values.set)
-	const matches = Math.ceil(requestedMatches / pairs) * pairs
-	if (!Number.isSafeInteger(matches) || seed + matches / pairs - 1 > 0xffffffff)
+	const round = (n) => Math.ceil(n / pairs) * pairs
+	const matches = round(requestedMatches)
+	const cap = values.until ? round(Number(values.until)) : matches
+	if (!Number.isSafeInteger(cap) || cap < matches)
+		throw new Error('--until must be a match count at least --matches')
+	if (seed + cap / pairs - 1 > 0xffffffff)
 		throw new Error('Match count exceeds the available uint32 seeds')
 	if (matches !== requestedMatches)
 		console.log(
@@ -423,7 +369,7 @@ export async function farm(argv = process.argv.slice(2)) {
 		)
 	// Plain git worktrees have no jj repo; fall back to git's HEAD.
 	const head = (command, args) => {
-		const revision = spawnSync(command, args, { encoding: 'utf8' })
+		const revision = spawnSync(command, args, { encoding: 'utf8', cwd: ROOT })
 		const id = revision.stdout?.trim()
 		return revision.status === 0 && /^[0-9a-f]{40}$/.test(id ?? '') ? id : null
 	}
@@ -431,67 +377,137 @@ export async function farm(argv = process.argv.slice(2)) {
 		head('jj', ['log', '-r', '@', '--no-graph', '-T', 'commit_id']) ??
 		head('git', ['rev-parse', 'HEAD'])
 	if (!commit) throw new Error('Cannot record the farm commit: jj log and git rev-parse failed')
-	const runId = crypto.randomUUID()
-	const tasks = variants.length * matches
-	console.log(
-		`run=${runId} commit=${commit} matches=${matches}${variants.length > 1 ? ` x ${variants.length} variants` : ''}`,
-	)
-	const workers = []
-	const rollup = variants.map(() => new Map())
-	const heroRollup = variants.map(() => new Map())
-	let completed = 0,
-		wins = 0
-	try {
-		await Promise.all(
-			Array.from(
-				{ length: Math.min(jobs, matches) },
-				(_, job) =>
-					new Promise((resolve, reject) => {
-						const worker = new Worker(new URL(import.meta.url), {
-							workerData: {
-								job,
-								jobs: Math.min(jobs, tasks),
-								matches,
-								heroes,
-								crossOnly,
-								variants,
-								summary: values.summary,
-								difficulty: values.difficulty,
-								seed,
-								maxSeconds,
-								directory: values.out,
-								runId,
-								commit,
-							},
-						})
-						workers.push(worker)
-						worker.on('message', (result) => {
-							completed++
-							if (result.winner) wins++
-							if (values.summary) {
-								rollupMatch(rollup[result.variant], heroRollup[result.variant], result)
-								process.stderr.write('.')
-								return
-							}
-							console.log(
-								`${completed}/${tasks} ${result.matchId} seed=${result.seed} winner=${result.winner ?? 'none'} ${result.duration.toFixed(1)}s ${result.reason}`,
-							)
-						})
-						worker.on('error', reject)
-						worker.on('exit', (code) =>
-							code === 0 ? resolve() : reject(new Error(`Farm worker exited ${code}`)),
-						)
-					}),
-			),
-		)
-	} finally {
-		await Promise.all(workers.map((worker) => worker.terminate()))
+	// Sides: the base revision first, when there is one, then the working copy.
+	const sides = []
+	if (values.base) {
+		const base = checkoutRevision(ROOT, values.base)
+		sides.push({ label: `base ${values.base}`, root: base.root, commit: base.commit })
 	}
-	if (values.summary) {
+	sides.push({ label: 'working copy', root: ROOT, commit })
+	for (const side of sides) side.cells = variants.map(() => emptyCell())
+	const runId = crypto.randomUUID()
+	const perRound = sides.length * variants.length * matches
+	console.log(
+		`run=${runId} commit=${commit.slice(0, 12)}${values.base ? ` base=${values.base} (${sides[0].commit.slice(0, 12)})` : ''} matches=${matches}${values.until ? ` until ${cap}` : ''}${variants.length > 1 ? ` x ${variants.length} variants` : ''}${sides.length > 1 ? ' x 2 revisions' : ''}${idle.length ? ` idle=${idle}` : ''}`,
+	)
+	const { cores, budget, release } = await reserveCores(Math.min(jobs, perRound), {
+		log: (line) => console.log(line),
+		label: `${values.base ? 'A/B ' : ''}${heroes.join(' v ')}`,
+	})
+	if (cores < Math.min(jobs, perRound))
+		console.log(`Sharing the machine: ${cores} of ${budget} cores free, running ${cores} jobs.`)
+
+	// Match `index` across rounds plays seed + index / pairs; every side and variant plays it.
+	const task = (index, side, variant) => {
+		const pair = pairList[index % pairs]
+		const taskSeed = seed + Math.floor(index / pairs)
+		const drawn = farmLineups(pair, taskSeed)
+		return {
+			side,
+			variant,
+			seed: taskSeed,
+			lineups: drawn,
+			// Lineups report the heroes their random seats drew.
+			pair: pair.some((team) => team.includes(',')) ? drawn.map((l) => l.join(',')) : pair,
+			matchId: `${runId}-${sides.length > 1 ? `s${side}-` : ''}${String(index * variants.length + variant + 1).padStart(5, '0')}`,
+		}
+	}
+	const workers = []
+	let completed = 0,
+		wins = 0,
+		played = 0
+	const failed = new Promise((_, reject) => (workers.reject = reject))
+	const shared = {
+		summary,
+		sample: !!values.report,
+		difficulty: values.difficulty,
+		idle,
+		practice: !!values.practice,
+		maxSeconds,
+		directory: values.out,
+		runId,
+		roots: sides.map((side) => side.root),
+		commits: sides.map((side) => side.commit),
+		variants,
+	}
+
+	const runRound = (from, to) => {
+		const queue = []
+		for (let index = from; index < to; index++)
+			for (let variant = 0; variant < variants.length; variant++)
+				for (let side = 0; side < sides.length; side++) queue.push(task(index, side, variant))
+		const total = queue.length
+		let done = 0
+		return Promise.race([
+			failed,
+			new Promise((resolve) => {
+				const feed = (worker) => {
+					const next = queue.shift()
+					if (next) worker.postMessage(next)
+				}
+				for (const worker of workers) {
+					worker.removeAllListeners('message')
+					worker.on('message', (result) => {
+						completed++
+						done++
+						if (result.winner) wins++
+						if (summary) {
+							addResult(sides[result.side].cells[result.variant], result)
+							process.stderr.write('.')
+						} else
+							console.log(
+								`${completed}/${total} ${result.matchId} seed=${result.seed} winner=${result.winner ?? 'none'} ${result.duration.toFixed(1)}s ${result.reason}`,
+							)
+						if (done === total) resolve()
+						else feed(worker)
+					})
+					feed(worker)
+				}
+			}),
+		])
+	}
+	let stopping = false
+	try {
+		for (let i = 0; i < cores; i++) {
+			const worker = new Worker(new URL(import.meta.url), { workerData: shared })
+			worker.on('error', (error) => workers.reject(error))
+			worker.on('exit', (code) => {
+				if (!stopping) workers.reject(new Error(`Farm worker exited unexpectedly (${code})`))
+			})
+			workers.push(worker)
+		}
+		for (;;) {
+			const next = Math.min(played + matches, cap)
+			await runRound(played, next)
+			played = next
+			if (!values.until) break
+			const { open, all } = undecided(sides.at(-1).cells, sides.length > 1 ? sides[0].cells : null)
+			process.stderr.write('\n')
+			if (!open || played >= cap) {
+				console.log(
+					`Stopped at ${played} matches per ${sides.length > 1 ? 'side and ' : ''}variant: ${all - open} of ${all} headline rates decided${open ? `, cap ${cap} reached` : ''}.`,
+				)
+				break
+			}
+			console.log(
+				`${played} matches: ${open} of ${all} headline rates undecided, adding ${Math.min(matches, cap - played)}.`,
+			)
+		}
+	} finally {
+		stopping = true
+		await Promise.all(workers.map((worker) => worker.terminate()))
+		release()
+	}
+	if (summary) {
 		process.stderr.write('\n')
-		console.log(summaryTable(variants, rollup))
-		console.log('\n' + heroTable(variants, heroRollup))
-		console.log(`${completed} matches: ${wins} winners, ${completed - wins} timeouts`)
+		const labels = variants.map(variantLabel)
+		if (values.until)
+			console.log('Exploratory stopping: intervals are not sequentially valid confidence bounds.')
+		console.log(summarySections(sides, labels))
+		if (values.report) console.log(reportSections(sides))
+		console.log(
+			`${completed} matches: ${wins} winners, ${completed - wins} timeouts${sides.length > 1 ? `; base ${values.base} = ${sides[0].commit.slice(0, 12)}` : ''}`,
+		)
 		return
 	}
 	console.log(`${completed} matches: ${wins} winners, ${completed - wins} timeouts; ${values.out}`)
@@ -499,29 +515,20 @@ export async function farm(argv = process.argv.slice(2)) {
 
 if (!isMainThread) {
 	await RAPIER.init({})
-	const { heroes, crossOnly, variants, matches } = workerData
-	const pairs = farmPairs(heroes, crossOnly).length
-	for (let task = workerData.job; task < variants.length * matches; task += workerData.jobs) {
-		const variant = Math.floor(task / matches),
-			index = task % matches
-		applyVariant(variants[variant])
-		// Every variant plays the same seeds, so a sweep compares like with like.
-		const seed = workerData.seed + Math.floor(index / pairs)
-		const pair = farmPairs(heroes, crossOnly)[index % pairs]
-		parentPort.postMessage({
-			...(await runFarmMatch({
-				...workerData,
-				seed,
-				matchId: `${workerData.runId}-${String(task + 1).padStart(5, '0')}`,
-				roster: farmRoster(heroes, workerData.difficulty, index % pairs, crossOnly, seed),
-			})),
-			variant,
-			// Lineups report the heroes their random seats drew.
-			pair: pair.some((team) => team.includes(','))
-				? farmLineups(pair, seed).map((lineup) => lineup.join(','))
-				: pair,
+	const { roots, commits, variants } = workerData
+	parentPort.on('message', async (t) => {
+		const mods = await gameModules(roots[t.side])
+		applyVariant(variants[t.variant], mods)
+		const result = await runFarmMatch({
+			...workerData,
+			mods,
+			seed: t.seed,
+			matchId: t.matchId,
+			commit: commits[t.side],
+			roster: matchRoster(mods, t.lineups, workerData),
 		})
-	}
+		parentPort.postMessage({ ...result, side: t.side, variant: t.variant, pair: t.pair })
+	})
 } else if (import.meta.main) {
 	farm().catch((error) => {
 		console.error(error.message)
