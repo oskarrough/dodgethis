@@ -219,7 +219,7 @@ export const tune = {
 	// The hero's movement profile (core/body.js). Obedience first: full speed in ~25 ms, a dead stop, no air.
 	tower: {
 		x: 18,
-		hp: 2400,
+		hp: 1400,
 		damage: 165,
 		rate: 1,
 		range: 7.75,

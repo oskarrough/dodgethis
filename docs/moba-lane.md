@@ -29,7 +29,7 @@ Every range is from the source's centre to the target's edge. There is no fort o
 
 |       | x   | HP   | Damage | Rate | Range | Radius |
 | ----- | --- | ---- | ------ | ---- | ----- | ------ |
-| Tower | ±18 | 2400 | 165    | 1/s  | 7.75  | 1.2    |
+| Tower | ±18 | 1400 | 165    | 1/s  | 7.75  | 1.2    |
 | Core  | ±40 | 6000 | 270    | 1/s  | 9     | 2.5    |
 
 Damage in the table is early-phase damage. At 6:00 guns deal one twentieth of it. Early guns make a three-hero siege need its wave or the Ball; the late reduction lets bot matches close instead of trading defences forever.
@@ -48,7 +48,7 @@ Damage in the table is early-phase damage. At 6:00 guns deal one twentieth of it
 - **Carry:** a 0.75 s pickup while standing on it, interrupted by damage. Eligible heroes from both teams contest it: no channel starts or continues, and a contested cue plays once until the contest clears. Otherwise the nearest eligible hero starts the pickup. The carrier moves at ×0.85 and can't attack, cast or mount. Dying drops the Ball.
 - **Throw:** any slot or `primary` press throws toward the aim after a visible 0.3 s windup. Orders (including held RMB resends) queue through the windup. Only stop or cancel aborts it with a deny cue; death drops it. It's a line skillshot (range 5, 14 m/s, radius 0.7) that counts its first hit only. An enemy hero takes 300 damage and a 0.75 s stun, and the Ball drops there. A vulnerable enemy structure takes 30% of its max HP, its guns go silent for 6 s, and the Ball is spent in a confetti burst. An invulnerable structure, a hedge or a pillar bounces it to the ground, and a miss lands at full range. A dropped Ball can't be picked up for 1 s.
 - **Interception contract:** `createSim({ intercept })` sends ordinary projectiles and the Ball through the same pre-collision hook: `{ kind: 'projectile'|'ball', shot, from, to, tick, ball, obstacles }`. The swept segment stops at cover or the map boundary; catch cones test it before body damage. Return `true` to consume the flight, or mutate the shot and return `false` to redirect it. `ball.give(hero)` immediately carries it without a pickup channel or refreshed lifetime (false for dead heroes or an expired/missing Ball). Backboard calls `ball.drop('backboard', point)` and returns true; this preserves expiry and starts the one-second pickup lock. Mitts and Carom's actual abilities remain the hero slice.
-- **Why range 5:** it reaches a tower's centre from 6.9 m and a core's from 8.2 m. The guns reach a hero's centre from 8.2 and 9.45 m, so scoring always means standing in range, and the defenders' best answer is a dodge. The Ball's 720 damage leaves a tower at 1,680 HP. Three heroes' basics plus a wave finish that in about 4.7 s, within the 6 s silence; one hero plus a wave needs about 9.5 s, so the guns resume before the solo siege finishes.
+- **Why range 5:** it reaches a tower's centre from 6.9 m and a core's from 8.2 m. The guns reach a hero's centre from 8.2 and 9.45 m, so scoring always means standing in range, and the defenders' best answer is a dodge. The Ball's 720 damage leaves a tower at 680 HP. Three heroes' basics plus a wave finish that in about 2 s; one hero plus a wave needs about 4 s, so even a solo siege finishes within the 6 s silence.
 
 ## Match timer and state
 

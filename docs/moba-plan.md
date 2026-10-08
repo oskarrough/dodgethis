@@ -10,7 +10,7 @@ A small Heroes of the Storm-style mode: the smallest thing that already feels li
 
 |       | HP   | Damage | Rate | Range | Targets                    |
 | ----- | ---- | ------ | ---- | ----- | -------------------------- |
-| Tower | 2400 | 165    | 1/s  | 7.75  | nearest minion, then hero  |
+| Tower | 1400 | 165    | 1/s  | 7.75  | nearest minion, then hero  |
 | Core  | 6000 | 270    | 1/s  | 9     | same; death ends the match |
 
 Early gun damage is shown above. At 6:00 guns deal 5% of it, waves accelerate and brutes join. The stronger early guns protect a weak human's team; late pressure stops mirror bots from defending forever. Structure HP and the Ball's damage fraction are unchanged.
