@@ -307,12 +307,6 @@ export function createLobbyProps(scene, el, gallery, readySeats, local, audio) {
 			},
 		})
 	}
-	for (const p of galleryProps)
-		inspectTarget('difficulty:' + p.stand.id, p.card, { x: p.stand.x, y: 0, z: p.stand.z }, () => ({
-			type: 'difficulty',
-			difficulty: p.stand.id,
-			selected: p.stand.id === gallery.difficulty,
-		}))
 	for (const p of seatProps)
 		for (const h of p.holograms)
 			inspectTarget(

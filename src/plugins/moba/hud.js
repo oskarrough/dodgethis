@@ -485,14 +485,6 @@ export function createHud({ lobby = false, layout, pieces } = {}) {
 				if (!unit || unit.dead) return null
 				if (unit.card) {
 					const prop = unit.card()
-					if (prop.type === 'difficulty')
-						return {
-							title: prop.difficulty[0].toUpperCase() + prop.difficulty.slice(1),
-							tag: prop.selected ? 'picked' : 'difficulty',
-							summary: 'Aim here and hit the magnet with a real cast to pick these bots.',
-							rows: [],
-							notes: ['G / d-pad down shoots the next choice.'],
-						}
 					const definition = heroDefinition(prop.heroId)
 					const trait = heroTrait(prop.heroId)
 					return {

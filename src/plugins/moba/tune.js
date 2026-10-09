@@ -400,7 +400,7 @@ export const tune = {
 		gallery: {
 			// Authored props apply on restart; aim/contact tests and settling are live.
 			x: 0,
-			z: 5.1,
+			z: 5.7,
 			spacing: 2.0,
 			radius: 0.4,
 			aimRadius: 2,
@@ -413,7 +413,7 @@ export const tune = {
 			overshoot: 0.12,
 			ringY: 0.18,
 			ringWidth: 0.06,
-			firingMark: { x: 0, z: 3.9 },
+			firingMark: { x: 0, z: 4.5 },
 			shot: { speed: 20, range: 18, radius: 0.2, damage: 0 },
 			shotSound: { freq: 790, slideTo: 350, dur: 0.09, gain: 0.07, type: 'sine' },
 			pickSound: { freq: 140, slideTo: 420, dur: 0.2, gain: 0.1, type: 'sine' },
