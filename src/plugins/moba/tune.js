@@ -918,6 +918,8 @@ export const tune = {
 		feedbackDecay: 12,
 		xpLife: 1,
 		xpRise: 1.5,
+		popIn: 0.08,
+		popSpread: 0.6,
 	},
 	hero: {
 		hp: 1400,

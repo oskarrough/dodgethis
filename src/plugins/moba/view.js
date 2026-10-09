@@ -64,25 +64,35 @@ export function createView(scene, smooth) {
 	const health = createHealthBars()
 	const barColors = { A: flat('teamA'), B: flat('teamB') }
 
+	// Floating text over the field: pop(text, point, { color }) and it rises, fades and cleans up.
 	const xpLabels = []
-	function xp(amount, point) {
+	function pop(text, point, { color = '#ffd76a' } = {}) {
+		const v = tune.laneView
 		const canvas = document.createElement('canvas')
-		canvas.width = tune.laneView.xpWidth
-		canvas.height = tune.laneView.xpHeight
+		canvas.width = v.xpWidth
+		canvas.height = v.xpHeight
 		const context = canvas.getContext('2d')
-		context.font = `bold ${tune.laneView.xpFont}px monospace`
-		context.fillStyle = '#ffd76a'
+		context.font = `bold ${v.xpFont}px monospace`
 		context.textAlign = 'center'
-		context.fillText(`+${amount} XP`, canvas.width / 2, canvas.height * tune.laneView.xpBaseline)
+		context.lineJoin = 'round'
+		context.lineWidth = 6
+		context.strokeStyle = '#1a1410'
+		context.strokeText(String(text), canvas.width / 2, canvas.height * v.xpBaseline)
+		context.fillStyle = color
+		context.fillText(String(text), canvas.width / 2, canvas.height * v.xpBaseline)
 		const texture = new THREE.CanvasTexture(canvas)
-		const material = new THREE.SpriteMaterial({ map: texture, depthWrite: false })
+		const material = new THREE.SpriteMaterial({
+			map: texture,
+			depthWrite: false,
+			transparent: true,
+		})
 		const mesh = new THREE.Sprite(material)
 		mesh.layers.set(FORWARD_LAYER)
-		mesh.position.set(point.x, tune.laneView.xpY, point.z)
-		mesh.scale.set(tune.laneView.xpScale, tune.laneView.xpScale / 2, 1)
+		mesh.position.set(point.x + (Math.random() - 0.5) * v.popSpread, v.xpY, point.z)
 		group.add(mesh)
-		xpLabels.push({ mesh, texture, material, life: tune.laneView.xpLife })
+		xpLabels.push({ mesh, texture, material, life: v.xpLife, age: 0 })
 	}
+	const xp = (amount, point) => pop(`+${amount} XP`, point)
 
 	// --- Skillshots: a bright bolt with a trail that grows from the hand. ---
 	const boltGeometry = own(new THREE.CapsuleGeometry(0.12, 0.7, 4, 8).rotateX(Math.PI / 2))
@@ -134,8 +144,14 @@ export function createView(scene, smooth) {
 	) {
 		for (let i = xpLabels.length - 1; i >= 0; i--) {
 			const label = xpLabels[i]
+			const v = tune.laneView
 			label.life -= dt
-			label.mesh.position.y += dt * tune.laneView.xpRise
+			label.age += dt
+			label.mesh.position.y += dt * v.xpRise * Math.max(0.2, label.life / v.xpLife)
+			const grow = Math.min(1, label.age / v.popIn)
+			const size = v.xpScale * (0.7 + 0.3 * grow + 0.15 * Math.sin(grow * Math.PI))
+			label.mesh.scale.set(size, size / 2, 1)
+			label.material.opacity = Math.min(1, label.life / (v.xpLife * 0.4))
 			if (label.life <= 0) {
 				group.remove(label.mesh)
 				label.texture.dispose()
@@ -220,7 +236,7 @@ export function createView(scene, smooth) {
 		for (const x of owned) x.dispose()
 	}
 
-	return { ping, xp, bolt, unbolt, update, health: health.update, reset, dispose }
+	return { ping, pop, xp, bolt, unbolt, update, health: health.update, reset, dispose }
 }
 
 const PING = 0.25

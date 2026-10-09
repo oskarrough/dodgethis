@@ -357,6 +357,8 @@ export function createFeedback({
 								: effects.hit,
 						fact,
 					)
+				if (fact.damage >= 0.5)
+					view.pop?.(Math.round(fact.damage), fact.point, { color: onMe ? '#ff6a5a' : '#fff6e6' })
 				if (onMe) {
 					camera.shake(tune.juice.shakeTaken)
 					input.rumble(0.2, 0.3, 60)
