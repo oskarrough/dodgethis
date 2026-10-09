@@ -612,6 +612,26 @@
 			.mute.muted {
 				background: color-mix(in srgb, var(--ui-red) 30%, #fffdf4);
 			}
+			/* Fullscreen toggle, left of mute: edge panning needs the real screen edge. */
+			.fullscreen {
+				position: fixed;
+				bottom: 12px;
+				right: 68px;
+				z-index: 20;
+				--sticker-radius: 50%;
+				width: 48px;
+				height: 48px;
+				padding: 0;
+				display: grid;
+				place-items: center;
+			}
+			.fullscreen[hidden] {
+				display: none;
+			}
+			.fullscreen svg {
+				width: 22px;
+				height: 22px;
+			}
 
 			/* Splash title — big candy letters over the hub. The hub stays playable
 			   underneath (pointer-events: none); this is pure signage. Letters pop in
@@ -1012,6 +1032,24 @@
 			aria-pressed="false"
 		>
 			🔊
+		</button>
+		<button
+			class="fullscreen sticker"
+			type="button"
+			title="Fullscreen"
+			aria-label="Fullscreen"
+			hidden
+		>
+			<svg
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="3"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+			>
+				<path d="M3 9V3h6M21 9V3h-6M3 15v6h6M21 15v6h-6" />
+			</svg>
 		</button>
 		<div class="overlay" hidden></div>
 		<div class="splash" hidden>

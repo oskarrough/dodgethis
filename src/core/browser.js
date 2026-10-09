@@ -102,6 +102,27 @@ export async function createBrowserApp() {
 	})
 	renderMute()
 
+	// Edge panning wants the cursor to hit the real screen edge, so offer fullscreen where it exists.
+	const fullscreenBtn = document.querySelector('.fullscreen')
+	const fullscreenIcon = fullscreenBtn.querySelector('path')
+	function renderFullscreen() {
+		const on = Boolean(document.fullscreenElement)
+		fullscreenIcon.setAttribute(
+			'd',
+			on ? 'M9 3v6H3M15 3v6h6M9 21v-6H3M15 21v-6h6' : 'M3 9V3h6M21 9V3h-6M3 15v6h6M21 15v6h-6',
+		)
+		fullscreenBtn.title = on ? 'Exit fullscreen' : 'Fullscreen'
+		fullscreenBtn.setAttribute('aria-label', fullscreenBtn.title)
+	}
+	fullscreenBtn.hidden = !document.fullscreenEnabled
+	fullscreenBtn.addEventListener('click', () => {
+		if (document.fullscreenElement) document.exitFullscreen()
+		else document.documentElement.requestFullscreen().catch(() => {})
+		fullscreenBtn.blur() // keep Space and Enter for the game
+	})
+	document.addEventListener('fullscreenchange', renderFullscreen)
+	renderFullscreen()
+
 	// --- Collider debug overlay (GUI toggle) ----------------------------------
 	const debugGeom = new THREE.BufferGeometry()
 	const debugLines = new THREE.LineSegments(

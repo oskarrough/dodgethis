@@ -81,6 +81,7 @@ export function createLobby({
 		['.front-lobby .online-entry', 1, -1],
 		['.moba-hud:not(.moba-unit)', 0, 1],
 		['.mute', 1, 1],
+		['.fullscreen', 1, 1],
 	]
 	let slides = []
 	function slide(node, x, y, { at = 0, time, out = false }) {
