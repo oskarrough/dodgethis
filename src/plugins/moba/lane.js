@@ -15,6 +15,8 @@ export const inReach = (a, b, range) => {
 
 // Plain agents: no character controllers, paths or render-time decisions.
 export function createLane({
+	layout,
+	structures: withStructures = true,
 	heroes,
 	present,
 	damage,
@@ -40,28 +42,26 @@ export function createLane({
 	// Each enemy tower a team takes adds one minion to every later wave of theirs.
 	const reinforcements = { A: 0, B: 0 }
 	const match = { winner: null, endedTick: null, phase: 'early' }
-	const structures = ['tower', 'core'].flatMap((kind) =>
-		['A', 'B'].map((team) => ({
-			id: `${kind}-${team}`,
-			team,
-			kind,
-			structure: true,
-			hp: tune[kind].hp,
-			maxHp: tune[kind].hp,
-			dead: false,
-			body: makeBody(team === 'A' ? -tune[kind].x : tune[kind].x, 0, team, kind),
-			target: null,
-			forced: null,
-			aggroUntil: 0,
-			silentUntil: 0,
-			attackTick: 0,
-			attack: null,
-		})),
-	)
+	const structures = (withStructures ? layout.structures : []).map(({ id, kind, team, x, z }) => ({
+		id,
+		team,
+		kind,
+		structure: true,
+		hp: tune[kind].hp,
+		maxHp: tune[kind].hp,
+		dead: false,
+		body: makeBody(x, z, team, kind),
+		target: null,
+		forced: null,
+		aggroUntil: 0,
+		silentUntil: 0,
+		attackTick: 0,
+		attack: null,
+	}))
 	const vulnerable = (unit) =>
 		!unit.structure ||
 		unit.kind === 'tower' ||
-		structures.find((s) => s.team === unit.team && s.kind === 'tower').dead
+		structures.find((s) => s.team === unit.team && s.kind === 'tower')?.dead !== false
 	const find = (id) =>
 		minions.find((u) => u.id === id && !u.dead) ??
 		structures.find((u) => u.id === id && !u.dead) ??
@@ -406,10 +406,16 @@ export function createLane({
 				continue
 			}
 			if (tower) continue
+			const core = structures.find((s) => s.kind === 'core' && s.team !== unit.team)
+			const path = layout.lanes[0]?.path
+			const end =
+				core?.body.position ??
+				(unit.team === 'A' ? path?.at(-1) : path?.[0]) ??
+				layout.spawns[unit.team === 'A' ? 'B' : 'A']
 			const goal = target?.body.position ??
 				unit.returnGoal ?? {
-					x: (unit.team === 'A' ? 1 : -1) * (tune.core.x - tune.core.radius - 1),
-					z: unit.file,
+					x: end.x - (core ? (unit.team === 'A' ? 1 : -1) * (tune.core.radius + 1) : 0),
+					z: end.z + unit.file,
 				}
 			if (
 				!unit.path ||

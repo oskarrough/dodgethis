@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import { PALETTE } from '../../core/style.js'
 import { clampMap } from './obstacles.js'
 import { tune } from './tune.js'
+import { DEFAULT_MAP, onlineMaps } from './maps/index.js'
 import { tune as frontTune } from './front/tune.js'
 import { createBackdrop, easeShot } from './front/backdrop.js'
 import { startLoading } from './front/descent.js'
@@ -450,7 +451,10 @@ export function createLobby({
 		)
 		if (app.session.shared)
 			handoff = {
-				setup: { ...structuredClone(setup), map: 'overthrow' },
+				setup: {
+					...structuredClone(setup),
+					map: onlineMaps.includes(setup.map) ? setup.map : DEFAULT_MAP,
+				},
 				roster: readySeats.laneRoster(hero.id, setup.difficulty, setup.seed),
 			}
 		loadLane()
@@ -687,7 +691,7 @@ export function createLobby({
 						roster.filter((p) => p.team === team).length ===
 						readySeats.seats.filter((s) => s.team === team).length,
 				) ||
-				matchSetup?.map !== 'overthrow' ||
+				!onlineMaps.includes(matchSetup?.map) ||
 				!['easy', 'normal', 'hard'].includes(matchSetup.difficulty) ||
 				!Number.isSafeInteger(matchSetup.seed) ||
 				matchSetup.seed < 0 ||

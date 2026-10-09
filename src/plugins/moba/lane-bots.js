@@ -1,0 +1,205 @@
+import { STEP } from '../../core/app.js'
+import { tune } from './tune.js'
+import { walkable } from './obstacles.js'
+
+const distance = (a, b) => Math.hypot(a.x - b.x, a.z - b.z)
+
+// This module owns its delayed population and all consequences of fighting under guns.
+export const laneBots = {
+	botView(sim, unit) {
+		const laneUnit = (u) => ({
+			...unit(u),
+			structure: !!u.structure,
+			vulnerable: !u.structure || sim.lane.vulnerable(u),
+			silent: (u.silentUntil ?? 0) > sim.tick,
+		})
+		return {
+			minions: sim.lane.minions.filter((u) => !u.dead).map(laneUnit),
+			structures: sim.lane.structures.map(laneUnit),
+			globes: sim.lane.globes.map((g) => ({ ...g, pos: { ...g.pos } })),
+		}
+	},
+	createBot() {
+		let lane
+		return {
+			botPerceive(ctx) {
+				const { perceived, team, p, h, abilities, b, near } = ctx
+				const minions = perceived.minions
+				const guards = perceived.structures.filter((u) => !u.dead && u.team !== team)
+				const structures = guards.filter((u) => u.vulnerable)
+				const wave = minions.filter((u) => u.team === team)
+				const guardOk = (at, victims = [], radius = 0) =>
+					guards.every((g) => {
+						// A silenced guard can't call for help.
+						if (g.silent) return true
+						const range = tune[g.kind].range
+						if (
+							distance(g.pos, at) > range + h.body.radius ||
+							!victims.some((u) => distance(g.pos, u.pos) <= range + u.radius + radius)
+						)
+							return true
+						const scale = 1 + tune.levels.growth * (h.level - 1)
+						const burst =
+							scale *
+							((h.definition.basic?.damage ?? 0) * b.burstWindow +
+								abilities
+									.filter(
+										([slot, a]) =>
+											['shot', 'zone'].includes(a.kind) && !h.cd[Number(slot.slice(-1)) - 1],
+									)
+									.reduce((damage, [, a]) => damage + (a.stats.damage ?? 0), 0))
+						return (
+							victims.some((u) => u.hp <= burst) &&
+							h.hp -
+								b.towerExposure *
+									tune[g.kind].damage *
+									(perceived.tick * STEP >= tune.match.late ? tune.match.lateGunDamage : 1) >
+								h.maxHp * b.retreatHp
+						)
+					})
+
+				// Spend an already-paid screen before staging for a future Ball.
+				const siege = structures[0]
+				const escort = siege ? near(wave, siege.pos, tune[siege.kind].range) : []
+				const escortStrength = escort.reduce(
+					(count, u) => count + (u.kind === 'brute' ? b.bruteEscort : 1),
+					0,
+				)
+				const tanked = siege && minions.some((u) => u.id === siege.target && u.team === team)
+				const sieging =
+					siege &&
+					(siege.silent ||
+						(tanked &&
+							(escortStrength >= b.siegeMinions ||
+								(escortStrength > 0 && siege.hp <= siege.maxHp * b.siegeLowHp))))
+
+				lane = { minions, wave, siege, sieging }
+				return {
+					blockers: [...minions.filter((u) => u.team !== team), ...guards],
+					pressure: guards.filter((u) => distance(u.pos, p) <= tune[u.kind].range + h.body.radius)
+						.length,
+					guardOk: [guardOk],
+					objectives: structures,
+				}
+			},
+			botGoals: {
+				retreat(ctx) {
+					const { perceived, team, p, side, h, b, sim, move, frame } = ctx
+					const globe = perceived.globes.find(
+						(g) =>
+							g.team === team &&
+							distance(g.pos, p) <= b.globeRange &&
+							side * (g.pos.x - p.x) >= 0 &&
+							walkable(g.pos.x, g.pos.z, h.body.radius, 0, sim.obstacles),
+					)
+					move(globe?.pos ?? h.spawn)
+					return frame
+				},
+				commitSiege(ctx) {
+					const { file, b, target, safe, attackSpot, setState, attack, frame } = ctx
+					const { siege, sieging } = lane
+					// Only the centre file ignores a low hero it can safely finish.
+					const finish =
+						file !== b.siegeFile &&
+						target &&
+						target.hp < target.maxHp * b.chaseHp &&
+						safe(attackSpot, [target])
+					if (!sieging || finish || ctx.preferredTargets.includes(target?.id)) return null
+					setState('push')
+					attack(siege)
+					return frame
+				},
+				defend(ctx) {
+					const {
+						perceived,
+						team,
+						p,
+						zoneAbility,
+						b,
+						target,
+						advantage,
+						k,
+						setState,
+						cast,
+						zoneSlot,
+						attack,
+						frame,
+					} = ctx
+					const homeGuard = perceived.structures.find((u) => !u.dead && u.team === team)
+					const invaders = lane.minions.filter(
+						(u) =>
+							u.team !== team &&
+							homeGuard &&
+							distance(u.pos, homeGuard.pos) <= tune[homeGuard.kind].range &&
+							distance(u.pos, p) <= (zoneAbility?.stats.range ?? b.fightRange),
+					)
+					if (!invaders.length || (target && advantage >= -k.aggression)) return null
+					setState('defend')
+					const focus = invaders.sort((a, c) => a.hp - c.hp || a.id.localeCompare(c.id))[0]
+					if (
+						invaders.length >= b.clearMinions &&
+						distance(p, focus.pos) <= (zoneAbility?.stats.range ?? 0) &&
+						cast(zoneSlot, focus.pos)
+					)
+						return frame
+					attack(focus)
+					return frame
+				},
+				siege({ setState, attack, frame }) {
+					if (!lane.sieging) return null
+					setState('push')
+					attack(lane.siege)
+					return frame
+				},
+				advance(ctx) {
+					const {
+						perceived,
+						team,
+						side,
+						p,
+						h,
+						b,
+						file,
+						melee,
+						move,
+						attack,
+						safe,
+						frame,
+						setState,
+					} = ctx
+					const { minions, wave, siege } = lane
+					setState('advance')
+					if (siege && distance(p, siege.pos) <= tune[siege.kind].range + h.body.radius) {
+						move({
+							x: siege.pos.x + side * (tune[siege.kind].range + h.body.radius + b.siegeBackoff),
+							z: file,
+						})
+						return frame
+					}
+					const front = [...wave].sort(
+						(a, c) => side * (a.pos.x - c.pos.x) || a.id.localeCompare(c.id),
+					)[0]
+					const guard = perceived.structures.find((u) => !u.dead && u.team === team)
+					const goal = {
+						x: (front?.pos.x ?? guard?.pos.x ?? h.spawn.x) + side * b.laneBehind,
+						z: file,
+					}
+					// While no enemy minion is on our half, hold the lobby edge instead of waiting at home.
+					if (!minions.some((u) => u.team !== team && side * u.pos.x > 0))
+						goal.x = side * Math.min(side * goal.x, b.openingX)
+					const creep = minions
+						.filter(
+							(u) =>
+								u.team !== team &&
+								distance(u.pos, p) <=
+									(melee ? b.fightRange : (h.definition.basic?.range ?? 0)) + u.radius,
+						)
+						.sort((a, c) => a.hp - c.hp || a.id.localeCompare(c.id))[0]
+					if (creep && safe(p)) attack(creep)
+					else move(goal)
+					return frame
+				},
+			},
+		}
+	},
+}

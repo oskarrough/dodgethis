@@ -7,7 +7,8 @@ import { tune } from './tune.js'
 import { floorShape } from './lobby-floor.js'
 import { createMatchTerrain } from './match-terrain.js'
 import { createFlagfallWater, loadFlagfallTile } from './flagfall-water.js'
-import { FLOOR, mapLayout, buildColliders } from './obstacles.js'
+import { FLOOR, buildColliders } from './obstacles.js'
+import { DEFAULT_MAP, mapLayout } from './maps/index.js'
 export { FLOOR, PILLARS, SPAWN, walkable, clampWalkable } from './obstacles.js'
 
 // Selection, loading and gameplay share this owner, not the browser's dodgeball world.
@@ -20,14 +21,14 @@ export function createMapScope(scene, RAPIER, step) {
 	return {
 		// `kind` picks the terrain: lane, Flagfall walkabout, or the lobby pick screen.
 		// Switching rebuilds the terrain on the same world; the previous run is already aborted.
-		start(run, create, kind = 'overthrow') {
+		start(run, create, kind = DEFAULT_MAP) {
 			if (live) throw new Error('MOBA already has a live sim')
 			if (!world) {
 				world = new RAPIER.World({ x: 0, y: coreTune.physics.gravity, z: 0 })
 				world.timestep = step
 			}
-			// Authored lobby/Flagfall layouts read tune on restart; rebuild visuals and colliders together.
-			if (built !== kind || kind === 'lobby' || kind === 'flagfall') {
+			// Authored layouts read tune on restart; rebuild visuals and colliders together.
+			if (built !== kind || kind === 'lobby' || mapLayout(kind).settings) {
 				unbuild?.()
 				unbuild = buildMap(scene, world, RAPIER, kind)
 				built = kind
@@ -70,11 +71,11 @@ export function createMapScope(scene, RAPIER, step) {
 
 // Ground prints and cover share the active layout's collision descriptors.
 // The 'lobby' kind draws only the lobby floor's cream ground: no walls, no pillars.
-export function buildMap(scene, world, RAPIER, kind = 'overthrow') {
+export function buildMap(scene, world, RAPIER, kind = DEFAULT_MAP) {
 	const layout = mapLayout(kind)
 	const scale = layout.settings?.scale ?? 1
 	const m = { ...tune.map }
-	if (kind === 'flagfall')
+	if (layout.settings)
 		for (const key of [
 			'hedgeHeight',
 			'wallHeight',
@@ -94,7 +95,7 @@ export function buildMap(scene, world, RAPIER, kind = 'overthrow') {
 		owned.push(mat)
 		return mat
 	}
-	const finish = kind === 'flagfall' ? layout.settings.finish : null
+	const finish = layout.settings?.finish ?? null
 	const shade = material('courtShade')
 	const cream = material('cream', { flat: true })
 	const scenery = material('scenery')
@@ -199,7 +200,7 @@ diffuseColor.rgb *= 1.0 - coverShade * (1.0 - max(0.0, dot(n, normalize(vec3(0.4
 	let unterrain = null
 	let water = null
 	const terrain = { ...tune.overthrowTerrain }
-	if (kind === 'flagfall') {
+	if (layout.settings) {
 		for (const key of [
 			'margin',
 			'jag',
@@ -315,7 +316,7 @@ diffuseColor.rgb *= 1.0 - coverShade * (1.0 - max(0.0, dot(n, normalize(vec3(0.4
 			)
 	}
 	if (kind === 'lobby') buildLobby()
-	else if (kind === 'flagfall') buildFlagfall()
+	else if (layout.settings?.lane) buildFlagfall()
 	else buildLane()
 	for (const b of layout.boxes) {
 		const h = b.kind === 'hedge' ? m.hedgeHeight : m.wallHeight

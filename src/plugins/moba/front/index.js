@@ -2,7 +2,7 @@ import { createBackdrop } from './backdrop.js'
 import { createControls } from './controls.js'
 import { tune } from './tune.js'
 import { parseMatchSetup } from '../setup.js'
-import { tune as mapTune } from '../tune.js'
+import { playableMaps, mapLayout } from '../maps/index.js'
 import './front.css'
 
 const modes = [
@@ -12,16 +12,13 @@ const modes = [
 		glyph:
 			'<circle cx="32" cy="32" r="22" class="front-glyph-fill"/><path d="M12 25 Q34 27 41 53 M25 10 Q24 33 11 41 M41 11 Q38 34 53 41"/>',
 	},
-	...['overthrow', 'flagfall'].map((id) => {
-		const flagfall = id === 'flagfall'
-		const data = flagfall ? mapTune.flagfall.bounds : mapTune.map
-		const { halfX, halfZ } = data
+	...playableMaps.map((id) => {
+		const layout = mapLayout(id)
+		const { halfX, halfZ } = layout.bounds
 		const padding = tune.tile.outlinePadding
 		const rect = (x, z) => `<rect x="${-x}" y="${-z}" width="${x * 2}" height="${z * 2}"/>`
-		const plan = flagfall
-			? `${rect(mapTune.flagfall.yard.halfX, mapTune.flagfall.yard.halfZ)}${[-1, 1].map((side) => `<path d="M${-halfX},${side * mapTune.flagfall.lane.innerZ} H${halfX}"/>`).join('')}`
-			: `<path d="M${-halfX},0 H${halfX}"/>${[-1, 1].map((side) => `<path d="M${side * mapTune.map.baseWallX},${-halfZ} V${-mapTune.map.throat / 2} M${side * mapTune.map.baseWallX},${mapTune.map.throat / 2} V${halfZ}"/>`).join('')}`
-		const name = flagfall ? mapTune.flagfall.name : mapTune.map.name
+		const plan = layout.preview ?? ''
+		const name = layout.name
 		return {
 			mode: 'moba',
 			map: id,

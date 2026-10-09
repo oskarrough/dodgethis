@@ -1,126 +1,16 @@
 import { tune } from './tune.js'
+import { overthrowLayout } from './maps/overthrow.js'
+export { mapLayout } from './maps/index.js'
+export { flagfallLayoutTune } from './maps/flagfall.js'
 
 const m = tune.map
-export const FLOOR = { id: 'overthrow', halfX: m.halfX, halfZ: m.halfZ, thickness: m.thickness }
-export const SPAWN = { x: -m.spawnX, z: 0 }
-export const PILLARS = [-1, 1].flatMap((side) => [
-	...[-1, 1].map((flank) => ({ x: side * m.pillarX, z: flank * m.pillarZ, r: m.pillarRadius })),
-	{ x: side * m.guardX, z: side * m.guardZ, r: m.pillarRadius },
-])
-export const BOXES = [-1, 1].flatMap((side) =>
-	[-1, 1].flatMap((flank) => [
-		{
-			kind: 'hedge',
-			x: (side * (m.hedgeInnerX + m.hedgeOuterX)) / 2,
-			z: (flank * (m.hedgeInnerZ + m.hedgeOuterZ)) / 2,
-			halfX: (m.hedgeOuterX - m.hedgeInnerX) / 2,
-			halfZ: (m.hedgeOuterZ - m.hedgeInnerZ) / 2,
-		},
-		{
-			kind: 'wall',
-			x: (side * (m.baseWallX + m.halfX)) / 2,
-			z: (flank * (m.throat + m.halfZ)) / 2,
-			halfX: (m.halfX - m.baseWallX) / 2,
-			halfZ: (m.halfZ - m.throat) / 2,
-		},
-	]),
-)
-export const OBSTACLES = [...PILLARS, ...BOXES]
-
-// A run owns its footprint; the lane's exported defaults remain unchanged.
-export function mapLayout(kind = 'overthrow') {
-	if (kind === 'lobby')
-		return { name: 'Lobby', bounds: tune.lobby.bounds, obstacles: BOXES, boxes: [], pillars: [] }
-	if (kind !== 'flagfall')
-		return {
-			name: tune.map.name,
-			bounds: FLOOR,
-			obstacles: OBSTACLES,
-			boxes: BOXES,
-			pillars: PILLARS,
-		}
-	const s = flagfallLayoutTune()
-	const boxes = [-1, 1].flatMap((side) => [
-		{
-			kind: 'wall',
-			x: (side * (s.baseBlock.innerX + s.baseBlock.outerX)) / 2,
-			z: 0,
-			halfX: (s.baseBlock.outerX - s.baseBlock.innerX) / 2,
-			halfZ: s.baseBlock.halfZ,
-		},
-		...[-1, 1].flatMap((flank) =>
-			s.hedge.runs.map(([inner, outer]) => ({
-				kind: 'hedge',
-				x: (side * (inner + outer)) / 2,
-				z: (flank * (s.hedge.innerZ + s.hedge.outerZ)) / 2,
-				halfX: (outer - inner) / 2,
-				halfZ: (s.hedge.outerZ - s.hedge.innerZ) / 2,
-			})),
-		),
-	])
-	const pillars = [-1, 1].flatMap((side) =>
-		[-1, 1].flatMap((flank) => [
-			{ x: side * s.yardPillars.x, z: flank * s.yardPillars.z, r: s.pillarRadius },
-			{ x: side * s.towerPillars.x, z: flank * s.towerPillars.z, r: s.pillarRadius },
-		]),
-	)
-	const structures = [-1, 1].flatMap((side) => [
-		...['tower', 'fort'].flatMap((kind) =>
-			[-1, 1].map((flank) => ({
-				kind,
-				x: side * s.structures[`${kind}X`],
-				z: flank * s.lane.centreZ,
-			})),
-		),
-		{ kind: 'core', x: side * s.structures.coreX, z: 0 },
-	])
-	return {
-		name: s.name,
-		settings: s,
-		bounds: { id: kind, ...s.bounds },
-		boxes,
-		pillars,
-		obstacles: [...pillars, ...boxes],
-		spawns: s.spawns,
-		structures,
-		posts: s.posts,
-		dummyPosts: s.dummyPosts,
-	}
-}
-
-// Capture metres once per restart, for both collision and presentation. Fence runs are
-// normalised fractions; colours, counts and animation times are deliberately not scaled.
-export function flagfallLayoutTune() {
-	const source = tune.flagfall
-	const scale = Math.max(0.75, Math.min(1, source.scale))
-	const metres = (value) =>
-		typeof value === 'number'
-			? value * scale
-			: Array.isArray(value)
-				? value.map(metres)
-				: Object.fromEntries(Object.entries(value).map(([key, v]) => [key, metres(v)]))
-	const scaled = Object.fromEntries(
-		[
-			'bounds',
-			'lane',
-			'yard',
-			'baseBlock',
-			'baseX',
-			'hedge',
-			'pillarRadius',
-			'yardPillars',
-			'towerPillars',
-			'spawns',
-			'structures',
-			'posts',
-			'dummyPosts',
-			'print',
-		].map((key) => [key, metres(source[key])]),
-	)
-	// Print layers are depth slots shared with every other ground print, not layout metres.
-	scaled.print.layers = source.print.layers
-	return { ...source, scale, water: { ...source.water }, ...scaled }
-}
+// Compatibility defaults for geometry helpers; each run gets its own layout.
+const defaults = overthrowLayout()
+export const FLOOR = defaults.bounds
+export const SPAWN = defaults.spawns.A
+export const PILLARS = defaults.pillars
+export const BOXES = defaults.boxes
+export const OBSTACLES = defaults.obstacles
 
 export function clampMap(p, margin = 0, bounds = FLOOR) {
 	return {

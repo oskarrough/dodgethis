@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { PALETTE } from '../../../core/style.js'
 import { el as make } from '../../../core/dom.js'
 import { tune as kit } from '../tune.js'
-import { mapLayout } from '../obstacles.js'
+import { matchRecipe } from '../maps/index.js'
 import { easeShot } from './backdrop.js'
 import { createDescentState, descentFrame } from './descent-state.js'
 import { tune } from './tune.js'
@@ -55,13 +55,7 @@ export function startLoading(
 		const pitch = Math.asin(-look.y)
 		const lens = aim.fov
 
-		const layout = mapLayout(setup?.map)
-		const palette =
-			setup?.map === 'flagfall'
-				? kit.flagfall.palette
-				: layout.bounds.id === 'overthrow'
-					? kit.overthrowTerrain.palette
-					: {}
+		const { layout, palette } = matchRecipe(setup?.map)
 		const name = layout.name
 		const orbit = tune.loading.orbit
 		const root = make(

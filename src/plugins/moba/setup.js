@@ -1,4 +1,5 @@
 import { tune } from './tune.js'
+import { DEFAULT_MAP, playableMaps } from './maps/index.js'
 import { HEROES, heroDefinition } from './heroes.js'
 
 // Front screens and direct entry use the same validated match setup.
@@ -34,9 +35,7 @@ export function parseMatchSetup(query, options = {}, warn = console.warn) {
 				[true, false, '1', '0', 'true', 'false'].includes(v),
 			),
 		),
-		map: read('map', options.map ?? query.get('map'), 'overthrow', (v) =>
-			['overthrow', 'flagfall'].includes(v),
-		),
+		map: read('map', options.map ?? query.get('map'), DEFAULT_MAP, (v) => playableMaps.includes(v)),
 		difficulty: read('bots', options.difficulty ?? query.get('bots'), 'easy', (v) =>
 			['easy', 'normal', 'hard'].includes(v),
 		),

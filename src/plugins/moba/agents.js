@@ -57,10 +57,10 @@ export function createAgentPerception() {
 			history.push({
 				tick: sim.tick,
 				heroes: sim.heroes.map(unit),
-				minions: sim.lane.minions.filter((u) => !u.dead).map(unit),
-				structures: sim.lane.structures.map(unit),
-				ball: sim.ball.state && copyData(sim.ball.state),
-				nextBall: sim.ball.nextBall,
+				minions: (sim.lane?.minions ?? []).filter((u) => !u.dead).map(unit),
+				structures: (sim.lane?.structures ?? []).map(unit),
+				ball: sim.ball?.state ? copyData(sim.ball.state) : null,
+				nextBall: sim.ball?.nextBall,
 				shots: sim.shots.map((s) => ({ ...s })),
 				zones: sim.zones.map((z) => ({ ...z })),
 			})
@@ -90,7 +90,9 @@ export function observation(sim, id, perceived, reasons = ['decision']) {
 	const b = perceived.ball
 	const ball = b
 		? `ball-${b.id} ${b.state} ${point(b.pos)}${b.carrier ? ` carrier=${b.carrier}` : ''}${b.channel ? ` channel=${b.channel.hero}:${left(b.channel.endTick)}s` : ''}${b.state === 'warning' ? ` spawn=${left(b.spawnAt)}s` : ` expires=${left(b.popAt)}s`}`
-		: `none next=${left(perceived.nextBall)}s`
+		: perceived.nextBall === undefined
+			? 'not in this match'
+			: `none next=${left(perceived.nextBall)}s`
 	const lines = [
 		`seat ${id} t=${n(sim.tick * STEP)}s view=${n(perceived.tick * STEP)}s event=${reasons.join(',')}`,
 		`self ${point(p)} hp=${Math.ceil(h.hp)}/${Math.ceil(h.maxHp)} lv=${h.level} Q/W/E=${h.cd
@@ -98,7 +100,7 @@ export function observation(sim, id, perceived, reasons = ['decision']) {
 			.map((cd) => n(cd * STEP))
 			.join(
 				'/',
-			)}s ${h.dead ? `dead respawn=${left(h.respawnTick)}s` : `order=${order}`}${h.cast ? ` cast=${h.cast.ability}:${n(h.cast.left * STEP)}s` : ''}${h.body.dashing ? ` dash=${n(h.body.dashTime)}s` : ''}${sim.ball.carrying(h) ? ` carrying=ball-${sim.ball.state.id}` : ''}${h.stunUntil > sim.tick ? ` stun=${left(h.stunUntil)}s` : ''}`,
+			)}s ${h.dead ? `dead respawn=${left(h.respawnTick)}s` : `order=${order}`}${h.cast ? ` cast=${h.cast.ability}:${n(h.cast.left * STEP)}s` : ''}${h.body.dashing ? ` dash=${n(h.body.dashTime)}s` : ''}${sim.ball?.carrying(h) ? ` carrying=ball-${sim.ball.state.id}` : ''}${h.stunUntil > sim.tick ? ` stun=${left(h.stunUntil)}s` : ''}`,
 		`ball ${ball}`,
 	]
 	const threats = []
@@ -225,7 +227,7 @@ export function agentAction(sim, id, perceived, input) {
 				(u) => u.id === input.target && !u.dead && u.team !== h.team && u.vulnerable,
 			)
 			if (!seen) throw new Error('Target is not a perceived, vulnerable enemy')
-			if (sim.ball.carrying(h)) throw new Error('Carrying: use throw')
+			if (sim.ball?.carrying(h)) throw new Error('Carrying: use throw')
 			// As with bots, only click resolution may use a live target position.
 			const target = sim.find(seen.id)
 			if (!target || sim.pick(h.team, position(target))?.id !== seen.id)
@@ -236,7 +238,7 @@ export function agentAction(sim, id, perceived, input) {
 		case 'cast': {
 			const slot = { Q: 'slot1', W: 'slot2', E: 'slot3' }[input.slot]
 			if (!slot) throw new Error('slot must be Q, W or E')
-			if (sim.ball.carrying(h)) throw new Error('Carrying: use throw')
+			if (sim.ball?.carrying(h)) throw new Error('Carrying: use throw')
 			if (input.target !== undefined) {
 				if (input.x !== undefined || input.y !== undefined)
 					throw new Error('Use target or x,y, not both')
@@ -260,7 +262,7 @@ export function agentAction(sim, id, perceived, input) {
 			break
 		}
 		case 'throw':
-			if (!sim.ball.carrying(h)) throw new Error('Not carrying the Ball')
+			if (!sim.ball?.carrying(h)) throw new Error('Not carrying the Ball')
 			frame.aim = at()
 			frame.pressed = [{ action: 'primary', at: frame.aim }]
 			break

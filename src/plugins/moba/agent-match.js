@@ -3,7 +3,7 @@ import { createIntents, neutralFrame, validIntent } from '../../core/intents.js'
 import { createSim } from './sim.js'
 import { copyData, createAgentPerception } from './agents.js'
 import { tune } from './tune.js'
-import { FLOOR } from './obstacles.js'
+import { matchRecipe } from './maps/index.js'
 import { HEROES } from './heroes.js'
 
 // Sparse input tape: a neutral continuous sample goes to every seat each tick.
@@ -14,6 +14,7 @@ export function createAgentMatch({
 	RAPIER,
 	roster,
 	seed,
+	recipe = matchRecipe(),
 	smooth,
 	present = () => {},
 	replay = null,
@@ -91,8 +92,8 @@ export function createAgentMatch({
 			position: null,
 			roster: structuredClone(roster),
 			difficulty: [...new Set(roster.map((seat) => seat.difficulty ?? 'normal'))].join(','),
-			map: FLOOR.id,
-			winner: sim.lane.match.winner,
+			map: recipe.layout.bounds.id,
+			winner: sim.lane?.match.winner ?? null,
 			duration: sim.tick * STEP,
 			reason,
 		})
@@ -105,7 +106,7 @@ export function createAgentMatch({
 		RAPIER,
 		heroes: roster,
 		seed,
-		lane: true,
+		...recipe,
 		smooth,
 		bots: roster.filter((seat) => seat.controller === 'bot'),
 		driveBots: !replay || replay.botReplay === true,
@@ -143,7 +144,7 @@ export function createAgentMatch({
 		facts,
 		logRows,
 		step(actions = []) {
-			if (sim.lane.match.winner || (replay && sim.tick >= replay.result.ticks)) return false
+			if (sim.lane?.match.winner || (replay && sim.tick >= replay.result.ticks)) return false
 			facts.length = 0
 			feeds = []
 			for (const seat of roster) intents.feed(seat.id, neutralFrame())
@@ -160,7 +161,7 @@ export function createAgentMatch({
 			}
 			const tick = sim.tick
 			sim.step()
-			if (sim.lane.match.winner) logResult('matchOver')
+			if (sim.lane?.match.winner) logResult('matchOver')
 			if (!replay && recordInputs && feeds.length) {
 				const record = [tick, feeds]
 				inputs.push(record)
@@ -175,7 +176,7 @@ export function createAgentMatch({
 			tape.result = {
 				reason,
 				ticks: sim.tick,
-				winner: sim.lane.match.winner,
+				winner: sim.lane?.match.winner ?? null,
 				hash: replayHash(sim.snapshot()),
 			}
 			return tape

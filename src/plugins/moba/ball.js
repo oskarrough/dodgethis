@@ -7,7 +7,7 @@ const ticks = (s) => Math.max(1, Math.round(s / STEP))
 const pos = (p) => ({ x: p.x, z: p.z })
 
 // One objective per sim. Its fixed clock is independent of pickup, spending and expiry.
-export function createBall({ heroes, lane, obstacles, present, damage }) {
+export function createBall({ heroes, targets, vulnerable, obstacles, present, damage }) {
 	let ball = null
 	let serial = 0
 	let nextBall = ticks(tune.ball.first)
@@ -177,7 +177,7 @@ export function createBall({ heroes, lane, obstacles, present, damage }) {
 				}
 				return
 			}
-			const targets = [...heroes, ...lane.structures]
+			const candidates = targets()
 				.filter((u) => !u.dead && u.team !== shot.team)
 				.map((u) => ({
 					id: u.id,
@@ -186,11 +186,11 @@ export function createBall({ heroes, lane, obstacles, present, damage }) {
 					z: u.body.position.z,
 					radius: u.body.radius,
 				}))
-			const result = stepShot(shot, dt, targets, -Infinity, obstacles)
+			const result = stepShot(shot, dt, candidates, -Infinity, obstacles)
 			ball.pos = { x: shot.x, z: shot.z }
 			if (result.hit) {
 				const u = result.hit.unit
-				if (u.structure && !lane.vulnerable(u)) {
+				if (u.structure && !vulnerable(u)) {
 					fact('ballBounce', { target: u.id, reason: 'shielded' })
 					drop('shielded')
 				} else {
@@ -276,6 +276,21 @@ export function createBall({ heroes, lane, obstacles, present, damage }) {
 		hurt,
 		carrying,
 		interrupt,
+		snapshot() {
+			return {
+				match: { nextBall },
+				ball:
+					ball &&
+					structuredClone({
+						...ball,
+						shot: ball.shot && {
+							pos: { x: ball.shot.x, z: ball.shot.z },
+							dir: { x: ball.shot.dx, z: ball.shot.dz },
+							travelled: ball.shot.travelled,
+						},
+					}),
+			}
+		},
 		get state() {
 			return ball
 		},

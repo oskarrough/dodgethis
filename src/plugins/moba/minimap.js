@@ -1,9 +1,11 @@
-import { mapLayout } from './obstacles.js'
+import { matchRecipe } from './maps/index.js'
 import { tune } from './tune.js'
 
 // A presentation-only map: the same rendered positions as the world, no input or snapshots.
 // The layout (court, lanes, cover, footprints) is drawn once; only unit markers move.
-export function createMinimap(icons, layout = mapLayout(), name = layout.name) {
+export function createMinimap(icons, layout = matchRecipe().layout, pieces = matchRecipe().pieces) {
+	const liveStructures = pieces.some((piece) => piece.structures)
+	const name = layout.name
 	const bounds = layout.bounds
 	const ns = 'http://www.w3.org/2000/svg'
 	const make = (tag, attributes, parent) => {
@@ -22,7 +24,14 @@ export function createMinimap(icons, layout = mapLayout(), name = layout.name) {
 		role: 'img',
 		'aria-label': `${name} minimap: heroes and buildings. Your hero has a cream ring.`,
 	})
-	drawLayout(layout, scale, height, make('g', { class: 'minimap-layout' }, root), make)
+	drawLayout(
+		layout,
+		liveStructures,
+		scale,
+		height,
+		make('g', { class: 'minimap-layout' }, root),
+		make,
+	)
 	const buildings = make('g', {}, root)
 	const heroes = make('g', {}, root)
 	const markers = new Map()
@@ -35,7 +44,11 @@ export function createMinimap(icons, layout = mapLayout(), name = layout.name) {
 			const hidden = lobby || !sim
 			if (root.style.display !== (hidden ? 'none' : '')) root.style.display = hidden ? 'none' : ''
 			if (hidden) return
-			const units = [...(sim.lane?.structures ?? []), ...sim.heroes, ...sim.dummies]
+			const units = [
+				...(liveStructures ? (sim.lane?.structures ?? []) : []),
+				...sim.heroes,
+				...sim.dummies,
+			]
 			const ids = new Set(units.map((unit) => unit.id))
 			for (const [id, marker] of markers) {
 				if (ids.has(id)) continue
@@ -75,7 +88,7 @@ export function createMinimap(icons, layout = mapLayout(), name = layout.name) {
 }
 
 // Static ink-on-cream plan of the active layout, in the same descriptors the world builds from.
-function drawLayout(layout, scale, height, parent, make) {
+function drawLayout(layout, liveStructures, scale, height, parent, make) {
 	const { bounds, settings: s } = layout
 	const X = (x) => 50 + x * scale
 	const Y = (z) => height / 2 + z * scale
@@ -131,8 +144,8 @@ function drawLayout(layout, scale, height, parent, make) {
 			{ class: 'minimap-pillar', cx: X(p.x), cy: Y(p.z), r: Math.max(1.1, p.r * scale) },
 			parent,
 		)
-	// Flagfall has no live lane: its towers, forts and cores are ground footprints, drawn as such.
-	for (const f of layout.structures ?? [])
+	// A layout's future buildings remain chalk until its recipe enables structures.
+	for (const f of !liveStructures && s?.print ? (layout.structures ?? []) : [])
 		make(
 			'circle',
 			{

@@ -2,29 +2,17 @@ import { HEROES, heroDefinition, freshAbilityState } from './heroes.js'
 import { abilityOf, castAbility, slowFactor } from './ability.js'
 import { sweepHit, sweepObstacles } from './obstacles.js'
 import { dressHero } from './hero-view.js'
-import { createBall } from './ball.js'
-import { createBots } from './bots.js'
 import { createReadySeats } from './lobby-state.js'
 import { createScriptedHero } from './scripted.js'
-import { createLane } from './lane.js'
+import { dummies as dummiesPiece } from './match.js'
 import { createMatchStats } from './match-stats.js'
-import { createLaneView } from './lane-view.js'
-import { projectLaneSnapshot } from './lane-replica.js'
 import { createBody } from '../../core/body.js'
 import { PALETTE } from '../../core/style.js'
 import { styleId } from '../../core/stylepass.js'
 import { STEP } from '../../core/app.js'
 import { SCHEMES } from '../../core/intents.js'
 import { tune, profile } from './tune.js'
-import {
-	OBSTACLES,
-	BOXES,
-	SPAWN,
-	FLOOR,
-	clampWalkable,
-	clampMap,
-	segmentClear,
-} from './obstacles.js'
+import { mapLayout, clampWalkable, clampMap, segmentClear } from './obstacles.js'
 import { createPathPlanner, pursue } from './path.js'
 import { interceptShot, stepShot } from './skillshot.js'
 
@@ -35,10 +23,9 @@ const TAU = Math.PI * 2
 // Yaw ↔ ground direction, matching body.face: yaw = atan2(x, z) + π.
 const yawOf = (x, z) => Math.atan2(x, z) + Math.PI
 const dirOf = (yaw) => ({ x: -Math.sin(yaw), z: -Math.cos(yaw) })
-const DUMMY_POSTS = tune.map.dummyPosts
 
-// Heroes read intents; optional lane agents share damage, shots and targeting. No DOM.
-// Training fixtures retain the dummies; the browser opts into `lane: true`.
+// Heroes read intents; match pieces share damage, shots and targeting. No DOM.
+// `pieces` chooses structures, minions, Ball, bots and dummies independently.
 // `heroes` is [{ id, team }], each id a participant in `intents`. `present(fact)` receives plain facts. `rng()` drives the dummies.
 export function createSim({
 	scene,
@@ -49,14 +36,15 @@ export function createSim({
 	smooth = null,
 	present: emit = () => {},
 	rng = Math.random,
-	lane: withLane = false,
-	spawns = null, // { participantId: { x, z } }; copied for death/recovery.
-	bounds = null, // { halfX, halfZ }; body centres stay one radius inside.
-	obstacles: mapObstacles = null, // The active terrain; defaults preserve the lane and lobby.
-	posts = DUMMY_POSTS, // Where the training dummies strafe; the lobby brings its own.
+	pieces = [dummiesPiece],
+	lobby = false, // Combat allegiance A for heroes, B for dummies; seatTeam retains the pick.
+	layout = mapLayout(lobby ? 'lobby' : undefined),
+	spawns = null, // Participant-specific spawn overrides, copied for death/recovery.
+	bounds = null, // Optional footprint override for training fixtures.
+	obstacles: mapObstacles = layout.obstacles,
+	posts = layout.dummyPosts,
 	respawn: respawnSeconds = null, // Hero recovery override, in seconds; dummies keep their timer.
 	readyRoster = [], // Full lobby seats; humans are the hero participants, the rest are cardboard bots.
-	lobby = false, // Combat allegiance A for heroes, B for dummies; seatTeam retains the pick.
 	scripted = [],
 	bots = [],
 	seed = tune.bots.seed,
@@ -64,23 +52,14 @@ export function createSim({
 	intercept = null,
 	footprint = null, // Lobby observer: aimed props and real, clipped cast footprints.
 }) {
-	const laneView = withLane ? createLaneView(scene, smooth) : null
-	const towerObstacles = withLane
-		? ['tower', 'core'].flatMap((kind) =>
-				['A', 'B'].map((team) => ({
-					id: `${kind}-${team}`,
-					kind,
-					x: team === 'A' ? -tune[kind].x : tune[kind].x,
-					z: 0,
-					r: tune[kind].radius,
-				})),
-			)
-		: []
-	// The lobby has no pillars; its hedges sit outside the bounds.
-	const obstacles = [...(mapObstacles ?? (lobby ? BOXES : OBSTACLES)), ...towerObstacles]
-	const floor = bounds ?? FLOOR
-	// The lobby limits walking, not casts: preserve its existing open shooting field.
-	const field = lobby ? FLOOR : floor
+	const lanePiece = pieces.find((piece) => piece.lane)?.lane
+	const laneView = lanePiece?.view(scene, smooth) ?? null
+	const towerObstacles = pieces.flatMap((piece) => piece.obstacles?.(layout) ?? [])
+	const obstacles = [...mapObstacles, ...towerObstacles]
+	const floor = bounds ?? layout.bounds
+	// Soft walking limits are separate from the terrain walls and dash bounds.
+	const walkingBounds = bounds ?? layout.walkingBounds
+	const field = layout.fieldBounds ?? floor
 	const towerColliders = new Map(
 		towerObstacles.map((o) => [
 			o.id,
@@ -88,7 +67,7 @@ export function createSim({
 				RAPIER.ColliderDesc.cylinder(tune.laneView[`${o.kind}Height`] / 2, o.r).setTranslation(
 					o.x,
 					tune.laneView[`${o.kind}Height`] / 2,
-					0,
+					o.z,
 				),
 			),
 		]),
@@ -104,10 +83,10 @@ export function createSim({
 		)
 	let planPath = createPathPlanner({ radius: profile.radius, ...tune.orders }, obstacles, floor)
 	let t = 0
-	const matchStats = withLane ? createMatchStats() : null
+	const matchStats = pieces.some((piece) => piece.stats) ? createMatchStats() : null
 	const present = (fact) => {
 		const timed = { ...fact, tick: t }
-		matchStats?.present(timed, heroes, lane.structures, botIds)
+		matchStats?.present(timed, heroes, lane?.structures ?? [], botIds)
 		emit(timed)
 	}
 	const footprints = new WeakMap()
@@ -127,25 +106,27 @@ export function createSim({
 	const boards = []
 	const cutouts = []
 	const bodyAt = (x, z, team, definition = heroDefinition()) => {
-		const point = bounds ? clampBounds({ x, z }, definition.base.radius) : { x, z }
+		const point = walkingBounds
+			? clampMap({ x, z }, definition.base.radius, walkingBounds)
+			: { x, z }
 		const body = createBody(scene, world, RAPIER, {
 			profile: definition.base,
 			position: [point.x, 0, point.z],
 			color: team === 'A' ? PALETTE.teamA : PALETTE.teamB,
 			bounds: (radius) => ({
-				x: (bounds?.halfX ?? FLOOR.halfX) - radius,
-				z: (bounds?.halfZ ?? FLOOR.halfZ) - radius,
+				x: floor.halfX - radius,
+				z: floor.halfZ - radius,
 			}),
 			smooth,
 		})
-		if (bounds) {
+		if (walkingBounds) {
 			// Clamp the pending physics step, not the synced/rendered pose: interpolation stays intact.
 			const update = body.update
 			body.update = (...args) => {
 				update(...args)
 				if (body.retired) return
 				const next = body.rigidBody.nextTranslation()
-				const point = clampBounds(next, body.radius)
+				const point = clampMap(next, body.radius, walkingBounds)
 				body.rigidBody.setNextKinematicTranslation({ ...point, y: next.y })
 			}
 		}
@@ -226,8 +207,9 @@ export function createSim({
 			{ ...seat, joinOrder: seat.joinOrder ?? i },
 			{
 				...(spawns?.[seat.id] ?? {
-					x: seat.team === 'A' ? SPAWN.x : -SPAWN.x,
-					z: SPAWN.z + (index - (teamSeats.length - 1) / 2) * tune.map.spawnSpacing,
+					x: layout.spawns[seat.team].x,
+					z:
+						layout.spawns[seat.team].z + (index - (teamSeats.length - 1) / 2) * layout.spawnSpacing,
 				}),
 			},
 		)
@@ -250,29 +232,12 @@ export function createSim({
 					t,
 				)
 		}
-	const dummies = (withLane ? [] : posts).map((post, i) => ({
-		id: `dummy${i + 1}`,
-		team: 'B',
-		post,
-		body: bodyAt(post.x, post.z, 'B'),
-		yaw: 0,
-		dir: i % 2 ? -1 : 1,
-		flipIn: tune.dummies.flipMax,
-		hp: tune.dummies.hp,
-		maxHp: tune.dummies.hp,
-		cast: null,
-		castTick: ticks(tune.dummies.castEvery),
-		sparring: i === 0,
-		dead: false,
-		corpse: null,
-		respawnTick: null,
-		slow: { until: 0, factor: 1 },
-	}))
-
-	const lane = withLane
-		? createLane({
+	const lane = laneView
+		? lanePiece.create({
+				layout,
+				structures: pieces.some((piece) => piece.structures),
 				heroes,
-				wavesEnabled: () => training.waves,
+				wavesEnabled: () => pieces.some((piece) => piece.waves) && training.waves,
 				present,
 				makeBody: laneView.makeBody,
 				obstacles,
@@ -334,21 +299,27 @@ export function createSim({
 			})
 		: null
 
-	const ball = lane
-		? createBall({
-				heroes,
-				lane,
-				obstacles,
-				present,
-				damage(shot, unit, damage) {
-					hit(
-						{ ...shot, id: -1, owner: shot.owner, slot: 'ball', damage },
-						{ id: unit.id, unit, hero: !unit.kind },
-						unit.body.position,
-					)
-				},
-			})
-		: null
+	const populations = { ball: null, dummies: [] }
+	for (const piece of pieces) {
+		if (!piece.create) continue
+		populations[piece.population] = piece.create({
+			heroes,
+			posts,
+			makeBody: bodyAt,
+			targets: () => [...heroes, ...(lane?.structures ?? [])],
+			vulnerable: (unit) => lane?.vulnerable(unit) ?? true,
+			obstacles,
+			present,
+			damage(shot, unit, damage) {
+				hit(
+					{ ...shot, id: -1, owner: shot.owner, slot: 'ball', damage },
+					{ id: unit.id, unit, hero: !unit.kind },
+					unit.body.position,
+				)
+			},
+		})
+	}
+	const { ball, dummies } = populations
 
 	// Everyone who can be shot, targeted or picked, as plain circles.
 	const units = () => [
@@ -1708,11 +1679,17 @@ export function createSim({
 		typeof seat === 'string' ? { ...seats.find((s) => s.id === seat) } : seat,
 	)
 	const botIds = new Set(botSeats.map((s) => s.id))
-	let botTeam = botSeats.length && withLane ? createBots(botSeats, seed) : null
+	const botModules = [
+		...new Set(pieces.flatMap((piece) => [piece.lane?.botHabit ?? piece.botHabit].filter(Boolean))),
+	]
+	const createControllers = pieces.find((piece) => piece.controllers)?.controllers
+	let botTeam =
+		botSeats.length && createControllers ? createControllers(botSeats, seed, botModules) : null
 	const rebuildBots = () => {
 		botIds.clear()
 		for (const seat of botSeats) botIds.add(seat.id)
-		botTeam = botSeats.length && withLane ? createBots(botSeats, seed) : null
+		botTeam =
+			botSeats.length && createControllers ? createControllers(botSeats, seed, botModules) : null
 	}
 	function step(dt = STEP) {
 		if (lane?.match.winner) return
@@ -1971,22 +1948,16 @@ export function createSim({
 	function snapshot({ wire = false } = {}) {
 		matchStats?.sync(heroes, botIds)
 		const pos = (b) => ({ x: q(b.position.x), z: q(b.position.z) })
+		const ballState = ball?.snapshot()
 		const state = {
 			t,
+			...((lane || ball) && {
+				match: { ...(lane && { ...lane.match, nextWave: lane.nextWave }), ...ballState?.match },
+			}),
+			...(ballState && { ball: ballState.ball }),
+			...(matchStats && { matchStats: structuredClone(matchStats.rows) }),
 			...(lane
 				? {
-						match: { ...lane.match, nextWave: lane.nextWave, nextBall: ball.nextBall },
-						ball:
-							ball.state &&
-							structuredClone({
-								...ball.state,
-								shot: ball.state.shot && {
-									pos: { x: ball.state.shot.x, z: ball.state.shot.z },
-									dir: { x: ball.state.shot.dx, z: ball.state.shot.dz },
-									travelled: ball.state.shot.travelled,
-								},
-							}),
-						matchStats: structuredClone(matchStats.rows),
 						globes: structuredClone(lane.globes),
 						teams: structuredClone(lane.teams),
 						minions: lane.minions.map((u) => ({
@@ -2026,7 +1997,7 @@ export function createSim({
 						})),
 					}
 				: {}),
-			map: floor.id ?? FLOOR.id,
+			map: floor.id ?? layout.bounds.id ?? field.id,
 			...(readySeats && { readySeats: structuredClone(readySeats.seats) }),
 			heroes: heroes.map((h) => ({
 				id: h.id,
@@ -2100,7 +2071,7 @@ export function createSim({
 				travelled: q(s.travelled),
 			})),
 		}
-		return wire && lane ? projectLaneSnapshot(state) : state
+		return wire && lane ? lanePiece.snapshot(state) : state
 	}
 
 	function dispose() {
@@ -2206,8 +2177,8 @@ export function createSim({
 			const count = heroes.filter((h) => h.team === team).length
 			const spawn = clampWalkable(
 				{
-					x: origin.x + (team === local?.team ? -1 : 1) * tune.map.spawnSpacing,
-					z: origin.z + count * tune.map.spawnSpacing,
+					x: origin.x + (team === local?.team ? -1 : 1) * layout.spawnSpacing,
+					z: origin.z + count * layout.spawnSpacing,
 				},
 				profile.radius,
 				tune.orders.clearance,

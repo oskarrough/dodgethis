@@ -2,7 +2,8 @@ import { createJuice } from '../../core/juice.js'
 import { createShadows } from '../../core/shadows.js'
 import { tune as coreTune } from '../../core/tune.js'
 import { tune } from './tune.js'
-import { mapLayout, FLOOR } from './obstacles.js'
+import { FLOOR } from './obstacles.js'
+import { matchRecipe, onlineMaps } from './maps/index.js'
 import { castAbility } from './ability.js'
 import { createSim } from './sim.js'
 import { practiceRoster } from './bots.js'
@@ -14,10 +15,8 @@ import { createSkillsView } from './skills-view.js'
 import { createHud, matchFrame } from './hud.js'
 import { createPips } from './pips.js'
 import { createSounds } from './sounds.js'
-import { createBallView } from './ball-view.js'
 import { createFeedback } from './feedback.js'
 import { createStamps } from './stamps.js'
-import { createOnboarding } from './onboarding.js'
 import { createMatchMenu } from './menu.js'
 import { parseMatchSetup } from './setup.js'
 import { createDebugLayout, createMatchDebug } from './debug.js'
@@ -91,10 +90,10 @@ export default function moba(app, map) {
 			const isLobby = !!options.lobby
 			const query = new URLSearchParams(window.location.search)
 			const setup = parseMatchSetup(query, options.setup ?? options)
-			const isFlagfall = !isLobby && setup.map === 'flagfall'
 			const kind = isLobby ? 'lobby' : setup.map
-			const layout = mapLayout(kind)
-			if (isFlagfall && app.session.shared) {
+			const match = matchRecipe(kind)
+			const { layout, pieces, palette, debugTune, online } = match
+			if (!online && app.session.shared) {
 				// Mode start must finish before its replacement can abort it. No map/sim is built.
 				queueMicrotask(() => {
 					if (!run.signal.aborted)
@@ -114,13 +113,7 @@ export default function moba(app, map) {
 			}
 			const local = app.session.local[0]
 			if (!options.handoff && !options.sharedLobby) departed.clear()
-			app.setPalette(
-				isFlagfall
-					? { ...tune.overthrowTerrain.palette, ...tune.flagfall.palette }
-					: !isLobby && setup.map === 'overthrow'
-						? tune.overthrowTerrain.palette
-						: {},
-			)
+			app.setPalette(palette)
 			document.documentElement.style.removeProperty('--page-bg')
 			audio.setMusicScene('play')
 			const juice = createJuice(scene)
@@ -134,7 +127,7 @@ export default function moba(app, map) {
 				!app.session.authoritative ? (object, read) => replica.smooth(object, read) : run.smooth,
 			)
 			const skillsView = createSkillsView(scene)
-			const hud = createHud({ lobby: isLobby, layout })
+			const hud = createHud({ lobby: isLobby, layout, pieces })
 			const pips = createPips()
 			const follow = createFollow(tune.follow, layout.bounds)
 			const cameraControls = createCameraControls(
@@ -174,11 +167,11 @@ export default function moba(app, map) {
 									setup.picks[seat.id]?.heroId ??
 									(seat.id === local ? setup.heroId : 'fletcher'),
 							}))
-					: isLobby || isFlagfall
+					: isLobby
 						? [
 								{
 									id: local,
-									team: isFlagfall ? 'A' : (setup.picks[local].team ?? 'A'),
+									team: setup.picks[local].team ?? 'A',
 									heroId: setup.picks[local].heroId,
 								},
 							]
@@ -218,31 +211,23 @@ export default function moba(app, map) {
 						scene,
 						world,
 						RAPIER,
+						...match,
 						intents: run.intents,
 						heroes: seats,
 						bots:
-							!isLobby && !isFlagfall && app.session.authoritative
+							pieces.some((piece) => piece.controllers) && app.session.authoritative
 								? seats.filter((seat) =>
 										app.session.shared ? seat.controller === 'bot' : botsOnly || seat.id !== local,
 									)
 								: [],
 						smooth: app.session.authoritative ? run.smooth : null,
 						present: run.present,
-						lane: !isLobby && !isFlagfall,
-						...(isFlagfall && {
-							obstacles: layout.obstacles,
-							bounds: layout.bounds,
-							spawns: { [local]: layout.spawns.A },
-							posts: layout.dummyPosts,
-						}),
 						...(isLobby && {
 							lobby: true,
 							readyRoster: roster.length
 								? roster.map((seat) => ({ ...seat, heroId: seat.data?.heroId ?? seat.heroId }))
 								: practiceRoster(local, difficulty, setup.picks, setup.seed),
 							spawns: lobbySpawns,
-							bounds: tune.lobby.bounds,
-							posts: tune.lobby.dummyPosts,
 							respawn: tune.lobby.respawn,
 							footprint: gallery.contact,
 						}),
@@ -252,7 +237,7 @@ export default function moba(app, map) {
 			)
 			// Assigned boxes are reservations, not won claims; walking into one stamps the claim tick.
 			if (isLobby) for (const seat of simulation.readySeats.seats) seat.claimTick = null
-			const ballView = isLobby || isFlagfall ? null : createBallView(scene)
+			const ballView = pieces.find((piece) => piece.view)?.view(scene) ?? null
 			const replica = !app.session.authoritative
 				? isLobby
 					? createLobbyReplica(simulation, scene)
@@ -265,7 +250,8 @@ export default function moba(app, map) {
 				run.system('present', () => replica.update(performance.now() / 1000))
 			}
 			const hero = sim.heroes.find((h) => h.id === local)
-			const onboarding = isLobby || isFlagfall ? null : createOnboarding({ scene, sim, hero })
+			const onboarding =
+				pieces.find((piece) => piece.onboarding)?.onboarding({ scene, sim, hero }) ?? null
 			const feedback = createFeedback({
 				juice,
 				sfx,
@@ -287,30 +273,7 @@ export default function moba(app, map) {
 			app.clock.reset()
 
 			const arrangeDebug = createDebugLayout(run, isLobby)
-			if (!isLobby && setup.map === 'overthrow')
-				run.debug.tune('overthrow terrain (applies on restart)', tune.overthrowTerrain, (f, s) => {
-					for (const [key, min, max, step] of [
-						['margin', 0.5, 3, 0.1],
-						['jag', 0, 1.5, 0.1],
-						['step', 1, 6, 0.5],
-						['rockDepth', 1, 8, 0.5],
-						['rockFlare', 0, 3, 0.1],
-						['rockBands', 1, 5, 1],
-						['chalkWidth', 0.04, 0.2, 0.01],
-						['courtInset', 0.5, 3, 0.1],
-						['mesaRadius', 3, 9, 0.5],
-						['mesaHeight', 1, 6, 0.5],
-					])
-						f.add(s, key, min, max, step)
-					for (const key of Object.keys(s.colors)) f.addColor(s.colors, key)
-					for (const key of Object.keys(s.palette)) f.addColor(s.palette, key)
-				})
-			if (isFlagfall)
-				run.debug.tune('flagfall (applies on restart)', tune.flagfall, (f, s) => {
-					f.add(s, 'scale', 0.75, 1, 0.01).name('scale (applies on restart)')
-					f.add(s.water, 'width', 140, 260, 1).name('water plate width (m, applies on restart)')
-					f.add(s.water, 'clouds').name('clouds (applies on restart)')
-				})
+			if (debugTune) run.debug.tune(debugTune.name, debugTune.values, debugTune.add)
 			const lobby = isLobby
 				? createLobby({ app, run, sim, hero, setup, options, gallery, onPresent })
 				: null
@@ -719,7 +682,7 @@ export default function moba(app, map) {
 									(seat.controller === 'bot' ||
 										(Number.isSafeInteger(seat.joinOrder) && seat.joinOrder >= 0)),
 							) ||
-							next.setup?.map !== 'overthrow' ||
+							!onlineMaps.includes(next.setup?.map) ||
 							!['easy', 'normal', 'hard'].includes(next.setup.difficulty) ||
 							!Number.isSafeInteger(next.setup.seed) ||
 							next.setup.seed < 0 ||
