@@ -62,6 +62,7 @@ export function createLobby({
 	const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)')
 	if (reducedMotion.matches || !(intro.time > 0)) intro.t = intro.time
 	let leaving = false
+	const faded = () => intro.time * tune.lobby.intro.fadeFrom
 	const fadeIntro = () => {
 		const k = Math.min(1, intro.t / intro.time)
 		canvas.style.opacity =
@@ -71,12 +72,14 @@ export function createLobby({
 	}
 	fadeIntro()
 	backdrop.shot('lobby', { instant: intro.t >= intro.time })
+	backdrop.tint(1, intro.time - intro.t)
 	run.system('present', ({ dt }) => {
 		// Leaving runs the arrival backwards: pull out along the same ray as the canvas fades.
 		if (leaving) {
 			intro.t = Math.max(0, intro.t - dt)
 			fadeIntro()
-			if (intro.t === 0 && !transferred) queueMicrotask(returnSplash)
+			// Once the lobby is gone the splash takes over, so its tiles land with the backdrop.
+			if (intro.t <= faded() && !transferred) queueMicrotask(returnSplash)
 			return
 		}
 		if (intro.t >= intro.time) return
@@ -148,7 +151,7 @@ export function createLobby({
 	let mouse = false
 	let touch = options.device ? options.device === 'touch' : matchMedia('(any-hover: none)').matches
 	const readySeats = sim.readySeats
-	const props = createLobbyProps(app.scene, el, gallery, readySeats, hero.id)
+	const props = createLobbyProps(app.scene, el, gallery, readySeats, hero.id, app.audio)
 	const floor = createLobbyFloor(app.scene, app.renderer)
 	const lobbyHeroes = createLobbyHeroes({
 		el,
@@ -415,7 +418,11 @@ export function createLobby({
 		app.intents.cancel(hero.id)
 		el.inert = true
 		backdrop.shot('splash')
-		if (reducedMotion.matches || intro.t <= 0) returnSplash()
+		backdrop.tint(0, frontTune.shot.splash.time)
+		if (reducedMotion.matches || intro.t <= faded()) return returnSplash()
+		document.body.style.setProperty('--unwind-time', `${intro.t - faded()}s`)
+		document.body.style.setProperty('--unwind-shift', `${frontTune.unwind.shift}px`)
+		document.body.classList.add('front-unwinding')
 	}
 	function cancelReady(stop = true) {
 		readyQueued = false
@@ -665,6 +672,9 @@ export function createLobby({
 	run.signal.addEventListener(
 		'abort',
 		() => {
+			document.body.classList.remove('front-unwinding')
+			document.body.style.removeProperty('--unwind-time')
+			document.body.style.removeProperty('--unwind-shift')
 			numbers.dispose()
 			strip.dispose()
 			lobbyHeroes.dispose()

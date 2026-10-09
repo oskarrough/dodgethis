@@ -178,16 +178,18 @@ export function mobaFront(app, map) {
 			}
 			let pop = null
 			if (options.backdrop) {
-				// The lobby's exit usually flew the shot home already; then the tiles land at once.
-				const landed = backdrop.shotName === 'splash' && backdrop.settled
-				if (!landed) backdrop.shot('splash')
+				// The lobby's exit has usually started the shot and the dawn home already.
+				if (backdrop.shotName !== 'splash') {
+					backdrop.shot('splash')
+					backdrop.tint(0, tune.shot.splash.time)
+				}
 				// The tiles land as the camera settles.
 				const time = reduced ? 0 : tune.tile.pop
 				pop = chrome.animate(
 					[{ translate: '0 100vh' }, { translate: '0 -3vh', offset: 0.7 }, { translate: '0 0' }],
 					{
 						duration: time * 1000,
-						delay: reduced || landed ? 0 : Math.max(0, tune.shot.splash.time - time) * 1000,
+						delay: reduced ? 0 : Math.max(0, backdrop.remaining - time) * 1000,
 						easing: 'cubic-bezier(0.2, 0.8, 0.4, 1)',
 						fill: 'backwards',
 					},

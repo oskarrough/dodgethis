@@ -67,6 +67,7 @@ export function createBackdrop() {
 	const el = make('div', 'front-backdrop')
 	el.setAttribute('aria-hidden', 'true')
 	el.style.setProperty('--front-ink', hex('ink'))
+	const day = {}
 	for (const [name, role, weight] of [
 		['peach', 'teamB', 18],
 		['mint', 'court', 16],
@@ -80,10 +81,7 @@ export function createBackdrop() {
 		['dune', 'ammo', 32],
 		['shadow', 'ink', 28],
 	])
-		el.style.setProperty(
-			'--front-' + name,
-			`color-mix(in srgb, ${hex(role)} ${weight}%, ${hex('cream')})`,
-		)
+		day[name] = `color-mix(in srgb, ${hex(role)} ${weight}%, ${hex('cream')})`
 	el.innerHTML =
 		`<div class="front-sky"></div><div class="front-sky front-sky-next"></div>` +
 		planes
@@ -116,6 +114,9 @@ export function createBackdrop() {
 	const pose = { lift: 0, zoom: 1 }
 	let current = 'splash'
 	let move = null
+	// How far the colours sit towards the lobby's dusk, and the blend under way.
+	let dusk = 0
+	let blend = null
 	let fade = null
 	let frame = null
 	let last = 0
@@ -166,6 +167,18 @@ export function createBackdrop() {
 		place()
 		if (!move) settle()
 	}
+	function paint() {
+		for (const [name, color] of Object.entries(day))
+			el.style.setProperty(
+				'--front-' + name,
+				dusk <= 0
+					? color
+					: dusk >= 1
+						? tune.dusk[name]
+						: `color-mix(in srgb, ${tune.dusk[name]} ${(dusk * 100).toFixed(1)}%, ${color})`,
+			)
+	}
+	paint()
 	function wake() {
 		if (disposed || frame !== null) return
 		last = performance.now()
@@ -203,12 +216,19 @@ export function createBackdrop() {
 				move = null
 			}
 		}
+		if (blend) {
+			blend.elapsed += dt
+			const t = blend.time > 0 ? Math.min(1, blend.elapsed / blend.time) : 1
+			dusk = blend.from + (blend.to - blend.from) * easeShot(t)
+			if (t >= 1) blend = null
+			paint()
+		}
 		place()
 		if (arrived) {
 			settle()
 			arrived.resolve(true)
 		}
-		if (move || !still) frame = requestAnimationFrame(step)
+		if (move || blend || !still) frame = requestAnimationFrame(step)
 	}
 	function parallax(event) {
 		pointer.targetX = Math.max(-1, Math.min(1, (event.clientX / innerWidth) * 2 - 1))
@@ -238,8 +258,9 @@ export function createBackdrop() {
 		get shotName() {
 			return current
 		},
-		get settled() {
-			return !move
+		// Seconds left in the current shot move.
+		get remaining() {
+			return move ? Math.max(0, move.time - move.elapsed) : 0
 		},
 		// Ease every layer to a named shot from wherever it is now, so a reversal mid-move
 		// turns round in place. Resolves true on arrival, false if a later shot replaced it.
@@ -257,6 +278,16 @@ export function createBackdrop() {
 				wake()
 			}
 			return promise
+		},
+		// Blend the colours to the lobby's dusk (1) or the splash's day (0) over `time` seconds.
+		tint(to, time = 0) {
+			if (disposed) return
+			blend = { from: dusk, to: Math.max(0, Math.min(1, to)), elapsed: 0, time }
+			if (!(time > 0) || reduced.matches) {
+				dusk = blend.to
+				blend = null
+				paint()
+			} else wake()
 		},
 		// The descent: the backdrop thins away as the lane comes up through it.
 		fade(progress) {

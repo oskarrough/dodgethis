@@ -154,6 +154,8 @@ export function startLoading(
 			if (lobby) lobby.inert = false
 			parent = canvas.parentNode
 			next = canvas.nextSibling
+			// The apex sky is the splash's, not the lobby's dusk.
+			backdrop.tint(0)
 			root.prepend(backdrop.el, canvas)
 			canvas.classList.add('front-canvas')
 			canvas.inert = false

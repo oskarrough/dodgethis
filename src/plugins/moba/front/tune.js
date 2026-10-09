@@ -77,6 +77,8 @@ export const tune = {
 		dune: '#4f5d70',
 		shadow: '#3f4358',
 	},
+	// Leaving the lobby, its chrome slides `shift` px towards its own edge as it fades.
+	unwind: { shift: 72 },
 	back: { freq: 174.61, slideTo: 130.81, dur: 0.25, gain: 0.055 },
 	// Menu tiles: the response is a spring, not a fade. `drop` is the fall under the lobby shot,
 	// `pop` the spring back in as the splash shot lands.
