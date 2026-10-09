@@ -73,7 +73,47 @@ export function createLobby({
 	fadeIntro()
 	backdrop.shot('lobby', { instant: intro.t >= intro.time })
 	backdrop.tint(1, intro.time - intro.t)
+	// The chrome lands after the lobby: each piece slides in from its own edge as the lane
+	// fades up, and the floor's labels follow once the camera has landed.
+	let arrival = null
+	function arrive() {
+		arrival = []
+		if (reducedMotion.matches || intro.t >= intro.time) return
+		const { shift, stagger, land } = frontTune.unwind
+		const enter = (node, x, y, at) => {
+			if (!node) return
+			const timing = {
+				duration: land * 1000,
+				delay: at * 1000,
+				easing: 'ease-out',
+				fill: 'backwards',
+			}
+			arrival.push(node.animate([{ opacity: 0, scale: 0.85 }, {}], timing))
+			if (x || y)
+				arrival.push(
+					node.animate([{ translate: `${x}px ${y}px` }, { translate: '0px 0px' }], {
+						...timing,
+						composite: 'add',
+					}),
+				)
+		}
+		const chrome = Math.max(0, intro.time * tune.lobby.intro.fadeFrom - intro.t)
+		;[
+			['.lobby-hero-strip', -shift, 0],
+			['.back-button', -shift, -shift],
+			['.online-entry', shift, -shift],
+		].forEach(([selector, x, y], i) =>
+			enter(el.querySelector(selector), x, y, chrome + i * stagger),
+		)
+		enter(document.querySelector('.moba-hud:not(.moba-unit)'), 0, shift, chrome + 3 * stagger)
+		enter(document.querySelector('.mute'), shift, shift, chrome + 4 * stagger)
+		const landed = intro.time - intro.t
+		el.querySelectorAll('.lobby-label').forEach((label, i) =>
+			enter(label, 0, 0, landed + i * stagger),
+		)
+	}
 	run.system('present', ({ dt }) => {
+		if (!arrival) arrive()
 		// Leaving runs the arrival backwards: pull out along the same ray as the canvas fades.
 		if (leaving) {
 			intro.t = Math.max(0, intro.t - dt)
@@ -419,6 +459,7 @@ export function createLobby({
 		el.inert = true
 		backdrop.shot('splash')
 		backdrop.tint(0, frontTune.shot.splash.time)
+		for (const animation of arrival ?? []) animation.cancel()
 		if (reducedMotion.matches || intro.t <= faded()) return returnSplash()
 		document.body.style.setProperty('--unwind-time', `${intro.t - faded()}s`)
 		document.body.style.setProperty('--unwind-shift', `${frontTune.unwind.shift}px`)

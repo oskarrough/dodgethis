@@ -321,21 +321,6 @@
 .front-tile:active::before {
 	transition-duration: var(--tile-press);
 }
-.moba-front footer {
-	position: absolute;
-	bottom: max(20px, 4vh);
-	left: 5vw;
-	right: 5vw;
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 1.5em;
-	font-size: 1.05em;
-	pointer-events: none;
-}
-.moba-front footer > * {
-	pointer-events: auto;
-}
 .moba-front kbd {
 	display: inline-block;
 	min-width: 1.6em;
@@ -347,25 +332,6 @@
 	font: 400 1.05em / 1.2 var(--ui-font);
 	text-align: center;
 	color: var(--ui-text);
-}
-.moba-front kbd.front-arrows {
-	font:
-		700 1.1em / 1.1 system-ui,
-		sans-serif;
-}
-.front-prompts {
-	display: flex;
-	flex-wrap: wrap;
-	justify-content: flex-end;
-	column-gap: 1.8em;
-	row-gap: 0.5em;
-	margin: 0 0 0 auto;
-}
-.front-prompts span {
-	display: flex;
-	align-items: center;
-	gap: 0.5em;
-	white-space: nowrap;
 }
 /* Narrow and tall: the stickers stack and lie flat in landscape strips. */
 @media (max-width: 700px) {
@@ -397,9 +363,6 @@
 	.front-tile-name {
 		grid-area: 2 / 2;
 		font-size: clamp(30px, 9vw, 48px);
-	}
-	.moba-front footer {
-		font-size: 14px;
 	}
 }
 @media (prefers-reduced-motion: reduce) {
