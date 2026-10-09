@@ -282,12 +282,15 @@ export function createBackdrop() {
 		// Blend the colours to the lobby's dusk (1) or the splash's day (0) over `time` seconds.
 		tint(to, time = 0) {
 			if (disposed) return
-			blend = { from: dusk, to: Math.max(0, Math.min(1, to)), elapsed: 0, time }
-			if (!(time > 0) || reduced.matches) {
-				dusk = blend.to
+			to = Math.max(0, Math.min(1, to))
+			if (time > 0 && !reduced.matches) {
+				blend = { from: dusk, to, elapsed: 0, time }
+				wake()
+			} else {
 				blend = null
+				dusk = to
 				paint()
-			} else wake()
+			}
 		},
 		// The descent: the backdrop thins away as the lane comes up through it.
 		fade(progress) {

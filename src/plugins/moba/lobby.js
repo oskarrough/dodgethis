@@ -62,64 +62,60 @@ export function createLobby({
 	const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)')
 	if (reducedMotion.matches || !(intro.time > 0)) intro.t = intro.time
 	let leaving = false
-	const faded = () => intro.time * tune.lobby.intro.fadeFrom
+	// The intro time below which the canvas is fully faded.
+	const fadeAt = () => intro.time * tune.lobby.intro.fadeFrom
 	const fadeIntro = () => {
-		const k = Math.min(1, intro.t / intro.time)
 		canvas.style.opacity =
-			k >= 1
+			intro.t >= intro.time
 				? ''
-				: String(Math.max(0, (k - tune.lobby.intro.fadeFrom) / (1 - tune.lobby.intro.fadeFrom)))
+				: String(Math.max(0, (intro.t - fadeAt()) / (intro.time - fadeAt())))
 	}
 	fadeIntro()
 	backdrop.shot('lobby', { instant: intro.t >= intro.time })
 	backdrop.tint(1, intro.time - intro.t)
-	// The chrome lands after the lobby: each piece slides in from its own edge as the lane
-	// fades up, and the floor's labels follow once the camera has landed.
-	let arrival = null
-	function arrive() {
-		arrival = []
-		if (reducedMotion.matches || intro.t >= intro.time) return
-		const { shift, stagger, land } = frontTune.unwind
-		const enter = (node, x, y, at) => {
-			if (!node) return
-			const timing = {
-				duration: land * 1000,
-				delay: at * 1000,
-				easing: 'ease-out',
-				fill: 'backwards',
-			}
-			arrival.push(node.animate([{ opacity: 0, scale: 0.85 }, {}], timing))
-			if (x || y)
-				arrival.push(
-					node.animate([{ translate: `${x}px ${y}px` }, { translate: '0px 0px' }], {
-						...timing,
-						composite: 'add',
-					}),
-				)
+	// The chrome slides between its place and its own edge: in one piece after another as the
+	// lane fades up, with the floor's labels once the camera lands; out together as it fades.
+	const edges = [
+		['.front-lobby .lobby-hero-strip', -1, 0],
+		['.front-lobby .back-button', -1, -1],
+		['.front-lobby .online-entry', 1, -1],
+		['.moba-hud:not(.moba-unit)', 0, 1],
+		['.mute', 1, 1],
+	]
+	let slides = []
+	function slide(node, x, y, { at = 0, time, out = false }) {
+		if (!node) return
+		const timing = {
+			duration: time * 1000,
+			delay: at * 1000,
+			// Reversed, ease-out would idle at the start; the exit is short enough to go straight.
+			easing: out ? 'linear' : 'ease-out',
+			direction: out ? 'reverse' : 'normal',
+			fill: out ? 'forwards' : 'backwards',
 		}
-		const chrome = Math.max(0, intro.time * tune.lobby.intro.fadeFrom - intro.t)
-		;[
-			['.lobby-hero-strip', -shift, 0],
-			['.back-button', -shift, -shift],
-			['.online-entry', shift, -shift],
-		].forEach(([selector, x, y], i) =>
-			enter(el.querySelector(selector), x, y, chrome + i * stagger),
-		)
-		enter(document.querySelector('.moba-hud:not(.moba-unit)'), 0, shift, chrome + 3 * stagger)
-		enter(document.querySelector('.mute'), shift, shift, chrome + 4 * stagger)
-		const landed = intro.time - intro.t
-		el.querySelectorAll('.lobby-label').forEach((label, i) =>
-			enter(label, 0, 0, landed + i * stagger),
-		)
+		const shift = frontTune.chrome.shift
+		slides.push(node.animate([{ opacity: 0, scale: 0.85 }, {}], timing))
+		if (x || y)
+			slides.push(
+				node.animate([{ translate: `${x * shift}px ${y * shift}px` }, { translate: '0px 0px' }], {
+					...timing,
+					composite: 'add',
+				}),
+			)
+	}
+	function stopSlides() {
+		for (const animation of slides) animation.cancel()
+		slides = []
 	}
 	run.system('present', ({ dt }) => {
-		if (!arrival) arrive()
 		// Leaving runs the arrival backwards: pull out along the same ray as the canvas fades.
 		if (leaving) {
 			intro.t = Math.max(0, intro.t - dt)
 			fadeIntro()
-			// Once the lobby is gone the splash takes over, so its tiles land with the backdrop.
-			if (intro.t <= faded() && !transferred) queueMicrotask(returnSplash)
+			// Once the lobby and its chrome are gone the splash takes over, so its tiles land
+			// with the backdrop.
+			const gone = intro.t <= fadeAt() && slides.every((a) => a.playState === 'finished')
+			if (gone && !transferred) queueMicrotask(returnSplash)
 			return
 		}
 		if (intro.t >= intro.time) return
@@ -209,6 +205,19 @@ export function createLobby({
 		pick: (id) => pickHero(id),
 		openNumbers: () => numbers.toggle(),
 	})
+	// The chrome slides in one piece after another as the lane fades up, labels once it lands.
+	if (!reducedMotion.matches && intro.t < intro.time) {
+		const { stagger, land } = frontTune.chrome
+		edges.forEach(([selector, x, y], i) =>
+			slide(document.querySelector(selector), x, y, {
+				at: Math.max(0, fadeAt() - intro.t) + i * stagger,
+				time: land,
+			}),
+		)
+		el.querySelectorAll('.lobby-label').forEach((label, i) =>
+			slide(label, 0, 0, { at: intro.time - intro.t + i * stagger, time: land }),
+		)
+	}
 	const numbers = createNumbers(hero, (open) => {
 		if (!open)
 			blockedPad = new Set((app.input.pad()?.buttons ?? []).flatMap((held, i) => (held ? [i] : [])))
@@ -459,11 +468,12 @@ export function createLobby({
 		el.inert = true
 		backdrop.shot('splash')
 		backdrop.tint(0, frontTune.shot.splash.time)
-		for (const animation of arrival ?? []) animation.cancel()
-		if (reducedMotion.matches || intro.t <= faded()) return returnSplash()
-		document.body.style.setProperty('--unwind-time', `${intro.t - faded()}s`)
-		document.body.style.setProperty('--unwind-shift', `${frontTune.unwind.shift}px`)
-		document.body.classList.add('front-unwinding')
+		if (reducedMotion.matches || intro.t <= fadeAt()) return returnSplash()
+		stopSlides()
+		const time = intro.t - fadeAt()
+		for (const [selector, x, y] of edges)
+			slide(document.querySelector(selector), x, y, { time, out: true })
+		for (const label of el.querySelectorAll('.lobby-label')) slide(label, 0, 0, { time, out: true })
 	}
 	function cancelReady(stop = true) {
 		readyQueued = false
@@ -713,9 +723,7 @@ export function createLobby({
 	run.signal.addEventListener(
 		'abort',
 		() => {
-			document.body.classList.remove('front-unwinding')
-			document.body.style.removeProperty('--unwind-time')
-			document.body.style.removeProperty('--unwind-shift')
+			stopSlides()
 			numbers.dispose()
 			strip.dispose()
 			lobbyHeroes.dispose()

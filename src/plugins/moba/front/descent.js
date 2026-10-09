@@ -8,7 +8,7 @@ import { createDescentState, descentFrame } from './descent-state.js'
 import { tune } from './tune.js'
 import './descent.css'
 
-// The crane and descent: one camera move from the lobby to the match that takes no input.
+// The crane and descent: one camera move from the lobby to the match; its only input is Esc/B to quit.
 // The lobby run lives until the apex, where the match starts behind the sky. The MOBA map
 // scope keeps the world, so the lane is rebuilt on it.
 export function startLoading(
@@ -23,7 +23,9 @@ export function startLoading(
 		const reduced = matchMedia('(prefers-reduced-motion: reduce)')
 		const gate = createDescentState(() => ({
 			crane: reduced.matches ? tune.loading.reducedDuration : tune.shot.apex.time,
+			preview: tune.loading.preview,
 			duration: reduced.matches ? tune.loading.reducedDuration : tune.loading.duration,
+			creep: reduced.matches ? 0 : tune.loading.creep,
 		}))
 		const canvas = app.renderer.domElement
 		const cameras = [app.camera.view, app.camera.aim]
@@ -39,8 +41,7 @@ export function startLoading(
 		let built = false
 		let apexTime = 0
 		let revealTime = 0
-		let previewTime = 0
-		let ornamentTime = 0
+		let dived = false
 		let buildHold = 0
 		let drawn = ''
 		scope.clock.pause(() => true)
@@ -57,7 +58,6 @@ export function startLoading(
 
 		const { layout, palette } = matchRecipe(setup?.map)
 		const name = layout.name
-		const orbit = tune.loading.orbit
 		const root = make(
 			'main',
 			'moba-front front-descent',
@@ -67,21 +67,11 @@ export function startLoading(
 					(letter, i) =>
 						`<span aria-hidden="true" style="--i:${i}">${letter === ' ' ? '&nbsp;' : letter}</span>`,
 				)
-				.join(
-					'',
-				)}</h1><svg class="front-descent-orbit" aria-hidden="true" viewBox="${-orbit.size / 2} ${-orbit.size / 2} ${orbit.size} ${orbit.size}"><g transform="scale(1 ${orbit.flatten})"><circle r="${orbit.radius}" fill="none" stroke-width="${orbit.stroke}"/><g class="front-descent-marks">${orbit.angles
-				.map((angle) => {
-					const a = (angle * Math.PI) / 180
-					return `<circle cx="${Math.cos(a) * orbit.radius}" cy="${Math.sin(a) * orbit.radius}" r="${orbit.mark}"/>`
-				})
-				.join('')}</g></g></svg>`,
+				.join('')}</h1>`,
 		)
 		root.dataset.phase = 'crane'
 		root.setAttribute('aria-label', 'Rising over the lobby')
 		const lettering = root.querySelector('.front-descent-name')
-		const ornament = root.querySelector('.front-descent-orbit')
-		const marks = root.querySelector('.front-descent-marks')
-		ornament.style.setProperty('--orbit-size', `${orbit.size}px`)
 		const crane = tune.loading.crane
 		root.style.setProperty('--name-at', `${tune.shot.apex.time * crane.nameAt}s`)
 		root.style.setProperty('--name-letter', `${crane.letter}s`)
@@ -91,6 +81,8 @@ export function startLoading(
 		document.body.classList.add('front-craning')
 		if (lobby) lobby.inert = true
 		backdrop.shot('apex').then(() => gate.arrive())
+		// The lobby's dusk lifts to the splash's day as the crane rises into the sky.
+		backdrop.tint(0, tune.shot.apex.time)
 
 		let unframe = scope.camera.frame(() => {
 			const e = easeShot(gate.state.crane)
@@ -154,8 +146,6 @@ export function startLoading(
 			if (lobby) lobby.inert = false
 			parent = canvas.parentNode
 			next = canvas.nextSibling
-			// The apex sky is the splash's, not the lobby's dusk.
-			backdrop.tint(0)
 			root.prepend(backdrop.el, canvas)
 			canvas.classList.add('front-canvas')
 			canvas.inert = false
@@ -186,7 +176,7 @@ export function startLoading(
 		)
 		const cream = new THREE.Color(PALETTE.cream)
 		function draw({ phase, crane: rise, progress }) {
-			const key = `${phase}:${rise}:${progress}:${revealTime}:${ornamentTime}`
+			const key = `${phase}:${rise}:${progress}:${revealTime}`
 			if (key === drawn) return
 			drawn = key
 			// Never fully clear: Chrome stops compositing an opacity-0 canvas, and the lane's
@@ -205,14 +195,9 @@ export function startLoading(
 						)
 			backdrop.fade(shown)
 			canvas.style.opacity = String(floor + (1 - floor) * shown)
-			marks.setAttribute(
-				'transform',
-				`rotate(${reduced.matches ? 0 : (ornamentTime / Math.max(tune.loading.reducedDuration, orbit.period)) * 360})`,
-			)
 			const eased = easeShot(progress)
 			const name = Math.min(1, progress / Math.max(0.01, tune.loading.uiFadeEnd))
 			lettering.style.opacity = String(1 - easeShot(name))
-			ornament.style.opacity = String(orbit.opacity * (1 - easeShot(name)))
 			restore.update({
 				line: tune.loading.line + (1 - tune.loading.line) * eased,
 				hatch: 1 - eased,
@@ -233,44 +218,53 @@ export function startLoading(
 			)
 		}
 
-		// Every key goes nowhere until landing; releases still reach input.
+		// Esc or B quits to the splash from anywhere in the crane or the dive. Local play only:
+		// a shared session can't walk out on its guests.
+		let quitting = false
+		function quit() {
+			if (ending || quitting || !app.session.actions.includes('restart')) return
+			quitting = true
+			app.audio.blip({ ...tune.back, type: 'sine' })
+			dispose()
+			app.modes.start('moba-front', { options: { setup, backdrop, heldKeys: ['Escape'] } })
+		}
+		let padBack = !!app.input.pad()?.buttons[1]
+		// Every other key goes nowhere until landing; releases still reach input.
 		function key(event) {
 			if (event.code === 'Backquote' || event.target?.closest?.('.lil-gui')) return
 			event.preventDefault()
 			event.stopImmediatePropagation()
+			if (event.code === 'Escape' && !event.repeat) quit()
 		}
 		window.addEventListener('keydown', key, { capture: true, signal: scope.signal })
 
 		scope.system('present', ({ dt }) => {
 			if (ending) return
 			if (!ownsRun()) return dispose()
+			const back = !!app.input.pad()?.buttons[1]
+			if (back && !padBack) return quit()
+			padBack = back
 			const before = gate.state.phase
-			if (!capturing) ornamentTime += dt
 			if (before === 'apex' && !capturing) {
 				apexTime += dt
 				if (built && apexTime >= buildHold) {
 					const reveal = reduced.matches ? 0 : Math.max(0, tune.loading.reveal)
-					const revealing = Math.min(dt, Math.max(0, reveal - revealTime))
-					revealTime += revealing
-					previewTime += dt - revealing
-					if (previewTime >= tune.loading.preview) gate.ready()
+					revealTime = Math.min(reveal, revealTime + dt)
+					// The map creeps into the dive while you look at it; no hold, no spinner.
+					if (revealTime >= reveal) gate.ready()
 				}
 			}
-			if (!capturing) {
-				const remaining =
-					capture && gate.state.phase === 'descent'
-						? Math.max(
-								0,
-								(capture.progress - gate.state.progress) *
-									(reduced.matches ? tune.loading.reducedDuration : tune.loading.duration),
-							)
-						: dt
-				gate.step(Math.min(dt, remaining))
-			}
+			if (!capturing) gate.step(dt)
 			const state = gate.state
 			if (before === 'crane' && state.phase !== 'crane' && !apex()) return
-			if (before === 'apex' && state.phase === 'descent') {
-				root.dataset.phase = 'descent'
+			if (before === 'apex' && state.phase === 'descent') root.dataset.phase = 'descent'
+			if (
+				!dived &&
+				state.phase !== 'crane' &&
+				state.phase !== 'apex' &&
+				state.elapsed >= tune.loading.preview
+			) {
+				dived = true
 				app.audio.blip(tune.loading.drop)
 			}
 			const flying = state.phase === 'descent' || state.phase === 'landed'
@@ -302,7 +296,6 @@ export function startLoading(
 						...gate.state,
 						apexTime,
 						revealTime,
-						previewTime,
 						built,
 						tick: match?.snapshot().t ?? null,
 						camera: app.camera.view.position.toArray(),
@@ -330,7 +323,7 @@ export function startLoading(
 		})
 		return () => {
 			capture?.resolve(null)
-			if (!ending) backdrop.dispose()
+			if (!ending && !quitting) backdrop.dispose()
 			restore?.()
 			unframe()
 			if (match && ownsRun()) app.setPalette(palette)

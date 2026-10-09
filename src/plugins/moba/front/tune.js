@@ -11,19 +11,11 @@ export const tune = {
 		farMargin: 100,
 		duration: 2.4,
 		reducedDuration: 1 / 60,
-		// After shader readiness and the reveal, the fully visible lane holds for `preview` s.
+		// After shader readiness and the reveal you look at the lane for `preview` s while the
+		// camera creeps `creep` of the way into the descent, then dives for `duration` s.
 		preview: 4,
+		creep: 0.06,
 		reveal: 0.7,
-		orbit: {
-			size: 96,
-			radius: 30,
-			flatten: 0.36,
-			stroke: 1.3,
-			mark: 2,
-			opacity: 0.55,
-			angles: [20, 150, 265],
-			period: 8,
-		},
 		height: 22,
 		back: 110,
 		fov: 55,
@@ -77,10 +69,12 @@ export const tune = {
 		dune: '#4f5d70',
 		shadow: '#3f4358',
 	},
-	// Leaving the lobby, its chrome slides `shift` px towards its own edge as it fades.
-	unwind: { shift: 72 },
+	// The lobby's chrome slides `shift` px between its place and its own edge over `land` s:
+	// in one piece `stagger` s after another, out together as the lane fades.
+	chrome: { shift: 72, stagger: 0.06, land: 0.3 },
 	back: { freq: 174.61, slideTo: 130.81, dur: 0.25, gain: 0.055 },
 	// Menu tiles: the response is a spring, not a fade. `drop` is the fall under the lobby shot,
+	// title first and each tile `stagger` s after the last (the picked one falls last);
 	// `pop` the spring back in as the splash shot lands.
 	// The title sits still for `calm` ms (min, max), then one letter dodges or the Ball glints.
 	title: { calm: [3500, 9000] },
@@ -93,6 +87,7 @@ export const tune = {
 		lift: 8,
 		tilt: 2.5,
 		drop: 0.2,
+		stagger: 0.05,
 		pop: 0.35,
 	},
 	move: { freq: 880, slideTo: 1175, dur: 0.045, gain: 0.03, type: 'square' },

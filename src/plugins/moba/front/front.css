@@ -377,34 +377,3 @@
 		transition-duration: 0s;
 	}
 }
-/* Leaving the lobby: its chrome shrinks and slides off towards its own edge as the camera
-   pulls away. */
-.front-unwinding > :not(.moba-front, script, .lil-gui),
-.front-unwinding .front-lobby > :not(.front-backdrop, .front-canvas) {
-	--out: var(--unwind-shift);
-	opacity: 0 !important;
-	scale: 0.85;
-	pointer-events: none;
-	transition:
-		opacity var(--unwind-time) ease-in,
-		scale var(--unwind-time) ease-in,
-		translate var(--unwind-time) ease-in !important;
-}
-.front-unwinding .front-lobby > .lobby-hero-strip {
-	translate: calc(-1 * var(--out)) -50%;
-}
-.front-unwinding .front-lobby > .back-button {
-	translate: calc(-1 * var(--out)) calc(-1 * var(--out));
-}
-.front-unwinding .front-lobby > .online-entry {
-	translate: var(--out) calc(-1 * var(--out));
-}
-.front-unwinding > .mute {
-	translate: var(--out) var(--out);
-}
-.front-unwinding > .moba-hud:not(.moba-unit) {
-	translate: 0 var(--out);
-}
-.front-unwinding > .moba-unit {
-	translate: calc(-1 * var(--out)) calc(-1 * var(--out));
-}

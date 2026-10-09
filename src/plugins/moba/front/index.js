@@ -37,6 +37,8 @@ export function mobaFront(app, map) {
 		const loading = folder.addFolder('loading')
 		for (const key of ['duration'])
 			loading.add(values.loading, key, app.clock.step, 3, app.clock.step)
+		loading.add(values.loading, 'preview', app.clock.step, 8, app.clock.step).name('look time')
+		loading.add(values.loading, 'creep', 0, 0.3, 0.01).name('creep while looking')
 		for (const key of ['line', 'pastel'])
 			loading.add(values.loading, key, key === 'line' ? 0.1 : 0, 1, 0.01)
 		const shots = folder.addFolder('backdrop shots (next move)')
@@ -139,8 +141,7 @@ export function mobaFront(app, map) {
 				.map((c, i) => `<span class="front-letter${i === 1 ? ' front-ball' : ''}">${c}</span>`)
 				.join('')
 			el.innerHTML = `<div class="front-chrome"><h1 class="front-heading" aria-label="DodgeThis"><span aria-hidden="true">${title}</span></h1><p class="front-notice" role="status" hidden></p>
-				<div class="front-tiles front-modes" role="group" aria-label="Game or map">${modes.map((tile) => `<button type="button" class="front-tile" data-mode="${tile.mode}" ${tile.map ? `data-map="${tile.map}"` : ''}><span class="front-tile-face"></span><svg viewBox="${tile.viewBox ?? '0 0 64 64'}" aria-hidden="true">${tile.glyph}</svg>${tile.map ? '<small class="front-tile-kicker">MOBA</small>' : ''}<span class="front-tile-name">${tile.name}</span></button>`).join('')}</div>
-				<footer><p class="front-prompts" aria-live="polite"></p></footer></div>`
+				<div class="front-tiles front-modes" role="group" aria-label="Game or map">${modes.map((tile) => `<button type="button" class="front-tile" data-mode="${tile.mode}" ${tile.map ? `data-map="${tile.map}"` : ''}><span class="front-tile-face"></span><svg viewBox="${tile.viewBox ?? '0 0 64 64'}" aria-hidden="true">${tile.glyph}</svg>${tile.map ? '<small class="front-tile-kicker">MOBA</small>' : ''}<span class="front-tile-name">${tile.name}</span></button>`).join('')}</div></div>`
 			const chrome = el.querySelector('.front-chrome')
 			const notice = el.querySelector('.front-notice')
 			notice.textContent = options.notice ?? ''
@@ -254,16 +255,28 @@ export function mobaFront(app, map) {
 				if (pop?.playState === 'running') pop.commitStyles()
 				pop?.cancel()
 				sheet.append(chrome)
-				chrome
-					.animate([{ translate: '0 100vh', rotate: '4deg' }], {
-						duration: (reduced ? 0 : tune.tile.drop) * 1000,
-						easing: 'cubic-bezier(0.5, 0, 0.9, 0.4)',
-						fill: 'forwards',
-					})
-					.finished.then(
-						() => sheet.remove(),
-						() => sheet.remove(),
-					)
+				// The title goes first, then the tiles one by one; the picked tile falls last.
+				const picked = buttons.find((button) => button.classList.contains('selected'))
+				const order = [
+					chrome.querySelector('.front-heading'),
+					notice,
+					...buttons.filter((button) => button !== picked),
+					picked,
+				].filter(Boolean)
+				Promise.all(
+					order.map(
+						(node, i) =>
+							node.animate([{ translate: '0 100vh', rotate: i % 2 ? '-4deg' : '4deg' }], {
+								duration: (reduced ? 0 : tune.tile.drop) * 1000,
+								delay: (reduced ? 0 : i * tune.tile.stagger) * 1000,
+								easing: 'cubic-bezier(0.5, 0, 0.9, 0.4)',
+								fill: 'forwards',
+							}).finished,
+					),
+				).then(
+					() => sheet.remove(),
+					() => sheet.remove(),
+				)
 			}
 			function deny() {
 				app.audio.blip(tune.deny)
@@ -277,12 +290,6 @@ export function mobaFront(app, map) {
 				if (device === next) return
 				device = next
 				el.dataset.device = next
-				el.querySelector('.front-prompts').innerHTML =
-					next === 'gamepad'
-						? '<span><kbd class="front-arrows">✛</kbd>Choose</span><span><kbd>A</kbd>Go</span>'
-						: next === 'keyboard'
-							? '<span><kbd class="front-arrows">←→</kbd>Choose</span><span><kbd>Enter</kbd>Go</span>'
-							: ''
 			}
 			setDevice(matchMedia('(any-hover: none)').matches ? 'mouse' : 'keyboard')
 			let focused = -1

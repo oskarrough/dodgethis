@@ -37,27 +37,6 @@
 		transform: none;
 	}
 }
-/* A small court orbit in the composition, not a progress meter. */
-.front-descent-orbit {
-	position: absolute;
-	z-index: 1;
-	top: calc(20% + clamp(52px, 9vw, 165px));
-	left: 50%;
-	width: var(--orbit-size);
-	height: var(--orbit-size);
-	translate: -50% -25%;
-	fill: var(--ui-cream);
-	stroke: var(--ui-text);
-	opacity: 0.7;
-	pointer-events: none;
-}
-.front-descent[data-phase='crane'] .front-descent-orbit {
-	visibility: hidden;
-}
-.front-descent-marks {
-	fill: var(--ui-text);
-	stroke: none;
-}
 @media (prefers-reduced-motion: reduce) {
 	.front-descent-name span {
 		animation: none;
