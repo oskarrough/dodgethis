@@ -5,6 +5,8 @@ import { FORWARD_LAYER, makeStyleMaterial } from '../../core/stylepass.js'
 import { tune as coreTune } from '../../core/tune.js'
 import { tune } from './tune.js'
 import { floorShape } from './lobby-floor.js'
+import { BOLLARD_ROLES, bollardGeometries } from './bollard.js'
+import { WINDBREAK_ROLES, windbreakGeometries } from './windbreak.js'
 import { createMatchTerrain } from './match-terrain.js'
 import { createFlagfallWater, loadFlagfallTile } from './flagfall-water.js'
 import { FLOOR, buildColliders } from './obstacles.js'
@@ -318,7 +320,16 @@ diffuseColor.rgb *= 1.0 - coverShade * (1.0 - max(0.0, dot(n, normalize(vec3(0.4
 	if (kind === 'lobby') buildLobby()
 	else if (layout.settings?.lane) buildFlagfall()
 	else buildLane()
+	// Flagfall draws its hedges as windbreaks, merged into one mesh per colour.
+	const windbreak = { sand: [], wood: [], stripes: [[], [], []] }
 	for (const b of layout.boxes) {
+		if (finish && b.kind === 'hedge') {
+			const parts = windbreakGeometries(b, m.hedgeHeight, scale)
+			windbreak.sand.push(...parts.sand)
+			windbreak.wood.push(...parts.wood)
+			parts.stripes.forEach((list, i) => windbreak.stripes[i].push(...list))
+			continue
+		}
 		const h = b.kind === 'hedge' ? m.hedgeHeight : m.wallHeight
 		const trunk = b.kind === 'hedge' ? h - m.scallopRadius : h
 		add(
@@ -346,8 +357,21 @@ diffuseColor.rgb *= 1.0 - coverShade * (1.0 - max(0.0, dot(n, normalize(vec3(0.4
 				hedgeColor,
 			)
 	}
+	print(windbreak.sand, material(WINDBREAK_ROLES.sand), 'windbreak-berms')
+	print(windbreak.wood, material(WINDBREAK_ROLES.wood), 'windbreak-poles')
+	windbreak.stripes.forEach((list, i) =>
+		print(list, material(WINDBREAK_ROLES.stripes[i]), `windbreak-canvas-${i}`),
+	)
 
+	// Flagfall's yard cover is a mooring bollard, merged into one mesh per colour.
+	const bollards = layout.settings?.lane
+	const bollard = Object.fromEntries(Object.keys(BOLLARD_ROLES).map((key) => [key, []]))
 	for (const p of layout.pillars) {
+		if (bollards) {
+			const parts = bollardGeometries(p, m.pillarHeight)
+			for (const key of Object.keys(bollard)) bollard[key].push(...parts[key])
+			continue
+		}
 		add(
 			new THREE.CylinderGeometry(p.r, p.r, m.pillarHeight, m.pillarSegments),
 			scenery,
@@ -364,6 +388,8 @@ diffuseColor.rgb *= 1.0 - coverShade * (1.0 - max(0.0, dot(n, normalize(vec3(0.4
 			p.z,
 		)
 	}
+	for (const [key, list] of Object.entries(bollard))
+		print(list, material(BOLLARD_ROLES[key]), `bollard-${key}`)
 	const uncollide = buildColliders(
 		world,
 		RAPIER,

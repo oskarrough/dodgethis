@@ -219,7 +219,6 @@ export function createFeedback({
 					follow: attack ? fact.target : null,
 					size: fact.repeat ? 0.55 : fact.kind === 'attack-move' ? 1.4 : 1,
 				})
-				if (!fact.repeat) sfx.tick(attack ? 0.5 : fact.kind === 'attack-move' ? 0.25 : 0)
 				return
 			}
 			case 'cast':

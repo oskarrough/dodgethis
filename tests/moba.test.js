@@ -269,7 +269,7 @@ test('W vaults in the aimed direction, with its own cooldown and no projectile',
 })
 
 test('E shows a delayed control zone, clamps its range, then hits and slows enemies', () => {
-	place(0, 8)
+	place(0, 6)
 	const d = sim.dummies[0]
 	d.body.place(0, 1.05, 0)
 	press('slot3', { x: 0, z: 0 })
@@ -293,7 +293,7 @@ test('E shows a delayed control zone, clamps its range, then hits and slows enem
 	hero().cd[2] = 0
 	press('slot3', { x: 0, z: -100 })
 	step()
-	expect(sim.zones[0].z).toBeCloseTo(8 - tune.rain.range)
+	expect(sim.zones[0].z).toBeCloseTo(6 - tune.rain.range)
 })
 
 // The bar is feel at 144 Hz: the rendered hero and the follow camera must move the same distance every frame.

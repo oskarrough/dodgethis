@@ -437,7 +437,14 @@ export function createSim({
 				h.order.resume ||
 				offPath(h)
 			)
-				h.order = { kind: 'attack', target: target.id, goal: null, path: null }
+				h.order = {
+					kind: 'attack',
+					target: target.id,
+					goal: null,
+					path: null,
+					// An attack-move keeps fighting around the click once its pick dies.
+					resume: point.kind === 'attack-move' ? walkGoal(point) : undefined,
+				}
 			present({
 				type: 'order',
 				hero: h.id,

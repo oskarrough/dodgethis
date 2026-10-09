@@ -29,6 +29,11 @@ export const PALETTE = {
 	godmodeGlow: 0xc8f0ff,
 	godmodeCore: 0xe8fbff,
 	godmodeDeep: 0x1a4466,
+	// Seaside scenery
+	sand: 0xc4ad82,
+	driftwood: 0x8a6c4c,
+	seaTeal: 0x5f9a98,
+	terracotta: 0xc98462,
 }
 
 // '#rrggbb' for canvas textures, CSS and anything that wants a string.

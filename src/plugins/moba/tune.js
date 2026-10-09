@@ -131,7 +131,7 @@ export const tune = {
 	// Flagfall: two lanes on the shared court in the shallows. All geometry applies on restart.
 	flagfall: {
 		name: 'Flagfall',
-		scale: 0.9, // one multiplier for every layout metre; applies on restart
+		scale: 1, // one multiplier for every layout metre; applies on restart
 		palette: { page: 0x536e79 },
 		rockDepth: 1.8,
 		// Flagfall scenery only; metres before map scale, all apply on restart.
@@ -289,7 +289,6 @@ export const tune = {
 		},
 		pillarRadius: 1.1,
 		yardPillars: { x: 7, z: 2 },
-		towerPillars: { x: 13, z: 13 },
 		spawns: { A: { x: -49, z: 0 }, B: { x: 49, z: 0 } },
 		structures: { towerX: 18, fortX: 32, coreX: 42 },
 		waveSpawnX: 40,
@@ -1042,7 +1041,7 @@ export const tune = {
 		critEvery: 3,
 		critMultiplier: 1.5,
 	},
-	toss: { damage: 120, castPoint: 0.35, range: 9, speed: 20, radius: 0.35, cooldown: 5 },
+	toss: { damage: 120, castPoint: 0.35, range: 7, speed: 20, radius: 0.35, cooldown: 5 },
 	catch: {
 		damageReduction: 0.25, // playtest starting value, not a balance claim
 		castPoint: 0,
@@ -1137,7 +1136,7 @@ export const tune = {
 	rain: {
 		damage: 180,
 		castPoint: 0,
-		range: 10,
+		range: 7,
 		radius: 2.5,
 		delay: 0.7,
 		slow: 0.3,

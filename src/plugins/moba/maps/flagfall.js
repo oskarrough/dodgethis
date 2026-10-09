@@ -24,7 +24,6 @@ export function flagfallLayout() {
 	const pillars = [-1, 1].flatMap((side) =>
 		[-1, 1].flatMap((flank) => [
 			{ x: side * s.yardPillars.x, z: flank * s.yardPillars.z, r: s.pillarRadius },
-			{ x: side * s.towerPillars.x, z: flank * s.towerPillars.z, r: s.pillarRadius },
 		]),
 	)
 	const lanes = [-1, 1].map((flank) => ({
@@ -99,7 +98,6 @@ export function flagfallLayoutTune() {
 			'hedge',
 			'pillarRadius',
 			'yardPillars',
-			'towerPillars',
 			'spawns',
 			'structures',
 			'posts',

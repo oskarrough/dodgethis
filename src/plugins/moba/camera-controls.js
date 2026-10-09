@@ -38,8 +38,24 @@ export function createCameraControls(
 	const onPointer = (e) => {
 		pointer = active() && e.pointerType === 'mouse' ? { x: e.clientX, y: e.clientY } : null
 	}
-	const leave = () => {
-		pointer = null
+	// A windowed mouse can overshoot the edge it's panning toward; pin it there so the pan keeps going.
+	const leave = (e) => {
+		const width = target.innerWidth,
+			height = target.innerHeight
+		const band = Math.min(t.edgeBand, width / 2, height / 2)
+		const x = e?.clientX,
+			y = e?.clientY
+		if (!pointer || !Number.isFinite(x) || !Number.isFinite(y)) return void (pointer = null)
+		const pin = (v, size) => (v <= band ? 0 : v >= size - band ? size - 1 : null)
+		const px = pin(x, width),
+			py = pin(y, height)
+		pointer =
+			px === null && py === null
+				? null
+				: {
+						x: px ?? Math.max(0, Math.min(width - 1, x)),
+						y: py ?? Math.max(0, Math.min(height - 1, y)),
+					}
 	}
 	// Capture Space before core input suppresses its page-scroll default.
 	target.addEventListener('keydown', onKey, { signal, capture: true })
@@ -49,7 +65,7 @@ export function createCameraControls(
 	target.addEventListener(
 		'pointerout',
 		(e) => {
-			if (!e.relatedTarget) leave()
+			if (!e.relatedTarget) leave(e)
 		},
 		{ signal },
 	)
@@ -61,11 +77,11 @@ export function createCameraControls(
 				e.target === target.document ||
 				e.target === target.document?.documentElement
 			)
-				leave()
+				leave(e)
 		},
 		{ signal, capture: true },
 	)
-	target.addEventListener('pointercancel', leave, { signal })
+	target.addEventListener('pointercancel', () => leave(), { signal })
 	target.addEventListener(
 		'blur',
 		() => {
