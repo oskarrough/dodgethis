@@ -27,22 +27,34 @@ export function flagfallLayout() {
 			{ x: side * s.towerPillars.x, z: flank * s.towerPillars.z, r: s.pillarRadius },
 		]),
 	)
-	const structures = [-1, 1].flatMap((side) => [
+	const lanes = [-1, 1].map((flank) => ({
+		id: flank === -1 ? 'south' : 'north',
+		path: [
+			{ x: -s.waveSpawnX, z: flank * s.lane.centreZ },
+			{ x: s.waveSpawnX, z: flank * s.lane.centreZ },
+		],
+	}))
+	const structures = ['A', 'B'].flatMap((team) => [
 		...['tower', 'fort'].flatMap((kind) =>
-			[-1, 1].map((flank) => ({
-				id: `${kind}-${side === -1 ? 'A' : 'B'}-${flank === -1 ? 'south' : 'north'}`,
-				team: side === -1 ? 'A' : 'B',
-				lane: flank === -1 ? 'south' : 'north',
+			lanes.map((lane) => ({
+				id: `${kind}-${team}-${lane.id}`,
+				team,
+				lane: lane.id,
 				kind,
-				x: side * s.structures[`${kind}X`],
-				z: flank * s.lane.centreZ,
+				after: kind === 'fort' ? [`tower-${team}-${lane.id}`] : [],
+				x: (team === 'A' ? -1 : 1) * s.structures[`${kind}X`],
+				z: lane.path[0].z,
 			})),
 		),
 		{
-			id: `core-${side === -1 ? 'A' : 'B'}`,
-			team: side === -1 ? 'A' : 'B',
+			id: `core-${team}`,
+			team,
 			kind: 'core',
-			x: side * s.structures.coreX,
+			after: {
+				all: lanes.map((lane) => `tower-${team}-${lane.id}`),
+				any: lanes.map((lane) => `fort-${team}-${lane.id}`),
+			},
+			x: (team === 'A' ? -1 : 1) * s.structures.coreX,
 			z: 0,
 		},
 	])
@@ -57,13 +69,8 @@ export function flagfallLayout() {
 		obstacles: [...pillars, ...boxes],
 		spawns: s.spawns,
 		spawnSpacing: tune.map.spawnSpacing,
-		lanes: [-1, 1].map((flank) => ({
-			id: flank === -1 ? 'south' : 'north',
-			path: [
-				{ x: s.spawns.A.x, z: flank * s.lane.centreZ },
-				{ x: s.spawns.B.x, z: flank * s.lane.centreZ },
-			],
-		})),
+		bases: { A: { x: -s.baseX }, B: { x: s.baseX } },
+		lanes,
 		structures,
 		posts: s.posts,
 		dummyPosts: s.dummyPosts,
@@ -88,6 +95,7 @@ export function flagfallLayoutTune() {
 			'yard',
 			'baseBlock',
 			'baseX',
+			'waveSpawnX',
 			'hedge',
 			'pillarRadius',
 			'yardPillars',

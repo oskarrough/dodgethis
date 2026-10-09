@@ -127,7 +127,7 @@ export const tune = {
 		},
 		palette: { page: 0x555669, courtShade: 0x708883, scenery: 0x899b9b },
 	},
-	// Flagfall walkabout: shared court in the shallows. All geometry applies on restart.
+	// Flagfall: two lanes on the shared court in the shallows. All geometry applies on restart.
 	flagfall: {
 		name: 'Flagfall',
 		scale: 0.9, // one multiplier for every layout metre; applies on restart
@@ -291,6 +291,7 @@ export const tune = {
 		towerPillars: { x: 13, z: 13 },
 		spawns: { A: { x: -49, z: 0 }, B: { x: 49, z: 0 } },
 		structures: { towerX: 18, fortX: 32, coreX: 42 },
+		waveSpawnX: 40,
 		posts: [
 			{ x: -16, z: 3 },
 			{ x: 16, z: -3 },
@@ -401,10 +402,10 @@ export const tune = {
 			spacing: 2.0,
 			radius: 0.4,
 			aimRadius: 2,
-			clickPad: 0.02, // right-clicks this far outside a card's screen box (in clip space) still pick it
+			clickPad: 0.02, // right-clicks this far outside a magnet's screen box (in clip space) still pick it
+			// The invisible box that hover and right-click read; the magnet floats inside it.
 			width: 1.15,
 			height: 1.7,
-			printGap: 0.015,
 			labelY: 0.1,
 			settleTime: 0.35,
 			overshoot: 0.12,
@@ -413,7 +414,43 @@ export const tune = {
 			firingMark: { x: 0, z: 3.9 },
 			shot: { speed: 20, range: 18, radius: 0.2, damage: 0 },
 			shotSound: { freq: 790, slideTo: 350, dur: 0.09, gain: 0.07, type: 'sine' },
-			pickSound: { freq: 240, slideTo: 90, dur: 0.22, gain: 0.12, type: 'triangle' },
+			pickSound: { freq: 140, slideTo: 420, dur: 0.2, gain: 0.1, type: 'sine' },
+			// Each difficulty is a floating horseshoe magnet; ball count, orbit and face say how hard.
+			// Shapes apply on restart; motion, timing and sound are live.
+			magnet: {
+				hover: 1.05, // arch centre above the floor
+				tilt: 0.35, // leans back toward the camera
+				arch: 0.3,
+				tube: 0.11,
+				leg: 0.3,
+				tip: 0.13,
+				ball: 0.1,
+				face: 0.15,
+				sag: 0.18, // an unpicked magnet droops this far and dims its pull
+				pullRate: 6,
+				slamTime: 0.14,
+				leapTime: 0.42,
+				leapHeight: 0.8,
+				stagger: 0.06,
+				stickFor: 0.8,
+				releaseTime: 0.45,
+				punch: 0.22,
+				punchTime: 0.35,
+				gravity: 16,
+				bounce: 0.45,
+				fling: 0.6, // share of orbit speed a dropped ball keeps
+				roll: 2.2, // floor friction per second
+				roam: 0.85, // dropped balls stay this close to their magnet
+				rest: 0.55, // where idle balls lie, around the magnet's foot
+				moods: {
+					easy: { balls: 1, orbit: 0.75, spin: 1.1, bob: 0.07, bobRate: 0.9, buzz: 0, crackle: 0 },
+					normal: { balls: 2, orbit: 0.65, spin: 3.2, bob: 0.04, bobRate: 1.6, buzz: 0, crackle: 0 },
+					hard: { balls: 3, orbit: 0.52, spin: 7.5, bob: 0.02, bobRate: 3, buzz: 0.025, crackle: 0.35 },
+				},
+				clackSound: { freq: 1900, slideTo: 1300, dur: 0.045, gain: 0.09, type: 'square' },
+				thudSound: { freq: 150, slideTo: 80, dur: 0.07, gain: 0.08, type: 'triangle' },
+				leapSound: { freq: 300, slideTo: 900, dur: 0.12, gain: 0.05, type: 'sine' },
+			},
 		},
 		// The lobby's camera starts `distance`× back along its view ray; the canvas fades in from `fadeFrom` of the move.
 		intro: { distance: 4, fadeFrom: 0.6 },
@@ -519,6 +556,16 @@ export const tune = {
 	// The hero's movement profile (core/body.js). Obedience first: full speed in ~25 ms, a dead stop, no air.
 	tower: {
 		x: 18,
+		hp: 1400,
+		damage: 165,
+		rate: 1,
+		range: 7.75,
+		radius: 1.5,
+		speed: 16,
+		tell: 0.3,
+		ringNear: 3,
+	},
+	fort: {
 		hp: 1400,
 		damage: 165,
 		rate: 1,
@@ -723,6 +770,7 @@ export const tune = {
 		growth: 0.04,
 		growthPeriod: 60,
 		spawnX: 32,
+		structureStandoff: 1,
 		fileSpacing: 2,
 		rowSpacing: 1.2,
 		radius: 0.27,
@@ -781,6 +829,7 @@ export const tune = {
 		shatterSize: 0.5,
 		shatterSpin: 3,
 		towerHeight: 5,
+		fortHeight: 5,
 		coreHeight: 8.5,
 		domeSegments: 16,
 		domeWidth: 0.045,
@@ -821,6 +870,7 @@ export const tune = {
 		aggroWidth: 6,
 		aggroPing: 1.3,
 		towerCharge: 0.15,
+		fortPose: 0.15,
 		meleePose: 0.5,
 		rangedPose: 0.4,
 		wizardPose: 0.35,
@@ -1084,6 +1134,49 @@ export const tune = {
 		tell: 0.4, // an enemy-visible line before the sparring dummy releases Q
 		castEvery: 4, // one sparring dummy casts Loose back while in range
 		respawn: 2,
+	},
+	// The sparring dummies' own body: a burlap sack on a coil spring, all sizes in metres from the disc.
+	dummyView: {
+		segments: 20,
+		springRadius: 0.11,
+		springTube: 0.035,
+		springTurns: 3,
+		springHeight: 0.3,
+		sackRadius: 0.38,
+		sackHalfHeight: 0.46,
+		targetRings: [0.62, 0.42, 0.2], // outer red, cream, bullseye: cap angles in radians
+		targetLift: 0.12, // radians the target tilts up from the sack's equator
+		seamStitches: 5,
+		stitchLength: 0.1,
+		stitchWidth: 0.025,
+		neckRadius: 0.13,
+		neckTube: 0.035,
+		headRadius: 0.24,
+		eyeX: 0.085,
+		eyeY: 0.04,
+		eyeSize: 0.11,
+		buttonRadius: 0.05,
+		mouthY: -0.09,
+		mouthWidth: 0.15,
+		strawCount: 3,
+		strawLength: 0.2,
+		strawRadius: 0.035,
+		strawFan: 0.5,
+		armRadius: 0.085,
+		armLength: 0.34,
+		armDroop: 0.35, // radians below horizontal at rest
+		armY: 0.8, // shoulder height, as a fraction of the sack's height
+		wobbleFrequency: 9, // rad/s of the spring wobble
+		wobbleDamping: 0.16, // fraction of critical: low rings for longer
+		wobbleHit: 4.5, // rad/s a hit throws the top away from the shot
+		wobbleRelease: 3.5, // rad/s the lurch that throws a Loose back
+		wobbleMax: 0.6, // radians, tilt never exceeds this
+		armFlail: 0.5, // arm swing per rad/s of wobble
+		hopHeight: 0.12, // metres of each strafing hop at full speed
+		hopStride: 1.1, // metres travelled per hop
+		hopRock: 0.12, // radians of side-to-side rock per hop
+		castLean: 0.35, // radians the dummy rears back during its Loose tell
+		castArms: 1.1, // radians the arms rise during the tell
 	},
 	sounds: {
 		slapWindup: { freq: 140, slideTo: 250, type: 'triangle', dur: 0.15, gain: 0.1 },

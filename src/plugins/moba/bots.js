@@ -4,6 +4,7 @@ import { tune } from './tune.js'
 import { copyData } from './agents.js'
 import { createFightBot } from './fight-bots.js'
 import { createDodgeBot } from './dodge-bots.js'
+import { laneRoute } from './maps/paths.js'
 
 import { HEROES } from './heroes.js'
 
@@ -92,6 +93,7 @@ function view(sim, births, modules) {
 	})
 	return {
 		tick: sim.tick,
+		lanes: copyData(sim.lanes ?? []),
 		heroes: sim.heroes.map(unit),
 		shots: sim.shots
 			.filter((s) => !s.target)
@@ -110,7 +112,19 @@ export function createBots(seats, seed = tune.bots.seed, modules = []) {
 	const history = []
 	const births = new WeakMap()
 	const botIds = new Set(seats.map((seat) => seat.id))
-	const brains = seats.map((seat) => createBot(seat, seed, botIds, modules))
+	// A separate seeded deal spreads bots, not human seats. An idle human never
+	// reserves the only bot in a lane, and combat's random stream stays untouched.
+	const ranks = new Map()
+	for (const team of new Set(seats.map((seat) => seat.team))) {
+		const deal = seats
+			.filter((seat) => seat.team === team)
+			.map((seat) => ({ id: seat.id, draw: botRandom(seed, `lanes:${seat.id}`)() }))
+			.sort((a, b) => a.draw - b.draw || a.id.localeCompare(b.id))
+		deal.forEach((seat, rank) => ranks.set(seat.id, rank))
+	}
+	const brains = seats.map((seat) =>
+		createBot({ ...seat, laneRank: ranks.get(seat.id) }, seed, botIds, modules),
+	)
 	return {
 		brains,
 		step(sim, intents) {
@@ -127,7 +141,7 @@ export function createBots(seats, seed = tune.bots.seed, modules = []) {
 }
 
 export function createBot(
-	{ id, team, file = 0, difficulty = 'normal' },
+	{ id, team, file = 0, difficulty = 'normal', laneRank = 0 },
 	seed,
 	botIds = null,
 	modules = [],
@@ -188,6 +202,10 @@ export function createBot(
 			nextThink = sim.tick + tune.bots.thinkTicks
 
 			const ctx = combat.perceive(sim, perceived, h)
+			ctx.lanePath = perceived.lanes?.[laneRank % perceived.lanes.length]
+			// Multi-lane routes already separate teammates; one lane retains its files.
+			ctx.laneFile = perceived.lanes?.length === 1 ? file : 0
+			if (ctx.lanePath) ctx.route = laneRoute(ctx.lanePath.path, team, ctx.laneFile)
 			const contributions = habits.map((habit) => habit.botPerceive?.(ctx) ?? {})
 			ctx.blockers = contributions.flatMap((c) => c.blockers ?? [])
 			ctx.objectives = contributions.flatMap((c) => c.objectives ?? [])

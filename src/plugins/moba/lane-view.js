@@ -7,7 +7,7 @@ export function createLaneView(scene, smooth = null) {
 	const bodies = new Set()
 	function makeBody(x, z, team, kind) {
 		const v = tune.laneView
-		const tower = ['tower', 'core'].includes(kind)
+		const tower = Object.hasOwn(tune, kind) && !Object.hasOwn(tune.minions, kind)
 		const radius = tower ? tune[kind].radius : kind === 'brute' ? v.bruteRadius : tune.waves.radius
 		const height = kind === 'brute' ? v.bruteHeight : v.minionHeight
 		const halfHeight = tower ? v[`${kind}Height`] / 2 : height / 2
@@ -253,6 +253,7 @@ export function createLaneView(scene, smooth = null) {
 					crack.visible = unit.hp <= unit.maxHp * (1 - (i + 1) * v.coreCrack)
 			}
 			if (unit.kind === 'tower') visual.scale.x = visual.scale.z = 1 + progress * v.towerCharge
+			else if (unit.kind === 'fort') visual.rotation.z = progress * v.fortPose
 			else if (unit.kind === 'core') visual.position.y = progress * v.corePose
 			else {
 				// Minions wind up like cartoons: pull back and crouch, hang at the peak, then snap through.

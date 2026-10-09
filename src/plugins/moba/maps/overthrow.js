@@ -35,9 +35,11 @@ export function overthrowLayout() {
 		pillars,
 		spawns: { A: { x: -m.spawnX, z: 0 }, B: { x: m.spawnX, z: 0 } },
 		spawnSpacing: m.spawnSpacing,
+		bases: { A: { x: -tune.base.x }, B: { x: tune.base.x } },
 		lanes: [
 			{
 				id: 'mid',
+				halfWidth: tune.waves.laneZ,
 				path: [
 					{ x: -tune.waves.spawnX, z: 0 },
 					{ x: tune.waves.spawnX, z: 0 },
@@ -49,6 +51,7 @@ export function overthrowLayout() {
 				id: `${kind}-${team}`,
 				team,
 				kind,
+				after: kind === 'core' ? [`tower-${team}`] : [],
 				x: (team === 'A' ? -1 : 1) * tune[kind].x,
 				z: 0,
 			})),

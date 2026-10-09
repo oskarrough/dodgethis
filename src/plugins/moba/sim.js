@@ -105,7 +105,7 @@ export function createSim({
 	const zones = []
 	const boards = []
 	const cutouts = []
-	const bodyAt = (x, z, team, definition = heroDefinition()) => {
+	const bodyAt = (x, z, team, definition = heroDefinition(), dress = dressHero) => {
 		const point = walkingBounds
 			? clampMap({ x, z }, definition.base.radius, walkingBounds)
 			: { x, z }
@@ -130,14 +130,14 @@ export function createSim({
 				body.rigidBody.setNextKinematicTranslation({ ...point, y: next.y })
 			}
 		}
-		let undress = dressHero(body, definition.id, team)
+		let undress = dress(body, definition.id, team)
 		// Lobby allegiance stays friendly; the claimed seat owns the costume's colour.
 		body.setTeam = (next) => {
 			if (team === next) return
 			team = next
 			undress()
 			body.visual.material.uniforms.uStyleId.value = styleId(next === 'A' ? 'teamA' : 'teamB')
-			undress = dressHero(body, definition.id, next)
+			undress = dress(body, definition.id, next)
 		}
 		const retire = body.retire
 		body.retire = () => {
@@ -1063,7 +1063,7 @@ export function createSim({
 		unit.corpse?.dispose()
 		unit.corpse = null
 		const spawn = unit.post ?? unit.spawn
-		unit.body = bodyAt(spawn.x, spawn.z, unit.team, unit.definition)
+		unit.body = bodyAt(spawn.x, spawn.z, unit.team, unit.definition, unit.dress)
 		if (unit.definition) unit.abilityState = freshAbilityState()
 		unit.body.face(dirOf(unit.yaw))
 		if (unit.definition) unit.cancelUntil = SLOTS.map(() => 0)
@@ -2129,6 +2129,7 @@ export function createSim({
 		ball,
 		obstacles,
 		bounds: field,
+		lanes: layout.lanes,
 		find,
 		get bots() {
 			return botTeam

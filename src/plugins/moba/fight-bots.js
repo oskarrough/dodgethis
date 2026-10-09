@@ -98,7 +98,13 @@ export function createFightBot({ id, team, file, difficulty }, botIds, random, i
 			},
 		}
 		const move = (goal) => {
-			const at = clampWalkable(goal, h.body.radius, tune.orders.clearance, sim.obstacles)
+			const at = clampWalkable(
+				goal,
+				h.body.radius,
+				tune.orders.clearance,
+				sim.obstacles,
+				sim.bounds,
+			)
 			if (h.order?.kind !== 'move' || distance(h.order.goal, at) > b.goalTolerance) frame.order = at
 		}
 		const attack = (target) => {
@@ -339,10 +345,10 @@ export function createFightBot({ id, team, file, difficulty }, botIds, random, i
 		return null
 	}
 	function push(ctx) {
-		const { h, move, frame } = ctx
-		// With no match habits, keep crossing toward the enemy side.
+		const { h, p, b, route, move, frame } = ctx
+		// With no match habits, walk the next stretch of the assigned lane.
 		state = 'push'
-		move({ x: -h.spawn.x, z: file })
+		move(route ? route.point(route.progress(p) + b.fightRange) : { x: -h.spawn.x, z: file })
 		return frame
 	}
 }
