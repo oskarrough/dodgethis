@@ -296,7 +296,7 @@ export function createHud({ lobby = false, bounds, name } = {}) {
 	for (const type of ['keydown', 'keyup']) globalThis.window?.addEventListener(type, onAlt)
 	globalThis.window?.addEventListener('blur', onBlur)
 
-	// Takedowns from death edges: a hero alive last frame and dead now was downed by the other team.
+	// Lane totals come from the host ledger; training falls back to visible death edges.
 	const kills = { A: 0, B: 0 }
 	const wasDead = new Map()
 	// One inspect cursor for keys and pad: I toggles it, or hold Y; arrows or the d-pad step through
@@ -683,7 +683,11 @@ export function createHud({ lobby = false, bounds, name } = {}) {
 				worldTip.hide()
 			}
 			const enemy = localTeam === 'A' ? 'B' : 'A'
-			if (sim)
+			if (sim?.matchStats) {
+				kills.A = kills.B = 0
+				for (const row of Object.values(sim.matchStats))
+					kills[row.team === 'A' ? 'B' : 'A'] += row.deaths
+			} else if (sim)
 				for (const h of sim.heroes) {
 					if (h.dead && wasDead.get(h.id) === false) kills[h.team === 'A' ? 'B' : 'A']++
 					wasDead.set(h.id, !!h.dead)

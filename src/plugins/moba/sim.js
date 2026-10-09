@@ -7,9 +7,12 @@ import { createBots } from './bots.js'
 import { createReadySeats } from './lobby-state.js'
 import { createScriptedHero } from './scripted.js'
 import { createLane } from './lane.js'
+import { createMatchStats } from './match-stats.js'
 import { createLaneView } from './lane-view.js'
+import { projectLaneSnapshot } from './lane-replica.js'
 import { createBody } from '../../core/body.js'
 import { PALETTE } from '../../core/style.js'
+import { styleId } from '../../core/stylepass.js'
 import { STEP } from '../../core/app.js'
 import { SCHEMES } from '../../core/intents.js'
 import { tune, profile } from './tune.js'
@@ -101,7 +104,12 @@ export function createSim({
 		)
 	let planPath = createPathPlanner({ radius: profile.radius, ...tune.orders }, obstacles, floor)
 	let t = 0
-	const present = (fact) => emit({ ...fact, tick: t })
+	const matchStats = withLane ? createMatchStats() : null
+	const present = (fact) => {
+		const timed = { ...fact, tick: t }
+		matchStats?.present(timed, heroes, lane.structures, botIds)
+		emit(timed)
+	}
 	const footprints = new WeakMap()
 	let castIds = 0
 	function trace(h, action, aim, ability) {
@@ -141,7 +149,15 @@ export function createSim({
 				body.rigidBody.setNextKinematicTranslation({ ...point, y: next.y })
 			}
 		}
-		const undress = dressHero(body, definition.id, team)
+		let undress = dressHero(body, definition.id, team)
+		// Lobby allegiance stays friendly; the claimed seat owns the costume's colour.
+		body.setTeam = (next) => {
+			if (team === next) return
+			team = next
+			undress()
+			body.visual.material.uniforms.uStyleId.value = styleId(next === 'A' ? 'teamA' : 'teamB')
+			undress = dressHero(body, definition.id, next)
+		}
 		const retire = body.retire
 		body.retire = () => {
 			for (const part of body.mesh.children) if (part !== body.visual) part.visible = false
@@ -1952,9 +1968,10 @@ export function createSim({
 		)
 	}
 
-	function snapshot() {
+	function snapshot({ wire = false } = {}) {
+		matchStats?.sync(heroes, botIds)
 		const pos = (b) => ({ x: q(b.position.x), z: q(b.position.z) })
-		return {
+		const state = {
 			t,
 			...(lane
 				? {
@@ -1969,6 +1986,7 @@ export function createSim({
 									travelled: ball.state.shot.travelled,
 								},
 							}),
+						matchStats: structuredClone(matchStats.rows),
 						globes: structuredClone(lane.globes),
 						teams: structuredClone(lane.teams),
 						minions: lane.minions.map((u) => ({
@@ -1976,6 +1994,8 @@ export function createSim({
 							kind: u.kind,
 							team: u.team,
 							hp: u.hp,
+							maxHp: u.maxHp,
+							dead: u.dead,
 							damageScale: u.damageScale,
 							pos: pos(u.body),
 							yaw: q(u.yaw ?? 0),
@@ -1996,6 +2016,7 @@ export function createSim({
 							vulnerable: lane.vulnerable(u),
 							silentUntil: u.silentUntil,
 							hp: u.hp,
+							maxHp: u.maxHp,
 							dead: u.dead,
 							target: u.target,
 							attackTick: u.attackTick,
@@ -2079,6 +2100,7 @@ export function createSim({
 				travelled: q(s.travelled),
 			})),
 		}
+		return wire && lane ? projectLaneSnapshot(state) : state
 	}
 
 	function dispose() {
@@ -2098,6 +2120,26 @@ export function createSim({
 		cutouts.length = 0
 	}
 
+	function removeHero(id) {
+		const index = heroes.findIndex((hero) => hero.id === id)
+		if (index < 0) return false
+		const hero = heroes[index]
+		ball?.hurt(hero)
+		cancelChannel(hero, 'clear')
+		intents.cancel(id)
+		readySeats?.release(id, t)
+		hero.corpse?.dispose()
+		if (!hero.dead) hero.body.dispose()
+		heroes.splice(index, 1)
+		const bot = botSeats.findIndex((seat) => seat.id === id)
+		if (bot >= 0) botSeats.splice(bot, 1)
+		for (const population of [boards, zones, shots])
+			for (let i = population.length - 1; i >= 0; i--)
+				if (population[i].owner === id || population[i].target === id) population.splice(i, 1)
+		rebuildBots()
+		return true
+	}
+
 	const api = {
 		heroes,
 		dummies,
@@ -2112,6 +2154,7 @@ export function createSim({
 		launchShot,
 		lane,
 		laneView,
+		matchStats: matchStats?.rows,
 		ball,
 		obstacles,
 		bounds: field,
@@ -2185,26 +2228,10 @@ export function createSim({
 			present({ type: 'spawn', hero: hero.id, point: { ...hero.body.position } })
 			return hero
 		},
+		removeHero,
 		clearHeroes(team, exceptId) {
-			for (let i = heroes.length - 1; i >= 0; i--) {
-				const hero = heroes[i]
-				if (hero.team !== team || hero.id === exceptId) continue
-				ball?.hurt(hero)
-				cancelChannel(hero, 'clear')
-				intents.cancel(hero.id)
-				hero.corpse?.dispose()
-				if (!hero.dead) hero.body.dispose()
-				heroes.splice(i, 1)
-				const index = botSeats.findIndex((s) => s.id === hero.id)
-				if (index >= 0) botSeats.splice(index, 1)
-				for (let j = boards.length - 1; j >= 0; j--)
-					if (boards[j].owner === hero.id) boards.splice(j, 1)
-				for (let j = zones.length - 1; j >= 0; j--)
-					if (zones[j].owner === hero.id) zones.splice(j, 1)
-				for (let j = shots.length - 1; j >= 0; j--)
-					if (shots[j].owner === hero.id || shots[j].target === hero.id) shots.splice(j, 1)
-			}
-			rebuildBots()
+			for (const hero of heroes.slice())
+				if (hero.team === team && hero.id !== exceptId) removeHero(hero.id)
 		},
 		step,
 		stickAim,

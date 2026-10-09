@@ -1,3 +1,9 @@
+import * as THREE from 'three'
+import { createBody } from '../../core/body.js'
+import { makeStyleMaterial } from '../../core/stylepass.js'
+import { dressHero } from './hero-view.js'
+import { HEROES } from './heroes.js'
+import { tune } from './tune.js'
 import { ICONS } from './hud.js'
 import './lobby-heroes.css'
 
@@ -62,6 +68,94 @@ export function createHeroStrip({ el, heroes, current, pick, openNumbers }) {
 		},
 		dispose() {
 			strip.remove()
+		},
+	}
+}
+
+// Intent picks and walk-on picks use the same authored stand positions.
+export function heroStands() {
+	const v = tune.lobby.pick
+	const playable = Object.values(HEROES).filter((h) => h.playable)
+	return playable.map((definition, i) => ({
+		id: definition.id,
+		x: v.x,
+		z: v.z + (i - (playable.length - 1) / 2) * v.spacing,
+	}))
+}
+
+export function createLobbyHeroes({ scene, el, humans, local }) {
+	const stands = heroStands()
+	const point = new THREE.Vector3()
+	const material = makeStyleMaterial('ammo', { flat: true })
+	const ring = new THREE.RingGeometry(
+		tune.lobby.pick.radius,
+		tune.lobby.pick.radius + tune.lobby.gallery.ringWidth,
+		tune.lobby.cutout.segments,
+	)
+	const labels = []
+	const props = stands.map((stand) => {
+		const body = createBody(scene, null, null, {
+			profile: HEROES[stand.id].base,
+			position: [stand.x, 0, stand.z],
+			replica: true,
+		})
+		const undress = dressHero(body, stand.id)
+		body.mesh.scale.setScalar(tune.lobby.ready.cardScale)
+		body.position.y *= tune.lobby.ready.cardScale
+		const pad = new THREE.Mesh(ring, material)
+		pad.rotation.x = -Math.PI / 2
+		pad.position.set(stand.x, tune.lobby.gallery.ringY, stand.z)
+		scene.add(pad)
+		const label = document.createElement('div')
+		label.className = 'lobby-label'
+		label.textContent = stand.id
+		label.dataset.picked = 'true'
+		el.append(label)
+		labels.push(label)
+		return { body, undress, pad, label }
+	})
+	const names = humans.map((human) => {
+		const label = document.createElement('div')
+		label.className = 'lobby-label sticker'
+		label.dataset.participant = human.id
+		label.textContent = `Player ${human.joinOrder + 1}${human.id === local ? ' (you)' : ''}`
+		label.style.cssText = 'translate:none;opacity:1;pointer-events:none;margin:0'
+		el.append(label)
+		labels.push(label)
+		return { human, label }
+	})
+	function place(label, position, camera) {
+		point.copy(position).project(camera)
+		label.hidden = point.z < -1 || point.z > 1
+		label.style.left = `${((point.x + 1) * innerWidth) / 2}px`
+		label.style.top = `${((1 - point.y) * innerHeight) / 2}px`
+	}
+	return {
+		stands,
+		update(camera) {
+			for (const [i, stand] of stands.entries())
+				place(props[i].label, { x: stand.x, y: tune.lobby.gallery.labelY, z: stand.z }, camera)
+			for (let i = names.length - 1; i >= 0; i--) {
+				const { human, label } = names[i]
+				if (!humans.includes(human)) {
+					label.remove()
+					names.splice(i, 1)
+					continue
+				}
+				const p = human.body.mesh.position
+				place(label, { x: p.x, y: p.y + tune.lobby.pick.nameHeight, z: p.z }, camera)
+				label.hidden ||= human.dead
+			}
+		},
+		dispose() {
+			for (const { body, undress, pad } of props) {
+				undress()
+				body.dispose()
+				scene.remove(pad)
+			}
+			for (const label of labels) label.remove()
+			ring.dispose()
+			material.dispose()
 		},
 	}
 }

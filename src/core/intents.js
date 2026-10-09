@@ -8,6 +8,7 @@ export const ACTIONS = Object.freeze([
 	'stop',
 	'cancel',
 	'ready',
+	'pick',
 	'slot1',
 	'slot2',
 	'slot3',

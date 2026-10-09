@@ -310,6 +310,8 @@ export const tune = {
 	},
 	// Lobby sim options apply on creation; map/match/training defaults do not read these.
 	lobby: {
+		capacity: 6,
+		handoffFor: 3, // seconds of live lane simulation carrying the loading roster
 		style: { line: 0.65, pastel: 0.65 },
 		practice: { damage: 0, tell: 0.8, tellY: 0.23 },
 		hud: { margin: 16 },
@@ -351,6 +353,12 @@ export const tune = {
 		},
 		// Picking from the hero row: the new body comes round edge-on, like a cutout turned on a pin.
 		pick: {
+			// Walk-on hero stands; geometry applies on lobby restart.
+			x: 5.2,
+			z: 0,
+			spacing: 2,
+			radius: 0.7,
+			nameHeight: 1.9,
 			flipTime: 0.25,
 			flipEdge: 0.06,
 			flipOvershoot: 0.12,
@@ -476,6 +484,7 @@ export const tune = {
 			],
 		},
 		onlineNotice: 'The online lobby is not ready yet. Play local practice.',
+		replica: { delay: 0.1, size: 6, depth: 12, precision: 100 },
 		respawn: 0.5,
 		// Where you spawn and recover: index 0 for team A, 3 for team B. Not drawn.
 		marks: [

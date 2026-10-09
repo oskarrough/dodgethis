@@ -1,8 +1,8 @@
 // Private, host-and-spoke PeerJS transport. Lobby/game authority lives in the session model.
 import { tune } from './tune.js'
 
-// 3: raw strings let us bound guest traffic before parsing JSON.
-export const PROTO = 3
+// 4: the host's mode id is part of the lobby/start contract (3 introduced bounded raw strings).
+export const PROTO = 4
 export const MAX_PLAYERS = 8
 export const REMOVAL_MESSAGES = Object.freeze({
 	'input-abuse': 'Player removed: invalid or excessive input.',
@@ -55,6 +55,19 @@ const cancelled = () => new Error('Connection attempt cancelled')
 const makeCode = () =>
 	Array.from({ length: 5 }, () => ALPHABET[Math.floor(Math.random() * ALPHABET.length)]).join('')
 
+// Modes may seed a participant with shallow, plain selection data, never identity or ownership.
+export function plainJoinData(data) {
+	return (
+		data == null ||
+		(typeof data === 'object' &&
+			!Array.isArray(data) &&
+			Object.values(data).every(
+				(value) =>
+					typeof value === 'string' || typeof value === 'boolean' || Number.isFinite(value),
+			))
+	)
+}
+
 export class Net {
 	constructor({
 		Peer = globalThis.window?.Peer,
@@ -63,6 +76,8 @@ export class Net {
 		startupTimeout = 12000,
 		joinTimeout = 14000,
 		handshakeTimeout = 5000,
+		capacity = () => MAX_PLAYERS,
+		validJoinData = () => true,
 	} = {}) {
 		this.Peer = Peer
 		this.peerOptions = peerOptions
@@ -70,6 +85,8 @@ export class Net {
 		this.startupTimeout = startupTimeout
 		this.joinTimeout = joinTimeout
 		this.handshakeTimeout = handshakeTimeout
+		this.capacity = capacity
+		this.validJoinData = validJoinData
 		this.peer = null
 		this.id = null
 		this.hostId = null
@@ -125,7 +142,7 @@ export class Net {
 		}
 	}
 
-	async join(code) {
+	async join(code, data) {
 		this.leave()
 		const generation = this._generation
 		code = typeof code === 'string' ? code.trim().toUpperCase() : ''
@@ -141,7 +158,7 @@ export class Net {
 				serialization: 'raw',
 				metadata: { v: PROTO },
 			})
-			await this._joinConnection(conn, generation)
+			await this._joinConnection(conn, generation, data)
 			if (generation !== this._generation) throw cancelled()
 			return this.code
 		} catch (error) {
@@ -224,7 +241,7 @@ export class Net {
 		})
 	}
 
-	_joinConnection(conn, generation) {
+	_joinConnection(conn, generation, data) {
 		this._connections.add(conn)
 		return new Promise((resolve, reject) => {
 			let settled = false
@@ -274,7 +291,7 @@ export class Net {
 				this.conns.set(conn.peer, conn)
 				this.connected = true
 				finish()
-				this._send(conn, { t: 'hello', d: { v: PROTO } })
+				this._send(conn, { t: 'hello', d: { v: PROTO, ...(data ? { data } : {}) } })
 			})
 			conn.on('close', () => {
 				if (generation !== this._generation) return
@@ -298,8 +315,8 @@ export class Net {
 			reason = 'Invalid peer identity'
 		else if (this.conns.has(conn.peer) || this._pending.has(conn.peer))
 			reason = 'That player is already connected'
-		else if (this.conns.size + this._pending.size >= MAX_PLAYERS - 1)
-			reason = 'That lobby is full (8 players maximum)'
+		else if (this.conns.size + this._pending.size >= this.capacity() - 1)
+			reason = `That lobby is full (${this.capacity()} players maximum)`
 		if (reason) {
 			this._refuse(conn, reason, generation)
 			return
@@ -336,10 +353,19 @@ export class Net {
 				this._refuse(conn, 'That lobby is closed; a match may already be running', generation)
 				return
 			}
+			if (this.conns.size >= this.capacity() - 1) {
+				this._refuse(conn, `That lobby is full (${this.capacity()} players maximum)`, generation)
+				return
+			}
+			const data = message.d.data
+			if (!plainJoinData(data) || !this.validJoinData(data)) {
+				this._refuse(conn, 'Invalid player selection; refresh and join again', generation)
+				return
+			}
 			this._pending.delete(conn.peer)
 			this._clearTimeout(conn)
 			this.conns.set(conn.peer, conn)
-			this.onPeerJoin?.(conn.peer)
+			this.onPeerJoin?.(conn.peer, data)
 		})
 		conn.on('close', () => {
 			if (current()) this._drop(conn)

@@ -8,12 +8,21 @@ import { startLoading } from './front/descent.js'
 import { createLobbyProps } from './lobby-props.js'
 import { createLobbyFloor } from './lobby-floor.js'
 import { HEROES } from './heroes.js'
-import { createHeroStrip } from './lobby-heroes.js'
+import { createHeroStrip, createLobbyHeroes } from './lobby-heroes.js'
 import { createNumbers } from './front/numbers.js'
 import './lobby.css'
 
 // The lobby uses the match's simulation and presentation, but owns navigation and framing.
-export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
+export function createLobby({
+	app,
+	run,
+	sim,
+	hero,
+	setup,
+	options,
+	gallery,
+	onPresent = (listener) => run.on('present', listener),
+}) {
 	const backdrop = options.backdrop ?? createBackdrop()
 	const el = options.el ?? document.createElement('main')
 	const canvas = app.renderer.domElement
@@ -23,6 +32,13 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 	el.dataset.screen = 'lobby'
 	el.setAttribute('aria-label', 'Try your hero in the lobby')
 	el.innerHTML = `<button type="button" class="back-button" aria-label="Back to splash"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12H5m6-7-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg><kbd></kbd></button><div class="lobby-pick-stamp" aria-live="polite"></div>`
+	const onlineEntry = document.createElement('button')
+	onlineEntry.type = 'button'
+	onlineEntry.className = 'sticker online-entry'
+	onlineEntry.textContent = 'Play online'
+	onlineEntry.style.cssText =
+		'position:absolute;right:max(14px,1.6vw);top:max(14px,1.6vw);z-index:1;margin:0'
+	el.append(onlineEntry)
 	el.prepend(backdrop.el, canvas)
 	canvas.classList.add('front-canvas')
 	canvas.inert = false
@@ -128,6 +144,15 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 		sim.heroes.find((h) => h.id === id),
 	)
 	const floor = createLobbyFloor(app.scene, app.renderer)
+	const lobbyHeroes = createLobbyHeroes({
+		scene: app.scene,
+		el,
+		humans: sim.heroes,
+		local: hero.id,
+	})
+	const enteredStands = new Map()
+	const flips = new Map()
+	const renderedPicks = new Map(sim.heroes.map((h) => [h.id, h.heroId]))
 	props.syncSeats()
 	const stamp = el.querySelector('.lobby-pick-stamp')
 	const strip = createHeroStrip({
@@ -150,7 +175,7 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 		run.clock.reset()
 		app.audio.blip(tune.lobby.inspect[open ? 'openSound' : 'closeSound'])
 	})
-	run.clock.pause(() => numbers.open)
+	run.clock.pause(() => numbers.open && app.session.actions.includes('pause'))
 	run.intents.suspend(() => numbers.open)
 	run.system('present', ({ dt }) =>
 		numbers.update(
@@ -164,7 +189,6 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 	let loadingQueued = false
 	const readySounds = new Map()
 	let pickSoundTick = null
-	let flipTick = -Infinity
 	let denySoundTick = null
 	let gallerySoundTick = null
 	let shotSoundTick = null
@@ -172,7 +196,7 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 	let readyQueued = false
 	const syncPick = () => {
 		setup.heroId = hero.heroId
-		setup.picks[hero.id] = { ...setup.picks[hero.id], heroId: hero.heroId }
+		setup.picks[hero.id] = { ...setup.picks[hero.id], heroId: hero.heroId, team: hero.seatTeam }
 		strip.sync(hero.heroId)
 		const url = new URL(location.href)
 		url.searchParams.set('hero', hero.heroId)
@@ -188,7 +212,7 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 				if (!run.signal.aborted) ready()
 			})
 	}
-	run.on('present', (fact) => {
+	onPresent((fact) => {
 		if (
 			galleryShot?.projectile != null &&
 			['expired', 'hit', 'blocked'].includes(fact.type) &&
@@ -198,6 +222,12 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 		if (fact.type === 'seatClaim') {
 			props.syncSeats()
 			setup.picks[hero.id].team = readySeats.seatOf(hero.id)?.team ?? setup.picks[hero.id].team
+		}
+		if (fact.type === 'swap') flips.set(fact.hero, fact.tick)
+		if (fact.type === 'pick') {
+			if (!app.session.authoritative) gallery.select(fact.difficulty, fact.tick, app.clock.step)
+			setup.difficulty = fact.difficulty
+			props.selectDifficulty()
 		}
 		if (fact.hero !== hero.id) return
 		const sound = {
@@ -226,21 +256,27 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 		}
 		if (fact.type !== 'swap') return
 		syncPick()
-		flipTick = fact.tick
-		// Restart the slam: a fresh class on the next frame replays the animation.
-		stamp.textContent = fact.heroId + '!'
-		stamp.dataset.hero = fact.heroId
-		stamp.classList.remove('slam')
-		void stamp.offsetWidth
-		stamp.classList.add('slam')
+		slam(`${fact.heroId}!`, fact.heroId)
 		if (pickSoundTick !== fact.tick) {
 			pickSoundTick = fact.tick
 			app.audio.blip(tune.lobby.pick.sound)
 		}
 	})
+	function slam(text, heroId = '') {
+		stamp.textContent = text
+		stamp.dataset.hero = heroId
+		stamp.classList.remove('slam')
+		void stamp.offsetWidth
+		stamp.classList.add('slam')
+	}
 	function pickHero(id) {
 		if (ending || numbers.open || id === hero.heroId) return
-		if (sim.swapHero(hero.id, id) || denySoundTick === sim.tick) return
+		const stand = lobbyHeroes.stands.find((s) => s.id === id)
+		if (stand) {
+			run.intents.press(hero.id, 'pick', { x: stand.x, z: stand.z })
+			return
+		}
+		if (denySoundTick === sim.tick) return
 		denySoundTick = sim.tick
 		app.audio.blip(tune.lobby.pick.denySound)
 	}
@@ -294,12 +330,16 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 	}
 	// G and a right-click on a card share one route: walk to the firing mark, then shoot that card.
 	function shootAt(stand) {
-		if (hero.dead || galleryShot) {
+		if (!app.session.authoritative || hero.dead || galleryShot) {
+			if (!app.session.authoritative) {
+				slam('Host only')
+				app.audio.blip(tune.lobby.pick.denySound)
+			}
 			run.present({
 				type: 'denied',
 				hero: hero.id,
 				slot: 'primary',
-				reason: 'gallery-busy',
+				reason: app.session.authoritative ? 'gallery-busy' : 'host-only',
 				tick: sim.tick,
 			})
 			return
@@ -313,6 +353,7 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 	}
 
 	let ending = false
+	let handoff = null
 	let transferred = false
 	let device = ''
 	const heldKeys = new Set(options.heldKeys ?? [])
@@ -357,6 +398,10 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 			app.intents.cancel(hero.id)
 			return
 		}
+		if (!app.session.actions.includes('restart')) {
+			app.emit('menu')
+			return
+		}
 		syncPick()
 		ending = true
 		app.audio.blip({ ...frontTune.back, type: 'sine' })
@@ -385,11 +430,20 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 		}
 		readyQueued = false
 		const box = readySeats.seatOf(hero.id)
-		if (!box) return
+		if (!box) {
+			run.present({
+				type: 'denied',
+				hero: hero.id,
+				slot: 'ready',
+				reason: 'no-seat',
+				tick: sim.tick,
+			})
+			return
+		}
 		run.intents.press(hero.id, 'ready')
 	}
 	function beginLoading() {
-		if (ending || !readySeats.allReady() || galleryShot) return
+		if (ending || !app.session.authoritative || !readySeats.allReady() || galleryShot) return
 		syncPick()
 		setup.picks = Object.fromEntries(
 			readySeats.seats
@@ -399,13 +453,23 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 					return [s.occupant.id, { heroId: human?.heroId ?? s.occupant.heroId, team: s.team }]
 				}),
 		)
+		if (app.session.shared)
+			handoff = {
+				setup: { ...structuredClone(setup), map: 'overthrow' },
+				roster: readySeats.laneRoster(hero.id, setup.difficulty, setup.seed),
+			}
+		loadLane()
+	}
+	function loadLane() {
 		ending = transferred = true
 		app.audio.blip(frontTune.loading.skip)
 		startLoading(app, {
 			el,
 			backdrop,
-			setup,
-			difficulty: setup.difficulty,
+			setup: handoff?.setup ?? setup,
+			difficulty: handoff?.setup.difficulty ?? setup.difficulty,
+			roster: handoff?.roster,
+			handoff,
 		})
 	}
 	window.addEventListener(
@@ -429,6 +493,7 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 	window.addEventListener(
 		'keydown',
 		(event) => {
+			if (event.target?.closest?.('dialog')) return
 			heldKeys.add(event.code)
 			// Lobby arrows select options before the shared movement input sees them.
 			if (event.code.startsWith('Arrow')) {
@@ -444,6 +509,12 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 				event.target?.closest?.('.lil-gui')
 			)
 				return
+			if (event.code === 'KeyO') {
+				event.preventDefault()
+				app.intents.cancel(hero.id)
+				onlineEntry.click()
+				return
+			}
 			if (event.code === 'KeyN') {
 				event.preventDefault()
 				numbers.toggle()
@@ -483,9 +554,15 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 	)
 	run.system('input', () => {
 		const buttons = app.input.pad()?.buttons ?? []
-		// The crane takes no input, pad included.
-		if (ending) return void (previous = buttons.slice())
+		// Neither the crane nor a modal takes lobby pad input.
+		if (ending || document.querySelector('dialog[open]')) return void (previous = buttons.slice())
 		const down = (i) => buttons[i] && !previous[i] && !blockedPad.has(i)
+		if (down(8) && !numbers.open) {
+			app.intents.cancel(hero.id)
+			onlineEntry.click()
+			previous = buttons.slice()
+			return
+		}
 		const cancel = down(1)
 		const start = down(9)
 		const cycle = down(12)
@@ -519,6 +596,12 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 		backButton.querySelector('kbd').textContent =
 			device === 'gamepad' ? 'B' : device === 'keyboard' ? 'Esc' : ''
 		props.setDevice(device)
+		onlineEntry.textContent =
+			device === 'gamepad'
+				? 'Play online · Select'
+				: device === 'keyboard'
+					? 'Play online · O'
+					: 'Play online'
 	})
 	// Screen changes drop pending casts/orders. The device reset requires a fresh press;
 	// inherited navigation keys and the initial pad buttons also have their own release guard.
@@ -559,6 +642,7 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 			strip,
 			gallery,
 			galleryProps: props.galleryProps,
+			heroStands: lobbyHeroes.stands,
 			readySeats,
 			numbers,
 			inspectables: props.inspectables,
@@ -574,6 +658,7 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 		() => {
 			numbers.dispose()
 			strip.dispose()
+			lobbyHeroes.dispose()
 			props.dispose()
 			floor.dispose()
 			canvas.classList.remove('front-canvas')
@@ -585,8 +670,47 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 		{ once: true },
 	)
 	return {
-		frozen: () => numbers.open,
-		presentationFrozen: () => numbers.open,
+		get handoff() {
+			return handoff
+		},
+		follow(next) {
+			if (app.session.authoritative || !app.session.shared) return false
+			if (ending) return true
+			const roster = next?.roster
+			const matchSetup = next?.setup
+			if (
+				!Array.isArray(roster) ||
+				roster.length !== readySeats.seats.length ||
+				new Set(roster.map((p) => p?.id)).size !== roster.length ||
+				!roster.every(
+					(p) =>
+						typeof p?.id === 'string' &&
+						['A', 'B'].includes(p.team) &&
+						HEROES[p.heroId]?.playable &&
+						['human', 'bot'].includes(p.controller),
+				) ||
+				roster.filter((p) => p.controller === 'human').length !== sim.heroes.length ||
+				!sim.heroes.every((h) => roster.some((p) => p.id === h.id && p.controller === 'human')) ||
+				!['A', 'B'].every(
+					(team) =>
+						roster.filter((p) => p.team === team).length ===
+						readySeats.seats.filter((s) => s.team === team).length,
+				) ||
+				matchSetup?.map !== 'overthrow' ||
+				!['easy', 'normal', 'hard'].includes(matchSetup.difficulty) ||
+				!Number.isSafeInteger(matchSetup.seed) ||
+				matchSetup.seed < 0 ||
+				matchSetup.seed > tune.testing.seedMax
+			)
+				return false
+			handoff = structuredClone(next)
+			handoff.setup.edgePan = setup.edgePan
+			// The loading scope aborts the lobby at the apex, never inside a wire callback.
+			loadLane()
+			return true
+		},
+		frozen: () => numbers.open && app.session.actions.includes('pause'),
+		presentationFrozen: () => numbers.open && app.session.actions.includes('pause'),
 		result() {},
 		touchMode: () => touch,
 		inspectAim(dir, magnitude) {
@@ -657,6 +781,27 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 		// At a fixed-step boundary, using the previous step's position. Stop must reach
 		// the sim before intents age; queueing it after sim.step would drop a one-step edge.
 		step() {
+			for (const human of sim.heroes) {
+				const frame = app.intents.get(human.id)
+				const picks = frame.pressed.filter((e) => e.action === 'pick')
+				for (const _ of picks) run.intents.consume(human.id, 'pick')
+				const edge = picks.at(-1)
+				if (edge) {
+					const stand = lobbyHeroes.stands.find(
+						(s) =>
+							edge.at && Math.hypot(edge.at.x - s.x, edge.at.z - s.z) <= tune.lobby.pick.radius,
+					)
+					if (stand && stand.id !== human.heroId) sim.swapHero(human.id, stand.id)
+					else
+						run.present({
+							type: 'denied',
+							hero: human.id,
+							slot: 'swap',
+							reason: stand ? 'already-picked' : 'unavailable',
+							tick: sim.tick,
+						})
+				}
+			}
 			if (galleryShot && galleryShot.projectile === null && !hero.dead) {
 				const p = hero.body.position,
 					mark = tune.lobby.gallery.firingMark
@@ -701,7 +846,17 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 			}
 		},
 		afterStep() {
-			if (readySeats.allReady() && !galleryShot && !loadingQueued) {
+			for (const human of sim.heroes) {
+				const p = human.body.position
+				const stand =
+					!human.dead &&
+					lobbyHeroes.stands.find((s) => Math.hypot(p.x - s.x, p.z - s.z) <= tune.lobby.pick.radius)
+				const previous = enteredStands.get(human.id)
+				enteredStands.set(human.id, stand?.id)
+				if (stand && previous !== stand.id && stand.id !== human.heroId)
+					sim.swapHero(human.id, stand.id)
+			}
+			if (app.session.authoritative && readySeats.allReady() && !galleryShot && !loadingQueued) {
 				loadingQueued = true
 				// Leave the fixed step before aborting its sim and transferring the map/backdrop.
 				queueMicrotask(() => {
@@ -712,11 +867,26 @@ export function createLobby({ app, run, sim, hero, setup, options, gallery }) {
 		},
 		update(alpha) {
 			props.update(sim.tick + alpha, app.camera.view, app.clock.step)
-			// The new body comes round from edge-on, widening past full and settling.
+			// A state change must sync the local pick even if its swap cue expired in a hidden tab.
+			if (setup.heroId !== hero.heroId) {
+				syncPick()
+				slam(`${hero.heroId}!`, hero.heroId)
+			}
+			setup.picks[hero.id].team = hero.seatTeam
 			const f = tune.lobby.pick
-			const k = ((sim.tick + alpha - flipTick) * app.clock.step) / f.flipTime
-			const turn = k >= 0 && k < 1 ? 1 - (1 - k) ** 3 + Math.sin(k * Math.PI) * f.flipOvershoot : 1
-			hero.body.mesh.scale.x = f.flipEdge + (1 - f.flipEdge) * turn
+			for (const human of sim.heroes) {
+				if (renderedPicks.get(human.id) !== human.heroId) {
+					renderedPicks.set(human.id, human.heroId)
+					if (!flips.has(human.id)) flips.set(human.id, sim.tick)
+				}
+				human.body.setTeam?.(human.seatTeam)
+				const k =
+					((sim.tick + alpha - (flips.get(human.id) ?? -Infinity)) * app.clock.step) / f.flipTime
+				const turn =
+					k >= 0 && k < 1 ? 1 - (1 - k) ** 3 + Math.sin(k * Math.PI) * f.flipOvershoot : 1
+				human.body.mesh.scale.x = f.flipEdge + (1 - f.flipEdge) * turn
+			}
+			lobbyHeroes.update(app.camera.view)
 		},
 		hudFrame(alpha) {
 			const step = app.clock.step

@@ -123,8 +123,9 @@ export function createBallView(scene, rng = Math.random) {
 				if (state.state === 'warning')
 					sweep(fill, (sim.tick + alpha - state.warnAt) / Math.max(1, state.spawnAt - state.warnAt))
 				const carrier = sim.heroes.find((h) => h.id === state.carrier)
-				const from =
-					state.state === 'flying' && state.releaseTick === sim.tick
+				const from = sim.ball.buffered
+					? state.pos
+					: state.state === 'flying' && state.releaseTick === sim.tick
 						? state.releasePos
 						: previous?.id === state.id
 							? previous.pos

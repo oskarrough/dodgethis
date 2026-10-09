@@ -14,9 +14,9 @@ export function createMatchMenu({
 	ready = () => true,
 	difficulty = 'easy',
 	setup = { difficulty },
+	returnToLobby = () => false,
 }) {
 	const recap = createRecap({ sim, hero, canvas: app.renderer?.domElement })
-	run.on('present', recap.present)
 	let paused = false
 	let resultShown = false
 	let backHeld = false
@@ -28,6 +28,11 @@ export function createMatchMenu({
 	}
 	function leave() {
 		resetInput()
+		if (app.session.shared) {
+			if (app.session.authoritative) returnToLobby()
+			else app.emit('menu')
+			return
+		}
 		app.modes.start('moba-lobby', { options: { setup } })
 	}
 	const restart = () => {
@@ -79,10 +84,17 @@ export function createMatchMenu({
 			pointerGuard: true,
 			spaceConfirm: false,
 			subtitle: sim.lane?.match.winner === hero.team ? 'Enemy core destroyed' : 'Your core fell',
-			actions: [
-				{ label: 'Again', key: 'KeyR', keyLabel: 'R', onSelect: restart },
-				{ label: 'Return to lobby', onSelect: leave },
-			],
+			actions: app.session.shared
+				? [
+						{
+							label: app.session.authoritative ? 'Return to lobby' : 'Room menu · waiting for host',
+							onSelect: leave,
+						},
+					]
+				: [
+						{ label: 'Again', key: 'KeyR', keyLabel: 'R', onSelect: restart },
+						{ label: 'Return to lobby', onSelect: leave },
+					],
 		})
 		if (app.renderer) recap.showTable(document.querySelector('.overlay .dialog-card'))
 	}
@@ -93,7 +105,8 @@ export function createMatchMenu({
 		'keydown',
 		(event) => {
 			if (event.defaultPrevented || event.repeat || event.code !== 'Escape') return
-			toggle()
+			if (app.session.shared) app.emit('menu')
+			else toggle()
 		},
 		{ signal: run.signal },
 	)

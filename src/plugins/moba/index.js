@@ -24,6 +24,9 @@ import { createDebugLayout, createMatchDebug } from './debug.js'
 import { addSliders, sliderSections } from './sliders.js'
 import { createLobby } from './lobby.js'
 import { createDifficultyGallery } from './lobby-props.js'
+import { createLobbyReplica } from './lobby-replica.js'
+import { createLaneReplica } from './lane-replica.js'
+import { HEROES } from './heroes.js'
 
 const FACTS = [
 	'boardExpired',
@@ -79,17 +82,19 @@ export default function moba(app, map) {
 	const { scene, RAPIER, input, audio } = app
 	const sfx = createSounds(audio)
 	let runs = 0
+	// Room departures survive individual lane/lobby runs, but reset on a new room.
+	const departed = new Set()
 
 	const definition = {
 		scheme: 'pointClick',
-		start(run, { options = {} } = {}) {
+		start(run, { roster = [], options = {} } = {}) {
 			const isLobby = !!options.lobby
 			const query = new URLSearchParams(window.location.search)
 			const setup = parseMatchSetup(query, options.setup ?? options)
 			const isFlagfall = !isLobby && setup.map === 'flagfall'
 			const kind = isLobby ? 'lobby' : setup.map
 			const layout = mapLayout(kind)
-			if ((isLobby || isFlagfall) && app.session.shared) {
+			if (isFlagfall && app.session.shared) {
 				// Mode start must finish before its replacement can abort it. No map/sim is built.
 				queueMicrotask(() => {
 					if (!run.signal.aborted)
@@ -108,6 +113,7 @@ export default function moba(app, map) {
 				}
 			}
 			const local = app.session.local[0]
+			if (!options.handoff && !options.sharedLobby) departed.clear()
 			app.setPalette(
 				isFlagfall
 					? { ...tune.overthrowTerrain.palette, ...tune.flagfall.palette }
@@ -123,7 +129,10 @@ export default function moba(app, map) {
 			const shadows = createShadows(scene, {
 				onGround: (x, z) => Math.abs(x) <= ground.halfX && Math.abs(z) <= ground.halfZ,
 			})
-			const view = createView(scene, run.smooth)
+			const view = createView(
+				scene,
+				!app.session.authoritative ? (object, read) => replica.smooth(object, read) : run.smooth,
+			)
 			const skillsView = createSkillsView(scene)
 			const hud = createHud({ lobby: isLobby, bounds: layout.bounds, name: layout.name })
 			const pips = createPips()
@@ -155,16 +164,44 @@ export default function moba(app, map) {
 				},
 			}
 			const seats =
-				isLobby || isFlagfall
-					? [
-							{
-								id: local,
-								team: isFlagfall ? 'A' : (setup.picks[local].team ?? 'A'),
-								heroId: setup.picks[local].heroId,
-							},
-						]
-					: practiceRoster(local, difficulty, setup.picks, setup.seed)
+				isLobby && roster.length
+					? roster
+							.filter((seat) => seat.controller === 'human')
+							.map((seat) => ({
+								...seat,
+								heroId:
+									seat.data?.heroId ??
+									setup.picks[seat.id]?.heroId ??
+									(seat.id === local ? setup.heroId : 'fletcher'),
+							}))
+					: isLobby || isFlagfall
+						? [
+								{
+									id: local,
+									team: isFlagfall ? 'A' : (setup.picks[local].team ?? 'A'),
+									heroId: setup.picks[local].heroId,
+								},
+							]
+						: roster.length
+							? roster
+							: practiceRoster(local, difficulty, setup.picks, setup.seed)
 			setup.heroId = seats.find((seat) => seat.id === local).heroId
+			const lobbySpawns = {}
+			if (isLobby) {
+				const used = new Set()
+				for (const seat of seats) {
+					const preferred = tune.lobby.marks.filter((mark) => mark.x < 0 === (seat.team === 'A'))
+					const mark =
+						preferred.find((mark) => !used.has(mark)) ??
+						tune.lobby.marks.find((mark) => !used.has(mark))
+					// Rooms allow more humans than the lane's six seats; overflow stands beside the marks.
+					lobbySpawns[seat.id] = mark ?? {
+						x: tune.lobby.marks[0].x * (seats.indexOf(seat) - tune.lobby.marks.length + 2),
+						z: tune.lobby.marks[0].z,
+					}
+					if (mark) used.add(mark)
+				}
+			}
 			const gallery = isLobby
 				? createDifficultyGallery({
 						local,
@@ -174,7 +211,7 @@ export default function moba(app, map) {
 					})
 				: null
 			const botsOnly = query.has('debug') && query.has('bots-only')
-			const sim = map.start(
+			const simulation = map.start(
 				run,
 				(world) =>
 					createSim({
@@ -185,9 +222,11 @@ export default function moba(app, map) {
 						heroes: seats,
 						bots:
 							!isLobby && !isFlagfall && app.session.authoritative
-								? seats.filter((seat) => botsOnly || seat.id !== local)
+								? seats.filter((seat) =>
+										app.session.shared ? seat.controller === 'bot' : botsOnly || seat.id !== local,
+									)
 								: [],
-						smooth: run.smooth,
+						smooth: app.session.authoritative ? run.smooth : null,
 						present: run.present,
 						lane: !isLobby && !isFlagfall,
 						...(isFlagfall && {
@@ -198,8 +237,10 @@ export default function moba(app, map) {
 						}),
 						...(isLobby && {
 							lobby: true,
-							readyRoster: practiceRoster(local, difficulty, setup.picks, setup.seed),
-							spawns: { [local]: tune.lobby.marks[setup.picks[local].team === 'B' ? 3 : 0] },
+							readyRoster: roster.length
+								? roster.map((seat) => ({ ...seat, heroId: seat.data?.heroId ?? seat.heroId }))
+								: practiceRoster(local, difficulty, setup.picks, setup.seed),
+							spawns: lobbySpawns,
 							bounds: tune.lobby.bounds,
 							posts: tune.lobby.dummyPosts,
 							respawn: tune.lobby.respawn,
@@ -209,7 +250,20 @@ export default function moba(app, map) {
 					}),
 				kind,
 			)
+			// Assigned boxes are reservations, not won claims; walking into one stamps the claim tick.
+			if (isLobby) for (const seat of simulation.readySeats.seats) seat.claimTick = null
 			const ballView = isLobby || isFlagfall ? null : createBallView(scene)
+			const replica = !app.session.authoritative
+				? isLobby
+					? createLobbyReplica(simulation, scene)
+					: createLaneReplica(simulation, scene)
+				: null
+			const sim = replica?.sim ?? simulation
+			const onPresent = replica?.onPresent ?? ((listener) => run.on('present', listener))
+			if (replica) {
+				run.on('present', replica.present)
+				run.system('present', () => replica.update(performance.now() / 1000))
+			}
 			const hero = sim.heroes.find((h) => h.id === local)
 			const onboarding = isLobby || isFlagfall ? null : createOnboarding({ scene, sim, hero })
 			const feedback = createFeedback({
@@ -257,7 +311,75 @@ export default function moba(app, map) {
 					f.add(s.water, 'width', 140, 260, 1).name('water plate width (m, applies on restart)')
 					f.add(s.water, 'clouds').name('clouds (applies on restart)')
 				})
-			const lobby = isLobby ? createLobby({ app, run, sim, hero, setup, options, gallery }) : null
+			const lobby = isLobby
+				? createLobby({ app, run, sim, hero, setup, options, gallery, onPresent })
+				: null
+			const epoch = ++runs
+			let returnQueued = false
+			function lobbyReturn() {
+				const participants = isLobby
+					? [
+							...sim.heroes.map((h) => ({
+								id: h.id,
+								team: h.seatTeam,
+								heroId: h.heroId,
+								joinOrder: h.joinOrder,
+								controller: 'human',
+							})),
+							...sim.readySeats.seats
+								.filter((seat) => seat.occupant?.bot)
+								.map((seat) => ({
+									...seat.occupant,
+									team: seat.team,
+									controller: 'bot',
+								})),
+						]
+					: seats
+				const returning = participants
+					.filter((seat) => !departed.has(seat.id))
+					.map((seat) => {
+						const human = sim.heroes.find((h) => h.id === seat.id)
+						const heroId = human?.heroId ?? seat.heroId
+						return {
+							...seat,
+							heroId,
+							joinOrder: human?.joinOrder ?? seat.joinOrder,
+							data: { heroId },
+						}
+					})
+				return {
+					id: epoch,
+					roster: returning,
+					setup: {
+						...setup,
+						picks: Object.fromEntries(
+							returning.map((seat) => [
+								seat.id,
+								{
+									heroId: seat.heroId,
+									team: seat.team,
+								},
+							]),
+						),
+					},
+				}
+			}
+			function returnToLobby(next = lobbyReturn()) {
+				if (!app.session.shared) return false
+				if (returnQueued) return true
+				returnQueued = true
+				const session = app.session
+				// Never tear down a sim from inside its fixed step or a wire callback.
+				queueMicrotask(() => {
+					if (run.signal.aborted) return
+					app.modes.start('moba-lobby', {
+						session,
+						roster: next.roster,
+						options: { setup: { ...next.setup, edgePan: setup.edgePan }, sharedLobby: next },
+					})
+				})
+				return true
+			}
 			const menu =
 				lobby ??
 				createMatchMenu({
@@ -270,6 +392,7 @@ export default function moba(app, map) {
 					ready: options.ready,
 					difficulty,
 					setup,
+					returnToLobby,
 				})
 			const controls = isLobby
 				? { paused: false }
@@ -317,9 +440,9 @@ export default function moba(app, map) {
 				sim.step(dt)
 				lobby?.afterStep()
 			})
-			run.on('present', feedback.present)
-			if (onboarding) run.on('present', onboarding.present)
-			if (ballView) run.on('present', ballView.present)
+			onPresent(feedback.present)
+			if (onboarding) onPresent(onboarding.present)
+			if (ballView) onPresent(ballView.present)
 			const ballFacts = []
 			run.on('present', (fact) => {
 				if (!fact.type.startsWith('ball')) return
@@ -332,10 +455,10 @@ export default function moba(app, map) {
 				return unit?.body.mesh.position ?? null
 			}
 			run.system('present', ({ dt, gameDt, alpha }) => {
-				menu.result(controls.paused ? 0 : dt, alpha)
+				menu.result(controls.paused ? 0 : dt, replica ? 0 : alpha)
 				const frozen = menu.frozen() || controls.paused
 				const presentationFrozen = menu.presentationFrozen() || controls.paused
-				const blend = frozen ? 0 : alpha
+				const blend = frozen || replica ? 0 : alpha
 				const step = presentationFrozen ? 0 : sim.lane?.match.winner ? dt : gameDt
 				map.update(step)
 				const frame = app.intents.get(local)
@@ -485,10 +608,12 @@ export default function moba(app, map) {
 						proof: { ...tune.proof, step: app.clock.step, botsOnly },
 						ballFacts,
 						ballView,
+						replica: replica?.stats,
 						snapshot: () => sim.snapshot(),
 						focus: (point) => follow.focus(point),
 						// Proof uses the real app loop: intents, fixed simulation, smoothing and feedback.
 						fastForward({ ticks, target = null }) {
+							if (!app.session.authoritative) throw new Error('Only the host can fast-forward')
 							if (!Number.isInteger(ticks) || ticks < 0 || ticks > tune.proof.batch)
 								throw new Error('Invalid proof step count')
 							const wasPhysicsPaused = coreTune.physics.paused
@@ -515,6 +640,7 @@ export default function moba(app, map) {
 				onboarding?.dispose()
 				cursor.dispose()
 				feedback.reset()
+				replica?.dispose()
 				ballView?.dispose()
 				view.dispose()
 				skillsView.dispose()
@@ -526,9 +652,85 @@ export default function moba(app, map) {
 			})
 
 			return {
-				epoch: ++runs,
-				snapshot: sim.snapshot,
-				apply: () => false, // no replica until M6
+				capacity: tune.lobby.capacity,
+				joinData: () => ({ heroId: hero.heroId }),
+				validJoinData: (data) => data?.heroId == null || HEROES[data.heroId]?.playable === true,
+				epoch,
+				loadingHero: () => ({ x: hero.body.position.x, z: hero.body.position.z }),
+				roomLobby: isLobby,
+				roomRoster: () =>
+					sim.heroes
+						.filter(
+							(h) =>
+								isLobby || seats.some((seat) => seat.id === h.id && seat.controller === 'human'),
+						)
+						.map((h) => ({
+							id: h.id,
+							team: h.seatTeam ?? h.team,
+							heroId: h.heroId,
+							joinOrder: h.joinOrder ?? seats.find((seat) => seat.id === h.id)?.joinOrder,
+						})),
+				returnToLobby: () => app.session.authoritative && returnToLobby(),
+				removeParticipant(id) {
+					if (!app.session.shared || id === local) return false
+					departed.add(id)
+					return sim.removeHero(id)
+				},
+				soloStart: () => ({
+					mode: 'moba-lobby',
+					args: {
+						options: {
+							setup: {
+								...setup,
+								heroId: hero.heroId,
+								picks: { local: { heroId: hero.heroId, team: hero.seatTeam ?? hero.team } },
+							},
+						},
+					},
+				}),
+				snapshot: () => ({
+					...sim.snapshot({ wire: true }),
+					...(options.sharedLobby ? { lobbyReturn: options.sharedLobby } : {}),
+					...(lobby?.handoff ||
+					(options.handoff &&
+						(!(options.ready?.() ?? true) || sim.tick * app.clock.step < tune.lobby.handoffFor))
+						? { handoff: lobby?.handoff ?? options.handoff }
+						: {}),
+				}),
+				apply(state, nowSeconds) {
+					const next = state?.lobbyReturn
+					if (!lobby && next && next.id !== options.sharedLobby?.id) {
+						if (
+							app.session.authoritative ||
+							!app.session.shared ||
+							!Number.isSafeInteger(next.id) ||
+							next.id < 0 ||
+							!Array.isArray(next.roster) ||
+							!next.roster.length ||
+							next.roster.length > tune.lobby.capacity ||
+							new Set(next.roster.map((seat) => seat?.id)).size !== next.roster.length ||
+							!next.roster.some((seat) => seat.id === local && seat.controller === 'human') ||
+							!next.roster.every(
+								(seat) =>
+									typeof seat?.id === 'string' &&
+									['A', 'B'].includes(seat.team) &&
+									HEROES[seat.heroId]?.playable &&
+									['human', 'bot'].includes(seat.controller) &&
+									(seat.controller === 'bot' ||
+										(Number.isSafeInteger(seat.joinOrder) && seat.joinOrder >= 0)),
+							) ||
+							next.setup?.map !== 'overthrow' ||
+							!['easy', 'normal', 'hard'].includes(next.setup.difficulty) ||
+							!Number.isSafeInteger(next.setup.seed) ||
+							next.setup.seed < 0 ||
+							next.setup.seed > tune.testing.seedMax
+						)
+							return false
+						return returnToLobby(structuredClone(next))
+					}
+					if (lobby && state?.handoff) return lobby.follow(state.handoff)
+					return replica?.apply(state, nowSeconds) ?? false
+				},
 				validFact,
 			}
 		},
@@ -536,8 +738,8 @@ export default function moba(app, map) {
 	app.modes.define('moba', definition)
 	app.modes.define('moba-lobby', {
 		...definition,
-		start: (run, { options = {} } = {}) =>
-			definition.start(run, { options: { ...options, lobby: true } }),
+		start: (run, { roster = [], options = {} } = {}) =>
+			definition.start(run, { roster, options: { ...options, lobby: true } }),
 	})
 }
 

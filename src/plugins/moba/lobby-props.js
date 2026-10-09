@@ -77,12 +77,7 @@ export function createDifficultyGallery({ local, difficulty, present, dummies = 
 			}
 		}
 		if (!best) return false
-		picked = best.id
-		for (const s of standees) {
-			s.from = angle(s, f.tick, f.step)
-			s.to = s.id === picked ? 0 : -Math.PI / 2
-			s.changedAt = f.tick
-		}
+		select(best.id, f.tick, f.step)
 		present({
 			type: 'pick',
 			hero: local,
@@ -95,8 +90,17 @@ export function createDifficultyGallery({ local, difficulty, present, dummies = 
 		})
 		return true
 	}
+	function select(id, tick, step) {
+		picked = id
+		for (const s of standees) {
+			s.from = angle(s, tick, step)
+			s.to = s.id === picked ? 0 : -Math.PI / 2
+			s.changedAt = tick
+		}
+	}
 	return {
 		standees,
+		select,
 		aimsAt,
 		contact,
 		angle,

@@ -1,12 +1,13 @@
 import { HEROES } from './heroes.js'
 import { tune } from './tune.js'
+import { practiceRoster } from './bots.js'
 
-// Seat ids name boxes; participant ids name their occupants. The host can feed
-// contested claims through this same function later (tick, then join order, then id).
+// Seat ids name boxes; participant ids name their occupants. Host claims resolve
+// by tick, then join order, then id; starting reservations have no claim tick.
 export function createReadySeats({ present }) {
 	const v = tune.lobby.ready
 	const seats = ['A', 'B'].flatMap((team) =>
-		Array.from({ length: 3 }, (_, index) => ({
+		Array.from({ length: tune.lobby.capacity / ['A', 'B'].length }, (_, index) => ({
 			id: `${team}:${index}`,
 			team,
 			x: (team === 'A' ? -1 : 1) * v.x,
@@ -20,6 +21,7 @@ export function createReadySeats({ present }) {
 		})),
 	)
 	let humans = []
+	const enteredSeats = new Map()
 	const seatOf = (id) => seats.find((s) => s.occupant?.id === id)
 	const contains = (seat, p) =>
 		!!p && Math.abs(p.x - seat.x) <= v.width / 2 && Math.abs(p.z - seat.z) <= v.depth / 2
@@ -62,6 +64,7 @@ export function createReadySeats({ present }) {
 		}
 		const wins =
 			!current ||
+			seat.claimTick === null ||
 			(current.bot && !participant.bot) ||
 			(current.bot === !!participant.bot &&
 				(tick < seat.claimTick ||
@@ -98,6 +101,17 @@ export function createReadySeats({ present }) {
 		seatOf,
 		contains,
 		claim,
+		release(id, tick) {
+			humans = humans.filter((human) => human !== id)
+			enteredSeats.delete(id)
+			const seat = seatOf(id)
+			if (!seat) return
+			fact('seatEmpty', seat, tick)
+			seat.occupant = null
+			seat.claimTick = null
+			seat.blocked = false
+			reset(seat)
+		},
 		cancel(id, tick) {
 			const seat = seatOf(id)
 			if (!seat) return
@@ -117,9 +131,16 @@ export function createReadySeats({ present }) {
 					(a, b) =>
 						(a.joinOrder ?? 0) - (b.joinOrder ?? 0) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0),
 				)) {
-				if (hero.dead) continue
+				if (hero.dead) {
+					enteredSeats.delete(hero.id)
+					continue
+				}
 				const entered = seats.find((s) => contains(s, hero.body.position))
-				if (entered && entered.occupant?.id !== hero.id)
+				const previous = enteredSeats.get(hero.id)
+				enteredSeats.set(hero.id, entered?.id)
+				if (entered && (previous !== entered.id || !entered.occupant)) {
+					if (entered.occupant?.id === hero.id && entered.claimTick === null)
+						entered.claimTick = tick
 					claim(
 						entered.id,
 						{
@@ -130,6 +151,7 @@ export function createReadySeats({ present }) {
 						},
 						tick,
 					)
+				}
 			}
 			for (const seat of seats) {
 				if (!seat.occupant || seat.occupant.bot) continue
@@ -159,6 +181,27 @@ export function createReadySeats({ present }) {
 				: seat.enteredAt === null
 					? 0
 					: Math.max(0, Math.min(1, ((tick - seat.enteredAt) * step) / v.fillTime))
+		},
+		laneRoster(local, difficulty, seed) {
+			const picks = Object.fromEntries(
+				seats
+					.filter((s) => s.occupant)
+					.map((s) => [s.occupant.id, { heroId: s.occupant.heroId, team: s.team }]),
+			)
+			const humans = seats.filter((s) => s.occupant && !s.occupant.bot).map((s) => s.occupant.id)
+			const roster = practiceRoster(local, difficulty, picks, seed, humans)
+			const used = new Set()
+			return seats.map((box) => {
+				const participant = box.occupant
+					? roster.find((p) => p.id === box.occupant.id)
+					: roster.find((p) => p.team === box.team && !picks[p.id] && !used.has(p.id))
+				used.add(participant.id)
+				return {
+					...participant,
+					...(box.occupant && { joinOrder: box.occupant.joinOrder }),
+					controller: box.occupant && !box.occupant.bot ? 'human' : 'bot',
+				}
+			})
 		},
 		allReady() {
 			return (

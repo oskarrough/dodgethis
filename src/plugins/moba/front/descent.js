@@ -4,14 +4,20 @@ import { el as make } from '../../../core/dom.js'
 import { tune as kit } from '../tune.js'
 import { mapLayout } from '../obstacles.js'
 import { easeShot } from './backdrop.js'
-import { createDescentState, descentFrame, localLoadingHero } from './descent-state.js'
+import { createDescentState, descentFrame } from './descent-state.js'
 import { tune } from './tune.js'
 import './descent.css'
 
 // The crane and descent: one camera move from the lobby to the match that takes no input.
 // The lobby run lives until the apex, where the match starts behind the sky. The MOBA map
 // scope keeps the world, so the lane is rebuilt on it.
-export function startLoading(app, { el: lobby, backdrop, difficulty = 'easy', setup }) {
+export function startLoading(
+	app,
+	{ el: lobby, backdrop, difficulty = 'easy', setup, roster, handoff },
+) {
+	let session = app.session
+	let contract = app.modes.current
+	const ownsRun = () => app.session === session && app.modes.current === contract
 	let dispose
 	dispose = app.use((scope) => {
 		const reduced = matchMedia('(prefers-reduced-motion: reduce)')
@@ -134,10 +140,22 @@ export function startLoading(app, { el: lobby, backdrop, difficulty = 'easy', se
 
 		// At the apex the canvas is clear: swap the lobby run for the match behind the sky.
 		function apex() {
+			if (!ownsRun()) {
+				dispose()
+				return false
+			}
 			match = app.modes.start('moba', {
-				session: app.session,
-				options: { setup, difficulty, ready: () => gate.state.phase === 'landed' && !capturing },
+				session,
+				roster,
+				options: {
+					setup,
+					difficulty,
+					handoff,
+					ready: () => gate.state.phase === 'landed' && !capturing,
+				},
 			})
+			contract = match
+			session = app.session
 			scope.clock.scale(() => 0)
 			if (lobby) lobby.inert = false
 			parent = canvas.parentNode
@@ -150,8 +168,7 @@ export function startLoading(app, { el: lobby, backdrop, difficulty = 'easy', se
 			document.body.classList.remove('front-craning')
 			document.body.classList.add('moba-descending')
 			app.audio.setMusicScene('wind')
-			const local = app.session.local[0]
-			hero = localLoadingHero(match.snapshot(), local)
+			hero = match.loadingHero()
 			unframe()
 			unframe = scope.camera.frame(descend)
 			restore = scope.setStylePreset({ line: tune.loading.line, hatch: 1, alpha: true })
@@ -162,6 +179,7 @@ export function startLoading(app, { el: lobby, backdrop, difficulty = 'easy', se
 				.then(() => {
 					if (!scope.signal.aborted) built = true
 				})
+			return true
 		}
 
 		const colors = Object.fromEntries(
@@ -229,6 +247,7 @@ export function startLoading(app, { el: lobby, backdrop, difficulty = 'easy', se
 
 		scope.system('present', ({ dt }) => {
 			if (ending) return
+			if (!ownsRun()) return dispose()
 			const before = gate.state.phase
 			if (!capturing) ornamentTime += dt
 			if (before === 'apex' && !capturing) {
@@ -253,7 +272,7 @@ export function startLoading(app, { el: lobby, backdrop, difficulty = 'easy', se
 				gate.step(Math.min(dt, remaining))
 			}
 			const state = gate.state
-			if (before === 'crane' && state.phase !== 'crane') apex()
+			if (before === 'crane' && state.phase !== 'crane' && !apex()) return
 			if (before === 'apex' && state.phase === 'descent') {
 				root.dataset.phase = 'descent'
 				app.audio.blip(tune.loading.drop)
@@ -318,15 +337,18 @@ export function startLoading(app, { el: lobby, backdrop, difficulty = 'easy', se
 			if (!ending) backdrop.dispose()
 			restore?.()
 			unframe()
-			if (match) app.setPalette(palette)
+			if (match && ownsRun()) app.setPalette(palette)
 			cameras.forEach((camera, index) => {
 				camera.far = previousFar[index]
 				camera.updateProjectionMatrix()
 			})
-			canvas.style.opacity = ''
-			if (parent) {
-				canvas.classList.remove('front-canvas')
-				parent.insertBefore(canvas, next)
+			// A replacement run already owns the canvas and its intro opacity.
+			if (ownsRun()) {
+				canvas.style.opacity = ''
+				if (parent) {
+					canvas.classList.remove('front-canvas')
+					parent.insertBefore(canvas, next)
+				}
 			}
 			if (lobby) lobby.inert = false
 			document.body.classList.remove('front-craning', 'moba-descending')

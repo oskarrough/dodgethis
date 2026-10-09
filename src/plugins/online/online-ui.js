@@ -1,10 +1,9 @@
 import { el } from '../../core/dom.js'
 import { MAX_BOTS } from './online-session.js'
+import { MAX_PLAYERS } from './net.js'
 
 // `inMatch()` is true while a match runs under the panel: Escape then resumes it rather than leaving.
-export function createOnlineUi(session, { inMatch = () => false } = {}) {
-	// The entry button lives in the playable hub's splash markup.
-	const entry = document.querySelector('.splash .online-entry')
+export function createOnlineUi(session, { inMatch = () => false, signal } = {}) {
 	const panel = el('dialog', 'online-panel dialog-card', document.body)
 	panel.setAttribute('aria-labelledby', 'online-title')
 	let busy = false
@@ -12,13 +11,20 @@ export function createOnlineUi(session, { inMatch = () => false } = {}) {
 	let joinCode = ''
 	let noGames = false
 	let creating = false
-	entry.onclick = () => {
-		error = ''
-		noGames = false
-		creating = false
-		render()
-		open()
-	}
+	// Screens own their entry markup; delegation also reaches entries in fresh mode runs.
+	document.addEventListener(
+		'click',
+		(event) => {
+			if (!event.target.closest('.online-entry')) return
+			error = ''
+			noGames = false
+			creating = false
+			render()
+			open()
+		},
+		{ signal },
+	)
+	signal?.addEventListener('abort', () => panel.remove(), { once: true })
 	// The result card's curtain marks every other body child inert, this panel included; opening over it must lift that.
 	function open() {
 		if (!panel.open) panel.showModal()
@@ -37,7 +43,7 @@ export function createOnlineUi(session, { inMatch = () => false } = {}) {
 			if (panel.open && !(event.target instanceof Node && panel.contains(event.target)))
 				event.stopImmediatePropagation()
 		},
-		true,
+		{ capture: true, signal },
 	)
 	panel.addEventListener('keyup', (event) => event.stopPropagation())
 	function leave() {
@@ -146,7 +152,7 @@ export function createOnlineUi(session, { inMatch = () => false } = {}) {
 			children.push(choices)
 		} else {
 			const hint = el('p', 'line')
-			hint.textContent = `Share code ${state.code} with friends. ${state.humans.length}/8 humans connected.`
+			hint.textContent = `Share code ${state.code} with friends. ${state.humans.length}/${state.capacity ?? MAX_PLAYERS} humans connected.`
 			children.push(hint)
 			const editable = session.net.isHost && state.phase === 'lobby'
 			for (const human of state.humans) {
@@ -196,7 +202,12 @@ export function createOnlineUi(session, { inMatch = () => false } = {}) {
 				if (!existing) label.append(input)
 				children.push(label)
 			}
-			if (state.phase === 'lobby') {
+			if (state.liveLobby && inMatch()) {
+				actions.append(button('Resume', () => panel.close()))
+				const hint = el('p', 'line')
+				hint.textContent = 'Claim a box in the shared lobby to ready up.'
+				children.push(hint)
+			} else if (state.phase === 'lobby') {
 				const canStart = ['A', 'B'].every(
 					(team) => state.bots[team] > 0 || state.humans.some((p) => p.team === team),
 				)
@@ -206,7 +217,9 @@ export function createOnlineUi(session, { inMatch = () => false } = {}) {
 				hint.textContent = !canStart
 					? 'Both teams need at least one human or bot.'
 					: session.net.isHost
-						? 'First team to win two rounds wins the match.'
+						? state.modeId === 'dodgeball'
+							? 'First team to win two rounds wins the match.'
+							: 'Start everyone in the host’s game.'
 						: 'Waiting for the host to start.'
 				children.push(hint)
 			} else if (inMatch()) {

@@ -1,9 +1,11 @@
 import { neutralFrame, readIntent } from '../../core/intents.js'
+import { tune } from './tune.js'
 
 export const INPUT_TIMEOUT = 0.5
 export const HOST_TIMEOUT = 10
 export const SEND_INTERVAL = 1 / 20
-const MAX_FACTS = 256
+// Protocol ceiling, captured once so a live tune edit cannot exceed the receiver's limit.
+export const MAX_FACTS = tune.link.maxFacts
 const MIN_GAP = 0.014 // a changed frame waits this long after the last send: every frame at 60 Hz, every third at 144
 const safeInt = (n) => Number.isSafeInteger(n) && n >= 0
 
@@ -22,13 +24,38 @@ export function createLink({
 }) {
 	const host = net.isHost
 	const local = net.id
-	const stats = { sent: 0, bytes: 0, received: 0, intents: 0 }
+	const sizes = []
+	let sampleIndex = 0
+	const encoder = new TextEncoder()
+	const envelopeBytes = (envelope) =>
+		encoder.encode(JSON.stringify({ t: 'state', d: envelope })).length
+	const measure = (bytes) => {
+		stats.bytes += bytes
+		sizes[sampleIndex] = bytes
+		sampleIndex = (sampleIndex + 1) % tune.link.samples
+	}
+	const stats = {
+		sent: 0,
+		bytes: 0,
+		received: 0,
+		intents: 0,
+		rejected: 0,
+		rejectionReason: null,
+		skipped: 0,
+		get envelopeP95() {
+			const sorted = sizes.toSorted((a, b) => a - b)
+			return sorted[Math.ceil(sorted.length * 0.95) - 1] ?? 0
+		},
+		get envelopeSamples() {
+			return sizes.length
+		},
+	}
 	// Host: remote humans by peer id, which online makes their participant id.
 	const seats = new Map(
 		host
 			? roster
 					.filter((p) => p.controller === 'human' && p.id !== local)
-					.map((p) => [p.id, { seq: -1, seen: now(), silent: false }])
+					.map((p) => [p.id, { seq: -1, seen: now(), silent: false, fact: 0 }])
 			: [],
 	)
 	let seq = 0
@@ -44,6 +71,17 @@ export function createLink({
 	let lastSent = -Infinity
 	let lastKey = ''
 	let disposed = false
+	let activeContract = null
+	const currentContract = () => {
+		const current = typeof contract === 'function' ? contract() : contract
+		if (current !== activeContract) {
+			// Facts belong to a run's tick clock; never carry lobby cues into its replacement.
+			facts = []
+			for (const seat of seats.values()) seat.fact = factId
+			activeContract = current
+		}
+		return current
+	}
 
 	function receiveIntent(message, from) {
 		const seat = seats.get(from)
@@ -64,7 +102,7 @@ export function createLink({
 		return true
 	}
 
-	function validEnvelope(envelope) {
+	function validEnvelope(envelope, current) {
 		if (
 			!envelope ||
 			envelope.matchId !== matchId ||
@@ -76,38 +114,70 @@ export function createLink({
 			return false
 		if (!Array.isArray(envelope.facts) || envelope.facts.length > MAX_FACTS) return false
 		return envelope.facts.every(
-			(entry) => entry && safeInt(entry.id) && contract.validFact(entry.fact),
+			(entry) => entry && safeInt(entry.id) && current.validFact(entry.fact),
 		)
 	}
 
 	function receiveState(envelope, from) {
-		if (from !== net.hostId || !validEnvelope(envelope)) return false
-		if (contract.apply(envelope.state, now()) === false) return false
+		const current = currentContract()
+		if (!current || from !== net.hostId || !validEnvelope(envelope, current)) return false
+		const time = now()
+		heard = time // A rejected state is still a live host, not a transport timeout.
 		stats.received++
+		measure(envelopeBytes(envelope))
 		lastSeq = envelope.seq
 		lastEpoch = envelope.epoch
-		heard = now()
-		// Facts land after the state they belong to, each once however often it is resent.
+		const accepted = current.apply(envelope.state, time) !== false
+		if (!accepted) {
+			stats.rejected++
+			stats.rejectionReason = 'Snapshot rejected by mode'
+		}
+		// Valid facts survive a rejected snapshot; their ids still deduplicate retries.
 		for (const { id, fact } of envelope.facts) {
 			if (id <= lastFact) continue
 			lastFact = id
 			present(fact)
 		}
-		return true
+		return accepted
 	}
 
 	function broadcast() {
+		const current = currentContract()
+		if (!current) return
 		const envelope = {
 			matchId,
-			epoch: contract.epoch,
+			epoch: current.epoch,
 			seq: ++seq,
-			state: contract.snapshot(),
-			facts,
+			state: current.snapshot(),
+			facts: [],
 		}
-		facts = []
-		stats.sent++
-		stats.bytes += JSON.stringify(envelope).length
-		net.send('state', envelope)
+		// Minimal transports may only broadcast; real peers each have an independent fact cursor.
+		if (!net.sendTo) {
+			envelope.facts = facts.splice(0, MAX_FACTS)
+			stats.sent++
+			measure(envelopeBytes(envelope))
+			net.send('state', envelope)
+			return
+		}
+		for (const [id, seat] of seats) {
+			const conn = net.conns.get(id)
+			if (!conn) {
+				seats.delete(id)
+				continue
+			}
+			envelope.facts = facts.filter((entry) => entry.id > seat.fact).slice(0, MAX_FACTS)
+			const bytes = envelopeBytes(envelope)
+			if ((conn.dataChannel?.bufferedAmount ?? 0) > bytes * tune.link.queuedEnvelopes) {
+				stats.skipped++
+				continue
+			}
+			if (!net.sendTo(id, 'state', envelope)) continue
+			seat.fact = envelope.facts.at(-1)?.id ?? seat.fact
+			stats.sent++
+			measure(bytes)
+		}
+		const delivered = Math.min(factId, ...Array.from(seats.values(), (seat) => seat.fact))
+		facts = facts.filter((entry) => entry.id > delivered)
 	}
 
 	// The local frame, taken whole each frame: edges go at once, an unchanged frame at most every tenth of a second.
@@ -131,7 +201,8 @@ export function createLink({
 		},
 		// Host: every gameplay fact the mode presents rides the next envelope.
 		record(fact) {
-			if (!disposed && host) facts.push({ id: ++factId, fact: structuredClone(fact) })
+			if (!disposed && host && currentContract())
+				facts.push({ id: ++factId, fact: structuredClone(fact) })
 		},
 		update(dt) {
 			if (disposed) return

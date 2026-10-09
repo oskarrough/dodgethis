@@ -1,5 +1,4 @@
 import { el } from '../../core/dom.js'
-import { tune } from './tune.js'
 import { tune as frontTune } from './front/tune.js'
 
 const titleCase = (word) => word[0].toUpperCase() + word.slice(1)
@@ -7,16 +6,8 @@ const number = (value) => value.toLocaleString(undefined, { maximumFractionDigit
 
 // One run's facts, not a second combat simulation. Only the local death gets a card.
 export function createRecap({ sim, hero, canvas }) {
-	const rows = new Map()
-	function syncHeroes() {
-		for (const unit of sim.heroes)
-			if (!rows.has(unit.id))
-				rows.set(unit.id, { unit, kills: 0, deaths: 0, heroDamage: 0, structureDamage: 0, xp: 0 })
-	}
-	syncHeroes()
 	const structures = new Map((sim.lane?.structures ?? []).map((unit) => [unit.id, unit.kind]))
-	const recent = []
-	let death = null
+	let shownDeath = null
 	let root, heading, hits, countdown, help
 	let lastCountdown = ''
 	if (canvas) {
@@ -32,55 +23,26 @@ export function createRecap({ sim, hero, canvas }) {
 	}
 	const heroName = (unit) => titleCase(unit.definition?.id ?? unit.heroId ?? 'fletcher')
 	const sourceName = (id) => {
-		const row = rows.get(id)
-		if (row)
-			return `${heroName(row.unit)}${id === hero.id ? ' (you)' : sim.bots?.brains.some((bot) => bot.id === id) ? ' bot' : ''}`
+		const row = sim.matchStats?.[id]
+		if (row) return `${heroName(row)}${id === hero.id ? ' (you)' : row.bot ? ' bot' : ''}`
 		if (structures.has(id)) return titleCase(structures.get(id))
 		if (id?.startsWith('minion-')) return 'Minions'
 		if (id?.startsWith('dummy')) return 'Training dummy'
 		return id ? titleCase(id) : 'Environment'
 	}
-	function present(fact) {
-		syncHeroes()
-		const source = rows.get(fact.source)
-		const target = rows.get(fact.target)
-		if (fact.type === 'hit') {
-			if (source && target) source.heroDamage += fact.damage
-			else if (source && structures.has(fact.target)) source.structureDamage += fact.damage
-			if (fact.target === hero.id) {
-				recent.unshift({
-					source: sourceName(fact.source),
-					damage: fact.damage,
-				})
-				recent.length = Math.min(recent.length, tune.hud.recapSources)
-			}
-		} else if (fact.type === 'death' && target) {
-			target.deaths++
-			if (source && source.unit.team !== target.unit.team) source.kills++
-			if (fact.target === hero.id) {
-				death = { killer: sourceName(fact.source), hits: [...recent] }
-				if (root) {
-					heading.textContent = `Killed by ${death.killer}`
-					hits.replaceChildren()
-					for (const hit of death.hits) {
-						const item = el('li', '', hits)
-						el('span', '', item).textContent = hit.source
-						el('b', '', item).textContent = number(hit.damage)
-					}
-				}
-			}
-		} else if (fact.type === 'spawn' && fact.target === hero.id) {
-			recent.length = 0
-			death = null
-		} else if (fact.type === 'xp') {
-			for (const [id, amount] of Object.entries(fact.contributions ?? {})) {
-				const row = rows.get(id)
-				if (row) row.xp += amount
-			}
-		}
-	}
 	function update({ alpha, step, device, hidden = false }) {
 		if (!root) return
+		const death = sim.matchStats?.[hero.id]?.death
+		if (death && death.tick !== shownDeath) {
+			shownDeath = death.tick
+			heading.textContent = `Killed by ${sourceName(death.source)}`
+			hits.replaceChildren()
+			for (const hit of death.hits) {
+				const item = el('li', '', hits)
+				el('span', '', item).textContent = sourceName(hit.source)
+				el('b', '', item).textContent = number(hit.damage)
+			}
+		}
 		const dead = hero.dead && !sim.lane?.match.winner
 		canvas.classList.toggle('moba-dead-world', dead)
 		root.hidden = !dead || !death || hidden
@@ -99,7 +61,6 @@ export function createRecap({ sim, hero, canvas }) {
 	}
 	function showTable(card) {
 		if (!card) return
-		syncHeroes()
 		for (const [key, value] of Object.entries(frontTune.tile)) {
 			const unit = ['snap', 'press'].includes(key)
 				? 's'
@@ -126,13 +87,13 @@ export function createRecap({ sim, hero, canvas }) {
 			teamCell.colSpan = header.children.length
 			teamCell.textContent = team === hero.team ? 'Your team' : 'Enemy team'
 			let bot = 0
-			for (const row of rows.values()) {
-				if (row.unit.team !== team) continue
+			for (const [id, row] of Object.entries(sim.matchStats ?? {})) {
+				if (row.team !== team) continue
 				const line = el('tr', '', body)
-				line.dataset.local = String(row.unit.id === hero.id)
+				line.dataset.local = String(id === hero.id)
 				const name = el('th', '', line)
 				name.scope = 'row'
-				name.textContent = `${heroName(row.unit)} · ${row.unit.id === hero.id ? 'You' : `bot ${++bot}`}`
+				name.textContent = `${heroName(row)} · ${id === hero.id ? 'You' : row.bot ? `bot ${++bot}` : 'Player'}`
 				for (const stat of ['kills', 'deaths', 'heroDamage', 'structureDamage', 'xp'])
 					el('td', '', line).textContent = number(row[stat])
 			}
@@ -142,7 +103,6 @@ export function createRecap({ sim, hero, canvas }) {
 		card.querySelector('.actions').before(wrap)
 	}
 	return {
-		present,
 		update,
 		showTable,
 		dispose() {

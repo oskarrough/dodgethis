@@ -32,8 +32,10 @@ export function practiceRoster(
 	difficulty = 'easy',
 	picks = {},
 	seed = tune.bots.seed,
+	humans = [local],
 ) {
 	const localTeam = picks[local]?.team ?? 'A'
+	const humanTeams = new Set(humans.map((id) => picks[id]?.team ?? localTeam))
 	const playable = Object.keys(HEROES).filter((id) => HEROES[id].playable)
 	const random = botRandom(seed, 'practice-roster')
 	const claimed = [local, ...Object.keys(picks).filter((id) => id !== local)]
@@ -55,7 +57,7 @@ export function practiceRoster(
 			team,
 			heroId: picks[id]?.heroId ?? (picks[id] || id === local ? 'fletcher' : lineup[next++]),
 			file: (i - 1) * tune.bots.fileSpacing,
-			difficulty: team === localTeam ? 'normal' : difficulty,
+			difficulty: humanTeams.has(team) ? 'normal' : difficulty,
 		}))
 	})
 }
