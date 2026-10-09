@@ -224,8 +224,24 @@ export default function moba(app, map) {
 						present: run.present,
 						...(isLobby && {
 							lobby: true,
+							// Online seats only the humans; bots fill the free boxes so a short lobby can still ready up.
 							readyRoster: roster.length
-								? roster.map((seat) => ({ ...seat, heroId: seat.data?.heroId ?? seat.heroId }))
+								? practiceRoster(
+										local,
+										difficulty,
+										Object.fromEntries(
+											roster.map((seat) => [
+												seat.id,
+												{ heroId: seat.data?.heroId ?? seat.heroId, team: seat.team },
+											]),
+										),
+										setup.seed,
+										roster.filter((seat) => seat.controller !== 'bot').map((seat) => seat.id),
+									).map((seat) => ({
+										...seat,
+										...roster.find((human) => human.id === seat.id),
+										heroId: seat.heroId,
+									}))
 								: practiceRoster(local, difficulty, setup.picks, setup.seed),
 							spawns: lobbySpawns,
 							respawn: tune.lobby.respawn,

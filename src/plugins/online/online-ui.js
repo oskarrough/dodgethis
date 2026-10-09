@@ -10,7 +10,7 @@ export function createOnlineUi(session, { inMatch = () => false, signal } = {}) 
 	let error = ''
 	let joinCode = ''
 	let noGames = false
-	let creating = false
+	let hostPublic = true
 	// Screens own their entry markup; delegation also reaches entries in fresh mode runs.
 	document.addEventListener(
 		'click',
@@ -18,7 +18,6 @@ export function createOnlineUi(session, { inMatch = () => false, signal } = {}) 
 			if (!event.target.closest('.online-entry')) return
 			error = ''
 			noGames = false
-			creating = false
 			render()
 			open()
 		},
@@ -82,53 +81,25 @@ export function createOnlineUi(session, { inMatch = () => false, signal } = {}) 
 		children.push(heading)
 		const actions = el('div', 'actions')
 		if (!state) {
+			// Three ways in, one row each: just play, bring a code, or make your own.
 			const choices = el('div', 'online-choices')
 			const quick = document.createElement('section')
 			quick.append(
-				button('Find a game', () => {
+				button('Play', () => {
 					noGames = false
 					return session.quickJoin()
 				}),
 			)
-			const hint = document.createElement('p')
-			hint.textContent = 'Join other players in a public lobby.'
-			quick.append(hint)
 			if (noGames) {
 				const empty = document.createElement('p')
 				empty.setAttribute('role', 'status')
-				empty.textContent = 'No games available right now. Start one and others can join you.'
-				quick.append(
-					empty,
-					button('Start a public game', () => session.host(true)),
-				)
+				empty.textContent = 'No games yet. Make a new one!'
+				quick.append(empty)
 			}
-			const friends = el('section', null, null, '<h2>Your own game</h2>')
-			if (creating) {
-				const visibility = el('div', 'online-visibility')
-				for (const [name, description, isPublic] of [
-					['Public', 'Anyone can join', true],
-					['Private', 'Invite code only', false],
-				]) {
-					const choice = document.createElement('div')
-					const hint = document.createElement('p')
-					hint.textContent = description
-					choice.append(
-						button(name, () => session.host(isPublic)),
-						hint,
-					)
-					visibility.append(choice)
-				}
-				friends.append(visibility)
-			} else
-				friends.append(
-					button('Create a game', () => {
-						creating = true
-					}),
-				)
 			const join = document.createElement('form')
 			const input = document.createElement('input')
 			input.name = 'code'
-			input.placeholder = 'Enter code…'
+			input.placeholder = 'Code'
 			input.setAttribute('aria-label', 'Lobby code')
 			input.maxLength = 12
 			input.value = joinCode
@@ -147,15 +118,40 @@ export function createOnlineUi(session, { inMatch = () => false, signal } = {}) 
 				if (!joinButton.disabled) joinButton.click()
 			}
 			join.append(input, joinButton)
-			friends.append(join)
-			choices.append(quick, friends)
+			const host = el('section', 'online-host')
+			const visibility = el('div', 'online-visibility', host)
+			visibility.setAttribute('role', 'group')
+			visibility.setAttribute('aria-label', 'Who can join')
+			for (const [name, isPublic] of [
+				['Public', true],
+				['Private', false],
+			]) {
+				const choice = el('button', 'sticker', visibility)
+				choice.type = 'button'
+				choice.textContent = name
+				choice.disabled = busy
+				choice.setAttribute('aria-pressed', String(hostPublic === isPublic))
+				choice.onclick = () => {
+					hostPublic = isPublic
+					render()
+				}
+			}
+			host.append(button('New game', () => session.host(hostPublic)))
+			choices.append(quick, join, host)
 			children.push(choices)
 		} else {
 			const hint = el('p', 'line')
-			hint.textContent = `Share code ${state.code} with friends. ${state.humans.length}/${state.capacity ?? MAX_PLAYERS} humans connected.`
+			const code = el('b', 'selectable')
+			code.textContent = state.code
+			hint.append(
+				'Share code ',
+				code,
+				` with friends. ${state.humans.length}/${state.capacity ?? MAX_PLAYERS} humans connected.`,
+			)
 			children.push(hint)
 			const editable = session.net.isHost && state.phase === 'lobby'
-			for (const human of state.humans) {
+			// A walk-around lobby picks teams by box and fills empty boxes with bots, so it needs neither control.
+			for (const human of state.liveLobby ? [] : state.humans) {
 				const label = document.createElement('label')
 				label.textContent = `${human.peerId === session.net.id ? 'You' : human.peerId === state.hostId ? 'Host' : `Player ${state.humans.indexOf(human) + 1}`} ${human.peerId === state.hostId ? '(host)' : ''} `
 				const select = document.createElement('select')
@@ -177,7 +173,7 @@ export function createOnlineUi(session, { inMatch = () => false, signal } = {}) 
 				label.append(select)
 				children.push(label)
 			}
-			for (const team of ['A', 'B']) {
+			for (const team of state.liveLobby ? [] : ['A', 'B']) {
 				const existing = sameLobby && panel.querySelector(`label[data-bot-team="${team}"]`)
 				const label = existing || document.createElement('label')
 				if (!existing) {
@@ -205,7 +201,7 @@ export function createOnlineUi(session, { inMatch = () => false, signal } = {}) 
 			if (state.liveLobby && inMatch()) {
 				actions.append(button('Resume', () => panel.close()))
 				const hint = el('p', 'line')
-				hint.textContent = 'Claim a box in the shared lobby to ready up.'
+				hint.textContent = 'Stand in a box to ready up. Empty boxes play as bots.'
 				children.push(hint)
 			} else if (state.phase === 'lobby') {
 				const canStart = ['A', 'B'].every(
@@ -230,12 +226,18 @@ export function createOnlineUi(session, { inMatch = () => false, signal } = {}) 
 		const status = el('p', 'line')
 		status.setAttribute('role', 'status')
 		status.textContent = error || (busy ? 'Connecting…' : state?.message || '')
+		// Out of a lobby the panel is only a menu, so it closes from the corner; leaving a lobby stays a real button.
 		const back = button(
-			state ? (state.phase === 'match' ? 'Leave match' : 'Leave lobby') : 'Back to game',
+			state ? (state.phase === 'match' ? 'Leave match' : 'Leave lobby') : '×',
 			leave,
 		)
 		back.disabled = false
-		actions.append(back)
+		if (state) actions.append(back)
+		else {
+			back.classList.add('online-close')
+			back.setAttribute('aria-label', 'Close')
+			children.unshift(back)
+		}
 		children.push(status, actions)
 		// Keep bot controls mounted so typing and held spinner buttons survive roster updates.
 		const previousChildren = [...panel.children]

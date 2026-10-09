@@ -112,16 +112,15 @@ export function heroCard(hero, { localTeam, localId, lobby = false } = {}) {
 		rows.push(['Basic attack', `${round(damage)} · ${n(basic.range)} m · ${n(basic.rate)}/s`])
 		rows.push(['Sustained DPS', n(damage * basic.rate)])
 	}
-	rows.push([
-		'Respawn',
-		`${n(lobby ? tune.lobby.respawn : tune.respawn.base + tune.respawn.perLevel * level)} s`,
-	])
-	const who = hero.id === localId ? 'You' : hero.team === localTeam ? 'Ally' : 'Enemy'
+	// The lobby's half-second bounce back isn't worth a row.
+	if (!lobby)
+		rows.push(['Respawns after', `${n(tune.respawn.base + tune.respawn.perLevel * level)} s`])
+	const who = hero.id === localId ? '' : hero.team === localTeam ? 'Ally' : 'Enemy'
 	return {
 		title: title(hero.heroId ?? def?.id ?? 'hero'),
 		tag: `Lv ${level}`,
 		tone: hero.team,
-		summary: `${who} · level ${level}${basic ? '' : ' · kit not built'}`,
+		summary: [who, basic ? '' : 'Kit not built'].filter(Boolean).join(' · '),
 		rows,
 		notes: hero.dead ? ['Down, respawning'] : [],
 	}

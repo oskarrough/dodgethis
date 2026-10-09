@@ -232,8 +232,10 @@ export function createHud({ lobby = false, layout, pieces } = {}) {
 	const root = el('div', 'moba-hud')
 	const bar = el('div', 'moba-bar', root)
 	const unitFrame = el('div', 'moba-hud moba-unit')
-	const portrait = hot(el('div', 'moba-portrait', unitFrame), { kind: 'portrait' })
+	const portrait = el('div', 'moba-portrait', unitFrame)
 	const avatar = el('div', 'moba-avatar', portrait)
+	// Only the badge opens the hero card; the whole frame sits too close to play to tip on every pass.
+	hot(el('span', 'moba-info', avatar), { kind: 'portrait' }).textContent = 'i'
 	const face = el('span', '', avatar)
 	const heroLevel = el('b', 'moba-lv', avatar)
 	const respawnNode = el('b', 'moba-respawn', avatar)
@@ -261,7 +263,8 @@ export function createHud({ lobby = false, layout, pieces } = {}) {
 	})
 	const banner = el('div', 'moba-banner')
 	banner.hidden = true
-	document.body.append(top, root, unitFrame, banner)
+	// The lobby is for walking and picking; the hero frame only earns its corner in a match.
+	document.body.append(top, root, ...(lobby ? [] : [unitFrame]), banner)
 	const tip = createTooltip(document.body)
 	// World units get their own card and a slim nameplate, so a slot card never fights a unit card.
 	const worldTip = createTooltip(document.body, 'moba-tip-world')
@@ -513,8 +516,8 @@ export function createHud({ lobby = false, layout, pieces } = {}) {
 					card.title = 'Sparring dummy'
 					card.summary = 'Practice your kit on this stuffed target.'
 					card.rows = card.rows.map((row) =>
-						row[0] === 'Respawn'
-							? ['Respawn', tune.dummies.respawn + ' s']
+						row[0] === 'Respawns after'
+							? ['Respawns after', tune.dummies.respawn + ' s']
 							: row[0] === 'Speed'
 								? ['Speed', tune.dummies.speed + ' m/s']
 								: row,

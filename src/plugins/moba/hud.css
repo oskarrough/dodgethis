@@ -452,6 +452,24 @@
 	border: 2px solid var(--ink);
 	border-radius: 11px;
 }
+.moba-info {
+	position: absolute;
+	left: -7px;
+	top: -6px;
+	width: 20px;
+	height: 20px;
+	box-sizing: border-box;
+	display: grid;
+	place-items: center;
+	font:
+		italic 700 12px / 1 Georgia,
+		serif;
+	color: var(--ink);
+	background: var(--cream);
+	border: 2px solid var(--ink);
+	border-radius: 50%;
+	cursor: help;
+}
 .moba-respawn {
 	position: absolute;
 	inset: 0;

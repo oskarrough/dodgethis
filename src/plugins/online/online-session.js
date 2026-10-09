@@ -19,6 +19,8 @@ export function createOnlineSession(
 		modeId = () => null,
 		joinData = () => undefined,
 		rosterSelections = () => [],
+		// A mode with its own walk-around lobby takes the room there at once; it seats bots itself.
+		hasRoomLobby = () => false,
 		rosterTimeout = 7000,
 		directory = createLobbyDirectory(),
 	} = {},
@@ -219,6 +221,7 @@ export function createOnlineSession(
 					throw error
 				}
 			}
+			if (operation === generation && hasRoomLobby()) this.start()
 		},
 		async quickJoin() {
 			const operation = ++generation
@@ -283,7 +286,11 @@ export function createOnlineSession(
 			const data = joinData()
 			if (data) local.data = data
 			const participants = roster()
-			if (!state.liveLobby && !teams.every((team) => participants.some((p) => p.team === team)))
+			if (
+				!state.liveLobby &&
+				!hasRoomLobby() &&
+				!teams.every((team) => participants.some((p) => p.team === team))
+			)
 				throw new Error('Both teams need at least one participant')
 			state.modeId = modeId()
 			state.phase = 'match'

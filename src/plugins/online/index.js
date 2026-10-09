@@ -25,6 +25,7 @@ export default function online(app) {
 		modeId: () => app.modes.active,
 		joinData: () => app.modes.current?.joinData?.(),
 		rosterSelections: () => app.modes.current?.roomRoster?.() ?? [],
+		hasRoomLobby: () => app.modes.current?.roomLobby === true,
 		onChange(state, message) {
 			if (link && state && app.session.shared)
 				for (const participant of app.modes.current?.roomRoster?.() ?? [])
