@@ -2,10 +2,17 @@ import * as THREE from 'three'
 import { FORWARD_LAYER } from '../../core/stylepass.js'
 import { tune } from './tune.js'
 
+const easeOut = (x) => 1 - (1 - x) ** 3
+const easeOutBack = (x, s) => 1 + (s + 1) * (x - 1) ** 3 + s * (x - 1) ** 2
+
 export function createDamageNumbers(parent) {
 	const labels = []
 
-	function pop(text, point, { color = tune.damageNumbers.colors.damage, scale = 1 } = {}) {
+	function pop(
+		text,
+		point,
+		{ color = tune.damageNumbers.colors.damage, scale = 1, crit = false } = {},
+	) {
 		const t = tune.damageNumbers
 		const label = String(text)
 		const canvas = document.createElement('canvas')
@@ -32,10 +39,22 @@ export function createDamageNumbers(parent) {
 		})
 		const mesh = new THREE.Sprite(material)
 		mesh.layers.set(FORWARD_LAYER)
-		mesh.position.set(point.x + (Math.random() - 0.5) * t.spread, t.y, point.z)
+		const x = point.x + (Math.random() - 0.5) * t.spread
+		mesh.position.set(x, t.y, point.z)
 		mesh.scale.setScalar(0)
 		parent.add(mesh)
-		labels.push({ mesh, texture, material, aspect: canvas.width / canvas.height, scale, age: 0 })
+		labels.push({
+			mesh,
+			texture,
+			material,
+			aspect: canvas.width / canvas.height,
+			scale,
+			crit,
+			x,
+			side: Math.random() < 0.5 ? -1 : 1,
+			life: crit ? t.crit.life : t.life,
+			age: 0,
+		})
 	}
 
 	function hit(fact) {
@@ -48,11 +67,15 @@ export function createDamageNumbers(parent) {
 		pop(Math.round(fact.damage), fact.point, {
 			color: fact.crit ? t.colors.crit : t.colors.damage,
 			scale: size * (fact.crit ? t.sizing.crit : 1),
+			crit: fact.crit,
 		})
 	}
 
 	function xp(amount, point) {
-		pop(`+${amount} XP`, point, { color: tune.damageNumbers.colors.xp })
+		pop(`+${amount} XP`, point, {
+			color: tune.damageNumbers.colors.xp,
+			scale: tune.damageNumbers.sizing.xp,
+		})
 	}
 
 	function remove(label) {
@@ -66,13 +89,21 @@ export function createDamageNumbers(parent) {
 		for (let i = labels.length - 1; i >= 0; i--) {
 			const label = labels[i]
 			label.age += dt
-			const left = Math.max(0, 1 - label.age / t.life)
-			label.mesh.position.y += dt * t.rise * Math.max(0.2, left)
+			const k = Math.min(1, label.age / label.life)
 			const grow = Math.min(1, label.age / t.popIn)
-			const height = t.height * label.scale * (0.7 + 0.3 * grow + 0.15 * Math.sin(grow * Math.PI))
+			const pop = label.crit
+				? 1 + (t.crit.punch - 1) * (1 - easeOut(grow))
+				: easeOutBack(grow, t.overshoot)
+			const out = Math.max(0, (k - 1 + t.fade) / t.fade)
+			const travel = easeOut(k)
+			label.mesh.position.x = label.x + label.side * t.drift * travel
+			label.mesh.position.y = t.y + t.rise * travel
+			const height = t.height * label.scale * pop * (1 - 0.3 * out)
 			label.mesh.scale.set(height * label.aspect, height, 1)
-			label.material.opacity = Math.min(1, left / t.fade)
-			if (left > 0) continue
+			label.material.opacity = 1 - out * out
+			if (label.crit)
+				label.material.rotation = label.side * t.crit.tilt * (0.3 + 0.7 * (1 - easeOut(grow)))
+			if (k < 1) continue
 			remove(label)
 			labels.splice(i, 1)
 		}
