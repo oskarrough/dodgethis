@@ -1,4 +1,5 @@
 import { tune } from './tune.js'
+import { controls, setQuickCast } from '../../core/controls.js'
 import { hex } from '../../core/style.js'
 import { createRecap } from './recap.js'
 import './menu.css'
@@ -23,6 +24,7 @@ export function createMatchMenu({
 	let endingElapsed = null
 	const frozen = () => paused || !!sim.lane?.match.winner
 	const resetInput = () => {
+		controls.attackArmed = false
 		app.intents.cancel(hero.id)
 		clearCamera()
 	}
@@ -55,9 +57,25 @@ export function createMatchMenu({
 			subtitle: resumeHint(),
 			actions: [
 				{ label: 'Resume', onSelect: toggle },
+				quickCastAction(),
 				{ label: 'Leave game', onSelect: leave },
 			],
 		})
+	}
+	// The label is rewritten in place so the selection stays put.
+	const quickCastLabel = () => `Quick cast: ${controls.quickCast ? 'on' : 'off'}`
+	function quickCastAction() {
+		const action = {
+			label: quickCastLabel(),
+			onSelect() {
+				setQuickCast(!controls.quickCast)
+				action.label = quickCastLabel()
+				const labels = document.querySelectorAll('.overlay[data-theme="moba-pause"] .label')
+				for (const label of labels)
+					if (label.textContent.startsWith('Quick cast')) label.textContent = action.label
+			},
+		}
+		return action
 	}
 	function result(dt = 0, alpha = 0) {
 		recap.update({
@@ -105,6 +123,9 @@ export function createMatchMenu({
 		'keydown',
 		(event) => {
 			if (event.defaultPrevented || event.repeat || event.code !== 'Escape') return
+			// Esc first drops a held aim or an armed attack-move (the intents sampler sees the same key).
+			if (!paused && (controls.attackArmed || Object.keys(app.intents.get(hero.id).held).length))
+				return
 			if (app.session.shared) app.emit('menu')
 			else toggle()
 		},

@@ -125,6 +125,7 @@ export function sliderSections(tune, setup) {
 		catch: { damageReduction: [0, 1, 0.01, 'landed damage reduction'] },
 		orders: {
 			pick: [0, 2, 0.05, 'attack pick (m)'],
+			attackMovePick: [0, 8, 0.25, 'attack-move pick (m)'],
 			carrot: [0.1, 3, 0.05, 'carrot (m)'],
 			arrival: [0.01, 0.5, 0.01, 'arrival (m)'],
 			rejoinDistance: [0.05, 1, 0.05, 'rejoin after displacement (m)'],
@@ -217,6 +218,20 @@ export function sliderSections(tune, setup) {
 			fatigue: [T, 10, 0.25, 'fatigue window (s)'],
 			quieter: [0, 1, 0.05, 'fatigue gain ×'],
 		},
+		damageNumbers: {
+			enabled: [0, 1, 1, 'on'],
+			height: [0.2, 2, 0.05],
+			y: [0, 5, 0.1],
+			life: [0.2, 3, 0.05],
+			fade: [0.05, 1, 0.05],
+			rise: [0, 5, 0.1],
+			popIn: [0.01, 0.5, 0.01, 'pop in (s)'],
+			spread: [0, 2, 0.05],
+			min: [0.2, 2, 0.05, 'smallest ×', tune.damageNumbers.sizing],
+			max: [0.2, 3, 0.05, 'largest ×', tune.damageNumbers.sizing],
+			growth: [0, 1, 0.01, 'growth per 10× damage', tune.damageNumbers.sizing],
+			crit: [1, 3, 0.05, 'crit ×', tune.damageNumbers.sizing],
+		},
 		juice: {
 			...each(['attackSquash', 'castSquash', 'vaultSquash', 'rainSquash'], () => [-0.3, 0.3, 0.01]),
 			flash: [0, 0.3, 0.01, 'hit flash (s)'],
@@ -252,7 +267,7 @@ export const debugSections = {
 		Difficulty: ['bots easy', 'bots normal', 'bots hard'],
 	},
 	Presentation: {
-		Feedback: ['hud', 'out', 'card', 'juice'],
+		Feedback: ['hud', 'out', 'card', 'juice', 'damageNumbers'],
 		Terrain: ['overthrow terrain (applies on restart)', 'flagfall (applies on restart)'],
 		Audio: ['squeak'],
 	},

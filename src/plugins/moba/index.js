@@ -26,6 +26,7 @@ import { createDifficultyGallery } from './lobby-props.js'
 import { createLobbyReplica } from './lobby-replica.js'
 import { createLaneReplica } from './lane-replica.js'
 import { HEROES } from './heroes.js'
+import { controls as playerControls } from '../../core/controls.js'
 
 const FACTS = [
 	'boardExpired',
@@ -457,9 +458,11 @@ export default function moba(app, map) {
 				const target =
 					!sim.ball?.carrying(hero) && !onPad() && frame.aim ? sim.pick(hero.team, frame.aim) : null
 				const hovered = target && locate(target.id)
+				const aiming = ['slot1', 'slot2', 'slot3', 'slot4'].some((s) => frame.held[s])
 				cursor.update({
 					enemy: !!target,
-					aiming: ['slot1', 'slot2', 'slot3', 'slot4'].some((s) => frame.held[s]),
+					aiming,
+					armed: playerControls.attackArmed,
 					pad: onPad(),
 					paused: frozen,
 				})
@@ -482,6 +485,7 @@ export default function moba(app, map) {
 					hero: p,
 					aim: hero.cast && lineAbility?.tell === 'line' ? hero.cast.target : frame.aim,
 					lineStats: lineAbility?.stats,
+					target: aiming && !onPad() ? frame.aim : null,
 					obstacles: sim.obstacles,
 					bounds: sim.bounds,
 					held:

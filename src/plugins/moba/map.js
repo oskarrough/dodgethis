@@ -370,6 +370,12 @@ diffuseColor.rgb *= 1.0 - coverShade * (1.0 - max(0.0, dot(n, normalize(vec3(0.4
 		layout.obstacles,
 		kind === 'lobby' ? undefined : layout.bounds,
 		scale,
+		kind === 'lobby'
+			? {
+					halfX: tune.lobby.floor.halfX - tune.lobby.floor.jag,
+					halfZ: tune.lobby.floor.halfZ - tune.lobby.floor.jag,
+				}
+			: null,
 	)
 	scene.add(group)
 	const dispose = () => {

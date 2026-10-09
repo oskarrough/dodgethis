@@ -78,7 +78,8 @@ export const tune = {
 		capHeight: 0.04,
 		printLayers: { road: 0.015, dots: 0.03, lobby: 0.045, marks: 0.06, seams: 0.075 },
 		// Ground markers (pings, hover, aim line) must sit above every print layer
-		markerLayers: { aim: 0.09, aimTip: 0.092, hover: 0.095, ping: 0.1 },
+		markerLayers: { aim: 0.09, aimTip: 0.092, hover: 0.095, reticle: 0.097, ping: 0.1 },
+		reticle: { inner: 0.3, outer: 0.42 }, // the drawn aim point while a key aims
 		lineWidth: 0.06,
 		dashLength: 1,
 		dashSpacing: 2,
@@ -480,8 +481,8 @@ export const tune = {
 		frame: { halfZ: 6.2, followX: 5, followEase: 6 },
 		// The lobby's training dummies strafe `dummies.span` either side of these; keep the gallery >2 m off.
 		dummyPosts: [
-			{ x: -1.5, z: -5.8 },
-			{ x: 1.5, z: -5.8 },
+			{ x: -1.5, z: -4.3 },
+			{ x: 1.5, z: -4.3 },
 		],
 		// The lobby floor: finite pale tarmac over a torn rock rim, floating over the desert. Geometry, texture and
 		// colours apply on restart. The outline only ever pulls in from the halfX/halfZ rectangle by up to `jag`.
@@ -548,6 +549,9 @@ export const tune = {
 				[1, -0.72],
 			],
 		},
+		// The floor has open edges: orders reach `reach` metres past it, so walk off, fall `depth` metres, then
+		// drop back in from `height` over a random spot inside the walking bounds.
+		fall: { reach: 2, depth: 6, height: 7 },
 		onlineNotice: 'The online lobby is not ready yet. Play local practice.',
 		replica: { delay: 0.1, size: 6, depth: 12, precision: 100 },
 		respawn: 0.5,
@@ -909,17 +913,22 @@ export const tune = {
 		labelWidth: 3,
 		labelHeight: 0.75,
 		labelLift: 0.6,
-		xpWidth: 256,
-		xpHeight: 64,
-		xpFont: 28,
-		xpBaseline: 0.7,
-		xpScale: 2,
-		xpY: 2,
 		feedbackDecay: 12,
-		xpLife: 1,
-		xpRise: 1.5,
+	},
+	damageNumbers: {
+		enabled: true,
+		font: 56,
+		family: 'monospace',
+		outline: 12,
+		height: 0.8,
+		y: 2,
+		life: 1,
+		fade: 0.4,
+		rise: 1.5,
 		popIn: 0.08,
-		popSpread: 0.6,
+		spread: 0.6,
+		sizing: { min: 0.65, max: 1.15, growth: 0.17, crit: 1.25 },
+		colors: { damage: '#ff9a2e', crit: '#c77dff', xp: '#ffd76a', outline: '#000' },
 	},
 	hero: {
 		hp: 1400,
@@ -994,6 +1003,7 @@ export const tune = {
 	},
 	orders: {
 		pick: 0.6, // an order this close to an enemy's silhouette attacks it
+		attackMovePick: 3, // an attack-move click this close to an enemy's edge attacks the nearest one instead of walking
 		carrot: 0.8, // the pursuit point runs this far ahead along the path
 		arrival: 0.05, // done within this radius, with no easing
 		stallProgress: 0.3, // repath when progress stays under this fraction of top speed…
@@ -1012,12 +1022,23 @@ export const tune = {
 		speed: 24,
 		radius: 0.12,
 		visualScale: 0.65,
+		critEvery: 5,
+		critMultiplier: 1.2,
 	},
 	respawn: { base: 8, perLevel: 2 },
 	momentum: { reduction: 2 },
 	cast: { cancelLockout: 0.75 },
 	catching: { returnTell: 0.5, pocketLife: 6, bagLimit: 6 },
-	gloveSlap: { damage: 130, rate: 1, windup: 0.2, backswing: 0.25, range: 3.5, radius: 0.35 },
+	gloveSlap: {
+		damage: 130,
+		rate: 1,
+		windup: 0.2,
+		backswing: 0.25,
+		range: 3.5,
+		radius: 0.35,
+		critEvery: 3,
+		critMultiplier: 1.5,
+	},
 	toss: { damage: 120, castPoint: 0.35, range: 9, speed: 20, radius: 0.35, cooldown: 5 },
 	catch: {
 		damageReduction: 0.25, // playtest starting value, not a balance claim

@@ -4,6 +4,7 @@ import {
 	direct,
 	neutralFrame,
 	pointClick,
+	POINT_CLICK,
 	stickVector,
 	validIntent,
 } from '../src/core/intents.js'
@@ -199,7 +200,7 @@ const buttons = (...down) => Array.from({ length: 16 }, (_, i) => down.includes(
 
 test('pointClick: RMB orders at the cursor and again every 100 ms while held; keys quick-cast at the cursor', () => {
 	const d = clicker()
-	const poll = pointClick(d, () => ({ x: 4, y: 0, z: -2 }))
+	const poll = pointClick(d, () => ({ x: 4, y: 0, z: -2 }), { ...POINT_CLICK, quickCast: true })
 	d.order = true
 	d.orderHeld = true
 	d.keys.push('KeyQ', 'KeyS', 'KeyX')

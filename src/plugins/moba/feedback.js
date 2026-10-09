@@ -217,9 +217,9 @@ export function createFeedback({
 				const attack = fact.kind === 'attack'
 				view.ping(fact.kind, fact.point, {
 					follow: attack ? fact.target : null,
-					size: fact.repeat ? 0.55 : 1,
+					size: fact.repeat ? 0.55 : fact.kind === 'attack-move' ? 1.4 : 1,
 				})
-				if (!fact.repeat) sfx.tick(attack ? 0.5 : 0)
+				if (!fact.repeat) sfx.tick(attack ? 0.5 : fact.kind === 'attack-move' ? 0.25 : 0)
 				return
 			}
 			case 'cast':
@@ -357,8 +357,8 @@ export function createFeedback({
 								: effects.hit,
 						fact,
 					)
-				if (fact.damage >= 0.5)
-					view.pop?.(Math.round(fact.damage), fact.point, { color: onMe ? '#ff6a5a' : '#fff6e6' })
+				if (mine) view.damage?.(fact)
+				if (mine && fact.crit) camera.shake(tune.juice.shakeTaken)
 				if (onMe) {
 					camera.shake(tune.juice.shakeTaken)
 					input.rumble(0.2, 0.3, 60)

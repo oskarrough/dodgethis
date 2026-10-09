@@ -1,10 +1,10 @@
 import * as THREE from 'three'
-import { FORWARD_LAYER } from '../../core/stylepass.js'
 import { makeStyleMaterial } from '../../core/stylepass.js'
 import { tune } from './tune.js'
 import { lineReach } from './skills-view.js'
 import { projectMap } from './obstacles.js'
 import { createHealthBars } from './health-bars.js'
+import { createDamageNumbers } from './damage-numbers.js'
 
 // Moba's own scene dressing: click pings, the hover ring, the held-aim indicator and the skillshot meshes. Local presentation only.
 export function createView(scene, smooth) {
@@ -20,7 +20,12 @@ export function createView(scene, smooth) {
 
 	// --- Pings: a ring that contracts over 0.25 s; attack pings sit on the target. ---
 	const ringGeometry = own(new THREE.RingGeometry(0.62, 0.8, 40).rotateX(-Math.PI / 2))
-	const ringMaterials = { move: flat('teamA'), attack: flat('teamB'), aggro: flat('ink') }
+	const ringMaterials = {
+		move: flat('teamA'),
+		attack: flat('teamB'),
+		'attack-move': flat('teamB'),
+		aggro: flat('ink'),
+	}
 	const pings = Array.from({ length: 10 }, () => {
 		const mesh = new THREE.Mesh(ringGeometry, ringMaterials.move)
 		mesh.visible = false
@@ -47,6 +52,18 @@ export function createView(scene, smooth) {
 	hover.visible = false
 	group.add(hover)
 
+	// --- Reticle: the aim point while a key aims. The OS hides its pointer during key repeat, so we draw our own. ---
+	const reticle = new THREE.Mesh(
+		own(
+			new THREE.RingGeometry(tune.map.reticle.inner, tune.map.reticle.outer, 32).rotateX(
+				-Math.PI / 2,
+			),
+		),
+		flat('ink'),
+	)
+	reticle.visible = false
+	group.add(reticle)
+
 	// --- Held aim: Q's line, as long as its range and as wide as the arrow. ---
 	const line = new THREE.Mesh(
 		own(new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2).translate(0, 0, -0.5)),
@@ -64,35 +81,7 @@ export function createView(scene, smooth) {
 	const health = createHealthBars()
 	const barColors = { A: flat('teamA'), B: flat('teamB') }
 
-	// Floating text over the field: pop(text, point, { color }) and it rises, fades and cleans up.
-	const xpLabels = []
-	function pop(text, point, { color = '#ffd76a' } = {}) {
-		const v = tune.laneView
-		const canvas = document.createElement('canvas')
-		canvas.width = v.xpWidth
-		canvas.height = v.xpHeight
-		const context = canvas.getContext('2d')
-		context.font = `bold ${v.xpFont}px monospace`
-		context.textAlign = 'center'
-		context.lineJoin = 'round'
-		context.lineWidth = 6
-		context.strokeStyle = '#1a1410'
-		context.strokeText(String(text), canvas.width / 2, canvas.height * v.xpBaseline)
-		context.fillStyle = color
-		context.fillText(String(text), canvas.width / 2, canvas.height * v.xpBaseline)
-		const texture = new THREE.CanvasTexture(canvas)
-		const material = new THREE.SpriteMaterial({
-			map: texture,
-			depthWrite: false,
-			transparent: true,
-		})
-		const mesh = new THREE.Sprite(material)
-		mesh.layers.set(FORWARD_LAYER)
-		mesh.position.set(point.x + (Math.random() - 0.5) * v.popSpread, v.xpY, point.z)
-		group.add(mesh)
-		xpLabels.push({ mesh, texture, material, life: v.xpLife, age: 0 })
-	}
-	const xp = (amount, point) => pop(`+${amount} XP`, point)
+	const numbers = createDamageNumbers(group)
 
 	// --- Skillshots: a bright bolt with a trail that grows from the hand. ---
 	const boltGeometry = own(new THREE.CapsuleGeometry(0.12, 0.7, 4, 8).rotateX(Math.PI / 2))
@@ -140,25 +129,9 @@ export function createView(scene, smooth) {
 	// Per rendered frame. `live` is the set of shot ids still flying; the rest are returned so feedback can fizzle them.
 	function update(
 		dt,
-		{ live, hero, aim, held, hovered, locate, lineStats = tune.loose, obstacles, bounds },
+		{ live, hero, aim, held, hovered, target, locate, lineStats = tune.loose, obstacles, bounds },
 	) {
-		for (let i = xpLabels.length - 1; i >= 0; i--) {
-			const label = xpLabels[i]
-			const v = tune.laneView
-			label.life -= dt
-			label.age += dt
-			label.mesh.position.y += dt * v.xpRise * Math.max(0.2, label.life / v.xpLife)
-			const grow = Math.min(1, label.age / v.popIn)
-			const size = v.xpScale * (0.7 + 0.3 * grow + 0.15 * Math.sin(grow * Math.PI))
-			label.mesh.scale.set(size, size / 2, 1)
-			label.material.opacity = Math.min(1, label.life / (v.xpLife * 0.4))
-			if (label.life <= 0) {
-				group.remove(label.mesh)
-				label.texture.dispose()
-				label.material.dispose()
-				xpLabels.splice(i, 1)
-			}
-		}
+		numbers.update(dt)
 		for (const p of pings) {
 			if (p.life <= 0) continue
 			p.life -= dt
@@ -175,6 +148,8 @@ export function createView(scene, smooth) {
 		}
 		hover.visible = !!hovered
 		if (hovered) hover.position.set(hovered.x, tune.map.markerLayers.hover, hovered.z)
+		reticle.visible = !!target
+		if (target) reticle.position.set(target.x, tune.map.markerLayers.reticle, target.z)
 
 		const showLine = !!(held && aim && hero)
 		line.visible = tip.visible = showLine
@@ -215,18 +190,13 @@ export function createView(scene, smooth) {
 
 	function reset() {
 		health.reset()
-		for (const label of xpLabels) {
-			group.remove(label.mesh)
-			label.texture.dispose()
-			label.material.dispose()
-		}
-		xpLabels.length = 0
+		numbers.reset()
 		for (const id of bolts.keys()) unbolt(id)
 		for (const p of pings) {
 			p.life = 0
 			p.mesh.visible = false
 		}
-		hover.visible = line.visible = tip.visible = false
+		hover.visible = reticle.visible = line.visible = tip.visible = false
 	}
 
 	function dispose() {
@@ -236,7 +206,18 @@ export function createView(scene, smooth) {
 		for (const x of owned) x.dispose()
 	}
 
-	return { ping, pop, xp, bolt, unbolt, update, health: health.update, reset, dispose }
+	return {
+		ping,
+		pop: numbers.pop,
+		damage: numbers.hit,
+		xp: numbers.xp,
+		bolt,
+		unbolt,
+		update,
+		health: health.update,
+		reset,
+		dispose,
+	}
 }
 
 const PING = 0.25

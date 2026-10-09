@@ -51,7 +51,15 @@ window.addEventListener('keydown', (e) => {
 	if (!e.repeat && !typing && keyEdges.length < 16) keyEdges.push(e.code)
 	keys.add(e.code)
 })
-window.addEventListener('keyup', (e) => keys.delete(e.code))
+// Every key-up, in order, so a hold-to-aim scheme never misses a release. Blur clears them (and the held set) instead.
+const keyUps = []
+export function consumeKeyUps() {
+	return keyUps.splice(0)
+}
+export const keyHeld = (code) => keys.has(code)
+window.addEventListener('keyup', (e) => {
+	if (keys.delete(e.code) && keyUps.length < 16) keyUps.push(e.code)
+})
 window.addEventListener('blur', () => {
 	pauseQueued = false
 	keys.clear()
@@ -61,6 +69,7 @@ window.addEventListener('blur', () => {
 	slotQueued = null
 	padSlotQueued = null
 	keyEdges.length = 0
+	keyUps.length = 0
 	padNeedsRelease = true
 })
 
@@ -347,6 +356,7 @@ export function resetActions() {
 	slotQueued = null
 	padSlotQueued = null
 	keyEdges.length = 0
+	keyUps.length = 0
 	orderQueued = false
 	orderHeld = false
 	pauseQueued = false

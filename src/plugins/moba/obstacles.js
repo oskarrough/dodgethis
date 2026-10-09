@@ -157,11 +157,24 @@ export function segmentClear(a, b, inflate = 0, obstacles = OBSTACLES, bounds = 
 }
 
 // Rapier movement and analytical queries consume the same descriptors.
-export function buildColliders(world, RAPIER, obstacles = OBSTACLES, bounds = FLOOR, scale = 1) {
+// An `island` ({ halfX, halfZ }) swaps the endless ground for a slab with open edges to walk off.
+export function buildColliders(
+	world,
+	RAPIER,
+	obstacles = OBSTACLES,
+	bounds = FLOOR,
+	scale = 1,
+	island = null,
+) {
 	const body = world.createRigidBody(RAPIER.RigidBodyDesc.fixed())
 	// A flat arena needs no terrain triangles: their seams snag capsules and slow every sweep.
-	// The boundary colliders below contain the lane; the lobby also clamps its walking bounds.
-	world.createCollider(new RAPIER.ColliderDesc(new RAPIER.HalfSpace({ x: 0, y: 1, z: 0 })), body)
+	// The boundary colliders below contain the lane.
+	world.createCollider(
+		island
+			? RAPIER.ColliderDesc.cuboid(island.halfX, 1, island.halfZ).setTranslation(0, -1, 0)
+			: new RAPIER.ColliderDesc(new RAPIER.HalfSpace({ x: 0, y: 1, z: 0 })),
+		body,
+	)
 	for (const o of obstacles) {
 		const h =
 			(o.r !== undefined ? m.pillarHeight : o.kind === 'hedge' ? m.hedgeHeight : m.wallHeight) *
@@ -173,6 +186,7 @@ export function buildColliders(world, RAPIER, obstacles = OBSTACLES, bounds = FL
 		world.createCollider(shape.setTranslation(o.x, h / 2, o.z), body)
 	}
 	const w = m.boundaryThickness * scale
+	if (island) return () => world.removeRigidBody(body)
 	const wallHeight = m.wallHeight * scale
 	for (const side of [-1, 1]) {
 		world.createCollider(

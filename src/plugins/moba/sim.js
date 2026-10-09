@@ -56,7 +56,15 @@ export function createSim({
 	const laneView = lanePiece?.view(scene, smooth) ?? null
 	const towerObstacles = pieces.flatMap((piece) => piece.obstacles?.(layout) ?? [])
 	const obstacles = [...mapObstacles, ...towerObstacles]
-	const floor = bounds ?? layout.bounds
+	// Lobby orders and dashes may aim past the floor's open edges, so you can walk off it.
+	const floor =
+		bounds ??
+		(lobby
+			? {
+					halfX: tune.lobby.floor.halfX + tune.lobby.fall.reach,
+					halfZ: tune.lobby.floor.halfZ + tune.lobby.fall.reach,
+				}
+			: layout.bounds)
 	// Soft walking limits are separate from the terrain walls and dash bounds.
 	const walkingBounds = bounds ?? layout.walkingBounds
 	const field = layout.fieldBounds ?? floor
@@ -119,7 +127,8 @@ export function createSim({
 			}),
 			smooth,
 		})
-		if (walkingBounds) {
+		// The lobby floor has open edges instead: walking off drops you (see `dropIn`).
+		if (walkingBounds && !lobby) {
 			// Clamp the pending physics step, not the synced/rendered pose: interpolation stays intact.
 			const update = body.update
 			body.update = (...args) => {
@@ -395,8 +404,30 @@ export function createSim({
 		return distance > tune.orders.rejoinDistance
 	}
 
+	// LoL-style attack-move: the vulnerable enemy nearest the click (edge to point), within reach of it. Ties go to the lower id.
+	function nearestToClick(team, p) {
+		let best = null
+		let bestD = Infinity
+		for (const e of enemiesOf(team)) {
+			if (lane && !lane.vulnerable(e.unit)) continue
+			const d = Math.hypot(p.x - e.x, p.z - e.z) - e.radius
+			if (d > tune.orders.attackMovePick) continue
+			if (d < bestD - 1e-9 || (Math.abs(d - bestD) <= 1e-9 && String(e.id) < String(best.id))) {
+				best = e
+				bestD = d
+			}
+		}
+		return best
+	}
+
 	function issue(h, point) {
-		const target = ball?.carrying(h) || point.kind ? null : pick(h.team, point)
+		const target = ball?.carrying(h)
+			? null
+			: point.kind === 'attack-move' && point.pick
+				? nearestToClick(h.team, point)
+				: point.kind
+					? null
+					: pick(h.team, point)
 		const repeat = t - h.lastOrder <= ticks(0.15)
 		h.lastOrder = t
 		if (target) {
@@ -854,6 +885,7 @@ export function createSim({
 			if (t >= h.respawnTick) respawn(h)
 			return
 		}
+		if (lobby && h.body.position.y < -tune.lobby.fall.depth) dropIn(h)
 		const frame = intents.get(h.id)
 		if (readySeats) {
 			const box = readySeats.seatOf(h.id)
@@ -1059,6 +1091,23 @@ export function createSim({
 		d.body.face(dirOf(d.yaw))
 	}
 
+	// Fell off the lobby floor: come back down from the sky over a random free spot.
+	function dropIn(h) {
+		const spot = walkGoal(
+			{
+				x: (rng() * 2 - 1) * walkingBounds.halfX,
+				z: (rng() * 2 - 1) * walkingBounds.halfZ,
+			},
+			h.body.radius,
+		)
+		h.body.place(spot.x, h.body.radius + h.body.halfHeight + tune.lobby.fall.height, spot.z)
+		h.order = null
+		if (readySeats) {
+			readySeats.cancel(h.id, t)
+			h.readyWalk = false
+		}
+	}
+
 	function respawn(unit) {
 		unit.corpse?.dispose()
 		unit.corpse = null
@@ -1117,6 +1166,11 @@ export function createSim({
 			travelled: 0,
 			passed: [],
 			damage: h.definition.basic.damage * (1 + tune.levels.growth * (h.level - 1)),
+		}
+		const { critEvery, critMultiplier } = h.definition.basic
+		if (critEvery && (h.basicStreak ?? 0) >= critEvery - 1) {
+			shot.crit = true
+			shot.damage *= critMultiplier
 		}
 		const castFootprint = footprints.get(attack)
 		if (castFootprint) footprints.set(shot, castFootprint)
@@ -1214,6 +1268,8 @@ export function createSim({
 					: 1),
 		)
 		lane?.help(find(shot.owner), unit, t)
+		if (source && shot.slot === 'primary' && source.definition.basic.critEvery)
+			source.basicStreak = shot.crit ? 0 : (source.basicStreak ?? 0) + 1
 		if (shot.slow) unit.slow = { until: t + ticks(shot.slow.duration), factor: shot.slow.factor }
 		unit.hp = Math.max(0, unit.hp - damage)
 		const lethal = unit.hp === 0
@@ -1237,6 +1293,7 @@ export function createSim({
 			direction,
 			lethal,
 			damage,
+			...(shot.crit && { crit: true }),
 			hp: unit.hp,
 			maxHp: unit.maxHp,
 		})

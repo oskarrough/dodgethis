@@ -36,7 +36,7 @@ Early gun damage is shown above. At 6:00 guns deal 5% of it, waves accelerate an
 | Mount | —        | 1 s channel, then `speedMul` 1.3. Movement cancels the channel; damage, attacking or casting dismounts                    |
 
 - **Bots (built):** hero bots play through `app.intents` exactly like players; see [Hero bots](#hero-bots-m4).
-- **Cut:** talents (Oskar's call), mana, items, extra lanes, mercenary camps, hearthstone, gates, fountains, shift-queue, attack-move, minimap, catch-up XP, and heroes not yet marked playable.
+- **Cut:** talents (Oskar's call), mana, items, extra lanes, mercenary camps, hearthstone, gates, fountains, shift-queue, minimap, catch-up XP, and heroes not yet marked playable.
 
 ## Playtest links
 
@@ -46,17 +46,17 @@ Early gun damage is shown above. At 6:00 guns deal 5% of it, waves accelerate an
 
 The mode declares the `pointClick` scheme. Moba sees one frame per participant, `{ move, order, aim, held, pressed: [{ action, at }], released }`, and one cast rule for both devices: a `slotN` press edge whose `at` is the aim at that moment.
 
-| Action              | Mouse and keyboard                     | Pad                                                                            |
-| ------------------- | -------------------------------------- | ------------------------------------------------------------------------------ |
-| `order` (point)     | RMB, re-sent every 100 ms while held   | —                                                                              |
-| `move`              | —                                      | left stick, deadzone 0.18, curve exponent 1.5                                  |
-| `aim`               | cursor ground point                    | `input.stickAim(dir, mag, slot)`: hero + dir × range × remap(0.25–0.9 → 0.3–1) |
-| `slot1–4` (Q W E R) | quick-cast on key-down                 | RB RT LB LT: hold to aim (`held.slotN` shows the indicator), fire on release   |
-| `slot5` (mount)     | Z                                      | X                                                                              |
-| `primary` (attack)  | — (RMB on an enemy resolves to attack) | A: best target in a 45° cone within 1.5 × attack range, heroes first           |
-| `stop` / `cancel`   | S                                      | B cancels a held cast, and always sends `cancel`                               |
+| Action              | Mouse and keyboard                                                                                                                                | Pad                                                                            |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `order` (point)     | RMB, re-sent every 100 ms while held; A then left click is an attack-move (`kind: 'attack-move'`, `pick: true`)                                   | —                                                                              |
+| `move`              | —                                                                                                                                                 | left stick, deadzone 0.18, curve exponent 1.5                                  |
+| `aim`               | cursor ground point                                                                                                                               | `input.stickAim(dir, mag, slot)`: hero + dir × range × remap(0.25–0.9 → 0.3–1) |
+| `slot1–4` (Q W E R) | hold to aim, release to cast; S or Esc cancels, RMB keeps the aim while moving. Pause-menu "Quick cast" (saved, off by default) casts on key-down | RB RT LB LT: hold to aim (`held.slotN` shows the indicator), fire on release   |
+| `slot5` (mount)     | Z                                                                                                                                                 | X                                                                              |
+| `primary` (attack)  | — (RMB on an enemy resolves to attack)                                                                                                            | A: best target in a 45° cone within 1.5 × attack range, heroes first           |
+| `stop` / `cancel`   | S                                                                                                                                                 | B cancels a held cast, and always sends `cancel`                               |
 
-Moba resolves `order` in `simulate`: an enemy collider within 0.6 m of the point (heroes first) means attack, anything else means move. The distance is to the unit's silhouette on the ground (its axis projected along the view), because a click on a torso lands about a metre behind the feet. Hover highlight is local presentation. With the stick neutral, pad aim falls back to the nearest enemy hero in range, then to facing. Aim assist lives in `stickAim`: within 10° of an enemy hero, bend Q's aim 60% toward it.
+Moba resolves `order` in `simulate`: an enemy collider within 0.6 m of the point (heroes first) means attack, anything else means move. The distance is to the unit's silhouette on the ground (its axis projected along the view), because a click on a torso lands about a metre behind the feet. Hover highlight is local presentation. A then left click arms an attack-move (attack cursor; Esc, S, RMB or a cast disarm): the sim attacks the vulnerable enemy whose edge is nearest the click within `orders.attackMovePick` (3 m; ties to the lower id), else walks to the point and engages along the way. Agents' `attack-move` carries no `pick`, so it keeps walking past enemies. With the stick neutral, pad aim falls back to the nearest enemy hero in range, then to facing. Aim assist lives in `stickAim`: within 10° of an enemy hero, bend Q's aim 60% toward it.
 
 ## Feel numbers
 

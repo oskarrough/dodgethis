@@ -1,6 +1,8 @@
 // Intents (docs/plugin-architecture.md, line 3): devices become one plain frame per participant per step, and modes read only frames.
 // DOM-free: the browser shell hands the kernel a device, and a scheme binds that device to the action vocabulary.
 
+import { controls } from './controls.js'
+
 export const ACTIONS = Object.freeze([
 	'primary',
 	'dash',
@@ -61,6 +63,7 @@ export function readIntent(frame) {
 	if (!pointOrNull(frame.order) || !pointOrNull(frame.aim) || !plain(frame.held)) return null
 	if (frame.order?.kind !== undefined && !['move', 'attack-move'].includes(frame.order.kind))
 		return null
+	if (frame.order?.pick !== undefined && frame.order.pick !== true) return null
 	if (!Object.entries(frame.held).every(([a, v]) => ACTIONS.includes(a) && v === true)) return null
 	if (!Array.isArray(frame.pressed) || frame.pressed.length > MAX_EDGES) return null
 	if (!frame.pressed.every((e) => plain(e) && ACTIONS.includes(e.action) && pointOrNull(e.at)))
@@ -70,6 +73,7 @@ export function readIntent(frame) {
 	const copyPoint = (p) => (p === null ? null : { x: p.x, z: p.z })
 	const order = copyPoint(frame.order)
 	if (order && frame.order.kind !== undefined) order.kind = frame.order.kind
+	if (order && frame.order.pick) order.pick = true // a player's attack-move click: the nearest enemy to the point wins
 	return {
 		move: copyPoint(frame.move),
 		order,
@@ -105,18 +109,15 @@ export function direct(device, ground) {
 	}
 }
 
-// The `pointClick` scheme. Mouse: RMB orders at the cursor (again every `resend` ms while held), Q W E R Z quick-cast at the cursor, S stops.
+// The `pointClick` scheme. Mouse: RMB orders at the cursor (again every `resend` ms while held), S stops.
+// Q W E R hold to aim at the cursor and cast on release (like the pad); with `controls.quickCast` on they cast on key-down.
+// Releasing never casts a cancelled aim: S and Esc drop it, as do a blur, a pause and a lost pad; RMB moves without dropping it. Z casts on press.
+// A arms an attack-move: the next left click orders it (the sim picks the enemy nearest the click); Esc, S, RMB or a cast disarm.
 // Pad: the left stick moves; RB RT LB LT hold to aim (`held.slotN`) and cast on release; X mounts, A attacks, B cancels a held cast.
 // `stickAim(dir, magnitude, slot)` is the mode's: it turns the right stick into a ground point (dir null when the stick rests).
 export const POINT_CLICK = { deadzone: 0.18, curve: 1.5, resend: 100 }
-const KEYS = {
-	KeyQ: 'slot1',
-	KeyW: 'slot2',
-	KeyE: 'slot3',
-	KeyR: 'slot4',
-	KeyZ: 'slot5',
-	KeyS: 'stop',
-}
+const AIM_KEYS = { KeyQ: 'slot1', KeyW: 'slot2', KeyE: 'slot3', KeyR: 'slot4' }
+const KEYS = { ...AIM_KEYS, KeyZ: 'slot5', KeyS: 'stop' }
 const PAD_AIMS = [
 	[5, 'slot1'],
 	[7, 'slot2'],
@@ -137,15 +138,18 @@ export function stickVector(x, z, deadzone, curve = 1) {
 }
 
 // Returns a sampler with its own edge state. `device` is core/input.js (or a fake), `ground()` the cursor's ground point or null.
+// `options.quickCast` overrides the saved preference (tests); `options.controls` holds the armed state.
 export function pointClick(device, ground, options = POINT_CLICK) {
+	const prefs = options.controls ?? controls
 	const aiming = new Set() // pad slots held to aim, in press order
+	const keyAims = new Map() // keyboard codes held to aim → slot, in press order
 	let previous = []
 	let resendAt = 0
 
 	return function sample(stickAim = null) {
 		// Direct-only edges must not pile up for the next mode that reads them.
 		device.consumeSlot()
-		device.consumePress()
+		const clicked = device.consumePress() // the left click: only an armed attack-move reads it
 		device.consumeRelease()
 		device.consumeDash()
 		device.consumeJump()
@@ -161,7 +165,7 @@ export function pointClick(device, ground, options = POINT_CLICK) {
 		const at = cursor && { x: cursor.x, z: cursor.z }
 
 		const pressed = []
-		if (!pad) aiming.clear() // a lost pad or a blur drops held aims without casting
+		if (!pad) aiming.clear() // a lost pad or a blur drops held aims without casting (keyboard aims check keyHeld below)
 		for (const [i, slot] of PAD_AIMS)
 			if (down(i)) {
 				aiming.delete(slot) // re-adding moves it last: the newest held aim is the one shown
@@ -185,21 +189,56 @@ export function pointClick(device, ground, options = POINT_CLICK) {
 		for (const [i, action] of PAD_AIMS)
 			if (up(i) && aiming.delete(action)) pressed.push({ action, at: aim })
 		for (const [i, action] of PAD_TAPS) if (down(i)) pressed.push({ action, at: aim })
-		for (const code of device.consumeKeys())
-			if (KEYS[code]) pressed.push({ action: KEYS[code], at: KEYS[code] === 'stop' ? null : at })
+		const quick = options.quickCast ?? prefs.quickCast
+		const dropAims = () => {
+			const had = keyAims.size > 0 || prefs.attackArmed
+			keyAims.clear()
+			prefs.attackArmed = false
+			return had
+		}
+		for (const code of device.consumeKeys()) {
+			if (code === 'Escape') {
+				if (dropAims()) pressed.push({ action: 'cancel', at: null })
+			} else if (code === 'KeyA') {
+				prefs.attackArmed = true
+			} else if (AIM_KEYS[code] && !quick) {
+				prefs.attackArmed = false
+				keyAims.delete(code) // re-adding moves it last: the newest held aim is the one shown
+				keyAims.set(code, AIM_KEYS[code])
+			} else if (KEYS[code]) {
+				const stop = KEYS[code] === 'stop'
+				if (stop) dropAims()
+				else prefs.attackArmed = false
+				pressed.push({ action: KEYS[code], at: stop ? null : at })
+			}
+		}
+		// A release casts at the cursor now; a hold that lost its key without a release (blur, pause) is dropped without casting.
+		const ups = device.consumeKeyUps?.() ?? []
+		for (const [code, action] of keyAims) {
+			if (ups.includes(code)) {
+				keyAims.delete(code)
+				pressed.push({ action, at })
+			} else if (!(device.keyHeld?.(code) ?? true)) keyAims.delete(code)
+		}
 		previous = buttons.slice()
 
 		let order = null
 		const now = device.now()
-		if (device.consumeOrder() || (device.orderDown() && now >= resendAt)) {
+		const fresh = device.consumeOrder()
+		if (fresh) prefs.attackArmed = false // a right click moves and disarms attack-move; held aims survive it
+		if (fresh || (device.orderDown() && now >= resendAt)) {
 			order = at
 			resendAt = now + options.resend
+		}
+		if (clicked && !onPad && prefs.attackArmed && at) {
+			prefs.attackArmed = false
+			order = { x: at.x, z: at.z, kind: 'attack-move', pick: true }
 		}
 		return {
 			move: stick ? { x: stick.x, z: stick.z } : { x: 0, z: 0 },
 			order,
 			aim,
-			held: Object.fromEntries([...aiming].map((a) => [a, true])),
+			held: Object.fromEntries([...aiming, ...keyAims.values()].map((a) => [a, true])),
 			pressed,
 			released: [],
 		}
