@@ -7,6 +7,7 @@ import { ballBots } from './ball-bots.js'
 import { createBallView } from './ball-view.js'
 import { createBots } from './bots.js'
 import { createOnboarding } from './onboarding.js'
+import { dressDummy } from './dummy-view.js'
 import { tune } from './tune.js'
 import { STEP } from '../../core/app.js'
 
@@ -41,7 +42,8 @@ export const dummies = {
 			id: `dummy${i + 1}`,
 			team: 'B',
 			post,
-			body: makeBody(post.x, post.z, 'B'),
+			dress: dressDummy,
+			body: makeBody(post.x, post.z, 'B', undefined, dressDummy),
 			yaw: 0,
 			dir: i % 2 ? -1 : 1,
 			flipIn: tune.dummies.flipMax,

@@ -77,7 +77,7 @@ export function createUnitReplica(
 			color: (unit.seatTeam ?? unit.team) === 'A' ? PALETTE.teamA : PALETTE.teamB,
 			replica: true,
 		})
-		const undress = dressHero(body, definition.id, unit.seatTeam ?? unit.team)
+		const undress = (unit.dress ?? dressHero)(body, definition.id, unit.seatTeam ?? unit.team)
 		const dispose = body.dispose
 		body.dispose = () => {
 			undress()

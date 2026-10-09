@@ -341,6 +341,7 @@ export function createFeedback({
 				if (unit) {
 					juice.flash(unit.body.visual, tune.juice.flash)
 					unit.body.squash(0.28)
+					unit.body.wobble?.(fact.direction)
 				}
 				juice.burst(
 					fact.point,
