@@ -76,9 +76,12 @@ export function createHealthBars() {
 				bar.fill.style.width = `${Math.max(0, Math.min(1, unit.hp / unit.maxHp)) * 100}%`
 				const text = unit.structure
 					? `${unit.team === localTeam ? 'Your' : 'Enemy'} ${unit.kind}`
-					: ''
+					: unit.heroId
+						? unit.heroId[0].toUpperCase() + unit.heroId.slice(1)
+						: ''
 				if (bar.label.textContent !== text) bar.label.textContent = text
-				bar.label.hidden = !unit.structure
+				bar.label.hidden = !text
+				bar.element.dataset.hero = String(!unit.structure && !!unit.heroId)
 				point.copy(unit.body.mesh.position)
 				point.y += unit.body.halfHeight + (unit.structure ? 0 : unit.body.radius) + t.lift
 				eye.copy(point).applyMatrix4(camera.matrixWorldInverse)

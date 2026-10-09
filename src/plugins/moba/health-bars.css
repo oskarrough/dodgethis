@@ -60,3 +60,14 @@
 	background: var(--ui-cream);
 	white-space: nowrap;
 }
+.moba-unit-health[data-hero='true'] .moba-health-label {
+	padding: 0;
+	border: 0;
+	background: none;
+	color: var(--ui-cream);
+	font-weight: bold;
+	text-shadow:
+		0 0 2px var(--ui-text),
+		0 1px 1px var(--ui-text),
+		0 0 1px var(--ui-text);
+}
