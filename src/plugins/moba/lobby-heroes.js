@@ -1,7 +1,4 @@
 import * as THREE from 'three'
-import { createBody } from '../../core/body.js'
-import { makeStyleMaterial } from '../../core/stylepass.js'
-import { dressHero } from './hero-view.js'
 import { HEROES } from './heroes.js'
 import { tune } from './tune.js'
 import { ICONS } from './hud.js'
@@ -72,7 +69,8 @@ export function createHeroStrip({ el, heroes, current, pick, openNumbers }) {
 	}
 }
 
-// Intent picks and walk-on picks use the same authored stand positions.
+// A pick intent names its hero by an authored point, so it travels as plain x/z like any order.
+// Nothing stands there: you pick from the strip or with H, and confirm on a seat.
 export function heroStands() {
 	const v = tune.lobby.pick
 	const playable = Object.values(HEROES).filter((h) => h.playable)
@@ -83,38 +81,10 @@ export function heroStands() {
 	}))
 }
 
-export function createLobbyHeroes({ scene, el, humans, local }) {
+export function createLobbyHeroes({ el, humans, local }) {
 	const stands = heroStands()
 	const point = new THREE.Vector3()
-	const material = makeStyleMaterial('ammo', { flat: true })
-	const ring = new THREE.RingGeometry(
-		tune.lobby.pick.radius,
-		tune.lobby.pick.radius + tune.lobby.gallery.ringWidth,
-		tune.lobby.cutout.segments,
-	)
 	const labels = []
-	const props = stands.map((stand) => {
-		const body = createBody(scene, null, null, {
-			profile: HEROES[stand.id].base,
-			position: [stand.x, 0, stand.z],
-			replica: true,
-		})
-		const undress = dressHero(body, stand.id)
-		body.mesh.scale.setScalar(tune.lobby.ready.cardScale)
-		body.position.y *= tune.lobby.ready.cardScale
-		const pad = new THREE.Mesh(ring, material)
-		pad.rotation.x = -Math.PI / 2
-		pad.position.set(stand.x, tune.lobby.gallery.ringY, stand.z)
-		scene.add(pad)
-		const label = document.createElement('div')
-		label.className = 'lobby-label'
-		label.textContent = stand.id
-		label.dataset.picked = 'true'
-		el.append(label)
-		labels.push(label)
-		return { body, undress, pad, label }
-	})
-	// Other players get a small P2-style tag over their head; your own hero needs none.
 	const names = humans
 		.filter((human) => human.id !== local)
 		.map((human) => {
@@ -135,8 +105,6 @@ export function createLobbyHeroes({ scene, el, humans, local }) {
 	return {
 		stands,
 		update(camera) {
-			for (const [i, stand] of stands.entries())
-				place(props[i].label, { x: stand.x, y: tune.lobby.gallery.labelY, z: stand.z }, camera)
 			for (let i = names.length - 1; i >= 0; i--) {
 				const { human, label } = names[i]
 				if (!humans.includes(human)) {
@@ -150,14 +118,7 @@ export function createLobbyHeroes({ scene, el, humans, local }) {
 			}
 		},
 		dispose() {
-			for (const { body, undress, pad } of props) {
-				undress()
-				body.dispose()
-				scene.remove(pad)
-			}
 			for (const label of labels) label.remove()
-			ring.dispose()
-			material.dispose()
 		},
 	}
 }

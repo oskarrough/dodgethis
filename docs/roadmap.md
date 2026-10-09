@@ -19,7 +19,7 @@ A small, toy-like hero brawler that grew out of dodgeball, set in the world over
 - [x] Minimap draws each map's layout, Flagfall and Overthrow.
 - [x] Oskar: judge the holograms. Approved.
 - [ ] Is Flagfall's dark water frame on the minimap too heavy?
-- [ ] Decide the walk-on hero rings (Fletcher, Mitts) beside the seats: keep, or pick heroes on the seat itself.
+- [x] Walk-on hero rings removed; pick from the strip or with H, confirm on a seat.
 - [ ] Oskar: walk Flagfall's shore lane; do the sandstone walls sit right beside the hedges?
 - [ ] Check whether restarts stutter while the three big textures reload.
 - [ ] Oskar: two-window online run; judge guest responsiveness to decide on guest-side prediction.

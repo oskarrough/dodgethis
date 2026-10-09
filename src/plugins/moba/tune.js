@@ -353,7 +353,7 @@ export const tune = {
 		},
 		// Picking from the hero row: the new body comes round edge-on, like a cutout turned on a pin.
 		pick: {
-			// Walk-on hero stands; geometry applies on lobby restart.
+			// Authored points that pick intents name heroes by; nothing stands there.
 			x: 5.2,
 			z: 0,
 			spacing: 2,

@@ -142,12 +142,10 @@ export function createLobby({
 	const props = createLobbyProps(app.scene, el, gallery, readySeats, hero.id)
 	const floor = createLobbyFloor(app.scene, app.renderer)
 	const lobbyHeroes = createLobbyHeroes({
-		scene: app.scene,
 		el,
 		humans: sim.heroes,
 		local: hero.id,
 	})
-	const enteredStands = new Map()
 	const flips = new Map()
 	const renderedPicks = new Map(sim.heroes.map((h) => [h.id, h.heroId]))
 	props.syncSeats()
@@ -839,16 +837,6 @@ export function createLobby({
 			}
 		},
 		afterStep() {
-			for (const human of sim.heroes) {
-				const p = human.body.position
-				const stand =
-					!human.dead &&
-					lobbyHeroes.stands.find((s) => Math.hypot(p.x - s.x, p.z - s.z) <= tune.lobby.pick.radius)
-				const previous = enteredStands.get(human.id)
-				enteredStands.set(human.id, stand?.id)
-				if (stand && previous !== stand.id && stand.id !== human.heroId)
-					sim.swapHero(human.id, stand.id)
-			}
 			if (app.session.authoritative && readySeats.allReady() && !galleryShot && !loadingQueued) {
 				loadingQueued = true
 				// Leave the fixed step before aborting its sim and transferring the map/backdrop.
