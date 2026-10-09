@@ -1,97 +1,83 @@
 # MOBA look
 
-Art direction for `?mode=moba`. [moba-lane.md](moba-lane.md) lists what exists; this says how it should look. Where they differ, this doc wins. The medium is fixed: the comic-sticker pass in `core/stylepass.js`, with stylised primitives, no downloaded assets, and DOM text outside WebGL.
+Art direction for `?mode=moba`. [moba-lane.md](moba-lane.md) lists what exists; this says how it should look. Where they differ, this doc wins. The medium is the comic-sticker pass in `core/stylepass.js`: stylised primitives built in code, DOM text outside WebGL. Imported images are limited to our own generated scenery: a background plate under a map's court and quiet seamless tiles for its ground, water and cover (Flagfall's). Everything a player reads (units, telegraphs, structures, UI) stays code-built.
 
-## Direction from the 2026-10-08 playtest
+## Direction
 
-The world should feel like a rough sketch drawing or a playable prototype, while UI elements stay crisp with thick ink borders. Drawn lines may jitter; movement stays fluid. Super Smash Bros. Melee is the feel reference: extremely responsive controls, fast animations and fluid movement. Visual polish must never add input latency or lengthen gameplay windups just to showcase an animation.
+The world is a rough sketch drawing or a playable prototype; the UI is crisp, with thick ink borders. Drawn lines may jitter; movement stays fluid. Super Smash Bros. Melee is the feel reference: responsive controls, fast animations, fluid movement. Polish never adds input latency or lengthens a windup.
 
-League of Legends and Heroes of the Storm inform readability, especially HP indicators and combat information; their rendered art styles aren't the target. Build the art in code from reusable shapes, ink effects, poses, SVG and ornaments. Generated images may help explore concepts, but aren't required for implementing a visual change.
+League of Legends and Heroes of the Storm inform readability (HP, combat information), not rendered style. The slowly animating ring around the Ball spawn is the reference for information carried by the world rather than by labels.
 
-The slowly animating ring around the ball spawn is the reference for information communicated through the world. The map introduction names Overthrow and uses a quiet ink orbit with moving marks. Shader readiness and the reveal precede a five-second fully visible side-view hold, then one continuous movement into the local hero's match viewpoint. Play and input stay suspended until landing; reduced-motion keeps readiness and the visible hold while shortening the camera moves. Detailed pending changes are tracked in [the feedback roadmap](../roadmap.md); this direction takes precedence over the older prescriptions below.
+**At a glance.** Read the whole fight in half a second: the ground stays quiet, units are loud, and every telegraph is the exact shape of its hitbox. The ground is _printed_: flat, low contrast, no shading, quiet chalk marks. Anything that can hurt or be hurt _stands up_: shaded, inked and team coloured. Saturation is a budget: team red and blue plus ammo gold are the only loud colours, and scenery never uses them. The camera reads roofs, hats and the floor under a unit, not faces.
 
-**At a glance.** A skillshot game looks great when you can read the whole fight in half a second: the ground stays quiet, units are loud, and every telegraph is the exact shape of its hitbox. In this style that splits the world in two. The ground is _printed_: flat, low contrast, no shading, quiet chalk marks on Overthrow. Anything that can hurt you or be hurt _stands up_: shaded, inked, and team coloured. Saturation is a budget: team red and blue plus ammo gold are the only loud colours, and scenery never uses them. Read from above: the camera sees roofs, hats and the floor under a unit, not faces.
+## References
 
-**Concept art.** Generated frames (e.g. GPT Sol through a Codex thread) explore a look before a builder spends a pass on it; they are targets, never imported assets. The recipe that produced the Overthrow frames:
+Our own generations live in [look/](look/), committed so later agents start from what we based work on. Keep each one we build from or ship, with its prompt beside it; leave rejected sets in thread storage.
 
-- Image 1 is a real game screenshot at the match camera. Ask for the same angle and an unchanged HUD.
-- Name what to take from inspiration images (value structure, light) and give the nouns from [world.md](world.md): Overthrow, chalk court lines, chain-link, sandcastle towers, the Yard. Without them the model copies the references' ornament wholesale.
-- Value first: a pale, warm, lit stage over a darker, colder surround. Pale on pale fails, in the art and in the build.
-- State the colour budget in every prompt: red and blue for teams, gold for the Ball and ammo, scenery in violet, teal and sand.
-- Describe heroes as the object they are (quiver, mitt, racket, cardboard cutout), or they come out as generic kids. Then check for brown on beige: foot discs and ink carry the teams.
-- Ask for three frames: establishing shot, crowded fight at the match camera, side-view intro. The fight is the readability test; empty frames always flatter.
+- [Overthrow fight](look/overthrow-fight.webp) (concept K), [lobby](look/overthrow-lobby.webp) and [side view](look/overthrow-side.webp): the approved Overthrow target. A pale, warm court on a torn mesa over a colder dusk surround; chain-link, sandcastles.
+- [Flagfall water](look/flagfall-water.webp), [prompt](look/flagfall-water-prompt.md): the plate shipped under Flagfall's court. Lost schoolyard things at the edges, open water in the middle, darker than the court.
+
+Oskar's inspiration screenshots come from other games, so they stay out of this public repo. What they taught:
+
+- **A court in the shallows.** A plain tiled stage in shallow, reflective violet water, overgrowth and half-sunk things thickening toward the edges (Flagfall's water).
+- **Sand in clear water.** Turquoise shallows with seaweed and pebbles visible below, long foam lines breaking, soft cloud wisps at the frame's edges.
+- **A lit courtyard.** A pale lit floor framed by darker roofs; all the detail lives at the edges, and one warm light falls on the play space.
+- **A castle at night.** The surround carries the drama (smoke, embers, drifting lights, a long drop) while the floor stays plain and readable.
+- **Ruins in the clouds.** A stage over a sea of cloud, with soft out-of-focus foliage framing the screen corners.
+
+The shared lesson: **a plain, pale, readable floor; richness, depth and ambient motion only in the surround and at the frame's edges.** Pale on pale fails. Fog, blur or a drop separates the stage from its surround. Take value, light and framing from references, never their ornament, characters or colours outside our budget.
+
+## Concept art
+
+Generated frames (GPT Sol through a Codex thread; other providers can't make images) explore a look before a builder spends a pass on it. They are targets, never imported assets; only scenery may ship: a background plate under the court and quiet seamless ground, water and cover tiles. The recipe:
+
+- Image 1 is a real screenshot at the match camera; ask for the same angle and an unchanged HUD.
+- Name what to take from each reference, and use the nouns from [world.md](world.md) (the Slab, chalk lines, chain-link, sandcastles, the Yard), or the model copies the references' ornament wholesale.
+- Value first: a pale, lit stage over a darker, colder surround.
+- State the colour budget: red and blue for teams, gold for the Ball and ammo, scenery in violet, teal and sand.
+- Describe heroes as the objects they are (quiver, mitt, racket, cardboard cutout), then check for brown on beige.
+- Ask for three frames: establishing shot, crowded fight at the match camera, side-view intro. The fight is the readability test.
 - Add the buildability clause: simple stylised geometry, lineless world, inked units, no busy texture.
+- Use an approved frame as the style anchor, and name what may change and what must stay fixed.
+- A new map reuses Overthrow's look wholesale and changes layout and surround. Flagfall's first concepts invented a new style and were rejected.
 
-**Rendering contract.** `makeStyleMaterial` writes opaque role IDs and ignores opacity. So anything translucent (tells, domes, the fill of a tint) is a plain colour material in the forward layer with `depthWrite = false`, or else opaque stippling. Blending an ID turns it into a different role; that's why the road draws orange today.
+## Ground and maps
 
-## Ground and lane markings
+- **Rendering contract.** `makeStyleMaterial` writes opaque role IDs and ignores opacity. Anything translucent (tells, domes, tint fills) is a plain colour material in the forward layer with `depthWrite = false`, or opaque stippling.
+- **Overthrow** is pale tarmac with quiet chalk sidelines, service lines and a centre circle, on a finite torn rock edge above a colder violet/teal surround. Terrain is lineless forward colour over matching opaque depth geometry. Presentation controls apply on restart and never change walking bounds or cover.
+- **Flagfall** calls the same terrain, chalk, edge, fence and cover builders (`match-terrain.js`) with its two-lane layout from `tune.flagfall`. The court sits in shallow dusk water: a generated plate (slide, goalpost, sandcastle moulds and lily pads at the edges, open water in the middle), under slow seamless caustics. A pale ground tile adds luminance-only grit (never past ±7%) over the patch shader; a soft warm pool cools toward the edges, with printed darkening at cover, pillars, fences and the rim. Hedge tops carry a muted canopy tile. The base blocks are walls, not cover: coursed sandstone with paved tops; pillars are stacked, fluted sandstone drums under cream caps; joints are soft darkening, never ink. The rock is wet sandstone with a darker waterline. A crisp, broken foam line traces the waterline, with a faint court reflection beyond it, with notched, veined pads, tiny flowers, reed clumps, distance-darkened water and a few drifting lights outside the court. The plate (`public/scenery/flagfall-water.webp`) keeps its native aspect; tiles repeat uniformly in world metres from `tune.flagfall`. Textures are mipmapped and anisotropic; all scenery controls apply on restart. The effects are fixed pools; pause freezes them and reduced motion stills them. Overthrow's presentation is unchanged.
+- At the match camera, lane edges and cover gaps stay legible in grayscale. Foam, reflections and drifting clouds stay quieter than units and telegraphs, and never cover a playable route.
+- Small team kerbs keep ownership along lanes; bases keep team hatching and structures printed team pads. The court is the brightest world surface; friendly tells keep their ink keyline. Hedges are scalloped cover in `courtShade`; pillars are `scenery` with cream caps.
 
-- Overthrow is pale tarmac with quiet chalk sidelines, service lines and a centre circle, on a finite torn rock edge above a colder violet/teal surround. Terrain uses lineless forward colour over matching opaque depth geometry; no imported textures, cracks, dashed ink centreline or flank dots. Its presentation controls apply on restart and never change walking bounds or cover.
-- Flagfall calls the same terrain, chalk, torn edge, fences and cover builders with its two-lane layout. The yard, both lanes and base courtyards share one pale tarmac surface. Beyond the edge are low dusk-violet dunes, taking only the value and mood of the rejected fight concept's background. There is no approved Flagfall concept to follow. Camera, units and HUD stay shared; `match-terrain.js` owns the common match skin and `tune.flagfall` its layout and background.
-- Small team kerbs retain ownership along the lane. The bases keep their team hatching and structures their printed team pads, so home, healing and targets stay readable. The animated Ball-spawn ring remains unchanged over the chalk circle. The court is the brightest world surface; friendly tells keep their ink keyline (see VFX).
-- Both maps share scalloped hedges and rounded cover in `courtShade`, with Overthrow's muted green scenery palette. Pillars stay `scenery` with cream caps.
+## Structures
 
-## Structure silhouettes
+Tell the tiers apart from above. Walls are `scenery`; team colour goes only on roofs, flags and the crystal.
 
-Tell the three tiers apart from above. Walls are `scenery`, and team colour goes only where the camera looks most: roofs, flags and the crystal.
+- **Tower:** a round drum, a tapered shaft and a team cone flag, 4 m; from above, a circle with a point. **Core:** a faceted team crystal over a stepped pedestal, 7 m, spinning slowly and bobbing; from above, a diamond. [world.md](world.md) turns both into sandcastles.
+- **Damage:** at 66% and 33% a new ink crack (a split in the geometry) and another 3° of lean on towers. Never darken a shared role.
+- **Occlusion:** ground tells ignore depth; units behind a structure draw as an ink keyline silhouette (depth test `Greater`).
+- **States:** invulnerable is a dashed cream dome; silenced is crossed cream tape over the gun; dead is three inked rubble chunks with the flag lying beside them.
 
-- **Tower:** a round drum, a tapered shaft and a team cone flag, 4 m tall; from above, a circle with a point. **Core:** a faceted team crystal over a stepped pedestal, 7 m, spinning slowly and bobbing 0.2 m; from above, a diamond.
-- **Damage:** two stepped states, shown only by shape. At 66% and at 33%, a new ink crack appears (a split in the geometry, so the normal edges ink it for free), and towers lean another 3°. Never darken a shared role.
-- **Occlusion:** at the default camera a 7 m core covers roughly 4.4 m of ground behind it. Ground tells in the forward layer ignore depth, and units behind a structure draw as an ink keyline silhouette in the forward layer (depth test `Greater`).
-- **States:** invulnerable shows a dashed cream dome in the forward layer; silenced shows crossed cream tape over the gun. Dead leaves three flat, inked rubble chunks on the pad, with the flag lying beside them.
+## Units
 
-## Units at 20 m
-
-- A size ladder: minions at 0.6, heroes and brutes at 1.0. Every unit stands on a flat team foot disc with an ink rim; the HotS trick survives any pose. Your own disc gets a cream outer ring.
-- Minion roles show in one prop visible from above: shield, stick, cone hat, and a block helmet for the brute. Minions are instanced by team and prop. Their hit flash goes per instance, in `instanceColor`, because `juice.flash` works per material and would light up the whole wave.
-- Hero silhouettes share the inked 0.45 m foot disc: Fletcher is a slim circle with three quiver arrows tilted back 35° and flat fins, Mitts a grounded low rounded square with its own ink edge and enlarged glove fingers, Carom a grounded rounded forward triangle and open racket, Skip a grounded 1.3 m bar and forward megaphone. Judge them at the lane camera's 58° pitch, with one shared scale (Fletcher at 20 px), never resized per hero. The same costume dresses the lane and select replica; the three new heroes are art-only stand-ins (see [moba-heroes.md](moba-heroes.md)).
-- Living heroes, dummies, minions and structures show screen-sized, camera-facing HP bars with thick ink borders, team-coloured fills and dark missing HP. Heroes have countable HP ticks; compact bars and high-HP structures use coarser multiples to keep ticks distinct. A cream outer accent identifies your hero. Structure labels remain relative to your team. Bars follow interpolated bodies and hide offscreen or behind the camera; `health-bars.js` owns their treatment. Check in grayscale: outline and foot disc alone must separate hero, minion and structure.
+- A size ladder: minions at 0.6, heroes and brutes at 1.0. Every unit stands on a flat team foot disc with an ink rim; yours gets a cream outer ring.
+- Minion roles show in one prop visible from above (shield, stick, cone hat, block helmet). Minions are instanced; hit flash goes per instance in `instanceColor`.
+- Hero silhouettes are judged at the 58° match camera at one shared scale: Fletcher a slim circle with three quiver arrows tilted back, Mitts a low rounded square with big glove fingers, Carom a forward triangle and open racket, Skip a 1.3 m bar and megaphone ([moba-heroes.md](moba-heroes.md)).
+- Screen-sized, camera-facing HP bars with thick ink borders, team fills, dark missing HP and countable ticks (`health-bars.js`). Check in grayscale: outline and foot disc alone separate hero, minion and structure.
 
 ## Ability VFX, hits and deaths
 
-- **Telegraph rule:** drawn on the ground at exactly the hitbox size. Yours is a cream fill with an ink keyline; an enemy's is a red outline with a 30% fill. Every enemy attack or cast shows its tell for at least 0.3 s (build rules). The sparring dummy keeps its 0.4 s (`tune.dummies.tell`). Bot heroes hold aim for that long before they cast, the way a player does, so the tell reports a real delay and the renderer adds none.
-- **W** adds two ink speed lines at the start and a scalloped ring where you land. **E** lands with five inked arrows jabbing the ground for 0.4 s and a cream shockwave ring. Basic attacks and tower shots are small team orbs. A tower's tether is a dashed ink-and-team line from its gun to the target; its range ring is dashed ink printed on the ground.
-- **Hit:** the target flashes flat cream for 70 ms, and an eight-point ink starburst appears at contact, sized by damage bucket (basic, Q, E, Ball). No hit-stop and no knockback. Pooled DOM numbers show only the damage you deal, 12 at most, fading over 0.6 s.
-- **Deaths:** every hero and minion falls over like a cardboard standee (core `death.js`, `card` style, timings in `tune.card`): it tips on its foot away from the hit, slaps flat with a small bounce and a felt-slap cue, is pressed into the print and fades. Hero takedowns leave a small ink-edged open ring with a compact X and a subtle taker-team arc (`stamps.js`, `tune.out`), briefly settling before fading. The ref's whistle retains streak cues; relative HUD callouts retain team-wipe information. Your own sneakers squeak when you reverse out of a run, capped by a cooldown and fatigue (`tune.squeak`). A structure slumps into rubble over 0.5 s with team confetti. Effects use pooled slots: 64 particles and 16 floor marks, recycled oldest first and cleared on restart.
+- **Telegraphs** are drawn on the ground at exactly the hitbox size: yours a cream fill with an ink keyline, an enemy's a red outline with a 30% fill. Every enemy tell lasts at least 0.3 s, and bots hold aim that long so the tell reports a real delay.
+- **Hits:** a 70 ms flat cream flash and an eight-point ink starburst sized by damage bucket. No hit-stop, no knockback. Pooled DOM numbers show only the damage you deal.
+- **Deaths:** heroes and minions fall like cardboard standees (`death.js`, `tune.card`); takedowns leave a small inked ring with an X (`stamps.js`). Structures slump into rubble with team confetti. Effects use pooled slots, cleared on restart.
 
 ## UI skin
 
-- A small cream minimap floats top-left, below the score bar on narrow screens. Its crisp edge and subtle shadow follow the actual rectangular lane footprint, with no enclosing disc or stretched proportions. It shows living heroes as team-coloured dots (your hero has a cream ring), and reuses tower/core icons; destroyed buildings fade with an ink slash. It follows rendered positions, has no input, and is absent from the lobby.
-- Off-screen Ball and local-hero markers are labelled cream arrow stickers, using the interpolated rendered positions. They stay inside the viewport at narrow widths. Arrow keys pan; Space brings the hero back. Mouse follow tracks the interpolated hero directly without an extra spring; held pad aim retains its spring.
-- Pause and the interim match result use `core/overlay.js` cards, with keyboard, mouse and pad navigation. Pause stacks Resume and Leave game vertically, with one live device hint: Esc to resume on keyboard, B to resume on pad. Escape, B and Start still resume. Leave game returns to the lobby with the current setup; the lobby's back route reaches home/splash. Replay stays in the result's Again action, beside Return to lobby. Both cards freeze the world; the result says VICTORY or DEFEAT relative to you. Death carrying the Ball explicitly says it dropped.
-- The HUD is cream stickers with 3 px ink borders and hard offset shadows, tilted a degree or two so they read as stuck on by hand. The references meet here: Moebius gives the line and the pale, quiet ground; Pixar, Toy Story and Sackboy give the touch. HUD pieces should look like toys you could pick up: chunky, rounded, warm cream, rosette medals, buttons that lift on hover. Bottom centre is your portrait (hero silhouette, level, trait chip) with an HP bar in team colour ticked every `hud.hpTick` HP and a gold team-XP bar, then three slots built from the hero's kit: icon, key label, ink cooldown sweep with seconds, gold pop when ready. There is no mana in the game, so no mana cost.
-- The top bar is the lane map read in 200 ms: your side left in your colour, the enemy's mirrored right. Out from the clock sticker: a rosette level badge with an XP ring, takedowns, then core and tower icons in inline SVG with HP slivers, dashed when protected, toppled grey when down. Under the clock, wave and Ball icons sit in countdown rings and pulse in their last `hud.warn` seconds. Every piece has a cream tooltip card (`tooltip.js`) on hover, touch long-press (`hud.longPress`) or pad Y hold (`hud.inspectHold`); world units get the hover below. Cards are built from `tune` and the hero table on every frame and only rewrite when they change.
-- **World hover:** after `hud.hoverDelay` a slim nameplate (name, exact HP) sits above the unit; hold Alt for the full card in the bottom-left dock. A floating card over a tower covers the fight you are reading; the nameplate sits where the world HP bar already is, and the numbers come on demand in a corner that never covers play. A unit wandering under a still cursor opens nothing. Chosen over four other prototypes in [#8](https://github.com/oskarrough/dodgethis/issues/8).
+- Cream stickers with 3 px ink borders and hard offset shadows, tilted a degree or two, chunky like toys you could pick up.
+- **Unit frame** (portrait, HP, XP, trait chip) sits top-left at the same rect in lobby and match, like WoW's player frame. Q, W and E sit alone at the bottom centre.
+- **Minimap** floats top-right with the inspect lens beside it, following the map's real footprint; heroes as team dots, tower/core icons, absent from the lobby.
+- **Top bar:** your side left in your colour, the enemy's mirrored right; clock, level rosettes, takedowns, structure icons with HP slivers, wave and Ball countdown rings.
+- **Inspection:** hover (or long-press, or pad Y hold) for a tooltip card built live from `tune` (`tooltip.js`); world units get a slim nameplate, Alt for the full card in a corner that never covers play. The planned Tab scoreboard lives in `.claude/queue/09-tooltips.md`.
+- Pause and result are `core/overlay.js` cards: Resume and Leave game, VICTORY or DEFEAT relative to you.
 
-**Budget.** 60 fps on a mid laptop, measured as the p95 of the whole frame (CPU plus GPU) in a crowded fight at 2560 × 1440: six heroes, two waves and a tower. The pass already caps DPR at 1.5. If the frame goes over 16.7 ms, drop DPR to 1.0 first, then halftone on units, then the minion props. Merge static geometry per role, instance minions, and skip shadow maps; a shadow is a printed ink ellipse. Overthrow adds no palette roles; its scoped scenery palette and lineless terrain colours are plugin-local.
-
-## Tooltips and scoreboard
-
-For the stat nerds, and nothing the sim doesn't already know. Cards read state (HP, max HP, level, cooldowns, Ball life) from the snapshot and definitions from the hero table and `tune`, so a `&debug` edit or a level-up redraws the open card. The snapshot carries each structure's captured `maxHp`, since a tune edit after spawn doesn't change it. No estimate is shown as a fact: there are no kill or survival times, only sustained DPS, labelled as such.
-
-- **One source.** `front/stats.js` moves to `plugins/moba/stats.js` and walks `definition.abilities` instead of assuming Loose, Vault and Rain. Level scaling reads `tune.levels`, and `front/tune.js` drops its copy. An empty slot, Fletcher's R included, says "not built"; Volley's numbers stay in the Numbers panel under a _Planned_ label and never reach the walker.
-- **Two tiers.** Tier one is the name and one plain line: "Loose · 140 damage line shot, every 4 s. Hero hits cut Vault by 2 s." Tier two, shown while Alt is held or after a second press, gives the current level, the next level's change, level 10, then derived values.
-- **Skills** (HUD slots): damage, range, radius, speed, cast point, cooldown, sustained DPS, and damage to structures (25%, none while protected). The dodge deadline at 8 m comes from `dodgeDeadline()`, which runs the sim's own stepper headless: a caster, a target at rest, and a search for the last start tick that still clears, with edge contact and tick order included. It's cached per tune version. `escapeTime` isn't used for it.
-- **Heroes:** HP, speed, level, basic damage, rate and sustained DPS, and respawn time at this level. Art-only heroes show base HP and speed, then "not built". **Structures:** HP of captured max, shot damage, rate, range, tell, the XP they pay, and "protected" while invulnerable. **Minions:** HP, damage, rate, range, XP and the 12 m soak radius. **Ball:** damage, stun, silence, 30% of structure max HP, range, speed, carry speed, channel, and this Ball's life left.
-- **Input.** Hovering the mouse picks a HUD slot, or a unit within `orders.pick` of the cursor. Alt calls `preventDefault`, so Firefox's menu bar stays shut. On the pad, holding Y for 0.35 s inspects whatever the right stick aims at (your own hero at rest), d-pad left and right step through the units in view, and a second Y opens tier two. While a card is open, B closes it and that press is consumed, so it never cancels a held cast. Slots are buttons with `aria-describedby`. The card is the cream sticker, 300 px wide, clamped to the viewport on both axes. It takes no pointer events and never pauses the sim.
-
-**Scoreboard.** Hold Tab, or View on the pad, for a cream table: two team blocks, each headed by its level and XP to the next level, then one row per hero with takedowns, deaths, hero damage, siege damage, Ball hits and XP soaked. Tab never moves focus in the match. The post-match table reads the same counters.
-
-- **Facts only.** `sim.hit` adds `dealt`, the HP actually removed (so 1 on a 1 HP target), beside the attempted `damage`, and the tally folds `dealt`. From a hero, it counts as hero damage against a hero and as siege against a structure. Soak XP names its heroes (`{ type: 'xp', soakers }`), and each soaker gets the full amount. `ballHit` counts Ball hits.
-- **Takedowns.** The host keeps, per victim hero, the last tick each roster hero damaged it. Basics, Loose, Rain, the Ball and any future damage over time all pass through `sim.hit`, so all of them count. On a hero death, the killer (if it's a hero) and every hero whose last hit is within 600 ticks inclusive get one takedown each; recipients form a set, so the killer counts once. A tower or minion kill still credits them. The victim's history clears on death.
-- **Online.** Assist history stays on the host, bounded at roster × roster. The snapshot carries only fixed whole-number counters per seat (six per hero, about 0.2 KB), so a dropped envelope or a late join can't skew a guest. On entering a session, every peer resets `tune` to the shipped values, and the host's start message carries a tune hash that a mismatched guest refuses. The tune GUI stays off online. Restart zeroes everything.
-
-**Build order.**
-
-1. **Stats and tooltips.** Tests: each skill card's damage, range, radius and cooldown match a headless cast's observed hit, reach and next ready tick; starting to move on the deadline tick clears and one tick later is hit; editing `loose.damage` redraws an open card; a tune edit after spawn leaves a tower's card at its captured max HP; a guest with a different local tune ends up with the host's lines or is refused; pad B closes a card without cancelling a held Q, and Y and View never reach intents. Screenshots at 1440 × 900: a slot card, a tower in tier two, a minion opened by pad.
-2. **Scoreboard.** Tests: overkill folds `dealt`, not `damage`; lethal Rain, Ball, tower and minion kills each credit the right takedowns; a hero that hits twice counts once; a hit 600 ticks before death counts and one at 601 doesn't; history doesn't survive a respawn; soak outside 12 m credits nobody; the fact fold equals the snapshot counters; restart empties them. Rerun the full 3v3 envelope test with the counters in: p95 at most 7 KB, with the queue within two envelopes. The six-Fletcher fixture regenerates only for `dealt` and `soakers`, and the commit says so.
-
-## Build order
-
-The original slices below describe the initial look pass. Current work follows [the feedback roadmap](../roadmap.md), one owned outcome per builder. Builders run targeted existing checks; the coordinator runs `bun run check` once at a settled code checkpoint, with dodgeball characterization unchanged. Restart must empty pools and render interpolation must remain smooth. Use one focused visual proof, expanding only the changed layout/input axis; the old screenshot lists are candidate scenes, not a mandatory matrix. Oskar judges meaningful visual and feel checkpoints through a working local URL, a screenshot or a short motion clip.
-
-1. **Ground** (no gate): `road`, `hedge`, kerbs, hatching and pads. Screenshots: spawn, a tower spot, the lobby, and a held Q line on both the road and the lobby.
-2. **Units** (after the lane's waves slice): foot discs, your ring, instanced props, per-instance flash, bars. Screenshots: six heroes and two waves at mid, in colour and grayscale. Test: only the struck minion flashes.
-3. **VFX and hits** (after the scripted Q hero): the rendering contract, tells, E impact, tethers, starbursts, pops. Screenshots: a mid-cast 3v3 frame, and an enemy Q tell beside yours.
-4. **Structures** (after the full lane): silhouettes, cracks, occlusion, dome, tape, rubble. Screenshots: each tier at 100%, 66%, 33% and dead; invulnerable; a hero and Rain behind each tier.
-5. **UI skin** (after the HUD clock): HP sticker, clock, structure rows, tooltips. Screenshots: the full HUD at 1440 × 900 and 1280 × 720, with a tooltip open.
+**Budget.** 60 fps on a mid laptop: p95 of the whole frame in a crowded fight at 2560 × 1440. DPR is capped at 1.5; over 16.7 ms, drop DPR to 1.0, then unit halftone, then minion props, then ambient surround effects, clouds first. Merge static geometry, instance minions, no shadow maps; a shadow is a printed ink ellipse.

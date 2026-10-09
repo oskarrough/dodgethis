@@ -253,7 +253,7 @@ export const debugSections = {
 	},
 	Presentation: {
 		Feedback: ['hud', 'out', 'card', 'juice'],
-		Terrain: ['overthrow terrain (applies on restart)'],
+		Terrain: ['overthrow terrain (applies on restart)', 'flagfall (applies on restart)'],
 		Audio: ['squeak'],
 	},
 	'Camera / input': {

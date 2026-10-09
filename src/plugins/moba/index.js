@@ -194,7 +194,7 @@ export default function moba(app, map) {
 							obstacles: layout.obstacles,
 							bounds: layout.bounds,
 							spawns: { [local]: layout.spawns.A },
-							posts: tune.flagfall.dummyPosts,
+							posts: layout.dummyPosts,
 						}),
 						...(isLobby && {
 							lobby: true,
@@ -250,6 +250,12 @@ export default function moba(app, map) {
 						f.add(s, key, min, max, step)
 					for (const key of Object.keys(s.colors)) f.addColor(s.colors, key)
 					for (const key of Object.keys(s.palette)) f.addColor(s.palette, key)
+				})
+			if (isFlagfall)
+				run.debug.tune('flagfall (applies on restart)', tune.flagfall, (f, s) => {
+					f.add(s, 'scale', 0.75, 1, 0.01).name('scale (applies on restart)')
+					f.add(s.water, 'width', 140, 260, 1).name('water plate width (m, applies on restart)')
+					f.add(s.water, 'clouds').name('clouds (applies on restart)')
 				})
 			const lobby = isLobby ? createLobby({ app, run, sim, hero, setup, options, gallery }) : null
 			const menu =
@@ -331,6 +337,7 @@ export default function moba(app, map) {
 				const presentationFrozen = menu.presentationFrozen() || controls.paused
 				const blend = frozen ? 0 : alpha
 				const step = presentationFrozen ? 0 : sim.lane?.match.winner ? dt : gameDt
+				map.update(step)
 				const frame = app.intents.get(local)
 				const p = hero.body.mesh.position
 				audio.setAudioListener(p)

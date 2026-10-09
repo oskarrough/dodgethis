@@ -39,7 +39,7 @@ export function mapLayout(kind = 'overthrow') {
 			boxes: BOXES,
 			pillars: PILLARS,
 		}
-	const s = tune.flagfall
+	const s = flagfallLayoutTune()
 	const boxes = [-1, 1].flatMap((side) => [
 		{
 			kind: 'wall',
@@ -76,6 +76,7 @@ export function mapLayout(kind = 'overthrow') {
 	])
 	return {
 		name: s.name,
+		settings: s,
 		bounds: { id: kind, ...s.bounds },
 		boxes,
 		pillars,
@@ -83,7 +84,42 @@ export function mapLayout(kind = 'overthrow') {
 		spawns: s.spawns,
 		structures,
 		posts: s.posts,
+		dummyPosts: s.dummyPosts,
 	}
+}
+
+// Capture metres once per restart, for both collision and presentation. Fence runs are
+// normalised fractions; colours, counts and animation times are deliberately not scaled.
+export function flagfallLayoutTune() {
+	const source = tune.flagfall
+	const scale = Math.max(0.75, Math.min(1, source.scale))
+	const metres = (value) =>
+		typeof value === 'number'
+			? value * scale
+			: Array.isArray(value)
+				? value.map(metres)
+				: Object.fromEntries(Object.entries(value).map(([key, v]) => [key, metres(v)]))
+	const scaled = Object.fromEntries(
+		[
+			'bounds',
+			'lane',
+			'yard',
+			'baseBlock',
+			'baseX',
+			'hedge',
+			'pillarRadius',
+			'yardPillars',
+			'towerPillars',
+			'spawns',
+			'structures',
+			'posts',
+			'dummyPosts',
+			'print',
+		].map((key) => [key, metres(source[key])]),
+	)
+	// Print layers are depth slots shared with every other ground print, not layout metres.
+	scaled.print.layers = source.print.layers
+	return { ...source, scale, water: { ...source.water }, ...scaled }
 }
 
 export function clampMap(p, margin = 0, bounds = FLOOR) {
@@ -231,33 +267,36 @@ export function segmentClear(a, b, inflate = 0, obstacles = OBSTACLES, bounds = 
 }
 
 // Rapier movement and analytical queries consume the same descriptors.
-export function buildColliders(world, RAPIER, obstacles = OBSTACLES, bounds = FLOOR) {
+export function buildColliders(world, RAPIER, obstacles = OBSTACLES, bounds = FLOOR, scale = 1) {
 	const body = world.createRigidBody(RAPIER.RigidBodyDesc.fixed())
 	// A flat arena needs no terrain triangles: their seams snag capsules and slow every sweep.
 	// The boundary colliders below contain the lane; the lobby also clamps its walking bounds.
 	world.createCollider(new RAPIER.ColliderDesc(new RAPIER.HalfSpace({ x: 0, y: 1, z: 0 })), body)
 	for (const o of obstacles) {
-		const h = o.r !== undefined ? m.pillarHeight : o.kind === 'hedge' ? m.hedgeHeight : m.wallHeight
+		const h =
+			(o.r !== undefined ? m.pillarHeight : o.kind === 'hedge' ? m.hedgeHeight : m.wallHeight) *
+			scale
 		const shape =
 			o.r !== undefined
 				? RAPIER.ColliderDesc.cylinder(h / 2, o.r)
 				: RAPIER.ColliderDesc.cuboid(o.halfX, h / 2, o.halfZ)
 		world.createCollider(shape.setTranslation(o.x, h / 2, o.z), body)
 	}
-	const w = m.boundaryThickness
+	const w = m.boundaryThickness * scale
+	const wallHeight = m.wallHeight * scale
 	for (const side of [-1, 1]) {
 		world.createCollider(
-			RAPIER.ColliderDesc.cuboid(w, m.wallHeight / 2, bounds.halfZ + w).setTranslation(
+			RAPIER.ColliderDesc.cuboid(w, wallHeight / 2, bounds.halfZ + w).setTranslation(
 				side * (bounds.halfX + w),
-				m.wallHeight / 2,
+				wallHeight / 2,
 				0,
 			),
 			body,
 		)
 		world.createCollider(
-			RAPIER.ColliderDesc.cuboid(bounds.halfX + w, m.wallHeight / 2, w).setTranslation(
+			RAPIER.ColliderDesc.cuboid(bounds.halfX + w, wallHeight / 2, w).setTranslation(
 				0,
-				m.wallHeight / 2,
+				wallHeight / 2,
 				side * (bounds.halfZ + w),
 			),
 			body,

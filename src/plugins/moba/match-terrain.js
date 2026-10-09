@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'
 import { FORWARD_LAYER, makeStyleMaterial } from '../../core/stylepass.js'
 import { createFences, floorOutline, floorShape } from './lobby-floor.js'
+import { loadFlagfallTile } from './flagfall-water.js'
 
 // A presentation skin, never a source of walking bounds or colliders. The torn edge sits
 // outside the entire playable rectangle even at the extremes of the restart controls.
@@ -10,7 +11,7 @@ export function createMatchTerrain(
 	layout,
 	s,
 	chalkLayout,
-	{ background, fence, footprints } = {},
+	{ background, fence, footprints, water = false } = {},
 ) {
 	const bounds = layout.bounds
 	const name = layout.name.toLowerCase()
@@ -29,11 +30,109 @@ export function createMatchTerrain(
 	}
 	const flat = (color) =>
 		own(new THREE.MeshBasicMaterial({ color, depthWrite: false, side: THREE.DoubleSide }))
+	const finish = water ? layout.settings.finish : null
+	const scale = layout.settings?.scale ?? 1
 	const ground = flat(s.colors.tarmac)
+	// The renderer survives map switches; closure contents aren't in Three's default
+	// program key, so never reuse Flagfall's shader for Overthrow (or vice versa).
+	ground.customProgramCacheKey = () => (finish ? 'flagfall-court-finish' : 'quiet-court')
+	const courtTile = finish
+		? loadFlagfallTile(finish.courtAsset, finish.anisotropy, own, finish.courtMean)
+		: null
+	// Mirror createFences' safe rim exactly; the shadows sit under its real feet.
+	const fenceClearance = fence
+		? extent.jag +
+			fence.edgeMargin +
+			Math.max(fence.capRadius, fence.bollardRadius) +
+			Math.abs(fence.bow)
+		: 0
+	const fenceHalfX = extent.halfX - fenceClearance
+	const fenceHalfZ = extent.halfZ - fenceClearance
+	// Contact is printed into the ground colour, not a black outline or a shadow map.
+	const contacts = finish
+		? [
+				...layout.boxes.map((b) => new THREE.Vector4(b.x, b.z, b.halfX, b.halfZ)),
+				...(fence?.runs ?? []).map(({ from, to }) => {
+					const ax = from[0] * fenceHalfX,
+						az = from[1] * fenceHalfZ
+					const bx = to[0] * fenceHalfX,
+						bz = to[1] * fenceHalfZ
+					return new THREE.Vector4(
+						(ax + bx) / 2,
+						(az + bz) / 2,
+						Math.abs(ax - bx) / 2,
+						Math.abs(az - bz) / 2,
+					)
+				}),
+			]
+		: []
+	const feet = finish
+		? [
+				...layout.pillars.map((p) => new THREE.Vector3(p.x, p.z, p.r)),
+				...layout.posts.map((p) => new THREE.Vector3(p.x, p.z, layout.settings.print.poleRadius)),
+				...(fence?.bollards ?? []).map(
+					([x, z]) => new THREE.Vector3(x * fenceHalfX, z * fenceHalfZ, fence.bollardRadius),
+				),
+			]
+		: []
+	// Bake static contact once. A single quiet multiply costs much less than a
+	// per-fragment nearest-obstacle search, especially on the software proof host.
+	let contactPrint = null
+	if (finish) {
+		const ppm = finish.contactPixelsPerMetre * devicePixelRatio
+		const canvas = document.createElement('canvas')
+		canvas.width = Math.ceil(extent.halfX * 2 * ppm)
+		canvas.height = Math.ceil(extent.halfZ * 2 * ppm)
+		const ctx = canvas.getContext('2d')
+		ctx.fillStyle = '#fff'
+		ctx.fillRect(0, 0, canvas.width, canvas.height)
+		const px = (x) => ((x + extent.halfX) / (2 * extent.halfX)) * canvas.width
+		const pz = (z) => ((z + extent.halfZ) / (2 * extent.halfZ)) * canvas.height
+		const ink = `rgba(0,0,0,${finish.contactStrength})`
+		ctx.fillStyle = ctx.strokeStyle = ctx.shadowColor = ink
+		ctx.shadowBlur = finish.contactWidth * scale * ppm
+		for (const b of contacts) {
+			ctx.lineWidth = Math.max(fence?.postRadius ?? 0, 1 / ppm) * 2 * ppm
+			ctx.beginPath()
+			ctx.rect(px(b.x - b.z), pz(b.y - b.w), b.z * 2 * ppm, b.w * 2 * ppm)
+			ctx.fill()
+			ctx.stroke()
+		}
+		for (const p of feet) {
+			ctx.beginPath()
+			ctx.arc(px(p.x), pz(p.y), p.z * ppm, 0, Math.PI * 2)
+			ctx.fill()
+		}
+		ctx.strokeStyle = ctx.shadowColor = `rgba(0,0,0,${finish.edgeStrength})`
+		ctx.shadowBlur = finish.edgeWidth * scale * ppm
+		ctx.lineWidth = finish.edgeWidth * scale * ppm
+		ctx.beginPath()
+		const rim = floorOutline(extent)
+		for (let i = 0; i < rim.length; i++) ctx[i ? 'lineTo' : 'moveTo'](px(rim[i].x), pz(rim[i].z))
+		ctx.closePath()
+		ctx.stroke()
+		contactPrint = own(new THREE.CanvasTexture(canvas))
+		contactPrint.colorSpace = THREE.SRGBColorSpace
+		contactPrint.anisotropy = finish.anisotropy
+	}
 	// Broad, barely-visible tarmac patches, not texture detail or busy cracks.
 	ground.onBeforeCompile = (shader) => {
 		shader.uniforms.courtScale = { value: s.patchScale }
 		shader.uniforms.courtContrast = { value: s.patchContrast }
+		if (finish)
+			Object.assign(shader.uniforms, {
+				courtTile: { value: courtTile },
+				courtMetres: { value: finish.courtMetres * scale },
+				courtTexture: { value: finish.courtTexture },
+				courtRange: { value: finish.courtRange },
+				courtMean: { value: finish.courtMean },
+				courtWarm: { value: new THREE.Color(finish.warm) },
+				courtCool: { value: new THREE.Color(finish.cool) },
+				courtLight: { value: finish.lightStrength },
+				courtSpread: { value: finish.lightSpread },
+				courtBounds: { value: new THREE.Vector2(extent.halfX, extent.halfZ) },
+				contactPrint: { value: contactPrint },
+			})
 		shader.vertexShader =
 			'varying vec2 courtPoint;\n' +
 			shader.vertexShader.replace(
@@ -53,8 +152,30 @@ float courtPatch(vec2 p) {
 ` +
 			shader.fragmentShader.replace(
 				'#include <color_fragment>',
-				'#include <color_fragment>\ndiffuseColor.rgb *= 1.0 - courtContrast * courtPatch(courtPoint / courtScale);',
+				`#include <color_fragment>
+ diffuseColor.rgb *= 1.0 - courtContrast * courtPatch(courtPoint / courtScale);
+${
+	finish
+		? `
+// Luminance only: the tile's warmth must not tint the floor.
+float grain = dot(texture2D(courtTile, courtPoint / courtMetres).rgb, vec3(0.2126, 0.7152, 0.0722)) / courtMean;
+diffuseColor.rgb *= clamp(1.0 + (grain - 1.0) * courtTexture, 1.0 - courtRange, 1.0 + courtRange);
+float pool = exp(-dot(courtPoint / (courtBounds * courtSpread), courtPoint / (courtBounds * courtSpread)));
+diffuseColor.rgb = mix(diffuseColor.rgb, mix(courtCool, courtWarm, pool), courtLight);
+diffuseColor.rgb *= texture2D(contactPrint, vec2(0.5) + vec2(courtPoint.x, -courtPoint.y) / (courtBounds * 2.0)).rgb;
+`
+		: ''
+}`,
 			)
+		if (finish)
+			shader.fragmentShader =
+				`
+uniform sampler2D courtTile;
+uniform float courtMetres, courtTexture, courtRange, courtMean, courtLight, courtSpread;
+uniform vec3 courtWarm, courtCool;
+uniform vec2 courtBounds;
+uniform sampler2D contactPrint;
+` + shader.fragmentShader
 	}
 	const chalk = flat(s.colors.chalk)
 	const rock = own(
@@ -86,8 +207,37 @@ float courtPatch(vec2 p) {
 	const outline = floorOutline(extent)
 	const positions = [],
 		colors = []
-	const light = new THREE.Color(s.colors.rock)
-	const dark = new THREE.Color(s.colors.rockDark)
+	const light = new THREE.Color(finish?.rock ?? s.colors.rock)
+	const dark = new THREE.Color(finish?.rockDark ?? s.colors.rockDark)
+	if (finish)
+		rock.onBeforeCompile = (shader) => {
+			Object.assign(shader.uniforms, {
+				stoneGrain: { value: finish.rockGrain },
+				stoneGrainMetres: { value: finish.rockGrainMetres * scale },
+				stoneStrata: { value: finish.rockStrata * scale },
+				stoneWaterY: { value: -layout.settings.water.drop * scale },
+				stoneWetHeight: { value: finish.wetHeight * scale },
+				stoneWetStrength: { value: finish.wetStrength },
+			})
+			shader.vertexShader =
+				'varying vec3 stonePoint;\n' +
+				shader.vertexShader.replace(
+					'#include <begin_vertex>',
+					'#include <begin_vertex>\nstonePoint = position;',
+				)
+			shader.fragmentShader =
+				`varying vec3 stonePoint;
+uniform float stoneGrain, stoneGrainMetres, stoneStrata, stoneWaterY, stoneWetHeight, stoneWetStrength;
+` +
+				shader.fragmentShader.replace(
+					'#include <color_fragment>',
+					`#include <color_fragment>
+float strata = sin(stonePoint.y / stoneStrata + 0.3 * sin(stonePoint.x + stonePoint.z));
+float grain = fract(sin(dot(floor(stonePoint / stoneGrainMetres), vec3(12.9898, 78.233, 39.425))) * 43758.5453);
+float wet = 1.0 - smoothstep(stoneWaterY, stoneWaterY + stoneWetHeight, stonePoint.y);
+diffuseColor.rgb *= (1.0 + stoneGrain * (strata + grain - 0.5)) * (1.0 - wet * stoneWetStrength);`,
+				)
+		}
 	const tint = new THREE.Color()
 	const vertex = (p, y, color) => {
 		positions.push(p.x, y, p.z)
@@ -114,8 +264,14 @@ float courtPatch(vec2 p) {
 				[a, top],
 				[c, bottom],
 				[d, bottom],
-			])
+			]) {
+				if (finish)
+					tint
+						.copy(light)
+						.lerp(dark, (s.groundY - y) / s.rockDepth)
+						.multiplyScalar(1 - finish.rockGrain * (0.5 + 0.5 * Math.sin(i * 2.4)))
 				vertex(p, y, tint)
+			}
 		}
 	}
 	const rim = new THREE.BufferGeometry()
@@ -123,14 +279,15 @@ float courtPatch(vec2 p) {
 	rim.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3))
 	rim.computeVertexNormals()
 	surface(rim, rock, `${name}-rock`, 0, 0, 0)
-	surface(
-		new THREE.PlaneGeometry(s.surroundSize, s.surroundSize).rotateX(-Math.PI / 2),
-		surround,
-		`${name}-surround`,
-		0,
-		-s.surroundDrop,
-		0,
-	)
+	if (!water)
+		surface(
+			new THREE.PlaneGeometry(s.surroundSize, s.surroundSize).rotateX(-Math.PI / 2),
+			surround,
+			`${name}-surround`,
+			0,
+			-s.surroundDrop,
+			0,
+		)
 	// The setting changes, never the stage. Quiet dunes or mesas below the same torn edge.
 	if (background) {
 		const geometry = new THREE.PlaneGeometry(
@@ -156,7 +313,7 @@ float courtPatch(vec2 p) {
 		geometry.setAttribute('color', new THREE.Float32BufferAttribute(duneColors, 3))
 		geometry.computeVertexNormals()
 		surface(geometry, rock, `${name}-dunes`, 0, 0, 0)
-	} else {
+	} else if (!water) {
 		const mesas = []
 		for (let row = 1; row <= s.mesaRows; row++) {
 			for (
