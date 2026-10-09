@@ -238,6 +238,9 @@ export function createBackdrop() {
 		get shotName() {
 			return current
 		},
+		get settled() {
+			return !move
+		},
 		// Ease every layer to a named shot from wherever it is now, so a reversal mid-move
 		// turns round in place. Resolves true on arrival, false if a later shot replaced it.
 		shot(name, { instant = false } = {}) {

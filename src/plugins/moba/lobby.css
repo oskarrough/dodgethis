@@ -186,20 +186,6 @@
 	text-align: center;
 }
 
-/* Dusk behind the lobby floor so the pale tarmac and its drop read: violet far ground, teal-blue dunes, lilac sky. */
-.front-lobby .front-backdrop {
-	--front-lilac: #b8abcf !important;
-	--front-mint: #a7a3c6 !important;
-	--front-peach: #c2aaca !important;
-	--front-planet: #f1eaf3 !important;
-	--front-planet-line: #d3c8de !important;
-	--front-cloud: #e4dcef !important;
-	--front-far: #6f6a8a !important;
-	--front-mesa: #625f82 !important;
-	--front-ridge: #58607e !important;
-	--front-dune: #4f5d70 !important;
-	--front-shadow: #3f4358 !important;
-}
 /* Play online: the back tile's twin in the top-right corner, its key stuck on the far corner. */
 .front-lobby .online-entry {
 	position: absolute;
@@ -211,7 +197,8 @@
 	gap: 0.45em;
 	height: clamp(38px, 3.2vw, 52px);
 	margin: 0;
-	padding: 0.13em 0.9em 0 0.6em;
+	/* This font's caps ride low; lift the label like every sticker does. */
+	padding: 0 0.9em 0.26em 0.6em;
 	border: 3px solid var(--ui-text);
 	border-radius: 10px;
 	background: var(--ui-cream);
@@ -227,7 +214,7 @@
 .front-lobby .online-entry svg {
 	width: 1.3em;
 	height: 1.3em;
-	margin-top: -0.13em;
+	margin-top: 0.26em; /* the icon has no low caps: keep it on true centre */
 }
 .front-lobby .online-entry kbd {
 	position: absolute;

@@ -59,8 +59,9 @@ export function createLobby({
 	// The lobby opens by flying in along the camera's own view ray, on the backdrop's shot
 	// ease and time; the canvas fades up over the last 40% of the move.
 	const intro = { time: frontTune.shot.lobby.time, t: 0 }
-	if (matchMedia('(prefers-reduced-motion: reduce)').matches || !(intro.time > 0))
-		intro.t = intro.time
+	const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)')
+	if (reducedMotion.matches || !(intro.time > 0)) intro.t = intro.time
+	let leaving = false
 	const fadeIntro = () => {
 		const k = Math.min(1, intro.t / intro.time)
 		canvas.style.opacity =
@@ -71,6 +72,13 @@ export function createLobby({
 	fadeIntro()
 	backdrop.shot('lobby', { instant: intro.t >= intro.time })
 	run.system('present', ({ dt }) => {
+		// Leaving runs the arrival backwards: pull out along the same ray as the canvas fades.
+		if (leaving) {
+			intro.t = Math.max(0, intro.t - dt)
+			fadeIntro()
+			if (intro.t === 0 && !transferred) queueMicrotask(returnSplash)
+			return
+		}
 		if (intro.t >= intro.time) return
 		intro.t = Math.min(intro.time, intro.t + dt)
 		fadeIntro()
@@ -172,7 +180,7 @@ export function createLobby({
 		app.audio.blip(tune.lobby.inspect[open ? 'openSound' : 'closeSound'])
 	})
 	run.clock.pause(() => numbers.open && app.session.actions.includes('pause'))
-	run.intents.suspend(() => numbers.open)
+	run.intents.suspend(() => numbers.open || leaving)
 	run.system('present', ({ dt }) =>
 		numbers.update(
 			dt,
@@ -358,6 +366,7 @@ export function createLobby({
 	let blockedPad = new Set(previous.flatMap((held, i) => (held ? [i] : [])))
 	const backButton = el.querySelector('.back-button')
 	const returnSplash = () => {
+		if (transferred || run.signal.aborted) return
 		transferred = true
 		app.modes.start('moba-front', { options: { setup, backdrop, heldKeys: [...heldKeys] } })
 	}
@@ -401,7 +410,12 @@ export function createLobby({
 		syncPick()
 		ending = true
 		app.audio.blip({ ...frontTune.back, type: 'sine' })
-		returnSplash()
+		// The backdrop eases back to the splash shot alongside the camera's pull-out.
+		leaving = true
+		app.intents.cancel(hero.id)
+		el.inert = true
+		backdrop.shot('splash')
+		if (reducedMotion.matches || intro.t <= 0) returnSplash()
 	}
 	function cancelReady(stop = true) {
 		readyQueued = false
@@ -628,7 +642,7 @@ export function createLobby({
 	})
 	run.debug.expose({
 		get screen() {
-			return ending ? 'descent' : 'lobby'
+			return ending && !leaving ? 'descent' : 'lobby'
 		},
 		lobby: {
 			sim,
@@ -657,6 +671,7 @@ export function createLobby({
 			props.dispose()
 			floor.dispose()
 			canvas.classList.remove('front-canvas')
+			if (leaving) canvas.style.opacity = ''
 			parent.insertBefore(canvas, next)
 			el.remove()
 			if (!transferred) backdrop.dispose()

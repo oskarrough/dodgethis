@@ -12,7 +12,7 @@ export const tune = {
 		duration: 2.4,
 		reducedDuration: 1 / 60,
 		// After shader readiness and the reveal, the fully visible lane holds for `preview` s.
-		preview: 5,
+		preview: 4,
 		reveal: 0.7,
 		orbit: {
 			size: 96,
@@ -61,6 +61,21 @@ export const tune = {
 		splash: { lift: 0, zoom: 1, time: 0.7 },
 		lobby: { lift: 400, zoom: 1.15, time: 0.7 },
 		apex: { lift: -480, zoom: 1, time: 0.6 },
+	},
+	// Dusk behind the lobby floor so the pale tarmac and its drop read: violet far ground,
+	// teal-blue dunes, lilac sky. The backdrop blends to it as the lobby flies in, and back.
+	dusk: {
+		lilac: '#b8abcf',
+		mint: '#a7a3c6',
+		peach: '#c2aaca',
+		planet: '#f1eaf3',
+		'planet-line': '#d3c8de',
+		cloud: '#e4dcef',
+		far: '#6f6a8a',
+		mesa: '#625f82',
+		ridge: '#58607e',
+		dune: '#4f5d70',
+		shadow: '#3f4358',
 	},
 	back: { freq: 174.61, slideTo: 130.81, dur: 0.25, gain: 0.055 },
 	// Menu tiles: the response is a spring, not a fade. `drop` is the fall under the lobby shot,
