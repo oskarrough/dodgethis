@@ -73,7 +73,7 @@
 /* A quiet map sticker; never an input target. */
 .moba-minimap {
 	position: fixed;
-	top: 14px;
+	bottom: 14px;
 	right: 14px;
 	width: clamp(168px, 15vw, 216px);
 	height: auto;
@@ -922,11 +922,11 @@
 		gap: 5px;
 	}
 }
-/* Inspect sits beside the minimap, or beneath it on narrow screens. */
+/* Inspect sits left of the fullscreen and mute buttons. */
 .moba-inspect {
 	position: fixed;
-	top: max(14px, 1.6vw);
-	right: calc(14px + clamp(168px, 15vw, 216px) + 20px);
+	top: 12px;
+	right: 124px;
 	z-index: 6;
 	display: grid;
 	place-items: center;
@@ -940,12 +940,6 @@
 	color: var(--ui-text);
 	cursor: pointer;
 	transition: transform 0.12s cubic-bezier(0.2, 1.9, 0.45, 1);
-}
-@media (max-width: 720px) {
-	.moba-inspect {
-		top: 100px;
-		right: 14px;
-	}
 }
 .moba-inspect[hidden] {
 	display: none;

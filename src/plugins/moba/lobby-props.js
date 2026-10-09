@@ -180,9 +180,9 @@ export function createLobbyProps(scene, el, gallery, readySeats, local, audio) {
 					varying float vY;
 					void main() {
 						float rim = pow(1.0 - abs(dot(normalize(vNormal), vView)), 2.0);
-						float scan = step(0.5, fract(vY * uLines - uTime * 1.5));
-						float flicker = 0.9 + 0.1 * sin(uTime * 23.0);
-						float alpha = uOpacity * (0.35 + 0.65 * rim) * (0.55 + 0.45 * scan) * flicker;
+						float scan = 0.5 + 0.5 * sin((vY * uLines - uTime * 0.35) * 6.2832);
+						float breathe = 0.85 + 0.15 * sin(uTime * 1.3);
+						float alpha = uOpacity * (0.3 + 0.7 * rim) * (0.7 + 0.3 * scan) * breathe;
 						gl_FragColor = vec4(mix(uColor, vec3(1.0), rim * 0.55), alpha);
 					}`,
 				transparent: true,

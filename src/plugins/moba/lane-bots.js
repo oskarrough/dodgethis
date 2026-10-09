@@ -88,11 +88,36 @@ export const laneBots = {
 					0,
 				)
 				const tanked = siege && minions.some((u) => u.id === siege.target && u.team === team)
+				// No one left to defend it: press on instead of waiting for a fuller wave.
+				const open =
+					siege &&
+					!minions.some(
+						(u) =>
+							u.team !== team &&
+							distance(u.pos, siege.pos) <= tune[siege.kind].range + tune.waves.aggro,
+					) &&
+					!near(ctx.enemies, siege.pos, b.supportRange).length
+				// Without a wave the gun shoots us: dive only if it falls before we must leave.
+				const gun =
+					siege &&
+					tune[siege.kind].damage *
+						tune[siege.kind].rate *
+						(perceived.tick * STEP >= tune.match.late ? tune.match.lateGunDamage : 1)
+				const divers = siege ? near(ctx.own, siege.pos, b.supportRange).length || 1 : 0
+				const dps =
+					(1 + tune.levels.growth * (h.level - 1)) *
+					(h.definition.basic?.damage ?? 0) *
+					(h.definition.basic?.rate ?? 0) *
+					divers
+				const dive =
+					open && !escort.length && dps > 0 && (siege.hp / dps) * gun < h.hp - h.maxHp * b.retreatHp
 				const sieging =
 					siege &&
 					(siege.silent ||
+						dive ||
 						(tanked &&
-							(escortStrength >= b.siegeMinions ||
+							(open ||
+								escortStrength >= b.siegeMinions ||
 								(escortStrength > 0 && siege.hp <= siege.maxHp * b.siegeLowHp))))
 
 				const home = perceived.structures.filter((u) => !u.dead && u.team === team && onLane(u))
@@ -103,7 +128,7 @@ export const laneBots = {
 					)
 				const authored = ctx.lanePath && laneRoute(ctx.lanePath.path, team)
 				const midpoint = authored && ctx.route.progress(authored.point(authored.midpoint))
-				lane = { minions, wave, siege, sieging, homeGuard: home[0], midpoint }
+				lane = { minions, wave, siege, sieging, open, homeGuard: home[0], midpoint }
 				return {
 					blockers: [...perceived.minions.filter((u) => u.team !== team), ...guards],
 					pressure: guards.filter((u) => distance(u.pos, p) <= tune[u.kind].range + h.body.radius)
@@ -185,7 +210,7 @@ export const laneBots = {
 				advance(ctx) {
 					const { team, p, h, b, route, melee, move, attack, safe, frame, setState } = ctx
 					if (!route) return null
-					const { minions, wave, siege, homeGuard, midpoint } = lane
+					const { minions, wave, siege, open, homeGuard, midpoint } = lane
 					setState('advance')
 					if (siege && distance(p, siege.pos) <= tune[siege.kind].range + h.body.radius) {
 						move(
@@ -203,6 +228,11 @@ export const laneBots = {
 					// An empty enemy half invites the opening; otherwise follow our paid wave.
 					if (!minions.some((u) => u.team !== team && route.progress(u.pos) < midpoint))
 						progress = Math.max(progress, midpoint - b.openingX)
+					// An undefended gun keeps us at its edge for the next wave, not back home.
+					const edge =
+						siege &&
+						route.progress(siege.pos) - (tune[siege.kind].range + h.body.radius + b.siegeBackoff)
+					if (open) progress = Math.max(progress, edge)
 					const creep = minions
 						.filter(
 							(u) =>

@@ -384,10 +384,10 @@ export const tune = {
 			hologram: {
 				float: 0.22,
 				bob: 0.06,
-				bobRate: 1.8,
+				bobRate: 1.1,
 				sway: 0.5,
-				swayRate: 0.5,
-				opacity: 0.95,
+				swayRate: 0.35,
+				opacity: 0.85,
 				lines: 14,
 				face: 0.75, // eyes wear the picked difficulty's mood, sized to the head
 				faceGap: 0.03,
