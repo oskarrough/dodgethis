@@ -87,6 +87,31 @@
 	stroke-width: 0.8;
 	filter: drop-shadow(1px 1.5px 0 var(--ui-text));
 }
+.moba-minimap .minimap-water {
+	fill: var(--water);
+	stroke: var(--ui-text);
+	stroke-width: 0.6;
+}
+.moba-minimap .minimap-lane {
+	fill: color-mix(in srgb, var(--ui-text) 8%, transparent);
+}
+.moba-minimap .minimap-chalk {
+	fill: none;
+	stroke: color-mix(in srgb, var(--ui-text) 35%, transparent);
+	stroke-width: 0.4;
+}
+.moba-minimap .minimap-hedge {
+	fill: color-mix(in srgb, var(--ui-text) 50%, var(--ui-cream));
+}
+.moba-minimap .minimap-wall,
+.moba-minimap .minimap-pillar {
+	fill: var(--ui-text);
+}
+.moba-minimap .minimap-footprint {
+	fill: var(--ui-cream);
+	stroke: var(--tone);
+	stroke-width: 1.1;
+}
 .moba-minimap [data-team='A'] {
 	--tone: var(--team-a);
 }

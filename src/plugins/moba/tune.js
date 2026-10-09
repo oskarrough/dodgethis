@@ -377,8 +377,17 @@ export const tune = {
 			boxY: 0.19,
 			borderY: 0.185,
 			fillY: 0.195,
-			cardY: 0.21,
 			cardScale: 0.36,
+			// A bot's hero floats over its seat as a hologram.
+			hologram: {
+				float: 0.22,
+				bob: 0.06,
+				bobRate: 1.8,
+				sway: 0.5,
+				swayRate: 0.5,
+				opacity: 0.95,
+				lines: 14,
+			},
 			promptRadius: 1.5,
 			walkSound: { freq: 440, slideTo: 560, dur: 0.1, gain: 0.06, type: 'sine' },
 			enterSound: { freq: 680, slideTo: 760, dur: 0.12, gain: 0.05, type: 'triangle' },

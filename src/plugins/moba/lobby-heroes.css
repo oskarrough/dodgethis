@@ -13,28 +13,24 @@
 	font: 400 calc(var(--tile) * 0.2) / 1 var(--ui-font);
 	color: var(--ui-text);
 }
-.lobby-hero-strip svg .tone,
-.lobby-seat-label svg .tone {
+.lobby-hero-strip svg .tone {
 	fill: var(--ui-cream);
 	stroke: var(--ui-text);
 	stroke-width: 3;
 	stroke-linejoin: round;
 }
-.lobby-hero-strip svg .cream,
-.lobby-seat-label svg .cream {
+.lobby-hero-strip svg .cream {
 	fill: var(--ui-cream);
 	stroke: var(--ui-text);
 	stroke-width: 3;
 }
-.lobby-hero-strip svg .gold,
-.lobby-seat-label svg .gold {
+.lobby-hero-strip svg .gold {
 	fill: var(--ui-gold);
 	stroke: var(--ui-text);
 	stroke-width: 3;
 	stroke-linejoin: round;
 }
-.lobby-hero-strip svg .ink-line,
-.lobby-seat-label svg .ink-line {
+.lobby-hero-strip svg .ink-line {
 	fill: none;
 	stroke: var(--ui-text);
 	stroke-width: 4;

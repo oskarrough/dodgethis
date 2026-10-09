@@ -114,16 +114,18 @@ export function createLobbyHeroes({ scene, el, humans, local }) {
 		labels.push(label)
 		return { body, undress, pad, label }
 	})
-	const names = humans.map((human) => {
-		const label = document.createElement('div')
-		label.className = 'lobby-label sticker'
-		label.dataset.participant = human.id
-		label.textContent = `Player ${human.joinOrder + 1}${human.id === local ? ' (you)' : ''}`
-		label.style.cssText = 'translate:none;opacity:1;pointer-events:none;margin:0'
-		el.append(label)
-		labels.push(label)
-		return { human, label }
-	})
+	// Other players get a small P2-style tag over their head; your own hero needs none.
+	const names = humans
+		.filter((human) => human.id !== local)
+		.map((human) => {
+			const label = document.createElement('div')
+			label.className = 'lobby-label lobby-player-tag'
+			label.dataset.participant = human.id
+			label.textContent = `P${human.joinOrder + 1}`
+			el.append(label)
+			labels.push(label)
+			return { human, label }
+		})
 	function place(label, position, camera) {
 		point.copy(position).project(camera)
 		label.hidden = point.z < -1 || point.z > 1

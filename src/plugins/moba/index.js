@@ -134,7 +134,7 @@ export default function moba(app, map) {
 				!app.session.authoritative ? (object, read) => replica.smooth(object, read) : run.smooth,
 			)
 			const skillsView = createSkillsView(scene)
-			const hud = createHud({ lobby: isLobby, bounds: layout.bounds, name: layout.name })
+			const hud = createHud({ lobby: isLobby, layout })
 			const pips = createPips()
 			const follow = createFollow(tune.follow, layout.bounds)
 			const cameraControls = createCameraControls(

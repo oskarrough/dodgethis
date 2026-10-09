@@ -18,7 +18,7 @@ export function createAgentMatch({
 	present = () => {},
 	replay = null,
 	onInputs = () => {},
-	matchId = crypto.randomUUID(),
+	matchId = Array.from(crypto.getRandomValues(new Uint32Array(4)), (n) => n.toString(16)).join('-'),
 	runId = matchId,
 	commit = null,
 	tuneHash = replayHash(tune),

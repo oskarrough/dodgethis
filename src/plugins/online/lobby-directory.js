@@ -26,7 +26,7 @@ export function createLobbyDirectory({ request = globalThis.fetch.bind(globalThi
 			reportError = onError
 			listing = {
 				code: state.code,
-				token: crypto.randomUUID(),
+				token: uuid(),
 				players: state.humans.length,
 				accepting: state.phase === 'lobby',
 			}
@@ -59,4 +59,12 @@ export function createLobbyDirectory({ request = globalThis.fetch.bind(globalThi
 					.catch(() => {})
 		},
 	}
+}
+
+// randomUUID exists only on https and localhost; LAN play is plain http, so build the same shape by hand.
+function uuid() {
+	const hex = Array.from(crypto.getRandomValues(new Uint8Array(16)), (n) =>
+		n.toString(16).padStart(2, '0'),
+	).join('')
+	return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`
 }

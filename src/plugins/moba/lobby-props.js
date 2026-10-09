@@ -1,7 +1,9 @@
 import * as THREE from 'three'
-import { makeStyleMaterial } from '../../core/stylepass.js'
+import { createBody } from '../../core/body.js'
+import { PALETTE } from '../../core/style.js'
+import { FORWARD_LAYER, makeStyleMaterial } from '../../core/stylepass.js'
+import { dressHero } from './hero-view.js'
 import { HEROES } from './heroes.js'
-import { ICONS } from './hud.js'
 import { tune } from './tune.js'
 import { closest } from './skillshot.js'
 
@@ -111,7 +113,7 @@ export function createDifficultyGallery({ local, difficulty, present, dummies = 
 }
 
 // Handmade cardboard props, not combatants. All animation reads the interpolated sim clock.
-export function createLobbyProps(scene, el, gallery, readySeats, local, heroFor = () => null) {
+export function createLobbyProps(scene, el, gallery, readySeats, local) {
 	const v = tune.lobby.cutout
 	const root = new THREE.Group()
 	root.name = 'lobby-props'
@@ -125,72 +127,12 @@ export function createLobbyProps(scene, el, gallery, readySeats, local, heroFor 
 	const ink = material('ink'),
 		cream = material('cream'),
 		cardboard = material('ammoShaft')
-	const colors = { circle: material('teamA'), square: material('bowl') }
 	const picked = material('ammo')
 	function mesh(geometry, mat, parent) {
 		owned.push(geometry)
 		const m = new THREE.Mesh(geometry, mat)
 		parent.add(m)
 		return m
-	}
-	function shape(kind, width, height) {
-		const s = new THREE.Shape()
-		if (kind === 'circle') s.absellipse(0, height / 2, width / 2, height / 2, 0, Math.PI * 2)
-		else {
-			const points =
-				kind === 'triangle'
-					? [
-							[-width / 2, 0],
-							[width / 2, 0],
-							[0, height],
-						]
-					: [
-							[-width / 2, 0],
-							[width / 2, 0],
-							[width / 2, height],
-							[-width / 2, height],
-						]
-			s.moveTo(...points[0])
-			for (const p of points.slice(1)) s.lineTo(...p)
-			s.closePath()
-		}
-		return s
-	}
-	function cutout(definition, group, color = null) {
-		const card = new THREE.Group()
-		group.add(card)
-		const width = v.width * (definition.silhouette === 'bar' ? v.barWidth : 1)
-		const height = v.height * (definition.silhouette === 'bar' ? v.barHeight : 1)
-		const outline = shape(definition.silhouette, width, height)
-		const board = mesh(
-			new THREE.ExtrudeGeometry(outline, {
-				depth: v.thickness,
-				bevelEnabled: false,
-				curveSegments: v.segments,
-			}),
-			cardboard,
-			card,
-		)
-		board.position.y = v.legHeight
-		const face = mesh(
-			new THREE.ShapeGeometry(outline, v.segments),
-			definition.playable ? (color ?? colors[definition.silhouette] ?? cream) : ink,
-			card,
-		)
-		face.position.set(0, v.legHeight, v.thickness + v.printGap)
-		for (const side of [-1, 1]) {
-			const leg = mesh(new THREE.BoxGeometry(v.legWidth, v.legHeight, v.thickness), cardboard, card)
-			leg.position.set(side * width * v.legSpread, v.legHeight / 2, v.thickness / 2)
-			const foot = mesh(new THREE.BoxGeometry(v.footWidth, v.footHeight, v.footDepth), cream, group)
-			foot.position.set(side * width * v.legSpread, v.footHeight / 2, 0)
-		}
-		const head = mesh(
-			new THREE.CircleGeometry(v.headRadius, v.segments),
-			definition.playable ? cream : ink,
-			card,
-		)
-		head.position.set(0, v.legHeight + height + v.headRadius, v.thickness + v.printGap)
-		return card
 	}
 	const definitions = Object.values(HEROES)
 	const galleryProps = gallery.standees.map((stand) => {
@@ -228,6 +170,51 @@ export function createLobbyProps(scene, el, gallery, readySeats, local, heroFor 
 	})
 	const r = tune.lobby.ready
 	const seatColors = { A: material('teamA'), B: material('teamB') }
+	// A bot's seat holds a hologram of its hero: see-through, scanlined, rimmed, bobbing above the plate.
+	const holo = tune.lobby.ready.hologram
+	const holoMaterials = Object.fromEntries(
+		['A', 'B'].map((team) => {
+			const m = new THREE.ShaderMaterial({
+				uniforms: {
+					uColor: { value: new THREE.Color(PALETTE[team === 'A' ? 'teamA' : 'teamB']) },
+					uTime: { value: 0 },
+					uOpacity: { value: holo.opacity },
+					uLines: { value: holo.lines },
+				},
+				vertexShader: `
+					varying vec3 vNormal;
+					varying vec3 vView;
+					varying float vY;
+					void main() {
+						vec4 world = modelMatrix * vec4(position, 1.0);
+						vY = world.y;
+						vec4 view = viewMatrix * world;
+						vView = normalize(-view.xyz);
+						vNormal = normalize(normalMatrix * normal);
+						gl_Position = projectionMatrix * view;
+					}`,
+				fragmentShader: `
+					uniform vec3 uColor;
+					uniform float uTime;
+					uniform float uOpacity;
+					uniform float uLines;
+					varying vec3 vNormal;
+					varying vec3 vView;
+					varying float vY;
+					void main() {
+						float rim = pow(1.0 - abs(dot(normalize(vNormal), vView)), 2.0);
+						float scan = step(0.5, fract(vY * uLines - uTime * 1.5));
+						float flicker = 0.9 + 0.1 * sin(uTime * 23.0);
+						float alpha = uOpacity * (0.35 + 0.65 * rim) * (0.55 + 0.45 * scan) * flicker;
+						gl_FragColor = vec4(mix(uColor, vec3(1.0), rim * 0.55), alpha);
+					}`,
+				transparent: true,
+				depthWrite: false,
+			})
+			owned.push(m)
+			return [team, m]
+		}),
+	)
 	const seatProps = readySeats.seats.map((seat) => {
 		const group = new THREE.Group()
 		group.position.set(seat.x, 0, seat.z)
@@ -251,44 +238,34 @@ export function createLobbyProps(scene, el, gallery, readySeats, local, heroFor 
 			group,
 		)
 		fill.position.y = r.fillY
-		const cards = definitions
+		const holograms = definitions
 			.filter((d) => d.playable)
 			.map((definition) => {
-				const g = new THREE.Group()
-				g.position.y = r.cardY
-				g.scale.setScalar(r.cardScale)
-				group.add(g)
-				cutout(definition, g, seatColors[seat.team])
-				return { id: definition.id, group: g }
+				const body = createBody(group, null, null, {
+					profile: definition.base,
+					position: [0, 0, 0],
+					replica: true,
+				})
+				const undress = dressHero(body, definition.id, seat.team)
+				const swapped = []
+				body.mesh.traverse((o) => {
+					if (!o.isMesh) return
+					swapped.push([o, o.material])
+					o.material = holoMaterials[seat.team]
+					o.layers.set(FORWARD_LAYER)
+					o.castShadow = false
+				})
+				body.mesh.rotation.y = Math.PI
+				body.mesh.visible = false
+				return { id: definition.id, body, undress, swapped, baseY: body.mesh.position.y }
 			})
-		const label = document.createElement('div')
-		label.className = 'lobby-seat-label'
-		label.setAttribute('role', 'img')
-		const portrait = document.createElement('span')
-		portrait.setAttribute('aria-hidden', 'true')
-		const ownerLabel = document.createElement('small')
-		label.append(portrait, ownerLabel)
-		el.append(label)
-		return { seat, fill, cards, label, portrait, ownerLabel }
+		return { seat, fill, holograms }
 	})
 	function syncSeats() {
 		for (const p of seatProps) {
-			const owner = p.seat.occupant,
-				mine = owner?.id === local
-			for (const card of p.cards) card.group.visible = !!owner?.bot && owner.heroId === card.id
-			p.fill.material = mine ? picked : seatColors[p.seat.team]
-			const heroId = heroFor(owner?.id)?.heroId ?? owner?.heroId
-			const name = heroId ?? 'Empty'
-			const who = mine ? 'You' : owner?.bot ? 'Bot' : owner ? 'Player' : 'Empty'
-			if (p.portrait.dataset.hero !== (heroId ?? '')) {
-				p.portrait.dataset.hero = heroId ?? ''
-				p.portrait.innerHTML = ICONS[heroId] ?? ''
-			}
-			const accessibleName = owner ? `${name}, ${who}` : 'Empty'
-			if (p.label.getAttribute('aria-label') !== accessibleName)
-				p.label.setAttribute('aria-label', accessibleName)
-			if (p.ownerLabel.textContent !== who) p.ownerLabel.textContent = who
-			p.label.dataset.local = String(mine)
+			const owner = p.seat.occupant
+			for (const h of p.holograms) h.body.mesh.visible = !!owner?.bot && owner.heroId === h.id
+			p.fill.material = owner?.id === local ? picked : seatColors[p.seat.team]
 		}
 	}
 	// Presentation-only inspection targets: these never enter the sim's unit database.
@@ -317,13 +294,13 @@ export function createLobbyProps(scene, el, gallery, readySeats, local, heroFor 
 			selected: p.stand.id === gallery.difficulty,
 		}))
 	for (const p of seatProps)
-		for (const card of p.cards)
+		for (const h of p.holograms)
 			inspectTarget(
-				'bot:' + p.seat.id + ':' + card.id,
-				card.group,
-				{ x: p.seat.x, y: r.cardY, z: p.seat.z },
-				() => ({ type: 'bot', heroId: card.id, seat: p.seat.id }),
-				() => card.group.visible,
+				'bot:' + p.seat.id + ':' + h.id,
+				h.body.mesh,
+				{ x: p.seat.x, y: r.fillY, z: p.seat.z },
+				() => ({ type: 'bot', heroId: h.id, seat: p.seat.id }),
+				() => h.body.mesh.visible,
 			)
 	const point = new THREE.Vector3()
 	// Left/top, not a transform: the labels' tilt and scale turn about their own centre,
@@ -354,10 +331,16 @@ export function createLobbyProps(scene, el, gallery, readySeats, local, heroFor 
 		},
 		update(tick, camera, step) {
 			syncSeats()
+			const time = tick * step
+			for (const m of Object.values(holoMaterials)) m.uniforms.uTime.value = time
 			for (const p of seatProps) {
-				point.set(p.seat.x, r.fillY, p.seat.z).project(camera)
-				p.label.hidden = point.z < -1 || point.z > 1
-				place(p.label)
+				for (const [i, h] of p.holograms.entries()) {
+					if (!h.body.mesh.visible) continue
+					const phase = time + p.seat.x + p.seat.z + i
+					h.body.mesh.position.y =
+						h.baseY + r.fillY + holo.float + Math.sin(phase * holo.bobRate) * holo.bob
+					h.body.mesh.rotation.y = Math.PI + Math.sin(phase * holo.swayRate) * holo.sway
+				}
 				const progress = readySeats.progress(p.seat, tick, step)
 				p.fill.visible = progress > 0
 				p.fill.scale.x = progress
@@ -372,7 +355,13 @@ export function createLobbyProps(scene, el, gallery, readySeats, local, heroFor 
 		},
 		dispose() {
 			root.removeFromParent()
-			for (const p of [...galleryProps, ...seatProps]) p.label.remove()
+			for (const p of galleryProps) p.label.remove()
+			for (const p of seatProps)
+				for (const h of p.holograms) {
+					for (const [o, original] of h.swapped) o.material = original
+					h.undress()
+					h.body.dispose()
+				}
 			for (const item of owned) item.dispose()
 		},
 	}

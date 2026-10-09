@@ -34,10 +34,9 @@ export function createLobby({
 	el.innerHTML = `<button type="button" class="back-button" aria-label="Back to splash"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12H5m6-7-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg><kbd></kbd></button><div class="lobby-pick-stamp" aria-live="polite"></div>`
 	const onlineEntry = document.createElement('button')
 	onlineEntry.type = 'button'
-	onlineEntry.className = 'sticker online-entry'
-	onlineEntry.textContent = 'Play online'
-	onlineEntry.style.cssText =
-		'position:absolute;right:max(14px,1.6vw);top:max(14px,1.6vw);z-index:1;margin:0'
+	onlineEntry.className = 'online-entry'
+	onlineEntry.innerHTML =
+		'<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18"/></g></svg>Play online<kbd></kbd>'
 	el.append(onlineEntry)
 	el.prepend(backdrop.el, canvas)
 	canvas.classList.add('front-canvas')
@@ -140,9 +139,7 @@ export function createLobby({
 	let mouse = false
 	let touch = options.device ? options.device === 'touch' : matchMedia('(any-hover: none)').matches
 	const readySeats = sim.readySeats
-	const props = createLobbyProps(app.scene, el, gallery, readySeats, hero.id, (id) =>
-		sim.heroes.find((h) => h.id === id),
-	)
+	const props = createLobbyProps(app.scene, el, gallery, readySeats, hero.id)
 	const floor = createLobbyFloor(app.scene, app.renderer)
 	const lobbyHeroes = createLobbyHeroes({
 		scene: app.scene,
@@ -596,12 +593,8 @@ export function createLobby({
 		backButton.querySelector('kbd').textContent =
 			device === 'gamepad' ? 'B' : device === 'keyboard' ? 'Esc' : ''
 		props.setDevice(device)
-		onlineEntry.textContent =
-			device === 'gamepad'
-				? 'Play online · Select'
-				: device === 'keyboard'
-					? 'Play online · O'
-					: 'Play online'
+		onlineEntry.querySelector('kbd').textContent =
+			device === 'gamepad' ? 'Select' : device === 'keyboard' ? 'O' : ''
 	})
 	// Screen changes drop pending casts/orders. The device reset requires a fresh press;
 	// inherited navigation keys and the initial pad buttons also have their own release guard.

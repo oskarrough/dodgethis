@@ -10,6 +10,21 @@ A small, toy-like hero brawler that grew out of dodgeball, set in the world over
 
 - Oskar plays the lobby; then its feel pass (the flip, squash, sounds, a calmer layout).
 
+### Todo (2026-10-09)
+
+- [x] Play online button matches the back tile; no more crooked label.
+- [x] Seat plates: no icon or cardboard. Bots float on theirs as holograms; humans just stand on it.
+- [x] Your own hero has no name tag; other players get a small P2 tag.
+- [x] Creating an online game over a LAN or tailnet address no longer crashes (`crypto.randomUUID`).
+- [x] Minimap draws each map's layout, Flagfall and Overthrow.
+- [x] Oskar: judge the holograms. Approved.
+- [ ] Is Flagfall's dark water frame on the minimap too heavy?
+- [ ] Decide the walk-on hero rings (Fletcher, Mitts) beside the seats: keep, or pick heroes on the seat itself.
+- [ ] Oskar: walk Flagfall's shore lane; do the sandstone walls sit right beside the hedges?
+- [ ] Check whether restarts stutter while the three big textures reload.
+- [ ] Oskar: two-window online run; judge guest responsiveness to decide on guest-side prediction.
+- [ ] Still unproven online: a hidden guest tab catching up, and play over a real network.
+
 ## Next
 
 - Balance from the farm once bots play every kit properly; Mitts tuning.
