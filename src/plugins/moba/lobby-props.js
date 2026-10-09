@@ -339,8 +339,7 @@ export function createLobbyProps(scene, el, gallery, readySeats, local, audio) {
 		selectDifficulty: labels,
 		setDevice(device) {
 			for (const p of galleryProps)
-				p.label.querySelector('kbd').textContent =
-					device === 'gamepad' ? '✛↓' : device === 'keyboard' ? '←→' : ''
+				p.label.querySelector('kbd').textContent = device === 'gamepad' ? '✛↓' : ''
 		},
 		update(tick, camera, step) {
 			syncSeats()

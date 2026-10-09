@@ -60,7 +60,7 @@ export function createHeroStrip({ el, heroes, current, pick, openNumbers }) {
 		el: strip,
 		sync,
 		setDevice(device) {
-			key.textContent = device === 'gamepad' ? '✛↑' : device === 'keyboard' ? '↑↓' : ''
+			key.textContent = device === 'gamepad' ? '✛↑' : ''
 			strip.dataset.device = device
 		},
 		dispose() {

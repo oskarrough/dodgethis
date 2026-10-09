@@ -664,11 +664,9 @@ export function createLobby({
 		device = nextDevice
 		el.dataset.device = device
 		strip.setDevice(device)
-		backButton.querySelector('kbd').textContent =
-			device === 'gamepad' ? 'B' : device === 'keyboard' ? 'Esc' : ''
+		backButton.querySelector('kbd').textContent = device === 'gamepad' ? 'B' : ''
 		props.setDevice(device)
-		onlineEntry.querySelector('kbd').textContent =
-			device === 'gamepad' ? 'Select' : device === 'keyboard' ? 'O' : ''
+		onlineEntry.querySelector('kbd').textContent = device === 'gamepad' ? 'Select' : ''
 	})
 	// Screen changes drop pending casts/orders. The device reset requires a fresh press;
 	// inherited navigation keys and the initial pad buttons also have their own release guard.
