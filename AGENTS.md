@@ -1,9 +1,9 @@
 # Agent notes
 
 - Use jujutsu version control when `jj` is available
-- Keep learnings in the repo (docs, this file), never in a harness's private memory; Oskar works across many harnesses.
+- Keep learnings in the repo (docs, this file), never in a harness's private memory; the user works across many harnesses.
 - Don't use `jj restore`; parallel agents may be working in this checkout.
-- Commit only if your brief says so (parallel builds leave it to the orchestrator), and then only your own files, always with a message: `jj commit <paths> -m "…"`. Run `bunx oxfmt <paths>` first, docs included; `bun run check` fails on unformatted markdown. Then `jj bookmark set main -r @-`. `jj commit <path>` takes every hunk in that file, other threads' edits included, so commit a file only when all its changes are yours and otherwise leave it to the orchestrator. Leave other threads' changes in the working copy; never create an empty-described commit.
+- Commit only if your brief says so (parallel builds leave it to the orchestrator), and then only your own files, always with a message: `jj commit <paths> -m "…"`. Run `bunx oxfmt <paths>` first, docs included; `bun run check` fails on unformatted markdown. Then `jj bookmark set main -r @-`. `jj commit <path>` takes every hunk in that file, other threads' edits included, so commit a file only when all its changes are yours and otherwise leave it to the orchestrator. Leave other threads' changes in the working copy; never create an empty-described commit. When parallel threads have tangled the same files, the orchestrator may commit unrelated features together rather than hand-split hunks; name each feature in the message.
 - Don't write new unit tests yet; prove changes by playing them. Keep the existing suite green.
 - A red check in files you don't own isn't yours: name them in your report and leave them alone. Iterate with `bun test <file>`; finish with `bunx oxlint <your files>`, `bunx oxfmt <your files>` and the test files near your change. In a shared checkout the orchestrator runs the full `bun run check` at the checkpoint, so don't loop on it: other threads' half-done edits make it red.
 - The machine is shared: browser sessions and full checks starve each other (load past 12 turns timing tests into random failures). Open a browser only when the change is visual or someone asked, and close it when done.
@@ -21,6 +21,7 @@
 
 ## Browser proofs
 
+- When the user is testing in the browser, hand over the URL and one thing to judge, and skip your own visual proof: a human look costs seconds, an agent session minutes. Otherwise browse when the change needs it, as below.
 - Keep browser proof proportional to the change: one focused session, one device and one width; expand only the axis changed by input or layout work. Use headless checks for logic. Don't repeat proof after it passes unless a new edit or failure warrants it.
 - For a local visual fix, go straight to the relevant screen. Prove the full route once at a checkpoint when navigation or transitions changed, rather than replaying a whole match per builder. Capture a screenshot for layout or a short clip for animation; screenshots alone don't prove feel.
 - If browser setup stalls, report the exact proof gap and a working manual-review URL instead of burning the build on automation. Close only your own browser session when finished; leave the shared server running.
@@ -49,4 +50,4 @@
 - The loop is `.claude/skills/loop/SKILL.md`; the queue of next briefs is `.claude/queue/`.
 - Build rules every builder follows: `.claude/queue/build-rules.md`.
 - The coordinating thread owns instructions, briefs, review and roadmap updates; builder BB threads implement game code in this shared checkout. No worktrees.
-- Ping Oskar when a meaningful visual or feel judgment is ready. Give an actual working local dev URL with the shortest route, a screenshot for layout or a short clip for motion, and one concrete thing to judge. Don't make him decipher an agent report or discover the review point himself.
+- Ping the user when a meaningful visual or feel judgment is ready. Give an actual working local dev URL with the shortest route, a screenshot for layout or a short clip for motion, and one concrete thing to judge. Don't make them decipher an agent report or discover the review point themselves.
