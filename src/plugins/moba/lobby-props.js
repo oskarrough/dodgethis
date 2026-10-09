@@ -6,6 +6,7 @@ import { dressHero } from './hero-view.js'
 import { HEROES } from './heroes.js'
 import { tune } from './tune.js'
 import { closest } from './skillshot.js'
+import { createFaceKit, createMagnets } from './lobby-magnets.js'
 
 // DOM-free picking: the sim offers only the footprint that actually happened,
 // clipped by cover/body contact, and retains a successful result on its cast token.
@@ -112,9 +113,8 @@ export function createDifficultyGallery({ local, difficulty, present, dummies = 
 	}
 }
 
-// Handmade cardboard props, not combatants. All animation reads the interpolated sim clock.
-export function createLobbyProps(scene, el, gallery, readySeats, local) {
-	const v = tune.lobby.cutout
+// Handmade toy props, not combatants. All animation reads the interpolated sim clock.
+export function createLobbyProps(scene, el, gallery, readySeats, local, audio) {
 	const root = new THREE.Group()
 	root.name = 'lobby-props'
 	scene.add(root)
@@ -125,8 +125,7 @@ export function createLobbyProps(scene, el, gallery, readySeats, local) {
 		return m
 	}
 	const ink = material('ink'),
-		cream = material('cream'),
-		cardboard = material('ammoShaft')
+		cream = material('cream')
 	const picked = material('ammo')
 	function mesh(geometry, mat, parent) {
 		owned.push(geometry)
@@ -135,38 +134,16 @@ export function createLobbyProps(scene, el, gallery, readySeats, local) {
 		return m
 	}
 	const definitions = Object.values(HEROES)
-	const galleryProps = gallery.standees.map((stand) => {
-		const g = tune.lobby.gallery
-		const group = new THREE.Group()
-		group.position.set(stand.x, v.footHeight, stand.z)
-		root.add(group)
-		const card = new THREE.Group()
-		group.add(card)
-		const board = mesh(new THREE.BoxGeometry(g.width, g.height, v.thickness), cardboard, card)
-		board.position.y = g.height / 2
-		const print = mesh(
-			new THREE.PlaneGeometry(g.width - v.thickness, g.height - v.thickness),
-			cream,
-			card,
-		)
-		print.position.set(0, g.height / 2, v.thickness / 2 + g.printGap)
-		for (const [i, mat] of [ink, cream, ink].entries()) {
-			const target = mesh(new THREE.CircleGeometry(g.radius * (1 - i / 3), v.segments), mat, card)
-			target.position.set(0, g.height / 2, v.thickness / 2 + g.printGap * (i + 2))
-		}
-		const pad = mesh(
-			new THREE.RingGeometry(g.radius, g.radius + g.ringWidth, v.segments),
-			ink,
-			root,
-		)
-		pad.rotation.x = -Math.PI / 2
-		pad.position.set(stand.x, g.ringY, stand.z)
+	const faces = createFaceKit()
+	const magnets = createMagnets(root, gallery, faces, audio)
+	const galleryProps = magnets.props.map((p) => {
 		const label = document.createElement('div')
 		label.className = 'lobby-label lobby-gallery-label'
-		label.dataset.difficulty = stand.id
-		label.append(document.createElement('kbd'), document.createTextNode(stand.id))
+		label.dataset.difficulty = p.stand.id
+		label.append(document.createElement('kbd'), document.createTextNode(p.stand.id))
 		el.append(label)
-		return { stand, card, pad, label }
+		p.label = label
+		return p
 	})
 	const r = tune.lobby.ready
 	const seatColors = { A: material('teamA'), B: material('teamB') }
@@ -215,6 +192,14 @@ export function createLobbyProps(scene, el, gallery, readySeats, local) {
 			return [team, m]
 		}),
 	)
+	const holoFace = new THREE.MeshBasicMaterial({
+		color: PALETTE.cream,
+		transparent: true,
+		opacity: holo.opacity,
+		depthWrite: false,
+		side: THREE.DoubleSide,
+	})
+	owned.push(holoFace)
 	const seatProps = readySeats.seats.map((seat) => {
 		const group = new THREE.Group()
 		group.position.set(seat.x, 0, seat.z)
@@ -257,14 +242,49 @@ export function createLobbyProps(scene, el, gallery, readySeats, local) {
 				})
 				body.mesh.rotation.y = Math.PI
 				body.mesh.visible = false
-				return { id: definition.id, body, undress, swapped, baseY: body.mesh.position.y }
+				const { radius, halfHeight } = definition.base
+				return {
+					id: definition.id,
+					body,
+					undress,
+					swapped,
+					baseY: body.mesh.position.y,
+					head: {
+						y: halfHeight + radius * 0.35,
+						z: -radius * 0.94 - holo.faceGap,
+						size: radius * holo.face,
+					},
+				}
 			})
-		return { seat, fill, holograms }
+		// The bot wears the picked difficulty's face: sleepy, calm or angry.
+		const face = new THREE.Group()
+		face.rotation.y = Math.PI
+		const moods = {}
+		for (const s of gallery.standees) {
+			const f = faces.face(s.id, 1, holoFace)
+			f.traverse((o) => {
+				o.layers.set(FORWARD_LAYER)
+				o.renderOrder = 1
+			})
+			face.add(f)
+			moods[s.id] = f
+		}
+		return { seat, fill, holograms, face, moods }
 	})
 	function syncSeats() {
 		for (const p of seatProps) {
 			const owner = p.seat.occupant
-			for (const h of p.holograms) h.body.mesh.visible = !!owner?.bot && owner.heroId === h.id
+			let shown = null
+			for (const h of p.holograms) {
+				h.body.mesh.visible = !!owner?.bot && owner.heroId === h.id
+				if (h.body.mesh.visible) shown = h
+			}
+			if (shown && p.face.parent !== shown.body.mesh) {
+				shown.body.mesh.add(p.face)
+				p.face.position.set(0, shown.head.y, shown.head.z)
+				p.face.scale.setScalar(shown.head.size)
+			}
+			for (const id in p.moods) p.moods[id].visible = id === gallery.difficulty
 			p.fill.material = owner?.id === local ? picked : seatColors[p.seat.team]
 		}
 	}
@@ -312,7 +332,6 @@ export function createLobbyProps(scene, el, gallery, readySeats, local) {
 	function labels() {
 		for (const p of galleryProps) {
 			const chosen = p.stand.id === gallery.difficulty
-			p.pad.visible = chosen
 			p.label.dataset.picked = String(chosen)
 			p.label.querySelector('kbd').hidden = !chosen
 		}
@@ -346,8 +365,8 @@ export function createLobbyProps(scene, el, gallery, readySeats, local) {
 				p.fill.scale.x = progress
 				p.fill.position.x = ((progress - 1) * (r.width - r.borderWidth * 2)) / 2
 			}
+			magnets.update(time, step)
 			for (const p of galleryProps) {
-				p.card.rotation.x = gallery.angle(p.stand, tick, step)
 				point.set(p.stand.x, tune.lobby.gallery.labelY, p.stand.z).project(camera)
 				p.label.hidden = point.z < -1 || point.z > 1
 				place(p.label)
@@ -356,8 +375,11 @@ export function createLobbyProps(scene, el, gallery, readySeats, local) {
 		dispose() {
 			root.removeFromParent()
 			for (const p of galleryProps) p.label.remove()
+			magnets.dispose()
+			faces.dispose()
 			for (const p of seatProps)
 				for (const h of p.holograms) {
+					p.face.removeFromParent()
 					for (const [o, original] of h.swapped) o.material = original
 					h.undress()
 					h.body.dispose()

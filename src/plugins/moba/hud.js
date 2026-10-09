@@ -357,7 +357,7 @@ export function createHud({ lobby = false, layout, pieces } = {}) {
 
 	function pickUnit(sim, aim, frame) {
 		// Cardboard is picked against its rendered bounds, not an imaginary combat body.
-		// This also covers a gallery card lying flat after a shot.
+		// This also covers the difficulty magnets, picked by their hover box.
 		let prop = null,
 			nearest = Infinity
 		let cursorX = pointer.x,
@@ -489,7 +489,7 @@ export function createHud({ lobby = false, layout, pieces } = {}) {
 						return {
 							title: prop.difficulty[0].toUpperCase() + prop.difficulty.slice(1),
 							tag: prop.selected ? 'picked' : 'difficulty',
-							summary: 'Aim here and hit the cardboard with a real cast to pick these bots.',
+							summary: 'Aim here and hit the magnet with a real cast to pick these bots.',
 							rows: [],
 							notes: ['G / d-pad down shoots the next choice.'],
 						}

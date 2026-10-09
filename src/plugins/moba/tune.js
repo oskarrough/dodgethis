@@ -388,6 +388,8 @@ export const tune = {
 				swayRate: 0.5,
 				opacity: 0.95,
 				lines: 14,
+				face: 0.75, // eyes wear the picked difficulty's mood, sized to the head
+				faceGap: 0.03,
 			},
 			promptRadius: 1.5,
 			walkSound: { freq: 440, slideTo: 560, dur: 0.1, gain: 0.06, type: 'sine' },
@@ -418,14 +420,15 @@ export const tune = {
 			// Each difficulty is a floating horseshoe magnet; ball count, orbit and face say how hard.
 			// Shapes apply on restart; motion, timing and sound are live.
 			magnet: {
-				hover: 1.05, // arch centre above the floor
+				hover: 1.2, // arch centre above the floor
 				tilt: 0.35, // leans back toward the camera
-				arch: 0.3,
-				tube: 0.11,
-				leg: 0.3,
-				tip: 0.13,
-				ball: 0.1,
-				face: 0.15,
+				lean: 0.45, // each ball's orbit plane tips this far off flat
+				arch: 0.38,
+				tube: 0.14,
+				leg: 0.36,
+				tip: 0.16,
+				ball: 0.13,
+				face: 0.2,
 				sag: 0.18, // an unpicked magnet droops this far and dims its pull
 				pullRate: 6,
 				slamTime: 0.14,
@@ -443,9 +446,25 @@ export const tune = {
 				roam: 0.85, // dropped balls stay this close to their magnet
 				rest: 0.55, // where idle balls lie, around the magnet's foot
 				moods: {
-					easy: { balls: 1, orbit: 0.75, spin: 1.1, bob: 0.07, bobRate: 0.9, buzz: 0, crackle: 0 },
-					normal: { balls: 2, orbit: 0.65, spin: 3.2, bob: 0.04, bobRate: 1.6, buzz: 0, crackle: 0 },
-					hard: { balls: 3, orbit: 0.52, spin: 7.5, bob: 0.02, bobRate: 3, buzz: 0.025, crackle: 0.35 },
+					easy: { balls: 1, orbit: 0.92, spin: 1.1, bob: 0.07, bobRate: 0.9, buzz: 0, crackle: 0 },
+					normal: {
+						balls: 2,
+						orbit: 0.8,
+						spin: 3.2,
+						bob: 0.04,
+						bobRate: 1.6,
+						buzz: 0,
+						crackle: 0,
+					},
+					hard: {
+						balls: 3,
+						orbit: 0.66,
+						spin: 7.5,
+						bob: 0.02,
+						bobRate: 3,
+						buzz: 0.025,
+						crackle: 0.35,
+					},
 				},
 				clackSound: { freq: 1900, slideTo: 1300, dur: 0.045, gain: 0.09, type: 'square' },
 				thudSound: { freq: 150, slideTo: 80, dur: 0.07, gain: 0.08, type: 'triangle' },
