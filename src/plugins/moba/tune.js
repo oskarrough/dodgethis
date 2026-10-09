@@ -46,7 +46,7 @@ export const tune = {
 		objectiveFont: 26,
 		objectiveTop: 118,
 		hintBottom: 160,
-		hintWidth: 520,
+		hintWidth: 568, // room for the two-sentence hints without orphaned words
 		timerFont: 10,
 	},
 	// Static layout and dressing: applies on mode restart.
