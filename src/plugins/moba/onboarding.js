@@ -18,24 +18,17 @@ export function createOnboarding({ scene, sim, hero }) {
 	const sticker = (name, text) => {
 		const node = el('div', name, root)
 		node.textContent = text
-		node.style.cssText = `position:absolute;background:${hex('cream')};color:${hex('ink')};border:${t.stickerBorder}px solid ${hex('ink')};border-radius:${t.stickerCorner}px;padding:${t.stickerPadding}px;box-shadow:${t.stickerShadow}px ${t.stickerShadow}px 0 ${hex('ink')};font:bold ${t.font}px/1.2 var(--ui-font);text-align:center`
+		node.style.cssText = `position:absolute;background:${hex('cream')};color:${hex('ink')};border:${t.stickerBorder}px solid ${hex('ink')};border-radius:${t.stickerCorner}px;padding:${t.stickerPadding}px;box-shadow:0 3px 10px rgba(38,68,95,${t.stickerShadow});font:bold ${t.font}px/1.2 var(--ui-font);text-align:center`
 		return node
 	}
 	const you = sticker('moba-you', 'You')
 	const pointer = sticker('moba-ball-pointer', '')
 	pointer.style.whiteSpace = 'nowrap'
-	const timerLabels = ['wave', 'ball'].map((kind) => {
-		const parent = document.querySelector(`.moba-timer.${kind}`)
-		const previousPosition = parent.style.position
-		parent.style.position = 'relative'
-		const label = el('small', 'moba-timer-label', parent)
-		label.restore = () => {
-			parent.style.position = previousPosition
-		}
-		label.textContent = kind === 'wave' ? 'Wave in' : 'Ball in'
-		label.style.cssText = `position:absolute;top:100%;left:50%;transform:translateX(-50%);font:bold ${t.timerFont}px/1.2 var(--ui-font);color:${hex('ink')};white-space:nowrap`
-		return label
-	})
+	// Printed inline before the Ball countdown in the top bar, so it rides the pill.
+	const ballLabel = el('small', 'moba-timer-label')
+	ballLabel.textContent = 'Ball in'
+	ballLabel.style.cssText = `font:bold ${t.timerFont}px/1.2 var(--ui-font);color:${hex('ink')};white-space:nowrap`
+	document.querySelector('.moba-timer.ball')?.prepend(ballLabel)
 	const owned = []
 	const material = (role) => {
 		const mat = makeStyleMaterial(role, { flat: true })
@@ -151,7 +144,7 @@ void main() {
 				).length >= t.crowdCount
 			place(you, p, camera, t.labelHeight)
 			you.hidden ||= hero.dead || (elapsed >= t.youLife && !crowded)
-			for (const label of timerLabels) label.hidden = elapsed >= t.timerLife
+			ballLabel.hidden = elapsed >= t.timerLife
 			pointer.hidden = true
 			if (sim.lane.match.winner) return
 			// Carrying, the pointer swaps the Ball for where to throw it.
@@ -199,10 +192,7 @@ void main() {
 		},
 		dispose() {
 			root.remove()
-			for (const label of timerLabels) {
-				label.restore()
-				label.remove()
-			}
+			ballLabel.remove()
 			group.removeFromParent()
 			for (const resource of owned) resource.dispose()
 		},

@@ -26,13 +26,13 @@ export const look = {
 		pointerMargin: 64,
 		pointerTop: 115,
 		pointerBottom: 180,
-		stickerBorder: 3,
-		// Readouts, not buttons: no printed shadow (moba-look.md, Frame means press).
-		stickerShadow: 0,
-		stickerCorner: 12,
+		// Readouts, not buttons: a thin line and a soft shadow's opacity (moba-look.md, Frame means press).
+		stickerBorder: 1.5,
+		stickerShadow: 0.22,
+		stickerCorner: 999,
 		stickerPadding: 8,
 		font: 16,
-		timerFont: 10,
+		timerFont: 12,
 	},
 	pips: {
 		inset: 0.92,

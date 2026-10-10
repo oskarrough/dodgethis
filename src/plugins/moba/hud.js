@@ -1,5 +1,4 @@
 import * as THREE from 'three'
-import './front/skin.css'
 import './hud.css'
 import { heroDefinition } from './heroes.js'
 import { tune } from './tune.js'
@@ -20,7 +19,6 @@ import {
 	levelProgress,
 	minionCard,
 	structureCard,
-	waveCard,
 } from './tooltip.js'
 
 // The match HUD: top bar, portrait, ability slots and tooltips, including world units.
@@ -32,22 +30,8 @@ const KEY_INSPECT = 'KeyI'
 const PAD_INSPECT = 3
 const PAD_LEFT = 14
 const PAD_RIGHT = 15
+const BALL_SOON = 30 // seconds out, the Ball countdown joins the top bar
 
-const rosette = (() => {
-	const bumps = 14,
-		r = 21,
-		bump = 3.2
-	let d = ''
-	for (let i = 0; i <= bumps; i++) {
-		const a = (i / bumps) * Math.PI * 2
-		const x = 24 + Math.cos(a) * r,
-			y = 24 + Math.sin(a) * r
-		d += i
-			? ` A ${bump} ${bump} 0 0 1 ${x.toFixed(2)} ${y.toFixed(2)}`
-			: `M ${x.toFixed(2)} ${y.toFixed(2)}`
-	}
-	return `<svg viewBox="0 0 48 48" aria-hidden="true"><path class="tone" d="${d} Z"/></svg>`
-})()
 const svg = (body) => `<svg viewBox="0 0 48 48" aria-hidden="true">${body}</svg>`
 export const ICONS = {
 	loose: svg(
@@ -179,51 +163,34 @@ export function createHud({ lobby = false, layout, pieces } = {}) {
 		return node
 	}
 
-	const top = el('div', 'moba-score moba-top skin-ribbon')
+	// One slim pill: who's alive on each side, the takedown score, the clock. Wave and Ball
+	// countdowns live in the clock's card; the Ball shows here only when it's close or live.
+	const top = el('div', 'moba-score moba-top')
 	top.setAttribute('role', 'group')
 	top.setAttribute('aria-label', 'Match status')
 	const summary = el('span', 'moba-sr', top)
 	const sides = {}
 	const side = (which) => {
 		const node = el('div', `moba-side ${which}`, top)
-		const forts = el('div', 'moba-forts', node)
-		const structures = {}
-		for (const kind of ['core', 'tower']) {
-			const icon = hot(el('div', 'moba-fort', forts, ICONS[kind]), {
-				kind: 'structure',
-				which,
-				structure: kind,
-			})
-			icon.dataset.kind = kind
-			structures[kind] = { icon, bar: el('i', '', icon) }
-		}
-		const kills = hot(el('div', 'moba-kills', node), { kind: 'kills', which })
-		const killCount = el('b', '', kills)
-		el('small', '', kills).textContent = 'kills'
-		const level = hot(el('div', 'moba-level', node, rosette), { kind: 'level', which })
-		const xp = el('i', 'moba-ring', level)
-		const levelNumber = el('b', '', level)
-		level.setAttribute('aria-label', which === 'mine' ? 'Your team level' : 'Enemy team level')
-		sides[which] = { node, structures, kills, killCount, level, xp, levelNumber }
+		const dots = hot(el('div', 'moba-dots', node), { kind: 'level', which })
+		const kills = hot(el('b', 'moba-kills', node), { kind: 'kills', which })
+		sides[which] = { node, dots, kills }
 	}
 	side('mine')
 	const clockNode = hot(el('div', 'moba-clock', top), { kind: 'clock' })
 	const clockText = el('b', '', clockNode)
-	const timers = el('div', 'moba-timers', clockNode)
-	const timer = (kind) => {
-		const node = hot(el('div', `moba-timer ${kind}`, timers), { kind })
-		const face = el('i', 'moba-ring', node, ICONS[kind])
+	const ball = (() => {
+		const node = hot(el('div', 'moba-timer ball', clockNode), { kind: 'ball' })
+		const face = el('i', 'moba-ring', node, ICONS.ball)
 		const seconds = el('b', '', node)
 		return { node, face, seconds }
-	}
-	const wave = timer('wave')
-	const ball = timer('ball')
+	})()
 	side('theirs')
 
 	const root = el('div', 'moba-hud')
 	const bar = el('div', 'moba-bar', root)
 	const unitFrame = el('div', 'moba-hud moba-unit')
-	const portrait = el('div', 'moba-portrait skin-ribbon', unitFrame)
+	const portrait = el('div', 'moba-portrait', unitFrame)
 	const avatar = el('div', 'moba-avatar', portrait)
 	// Only the badge opens the hero card; the whole frame sits too close to play to tip on every pass.
 	hot(el('span', 'moba-info', avatar), { kind: 'portrait' }).textContent = 'i'
@@ -336,12 +303,8 @@ export function createHud({ lobby = false, layout, pieces } = {}) {
 		portrait,
 		trait,
 		clockNode,
-		wave.node,
 		ball.node,
-		...['mine', 'theirs'].flatMap((which) => {
-			const { level, kills, structures } = sides[which]
-			return [level, kills, ...['tower', 'core'].map((k) => structures[k].icon)]
-		}),
+		...['mine', 'theirs'].flatMap((which) => [sides[which].dots, sides[which].kills]),
 	]
 	let world = null
 	const projected = new THREE.Vector3()
@@ -466,9 +429,7 @@ export function createHud({ lobby = false, layout, pieces } = {}) {
 				})
 			}
 			case 'clock':
-				return clockCard({ elapsed })
-			case 'wave':
-				return waveCard({ nextWave, elapsed })
+				return clockCard({ elapsed, nextWave, nextBall, ballPop })
 			case 'ball':
 				return ballCard({ nextBall, ballPop, carrying: carryingBall })
 			case 'unit': {
@@ -690,32 +651,15 @@ export function createHud({ lobby = false, layout, pieces } = {}) {
 					['theirs', enemy],
 				]) {
 					const s = sides[which]
-					const progress = levelProgress(teams[team].xp)
+					const heroes = sim?.heroes?.filter((h) => h.team === team) ?? []
 					data(s.node, 'team', team)
-					text(s.levelNumber, String(teams[team].level))
-					prop(s.xp, '--f', String(progress.need ? ring(progress.into, progress.need) : 1))
-					text(s.killCount, String(kills[team]))
-					for (const kind of ['tower', 'core']) {
-						const unit = sim?.lane?.structures.find((u) => u.team === team && u.kind === kind)
-						if (!unit) continue
-						const { icon, bar: hpBar } = s.structures[kind]
-						flag(icon, 'down', !!unit.dead)
-						flag(icon, 'shielded', !unit.dead && !sim.lane.vulnerable(unit))
-						prop(hpBar, '--f', String(unit.dead ? 0 : ring(unit.hp, unit.maxHp)))
-					}
+					while (s.dots.children.length < heroes.length) el('i', '', s.dots)
+					while (s.dots.children.length > heroes.length) s.dots.lastChild.remove()
+					heroes.forEach((h, i) => flag(s.dots.children[i], 'down', !!h.dead))
+					text(s.kills, String(kills[team]))
 				}
 				text(clockText, clock(elapsed))
 				const late = elapsed >= tune.match.late
-				const waveLeft = Math.max(0, nextWave ?? 0)
-				const waveTotal =
-					elapsed < tune.waves.first
-						? tune.waves.first
-						: late
-							? tune.waves.lateInterval
-							: tune.waves.interval
-				text(wave.seconds, `${Math.ceil(waveLeft)}`)
-				prop(wave.face, '--f', String(ring(waveLeft, waveTotal)))
-				flag(wave.node, 'warn', waveLeft <= tune.hud.warn)
 				const ballState = carryingBall
 					? 'carried'
 					: ballPop != null
@@ -743,10 +687,16 @@ export function createHud({ lobby = false, layout, pieces } = {}) {
 					'warn',
 					ballState === 'live' || (ballState === 'next' && ballLeft <= tune.hud.warn),
 				)
+				flag(
+					ball.node,
+					'soon',
+					ballState !== 'off' && (ballState !== 'next' || ballLeft <= BALL_SOON),
+				)
+				const alive = (t) => sim?.heroes?.filter((h) => h.team === t && !h.dead).length ?? 0
 				// One plain sentence for screen readers and scripts; only rewritten when a whole second ticks.
 				text(
 					summary,
-					`Your team level ${teams[localTeam].level}, ${kills[localTeam]} kills · ${clock(elapsed)} · Enemy level ${teams[enemy].level}, ${kills[enemy]} kills · wave ${Math.ceil(waveLeft)}s${ballPop != null ? ` · Ball pops in ${Math.ceil(ballPop)}s` : nextBall === undefined ? '' : ` · Ball ${Math.ceil(ballLeft)}s`}`,
+					`Your team ${alive(localTeam)} up, ${kills[localTeam]} kills · ${clock(elapsed)} · Enemy ${alive(enemy)} up, ${kills[enemy]} kills · wave ${Math.ceil(Math.max(0, nextWave ?? 0))}s${ballPop != null ? ` · Ball pops in ${Math.ceil(ballPop)}s` : nextBall === undefined ? '' : ` · Ball ${Math.ceil(ballLeft)}s`}`,
 				)
 			}
 			if (bannerLeft > 0 && (bannerLeft -= dt) <= 0) banner.hidden = true

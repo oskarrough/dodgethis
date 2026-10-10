@@ -9,7 +9,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 ## Shell and splash
 
 - Splash with map tiles (Overthrow, Flagfall), their illustrations in `public/splash/`: `front/index.js` `mobaFront`; `front/backdrop.js` `createBackdrop`; `front/tune.js` `tile`, `title`, `dusk`; `moba-front.md`
-- Card skin for the splash cards and the lobby hero strip (default `painted`; `wash`, `ink`, `stone` via `?skin=`): `front/skin.js` `applySkin`, `paintedCard`; `front/skin.css` (`.skin-card`, `.skin-sheet`, `.skin-title`; `.skin-ribbon`, the unframed paper under HUD readouts: top bar, unit frame); art in `public/splash/`; `front/tune.js` `skin`
+- Card skin for the splash cards and the lobby hero strip (default `painted`; `wash`, `ink`, `stone` via `?skin=`): `front/skin.js` `applySkin`, `paintedCard`; `front/skin.css` (`.skin-card`, `.skin-sheet`, `.skin-title`); art in `public/splash/`; `front/tune.js` `skin`
 - Dodgeball bonus tag under the tiles: `front/index.js` (`bonus` const, `.front-bonus`); `moba-front.md`, `roadmap.md`
 - Splash keyboard and pad focus, deny shake, back button: `front/controls.js` `createControls`; `front/tune.js` `deny`, `back`, `move`, `enter`
 - Stickers, mute button, corner row, online panel, shell CSS: `index.html`; `src/core/browser.js` `createBrowserApp`
@@ -57,10 +57,11 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 ## Match: HUD
 
 - HUD (portrait, ability slots, cooldown rings, level, health): `hud.js` `createHud`, `matchFrame`; `hud.css`; `tune.js` `hud`; `moba-plan.md`
+- Top bar (one cream pill: team dots for heroes alive, takedowns, clock, the Ball countdown inside 30 s): `hud.js` `createHud` (`moba-top`, `BALL_SOON`); `hud.css` Top bar
 - Ability slot keys (Q, W, E and pad RB, RT, LB): `hud.js` `KEYS`, `SLOTS`
 - Inspect mode (hold I or pad button, hover to read cards): `hud.js` `KEY_INSPECT`, `PAD_INSPECT`, `pickUnit`
-- Tooltips and unit cards (hero, tower, minion, wave, Ball, level, kills, clock): `tooltip.js` `createTooltip`, `heroCard`, `abilityCard`, `structureCard`, `minionCard`, `waveCard`, `ballCard`, `levelCard`, `killsCard`, `clockCard`; `hud.js` `cardFor`, `updateTip`
-- Match clock: `tooltip.js` `clock`, `clockCard`; `hud.js`
+- Tooltips and unit cards (hero, tower, minion, Ball, level, kills, clock): `tooltip.js` `createTooltip`, `heroCard`, `abilityCard`, `structureCard`, `minionCard`, `ballCard`, `levelCard`, `killsCard`, `clockCard`; `hud.js` `cardFor`, `updateTip`
+- Match clock (its card carries the next wave and the Ball): `tooltip.js` `clock`, `clockCard`; `hud.js`
 - Health bars over units: `health-bars.js` `createHealthBars`; `health-bars.css`; `look.js` `healthBars`
 - Damage numbers: `damage-numbers.js` `createDamageNumbers`; `look.js` `damageNumbers`
 - Edge pips for off-screen allies, enemies, Ball: `pips.js` `edgePip`, `createPips`; `look.js` `pips`

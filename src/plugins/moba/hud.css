@@ -1,4 +1,4 @@
-/* Match HUD: cream stickers, 3 px ink, hard offset shadows. Toy-like: chunky, rounded, a little tilted, pressable. */
+/* Match HUD. Frame means press: ability tiles wear 3 px ink and a hard offset shadow; readouts (top bar, unit frame) are smooth cream with a thin line and a soft shadow. */
 .moba-top,
 .moba-hud,
 .moba-tip {
@@ -158,119 +158,77 @@
 	}
 }
 
-/* --- Top bar --- */
+/* --- Top bar: one slim cream pill, a readout, so a thin line and a soft shadow, never a button frame. --- */
 .moba-top {
 	position: fixed;
-	top: 10px;
+	top: 12px;
 	left: 50%;
 	transform: translateX(-50%);
 	z-index: 4;
 	display: flex;
 	align-items: center;
 	gap: 14px;
-	/* The ribbon's deckle eats into the border; pull the content back over it. */
-	--ribbon-paper: 22px;
-	padding: 0 6px;
-	margin-top: -4px;
+	height: 40px;
+	padding: 0 16px;
+	box-sizing: border-box;
+	background: var(--cream);
+	border: 1.5px solid var(--ink);
+	border-radius: 999px;
+	box-shadow: 0 3px 10px rgba(38, 68, 95, 0.22);
 	pointer-events: none;
 	white-space: nowrap;
-}
-.moba-top > * {
-	margin-block: -12px;
 }
 .moba-side {
 	display: flex;
 	align-items: center;
-	gap: 8px;
+	gap: 10px;
 }
 .moba-side.theirs,
-.moba-side.theirs .moba-forts {
+.moba-side.theirs .moba-dots {
 	flex-direction: row-reverse;
 }
-.moba-forts {
+.moba-dots {
 	display: flex;
-	gap: 3px;
+	gap: 5px;
+	padding: 4px 0;
 }
-.moba-fort {
-	position: relative;
-	width: 28px;
-	height: 30px;
-}
-.moba-fort svg {
-	width: 28px;
-	height: 28px;
-	display: block;
+.moba-dots i {
+	width: 14px;
+	height: 14px;
+	box-sizing: border-box;
+	border-radius: 50%;
+	background: var(--tone);
+	border: 2px solid var(--ink);
 	transition:
-		filter 0.3s,
-		opacity 0.3s,
-		transform 0.3s;
+		background 0.2s,
+		transform 0.2s;
 }
-.moba-fort i {
-	position: absolute;
-	left: 3px;
-	right: 3px;
-	bottom: -1px;
-	height: 4px;
-	border-radius: 2px;
-	background: linear-gradient(90deg, var(--tone) calc(var(--f, 1) * 100%), rgba(38, 68, 95, 0.2) 0);
+.moba-dots i.down {
+	background: transparent;
+	border-color: rgba(38, 68, 95, 0.4);
+	transform: scale(0.8);
 }
-.moba-fort.shielded svg {
-	filter: drop-shadow(0 0 0 var(--cream)) drop-shadow(0 0 2px var(--cream));
-	opacity: 0.8;
-}
-.moba-fort.shielded::after {
-	content: '';
-	position: absolute;
-	inset: -2px -1px 2px;
-	border: 2px dashed var(--ink);
-	border-radius: 50% 50% 8px 8px;
-	opacity: 0.45;
-}
-.moba-fort.down svg {
-	filter: grayscale(1);
-	opacity: 0.35;
-	transform: rotate(-12deg) translateY(4px) scale(0.85);
-}
-.moba-fort.down i {
-	opacity: 0;
-}
+/* Takedowns: the score, chunky ink numerals beside the dots. */
 .moba-kills {
-	display: grid;
-	justify-items: center;
-	gap: 1px;
-	min-width: 34px;
-}
-.moba-kills b {
-	font-size: 24px;
+	min-width: 1ch;
+	font-size: 26px;
 	font-weight: 400;
+	font-variant-numeric: tabular-nums;
+	text-align: center;
 }
-.moba-kills small {
-	font:
-		700 9px / 1 system-ui,
-		sans-serif;
-	letter-spacing: 0.08em;
-	text-transform: uppercase;
+.moba-clock {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 0 12px;
+	align-self: stretch;
+	border-inline: 1.5px solid rgba(38, 68, 95, 0.18);
 }
-.moba-level {
-	position: relative;
-	width: 56px;
-	height: 56px;
-	display: grid;
-	place-items: center;
-}
-.moba-side.mine .moba-level {
-	transform: rotate(-4deg);
-}
-.moba-side.theirs .moba-level {
-	transform: rotate(4deg);
-}
-.moba-level > svg {
-	position: absolute;
-	inset: 0;
-	width: 100%;
-	height: 100%;
-	/* The scalloped arcs and ink stroke extend past the nominal icon square. */
-	overflow: visible;
+.moba-clock > b {
+	font-size: 26px;
+	font-weight: 400;
+	letter-spacing: 0.02em;
+	font-variant-numeric: tabular-nums;
 }
 .moba-ring {
 	position: absolute;
@@ -282,54 +240,20 @@
 	-webkit-mask: radial-gradient(circle, transparent 57%, #000 58%);
 	mask: radial-gradient(circle, transparent 57%, #000 58%);
 }
-.moba-level .moba-ring {
-	inset: 10px;
-}
-.moba-level::before {
-	content: '';
-	position: absolute;
-	inset: 10px;
-	border-radius: 50%;
-	background: var(--cream);
-	border: 2px solid var(--ink);
-	box-sizing: border-box;
-}
-.moba-level b {
-	position: relative;
-	font-size: 26px;
-	font-weight: 400;
-	/* Centre the display font's visible digits, not its asymmetric line box. */
-	margin-top: -0.15em;
-}
-.moba-clock {
-	display: grid;
-	justify-items: center;
-	gap: 4px;
-	padding: 0 4px;
-}
-/* Room on the ribbon for the onboarding's printed Wave in / Ball in labels. */
-.moba-clock:has(.moba-timer-label) {
-	padding-bottom: 12px;
-}
-.moba-clock > b {
-	font-size: 30px;
-	font-weight: 400;
-	letter-spacing: 0.02em;
-	font-variant-numeric: tabular-nums;
-}
-.moba-timers {
-	display: flex;
-	gap: 10px;
-}
+/* The Ball joins the pill when it's close, live or yours. */
 .moba-timer {
-	display: flex;
+	display: none;
 	align-items: center;
 	gap: 4px;
 }
+.moba-timer.soon,
+.moba-timer:has(.moba-timer-label:not([hidden])) {
+	display: flex;
+}
 .moba-timer .moba-ring {
 	position: relative;
-	width: 30px;
-	height: 30px;
+	width: 24px;
+	height: 24px;
 	-webkit-mask: none;
 	mask: none;
 	display: grid;
@@ -337,28 +261,20 @@
 	background:
 		radial-gradient(circle, var(--cream) 58%, transparent 59%),
 		conic-gradient(var(--ring, var(--ink)) calc(var(--f, 0) * 1turn), rgba(38, 68, 95, 0.15) 0);
-	box-shadow: 0 0 0 2px var(--ink);
+	box-shadow: 0 0 0 1.5px var(--ink);
 }
 .moba-timer svg {
-	width: 22px;
-	height: 22px;
-}
-.moba-timer.wave {
-	--tone: var(--team-a, #5db4ff);
-}
-.moba-top[data-local='B'] .moba-timer.wave {
-	--tone: var(--team-b, #ff5d5d);
+	width: 18px;
+	height: 18px;
 }
 .moba-timer b {
 	min-width: 1.6em;
-	font-size: 18px;
+	font-size: 16px;
 	font-weight: 400;
 	font-variant-numeric: tabular-nums;
 	text-align: left;
 }
-.moba-timer.ball[data-state='live'] {
-	--ring: var(--gold);
-}
+.moba-timer.ball[data-state='live'],
 .moba-timer.ball[data-state='carried'] {
 	--ring: var(--gold);
 }
@@ -372,8 +288,8 @@
 	to {
 		transform: scale(1.14);
 		box-shadow:
-			0 0 0 2px var(--ink),
-			0 0 0 5px var(--gold);
+			0 0 0 1.5px var(--ink),
+			0 0 0 4px var(--gold);
 	}
 }
 
@@ -407,9 +323,12 @@
 	display: flex;
 	align-items: center;
 	gap: 10px;
-	/* A readout: painted ribbon (front/skin.css), no frame, no shadow. */
-	--ribbon-paper: 18px;
-	padding: 0 4px 0 4px;
+	/* A readout, like the top bar: smooth cream, thin line, soft shadow, never a button frame. */
+	padding: 8px 14px 8px 8px;
+	background: var(--cream);
+	border: 1.5px solid var(--ink);
+	border-radius: 44px 20px 20px 44px;
+	box-shadow: 0 3px 10px rgba(38, 68, 95, 0.22);
 }
 .moba-avatar {
 	position: relative;
@@ -692,10 +611,11 @@
 	box-sizing: border-box;
 	padding: 10px 12px 11px;
 	background: var(--cream);
-	border: 3px solid var(--ink);
-	border-top: 7px solid var(--tone, var(--ink));
+	/* A readout: thin line and soft shadow; the team stripe on top says whose. */
+	border: 1.5px solid var(--ink);
+	border-top: 6px solid var(--tone, var(--ink));
 	border-radius: 14px;
-	box-shadow: 4px 5px 0 var(--ink);
+	box-shadow: 0 4px 14px rgba(38, 68, 95, 0.25);
 	pointer-events: none;
 	will-change: transform;
 }
@@ -803,71 +723,23 @@
 @media (max-width: 720px) {
 	.moba-top {
 		top: 158px;
-		gap: 5px;
+		gap: 8px;
+		height: 34px;
+		padding: 0 10px;
 	}
-	.moba-side,
-	.moba-side.theirs {
-		display: grid;
-		grid-template-columns: auto auto;
-		justify-items: center;
-		gap: 4px;
+	.moba-side {
+		gap: 6px;
 	}
-	.moba-side .moba-forts {
-		grid-row: 2;
-		grid-column: 1 / 3;
+	.moba-dots i {
+		width: 11px;
+		height: 11px;
 	}
-	.moba-side.mine .moba-level,
-	.moba-side.theirs .moba-kills {
-		grid-column: 2;
-		grid-row: 1;
-	}
-	.moba-side.mine .moba-kills,
-	.moba-side.theirs .moba-level {
-		grid-column: 1;
-		grid-row: 1;
-	}
-	.moba-fort,
-	.moba-fort svg {
-		width: 18px;
-		height: 19px;
-	}
-	.moba-level {
-		width: 46px;
-		height: 46px;
-	}
-	.moba-level .moba-ring,
-	.moba-level::before {
-		inset: 8px;
-	}
-	.moba-level b {
+	.moba-kills,
+	.moba-clock > b {
 		font-size: 19px;
 	}
-	.moba-kills {
-		min-width: 24px;
-	}
-	.moba-kills b {
-		font-size: 18px;
-	}
 	.moba-clock {
-		padding: 0 2px;
-		gap: 2px;
-	}
-	.moba-clock > b {
-		font-size: 22px;
-	}
-	.moba-timers {
-		gap: 5px;
-	}
-	.moba-timer .moba-ring {
-		width: 24px;
-		height: 24px;
-	}
-	.moba-timer svg {
-		width: 17px;
-		height: 17px;
-	}
-	.moba-timer b {
-		font-size: 14px;
+		padding: 0 8px;
 	}
 	.moba-hud {
 		bottom: 6px;
@@ -877,8 +749,7 @@
 		gap: 6px;
 	}
 	.moba-portrait {
-		padding: 0 2px 0 0;
-		--ribbon-paper: 12px;
+		padding: 5px 10px 5px 5px;
 		gap: 6px;
 	}
 	.moba-avatar,

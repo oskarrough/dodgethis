@@ -175,23 +175,6 @@ export function minionCard(unit, { localTeam } = {}) {
 	}
 }
 
-// Seconds until the next wave, and its make-up from `tune.minions`.
-export function waveCard({ nextWave = 0, elapsed = 0 } = {}) {
-	const late = elapsed >= tune.match.late
-	const kinds = Object.entries(tune.minions).map(([kind, m]) => `${m.count} ${kind}`)
-	return {
-		title: 'Next wave',
-		tag: `${Math.max(0, Math.ceil(nextWave))} s`,
-		summary: kinds.join(', '),
-		rows: [
-			['Every', `${n(late ? tune.waves.lateInterval : tune.waves.interval)} s`],
-			['After', `${clock(tune.match.late)}: every ${n(tune.waves.lateInterval)} s`],
-			['Growth', `+${pct(tune.waves.growth)} every ${n(tune.waves.growthPeriod)} s`],
-		],
-		notes: [],
-	}
-}
-
 export function ballCard({ nextBall = 0, ballPop = null, carrying = false } = {}) {
 	const b = tune.ball
 	return {
@@ -253,13 +236,26 @@ export function killsCard(kills, { mine = true } = {}) {
 	}
 }
 
-export function clockCard({ elapsed = 0 } = {}) {
+// The clock's card carries the countdowns the top bar no longer shows.
+export function clockCard({ elapsed = 0, nextWave = 0, nextBall, ballPop = null } = {}) {
+	const late = elapsed >= tune.match.late
+	const kinds = Object.entries(tune.minions).map(([kind, m]) => `${m.count} ${kind}`)
+	const ball =
+		ballPop != null
+			? `live, pops in ${Math.ceil(ballPop)} s`
+			: nextBall === undefined
+				? null
+				: `in ${Math.max(0, Math.ceil(nextBall))} s`
 	return {
 		title: 'Match time',
 		tag: clock(elapsed),
 		summary: `Late game from ${clock(tune.match.late)}.`,
 		rows: [
-			['Late waves', `every ${n(tune.waves.lateInterval)} s`],
+			['Next wave', `in ${Math.max(0, Math.ceil(nextWave))} s`],
+			['Each wave', kinds.join(', ')],
+			...(ball ? [['The Ball', ball]] : []),
+			['Waves', `every ${n(late ? tune.waves.lateInterval : tune.waves.interval)} s`],
+			['Wave growth', `+${pct(tune.waves.growth)} every ${n(tune.waves.growthPeriod)} s`],
 			['Late Ball', `every ${n(tune.ball.lateInterval)} s`],
 			['Late guns', `${pct(tune.match.lateGunDamage)} of their damage`],
 		],
