@@ -45,7 +45,7 @@ export const dummies = {
 			dress: dressDummy,
 			body: makeBody(post.x, post.z, 'B', undefined, dressDummy),
 			yaw: 0,
-			dir: i % 2 ? -1 : 1,
+			dir: i % 2 ? 1 : -1, // Walk away from the neighbouring post first, so a pair never starts pressed together.
 			flipIn: tune.dummies.flipMax,
 			hp: tune.dummies.hp,
 			maxHp: tune.dummies.hp,
