@@ -41,6 +41,8 @@ Gotchas:
 - Bots-only fast-forward proves the result wiring, never that a human can win.
 - Flagfall coordinates are scaled; read `sim.obstacles` for real positions.
 - Try Mode reset keeps its paused state; resume before waiting on a cast, move or death.
+- Corner buttons are `.corner-nav .back-button` and `.corner-nav .online-entry` (`src/core/corner-nav.js`); query them after the screen lands, they don't exist on the splash.
+- Two-browser online proofs: open the host in its own window and keep it visible (a hidden tab stops simulating), then wait on `dt.screen()` in the guest with `--timeout 60000`.
 
 ## Evidence
 
