@@ -18,13 +18,35 @@
 	video {
 		width: 480px;
 	}
-	img.big {
-		width: auto;
-		max-width: 100%;
-		cursor: zoom-out;
+	dialog {
+		width: 100vw;
+		height: 100vh;
+		max-width: none;
+		max-height: none;
+		margin: 0;
+		padding: 0;
+		border: 0;
+		background: #111e;
+		color: #ddd;
+	}
+	dialog img {
+		width: 100%;
+		height: calc(100% - 32px);
+		object-fit: contain;
+		margin: 0;
+		cursor: default;
+	}
+	dialog p {
+		margin: 0;
+		text-align: center;
+		line-height: 32px;
 	}
 </style>
 <h1>Review feed</h1>
+<dialog id="viewer">
+	<img />
+	<p></p>
+</dialog>
 <div id="feed">No entries yet. Agents add them with <code>bun run review</code>.</div>
 <script>
 	const isVideo = (f) => /\.(webm|mp4)$/i.test(f)
@@ -44,8 +66,26 @@
 				.join('')
 		})
 		.catch(() => {})
-	document.addEventListener(
-		'click',
-		(e) => e.target.tagName === 'IMG' && e.target.classList.toggle('big'),
-	)
+	const viewer = document.getElementById('viewer')
+	let index = 0
+	const all = () => [...document.querySelectorAll('#feed img')]
+	const show = (i) => {
+		const imgs = all()
+		index = (i + imgs.length) % imgs.length
+		viewer.querySelector('img').src = imgs[index].src
+		const title = imgs[index].closest('section').querySelector('h2').textContent
+		viewer.querySelector('p').textContent =
+			`${index + 1} / ${imgs.length} · ${title} · ← → to browse, Esc to close`
+	}
+	document.addEventListener('click', (e) => {
+		if (e.target.closest('#feed') && e.target.tagName === 'IMG') {
+			show(all().indexOf(e.target))
+			viewer.showModal()
+		} else if (e.target.closest('dialog')) viewer.close()
+	})
+	document.addEventListener('keydown', (e) => {
+		if (!viewer.open) return
+		if (e.key === 'ArrowRight') show(index + 1)
+		if (e.key === 'ArrowLeft') show(index - 1)
+	})
 </script>
