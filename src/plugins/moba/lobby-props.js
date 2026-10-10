@@ -180,6 +180,12 @@ export function createLobbyProps(scene, el, gallery, readySeats, local, audio) {
 		return p
 	})
 	const r = tune.lobby.ready
+	// Your plate says what it's for until you stand in it: printed on the glaze, with its key.
+	const readyLabel = document.createElement('div')
+	readyLabel.className = 'lobby-label lobby-ready-label'
+	readyLabel.dataset.picked = 'true'
+	readyLabel.append(document.createElement('kbd'), document.createTextNode(r.label))
+	el.append(readyLabel)
 	const bands = { A: glaze(tone('teamA'), -1.8), B: glaze(tone('teamB'), -1.8) }
 	const seatColors = { A: glaze(tone('teamA'), -1.6), B: glaze(tone('teamB'), -1.6) }
 	// A bot's seat holds a hologram of its hero: see-through, scanlined, rimmed, bobbing above the plate.
@@ -314,6 +320,7 @@ export function createLobbyProps(scene, el, gallery, readySeats, local, audio) {
 			}
 			for (const id in p.moods) p.moods[id].visible = id === gallery.difficulty
 			const fill = owner?.id === local ? picked : seatColors[p.seat.team]
+
 			p.fill.material = fill.m
 			p.fill.renderOrder = fill.order
 		}
@@ -370,6 +377,7 @@ export function createLobbyProps(scene, el, gallery, readySeats, local, audio) {
 		setDevice(device) {
 			for (const p of galleryProps)
 				p.label.querySelector('kbd').textContent = device === 'gamepad' ? '✛↓' : ''
+			readyLabel.querySelector('kbd').textContent = r.badge[device] ?? ''
 		},
 		update(tick, camera, step) {
 			syncSeats()
@@ -383,10 +391,20 @@ export function createLobbyProps(scene, el, gallery, readySeats, local, audio) {
 						h.baseY + r.fillY + holo.float + Math.sin(phase * holo.bobRate) * holo.bob
 					h.body.mesh.rotation.y = Math.PI + Math.sin(phase * holo.swayRate) * holo.sway
 				}
+				// The glaze runs in from the middle of the well to its rim.
 				const progress = readySeats.progress(p.seat, tick, step)
 				p.fill.visible = progress > 0
-				p.fill.scale.x = progress
-				p.fill.position.x = ((progress - 1) * (r.width - r.borderWidth * 2 - r.band * 2)) / 2
+				p.fill.scale.set(progress, 1, progress)
+			}
+			const mine = readySeats.seatOf(local)
+			readyLabel.hidden =
+				!mine || mine.enteredAt != null || readySeats.progress(mine, tick, step) > 0
+			if (!readyLabel.hidden) {
+				// Beside the plate on the saucer's outer side: you spawn on its inner side.
+				const side = Math.sign(mine.x) || 1
+				point.set(mine.x + side * (r.width / 2 + r.labelGap), r.fillY, mine.z).project(camera)
+				readyLabel.dataset.side = side < 0 ? 'left' : 'right'
+				place(readyLabel)
 			}
 			magnets.update(time, step)
 			for (const p of galleryProps) {
@@ -398,6 +416,7 @@ export function createLobbyProps(scene, el, gallery, readySeats, local, audio) {
 		dispose() {
 			root.removeFromParent()
 			for (const p of galleryProps) p.label.remove()
+			readyLabel.remove()
 			magnets.dispose()
 			faces.dispose()
 			for (const p of seatProps)

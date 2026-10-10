@@ -126,11 +126,13 @@ function miniature(layout, look) {
 	return geometry
 }
 
-// The back half of a cylinder whose top edge arches from nothing at the sides to `capHeight`
-// behind the middle: from the camera, a semicircle of sky behind the miniature.
+// A backdrop following the back of the rim, its top edge arching from nothing at the sides to
+// `capHeight` behind the middle: from the camera, a semicircle of sky behind the miniature.
 function skyArch(b) {
 	const across = 32,
 		up = 8
+	// Standing on the back of the rim, so the turning miniature always passes in front.
+	const rim = b.radius - b.wall * 0.5
 	const positions = [],
 		uvs = [],
 		index = [],
@@ -139,10 +141,11 @@ function skyArch(b) {
 		const a = (i / across) * Math.PI
 		const top = b.capHeight * Math.sin(a) ** 0.55
 		const x = Math.cos(a) * b.capRadius,
-			z = -Math.sin(a) * b.capRadius
+			z = -Math.sqrt(rim ** 2 - x ** 2)
 		for (let j = 0; j <= up; j++) {
 			positions.push(x, (top * j) / up, z)
-			uvs.push(1 - i / across, j / up)
+			// Sky by height, so the sides show only the horizon.
+			uvs.push(1 - i / across, (top * j) / up / b.capHeight)
 		}
 		edge.push(new THREE.Vector3(x, top, z))
 	}
@@ -166,8 +169,7 @@ function drawSky(look, size) {
 	const g = canvas.getContext('2d')
 	// Canvas top is the zenith, bottom the horizon behind the miniature.
 	const sky = g.createLinearGradient(0, 0, 0, size)
-	sky.addColorStop(0, look.sky[0])
-	sky.addColorStop(1, look.sky[1])
+	look.sky.forEach((color, i) => sky.addColorStop(i / (look.sky.length - 1), color))
 	g.fillStyle = sky
 	g.fillRect(0, 0, size * 2, size)
 	let seed = 11
@@ -194,7 +196,38 @@ function drawSky(look, size) {
 		g.fillRect(0, 0, size * 2, size)
 		g.globalCompositeOperation = 'source-over'
 	}
-	// A low band of cloud along the horizon.
+	// Far isles: flat-topped stone columns fading into the haze.
+	g.fillStyle = look.isle
+	for (let i = 0; i < look.isles; i++) {
+		const x = (0.15 + rand() * 1.7) * size,
+			y = (0.55 + rand() * 0.25) * size
+		const w = (0.04 + rand() * 0.07) * size,
+			h = (0.08 + rand() * 0.18) * size
+		g.globalAlpha = 0.35 + rand() * 0.3
+		g.beginPath()
+		g.moveTo(x - w / 2, y)
+		g.lineTo(x + w / 2, y)
+		g.lineTo(x + w * 0.3, y + h)
+		g.lineTo(x - w * 0.25, y + h * 0.85)
+		g.closePath()
+		g.fill()
+	}
+	// Thin wisps across the sky, then a low band of cloud along the horizon.
+	g.fillStyle = look.cloud
+	for (let i = 0; i < look.wisps; i++) {
+		g.globalAlpha = 0.35 + rand() * 0.3
+		g.beginPath()
+		g.ellipse(
+			rand() * size * 2,
+			(0.2 + rand() * 0.45) * size,
+			size * (0.12 + rand() * 0.18),
+			size * 0.012,
+			0,
+			0,
+			Math.PI * 2,
+		)
+		g.fill()
+	}
 	g.fillStyle = look.cloud
 	for (let i = 0; i < 18; i++) {
 		g.globalAlpha = 0.5 + rand() * 0.4

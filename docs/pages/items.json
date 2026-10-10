@@ -1,5 +1,19 @@
 [
 	{
+		"at": "2026-10-10T11:14:31.991Z",
+		"title": "Lobby Ready on the saucer",
+		"ask": "Is it clear you walk onto your plate to ready, and does the glaze filling in from the middle feel like part of the saucer?",
+		"status": "To review",
+		"decision": "",
+		"media": [
+			"review/media/2026-10-10-lobby-ready-on-the-saucer/ready-on-the-saucer.png",
+			"review/media/2026-10-10-lobby-ready-on-the-saucer/ready-filling.png"
+		],
+		"links": [],
+		"thread": "thr_dwbukqxwup",
+		"page": "2026-10-10-lobby-ready-on-the-saucer/"
+	},
+	{
 		"at": "2026-10-10T11:12:28.733Z",
 		"title": "Pause menu: manual or obi",
 		"ask": "Which pause page: manual (cream sheet over the left seven columns) or obi (jewel-case spine, giant clock)?",

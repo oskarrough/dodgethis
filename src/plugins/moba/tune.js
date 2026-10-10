@@ -344,7 +344,10 @@ export const tune = {
 			corner: 0.22,
 			tint: 0.35,
 			well: '#fbf6ea',
-			fillY: 0.05, // holograms and stickers stand on the plate here
+			fillY: 0.05, // holograms and labels stand on the plate here
+			label: 'Ready', // printed beside your plate until you stand in it
+			labelGap: 0.12,
+			badge: { keyboard: 'Enter', mouse: 'Enter', gamepad: 'Start', touch: '' },
 			// A bot's hero floats over its seat as a hologram.
 			hologram: {
 				float: 0.32,
@@ -503,8 +506,8 @@ export const tune = {
 			wall: 0.16,
 			floor: 0.14,
 			segments: 48,
-			capRadius: 2.1,
-			capHeight: 1.6, // the sky arch's height behind the middle of the rim
+			capRadius: 1.75, // the sky arch's half-width; keep it inside radius
+			capHeight: 1.75, // and its height behind the middle of the rim
 			skyPixels: 256,
 			island: 1.7, // the miniature's half-diagonal; keep it inside the cloud bed
 			relief: 2.4, // dioramas exaggerate height
@@ -523,12 +526,15 @@ export const tune = {
 					hedge: '#8faa6a',
 					cap: '#b9c98c',
 					cloud: '#f4c8bc',
-					sky: ['#ee9f7c', '#f9d6b6'],
-					moon: [1.25, 0.4, 0.2],
+					sky: ['#b99ac2', '#efab8e', '#fae0c6'], // zenith to horizon
+					moon: [0.55, 0.32, 0.14],
 					moonColor: '#fff3dc',
 					crescent: false,
 					stars: 0,
 					star: '#ffffff',
+					isles: 7,
+					isle: '#9d8fb0',
+					wisps: 6,
 					margin: 1.5,
 					slab: 2.5,
 					rock: 6,
@@ -550,6 +556,9 @@ export const tune = {
 					crescent: true,
 					stars: 40,
 					star: '#f3ead2',
+					isles: 6,
+					isle: '#2c2448',
+					wisps: 0,
 					margin: 1.5,
 					slab: 2.5,
 					rock: 6,

@@ -82,6 +82,20 @@
 .lobby-label[data-picked='true'] {
 	opacity: 1;
 }
+.lobby-label.lobby-ready-label {
+	transform: translate(-100%, -50%);
+	translate: 0 0;
+}
+.lobby-label.lobby-ready-label[data-side='right'] {
+	transform: translate(0, -50%);
+}
+.moba-front .lobby-ready-label kbd {
+	margin-right: 0.4em;
+	font-size: 0.8em;
+}
+.moba-front .lobby-ready-label kbd:empty {
+	display: none;
+}
 .lobby-label.lobby-bowl-label {
 	translate: 0 0.2em;
 }

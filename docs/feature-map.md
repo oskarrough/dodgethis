@@ -23,7 +23,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Lobby screen (walk around, pick, ready, back): `lobby.js` `createLobby`; `tune.js` `lobby`; `moba-lobby.md`
 - Back and Play online, the top-left row in both modes' lobbies: `src/core/corner-nav.js` `createCornerNav`; `index.html` `.corner-nav`; used by `lobby.js` `createLobby` and `src/plugins/dodgeball/index.js`
 - Seats, roster, ready state: `lobby-state.js` `createReadySeats`; `lobby-heroes.js` `createLobbyHeroes`; `tune.js` `lobby.ready`
-- Ready pad on the floor: `lobby-floor.js` (`tune.lobby.ready`); `lobby.js` `createLobby`
+- Ready plates inlaid in the saucer's glaze, the Ready label beside yours, the glaze fill: `lobby-props.js` `createLobbyProps`, `plate`; `tune.js` `lobby.ready`; `lobby.js` `createLobby`
 - Lobby floor, the glazed saucer in its magnetic cradles: `lobby-floor.js` `createLobbyFloor`, `saucerShape`; its elliptical collider: `obstacles.js` `buildColliders` (`island.round`); `maps/lobby.js` `lobbyLayout`; `tune.js` `lobby.floor`
 - Weather bowl, the next map turning in miniature under a sky cap, with its label: `lobby-bowl.js` `createWeatherBowl`; `tune.js` `lobby.bowl`
 - Hero stands and the hero strip (pick a hero): `lobby-heroes.js` `heroStands`, `createHeroStrip`; `tune.js` `lobby.pick`
