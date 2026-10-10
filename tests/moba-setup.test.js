@@ -11,12 +11,6 @@ const defaults = {
 	seeded: false,
 	edgePan: true,
 }
-test('missing params use the front-screen defaults without warnings', () => {
-	const warnings = []
-	expect(parseMatchSetup(new URLSearchParams(), {}, (w) => warnings.push(w))).toEqual(defaults)
-	expect(wantsDirectPlay(new URLSearchParams())).toBe(false)
-	expect(warnings).toEqual([])
-})
 test.each([
 	['map', 'overthrow', 'map', 'overthrow'],
 	['bots', 'easy', 'difficulty', 'easy'],

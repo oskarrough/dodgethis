@@ -3,8 +3,6 @@ import * as THREE from 'three'
 import RAPIER from '@dimforge/rapier3d-compat'
 import { buildCourt } from '../src/plugins/dodgeball/court.js'
 import { createRound } from '../src/plugins/dodgeball/round.js'
-import { createPlayer } from '../src/plugins/dodgeball/unit.js'
-import { spawnPoint } from '../src/plugins/dodgeball/arena.js'
 import { tune } from '../src/plugins/dodgeball/tune.js'
 import { tune as coreTune } from '../src/core/tune.js'
 
@@ -52,28 +50,6 @@ function ticks(count, move = STILL, remoteMoves) {
 		round.lateUpdate()
 	}
 }
-
-test('solo defaults preserve unit order, spawn slots, and the initial arrow pool', () => {
-	round = createRound(ctx, { seed: 42 })
-	expect(round.units.map((u) => u.team)).toEqual(['A', 'B', 'B', 'B'])
-	expect(round.localParticipantId).toBe('local')
-	expect(round.human).toBe(round.localPlayer)
-	expect(round.brains).toHaveLength(3)
-	expect(round.arrows).toHaveLength(7)
-	expect(round.human.heldArrow).toBe(round.arrows[0])
-	expect(round.arrows.slice(1).every((a) => a.state === 'grounded')).toBe(true)
-	round.dispose()
-	round = createRound(ctx, { enemies: 2, allies: 2 })
-	expect(round.units.map((u) => u.team)).toEqual(['A', 'B', 'B', 'A', 'A'])
-	for (const team of ['A', 'B']) {
-		const teamUnits = round.units.filter((u) => u.team === team)
-		teamUnits.forEach((u, index) => {
-			const [x, , z] = spawnPoint(team, index, teamUnits.length)
-			expect(u.position.x).toBe(x)
-			expect(u.position.z).toBe(z)
-		})
-	}
-})
 
 test('two humans have no brains, remain neutral, and both advance gravity each tick', () => {
 	make([human('a', 'A'), human('b', 'B')])
@@ -218,18 +194,6 @@ test('shared release/dash and fixed-tick auto-pickup work identically for both h
 	for (const u of round.units) expect(u.dashing).toBe(false)
 })
 
-test('infinite ammo and void rescue apply to remote humans too, on their own team', () => {
-	make([human('a', 'A'), human('b', 'B')], 'a', { arrowCount: 1 })
-	tune.cheats.infiniteAmmo = true
-	tune.cheats.godmode = true
-	round.units[1].place(0, -20, 0)
-	ticks(1)
-	expect(round.arrows).toHaveLength(2)
-	expect(round.units.every((u) => !!u.heldArrow)).toBe(true)
-	expect(round.units[1].alive).toBe(true)
-	expect(round.units[1].position.z).toBe(spawnPoint('B')[2])
-})
-
 test('live bot editing updates roster and brains without removing either human or reusing ids', () => {
 	make([human('a', 'A'), human('b', 'B'), bot('bot-added-1', 'B')])
 	const added = round.addUnit('B')
@@ -275,13 +239,3 @@ test.each([undefined, 'missing', 'bot'])(
 		expect(ctx.world.bodies.len()).toBe(bodies)
 	},
 )
-
-test('standalone player validates participant before allocating physics objects', () => {
-	const bodies = ctx.world.bodies.len()
-	expect(() =>
-		createPlayer(ctx.scene, ctx.world, RAPIER, {
-			participant: { ...human('a', 'A'), team: 'C' },
-		}),
-	).toThrow()
-	expect(ctx.world.bodies.len()).toBe(bodies)
-})

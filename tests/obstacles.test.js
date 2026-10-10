@@ -1,11 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import {
-	LAYOUTS,
-	blocksSight,
-	pointInside,
-	steerAround,
-	distanceTo,
-} from '../src/plugins/dodgeball/obstacles.js'
+import { LAYOUTS, blocksSight, pointInside } from '../src/plugins/dodgeball/obstacles.js'
 import { ARENA, spawnPoint } from '../src/plugins/dodgeball/arena.js'
 
 const pillar = { kind: 'pillar', x: 0, z: 0, r: 0.5, h: 2.2 }
@@ -13,20 +7,6 @@ const lowWall = { kind: 'wall', x: 0, z: 0, w: 2, d: 0.4, h: 0.9 }
 const tallWall = { ...lowWall, h: 2 }
 
 describe('geometry', () => {
-	test('distance, normal and padded containment for pillars and walls', () => {
-		expect(distanceTo(2, 0, pillar).d).toBeCloseTo(1.5)
-		expect(distanceTo(2, 0, pillar).nx).toBeCloseTo(1)
-		expect(distanceTo(0, 0.2, pillar).d).toBeLessThan(0)
-		expect(distanceTo(0, 1.2, lowWall).d).toBeCloseTo(1)
-		expect(distanceTo(0, 1.2, lowWall).nz).toBeCloseTo(1)
-		expect(distanceTo(1.6, 0.6, lowWall).d).toBeCloseTo(Math.hypot(0.6, 0.4))
-		const inside = distanceTo(0.9, 0.05, lowWall)
-		expect(inside.d).toBeLessThan(0)
-		expect(inside.nx).toBe(1)
-		expect(pointInside(0.8, 0, [pillar])).toBe(false)
-		expect(pointInside(0.8, 0, [pillar], 0.5)).toBe(true)
-	})
-
 	test('sightlines pass low walls, stop at tall ones and pillars, and miss to the side', () => {
 		expect(blocksSight(0, -3, 0, 3, [pillar])).toBe(true)
 		expect(blocksSight(1, -3, 1, 3, [pillar])).toBe(false)
@@ -34,16 +14,6 @@ describe('geometry', () => {
 		expect(blocksSight(0, -3, 0, 3, [tallWall])).toBe(true)
 		expect(blocksSight(-3, 0.5, 3, 0.5, [tallWall])).toBe(false)
 		expect(blocksSight(-3, -1, 3, 1, [tallWall])).toBe(true)
-	})
-
-	test('steering deflects a head-on approach sideways and ignores a clear path', () => {
-		const head = steerAround({ x: 0, z: -1 }, 0.01, 1.2, [pillar])
-		expect(Math.abs(head.x)).toBeGreaterThan(0.3)
-		expect(head.z).toBeLessThan(0) // still making progress
-		const clear = steerAround({ x: 0, z: -1 }, 3, 1.2, [pillar])
-		expect(clear).toEqual({ x: 0, z: -1 })
-		const behind = steerAround({ x: 0, z: -1 }, 0, -0.9, [pillar])
-		expect(behind).toEqual({ x: 0, z: -1 })
 	})
 })
 

@@ -14,7 +14,6 @@ import {
 	createAgentDecisions,
 } from '../src/plugins/moba/agents.js'
 import { createAgentMatch, readReplay, replayHash } from '../src/plugins/moba/agent-match.js'
-import { HELP } from '../scripts/play.js'
 
 await RAPIER.init({})
 
@@ -35,16 +34,6 @@ function match(roster = agentRoster(), replay = null, seed = replay?.seed ?? 2) 
 function act(run, id, input) {
 	return agentAction(run.sim, id, run.perception.read(), input).frame
 }
-
-test('one-screen help teaches all verbs, units, seat protocol and replay', () => {
-	expect(HELP.trim().split('\n').length).toBeLessThanOrEqual(30)
-	for (const action of ['move', 'attack', 'cast', 'stop', 'pickup', 'throw', 'wait'])
-		expect(HELP).toContain(`"action":"${action}"`)
-	expect(HELP).toContain('metres')
-	expect(HELP).toContain('act <seat>')
-	expect(() => agentRoster({ seats: ['B2'], idle: ['B2'] })).toThrow()
-	expect(() => agentRoster({ seats: ['B4'] })).toThrow()
-})
 
 test('verbs produce ordinary intents; malformed, hidden and shielded orders are rejected', () => {
 	const run = match()

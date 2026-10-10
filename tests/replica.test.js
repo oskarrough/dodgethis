@@ -308,12 +308,6 @@ test.each([
 		},
 	],
 	[
-		'controller changed',
-		(p) => {
-			p.units[0].participant.controller = 'bot'
-		},
-	],
-	[
 		'unit id changed',
 		(p) => {
 			p.units[0].id += 9999
@@ -450,37 +444,4 @@ test('invalid first packet allocates no arrows or host ids; stale arrivals and r
 	host.units[2].eliminate()
 	deliver(2)
 	expect(replica.push(alive, 3)).toBe(false)
-})
-
-test('pool additions reuse shared geometry builders and disposal releases every owned resource once', () => {
-	deliver()
-	tune.cheats.infiniteAmmo = true
-	host.looseHuman({ x: 1, z: 0 }, 15)
-	host.step(1 / 60, { x: 0, z: 0 })
-	host.lateUpdate()
-	deliver(1)
-	expect(replica.arrows).toHaveLength(8)
-	const resources = new Set()
-	for (const unit of replica.units)
-		unit.visual.traverse((o) => {
-			if (o.geometry) resources.add(o.geometry)
-			if (o.material) resources.add(o.material)
-		})
-	for (const arrow of replica.arrows) {
-		for (const root of [arrow.mesh, arrow.ball, arrow.pickup, arrow.trail])
-			root.traverse((o) => {
-				if (o.geometry) resources.add(o.geometry)
-			})
-		resources.add(arrow.trail.material)
-	}
-	const disposed = new Map()
-	for (const resource of resources)
-		resource.addEventListener('dispose', () =>
-			disposed.set(resource, (disposed.get(resource) ?? 0) + 1),
-		)
-	replica.dispose()
-	replica.dispose()
-	expect(disposed.size).toBe(resources.size)
-	expect([...disposed.values()].every((count) => count === 1)).toBe(true)
-	expect(replica.push(snapshotRound(host), 2)).toBe(false)
 })

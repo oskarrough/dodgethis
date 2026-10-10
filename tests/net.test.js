@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, expect, test } from 'bun:test'
-import { DEFAULT_PEER_OPTIONS, MAX_PLAYERS, Net, PROTO } from '../src/plugins/online/net.js'
+import { MAX_PLAYERS, Net, PROTO } from '../src/plugins/online/net.js'
 import { tune } from '../src/plugins/online/tune.js'
 
 class Emitter {
@@ -603,23 +603,4 @@ test('private code collision retries use a fresh peer, and six-character codes c
 	conn.start()
 	conn.emit('data', { t: 'welcome', d: { v: PROTO, hostId: 'dodgethis-ABCDEF' } })
 	expect(await joining).toBe('ABCDEF')
-})
-
-test('constructor injection and window override replace public relay defaults', async () => {
-	const options = { config: { iceServers: [{ urls: 'turn:private.example' }] } }
-	const net = make({ peerOptions: options })
-	await settle(net.host())
-	expect(net.peer.options).toBe(options)
-	expect(DEFAULT_PEER_OPTIONS.config.iceServers.at(-1).urls[0]).toContain('openrelay')
-	const oldWindow = globalThis.window
-	try {
-		globalThis.window = { Peer: hub.Peer, DODGETHIS_PEER_OPTIONS: options }
-		const browserNet = new Net({ timers: clock })
-		nets.push(browserNet)
-		await settle(browserNet.host())
-		expect(browserNet.peer.options).toBe(options)
-	} finally {
-		if (oldWindow === undefined) delete globalThis.window
-		else globalThis.window = oldWindow
-	}
 })

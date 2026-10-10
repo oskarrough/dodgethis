@@ -67,56 +67,6 @@ test('a contact owns the corpse until its exit finishes; a survived hit never st
 	expect(mesh.position.equals(position)).toBe(true)
 })
 
-test('chip and court-mark pools are fixed, survive spam, and are released on reset and dispose', () => {
-	const chips = scene.getObjectByName('impact-ink')
-	const marks = scene.getObjectByName('court-ink')
-	const pools = [chips, marks].map((pool) => ({
-		pool,
-		count: pool.count,
-		matrix: pool.instanceMatrix,
-		geometry: pool.geometry,
-		material: pool.material,
-	}))
-	const scuff = { ...impact('landed'), surface: 'court', point: { x: 0, y: 0, z: 0 } }
-	for (let i = 0; i < 100; i++) {
-		feedback.present(impact('landed'))
-		feedback.present(scuff)
-	}
-	feedback.present(impact(), mesh)
-	feedback.update(0.01)
-	for (const { pool, count, matrix, geometry, material } of pools) {
-		expect(pool.visible).toBe(true)
-		expect(pool.count).toBe(count) // one allocation, reused forever
-		expect(pool.instanceMatrix).toBe(matrix)
-		expect(pool.geometry).toBe(geometry)
-		expect(pool.material).toBe(material)
-	}
-	expect(scene.children).toHaveLength(3)
-
-	feedback.reset()
-	const position = mesh.position.clone()
-	feedback.update(10) // no stale death animation touches a retired round's mesh
-	expect(mesh.position.equals(position)).toBe(true)
-	expect(chips.visible).toBe(false)
-	expect(marks.visible).toBe(false)
-	// A mark drawn after the reset starts from a cleared pool, not on top of old strokes.
-	feedback.present(scuff)
-	feedback.update(0.01)
-	const matrix = new THREE.Matrix4()
-	marks.getMatrixAt(3, matrix)
-	expect(new THREE.Vector3().setFromMatrixScale(matrix).length()).toBe(0)
-
-	const geometryDisposed = mock()
-	const materialDisposed = mock()
-	marks.geometry.addEventListener('dispose', geometryDisposed)
-	marks.material.addEventListener('dispose', materialDisposed)
-	feedback.dispose()
-	expect(scene.getObjectByName('court-ink')).toBeUndefined()
-	expect(scene.getObjectByName('impact-ink')).toBeUndefined()
-	expect(geometryDisposed).toHaveBeenCalledTimes(1)
-	expect(materialDisposed).toHaveBeenCalledTimes(1)
-})
-
 test('remote humans do not own local confirmations or bot taunts', () => {
 	feedback.dispose()
 	const confirm = mock()

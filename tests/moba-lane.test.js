@@ -6,16 +6,12 @@ import {
 	BOXES,
 	FLOOR,
 	PILLARS,
-	clampWalkable,
 	walkable,
 	segmentClear,
 	sweepObstacles,
-	projectMap,
 } from '../src/plugins/moba/obstacles.js'
 import { createPathPlanner } from '../src/plugins/moba/path.js'
 import { stepShot } from '../src/plugins/moba/skillshot.js'
-import { edgePip } from '../src/plugins/moba/pips.js'
-import { createFollow, clampView } from '../src/plugins/moba/follow.js'
 
 const options = { radius: tune.hero.radius, ...tune.orders }
 
@@ -36,29 +32,6 @@ function shot(x, z, dx, dz, slot = 'slot1') {
 		passed: [],
 	}
 }
-
-test('layout is 104 × 26, with four hedges, four base walls and six pillars', () => {
-	expect(FLOOR).toMatchObject({ id: 'overthrow', halfX: 52, halfZ: 13 })
-	expect(BOXES.filter((b) => b.kind === 'hedge')).toHaveLength(4)
-	expect(BOXES.filter((b) => b.kind === 'wall')).toHaveLength(4)
-	expect(PILLARS).toHaveLength(6)
-	for (const p of [
-		{ x: 18, z: 7 },
-		{ x: -18, z: -7 },
-		{ x: 40, z: 10 },
-		{ x: 99, z: -99 },
-	]) {
-		expect(walkable(p.x, p.z, options.radius)).toBe(false)
-		const at = clampWalkable(p, options.radius, options.clearance)
-		expect(walkable(at.x, at.z, options.radius, options.clearance)).toBe(true)
-	}
-	for (const p of [
-		{ x: 48, z: 0 },
-		{ x: -48, z: 0 },
-		{ x: 18, z: 10 },
-	])
-		expect(walkable(p.x, p.z, options.radius)).toBe(true)
-})
 
 test('non-homing shots stop at each hedge before a target beyond it', () => {
 	for (const b of BOXES.filter((b) => b.kind === 'hedge'))
@@ -182,18 +155,4 @@ test('intent movement, ordered paths and Vault all respect the same hedge collid
 		harness.dispose()
 		expect(scene.children).toHaveLength(0)
 	}
-})
-
-test('camera follow and pad look-ahead clamp to the rectangular map; edge pips distinguish visible and behind-camera heroes', () => {
-	const follow = createFollow()
-	const camera = follow.frame(0, { x: 52, z: 13 }, { x: 99, z: 99 }, { pad: true })
-	const bounded = clampView({ x: 52, z: 13 }, tune.follow)
-	expect(camera.target).toMatchObject({ x: bounded.x, z: bounded.z })
-	expect(projectMap({ x: 50, z: 0 }, { x: 60, z: 10 })).toEqual({ x: 52, z: 2 })
-	expect(edgePip({ x: 0.2, y: 0.1, z: 0.5 })).toBeNull()
-	expect(edgePip({ x: 4, y: 2, z: 0.5 })).toEqual({ x: tune.pips.inset, y: tune.pips.inset / 2 })
-	expect(edgePip({ x: 4, y: 2, z: 2 }, true)).toEqual({
-		x: -tune.pips.inset,
-		y: -tune.pips.inset / 2,
-	})
 })

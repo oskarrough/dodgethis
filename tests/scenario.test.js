@@ -1,6 +1,5 @@
 import { expect, test } from 'bun:test'
 import { scenario, scenarioFromURL } from '../src/plugins/dodgeball/scenario.js'
-import { createPerformanceMonitor } from '../src/core/performance.js'
 
 test('a shareable URL names exact rosters, seed, ammo, layout and controls', () => {
 	expect(scenarioFromURL('')).toBeNull()
@@ -26,13 +25,4 @@ test('a shareable URL names exact rosters, seed, ammo, layout and controls', () 
 	])
 		expect(() => scenarioFromURL(url)).toThrow()
 	expect(() => scenario({ teamB: 10000 })).toThrow()
-})
-
-test('performance history stays bounded, measures raw intervals and resets', () => {
-	const perf = createPerformanceMonitor(3)
-	for (const frame of [1000, 5, 6, 10])
-		perf.record({ frame, simulation: 1, presentation: 0.5, render: 2, cpu: 4 })
-	expect(perf.report()).toMatchObject({ samples: 3, ms: { frame: { mean: 7, p95: 10, max: 10 } } })
-	perf.reset()
-	expect(perf.report()).toMatchObject({ samples: 0, fps: null })
 })

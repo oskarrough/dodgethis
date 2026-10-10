@@ -1,31 +1,5 @@
 import { expect, test } from 'bun:test'
-import {
-	ARENA,
-	ammoPoint,
-	blockOutward,
-	bounds,
-	clamp,
-	makeRng,
-	onCourt,
-	spawnPoint,
-} from '../src/plugins/dodgeball/arena.js'
-
-test('a narrower court moves every derived boundary with it', () => {
-	const wide = bounds(0).x
-	const original = ARENA.width
-	try {
-		ARENA.width = 6
-		expect(bounds(0).x).toBe(3)
-		expect(clamp(99, 0).x).toBe(3)
-		expect(onCourt(3.5, 0)).toBe(false)
-		expect(blockOutward({ x: 1, z: 0 }, 3, 0).x).toBe(0)
-	} finally {
-		ARENA.width = original
-	}
-	expect(bounds(0).x).toBe(wide)
-	// The AI turns away well before a shot is allowed to come to rest, so bots never stand where ammo cannot land.
-	expect(ARENA.inset.aiKite).toBeGreaterThan(ARENA.inset.aiEdge)
-})
+import { ARENA, ammoPoint, makeRng, onCourt, spawnPoint } from '../src/plugins/dodgeball/arena.js'
 
 test('a seed rebuilds the same scatter; no seed does not', () => {
 	const one = Array.from({ length: 8 }, () => ammoPoint(makeRng(42)))

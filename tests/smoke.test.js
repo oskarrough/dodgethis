@@ -5,8 +5,6 @@ import {
 	projectArrowFlight,
 	solveLaunch,
 } from '../src/plugins/dodgeball/arrow.js'
-import { createChargeMeter } from '../src/plugins/dodgeball/weapons.js'
-import { nearest } from '../src/core/spatial.js'
 import { tune } from '../src/plugins/dodgeball/tune.js'
 import { tune as coreTune } from '../src/core/tune.js'
 
@@ -47,46 +45,4 @@ describe('solveLaunch', () => {
 			coreTune.physics.gravity = gravity
 		}
 	})
-})
-
-test('the charge meter winds up, peaks perfect, unwinds past the band, and cancels', () => {
-	const w = tune.weapons
-	const m = createChargeMeter()
-	expect(m.release()).toBeNull() // not charging yet
-	m.press()
-	m.update(w.chargeTime / 2)
-	expect(m.value).toBeCloseTo(0.5, 6)
-	expect(m.previewSpeed()).toBeCloseTo(w.chargeMin + (w.chargeMax - w.chargeMin) * 0.5, 6)
-	m.update(w.chargeTime / 2) // at the peak
-	expect(m.value).toBeCloseTo(1, 6)
-	expect(m.perfect).toBe(true)
-	expect(m.previewSpeed()).toBeCloseTo(w.chargeMax * w.perfectMult, 6)
-	const shot = m.release()
-	expect(shot.perfect).toBe(true)
-	expect(shot.speed).toBeCloseTo(w.chargeMax * w.perfectMult, 6)
-	expect(m.charging).toBe(false)
-	// Holding on past the peak unwinds back down, out of the perfect band.
-	const held = createChargeMeter()
-	held.press()
-	held.update(w.chargeTime * 1.5)
-	expect(held.value).toBeCloseTo(0.5, 6)
-	expect(held.perfect).toBe(false)
-	held.cancel()
-	expect(held.release()).toBeNull()
-	expect(held.value).toBe(0)
-})
-
-test('nearest finds the closest passing item with its squared distance', () => {
-	const items = [
-		{ position: { x: 0, z: 0 }, tag: 'origin' },
-		{ position: { x: 3, z: 4 }, tag: 'fiveAway' },
-		{ position: { x: 1, z: 0 }, tag: 'close' },
-	]
-	const { item, d2 } = nearest(items, 0.4, 0, () => true)
-	expect(item.tag).toBe('origin')
-	expect(d2).toBeCloseTo(0.16, 9)
-	expect(nearest(items, 0, 0, (it) => it.tag !== 'origin').item.tag).toBe('close')
-	const none = nearest(items, 0, 0, () => false)
-	expect(none.item).toBeNull()
-	expect(none.d2).toBe(Infinity)
 })

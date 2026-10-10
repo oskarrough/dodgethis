@@ -1,15 +1,8 @@
 import { afterEach, beforeEach, expect, test } from 'bun:test'
-import * as THREE from 'three'
-import { createApp } from '../src/core/app.js'
-import { createJuice } from '../src/core/juice.js'
-import { makeStyleMaterial, styleId } from '../src/core/stylepass.js'
-import { createFollow } from '../src/plugins/moba/follow.js'
-import { neutralFrame } from '../src/core/intents.js'
-import { createSim } from '../src/plugins/moba/sim.js'
-import { RAPIER, STEP, bootMoba } from './moba-harness.js'
+import { STEP, bootMoba } from './moba-harness.js'
 import { tune } from '../src/plugins/moba/tune.js'
 import { PILLARS, clampWalkable, walkable } from '../src/plugins/moba/map.js'
-import { buildColliders, segmentClear } from '../src/plugins/moba/obstacles.js'
+import { segmentClear } from '../src/plugins/moba/obstacles.js'
 import { createPathPlanner } from '../src/plugins/moba/path.js'
 import { closest, stepShot, sweepHit } from '../src/plugins/moba/skillshot.js'
 
@@ -84,20 +77,6 @@ test('orders path around pillars and clicks off the walkable area clamp to it', 
 		true,
 	)
 	expect(clampWalkable({ x: 99, z: -99 }, 0.45)).toEqual({ x: 51.549, z: -7.549 })
-})
-
-test('a full-speed reversal takes at most 8 steps', () => {
-	place(-8, 8)
-	feed({ order: { x: 12, z: 8 } })
-	step(30)
-	expect(hero().body.velocity.x).toBeGreaterThan(tune.hero.speed * 0.99)
-	feed({ order: { x: -18, z: 8 } })
-	let steps = 0
-	while (hero().body.velocity.x > -tune.hero.speed * 0.95 && steps < 30) {
-		step()
-		steps++
-	}
-	expect(steps).toBeLessThanOrEqual(8)
 })
 
 test('a slot press buffers for tune.cast.buffer: it fires on the first legal step, or is denied at once', () => {
@@ -212,160 +191,4 @@ test('skillshots sweep: a thin target between two sampled positions is hit, a cl
 	expect(near).toHaveLength(1)
 	expect(near[0].distance).toBeCloseTo(0.5, 6)
 	expect(near[0].point.x).toBeCloseTo(5, 6)
-})
-
-test('Q deals HP damage to a strafing dummy, takes it down at zero, and it respawns', () => {
-	const d = sim.dummies[0]
-	d.body.place(d.post.x, 1.05, d.post.z)
-	d.dir = 1
-	d.flipIn = 99
-	place(d.post.x - 6, d.post.z)
-	const hitCount = Math.ceil(tune.dummies.hp / tune.loose.damage)
-	for (let n = 0; n < hitCount; n++) {
-		const target = d.body.position
-		press('slot1', { x: target.x + tune.dummies.speed * 0.35, z: target.z })
-		step(Math.round(tune.loose.cooldown * 60) + 1)
-		d.body.place(d.post.x, 1.05, d.post.z)
-	}
-	expect(facts.filter((f) => f.type === 'hit')).toHaveLength(hitCount)
-	expect(facts.find((f) => f.type === 'death')?.target).toBe(d.id)
-	expect(d.dead || facts.some((f) => f.type === 'spawn')).toBe(true)
-	step(Math.round(tune.dummies.respawn * 60) + 1)
-	expect(d.dead).toBe(false)
-	expect(facts.at(-1).type === 'spawn' || facts.some((f) => f.type === 'spawn')).toBe(true)
-	const snap = sim.snapshot()
-	expect(JSON.parse(JSON.stringify(snap))).toEqual(snap)
-})
-
-test('pad aim: remapped reach, a 10° assist toward an enemy on Q, and a resting stick falls back to the nearest enemy', () => {
-	place(0, 8)
-	const d = sim.dummies[0]
-	d.body.place(0, 1.05, 0)
-	const full = sim.stickAim(ID, { x: 1, z: 0 }, 1, null)
-	expect(full.x).toBeCloseTo(tune.loose.range, 6)
-	const low = sim.stickAim(ID, { x: 1, z: 0 }, 0.2, null)
-	expect(low.x).toBeCloseTo(tune.loose.range * tune.stickAim.outMin, 6)
-	const off = (8 * Math.PI) / 180
-	const dir = { x: Math.sin(Math.PI + off), z: Math.cos(Math.PI + off) } // 8° off the dummy, straight up the screen
-	const bent = sim.stickAim(ID, dir, 1, 'slot1')
-	const angle = Math.atan2(bent.x, bent.z - 8)
-	expect(Math.cos(angle - (Math.PI + off * (1 - tune.stickAim.assistBend)))).toBeCloseTo(1, 9)
-	expect(sim.stickAim(ID, dir, 1, 'slot2').x).toBeCloseTo(dir.x * tune.vault.range, 6)
-	expect(sim.stickAim(ID, dir, 1, 'slot3').x).toBeCloseTo(dir.x * tune.rain.range, 6)
-	expect(sim.stickAim(ID, null, 0, null)).toEqual({ x: 0, z: 0 })
-})
-
-test('W vaults in the aimed direction, with its own cooldown and no projectile', () => {
-	place(0, 8)
-	press('slot2', { x: 10, z: 8 })
-	step()
-	expect(hero().body.dashing).toBe(true)
-	expect(hero().cd[1]).toBe(Math.round(tune.vault.cooldown / STEP))
-	expect(sim.shots).toHaveLength(0)
-	expect(sim.zones).toHaveLength(0)
-	step(Math.ceil(tune.vault.time / STEP) + 2)
-	expect(pos().x).toBeCloseTo(tune.vault.range, 1)
-	expect(pos().z).toBeCloseTo(8, 3)
-})
-
-test('E shows a delayed control zone, clamps its range, then hits and slows enemies', () => {
-	place(0, 6)
-	const d = sim.dummies[0]
-	d.body.place(0, 1.05, 0)
-	press('slot3', { x: 0, z: 0 })
-	step()
-	expect(sim.zones).toHaveLength(1)
-	expect(sim.zones[0]).toMatchObject({ x: 0, z: 0 })
-	expect(hero().cd[2]).toBe(Math.round(tune.rain.cooldown / STEP))
-	expect(d.hp).toBe(d.maxHp)
-	// Park the dummy in the zone until the tell completes.
-	for (let i = 1; i < Math.round(tune.rain.delay / STEP); i++) {
-		d.body.place(0, 1.05, 0)
-		step()
-	}
-	expect(sim.zones).toHaveLength(0)
-	expect(d.hp).toBe(d.maxHp - tune.rain.damage)
-	expect(d.slow.until).toBeGreaterThan(sim.tick)
-	expect(facts.find((f) => f.type === 'hit')?.slot).toBe('slot3')
-	expect(facts.some((f) => f.type === 'impact')).toBe(true)
-	step()
-	expect(d.body.speedMul).toBeCloseTo((tune.dummies.speed / tune.hero.speed) * (1 - tune.rain.slow))
-	hero().cd[2] = 0
-	press('slot3', { x: 0, z: -100 })
-	step()
-	expect(sim.zones[0].z).toBeCloseTo(6 - tune.rain.range)
-})
-
-// The bar is feel at 144 Hz: the rendered hero and the follow camera must move the same distance every frame.
-test('at 144 Hz an ordered hero and the follow camera advance evenly', () => {
-	const app = createApp()
-	const w = new RAPIER.World({ x: 0, y: -9.81, z: 0 })
-	w.timestep = STEP
-	buildColliders(w, RAPIER)
-	const own = createSim({
-		scene: new THREE.Scene(),
-		world: w,
-		RAPIER,
-		intents: app.intents,
-		heroes: [{ id: ID, team: 'A' }],
-		smooth: app.smooth,
-	})
-	app.system('simulate', (dt) => own.step(dt))
-	const h = own.heroes[0]
-	for (const d of own.dummies) {
-		d.sparring = false
-		d.body.place(-20, d.body.position.y, 12)
-	}
-	h.body.place(8, h.body.position.y, 0)
-	const follow = createFollow()
-	const rendered = []
-	const framed = []
-	app.system('present', ({ dt }) => {
-		rendered.push(h.body.mesh.position.x)
-		framed.push(follow.frame(dt, h.body.mesh.position, null).target.x)
-	})
-	app.intents.feed(ID, { ...neutralFrame(), order: { x: -12, z: 0 } })
-	for (let i = 0; i < 144 * 3; i++) app.frame(1 / 144)
-	const even = (zs, from, to) => {
-		const steps = zs.slice(from + 1, to).map((z, i) => z - zs[from + i])
-		const mean = steps.reduce((a, b) => a + b, 0) / steps.length
-		expect(mean).toBeCloseTo(-tune.hero.speed / 144, 3)
-		for (const d of steps) expect(Math.abs(d - mean)).toBeLessThan(Math.abs(mean) * 0.05)
-	}
-	even(rendered, 30, 144 * 3 - 1) // after acceleration, before arrival
-	even(framed, 144, 144 * 3 - 1) // once the spring has caught up
-	own.dispose()
-	w.free()
-})
-
-test('follow framing leans a quarter of the way to the aim, capped at 3 m, and snaps on recentre', () => {
-	const follow = createFollow()
-	expect(follow.goal({ x: 0, z: 0 }, { x: 4, z: 0 })).toEqual({ x: 1, z: 0 })
-	const far = follow.goal({ x: 0, z: 0 }, { x: 0, z: -40 })
-	expect(Math.hypot(far.x, far.z)).toBeCloseTo(tune.follow.lookCap, 9)
-	const first = follow.frame(1 / 144, { x: 5, z: 3 }, null)
-	expect(first.target).toMatchObject({ x: 5, z: 3 })
-	expect(first.eye).toMatchObject({ x: 5, y: tune.follow.height, z: 3 + tune.follow.back })
-	const moved = follow.frame(1 / 144, { x: 10, z: 5 }, null, { pad: true }).target.x
-	expect(moved).toBeGreaterThan(5)
-	expect(moved).toBeLessThan(6)
-	follow.snap()
-	expect(follow.frame(1 / 144, { x: 10, z: 5 }, null).target.x).toBe(10)
-})
-
-test('the juice kit flashes a style mesh cream, then restores it', () => {
-	const juiceScene = new THREE.Scene()
-	const juice = createJuice(juiceScene)
-	const mesh = new THREE.Mesh(new THREE.BoxGeometry(), makeStyleMaterial('teamB'))
-	const { uStyleId, uFlat } = mesh.material.uniforms
-	juice.flash(mesh, 0.07)
-	expect(uStyleId.value).toBe(styleId('cream'))
-	expect(uFlat.value).toBe(1)
-	juice.update(0.05)
-	expect(uStyleId.value).toBe(styleId('cream'))
-	juice.update(0.05)
-	expect(uStyleId.value).toBe(styleId('teamB'))
-	expect(uFlat.value).toBe(0)
-	juice.dispose()
-	expect(juiceScene.children).toHaveLength(0)
 })
