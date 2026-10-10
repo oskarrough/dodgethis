@@ -8,194 +8,31 @@
 			name="description"
 			content="Three distinct persistent lobbies with destination windows, miniature worlds and map prints. Floating bot holograms, shootable horseshoe magnets and painted hero cards."
 		/>
+		<link rel="stylesheet" href="/docs/page.css" />
 		<style>
-			* {
-				box-sizing: border-box;
-			}
-			body {
-				margin: 0;
-				background: #faf7ef;
-				color: #2e3d46;
-				font:
-					16px/1.55 system-ui,
-					sans-serif;
-			}
-			main {
-				max-width: 1360px;
-				margin: auto;
-				padding: 40px 28px 55px;
-			}
-			.eyebrow {
-				font-size: 12px;
-				letter-spacing: 0.15em;
-				text-transform: uppercase;
-				color: #6e796f;
-				margin: 0 0 10px;
-			}
-			h1 {
-				font-size: clamp(32px, 4.5vw, 50px);
-				line-height: 1.1;
-				letter-spacing: -0.04em;
-				margin: 0 0 18px;
-			}
-			h2 {
-				font-size: 30px;
-				line-height: 1.15;
-				letter-spacing: -0.025em;
-				margin: 0 0 18px;
-			}
-			h3 {
-				font-size: 16px;
-				margin: 0 0 6px;
-			}
-			p {
-				margin: 0 0 16px;
-			}
-			.intro {
-				max-width: 810px;
-			}
-			a {
-				color: inherit;
-				text-underline-offset: 3px;
-			}
-			nav {
-				display: flex;
-				gap: 20px;
-				flex-wrap: wrap;
-				font-size: 14px;
-				margin: 22px 0 28px;
-			}
-			.shared {
-				background: #eceee5;
-				padding: 15px 19px;
-				border-left: 3px solid #70826e;
-				max-width: 940px;
-				font-size: 14px;
-			}
-			.shared p {
-				margin: 0;
-			}
-			.direction {
-				display: grid;
-				grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr);
-				gap: 34px;
-				align-items: center;
-				padding: 32px 0;
-				border-bottom: 1px solid #ddd8cd;
-			}
-			.art {
-				display: block;
-				min-width: 0;
-			}
-			.art img {
-				width: 100%;
-				height: auto;
-				display: block;
-				border-radius: 7px;
-				background: #dad6ca;
-			}
-			.pitch {
-				max-width: 410px;
-			}
-			.next {
-				background: #efede3;
-				padding: 15px 17px;
-				margin: 22px 0;
-			}
-			.next p {
-				font-size: 14px;
-				margin: 0;
-			}
-			.build {
-				font-size: 14px;
-				color: #65716d;
-			}
-			.download {
-				font-size: 13px;
-				color: #65716d;
-			}
-			details {
-				margin: 30px 0 20px;
-				border: 1px solid #ddd8cd;
-				border-radius: 7px;
-				padding: 17px 20px;
-			}
-			summary {
-				font-size: 18px;
-				cursor: pointer;
-				font-weight: 650;
-			}
-			details > p {
-				font-size: 14px;
-				margin: 16px 0;
-			}
-			.v1 {
-				display: grid;
-				grid-template-columns: 1fr 1fr;
-				gap: 25px;
-				margin: 20px 0 0;
-			}
-			figure {
-				margin: 0;
-			}
-			figure img {
-				width: 100%;
-				height: auto;
-				display: block;
-				border-radius: 5px;
-			}
-			figcaption {
-				font-size: 14px;
-				margin-top: 10px;
-			}
-			footer {
-				font-size: 13px;
-				color: #65716d;
-				margin-top: 25px;
-			}
-			footer p {
-				margin-bottom: 8px;
-			}
-			@media (max-width: 760px) {
-				main {
-					padding: 26px 16px 40px;
-				}
-				.direction {
-					grid-template-columns: 1fr;
-					gap: 20px;
-				}
-				.pitch {
-					max-width: 100%;
-				}
-				.v1 {
-					grid-template-columns: 1fr;
-				}
-				nav {
-					gap: 14px;
-				}
-				.next {
-					margin: 17px 0;
-				}
+			.sticker {
+				padding: 14px 16px;
 			}
 		</style>
 	</head>
-	<body>
+	<body class="page">
 		<main>
 			<header>
-				<p class="eyebrow">dodgethis / lobby / v2</p>
+				<p class="small">dodgethis / lobby / v2</p>
 				<h1>Three homes. Two destinations.</h1>
-				<p class="intro">
+				<p class="lede">
 					Each lobby is a world of its own, kept intact whichever map you pick. A window, a
 					miniature or a printed sheet shows where the match will take you. The new directions keep
 					the floating bots and horseshoe magnets, with painted cards and a quieter, stranger sense
 					of place.
 				</p>
 				<nav>
-					<a href="#03-counterweight-v2">Counterweight</a
-					><a href="#04-pocket-weather-v2">Pocket weather</a><a href="#05-printyard-v2">Printyard</a
-					><a href="#v1">Earlier v1</a>
+					<a href="#03-counterweight-v2">Counterweight</a>
+					<a href="#04-pocket-weather-v2">Pocket weather</a>
+					<a href="#05-printyard-v2">Printyard</a>
+					<a href="#v1">Earlier v1</a>
 				</nav>
-				<aside class="shared">
+				<aside class="sticker">
 					<p>
 						Shared functions: three blue and three red seat plates, one solid player and five
 						floating translucent bot projections; a central sparring space; three shootable U
@@ -204,103 +41,103 @@
 					</p>
 				</aside>
 			</header>
-			<section class="direction" id="03-counterweight-v2">
-				<a class="art" href="03-counterweight-v2.webp" target="_blank" rel="noopener"
-					><img
-						src="03-counterweight-v2.webp"
-						width="1386"
-						height="1294"
-						alt="Counterweight lobby: six team plates, floating bot holograms, shootable horseshoe magnets, painted hero cards and A weighted stone window shows the next map. The room, sky and light stay fixed; only the view and destination label change."
-				/></a>
-				<div class="pitch">
-					<p class="eyebrow">v2 / 01</p>
-					<h2>Counterweight</h2>
+
+			<section class="sticker" id="03-counterweight-v2">
+				<h2><span class="num">1</span>Counterweight</h2>
+				<p class="small">v2 / 01</p>
+				<figure>
+					<a href="03-counterweight-v2.webp" target="_blank" rel="noopener"
+						><img
+							src="03-counterweight-v2.webp"
+							width="1386"
+							height="1294"
+							alt="Counterweight lobby: six team plates, floating bot holograms, shootable horseshoe magnets, painted hero cards and A weighted stone window shows the next map. The room, sky and light stay fixed; only the view and destination label change."
+					/></a>
+				</figure>
+				<p>
+					A rectangular room hangs beneath a vast empty sky. A blunt stone wall, exposed line and
+					enormous counterweight make the window feel like a working part of the home.
+				</p>
+				<div class="sticker">
+					<h3>Showing the next map</h3>
 					<p>
-						A rectangular room hangs beneath a vast empty sky. A blunt stone wall, exposed line and
-						enormous counterweight make the window feel like a working part of the home.
+						Only the view through the weighted window and its paper destination label change. Shown:
+						Overthrow.
 					</p>
-					<div class="next">
-						<h3>Showing the next map</h3>
-						<p>
-							Only the view through the weighted window and its paper destination label change.
-							Shown: Overthrow.
-						</p>
-					</div>
-					<p class="build">
-						Stone blocks, one aperture, simple cylinders and a line. Keep the floor quiet; the
-						mechanism gives the place its identity.
-					</p>
-					<a class="download" href="03-counterweight-v2.webp" download
-						>Download WebP · 1386 × 1294</a
-					>
 				</div>
+				<p class="small">
+					Stone blocks, one aperture, simple cylinders and a line. Keep the floor quiet; the
+					mechanism gives the place its identity.
+				</p>
+				<a class="chip" href="03-counterweight-v2.webp" download>Download WebP · 1386 × 1294</a>
 			</section>
-			<section class="direction" id="04-pocket-weather-v2">
-				<a class="art" href="04-pocket-weather-v2.webp" target="_blank" rel="noopener"
-					><img
-						src="04-pocket-weather-v2.webp"
-						width="1386"
-						height="1294"
-						alt="Pocket weather lobby: six team plates, floating bot holograms, shootable horseshoe magnets, painted hero cards and A small turning diorama in a ceramic weather bowl previews the next map. Only the bowl’s miniature, sky cap and label change."
-				/></a>
-				<div class="pitch">
-					<p class="eyebrow">v2 / 02</p>
-					<h2>Pocket weather</h2>
+
+			<section class="sticker" id="04-pocket-weather-v2">
+				<h2><span class="num">2</span>Pocket weather</h2>
+				<p class="small">v2 / 02</p>
+				<figure>
+					<a href="04-pocket-weather-v2.webp" target="_blank" rel="noopener"
+						><img
+							src="04-pocket-weather-v2.webp"
+							width="1386"
+							height="1294"
+							alt="Pocket weather lobby: six team plates, floating bot holograms, shootable horseshoe magnets, painted hero cards and A small turning diorama in a ceramic weather bowl previews the next map. Only the bowl’s miniature, sky cap and label change."
+					/></a>
+				</figure>
+				<p>
+					A huge ceramic saucer sits in magnetic cradles. Players assemble on its plain floor around
+					a small turning world held in a weather bowl.
+				</p>
+				<div class="sticker">
+					<h3>Showing the next map</h3>
 					<p>
-						A huge ceramic saucer sits in magnetic cradles. Players assemble on its plain floor
-						around a small turning world held in a weather bowl.
+						Only the bowl’s miniature map, little sky cap and destination label change. Shown:
+						Flagfall.
 					</p>
-					<div class="next">
-						<h3>Showing the next map</h3>
-						<p>
-							Only the bowl’s miniature map, little sky cap and destination label change. Shown:
-							Flagfall.
-						</p>
-					</div>
-					<p class="build">
-						One shallow dish, flat floor, curved U cradles and a tiny map model. The diorama stays
-						outside the sparring space.
-					</p>
-					<a class="download" href="04-pocket-weather-v2.webp" download
-						>Download WebP · 1386 × 1294</a
-					>
 				</div>
+				<p class="small">
+					One shallow dish, flat floor, curved U cradles and a tiny map model. The diorama stays
+					outside the sparring space.
+				</p>
+				<a class="chip" href="04-pocket-weather-v2.webp" download>Download WebP · 1386 × 1294</a>
 			</section>
-			<section class="direction" id="05-printyard-v2">
-				<a class="art" href="05-printyard-v2.webp" target="_blank" rel="noopener"
-					><img
-						src="05-printyard-v2.webp"
-						width="1386"
-						height="1294"
-						alt="Printyard lobby: six team plates, floating bot holograms, shootable horseshoe magnets, painted hero cards and A blunt roller stamps the chosen map onto a hanging paper sheet. The folded-stone yard stays fixed; the print and destination label change."
-				/></a>
-				<div class="pitch">
-					<p class="eyebrow">v2 / 03</p>
-					<h2>Printyard</h2>
+
+			<section class="sticker" id="05-printyard-v2">
+				<h2><span class="num">3</span>Printyard</h2>
+				<p class="small">v2 / 03</p>
+				<figure>
+					<a href="05-printyard-v2.webp" target="_blank" rel="noopener"
+						><img
+							src="05-printyard-v2.webp"
+							width="1386"
+							height="1294"
+							alt="Printyard lobby: six team plates, floating bot holograms, shootable horseshoe magnets, painted hero cards and A blunt roller stamps the chosen map onto a hanging paper sheet. The folded-stone yard stays fixed; the print and destination label change."
+					/></a>
+				</figure>
+				<p>
+					The home is a heavy sheet of folded stone. A blunt roller prints the next destination onto
+					a hanging deckled sheet: a physical promise of where you are going.
+				</p>
+				<div class="sticker">
+					<h3>Showing the next map</h3>
 					<p>
-						The home is a heavy sheet of folded stone. A blunt roller prints the next destination
-						onto a hanging deckled sheet: a physical promise of where you are going.
+						Only the map picture on the sheet and its destination label change. Shown: Overthrow.
 					</p>
-					<div class="next">
-						<h3>Showing the next map</h3>
-						<p>
-							Only the map picture on the sheet and its destination label change. Shown: Overthrow.
-						</p>
-					</div>
-					<p class="build">
-						Broad angular planes, one cylinder and a hanging image plane. The yard keeps its shape
-						and light for either map.
-					</p>
-					<a class="download" href="05-printyard-v2.webp" download>Download WebP · 1386 × 1294</a>
 				</div>
+				<p class="small">
+					Broad angular planes, one cylinder and a hanging image plane. The yard keeps its shape and
+					light for either map.
+				</p>
+				<a class="chip" href="05-printyard-v2.webp" download>Download WebP · 1386 × 1294</a>
 			</section>
+
 			<details id="v1">
 				<summary>v1 · the earlier day and dusk isles</summary>
 				<p>
 					Kept for reference. These preceded the shared-home rule and used solid seats, banners and
 					difficulty stones; those choices are superseded by v2.
 				</p>
-				<div class="v1">
+				<div>
 					<figure>
 						<a href="01-day-lobby.webp" target="_blank" rel="noopener"
 							><img
@@ -325,17 +162,18 @@
 					</figure>
 				</div>
 			</details>
+
 			<footer>
-				<p>
+				<p class="small">
 					The shown map is an example inside each concept’s destination device. Overthrow shows
 					bright day isles; Flagfall shows the night violet garden. Lobby geometry, floor, sky and
 					light stay fixed. These are buildable concept targets, not exact collision plans or
 					imported gameplay art.
 				</p>
-				<p>
+				<p class="small">
 					References: <a href="lobby-before.png">current camera, holograms and magnets</a>,
-					<a href="../splash/">splash style</a>, <a href="../frames/">painted cards</a>.
-					Built-in image generator; <a href="prompts-v2.json">v2 prompts and output details</a> ·
+					<a href="../splash/">splash style</a>, <a href="../frames/">painted cards</a>. Built-in
+					image generator; <a href="prompts-v2.json">v2 prompts and output details</a> ·
 					<a href="prompts.json">v1 prompts</a>. No game code changed.
 				</p>
 			</footer>
