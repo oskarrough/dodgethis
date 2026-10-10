@@ -68,28 +68,44 @@ export const tune = {
 		chalkSegments: 96,
 		surroundSize: 600,
 		surroundDrop: 12,
-		mesaSpacing: 22,
-		mesaRows: 3,
-		mesaRadius: 7,
-		mesaHeight: 5,
-		mesaVariation: 0.2,
-		mesaTaper: 1.3,
-		mesaSegments: 7,
-		colors: {
-			tarmac: '#e4dfcf',
-			chalk: '#f5f1e5',
-			rock: '#aaa49b',
-			rockDark: '#656575',
-			surround: '#555669',
-			mesa: '#536c6b',
+		// Overthrow by day (isle.js): the court is the flat top of a stone isle over a sea of cloud.
+		// Metres; everything applies on restart.
+		cliff: {
+			depth: 46, // the face falls out of frame into cloud
+			levels: 9, // stacked ledges, finer near the rim
+			flare: 0.2, // outward lean per metre of drop: wider at the bottom, so it reads from above
+			ledge: 0.9, // the odd outward step between levels
+			column: 0.55, // in-out jitter between neighbouring columns
+			lipMin: 0.12, // the moss lip reaches this far onto the court's margin…
+			lipMax: 0.7, // …to this, never past the margin into the walkable court
+			mossMin: 0.2, // and hangs this far down the face…
+			mossMax: 1.1, // …to this, broken along the rim
+			strata: 1.7, // ink strata spacing on vertical faces
+			strataInk: 0.4,
+			rimInk: 0.035, // the thin ink line along the cliff top
 		},
-		palette: { page: 0x555669, courtShade: 0x708883, scenery: 0x899b9b },
+		haze: { top: 1.5, bottom: 30, power: 0.85, max: 0.94, near: 18, far: 120 },
+		colors: {
+			tarmac: '#cacc98', // the court: butter-green
+			chalk: '#babd89', // worn stone inlays, under 10% darker than the court
+			moss: '#a3a35e',
+			mossShade: '#76784e',
+			stoneLit: '#9a8396',
+			stone: '#7d6e93',
+			stoneShade: '#5e5179',
+			ink: '#26445f',
+			haze: '#f2cdbd',
+		},
+		// One low warm sun from the upper left: lit faces warm, shade violet.
+		light: { dir: [-0.7, 0.62, -0.25] },
+		palette: { page: 0xf2cdbd, courtShade: 0x708883, scenery: 0x899b9b },
 	},
 	// Flagfall: two lanes on the shared court in the shallows. All geometry applies on restart.
 	flagfall: {
 		name: 'Flagfall',
 		scale: 1, // one multiplier for every layout metre; applies on restart
-		palette: { page: 0x536e79 },
+		palette: { page: 0x536e79, courtShade: 0x708883, scenery: 0x899b9b },
+		colors: { tarmac: '#e4dfcf', chalk: '#f5f1e5', rock: '#aaa49b', rockDark: '#656575' },
 		rockDepth: 1.8,
 		// Flagfall scenery only; metres before map scale, all apply on restart.
 		finish: {

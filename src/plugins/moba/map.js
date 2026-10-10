@@ -214,6 +214,7 @@ diffuseColor.rgb *= 1.0 - coverShade * (1.0 - max(0.0, dot(n, normalize(vec3(0.4
 		])
 			terrain[key] *= scale
 		terrain.rockDepth = layout.settings.rockDepth * scale
+		terrain.colors = layout.settings.colors
 	}
 	const bounds = layout.bounds
 	const chalkLayout = { lines: [], circles: [] }
@@ -463,6 +464,9 @@ diffuseColor.rgb *= 1.0 - coverShade * (1.0 - max(0.0, dot(n, normalize(vec3(0.4
 		for (const resource of owned) resource.dispose()
 		uncollide()
 	}
-	dispose.update = (dt) => water?.update(dt)
+	dispose.update = (dt) => {
+		water?.update(dt)
+		unterrain?.update?.(dt)
+	}
 	return dispose
 }

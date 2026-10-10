@@ -3,6 +3,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'
 import { FORWARD_LAYER, makeStyleMaterial } from '../../core/stylepass.js'
 import { createFences, floorOutline, floorShape } from './lobby-floor.js'
 import { loadFlagfallTile } from './flagfall-water.js'
+import { createIsle } from './isle.js'
 
 // A presentation skin, never a source of walking bounds or colliders. The torn edge sits
 // outside the entire playable rectangle even at the extremes of the restart controls.
@@ -23,6 +24,7 @@ export function createMatchTerrain(
 		seed: s.seed,
 	}
 	const meshes = []
+	let skin = null
 	const owned = new Set()
 	const own = (resource) => {
 		owned.add(resource)
@@ -31,11 +33,14 @@ export function createMatchTerrain(
 	const flat = (color) =>
 		own(new THREE.MeshBasicMaterial({ color, depthWrite: false, side: THREE.DoubleSide }))
 	const finish = water ? layout.settings.finish : null
+	// Overthrow by day: the court tops a stone isle over cloud (isle.js).
+	const isle = !water && !background && s.cliff
 	const scale = layout.settings?.scale ?? 1
 	const ground = flat(s.colors.tarmac)
 	// The renderer survives map switches; closure contents aren't in Three's default
 	// program key, so never reuse Flagfall's shader for Overthrow (or vice versa).
-	ground.customProgramCacheKey = () => (finish ? 'flagfall-court-finish' : 'quiet-court')
+	ground.customProgramCacheKey = () =>
+		finish ? 'flagfall-court-finish' : isle ? 'overthrow-court' : 'quiet-court'
 	const courtTile = finish
 		? loadFlagfallTile(finish.courtAsset, finish.anisotropy, own, finish.courtMean)
 		: null
@@ -119,6 +124,12 @@ export function createMatchTerrain(
 	ground.onBeforeCompile = (shader) => {
 		shader.uniforms.courtScale = { value: s.patchScale }
 		shader.uniforms.courtContrast = { value: s.patchContrast }
+		if (isle)
+			Object.assign(shader.uniforms, {
+				courtEdge: { value: new THREE.Vector2(extent.halfX, extent.halfZ) },
+				courtMoss: { value: new THREE.Color(s.colors.moss) },
+				courtLip: { value: new THREE.Vector2(s.cliff.lipMin, Math.min(s.cliff.lipMax, s.margin)) },
+			})
 		if (finish)
 			Object.assign(shader.uniforms, {
 				courtTile: { value: courtTile },
@@ -155,8 +166,19 @@ float courtPatch(vec2 p) {
 				`#include <color_fragment>
  diffuseColor.rgb *= 1.0 - courtContrast * courtPatch(courtPoint / courtScale);
 ${
-	finish
+	isle
 		? `
+// A broken moss lip inside the torn rim, never past the margin into the walkable court.
+vec2 edge = courtEdge - abs(courtPoint);
+float rim = min(edge.x, edge.y);
+float along = courtPoint.x + courtPoint.y * 1.37;
+float lip = mix(courtLip.x, courtLip.y, 0.6 * courtPatch(vec2(along * 1.9, 3.0)) + 0.4 * courtPatch(vec2(along * 5.3, 9.0)));
+diffuseColor.rgb = mix(diffuseColor.rgb, courtMoss, step(rim, lip));
+`
+		: ''
+}${
+					finish
+						? `
 // Luminance only: the tile's warmth must not tint the floor.
 float grain = dot(texture2D(courtTile, courtPoint / courtMetres).rgb, vec3(0.2126, 0.7152, 0.0722)) / courtMean;
 diffuseColor.rgb *= clamp(1.0 + (grain - 1.0) * courtTexture, 1.0 - courtRange, 1.0 + courtRange);
@@ -164,9 +186,12 @@ float pool = exp(-dot(courtPoint / (courtBounds * courtSpread), courtPoint / (co
 diffuseColor.rgb = mix(diffuseColor.rgb, mix(courtCool, courtWarm, pool), courtLight);
 diffuseColor.rgb *= texture2D(contactPrint, vec2(0.5) + vec2(courtPoint.x, -courtPoint.y) / (courtBounds * 2.0)).rgb;
 `
-		: ''
-}`,
+						: ''
+				}`,
 			)
+		if (isle)
+			shader.fragmentShader =
+				'uniform vec2 courtEdge, courtLip;\nuniform vec3 courtMoss;\n' + shader.fragmentShader
 		if (finish)
 			shader.fragmentShader =
 				`
@@ -181,8 +206,7 @@ uniform sampler2D contactPrint;
 	const rock = own(
 		new THREE.MeshBasicMaterial({ vertexColors: true, depthWrite: false, side: THREE.DoubleSide }),
 	)
-	const surround = flat(background?.colors.surround ?? s.colors.surround)
-	const mesa = flat(s.colors.mesa)
+	const surround = background ? flat(background.colors.surround) : null
 	const depth = own(makeStyleMaterial('cream', { flat: true }))
 	const rockDepth = own(makeStyleMaterial('scenery', { flat: true }))
 	// Visible and opaque depth meshes share the exact geometry and transform. Pull only
@@ -198,7 +222,7 @@ uniform sampler2D contactPrint;
 		sheet.renderOrder = -4
 		meshes.push(opaque, sheet)
 	}
-	for (const material of [ground, rock, surround, mesa]) {
+	for (const material of [ground, rock, surround].filter(Boolean)) {
 		material.polygonOffset = true
 		material.polygonOffsetFactor = -1
 		material.polygonOffsetUnits = -4
@@ -243,7 +267,7 @@ diffuseColor.rgb *= (1.0 + stoneGrain * (strata + grain - 0.5)) * (1.0 - wet * s
 		positions.push(p.x, y, p.z)
 		colors.push(color.r, color.g, color.b)
 	}
-	for (let band = 0; band < s.rockBands; band++) {
+	for (let band = 0; band < (isle ? 0 : s.rockBands); band++) {
 		const top = s.groundY - (band / s.rockBands) * s.rockDepth
 		const bottom = s.groundY - ((band + 1) / s.rockBands) * s.rockDepth
 		const ring = (p, level) => ({
@@ -274,12 +298,15 @@ diffuseColor.rgb *= (1.0 + stoneGrain * (strata + grain - 0.5)) * (1.0 - wet * s
 			}
 		}
 	}
-	const rim = new THREE.BufferGeometry()
-	rim.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
-	rim.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3))
-	rim.computeVertexNormals()
-	surface(rim, rock, `${name}-rock`, 0, 0, 0)
-	if (!water)
+	if (isle) skin = createIsle(parent, s, extent, s.light.dir)
+	else {
+		const rim = new THREE.BufferGeometry()
+		rim.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
+		rim.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3))
+		rim.computeVertexNormals()
+		surface(rim, rock, `${name}-rock`, 0, 0, 0)
+	}
+	if (surround)
 		surface(
 			new THREE.PlaneGeometry(s.surroundSize, s.surroundSize).rotateX(-Math.PI / 2),
 			surround,
@@ -288,7 +315,7 @@ diffuseColor.rgb *= (1.0 + stoneGrain * (strata + grain - 0.5)) * (1.0 - wet * s
 			-s.surroundDrop,
 			0,
 		)
-	// The setting changes, never the stage. Quiet dunes or mesas below the same torn edge.
+	// The setting changes, never the stage. Quiet dunes below the same torn edge.
 	if (background) {
 		const geometry = new THREE.PlaneGeometry(
 			s.surroundSize,
@@ -313,33 +340,6 @@ diffuseColor.rgb *= (1.0 + stoneGrain * (strata + grain - 0.5)) * (1.0 - wet * s
 		geometry.setAttribute('color', new THREE.Float32BufferAttribute(duneColors, 3))
 		geometry.computeVertexNormals()
 		surface(geometry, rock, `${name}-dunes`, 0, 0, 0)
-	} else if (!water) {
-		const mesas = []
-		for (let row = 1; row <= s.mesaRows; row++) {
-			for (
-				let x = -bounds.halfX - s.mesaSpacing;
-				x <= bounds.halfX + s.mesaSpacing;
-				x += s.mesaSpacing
-			) {
-				for (const side of [-1, 1]) {
-					const height = s.mesaHeight * (1 + Math.sin(x + row) * s.mesaVariation)
-					mesas.push(
-						new THREE.CylinderGeometry(
-							s.mesaRadius,
-							s.mesaRadius * s.mesaTaper,
-							height,
-							s.mesaSegments,
-						).translate(
-							x + Math.sin(row) * s.mesaRadius,
-							-s.surroundDrop + height / 2,
-							side * (extent.halfZ + row * s.mesaSpacing),
-						),
-					)
-				}
-			}
-		}
-		surface(mergeGeometries(mesas), mesa, `${name}-mesas`, 0, 0, 0)
-		for (const geometry of mesas) geometry.dispose()
 	}
 	const strokes = []
 	const line = (width, length, x, z) =>
@@ -386,8 +386,11 @@ diffuseColor.rgb *= (1.0 + stoneGrain * (strata + grain - 0.5)) * (1.0 - wet * s
 	marks.renderOrder = -3
 	meshes.push(marks)
 	parent.add(...meshes)
-	return () => {
+	const dispose = () => {
 		for (const mesh of meshes) mesh.removeFromParent()
 		for (const resource of owned) resource.dispose()
+		skin?.dispose()
 	}
+	dispose.update = (dt) => skin?.update(dt)
+	return dispose
 }
