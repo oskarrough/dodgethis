@@ -198,7 +198,7 @@ export function createBall({ heroes, targets, vulnerable, obstacles, present, da
 						u.silentUntil = now + ticks(tune.ball.silence)
 						u.attack = null
 					} else {
-						u.cast = null
+						endCast(u, 'ball')
 						u.attack = null
 						u.ballThrow = null
 					}

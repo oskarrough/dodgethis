@@ -19,7 +19,22 @@ export function heroFromManifest(id, { kit = {}, basic = null, ...manifest }) {
 	const basicAbility = resolve(basic)
 	for (const slot of Object.keys(kit))
 		if (!SLOTS.includes(slot)) throw new Error(`MOBA hero ${id}: unknown kit slot ${slot}`)
-	const view = new Proxy({}, { get: (_, key) => tune.heroes[id]?.[key] ?? tune.hero[key] })
+	const baseValue = (key) => tune.heroes[id]?.[key] ?? tune.hero[key]
+	const baseKeys = () => [
+		...new Set([...Object.keys(tune.hero), ...Object.keys(tune.heroes[id] ?? {})]),
+	]
+	const view = new Proxy(
+		{},
+		{
+			get: (_, key) => baseValue(key),
+			has: (_, key) => key in tune.hero || key in (tune.heroes[id] ?? {}),
+			ownKeys: baseKeys,
+			getOwnPropertyDescriptor: (_, key) =>
+				baseKeys().includes(key)
+					? { enumerable: true, configurable: true, value: baseValue(key) }
+					: undefined,
+		},
+	)
 	return {
 		silhouette: 'circle',
 		traits: {},
@@ -47,7 +62,7 @@ export const HEROES = Object.fromEntries(
 	Object.entries(manifests).map(([id, manifest]) => [id, heroFromManifest(id, manifest)]),
 )
 
-// `playable` means "may play" and gates every validator, drafts included. `listed` is
+// `playable` means "may play offline", drafts included. Online validators use `listed`, which is
 // playable and not a draft, the same on every peer whatever the URL says.
 for (const definition of Object.values(HEROES))
 	Object.defineProperties(definition, {

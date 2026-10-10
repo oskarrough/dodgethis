@@ -581,6 +581,8 @@ export function createSim({
 		if (index < 0) return false
 		const hero = heroes[index]
 		ball?.hurt(hero)
+		endCast(hero, 'clear')
+		endStance(hero, 'clear')
 		cancelChannel(hero, 'clear')
 		intents.cancel(id)
 		readySeats?.release(id, t)

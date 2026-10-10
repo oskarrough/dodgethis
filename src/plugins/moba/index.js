@@ -54,6 +54,7 @@ const FACTS = [
 	'cast',
 	'projectile',
 	'blocked',
+	'cushion',
 	'hit',
 	'nearMiss',
 	'death',
@@ -95,7 +96,10 @@ export default function moba(app, map) {
 		start(run, { roster = [], options = {} } = {}) {
 			const isLobby = !!options.lobby
 			const query = new URLSearchParams(window.location.search)
-			const setup = parseMatchSetup(query, options.setup ?? options)
+			const setup = parseMatchSetup(query, {
+				...(options.setup ?? options),
+				shared: app.session.shared,
+			})
 			const kind = isLobby ? 'lobby' : setup.map
 			const match = matchRecipe(kind)
 			const { layout, pieces, palette, debugTune, online } = match
@@ -223,6 +227,14 @@ export default function moba(app, map) {
 						: roster.length
 							? roster
 							: practiceRoster(local, difficulty, setup.picks, setup.seed)
+			if (app.session.shared)
+				for (const seat of seats)
+					if (!HEROES[seat.heroId]?.listed) {
+						console.warn(
+							`MOBA: invalid online hero=${JSON.stringify(seat.heroId)}; using ${DEFAULT_HERO}`,
+						)
+						seat.heroId = DEFAULT_HERO
+					}
 			setup.heroId = seats.find((seat) => seat.id === local).heroId
 			const lobbySpawns = {}
 			if (isLobby) {
@@ -749,7 +761,7 @@ export default function moba(app, map) {
 				},
 				capacity: tune.lobby.capacity,
 				joinData: () => ({ heroId: hero.heroId }),
-				validJoinData: (data) => data?.heroId == null || HEROES[data.heroId]?.playable === true,
+				validJoinData: (data) => data?.heroId == null || HEROES[data.heroId]?.listed === true,
 				epoch,
 				loadingHero: () => ({ x: hero.body.position.x, z: hero.body.position.z }),
 				roomLobby: isLobby,
@@ -841,7 +853,7 @@ function validPlan(next, local) {
 			(seat) =>
 				typeof seat?.id === 'string' &&
 				['A', 'B'].includes(seat.team) &&
-				HEROES[seat.heroId]?.playable &&
+				HEROES[seat.heroId]?.listed &&
 				['human', 'bot'].includes(seat.controller) &&
 				(seat.controller === 'bot' ||
 					(Number.isSafeInteger(seat.joinOrder) && seat.joinOrder >= 0)),

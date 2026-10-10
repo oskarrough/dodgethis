@@ -85,8 +85,11 @@ export function createProjectiles(ctx) {
 	function stepShots(dt) {
 		const shotTargets = new Map(['A', 'B'].map((team) => [team, enemiesOf(team)]))
 		const shotTargetById = new Map([...shotTargets.values()].flat().map((unit) => [unit.id, unit]))
+		let remaining = dt
 		for (let i = shots.length - 1; i >= 0; i--) {
 			if (lane?.match.winner) break
+			const stepDt = remaining
+			remaining = dt
 			const shot = shots[i]
 			const from = footprint ? { x: shot.x, z: shot.z } : null
 			let targets
@@ -115,7 +118,7 @@ export function createProjectiles(ctx) {
 					(unit) => !unit.unit.dead && (!shot.heroOnly || unit.hero),
 				)
 			if (
-				interceptShot(shot, dt, resolveInterception, {
+				interceptShot(shot, stepDt, resolveInterception, {
 					kind: 'projectile',
 					tick: ctx.t,
 					ball,
@@ -139,7 +142,7 @@ export function createProjectiles(ctx) {
 			}
 			const r = stepShot(
 				shot,
-				dt,
+				stepDt,
 				targets,
 				shot.target ? -Infinity : tune.projectile.nearMiss,
 				obstacles,
@@ -189,6 +192,11 @@ export function createProjectiles(ctx) {
 					direction: { x: shot.dx, y: 0, z: shot.dz },
 				})
 			if (r.hit || r.expired) shots.splice(i, 1)
+			else if (r.remaining > 0) {
+				// Revisit this shot's next leg in the same tick, before body collision.
+				remaining = r.remaining
+				i++
+			}
 		}
 	}
 

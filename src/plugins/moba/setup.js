@@ -11,7 +11,9 @@ export function parseMatchSetup(query, options = {}, warn = console.warn) {
 		return fallback
 	}
 	const seed = options.seed ?? query.get('seed')
-	const playable = (id) => Object.hasOwn(HEROES, id) && heroDefinition(id).playable === true
+	const playable = (id) =>
+		Object.hasOwn(HEROES, id) &&
+		(options.shared ? heroDefinition(id).listed : heroDefinition(id).playable) === true
 	const picks =
 		options.picks &&
 		Object.fromEntries(

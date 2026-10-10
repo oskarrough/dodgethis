@@ -62,7 +62,7 @@ function cushion(shot, cover, bounds) {
 
 // Advance one shot by `dt` against `targets` ({ id, x, z, radius }). Returns { hit, point } for the first body touched,
 // { expired } once the range is spent, and lists `nearMisses` it passed within `nearMiss` of without touching.
-// A bouncing shot reflects off cover and edges (listing each in `cushions`) and spends the rest of the step on the new heading.
+// A cushion ends this leg; `remaining` seconds go back through interception on the new heading.
 export function stepShot(shot, dt, targets, nearMiss, obstacles = OBSTACLES, bounds = FLOOR) {
 	const step = Math.min(shot.speed * dt, shot.range - shot.travelled)
 	const ax = shot.x
@@ -99,21 +99,15 @@ export function stepShot(shot, dt, targets, nearMiss, obstacles = OBSTACLES, bou
 		shot.z = az + (bz - az) * end
 		shot.travelled += step * end
 		const banked = blocked !== null && cushion(shot, cover, bounds)
-		if (banked) {
-			const rest = stepShot(
-				shot,
-				(step * (1 - end)) / shot.speed,
-				targets,
-				nearMiss,
-				obstacles,
-				bounds,
-			)
+		if (banked)
 			return {
-				...rest,
-				hits: [...hits, ...(rest.hits ?? [])],
-				cushions: [banked, ...(rest.cushions ?? [])],
+				hit: null,
+				hits,
+				nearMisses: [],
+				cushions: [banked],
+				remaining: (step * (1 - end)) / shot.speed,
+				expired: shot.travelled >= shot.range - 1e-9,
 			}
-		}
 		return {
 			hit: null,
 			hits,
@@ -134,17 +128,14 @@ export function stepShot(shot, dt, targets, nearMiss, obstacles = OBSTACLES, bou
 		shot.z = az + (bz - az) * blocked
 		shot.travelled += step * blocked
 		const banked = cushion(shot, cover, bounds)
-		if (banked) {
-			const rest = stepShot(
-				shot,
-				(step * (1 - blocked)) / shot.speed,
-				targets,
-				nearMiss,
-				obstacles,
-				bounds,
-			)
-			return { ...rest, cushions: [banked, ...(rest.cushions ?? [])] }
-		}
+		if (banked)
+			return {
+				hit: null,
+				nearMisses: [],
+				cushions: [banked],
+				remaining: (step * (1 - blocked)) / shot.speed,
+				expired: shot.travelled >= shot.range - 1e-9,
+			}
 		return {
 			hit: null,
 			blocked: true,

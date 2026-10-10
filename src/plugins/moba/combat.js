@@ -278,13 +278,13 @@ export function createCombat(ctx) {
 		unit.respawnTick = ctx.t + ticks(seconds)
 		endCast(unit, 'death')
 		endStance(unit, 'death')
+		cancelChannel(unit, 'death')
 		unit.shove = null
 		if (unit.post) return
 		unit.abilityState = freshAbilityState(unit.definition)
 		unit.catchWindow = null
 		unit.freezeUntil = 0
 		unit.proneUntil = 0
-		cancelChannel(unit, 'death')
 		unit.definition.traits.onDeath?.(traitContext(unit, { shot }))
 		unit.order = null
 		unit.attack = null

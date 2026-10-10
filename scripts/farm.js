@@ -287,7 +287,7 @@ Plays headless bot matches. Default: write logs and tapes for \`bun run simulate
 
 Teams
   --heroes fletcher,mitts   each team three of one hero; \`mixed\` is practice's mitts,fletcher,random
-  --lineup a,b,c            a team of those seats (repeatable); \`random\` draws a seeded playable hero
+  --lineup a,b,c            a team of those seats (repeatable); \`random\` draws a seeded listed hero
   --cross-only              skip mirror matchups
   --idle A1[,B2]            seats that stand still; --practice = idle A1, allies normal, enemies --difficulty
   --player A1[:north]       a stand-in human: its own bot plays the seat outside the team's lane deal, in that lane
