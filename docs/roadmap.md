@@ -20,8 +20,8 @@ A small, toy-like hero brawler that grew out of dodgeball, set in the world over
 
 Agents add a line when they need a call; the orchestrator removes it once answered.
 
+- [ ] Hero pitches: [#24](https://github.com/oskarrough/dodgethis/issues/24). Art style and name: [#25](https://github.com/oskarrough/dodgethis/issues/25). The domain is dodgethis.0sk.ar until then.
 - [ ] Rebrand gallery, six directions plus your three: http://office-linux.heron-mermaid.ts.net:5173/docs/look/vibes/
-- [ ] Hero pitches as a numbered deck (coming): /docs/pitches/heroes/
 - [ ] Is Flagfall's dark water frame on the minimap too heavy?
 
 ### Agent todo
