@@ -69,10 +69,10 @@ export function createProofApi(app, input) {
 			return app.debug.game
 		},
 		// A down/up pair on the focused element, as a real key would arrive; resolves to the screen after.
+		// Each half goes to whatever has focus then, so a release still lands after the press removed its element.
 		async key(code, { hold: ms = 0, until } = {}) {
-			const target = document.activeElement ?? document.body
 			const send = (type) =>
-				target.dispatchEvent(
+				(document.activeElement ?? document.body).dispatchEvent(
 					new KeyboardEvent(type, { code, key: keyOf(code), bubbles: true, cancelable: true }),
 				)
 			send('keydown')
