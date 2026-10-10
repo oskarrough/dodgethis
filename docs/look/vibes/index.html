@@ -9,70 +9,25 @@
 			content="Two selected art directions: bright floating islands and a glowing violet jungle. Naming comes later."
 		/>
 		<title>Two directions · dodgethis concepts</title>
+		<link rel="stylesheet" href="/docs/page.css" />
 		<style>
-			:root {
-				color-scheme: light;
-				--paper: #faf9f5;
-				--ink: #242720;
-				--muted: #666b61;
-				--line: #dcded5;
-				--accent: #3f675a;
-			}
-			* {
-				box-sizing: border-box;
-			}
 			html {
 				scroll-behavior: smooth;
 				scroll-padding-top: 1rem;
 			}
-			body {
-				margin: 0;
-				background: var(--paper);
-				color: var(--ink);
-				font:
-					16px/1.5 system-ui,
-					-apple-system,
-					BlinkMacSystemFont,
-					'Segoe UI',
-					sans-serif;
-			}
-			a {
-				color: inherit;
-			}
-			a:focus-visible,
-			button:focus-visible,
-			summary:focus-visible {
-				outline: 3px solid var(--accent);
-				outline-offset: 4px;
-			}
-			main {
+			.page > main {
 				max-width: 1500px;
-				margin: auto;
-				padding: 42px 32px 50px;
 			}
 			header {
 				margin-bottom: 32px;
-				max-width: 1000px;
 			}
 			.eyebrow {
 				font-size: 11px;
-				font-weight: 700;
+				font-weight: 800;
 				letter-spacing: 0.09em;
 				text-transform: uppercase;
-				color: var(--muted);
+				color: #5b544b;
 				margin: 0 0 12px;
-			}
-			h1 {
-				font-size: clamp(32px, 4vw, 52px);
-				letter-spacing: -0.055em;
-				line-height: 1.06;
-				margin: 0 0 16px;
-				font-weight: 750;
-			}
-			header > p:not(.eyebrow) {
-				max-width: 700px;
-				margin: 0;
-				color: var(--muted);
 			}
 			nav {
 				display: flex;
@@ -82,22 +37,19 @@
 			}
 			nav a {
 				text-decoration: none;
-				border: 1px solid var(--line);
-				border-radius: 6px;
-				padding: 6px 11px;
+				border: 2px solid var(--ink);
+				border-radius: 999px;
+				padding: 2px 12px;
 				font-size: 13px;
-				background: white;
-			}
-			nav a:hover {
-				border-color: var(--accent);
-				color: var(--accent);
+				font-weight: 800;
+				background: var(--paper);
 			}
 			.direction {
 				display: grid;
 				grid-template-columns: 250px minmax(0, 1fr);
 				gap: 32px;
 				padding: 30px 0 36px;
-				border-top: 1px solid var(--line);
+				border-top: 2px solid var(--ink);
 				align-items: start;
 			}
 			.pitch {
@@ -109,77 +61,29 @@
 				line-height: 1.5;
 				margin-bottom: 8px;
 			}
-			h2 {
-				font-size: 30px;
-				letter-spacing: -0.04em;
-				line-height: 1.08;
+			.pitch h2 {
 				margin: 0 0 18px;
 			}
-			.pitch > p:not(.eyebrow) {
-				font-size: 15px;
-				line-height: 1.6;
-				margin: 0 0 10px;
-			}
-			.images {
-				display: grid;
+			.page .images {
 				grid-template-columns: repeat(2, minmax(0, 1fr));
-				gap: 16px;
-			}
-			figure {
 				margin: 0;
-				min-width: 0;
 			}
 			figure a {
 				display: block;
-				background: #efeee8;
 				overflow: hidden;
-				border-radius: 4px;
-				outline-offset: 3px;
-			}
-			img {
-				display: block;
-				width: 100%;
-				height: auto;
-				aspect-ratio: 16/9;
-				object-fit: contain;
-				transition: filter 0.12s;
-			}
-			figure a:hover img {
-				filter: brightness(1.04);
-			}
-			figcaption {
-				font-size: 12px;
-				margin-top: 7px;
-				color: var(--muted);
+				border-radius: 8px;
 			}
 			figcaption span:first-child {
 				color: var(--ink);
-				font-weight: 650;
+				font-weight: 800;
 			}
 			.enlarge {
 				float: right;
 			}
-			details {
-				margin-top: 20px;
-				font-size: 12px;
-				color: var(--muted);
-			}
-			summary {
-				cursor: pointer;
-				width: fit-content;
-			}
-			details p {
-				line-height: 1.6;
-			}
 			footer {
 				padding-top: 20px;
-				border-top: 1px solid var(--line);
+				border-top: 2px solid var(--ink);
 				font-size: 12px;
-				color: var(--muted);
-			}
-			footer a {
-				text-decoration-thickness: 1px;
-				text-underline-offset: 3px;
 			}
 			dialog {
 				border: 0;
@@ -192,15 +96,12 @@
 				overflow: auto;
 				color: var(--ink);
 			}
-			dialog::backdrop {
-				background: rgba(20, 23, 20, 0.86);
-			}
 			dialog img {
+				display: block;
 				width: 100%;
 				height: auto;
 				max-height: 82dvh;
 				object-fit: contain;
-				aspect-ratio: auto;
 				background: #151715;
 			}
 			.modal-bar {
@@ -223,37 +124,43 @@
 				font-size: 13px;
 				cursor: pointer;
 				padding: 6px 11px;
-				border: 1px solid var(--line);
-				background: white;
-				border-radius: 4px;
+				border: 2px solid var(--ink);
+				background: var(--paper);
+				border-radius: 6px;
 			}
-			.controls button:hover {
-				border-color: var(--accent);
+			.collection-heading {
+				margin: 36px 0 20px;
 			}
-			@media (min-width: 1600px) {
-				.direction {
-					grid-template-columns: 275px minmax(0, 1fr);
-				}
+			.collection-heading h2 {
+				margin: 0 0 8px;
+			}
+			.collection-heading p {
+				margin: 0;
+			}
+			.page .references {
+				grid-template-columns: 1.5fr 1fr;
+				align-items: start;
+				margin-bottom: 28px;
+			}
+			.page .references img {
+				aspect-ratio: auto;
+			}
+			.pitch > p.echo {
+				font-size: 12px;
+				border-left: 3px solid var(--gold);
+				padding-left: 10px;
+				margin-top: 18px;
+			}
+			.pitch > p.reference-note {
+				font-size: 11px;
 			}
 			@media (max-width: 950px) {
-				main {
-					padding: 30px 22px;
-				}
 				.direction {
 					grid-template-columns: 200px minmax(0, 1fr);
 					gap: 22px;
 				}
-				h2 {
-					font-size: 27px;
-				}
-				.images {
-					gap: 12px;
-				}
 			}
 			@media (max-width: 700px) {
-				main {
-					padding: 25px 16px;
-				}
 				.direction {
 					grid-template-columns: 1fr;
 					gap: 18px;
@@ -262,86 +169,21 @@
 				.pitch {
 					position: static;
 				}
-				.pitch > p:not(.eyebrow) {
-					max-width: 580px;
-				}
-				h2 {
-					margin-bottom: 12px;
-				}
-				details {
-					margin-top: 10px;
-				}
-				.images {
-					gap: 12px;
-				}
-				figcaption {
-					font-size: 11px;
-				}
-				nav {
-					gap: 6px;
+				.page .references {
+					grid-template-columns: 1fr;
 				}
 				.modal-bar {
 					flex-wrap: wrap;
 				}
 			}
 			@media (max-width: 440px) {
-				.images {
+				.page .images {
 					grid-template-columns: 1fr;
-				}
-				nav a {
-					font-size: 12px;
-				}
-			}
-			@media (prefers-reduced-motion: reduce) {
-				html {
-					scroll-behavior: auto;
-				}
-				img {
-					transition: none;
-				}
-			}
-			.collection-heading {
-				margin: 36px 0 20px;
-			}
-			.collection-heading h2 {
-				font-size: 25px;
-				margin-bottom: 8px;
-			}
-			.collection-heading p {
-				margin: 0;
-				color: var(--muted);
-				font-size: 14px;
-			}
-			.references {
-				display: grid;
-				grid-template-columns: 1.5fr 1fr;
-				gap: 20px;
-				align-items: start;
-				margin-bottom: 28px;
-			}
-			.references img {
-				aspect-ratio: auto;
-			}
-			.pitch > p.echo {
-				font-size: 12px;
-				color: var(--accent);
-				border-left: 2px solid var(--line);
-				padding-left: 10px;
-				margin-top: 18px;
-			}
-			.pitch > p.reference-note {
-				font-size: 11px;
-				color: var(--muted);
-			}
-			@media (max-width: 700px) {
-				.references {
-					grid-template-columns: 1fr;
-					gap: 16px;
 				}
 			}
 		</style>
 	</head>
-	<body>
+	<body class="page">
 		<main>
 			<header>
 				<p class="eyebrow">dodgethis / selected art directions</p>

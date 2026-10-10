@@ -4,122 +4,30 @@
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<title>Hero pitches · dodgethis</title>
+		<link rel="stylesheet" href="/docs/page.css" />
 		<style>
-			:root {
-				--cream: #f6eedb;
-				--paper: #fffaf0;
-				--ink: #1d1a17;
-				--blue: #3a6ee0;
-				--blue-soft: #c9d8f8;
-				--red: #e0453a;
-				--red-soft: #f7cdc8;
-				--gold: #f2b632;
-				--sand: #d8c7a3;
-				--teal: #5f9e98;
+			.page {
 				--violet: #8b7fa8;
-				--grey: #9a9288;
 			}
-			* {
-				box-sizing: border-box;
-			}
-			body {
-				margin: 0;
-				background: var(--cream);
-				color: var(--ink);
-				font:
-					15px/1.4 ui-rounded,
-					'Nunito',
-					'Trebuchet MS',
-					system-ui,
-					sans-serif;
-			}
-			main {
+			.page > main {
 				max-width: 1240px;
-				margin: 0 auto;
-				padding: 28px 20px 80px;
-			}
-			h1 {
-				font-size: 44px;
-				line-height: 1;
-				margin: 0 0 8px;
-				letter-spacing: -0.02em;
 			}
 			h2 {
 				font-size: 26px;
 				margin: 48px 0 14px;
 			}
-			p {
-				margin: 0 0 8px;
-			}
-			.lede {
-				max-width: 760px;
-				font-size: 16px;
-			}
-			.sticker {
-				background: var(--paper);
-				border: 3px solid var(--ink);
-				border-radius: 12px;
-				box-shadow: 5px 5px 0 var(--ink);
-			}
-			.chip {
-				display: inline-block;
-				border: 2px solid var(--ink);
-				border-radius: 999px;
-				padding: 0 9px;
-				font-size: 12px;
-				font-weight: 800;
-				background: var(--paper);
-				white-space: nowrap;
-			}
-			.chip.gold {
-				background: var(--gold);
-			}
 			.chip.blue {
 				background: var(--blue);
 				color: #fff;
-			}
-			.note {
-				display: inline-block;
-				margin: 10px 0 0;
-				padding: 6px 12px;
-				transform: rotate(-1deg);
-				background: var(--gold);
-				border: 3px solid var(--ink);
-				border-radius: 8px;
-				box-shadow: 3px 3px 0 var(--ink);
-				font-weight: 700;
 			}
 			.howto {
 				margin-left: 10px;
 				transform: rotate(0.8deg);
 				background: var(--paper);
 			}
-
-			/* comparison strip */
 			.strip {
 				overflow-x: auto;
 				padding: 0;
-			}
-			table {
-				border-collapse: collapse;
-				width: 100%;
-				font-size: 14px;
-			}
-			th,
-			td {
-				text-align: left;
-				padding: 7px 10px;
-				border-bottom: 2px solid var(--ink);
-				vertical-align: top;
-			}
-			tr:last-child td {
-				border-bottom: 0;
-			}
-			th {
-				font-size: 12px;
-				text-transform: uppercase;
-				letter-spacing: 0.05em;
-				background: var(--sand);
 			}
 			tr.built td {
 				background: #efe7d4;
@@ -145,10 +53,6 @@
 			.dots b.on {
 				background: var(--ink);
 			}
-			.small {
-				font-size: 12px;
-				color: #5b544b;
-			}
 
 			/* hero cards */
 			.hero {
@@ -162,43 +66,20 @@
 				flex-wrap: wrap;
 				margin-bottom: 10px;
 			}
-			.badge {
+			.hero .badge {
 				font-size: 26px;
-				font-weight: 900;
-				background: var(--blue);
-				color: #fff;
-				border: 3px solid var(--ink);
-				border-radius: 10px;
 				padding: 2px 12px;
-				transform: rotate(-2deg);
-				box-shadow: 3px 3px 0 var(--ink);
 			}
 			.hero h3 {
 				font-size: 30px;
 				margin: 0;
 			}
-			.lines {
-				display: grid;
+			.hero .lines {
 				grid-template-columns: 82px 1fr;
-				gap: 4px 12px;
 				max-width: 980px;
 				margin-bottom: 14px;
 			}
-			.lines dt {
-				font-weight: 900;
-				font-size: 12px;
-				text-transform: uppercase;
-				letter-spacing: 0.05em;
-				padding-top: 2px;
-			}
-			.lines dd {
-				margin: 0;
-			}
-			.flag {
-				background: var(--red-soft);
-				border: 2px solid var(--ink);
-				border-radius: 8px;
-				padding: 6px 10px;
+			.hero .flag {
 				margin: 0 0 14px;
 				max-width: 980px;
 			}
@@ -366,7 +247,7 @@
 			}
 		</style>
 	</head>
-	<body>
+	<body class="page">
 		<main>
 			<h1>Eight hero pitches</h1>
 			<p class="lede">

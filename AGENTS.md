@@ -24,6 +24,8 @@
 
 - Before opening a browser or proving a change by play, read `.claude/skills/verify/SKILL.md`: which proof to pick, the shared dev server, `window.dt`, evidence and cleanup. Every visual proof, clip or variant goes through `bun run review -- --title … --ask … --thread $BB_THREAD_ID <files>`; reports link http://office-linux.heron-mermaid.ts.net:5173/review/, never thread-storage paths. Oskar plays at http://office-linux.heron-mermaid.ts.net:5173, never `127.0.0.1`.
 
+- HTML artifacts (pitches, look pages, review) link `/docs/page.css` with `<body class="page">` and write no CSS of their own; helpers are listed at the top of that file.
+
 ## Vocabulary
 
 - Screens, in both modes: `splash` (home), `lobby` (walk around, pick, ready up), `match`, `paused`, `result`. `dt.screen()` reports them. The crane and descent are a transition, not a screen. Say screen, never scene: `scene` is the Three.js scene.

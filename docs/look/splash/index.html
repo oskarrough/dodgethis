@@ -8,54 +8,16 @@
 			name="description"
 			content="Two splash plates and two map illustrations: bright day isles for Overthrow, violet night garden for Flagfall."
 		/>
+		<link rel="stylesheet" href="/docs/page.css" />
 		<style>
-			:root {
-				color-scheme: light;
-				--ink: #263b45;
-				--paper: #faf8f2;
-				--muted: #64716e;
-				--line: #dddcd1;
-			}
-			* {
-				box-sizing: border-box;
-			}
-			body {
-				margin: 0;
-				background: var(--paper);
-				color: var(--ink);
-				font:
-					16px/1.55 system-ui,
-					sans-serif;
-			}
-			main {
+			.page > main {
 				max-width: 1260px;
-				margin: auto;
-				padding: 44px 30px 60px;
-			}
-			h1,
-			h2,
-			h3,
-			p {
-				margin: 0;
-			}
-			h1 {
-				font-size: clamp(30px, 5vw, 52px);
-				line-height: 1.1;
-				letter-spacing: -0.04em;
-				margin: 10px 0 14px;
-			}
-			h2 {
-				font-size: 25px;
-				letter-spacing: -0.025em;
-			}
-			h3 {
-				font-size: 20px;
 			}
 			.eyebrow {
 				font-size: 12px;
 				text-transform: uppercase;
 				letter-spacing: 0.15em;
-				color: var(--muted);
+				color: #5b544b;
 			}
 			.intro {
 				max-width: 740px;
@@ -73,10 +35,6 @@
 			.ship p {
 				font-size: 15px;
 			}
-			a {
-				color: inherit;
-				text-underline-offset: 3px;
-			}
 			nav {
 				display: flex;
 				flex-wrap: wrap;
@@ -87,7 +45,7 @@
 				font: inherit;
 				cursor: pointer;
 				color: inherit;
-				border: 1px solid var(--line);
+				border: 1px solid var(--ink);
 				border-radius: 6px;
 				background: transparent;
 				padding: 7px 12px;
@@ -220,55 +178,20 @@
 			}
 			.caption {
 				margin-top: 12px;
-				color: var(--muted);
+				color: #5b544b;
 				font-size: 14px;
 				max-width: 850px;
-			}
-			.collection {
-				margin-top: 40px;
-				padding-top: 26px;
-				border-top: 1px solid var(--line);
-			}
-			.assets {
-				display: grid;
-				grid-template-columns: 1fr 1fr;
-				gap: 26px;
-				margin-top: 18px;
-			}
-			figure {
-				margin: 0;
-				min-width: 0;
 			}
 			figure > a {
 				display: block;
 			}
-			figure img {
-				display: block;
-				width: 100%;
-				height: auto;
-				border-radius: 8px;
-				background: #e7e2d8;
-			}
-			figcaption {
-				margin-top: 12px;
-			}
 			figcaption p {
 				font-size: 14px;
 				margin-top: 5px;
-				color: var(--muted);
+				color: #5b544b;
 			}
 			.links {
 				font-size: 13px;
-				margin-top: 8px;
-			}
-			footer {
-				border-top: 1px solid var(--line);
-				margin-top: 40px;
-				padding-top: 20px;
-				font-size: 13px;
-				color: var(--muted);
-			}
-			footer p + p {
 				margin-top: 8px;
 			}
 			@media (max-width: 650px) {
@@ -288,7 +211,7 @@
 			}
 		</style>
 	</head>
-	<body>
+	<body class="page">
 		<main>
 			<header>
 				<p class="eyebrow">dodgethis / splash studies / 10 October 2026</p>
