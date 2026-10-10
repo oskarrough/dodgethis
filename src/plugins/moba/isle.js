@@ -25,6 +25,7 @@ export function createIsle(parent, s, extent, sun) {
 			value: new THREE.Vector4(s.haze.top, s.haze.bottom, s.haze.power, s.haze.max),
 		},
 		uHazeReach: { value: new THREE.Vector2(s.haze.near, s.haze.far) },
+		uTime: { value: 0 },
 	}
 
 	const stone = own(
@@ -40,7 +41,7 @@ export function createIsle(parent, s, extent, sun) {
 				uStrata: { value: new THREE.Vector2(s.cliff.strata, s.cliff.strataInk) },
 			},
 			vertexShader: /* glsl */ `
-attribute vec2 stone; // x: 0 stone, 1 moss, 2 cliff (moss lip by depth); y: tone drift
+attribute vec2 stone; // x: 0 stone, 1 moss, 2 cliff (moss lip by depth), 3 mossy tops; y: tone drift
 varying vec3 vWorld;
 varying vec3 vNormal;
 varying vec2 vStone;
@@ -73,7 +74,7 @@ void main() {
 	float drop = uTop - vWorld.y;
 	float along = vWorld.x + vWorld.z * 1.37;
 	float lip = mix(uMossLine.x, uMossLine.y, 0.6 * isleNoise(along * 1.3) + 0.4 * isleNoise(along * 3.7 + 11.0));
-	bool mossy = (vStone.x > 0.5 && vStone.x < 1.5) || (vStone.x > 1.5 && drop < lip);
+	bool mossy = (vStone.x > 0.5 && vStone.x < 1.5) || (vStone.x > 1.5 && vStone.x < 2.5 && drop < lip) || (vStone.x > 2.5 && n.y > 0.7);
 	if (mossy) col = moss;
 	else {
 		// A few broken ink strata on vertical faces only.
@@ -182,6 +183,257 @@ void main() {
 	const rimMesh = forward(new THREE.Mesh(rim, ink), 'overthrow-rim-ink')
 	rimMesh.renderOrder = -3
 
+	// --- Far stone: spires and broken arches out of the cloud, lower and hazier with distance. ---
+	const far = { positions: [], normals: [], stones: [] }
+	const solid = (geometry, kind) => {
+		const g = geometry.toNonIndexed()
+		geometry.dispose()
+		g.computeVertexNormals()
+		const p = g.attributes.position,
+			n = g.attributes.normal
+		for (let v = 0; v < p.count; v += 3) {
+			const tone = (rand() - 0.5) * 0.1
+			for (let k = v; k < v + 3; k++) {
+				far.positions.push(p.getX(k), p.getY(k), p.getZ(k))
+				far.normals.push(n.getX(k), n.getY(k), n.getZ(k))
+				far.stones.push(kind, tone)
+			}
+		}
+		g.dispose()
+	}
+	const sp = s.spires
+	const base = s.clouds.y - 6
+	const spire = (x, z, radius, top) => {
+		const height = top - base
+		const lean = (rand() - 0.5) * 0.12
+		solid(
+			new THREE.CylinderGeometry(radius * 0.8, radius * 1.25, height, sp.sides)
+				.rotateY(rand() * Math.PI)
+				.translate(0, height / 2, 0)
+				.rotateZ(lean)
+				.rotateX(lean * 0.6)
+				.translate(x, base, z),
+			3,
+		)
+		// A broken shoulder partway down: stone has strata, not one clean shaft.
+		const shoulder = top - height * (0.25 + rand() * 0.2)
+		solid(
+			new THREE.CylinderGeometry(radius * 1.05, radius * 1.15, 0.9, sp.sides)
+				.rotateY(rand() * Math.PI)
+				.translate(x + (rand() - 0.5) * radius * 0.4, shoulder, z),
+			3,
+		)
+	}
+	const around = (distance, ends = 0) => {
+		// A point `distance` metres past the rim; `ends` biases it toward the isle's short
+		// ends, where the match camera looks straight past the rim.
+		const angle =
+			rand() < ends ? (rand() < 0.5 ? 0 : Math.PI) + (rand() - 0.5) * 1.4 : rand() * Math.PI * 2
+		const dx = Math.cos(angle),
+			dz = Math.sin(angle)
+		const reach = Math.min(
+			(extent.halfX + distance) / Math.max(1e-3, Math.abs(dx)),
+			(extent.halfZ + distance) / Math.max(1e-3, Math.abs(dz)),
+		)
+		return { x: dx * reach, z: dz * reach }
+	}
+	const height = (distance) => Math.min(-4, -6 - distance * 0.28 + (rand() - 0.5) * 6)
+	for (let i = 0; i < sp.count; i++) {
+		const distance = sp.near + Math.pow(rand(), 0.8) * (sp.far - sp.near)
+		const at = around(distance, 0.5)
+		spire(at.x, at.z, sp.radius[0] + rand() * (sp.radius[1] - sp.radius[0]), height(distance))
+	}
+	for (let i = 0; i < sp.arches; i++) {
+		const distance = sp.near + 8 + rand() * (sp.far - sp.near) * 0.6
+		const at = around(distance, 0.6)
+		const top = height(distance) - 2
+		const span = 7 + rand() * 5
+		const along = Math.atan2(at.z, at.x) + Math.PI / 2
+		const ux = Math.cos(along),
+			uz = Math.sin(along)
+		const radius = 1.4 + rand() * 0.6
+		spire(at.x - (ux * span) / 2, at.z - (uz * span) / 2, radius, top)
+		spire(at.x + (ux * span) / 2, at.z + (uz * span) / 2, radius, top - 1.5 - rand() * 2)
+		// The lintel, one end slumped where it broke.
+		solid(
+			new THREE.BoxGeometry(span + radius * 1.6, 1.8, radius * 1.8)
+				.rotateZ(0.08 + rand() * 0.06)
+				.rotateY(-along)
+				.translate(at.x, top - 1, at.z),
+			3,
+		)
+	}
+	const farGeometry = own(new THREE.BufferGeometry())
+	farGeometry.setAttribute('position', new THREE.Float32BufferAttribute(far.positions, 3))
+	farGeometry.setAttribute('normal', new THREE.Float32BufferAttribute(far.normals, 3))
+	farGeometry.setAttribute('stone', new THREE.Float32BufferAttribute(far.stones, 2))
+	forward(new THREE.Mesh(farGeometry, stone), 'overthrow-far-stone')
+
+	// --- The sea of cloud: printed bands in a drifting field, glowing toward the sun. ---
+	const cl = s.clouds
+	const sunXZ = new THREE.Vector2(sun[0], sun[2]).normalize()
+	const sea = own(
+		new THREE.ShaderMaterial({
+			uniforms: {
+				...shared,
+				uCloudLit: { value: color(c.cloudLit) },
+				uCloud: { value: color(c.cloud) },
+				uCloudShade: { value: color(c.cloudShade) },
+				uCloudDeep: { value: color(c.cloudDeep) },
+				uCloudScale: { value: cl.scale },
+				uDrift: { value: new THREE.Vector2(...cl.drift) },
+				uSunXZ: { value: sunXZ },
+			},
+			vertexShader: /* glsl */ `
+varying vec3 vWorld;
+void main() {
+	vec4 world = modelMatrix * vec4(position, 1.0);
+	vWorld = world.xyz;
+	gl_Position = projectionMatrix * viewMatrix * world;
+}`,
+			fragmentShader: /* glsl */ `
+${HAZE}
+${NOISE}
+uniform vec3 uCloudLit, uCloud, uCloudShade, uCloudDeep;
+uniform float uCloudScale, uTime;
+uniform vec2 uDrift, uSunXZ;
+void main() {
+	vec2 p = (vWorld.xz - uDrift * uTime) / uCloudScale;
+	float a = isleFbm(p);
+	// Sample toward the sun: a puff's sunward side is brighter than its far side.
+	float b = isleFbm(p + uSunXZ * 0.12);
+	float body = smoothstep(0.4, 0.46, a);
+	float lit = (a - b) * 9.0 + 0.5;
+	vec3 col = lit > 0.62 ? uCloudLit : (lit > 0.4 ? uCloud : uCloudShade);
+	col = mix(uCloudDeep, col, body);
+	// A soft bloom in the haze on the sun's side.
+	float glow = smoothstep(-40.0, 160.0, dot(vWorld.xz, uSunXZ));
+	col = mix(col, uCloudLit, glow * 0.35);
+	gl_FragColor = vec4(mix(col, uHaze, 0.25), 1.0);
+}`,
+		}),
+	)
+	const seaMesh = forward(
+		new THREE.Mesh(own(new THREE.PlaneGeometry(cl.size, cl.size).rotateX(-Math.PI / 2)), sea),
+		'overthrow-cloud-sea',
+	)
+	seaMesh.position.y = cl.y
+
+	// --- Cloud banks hugging the isle below the rim: soft toon puffs that bob. ---
+	const puff = own(
+		new THREE.ShaderMaterial({
+			uniforms: {
+				...shared,
+				uCloudLit: { value: color(c.cloudLit) },
+				uCloud: { value: color(c.cloud) },
+				uCloudShade: { value: color(c.cloudShade) },
+				uBob: { value: cl.bob },
+			},
+			vertexShader: /* glsl */ `
+uniform float uTime, uBob;
+varying vec3 vWorld;
+varying vec3 vNormal;
+void main() {
+	vec4 world = modelMatrix * instanceMatrix * vec4(position, 1.0);
+	float phase = instanceMatrix[3].x * 0.13 + instanceMatrix[3].z * 0.07;
+	world.y += sin(uTime * 0.35 + phase) * uBob;
+	vWorld = world.xyz;
+	vNormal = normalize(mat3(modelMatrix) * mat3(instanceMatrix) * normal);
+	gl_Position = projectionMatrix * viewMatrix * world;
+}`,
+			fragmentShader: /* glsl */ `
+${HAZE}
+uniform vec3 uSun, uCloudLit, uCloud, uCloudShade;
+varying vec3 vNormal;
+void main() {
+	float light = dot(normalize(vNormal), uSun) * 0.5 + 0.5;
+	vec3 col = light > 0.66 ? uCloudLit : (light > 0.42 ? uCloud : uCloudShade);
+	gl_FragColor = vec4(isleHaze(col), 1.0);
+}`,
+		}),
+	)
+	const puffs = new THREE.InstancedMesh(own(new THREE.IcosahedronGeometry(1, 3)), puff, cl.puffs)
+	const matrix = new THREE.Matrix4(),
+		q = new THREE.Quaternion(),
+		size = new THREE.Vector3(),
+		at = new THREE.Vector3()
+	for (let i = 0; i < cl.puffs; i++) {
+		const r = cl.puffMin + rand() * (cl.puffMax - cl.puffMin)
+		const spot = around(r * 0.3 + rand() * 10)
+		at.set(spot.x, -(cl.puffDepth[0] + rand() * (cl.puffDepth[1] - cl.puffDepth[0])), spot.z)
+		size.set(r * (1 + rand() * 0.6), r * 0.55, r)
+		q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), rand() * Math.PI)
+		puffs.setMatrixAt(i, matrix.compose(at, q, size))
+	}
+	forward(puffs, 'overthrow-cloud-banks')
+
+	// --- Waterfalls: white ribbons draped down the cliff, streaks running down. ---
+	const fall = own(
+		new THREE.ShaderMaterial({
+			uniforms: {
+				...shared,
+				uWater: { value: color(c.water) },
+				uWaterShade: { value: color(c.waterShade) },
+				uFallSpeed: { value: s.fallSpeed },
+			},
+			vertexShader: /* glsl */ `
+varying vec3 vWorld;
+varying vec2 vFall;
+void main() {
+	vec4 world = modelMatrix * vec4(position, 1.0);
+	vWorld = world.xyz;
+	vFall = uv;
+	gl_Position = projectionMatrix * viewMatrix * world;
+}`,
+			fragmentShader: /* glsl */ `
+${HAZE}
+${NOISE}
+uniform vec3 uWater, uWaterShade;
+uniform float uTime, uFallSpeed;
+varying vec2 vFall; // x across 0..1, y metres fallen
+void main() {
+	float streak = isleNoise(vec2(vFall.x * 7.0, (vFall.y - uTime * uFallSpeed) * 0.18));
+	float edge = smoothstep(0.0, 0.18, vFall.x) * smoothstep(1.0, 0.82, vFall.x);
+	vec3 col = streak * edge > 0.42 ? uWater : uWaterShade;
+	gl_FragColor = vec4(isleHaze(col), 1.0);
+}`,
+		}),
+	)
+	for (const spot of s.falls) {
+		// The rim segment nearest the spot; the ribbon follows that facet's columns down.
+		let best = 0
+		for (let i = 0; i < count; i++)
+			if (
+				Math.hypot(outline[i].x - spot.x, outline[i].z - spot.z) <
+				Math.hypot(outline[best].x - spot.x, outline[best].z - spot.z)
+			)
+				best = i
+		const j = (best + 1) % count
+		const segment = Math.hypot(outline[j].x - outline[best].x, outline[j].z - outline[best].z)
+		const half = Math.min(0.45, spot.width / 2 / Math.max(0.1, segment))
+		const ribbon = [],
+			uvs = [],
+			index = []
+		const lift = 0.12
+		for (let k = 0; k < rings.length; k++) {
+			const a = points[k][best],
+				b = points[k][j]
+			const ox = (outward[best].x + outward[j].x) * 0.5 * lift,
+				oz = (outward[best].z + outward[j].z) * 0.5 * lift
+			for (const u of [0.5 - half, 0.5 + half]) {
+				ribbon.push(a.x + (b.x - a.x) * u + ox, a.y + 0.02, a.z + (b.z - a.z) * u + oz)
+				uvs.push(u < 0.5 ? 0 : 1, rings[k].drop)
+			}
+			if (k) index.push(2 * k - 2, 2 * k - 1, 2 * k + 1, 2 * k - 2, 2 * k + 1, 2 * k)
+		}
+		const geometry = own(new THREE.BufferGeometry())
+		geometry.setAttribute('position', new THREE.Float32BufferAttribute(ribbon, 3))
+		geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2))
+		geometry.setIndex(index)
+		fall.side = THREE.DoubleSide
+		forward(new THREE.Mesh(geometry, fall), 'overthrow-waterfall')
+	}
+
 	function forward(mesh, name) {
 		mesh.name = name
 		mesh.layers.set(FORWARD_LAYER)
@@ -191,7 +443,9 @@ void main() {
 	}
 	parent.add(...meshes)
 	return {
-		update() {},
+		update(dt) {
+			shared.uTime.value += dt
+		},
 		dispose() {
 			for (const mesh of meshes) mesh.removeFromParent()
 			for (const resource of owned) resource.dispose()
@@ -212,6 +466,19 @@ vec3 isleHaze(vec3 col) {
 	vec2 past = max(abs(vWorld.xz) - uIsle, 0.0);
 	float far = smoothstep(uHazeReach.x, uHazeReach.y, length(past));
 	return mix(col, uHaze, min(uHazeShape.w, 1.0 - (1.0 - drop) * (1.0 - far)));
+}`
+
+const NOISE = /* glsl */ `
+float isleHash2(vec2 p) { p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
+float isleNoise(vec2 p) {
+	vec2 i = floor(p), f = fract(p);
+	f = f * f * (3.0 - 2.0 * f);
+	return mix(mix(isleHash2(i), isleHash2(i + vec2(1, 0)), f.x), mix(isleHash2(i + vec2(0, 1)), isleHash2(i + vec2(1, 1)), f.x), f.y);
+}
+float isleFbm(vec2 p) {
+	float sum = 0.0, amp = 0.5;
+	for (int i = 0; i < 4; i++) { sum += amp * isleNoise(p); p = p * 2.03 + 17.1; amp *= 0.5; }
+	return sum;
 }`
 
 function seeded(seed) {

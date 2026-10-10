@@ -73,7 +73,7 @@ export const tune = {
 		cliff: {
 			depth: 46, // the face falls out of frame into cloud
 			levels: 9, // stacked ledges, finer near the rim
-			flare: 0.2, // outward lean per metre of drop: wider at the bottom, so it reads from above
+			flare: 0.32, // outward lean per metre of drop: wider at the bottom, so it reads from above
 			ledge: 0.9, // the odd outward step between levels
 			column: 0.55, // in-out jitter between neighbouring columns
 			lipMin: 0.12, // the moss lip reaches this far onto the court's margin…
@@ -85,16 +85,44 @@ export const tune = {
 			rimInk: 0.035, // the thin ink line along the cliff top
 		},
 		haze: { top: 1.5, bottom: 30, power: 0.85, max: 0.94, near: 18, far: 120 },
+		// The sea of cloud below the rim: printed bands, drifting slowly; pause freezes it.
+		clouds: {
+			y: -34,
+			size: 900,
+			scale: 34, // metres per cloud
+			drift: [0.5, 0.18], // metres per second
+			puffs: 48, // banks hugging the isle below the rim
+			puffMin: 4,
+			puffMax: 8,
+			puffDepth: [11, 26],
+			bob: 0.6,
+		},
+		// Far stone rising out of the cloud, lower and hazier with distance; never above the rim.
+		spires: { count: 22, arches: 3, near: 10, far: 75, sides: 6, radius: [1.6, 4.2] },
+		// Waterfalls draped down the cliff from the rim: x, z near the rim, width.
+		falls: [
+			{ x: 36, z: 15, width: 2.6 },
+			{ x: -22, z: 15, width: 1.8 },
+			{ x: -55, z: -7, width: 2.2 },
+			{ x: 55, z: 6, width: 2 },
+		],
+		fallSpeed: 7,
 		colors: {
 			tarmac: '#cacc98', // the court: butter-green
 			chalk: '#babd89', // worn stone inlays, under 10% darker than the court
 			moss: '#a3a35e',
 			mossShade: '#76784e',
-			stoneLit: '#9a8396',
-			stone: '#7d6e93',
-			stoneShade: '#5e5179',
+			stoneLit: '#a08c9c',
+			stone: '#857a96',
+			stoneShade: '#655b7f',
 			ink: '#26445f',
 			haze: '#f2cdbd',
+			cloudLit: '#fdeee3',
+			cloud: '#f7d9c9',
+			cloudShade: '#efc6c4',
+			cloudDeep: '#e6b9bf',
+			water: '#fbf9ff',
+			waterShade: '#c6bfe4',
 		},
 		// One low warm sun from the upper left: lit faces warm, shade violet.
 		light: { dir: [-0.7, 0.62, -0.25] },
