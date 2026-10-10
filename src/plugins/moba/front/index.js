@@ -1,10 +1,9 @@
 import { createBackdrop } from './backdrop.js'
 import { createControls } from './controls.js'
 import { tune } from './tune.js'
-import { ensureSkinDefs, paintedCard, paintedEdge, paintedWash } from './skin.js'
+import { applySkin, paintedCard, paintedEdge, paintedWash } from './skin.js'
 import { parseMatchSetup } from '../setup.js'
 import { playableMaps, mapLayout } from '../maps/index.js'
-import './skin.css'
 import './front.css'
 
 // The MOBA maps are the front door; Dodgeball is a bonus sticker under them, last in the cursor order.
@@ -150,7 +149,6 @@ export function mobaFront(app, map) {
 			if (url.href !== location.href) history.replaceState(null, '', url)
 			const el = document.createElement('main')
 			el.className = 'moba-front'
-			ensureSkinDefs()
 			el.dataset.screen = 'modes'
 			el.setAttribute('aria-label', 'Choose a game or map')
 			// Everything but the backdrop moves as one sticker sheet: it drops out under the lobby
@@ -160,7 +158,7 @@ export function mobaFront(app, map) {
 				.map((c, i) => `<span class="front-letter${i === 1 ? ' front-ball' : ''}">${c}</span>`)
 				.join('')
 			el.innerHTML = `<div class="front-chrome"><h1 class="front-heading" aria-label="DodgeThis"><span aria-hidden="true">${title}</span></h1><p class="front-notice" role="status" hidden></p>
-				<div class="front-tiles front-modes" role="group" aria-label="Game or map">${maps.map((tile, i) => `<button type="button" class="front-tile skin-card" data-mode="${tile.mode}" data-map="${tile.map}" data-light="${tune.skin.light[tile.map] ?? tune.skin.light.bonus}" style="--wash: ${tune.skin.wash[tile.map] ?? tune.skin.wash.bonus}">${paintedCard(i)}<span class="skin-sheet"></span><span class="skin-ring"></span><span class="skin-face"></span><span class="front-tile-art${tile.picture.startsWith('<svg') ? ' front-tile-plan' : ''}">${tile.picture}${paintedEdge(i)}</span><span class="front-tile-label">${paintedWash(i)}<span class="front-tile-name">${tile.name}</span></span></button>`).join('')}</div>
+				<div class="front-tiles front-modes" role="group" aria-label="Game or map">${maps.map((tile, i) => `<button type="button" class="front-tile skin-card" data-mode="${tile.mode}" data-map="${tile.map}" data-light="${tune.skin.light[tile.map] ?? tune.skin.light.bonus}" style="--wash: ${tune.skin.wash[tile.map] ?? tune.skin.wash.bonus}">${paintedCard(i)}<span class="skin-sheet"></span><span class="skin-ring"></span><span class="skin-face"></span><span class="front-tile-art${tile.picture.startsWith('<svg') ? ' front-tile-plan' : ''}">${tile.picture}${paintedEdge(i)}</span><span class="front-tile-label skin-title">${paintedWash(i)}<span class="front-tile-name">${tile.name}</span></span></button>`).join('')}</div>
 				<button type="button" class="front-bonus skin-card" data-mode="${bonus.mode}" data-light="${tune.skin.light.bonus}" style="--wash: ${tune.skin.wash.bonus}">${paintedCard(maps.length)}<span class="skin-sheet"></span><span class="skin-ring"></span><span class="skin-face"></span>${paintedWash(maps.length)}<svg viewBox="0 0 64 64" aria-hidden="true">${bonus.glyph}</svg><small class="front-bonus-kicker">Bonus</small><span class="front-bonus-name">${bonus.name}</span></button></div>`
 			const chrome = el.querySelector('.front-chrome')
 			const notice = el.querySelector('.front-notice')
@@ -232,19 +230,13 @@ export function mobaFront(app, map) {
 						for (const [key, unit] of [
 							['snap', 's'],
 							['press', 's'],
-							['scale', ''],
 							['lift', 'px'],
+							['scale', ''],
 							['tilt', 'deg'],
 							['wash', ''],
 						])
 							target.style.setProperty('--tile-' + key, tune.tile[key] + unit)
-						// The stone-card skin rides on `el` into the lobby, so later screens share it.
-						target.dataset.skin =
-							new URLSearchParams(location.search).get('skin') ?? tune.skin.style
-						for (const key of ['line', 'shadow', 'ring'])
-							target.style.setProperty('--skin-' + key, tune.skin[key] + 'px')
-						for (const [i, corner] of ['tl', 'tr', 'br', 'bl'].entries())
-							target.style.setProperty('--skin-' + corner, tune.skin.cut[i] + 'px')
+						applySkin(target)
 					}
 				},
 			}

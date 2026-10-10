@@ -2,23 +2,28 @@ import * as THREE from 'three'
 import { HEROES } from './heroes.js'
 import { tune } from './tune.js'
 import { ICONS } from './hud.js'
+import { paintedCard } from './front/skin.js'
+import { tune as frontTune } from './front/tune.js'
 import './lobby-heroes.css'
 
-// The lobby's hero strip: one tile per hero, stacked down the left edge, apart from the
-// HUD so it reads as a menu rather than part of your hero. Yours slides out, framed gold;
-// clicking it opens the numbers sheet. Locked tiles say "soon" and wobble.
+// The lobby's hero strip: one painted card per hero, stacked down the left edge, apart from
+// the HUD so it reads as a menu rather than part of your hero. Yours slides out on a wash
+// bleed; clicking it opens the numbers sheet. Locked cards, by night, say "soon" and wobble.
 export function createHeroStrip({ el, heroes, current, pick, openNumbers }) {
 	const strip = document.createElement('nav')
 	strip.className = 'lobby-hero-strip'
 	strip.setAttribute('aria-label', 'Pick a hero')
 	strip.innerHTML = '<kbd class="lobby-hero-strip-key"></kbd>'
 	const key = strip.firstChild
-	const tiles = Object.values(heroes).map((definition) => {
+	const tiles = Object.values(heroes).map((definition, i) => {
 		const button = document.createElement('button')
 		button.type = 'button'
+		button.className = 'skin-card'
 		button.dataset.hero = definition.id
+		button.dataset.light = definition.playable ? 'day' : 'night'
+		button.style.setProperty('--wash', frontTune.skin.wash.hero)
 		if (!definition.playable) button.setAttribute('aria-disabled', 'true')
-		button.innerHTML = `<span class="lobby-hero-strip-face">${ICONS[definition.id] ?? ''}</span><span class="lobby-hero-strip-name"><span>${definition.id}</span></span>${definition.playable ? '' : '<small>soon</small>'}`
+		button.innerHTML = `${paintedCard(i)}<span class="skin-sheet"></span><span class="skin-ring"></span><span class="skin-face"></span><span class="lobby-hero-strip-face">${ICONS[definition.id] ?? ''}</span><span class="lobby-hero-strip-name skin-title"><span>${definition.id}</span></span>${definition.playable ? '' : '<small>soon</small>'}`
 		button.onclick = () => {
 			if (button.dataset.hero === current) return openNumbers()
 			if (!definition.playable) wobble(button)

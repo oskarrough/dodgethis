@@ -1,2 +1,0 @@
-Model: Opus 5.5. After: Oskar approves the splash card frames (front/skin.css, `tune.skin`).
-Redesign the lobby's hero strip (docs/look/lobby-hero-strip-before.png: Fletcher, Mitts, Carom and Skip as striped sticker tiles) in the splash cards' new drawn, aquarelle frame language, reusing skin.css rather than a second style. Then the lobby's sand table, which no longer fits the isles. Proof: one screenshot at 1440 via the verify skill; Oskar judges.

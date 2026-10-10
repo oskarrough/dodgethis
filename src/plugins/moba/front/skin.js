@@ -1,10 +1,28 @@
 import { tune } from './tune.js'
+import './skin.css'
 
 // The card skin's painted edges: SVG filters defined once per document, then referenced by
 // every card. Each filter comes in a few seeds so neighbouring cards never share a wobble.
 const seeds = 3
 
-export function ensureSkinDefs() {
+// Dress a screen's root in the card skin: the variant ('?skin=' overrides tune), its numbers
+// and the painted filters. The splash's root rides into the lobby, so both share it.
+export function applySkin(root) {
+	ensureSkinDefs()
+	root.dataset.skin = new URLSearchParams(location.search).get('skin') ?? tune.skin.style
+	for (const key of ['line', 'shadow', 'ring'])
+		root.style.setProperty('--skin-' + key, tune.skin[key] + 'px')
+	for (const [i, corner] of ['tl', 'tr', 'br', 'bl'].entries())
+		root.style.setProperty('--skin-' + corner, tune.skin.cut[i] + 'px')
+	for (const [key, unit] of [
+		['snap', 's'],
+		['press', 's'],
+		['lift', 'px'],
+	])
+		root.style.setProperty('--skin-' + key, tune.tile[key] + unit)
+}
+
+function ensureSkinDefs() {
 	if (document.getElementById('skin-defs')) return
 	const { deckle, pen, wash, bloom, brush } = tune.skin.paint
 	const filters = Array.from(

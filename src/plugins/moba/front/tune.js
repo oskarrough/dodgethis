@@ -113,7 +113,7 @@ export const tune = {
 			bloom: { frequency: 0.008, scale: 60, soften: 4, pooling: 2.2, rim: 5 },
 		},
 		// Each map's wash: apricot by day, orchid by night, never a team hue.
-		wash: { overthrow: '#f0b48a', flagfall: '#b99ad8', bonus: '#e9c9b0' },
+		wash: { overthrow: '#f0b48a', flagfall: '#b99ad8', bonus: '#e9c9b0', hero: '#f0b48a' },
 		// Painted materials per map light: frame and title wash, by day or night.
 		light: { overthrow: 'day', flagfall: 'night', bonus: 'day' },
 	},

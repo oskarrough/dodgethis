@@ -7,6 +7,7 @@ import { DEFAULT_MAP, onlineMaps } from './maps/index.js'
 import { tune as frontTune } from './front/tune.js'
 import { createBackdrop, easeShot } from './front/backdrop.js'
 import { startLoading } from './front/descent.js'
+import { applySkin } from './front/skin.js'
 import { createLobbyProps } from './lobby-props.js'
 import { createLobbyFloor } from './lobby-floor.js'
 import { HEROES } from './heroes.js'
@@ -31,6 +32,7 @@ export function createLobby({
 	const parent = canvas.parentNode
 	const next = canvas.nextSibling
 	el.className = 'moba-front front-lobby'
+	applySkin(el)
 	el.dataset.screen = 'lobby'
 	el.setAttribute('aria-label', 'Try your hero in the lobby')
 	el.innerHTML = '<div class="lobby-pick-stamp" aria-live="polite"></div>'

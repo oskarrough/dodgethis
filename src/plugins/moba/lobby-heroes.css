@@ -1,4 +1,4 @@
-/* The lobby's hero strip: fighting-game tiles stacked down the left edge. */
+/* The lobby's hero strip: small painted cards (front/skin.css) stacked down the left edge. */
 .lobby-hero-strip {
 	--tile: clamp(62.4px, min(7.8vw, 12vh), 110.4px);
 	position: fixed;
@@ -12,29 +12,6 @@
 	translate: 0 -50%;
 	font: 400 calc(var(--tile) * 0.2) / 1 var(--ui-font);
 	color: var(--ui-text);
-}
-.lobby-hero-strip svg .tone {
-	fill: var(--ui-cream);
-	stroke: var(--ui-text);
-	stroke-width: 3;
-	stroke-linejoin: round;
-}
-.lobby-hero-strip svg .cream {
-	fill: var(--ui-cream);
-	stroke: var(--ui-text);
-	stroke-width: 3;
-}
-.lobby-hero-strip svg .gold {
-	fill: var(--ui-gold);
-	stroke: var(--ui-text);
-	stroke-width: 3;
-	stroke-linejoin: round;
-}
-.lobby-hero-strip svg .ink-line {
-	fill: none;
-	stroke: var(--ui-text);
-	stroke-width: 4;
-	stroke-linecap: round;
 }
 /* One key badge for the whole strip, stuck on its top-left corner. */
 .moba-front .lobby-hero-strip-key {
@@ -50,44 +27,33 @@
 	display: none;
 }
 .moba-front .lobby-hero-strip button {
-	--hero: var(--ui-muted);
-	position: relative;
+	--sheet-paper: 10px;
+	--sheet-frame: 13px;
+	--title-cap: 8px;
+	--skin-tl: 9px;
+	--skin-tr: 4px;
+	--skin-br: 8px;
+	--skin-bl: 3px;
+	--tilt: -1.5deg;
 	display: grid;
 	grid-template-rows: 1fr auto;
 	flex: none;
 	width: var(--tile);
-	height: calc(var(--tile) * 1.1);
-	padding: 0;
-	border: clamp(3px, calc(var(--tile) * 0.035), 5px) solid var(--ui-text);
-	border-radius: 0.3em;
-	background:
-		repeating-linear-gradient(-45deg, transparent 0 0.5em, rgb(255 255 255 / 0.18) 0.5em 1em),
-		var(--hero);
-	box-shadow: 3px 4px 0 var(--ui-text);
-	color: var(--ui-cream);
-	transform: skewX(-8deg);
+	height: calc(var(--tile) * 1.12);
+	padding: calc(var(--tile) * 0.1) calc(var(--tile) * 0.08) calc(var(--tile) * 0.09);
+	border: 0;
+	background: transparent;
+	color: var(--ui-text);
+	rotate: var(--tilt);
 	transition:
-		transform 0.12s cubic-bezier(0.3, 1.8, 0.5, 1),
-		box-shadow 0.12s,
+		transform var(--skin-snap) cubic-bezier(0.3, 1.8, 0.5, 1),
 		translate 0.18s cubic-bezier(0.3, 1.8, 0.5, 1);
 }
-.moba-front .lobby-hero-strip button[data-hero='fletcher'] {
-	--hero: var(--ui-blue);
+.moba-front .lobby-hero-strip button:nth-of-type(2n) {
+	--tilt: 1.2deg;
 }
-.moba-front .lobby-hero-strip button[data-hero='mitts'] {
-	--hero: var(--ui-red);
-}
-.moba-front .lobby-hero-strip button[data-hero='carom'] {
-	--hero: var(--ui-green);
-}
-/* Face and text stand upright; the name bar keeps the frame's slant. */
-.moba-front .lobby-hero-strip-face,
-.moba-front .lobby-hero-strip-name > span,
-.moba-front .lobby-hero-strip small {
-	transform: skewX(8deg);
-}
-.lobby-hero-strip-name > span {
-	display: inline-block;
+.moba-front .lobby-hero-strip button > .skin-bleed {
+	--o: calc(var(--tile) * 0.22);
 }
 .lobby-hero-strip-face {
 	display: grid;
@@ -96,66 +62,80 @@
 }
 .lobby-hero-strip-face svg {
 	display: block;
-	width: 70%;
+	width: 68%;
 	height: auto;
 	max-height: 100%;
-	filter: drop-shadow(1px 2px 0 var(--ui-text));
+}
+.lobby-hero-strip svg .tone,
+.lobby-hero-strip svg .cream {
+	fill: var(--ui-cream);
+	stroke: var(--ui-text);
+	stroke-width: 3;
+	stroke-linejoin: round;
+}
+.lobby-hero-strip svg .gold {
+	fill: var(--ui-gold);
+	stroke: var(--ui-text);
+	stroke-width: 3;
+	stroke-linejoin: round;
+}
+.lobby-hero-strip svg .ink-line {
+	fill: none;
+	stroke: var(--ui-text);
+	stroke-width: 4;
+	stroke-linecap: round;
 }
 .lobby-hero-strip-name {
-	padding: 0.2em 0 0.15em;
-	background: var(--ui-text);
-	font-size: 0.85em;
+	padding: 0.3em 0 0.35em;
+	font-size: 0.95em;
+	text-transform: capitalize;
 	letter-spacing: 0.04em;
-	text-transform: uppercase;
 	text-align: center;
+}
+.lobby-hero-strip-name > span {
+	position: relative;
+}
+.moba-front[data-skin='painted'] .lobby-hero-strip-name::after {
+	inset: 0 -2%;
 }
 .moba-front .lobby-hero-strip button:hover,
 .moba-front .lobby-hero-strip button:focus-visible {
-	transform: skewX(-8deg) translateY(-3px) rotate(-2deg);
-	box-shadow: 4px 7px 0 var(--ui-text);
+	transform: translateY(-3px) rotate(-2deg);
+	--skin-drop: calc(var(--skin-shadow) + 3px);
 }
-/* Yours: slid out from the edge, gold frame, gold name bar. */
+.moba-front .lobby-hero-strip button:focus-visible {
+	outline: 3px solid var(--ui-text);
+	outline-offset: 4px;
+}
+/* Yours: slid out from the edge on a bleed of wash. */
 .moba-front .lobby-hero-strip button[aria-pressed='true'] {
-	translate: calc(var(--tile) * 0.18) 0;
-	border-color: var(--ui-gold);
-	box-shadow:
-		0 0 0 3px var(--ui-text),
-		5px 6px 0 3px var(--ui-text);
+	--skin-hot: 1;
+	--skin-drop: calc(var(--skin-shadow) + var(--skin-lift));
+	translate: calc(var(--tile) * 0.2) 0;
 	z-index: 1;
 }
-.moba-front .lobby-hero-strip button[aria-pressed='true'] .lobby-hero-strip-name {
-	background: var(--ui-gold);
-	color: var(--ui-text);
-}
+/* Locked: by night, faded, a stamp across it. */
 .moba-front .lobby-hero-strip button[aria-disabled='true'] {
 	cursor: not-allowed;
-	box-shadow: 2px 3px 0 var(--ui-text);
-	background:
-		repeating-linear-gradient(-45deg, transparent 0 0.5em, rgb(38 68 95 / 0.12) 0.5em 1em),
-		var(--ui-cream);
-	color: var(--ui-muted);
+	color: color-mix(in srgb, var(--ui-text) 55%, transparent);
 }
-.moba-front .lobby-hero-strip button[aria-disabled='true'] svg {
-	filter: brightness(0) opacity(0.3);
-}
-.moba-front .lobby-hero-strip button[aria-disabled='true'] .lobby-hero-strip-name {
-	background: var(--ui-muted);
-	color: var(--ui-cream);
+.moba-front .lobby-hero-strip button[aria-disabled='true'] .lobby-hero-strip-face svg {
+	opacity: 0.35;
 }
 .lobby-hero-strip small {
 	position: absolute;
 	top: 40%;
 	left: 50%;
 	translate: -50% -50%;
-	padding: 0.1em 0.3em;
+	padding: 0.1em 0.35em;
 	border: 2px solid var(--ui-text);
-	background: var(--ui-button);
+	background: var(--ui-cream);
 	color: var(--ui-text);
 	font-size: max(9px, 0.6em);
 	text-transform: uppercase;
 	rotate: -12deg;
 }
-/* A new pick lands with a little overshoot; a locked tile shakes its head. */
+/* A new pick lands with a little overshoot; a locked card shakes its head. */
 .moba-front .lobby-hero-strip button.pop {
 	animation: lobby-hero-strip-pop 0.22s cubic-bezier(0.3, 1.8, 0.5, 1);
 }
@@ -164,21 +144,21 @@
 }
 @keyframes lobby-hero-strip-pop {
 	from {
-		transform: skewX(-8deg) scale(0.8);
+		transform: scale(0.8);
 	}
 }
 @keyframes lobby-hero-strip-wobble {
 	20% {
-		transform: skewX(-8deg) rotate(-9deg);
+		transform: rotate(-9deg);
 	}
 	45% {
-		transform: skewX(-8deg) rotate(7deg);
+		transform: rotate(7deg);
 	}
 	70% {
-		transform: skewX(-8deg) rotate(-4deg);
+		transform: rotate(-4deg);
 	}
 	90% {
-		transform: skewX(-8deg) rotate(2deg);
+		transform: rotate(2deg);
 	}
 }
 @media (prefers-reduced-motion: reduce) {

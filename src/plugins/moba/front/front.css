@@ -254,7 +254,7 @@
 	pointer-events: auto;
 	color: var(--ui-text);
 	transform: rotate(calc(var(--tile-rest) * var(--tile-tilt)));
-	transition: transform var(--tile-snap) cubic-bezier(0.2, 1.9, 0.45, 1);
+	transition: transform var(--skin-snap) cubic-bezier(0.2, 1.9, 0.45, 1);
 	-webkit-tap-highlight-color: transparent;
 	user-select: none;
 	will-change: transform;
@@ -307,10 +307,10 @@
 	height: auto;
 	background: var(--ui-cream);
 	opacity: calc(var(--tile-wash) * (1 - var(--skin-hot)));
-	transition: opacity var(--tile-snap) linear;
+	transition: opacity var(--skin-snap) linear;
 }
 .front-tile-art > img {
-	transition: scale var(--tile-snap) cubic-bezier(0.2, 1.9, 0.45, 1);
+	transition: scale var(--skin-snap) cubic-bezier(0.2, 1.9, 0.45, 1);
 }
 .front-tile.selected .front-tile-art > img {
 	scale: 1.04;
@@ -346,7 +346,7 @@
 	background: var(--ui-text);
 	transform: scaleY(var(--skin-hot));
 	transform-origin: bottom;
-	transition: transform var(--tile-snap) cubic-bezier(0.3, 1.3, 0.5, 1);
+	transition: transform var(--skin-snap) cubic-bezier(0.3, 1.3, 0.5, 1);
 }
 .front-tile-label > * {
 	position: relative;
@@ -355,7 +355,7 @@
 	font: 400 clamp(36px, 4.4vw, 80px) / 0.95 var(--ui-font);
 	text-align: center;
 	letter-spacing: 0.01em;
-	transition: color var(--tile-press) linear;
+	transition: color var(--skin-press) linear;
 }
 .moba-front[data-skin='stone'] .front-tile.selected .front-tile-name {
 	color: var(--ui-cream);
@@ -397,28 +397,7 @@
 .moba-front[data-skin='stone'] .skin-edge {
 	display: none;
 }
-/* Painted: the art's straight edge sinks under paper-coloured deckle, the title sits on a
-   painted wash swatch. */
-.moba-front[data-skin='painted'] .skin-edge-paper {
-	stroke: #f8ebd5;
-}
-.moba-front[data-skin='painted'] .front-tile-label {
-	isolation: isolate;
-}
-.moba-front[data-skin='painted'] .front-tile-label::after {
-	content: '';
-	position: absolute;
-	inset: 4% 3% 14%;
-	z-index: -1;
-	border: 0 solid transparent;
-	border-inline-width: 18px;
-	border-image: url('/splash/wash-day.webp') 0 48 fill / 0 18px / 0 stretch;
-	opacity: calc(0.6 + var(--skin-hot) * 0.4);
-	transition: opacity var(--tile-press) linear;
-}
-.moba-front[data-skin='painted'] [data-light='night'] .front-tile-label::after {
-	border-image-source: url('/splash/wash-night.webp');
-}
+/* Painted: the frame's own inset holds the picture. */
 .moba-front[data-skin='painted'] .front-tile {
 	padding: var(--sheet-frame, 30px) var(--sheet-frame, 30px) 8px;
 }
@@ -439,12 +418,12 @@
 	height: 78%;
 }
 .front-tile.selected {
-	transform: translate(calc(var(--tile-lift) * -0.5), calc(var(--tile-lift) * -1))
+	transform: translate(calc(var(--skin-lift) * -0.5), calc(var(--skin-lift) * -1))
 		rotate(calc(var(--tile-rest) * var(--tile-tilt) * -0.6)) scale(var(--tile-scale));
 }
 .front-tile:active {
 	transform: translate(3px, 4px) scale(0.97);
-	transition-duration: var(--tile-press);
+	transition-duration: var(--skin-press);
 }
 /* Dodgeball, the bonus round: a small stone tag under the maps, not a peer card. */
 .moba-front .front-bonus {
@@ -465,8 +444,8 @@
 	color: var(--ui-text);
 	transform: translateX(-50%) rotate(1deg);
 	transition:
-		transform var(--tile-snap) cubic-bezier(0.2, 1.9, 0.45, 1),
-		color var(--tile-press) linear;
+		transform var(--skin-snap) cubic-bezier(0.2, 1.9, 0.45, 1),
+		color var(--skin-press) linear;
 	-webkit-tap-highlight-color: transparent;
 	user-select: none;
 }
@@ -477,7 +456,7 @@
 	stroke: currentColor;
 	stroke-width: 3.4;
 	stroke-linecap: round;
-	transition: transform var(--tile-snap) cubic-bezier(0.2, 1.9, 0.45, 1);
+	transition: transform var(--skin-snap) cubic-bezier(0.2, 1.9, 0.45, 1);
 }
 .front-bonus > svg:not(.skin-paint) path {
 	fill: none;
@@ -503,7 +482,7 @@
 }
 .moba-front .front-bonus:active {
 	transform: translate(-50%, 2px) scale(0.97);
-	transition-duration: var(--tile-press);
+	transition-duration: var(--skin-press);
 }
 .moba-front kbd {
 	display: inline-block;

@@ -2,7 +2,8 @@
    a cream ring round whatever you're on (the same ring your unit wears in the match). Numbers
    come from `tune.skin` as --skin-line, --skin-shadow, --skin-ring and the four corner cuts
    --skin-tl/tr/br/bl. Markup: `.skin-card` > `.skin-ring` + `.skin-face` + your content;
-   `.selected` lights the ring. */
+   `.selected` lights the ring. `skin.js` `applySkin` sets the variables and the variant on a
+   screen's root, `paintedCard` adds the painted layers. */
 
 /* One chamfer for every layer: --g grows (or with a negative value shrinks) the shape by that
    much on every side while keeping each cut parallel. */
@@ -40,7 +41,7 @@
 	inset: 0;
 	background: var(--ui-text);
 	translate: var(--skin-drop) var(--skin-drop);
-	transition: translate var(--tile-snap) cubic-bezier(0.2, 1.9, 0.45, 1);
+	transition: translate var(--skin-snap) cubic-bezier(0.2, 1.9, 0.45, 1);
 }
 .skin-card > .skin-ring,
 .skin-card > .skin-face {
@@ -54,8 +55,8 @@
 	opacity: var(--skin-hot);
 	scale: calc(0.96 + var(--skin-hot) * 0.04);
 	transition:
-		opacity var(--tile-press) linear,
-		scale var(--tile-snap) cubic-bezier(0.2, 1.9, 0.45, 1);
+		opacity var(--skin-press) linear,
+		scale var(--skin-snap) cubic-bezier(0.2, 1.9, 0.45, 1);
 }
 .skin-ring::before {
 	--g: var(--skin-ring);
@@ -84,18 +85,18 @@
 	background: var(--ui-text);
 	transform: scaleY(var(--skin-flood, 0));
 	transform-origin: bottom;
-	transition: transform var(--tile-snap) cubic-bezier(0.3, 1.3, 0.5, 1);
+	transition: transform var(--skin-snap) cubic-bezier(0.3, 1.3, 0.5, 1);
 }
 .skin-card.selected {
 	--skin-hot: 1;
-	--skin-drop: calc(var(--skin-shadow) + var(--tile-lift));
+	--skin-drop: calc(var(--skin-shadow) + var(--skin-lift));
 	z-index: 1;
 }
 .skin-card:active {
 	--skin-drop: calc(var(--skin-shadow) * 0.3);
 }
 .skin-card:active::before {
-	transition-duration: var(--tile-press);
+	transition-duration: var(--skin-press);
 }
 @media (prefers-reduced-motion: reduce) {
 	.skin-card::before,
@@ -126,7 +127,7 @@
 }
 .skin-shadow {
 	translate: var(--skin-drop) var(--skin-drop);
-	transition: translate var(--tile-snap) cubic-bezier(0.2, 1.9, 0.45, 1);
+	transition: translate var(--skin-snap) cubic-bezier(0.2, 1.9, 0.45, 1);
 }
 .skin-paint .skin-shadow-paint {
 	fill: var(--ui-text);
@@ -144,8 +145,8 @@
 	opacity: var(--skin-hot);
 	scale: calc(0.94 + var(--skin-hot) * 0.06);
 	transition:
-		opacity var(--tile-press) linear,
-		scale var(--tile-snap) cubic-bezier(0.2, 1.9, 0.45, 1);
+		opacity var(--skin-press) linear,
+		scale var(--skin-snap) cubic-bezier(0.2, 1.9, 0.45, 1);
 	will-change: opacity, scale;
 }
 .skin-card > .skin-halo {
@@ -188,7 +189,7 @@
 }
 .moba-front[data-skin='wash'] .skin-wash {
 	opacity: calc(0.5 + var(--skin-hot) * 0.5);
-	transition: opacity var(--tile-press) linear;
+	transition: opacity var(--skin-press) linear;
 }
 @media (prefers-reduced-motion: reduce) {
 	.skin-shadow,
@@ -225,4 +226,28 @@
 }
 [data-light='night'] > .skin-sheet::after {
 	border-image-source: url('/splash/frame-night.webp');
+}
+
+/* A title on a painted wash swatch: day ochre, or violet under a `[data-light='night']` card. */
+.moba-front[data-skin='painted'] .skin-title {
+	position: relative;
+	isolation: isolate;
+}
+.moba-front[data-skin='painted'] .skin-title::after {
+	content: '';
+	position: absolute;
+	inset: 4% 3% 14%;
+	z-index: -1;
+	border: 0 solid transparent;
+	border-inline-width: var(--title-cap, 18px);
+	border-image: url('/splash/wash-day.webp') 0 48 fill / 0 var(--title-cap, 18px) / 0 stretch;
+	opacity: calc(0.6 + var(--skin-hot) * 0.4);
+	transition: opacity var(--skin-press) linear;
+}
+.moba-front[data-skin='painted'] [data-light='night'] .skin-title::after {
+	border-image-source: url('/splash/wash-night.webp');
+}
+/* The picture's straight edge sinks under paper-coloured deckle. */
+.moba-front[data-skin='painted'] .skin-edge-paper {
+	stroke: #f8ebd5;
 }
