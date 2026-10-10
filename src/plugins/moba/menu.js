@@ -172,13 +172,41 @@ export function createMatchMenu({
 							label: app.session.authoritative ? 'Return to lobby' : 'Room menu · waiting for host',
 							onSelect: leave,
 						},
+						share,
 					]
 				: [
 						{ label: 'Again', key: 'KeyR', keyLabel: 'R', onSelect: restart },
 						{ label: 'Return to lobby', onSelect: leave },
+						share,
 					],
 		})
 		if (app.renderer) recap.showTable(document.querySelector('.overlay .dialog-card'))
+	}
+	// The result card's brag: a line of the match and the link the address bar shows, the room's in a shared match.
+	const share = {
+		label: 'Copy link',
+		async onSelect() {
+			const won = sim.lane?.match.winner === hero.team
+			const row = sim.matchStats?.[hero.id]
+			const name = (id) => id[0].toUpperCase() + id.slice(1)
+			const text = [
+				`${won ? 'Won' : 'Lost'} on ${name(setup.map ?? 'overthrow')} as ${name(hero.heroId)}${row ? `: ${row.kills} kills, ${row.deaths} deaths` : ''}.`,
+				`${app.session.shared ? 'Rematch' : 'Your turn'}: ${location.href}`,
+			].join('\n')
+			try {
+				await navigator.clipboard.writeText(text)
+			} catch {
+				// Plain-http LAN play has no async clipboard; the card sits under the curtain, so copy from inside it.
+				const area = el('textarea', '', document.querySelector('.overlay .dialog-card'))
+				area.value = text
+				area.select()
+				document.execCommand('copy')
+				area.remove()
+			}
+			share.label = 'Copied'
+			for (const label of document.querySelectorAll('.overlay .actions .label'))
+				if (label.textContent === 'Copy link') label.textContent = 'Copied'
+		},
 	}
 	run.clock.pause(frozen)
 	run.intents.suspend(frozen)

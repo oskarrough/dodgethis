@@ -5,10 +5,27 @@ export default {
 			return env.LOBBIES.get(env.LOBBIES.idFromName('public')).fetch(request)
 		}
 		// A room link (/ABCDE) is the game page; the page reads the code from its path.
-		if (/^\/[A-HJ-NP-Z2-9]{5}\/?$/i.test(url.pathname))
-			return env.ASSETS.fetch(new Request(new URL('/', url), request))
+		const room = /^\/([A-HJ-NP-Z2-9]{5})\/?$/i.exec(url.pathname)
+		if (room)
+			return roomPage(await env.ASSETS.fetch(new Request(new URL('/', url), request)), url, room[1])
 		return env.ASSETS.fetch(request)
 	},
+}
+
+// Its link preview names the room, and points at this host so a preview build unfurls its own art.
+function roomPage(page, url, code) {
+	const content = {
+		'og:title': `Join my DodgeThis game · ${code.toUpperCase()}`,
+		'og:description': 'Tap to join. No install; it plays in the browser.',
+		'og:url': url.href,
+		'og:image': new URL('/og.jpg', url).href,
+	}
+	const rewriter = new HTMLRewriter()
+	for (const [property, value] of Object.entries(content))
+		rewriter.on(`meta[property="${property}"]`, {
+			element: (meta) => meta.setAttribute('content', value),
+		})
+	return rewriter.transform(page)
 }
 
 export class LobbyDirectory {
