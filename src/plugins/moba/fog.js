@@ -27,50 +27,82 @@ export function createFog(scene, bounds, brush = []) {
 	scene.add(plane)
 	const seen = new Set()
 	const at = (unit) => unit.body.mesh?.position ?? unit.body.position
+	const fill = `rgba(${f.color}, ${f.dim})`
+	const s = f.resolution
+	// Reused per frame: viewer units, their sight radii, and the circles last drawn (x, y, r in px).
+	const viewers = []
+	const radii = []
+	let drawn = new Float64Array(192)
+	let circles = new Float64Array(192)
+	let count = -1
+	const hidden = (p) =>
+		brush.some((b) => Math.abs(p.x - b.x) <= b.halfX && Math.abs(p.z - b.z) <= b.halfZ)
+	const sees = (p) => {
+		const reach = hidden(p) ? f.brush * f.brush : Infinity
+		for (let i = 0; i < viewers.length; i++) {
+			const q = at(viewers[i])
+			const d = (q.x - p.x) ** 2 + (q.z - p.z) ** 2
+			if (d <= radii[i] * radii[i] && d <= reach) return true
+		}
+		return false
+	}
+	const look = (unit, team, r) => {
+		if (unit.team !== team || unit.dead) return
+		viewers.push(unit)
+		radii.push(r)
+	}
+	const show = (unit, team) => {
+		const visible = unit.team === team || sees(at(unit))
+		if (visible) seen.add(unit.id)
+		unit.body.mesh.visible = visible
+	}
 
 	return {
 		seen,
 		update(sim, team) {
 			const lane = sim.lane
-			const viewers = [
-				...[...sim.heroes, ...sim.dummies].map((u) => [u, f.sight.hero]),
-				...(lane?.minions ?? []).map((u) => [u, f.sight.minion]),
-				...(lane?.structures ?? []).map((u) => [u, f.sight.structure]),
-			].filter(([u]) => u.team === team && !u.dead)
-			const hidden = (p) =>
-				brush.some((b) => Math.abs(p.x - b.x) <= b.halfX && Math.abs(p.z - b.z) <= b.halfZ)
-			const sees = (p) => {
-				const reach = hidden(p) ? f.brush : Infinity
-				return viewers.some(([u, r]) => {
-					const q = at(u)
-					const d = (q.x - p.x) ** 2 + (q.z - p.z) ** 2
-					return d <= r * r && d <= reach * reach
-				})
-			}
+			viewers.length = radii.length = 0
+			for (const u of sim.heroes) look(u, team, f.sight.hero)
+			for (const u of sim.dummies) look(u, team, f.sight.hero)
+			for (const u of lane?.minions ?? []) look(u, team, f.sight.minion)
+			for (const u of lane?.structures ?? []) look(u, team, f.sight.structure)
 			seen.clear()
 			// Structures stay drawn, as remembered landmarks; heroes and minions hide.
 			for (const unit of lane?.structures ?? []) seen.add(unit.id)
-			const minions = (lane?.minions ?? []).filter((u) => !u.dead)
-			for (const unit of [...sim.heroes, ...sim.dummies, ...minions]) {
-				const visible = unit.team === team || sees(at(unit))
-				if (visible) seen.add(unit.id)
-				unit.body.mesh.visible = visible
-			}
+			for (const unit of sim.heroes) show(unit, team)
+			for (const unit of sim.dummies) show(unit, team)
+			for (const unit of lane?.minions ?? []) if (!unit.dead) show(unit, team)
 
-			const s = f.resolution
+			// Redraw and reupload the dim only when a circle moved, appeared or vanished.
+			const n = viewers.length * 3
+			if (circles.length < n)
+				[circles, drawn, count] = [new Float64Array(n * 2), new Float64Array(n * 2), -1]
+			let same = n === count
+			for (let i = 0; i < viewers.length; i++) {
+				const q = at(viewers[i])
+				const x = (q.x + bounds.halfX) * s
+				const y = (q.z + bounds.halfZ) * s
+				const r = radii[i] * s
+				circles[i * 3] = x
+				circles[i * 3 + 1] = y
+				circles[i * 3 + 2] = r
+				if (same) same = drawn[i * 3] === x && drawn[i * 3 + 1] === y && drawn[i * 3 + 2] === r
+			}
+			if (same) return
+			;[drawn, circles, count] = [circles, drawn, n]
 			ctx.globalCompositeOperation = 'source-over'
 			ctx.clearRect(0, 0, canvas.width, canvas.height)
-			ctx.fillStyle = `rgba(${f.color}, ${f.dim})`
+			ctx.fillStyle = fill
 			ctx.fillRect(0, 0, canvas.width, canvas.height)
 			ctx.globalCompositeOperation = 'destination-out'
 			ctx.fillStyle = '#000'
 			ctx.beginPath()
-			for (const [u, r] of viewers) {
-				const q = at(u)
-				const x = (q.x + bounds.halfX) * s
-				const y = (q.z + bounds.halfZ) * s
-				ctx.moveTo(x + r * s, y)
-				ctx.arc(x, y, r * s, 0, Math.PI * 2)
+			for (let i = 0; i < n; i += 3) {
+				const x = drawn[i]
+				const y = drawn[i + 1]
+				const r = drawn[i + 2]
+				ctx.moveTo(x + r, y)
+				ctx.arc(x, y, r, 0, Math.PI * 2)
 			}
 			ctx.fill()
 			texture.needsUpdate = true
