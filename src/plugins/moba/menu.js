@@ -47,8 +47,6 @@ export function createMatchMenu({
 		resetInput()
 		app.modes.start('moba', { options: { setup } })
 	}
-	const resumeHint = () =>
-		app.input.activeDevice() === 'gamepad' ? 'B to resume' : 'Esc to resume'
 	function toggle() {
 		if (!ready() || sim.lane?.match.winner || !app.session.actions.includes('pause')) return
 		paused = !paused
@@ -60,7 +58,6 @@ export function createMatchMenu({
 			theme: 'moba-pause',
 			pointerGuard: true,
 			spaceConfirm: false,
-			subtitle: resumeHint(),
 			actions: [
 				{ label: 'Resume', onSelect: toggle },
 				quickCastAction(),
@@ -164,11 +161,6 @@ export function createMatchMenu({
 		if (select && !selectHeld && !app.overlay.visible) board = !board
 		selectHeld = select
 		if (!ready() || !app.overlay.visible) return
-		if (paused) {
-			const hint = document.querySelector('.overlay[data-theme="moba-pause"] .sub')
-			const text = resumeHint()
-			if (hint && hint.textContent !== text) hint.textContent = text
-		}
 		const input = app.input.consumeMenuInput()
 		if (pressed && paused && !sim.lane?.match.winner) toggle()
 		else app.overlay.handleGamepad(input)

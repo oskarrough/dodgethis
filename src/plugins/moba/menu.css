@@ -21,7 +21,9 @@
 }
 .overlay[data-theme='moba-pause'] h1 {
 	color: var(--ui-text);
-	background: var(--ui-cream);
+	background: none;
+	border: 0;
+	box-shadow: none;
 	-webkit-text-stroke: 0;
 }
 .overlay[data-theme^='moba'] .sub {
