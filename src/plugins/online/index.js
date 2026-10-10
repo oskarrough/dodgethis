@@ -8,11 +8,10 @@ import { playerName, seatKey, validName } from './names.js'
 // Leaving restarts that mode solo. Online never names the mode, and the mode never learns it is online.
 // `join` is a room code from a link: the first frame joins it, and a dead code stays solo with a notice.
 export default function online(app, { join = null } = {}) {
-	// `?build=1` in dev fakes a page from an old build, to see the reload notice.
-	const fakeBuild =
-		import.meta.env?.DEV && Number(new URLSearchParams(location.search).get('build'))
+	// `/CODE?build=old` in dev fakes a page from an older build than the room's, to see the reload notice.
+	const old = import.meta.env?.DEV && new URLSearchParams(location.search).get('build') === 'old'
 	const net = new Net({
-		build: fakeBuild || BUILD,
+		build: old ? BUILD - 1 : BUILD,
 		capacity: () => app.modes.current?.capacity ?? MAX_PLAYERS,
 		validJoinData: (data) =>
 			validName(data?.name) && (app.modes.current?.validJoinData?.(data) ?? true),
