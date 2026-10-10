@@ -107,11 +107,6 @@ canvas.moba-dead-world {
 	width: 100%;
 	border-collapse: collapse;
 }
-.moba-results caption {
-	font: 400 28px / 1.2 var(--ui-font);
-	text-align: left;
-	margin-bottom: 10px;
-}
 .moba-results :is(th, td) {
 	padding: 8px 10px;
 	border-bottom: 1px solid color-mix(in srgb, var(--ui-text) 20%, transparent);
