@@ -1015,6 +1015,7 @@ export const tune = {
 		rejoinDistance: 0.3, // a duplicate click replans if the hero was displaced this far from its path
 		clearance: 0.1, // extra room kept from pillars beyond the body's radius
 		attackRange: 5.5, // an attack order walks until the target is this close
+		repeatPing: 0.1, // a held RMB re-aims every step; its small rings still drop at most this often
 	},
 	attack: {
 		damage: 90,

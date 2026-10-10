@@ -161,7 +161,7 @@ export async function createBrowserApp() {
 	app.debug.tune('pointClick', POINT_CLICK, (f, t) => {
 		f.add(t, 'deadzone', 0, 0.5, 0.01).name('stick deadzone')
 		f.add(t, 'curve', 1, 3, 0.05).name('stick curve')
-		f.add(t, 'resend', 30, 300, 10).name('RMB resend (ms)')
+		f.add(t, 'resend', 10, 300, 1).name('RMB resend (ms)')
 	})
 	app.debug.tune('output', tune.output, (f, t) => {
 		f.add(t, 'sound').onChange(() => {

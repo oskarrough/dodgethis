@@ -115,7 +115,9 @@ export function direct(device, ground) {
 // A arms an attack-move: the next left click orders it (the sim picks the enemy nearest the click); Esc, S, RMB or a cast disarm.
 // Pad: the left stick moves; RB RT LB LT hold to aim (`held.slotN`) and cast on release; X mounts, A attacks, B cancels a held cast.
 // `stickAim(dir, magnitude, slot)` is the mode's: it turns the right stick into a ground point (dir null when the stick rests).
-export const POINT_CLICK = { deadzone: 0.18, curve: 1.5, resend: 100 }
+// `resend` is under one 60 Hz step, so a held RMB steers every step at 60 Hz and every second frame at 144 Hz,
+// which keeps a guest well inside online's 120 messages a second.
+export const POINT_CLICK = { deadzone: 0.18, curve: 1.5, resend: 13 }
 const AIM_KEYS = { KeyQ: 'slot1', KeyW: 'slot2', KeyE: 'slot3', KeyR: 'slot4' }
 const KEYS = { ...AIM_KEYS, KeyZ: 'slot5', KeyS: 'stop' }
 const PAD_AIMS = [

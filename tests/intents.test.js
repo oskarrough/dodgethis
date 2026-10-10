@@ -198,7 +198,7 @@ function clicker() {
 }
 const buttons = (...down) => Array.from({ length: 16 }, (_, i) => down.includes(i))
 
-test('pointClick: RMB orders at the cursor and again every 100 ms while held; keys quick-cast at the cursor', () => {
+test('pointClick: RMB orders at the cursor and again every resend ms while held; keys quick-cast at the cursor', () => {
 	const d = clicker()
 	const poll = pointClick(d, () => ({ x: 4, y: 0, z: -2 }), { ...POINT_CLICK, quickCast: true })
 	d.order = true
@@ -211,9 +211,9 @@ test('pointClick: RMB orders at the cursor and again every 100 ms while held; ke
 		{ action: 'slot1', at: { x: 4, z: -2 } },
 		{ action: 'stop', at: null },
 	])
-	d.time = 50
+	d.time = POINT_CLICK.resend / 2
 	expect(poll().order).toBeNull()
-	d.time = 100
+	d.time = POINT_CLICK.resend
 	expect(poll().order).toEqual({ x: 4, z: -2 })
 	d.orderHeld = false
 	d.time = 400

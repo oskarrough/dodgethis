@@ -76,7 +76,7 @@ Landed with moba M1: the `pointClick` scheme, `input.stickAim` (the kernel hands
 
 1. Per-mode bindings: confirmed. The mode declares a scheme; the core owns the bindings.
 2. Pointer picking: confirmed. Core gives the cursor's ground point, hover highlight is mode presentation, and intents carry only points.
-3. Right mouse: confirmed. `pointClick` adds RMB held state and `contextmenu` suppression, and re-sends `order` every 100 ms while RMB is held.
+3. Right mouse: confirmed. `pointClick` adds RMB held state and `contextmenu` suppression, and re-sends `order` every 13 ms while RMB is held (each 60 Hz step; every second frame at 144 Hz).
 4. Twin-stick: confirmed with one change. The mode supplies `input.stickAim((dir, magnitude, slot) → point)`, so range, remap and aim assist stay in moba.
 5. Body parameters: confirmed. The body takes a movement profile at creation, a per-unit `speedMul` (mount, slow, levels) and `dash(dir, { distance, time })`. Cooldowns belong to the mode.
 6. Render interpolation: confirmed. It's in core in phase C. `present` gets `t.alpha`, but the core poses registered objects itself.

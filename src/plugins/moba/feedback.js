@@ -49,6 +49,7 @@ export function createFeedback({
 		sim.lane?.structures.find((u) => u.id === id)
 
 	let aggroPingTick = -1
+	let pingedAt = -Infinity // the sim tick of the last order ring
 	const sounded = new Map()
 	function cue(name, fact, gain = 1, ...extra) {
 		const tick = fact.tick ?? sim.tick
@@ -214,6 +215,8 @@ export function createFeedback({
 				return
 			case 'order': {
 				if (fact.hero !== local) return
+				if (fact.repeat && sim.tick - pingedAt < tune.orders.repeatPing / STEP - 1e-9) return
+				pingedAt = sim.tick
 				const attack = fact.kind === 'attack'
 				view.ping(fact.kind, fact.point, {
 					follow: attack ? fact.target : null,
