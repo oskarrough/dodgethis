@@ -45,7 +45,7 @@ export const maps = {
 	flagfall: {
 		layout: flagfallLayout,
 		pieces: [structures, minions, bots],
-		palette: () => ({ ...tune.flagfall.palette }),
+		palette: () => ({ ...tune.flagfall.palette, light: tune.flagfall.light }),
 		debugTune: {
 			name: 'flagfall (applies on restart)',
 			values: tune.flagfall,

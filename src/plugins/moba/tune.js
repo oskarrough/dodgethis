@@ -162,50 +162,95 @@ export const tune = {
 	flagfall: {
 		name: 'Flagfall',
 		scale: 1, // one multiplier for every layout metre; applies on restart
-		palette: { page: 0x536e79, courtShade: 0x708883, scenery: 0x899b9b },
-		colors: { tarmac: '#e4dfcf', chalk: '#f5f1e5', rock: '#aaa49b', rockDark: '#656575' },
+		// Flagfall by night: Overthrow's stone isle (isle.js) under a moon. These replace
+		// overthrowTerrain's keys of the same name; the rest (cliff, spires, stone) are shared.
+		// The surround is darkest, the court one clear step lighter, units and glows lightest.
+		palette: { page: 0x1b1733, courtShade: 0x6a6390, scenery: 0x8a83ab, court: 0x1d4541 },
+		colors: {
+			tarmac: '#6d6597', // the court: mid-violet, greyed so team blue stays its own hue
+			chalk: '#635b8b', // worn stone inlays, under 10% darker than the court
+			moss: '#3a7068',
+			mossShade: '#264b4a',
+			stoneLit: '#463e6e',
+			stone: '#362f5a',
+			stoneShade: '#272146',
+			ink: '#1c2244',
+			haze: '#1d1839',
+			cloudLit: '#4c4280',
+			cloud: '#372f65',
+			cloudShade: '#2a2353',
+			cloudDeep: '#1f1940',
+			water: '#fbf9ff',
+			waterShade: '#c6bfe4',
+		},
+		// One cool moon from the upper left: lit faces pale lilac, shade deep violet.
+		light: {
+			dir: [-0.6, 0.72, -0.35],
+			sun: 0xdde2ff,
+			shade: 0x2a2450,
+			bandMix: [0.1, 0.45], // linear mixes: a strong lit band would lift the night's darks
+			shadow: '#4a4277',
+			shadowStrength: 0.38,
+			shadowLength: 0.45,
+			shadowPixelsPerMetre: 16,
+		},
+		// A soft pool of moonlight on the court, falling off toward the rim.
+		pool: { strength: 0.16, spread: 0.95 },
+		haze: { top: 1.2, bottom: 24, power: 0.8, max: 0.93, near: 14, far: 100 },
+		clouds: {
+			y: -34,
+			size: 900,
+			scale: 38,
+			drift: [0.3, 0.1],
+			puffs: 40,
+			puffMin: 4,
+			puffMax: 8,
+			puffDepth: [12, 28],
+			bob: 0.5,
+		},
+		falls: [],
+		// A big lilac moon low in the void past Blue's end, rising out of the cloud.
+		moon: {
+			at: [-80, -24, -12],
+			size: 24,
+			color: '#d4cbf2',
+			seas: '#bfb3e6',
+			ink: '#1c2244',
+			halo: '#b9a9ee',
+			haloScale: 1.5, // never bloom past its source
+			haloOpacity: 0.2,
+		},
+		// The night garden: deep-teal leaf fans and orchid bells over the rim, glowing cream.
+		garden: {
+			every: 1, // rim points between clumps
+			chance: 0.6,
+			sink: 0.25, // m under the rim the clump roots
+			leaves: 5,
+			leaf: [1.1, 2.1], // length range, m
+			width: 0.42,
+			low: 0.35, // m the near rims' leaves may rise, so they never cover the court
+			tall: 1.4, // the far rim's
+			bells: 2,
+			bell: 0.32,
+			flower: '#b98fe0', // orchid: never coral, never a team hue
+			glow: '#fff2d6',
+			glowSize: 0.55,
+			glowHalo: 2,
+			glowHaloOpacity: 0.22,
+		},
+		// Sparse cream specks drifting in the dark below the rim.
+		specks: { count: 160, near: 2, far: 60, y: [-30, -3], size: 0.5, color: '#f3ecff' },
 		rockDepth: 1.8,
-		// Flagfall scenery only; metres before map scale, all apply on restart.
-		finish: {
-			anisotropy: 8,
-			courtAsset: '/scenery/flagfall-court.webp',
-			courtMetres: 8,
-			courtTexture: 3, // grit contrast gain; 1 is the tile as painted
-			courtRange: 0.07, // grit never moves the floor more than ±7%
-			courtMean: 0.731, // linear luminance mean; modulate without lowering the pale floor
-			hedgeAsset: '/scenery/flagfall-hedge.webp',
-			hedgeMetres: 5,
-			hedgeTexture: 0.35,
-			warm: '#f2e5c9',
-			cool: '#c7cdd0',
-			lightStrength: 0.2,
-			lightSpread: 0.85,
-			contactPixelsPerMetre: 12,
-			contactWidth: 1.2,
-			contactStrength: 0.3,
-			edgeWidth: 1.3,
-			edgeStrength: 0.1,
-			rock: '#b3a28c',
-			rockDark: '#617175',
-			rockGrain: 0.045,
-			rockGrainMetres: 0.04,
-			rockStrata: 0.22,
-			wetHeight: 0.5,
-			wetStrength: 0.28,
-			cover: '#70877a',
-			wall: '#a69680', // base blocks are sandstone walls, not hedges
-			wallBlock: [1.5, 0.5], // block length, course height
-			wallFlag: 3, // square paving on the wall tops
-			pillar: '#b0a690',
-			pillarCourse: 0.6, // stacked drums
-			pillarFlutes: 14,
-			fluteDepth: 0.07,
-			mortar: 0.14, // joint darkening, never ink
-			mortarWidth: 0.04,
-			mottle: 0.07, // tone drift between blocks
-			footHeight: 0.4,
-			footShade: 0.16,
-			coverShade: 0.23,
+		// The shore kerb: low coursed stone on the safe rim, cut at the dunk gaps. Metres.
+		kerb: { height: 0.55, depth: 0.55, offset: 0.45, ends: 0.3 }, // offset: share of the margin
+		// Cream glows: lantern bulbs and halos. Small; never past their source.
+		glow: {
+			color: '#fff2d6',
+			lantern: 0.2,
+			halo: 3,
+			haloOpacity: 0.45,
+			post: 2.2,
+			postRadius: 0.22,
 		},
 		water: {
 			asset: '/scenery/flagfall-water.webp', // generated shallows; flat fallback if unavailable
@@ -213,7 +258,7 @@ export const tune = {
 			fallbackSize: 600,
 			drop: 1.7,
 			layerGap: 0.015,
-			color: '#536e79',
+			color: '#2b2550', // the minimap's void past the court
 			foamColor: '#b3c8c2',
 			padColor: '#618b7e',
 			detailAsset: '/scenery/flagfall-ripple.webp',
@@ -347,8 +392,8 @@ export const tune = {
 			hop: 1.1, // m of lift on the way out
 			fly: 0.45, // s in the air
 			sink: 0.6, // s under the surface before it's gone
-			wet: '#7f9fa3', // the slick print
-			wetOpacity: 0.55,
+			wet: '#9fe3d8', // the slick print: a pale teal glow, never a team hue
+			wetOpacity: 0.3,
 			wetStripe: 0.6, // m between the hazard stripes on the slick
 			splash: { count: 28, speed: 2.2, life: 0.7, lifeStep: 0.1, size: 0.14, sizeStep: 0.05 },
 			spray: { count: 10, speed: 4, life: 0.45, lifeStep: 0.05, size: 0.09, sizeStep: 0.03 },

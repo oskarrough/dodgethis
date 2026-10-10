@@ -40,7 +40,13 @@ export function createMatchTerrain(
 	// The renderer survives map switches; closure contents aren't in Three's default
 	// program key, so never reuse Flagfall's shader for Overthrow (or vice versa).
 	ground.customProgramCacheKey = () =>
-		finish ? 'flagfall-court-finish' : isle ? 'overthrow-court' : 'quiet-court'
+		finish
+			? 'flagfall-court-finish'
+			: isle
+				? s.pool
+					? 'night-court'
+					: 'overthrow-court'
+				: 'quiet-court'
 	const courtTile = finish
 		? loadFlagfallTile(finish.courtAsset, finish.anisotropy, own, finish.courtMean)
 		: null
@@ -179,6 +185,7 @@ export function createMatchTerrain(
 				courtShadowPrint: { value: shadowPrint },
 				courtShadowOn: { value: shadowPrint ? 1 : 0 },
 				courtShadowStrength: { value: s.light.shadowStrength },
+				courtPool: { value: new THREE.Vector2(s.pool?.strength ?? 0, s.pool?.spread ?? 1) },
 			})
 		if (finish)
 			Object.assign(shader.uniforms, {
@@ -227,7 +234,14 @@ diffuseColor.rgb = mix(diffuseColor.rgb, courtMoss, step(rim, lip));
 if (courtShadowOn > 0.5) {
 	float shaded = 1.0 - texture2D(courtShadowPrint, vec2(0.5) + vec2(courtPoint.x, -courtPoint.y) / (courtEdge * 2.0)).r;
 	diffuseColor.rgb = mix(diffuseColor.rgb, courtShadow.rgb, shaded * courtShadowStrength);
-}
+}${
+				s.pool
+					? `
+// A soft pool of moonlight: full in the middle, falling off toward the rim.
+vec2 poolAt = courtPoint / (courtEdge * courtPool.y);
+diffuseColor.rgb *= 1.0 - courtPool.x * (1.0 - exp(-dot(poolAt, poolAt) * 1.6));`
+					: ''
+			}
 `
 		: ''
 }${
@@ -245,7 +259,7 @@ diffuseColor.rgb *= texture2D(contactPrint, vec2(0.5) + vec2(courtPoint.x, -cour
 			)
 		if (isle)
 			shader.fragmentShader =
-				'uniform vec2 courtEdge, courtLip;\nuniform vec3 courtMoss, courtShadow;\nuniform sampler2D courtShadowPrint;\nuniform float courtShadowOn, courtShadowStrength;\n' +
+				'uniform vec2 courtEdge, courtLip, courtPool;\nuniform vec3 courtMoss, courtShadow;\nuniform sampler2D courtShadowPrint;\nuniform float courtShadowOn, courtShadowStrength;\n' +
 				shader.fragmentShader
 		if (finish)
 			shader.fragmentShader =

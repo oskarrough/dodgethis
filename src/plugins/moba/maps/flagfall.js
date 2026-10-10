@@ -71,6 +71,8 @@ export function flagfallLayout() {
 		name: s.name,
 		preview: `<rect x="${-s.yard.halfX}" y="${-s.yard.halfZ}" width="${s.yard.halfX * 2}" height="${s.yard.halfZ * 2}"/>${[-1, 1].map((side) => `<path d="M${-bounds.halfX},${side * s.lane.innerZ} H${bounds.halfX}"/>`).join('')}`,
 		settings: s,
+		structureStyle: 'stone',
+		light: s.light,
 		bounds,
 		walkingBounds: bounds,
 		boxes,

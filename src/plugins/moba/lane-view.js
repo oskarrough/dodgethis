@@ -5,7 +5,7 @@ import { tune } from './tune.js'
 import { look } from './look.js'
 import { convexHull } from './match-terrain.js'
 
-// `layout.structureStyle === 'stone'` (Overthrow by day) builds towers and the core in stone
+// `layout.structureStyle === 'stone'` (both isles; `layout.light` picks sun or moon) builds towers and the core in stone
 // with team colour only on banners and crystals, and prints each one's shadow on the court.
 export function createLaneView(scene, smooth = null, layout = null) {
 	const bodies = new Set()
@@ -211,7 +211,7 @@ export function createLaneView(scene, smooth = null, layout = null) {
 		}
 		// The low sun's printed shadow: base circle swept toward the tip, never a shadow map.
 		function printShadow(px, pz, r, height) {
-			const light = tune.overthrowTerrain.light
+			const light = layout.light ?? tune.overthrowTerrain.light
 			const [lx, ly, lz] = light.dir
 			const reach = (light.shadowLength / Math.max(0.05, ly)) * height
 			const points = []

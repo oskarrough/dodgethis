@@ -8,7 +8,8 @@ import { saucerShape } from './lobby-floor.js'
 import { BOLLARD_ROLES, bollardGeometries } from './bollard.js'
 import { WINDBREAK_ROLES, windbreakGeometries } from './windbreak.js'
 import { createMatchTerrain } from './match-terrain.js'
-import { createFlagfallWater, loadFlagfallTile } from './flagfall-water.js'
+import { glowTexture } from './isle.js'
+import { loadFlagfallTile } from './flagfall-water.js'
 import { FLOOR, buildColliders } from './obstacles.js'
 import { DEFAULT_MAP, mapLayout } from './maps/index.js'
 export { FLOOR, PILLARS, SPAWN, walkable, clampWalkable } from './obstacles.js'
@@ -176,7 +177,6 @@ diffuseColor.rgb *= 1.0 - coverShade * (1.0 - max(0.0, dot(n, normalize(vec3(0.4
 	const pillarColor =
 		finish &&
 		sheetMaterial(finish.pillar, { block: [0, finish.pillarCourse], flutes: finish.pillarFlutes })
-	const poleColor = finish && sheetMaterial(finish.pillar)
 	const add = (geometry, mat, x, y, z, sheetColor = null) => {
 		owned.push(geometry)
 		const mesh = new THREE.Mesh(geometry, mat)
@@ -200,7 +200,8 @@ diffuseColor.rgb *= 1.0 - coverShade * (1.0 - max(0.0, dot(n, normalize(vec3(0.4
 		add(saucerShape(), cream, 0, m.printLayers.lobby, 0)
 	}
 	let unterrain = null
-	let water = null
+	const kerbStones = []
+	const lanterns = []
 	const terrain = { ...tune.overthrowTerrain }
 	if (layout.settings) {
 		for (const key of [
@@ -214,7 +215,19 @@ diffuseColor.rgb *= 1.0 - coverShade * (1.0 - max(0.0, dot(n, normalize(vec3(0.4
 		])
 			terrain[key] *= scale
 		terrain.rockDepth = layout.settings.rockDepth * scale
-		terrain.colors = layout.settings.colors
+		// Flagfall by night swaps the isle's light and air; cliff, spires and stone stay shared.
+		for (const key of [
+			'colors',
+			'light',
+			'pool',
+			'haze',
+			'clouds',
+			'falls',
+			'moon',
+			'garden',
+			'specks',
+		])
+			if (layout.settings[key]) terrain[key] = layout.settings[key]
 	}
 	const bounds = layout.bounds
 	const chalkLayout = { lines: [], circles: [] }
@@ -273,27 +286,37 @@ diffuseColor.rgb *= 1.0 - coverShade * (1.0 - max(0.0, dot(n, normalize(vec3(0.4
 					flank * s.lane.centreZ,
 				)
 		}
-		const fence = { ...tune.lobby.fence, ...s.fence }
-		for (const key of Object.keys(fence))
-			if (typeof fence[key] === 'number' && key !== 'curveSteps' && key !== 'radialSegments')
-				fence[key] *= scale
-		// The long shores' runs are what the dunk gaps leave, in createFences' fractions of its rim.
-		const fenceHalfX =
-			bounds.halfX +
-			terrain.margin -
-			fence.edgeMargin -
-			Math.max(fence.capRadius, fence.bollardRadius) -
-			Math.abs(fence.bow)
+		// A low coursed-stone kerb on the safe rim, never a collider. The long shores' runs are
+		// what the dunk gaps leave, so the drawn gaps are exactly the sim's.
+		const k = s.kerb
+		const kerbHalf = (k.depth * scale) / 2
+		const kerbZ = bounds.halfZ + k.offset * terrain.margin
+		const kerbX = bounds.halfX + k.offset * terrain.margin
+		const kerb = (x0, x1, z0, z1) =>
+			kerbStones.push({
+				kind: 'kerb',
+				x: (x0 + x1) / 2,
+				z: (z0 + z1) / 2,
+				halfX: (x1 - x0) / 2,
+				halfZ: (z1 - z0) / 2,
+			})
 		for (const flank of [-1, 1]) {
 			const cuts = layout.gaps
 				.filter((gap) => gap.flank === flank)
-				.map((gap) => [gap.x0 / fenceHalfX, gap.x1 / fenceHalfX])
+				.map((gap) => [gap.x0, gap.x1])
 				.sort((a, b) => a[0] - b[0])
-			let from = -0.96
-			for (const [x0, x1] of [...cuts, [0.96, 0.96]]) {
-				if (x0 > from) fence.runs = [...fence.runs, { from: [from, flank], to: [x0, flank] }]
+			let from = -kerbX
+			for (const [x0, x1] of [...cuts, [kerbX, kerbX]]) {
+				if (x0 > from) kerb(from, x0, flank * kerbZ - kerbHalf, flank * kerbZ + kerbHalf)
 				from = Math.max(from, x1)
 			}
+			// The ends behind the bases.
+			kerb(
+				flank * kerbX - kerbHalf,
+				flank * kerbX + kerbHalf,
+				-k.ends * bounds.halfZ,
+				k.ends * bounds.halfZ,
+			)
 		}
 		// The slick inside each gap: a wet print with hazard stripes, so you can see where you can be dunked.
 		const wet = new THREE.MeshBasicMaterial({
@@ -331,11 +354,9 @@ diffuseColor.rgb *= 1.0 - coverShade * (1.0 - max(0.0, dot(n, normalize(vec3(0.4
 			for (const g of wetPrints) g.dispose()
 		}
 		unterrain = createMatchTerrain(group, layout, terrain, chalkLayout, {
-			water: true,
-			fence,
 			footprints: s.print,
+			casts: { hedge: m.hedgeHeight, wall: m.wallHeight, pillar: m.pillarHeight + m.capHeight },
 		})
-		water = createFlagfallWater(group, layout, terrain)
 		for (const side of [-1, 1]) {
 			const team = material(side < 0 ? 'teamA' : 'teamB', { flat: true })
 			const kerbs = []
@@ -358,20 +379,23 @@ diffuseColor.rgb *= 1.0 - coverShade * (1.0 - max(0.0, dot(n, normalize(vec3(0.4
 					flank * s.lane.innerZ,
 				)
 		}
-		for (const post of layout.posts)
+		// Lantern posts: a squat stone post with a small cream glow, the only light on the court.
+		const g = s.glow
+		for (const post of layout.posts) {
 			add(
 				new THREE.CylinderGeometry(
-					s.print.poleRadius,
-					s.print.poleRadius,
-					s.print.poleHeight,
-					m.pillarSegments,
+					g.postRadius * scale,
+					g.postRadius * 1.5 * scale,
+					g.post * scale,
+					6,
 				),
 				scenery,
 				post.x,
-				s.print.poleHeight / 2,
+				(g.post * scale) / 2,
 				post.z,
-				poleColor,
 			)
+			lanterns.push({ x: post.x, y: (g.post + g.lantern) * scale, z: post.z })
+		}
 	}
 	if (kind === 'lobby') buildLobby()
 	else if (layout.settings?.lane) buildFlagfall()
@@ -389,8 +413,10 @@ diffuseColor.rgb *= 1.0 - coverShade * (1.0 - max(0.0, dot(n, normalize(vec3(0.4
 	const coursed = (b) => {
 		const c = tune.overthrowTerrain.stone
 		const hedge = b.kind === 'hedge'
-		const h = hedge ? m.hedgeHeight : m.wallHeight
-		const courses = hedge ? 1 : c.wallCourses
+		const low = hedge || b.kind === 'kerb'
+		const h =
+			b.kind === 'kerb' ? layout.settings.kerb.height * scale : hedge ? m.hedgeHeight : m.wallHeight
+		const courses = low ? 1 : c.wallCourses
 		const alongX = b.halfX >= b.halfZ
 		const length = (alongX ? b.halfX : b.halfZ) * 2
 		const depth = (alongX ? b.halfZ : b.halfX) * 2
@@ -429,8 +455,11 @@ diffuseColor.rgb *= 1.0 - coverShade * (1.0 - max(0.0, dot(n, normalize(vec3(0.4
 			}
 		}
 	}
-	for (const b of layout.boxes) {
-		if (stoneCover) {
+	// Flagfall by night keeps its hedges green: dark-teal leaf banks on the hedge boxes.
+	const flagfall = kind !== 'lobby' && Boolean(layout.settings?.lane)
+	const leaf = flagfall ? material('court') : shade
+	for (const b of [...layout.boxes, ...kerbStones]) {
+		if (stoneCover && !(flagfall && b.kind === 'hedge')) {
 			coursed(b)
 			continue
 		}
@@ -451,7 +480,7 @@ diffuseColor.rgb *= 1.0 - coverShade * (1.0 - max(0.0, dot(n, normalize(vec3(0.4
 				1,
 				Math.min(m.scallopRadius, trunk / 2),
 			),
-			shade,
+			b.kind === 'hedge' ? leaf : shade,
 			b.x,
 			trunk / 2,
 			b.z,
@@ -461,7 +490,7 @@ diffuseColor.rgb *= 1.0 - coverShade * (1.0 - max(0.0, dot(n, normalize(vec3(0.4
 		for (let x = b.x - b.halfX + m.scallopRadius; x < b.x + b.halfX; x += m.scallopSpacing)
 			add(
 				new THREE.SphereGeometry(m.scallopRadius, m.pillarSegments, m.pillarSegments / 2),
-				shade,
+				leaf,
 				x,
 				h - m.scallopRadius,
 				b.z,
@@ -517,10 +546,35 @@ diffuseColor.rgb *= 1.0 - coverShade * (1.0 - max(0.0, dot(n, normalize(vec3(0.4
 			p.z,
 		)
 	}
-	print(stones.blocks, shade, 'overthrow-stone-blocks')
-	print(stones.moss, material('court'), 'overthrow-stone-moss')
-	print(stones.drums, scenery, 'overthrow-pillar-drums')
-	print(stones.caps, scenery, 'overthrow-pillar-caps')
+	const stoneName = layout.name.toLowerCase()
+	print(stones.blocks, shade, `${stoneName}-stone-blocks`)
+	print(stones.moss, material('court'), `${stoneName}-stone-moss`)
+	print(stones.drums, scenery, `${stoneName}-pillar-drums`)
+	print(stones.caps, scenery, `${stoneName}-pillar-caps`)
+	// Lanterns glow cream: a small lit bulb and a soft halo, never larger than the bulb's reach.
+	if (lanterns.length) {
+		const g = tune.flagfall.glow
+		const bulb = new THREE.MeshBasicMaterial({ color: g.color })
+		const map = glowTexture(0)
+		const halo = new THREE.SpriteMaterial({
+			map,
+			color: g.color,
+			transparent: true,
+			opacity: g.haloOpacity,
+			blending: THREE.AdditiveBlending,
+			depthWrite: false,
+		})
+		owned.push(bulb, map, halo)
+		for (const p of lanterns) {
+			const core = add(new THREE.SphereGeometry(g.lantern * scale, 12, 8), bulb, p.x, p.y, p.z)
+			core.layers.set(FORWARD_LAYER)
+			const ring = new THREE.Sprite(halo)
+			ring.scale.setScalar(g.lantern * g.halo * scale * 2)
+			ring.position.copy(core.position)
+			ring.layers.set(FORWARD_LAYER)
+			group.add(ring)
+		}
+	}
 	for (const [key, list] of Object.entries(bollard))
 		print(list, material(BOLLARD_ROLES[key]), `bollard-${key}`)
 	const uncollide = buildColliders(
@@ -540,13 +594,11 @@ diffuseColor.rgb *= 1.0 - coverShade * (1.0 - max(0.0, dot(n, normalize(vec3(0.4
 	scene.add(group)
 	const dispose = () => {
 		scene.remove(group)
-		water?.dispose()
 		unterrain?.()
 		for (const resource of owned) resource.dispose()
 		uncollide()
 	}
 	dispose.update = (dt) => {
-		water?.update(dt)
 		unterrain?.update?.(dt)
 	}
 	return dispose
