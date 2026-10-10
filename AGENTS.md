@@ -40,7 +40,7 @@
 - Modes: `/` opens the splash. `?mode=moba&play&bots=easy&hero=fletcher&seed=2&debug` jumps straight into a match with the debug panel.
 - Where is X: read `docs/feature-map.md` first (grep it for the player's word). Whoever adds or moves a feature updates its line there. `tune.js` is huge: read the landmark, not the file.
 - To see a file's symbols without reading it: `ast-grep outline <file>`. For structural search (callers of a function, every `tune.x.y` use) use `ast-grep run -p '<pattern>' -l js src` instead of regex grep. Files over ~300 lines: `ast-grep outline` first, then `sed -n` only the symbol's range; never `cat` them.
-- Docs: `docs/roadmap.md` (the big picture), `docs/world.md` (setting), `docs/moba-plan.md` (scope, feel, milestones), `docs/moba-lane.md` (map, structures, Ball), `docs/moba-ideas.md` (creative pitches), `docs/network.md`, `docs/verification.md`.
+- Docs: `docs/roadmap.md` (the big picture), `docs/world.md` (setting), `docs/moba-plan.md` (scope, feel, milestones), `docs/moba-lane.md` (map, structures, Ball), `docs/moba-ideas.md` (creative pitches), `docs/network.md`, `docs/verification.md`, `docs/sound.md` (music and sound effects).
 
 ## Orchestration
 
