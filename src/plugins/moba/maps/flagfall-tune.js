@@ -123,9 +123,9 @@ export const flagfall = {
 		],
 		midBrush: { halfX: 2, z: [7, 10.5] }, // the clearing's two lane holes
 		camps: { x: 19, z: 4.25 }, // mercenary camps (`camps.js`): a lantern and a chalk square
-		frontGate: 'laser', // the front gate's kind: 'gatehouse' or 'laser' (Oskar, 2026-10-11: laser)
-		gatehouseX: 29, // the gatehouses in front of each fort (gates.js, tune.gatehouse)
-		laserX: 37, // the laser gates between each fort and the core (gates.js, tune.laser)
+		frontGate: 'laser', // one gate per lane, in front of the fort, so melee and straight shots can't reach it (Oskar, 2026-10-11)
+		gatehouseX: 29, // where the front gate stands, in front of each fort (gates.js)
+		laserX: 0, // a second laser gate between fort and core; 0 means none
 	},
 	// Dunk gaps in the shore fence: |x| ranges, mirrored to both halves of both shores.
 	gaps: [[5, 11]],
