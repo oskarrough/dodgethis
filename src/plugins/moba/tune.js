@@ -279,8 +279,8 @@ export const tune = {
 				{ x: [22, 26], z: [3.5, 7] }, // and its outer one
 			],
 			midBrush: { halfX: 2, z: [3.5, 7] }, // the clearing's two lane holes
-			camps: { x: 19, z: 4.25 }, // marked only: a lantern and a chalk square
-			gateX: 29, // marked only: a chalk bar across each lane in front of the fort
+			camps: { x: 19, z: 4.25 }, // mercenary camps (`camps.js`): a lantern and a chalk square
+			gateX: 29, // the lane gates in front of each fort (gates.js, tune.gate)
 		},
 		// Dunk gaps in the shore fence: |x| ranges, mirrored to both halves of both shores.
 		gaps: [[5, 11]],
@@ -296,6 +296,23 @@ export const tune = {
 			{ x: 19, z: 4.25 },
 			{ x: 19, z: -4.25 },
 		],
+		// The centre flag (flag.js): hoisted on a fixed clock at the chalk cross, taken by holding
+		// its ring with no enemy hero inside. Seconds unless noted; live.
+		flag: {
+			first: 90, // the first hoist
+			every: 150, // then on this clock, whatever the last round did
+			lateEvery: 90, // from `late` on
+			late: 600,
+			warn: 30, // the pole climbs this long before a hoist
+			window: 60, // up this long; nobody's bar full by then, it lowers
+			radius: 3.5, // m, the ring you stand in (layout scale applies)
+			hold: 6, // s one hero alone fills the bar; an enemy in the ring freezes it
+			extraHolder: 0.25, // each extra ally in the ring fills this much faster
+			decay: 0.5, // an empty ring drains at this share of the fill rate
+			xp: 300, // team XP to the taker
+			silence: { tower: 20, fort: 30, core: 35 }, // the loser's frontmost structure per lane
+			pole: 3.2, // m, presentation only
+		},
 		dummyPosts: [
 			{ x: -2, z: -2 },
 			{ x: 2, z: -2 },
@@ -675,6 +692,21 @@ export const tune = {
 		ringNear: 3,
 		height: 5,
 	},
+	// Flagfall's lane gates (gates.js): no gun, low HP so a wave and a hero break one in ~10 s.
+	// The radius spans the lane, so every enemy shot across it lands; depth is the wall's thickness.
+	gate: {
+		hp: 1500,
+		xp: 0, // a speed bump, not a prize: tower XP here snowballed matches shorter
+		damage: 0,
+		rate: 1,
+		range: 0,
+		radius: 3.5,
+		depth: 1,
+		speed: 16,
+		tell: 0.3,
+		ringNear: 3,
+		height: 1.2,
+	},
 	core: {
 		x: 40,
 		hp: 6000,
@@ -771,6 +803,11 @@ export const tune = {
 		dodgeClearance: 0.6,
 		zoneClearance: 0.5,
 		ballPrepare: 10,
+		// Flagfall's centre flag (tune.flagfall.flag): the team's this-many nearest heroes go for it
+		// when it's up (or this many seconds before), unless below this share of HP.
+		flagGo: 2,
+		flagPrepare: 8,
+		flagHp: 0.4,
 		ballHp: 0.5,
 		ballContestHp: 0.5,
 		shadowRange: 8,
@@ -879,6 +916,29 @@ export const tune = {
 		structureXp: 300,
 		abilityStructure: 0.25,
 		reinforcement: 'melee', // one more per wave for each enemy tower taken
+	},
+	// Mercenary camps (Flagfall's jungle, `camps.js`): guards wait at the camp marks, fight back
+	// within `leash` m of the mark, and heal after `calm` s alone. The last hit's team gets
+	// `mercs` down the nearest lane; the camp returns `respawn` s later. `damage` scales the kind's.
+	camps: {
+		first: 45,
+		respawn: 90,
+		leash: 9,
+		calm: 3,
+		spread: 1.2,
+		guards: [
+			{ kind: 'brute', hp: 1100, damage: 0.5 },
+			{ kind: 'melee', hp: 450, damage: 1 },
+			{ kind: 'melee', hp: 450, damage: 1 },
+		],
+		mercs: [
+			{ kind: 'brute', hp: 2400, damage: 1 },
+			{ kind: 'melee', hp: 500, damage: 1.2 },
+			{ kind: 'melee', hp: 500, damage: 1.2 },
+		],
+		// Bots: within `reach` m, above `hp` health and no enemy hero near, every `every`th
+		// `period` s window (offset per bot) they clear the nearest camp.
+		bots: { reach: 20, hp: 0.6, period: 20, every: 3 },
 	},
 	minions: {
 		brute: {

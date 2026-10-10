@@ -1,5 +1,49 @@
 [
 	{
+		"at": "2026-10-10T21:49:45.075Z",
+		"title": "Flagfall gates",
+		"ask": "The gate is a placeholder stone drum spanning the lane. Is a drum fine for now, or should it read as a wall?",
+		"status": "To review",
+		"decision": "",
+		"media": ["review/media/2026-10-10-flagfall-gates/flagfall-gate.png"],
+		"links": [],
+		"thread": "thr_88z9qrycxv",
+		"page": "2026-10-10-flagfall-gates/"
+	},
+	{
+		"at": "2026-10-10T21:47:15.652Z",
+		"title": "Flagfall centre flag",
+		"ask": "Plain flag at the chalk cross: HUD line, ring with fill arc, minimap dot. Look is yours.",
+		"status": "To review",
+		"decision": "",
+		"media": ["review/media/2026-10-10-flagfall-centre-flag/flag.png"],
+		"links": [],
+		"thread": "thr_wfq8ficigf",
+		"page": "2026-10-10-flagfall-centre-flag/"
+	},
+	{
+		"at": "2026-10-10T21:43:54.979Z",
+		"title": "Cheaper fog of war",
+		"ask": "Does the fog look unchanged: same edge, same darkness?",
+		"status": "To review",
+		"decision": "",
+		"media": ["review/media/2026-10-10-cheaper-fog-of-war/fog-after.png"],
+		"links": [],
+		"thread": "thr_ut6hmdpqhz",
+		"page": "2026-10-10-cheaper-fog-of-war/"
+	},
+	{
+		"at": "2026-10-10T21:43:49.542Z",
+		"title": "Flagfall mercenary camps",
+		"ask": "Camp guards (plain cream for now) at a jungle camp mark, 55 s in. Clear one and its mercs march the nearest lane for you. Does the camp read as neutral?",
+		"status": "To review",
+		"decision": "",
+		"media": ["review/media/2026-10-10-flagfall-mercenary-camps/camp.png"],
+		"links": [],
+		"thread": "thr_bxbcth5sxc",
+		"page": "2026-10-10-flagfall-mercenary-camps/"
+	},
+	{
 		"at": "2026-10-10T20:26:33.677Z",
 		"title": "Flagfall jungle: rooms, brush, marks",
 		"ask": "Block gone; four jungle rooms behind a stone spine, each opening on two lane holes and the clearing, moss brush at the holes. Lantern + chalk square = camp, cross = flag, bars across the lanes = gates (all marks only). Does it feel worth walking into under fog?",

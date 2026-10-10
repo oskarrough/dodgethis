@@ -1,7 +1,7 @@
 import { overthrowLayout } from './overthrow.js'
 import { flagfallLayout } from './flagfall.js'
 import { lobbyLayout } from './lobby.js'
-import { structures, minions, ball, bots, dummies } from '../match.js'
+import { structures, minions, ball, bots, dummies, camps, flag } from '../match.js'
 import { tune } from '../tune.js'
 
 export const DEFAULT_MAP = 'overthrow'
@@ -44,7 +44,7 @@ export const maps = {
 	},
 	flagfall: {
 		layout: flagfallLayout,
-		pieces: [structures, minions, bots],
+		pieces: [structures, minions, camps, flag, bots],
 		palette: () => ({ ...tune.flagfall.palette, light: tune.flagfall.light }),
 		debugTune: {
 			name: 'flagfall (applies on restart)',

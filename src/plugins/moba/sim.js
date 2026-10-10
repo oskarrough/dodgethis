@@ -11,6 +11,7 @@ import { styleId } from '../../core/stylepass.js'
 import { STEP } from '../../core/app.js'
 import { tune, profile } from './tune.js'
 import { mapLayout, clampWalkable, clampMap } from './obstacles.js'
+import { holdGates } from './gates.js'
 import { createPathPlanner } from './path.js'
 import { createTargeting } from './targeting.js'
 import { createProjectiles } from './projectiles.js'
@@ -273,12 +274,20 @@ export function createSim({
 			})
 		: null
 
-	const populations = { ball: null, dummies: [] }
+	// Neutral camps ride the lane's minion list; the map's recipe switches them on.
+	const campsPiece = pieces.find((piece) => piece.camps)?.camps
+	const camps =
+		lane && campsPiece
+			? campsPiece({ layout, lane, heroes, makeBody: laneView.makeBody, present, obstacles })
+			: null
+	const populations = { ball: null, dummies: [], flag: null }
 	for (const piece of pieces) {
 		if (!piece.create) continue
 		populations[piece.population] = piece.create({
 			heroes,
 			posts,
+			lane,
+			layout,
 			makeBody: bodyAt,
 			targets: () => [...heroes, ...(lane?.structures ?? [])],
 			vulnerable: (unit) => lane?.vulnerable(unit) ?? true,
@@ -293,7 +302,7 @@ export function createSim({
 			},
 		})
 	}
-	const { ball, dummies } = populations
+	const { ball, dummies, flag } = populations
 
 	const { enemiesOf, find, pick, nearestToClick, stickAim } = createTargeting({
 		heroes,
@@ -484,6 +493,8 @@ export function createSim({
 		t++
 		expireBoards()
 		ball?.begin(t)
+		camps?.step(t)
+		flag?.step(t)
 		lane?.step(t, dt)
 		if (lane?.match.winner) return
 		const dashEnds = []
@@ -525,6 +536,7 @@ export function createSim({
 				})
 			face(h, dt)
 		}
+		if (lane) holdGates(lane.structures, [...heroes, ...lane.minions])
 		for (const d of dummies) if (!d.dead) d.body.sync()
 		for (const h of dashEnds) {
 			abilityOf(h.dashAbility, h)?.onDashEnd?.(traitContext(h))
@@ -612,8 +624,10 @@ export function createSim({
 		launchShot,
 		lane,
 		laneView,
+		camps,
 		matchStats: matchStats?.rows,
 		ball,
+		flag,
 		obstacles,
 		bounds: field,
 		lanes: layout.lanes,

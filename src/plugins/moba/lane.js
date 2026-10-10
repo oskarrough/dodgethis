@@ -141,7 +141,8 @@ export function createLane({
 			bestRank = Infinity,
 			bestDistance = Infinity
 		for (const candidate of candidates) {
-			if (candidate.dead || candidate.team === unit.team) continue
+			// Camp guards (team 'N') are left to heroes; lanes and guns ignore them.
+			if (candidate.dead || candidate.team === unit.team || candidate.team === 'N') continue
 			const dx = candidate.body.position.x - unit.body.position.x,
 				dz = candidate.body.position.z - unit.body.position.z
 			const d = dx * dx + dz * dz
@@ -274,16 +275,12 @@ export function createLane({
 		// by the heroes who earned it. Passive and lane-only kills have no hero credit.
 		const killer = heroes.find((hero) => hero.id === source && hero.team === killerTeam)
 		const credit = (amount) => (killer ? { [killer.id]: amount } : {})
+		unit.killedBy = killerTeam
 		if (unit.structure) {
 			removeTower(unit)
 			if (unit.kind === 'tower') reinforcements[unit.team === 'A' ? 'B' : 'A']++
-			addXp(
-				killerTeam,
-				tune.waves.structureXp,
-				unit.body.position,
-				false,
-				credit(tune.waves.structureXp),
-			)
+			const xp = tune[unit.kind].xp ?? tune.waves.structureXp
+			addXp(killerTeam, xp, unit.body.position, false, credit(xp))
 			present({
 				type: 'structureDown',
 				target: unit.id,
@@ -310,12 +307,16 @@ export function createLane({
 			)
 		} else {
 			const soaking = heroes.filter(
-				(h) => !h.dead && h.team !== unit.team && distance(unit, h) <= tune.waves.soak,
+				(h) =>
+					!h.dead &&
+					h.team !== unit.team &&
+					(unit.team !== 'N' || h.team === killerTeam) &&
+					distance(unit, h) <= tune.waves.soak,
 			)
 			if (soaking.length) {
 				const amount = tune.minions[unit.kind].xp
 				addXp(
-					unit.team === 'A' ? 'B' : 'A',
+					unit.team === 'N' ? killerTeam : unit.team === 'A' ? 'B' : 'A',
 					amount,
 					unit.body.position,
 					false,
@@ -408,6 +409,7 @@ export function createLane({
 							tune[unit.kind].damage * (t * STEP >= tune.match.late ? tune.match.lateGunDamage : 1),
 					}
 				: { ...tune.minions[unit.kind], damage: tune.minions[unit.kind].damage * unit.damageScale }
+			if (tower && !stats.damage) continue // a gate has no gun
 			const range = tower ? stats.range : tune.waves.aggro
 			let target = t < unit.aggroUntil ? liveTarget(unit.forced) : null
 			if (target && !inReach(unit, target, range)) target = null
@@ -445,7 +447,7 @@ export function createLane({
 					unit.returnGoal = null
 				}
 			}
-			if (!unit.returning) target ??= nearest(unit, range, candidates)
+			if (!unit.returning && !unit.passive) target ??= nearest(unit, range, candidates)
 			if (unit.target !== (target?.id ?? null)) {
 				unit.attack = null
 				unit.path = null
@@ -555,6 +557,7 @@ export function createLane({
 		minions,
 		structures,
 		teams,
+		route,
 		globes,
 		match,
 		reinforcements,

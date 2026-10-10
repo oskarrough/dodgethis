@@ -5,7 +5,12 @@ import { projectLaneSnapshot } from './lane-replica.js'
 import { createBall } from './ball.js'
 import { ballBots } from './ball-bots.js'
 import { createBallView } from './ball-view.js'
+import { createFlag } from './flag.js'
+import { flagBots } from './flag-bots.js'
+import { createFlagView } from './flag-view.js'
 import { createBots } from './bots.js'
+import { createCamps } from './camps.js'
+import { campBots } from './camp-bots.js'
 import { createOnboarding } from './onboarding.js'
 import { dressDummy } from './dummy-view.js'
 import { tune } from './tune.js'
@@ -24,7 +29,9 @@ export const structures = {
 	structures: true,
 	onboarding: createOnboarding,
 	obstacles: (layout) =>
-		layout.structures.map(({ id, kind, x, z }) => ({ id, kind, x, z, r: tune[kind].radius })),
+		layout.structures
+			.filter((s) => s.obstacle !== false)
+			.map(({ id, kind, x, z }) => ({ id, kind, x, z, r: tune[kind].radius })),
 }
 export const minions = { lane, stats: true, waves: true }
 export const ball = {
@@ -33,6 +40,15 @@ export const ball = {
 	view: createBallView,
 	botHabit: ballBots,
 	stats: true,
+}
+export const camps = { camps: createCamps, botHabit: campBots }
+// Flagfall's centre flag: one ring both teams fight over on a fixed clock.
+export const flag = {
+	population: 'flag',
+	create: createFlag,
+	view: createFlagView,
+	botHabit: flagBots,
+	minimap: (sim) => sim.flag && { ...sim.flag.state, live: sim.flag.state.phase === 'up' },
 }
 export const bots = { controllers: createBots, stats: true }
 export const dummies = {
