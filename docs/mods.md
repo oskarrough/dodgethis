@@ -98,7 +98,8 @@ Bare ids (`loose`, `fletcher`, `flagfall`), one author. The folder name, the man
 
 ## Hazards left alone
 
-`tune` is one mutable module object, and `sim.js:53` and `index.js:101` write `tune.match.late` per match. Harmless while maps only differ in `late`; per-match mod merging would leak between matches and peers, so `tune` becomes a per-match value before mods load.
+- Online lobby picks travel as a stand index, not a hero id (`lobby-heroes.js`, `lobby-replica.js`). A draft shown on one peer's strip shifts that peer's stands and the two games disagree about the pick. Step 5 must send the hero id, or hide drafts in online lobbies.
+  `tune` is one mutable module object, and `sim.js:53` and `index.js:101` write `tune.match.late` per match. Harmless while maps only differ in `late`; per-match mod merging would leak between matches and peers, so `tune` becomes a per-match value before mods load.
 
 ## Order of work
 
