@@ -1,5 +1,19 @@
 [
 	{
+		"at": "2026-10-10T15:37:18.325Z",
+		"title": "Match camera shows both long rims",
+		"ask": "Mid-court at 1440×900: do both long rims show on each map, and are the heroes still big enough?",
+		"status": "To review",
+		"decision": "",
+		"media": [
+			"review/media/2026-10-10-match-camera-shows-both-long-rims/overthrow-midcourt.png",
+			"review/media/2026-10-10-match-camera-shows-both-long-rims/flagfall-midcourt.png"
+		],
+		"links": [],
+		"thread": "thr_2aqw4bpva3",
+		"page": "2026-10-10-match-camera-shows-both-long-rims/"
+	},
+	{
 		"at": "2026-10-10T15:29:28.817Z",
 		"title": "Overthrow by day, built",
 		"ask": "Concept left, the game right, at the shipped match camera (2560×1440, Radeon 780M). Does the isle read? And: should the match camera show both rims and the front cliff like the concept? Today its clamp keeps the view inside the court's width, so mid-court frames show only court.",
