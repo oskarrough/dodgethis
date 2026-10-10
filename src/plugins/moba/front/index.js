@@ -261,7 +261,15 @@ export function mobaFront(app, map) {
 			function dropTiles() {
 				if (pop?.playState === 'running') pop.commitStyles()
 				pop?.cancel()
+				// Moving to the sheet cuts any running transition, like a clicked card's spring back
+				// from pressed: carry each pose across, then let it go so the spring finishes in flight.
+				const poses = buttons.map((button) => getComputedStyle(button).transform)
+				buttons.forEach((button, i) => (button.style.transform = poses[i]))
 				sheet.append(chrome)
+				requestAnimationFrame(() => {
+					void chrome.offsetWidth
+					for (const button of buttons) button.style.transform = ''
+				})
 				const picked = buttons.find((button) => button.classList.contains('selected'))
 				const order = [
 					chrome.querySelector('.front-heading'),
