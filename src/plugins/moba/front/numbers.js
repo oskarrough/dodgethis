@@ -1,28 +1,6 @@
 import { tune } from '../tune.js'
-import { tune as frontTune } from './tune.js'
-import { fletcherStats, numberLines } from './stats.js'
 import { heroCard, traitCard, abilityCard, cardHtml } from '../tooltip.js'
 import HERO_VIEWS from '../heroes/views.js'
-
-// Extra numbers-panel cards by hero id; hero folders bring theirs through heroes/views.js.
-const NUMBERS = {
-	fletcher: {
-		cards({ level }) {
-			const stats = fletcherStats(tune, { ...frontTune, level: tune.levels }, level)
-			const lines = numberLines(stats, frontTune.preview.distance)
-			return [
-				{ title: 'Flight & dodging', summary: '', rows: [], notes: lines.slice(3, 9) },
-				{
-					title: 'Planned Volley',
-					tag: 'not playable',
-					summary: '',
-					rows: [],
-					notes: lines.slice(9),
-				},
-			]
-		},
-	},
-}
 
 // A read-only, run-owned sheet. The caller owns the clock/input hold and closing-edge consumption.
 export function createNumbers(hero, onChange) {
@@ -93,7 +71,7 @@ export function createNumbers(hero, onChange) {
 						}),
 					),
 			].filter(Boolean)
-			const numbers = HERO_VIEWS[hero.heroId]?.numbers ?? NUMBERS[hero.heroId]
+			const numbers = HERO_VIEWS[hero.heroId]?.numbers
 			if (numbers) cards.push(...numbers.cards({ hero, level: hero.level }))
 			const html = cards.map((card) => '<article>' + cardHtml(card) + '</article>').join('')
 			if (html !== last) {

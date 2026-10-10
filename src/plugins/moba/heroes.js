@@ -4,29 +4,9 @@ import manifests from './heroes/index.js'
 
 // Definitions stay plugin-local. Getters keep live tuning live; mutable state
 // belongs to each sim hero, never to this table. A basic and abilities make a kit.
-// Fletcher and Mitts are still written out here; folder heroes come from heroes/index.js.
+// Mitts is still written out here; folder heroes come from heroes/index.js.
 const ability = (id, kind, properties = {}) =>
 	registerAbility(defineAbility(id, { kind, ...properties }))
-const loose = ability('loose', 'shot', {
-	pierce: false,
-	heal: false,
-	bounce: false,
-	catchable: true,
-	aimAssist: true,
-	tell: 'line',
-	held: 'line',
-	effects: { cast: 'nock', projectile: 'loose', hit: 'looseHit', pose: 'draw' },
-})
-const vault = ability('vault', 'dash', {
-	held: 'arrow',
-	effects: { cast: 'vault', effect: 'vault', pose: 'vault' },
-})
-const rain = ability('rain', 'zone', {
-	heal: false,
-	tell: 'circle',
-	held: 'circle',
-	effects: { impact: 'rain', effect: 'rain', pose: 'rain' },
-})
 const toss = ability('toss', 'shot', {
 	pierce: false,
 	heal: false,
@@ -112,74 +92,39 @@ export function heroFromManifest(id, { kit = {}, basic = null, ...manifest }) {
 	}
 }
 
-export const HEROES = {
-	fletcher: {
-		id: 'fletcher',
-		name: 'Fletcher',
-		order: 1,
-		color: 'blue',
-		silhouette: 'circle',
-		get base() {
-			return tune.hero
+const mitts = {
+	id: 'mitts',
+	name: 'Mitts',
+	order: 2,
+	color: 'red',
+	silhouette: 'square',
+	get base() {
+		return { ...tune.hero, ...tune.heroes.mitts }
+	},
+	get basic() {
+		return { ...gloveSlap, ...tune.gloveSlap }
+	},
+	abilities: { slot1: toss, slot2: catchStance, slot3: dive, slot4: null },
+	returnPose: 'toss',
+	traits: {
+		onCatch({ hero, source }) {
+			if (hero.abilityState.pocket) hero.abilityState.pocket.team = source.team
 		},
-		get basic() {
-			return { ...tune.attack, range: tune.orders.attackRange }
-		},
-		abilities: { slot1: loose, slot2: rain, slot3: vault, slot4: null },
-		traits: {
-			onHit({ source, shot, target, ticks }) {
-				if (shot.traitProcs !== false && shot.ability === loose.id && target.hero && !source.dead)
-					source.cd[1] = Math.max(0, source.cd[1] - ticks(tune.momentum.reduction))
-			},
+		onDeath({ hero }) {
+			hero.body.cancelDash()
+			hero.dashAbility = null
 		},
 	},
-	mitts: {
-		id: 'mitts',
-		name: 'Mitts',
-		order: 2,
-		color: 'red',
-		silhouette: 'square',
-		get base() {
-			return { ...tune.hero, ...tune.heroes.mitts }
-		},
-		get basic() {
-			return { ...gloveSlap, ...tune.gloveSlap }
-		},
-		abilities: { slot1: toss, slot2: catchStance, slot3: dive, slot4: null },
-		returnPose: 'toss',
-		traits: {
-			onCatch({ hero, source }) {
-				if (hero.abilityState.pocket) hero.abilityState.pocket.team = source.team
-			},
-			onDeath({ hero }) {
-				hero.body.cancelDash()
-				hero.dashAbility = null
-			},
-		},
-	},
-	...Object.fromEntries(
-		['carom', 'skip'].map((id) => [
-			id,
-			{
-				id,
-				name: titleCase(id),
-				order: 100,
-				silhouette: id === 'carom' ? 'triangle' : 'bar',
-				get base() {
-					return { ...tune.hero, ...tune.heroes[id] }
-				},
-				basic: null,
-				abilities: { slot1: null, slot2: null, slot3: null, slot4: null },
-				traits: {},
-			},
-		]),
-	),
 }
 
+// Folder heroes first, so Fletcher precedes Mitts: seeded random seats index into this order.
+export const HEROES = {}
 for (const [id, manifest] of Object.entries(manifests)) {
 	if (Object.hasOwn(HEROES, id)) throw new Error(`MOBA hero defined twice: ${id}`)
 	HEROES[id] = heroFromManifest(id, manifest)
 }
+if (Object.hasOwn(HEROES, mitts.id)) throw new Error(`MOBA hero defined twice: ${mitts.id}`)
+HEROES.mitts = mitts
 
 // `playable` means "may play" and gates every validator, drafts included. `listed` is
 // playable and not a draft, the same on every peer whatever the URL says.

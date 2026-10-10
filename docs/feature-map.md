@@ -4,7 +4,7 @@ Every player-facing feature, grouped by screen, one line each: the feature in pl
 
 Don't read big files whole. `ast-grep outline <file>` lists a file's symbols with line numbers; `ast-grep run -p '<pattern>' -l js src` finds structure (callers, `tune.x.y` uses). Whoever adds or moves a feature updates its line here. To prove a feature in the running game, use `.claude/skills/verify/SKILL.md`.
 
-Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` means `src/plugins/moba/tune.js` (key in backticks); other tune files are named in full. `tune.js` keeps the match rules and assembles the rest, so every `tune.x.y` path is unchanged but the values live elsewhere: `map` and `overthrowTerrain` in `maps/overthrow-tune.js`, `flagfall` in `maps/flagfall-tune.js`, `lobby` in `front/lobby-tune.js`, Mitts's `gloveSlap`, `toss`, `catch`, `dive` in `mitts-tune.js`, Fletcher's `loose`, `rain`, `vault` in `fletcher-tune.js`. Docs live in `docs/`.
+Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` means `src/plugins/moba/tune.js` (key in backticks); other tune files are named in full. `tune.js` keeps the match rules and assembles the rest, so every `tune.x.y` path is unchanged but the values live elsewhere: `map` and `overthrowTerrain` in `maps/overthrow-tune.js`, `flagfall` in `maps/flagfall-tune.js`, `lobby` in `front/lobby-tune.js`, Mitts's `gloveSlap`, `toss`, `catch`, `dive` in `mitts-tune.js`, Fletcher's `loose`, `rain`, `vault` in `abilities/<id>/tune.js`, Carom's and Skip's heroes in `heroes/<id>/tune.js`. Docs live in `docs/`.
 
 ## Shell and splash
 
@@ -89,12 +89,12 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Damage and hit resolution: `combat.js` `hit`; `skillshot.js` `stepShot`, `interceptShot`
 - Skillshot shapes and sweeps: `skillshot.js` `stepShot`, `closest`; `obstacles.js` `sweepHit`, `sweepObstacles`; `skills-view.js` `lineReach`
 - Ability telegraphs for enemies (ground line tell): `skills-view.js` `createSkillsView`; `look.js` `abilityView`; `moba-heroes.md`
-- Fletcher, ranged poke. Q Loose (arrow shot), W Rain (zone), E Vault (dash): `heroes.js` `loose`, `vault`, `rain`; `tune.js` `loose`, `vault`, `rain`; `moba-heroes.md`
+- Fletcher, ranged poke. Q Loose (arrow shot), W Rain (zone), E Vault (dash): `abilities/{loose,vault,rain}/`, `heroes/fletcher/`; `moba-heroes.md`
 - Mitts, keeper. Q Toss (throw caught shots), W Catch (stance), E Dive (dash): `heroes.js` `toss`, `catchStance`, `dive`; `tune.js` `toss`, `catch`, `dive`, `gloveSlap`; `look.js` `mittsView`
 - Mitts glove slap (basic): `heroes.js` `gloveSlap`; `tune.js` `gloveSlap`
 - Catching and the Pocket (caught shots held and thrown back): `projectiles.js` `openCatch`, `throwCaught`, `resolveInterception`; `casting.js` `traitContext`; `tune.js` `catch`, `catching`, `momentum`
-- Carom and Skip: tuned (`tune.js` `heroes`) and designed in `moba-heroes.md`, but not in the `heroes.js` table yet
-- Hero costumes and silhouettes: `hero-view.js` `dressHero`; `look.js` `silhouettes`; `moba-look.md`
+- Carom and Skip: tuned (`tune.js` `heroes`) and designed in `moba-heroes.md`, costume and tune in `heroes/{carom,skip}/`, no `index.js` yet so not heroes
+- Hero costumes and silhouettes: `hero-view.js` `dressHero`, costumes in `heroes/<id>/costume.js` (Mitts's still inline); `look.js` `silhouettes`; `moba-look.md`
 - Level, XP and stat growth: `tooltip.js` `levelProgress`; `combat.js` `hit`; `tune.js` `levels`
 - Globes (health pickups): `lane.js` `createLane`; `lane-view.js` `createLaneView`; `tune.js` `globes`
 - Scripted test hero: `scripted.js` `createScriptedHero`; `tune.js` `scripted`

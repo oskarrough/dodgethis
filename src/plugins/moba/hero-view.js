@@ -10,69 +10,6 @@ import HERO_VIEWS from './heroes/views.js'
 // Costumes by hero id; a hero without one wears the box. A costume dresses the torso, adds
 // parts and returns the rig its poses need (Fletcher's bow, Mitts's glove). Hero folders
 // bring theirs through heroes/views.js.
-function dressFletcher({ costume, torso, part, own, roots, t, look, materials }) {
-	const { ink, cream, fins, team: teamMaterial } = materials
-	torso.geometry = own(new THREE.CapsuleGeometry(t.bodyRadius, t.bodyHalfHeight * 2, 8, t.segments))
-	part(
-		new THREE.CylinderGeometry(t.quiverRadius, t.quiverRadius, t.quiverHeight, t.segments),
-		ink,
-		0,
-		t.quiverY,
-		t.quiverZ,
-	)
-	for (let i = 0; i < t.arrowCount; i++) {
-		const offset = i - (t.arrowCount - 1) / 2
-		const arrow = new THREE.Group()
-		arrow.position.set(offset * t.arrowSpacing, t.arrowY, t.quiverZ)
-		arrow.rotation.z = -offset * t.arrowFan
-		arrow.rotation.x = t.arrowTilt
-		costume.add(arrow)
-		roots.push(arrow)
-		part(
-			new THREE.CylinderGeometry(t.arrowRadius, t.arrowRadius, t.arrowHeight, 4),
-			cream,
-			0,
-			0,
-			0,
-			arrow,
-		)
-		for (let fin = 0; fin < t.finCount; fin++) {
-			const mesh = part(
-				new THREE.PlaneGeometry(t.fletchingRadius * 2, t.fletchingHeight),
-				fins,
-				0,
-				t.arrowHeight / 2,
-				0,
-				arrow,
-			)
-			mesh.rotation.y = (fin * Math.PI) / t.finCount
-		}
-	}
-	const a = look.abilityView
-	const bow = new THREE.Group()
-	bow.name = 'moba-bow'
-	costume.add(bow)
-	roots.push(bow)
-	const curve = new THREE.CatmullRomCurve3([
-		new THREE.Vector3(0, -a.bowHeight / 2, 0),
-		new THREE.Vector3(0, 0, -a.bowCurve),
-		new THREE.Vector3(0, a.bowHeight / 2, 0),
-	])
-	part(new THREE.TubeGeometry(curve, a.bowSegments, a.bowRadius, 4, false), ink, 0, 0, 0, bow)
-	const hand = part(new THREE.SphereGeometry(a.handRadius, 8, 6), cream)
-	hand.name = 'moba-draw-hand'
-	part(new THREE.SphereGeometry(a.handRadius, 8, 6), cream, 0, 0, -a.bowCurve, bow)
-	const drawArm = part(new THREE.CylinderGeometry(a.armRadius, a.armRadius, 1, 4), teamMaterial)
-	drawArm.name = 'moba-draw-arm'
-	const stringGeometry = new THREE.BufferGeometry()
-	stringGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(36), 3))
-	const bowString = new THREE.Mesh(own(stringGeometry), fins)
-	bowString.frustumCulled = false
-	costume.add(bowString)
-	roots.push(bowString)
-	return { border: false, bow, hand, bowString, drawArm }
-}
-
 function dressMitts({
 	costume,
 	torso,
@@ -135,50 +72,6 @@ function dressMitts({
 	return { glove, pocketRing }
 }
 
-function dressCarom({ torso, part, own, t, materials }) {
-	const { ink, team: teamMaterial } = materials
-	const shape = new THREE.Shape()
-	for (let i = 0; i < 3; i++) {
-		const angle = (i * Math.PI * 2) / 3
-		const x = Math.sin(angle) * t.caromRadius,
-			z = -Math.cos(angle) * t.caromRadius
-		if (i === 0) shape.moveTo(x, z)
-		else shape.lineTo(x, z)
-	}
-	shape.closePath()
-	torso.geometry = own(
-		new THREE.ExtrudeGeometry(shape, {
-			depth: t.caromHeight,
-			bevelEnabled: true,
-			bevelThickness: t.corner / 2,
-			bevelSize: t.corner / 2,
-			bevelSegments: 3,
-		})
-			.rotateX(Math.PI / 2)
-			.translate(0, t.caromHeight / 2, 0),
-	)
-	part(
-		new THREE.TorusGeometry(t.racketRadius, t.racketTube, 8, t.segments).rotateX(Math.PI / 2),
-		teamMaterial,
-		t.racketX,
-		t.racketY,
-		0,
-	)
-	part(
-		new THREE.CylinderGeometry(
-			t.racketHandleRadius,
-			t.racketHandleRadius,
-			t.racketHandle,
-			8,
-		).rotateX(Math.PI / 2),
-		ink,
-		t.racketX,
-		t.racketY,
-		t.racketRadius + t.racketHandle / 2,
-	)
-	return {}
-}
-
 function dressBox({ torso, part, own, t, materials }) {
 	const { ink, team: teamMaterial } = materials
 	torso.geometry = own(new THREE.BoxGeometry(t.skipWidth, t.skipHeight, t.skipDepth))
@@ -204,7 +97,7 @@ function dressBox({ torso, part, own, t, materials }) {
 	return {}
 }
 
-const COSTUMES = { fletcher: dressFletcher, mitts: dressMitts, carom: dressCarom }
+const COSTUMES = { mitts: dressMitts }
 
 // Same costume on the lane body and the select replica. The capsule collider
 // remains untouched; every costume sits above the same inked collision disc.

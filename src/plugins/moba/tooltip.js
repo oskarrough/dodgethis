@@ -48,18 +48,11 @@ const SUMMARY = {
 	dive: () => 'Dive toward your aim, catching shots all around on the way, then lie prone.',
 }
 const NOTES = {
-	loose: () => [`Momentum: hero hits cut Vault's cooldown by ${n(tune.momentum.reduction)} s`],
 	toss: () => [`Pocketed shots last ${n(tune.catching.pocketLife)} s`],
 }
 
 // Trait per hero id, for heroes without a `trait()`: the portrait chip and its card.
 const TRAITS = {
-	fletcher: () => ({
-		name: 'Momentum',
-		icon: 'momentum',
-		chip: `−${n(tune.momentum.reduction)}s`,
-		summary: `Loose hitting a hero cuts Vault's cooldown by ${n(tune.momentum.reduction)} s.`,
-	}),
 	mitts: () => ({
 		name: 'Pocket',
 		icon: 'pocket',

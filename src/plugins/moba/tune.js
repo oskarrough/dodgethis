@@ -4,7 +4,6 @@ import { overthrowMap, overthrowTerrain } from './maps/overthrow-tune.js'
 import { flagfall } from './maps/flagfall-tune.js'
 import { lobby } from './front/lobby-tune.js'
 import { mitts } from './mitts-tune.js'
-import { fletcher } from './fletcher-tune.js'
 import * as tunes from './tunes.js'
 
 export const tune = {
@@ -366,8 +365,6 @@ export const tune = {
 	},
 	heroes: {
 		mitts: { hp: 2200, speed: 5.6 },
-		carom: { hp: 1300, speed: 5 },
-		skip: { hp: 1450, speed: 5 },
 	},
 	orders: {
 		pick: 0.6, // an order this close to an enemy's silhouette attacks it
@@ -404,7 +401,6 @@ export const tune = {
 		nearMiss: 0.8, // a pass this close to a body's edge cues "close"
 	},
 	...mitts,
-	...fletcher,
 	// The pad's right stick: hero + dir × range × remap(magnitude).
 	stickAim: {
 		inMin: 0.25,

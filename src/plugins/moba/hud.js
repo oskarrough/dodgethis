@@ -55,9 +55,6 @@ export const ICONS = {
 	core: svg(
 		'<path class="stone" d="M10 44 L13 36 L35 36 L38 44 Z"/><path class="tone" d="M24 3 L36 19 L24 35 L12 19 Z"/><path class="ink-line" d="M12 19 L36 19 M24 3 L24 35"/>',
 	),
-	fletcher: svg(
-		'<path class="ink-line" d="M30 30 L40 6 M33 31 L44 10 M27 29 L34 4"/><circle class="tone" cx="22" cy="28" r="15"/><circle class="cream" cx="17" cy="24" r="4"/>',
-	),
 	momentum: svg('<path class="gold" d="M8 30 L22 6 L20 22 L40 18 L24 42 L26 28 Z"/>'),
 	toss: svg(
 		'<path class="tone" d="M6 34 Q6 22 16 22 L24 22 Q28 22 28 27 Q28 31 24 31 L18 31 L18 36 Q18 42 12 42 Q6 42 6 34 Z"/><circle class="gold" cx="35" cy="14" r="7"/><path class="ink-line" d="M27 22 L31 19"/>',
