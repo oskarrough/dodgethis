@@ -114,51 +114,13 @@
 	translate: calc(var(--tile) * 0.2) 0;
 	z-index: 1;
 }
-/* Locked: by night, faded, a stamp across it. */
-.moba-front .lobby-hero-strip button[aria-disabled='true'] {
-	cursor: not-allowed;
-	color: color-mix(in srgb, var(--ui-text) 55%, transparent);
-}
-.moba-front .lobby-hero-strip button[aria-disabled='true'] .lobby-hero-strip-face svg {
-	opacity: 0.35;
-}
-.lobby-hero-strip small {
-	position: absolute;
-	top: 40%;
-	left: 50%;
-	translate: -50% -50%;
-	padding: 0.1em 0.35em;
-	border: 2px solid var(--ui-text);
-	background: var(--ui-cream);
-	color: var(--ui-text);
-	font-size: max(9px, 0.6em);
-	text-transform: uppercase;
-	rotate: -12deg;
-}
-/* A new pick lands with a little overshoot; a locked card shakes its head. */
+/* A new pick lands with a little overshoot. */
 .moba-front .lobby-hero-strip button.pop {
 	animation: lobby-hero-strip-pop 0.22s cubic-bezier(0.3, 1.8, 0.5, 1);
-}
-.moba-front .lobby-hero-strip button.wobble {
-	animation: lobby-hero-strip-wobble 0.36s ease-out;
 }
 @keyframes lobby-hero-strip-pop {
 	from {
 		transform: scale(0.8);
-	}
-}
-@keyframes lobby-hero-strip-wobble {
-	20% {
-		transform: rotate(-9deg);
-	}
-	45% {
-		transform: rotate(7deg);
-	}
-	70% {
-		transform: rotate(-4deg);
-	}
-	90% {
-		transform: rotate(2deg);
 	}
 }
 @media (prefers-reduced-motion: reduce) {
