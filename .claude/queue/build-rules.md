@@ -1,11 +1,9 @@
-Build rules. Each one comes from a finding an earlier review caught. The orchestrator appends "Everyone" plus the section that matches the brief: "Sim, bots and net" or "View, UI and screens". A brief that spans both gets both.
+Build rules. Each one comes from a finding an earlier review caught. A brief quotes the one to three lines that bear on it, never a whole section.
 
 ## Everyone
 
-No new unit tests for now (user, 2026-10-04): prove a change by playing it, in a headless match or a browser trace. Keep the existing suite green; delete a test rather than nurse it when a deliberate change makes it obsolete. Rules below that ask for tests mean a quick proof. A surgical edit outside your owned files (a setter, an export, a hook) is fine without asking; name it in the report.
+No new unit tests for now (user, 2026-10-04); delete a test rather than nurse it when a deliberate change makes it obsolete. Rules below that ask for tests mean a quick proof, in a headless match or a browser trace. A surgical edit outside your owned files (a setter, an export, a hook) is fine without asking; name it in the report.
 
-- Prove the change once: one device and one width, unless input or layout is the change. Then prove that axis, and only that one.
-- Keep browser proofs short and relevant: reuse the shared server, go to the screen changed, capture one useful layout screenshot or motion clip, then close your session. Full route proof belongs to a navigation/transition checkpoint, not every builder. If automation setup stalls, report the gap and give a working URL for manual review.
 - When the user's judgment is useful, report the actual local dev URL and shortest route plus one specific thing to judge. The coordinator pings them; don't leave review hidden in a long completion report.
 - A proof says how it was made: a bots-only fast-forward proves nothing about a human playing.
 - Every number lives in the plugin's tune.js, and every slider has a sane range (fractions 0–1, times at least one step). No slider value may produce NaN or reverse movement.
@@ -13,7 +11,7 @@ No new unit tests for now (user, 2026-10-04): prove a change by playing it, in a
 - Update the docs line your change contradicts.
 - App-wide and run-owned debug APIs share one namespace: check both registrations before renaming a key, keep duplicate protection, and prove unregister/re-entry. Scope helpers by action or mode so a lobby object cannot collide with a lobby action.
 - The local hero is looked up by participant id, never heroes[0].
-- Browser work follows the "Browser proofs" lines in AGENTS.md: shared agent server, your own browser session, waits on conditions. Never `pkill` anything; you share the box.
+- Browser work follows the "Browser proofs" lines in AGENTS.md. Never `pkill` anything; you share the box.
 
 ## Sim, bots and net
 
@@ -30,7 +28,7 @@ No new unit tests for now (user, 2026-10-04): prove a change by playing it, in a
 - Tests assert the whole population (all 12 minions arrive), not that some unit did.
 - Proof comes from real play fast-forwarded, never injected lethal shots; a match must be able to end in a headless test.
 - Prove "never triggers" cases with real aim points (where a player's cursor lands on a body), not exact centres.
-- Hot paths get a time-budget test: path planning and per-tick queries must fit well inside a 16.7 ms frame, measured as a median or a work count so it doesn't flake under load.
+- Hot paths: path planning and per-tick queries must fit well inside a 16.7 ms frame, measured as a median or a work count so it doesn't flake under load.
 - On a guest, anything that only resolves in the host's sim step (shots, picks, orders to a mark) goes to the host as intent or is disabled with a deny; never leave the guest waiting on a step that never runs. Facts queued while a tab is hidden are dropped once stale, not replayed in a burst.
 - Rate limits use a token bucket, not a fixed window: a reliable channel delivers a stall's backlog at once, and that must drain, not lock the player out.
 

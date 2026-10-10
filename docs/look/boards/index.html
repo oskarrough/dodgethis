@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dodgethis: four settings</title>
+<style>
+  :root { --ink:#16130f; --paper:#f6f0e2; --card:#fffaf0; --gold:#e8a91c; --red:#d9402f; --blue:#2f63c9; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--paper); color:var(--ink); font:16px/1.5 ui-sans-serif, system-ui, "Helvetica Neue", sans-serif; }
+  header { padding:40px 24px 8px; max-width:1100px; margin:0 auto; }
+  h1 { font-size:34px; margin:0 0 8px; letter-spacing:-.02em; }
+  header p { margin:0 0 8px; max-width:68ch; }
+  nav { max-width:1100px; margin:16px auto 0; padding:0 24px; display:flex; gap:10px; flex-wrap:wrap; }
+  nav a { border:3px solid var(--ink); background:var(--card); padding:6px 14px; border-radius:10px; color:inherit; text-decoration:none; font-weight:700; box-shadow:3px 3px 0 var(--ink); }
+  nav a:hover { background:var(--gold); }
+  main { max-width:1100px; margin:0 auto; padding:24px; display:grid; gap:48px; }
+  .board { border:4px solid var(--ink); border-radius:18px; background:var(--card); box-shadow:8px 8px 0 var(--ink); overflow:hidden; }
+  .head { display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; padding:18px 24px 14px; border-bottom:4px solid var(--ink); background:var(--tint); }
+  .head .n { font-size:14px; font-weight:800; border:3px solid var(--ink); border-radius:999px; padding:0 10px; background:var(--card); }
+  .head h2 { margin:0; font-size:30px; letter-spacing:-.02em; }
+  .head .tag { font-style:italic; flex-basis:100%; margin:0; }
+  .body { padding:20px 24px 24px; display:grid; gap:22px; }
+  .feel { font-size:18px; margin:0; max-width:75ch; }
+  .cols { display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:14px; }
+  .box { border:3px solid var(--ink); border-radius:12px; padding:12px 14px; background:#fff; }
+  .box h3 { margin:0 0 6px; font-size:13px; text-transform:uppercase; letter-spacing:.08em; }
+  .box p, .box ul { margin:0; font-size:15px; }
+  .box ul { padding-left:18px; }
+  .box li { margin:0 0 4px; }
+  .why { border:3px solid var(--ink); border-radius:12px; padding:12px 14px; background:var(--gold); }
+  .why h3 { margin:0 0 4px; font-size:13px; text-transform:uppercase; letter-spacing:.08em; }
+  .why p { margin:0 0 6px; } .why p:last-child { margin:0; }
+  .refs { display:grid; grid-template-columns:repeat(auto-fill, minmax(190px, 1fr)); gap:12px; }
+  figure { margin:0; border:3px solid var(--ink); border-radius:10px; overflow:hidden; background:#fff; display:flex; flex-direction:column; }
+  figure img { width:100%; aspect-ratio:16/10; object-fit:cover; display:block; border-bottom:3px solid var(--ink); background:#ddd; }
+  figcaption { padding:8px 10px; font-size:13px; line-height:1.35; }
+  figcaption b { display:block; }
+  figcaption a { color:var(--blue); }
+  .refs-h { margin:0 0 -10px; font-size:13px; text-transform:uppercase; letter-spacing:.08em; font-weight:800; }
+  .pick { border:4px solid var(--ink); border-radius:18px; background:var(--ink); color:var(--paper); padding:20px 24px; box-shadow:8px 8px 0 var(--gold); }
+  .pick h2 { margin:0 0 6px; } .pick p { margin:0; max-width:75ch; }
+  footer { max-width:1100px; margin:0 auto; padding:0 24px 48px; font-size:13px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Four settings for Dodgethis</h1>
+  <p>Each board is a different world under the same snappy toy brawler. All four keep the four built heroes (Fletcher, Mitts, Carom, Skip) and Overthrow and Flagfall legible, so none of them is a restart.</p>
+  <p>Images are small copies for reference, each linked to its source. Game shots belong to their studios; Bruegel, Hokusai, Hiroshige, McCay and the photos come from Wikimedia Commons.</p>
+</header>
+<nav id="nav"></nav>
+<main id="main"></main>
+<footer>Research only. Nothing in the repo was touched.</footer>
+
+<script>
+const boards = [
+{
+  id: "recess", n: "1 of 4 · the control", name: "Recess", tint: "#f3d77a",
+  tag: "Schoolyard, done properly: no desert, no mythology, just the best twenty minutes of the day.",
+  feel: "The bell rings and the tarmac becomes a country. Everything is chalk, rubber, skipping rope and rules argued at full volume. It is small, loud and a bit unfair, and everyone remembers the ground rules better than their lessons.",
+  heroes: ["Mitts, the catcher's glove: kept. Fletcher becomes the kid with the bow from the school play.", "Skip, a skipping rope (the name finally means something). Carom, the squash-club kid with the one good racket.", "Conker, a tough on a string. Hopscotch, a chalk-drawn hopper who blinks between squares. Whistle, the dinner lady."],
+  maps: ["Overthrow stays the tarmac with painted lines, hedges and bollards, as drawn.", "Flagfall becomes the school trip to the beach, with a rope line and a windbreak.", "A third map would be the field behind the bike sheds, with long grass for stealth."],
+  lobby: ["The playground at the bell. The hopscotch grid is the ready-up: stand on your number.", "The bench is the hero select, and the wall is the scoreboard in chalk."],
+  why: ["It is the lightest lift: dodgeball is already the game's seed, and every verb (throw, catch, dodge, tag) has a playground name.", "The risk is that it stays a skin. Nothing in a schoolyard is strange enough to make a second look, and it is also the setting Oskar already doubts."],
+  refs: [
+    ["s1422420-1.jpg","Dodgeball Academia","Dodgeball with RPG stakes, readable at a glance.","https://store.steampowered.com/app/1422420"],
+    ["s1599660-1.jpg","Sackboy: A Big Adventure","Handmade materials and a stage that moves with the music.","https://store.steampowered.com/app/1599660"],
+    ["s1123450-1.jpg","Chicory: A Colorful Tale","Inked outline world you colour in. The ligne claire cousin.","https://store.steampowered.com/app/1123450"],
+    ["bruegel-games.jpg","Bruegel, Children's Games (1560)","Ninety games on one square. The oldest schoolyard board.","https://commons.wikimedia.org/wiki/File:Children%27s_Games_(Bruegel).jpg"]
+  ]
+},
+{
+  id: "lowtide", n: "2 of 4", name: "Low tide", tint: "#9fd6d0",
+  tag: "Everything the sea ever took washes up here. The tide is the clock.",
+  feel: "A coast of flotsam, driftwood and sea glass, where lost things come ashore and decide to be someone. The water is bright, flat and shallow, so the floor reads and the edges can be rich. Every match breathes with the tide: it comes in, it goes out, the court changes shape.",
+  heroes: ["Bottle: a message in a bottle that never found its reader, and throws what it was meant to say.", "Hermit: a crab living in a teapot, slow and armoured, who can swap shells mid-fight.", "Buoy (a bell with a bad temper, tank), Float (a glass fishing float, caster), Kite-fish (a windsock that swims, assassin). Mitts and Skip wash up as a lost glove and a lifeguard cutout."],
+  maps: ["Flagfall is already here: a court in the shallows with sandstone and windbreaks.", "Overthrow becomes the harbour slipway, where the tarmac runs down into the water.", "A tidepool map where the lanes flood and drain through the match, with towers as cairns and the core a lighthouse lamp."],
+  lobby: ["You wade a rock pool. Stepping stones are the seats; starfish and anemones are the hero strip.", "When everyone is ready, the tide pulls out and the stones become the court."],
+  why: ["Flagfall proves the idea: shallow reflective water gives a calm bright floor and all the richness (foam, reeds, drifting lights) goes to the edges. Waves are already line art, which is exactly what ligne claire does well.", "The risk is mood: lovely, but calm. It needs a loud team palette and quick effects so it stays a brawler rather than a screensaver."],
+  refs: [
+    ["s384190-2.jpg","ABZU","Flat colour, huge readable shapes, motion in the margins.","https://store.steampowered.com/app/384190"],
+    ["s1244090-1.jpg","Sea of Stars","Pixel clarity and tight, bold shape language.","https://store.steampowered.com/app/1244090"],
+    ["s1162130-1.jpg","Windbound","Low-poly shoreline, dusk light, handmade gear.","https://store.steampowered.com/app/1162130"],
+    ["s1055540-1.jpg","A Short Hike","Toy-box coast with a calm, warm floor.","https://store.steampowered.com/app/1055540"],
+    ["hokusai.jpg","Hokusai, The Great Wave","The wave as outline and flat colour, already game-ready.","https://commons.wikimedia.org/wiki/File:Great_Wave_off_Kanagawa2.jpg"],
+    ["hiroshige-naruto.jpg","Hiroshige, Naruto Whirlpools (1857)","Water drawn as repeating pattern; a tide-clock idea.","https://commons.wikimedia.org/wiki/File:Utagawa_Hiroshige_(1857)_Awa_Naruto_no_fuukei.jpg"]
+  ]
+},
+{
+  id: "penny-plain", n: "3 of 4", name: "Penny plain", tint: "#f0a4a0",
+  tag: "A toy theatre: cardboard cast, painted flats, and a curtain that rises when you are ready.",
+  feel: "Every hero is a cut-out puppet on a stick, every map is a stage of painted scenery, and the whole world knows it is a show. Flats slide in and fold flat, a spotlight sweeps the stage, and the audience is somewhere in the dark making noise. It is the only direction where the sketch drawing and the thick-ink UI are both the point, not a filter.",
+  heroes: ["Mitts, Carom and Fletcher become props from the props cupboard: a glove, a racket, a quiver. Skip is a scenery flat that learned to walk.", "Prompter, a hooded figure who whispers: silences and reveals. Understudy, who copies the last hero they touched.", "Stagehand (sandbag and rope, a hook and a tank), Villain (moustache, cape, boos from the crowd as a status effect), Diva (a caster, louder the longer the fight)."],
+  maps: ["Overthrow is the main stage: painted tarmac as floorboards, hedges as flats.", "Flagfall is the seaside set: a painted sea of waves on sticks, rolling in the wings.", "Scenery changes mid-match: a flat drops in as cover and another slides out. Towers are painted cut-outs that fold flat; the core is the prompt-box lamp."],
+  lobby: ["Backstage. You walk the wings among rope, crates and costume racks; seats are chalk marks on the floor.", "Ready up and the curtain rises: the lobby is the stage, and the match starts where you stand."],
+  why: ["It answers the north star literally: the menu is the game, because backstage is the stage and the curtain is the transition. Cut-outs give free squash, flip and snap, and flats give map events with no new rules.", "It also keeps the old pick's best idea (lost props and a cardboard cutout) with a better reason: this is the props cupboard, not a desert.", "The risk is twee. Keep it brash and funny, with grease paint rather than lace."],
+  refs: [
+    ["s268910-2.jpg","Cuphead","Hand-inked stage, boss as showman, a whole game that is a show.","https://store.steampowered.com/app/268910"],
+    ["s242550-1.jpg","Rayman Legends","Cut-out-look characters with huge squash and snap.","https://store.steampowered.com/app/242550"],
+    ["wayang.jpg","Wayang kulit","Shadow puppets on sticks, with a lit screen and a crowd.","https://commons.wikimedia.org/wiki/File:Pertunjukan_Wayang_Kulit.jpg"],
+    ["nemo.jpg","Winsor McCay, Little Nemo (1907)","Line, flat colour and bendy architecture, a century ago.","https://commons.wikimedia.org/wiki/File:Little_Nemo_1907-09-29.jpg"],
+    ["pollock.jpg","Pollock's Toy Theatre","\"Penny plain, twopence coloured.\" Paper stages sold as toys.","https://commons.wikimedia.org/wiki/File:Benjamin_Pollocks_Toy_Shop_exterior.jpg"]
+  ]
+},
+{
+  id: "fete", n: "4 of 4", name: "Fête", tint: "#b9d98f",
+  tag: "A village fête, the hour before the rain. Every stall is a game and everyone takes it far too seriously.",
+  feel: "Bunting, brass band, tombola and a very small cup, with grown-up pride over tiny stakes. Each stall is its own mini rule set, so the strangeness is built in. It is warm and funny and a little frantic, and it lets the camera sit above a busy, colourful, readable lawn.",
+  heroes: ["Coconut: the shy, a rolling hard-case with a face. Bunting, a quick flag-line that ties up the field.", "Brass, a tuba and a tank; its blast sets the rhythm. Tombola, a drum of numbered balls that rolls a random ability.", "Scarecrow (best in show, bait), Egg-and-spoon (a very careful runner, a very sudden loss), Jam (a sticky slow). Mitts is the cricket glove."],
+  maps: ["Overthrow is the cricket pitch and the village green with a rope-line court.", "Flagfall is the harbour fête, with stalls on the quay.", "The marquee map: tent poles as cover, trestle tables as walls, and the cake stall as a power-up."],
+  lobby: ["The green on set-up morning: stalls half built, bunting going up. Ready up at the tombola drum.", "Hero strip is the raffle prize table; the scoreboard is the best-in-show rosette."],
+  why: ["Every stall is a ready-made mechanic (coconut shy, tug of war, egg and spoon, tombola), so spells and map objects arrive with their own jokes. Towers become gazebos and bouncy castles that deflate with a squeal when they fall.", "The risk is that it sits too close to the schoolyard in mood, and its warmth is hard to make snappy: it needs a sharper edge than a village green gives."],
+  refs: [
+    ["s848350-1.jpg","Katamari Damacy","A whole world of ordinary objects with a bonkers sense of occasion.","https://store.steampowered.com/app/848350"],
+    ["s728880-1.jpg","Overcooked! 2","A frantic, top-down, tidy arena that reads from far away.","https://store.steampowered.com/app/728880"],
+    ["s702680-1.jpg","Wattam","Soft toy shapes and joy as a mechanic.","https://store.steampowered.com/app/702680"],
+    ["kermis.jpg","Bruegel, Kermis at Hoboken (1559)","The original village fête: crowds, games and tents from above.","https://commons.wikimedia.org/wiki/File:Kermis_at_Hoboken,_1559.jpg"],
+    ["tugofwar.jpg","Sports day tug of war","The posture and flags of a real sports day.","https://commons.wikimedia.org/wiki/File:Tug_of_war,_sports_day_of_Ofuna_High_School_-_Sep_11,_2010.jpg"]
+  ]
+}
+];
+
+const esc = s => s.replace(/&/g,"&amp;").replace(/</g,"&lt;");
+const list = a => "<ul>" + a.map(x => "<li>" + esc(x) + "</li>").join("") + "</ul>";
+document.getElementById("nav").innerHTML = boards.map(b => `<a href="#${b.id}">${esc(b.name)}</a>`).join("") + `<a href="#pick">My pick</a>`;
+document.getElementById("main").innerHTML = boards.map(b => `
+<section class="board" id="${b.id}" style="--tint:${b.tint}">
+  <div class="head"><span class="n">${esc(b.n)}</span><h2>${esc(b.name)}</h2><p class="tag">${esc(b.tag)}</p></div>
+  <div class="body">
+    <p class="feel">${esc(b.feel)}</p>
+    <div class="cols">
+      <div class="box"><h3>Heroes</h3>${list(b.heroes)}</div>
+      <div class="box"><h3>Maps</h3>${list(b.maps)}</div>
+      <div class="box"><h3>Lobby</h3>${list(b.lobby)}</div>
+    </div>
+    <div class="why"><h3>Why it suits a snappy toy brawler</h3>${b.why.map(w => `<p>${esc(w)}</p>`).join("")}</div>
+    <p class="refs-h">References</p>
+    <div class="refs">${b.refs.map(r => `<figure><a href="${r[3]}"><img loading="lazy" src="img/${r[0]}" alt="${esc(r[1])}"></a><figcaption><b>${esc(r[1])}</b>${esc(r[2])} <a href="${r[3]}">source</a></figcaption></figure>`).join("")}</div>
+  </div>
+</section>`).join("") + `
+<section class="pick" id="pick">
+  <h2>My pick: Penny plain</h2>
+  <p>It is the only board that turns "the menu is the game" into structure: backstage is the lobby, the curtain is the descent, and scenery flats give maps events without new rules. The four built heroes already fit as props and a cutout, and the sketch look and ink-bordered UI stop being a style and become the setting.</p>
+</section>`;
+</script>
+</body>
+</html>
