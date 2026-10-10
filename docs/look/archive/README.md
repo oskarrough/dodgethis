@@ -1,0 +1,1 @@
+Superseded 2026-10-10, history only, do not build from it: the schoolyard and seaside concepts, the old reference boards and the seven gallery directions Oskar didn't pick. The live direction is [moba-look.md](../../moba-look.md) and [vibes/](../vibes/index.html).

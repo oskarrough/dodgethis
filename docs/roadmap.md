@@ -21,7 +21,6 @@ A small, toy-like hero brawler that grew out of dodgeball, set in the world over
 Agents add a line when they need a call; the orchestrator removes it once answered.
 
 - [ ] Hero pitches: [#24](https://github.com/oskarrough/dodgethis/issues/24). Art style and name: [#25](https://github.com/oskarrough/dodgethis/issues/25). The domain is dodgethis.0sk.ar until then.
-- [ ] Rebrand gallery, six directions plus your three: http://office-linux.heron-mermaid.ts.net:5173/docs/look/vibes/
 - [ ] Is Flagfall's dark water frame on the minimap too heavy?
 
 ### Agent todo
@@ -35,7 +34,7 @@ Agents add a line when they need a call; the orchestrator removes it once answer
 - Online MOBA through the existing rooms, then the lobby's online seats.
 - Carom and Skip, then Yo-yo and Mascot: six built heroes, ten designed at most.
 - Juice and sound everywhere; the frozen briefs come back one by one.
-- The world shows up in the art: the Yard in the sky, schoolyard tarmac, keeps.
+- The world shows up in the art: Overthrow's day isles over cloud, Flagfall's night garden, keeps ([moba-look.md](moba-look.md)).
 
 ## Later
 

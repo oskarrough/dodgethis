@@ -1,0 +1,1123 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="color-scheme" content="light" />
+		<meta
+			name="description"
+			content="Seven archived art directions for dodgethis, kept for reference."
+		/>
+		<title>Archived directions · dodgethis concepts</title>
+		<style>
+			:root {
+				color-scheme: light;
+				--paper: #faf9f5;
+				--ink: #242720;
+				--muted: #666b61;
+				--line: #dcded5;
+				--accent: #3f675a;
+			}
+			* {
+				box-sizing: border-box;
+			}
+			html {
+				scroll-behavior: smooth;
+				scroll-padding-top: 1rem;
+			}
+			body {
+				margin: 0;
+				background: var(--paper);
+				color: var(--ink);
+				font:
+					16px/1.5 system-ui,
+					-apple-system,
+					BlinkMacSystemFont,
+					'Segoe UI',
+					sans-serif;
+			}
+			a {
+				color: inherit;
+			}
+			a:focus-visible,
+			button:focus-visible,
+			summary:focus-visible {
+				outline: 3px solid var(--accent);
+				outline-offset: 4px;
+			}
+			main {
+				max-width: 1500px;
+				margin: auto;
+				padding: 42px 32px 50px;
+			}
+			header {
+				margin-bottom: 32px;
+				max-width: 1000px;
+			}
+			.eyebrow {
+				font-size: 11px;
+				font-weight: 700;
+				letter-spacing: 0.09em;
+				text-transform: uppercase;
+				color: var(--muted);
+				margin: 0 0 12px;
+			}
+			h1 {
+				font-size: clamp(32px, 4vw, 52px);
+				letter-spacing: -0.055em;
+				line-height: 1.06;
+				margin: 0 0 16px;
+				font-weight: 750;
+			}
+			header > p:not(.eyebrow) {
+				max-width: 700px;
+				margin: 0;
+				color: var(--muted);
+			}
+			nav {
+				display: flex;
+				gap: 8px;
+				flex-wrap: wrap;
+				margin-top: 22px;
+			}
+			nav a {
+				text-decoration: none;
+				border: 1px solid var(--line);
+				border-radius: 6px;
+				padding: 6px 11px;
+				font-size: 13px;
+				background: white;
+			}
+			nav a:hover {
+				border-color: var(--accent);
+				color: var(--accent);
+			}
+			.direction {
+				display: grid;
+				grid-template-columns: 250px minmax(0, 1fr);
+				gap: 32px;
+				padding: 30px 0 36px;
+				border-top: 1px solid var(--line);
+				align-items: start;
+			}
+			.pitch {
+				position: sticky;
+				top: 24px;
+			}
+			.pitch .eyebrow {
+				font-size: 10px;
+				line-height: 1.5;
+				margin-bottom: 8px;
+			}
+			h2 {
+				font-size: 30px;
+				letter-spacing: -0.04em;
+				line-height: 1.08;
+				margin: 0 0 18px;
+			}
+			.pitch > p:not(.eyebrow) {
+				font-size: 15px;
+				line-height: 1.6;
+				margin: 0 0 10px;
+			}
+			.images {
+				display: grid;
+				grid-template-columns: repeat(2, minmax(0, 1fr));
+				gap: 16px;
+			}
+			figure {
+				margin: 0;
+				min-width: 0;
+			}
+			figure a {
+				display: block;
+				background: #efeee8;
+				overflow: hidden;
+				border-radius: 4px;
+				outline-offset: 3px;
+			}
+			img {
+				display: block;
+				width: 100%;
+				height: auto;
+				aspect-ratio: 16/9;
+				object-fit: contain;
+				transition: filter 0.12s;
+			}
+			figure a:hover img {
+				filter: brightness(1.04);
+			}
+			figcaption {
+				font-size: 12px;
+				margin-top: 7px;
+				color: var(--muted);
+			}
+			figcaption span:first-child {
+				color: var(--ink);
+				font-weight: 650;
+			}
+			.enlarge {
+				float: right;
+			}
+			details {
+				margin-top: 20px;
+				font-size: 12px;
+				color: var(--muted);
+			}
+			summary {
+				cursor: pointer;
+				width: fit-content;
+			}
+			details p {
+				line-height: 1.6;
+			}
+			footer {
+				padding-top: 20px;
+				border-top: 1px solid var(--line);
+				font-size: 12px;
+				color: var(--muted);
+			}
+			footer a {
+				text-decoration-thickness: 1px;
+				text-underline-offset: 3px;
+			}
+			dialog {
+				border: 0;
+				padding: 0;
+				max-width: 96vw;
+				width: 1400px;
+				background: var(--paper);
+				border-radius: 8px;
+				max-height: 95dvh;
+				overflow: auto;
+				color: var(--ink);
+			}
+			dialog::backdrop {
+				background: rgba(20, 23, 20, 0.86);
+			}
+			dialog img {
+				width: 100%;
+				height: auto;
+				max-height: 82dvh;
+				object-fit: contain;
+				aspect-ratio: auto;
+				background: #151715;
+			}
+			.modal-bar {
+				display: flex;
+				gap: 12px;
+				align-items: center;
+				justify-content: space-between;
+				padding: 10px 16px;
+			}
+			.modal-bar p {
+				margin: 0;
+				font-size: 13px;
+			}
+			.controls {
+				display: flex;
+				gap: 6px;
+			}
+			.controls button {
+				font: inherit;
+				font-size: 13px;
+				cursor: pointer;
+				padding: 6px 11px;
+				border: 1px solid var(--line);
+				background: white;
+				border-radius: 4px;
+			}
+			.controls button:hover {
+				border-color: var(--accent);
+			}
+			@media (min-width: 1600px) {
+				.direction {
+					grid-template-columns: 275px minmax(0, 1fr);
+				}
+			}
+			@media (max-width: 950px) {
+				main {
+					padding: 30px 22px;
+				}
+				.direction {
+					grid-template-columns: 200px minmax(0, 1fr);
+					gap: 22px;
+				}
+				h2 {
+					font-size: 27px;
+				}
+				.images {
+					gap: 12px;
+				}
+			}
+			@media (max-width: 700px) {
+				main {
+					padding: 25px 16px;
+				}
+				.direction {
+					grid-template-columns: 1fr;
+					gap: 18px;
+					padding: 25px 0;
+				}
+				.pitch {
+					position: static;
+				}
+				.pitch > p:not(.eyebrow) {
+					max-width: 580px;
+				}
+				h2 {
+					margin-bottom: 12px;
+				}
+				details {
+					margin-top: 10px;
+				}
+				.images {
+					gap: 12px;
+				}
+				figcaption {
+					font-size: 11px;
+				}
+				nav {
+					gap: 6px;
+				}
+				.modal-bar {
+					flex-wrap: wrap;
+				}
+			}
+			@media (max-width: 440px) {
+				.images {
+					grid-template-columns: 1fr;
+				}
+				nav a {
+					font-size: 12px;
+				}
+			}
+			@media (prefers-reduced-motion: reduce) {
+				html {
+					scroll-behavior: auto;
+				}
+				img {
+					transition: none;
+				}
+			}
+			.collection-heading {
+				margin: 36px 0 20px;
+			}
+			.collection-heading h2 {
+				font-size: 25px;
+				margin-bottom: 8px;
+			}
+			.collection-heading p {
+				margin: 0;
+				color: var(--muted);
+				font-size: 14px;
+			}
+			.references {
+				display: grid;
+				grid-template-columns: 1.5fr 1fr;
+				gap: 20px;
+				align-items: start;
+				margin-bottom: 28px;
+			}
+			.references img {
+				aspect-ratio: auto;
+			}
+			.pitch > p.echo {
+				font-size: 12px;
+				color: var(--accent);
+				border-left: 2px solid var(--line);
+				padding-left: 10px;
+				margin-top: 18px;
+			}
+			.pitch > p.reference-note {
+				font-size: 11px;
+				color: var(--muted);
+			}
+			@media (max-width: 700px) {
+				.references {
+					grid-template-columns: 1fr;
+					gap: 16px;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<main>
+			<header>
+				<p class="eyebrow">dodgethis / concept archive</p>
+				<h1>Archived directions</h1>
+				<p>
+					Seven explorations, kept for reference. The active gallery follows the bright floating
+					islands and the violet flower jungle.
+				</p>
+				<nav aria-label="Gallery navigation">
+					<a href="../../vibes/index.html">Back to the two favourites</a
+					><a href="#cosmic-scribble">Cosmic Scribble</a
+					><a href="#finders-keepers">Finders Keepers</a><a href="#low-tide">Low Tide</a
+					><a href="#uproar">Uproar</a><a href="#yardbirds">Yardbirds</a
+					><a href="#potluck">Potluck</a><a href="#bad-company">Bad Company</a>
+				</nav>
+			</header>
+			<section class="direction" id="cosmic-scribble" aria-labelledby="cosmic-scribble-title">
+				<div class="pitch">
+					<p class="eyebrow">Oskar / 03</p>
+					<h2 id="cosmic-scribble-title">Cosmic Scribble</h2>
+					<p>Messy orbits, happier days.</p>
+					<p>
+						A caped star, a cat and a curly-eared creature chase a glowing ball through a crayon
+						cosmos.
+					</p>
+					<p class="echo">
+						Echoes Finders Keepers’ floating playground and Yardbirds’ animal silhouettes; the
+						crayon cosmos is new.
+					</p>
+					<p class="reference-note">All four images follow Oskar’s Cosmic Scribble panel.</p>
+					<details>
+						<summary>Shapes &amp; palette</summary>
+						<p>
+							Chunky extruded creatures and rock blocks, one quiet crayon tile, flat orbit ribbons
+							and sparse billboard stars. Keep the butter-yellow arena clear; the wild marks live
+							beyond its edge.
+						</p>
+					</details>
+				</div>
+				<div class="images">
+					<figure>
+						<a
+							href="cosmic-scribble/01-title.webp"
+							data-image
+							data-caption="Cosmic Scribble · Key art / title screen"
+							aria-label="Enlarge Cosmic Scribble: Key art / title screen"
+							><img
+								src="cosmic-scribble/01-title.webp"
+								alt="Cosmic Scribble — Key art / title screen"
+								width="1600"
+								height="900"
+								loading="lazy"
+								decoding="async"
+						/></a>
+						<figcaption>
+							<span>1.</span> Key art / title screen
+							<span class="enlarge" aria-hidden="true">↗</span>
+						</figcaption>
+					</figure>
+					<figure>
+						<a
+							href="cosmic-scribble/02-heroes.webp"
+							data-image
+							data-caption="Cosmic Scribble · Three heroes"
+							aria-label="Enlarge Cosmic Scribble: Three heroes"
+							><img
+								src="cosmic-scribble/02-heroes.webp"
+								alt="Cosmic Scribble — Three heroes"
+								width="1600"
+								height="900"
+								loading="lazy"
+								decoding="async"
+						/></a>
+						<figcaption>
+							<span>2.</span> Three heroes <span class="enlarge" aria-hidden="true">↗</span>
+						</figcaption>
+					</figure>
+					<figure>
+						<a
+							href="cosmic-scribble/03-match.webp"
+							data-image
+							data-caption="Cosmic Scribble · Match · MOBA camera"
+							aria-label="Enlarge Cosmic Scribble: Match · MOBA camera"
+							><img
+								src="cosmic-scribble/03-match.webp"
+								alt="Cosmic Scribble — Match · MOBA camera"
+								width="1600"
+								height="900"
+								loading="lazy"
+								decoding="async"
+						/></a>
+						<figcaption>
+							<span>3.</span> Match · MOBA camera
+							<span class="enlarge" aria-hidden="true">↗</span>
+						</figcaption>
+					</figure>
+					<figure>
+						<a
+							href="cosmic-scribble/04-lobby.webp"
+							data-image
+							data-caption="Cosmic Scribble · Walkable lobby"
+							aria-label="Enlarge Cosmic Scribble: Walkable lobby"
+							><img
+								src="cosmic-scribble/04-lobby.webp"
+								alt="Cosmic Scribble — Walkable lobby"
+								width="1600"
+								height="900"
+								loading="lazy"
+								decoding="async"
+						/></a>
+						<figcaption>
+							<span>4.</span> Walkable lobby <span class="enlarge" aria-hidden="true">↗</span>
+						</figcaption>
+					</figure>
+				</div>
+			</section>
+			<section class="direction" id="finders-keepers" aria-labelledby="finders-keepers-title">
+				<div class="pitch">
+					<p class="eyebrow">01 / The current world, made unmistakable</p>
+					<h2 id="finders-keepers-title">Finders Keepers</h2>
+					<p>Every lost ball, glove and playground oddment lands in a desert beyond the fence.</p>
+					<p>Pick sides, play for keeps, and hang out on the same battered court between fights.</p>
+					<details>
+						<summary>Shapes &amp; palette</summary>
+						<p>
+							A world of lost playground equipment over the fence: pale chalk court on torn tarmac
+							mesa above a dusty violet desert, enormous faint schoolyard moon, chain-link fence and
+							bucket-built sandcastles. Palette warm parchment, dusty lavender, muted sage,
+							charcoal. Heroes are the objects themselves with tiny simple limbs, not humans holding
+							equipment: Fletcher a tall cylindrical cream quiver with three arrows and a small bent
+							bow, Mitts a squat oversized worn taupe catcher's glove whose fingers form the head,
+							Carom an angular cream squash racket with tiny limbs and open oval mesh head. Neutral
+							materials with team bibs only.
+						</p>
+					</details>
+				</div>
+				<div class="images">
+					<figure>
+						<a
+							href="finders-keepers/01-title.webp"
+							data-image
+							data-caption="Finders Keepers · Key art / title screen"
+							aria-label="Enlarge Finders Keepers: Key art / title screen"
+							><img
+								src="finders-keepers/01-title.webp"
+								alt="Finders Keepers — Key art / title screen"
+								width="1600"
+								height="900"
+								fetchpriority="high"
+								decoding="async"
+						/></a>
+						<figcaption>
+							<span>1.</span> Key art / title screen
+							<span class="enlarge" aria-hidden="true">↗</span>
+						</figcaption>
+					</figure>
+					<figure>
+						<a
+							href="finders-keepers/02-heroes.webp"
+							data-image
+							data-caption="Finders Keepers · Three heroes"
+							aria-label="Enlarge Finders Keepers: Three heroes"
+							><img
+								src="finders-keepers/02-heroes.webp"
+								alt="Finders Keepers — Three heroes"
+								width="1600"
+								height="900"
+								loading="lazy"
+								decoding="async"
+						/></a>
+						<figcaption>
+							<span>2.</span> Three heroes <span class="enlarge" aria-hidden="true">↗</span>
+						</figcaption>
+					</figure>
+					<figure>
+						<a
+							href="finders-keepers/03-match.webp"
+							data-image
+							data-caption="Finders Keepers · Match · MOBA camera"
+							aria-label="Enlarge Finders Keepers: Match · MOBA camera"
+							><img
+								src="finders-keepers/03-match.webp"
+								alt="Finders Keepers — Match · MOBA camera"
+								width="1600"
+								height="900"
+								loading="lazy"
+								decoding="async"
+						/></a>
+						<figcaption>
+							<span>3.</span> Match · MOBA camera <span class="enlarge" aria-hidden="true">↗</span>
+						</figcaption>
+					</figure>
+					<figure>
+						<a
+							href="finders-keepers/04-lobby.webp"
+							data-image
+							data-caption="Finders Keepers · Walkable lobby"
+							aria-label="Enlarge Finders Keepers: Walkable lobby"
+							><img
+								src="finders-keepers/04-lobby.webp"
+								alt="Finders Keepers — Walkable lobby"
+								width="1600"
+								height="900"
+								loading="lazy"
+								decoding="async"
+						/></a>
+						<figcaption>
+							<span>4.</span> Walkable lobby <span class="enlarge" aria-hidden="true">↗</span>
+						</figcaption>
+					</figure>
+				</div>
+			</section>
+			<section class="direction" id="low-tide" aria-labelledby="low-tide-title">
+				<div class="pitch">
+					<p class="eyebrow">02 / Harbour crews settle it on the slipway</p>
+					<h2 id="low-tide-title">Low Tide</h2>
+					<p>The tide goes out; rival dock crews take over the slipway for a quick scrap.</p>
+					<p>
+						Throw, hook and ricochet through a harbour that works as your lobby as well as your
+						arena.
+					</p>
+					<details>
+						<summary>Shapes &amp; palette</summary>
+						<p>
+							A working fishing harbour, no pirates or tropical resort. Very chunky human
+							dockworkers, rain capes, rubber boots, buoys, coiled rope, fish crates. Palette bone
+							concrete, dark desaturated sea-green, fog-grey, charcoal, muted peach. Three heroes: a
+							short broad woman dockhand in sage waterproof apron carrying an enormous cream oval
+							lifebuoy for catches, a tall lean fisherman in charcoal sou'wester with curved pole
+							and rope hook, a square-bodied deck mechanic in peach dungarees carrying a long flat
+							boat paddle for ricochets. Huge readable headgear and equipment; faceted simple faces;
+							team sash colour only.
+						</p>
+					</details>
+				</div>
+				<div class="images">
+					<figure>
+						<a
+							href="low-tide/01-title.webp"
+							data-image
+							data-caption="Low Tide · Key art / title screen"
+							aria-label="Enlarge Low Tide: Key art / title screen"
+							><img
+								src="low-tide/01-title.webp"
+								alt="Low Tide — Key art / title screen"
+								width="1600"
+								height="900"
+								loading="lazy"
+								decoding="async"
+						/></a>
+						<figcaption>
+							<span>1.</span> Key art / title screen
+							<span class="enlarge" aria-hidden="true">↗</span>
+						</figcaption>
+					</figure>
+					<figure>
+						<a
+							href="low-tide/02-heroes.webp"
+							data-image
+							data-caption="Low Tide · Three heroes"
+							aria-label="Enlarge Low Tide: Three heroes"
+							><img
+								src="low-tide/02-heroes.webp"
+								alt="Low Tide — Three heroes"
+								width="1600"
+								height="900"
+								loading="lazy"
+								decoding="async"
+						/></a>
+						<figcaption>
+							<span>2.</span> Three heroes <span class="enlarge" aria-hidden="true">↗</span>
+						</figcaption>
+					</figure>
+					<figure>
+						<a
+							href="low-tide/03-match.webp"
+							data-image
+							data-caption="Low Tide · Match · MOBA camera"
+							aria-label="Enlarge Low Tide: Match · MOBA camera"
+							><img
+								src="low-tide/03-match.webp"
+								alt="Low Tide — Match · MOBA camera"
+								width="1600"
+								height="900"
+								loading="lazy"
+								decoding="async"
+						/></a>
+						<figcaption>
+							<span>3.</span> Match · MOBA camera <span class="enlarge" aria-hidden="true">↗</span>
+						</figcaption>
+					</figure>
+					<figure>
+						<a
+							href="low-tide/04-lobby.webp"
+							data-image
+							data-caption="Low Tide · Walkable lobby"
+							aria-label="Enlarge Low Tide: Walkable lobby"
+							><img
+								src="low-tide/04-lobby.webp"
+								alt="Low Tide — Walkable lobby"
+								width="1600"
+								height="900"
+								loading="lazy"
+								decoding="async"
+						/></a>
+						<figcaption>
+							<span>4.</span> Walkable lobby <span class="enlarge" aria-hidden="true">↗</span>
+						</figcaption>
+					</figure>
+				</div>
+			</section>
+			<section class="direction" id="uproar" aria-labelledby="uproar-title">
+				<div class="pitch">
+					<p class="eyebrow">03 / The show is a three-on-three fight</p>
+					<h2 id="uproar-title">Uproar</h2>
+					<p>
+						Three actors a side, one stage, and absolutely no agreement about who gets the
+						spotlight.
+					</p>
+					<p>
+						Masks, props and trapdoors turn a theatre into a brawler; backstage is where you pick
+						your part.
+					</p>
+					<details>
+						<summary>Shapes &amp; palette</summary>
+						<p>
+							A mischievous tiny touring theatre world made of painted plywood, cardboard flats and
+							chunky simple masks. Not medieval fantasy or ornate circus. Palette pale mint painted
+							floor, dark aubergine curtains, dusty mauve and chalk cream, ink black. Three heroes:
+							a slim triangular masked acrobat in a plain diamond-pattern neutral unitard wielding
+							two flat fan blades; a squat pear-shaped stagehand with oversized round cream comedy
+							mask and padded cylinder mallet; a tall rectangular diva shaped like a folded paper
+							costume with an oval half-black half-cream face mask carrying a megaphone. Team
+							ribbons detachable. Faces are graphic mask shapes, geometry cheap.
+						</p>
+					</details>
+				</div>
+				<div class="images">
+					<figure>
+						<a
+							href="uproar/01-title.webp"
+							data-image
+							data-caption="Uproar · Key art / title screen"
+							aria-label="Enlarge Uproar: Key art / title screen"
+							><img
+								src="uproar/01-title.webp"
+								alt="Uproar — Key art / title screen"
+								width="1600"
+								height="900"
+								loading="lazy"
+								decoding="async"
+						/></a>
+						<figcaption>
+							<span>1.</span> Key art / title screen
+							<span class="enlarge" aria-hidden="true">↗</span>
+						</figcaption>
+					</figure>
+					<figure>
+						<a
+							href="uproar/02-heroes.webp"
+							data-image
+							data-caption="Uproar · Three heroes"
+							aria-label="Enlarge Uproar: Three heroes"
+							><img
+								src="uproar/02-heroes.webp"
+								alt="Uproar — Three heroes"
+								width="1600"
+								height="900"
+								loading="lazy"
+								decoding="async"
+						/></a>
+						<figcaption>
+							<span>2.</span> Three heroes <span class="enlarge" aria-hidden="true">↗</span>
+						</figcaption>
+					</figure>
+					<figure>
+						<a
+							href="uproar/03-match.webp"
+							data-image
+							data-caption="Uproar · Match · MOBA camera"
+							aria-label="Enlarge Uproar: Match · MOBA camera"
+							><img
+								src="uproar/03-match.webp"
+								alt="Uproar — Match · MOBA camera"
+								width="1600"
+								height="900"
+								loading="lazy"
+								decoding="async"
+						/></a>
+						<figcaption>
+							<span>3.</span> Match · MOBA camera <span class="enlarge" aria-hidden="true">↗</span>
+						</figcaption>
+					</figure>
+					<figure>
+						<a
+							href="uproar/04-lobby.webp"
+							data-image
+							data-caption="Uproar · Walkable lobby"
+							aria-label="Enlarge Uproar: Walkable lobby"
+							><img
+								src="uproar/04-lobby.webp"
+								alt="Uproar — Walkable lobby"
+								width="1600"
+								height="900"
+								loading="lazy"
+								decoding="async"
+						/></a>
+						<figcaption>
+							<span>4.</span> Walkable lobby <span class="enlarge" aria-hidden="true">↗</span>
+						</figcaption>
+					</figure>
+				</div>
+			</section>
+			<section class="direction" id="yardbirds" aria-labelledby="yardbirds-title">
+				<div class="pitch">
+					<p class="eyebrow">04 / The roof belongs to whoever holds it</p>
+					<h2 id="yardbirds-title">Yardbirds</h2>
+					<p>
+						Pigeons, gulls and crows turn city rooftops into their own fiercely contested
+						neighbourhood.
+					</p>
+					<p>
+						Scrap over the shiny prize, then loaf at the rooftop clubhouse while the next flock
+						gathers.
+					</p>
+					<details>
+						<summary>Shapes &amp; palette</summary>
+						<p>
+							All heroes are actual small anthropomorphic city birds, no humans, no sports equipment
+							characters. A flat graphic urban roofscape at early peach dawn, graphic feather blocks
+							not detailed plumage. Palette pale concrete, desaturated petrol green rooftops,
+							pigeon-grey, muted peach, charcoal. Three heroes: a stout barrel pigeon with tiny head
+							and fan-tail, a tall lanky gull with long pointed beak and wing-boomerang silhouette,
+							a triangular charcoal crow with angular wing cape and one shiny bottlecap shield. All
+							bipedal birds with only basic scarves for team colours. Roof silhouettes and tiny bird
+							eyes extremely simple low-poly.
+						</p>
+					</details>
+				</div>
+				<div class="images">
+					<figure>
+						<a
+							href="yardbirds/01-title.webp"
+							data-image
+							data-caption="Yardbirds · Key art / title screen"
+							aria-label="Enlarge Yardbirds: Key art / title screen"
+							><img
+								src="yardbirds/01-title.webp"
+								alt="Yardbirds — Key art / title screen"
+								width="1600"
+								height="900"
+								loading="lazy"
+								decoding="async"
+						/></a>
+						<figcaption>
+							<span>1.</span> Key art / title screen
+							<span class="enlarge" aria-hidden="true">↗</span>
+						</figcaption>
+					</figure>
+					<figure>
+						<a
+							href="yardbirds/02-heroes.webp"
+							data-image
+							data-caption="Yardbirds · Three heroes"
+							aria-label="Enlarge Yardbirds: Three heroes"
+							><img
+								src="yardbirds/02-heroes.webp"
+								alt="Yardbirds — Three heroes"
+								width="1600"
+								height="900"
+								loading="lazy"
+								decoding="async"
+						/></a>
+						<figcaption>
+							<span>2.</span> Three heroes <span class="enlarge" aria-hidden="true">↗</span>
+						</figcaption>
+					</figure>
+					<figure>
+						<a
+							href="yardbirds/03-match.webp"
+							data-image
+							data-caption="Yardbirds · Match · MOBA camera"
+							aria-label="Enlarge Yardbirds: Match · MOBA camera"
+							><img
+								src="yardbirds/03-match.webp"
+								alt="Yardbirds — Match · MOBA camera"
+								width="1600"
+								height="900"
+								loading="lazy"
+								decoding="async"
+						/></a>
+						<figcaption>
+							<span>3.</span> Match · MOBA camera <span class="enlarge" aria-hidden="true">↗</span>
+						</figcaption>
+					</figure>
+					<figure>
+						<a
+							href="yardbirds/04-lobby.webp"
+							data-image
+							data-caption="Yardbirds · Walkable lobby"
+							aria-label="Enlarge Yardbirds: Walkable lobby"
+							><img
+								src="yardbirds/04-lobby.webp"
+								alt="Yardbirds — Walkable lobby"
+								width="1600"
+								height="900"
+								loading="lazy"
+								decoding="async"
+						/></a>
+						<figcaption>
+							<span>4.</span> Walkable lobby <span class="enlarge" aria-hidden="true">↗</span>
+						</figcaption>
+					</figure>
+				</div>
+			</section>
+			<section class="direction" id="potluck" aria-labelledby="potluck-title">
+				<div class="pitch">
+					<p class="eyebrow">05 / Kitchen scraps with a competitive streak</p>
+					<h2 id="potluck-title">Potluck</h2>
+					<p>
+						A mushroom, a dumpling and an aubergine can still ruin your evening in under five
+						minutes.
+					</p>
+					<p>
+						The prep counter is the arena; the kitchen between rounds is somewhere to poke, practise
+						and play.
+					</p>
+					<details>
+						<summary>Shapes &amp; palette</summary>
+						<p>
+							A late-night communal kitchen populated by lively ingredients, NOT human chefs, NOT
+							grotesque food, no realistic food texture. Palette flour-white, desaturated celery
+							green, ink aubergine, pale peach, charcoal. Three heroes: a broad squat cream dumpling
+							with simple folded top and two little arms wielding a saucepan-lid catch shield, a
+							slim tall aubergine with flat leaf crown and a skewer spear, a small round mushroom
+							with wide flat taupe cap wielding a rectangular spatula paddle. Expressive two-dot
+							faces, tiny feet. Keep neutral purple and sage ingredients apart from combat red/blue.
+							Soft low-poly forms, no gloss.
+						</p>
+					</details>
+				</div>
+				<div class="images">
+					<figure>
+						<a
+							href="potluck/01-title.webp"
+							data-image
+							data-caption="Potluck · Key art / title screen"
+							aria-label="Enlarge Potluck: Key art / title screen"
+							><img
+								src="potluck/01-title.webp"
+								alt="Potluck — Key art / title screen"
+								width="1600"
+								height="900"
+								loading="lazy"
+								decoding="async"
+						/></a>
+						<figcaption>
+							<span>1.</span> Key art / title screen
+							<span class="enlarge" aria-hidden="true">↗</span>
+						</figcaption>
+					</figure>
+					<figure>
+						<a
+							href="potluck/02-heroes.webp"
+							data-image
+							data-caption="Potluck · Three heroes"
+							aria-label="Enlarge Potluck: Three heroes"
+							><img
+								src="potluck/02-heroes.webp"
+								alt="Potluck — Three heroes"
+								width="1600"
+								height="900"
+								loading="lazy"
+								decoding="async"
+						/></a>
+						<figcaption>
+							<span>2.</span> Three heroes <span class="enlarge" aria-hidden="true">↗</span>
+						</figcaption>
+					</figure>
+					<figure>
+						<a
+							href="potluck/03-match.webp"
+							data-image
+							data-caption="Potluck · Match · MOBA camera"
+							aria-label="Enlarge Potluck: Match · MOBA camera"
+							><img
+								src="potluck/03-match.webp"
+								alt="Potluck — Match · MOBA camera"
+								width="1600"
+								height="900"
+								loading="lazy"
+								decoding="async"
+						/></a>
+						<figcaption>
+							<span>3.</span> Match · MOBA camera <span class="enlarge" aria-hidden="true">↗</span>
+						</figcaption>
+					</figure>
+					<figure>
+						<a
+							href="potluck/04-lobby.webp"
+							data-image
+							data-caption="Potluck · Walkable lobby"
+							aria-label="Enlarge Potluck: Walkable lobby"
+							><img
+								src="potluck/04-lobby.webp"
+								alt="Potluck — Walkable lobby"
+								width="1600"
+								height="900"
+								loading="lazy"
+								decoding="async"
+						/></a>
+						<figcaption>
+							<span>4.</span> Walkable lobby <span class="enlarge" aria-hidden="true">↗</span>
+						</figcaption>
+					</figure>
+				</div>
+			</section>
+			<section class="direction" id="bad-company" aria-labelledby="bad-company-title">
+				<div class="pitch">
+					<p class="eyebrow">06 / Office supplies have settled on violence</p>
+					<h2 id="bad-company-title">Bad Company</h2>
+					<p>When everyone goes home, the stationery starts settling departmental grudges.</p>
+					<p>
+						Staplers tank, scissors flank, and the water-cooler lobby is a place to play rather than
+						a menu.
+					</p>
+					<details>
+						<summary>Shapes &amp; palette</summary>
+						<p>
+							After-hours drab 1970s office comedy at stationery scale, NO computers-as-heroes, no
+							futuristic neon, no cyberpunk. Palette pale recycled paper, sage-green desks, dusty
+							lilac, charcoal, pale orange accents. Three heroes are living office supplies with
+							tiny simple limbs: a squat charcoal stapler with a big hinged jaw and cuboid body, a
+							tall slim pair of cream-handled scissors with long pointed closed metal-blade legs, a
+							wide round taupe adhesive-tape dispenser with a visible circle hole and short
+							projecting tape shield. Dot eyes restrained, detachable team paperclip bibs. A
+							photocopier and huge swivel chair provide scale at edges.
+						</p>
+					</details>
+				</div>
+				<div class="images">
+					<figure>
+						<a
+							href="bad-company/01-title.webp"
+							data-image
+							data-caption="Bad Company · Key art / title screen"
+							aria-label="Enlarge Bad Company: Key art / title screen"
+							><img
+								src="bad-company/01-title.webp"
+								alt="Bad Company — Key art / title screen"
+								width="1600"
+								height="900"
+								loading="lazy"
+								decoding="async"
+						/></a>
+						<figcaption>
+							<span>1.</span> Key art / title screen
+							<span class="enlarge" aria-hidden="true">↗</span>
+						</figcaption>
+					</figure>
+					<figure>
+						<a
+							href="bad-company/02-heroes.webp"
+							data-image
+							data-caption="Bad Company · Three heroes"
+							aria-label="Enlarge Bad Company: Three heroes"
+							><img
+								src="bad-company/02-heroes.webp"
+								alt="Bad Company — Three heroes"
+								width="1600"
+								height="900"
+								loading="lazy"
+								decoding="async"
+						/></a>
+						<figcaption>
+							<span>2.</span> Three heroes <span class="enlarge" aria-hidden="true">↗</span>
+						</figcaption>
+					</figure>
+					<figure>
+						<a
+							href="bad-company/03-match.webp"
+							data-image
+							data-caption="Bad Company · Match · MOBA camera"
+							aria-label="Enlarge Bad Company: Match · MOBA camera"
+							><img
+								src="bad-company/03-match.webp"
+								alt="Bad Company — Match · MOBA camera"
+								width="1600"
+								height="900"
+								loading="lazy"
+								decoding="async"
+						/></a>
+						<figcaption>
+							<span>3.</span> Match · MOBA camera <span class="enlarge" aria-hidden="true">↗</span>
+						</figcaption>
+					</figure>
+					<figure>
+						<a
+							href="bad-company/04-lobby.webp"
+							data-image
+							data-caption="Bad Company · Walkable lobby"
+							aria-label="Enlarge Bad Company: Walkable lobby"
+							><img
+								src="bad-company/04-lobby.webp"
+								alt="Bad Company — Walkable lobby"
+								width="1600"
+								height="900"
+								loading="lazy"
+								decoding="async"
+						/></a>
+						<figcaption>
+							<span>4.</span> Walkable lobby <span class="enlarge" aria-hidden="true">↗</span>
+						</figcaption>
+					</figure>
+				</div>
+			</section>
+			<footer>
+				28 archived concepts. <a href="../../vibes/index.html">Selected directions</a> ·
+				<a href="prompts.json">Generation prompts</a>
+			</footer>
+		</main>
+		<dialog aria-label="Enlarged concept art">
+			<img id="full-image" alt="" />
+			<div class="modal-bar">
+				<p id="caption" aria-live="polite"></p>
+				<div class="controls">
+					<button id="previous" aria-label="Previous image">←</button
+					><button id="next" aria-label="Next image">→</button><button id="close">Close</button>
+				</div>
+			</div>
+		</dialog>
+		<script>
+			const links = Array.from(document.querySelectorAll('[data-image]')),
+				modal = document.querySelector('dialog'),
+				full = document.querySelector('#full-image'),
+				caption = document.querySelector('#caption')
+			let current = 0
+			function show(i) {
+				current = (i + links.length) % links.length
+				full.src = links[current].getAttribute('href')
+				full.alt = links[current].dataset.caption
+				caption.textContent = links[current].dataset.caption
+			}
+			links.forEach((link, i) =>
+				link.addEventListener('click', (event) => {
+					if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+					event.preventDefault()
+					show(i)
+					modal.showModal()
+				}),
+			)
+			document.querySelector('#close').addEventListener('click', () => modal.close())
+			document.querySelector('#previous').addEventListener('click', () => show(current - 1))
+			document.querySelector('#next').addEventListener('click', () => show(current + 1))
+			modal.addEventListener('keydown', (event) => {
+				if (event.key === 'ArrowLeft') {
+					event.preventDefault()
+					show(current - 1)
+				}
+				if (event.key === 'ArrowRight') {
+					event.preventDefault()
+					show(current + 1)
+				}
+			})
+			modal.addEventListener('click', (event) => {
+				if (event.target === modal) {
+					const r = modal.getBoundingClientRect()
+					if (
+						event.clientX < r.left ||
+						event.clientX > r.right ||
+						event.clientY < r.top ||
+						event.clientY > r.bottom
+					)
+						modal.close()
+				}
+			})
+		</script>
+	</body>
+</html>

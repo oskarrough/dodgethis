@@ -2,7 +2,7 @@
 
 A MOBA map tile from the splash opens a place you play in, like the LittleBigPlanet pod: you run around the lobby as your hero, swap heroes from the strip at the left, try the kit on dummies, shoot a difficulty card and walk into your Ready box. The 3D lobby fills the frame above the HUD; the hero strip stays at the left, apart from stickers on the props they name. The map is already picked on the splash; the lobby contains only heroes, difficulty and Ready. Esc goes back to the [splash](moba-front.md).
 
-**Moebius and Sackboy.** Moebius sets the line, the light and the empty sky. Sackboy and Toy Story set what things are made of: cardboard bots, stuffed sack dummies, a chalk start line. The line is drawn; the props are built. They squash when bumped, rock when hit and settle with a little overshoot.
+**Moebius, with weight.** Moebius sets the line, the light and the empty sky. The isles set what things are made of: stone, bark and bone, weathered, per [moba-look.md](moba-look.md); today's cardboard bots, sack dummies and chalk start line are the retired schoolyard look. The line is drawn; the props are built. They squash when bumped, rock when hit and settle with a little overshoot.
 
 ## The space and the sim (built)
 
