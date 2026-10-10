@@ -3,10 +3,20 @@ import { controls, setQuickCast } from '../../core/controls.js'
 import { hex } from '../../core/style.js'
 import { createCornerNav } from '../../core/corner-nav.js'
 import { createRecap } from './recap.js'
+import { clock } from './tooltip.js'
+import { tune as front } from './front/tune.js'
+import { el } from '../../core/dom.js'
 import './menu.css'
 
 const MENU_ICON =
 	'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6.5h14M5 12h14M5 17.5h14" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/></svg>'
+
+// The pause page comes in two layouts on one Swiss grid while Oskar compares them: `?pause=manual`.
+const PAUSE_LAYOUTS = ['obi', 'manual']
+const pauseLayout = () => {
+	const pick = new URLSearchParams(globalThis.location?.search ?? '').get('pause')
+	return PAUSE_LAYOUTS.includes(pick) ? pick : PAUSE_LAYOUTS[0]
+}
 
 // Simulation stops on the winning tick; presentation finishes before the result card.
 export function createMatchMenu({
@@ -60,25 +70,66 @@ export function createMatchMenu({
 			spaceConfirm: false,
 			actions: [
 				{ label: 'Resume', onSelect: toggle },
-				quickCastAction(),
+				{ label: 'Quick cast', onSelect: toggleQuickCast },
 				{ label: 'Leave game', onSelect: leave },
 			],
 		})
+		const card = document.querySelector('.overlay[data-theme="moba-pause"] .dialog-card')
+		if (card) pausePage(card)
 	}
-	// The label is rewritten in place so the selection stays put.
-	const quickCastLabel = () => `Quick cast: ${controls.quickCast ? 'on' : 'off'}`
-	function quickCastAction() {
-		const action = {
-			label: quickCastLabel(),
-			onSelect() {
-				setQuickCast(!controls.quickCast)
-				action.label = quickCastLabel()
-				const labels = document.querySelectorAll('.overlay[data-theme="moba-pause"] .label')
-				for (const label of labels)
-					if (label.textContent.startsWith('Quick cast')) label.textContent = action.label
-			},
-		}
-		return action
+	// The state is its own word on the button, rewritten in place so the selection stays put.
+	const quickCastState = () => (controls.quickCast ? 'On' : 'Off')
+	function toggleQuickCast() {
+		setQuickCast(!controls.quickCast)
+		const state = document.querySelector('.overlay[data-theme="moba-pause"] .pause-state')
+		if (state) state.textContent = quickCastState()
+	}
+	// Dresses the shared overlay card as a manual page: captions, the facts of the match, and the
+	// paused world as its figure. Readouts are printed; only the overlay's buttons are framed.
+	function pausePage(card) {
+		const layout = pauseLayout()
+		const map = setup.map ?? 'overthrow'
+		const mine = hero.team
+		const kills = { A: 0, B: 0 }
+		for (const row of Object.values(sim.matchStats ?? {}))
+			if (row.team) kills[row.team === 'A' ? 'B' : 'A'] += row.deaths
+		const heroId = hero.heroId ?? 'fletcher'
+		const level = hero.level ?? sim.lane?.teams?.[mine].level ?? 1
+		card.classList.add('moba-pause')
+		card.dataset.pause = layout
+		card.style.setProperty('--pause-wash', front.skin.wash[map] ?? front.skin.wash.bonus)
+		card.style.setProperty('--pause-mine', hex(mine === 'A' ? 'teamA' : 'teamB'))
+		card.style.setProperty('--pause-theirs', hex(mine === 'A' ? 'teamB' : 'teamA'))
+		const fact = (label, value, kana) =>
+			`<div><small>${label}<span lang="ja">${kana}</span></small><b>${value}</b></div>`
+		const facts = el(
+			'div',
+			'pause-facts',
+			card,
+			fact('Time', clock(sim.tick * app.clock.step), '時間') +
+				fact(
+					'Takedowns',
+					`<i class="mine">${kills[mine]}</i>–<i class="theirs">${kills[mine === 'A' ? 'B' : 'A']}</i>`,
+					'撃破',
+				) +
+				fact('Hero', `${heroId[0].toUpperCase()}${heroId.slice(1)} <em>Lv ${level}</em>`, '勇者'),
+		)
+		facts.setAttribute('aria-label', 'Match so far')
+		el(
+			'header',
+			'pause-head',
+			card,
+			`<span>Dodgethis <span lang="ja">取扱説明書</span></span><span>${map}</span><span>P. 07</span>`,
+		).setAttribute('aria-hidden', 'true')
+		el('p', 'pause-kana', card, 'ポーズ').setAttribute('aria-hidden', 'true')
+		el(
+			'p',
+			'pause-figure',
+			card,
+			'<span>Fig. 1</span> The match, held where you left it.',
+		).setAttribute('aria-hidden', 'true')
+		const quick = card.querySelectorAll('.actions button')[1]
+		if (quick) el('span', 'pause-state', quick, quickCastState())
 	}
 	function result(dt = 0, alpha = 0) {
 		recap.update({

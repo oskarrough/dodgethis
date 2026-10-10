@@ -1,5 +1,21 @@
 [
 	{
+		"at": "2026-10-10T11:12:28.733Z",
+		"title": "Pause menu: manual or obi",
+		"ask": "Which pause page: manual (cream sheet over the left seven columns) or obi (jewel-case spine, giant clock)?",
+		"status": "To review",
+		"decision": "",
+		"media": [
+			"review/media/2026-10-10-pause-menu-manual-or-obi/manual-1440.png",
+			"review/media/2026-10-10-pause-menu-manual-or-obi/obi-1440.png",
+			"review/media/2026-10-10-pause-menu-manual-or-obi/manual-390.png",
+			"review/media/2026-10-10-pause-menu-manual-or-obi/obi-390.png"
+		],
+		"links": [],
+		"thread": "thr_ra883cf55x",
+		"page": "2026-10-10-pause-menu-manual-or-obi/"
+	},
+	{
 		"at": "2026-10-10T11:10:13.349Z",
 		"title": "Lobby weather bowl",
 		"ask": "Does the turning bowl read as the next map (Flagfall by night here, Overthrow by day), and is it big enough to notice?",
