@@ -11,13 +11,6 @@ import './menu.css'
 const MENU_ICON =
 	'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6.5h14M5 12h14M5 17.5h14" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/></svg>'
 
-// The pause page comes in two layouts on one Swiss grid while Oskar compares them: `?pause=manual`.
-const PAUSE_LAYOUTS = ['obi', 'manual']
-const pauseLayout = () => {
-	const pick = new URLSearchParams(globalThis.location?.search ?? '').get('pause')
-	return PAUSE_LAYOUTS.includes(pick) ? pick : PAUSE_LAYOUTS[0]
-}
-
 // Simulation stops on the winning tick; presentation finishes before the result card.
 export function createMatchMenu({
 	app,
@@ -94,7 +87,6 @@ export function createMatchMenu({
 	// Dresses the shared overlay card as a manual page: captions, the facts of the match, and the
 	// paused world as its figure. Readouts are printed; only the overlay's buttons are framed.
 	function pausePage(card) {
-		const layout = pauseLayout()
 		const map = setup.map ?? 'overthrow'
 		const mine = hero.team
 		const kills = { A: 0, B: 0 }
@@ -103,7 +95,6 @@ export function createMatchMenu({
 		const heroId = hero.heroId ?? 'fletcher'
 		const level = hero.level ?? sim.lane?.teams?.[mine].level ?? 1
 		card.classList.add('moba-pause')
-		card.dataset.pause = layout
 		card.style.setProperty('--pause-wash', front.skin.wash[map] ?? front.skin.wash.bonus)
 		card.style.setProperty('--pause-mine', hex(mine === 'A' ? 'teamA' : 'teamB'))
 		card.style.setProperty('--pause-theirs', hex(mine === 'A' ? 'teamB' : 'teamA'))

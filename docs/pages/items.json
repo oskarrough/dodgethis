@@ -1,5 +1,16 @@
 [
 	{
+		"at": "2026-10-10T14:28:59.587Z",
+		"title": "Pause: manual with vertical PAUSED",
+		"ask": "Manual is now the only pause page, with PAUSED running down the first column. Right weight and place?",
+		"status": "To review",
+		"decision": "",
+		"media": ["review/media/2026-10-10-pause-manual-with-vertical-paused/vertical-1440.png"],
+		"links": [],
+		"thread": "thr_ra883cf55x",
+		"page": "2026-10-10-pause-manual-with-vertical-paused/"
+	},
+	{
 		"at": "2026-10-10T14:23:06.437Z",
 		"title": "Pause: Quick cast as a checkbox",
 		"ask": "Quick cast now sits under Resume and Leave game as an unnumbered checkbox (ticked and selected in obi, at rest in manual). Does it read as a setting, not an action?",

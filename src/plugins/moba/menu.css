@@ -243,9 +243,9 @@ canvas.moba-dead-world {
 }
 
 /* The pause page: a Japanese game manual on a Swiss grid, the paused match as its figure.
-   Twelve visible columns. `manual` lays a cream sheet over the left seven; `obi` is a jewel-case
-   spine over the left three, on a darkened world. Readouts are printed; the actions are the only
-   frames. Markup is the shared overlay card plus `pausePage` in menu.js. */
+   Twelve visible columns, a cream sheet over the left seven, PAUSED running down its first column.
+   Readouts are printed; the actions are the only frames. Markup is the shared overlay card plus
+   `pausePage` in menu.js. */
 .overlay[data-theme='moba-pause'] {
 	place-items: stretch;
 	overflow: auto;
@@ -269,7 +269,7 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden]))
 	isolation: isolate;
 	display: grid;
 	grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
-	grid-template-rows: auto auto 1fr auto;
+	grid-template-rows: auto 1fr auto;
 	max-width: none;
 	min-height: 100%;
 	box-sizing: border-box;
@@ -332,11 +332,13 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden]))
 }
 .overlay .moba-pause h1 {
 	grid-row: 2;
-	grid-column: 1 / span 6;
+	grid-column: 1;
+	justify-self: start;
 	align-self: start;
-	margin: 0.18em 0 0.12em -0.04em;
+	margin: clamp(12px, 2vw, 28px) 0 0 -0.04em;
 	padding: 0;
-	font: 400 clamp(64px, 10.5vw, 188px) / 0.86 var(--ui-font);
+	writing-mode: vertical-rl;
+	font: 400 clamp(56px, min(10vw, 16vh), 168px) / 0.9 var(--ui-font);
 	letter-spacing: -0.01em;
 	color: inherit;
 	background: none;
@@ -356,8 +358,8 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden]))
 	letter-spacing: 0.12em;
 }
 .overlay .moba-pause .actions {
-	grid-row: 3;
-	grid-column: 1 / span 6;
+	grid-row: 2;
+	grid-column: 2 / span 5;
 	align-self: start;
 	flex-direction: column;
 	align-items: stretch;
@@ -416,7 +418,7 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden]))
 	box-shadow: 0 0 0 var(--ui-text);
 }
 .moba-pause .pause-facts {
-	grid-row: 4;
+	grid-row: 3;
 	grid-column: 1 / span 7;
 	display: grid;
 	grid-template-columns: subgrid;
@@ -530,16 +532,9 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden]))
 	transform: translate(3px, 3px);
 	box-shadow: 0 0 0 var(--ui-text);
 }
-.moba-pause[data-pause='obi'] .pause-box {
-	border-color: var(--ui-text);
-	box-shadow: 3px 3px 0 var(--pause-wash);
-}
-.moba-pause[data-pause='obi'] .pause-check:is(.selected, :hover) .pause-box {
-	box-shadow: 5px 5px 0 var(--pause-wash);
-}
 /* The world behind is the page's figure. */
 .moba-pause .pause-figure {
-	grid-row: 4;
+	grid-row: 3;
 	grid-column: 9 / span 2;
 	align-self: end;
 	margin: 0;
@@ -556,137 +551,20 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden]))
 	text-transform: uppercase;
 }
 
-/* Obi: the spine strip of a Japanese jewel case, over a darkened world. PAUSED runs down the
-   spine above an apricot (or orchid) band and an ink band; the clock is the index numeral. */
-.overlay .dialog-card.moba-pause[data-pause='obi'] {
-	--sheet: 3;
-	--grid-line: color-mix(in srgb, var(--ui-cream) 12%, transparent);
-	grid-template-rows: auto 1fr auto auto;
-	color: var(--ui-cream);
-	background: color-mix(in srgb, var(--ui-text) 80%, transparent);
-}
-.dialog-card.moba-pause[data-pause='obi']::before {
-	border-right: 0;
-}
-.overlay .moba-pause[data-pause='obi'] h1 {
-	grid-row: 1 / span 2;
-	grid-column: 1 / span 3;
-	margin: 0;
-	writing-mode: vertical-rl;
-	font-size: clamp(60px, min(9vw, 15vh), 168px);
-	line-height: 0.9;
-	color: var(--ui-text);
-}
-.moba-pause[data-pause='obi'] :is(.pause-kana, .pause-head) {
-	grid-column: 1 / span 3;
-	margin: 0 0 0 calc(var(--pad) * -1);
-	padding: 18px var(--pad);
-}
-.moba-pause[data-pause='obi'] .pause-kana {
-	grid-row: 3;
-	justify-self: stretch;
-	writing-mode: horizontal-tb;
-	font-size: clamp(28px, 3.4vw, 56px);
-	color: var(--ui-text);
-	background: var(--pause-wash);
-}
-.moba-pause[data-pause='obi'] .pause-head {
-	grid-row: 4;
-	display: flex;
-	flex-direction: column;
-	align-items: start;
-	gap: 8px;
-	margin-bottom: calc(var(--pad) * -1);
-	background: var(--ui-text);
-	border: 0;
-}
-.moba-pause[data-pause='obi'] .pause-facts {
-	grid-row: 1;
-	grid-column: 5 / span 8;
-	row-gap: 14px;
-	margin-top: 0;
-	border-top: 0;
-}
-.moba-pause[data-pause='obi'] .pause-facts > div {
-	grid-column: span 3;
-	padding: 10px 12px 0;
-	border-top: 1px solid currentColor;
-}
-.moba-pause[data-pause='obi'] .pause-facts > div:first-child {
-	grid-column: 1 / -1;
-	padding: 0;
-	border: 0;
-}
-.moba-pause[data-pause='obi'] .pause-facts > div:nth-child(2) {
-	padding-left: 0;
-	border-left: 0;
-}
-.moba-pause[data-pause='obi'] .pause-facts > div:last-child {
-	grid-column: span 5;
-}
-.moba-pause[data-pause='obi'] .pause-facts > div:first-child b {
-	margin: 0.02em 0 0 -0.05em;
-	font-size: clamp(96px, min(17vw, 30vh), 300px);
-	line-height: 0.9;
-	letter-spacing: -0.02em;
-	color: var(--pause-wash);
-}
-.overlay .moba-pause[data-pause='obi'] .actions {
-	grid-row: 2 / span 2;
-	grid-column: 6 / span 5;
-	align-self: end;
-	margin: 24px 0 0;
-}
-.overlay .moba-pause[data-pause='obi'] .actions button:not(.pause-check) {
-	color: var(--ui-text);
-	box-shadow: var(--sticker-lift) var(--sticker-lift) 0 var(--pause-wash);
-}
-/* Numbers hang in the gutter, outside the frame. */
-.overlay .moba-pause[data-pause='obi'] .actions button:not(.pause-check)::before {
-	position: absolute;
-	right: 100%;
-	top: 0;
-	bottom: 0;
-	width: auto;
-	padding-right: 0.3em;
-	font: 400 1em / 1 var(--ui-font);
-	letter-spacing: 0;
-	color: var(--pause-wash);
-	background: none;
-	border: 0;
-}
-.overlay .moba-pause[data-pause='obi'] .actions button.selected:not(.pause-check) {
-	box-shadow: calc(var(--sticker-lift) + 4px) calc(var(--sticker-lift) + 4px) 0 var(--pause-wash);
-}
-.overlay .moba-pause[data-pause='obi'] .actions button.selected:not(.pause-check)::before {
-	color: var(--ui-button);
-	background: none;
-}
-.moba-pause[data-pause='obi'] .pause-figure {
-	grid-row: 4;
-	grid-column: 5 / span 4;
-	text-shadow: none;
-	opacity: 0.8;
-}
-
 @media (max-width: 700px) {
+	/* Clear of the corner buttons; the sheet takes the whole phone. */
 	.overlay .dialog-card.moba-pause {
 		--cols: 6;
 		--sheet: 6;
-		grid-template-rows: auto auto auto 1fr;
-	}
-	/* Clear of the corner buttons; the sheet takes the whole phone. */
-	.overlay .dialog-card.moba-pause:not([data-pause='obi']) {
-		grid-template-rows: auto auto auto auto 1fr;
 		padding-top: 76px;
 	}
-	.dialog-card.moba-pause:not([data-pause='obi'])::before {
+	.dialog-card.moba-pause::before {
 		width: 100%;
 		border-right: 0;
 		opacity: 0.94;
 	}
-	.moba-pause:not([data-pause='obi']) .pause-head,
-	.moba-pause:not([data-pause='obi']) .pause-facts {
+	.moba-pause .pause-head,
+	.moba-pause .pause-facts {
 		grid-column: 1 / -1;
 	}
 	.moba-pause .pause-head > :nth-child(1) {
@@ -695,14 +573,11 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden]))
 	.moba-pause .pause-head > :nth-child(2) {
 		grid-column: span 2;
 	}
-	.overlay .moba-pause:not([data-pause='obi']) h1 {
-		grid-column: 1 / span 5;
+	.moba-pause .pause-kana {
+		display: none;
 	}
-	.moba-pause:not([data-pause='obi']) .pause-kana {
-		grid-column: 6;
-	}
-	.overlay .moba-pause:not([data-pause='obi']) .actions {
-		grid-column: 1 / -1;
+	.overlay .moba-pause .actions {
+		grid-column: 2 / -1;
 		padding-right: 6px;
 	}
 	.moba-pause .pause-facts > div,
@@ -719,55 +594,5 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden]))
 	}
 	.moba-pause .pause-figure {
 		display: none;
-	}
-	/* Obi on a phone: the spine turns sideways into a band across the top. */
-	.dialog-card.moba-pause[data-pause='obi']::before {
-		display: none;
-	}
-	.overlay .dialog-card.moba-pause[data-pause='obi'] {
-		grid-template-rows: auto auto auto 1fr;
-	}
-	.overlay .moba-pause[data-pause='obi'] h1 {
-		grid-row: 1;
-		grid-column: 1 / -1;
-		margin: calc(var(--pad) * -1) calc(var(--pad) * -1) 0;
-		padding: var(--pad) var(--pad) 10px;
-		writing-mode: horizontal-tb;
-		font-size: clamp(52px, 16vw, 96px);
-		background: var(--ui-cream);
-	}
-	.moba-pause[data-pause='obi'] :is(.pause-kana, .pause-head) {
-		grid-row: 2;
-		padding: 12px var(--pad);
-	}
-	.moba-pause[data-pause='obi'] .pause-kana {
-		grid-column: 1 / span 2;
-		align-content: center;
-		font-size: 24px;
-	}
-	.moba-pause[data-pause='obi'] .pause-head {
-		grid-column: 3 / -1;
-		gap: 4px;
-		margin: 0 calc(var(--pad) * -1) 0 0;
-		padding-left: 12px;
-	}
-	.moba-pause[data-pause='obi'] .pause-facts {
-		grid-row: 3;
-		grid-column: 1 / -1;
-		margin-top: 16px;
-	}
-	.moba-pause[data-pause='obi'] .pause-facts > div:nth-child(2) {
-		grid-column: span 2;
-	}
-	.moba-pause[data-pause='obi'] .pause-facts > div:last-child {
-		grid-column: span 4;
-	}
-	.moba-pause[data-pause='obi'] .pause-facts > div:first-child b {
-		font-size: clamp(72px, 26vw, 120px);
-	}
-	.overlay .moba-pause[data-pause='obi'] .actions {
-		grid-row: 4;
-		grid-column: 1 / -1;
-		padding: 0 6px 0 1.6em;
 	}
 }
