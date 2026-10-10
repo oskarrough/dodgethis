@@ -862,7 +862,7 @@ export const tune = {
 	waves: {
 		first: 15,
 		interval: 30,
-		lateInterval: 15,
+		lateInterval: 20,
 		growth: 0.04,
 		growthPeriod: 60,
 		spawnX: 32,
