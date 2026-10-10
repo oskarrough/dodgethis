@@ -64,8 +64,6 @@ export const maps = {
 
 function flagfallDebug(f, s) {
 	f.add(s, 'scale', 0.75, 1, 0.01).name('scale (applies on restart)')
-	f.add(s.water, 'width', 140, 260, 1).name('water plate width (m, applies on restart)')
-	f.add(s.water, 'clouds').name('clouds (applies on restart)')
 }
 
 export const playableMaps = Object.keys(maps).filter((id) => id !== 'lobby')

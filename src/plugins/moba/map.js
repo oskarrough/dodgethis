@@ -5,11 +5,8 @@ import { FORWARD_LAYER, makeStyleMaterial } from '../../core/stylepass.js'
 import { tune as coreTune } from '../../core/tune.js'
 import { tune } from './tune.js'
 import { saucerShape } from './lobby-floor.js'
-import { BOLLARD_ROLES, bollardGeometries } from './bollard.js'
-import { WINDBREAK_ROLES, windbreakGeometries } from './windbreak.js'
 import { createMatchTerrain } from './match-terrain.js'
 import { glowTexture } from './isle.js'
-import { loadFlagfallTile } from './flagfall-water.js'
 import { FLOOR, buildColliders } from './obstacles.js'
 import { DEFAULT_MAP, mapLayout } from './maps/index.js'
 export { FLOOR, PILLARS, SPAWN, walkable, clampWalkable } from './obstacles.js'
@@ -98,96 +95,14 @@ export function buildMap(scene, world, RAPIER, kind = DEFAULT_MAP) {
 		owned.push(mat)
 		return mat
 	}
-	const finish = layout.settings?.finish ?? null
 	const shade = material('courtShade')
 	const cream = material('cream', { flat: true })
 	const scenery = material('scenery')
-	// Flagfall's cover keeps the exact opaque depth/collision shape; its colour sheets
-	// give hedges a quiet organic top, and walls and pillars coursed sandstone, without
-	// changing shared roles.
-	const coverTile = finish
-		? loadFlagfallTile(finish.hedgeAsset, finish.anisotropy, (resource) => {
-				owned.push(resource)
-				return resource
-			})
-		: null
-	// One program for every sheet; the face pattern is uniforms only.
-	const sheetMaterial = (color, { texture = 0, block = [0, 0], flutes = 0 } = {}) => {
-		const mat = new THREE.MeshBasicMaterial({
-			color,
-			depthWrite: false,
-			polygonOffset: true,
-			polygonOffsetFactor: -1,
-			polygonOffsetUnits: -4,
-		})
-		owned.push(mat)
-		mat.onBeforeCompile = (shader) => {
-			Object.assign(shader.uniforms, {
-				coverTile: { value: coverTile },
-				coverMetres: { value: finish.hedgeMetres * scale },
-				coverTexture: { value: texture },
-				coverShade: { value: finish.coverShade },
-				coverBlock: { value: new THREE.Vector2(block[0] * scale, block[1] * scale) },
-				coverFlag: { value: finish.wallFlag * scale },
-				coverFlutes: { value: flutes },
-				coverFlute: { value: finish.fluteDepth },
-				coverMortar: { value: finish.mortar },
-				coverMortarWidth: { value: finish.mortarWidth * scale },
-				coverMottle: { value: finish.mottle },
-				coverFoot: { value: new THREE.Vector2(finish.footHeight * scale, finish.footShade) },
-			})
-			shader.vertexShader =
-				'varying vec3 coverPoint;\nvarying vec3 coverLocal;\nvarying vec3 coverNormal;\n' +
-				shader.vertexShader.replace(
-					'#include <begin_vertex>',
-					'#include <begin_vertex>\ncoverPoint = (modelMatrix * vec4(position,1.0)).xyz;\ncoverLocal = position;\ncoverNormal = mat3(modelMatrix) * normal;',
-				)
-			shader.fragmentShader =
-				`varying vec3 coverPoint, coverLocal, coverNormal;
-uniform sampler2D coverTile;
-uniform float coverMetres, coverTexture, coverShade, coverFlutes, coverFlute, coverMortar, coverMortarWidth, coverMottle, coverFlag;
-uniform vec2 coverBlock, coverFoot;
-` +
-				shader.fragmentShader.replace(
-					'#include <color_fragment>',
-					`#include <color_fragment>
-vec3 n = normalize(coverNormal);
-float top = smoothstep(0.45, 0.9, n.y);
-diffuseColor.rgb *= mix(vec3(1.0), texture2D(coverTile, coverPoint.xz / coverMetres).rgb, top * coverTexture);
-if (coverBlock.y > 0.0) {
-	// Running-bond courses on the sides, broad fainter flags on top; joints are a soft
-	// darkening at least a pixel wide, never ink.
-	vec2 size = max(top > 0.5 ? vec2(coverFlag) : coverBlock, vec2(0.001));
-	vec2 face = (top > 0.5 ? coverPoint.xz : vec2(abs(n.x) > abs(n.z) ? coverPoint.z : coverPoint.x, coverPoint.y)) / size;
-	face.x += 0.5 * floor(face.y);
-	vec2 edge = min(fract(face), 1.0 - fract(face)) / max(coverMortarWidth / size, fwidth(face));
-	if (coverBlock.x <= 0.0) edge.x = 1e4; // drums: bed joints only
-	diffuseColor.rgb *= 1.0 - coverMortar * (1.0 - 0.5 * top) * (1.0 - smoothstep(0.5, 1.5, min(edge.x, edge.y)));
-	diffuseColor.rgb *= 1.0 + coverMottle * (fract(sin(dot(floor(face), vec2(12.9898, 78.233))) * 43758.5453) - 0.5);
-	diffuseColor.rgb *= 1.0 - coverFoot.y * (1.0 - smoothstep(0.0, coverFoot.x, coverPoint.y));
-}
-diffuseColor.rgb *= 1.0 - coverFlute * (1.0 - top) * step(0.5, coverFlutes) * (0.5 + 0.5 * cos(atan(coverLocal.z, coverLocal.x) * coverFlutes));
-diffuseColor.rgb *= 1.0 - coverShade * (1.0 - max(0.0, dot(n, normalize(vec3(0.4,0.85,0.35)))));`,
-				)
-		}
-		return mat
-	}
-	const hedgeColor = finish && sheetMaterial(finish.cover, { texture: finish.hedgeTexture })
-	const wallColor = finish && sheetMaterial(finish.wall, { block: finish.wallBlock })
-	const pillarColor =
-		finish &&
-		sheetMaterial(finish.pillar, { block: [0, finish.pillarCourse], flutes: finish.pillarFlutes })
-	const add = (geometry, mat, x, y, z, sheetColor = null) => {
+	const add = (geometry, mat, x, y, z) => {
 		owned.push(geometry)
 		const mesh = new THREE.Mesh(geometry, mat)
 		mesh.position.set(x, y, z)
 		group.add(mesh)
-		if (finish && sheetColor) {
-			const sheet = new THREE.Mesh(geometry, sheetColor)
-			sheet.position.copy(mesh.position)
-			sheet.layers.set(FORWARD_LAYER)
-			group.add(sheet)
-		}
 		return mesh
 	}
 	const print = (geometries, mat, name) => {
@@ -214,7 +129,6 @@ diffuseColor.rgb *= 1.0 - coverShade * (1.0 - max(0.0, dot(n, normalize(vec3(0.4
 			'patchScale',
 		])
 			terrain[key] *= scale
-		terrain.rockDepth = layout.settings.rockDepth * scale
 		// Flagfall by night swaps the isle's light and air; cliff, spires and stone stay shared.
 		for (const key of [
 			'colors',
@@ -400,10 +314,9 @@ diffuseColor.rgb *= 1.0 - coverShade * (1.0 - max(0.0, dot(n, normalize(vec3(0.4
 	if (kind === 'lobby') buildLobby()
 	else if (layout.settings?.lane) buildFlagfall()
 	else buildLane()
-	const windbreak = { sand: [], wood: [], stripes: [[], [], []] }
 	// Overthrow by day: cover and base walls are coursed, chipped stone blocks on the same
 	// collision boxes, moss on the low cover's tops; pillars are stacked faceted drums.
-	const stoneCover = !finish && kind !== 'lobby'
+	const stoneCover = kind !== 'lobby'
 	const stones = { blocks: [], moss: [], drums: [], caps: [] }
 	const chance = (i) => {
 		const v = Math.sin(i * 12.9898 + 4.1) * 43758.5453
@@ -463,13 +376,6 @@ diffuseColor.rgb *= 1.0 - coverShade * (1.0 - max(0.0, dot(n, normalize(vec3(0.4
 			coursed(b)
 			continue
 		}
-		if (finish && b.kind === 'hedge') {
-			const parts = windbreakGeometries(b, m.hedgeHeight, scale)
-			windbreak.sand.push(...parts.sand)
-			windbreak.wood.push(...parts.wood)
-			parts.stripes.forEach((list, i) => windbreak.stripes[i].push(...list))
-			continue
-		}
 		const h = b.kind === 'hedge' ? m.hedgeHeight : m.wallHeight
 		const trunk = b.kind === 'hedge' ? h - m.scallopRadius : h
 		add(
@@ -484,7 +390,6 @@ diffuseColor.rgb *= 1.0 - coverShade * (1.0 - max(0.0, dot(n, normalize(vec3(0.4
 			b.x,
 			trunk / 2,
 			b.z,
-			b.kind === 'hedge' ? hedgeColor : wallColor,
 		)
 		if (b.kind !== 'hedge') continue
 		for (let x = b.x - b.halfX + m.scallopRadius; x < b.x + b.halfX; x += m.scallopSpacing)
@@ -494,17 +399,9 @@ diffuseColor.rgb *= 1.0 - coverShade * (1.0 - max(0.0, dot(n, normalize(vec3(0.4
 				x,
 				h - m.scallopRadius,
 				b.z,
-				hedgeColor,
 			)
 	}
-	print(windbreak.sand, material(WINDBREAK_ROLES.sand), 'windbreak-berms')
-	print(windbreak.wood, material(WINDBREAK_ROLES.wood), 'windbreak-poles')
-	windbreak.stripes.forEach((list, i) =>
-		print(list, material(WINDBREAK_ROLES.stripes[i]), `windbreak-canvas-${i}`),
-	)
 
-	const bollards = layout.settings?.lane
-	const bollard = Object.fromEntries(Object.keys(BOLLARD_ROLES).map((key) => [key, []]))
 	for (const p of layout.pillars) {
 		if (stoneCover) {
 			const c = tune.overthrowTerrain.stone
@@ -525,18 +422,12 @@ diffuseColor.rgb *= 1.0 - coverShade * (1.0 - max(0.0, dot(n, normalize(vec3(0.4
 			)
 			continue
 		}
-		if (bollards) {
-			const parts = bollardGeometries(p, m.pillarHeight)
-			for (const key of Object.keys(bollard)) bollard[key].push(...parts[key])
-			continue
-		}
 		add(
 			new THREE.CylinderGeometry(p.r, p.r, m.pillarHeight, m.pillarSegments),
 			scenery,
 			p.x,
 			m.pillarHeight / 2,
 			p.z,
-			pillarColor,
 		)
 		add(
 			new THREE.CylinderGeometry(p.r * m.capScale, p.r * m.capScale, m.capHeight, m.pillarSegments),
@@ -575,8 +466,6 @@ diffuseColor.rgb *= 1.0 - coverShade * (1.0 - max(0.0, dot(n, normalize(vec3(0.4
 			group.add(ring)
 		}
 	}
-	for (const [key, list] of Object.entries(bollard))
-		print(list, material(BOLLARD_ROLES[key]), `bollard-${key}`)
 	const uncollide = buildColliders(
 		world,
 		RAPIER,

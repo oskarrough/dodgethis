@@ -240,7 +240,6 @@ export const tune = {
 		},
 		// Sparse cream specks drifting in the dark below the rim.
 		specks: { count: 160, near: 2, far: 60, y: [-30, -3], size: 0.5, color: '#f3ecff' },
-		rockDepth: 1.8,
 		// The shore kerb: low coursed stone on the safe rim, cut at the dunk gaps. Metres.
 		kerb: { height: 0.55, depth: 0.55, offset: 0.45, ends: 0.3 }, // offset: share of the margin
 		// Cream glows: lantern bulbs and halos. Small; never past their source.
@@ -252,102 +251,8 @@ export const tune = {
 			post: 2.2,
 			postRadius: 0.22,
 		},
-		water: {
-			asset: '/scenery/flagfall-water.webp', // generated shallows; flat fallback if unavailable
-			width: 165, // image width in metres; height follows its native aspect
-			fallbackSize: 600,
-			drop: 1.7,
-			layerGap: 0.015,
-			color: '#2b2550', // the minimap's void past the court
-			foamColor: '#b3c8c2',
-			padColor: '#618b7e',
-			detailAsset: '/scenery/flagfall-ripple.webp',
-			detailMetres: 7,
-			detailStrength: 3, // caustic contrast gain; 1 is the tile as painted
-			detailMean: 0.461, // grey tile's linear luminance mean, so ripples don't turn the plate muddy
-			detailSpeed: 0.035,
-			hazeDistance: 28,
-			hazeStrength: 0.32,
-			shoreWidth: 0.5,
-			shoreOpacity: 0.75,
-			shoreBreak: 1, // 0 a soft glow, 1 a crisp broken foam line
-			reflectionWidth: 2.2,
-			reflectionOpacity: 0.14,
-			padNotch: 0.16,
-			padRim: 0.025,
-			padRimColor: '#90ab92',
-			padVeinColor: '#7da18d',
-			padVeinWidth: 0.018,
-			padVeinReach: 0.75,
-			padVeinAngles: [-0.8, 0, 0.8],
-			padAspect: 0.82,
-			flowerEvery: 3,
-			flowerRadius: 0.12,
-			flowerColor: '#d3c4ce',
-			flowerPetals: 5,
-			reedCount: 12,
-			reedBlades: 7,
-			reedHeight: 0.9,
-			reedWidth: 0.06,
-			reedSpread: 0.35,
-			reedOffset: 6,
-			reedColor: '#607c72',
-			lightCount: 8,
-			lightRadius: 0.08,
-			lightHalo: 0.35,
-			lightHeight: 0.7,
-			lightColor: '#c2d5c2',
-			lightOpacity: 0.55,
-			lightTravel: 0.6,
-			lightTime: 18,
-			cloudColor: '#b9b8c9',
-			feather: 0.1, // soften the finite plate into the flat sea; UV fraction
-			shimmer: 0.045,
-			rippleLength: 2.8,
-			rippleTime: 9,
-			foamCount: 24,
-			foamLength: 6,
-			foamWidth: 0.12,
-			foamOffset: 2.5,
-			foamTravel: 2,
-			foamTime: 12,
-			foamOpacity: 0.24,
-			ringCount: 16,
-			ringRadius: 0.8,
-			ringWidth: 0.04,
-			ringGrow: 0.8,
-			ringTime: 7,
-			ringOpacity: 0.18,
-			padCount: 12,
-			padRadius: 0.65,
-			padOffset: 1.5,
-			padSpread: 3,
-			padBob: 0.035,
-			padTime: 6,
-			clouds: true, // first effect to drop if the frame budget is threatened
-			cloudCount: 4,
-			cloudLength: 15,
-			cloudWidth: 5,
-			cloudOffset: 9,
-			cloudTravel: 4,
-			cloudTime: 45,
-			cloudOpacity: 0.09,
-			segments: 32,
-		},
-		// Fence on the safe rim, not colliders. The long shores' runs are cut wherever `gaps` open
-		// (map.js), so the drawn gaps are exactly the sim's; these are the end runs behind the bases.
-		fence: {
-			runs: [
-				{ from: [-1, -0.28], to: [-1, 0.28] },
-				{ from: [1, -0.28], to: [1, 0.28] },
-			],
-			bollards: [
-				[-0.5, -1],
-				[0.5, -1],
-				[-0.5, 1],
-				[0.5, 1],
-			],
-		},
+		// Presentation only: how far a dunked body falls, and the minimap's void.
+		water: { drop: 3, color: '#2b2550' },
 		// Squeezed: the lanes sit close enough to hear each other across an 8 m yard.
 		bounds: { halfX: 52, halfZ: 16 },
 		lane: { innerZ: 6, outerZ: 16, centreZ: 11, pathZ: 12.5 }, // waves and towers walk the shore side
@@ -404,8 +309,6 @@ export const tune = {
 			kerbWidth: 0.08,
 			footprintWidth: 0.12,
 			radii: { tower: 1.4, fort: 2, core: 2.6, post: 0.6 },
-			poleRadius: 0.08,
-			poleHeight: 6,
 		},
 	},
 	// Lobby sim options apply on creation; map/match/training defaults do not read these.

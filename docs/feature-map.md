@@ -116,11 +116,9 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Overthrow (the first map): `maps/overthrow.js` `overthrowLayout`; `match-terrain.js` `createMatchTerrain`; `tune.js` `overthrowTerrain`, `map`; `moba-lane.md`
 - Overthrow by day (cliff, moss lip, rim ink, cloud sea, cloud banks, far spires and arches, waterfalls, haze): `isle.js` `createIsle`; court moss and printed cast shadows: `match-terrain.js`; stone cover and pillars: `map.js` `buildMap` (`stoneCover`); stone towers and core: `lane-view.js` (`structureStyle: 'stone'`); the sun: `tune.js` `overthrowTerrain.light`, `core/stylepass.js` `setPalette`
 - Flagfall (the second map): `maps/flagfall.js` `flagfallLayout`, `flagfallLayoutTune`; `tune.js` `flagfall`; `moba-map-2.md`
-- Flagfall water: `flagfall-water.js` `createFlagfallWater`, `loadFlagfallTile`; `tune.js` `flagfall.water`
-- Flagfall windbreaks (striped screens): `windbreak.js` `windbreakGeometries`; `tune.js` `flagfall`
-- Flagfall bollards (mooring posts): `bollard.js` `bollardGeometries`; `tune.js` `flagfall`
-- Flagfall hedges and fence: `match-terrain.js` `createMatchTerrain`; `tune.js` `flagfall.hedge`, `flagfall.fence`
-- Flagfall dunk (fence gaps, slick, shove into the sea): `combat.js` `shove`, `dunk`; `map.js` `buildFlagfall` (fence cut, slick print); `feedback.js` `'dunk'`; `core/death.js` `overboard`; bots `fight-bots.js` `slick`, `inland`; `tune.js` `flagfall.gaps`, `flagfall.dunk`, `bots.slick*`
+- Flagfall by night (the shared isle with night `colors`, `light`, `pool`, `haze`, `clouds`; moon, rim garden of leaf fans and glowing orchid bells, specks): `isle.js` `createIsle`; `tune.js` `flagfall`
+- Flagfall cover (rim kerb cut at the Dunk gaps, dark-teal leaf-bank hedges, stone walls and drums, lantern posts): `map.js` `buildFlagfall`, `buildMap`; `tune.js` `flagfall.kerb`, `flagfall.glow`, `flagfall.hedge`
+- Flagfall dunk (fence gaps, slick, shove into the sea): `combat.js` `shove`, `dunk`; `map.js` `buildFlagfall` (kerb cut, slick print); `feedback.js` `'dunk'`; `core/death.js` `overboard`; bots `fight-bots.js` `slick`, `inland`; `tune.js` `flagfall.gaps`, `flagfall.dunk`, `bots.slick*`
 - Flagfall bot rotation across the yard: `lane-bots.js` `advance`; `tune.js` `bots.rotateRange`, `bots.rotateQuiet`
 - Map registry and layout recipe: `maps/index.js` `mapLayout`, `matchRecipe`; `tune.js` `map`
 - Ground and walls build: `map.js` `buildMap`, `createMapScope`; `match-terrain.js` `createMatchTerrain`
