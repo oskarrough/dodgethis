@@ -2,6 +2,8 @@
 
 A MOBA map tile from the splash opens a place you play in, like the LittleBigPlanet pod: you run around the lobby as your hero, swap heroes from the strip at the left, try the kit on dummies, shoot a difficulty card and walk into your Ready box. The 3D lobby fills the frame above the HUD; the hero strip stays at the left, apart from stickers on the props they name. The map is already picked on the splash; the lobby contains only heroes, difficulty and Ready. Esc goes back to the [splash](moba-front.md).
 
+**Oskar's rules (2026-10-10).** The lobby is its own world: the same lobby whichever map you picked, but it shows which map you're about to enter. Bots stand on their seats as holograms; keep them. Difficulty stays magnets you shoot, restyled into our world. No stock fantasy: generic D&D-Steam props (training dummies, banner plinths, rune stones) read as AI filler.
+
 **Moebius, with weight.** Moebius sets the line, the light and the empty sky. The isles set what things are made of: stone, bark and bone, weathered, per [moba-look.md](moba-look.md); today's cardboard bots, sack dummies and chalk start line are the retired schoolyard look. The line is drawn; the props are built. They squash when bumped, rock when hit and settle with a little overshoot.
 
 ## The space and the sim (built)
