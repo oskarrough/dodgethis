@@ -380,8 +380,8 @@ const HALF = LIGHT.clone()
 	.add(new THREE.Vector3(0, 0.85, 0.53))
 	.normalize()
 
-// Baked light into vertex colours: `color(i)` per vertex, glaze gets a soft highlight.
-function bake(geometry, color, { flat = false, gloss = 0 } = {}) {
+// Baked light into vertex colours: `color(i, normal)` per vertex, glaze gets a soft highlight.
+export function bake(geometry, color, { flat = false, gloss = 0 } = {}) {
 	const g = flat ? geometry.toNonIndexed() : geometry
 	if (flat) geometry.dispose()
 	g.computeVertexNormals()
@@ -395,7 +395,7 @@ function bake(geometry, color, { flat = false, gloss = 0 } = {}) {
 		// Shading is symmetric under DoubleSide, so a flipped winding never goes dark.
 		if (n.y < -0.98) n.negate()
 		const shade = 0.74 + 0.34 * Math.max(0, n.dot(LIGHT))
-		tint.copy(color(i)).multiplyScalar(shade)
+		tint.copy(color(i, n)).multiplyScalar(shade)
 		const spec = gloss * Math.max(0, n.dot(HALF)) ** 18
 		out[i * 3] = Math.min(1, tint.r + spec)
 		out[i * 3 + 1] = Math.min(1, tint.g + spec)

@@ -492,6 +492,74 @@ export const tune = {
 				pole: '#d8d0bf',
 			},
 		},
+		// The weather bowl on the saucer's far right holds the next map in miniature, turning `turn` rad/s under a
+		// painted sky cap. Shapes and colours apply on restart; turning and the label are live. Each map's `look` is
+		// its light in miniature: Overthrow by day, Flagfall by night. Lengths in `maps` are that map's metres.
+		bowl: {
+			x: 11.7,
+			z: -4.4,
+			radius: 2.3,
+			height: 1.05,
+			wall: 0.16,
+			floor: 0.14,
+			segments: 48,
+			capRadius: 2.1,
+			capHeight: 1.6, // the sky arch's height behind the middle of the rim
+			skyPixels: 256,
+			island: 1.7, // the miniature's half-diagonal; keep it inside the cloud bed
+			relief: 2.4, // dioramas exaggerate height
+			lift: 0.16,
+			turn: 0.12,
+			rest: 0.5, // the angle it holds under reduced motion
+			bob: 0.025,
+			bobRate: 0.8,
+			label: 'Next: {map}',
+			colors: { glaze: '#f4eddc', inside: '#e6dcc6', foot: '#8d82a8' },
+			maps: {
+				overthrow: {
+					court: '#d8dc9a',
+					stone: '#a49cb4',
+					under: '#6f6888',
+					hedge: '#8faa6a',
+					cap: '#b9c98c',
+					cloud: '#f4c8bc',
+					sky: ['#ee9f7c', '#f9d6b6'],
+					moon: [1.25, 0.4, 0.2],
+					moonColor: '#fff3dc',
+					crescent: false,
+					stars: 0,
+					star: '#ffffff',
+					margin: 1.5,
+					slab: 2.5,
+					rock: 6,
+					laneWidth: 3,
+					hedgeHeight: 1.6,
+					wallHeight: 2.4,
+					pillarHeight: 3.4,
+				},
+				flagfall: {
+					court: '#9c88c4',
+					stone: '#5b4870',
+					under: '#3a2c4e',
+					hedge: '#2f6b66',
+					cap: '#6e5a8e',
+					cloud: '#4a3d6b',
+					sky: ['#191533', '#4a3a74'],
+					moon: [0.75, 0.32, 0.13],
+					moonColor: '#d9c8f5',
+					crescent: true,
+					stars: 40,
+					star: '#f3ead2',
+					margin: 1.5,
+					slab: 2.5,
+					rock: 6,
+					laneWidth: 3,
+					hedgeHeight: 1.6,
+					wallHeight: 2.4,
+					pillarHeight: 3.4,
+				},
+			},
+		},
 		// Flagfall's shore fence builds from these (map.js); the lobby has none. All apply on restart;
 		// coordinates are fractions of the safe rim rectangle.
 		fence: {

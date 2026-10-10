@@ -24,7 +24,8 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Back and Play online, the top-left row in both modes' lobbies: `src/core/corner-nav.js` `createCornerNav`; `index.html` `.corner-nav`; used by `lobby.js` `createLobby` and `src/plugins/dodgeball/index.js`
 - Seats, roster, ready state: `lobby-state.js` `createReadySeats`; `lobby-heroes.js` `createLobbyHeroes`; `tune.js` `lobby.ready`
 - Ready pad on the floor: `lobby-floor.js` (`tune.lobby.ready`); `lobby.js` `createLobby`
-- Lobby floor, rocks and fences: `lobby-floor.js` `createLobbyFloor`, `floorOutline`, `createFences`; `maps/lobby.js` `lobbyLayout`; `tune.js` `lobby.floor`, `lobby.fence`
+- Lobby floor, the glazed saucer in its magnetic cradles: `lobby-floor.js` `createLobbyFloor`, `saucerShape`; its elliptical collider: `obstacles.js` `buildColliders` (`island.round`); `maps/lobby.js` `lobbyLayout`; `tune.js` `lobby.floor`
+- Weather bowl, the next map turning in miniature under a sky cap, with its label: `lobby-bowl.js` `createWeatherBowl`; `tune.js` `lobby.bowl`
 - Hero stands and the hero strip (pick a hero): `lobby-heroes.js` `heroStands`, `createHeroStrip`; `tune.js` `lobby.pick`
 - Hero numbers panel (stats, level slider): `front/numbers.js` `createNumbers`; `front/stats.js` `heroStats`, `numberLines`; `tune.js` `lobby.inspect`
 - Difficulty gallery, three standees you shoot to pick: `lobby-props.js` `createDifficultyGallery`; `tune.js` `lobby.gallery`

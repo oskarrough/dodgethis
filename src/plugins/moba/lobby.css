@@ -82,6 +82,9 @@
 .lobby-label[data-picked='true'] {
 	opacity: 1;
 }
+.lobby-label.lobby-bowl-label {
+	translate: 0 0.2em;
+}
 .moba-front .lobby-gallery-label kbd {
 	margin-right: 0.4em;
 	font-size: 0.8em;

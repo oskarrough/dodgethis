@@ -10,6 +10,7 @@ import { startLoading } from './front/descent.js'
 import { applySkin } from './front/skin.js'
 import { createLobbyProps } from './lobby-props.js'
 import { createLobbyFloor } from './lobby-floor.js'
+import { createWeatherBowl } from './lobby-bowl.js'
 import { HEROES } from './heroes.js'
 import { createHeroStrip, createLobbyHeroes } from './lobby-heroes.js'
 import { createNumbers } from './front/numbers.js'
@@ -185,6 +186,7 @@ export function createLobby({
 	const readySeats = sim.readySeats
 	const props = createLobbyProps(app.scene, el, gallery, readySeats, hero.id, app.audio)
 	const floor = createLobbyFloor(app.scene, app.renderer)
+	const bowl = createWeatherBowl(app.scene, el, setup.map, app.renderer)
 	const lobbyHeroes = createLobbyHeroes({
 		el,
 		humans: sim.heroes,
@@ -714,6 +716,7 @@ export function createLobby({
 			lobbyHeroes.dispose()
 			props.dispose()
 			floor.dispose()
+			bowl.dispose()
 			canvas.classList.remove('front-canvas')
 			if (leaving) canvas.style.opacity = ''
 			parent.insertBefore(canvas, next)
@@ -911,6 +914,7 @@ export function createLobby({
 		},
 		update(alpha) {
 			props.update(sim.tick + alpha, app.camera.view, app.clock.step)
+			bowl.update((sim.tick + alpha) * app.clock.step, app.camera.view)
 			// A state change must sync the local pick even if its swap cue expired in a hidden tab.
 			if (setup.heroId !== hero.heroId) {
 				syncPick()

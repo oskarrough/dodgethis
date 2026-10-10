@@ -1,5 +1,19 @@
 [
 	{
+		"at": "2026-10-10T11:10:13.349Z",
+		"title": "Lobby weather bowl",
+		"ask": "Does the turning bowl read as the next map (Flagfall by night here, Overthrow by day), and is it big enough to notice?",
+		"status": "To review",
+		"decision": "",
+		"media": [
+			"review/media/2026-10-10-lobby-weather-bowl/weather-bowl-flagfall.png",
+			"review/media/2026-10-10-lobby-weather-bowl/bowl-turn-crop.webm"
+		],
+		"links": [],
+		"thread": "thr_dwbukqxwup",
+		"page": "2026-10-10-lobby-weather-bowl/"
+	},
+	{
 		"at": "2026-10-10T11:06:46.078Z",
 		"title": "Match HUD: swagger pass",
 		"ask": "Cards drop below the pill and read like a manual spec table (small-caps captions, solid rule, big index numeral); callout banner and nameplates went smooth. Right direction?",
