@@ -13,8 +13,9 @@
 			<p><small>To review · 2026-10-10</small></p>
 			<p>
 				<strong
-					>Pick: grow Flagfall toward the reference (yard as jungle, flags at its heart, gates at
-					the forts) and park a three-lane map until 5v5 bots exist.</strong
+					>Pick: grow Flagfall toward the reference (narrower, taller, a tight jungle of paths and
+					brush, flags inside, gates at the forts) and park a three-lane map until 5v5 bots
+					exist.</strong
 				>
 			</p>
 			<figure>
@@ -141,95 +142,173 @@
 				Order: flags first (they are the reason to leave a lane), gates after, each its own brief.
 			</p>
 
+			<h2>Round 2: narrower, taller, a real jungle</h2>
+			<p>
+				Oskar’s note: the court can be less wide and taller, and the best part of the reference is
+				the tight jungle with its narrow paths. Agreed. The sketch below swaps the open yard for a
+				jungle of 4 m paths between solid blocks.
+			</p>
+			<table>
+				<thead>
+					<tr>
+						<th></th>
+						<th>Flagfall today</th>
+						<th>Grown</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>Court</td>
+						<td>104 × 32 m</td>
+						<td>88 × 44 m</td>
+					</tr>
+					<tr>
+						<td>Lanes</td>
+						<td>10 m wide, waves 25 m apart</td>
+						<td>8 m wide, waves 36 m apart</td>
+					</tr>
+					<tr>
+						<td>Tower to tower</td>
+						<td>36 m</td>
+						<td>24 m, so sieges come sooner and matches get shorter</td>
+					</tr>
+					<tr>
+						<td>Middle</td>
+						<td>an open yard with four pillars</td>
+						<td>
+							a jungle: three paths out of each lane, two cross paths, a clearing at the centre, a
+							flag post in each team’s half
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<p>
+				Paths are 4 m, not HotS’s 3 m. Rain covers 5 m, so a 3 m path is a box nobody can dodge out
+				of; 4 m keeps a sidestep alive. Tune it on the court.
+			</p>
+
+			<h2>Without fog of war</h2>
+			<p>
+				A HotS jungle works because you can’t see who’s in it. Without fog, our narrow paths still
+				block skillshots and break line of sight for aiming, but nobody gets ambushed. The cheap
+				stand-in is brush, which HotS has too: a few patches at path junctions where a hero is
+				hidden from enemies more than 3 m away. That gets the ambush without building fog.
+			</p>
+			<ul>
+				<li>The renderer hides enemies standing in brush. Your own team stays visible.</li>
+				<li>
+					Bots read the same rule through their delayed view, so they can’t see through brush
+					either.
+				</li>
+				<li>
+					Online sends every position, so a modified client could see hidden heroes. That’s fine
+					until M6; the host can filter snapshots later.
+				</li>
+				<li>Full fog of war can grow out of brush later if it earns its place.</li>
+			</ul>
+
+			<h2>What the taller court costs</h2>
+			<ul>
+				<li>
+					<strong>Camera:</strong> today’s commit makes the match camera show both rims of every
+					court. At 44 m deep it can’t without lifting the camera and shrinking the heroes. My pick:
+					Flagfall is the exception, and you see your lane plus the edge of the jungle, which is the
+					point of a jungle.
+				</li>
+				<li>
+					<strong>Bots:</strong> rotating across the jungle is longer, so
+					<code>bots.rotateRange</code>
+					goes from 28 to about 40. Pathing through narrow paths already works.
+				</li>
+				<li>
+					<strong>Map data:</strong> a new <code>flagfallLayout</code>, with the jungle built from
+					the same boxes and hedges as today’s cover. Flags move their posts into the clearings.
+				</li>
+			</ul>
+
 			<h2>Layout sketch: Flagfall, grown</h2>
 			<p>
-				Top-down, x along the lane, team A on the left. Same court as today (104 × 32 m); new are
-				the gates and the yard as the objective ground.
+				Top-down, x along the lanes, team A on the left. The dark ground is solid jungle and the
+				light lines through it are paths. Brush patches (dotted) sit at the junctions.
 			</p>
 			<figure>
 				<svg
-					viewBox="-56 -21 112 42"
+					viewBox="-48 -27 96 54"
 					role="img"
-					aria-label="Flagfall top-down: two lanes, the yard between them with flag posts, gates across each lane in front of the forts."
+					aria-label="Grown Flagfall top-down: two lanes 8 m wide at top and bottom, a jungle between them cut by 4 m paths, a central clearing, flag posts in each team's half, gates across the lanes in front of the forts, and cores in courtyards at each end."
 				>
 					<rect
-						x="-52"
-						y="-16"
-						width="104"
-						height="32"
+						x="-44"
+						y="-22"
+						width="88"
+						height="44"
 						fill="none"
 						stroke="currentColor"
 						stroke-width="0.4"
 					/>
-					<!-- lanes -->
-					<rect x="-38" y="-16" width="76" height="10" fill="currentColor" fill-opacity="0.08" />
-					<rect x="-38" y="6" width="76" height="10" fill="currentColor" fill-opacity="0.08" />
-					<!-- base blocks -->
-					<rect x="-38" y="-6" width="10" height="12" fill="currentColor" fill-opacity="0.35" />
-					<rect x="28" y="-6" width="10" height="12" fill="currentColor" fill-opacity="0.35" />
-					<!-- hedges -->
-					<g stroke="currentColor" stroke-width="1.6" stroke-opacity="0.5">
-						<line x1="-28" y1="-5" x2="-20" y2="-5" />
-						<line x1="-16" y1="-5" x2="-12" y2="-5" />
-						<line x1="-8" y1="-5" x2="-3" y2="-5" />
-						<line x1="3" y1="-5" x2="8" y2="-5" />
-						<line x1="12" y1="-5" x2="16" y2="-5" />
-						<line x1="20" y1="-5" x2="28" y2="-5" />
-						<line x1="-28" y1="5" x2="-20" y2="5" />
-						<line x1="-16" y1="5" x2="-12" y2="5" />
-						<line x1="-8" y1="5" x2="-3" y2="5" />
-						<line x1="3" y1="5" x2="8" y2="5" />
-						<line x1="12" y1="5" x2="16" y2="5" />
-						<line x1="20" y1="5" x2="28" y2="5" />
+					<!-- jungle and base blocks -->
+					<rect x="-22" y="-14" width="44" height="28" fill="currentColor" fill-opacity="0.35" />
+					<rect x="-32" y="-14" width="10" height="28" fill="currentColor" fill-opacity="0.55" />
+					<rect x="22" y="-14" width="10" height="28" fill="currentColor" fill-opacity="0.55" />
+					<!-- paths through the jungle -->
+					<g fill="Canvas">
+						<rect x="-16" y="-14" width="4" height="28" />
+						<rect x="-2" y="-14" width="4" height="28" />
+						<rect x="12" y="-14" width="4" height="28" />
+						<rect x="-16" y="-2" width="32" height="4" />
+						<rect x="-16" y="-9" width="32" height="4" />
+						<rect x="-16" y="5" width="32" height="4" />
+						<circle cx="0" cy="0" r="4.5" />
+						<circle cx="-7" cy="-7" r="3" />
+						<circle cx="7" cy="7" r="3" />
+					</g>
+					<!-- brush -->
+					<g fill="none" stroke="currentColor" stroke-width="0.4" stroke-dasharray="0.8 0.8">
+						<circle cx="-14" cy="-7" r="2" />
+						<circle cx="14" cy="7" r="2" />
+						<circle cx="0" cy="-7" r="2" />
+						<circle cx="0" cy="7" r="2" />
 					</g>
 					<!-- gates -->
 					<g stroke="#2a6fdb" stroke-width="1.2">
-						<line x1="-28" y1="-16" x2="-28" y2="-6" />
-						<line x1="-28" y1="6" x2="-28" y2="16" />
+						<line x1="-22" y1="-22" x2="-22" y2="-14" />
+						<line x1="-22" y1="14" x2="-22" y2="22" />
 					</g>
 					<g stroke="#d9412b" stroke-width="1.2">
-						<line x1="28" y1="-16" x2="28" y2="-6" />
-						<line x1="28" y1="6" x2="28" y2="16" />
+						<line x1="22" y1="-22" x2="22" y2="-14" />
+						<line x1="22" y1="14" x2="22" y2="22" />
 					</g>
 					<!-- towers, forts, cores -->
 					<g fill="#2a6fdb">
-						<circle cx="-18" cy="-12.5" r="1.4" />
-						<circle cx="-18" cy="12.5" r="1.4" />
-						<rect x="-34" y="-14" width="4" height="3" />
-						<rect x="-34" y="11" width="4" height="3" />
-						<circle cx="-42" cy="0" r="2.5" />
+						<circle cx="-12" cy="-18" r="1.4" />
+						<circle cx="-12" cy="18" r="1.4" />
+						<rect x="-29" y="-19.5" width="4" height="3" />
+						<rect x="-29" y="16.5" width="4" height="3" />
+						<circle cx="-37" cy="0" r="2.5" />
 					</g>
 					<g fill="#d9412b">
-						<circle cx="18" cy="-12.5" r="1.4" />
-						<circle cx="18" cy="12.5" r="1.4" />
-						<rect x="30" y="-14" width="4" height="3" />
-						<rect x="30" y="11" width="4" height="3" />
-						<circle cx="42" cy="0" r="2.5" />
+						<circle cx="12" cy="-18" r="1.4" />
+						<circle cx="12" cy="18" r="1.4" />
+						<rect x="25" y="-19.5" width="4" height="3" />
+						<rect x="25" y="16.5" width="4" height="3" />
+						<circle cx="37" cy="0" r="2.5" />
 					</g>
-					<!-- pillars -->
-					<g fill="currentColor" fill-opacity="0.6">
-						<circle cx="-7" cy="-2" r="1.1" />
-						<circle cx="7" cy="-2" r="1.1" />
-						<circle cx="-7" cy="2" r="1.1" />
-						<circle cx="7" cy="2" r="1.1" />
-					</g>
-					<!-- flag posts -->
-					<g font-size="3" text-anchor="middle" fill="currentColor">
-						<text x="-16" y="-1.5" fill="#2a6fdb">⚑A</text>
-						<text x="16" y="4.5" fill="#d9412b">⚑B</text>
-						<text x="0" y="1">yard</text>
-						<text x="0" y="-10.5">north lane</text>
-						<text x="0" y="13.5">south lane</text>
-						<text x="-28" y="-17.5">gate</text>
-						<text x="28" y="-17.5">gate</text>
-						<text x="-48" y="1">base</text>
-						<text x="48" y="1">base</text>
+					<g font-size="2.6" text-anchor="middle" fill="currentColor">
+						<text x="-7" y="-6" fill="#2a6fdb">⚑A</text>
+						<text x="7" y="8" fill="#d9412b">⚑B</text>
+						<text x="0" y="1">centre</text>
+						<text x="0" y="-17">north lane</text>
+						<text x="0" y="19">south lane</text>
+						<text x="-22" y="-23.5">gate</text>
+						<text x="22" y="-23.5">gate</text>
+						<text x="-40" y="5">base</text>
+						<text x="40" y="5">base</text>
 					</g>
 				</svg>
 				<figcaption>
 					Circles in lanes are towers, squares forts, big circles cores. Coloured bars across the
-					lanes are gates: your colour walks through, the other has to break them. Grey bars are the
-					yard hedges with their gaps.
+					lanes are gates. Each lane has three ways into the jungle, and the towers stand at the
+					outer two.
 				</figcaption>
 			</figure>
 			<p>
