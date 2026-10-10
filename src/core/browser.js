@@ -3,7 +3,6 @@ import * as input from './input.js'
 import * as audio from './audio.js'
 import { createApp, STEP } from './app.js'
 import { direct, pointClick, POINT_CLICK } from './intents.js'
-import { initPhysics } from './physics.js'
 import { createRenderer } from './render.js'
 import { createOverlay } from './overlay.js'
 import { createPerformanceMonitor } from './performance.js'
@@ -16,7 +15,9 @@ import { tune } from './tune.js'
 // The browser shell: builds the DOM services, runs the requestAnimationFrame loop, and owns diagnostics, mute and the collider overlay.
 export async function createBrowserApp() {
 	applyCssVariables() // one palette drives both the WebGL world and the HTML chrome
-	const { RAPIER, world } = await initPhysics()
+	// Rapier ships as wasm: a dynamic import isolates it and its init into their own chunk (vite-plugin-wasm), so there's no RAPIER.init() to await and the wasm stays a cacheable file instead of base64-inlining into the bundle.
+	const RAPIER = await import('@dimforge/rapier3d')
+	const world = new RAPIER.World({ x: 0, y: tune.physics.gravity, z: 0 })
 	world.timestep = STEP
 	const debugWorlds = []
 	const activeWorld = () => debugWorlds.at(-1)?.world ?? world

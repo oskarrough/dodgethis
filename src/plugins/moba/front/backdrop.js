@@ -1,6 +1,21 @@
 import { el as make } from '../../../core/dom.js'
 import { tune } from './tune.js'
-import { easePointer, projectFrame } from './geometry.js'
+
+// The same slice projection anchors the DOM sign and the backdrop's zoom.
+function projectFrame(width, height) {
+	const scale = Math.max((width * 1.1) / 1440, (height * 1.1) / 900)
+	return {
+		scale,
+		point: (x, y) => ({ x: width / 2 + (x - 720) * scale, y: height * 1.05 + (y - 900) * scale }),
+		signX: width / 2 + (800 - 720) * scale,
+		ground: -height * 0.05 + (900 - 750) * scale,
+	}
+}
+
+function easePointer(current, target, dt, response) {
+	const blend = 1 - Math.exp(-Math.max(0, dt) / response)
+	return current + (target - current) * blend
+}
 
 // The focus point in the 1440 × 900 frame: shots zoom on it, so the lobby's tabletop
 // lands where the splash's eye rests.
