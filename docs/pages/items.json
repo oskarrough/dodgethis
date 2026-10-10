@@ -1,5 +1,36 @@
 [
 	{
+		"at": "2026-10-10T15:29:28.817Z",
+		"title": "Overthrow by day, built",
+		"ask": "Concept left, the game right, at the shipped match camera (2560×1440, Radeon 780M). Does the isle read? And: should the match camera show both rims and the front cliff like the concept? Today its clamp keeps the view inside the court's width, so mid-court frames show only court.",
+		"status": "To review",
+		"decision": "",
+		"media": [
+			"review/media/2026-10-10-overthrow-by-day-built/concept-establishing.webp",
+			"review/media/2026-10-10-overthrow-by-day-built/after-establishing.png",
+			"review/media/2026-10-10-overthrow-by-day-built/concept-fight.webp",
+			"review/media/2026-10-10-overthrow-by-day-built/after-fight.png"
+		],
+		"links": [],
+		"thread": "thr_tfbqscj9f5",
+		"page": "2026-10-10-overthrow-by-day-built/"
+	},
+	{
+		"at": "2026-10-10T15:27:11.912Z",
+		"title": "Join by link: preview card, reload notice, rematch link",
+		"ask": "Does the room link's preview card (title, line, key art) read as an invite you'd tap? Is the splash the right key art?",
+		"status": "To review",
+		"decision": "",
+		"media": [
+			"review/media/2026-10-10-join-by-link-preview-card-reload-notice-/preview-card.png",
+			"review/media/2026-10-10-join-by-link-preview-card-reload-notice-/stale-build.png",
+			"review/media/2026-10-10-join-by-link-preview-card-reload-notice-/result-card.png"
+		],
+		"links": [],
+		"thread": "thr_a88i8a2nsb",
+		"page": "2026-10-10-join-by-link-preview-card-reload-notice-/"
+	},
+	{
 		"at": "2026-10-10T15:23:18.052Z",
 		"title": "Flagfall night",
 		"ask": "Is this Flagfall?",

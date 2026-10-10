@@ -114,6 +114,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 ## Match: maps and props
 
 - Overthrow (the first map): `maps/overthrow.js` `overthrowLayout`; `match-terrain.js` `createMatchTerrain`; `tune.js` `overthrowTerrain`, `map`; `moba-lane.md`
+- Overthrow by day (cliff, moss lip, rim ink, cloud sea, cloud banks, far spires and arches, waterfalls, haze): `isle.js` `createIsle`; court moss and printed cast shadows: `match-terrain.js`; stone cover and pillars: `map.js` `buildMap` (`stoneCover`); stone towers and core: `lane-view.js` (`structureStyle: 'stone'`); the sun: `tune.js` `overthrowTerrain.light`, `core/stylepass.js` `setPalette`
 - Flagfall (the second map): `maps/flagfall.js` `flagfallLayout`, `flagfallLayoutTune`; `tune.js` `flagfall`; `moba-map-2.md`
 - Flagfall water: `flagfall-water.js` `createFlagfallWater`, `loadFlagfallTile`; `tune.js` `flagfall.water`
 - Flagfall windbreaks (striped screens): `windbreak.js` `windbreakGeometries`; `tune.js` `flagfall`
@@ -162,6 +163,11 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Room list and join codes: `src/plugins/online/lobby-directory.js` `createLobbyDirectory`
 - Join by link (`/ABCDE`), Copy link: `src/main.js`; `net.js` `roomCode`; online `index.js` `joinByLink`; `online-ui.js`; `worker/index.js`
 - Late joiner takes a bot's seat, leaver hands it back: moba `index.js` `seatLate`, `openSeats`, `removeParticipant`; `sim.js` `releaseBot`, `adoptBot`; `online-session.js` `onPeerJoin`; `link.js` `SEAT_TIMEOUT`
+- Sticker names over heroes and in the room panel: `online/names.js` `playerName`; online `index.js` `showNames`; moba `index.js` `names`; `health-bars.js`
+- Refresh mid-match gets the same seat back: `names.js` `seatKey`; `online-session.js` `onPeerJoin` (`left`, `prefer`); moba `seatLate`; online `tune.js` `room.rejoinFor`
+- Stale build gets "New version, reload": `net.js` `BUILD`, `staleBuild`; `vite.config.js` `define`; `online-ui.js` `stale`; dev fake `/CODE?build=old`
+- Link previews (og tags, key art `public/og.jpg`) and the room's own preview title: `index.html`; `worker/index.js` `roomPage`
+- Result card Copy link (a line of the match plus the address bar's link, the room's when shared): moba `menu.js` `share`
 - Transport (peer link, envelopes): `src/plugins/online/net.js` `Net`, `plainJoinData`; `src/plugins/online/link.js` `createLink`
 - Remote players as replicas: `lane-replica.js`, `lobby-replica.js`; `src/plugins/dodgeball/replica.js`
 
