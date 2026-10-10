@@ -32,12 +32,22 @@ const bots = (preset) => ({
 		humanAttackers: [1, 3, 1, 'early human duelists'],
 	}),
 })
-// An ability without hand-set ranges gets one slider per number, from zero to four times its value.
+// An ability without hand-set ranges gets one slider per number, from a quarter to four times
+// its value: a rate, speed or duration at zero would leave the hero unable to act.
 const numbers = (stats) =>
 	Object.fromEntries(
 		Object.entries(stats ?? {})
 			.filter(([, v]) => typeof v === 'number')
-			.map(([key, v]) => [key, [0, v > 0 ? v * 4 : 1, Number.isInteger(v) && v >= 10 ? 1 : 0.01]]),
+			.map(([key, v]) => {
+				if (v <= 0) return [key, [0, 1, 0.01]]
+				const whole = Number.isInteger(v) && v >= 4
+				return [
+					key,
+					whole
+						? [Math.max(1, Math.round(v / 4)), v * 4, 1]
+						: [Number((v / 4).toFixed(2)) || 0.01, v * 4, 0.01],
+				]
+			}),
 	)
 const sound = {
 	freq: [20, 2400, 10],
@@ -151,7 +161,7 @@ export function sliderSections(tune, look, setup) {
 			castPoint: [T, 0.5, T, 'cast point (s)'],
 			cooldown: [0.2, 10, 0.1, 'cooldown (s)'],
 		},
-		projectile: { nearMiss: [0, 2, 0.05, 'near miss (m)'] },
+		projectile: { nearMiss: [0.05, 2, 0.05, 'near miss (m)'] },
 		rain: {
 			damage: [10, 500, 10],
 			castPoint: [0, 1, T],

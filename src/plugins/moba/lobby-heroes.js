@@ -23,7 +23,7 @@ export function createHeroStrip({ el, heroes, current, pick, openNumbers }) {
 		button.dataset.hero = definition.id
 		button.dataset.light = 'day'
 		button.style.setProperty('--wash', frontTune.skin.wash.hero)
-		button.innerHTML = `${paintedCard(i)}<span class="skin-sheet"></span><span class="skin-ring"></span><span class="skin-face"></span><span class="lobby-hero-strip-face">${definition.icon ?? ICONS[definition.id] ?? ''}</span><span class="lobby-hero-strip-name skin-title"><span>${definition.id}</span></span>`
+		button.innerHTML = `${paintedCard(i)}<span class="skin-sheet"></span><span class="skin-ring"></span><span class="skin-face"></span><span class="lobby-hero-strip-face">${definition.icon ?? ICONS[definition.id] ?? ICONS[definition.silhouette] ?? ICONS.empty}</span><span class="lobby-hero-strip-name skin-title"><span>${definition.id}</span></span>`
 		button.onclick = () => {
 			if (button.dataset.hero === current) return openNumbers()
 			pick(definition.id)

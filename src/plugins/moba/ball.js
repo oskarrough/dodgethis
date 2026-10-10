@@ -7,7 +7,7 @@ const ticks = (s) => Math.max(1, Math.round(s / STEP))
 const pos = (p) => ({ x: p.x, z: p.z })
 
 // One objective per sim. Its fixed clock is independent of pickup, spending and expiry.
-export function createBall({ heroes, targets, vulnerable, obstacles, present, damage }) {
+export function createBall({ heroes, targets, vulnerable, obstacles, present, damage, endCast }) {
 	let ball = null
 	let serial = 0
 	let nextBall = ticks(tune.ball.first)
@@ -98,7 +98,7 @@ export function createBall({ heroes, targets, vulnerable, obstacles, present, da
 		const previous = heroes.find((u) => u.id === ball.carrier)
 		if (previous) previous.ballThrow = null
 		h.ballThrow = null
-		h.cast = null
+		endCast(h, 'ball')
 		h.attack = null
 		h.order = null
 		h.body.cancelDash?.()
@@ -114,7 +114,7 @@ export function createBall({ heroes, targets, vulnerable, obstacles, present, da
 	}
 	function control(h, frame, intents, facing) {
 		if (!carrying(h)) return false
-		h.cast = null
+		endCast(h, 'ball')
 		h.attack = null
 		const edges = frame.pressed.filter((e) => e.action === 'primary' || e.action.startsWith('slot'))
 		if (h.ballThrow && frame.pressed.some((e) => ['stop', 'cancel'].includes(e.action))) {

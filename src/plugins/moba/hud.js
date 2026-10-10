@@ -34,15 +34,6 @@ const PAD_RIGHT = 15
 
 const svg = (body) => `<svg viewBox="0 0 48 48" aria-hidden="true">${body}</svg>`
 export const ICONS = {
-	loose: svg(
-		'<path class="ink-line" d="M10 38 L36 12"/><path class="gold" d="M30 9 L40 8 L39 18 Z"/><path class="tone" d="M9 33 L15 39 L11 43 L5 37 Z"/>',
-	),
-	vault: svg(
-		'<path class="tone" d="M8 30 L20 18 L20 25 L34 25 L34 35 L20 35 L20 42 Z" transform="rotate(-20 24 30)"/><path class="ink-line" d="M30 12 L38 8 M33 18 L42 15"/>',
-	),
-	rain: svg(
-		'<ellipse class="cream" cx="24" cy="37" rx="17" ry="7"/><path class="ink-line" d="M14 8 L16 32 M24 5 L24 33 M34 8 L32 32"/><path class="gold" d="M12 28 L20 28 L16 36 Z M20 29 L28 29 L24 37 Z M28 28 L36 28 L32 36 Z"/>',
-	),
 	ball: svg(
 		'<circle class="gold" cx="24" cy="24" r="15"/><path class="ink-line" d="M10 20 Q24 28 38 20 M18 10 Q26 24 18 38"/>',
 	),
@@ -56,20 +47,14 @@ export const ICONS = {
 		'<path class="stone" d="M10 44 L13 36 L35 36 L38 44 Z"/><path class="tone" d="M24 3 L36 19 L24 35 L12 19 Z"/><path class="ink-line" d="M12 19 L36 19 M24 3 L24 35"/>',
 	),
 	momentum: svg('<path class="gold" d="M8 30 L22 6 L20 22 L40 18 L24 42 L26 28 Z"/>'),
-	toss: svg(
-		'<path class="tone" d="M6 34 Q6 22 16 22 L24 22 Q28 22 28 27 Q28 31 24 31 L18 31 L18 36 Q18 42 12 42 Q6 42 6 34 Z"/><circle class="gold" cx="35" cy="14" r="7"/><path class="ink-line" d="M27 22 L31 19"/>',
-	),
-	catch: svg(
-		'<path class="cream" d="M24 40 L8 14 A26 26 0 0 1 40 14 Z"/><path class="tone" d="M14 40 Q10 30 16 26 L22 30 L22 18 Q22 14 25 14 Q28 14 28 18 L28 28 L34 24 Q38 28 34 40 Z"/>',
-	),
-	dive: svg(
-		'<rect class="tone" x="12" y="20" width="22" height="15" rx="5" transform="rotate(-18 23 27)"/><path class="tone" d="M34 14 L44 10 L40 20 Z"/><path class="ink-line" d="M4 38 L14 38 M6 44 L20 44"/>',
-	),
 	pocket: svg(
 		'<path class="cream" d="M10 14 L38 14 L36 38 Q24 44 12 38 Z"/><circle class="gold" cx="24" cy="24" r="6"/>',
 	),
-	carom: svg('<path class="tone" d="M24 8 L42 40 L6 40 Z"/>'),
-	skip: svg('<rect class="tone" x="8" y="18" width="32" height="14" rx="5"/>'),
+	// Default faces, by silhouette
+	circle: svg('<circle class="tone" cx="24" cy="24" r="15"/>'),
+	square: svg('<rect class="tone" x="10" y="10" width="28" height="28" rx="5"/>'),
+	triangle: svg('<path class="tone" d="M24 8 L42 40 L6 40 Z"/>'),
+	bar: svg('<rect class="tone" x="8" y="18" width="32" height="14" rx="5"/>'),
 	empty: svg('<path class="ink-line" d="M16 24 L32 24" opacity="0.4"/>'),
 }
 
@@ -698,7 +683,9 @@ export function createHud({ lobby = false, layout, pieces, onMinimap } = {}) {
 				face,
 				'icon',
 				heroId,
-				(id) => (face.innerHTML = definition.icon ?? ICONS[id] ?? ICONS.empty),
+				(id) =>
+					(face.innerHTML =
+						definition.icon ?? ICONS[id] ?? ICONS[definition.silhouette] ?? ICONS.empty),
 			)
 			text(heroLevel, String(level))
 			const heroicTrait = heroTrait(heroId)

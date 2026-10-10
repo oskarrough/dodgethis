@@ -286,6 +286,24 @@ export function createCasting(ctx) {
 		})
 	}
 
+	// A cast or stance that ends for any reason but its own release: the hook fires, then
+	// the state goes, so what onStart set up can be undone.
+	function endCast(hero, reason) {
+		if (!hero.cast) return
+		const cast = hero.cast
+		const ability = castAbility(hero)
+		hero.cast = null
+		ability?.onCancel?.(traitContext(hero, { ...cast, ability, reason }))
+	}
+
+	function endStance(hero, reason) {
+		if (!hero.stance) return
+		const stance = hero.stance
+		const ability = abilityOf(stance.ability, hero)
+		hero.stance = null
+		ability?.onEnd?.(traitContext(hero, { stance, ability, reason }))
+	}
+
 	function stepHeroState(hero, dt) {
 		const frame = intents.get(hero.id)
 		if (hero.stance) {
@@ -337,6 +355,8 @@ export function createCasting(ctx) {
 		aimBasic,
 		traitContext,
 		cancelChannel,
+		endCast,
+		endStance,
 		stepHeroState,
 	}
 }

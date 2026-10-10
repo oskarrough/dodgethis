@@ -1,5 +1,5 @@
 import { DEFAULT_HERO, HEROES, heroDefinition, freshAbilityState } from './heroes.js'
-import { abilityOf, castAbility } from './ability.js'
+import { abilityOf } from './ability.js'
 import { dressHero } from './hero-view.js'
 import { createReadySeats } from './lobby-state.js'
 import { createScriptedHero } from './scripted.js'
@@ -294,6 +294,7 @@ export function createSim({
 			vulnerable: (unit) => lane?.vulnerable(unit) ?? true,
 			obstacles,
 			present,
+			endCast: (...args) => ctx.endCast(...args),
 			damage(shot, unit, damage) {
 				hit(
 					{ ...shot, id: -1, owner: shot.owner, slot: 'ball', damage },
@@ -406,6 +407,8 @@ export function createSim({
 		release,
 		traitContext,
 		cancelChannel,
+		endCast,
+		endStance,
 		stepHeroState,
 		snapshot,
 		control,
@@ -436,10 +439,8 @@ export function createSim({
 		const speed = Math.hypot(velocity.x, velocity.z)
 		const scale = speed ? Math.min(1, definition.base.speed / speed) : 1
 		const fraction = hero.hp / hero.maxHp
-		if (hero.cast) {
-			const ability = castAbility(hero)
-			ability?.onCancel?.(traitContext(hero, { ...hero.cast, ability, reason: 'swap' }))
-		}
+		endCast(hero, 'swap')
+		endStance(hero, 'swap')
 		cancelChannel(hero, 'swap')
 		hero.body.cancelDash()
 		hero.body.dispose()

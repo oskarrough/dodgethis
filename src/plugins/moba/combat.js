@@ -33,6 +33,8 @@ export function createCombat(ctx) {
 	} = ctx
 	const traitContext = (...args) => ctx.traitContext(...args)
 	const cancelChannel = (...args) => ctx.cancelChannel(...args)
+	const endCast = (...args) => ctx.endCast(...args)
+	const endStance = (...args) => ctx.endStance(...args)
 
 	// Fell off the lobby floor: come back down from the sky over a random free spot.
 	function dropIn(h) {
@@ -68,8 +70,9 @@ export function createCombat(ctx) {
 		unit.slow = { until: 0, factor: 1 }
 		unit.freezeUntil = 0
 		unit.proneUntil = 0
-		unit.stance = null
-		unit.channel = null
+		endCast(unit, 'respawn')
+		endStance(unit, 'respawn')
+		cancelChannel(unit, 'respawn')
 		unit.catchWindow = null
 		for (let i = cutouts.length - 1; i >= 0; i--)
 			if (cutouts[i].owner === unit.id) cutouts.splice(i, 1)
@@ -273,11 +276,11 @@ export function createCombat(ctx) {
 	// Out of play until `seconds` pass: a death or a dunk. The caller has retired the body.
 	function bench(unit, seconds, shot) {
 		unit.respawnTick = ctx.t + ticks(seconds)
-		unit.cast = null
+		endCast(unit, 'death')
+		endStance(unit, 'death')
 		unit.shove = null
 		if (unit.post) return
 		unit.abilityState = freshAbilityState(unit.definition)
-		unit.stance = null
 		unit.catchWindow = null
 		unit.freezeUntil = 0
 		unit.proneUntil = 0

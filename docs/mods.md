@@ -22,8 +22,8 @@ Always top level; heroes name them by id. A manifest holds data and hooks into t
 - `kind`: `shot`, `zone`, `dash`, `stance`, `channel` or `melee`. Casting branches on it; a new kind is an engine change, not a mod.
 - Flags casting and flight already read: `pierce`, `heal`, `catchable`, `aimAssist`, `returnsPocket`, `catchesShots`, `acceptBall`, `root`, `cancelOnMove`.
 - `tell` and `held` (`line`, `circle`, `arrow`, `cone`) pick the telegraph; its size comes from the ability's tune (`range`, `radius`, `angle`). `effects { cast, projectile, hit, impact, effect, pose }` name cues from the shared vocabulary in `look.js` and `feedback.js`; a new cue is engine work, like a new sound.
-- `card: { summary(), notes() }` replaces `tooltip.js` `SUMMARY` and `NOTES`. Default: the kind's line and no notes. `look` holds an ability's own telegraph look (Catch's fan, today `look.mittsView`).
-- Hooks, all optional, each called with `traitContext(hero, { ability, … })`: `onStart` (stance, channel), `onRelease`, `onTick`, `onEnd`, `onCancel`, `onDashEnd`. A hook reads `ability.stats`, never `tune.<id>` (Dive's `onDashEnd` reads `tune.dive.prone` today). Only release passes the object today: `onCancel` (`sim.js:440`, `control.js:146`) and channel hooks (`casting.js:319,322`) spread a cast whose `ability` is a string id, and `onEnd`, stance `onTick` (`casting.js:296,301`) and `onDashEnd` (`sim.js:543`) pass none. Each call site adds `ability: abilityOf(id, hero)` after the spread.
+- `card: { summary(), notes() }` replaces `tooltip.js` `SUMMARY` and `NOTES`. Default: the kind's line and no notes. `icon` is the slot's SVG markup (default: an empty slot). `look` holds an ability's own telegraph look (Catch's fan).
+- Hooks, all optional, each called with `traitContext(hero, { ability, … })`: `onStart` (stance, channel), `onRelease`, `onTick`, `onEnd`, `onCancel`, `onDashEnd`. A hook reads `ability.stats`, never `tune.<id>`. Every call site passes the ability object. A cast that ends any way but its release (input, swap, death, Ball pickup) goes through `endCast` in `casting.js`: `onCancel` fires, then the cast clears. A stance cut short (swap, death, respawn) fires `onEnd` through `endStance`; a channel fires `onCancel` through `cancelChannel`. Hooks always run before the state is gone.
 - `bounce` is copied onto the shot (`casting.js:214`) but flight never reads it. Bounce is engine work (step 4) before it becomes a flag.
 - `tune.js` default-exports the numbers; the registry adds a `stats` getter returning `tune[id]`.
 
@@ -49,7 +49,7 @@ export default {
 }
 ```
 
-Also optional: `silhouette` (`look.silhouettes` shape, default `circle`), `color` (`blue`, `red`; the lobby stamp's `--hero-color`, default cream), `icon` (SVG markup for the HUD and strip, default drawn from the silhouette), `returnPose`, `state()`, `traits { onHit, onCatch, onDeath, onTick }`, `trait()` (the portrait chip and card, was `tooltip.js` `TRAITS`). `costume.js` exports `dress({ costume, part, rounded, team, look })` and optional `animate(unit, rig)` (Mitts's glove poses); without it the generic body dresses the hero. `numbers.js` exports extra numbers-panel cards (Fletcher's Flight & dodging, Planned Volley). `tune.js` lands at `tune.heroes[id]`; stats are `{ ...tune.hero, ...tune.heroes[id] }`.
+Also optional: `silhouette` (`look.silhouettes` shape, default `circle`), `color` (a `--ui-*` token name such as `blue` or `red`, not a hex value; the lobby stamp's `--hero-color`, default cream), `icon` (SVG markup for the HUD and strip; default is the generic face for its silhouette: `circle`, `square`, `triangle` or `bar`, keyed in `hud.js` `ICONS`), `returnPose`, `state()`, `traits { onHit, onCatch, onDeath, onTick }`, `trait()` (the portrait chip and card, was `tooltip.js` `TRAITS`). `costume.js` exports `dress({ costume, torso, footDisc, discY, part, own, rounded, roots, t, look, materials })` (the team colour is `materials.team`; there is no `team` argument) and optional `animate(unit, rig, …)` (Mitts's glove poses). `dress` returns the rig the poses read: `{ glove, pocketRing, bow, hand, bowString, drawArm, border, releases }`, all optional; `hero-view.js` reads `dress(…) ?? {}`. Without a costume the generic body dresses the hero. Proportions still live in the shared `look.silhouettes` (`caromRadius`, the `mitts*` and `quiver*` keys), so a hero folder does not own them yet. The lobby strip prints the hero's `id` by design (lettering), not its `name`. `numbers.js` exports extra numbers-panel cards (Fletcher's Flight & dodging, Planned Volley). `tune.js` lands at `tune.heroes[id]`; stats are `{ ...tune.hero, ...tune.heroes[id] }`, read live: a hero without a tune shares `tune.hero` itself, one with a tune reads through a view that falls back to `tune.hero` key by key, so the Hero sliders reach existing bodies.
 
 The registry builds today's definition shape from the manifest: `kit` becomes `abilities: { slot1…slot4 }` of ability objects, `basic` a getter, `base` a getter (`heroes.js:85-139`); every reader of `definition.abilities[slot]` stays as is.
 
@@ -57,7 +57,7 @@ A folder with only `kit` loads and plays. `playable` (at least one ability resol
 
 ## Discovery and tune paths
 
-Generated registries, not globs: `import.meta.glob` is Vite-only, and a Bun branch would put a top-level `await` in `tune.js` (imported by 66 files) and in both `heroes.js` and `ability.js`, which import each other once kits resolve ids. A top-level await in a cycle deadlocks or hands out uninitialised bindings. Instead `scripts/registry.js` (`bun run registry`) writes one plain file per kind with static imports sorted by id: `abilities/index.js`, `heroes/index.js`, `maps/index.js`, `pieces/index.js`; `tunes.js` (every folder `tune.js`, for root `tune.js`); `heroes/views.js` (`costume.js`, `numbers.js`). A test fails when a folder is missing from its file. No await, one path, greppable.
+Generated registries, not globs: `import.meta.glob` is Vite-only, and a Bun branch would put a top-level `await` in `tune.js` (imported by 66 files) and in both `heroes.js` and `ability.js`, which import each other once kits resolve ids. A top-level await in a cycle deadlocks or hands out uninitialised bindings. Instead `scripts/registry.js` (`bun run registry`) writes one plain file per kind with static imports sorted by id: `abilities/index.js`, `heroes/index.js`, `maps/index.js`, `pieces/index.js`; `tunes.js` (every folder `tune.js`, for root `tune.js`); `heroes/views.js` (`costume.js`, `numbers.js`). A test fails when a folder is missing from its file. No await, one path, greppable. Generated import names carry a kind prefix (`abilities_catch`), so an id may be a reserved word (`catch`).
 
 - `heroes.js` keeps its exports (`HEROES`, `heroDefinition`, `freshAbilityState`) and adds `DEFAULT_HERO`, `listed` and `listedHeroes(setup)`; it reads `heroes/index.js` and resolves kit ids against `ABILITIES`. `HEROES` keeps Fletcher before Mitts (seeded random seats index into it).
 - `ability.js` reads `abilities/index.js` into `ABILITIES` and stops importing `heroes.js`; `abilityOf(id, unit)` checks the unit, then one map lookup. Until Mitts moves, `heroes.js` registers its inline abilities into `ABILITIES` (`registerAbility`).
@@ -92,7 +92,7 @@ Bare ids (`loose`, `fletcher`, `flagfall`), one author. The folder name, the man
 - `hud.js` `ICONS[heroId]` → `definition.icon`; trait icons such as `pocket`, `momentum` stay in `ICONS`.
 - `front/numbers.js`, `front/stats.js`: Fletcher branches → generic `heroStats` plus a numbers lookup (`heroes/views.js` `numbers.cards()`, then the inline table).
 - `lobby.css:29,33` per-hero stamp selectors → `--hero-color` set from `definition.color`. `.front-distant-fletcher` stays: it names a splash drawing, not a hero lookup.
-- `look.js` `mittsView` → `abilities/catch` `look`; `abilityView` and `silhouettes` stay shared.
+- `look.js`: only the catch fan went to `abilities/catch` `look`; the pocket ring and glove-pose numbers went to `heroes/mitts/costume.js`; body sizes stay in `look.silhouettes`; `abilityView` stays shared.
 - `maps/index.js`: hand-written `maps` → generated registry, same exports; `obstacles.js` and `maps/lobby/` import `maps/overthrow/layout.js`.
 - `map.js:353,410`, `isle.js:456-582`: inferred Flagfall → `kind`, `ground`, `scenery`.
 
@@ -115,6 +115,6 @@ Each step is one brief, run in sequence; the files listed are the step's own. Pr
 
 ## Decided after review (2026-10-11)
 
-- The pocket's team colour is engine catch code, not Mitts's `onCatch` trait: any catcher's pocket shows their own team. Lands with step 3.
+- The pocket's team colour is engine catch code, not Mitts's `onCatch` trait: the pocket wears the caught shot's team, whoever caught it. Landed with step 3.
 - Costumes and numbers go through a generated view registry so a hero folder ships its look; the sim never imports it.
 - The bot lineup stays the literal `['mitts', 'fletcher']` until a third listed hero exists, then becomes `tune.bots.lineup`.

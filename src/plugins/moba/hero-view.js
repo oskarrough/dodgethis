@@ -108,26 +108,27 @@ export function dressHero(body, heroId = DEFAULT_HERO, team = 'A') {
 		body.mesh,
 	)
 	const { dress = dressBox, animate = null } = HERO_VIEWS[heroId]?.costume ?? {}
-	const dressed = dress({
-		costume,
-		torso,
-		footDisc,
-		discY,
-		part,
-		own,
-		rounded,
-		roots,
-		t,
-		look,
-		materials: {
-			ink,
-			cream,
-			fins,
-			team: teamMaterial,
-			glove: gloveMaterial,
-			pocket: pocketMaterial,
-		},
-	})
+	const dressed =
+		dress({
+			costume,
+			torso,
+			footDisc,
+			discY,
+			part,
+			own,
+			rounded,
+			roots,
+			t,
+			look,
+			materials: {
+				ink,
+				cream,
+				fins,
+				team: teamMaterial,
+				glove: gloveMaterial,
+				pocket: pocketMaterial,
+			},
+		}) ?? {}
 	const { bow = null, hand = null, bowString = null, drawArm = null } = dressed
 	// Move geometry, not the animated root: core's capsule centre is still physics.
 	torso.geometry.computeBoundingBox()

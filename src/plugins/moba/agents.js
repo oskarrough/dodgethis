@@ -308,7 +308,8 @@ function aimedTells(h, perceived) {
 		const stats = ability?.stats
 		let aimed =
 			distance(p, c.target) <=
-			(ability?.kind === 'zone' ? stats.radius : tune.rain.radius) + h.body.radius
+			(ability?.kind === 'zone' ? (stats?.radius ?? tune.rain.radius) : tune.rain.radius) +
+				h.body.radius
 		if (ability?.kind === 'shot' && stats) {
 			const dx = c.target.x - u.pos.x,
 				dz = c.target.z - u.pos.z

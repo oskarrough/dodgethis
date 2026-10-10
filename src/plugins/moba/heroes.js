@@ -17,6 +17,9 @@ export function heroFromManifest(id, { kit = {}, basic = null, ...manifest }) {
 		return ABILITIES[abilityId]
 	}
 	const basicAbility = resolve(basic)
+	for (const slot of Object.keys(kit))
+		if (!SLOTS.includes(slot)) throw new Error(`MOBA hero ${id}: unknown kit slot ${slot}`)
+	const view = new Proxy({}, { get: (_, key) => tune.heroes[id]?.[key] ?? tune.hero[key] })
 	return {
 		silhouette: 'circle',
 		traits: {},
@@ -25,8 +28,10 @@ export function heroFromManifest(id, { kit = {}, basic = null, ...manifest }) {
 		name: manifest.name ?? titleCase(id),
 		order: manifest.order ?? 100,
 		draft: manifest.draft ?? false,
+		// Live: a hero without its own tune shares tune.hero itself; one with its own tune
+		// reads through a view that falls back to tune.hero key by key.
 		get base() {
-			return { ...tune.hero, ...tune.heroes[id] }
+			return tune.heroes[id] ? view : tune.hero
 		},
 		get basic() {
 			return basicAbility
