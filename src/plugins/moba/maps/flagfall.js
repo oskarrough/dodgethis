@@ -3,29 +3,46 @@ import { tune } from '../tune.js'
 export function flagfallLayout() {
 	const s = flagfallLayoutTune()
 	const bounds = { id: 'flagfall', ...s.bounds }
-	const boxes = [-1, 1].flatMap((side) => [
-		{
-			kind: 'wall',
-			x: (side * (s.baseBlock.innerX + s.baseBlock.outerX)) / 2,
-			z: 0,
-			halfX: (s.baseBlock.outerX - s.baseBlock.innerX) / 2,
-			halfZ: s.baseBlock.halfZ,
-		},
-		...[-1, 1].flatMap((flank) =>
-			s.hedge.runs.map(([inner, outer]) => ({
-				kind: 'hedge',
-				x: (side * (inner + outer)) / 2,
-				z: (flank * (s.hedge.innerZ + s.hedge.outerZ)) / 2,
-				halfX: (outer - inner) / 2,
-				halfZ: (s.hedge.outerZ - s.hedge.innerZ) / 2,
-			})),
+	const j = s.jungle
+	const quarters = (fn) => [-1, 1].flatMap((side) => [-1, 1].map((flank) => fn(side, flank)))
+	const rect = (kind, x0, x1, z0, z1) => ({
+		kind,
+		x: (x0 + x1) / 2,
+		z: (z0 + z1) / 2,
+		halfX: Math.abs(x1 - x0) / 2,
+		halfZ: Math.abs(z1 - z0) / 2,
+	})
+	const boxes = [
+		...[-1, 1].map((side) =>
+			rect('wall', side * j.spine.x[0], side * j.spine.x[1], -j.spine.halfZ, j.spine.halfZ),
 		),
-	])
-	const pillars = [-1, 1].flatMap((side) =>
-		[-1, 1].flatMap((flank) => [
-			{ x: side * s.yardPillars.x, z: flank * s.yardPillars.z, r: s.pillarRadius },
-		]),
-	)
+		...quarters((side, flank) =>
+			rect('wall', side * j.end.x[0], side * j.end.x[1], flank * j.end.z[0], flank * j.end.z[1]),
+		),
+		...quarters((side, flank) =>
+			s.hedge.runs.map(([inner, outer]) =>
+				rect('hedge', side * inner, side * outer, flank * s.hedge.innerZ, flank * s.hedge.outerZ),
+			),
+		).flat(),
+	]
+	// Brush: low cover at the jungle's crossings. Fog hides whoever stands in it.
+	const brush = [
+		...quarters((side, flank) =>
+			j.brush.map((b) =>
+				rect('brush', side * b.x[0], side * b.x[1], flank * b.z[0], flank * b.z[1]),
+			),
+		).flat(),
+		...[-1, 1].map((flank) =>
+			rect(
+				'brush',
+				-j.midBrush.halfX,
+				j.midBrush.halfX,
+				flank * j.midBrush.z[0],
+				flank * j.midBrush.z[1],
+			),
+		),
+	]
+	const pillars = []
 	const lanes = [-1, 1].map((flank) => ({
 		id: flank === -1 ? 'south' : 'north',
 		path: [
@@ -69,7 +86,7 @@ export function flagfallLayout() {
 	)
 	return {
 		name: s.name,
-		preview: `<rect x="${-s.yard.halfX}" y="${-s.yard.halfZ}" width="${s.yard.halfX * 2}" height="${s.yard.halfZ * 2}"/>${[-1, 1].map((side) => `<path d="M${-bounds.halfX},${side * s.lane.innerZ} H${bounds.halfX}"/>`).join('')}`,
+		preview: `<rect x="${-s.clearing.halfX}" y="${-s.clearing.halfZ}" width="${s.clearing.halfX * 2}" height="${s.clearing.halfZ * 2}"/>${[-1, 1].map((side) => `<path d="M${-bounds.halfX},${side * s.lane.innerZ} H${bounds.halfX}"/>`).join('')}`,
 		settings: s,
 		structureStyle: 'stone',
 		light: s.light,
@@ -78,6 +95,7 @@ export function flagfallLayout() {
 		boxes,
 		pillars,
 		obstacles: [...pillars, ...boxes],
+		brush,
 		spawns: s.spawns,
 		spawnSpacing: tune.map.spawnSpacing,
 		bases: { A: { x: -s.baseX }, B: { x: s.baseX } },
@@ -104,14 +122,14 @@ export function flagfallLayoutTune() {
 		[
 			'bounds',
 			'lane',
-			'yard',
-			'baseBlock',
+			'plaza',
+			'clearing',
+			'jungle',
 			'baseX',
 			'waveSpawnX',
 			'hedge',
 			'gaps',
 			'pillarRadius',
-			'yardPillars',
 			'spawns',
 			'structures',
 			'posts',

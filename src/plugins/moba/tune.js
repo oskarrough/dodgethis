@@ -253,31 +253,48 @@ export const tune = {
 		},
 		// Presentation only: how far a dunked body falls, and the minimap's void.
 		water: { drop: 3, color: '#2b2550' },
-		// Squeezed: the lanes sit close enough to hear each other across an 8 m yard.
+		// Two 7 m lanes on the shores; between them an 18 m jungle of rooms, walls and brush.
 		bounds: { halfX: 52, halfZ: 16 },
-		lane: { innerZ: 6, outerZ: 16, centreZ: 11, pathZ: 12.5 }, // waves and towers walk the shore side
-		yard: { halfX: 28, halfZ: 4 },
-		baseBlock: { innerX: 28, outerX: 38, halfZ: 6 },
+		lane: { innerZ: 9, outerZ: 16, centreZ: 12.5, pathZ: 12.5 }, // waves and towers walk the shore side
 		baseX: 46,
+		plaza: { x: 30 }, // |x| past which each base opens onto both lanes
+		clearing: { halfX: 10, halfZ: 7 }, // the open middle, where the flag will stand
+		// The jungle's rim along each lane: hedge runs over |x|; the holes between are the ways in.
 		hedge: {
-			innerZ: 4,
-			outerZ: 6,
+			innerZ: 7,
+			outerZ: 9,
 			runs: [
-				[3, 8],
-				[12, 16],
-				[20, 28],
+				[4, 12],
+				[16, 22],
+				[26, 30],
 			],
+		},
+		// Four rooms (each half, each flank): a stone spine splits north from south, an end wall
+		// shuts the base side, so each room opens on two lane holes and the clearing. Metres, |x| and |z|.
+		jungle: {
+			spine: { x: [10, 30], halfZ: 1.5 },
+			end: { x: [28, 30], z: [1.5, 7] },
+			brush: [
+				{ x: [12, 16], z: [3.5, 7] }, // inside each room's inner lane hole
+				{ x: [22, 26], z: [3.5, 7] }, // and its outer one
+			],
+			midBrush: { halfX: 2, z: [3.5, 7] }, // the clearing's two lane holes
+			camps: { x: 19, z: 4.25 }, // marked only: a lantern and a chalk square
+			gateX: 29, // marked only: a chalk bar across each lane in front of the fort
 		},
 		// Dunk gaps in the shore fence: |x| ranges, mirrored to both halves of both shores.
 		gaps: [[5, 11]],
 		pillarRadius: 0.8,
-		yardPillars: { x: 6, z: 2 },
 		spawns: { A: { x: -49, z: 0 }, B: { x: 49, z: 0 } },
 		structures: { towerX: 18, fortX: 32, coreX: 42 },
 		waveSpawnX: 40,
+		// Lanterns: one on each camp, one on the flag. Marks for now.
 		posts: [
-			{ x: -16, z: 3 },
-			{ x: 16, z: -3 },
+			{ x: 0, z: 0 },
+			{ x: -19, z: 4.25 },
+			{ x: -19, z: -4.25 },
+			{ x: 19, z: 4.25 },
+			{ x: 19, z: -4.25 },
 		],
 		dummyPosts: [
 			{ x: -2, z: -2 },
@@ -836,6 +853,7 @@ export const tune = {
 	// Fog of war (on unless ?fog=0): sight radii (m) per viewer, and the dim laid over unseen ground (rgb, alpha, px per m).
 	fog: {
 		sight: { hero: 10, minion: 7, structure: 10 },
+		brush: 3, // m: a unit in brush shows only to a viewer this close
 		color: '20, 18, 30',
 		dim: 0.6,
 		resolution: 2,

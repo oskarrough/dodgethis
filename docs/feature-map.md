@@ -70,6 +70,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Edge pips for off-screen allies, enemies, Ball: `pips.js` `edgePip`, `createPips`; `look.js` `pips`
 - Minimap: `minimap.js` `createMinimap`; `maps/index.js` `matchRecipe`; `hud.js`
 - Fog of war (on by default, `?fog=0` turns it off; sight, hidden enemies, dimmed ground): `fog.js` `createFog`; `tune.js` `fog`; hooked in `index.js` present
+- Flagfall jungle (rooms, spine walls, brush, camp/flag/gate marks): `maps/flagfall.js` `flagfallLayout`; `tune.js` `flagfall.jungle`; marks and brush mats in `map.js` `buildFlagfall`
 - Scoreboard (Tab or pad Select, live table mid-match): `recap.js` `createRecap` (the `board` aside, class `moba-scoreboard`); `match-stats.js` `createMatchStats`; `moba-recap.md`
 - Pause menu (Esc, pad Start, or the top-left menu tile): `menu.js` `createMatchMenu`, `openMenu`, the manual page `pausePage` (Quick cast as a checkbox under the actions), Leave game to the splash `quit`; tile from `src/core/corner-nav.js`; `menu.css`; `tune.js` `hud`
 - Onboarding cues (floor arrow, hero ring, You sticker, Ball and goal pointer): `onboarding.js` `createOnboarding`; `look.js` `onboarding`; `moba-onboarding.md`

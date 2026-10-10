@@ -186,20 +186,32 @@ export function buildMap(scene, world, RAPIER, kind = DEFAULT_MAP) {
 		const s = layout.settings
 		const layers = s.print.layers
 		for (const flank of [-1, 1]) {
-			chalkLine(
-				s.baseBlock.outerX * 2,
-				terrain.chalkWidth,
-				0,
-				flank * (s.lane.innerZ + terrain.courtInset),
-			)
+			chalkLine(s.plaza.x * 2, terrain.chalkWidth, 0, flank * (s.lane.innerZ + terrain.courtInset))
 			for (const side of [-1, 1])
 				chalkLine(
 					terrain.chalkWidth,
 					s.lane.outerZ - s.lane.innerZ - terrain.courtInset * 2,
-					side * s.baseBlock.outerX,
+					side * s.plaza.x,
 					flank * s.lane.centreZ,
 				)
 		}
+		// Marks for what will work later: chalk squares on the camps, a cross on the flag,
+		// a bar across each lane in front of the forts where the gates will stand.
+		const j = s.jungle
+		const w = terrain.chalkWidth
+		for (const post of layout.posts.filter((p) => p.x !== 0)) {
+			const r = 1.6
+			for (const d of [-1, 1]) {
+				chalkLine(r * 2, w, post.x, post.z + d * r)
+				chalkLine(w, r * 2, post.x + d * r, post.z)
+			}
+		}
+		chalkLine(4, w, 0, 0)
+		chalkLine(w, 4, 0, 0)
+		for (const side of [-1, 1])
+			for (const flank of [-1, 1])
+				for (const d of [-0.4, 0.4])
+					chalkLine(w, s.lane.outerZ - s.lane.innerZ, side * j.gateX + d, flank * s.lane.centreZ)
 		// A low coursed-stone kerb on the safe rim, never a collider. The long shores' runs are
 		// what the dunk gaps leave, so the drawn gaps are exactly the sim's.
 		const k = s.kerb
@@ -267,6 +279,27 @@ export function buildMap(scene, world, RAPIER, kind = DEFAULT_MAP) {
 			mesh.renderOrder = -3
 			for (const g of wetPrints) g.dispose()
 		}
+		// Brush: a moss mat at each jungle crossing, drawn over the court like the slick.
+		const mat = new THREE.MeshBasicMaterial({
+			color: s.colors.moss,
+			transparent: true,
+			opacity: 0.85,
+			depthWrite: false,
+			polygonOffset: true,
+			polygonOffsetFactor: -1,
+		})
+		owned.push(mat)
+		for (const b of layout.brush ?? []) {
+			const mesh = add(
+				new THREE.PlaneGeometry(b.halfX * 2, b.halfZ * 2).rotateX(-Math.PI / 2),
+				mat,
+				b.x,
+				layers.wet,
+				b.z,
+			)
+			mesh.layers.set(FORWARD_LAYER)
+			mesh.renderOrder = -3
+		}
 		unterrain = createMatchTerrain(group, layout, terrain, chalkLayout, {
 			footprints: s.print,
 			casts: { hedge: m.hedgeHeight, wall: m.wallHeight, pillar: m.pillarHeight + m.capHeight },
@@ -274,7 +307,7 @@ export function buildMap(scene, world, RAPIER, kind = DEFAULT_MAP) {
 		for (const side of [-1, 1]) {
 			const team = material(side < 0 ? 'teamA' : 'teamB', { flat: true })
 			const kerbs = []
-			for (let x = m.dashSpacing; x < s.baseBlock.outerX; x += m.dashSpacing)
+			for (let x = m.dashSpacing; x < s.plaza.x; x += m.dashSpacing)
 				for (const flank of [-1, 1])
 					kerbs.push(
 						new THREE.PlaneGeometry(m.dashLength, s.print.kerbWidth)

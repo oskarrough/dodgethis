@@ -163,7 +163,8 @@ export default function moba(app, map) {
 				!app.session.authoritative ? (object, read) => replica.smooth(object, read) : run.smooth,
 			)
 			const skillsView = createSkillsView(scene)
-			const fog = !isLobby && query.get('fog') !== '0' ? createFog(scene, layout.bounds) : null
+			const fog =
+				!isLobby && query.get('fog') !== '0' ? createFog(scene, layout.bounds, layout.brush) : null
 			const hud = createHud({ lobby: isLobby, layout, pieces })
 			const pips = createPips()
 			const follow = createFollow(tune.follow, layout.bounds)

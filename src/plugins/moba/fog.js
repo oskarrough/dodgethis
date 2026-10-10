@@ -5,7 +5,7 @@ import { tune } from './tune.js'
 // Fog of war behind `?fog`: your team's heroes, minions and structures see a circle each.
 // Enemy units outside every circle vanish and the ground outside dims. Presentation only:
 // the sim and the bots stay omniscient.
-export function createFog(scene, bounds) {
+export function createFog(scene, bounds, brush = []) {
 	const f = tune.fog
 	const canvas = document.createElement('canvas')
 	canvas.width = Math.ceil(bounds.halfX * 2 * f.resolution)
@@ -37,11 +37,16 @@ export function createFog(scene, bounds) {
 				...(lane?.minions ?? []).map((u) => [u, f.sight.minion]),
 				...(lane?.structures ?? []).map((u) => [u, f.sight.structure]),
 			].filter(([u]) => u.team === team && !u.dead)
-			const sees = (p) =>
-				viewers.some(([u, r]) => {
+			const hidden = (p) =>
+				brush.some((b) => Math.abs(p.x - b.x) <= b.halfX && Math.abs(p.z - b.z) <= b.halfZ)
+			const sees = (p) => {
+				const reach = hidden(p) ? f.brush : Infinity
+				return viewers.some(([u, r]) => {
 					const q = at(u)
-					return (q.x - p.x) ** 2 + (q.z - p.z) ** 2 <= r * r
+					const d = (q.x - p.x) ** 2 + (q.z - p.z) ** 2
+					return d <= r * r && d <= reach * reach
 				})
+			}
 			seen.clear()
 			// Structures stay drawn, as remembered landmarks; heroes and minions hide.
 			for (const unit of lane?.structures ?? []) seen.add(unit.id)

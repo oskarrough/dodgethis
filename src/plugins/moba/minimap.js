@@ -127,7 +127,7 @@ function drawLayout(layout, liveStructures, scale, height, parent, make) {
 				bounds.halfX,
 				(s.lane.outerZ - s.lane.innerZ) / 2,
 			)
-		box('minimap-lane', 0, 0, s.yard.halfX, s.yard.halfZ)
+		box('minimap-lane', 0, 0, s.clearing.halfX, s.clearing.halfZ)
 	} else {
 		const m = tune.map
 		box('minimap-lane', 0, 0, bounds.halfX, m.hedgeInnerZ)
