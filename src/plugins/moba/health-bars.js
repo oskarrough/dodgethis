@@ -19,7 +19,7 @@ export function createHealthBars() {
 	}
 
 	return {
-		update(units, camera, viewport, local, localTeam) {
+		update(units, camera, viewport, local, localTeam, names = new Map()) {
 			const t = look.healthBars
 			const live = new Set(units.map((unit) => unit.id))
 			for (const [id, bar] of bars)
@@ -77,9 +77,11 @@ export function createHealthBars() {
 				bar.fill.style.width = `${Math.max(0, Math.min(1, unit.hp / unit.maxHp)) * 100}%`
 				const text = unit.structure
 					? `${unit.team === localTeam ? 'Your' : 'Enemy'} ${unit.kind}`
-					: unit.heroId
-						? unit.heroId[0].toUpperCase() + unit.heroId.slice(1)
-						: ''
+					: names.has(unit.id)
+						? names.get(unit.id)
+						: unit.heroId
+							? unit.heroId[0].toUpperCase() + unit.heroId.slice(1)
+							: ''
 				if (bar.label.textContent !== text) bar.label.textContent = text
 				bar.label.hidden = !text
 				bar.element.dataset.hero = String(!unit.structure && !!unit.heroId)

@@ -2,6 +2,7 @@ import { createLink } from './link.js'
 import { MAX_PLAYERS, Net } from './net.js'
 import { createOnlineSession } from './online-session.js'
 import { createOnlineUi } from './online-ui.js'
+import { playerName, validName } from './names.js'
 
 // Online play. A started match restarts the running mode under a shared session with the lobby's roster; the link carries it.
 // Leaving restarts that mode solo. Online never names the mode, and the mode never learns it is online.
@@ -9,8 +10,10 @@ import { createOnlineUi } from './online-ui.js'
 export default function online(app, { join = null } = {}) {
 	const net = new Net({
 		capacity: () => app.modes.current?.capacity ?? MAX_PLAYERS,
-		validJoinData: (data) => app.modes.current?.validJoinData?.(data) ?? true,
+		validJoinData: (data) =>
+			validName(data?.name) && (app.modes.current?.validJoinData?.(data) ?? true),
 	})
+	const name = playerName()
 	let link = null
 	let mode = null
 	let joining = null
@@ -25,7 +28,7 @@ export default function online(app, { join = null } = {}) {
 
 	const session = createOnlineSession(net, {
 		modeId: () => app.modes.active,
-		joinData: () => app.modes.current?.joinData?.(),
+		joinData: () => ({ ...app.modes.current?.joinData?.(), name }),
 		rosterSelections: () => app.modes.current?.roomRoster?.() ?? [],
 		hasRoomLobby: () => app.modes.current?.roomLobby === true,
 		openSeats: () => app.modes.current?.openSeats?.() ?? false,
@@ -38,6 +41,7 @@ export default function online(app, { join = null } = {}) {
 						app.modes.current?.removeParticipant?.(participant.id)
 			ui.render(state, message)
 			app.debug.panel?.setInert(!!state)
+			showNames(state)
 		},
 		onStart(roster, matchId, hostMode) {
 			link?.dispose()
@@ -73,6 +77,7 @@ export default function online(app, { join = null } = {}) {
 				onSilent: (peerId) => net.drop(peerId),
 			})
 			ui.hide()
+			showNames(session.state)
 			if (app.modes.current?.roomLobby) session.setRoomPhase(true)
 		},
 		onAbort(message) {
@@ -103,6 +108,12 @@ export default function online(app, { join = null } = {}) {
 		},
 	})
 	const ui = createOnlineUi(session, { inMatch: () => !!link, signal: app.signal })
+	// The mode labels each human's hero with its sticker name, keyed by participant id.
+	function showNames(state) {
+		app.modes.current?.names?.(
+			Object.fromEntries((state?.humans ?? []).map((h) => [h.id, h.data?.name ?? null])),
+		)
+	}
 
 	// The panel is a modal: it holds the local player's input, and the solo game under it, but never a shared match.
 	app.intents.suspend(() => ui.open)
@@ -118,6 +129,7 @@ export default function online(app, { join = null } = {}) {
 			return
 		}
 		ui.hide()
+		showNames(session.state)
 		if (app.modes.current?.roomLobby != null) session.setRoomPhase(app.modes.current.roomLobby)
 	})
 	app.on('present', (fact) => link?.record(fact))
@@ -144,6 +156,7 @@ export default function online(app, { join = null } = {}) {
 	const keepalive = setInterval(() => link?.keepalive(), 1000)
 	app.debug.expose({
 		online: session,
+		name,
 		// The room the address bar names: the one we're in, or the link's while it is joining.
 		get room() {
 			return session.state?.code ?? join ?? joining

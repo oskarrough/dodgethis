@@ -164,15 +164,27 @@ export function createOnlineUi(session, { inMatch = () => false, signal } = {}) 
 			const hint = el('p', 'line')
 			hint.textContent = `${state.humans.length}/${state.capacity ?? MAX_PLAYERS} humans connected.`
 			children.push(share, hint)
+			const who = (human) => human.data?.name ?? `Player ${state.humans.indexOf(human) + 1}`
+			// A walk-around lobby has no roster rows, so the names stand alone.
+			if (state.liveLobby || state.phase === 'match') {
+				const names = el('p', 'line online-names')
+				names.textContent = state.humans
+					.map(
+						(human) =>
+							`${who(human)}${human.peerId === session.net.id ? ' (you)' : human.peerId === state.hostId ? ' (host)' : ''}`,
+					)
+					.join(', ')
+				children.push(names)
+			}
 			const editable = session.net.isHost && state.phase === 'lobby'
 			// A walk-around lobby picks teams by box and fills empty boxes with bots, so it needs neither control.
 			for (const human of state.liveLobby ? [] : state.humans) {
 				const label = document.createElement('label')
-				label.textContent = `${human.peerId === session.net.id ? 'You' : human.peerId === state.hostId ? 'Host' : `Player ${state.humans.indexOf(human) + 1}`} ${human.peerId === state.hostId ? '(host)' : ''} `
+				label.textContent = `${who(human)}${human.peerId === session.net.id ? ' (you)' : human.peerId === state.hostId ? ' (host)' : ''} `
 				const select = document.createElement('select')
 				select.setAttribute(
 					'aria-label',
-					`Team for ${human.peerId === session.net.id ? 'you' : `player ${state.humans.indexOf(human) + 1}`}`,
+					`Team for ${human.peerId === session.net.id ? 'you' : who(human)}`,
 				)
 				for (const team of ['A', 'B']) {
 					const option = document.createElement('option')

@@ -100,7 +100,7 @@ export function createOnlineSession(
 				team: seat.team,
 				joinOrder,
 				controller: 'human',
-				...(seat.data ? { data: seat.data } : {}),
+				data: { ...seat.data, ...(data?.name ? { name: data.name } : {}) },
 			})
 			publish()
 			onSeat(peerId, seat.id)

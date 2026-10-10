@@ -579,6 +579,7 @@ export default function moba(app, map) {
 					app.renderer.domElement.getBoundingClientRect(),
 					local,
 					hero.team,
+					names,
 				)
 				pips.update(app.camera.view, [...sim.heroes, ...sim.dummies], hero.team, {
 					hero,
@@ -669,6 +670,7 @@ export default function moba(app, map) {
 				shadows.dispose()
 			})
 
+			const names = new Map()
 			// Mid-lane, a late human takes a bot's seat as it stands, on the side with fewer humans.
 			let seating = null
 			function seatLate({ joinOrder }) {
@@ -708,6 +710,11 @@ export default function moba(app, map) {
 			return {
 				openSeats,
 				seatLate,
+				// Online's sticker names by participant id; heroes without one show their hero.
+				names(byId) {
+					names.clear()
+					for (const [id, name] of Object.entries(byId)) if (name) names.set(id, name)
+				},
 				capacity: tune.lobby.capacity,
 				joinData: () => ({ heroId: hero.heroId }),
 				validJoinData: (data) => data?.heroId == null || HEROES[data.heroId]?.playable === true,
