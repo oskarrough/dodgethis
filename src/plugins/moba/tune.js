@@ -791,6 +791,7 @@ export const tune = {
 		// far inland of a hero standing on it, so the shove goes out to sea.
 		rotateRange: 28, // two-lane maps: join a teammate's fight this close, through the yard
 		rotateQuiet: 14, // ... when no enemy hero is this close to you
+		laneClaim: 6, // two-lane maps: a human this close to a lane claims it; bots take the others
 		slickWary: 12,
 		slickMargin: 0.5,
 		dunkRain: 1.6,

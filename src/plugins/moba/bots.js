@@ -122,8 +122,14 @@ export function createBots(seats, seed = tune.bots.seed, modules = []) {
 			.sort((a, b) => a.draw - b.draw || a.id.localeCompare(b.id))
 		deal.forEach((seat, rank) => ranks.set(seat.id, rank))
 	}
+	const teamBots = (team) => seats.filter((seat) => seat.team === team).length
 	const brains = seats.map((seat) =>
-		createBot({ ...seat, laneRank: ranks.get(seat.id) }, seed, botIds, modules),
+		createBot(
+			{ ...seat, laneRank: ranks.get(seat.id), teamBots: teamBots(seat.team) },
+			seed,
+			botIds,
+			modules,
+		),
 	)
 	return {
 		brains,
@@ -141,7 +147,7 @@ export function createBots(seats, seed = tune.bots.seed, modules = []) {
 }
 
 export function createBot(
-	{ id, team, file = 0, difficulty = 'normal', laneRank = 0 },
+	{ id, team, file = 0, difficulty = 'normal', laneRank = 0, teamBots = 1 },
 	seed,
 	botIds = null,
 	modules = [],
@@ -159,6 +165,30 @@ export function createBot(
 		interceptTime,
 	)
 	let nextThink = Math.floor(random() * tune.bots.thinkTicks)
+	// The lane each human teammate last stood in. They claim it; bots deal into the team's
+	// remaining slots, so the team splits like an all-bot deal instead of doubling the human.
+	const claims = new Map()
+	const pickLane = (perceived) => {
+		const lanes = perceived.lanes
+		const dealt = lanes?.[laneRank % lanes.length]
+		if (!(lanes?.length > 1) || !botIds) return dealt
+		for (const u of perceived.heroes) {
+			if (u.team !== team || u.dead || botIds.has(u.id)) continue
+			const lane = lanes.find((l) => {
+				const route = laneRoute(l.path, team)
+				const at = route.point(route.progress(u.pos))
+				return Math.hypot(at.x - u.pos.x, at.z - u.pos.z) <= tune.bots.laneClaim
+			})
+			if (lane) claims.set(u.id, lane.id)
+		}
+		if (!claims.size) return dealt
+		const slots = Array.from({ length: teamBots + claims.size }, (_, k) => lanes[k % lanes.length])
+		for (const claimed of claims.values()) {
+			const i = slots.findIndex((l) => l.id === claimed)
+			if (i >= 0) slots.splice(i, 1)
+		}
+		return slots[laneRank] ?? dealt
+	}
 	const dodge = createDodgeBot(random)
 	const phases = {}
 	for (const habit of habits)
@@ -211,7 +241,7 @@ export function createBot(
 			nextThink = sim.tick + tune.bots.thinkTicks
 
 			const ctx = combat.perceive(sim, perceived, h)
-			ctx.lanePath = perceived.lanes?.[laneRank % perceived.lanes.length]
+			ctx.lanePath = pickLane(perceived)
 			// Multi-lane routes already separate teammates; one lane retains its files.
 			ctx.laneFile = perceived.lanes?.length === 1 ? file : 0
 			if (ctx.lanePath) ctx.route = laneRoute(ctx.lanePath.path, team, ctx.laneFile)

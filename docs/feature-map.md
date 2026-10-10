@@ -122,6 +122,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Flagfall cover (rim kerb cut at the Dunk gaps, dark-teal leaf-bank hedges, stone walls and drums, lantern posts): `map.js` `buildFlagfall`, `buildMap`; `tune.js` `flagfall.kerb`, `flagfall.glow`, `flagfall.hedge`
 - Flagfall dunk (fence gaps, slick, shove into the sea): `combat.js` `shove`, `dunk`; `map.js` `buildFlagfall` (kerb cut, slick print); `feedback.js` `'dunk'`; `core/death.js` `overboard`; bots `fight-bots.js` `slick`, `inland`; `tune.js` `flagfall.gaps`, `flagfall.dunk`, `bots.slick*`
 - Flagfall bot rotation across the yard: `lane-bots.js` `advance`; `tune.js` `bots.rotateRange`, `bots.rotateQuiet`
+- Flagfall lane split (a human claims the lane they stand in, bots take the others): `bots.js` `createBot` `pickLane`; `tune.js` `bots.laneClaim`
 - Map registry and layout recipe: `maps/index.js` `mapLayout`, `matchRecipe`; `tune.js` `map`
 - Ground and walls build: `map.js` `buildMap`, `createMapScope`; `match-terrain.js` `createMatchTerrain`
 - Colliders and walkable test: `obstacles.js` `buildColliders`, `walkable`, `clampWalkable`, `segmentClear`, `clampMap`
