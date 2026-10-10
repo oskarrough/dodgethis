@@ -66,7 +66,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Minimap: `minimap.js` `createMinimap`; `maps/index.js` `matchRecipe`; `hud.js`
 - Scoreboard (Tab or pad Select, live table mid-match): `recap.js` `createRecap` (the `board` aside, class `moba-scoreboard`); `match-stats.js` `createMatchStats`; `moba-recap.md`
 - Pause menu (Esc): `menu.js` `createMatchMenu`; `menu.css`; `tune.js` `hud`
-- Onboarding hints (first match prompts, guide to the Ball): `onboarding.js` `createOnboarding`; `tune.js` `onboarding`; `moba-onboarding.md`
+- Onboarding cues (floor arrow, hero ring, You sticker, Ball and goal pointer): `onboarding.js` `createOnboarding`; `tune.js` `onboarding`; `moba-onboarding.md`
 - Dead-world grey-out and respawn timer: `recap.js` `createRecap` (`moba-dead-world`); `sim.js` `respawn`; `tune.js` `respawn`
 - Combat log: `src/core/debug.js` `createCombatLog`
 

@@ -21,20 +21,7 @@ export function createOnboarding({ scene, sim, hero }) {
 		node.style.cssText = `position:absolute;background:${hex('cream')};color:${hex('ink')};border:${t.stickerBorder}px solid ${hex('ink')};border-radius:${t.stickerCorner}px;padding:${t.stickerPadding}px;box-shadow:${t.stickerShadow}px ${t.stickerShadow}px 0 ${hex('ink')};font:bold ${t.font}px/1.2 var(--ui-font);text-align:center`
 		return node
 	}
-	const objective = sticker('moba-objective', 'Destroy the enemy core')
-	objective.setAttribute('role', 'status')
-	objective.style.cssText += `;left:50%;top:${t.objectiveTop}px;transform:translateX(-50%) rotate(-2deg);font-size:${t.objectiveFont}px;width:max-content;max-width:calc(100% - ${t.stickerPadding * 4}px)`
 	const you = sticker('moba-you', 'You')
-	const level = sticker('moba-level-pop', '')
-	level.setAttribute('role', 'status')
-	const hint = sticker('moba-xp-hint', '')
-	hint.style.cssText += `;left:50%;bottom:${t.hintBottom}px;transform:translateX(-50%);width:max-content;max-width:min(${t.hintWidth}px,calc(100% - ${t.stickerPadding * 4}px))`
-	const ballHint = sticker(
-		'moba-ball-hint',
-		`The Ball is up at mid. Throw it at their tower: −${Math.round(tune.ball.structureDamage * 100)}% HP and ${tune.ball.silence} s of silent guns.`,
-	)
-	ballHint.setAttribute('role', 'status')
-	ballHint.style.cssText += `;left:50%;bottom:${t.hintBottom}px;transform:translateX(-50%) rotate(1deg);width:max-content;max-width:min(${t.hintWidth}px,calc(100% - ${t.stickerPadding * 4}px))`
 	const pointer = sticker('moba-ball-pointer', '')
 	pointer.style.whiteSpace = 'nowrap'
 	const timerLabels = ['wave', 'ball'].map((kind) => {
@@ -106,10 +93,7 @@ void main() {
 	let previous = null
 	let distance = 0
 	let fadedAt = null
-	let xpAt = null
 	let levelAt = null
-	let ballAt = null
-	let previousMaxHp = hero.maxHp
 	let wasDead = hero.dead
 	const startTick = sim.tick
 	const text = (node, value) => {
@@ -128,18 +112,8 @@ void main() {
 	return {
 		present(fact) {
 			if (fact.team !== hero.team) return
-			if (fact.type === 'xp' && fact.passive && xpAt === null) {
-				xpAt = sim.tick
-				text(
-					hint,
-					`Team XP: +${tune.levels.passive}/s even at base. Stay near fallen enemy minions for more. XP is shared.`,
-				)
-			}
-			if (fact.type === 'levelUp') {
-				levelAt = sim.tick
-				text(level, `Level ${fact.level}! +${Math.round(hero.maxHp - previousMaxHp)} HP`)
-				previousMaxHp = hero.maxHp
-			}
+			// A level pulses the hero's ring; the sound and HP flash say the rest.
+			if (fact.type === 'levelUp') levelAt = sim.tick
 		},
 		update({ camera, alpha, ballPosition, frozen = false }) {
 			const tick = sim.tick + alpha
@@ -159,12 +133,7 @@ void main() {
 			const at = clampMap({ x: p.x + direction * t.arrowOffset, z: p.z })
 			arrow.position.set(at.x, t.arrowY, at.z)
 			arrow.rotation.z = direction === 1 ? 0 : Math.PI
-			objective.hidden = elapsed >= t.objectiveLife || !!sim.lane.match.winner
-			hint.hidden = xpAt === null || (tick - xpAt) * STEP >= t.xpLife || !!sim.lane.match.winner
 			const pop = levelAt === null ? 0 : Math.max(0, 1 - ((tick - levelAt) * STEP) / t.levelLife)
-			place(level, p, camera, t.labelHeight + (1 - pop) * t.levelRise)
-			level.hidden ||= pop <= 0 || hero.dead
-			level.style.opacity = String(pop)
 			const scale = 1 + t.levelPulse * Math.sin(pop * Math.PI)
 			for (const [node, y] of [
 				[ring, t.ringY],
@@ -182,11 +151,8 @@ void main() {
 						unit.body.mesh.position.distanceTo(p) <= t.crowdRadius,
 				).length >= t.crowdCount
 			place(you, p, camera, t.labelHeight)
-			you.hidden ||= hero.dead || (elapsed >= t.youLife && !crowded) || pop > 0
+			you.hidden ||= hero.dead || (elapsed >= t.youLife && !crowded)
 			for (const label of timerLabels) label.hidden = elapsed >= t.timerLife
-			if (sim.ball?.state && sim.ball.state.state !== 'warning' && ballAt === null) ballAt = tick
-			ballHint.hidden =
-				ballAt === null || (tick - ballAt) * STEP >= t.ballHintLife || !!sim.lane.match.winner
 			pointer.hidden = true
 			if (sim.lane.match.winner) return
 			// Carrying, the pointer swaps the Ball for where to throw it.
