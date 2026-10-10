@@ -143,7 +143,7 @@ export function createControl(ctx) {
 				if (cast.pocket.until > ctx.t) h.abilityState.pocket = cast.pocket
 				else present({ type: 'catchExpired', hero: h.id, point: { ...h.body.position } })
 			}
-			ability?.onCancel?.(traitContext(h, { ...cast, reason: 'input' }))
+			ability?.onCancel?.(traitContext(h, { ...cast, ability, reason: 'input' }))
 			present({
 				type: 'denied',
 				hero: h.id,

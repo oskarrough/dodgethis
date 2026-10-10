@@ -1,4 +1,4 @@
-import { HEROES, heroDefinition, freshAbilityState } from './heroes.js'
+import { DEFAULT_HERO, HEROES, heroDefinition, freshAbilityState } from './heroes.js'
 import { abilityOf, castAbility } from './ability.js'
 import { dressHero } from './hero-view.js'
 import { createReadySeats } from './lobby-state.js'
@@ -166,7 +166,7 @@ export function createSim({
 		botsEnabled: true,
 	}
 	let trainingSerial = 0
-	function makeHero({ id, team: seatTeam, heroId = 'fletcher', joinOrder = 0 }, spawn) {
+	function makeHero({ id, team: seatTeam, heroId = DEFAULT_HERO, joinOrder = 0 }, spawn) {
 		const team = lobby ? 'A' : seatTeam
 		const definition = heroDefinition(heroId)
 		const body = bodyAt(spawn.x, spawn.z, team, definition)
@@ -176,7 +176,7 @@ export function createSim({
 			...(lobby && { seatTeam, joinOrder, readyWalk: false }),
 			heroId,
 			definition,
-			abilityState: freshAbilityState(),
+			abilityState: freshAbilityState(definition),
 			body,
 			yaw: 0,
 			spawn,
@@ -231,7 +231,7 @@ export function createSim({
 					box.id,
 					{
 						...participant,
-						heroId: human?.heroId ?? participant.heroId ?? 'fletcher',
+						heroId: human?.heroId ?? participant.heroId ?? DEFAULT_HERO,
 						joinOrder: human?.joinOrder ?? joinOrder + heroes.length,
 						bot: !human,
 					},
@@ -436,8 +436,10 @@ export function createSim({
 		const speed = Math.hypot(velocity.x, velocity.z)
 		const scale = speed ? Math.min(1, definition.base.speed / speed) : 1
 		const fraction = hero.hp / hero.maxHp
-		if (hero.cast)
-			castAbility(hero)?.onCancel?.(traitContext(hero, { ...hero.cast, reason: 'swap' }))
+		if (hero.cast) {
+			const ability = castAbility(hero)
+			ability?.onCancel?.(traitContext(hero, { ...hero.cast, ability, reason: 'swap' }))
+		}
 		cancelChannel(hero, 'swap')
 		hero.body.cancelDash()
 		hero.body.dispose()
@@ -449,7 +451,7 @@ export function createSim({
 		hero.body.face(dirOf(hero.yaw))
 		hero.maxHp = definition.base.hp * (1 + tune.levels.growth * (hero.level - 1))
 		hero.hp = hero.maxHp * fraction
-		hero.abilityState = freshAbilityState()
+		hero.abilityState = freshAbilityState(definition)
 		hero.attack = null
 		hero.attackTick = 0
 		hero.order = null
@@ -540,7 +542,8 @@ export function createSim({
 		if (lane) holdGates(lane.structures, [...heroes, ...lane.minions])
 		for (const d of dummies) if (!d.dead) d.body.sync()
 		for (const h of dashEnds) {
-			abilityOf(h.dashAbility, h)?.onDashEnd?.(traitContext(h))
+			const ability = abilityOf(h.dashAbility, h)
+			ability?.onDashEnd?.(traitContext(h, { ability }))
 			h.dashAbility = null
 			if (h.order?.goal) h.order.path = plan(h, h.order.goal)
 		}

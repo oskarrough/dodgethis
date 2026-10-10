@@ -6,6 +6,7 @@ import { createRecap } from './recap.js'
 import { clock } from './tooltip.js'
 import { tune as front } from './front/tune.js'
 import { el } from '../../core/dom.js'
+import { DEFAULT_HERO } from './heroes.js'
 import './menu.css'
 
 const MENU_ICON =
@@ -92,7 +93,7 @@ export function createMatchMenu({
 		const kills = { A: 0, B: 0 }
 		for (const row of Object.values(sim.matchStats ?? {}))
 			if (row.team) kills[row.team === 'A' ? 'B' : 'A'] += row.deaths
-		const heroId = hero.heroId ?? 'fletcher'
+		const heroId = hero.heroId ?? DEFAULT_HERO
 		const level = hero.level ?? sim.lane?.teams?.[mine].level ?? 1
 		card.classList.add('moba-pause')
 		card.style.setProperty('--pause-wash', front.skin.wash[map] ?? front.skin.wash.bonus)

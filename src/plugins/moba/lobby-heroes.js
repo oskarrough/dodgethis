@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { HEROES } from './heroes.js'
+import { listedHeroes } from './heroes.js'
 import { tune } from './tune.js'
 import { ICONS } from './hud.js'
 import { paintedCard } from './front/skin.js'
@@ -16,24 +16,22 @@ export function createHeroStrip({ el, heroes, current, pick, openNumbers }) {
 	strip.innerHTML = '<kbd class="lobby-hero-strip-key"></kbd>'
 	const key = strip.firstChild
 	// Heroes show up here once they're playable; there are no "soon" cards.
-	const tiles = Object.values(heroes)
-		.filter((definition) => definition.playable)
-		.map((definition, i) => {
-			const button = document.createElement('button')
-			button.type = 'button'
-			button.className = 'skin-card'
-			button.dataset.hero = definition.id
-			button.dataset.light = 'day'
-			button.style.setProperty('--wash', frontTune.skin.wash.hero)
-			button.innerHTML = `${paintedCard(i)}<span class="skin-sheet"></span><span class="skin-ring"></span><span class="skin-face"></span><span class="lobby-hero-strip-face">${ICONS[definition.id] ?? ''}</span><span class="lobby-hero-strip-name skin-title"><span>${definition.id}</span></span>`
-			button.onclick = () => {
-				if (button.dataset.hero === current) return openNumbers()
-				pick(definition.id)
-			}
-			button.onanimationend = () => button.classList.remove('pop')
-			strip.append(button)
-			return button
-		})
+	const tiles = heroes.map((definition, i) => {
+		const button = document.createElement('button')
+		button.type = 'button'
+		button.className = 'skin-card'
+		button.dataset.hero = definition.id
+		button.dataset.light = 'day'
+		button.style.setProperty('--wash', frontTune.skin.wash.hero)
+		button.innerHTML = `${paintedCard(i)}<span class="skin-sheet"></span><span class="skin-ring"></span><span class="skin-face"></span><span class="lobby-hero-strip-face">${definition.icon ?? ICONS[definition.id] ?? ''}</span><span class="lobby-hero-strip-name skin-title"><span>${definition.id}</span></span>`
+		button.onclick = () => {
+			if (button.dataset.hero === current) return openNumbers()
+			pick(definition.id)
+		}
+		button.onanimationend = () => button.classList.remove('pop')
+		strip.append(button)
+		return button
+	})
 	el.append(strip)
 
 	function sync(heroId) {
@@ -71,18 +69,17 @@ export function createHeroStrip({ el, heroes, current, pick, openNumbers }) {
 
 // A pick intent names its hero by an authored point, so it travels as plain x/z like any order.
 // Nothing stands there: you pick from the strip or with H, and confirm on a seat.
-export function heroStands() {
+export function heroStands(heroes = listedHeroes()) {
 	const v = tune.lobby.pick
-	const playable = Object.values(HEROES).filter((h) => h.playable)
-	return playable.map((definition, i) => ({
+	return heroes.map((definition, i) => ({
 		id: definition.id,
 		x: v.x,
-		z: v.z + (i - (playable.length - 1) / 2) * v.spacing,
+		z: v.z + (i - (heroes.length - 1) / 2) * v.spacing,
 	}))
 }
 
-export function createLobbyHeroes({ el, humans, local }) {
-	const stands = heroStands()
+export function createLobbyHeroes({ el, humans, local, heroes }) {
+	const stands = heroStands(heroes)
 	const point = new THREE.Vector3()
 	const labels = []
 	const names = humans

@@ -1,5 +1,6 @@
 import { el } from '../../core/dom.js'
 import { tune as frontTune } from './front/tune.js'
+import { DEFAULT_HERO } from './heroes.js'
 
 const titleCase = (word) => word[0].toUpperCase() + word.slice(1)
 const stats = ['kills', 'deaths', 'heroDamage', 'structureDamage', 'xp']
@@ -22,7 +23,7 @@ export function createRecap({ sim, hero, canvas }) {
 		countdown = el('p', 'moba-respawn-sticker', root)
 		help = el('p', 'moba-recap-caption', root)
 	}
-	const heroName = (unit) => titleCase(unit.definition?.id ?? unit.heroId ?? 'fletcher')
+	const heroName = (unit) => titleCase(unit.definition?.id ?? unit.heroId ?? DEFAULT_HERO)
 	const sourceName = (id) => {
 		const row = sim.matchStats?.[id]
 		if (row) return `${heroName(row)}${id === hero.id ? ' (you)' : row.bot ? ' bot' : ''}`

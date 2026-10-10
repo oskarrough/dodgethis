@@ -105,7 +105,7 @@ export function createView(scene, smooth) {
 		const pose = { position: new THREE.Vector3(), quaternion: new THREE.Quaternion() }
 		pose.quaternion.setFromAxisAngle(UP, Math.atan2(shot.dx, shot.dz))
 		const read = () => {
-			pose.position.set(shot.x, tune.loose.height, shot.z)
+			pose.position.set(shot.x, tune.projectile.height, shot.z)
 			pose.quaternion.setFromAxisAngle(UP, Math.atan2(shot.dx, shot.dz))
 			return pose
 		}

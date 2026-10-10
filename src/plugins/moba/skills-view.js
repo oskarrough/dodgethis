@@ -101,7 +101,7 @@ export function createSkillsView(scene) {
 		castLeft = 0,
 		lastSwap = null
 
-	function rain(point, stats = tune.rain) {
+	function rain(point, stats = abilityOf('rain').stats) {
 		if (!castCircle) castCircle = mesh(ring, cream)
 		castCircle.position.set(point.x, GROUND + 0.004, point.z)
 		castCircle.scale.setScalar(stats.radius)
@@ -129,7 +129,7 @@ export function createSkillsView(scene) {
 			return { root, start: (r.stagger * ((i * 7) % r.arrows)) / r.arrows }
 		})
 	}
-	function vault(point, direction, stats = tune.vault) {
+	function vault(point, direction, stats = abilityOf('vault').stats) {
 		const m = mesh(arrowGeometry, gold)
 		m.position.set(point.x, GROUND + 0.003, point.z)
 		m.rotation.y = Math.atan2(direction.x, direction.z) + Math.PI

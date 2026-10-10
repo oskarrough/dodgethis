@@ -1,6 +1,7 @@
 import { tune } from './tune.js'
 import { structureName } from './gates.js'
 import { waveInterval } from './lane.js'
+import { HEROES } from './heroes.js'
 
 // A cream sticker card for the stat nerds. Builders are pure: they read live state and `tune`
 // on every call, so an open card follows a `&debug` edit or a level-up. The card element only
@@ -38,7 +39,8 @@ const KIND = {
 	stance: 'Stance that catches shots in front of you.',
 	melee: 'Short melee swing.',
 }
-// Ability-specific lines, keyed by ability id. Numbers come from tune at call time.
+// Ability-specific lines, keyed by ability id, for abilities without a `card`. Numbers come
+// from tune at call time.
 const SUMMARY = {
 	toss: () => 'Line skillshot. With a caught shot in your pocket, Toss sends that back instead.',
 	catch: () =>
@@ -50,7 +52,7 @@ const NOTES = {
 	toss: () => [`Pocketed shots last ${n(tune.catching.pocketLife)} s`],
 }
 
-// Trait per hero id: the portrait chip and its card.
+// Trait per hero id, for heroes without a `trait()`: the portrait chip and its card.
 const TRAITS = {
 	fletcher: () => ({
 		name: 'Momentum',
@@ -66,13 +68,14 @@ const TRAITS = {
 	}),
 }
 export function heroTrait(heroId) {
-	return TRAITS[heroId]?.() ?? null
+	const definition = Object.hasOwn(HEROES, heroId) ? HEROES[heroId] : null
+	return definition?.trait?.() ?? TRAITS[heroId]?.() ?? null
 }
 export function traitCard(heroId) {
 	const trait = heroTrait(heroId)
 	return trait && { title: trait.name, tag: 'trait', summary: trait.summary, rows: [], notes: [] }
 }
-export const abilityName = (ability) => (ability ? title(ability.id) : 'Empty')
+export const abilityName = (ability) => (ability ? (ability.name ?? title(ability.id)) : 'Empty')
 
 export function abilityCard(ability, { level = 1, key = '' } = {}) {
 	if (!ability)
@@ -91,11 +94,11 @@ export function abilityCard(ability, { level = 1, key = '' } = {}) {
 	const notes = []
 	if (s.damage && level < tune.levels.cap)
 		notes.push(`+${n(s.damage * tune.levels.growth)} damage per level`)
-	notes.push(...(NOTES[ability.id]?.() ?? []))
+	notes.push(...((ability.card?.notes ?? NOTES[ability.id])?.() ?? []))
 	return {
 		title: abilityName(ability),
 		tag: key,
-		summary: SUMMARY[ability.id]?.() ?? KIND[ability.kind] ?? '',
+		summary: (ability.card?.summary ?? SUMMARY[ability.id])?.() ?? KIND[ability.kind] ?? '',
 		rows,
 		notes,
 	}
@@ -119,7 +122,7 @@ export function heroCard(hero, { localTeam, localId, lobby = false } = {}) {
 		rows.push(['Respawns after', `${n(tune.respawn.base + tune.respawn.perLevel * level)} s`])
 	const who = hero.id === localId ? '' : hero.team === localTeam ? 'Ally' : 'Enemy'
 	return {
-		title: title(hero.heroId ?? def?.id ?? 'hero'),
+		title: def?.name ?? title(hero.heroId ?? 'hero'),
 		tag: `Lv ${level}`,
 		tone: hero.team,
 		summary: [who, basic ? '' : 'Kit not built'].filter(Boolean).join(' · '),

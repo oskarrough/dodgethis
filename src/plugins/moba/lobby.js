@@ -10,7 +10,7 @@ import { applySkin } from './front/skin.js'
 import { createLobbyProps } from './lobby-props.js'
 import { createLobbyFloor, saucerExtent } from './lobby-floor.js'
 import { bowlExtent, createWeatherBowl } from './lobby-bowl.js'
-import { HEROES } from './heroes.js'
+import { HEROES, listedHeroes } from './heroes.js'
 import { createHeroStrip, createLobbyHeroes } from './lobby-heroes.js'
 import { createNumbers } from './front/numbers.js'
 import './lobby.css'
@@ -192,13 +192,26 @@ export function createLobby({
 	let mouse = false
 	let touch = options.device ? options.device === 'touch' : matchMedia('(any-hover: none)').matches
 	const readySeats = sim.readySeats
-	const props = createLobbyProps(app.scene, el, gallery, readySeats, hero.id, app.audio)
+	const heroChoices = listedHeroes({
+		...setup,
+		debug: new URLSearchParams(globalThis.location?.search).has('debug'),
+	})
+	const props = createLobbyProps(
+		app.scene,
+		el,
+		gallery,
+		readySeats,
+		hero.id,
+		app.audio,
+		heroChoices,
+	)
 	const floor = createLobbyFloor(app.scene, app.renderer)
 	const bowl = createWeatherBowl(app.scene, el, setup.map, app.renderer)
 	const lobbyHeroes = createLobbyHeroes({
 		el,
 		humans: sim.heroes,
 		local: hero.id,
+		heroes: heroChoices,
 	})
 	const flips = new Map()
 	const renderedPicks = new Map(sim.heroes.map((h) => [h.id, h.heroId]))
@@ -206,7 +219,7 @@ export function createLobby({
 	const stamp = el.querySelector('.lobby-pick-stamp')
 	const strip = createHeroStrip({
 		el,
-		heroes: HEROES,
+		heroes: heroChoices,
 		current: hero.heroId,
 		pick: (id) => pickHero(id),
 		openNumbers: () => numbers.toggle(),
@@ -318,6 +331,9 @@ export function createLobby({
 	function slam(text, heroId = '') {
 		stamp.textContent = text
 		stamp.dataset.hero = heroId
+		const color = HEROES[heroId]?.color
+		if (color) stamp.style.setProperty('--hero-color', `var(--ui-${color})`)
+		else stamp.style.removeProperty('--hero-color')
 		stamp.classList.remove('slam')
 		void stamp.offsetWidth
 		stamp.classList.add('slam')
@@ -334,9 +350,8 @@ export function createLobby({
 		app.audio.blip(tune.lobby.pick.denySound)
 	}
 	function cycleHero(delta = 1) {
-		const playable = Object.values(HEROES).filter((definition) => definition.playable)
-		const index = playable.findIndex((definition) => definition.id === hero.heroId)
-		pickHero(playable[(index + delta + playable.length) % playable.length].id)
+		const index = heroChoices.findIndex((definition) => definition.id === hero.heroId)
+		pickHero(heroChoices[(index + delta + heroChoices.length) % heroChoices.length].id)
 	}
 
 	// A right-click picks a target by the card you see, upright or knocked flat. The ground point

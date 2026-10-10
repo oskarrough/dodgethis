@@ -4,7 +4,7 @@ import { createSim } from './sim.js'
 import { copyData, createAgentPerception } from './agents.js'
 import { tune } from './tune.js'
 import { matchRecipe } from './maps/index.js'
-import { HEROES } from './heroes.js'
+import { DEFAULT_HERO, HEROES } from './heroes.js'
 
 // Sparse input tape: a neutral continuous sample goes to every seat each tick.
 // Presses remain in the ordinary store until consumed or aged, just as in the app.
@@ -54,7 +54,7 @@ export function createAgentMatch({
 			match_id: matchId,
 			seed,
 			seat: seat?.id ?? null,
-			hero: seat ? (seat.heroId ?? 'fletcher') : null,
+			hero: seat ? (seat.heroId ?? DEFAULT_HERO) : null,
 			team: fact.team ?? seat?.team ?? unit?.team ?? null,
 			kind: fact.type,
 			target,

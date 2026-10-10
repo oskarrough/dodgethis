@@ -275,7 +275,8 @@ export function createCasting(ctx) {
 		if (!hero.channel) return
 		const channel = hero.channel
 		hero.channel = null
-		abilityOf(channel.ability, hero)?.onCancel?.(traitContext(hero, { ...channel, reason }))
+		const ability = abilityOf(channel.ability, hero)
+		ability?.onCancel?.(traitContext(hero, { ...channel, ability, reason }))
 		present({
 			type: 'channelCancelled',
 			hero: hero.id,
@@ -293,12 +294,12 @@ export function createCasting(ctx) {
 			const cancelled = lobby && frame.pressed.some((e) => e.action === 'cancel')
 			if (stance.until <= ctx.t || cancelled) {
 				hero.stance = null
-				ability?.onEnd?.(traitContext(hero, { stance }))
+				ability?.onEnd?.(traitContext(hero, { stance, ability }))
 				if (cancelled && hero.catchWindow) {
 					hero.catchWindow = null
 					present({ type: 'catchExpired', hero: hero.id, point: { ...hero.body.position } })
 				}
-			} else ability?.onTick?.(traitContext(hero, { stance, dt }))
+			} else ability?.onTick?.(traitContext(hero, { stance, ability, dt }))
 		}
 		if (hero.catchWindow && hero.catchWindow.until <= ctx.t) hero.catchWindow = null
 		if (hero.abilityState.pocket && hero.abilityState.pocket.until <= ctx.t) {
@@ -316,10 +317,10 @@ export function createCasting(ctx) {
 		if (ctx.t < hero.stunUntil || ctx.t < hero.freezeUntil || ctx.t < hero.proneUntil)
 			return cancelChannel(hero, 'disabled')
 		const ability = abilityOf(channel.ability, hero)
-		ability?.onTick?.(traitContext(hero, { ...channel, dt }))
+		ability?.onTick?.(traitContext(hero, { ...channel, ability, dt }))
 		if (--channel.left > 0) return
 		hero.channel = null
-		ability?.onRelease?.(traitContext(hero, channel))
+		ability?.onRelease?.(traitContext(hero, { ...channel, ability }))
 		present({
 			type: 'channelEnd',
 			hero: hero.id,

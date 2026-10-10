@@ -1,6 +1,6 @@
 import { tune } from './tune.js'
 import { DEFAULT_MAP, playableMaps } from './maps/index.js'
-import { HEROES, heroDefinition } from './heroes.js'
+import { DEFAULT_HERO, HEROES, heroDefinition } from './heroes.js'
 
 // Front screens and direct entry use the same validated match setup.
 export function parseMatchSetup(query, options = {}, warn = console.warn) {
@@ -39,7 +39,7 @@ export function parseMatchSetup(query, options = {}, warn = console.warn) {
 		difficulty: read('bots', options.difficulty ?? query.get('bots'), 'easy', (v) =>
 			['easy', 'normal', 'hard'].includes(v),
 		),
-		heroId: read('hero', options.heroId ?? query.get('hero'), 'fletcher', playable),
+		heroId: read('hero', options.heroId ?? query.get('hero'), DEFAULT_HERO, playable),
 		// Re-parsing a parsed setup keeps whether a seed was asked for, not just its value.
 		seeded: options.seeded ?? seed != null,
 		seed: Number(
@@ -125,8 +125,8 @@ export function parseTrySetup(query, options = {}, warn = console.warn) {
 				Number(v) <= tune.levels.cap,
 			Number,
 		),
-		allyHero: read('allyHero', 'fletcher', playable),
-		enemyHero: read('enemyHero', 'fletcher', playable),
+		allyHero: read('allyHero', DEFAULT_HERO, playable),
+		enemyHero: read('enemyHero', DEFAULT_HERO, playable),
 		allyBot: bool('allyBot', false),
 		enemyBot: bool('enemyBot', false),
 		...(tryRoster === undefined ? {} : { tryRoster }),

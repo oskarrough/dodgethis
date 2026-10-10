@@ -699,11 +699,13 @@ export function createHud({ lobby = false, layout, pieces, onMinimap } = {}) {
 			data(top, 'local', localTeam)
 			const definition = hero?.definition ?? heroDefinition()
 			const heroId = hero?.heroId ?? definition.id
-			text(
-				heroName,
-				heroId.replace(/^./, (c) => c.toUpperCase()),
+			text(heroName, definition.name ?? heroId.replace(/^./, (c) => c.toUpperCase()))
+			put(
+				face,
+				'icon',
+				heroId,
+				(id) => (face.innerHTML = definition.icon ?? ICONS[id] ?? ICONS.empty),
 			)
-			put(face, 'icon', heroId, (id) => (face.innerHTML = ICONS[id] ?? ICONS.empty))
 			text(heroLevel, String(level))
 			const heroicTrait = heroTrait(heroId)
 			flag(trait, 'none', !heroicTrait)
@@ -741,7 +743,12 @@ export function createHud({ lobby = false, layout, pieces, onMinimap } = {}) {
 				const total = ability?.stats.cooldown ?? 0
 				const cooldown = cooldowns?.[i] ?? 0
 				if (s.deniedFor > 0 && (s.deniedFor -= dt) <= 0) s.slot.classList.remove('denied')
-				put(s.icon, 'icon', ability?.id ?? 'empty', (id) => (s.icon.innerHTML = ICONS[id] ?? ''))
+				put(
+					s.icon,
+					'icon',
+					ability?.id ?? 'empty',
+					(id) => (s.icon.innerHTML = ability?.icon ?? ICONS[id] ?? ''),
+				)
 				text(s.key, keys[i])
 				put(s.key, 'touch', device === 'touch', (v) => (s.key.style.display = v ? 'none' : ''))
 				flag(s.slot, 'ball', !!carryingBall)

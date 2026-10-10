@@ -52,7 +52,7 @@ export function createDodgeBot(random) {
 			threats.push({
 				key: `zone:${z.id}`,
 				centre: { x: z.x, z: z.z },
-				radius: tune[z.ability ?? 'rain'].radius,
+				radius: abilityOf(z.ability ?? 'rain').stats.radius,
 				delay: z.left * STEP,
 			})
 		return threats

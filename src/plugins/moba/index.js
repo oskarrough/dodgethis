@@ -27,7 +27,7 @@ import { createLobby } from './lobby.js'
 import { createDifficultyGallery } from './lobby-props.js'
 import { createLobbyReplica } from './lobby-replica.js'
 import { createLaneReplica } from './lane-replica.js'
-import { HEROES } from './heroes.js'
+import { DEFAULT_HERO, HEROES } from './heroes.js'
 import { controls as playerControls } from '../../core/controls.js'
 
 const FACTS = [
@@ -209,7 +209,7 @@ export default function moba(app, map) {
 								heroId:
 									seat.data?.heroId ??
 									setup.picks[seat.id]?.heroId ??
-									(seat.id === local ? setup.heroId : 'fletcher'),
+									(seat.id === local ? setup.heroId : DEFAULT_HERO),
 							}))
 					: isLobby
 						? [

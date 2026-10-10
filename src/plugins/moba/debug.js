@@ -1,6 +1,6 @@
 import { tune } from './tune.js'
 import { tune as coreTune } from '../../core/tune.js'
-import { HEROES } from './heroes.js'
+import { listedHeroes } from './heroes.js'
 import { debugSections } from './sliders.js'
 import { matchLink, parseTrySetup } from './setup.js'
 
@@ -301,9 +301,7 @@ export function createMatchDebug({
 		player.add(values, 'respawn').name('respawn now')
 		player.add(values, 'resetCooldowns').name('reset cooldowns')
 		const choices = Object.fromEntries(
-			Object.values(HEROES)
-				.filter((h) => h.playable)
-				.map((h) => [h.id[0].toUpperCase() + h.id.slice(1), h.id]),
+			listedHeroes({ ...setup, debug: true }).map((h) => [h.name, h.id]),
 		)
 		for (const [name, side, spawnKey, clearKey] of [
 			['Allied heroes', 'ally', 'spawnAlly', 'clearAllies'],

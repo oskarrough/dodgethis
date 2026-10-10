@@ -1,6 +1,7 @@
 import { tune } from './tune.js'
 import { STEP } from '../../core/app.js'
 import { freshAbilityState } from './heroes.js'
+import { abilityOf } from './ability.js'
 import { segmentClear } from './obstacles.js'
 import { SLOTS, ticks, dirOf } from './sim-kit.js'
 
@@ -55,7 +56,7 @@ export function createCombat(ctx) {
 		unit.corpse = null
 		const spawn = unit.post ?? unit.spawn
 		unit.body = bodyAt(spawn.x, spawn.z, unit.team, unit.definition, unit.dress)
-		if (unit.definition) unit.abilityState = freshAbilityState()
+		if (unit.definition) unit.abilityState = freshAbilityState(unit.definition)
 		unit.body.face(dirOf(unit.yaw))
 		if (unit.definition) unit.cancelUntil = SLOTS.map(() => 0)
 		unit.dead = false
@@ -142,7 +143,7 @@ export function createCombat(ctx) {
 				hero: h.id,
 				ability: shot.ability,
 				hit: inReach,
-				point: { x: tp.x, y: tune.loose.height, z: tp.z },
+				point: { x: tp.x, y: tune.projectile.height, z: tp.z },
 			})
 			if (inReach && target) hit(shot, { id: target.id, unit: target, hero: !target.kind }, tp)
 		} else shots.push(shot)
@@ -159,7 +160,7 @@ export function createCombat(ctx) {
 			id: shot.id,
 			hero: h.id,
 			slot: 'primary',
-			point: { x: p.x, y: tune.loose.height, z: p.z },
+			point: { x: p.x, y: tune.projectile.height, z: p.z },
 			direction: { x: shot.dx, z: shot.dz },
 		})
 	}
@@ -172,13 +173,13 @@ export function createCombat(ctx) {
 				source: shot.owner,
 				target: unit.id,
 				projectile: shot.id,
-				point: { x: point.x, y: tune.loose.height, z: point.z },
+				point: { x: point.x, y: tune.projectile.height, z: point.z },
 			})
 			return
 		}
 		if (shot.slot === 'ball' && target.hero) unit.body.cancelDash()
 		const direction = { x: shot.dx, y: 0, z: shot.dz }
-		const at = { x: point.x, y: tune.loose.height, z: point.z }
+		const at = { x: point.x, y: tune.projectile.height, z: point.z }
 		if (unit.structure && !lane.vulnerable(unit)) {
 			present({
 				type: 'shielded',
@@ -193,20 +194,21 @@ export function createCombat(ctx) {
 		const ability = source?.definition.abilities[shot.slot]
 		const rawDamage =
 			shot.damage ??
-			(tune[shot.ability]?.damage ?? ability?.stats.damage ?? tune.loose.damage) *
+			(tune[shot.ability]?.damage ?? ability?.stats.damage) *
 				(1 + tune.levels.growth * ((source?.level ?? 1) - 1))
 		const catchShield =
 			!unit.dead &&
 			unit.respawnTick == null &&
 			unit.stance?.ability === 'catch' &&
 			unit.stance.until > ctx.t &&
-			unit.catchWindow?.ability === 'catch' &&
-			unit.catchWindow.until > ctx.t &&
+			unit.catchWindow?.until > ctx.t &&
 			ctx.t >= Math.max(unit.stunUntil, unit.freezeUntil, unit.proneUntil)
 		const damage = Math.min(
 			unit.hp,
 			rawDamage *
-				(catchShield ? 1 - tune.catch.damageReduction : 1) *
+				(catchShield
+					? 1 - (abilityOf(unit.catchWindow.ability, unit)?.stats.damageReduction ?? 0)
+					: 1) *
 				(unit.structure && (shot.isAbility || shot.slot.startsWith('slot'))
 					? tune.waves.abilityStructure
 					: 1),
@@ -274,7 +276,7 @@ export function createCombat(ctx) {
 		unit.cast = null
 		unit.shove = null
 		if (unit.post) return
-		unit.abilityState = freshAbilityState()
+		unit.abilityState = freshAbilityState(unit.definition)
 		unit.stance = null
 		unit.catchWindow = null
 		unit.freezeUntil = 0

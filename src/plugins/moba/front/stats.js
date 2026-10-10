@@ -1,5 +1,5 @@
 import { STEP } from '../../../core/app.js'
-import { heroDefinition } from '../heroes.js'
+import { DEFAULT_HERO, heroDefinition } from '../heroes.js'
 import { stepHorizontalVelocity } from '../../../core/move.js'
 
 function escapeTime(distance, profile) {
@@ -18,21 +18,28 @@ function escapeTime(distance, profile) {
 	return elapsed
 }
 
-export function heroStats(kit, front, level = 1, heroId = 'fletcher') {
-	const mul = 1 + front.level.growth * (Math.max(1, Math.min(front.level.cap, level)) - 1)
-	if (heroId !== 'fletcher') {
-		const definition = heroDefinition(heroId)
-		return {
-			level,
-			hp: definition.base.hp * mul,
-			speed: definition.base.speed,
-			attack: (definition.basic?.damage ?? 0) * mul,
-			attackRange: definition.basic?.range ?? 0,
-			attackRate: definition.basic?.rate ?? 0,
-			abilities: definition.abilities,
-			pocketLife: kit.catching.pocketLife,
-		}
+const growth = (front, level) =>
+	1 + front.level.growth * (Math.max(1, Math.min(front.level.cap, level)) - 1)
+
+// Any hero's numbers, read from its definition.
+export function heroStats(kit, front, level = 1, heroId = DEFAULT_HERO) {
+	const mul = growth(front, level)
+	const definition = heroDefinition(heroId)
+	return {
+		level,
+		hp: definition.base.hp * mul,
+		speed: definition.base.speed,
+		attack: (definition.basic?.damage ?? 0) * mul,
+		attackRange: definition.basic?.range ?? 0,
+		attackRate: definition.basic?.rate ?? 0,
+		abilities: definition.abilities,
+		pocketLife: kit.catching.pocketLife,
 	}
+}
+
+// Fletcher's flight and dodging numbers, behind his extra numbers-panel cards.
+export function fletcherStats(kit, front, level = 1) {
+	const mul = growth(front, level)
 	const qClear = kit.loose.radius + kit.hero.radius
 	const rainClear = kit.rain.radius + kit.hero.radius
 	return {

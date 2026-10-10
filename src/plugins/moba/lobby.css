@@ -26,12 +26,11 @@
 	pointer-events: none;
 	opacity: 0;
 }
-.lobby-pick-stamp[data-hero='fletcher'] {
-	background: var(--ui-blue);
-	color: var(--ui-cream);
+/* A hero's stamp wears its colour (lobby.js sets --hero-color from the definition); cream without one. */
+.lobby-pick-stamp[data-hero]:not([data-hero='']) {
+	background: var(--hero-color, var(--ui-cream));
 }
-.lobby-pick-stamp[data-hero='mitts'] {
-	background: var(--ui-red);
+.lobby-pick-stamp[style*='--hero-color'] {
 	color: var(--ui-cream);
 }
 .lobby-pick-stamp.slam {

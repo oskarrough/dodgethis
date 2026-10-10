@@ -5,6 +5,7 @@ import { flagfall } from './maps/flagfall-tune.js'
 import { lobby } from './front/lobby-tune.js'
 import { mitts } from './mitts-tune.js'
 import { fletcher } from './fletcher-tune.js'
+import * as tunes from './tunes.js'
 
 export const tune = {
 	testing: {
@@ -397,6 +398,11 @@ export const tune = {
 	momentum: { reduction: 2 },
 	cast: { cancelLockout: 0.75, buffer: 0.4 }, // buffer: how early (s) a skill press may land and still fire on its first legal tick
 	catching: { returnTell: 0.5, pocketLife: 6, bagLimit: 6 },
+	// Every shot's flight, whoever throws it.
+	projectile: {
+		height: 1.1, // flight height, for presentation only
+		nearMiss: 0.8, // a pass this close to a body's edge cues "close"
+	},
 	...mitts,
 	...fletcher,
 	// The pad's right stick: hero + dir × range × remap(magnitude).
@@ -438,4 +444,24 @@ export const tune = {
 }
 
 // The body's movement profile is the hero section; its extra keys are ignored by the body.
+// Folder tunes (tunes.js): an ability's at tune[id], a hero's at tune.heroes[id], a map's keys at
+// the top. An ability or hero id that is already a top-level key would shadow it, so it throws.
+const claim = (key, owner) => {
+	if (Object.hasOwn(tune, key)) throw new Error(`MOBA ${owner} collides with tune.${key}`)
+}
+for (const [id, numbers] of Object.entries(tunes.abilities)) {
+	claim(id, `ability ${id}`)
+	tune[id] = numbers
+}
+for (const [id, numbers] of Object.entries(tunes.heroes)) {
+	claim(id, `hero ${id}`)
+	if (Object.hasOwn(tune.heroes, id)) throw new Error(`MOBA hero ${id} has two tunes`)
+	tune.heroes[id] = numbers
+}
+for (const [id, keys] of Object.entries(tunes.maps))
+	for (const [key, numbers] of Object.entries(keys)) {
+		claim(key, `map ${id}`)
+		tune[key] = numbers
+	}
+
 export const profile = tune.hero

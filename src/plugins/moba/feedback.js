@@ -390,7 +390,7 @@ export function createFeedback({
 							cream: true,
 						})
 				}
-				if (onMe) sfx.whoosh(fact.point, 1 - Math.min(1, fact.distance / tune.loose.nearMiss))
+				if (onMe) sfx.whoosh(fact.point, 1 - Math.min(1, fact.distance / tune.projectile.nearMiss))
 				return
 			case 'death': {
 				const unit = unitOf(fact.target)

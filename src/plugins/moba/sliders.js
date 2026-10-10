@@ -1,5 +1,7 @@
 // Tune GUI: moba's sections come and go with the run; the values live in tune.js and survive restarts.
 // Each section maps a key to [min, max, step, label?, object?]. T is one clock step.
+import { ABILITIES } from './ability.js'
+
 export const T = 'clock step'
 
 const each = (keys, slider) => Object.fromEntries(keys.map((key) => [key, slider(key)]))
@@ -30,6 +32,13 @@ const bots = (preset) => ({
 		humanAttackers: [1, 3, 1, 'early human duelists'],
 	}),
 })
+// An ability without hand-set ranges gets one slider per number, from zero to four times its value.
+const numbers = (stats) =>
+	Object.fromEntries(
+		Object.entries(stats ?? {})
+			.filter(([, v]) => typeof v === 'number')
+			.map(([key, v]) => [key, [0, v > 0 ? v * 4 : 1, Number.isInteger(v) && v >= 10 ? 1 : 0.01]]),
+	)
 const sound = {
 	freq: [20, 2400, 10],
 	slideTo: [20, 2400, 10],
@@ -141,8 +150,8 @@ export function sliderSections(tune, look, setup) {
 			radius: [0.05, 1.5, 0.05],
 			castPoint: [T, 0.5, T, 'cast point (s)'],
 			cooldown: [0.2, 10, 0.1, 'cooldown (s)'],
-			nearMiss: [0, 2, 0.05, 'near miss (m)'],
 		},
+		projectile: { nearMiss: [0, 2, 0.05, 'near miss (m)'] },
 		rain: {
 			damage: [10, 500, 10],
 			castPoint: [0, 1, T],
@@ -245,6 +254,7 @@ export function sliderSections(tune, look, setup) {
 			shakeTakedown: [0, 1, 0.05, 'shake when you die'],
 		},
 	}
+	for (const id of Object.keys(ABILITIES)) sections[id] ??= numbers(tune[id])
 	const object = (name) =>
 		name === 'Ball'
 			? tune.ball
@@ -260,7 +270,10 @@ export function sliderSections(tune, look, setup) {
 export const debugSections = {
 	'Heroes / abilities': {
 		Hero: ['hero', 'levels', 'respawn', 'momentum', 'dummies'],
-		Abilities: ['attack', 'cast', 'loose', 'rain', 'vault', 'catch', 'kit'],
+		// A getter: heroes.js registers its inline abilities after this module loads.
+		get Abilities() {
+			return ['attack', 'cast', 'projectile', ...Object.keys(ABILITIES), 'kit']
+		},
 	},
 	'Match / lane': {
 		Match: ['match', 'Ball', 'globes'],

@@ -1,4 +1,5 @@
 import { tune } from './tune.js'
+import { abilityOf } from './ability.js'
 import { STEP } from '../../core/app.js'
 import { clampMap, sweepHit, sweepObstacles } from './obstacles.js'
 import { interceptShot, stepShot } from './skillshot.js'
@@ -44,7 +45,7 @@ export function createProjectiles(ctx) {
 		for (let i = zones.length - 1; i >= 0; i--) {
 			const zone = zones[i]
 			if (--zone.left > 0) continue
-			const skill = tune[zone.ability ?? 'rain']
+			const skill = abilityOf(zone.ability ?? 'rain').stats
 			touch(zone, { kind: 'zone', point: { x: zone.x, z: zone.z }, radius: skill.radius })
 			const targets = enemiesOf(zone.team).filter(
 				(e) => Math.hypot(e.x - zone.x, e.z - zone.z) <= skill.radius + e.radius,
@@ -99,7 +100,7 @@ export function createProjectiles(ctx) {
 						source: shot.owner,
 						projectile: shot.id,
 						reason: 'targetLost',
-						point: { x: shot.x, y: tune.loose.height, z: shot.z },
+						point: { x: shot.x, y: tune.projectile.height, z: shot.z },
 						direction: { x: shot.dx, y: 0, z: shot.dz },
 					})
 					shots.splice(i, 1)
@@ -130,7 +131,7 @@ export function createProjectiles(ctx) {
 					source: shot.owner,
 					projectile: shot.id,
 					reason: 'intercepted',
-					point: { x: shot.x, y: tune.loose.height, z: shot.z },
+					point: { x: shot.x, y: tune.projectile.height, z: shot.z },
 					direction: { x: shot.dx, y: 0, z: shot.dz },
 				})
 				shots.splice(i, 1)
@@ -140,7 +141,7 @@ export function createProjectiles(ctx) {
 				shot,
 				dt,
 				targets,
-				shot.target ? -Infinity : tune.loose.nearMiss,
+				shot.target ? -Infinity : tune.projectile.nearMiss,
 				obstacles,
 				field,
 			)
@@ -152,7 +153,7 @@ export function createProjectiles(ctx) {
 					source: shot.owner,
 					target: n.target.id,
 					projectile: shot.id,
-					point: { x: n.point.x, y: tune.loose.height, z: n.point.z },
+					point: { x: n.point.x, y: tune.projectile.height, z: n.point.z },
 					distance: n.distance,
 				})
 			if (r.blocked)
@@ -163,7 +164,7 @@ export function createProjectiles(ctx) {
 					source: shot.owner,
 					projectile: shot.id,
 					slot: shot.slot,
-					point: { ...r.point, y: tune.loose.height },
+					point: { ...r.point, y: tune.projectile.height },
 					direction: { x: shot.dx, y: 0, z: shot.dz },
 				})
 			for (const entry of r.hits ?? []) hit(shot, entry.hit, entry.point)
@@ -174,7 +175,7 @@ export function createProjectiles(ctx) {
 					source: shot.owner,
 					projectile: shot.id,
 					reason: 'range',
-					point: { x: shot.x, y: tune.loose.height, z: shot.z },
+					point: { x: shot.x, y: tune.projectile.height, z: shot.z },
 					direction: { x: shot.dx, y: 0, z: shot.dz },
 				})
 			if (r.hit || r.expired) shots.splice(i, 1)
@@ -208,7 +209,7 @@ export function createProjectiles(ctx) {
 			id: shot.id,
 			hero: source.id,
 			slot: source.kind,
-			point: { x: p.x, y: tune.loose.height, z: p.z },
+			point: { x: p.x, y: tune.projectile.height, z: p.z },
 			direction: { x: shot.dx, z: shot.dz },
 		})
 	}
@@ -276,7 +277,7 @@ export function createProjectiles(ctx) {
 			hero: hero.id,
 			ability: shot.ability,
 			slot: shot.slot,
-			point: { x: p.x, y: tune.loose.height, z: p.z },
+			point: { x: p.x, y: tune.projectile.height, z: p.z },
 			direction: { x: shot.dx, z: shot.dz },
 		})
 		return shot
@@ -435,7 +436,7 @@ export function createProjectiles(ctx) {
 					projectile: shot.id,
 					ability: shot.ability,
 					slot: shot.slot,
-					point: { ...point, y: tune.loose.height },
+					point: { ...point, y: tune.projectile.height },
 					direction: { x: shot.dx, z: shot.dz },
 				})
 			return true
@@ -469,7 +470,7 @@ export function createProjectiles(ctx) {
 			source: shot.owner,
 			projectile: shot.id,
 			ability: shot.ability,
-			point: { ...point, y: tune.loose.height },
+			point: { ...point, y: tune.projectile.height },
 		})
 		return true
 	}

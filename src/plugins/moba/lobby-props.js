@@ -4,7 +4,7 @@ import { PALETTE } from '../../core/style.js'
 import { hologramMaterial } from './hologram.js'
 import { FORWARD_LAYER } from '../../core/stylepass.js'
 import { dressHero } from './hero-view.js'
-import { HEROES } from './heroes.js'
+import { listedHeroes } from './heroes.js'
 import { tune } from './tune.js'
 import { closest } from './skillshot.js'
 import { createFaceKit, createMagnets } from './lobby-magnets.js'
@@ -133,7 +133,15 @@ export function createDifficultyGallery({ local, difficulty, present, dummies = 
 }
 
 // Handmade toy props, not combatants. All animation reads the interpolated sim clock.
-export function createLobbyProps(scene, el, gallery, readySeats, local, audio) {
+export function createLobbyProps(
+	scene,
+	el,
+	gallery,
+	readySeats,
+	local,
+	audio,
+	heroes = listedHeroes(),
+) {
 	const root = new THREE.Group()
 	root.name = 'lobby-props'
 	scene.add(root)
@@ -168,7 +176,6 @@ export function createLobbyProps(scene, el, gallery, readySeats, local, audio) {
 		parent.add(m)
 		return m
 	}
-	const definitions = Object.values(HEROES)
 	const faces = createFaceKit()
 	const magnets = createMagnets(root, gallery, faces, audio)
 	const galleryProps = magnets.props.map((p) => {
@@ -223,39 +230,37 @@ export function createLobbyProps(scene, el, gallery, readySeats, local, audio) {
 			plate(r.width - inner, r.depth - inner, r.corner - r.borderWidth - r.band)
 		inlay(wellPlate(), well, group)
 		const fill = inlay(wellPlate(), seatColors[seat.team], group)
-		const holograms = definitions
-			.filter((d) => d.playable)
-			.map((definition) => {
-				const body = createBody(group, null, null, {
-					profile: definition.base,
-					position: [0, 0, 0],
-					replica: true,
-				})
-				const undress = dressHero(body, definition.id, seat.team)
-				const swapped = []
-				body.mesh.traverse((o) => {
-					if (!o.isMesh) return
-					swapped.push([o, o.material])
-					o.material = holoMaterials[seat.team]
-					o.layers.set(FORWARD_LAYER)
-					o.castShadow = false
-				})
-				body.mesh.rotation.y = Math.PI
-				body.mesh.visible = false
-				const { radius, halfHeight } = definition.base
-				return {
-					id: definition.id,
-					body,
-					undress,
-					swapped,
-					baseY: body.mesh.position.y,
-					head: {
-						y: halfHeight + radius * 0.35,
-						z: -radius * 0.94 - holo.faceGap,
-						size: radius * holo.face,
-					},
-				}
+		const holograms = heroes.map((definition) => {
+			const body = createBody(group, null, null, {
+				profile: definition.base,
+				position: [0, 0, 0],
+				replica: true,
 			})
+			const undress = dressHero(body, definition.id, seat.team)
+			const swapped = []
+			body.mesh.traverse((o) => {
+				if (!o.isMesh) return
+				swapped.push([o, o.material])
+				o.material = holoMaterials[seat.team]
+				o.layers.set(FORWARD_LAYER)
+				o.castShadow = false
+			})
+			body.mesh.rotation.y = Math.PI
+			body.mesh.visible = false
+			const { radius, halfHeight } = definition.base
+			return {
+				id: definition.id,
+				body,
+				undress,
+				swapped,
+				baseY: body.mesh.position.y,
+				head: {
+					y: halfHeight + radius * 0.35,
+					z: -radius * 0.94 - holo.faceGap,
+					size: radius * holo.face,
+				},
+			}
+		})
 		const face = new THREE.Group()
 		face.rotation.y = Math.PI
 		const moods = {}

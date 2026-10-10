@@ -4,11 +4,211 @@ import { tune } from './tune.js'
 import { look } from './look.js'
 import { STEP } from '../../core/app.js'
 import { castAbility } from './ability.js'
-import { heroDefinition } from './heroes.js'
+import { DEFAULT_HERO, heroDefinition } from './heroes.js'
+import HERO_VIEWS from './heroes/views.js'
+
+// Costumes by hero id; a hero without one wears the box. A costume dresses the torso, adds
+// parts and returns the rig its poses need (Fletcher's bow, Mitts's glove). Hero folders
+// bring theirs through heroes/views.js.
+function dressFletcher({ costume, torso, part, own, roots, t, look, materials }) {
+	const { ink, cream, fins, team: teamMaterial } = materials
+	torso.geometry = own(new THREE.CapsuleGeometry(t.bodyRadius, t.bodyHalfHeight * 2, 8, t.segments))
+	part(
+		new THREE.CylinderGeometry(t.quiverRadius, t.quiverRadius, t.quiverHeight, t.segments),
+		ink,
+		0,
+		t.quiverY,
+		t.quiverZ,
+	)
+	for (let i = 0; i < t.arrowCount; i++) {
+		const offset = i - (t.arrowCount - 1) / 2
+		const arrow = new THREE.Group()
+		arrow.position.set(offset * t.arrowSpacing, t.arrowY, t.quiverZ)
+		arrow.rotation.z = -offset * t.arrowFan
+		arrow.rotation.x = t.arrowTilt
+		costume.add(arrow)
+		roots.push(arrow)
+		part(
+			new THREE.CylinderGeometry(t.arrowRadius, t.arrowRadius, t.arrowHeight, 4),
+			cream,
+			0,
+			0,
+			0,
+			arrow,
+		)
+		for (let fin = 0; fin < t.finCount; fin++) {
+			const mesh = part(
+				new THREE.PlaneGeometry(t.fletchingRadius * 2, t.fletchingHeight),
+				fins,
+				0,
+				t.arrowHeight / 2,
+				0,
+				arrow,
+			)
+			mesh.rotation.y = (fin * Math.PI) / t.finCount
+		}
+	}
+	const a = look.abilityView
+	const bow = new THREE.Group()
+	bow.name = 'moba-bow'
+	costume.add(bow)
+	roots.push(bow)
+	const curve = new THREE.CatmullRomCurve3([
+		new THREE.Vector3(0, -a.bowHeight / 2, 0),
+		new THREE.Vector3(0, 0, -a.bowCurve),
+		new THREE.Vector3(0, a.bowHeight / 2, 0),
+	])
+	part(new THREE.TubeGeometry(curve, a.bowSegments, a.bowRadius, 4, false), ink, 0, 0, 0, bow)
+	const hand = part(new THREE.SphereGeometry(a.handRadius, 8, 6), cream)
+	hand.name = 'moba-draw-hand'
+	part(new THREE.SphereGeometry(a.handRadius, 8, 6), cream, 0, 0, -a.bowCurve, bow)
+	const drawArm = part(new THREE.CylinderGeometry(a.armRadius, a.armRadius, 1, 4), teamMaterial)
+	drawArm.name = 'moba-draw-arm'
+	const stringGeometry = new THREE.BufferGeometry()
+	stringGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(36), 3))
+	const bowString = new THREE.Mesh(own(stringGeometry), fins)
+	bowString.frustumCulled = false
+	costume.add(bowString)
+	roots.push(bowString)
+	return { border: false, bow, hand, bowString, drawArm }
+}
+
+function dressMitts({
+	costume,
+	torso,
+	footDisc,
+	discY,
+	part,
+	own,
+	rounded,
+	roots,
+	t,
+	look,
+	materials,
+}) {
+	const { glove: gloveMaterial, pocket: pocketMaterial } = materials
+	torso.geometry = own(rounded(t.mittsWidth, t.mittsDepth, t.mittsHeight))
+	const glove = new THREE.Group()
+	glove.name = 'moba-glove'
+	costume.add(glove)
+	roots.push(glove)
+	const pocketRing = part(
+		new THREE.RingGeometry(
+			look.mittsView.pocketRadius - look.mittsView.pocketWidth,
+			look.mittsView.pocketRadius,
+			look.mittsView.segments,
+		).rotateX(-Math.PI / 2),
+		pocketMaterial,
+		0,
+		look.mittsView.pocketY,
+		0,
+		footDisc,
+	)
+	pocketRing.name = 'moba-pocket-ring'
+	pocketRing.visible = false
+	// Palm ends before the thumb: the intervening gap is real geometry, not paint.
+	part(
+		rounded(t.gloveWidth, t.gloveDepth, t.fingerRadius * 2),
+		gloveMaterial,
+		t.gloveX,
+		discY + t.mittsHeight / 2,
+		t.gloveZ,
+		glove,
+	)
+	for (let i = 0; i < t.fingerCount; i++)
+		part(
+			new THREE.SphereGeometry(t.fingerRadius, 8, 6),
+			gloveMaterial,
+			t.gloveX + (i - (t.fingerCount - 1) / 2) * t.fingerSpacing,
+			discY + t.mittsHeight / 2,
+			t.gloveZ - t.gloveDepth / 2,
+			glove,
+		)
+	part(
+		new THREE.SphereGeometry(t.fingerRadius, 8, 6),
+		gloveMaterial,
+		t.gloveX - t.gloveWidth / 2 - t.fingerRadius,
+		discY + t.mittsHeight / 2,
+		t.gloveZ + t.gloveDepth / 2,
+		glove,
+	)
+	return { glove, pocketRing }
+}
+
+function dressCarom({ torso, part, own, t, materials }) {
+	const { ink, team: teamMaterial } = materials
+	const shape = new THREE.Shape()
+	for (let i = 0; i < 3; i++) {
+		const angle = (i * Math.PI * 2) / 3
+		const x = Math.sin(angle) * t.caromRadius,
+			z = -Math.cos(angle) * t.caromRadius
+		if (i === 0) shape.moveTo(x, z)
+		else shape.lineTo(x, z)
+	}
+	shape.closePath()
+	torso.geometry = own(
+		new THREE.ExtrudeGeometry(shape, {
+			depth: t.caromHeight,
+			bevelEnabled: true,
+			bevelThickness: t.corner / 2,
+			bevelSize: t.corner / 2,
+			bevelSegments: 3,
+		})
+			.rotateX(Math.PI / 2)
+			.translate(0, t.caromHeight / 2, 0),
+	)
+	part(
+		new THREE.TorusGeometry(t.racketRadius, t.racketTube, 8, t.segments).rotateX(Math.PI / 2),
+		teamMaterial,
+		t.racketX,
+		t.racketY,
+		0,
+	)
+	part(
+		new THREE.CylinderGeometry(
+			t.racketHandleRadius,
+			t.racketHandleRadius,
+			t.racketHandle,
+			8,
+		).rotateX(Math.PI / 2),
+		ink,
+		t.racketX,
+		t.racketY,
+		t.racketRadius + t.racketHandle / 2,
+	)
+	return {}
+}
+
+function dressBox({ torso, part, own, t, materials }) {
+	const { ink, team: teamMaterial } = materials
+	torso.geometry = own(new THREE.BoxGeometry(t.skipWidth, t.skipHeight, t.skipDepth))
+	part(
+		new THREE.CylinderGeometry(
+			t.megaphoneRadius,
+			t.arrowRadius,
+			t.megaphoneLength,
+			t.segments,
+		).rotateX(-Math.PI / 2),
+		teamMaterial,
+		0,
+		t.megaphoneY,
+		t.megaphoneZ,
+	)
+	part(
+		new THREE.CircleGeometry(t.megaphoneMouth, t.segments),
+		ink,
+		0,
+		t.megaphoneY,
+		t.megaphoneZ - t.megaphoneLength / 2 - t.discBorder / 4,
+	).rotation.y = Math.PI
+	return {}
+}
+
+const COSTUMES = { fletcher: dressFletcher, mitts: dressMitts, carom: dressCarom }
 
 // Same costume on the lane body and the select replica. The capsule collider
 // remains untouched; every costume sits above the same inked collision disc.
-export function dressHero(body, heroId = 'fletcher', team = 'A') {
+export function dressHero(body, heroId = DEFAULT_HERO, team = 'A') {
 	heroDefinition(heroId)
 	const t = look.silhouettes
 	const original = body.visual.geometry
@@ -29,8 +229,6 @@ export function dressHero(body, heroId = 'fletcher', team = 'A') {
 	const foot = makeStyleMaterial(team === 'A' ? 'teamA' : 'teamB', { flat: true })
 	const gloveMaterial = makeStyleMaterial(team === 'A' ? 'teamA' : 'teamB')
 	const pocketMaterial = makeStyleMaterial('ammo', { flat: true })
-	let glove = null,
-		pocketRing = null
 	const geometries = []
 	const roots = []
 	const own = (g) => {
@@ -82,157 +280,39 @@ export function dressHero(body, heroId = 'fletcher', team = 'A') {
 		0,
 		body.mesh,
 	)
-	if (heroId === 'fletcher') {
-		torso.geometry = own(
-			new THREE.CapsuleGeometry(t.bodyRadius, t.bodyHalfHeight * 2, 8, t.segments),
-		)
-		part(
-			new THREE.CylinderGeometry(t.quiverRadius, t.quiverRadius, t.quiverHeight, t.segments),
+	const dress = HERO_VIEWS[heroId]?.costume?.dress ?? COSTUMES[heroId] ?? dressBox
+	const dressed = dress({
+		costume,
+		torso,
+		footDisc,
+		discY,
+		part,
+		own,
+		rounded,
+		roots,
+		t,
+		look,
+		materials: {
 			ink,
-			0,
-			t.quiverY,
-			t.quiverZ,
-		)
-		for (let i = 0; i < t.arrowCount; i++) {
-			const offset = i - (t.arrowCount - 1) / 2
-			const arrow = new THREE.Group()
-			arrow.position.set(offset * t.arrowSpacing, t.arrowY, t.quiverZ)
-			arrow.rotation.z = -offset * t.arrowFan
-			arrow.rotation.x = t.arrowTilt
-			costume.add(arrow)
-			roots.push(arrow)
-			part(
-				new THREE.CylinderGeometry(t.arrowRadius, t.arrowRadius, t.arrowHeight, 4),
-				cream,
-				0,
-				0,
-				0,
-				arrow,
-			)
-			for (let fin = 0; fin < t.finCount; fin++) {
-				const mesh = part(
-					new THREE.PlaneGeometry(t.fletchingRadius * 2, t.fletchingHeight),
-					fins,
-					0,
-					t.arrowHeight / 2,
-					0,
-					arrow,
-				)
-				mesh.rotation.y = (fin * Math.PI) / t.finCount
-			}
-		}
-	} else if (heroId === 'mitts') {
-		torso.geometry = own(rounded(t.mittsWidth, t.mittsDepth, t.mittsHeight))
-		glove = new THREE.Group()
-		glove.name = 'moba-glove'
-		costume.add(glove)
-		roots.push(glove)
-		pocketRing = part(
-			new THREE.RingGeometry(
-				look.mittsView.pocketRadius - look.mittsView.pocketWidth,
-				look.mittsView.pocketRadius,
-				look.mittsView.segments,
-			).rotateX(-Math.PI / 2),
-			pocketMaterial,
-			0,
-			look.mittsView.pocketY,
-			0,
-			footDisc,
-		)
-		pocketRing.name = 'moba-pocket-ring'
-		pocketRing.visible = false
-		// Palm ends before the thumb: the intervening gap is real geometry, not paint.
-		part(
-			rounded(t.gloveWidth, t.gloveDepth, t.fingerRadius * 2),
-			gloveMaterial,
-			t.gloveX,
-			discY + t.mittsHeight / 2,
-			t.gloveZ,
-			glove,
-		)
-		for (let i = 0; i < t.fingerCount; i++)
-			part(
-				new THREE.SphereGeometry(t.fingerRadius, 8, 6),
-				gloveMaterial,
-				t.gloveX + (i - (t.fingerCount - 1) / 2) * t.fingerSpacing,
-				discY + t.mittsHeight / 2,
-				t.gloveZ - t.gloveDepth / 2,
-				glove,
-			)
-		part(
-			new THREE.SphereGeometry(t.fingerRadius, 8, 6),
-			gloveMaterial,
-			t.gloveX - t.gloveWidth / 2 - t.fingerRadius,
-			discY + t.mittsHeight / 2,
-			t.gloveZ + t.gloveDepth / 2,
-			glove,
-		)
-	} else if (heroId === 'carom') {
-		const shape = new THREE.Shape()
-		for (let i = 0; i < 3; i++) {
-			const angle = (i * Math.PI * 2) / 3
-			const x = Math.sin(angle) * t.caromRadius,
-				z = -Math.cos(angle) * t.caromRadius
-			if (i === 0) shape.moveTo(x, z)
-			else shape.lineTo(x, z)
-		}
-		shape.closePath()
-		torso.geometry = own(
-			new THREE.ExtrudeGeometry(shape, {
-				depth: t.caromHeight,
-				bevelEnabled: true,
-				bevelThickness: t.corner / 2,
-				bevelSize: t.corner / 2,
-				bevelSegments: 3,
-			})
-				.rotateX(Math.PI / 2)
-				.translate(0, t.caromHeight / 2, 0),
-		)
-		part(
-			new THREE.TorusGeometry(t.racketRadius, t.racketTube, 8, t.segments).rotateX(Math.PI / 2),
-			teamMaterial,
-			t.racketX,
-			t.racketY,
-			0,
-		)
-		part(
-			new THREE.CylinderGeometry(
-				t.racketHandleRadius,
-				t.racketHandleRadius,
-				t.racketHandle,
-				8,
-			).rotateX(Math.PI / 2),
-			ink,
-			t.racketX,
-			t.racketY,
-			t.racketRadius + t.racketHandle / 2,
-		)
-	} else {
-		torso.geometry = own(new THREE.BoxGeometry(t.skipWidth, t.skipHeight, t.skipDepth))
-		part(
-			new THREE.CylinderGeometry(
-				t.megaphoneRadius,
-				t.arrowRadius,
-				t.megaphoneLength,
-				t.segments,
-			).rotateX(-Math.PI / 2),
-			teamMaterial,
-			0,
-			t.megaphoneY,
-			t.megaphoneZ,
-		)
-		part(
-			new THREE.CircleGeometry(t.megaphoneMouth, t.segments),
-			ink,
-			0,
-			t.megaphoneY,
-			t.megaphoneZ - t.megaphoneLength / 2 - t.discBorder / 4,
-		).rotation.y = Math.PI
-	}
+			cream,
+			fins,
+			team: teamMaterial,
+			glove: gloveMaterial,
+			pocket: pocketMaterial,
+		},
+	})
+	const {
+		glove = null,
+		pocketRing = null,
+		bow = null,
+		hand = null,
+		bowString = null,
+		drawArm = null,
+	} = dressed
 	// Move geometry, not the animated root: core's capsule centre is still physics.
 	torso.geometry.computeBoundingBox()
 	torso.geometry.translate(0, discY - torso.geometry.boundingBox.min.y, 0)
-	if (heroId !== 'fletcher') {
+	if (dressed.border !== false) {
 		const border = part(torso.geometry.clone(), ink)
 		border.geometry.computeBoundingBox()
 		const bounds = border.geometry.boundingBox
@@ -253,36 +333,8 @@ export function dressHero(body, heroId = 'fletcher', team = 'A') {
 	)
 	drawn.name = 'moba-drawn-arrow'
 	drawn.visible = false
-	let bow = null,
-		hand = null,
-		bowString = null,
-		drawArm = null
 	const armDirection = new THREE.Vector3(),
 		armUp = new THREE.Vector3(0, 1, 0)
-	if (heroId === 'fletcher') {
-		const a = look.abilityView
-		bow = new THREE.Group()
-		bow.name = 'moba-bow'
-		costume.add(bow)
-		roots.push(bow)
-		const curve = new THREE.CatmullRomCurve3([
-			new THREE.Vector3(0, -a.bowHeight / 2, 0),
-			new THREE.Vector3(0, 0, -a.bowCurve),
-			new THREE.Vector3(0, a.bowHeight / 2, 0),
-		])
-		part(new THREE.TubeGeometry(curve, a.bowSegments, a.bowRadius, 4, false), ink, 0, 0, 0, bow)
-		hand = part(new THREE.SphereGeometry(a.handRadius, 8, 6), cream)
-		hand.name = 'moba-draw-hand'
-		part(new THREE.SphereGeometry(a.handRadius, 8, 6), cream, 0, 0, -a.bowCurve, bow)
-		drawArm = part(new THREE.CylinderGeometry(a.armRadius, a.armRadius, 1, 4), teamMaterial)
-		drawArm.name = 'moba-draw-arm'
-		const stringGeometry = new THREE.BufferGeometry()
-		stringGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(36), 3))
-		bowString = new THREE.Mesh(own(stringGeometry), fins)
-		bowString.frustumCulled = false
-		costume.add(bowString)
-		roots.push(bowString)
-	}
 	const definition = heroDefinition(heroId)
 	const resolver = { cast: null, definition }
 	let releasePose = null,

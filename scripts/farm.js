@@ -23,7 +23,7 @@ const THREE = await import('three')
 const { default: RAPIER } = await import('@dimforge/rapier3d-compat')
 const { STEP } = await import('../src/core/app.js')
 const { tune } = await import('../src/plugins/moba/tune.js')
-const { HEROES } = await import('../src/plugins/moba/heroes.js')
+const { HEROES, listed } = await import('../src/plugins/moba/heroes.js')
 const { agentRoster } = await import('../src/plugins/moba/agents.js')
 const { botRandom } = await import('../src/plugins/moba/bots.js')
 const { playableMaps } = await import('../src/plugins/moba/maps/index.js')
@@ -69,15 +69,14 @@ export function farmPairs(heroes, crossOnly = false) {
 }
 
 // A team is one hero for all three seats, or a lineup like `mitts,fletcher,random`. Practice fields
-// `mixed`: Mitts, Fletcher and a seeded random playable hero, drawn for A then B as practiceRoster does.
+// `mixed`: Mitts, Fletcher and a seeded random listed hero, drawn for A then B as practiceRoster does.
 export const MIXED = 'mitts,fletcher,random'
 export function farmLineups(teams, seed) {
-	const playable = Object.keys(HEROES).filter((id) => HEROES[id].playable)
 	const random = botRandom(seed, 'practice-roster')
 	return teams.map((team) => {
 		const heroes = team.split(',')
 		return (heroes.length === 1 ? [team, team, team] : heroes).map((hero) =>
-			hero === 'random' ? playable[Math.floor(random() * playable.length)] : hero,
+			hero === 'random' ? listed[Math.floor(random() * listed.length)] : hero,
 		)
 	})
 }

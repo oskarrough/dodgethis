@@ -137,7 +137,10 @@ export function projectLaneSnapshot(state) {
 				if (key === 'heroes') {
 					if (Object.hasOwn(heroDefaults, field) && value === heroDefaults[field]) return null
 					if (['cd', 'cancelUntil'].includes(field) && value.every((v) => v === 0)) return null
-					if (field === 'abilityState' && value.pocket === null && value.bag.length === 0)
+					if (
+						field === 'abilityState' &&
+						JSON.stringify(value) === JSON.stringify(freshAbilityState(HEROES[unit.heroId]))
+					)
 						return null
 					if (field === 'slow' && value.until === 0 && value.factor === 1) return null
 				}
@@ -443,7 +446,8 @@ export function createLaneReplica(simulation, scene) {
 						for (const [field, value] of Object.entries(heroDefaults))
 							if (unit[field] === null) unit[field] = value
 						if (unit.slow === null) unit.slow = { until: 0, factor: 1 }
-						if (unit.abilityState === null) unit.abilityState = freshAbilityState()
+						if (unit.abilityState === null)
+							unit.abilityState = freshAbilityState(HEROES[unit.heroId])
 						for (const field of ['cd', 'cancelUntil'])
 							if (unit[field] === null)
 								unit[field] =

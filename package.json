@@ -14,6 +14,7 @@
 		"profile:dodgeball": "bun scripts/bench.js",
 		"simulate": "bun scripts/farm.js",
 		"review": "bun scripts/review.js",
+		"registry": "bun scripts/registry.js",
 		"play:headless": "bun scripts/play.js",
 		"verify:browser": "node scripts/verify-moba-playability.mjs",
 		"deploy": "wrangler deploy"

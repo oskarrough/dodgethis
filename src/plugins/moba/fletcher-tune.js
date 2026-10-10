@@ -9,8 +9,6 @@ export const fletcher = {
 		speed: 20, // Ground line plus flight gives an 8 m dodge deadline of about 0.52 s.
 		radius: 0.3,
 		cooldown: 4,
-		height: 1.1, // flight height, for presentation only
-		nearMiss: 0.8, // a pass this close to a body's edge cues "close"
 	},
 	rain: {
 		damage: 180,

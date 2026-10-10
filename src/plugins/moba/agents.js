@@ -1,6 +1,8 @@
 import { STEP } from '../../core/app.js'
 import { neutralFrame, validIntent } from '../../core/intents.js'
 import { tune } from './tune.js'
+import { DEFAULT_HERO } from './heroes.js'
+import { abilityOf } from './ability.js'
 
 const ticks = (s) => Math.max(1, Math.round(s / STEP))
 const n = (v) => String(Math.round(v * tune.agents.precision) / tune.agents.precision || 0)
@@ -28,7 +30,7 @@ export function agentRoster({ seats = ['A1'], idle = [], difficulty = 'normal' }
 	return ids.map((id) => ({
 		id,
 		team: id[0],
-		heroId: 'fletcher',
+		heroId: DEFAULT_HERO,
 		file: (Number(id[1]) - 2) * tune.bots.fileSpacing,
 		difficulty,
 		controller: seats.includes(id) ? 'agent' : idle.includes(id) ? 'idle' : 'bot',
@@ -301,14 +303,19 @@ function aimedTells(h, perceived) {
 		}
 		if (!u.cast) continue
 		const c = u.cast
-		let aimed = distance(p, c.target) <= tune.rain.radius + h.body.radius
-		if (c.ability === 'loose') {
+		// A shot is aimed along its line, a zone at its circle; anything else near its target.
+		const ability = abilityOf(c.ability)
+		const stats = ability?.stats
+		let aimed =
+			distance(p, c.target) <=
+			(ability?.kind === 'zone' ? stats.radius : tune.rain.radius) + h.body.radius
+		if (ability?.kind === 'shot' && stats) {
 			const dx = c.target.x - u.pos.x,
 				dz = c.target.z - u.pos.z
 			const len = Math.hypot(dx, dz) || 1
 			const along = ((p.x - u.pos.x) * dx + (p.z - u.pos.z) * dz) / len
 			const across = Math.abs((p.x - u.pos.x) * dz - (p.z - u.pos.z) * dx) / len
-			aimed = along >= 0 && along <= tune.loose.range && across <= tune.loose.radius + h.body.radius
+			aimed = along >= 0 && along <= stats.range && across <= stats.radius + h.body.radius
 		}
 		if (aimed) tells.add(`${u.id}:${c.ability}:${perceived.tick + c.left}`)
 	}
