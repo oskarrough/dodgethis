@@ -22,6 +22,7 @@ Automated coverage includes roster/controller assignment, shared human actions, 
 
 - Start small: `bun run simulate --base --cross-only --matches 2 --max-seconds 30 --jobs 2 --report`. Summaries default to 4 matches and 2 workers; logs default to 20 matches. `--quick` is `--summary --cross-only --matches 4`.
 - Teams: `--heroes fletcher,mitts` gives each team three of one hero; `mixed` is practice's `mitts,fletcher,random`. `--lineup mitts,fletcher,mitts` adds a team of those seats (repeatable); `random` draws a seeded playable hero, the same draw on every revision and variant. `--cross-only` skips mirrors. `--idle A1` leaves seats standing still. Scripted seats are not supported. `--practice` is practice's shape: an idle A1, allies on normal, enemies on `--difficulty`.
+- `--map flagfall` plays every match on that map with its own walls (`overthrow` or `flagfall`; default is the game's default map); it works with `--summary`, `--base` and `--report`.
 - Counts round up to whole matchup rotations; every pairing and its side swap share a rotation's seed, and every variant and revision plays the same seeds.
 - `--set path=v[,v…]` overrides a `tune` number (a path under `tune.heroes` may drop that prefix; comma values sweep, several flags make a grid).
 - Logic experiments are flags, not patches: bot code may read `tune.bots.exp.<flag>` (truthy, or a number), and `--set bots.exp.dive=0,1` plays both. A flag needn't exist in `tune.js` to be set. When a variant wins, land it as plain code and delete the flag; `exp` stays empty on main.

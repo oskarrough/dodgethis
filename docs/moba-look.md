@@ -14,6 +14,8 @@ League of Legends and Heroes of the Storm inform readability (HP, combat informa
 
 Our own generations live in [look/](look/), committed so later agents start from what we based work on. Keep each one we build from or ship, with its prompt beside it; leave rejected sets in thread storage.
 
+- [Oskar's Are.na board, video games](https://www.are.na/don-leche/video-games-anhjn10fbwq): taste for the rebrand (2026-10-10).
+
 - [Overthrow fight](look/overthrow-fight.webp) (concept K), [lobby](look/overthrow-lobby.webp) and [side view](look/overthrow-side.webp): the approved Overthrow target. A pale, warm court on a torn mesa over a colder dusk surround; chain-link, sandcastles.
 - [Flagfall water](look/flagfall-water.webp), [prompt](look/flagfall-water-prompt.md): the plate shipped under Flagfall's court. Lost schoolyard things at the edges, open water in the middle, darker than the court.
 

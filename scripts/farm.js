@@ -26,6 +26,7 @@ const { tune } = await import('../src/plugins/moba/tune.js')
 const { HEROES } = await import('../src/plugins/moba/heroes.js')
 const { agentRoster } = await import('../src/plugins/moba/agents.js')
 const { botRandom } = await import('../src/plugins/moba/bots.js')
+const { playableMaps } = await import('../src/plugins/moba/maps/index.js')
 
 // The game modules of one checkout. The working copy's are the ones imported above; a --base
 // revision's come from its unpacked tree, so each side plays its own sim, bots and tune.
@@ -43,14 +44,16 @@ export function gameModules(root = ROOT) {
 					'src/plugins/moba/agents.js',
 					'src/plugins/moba/obstacles.js',
 					'src/plugins/moba/agent-match.js',
+					'src/plugins/moba/maps/index.js',
 				].map(at),
-			).then(([app, core, moba, agents, obstacles, match]) => ({
+			).then(([app, core, moba, agents, obstacles, match, maps]) => ({
 				STEP: app.STEP,
 				coreTune: core.tune,
 				tune: moba.tune,
 				agentRoster: agents.agentRoster,
 				buildColliders: obstacles.buildColliders,
 				createAgentMatch: match.createAgentMatch,
+				matchRecipe: maps.matchRecipe,
 				baseline: new Map(),
 			})),
 		)
@@ -171,6 +174,7 @@ export async function runFarmMatch({
 	commit = null,
 	summary = false,
 	sample = false,
+	map = null,
 	mods,
 }) {
 	mods ??= await gameModules()
@@ -195,8 +199,14 @@ export async function runFarmMatch({
 	world.timestep = STEP
 	let match, unbuild, result
 	try {
-		unbuild = buildColliders(world, RAPIER)
+		// No map plays createAgentMatch's default with the default walls, exactly as before --map.
+		const recipe = map ? mods.matchRecipe(map) : undefined
+		const { obstacles, bounds, settings } = recipe?.layout ?? {}
+		unbuild = recipe
+			? buildColliders(world, RAPIER, obstacles, bounds, settings?.scale ?? 1)
+			: buildColliders(world, RAPIER)
 		match = createAgentMatch({
+			recipe,
 			scene: new THREE.Scene(),
 			world,
 			RAPIER,
@@ -256,6 +266,7 @@ Teams
   --cross-only              skip mirror matchups
   --idle A1[,B2]            seats that stand still; --practice = idle A1, allies normal, enemies --difficulty
   --difficulty hard         easy, normal or hard
+  --map flagfall            overthrow or flagfall (default: the game's default map)
 Sampling
   --matches N               default 4 for summaries, 20 for logs; rounded up to full matchup rotations; each rotation shares a seed
   --seed uint32  --max-seconds N  (a timeout has no winner)
@@ -291,6 +302,7 @@ export async function farm(argv = process.argv.slice(2)) {
 			heroes: { type: 'string' },
 			lineup: { type: 'string', multiple: true, default: [] },
 			difficulty: { type: 'string', default: 'hard' },
+			map: { type: 'string' },
 			jobs: { type: 'string' },
 			'cross-only': { type: 'boolean' },
 			summary: { type: 'boolean' },
@@ -307,6 +319,8 @@ export async function farm(argv = process.argv.slice(2)) {
 		},
 	})
 	if (values.help) return console.log(HELP)
+	if (values.map && !playableMaps.includes(values.map))
+		throw new Error(`--map ${values.map}: expected ${playableMaps.join(' or ')}`)
 	if (values.logs) {
 		const path =
 			existsSync(values.logs) && statSync(values.logs).isDirectory()
@@ -413,7 +427,7 @@ export async function farm(argv = process.argv.slice(2)) {
 	const runId = crypto.randomUUID()
 	const perRound = sides.length * variants.length * matches
 	console.log(
-		`run=${runId} commit=${commit.slice(0, 12)}${values.base ? ` base=${values.base} (${sides[0].commit.slice(0, 12)})` : ''} matches=${matches}${values.until ? ` until ${cap}` : ''}${variants.length > 1 ? ` x ${variants.length} variants` : ''}${sides.length > 1 ? ' x 2 revisions' : ''}${idle.length ? ` idle=${idle}` : ''}`,
+		`run=${runId} commit=${commit.slice(0, 12)}${values.base ? ` base=${values.base} (${sides[0].commit.slice(0, 12)})` : ''} matches=${matches}${values.until ? ` until ${cap}` : ''}${variants.length > 1 ? ` x ${variants.length} variants` : ''}${sides.length > 1 ? ' x 2 revisions' : ''}${idle.length ? ` idle=${idle}` : ''}${values.map ? ` map=${values.map}` : ''}`,
 	)
 	const { cores, budget, release } = await reserveCores(Math.min(jobs, perRound), {
 		log: (line) => console.log(line),
@@ -445,6 +459,7 @@ export async function farm(argv = process.argv.slice(2)) {
 	const shared = {
 		summary,
 		sample: !!values.report,
+		map: values.map ?? null,
 		difficulty: values.difficulty,
 		idle,
 		practice: !!values.practice,
