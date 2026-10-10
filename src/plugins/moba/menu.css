@@ -263,6 +263,12 @@ canvas.moba-dead-world {
 	background: none;
 	backdrop-filter: none;
 }
+/* Paused, the page shows only itself over the world: the HUD, its pill, the minimap and the corner buttons
+   step out; health bars stay as part of the figure. */
+body:has(> .overlay[data-theme='moba-pause']:not([hidden]))
+	> :not(canvas, .overlay, .fade, .lil-gui, .moba-health-bars) {
+	visibility: hidden;
+}
 .overlay .dialog-card.moba-pause {
 	--pad: clamp(16px, 3.4vw, 56px);
 	--cols: 12;
