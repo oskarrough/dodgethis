@@ -39,7 +39,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 
 ## Descent
 
-- Crane descent from lobby to match: `front/descent.js` `startLoading`; `front/descent-state.js` `createDescentState`, `descentProgress`, `descentFrame`, `localLoadingHero`; `front/tune.js` `loading`; `moba-front.md`
+- Crane descent from lobby to match: `front/descent.js` `startLoading`; `front/descent-state.js` `createDescentState`, `descentFrame`; `front/tune.js` `loading`; `moba-front.md`
 - Descent camera projection and pointer easing: `front/backdrop.js` `projectFrame`, `easePointer`
 - Splash plate (day into night), mist drift, parallax, dusk wash on the splash and descent: `front/backdrop.js` `createBackdrop`, `easeShot`; `public/splash/plate-*.webp`; `front/tune.js` `plate`, `mist`, `parallax`, `shot`, `dusk`
 - Volley on the splash (balls flying behind the title): `front/backdrop.js`; `front/tune.js` `volley`
