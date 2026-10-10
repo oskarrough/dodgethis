@@ -1,296 +1,64 @@
-/* Shared look for every HTML artifact. <link rel="stylesheet" href="/docs/page.css"> + <body class="page">, plain semantic HTML.
-   Helpers: .sticker (bordered card), .note (gold callout), .flag (red callout), .chip (pill; + .gold .red .blue).
-   .badge (blue tag) and h2 .num (numbered heading), .lines (a dl as label/value rows), .small and .lede (text sizes).
-   A parent with two or more <figure> children becomes an even grid of tiles; a table or <details> needs nothing.
-   Page-specific CSS stays in the page; everything else belongs here. */
+/* Shared look for every HTML artifact: <link rel="stylesheet" href="/docs/page.css"> + <body class="page">.
+   Write plain semantic HTML. Less style, fewer problems: add nothing here unless every page needs it. */
 
 .page {
-	--cream: #f6eedb;
-	--paper: #fffaf0;
-	--ink: #1d1a17;
-	--blue: #3a6ee0;
-	--blue-soft: #c9d8f8;
-	--red: #e0453a;
-	--red-soft: #f7cdc8;
-	--gold: #f2b632;
-	--sand: #d8c7a3;
-	--teal: #5f9e98;
-	--grey: #9a9288;
-	margin: 0;
-	background: var(--cream);
-	color: var(--ink);
-	font:
-		15px/1.45 ui-rounded,
-		'Nunito',
-		'Trebuchet MS',
-		system-ui,
-		sans-serif;
-}
-.page *,
-.page *::before,
-.page *::after {
-	box-sizing: border-box;
-}
-.page > main,
-.page > article {
-	max-width: 1100px;
 	margin: 0 auto;
-	padding: 28px 20px 80px;
+	max-width: 1100px;
+	padding: 32px 24px 64px;
+	font:
+		17px/1.5 system-ui,
+		sans-serif;
+	color: #222;
+	background: #fbf8f1;
 }
-
-/* text */
-.page h1 {
-	font-size: 44px;
-	line-height: 1;
-	margin: 0 0 8px;
-	letter-spacing: -0.02em;
-}
-.page h2 {
-	font-size: 28px;
-	margin: 56px 0 6px;
-}
+.page h1,
+.page h2,
 .page h3 {
-	font-size: 21px;
-	margin: 22px 0 6px;
+	line-height: 1.2;
+	margin: 1.6em 0 0.4em;
 }
-.page h4 {
-	font-size: 16px;
-	margin: 16px 0 4px;
+.page section {
+	margin: 0 0 48px;
 }
-.page h2 .num {
-	display: inline-block;
-	background: var(--ink);
-	color: var(--paper);
-	border-radius: 8px;
-	padding: 0 10px;
-	margin-right: 8px;
-	transform: rotate(-2deg);
+.page img,
+.page video {
+	display: block;
+	max-width: 100%;
+	height: auto;
 }
-.page p {
-	margin: 0 0 8px;
+.page figure {
+	margin: 16px 0;
 }
-.page :where(p, ul, ol, dl, blockquote) {
-	max-width: 780px;
+.page figcaption,
+.page .small {
+	font-size: 14px;
+	color: #666;
 }
-.page .lede {
-	font-size: 16px;
-}
-.page .small,
-.page small {
-	font-size: 12.5px;
-	color: #5b544b;
-}
-.page a {
-	color: inherit;
-	text-underline-offset: 3px;
-}
-.page :where(ul, ol) {
-	padding-left: 22px;
-	margin: 6px 0 10px;
-}
-.page li {
-	margin: 3px 0;
-}
-.page li:target {
-	background: var(--gold);
-}
-.page hr {
-	border: 0;
-	border-top: 2px solid var(--ink);
-	margin: 32px 0;
-}
-.page blockquote {
-	margin: 12px 0;
-	padding: 6px 16px;
-	border-left: 5px solid var(--gold);
-	background: var(--paper);
-}
-.page sup a {
-	text-decoration: none;
-	font-weight: 800;
-	font-size: 11px;
-	color: var(--blue);
-}
-.page mark {
-	background: var(--gold);
-	padding: 0 3px;
-}
-
-/* code */
-.page code {
-	font-size: 13px;
-	background: #efe7d4;
-	border-radius: 4px;
-	padding: 0 4px;
-}
-.page pre {
-	margin: 10px 0;
-	padding: 12px 14px;
-	overflow-x: auto;
-	background: var(--paper);
-	border: 2px solid var(--ink);
-	border-radius: 8px;
-	font-size: 13px;
-	line-height: 1.5;
-}
-.page pre code {
-	background: none;
-	padding: 0;
-}
-
-/* cards and notes */
-.page .sticker,
-.page details {
-	background: var(--paper);
-	border: 3px solid var(--ink);
-	border-radius: 12px;
-	box-shadow: 5px 5px 0 var(--ink);
-}
-.page details {
-	margin: 14px 0;
-	padding: 10px 16px;
-}
-.page summary {
-	cursor: pointer;
-	font-weight: 800;
-}
-.page .note {
-	display: inline-block;
-	margin: 10px 0 0;
-	padding: 6px 12px;
-	transform: rotate(-1deg);
-	background: var(--gold);
-	border: 3px solid var(--ink);
-	border-radius: 8px;
-	box-shadow: 3px 3px 0 var(--ink);
-	font-weight: 700;
-}
-.page .flag {
-	background: var(--red-soft);
-	border: 2px solid var(--ink);
-	border-radius: 8px;
-	padding: 6px 10px;
-	margin: 10px 0 0;
-}
-.page .chip {
-	display: inline-block;
-	border: 2px solid var(--ink);
-	border-radius: 999px;
-	padding: 0 9px;
-	font-size: 12px;
-	font-weight: 800;
-	background: var(--paper);
-	white-space: nowrap;
-}
-.page .chip.gold {
-	background: var(--gold);
-}
-.page .chip.red {
-	background: var(--red-soft);
-}
-.page .chip.blue {
-	background: var(--blue-soft);
-}
-.page .badge {
-	font-size: 20px;
-	font-weight: 900;
-	background: var(--blue);
-	color: #fff;
-	border: 3px solid var(--ink);
-	border-radius: 10px;
-	padding: 0 10px;
-	transform: rotate(-2deg);
-	box-shadow: 3px 3px 0 var(--ink);
-}
-.page .lines {
+.page :has(> figure + figure) {
 	display: grid;
-	grid-template-columns: 74px 1fr;
-	gap: 4px 12px;
-	margin: 0;
-	max-width: none;
+	grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+	gap: 16px;
 }
-.page .lines dt {
-	font-weight: 900;
-	font-size: 12px;
-	text-transform: uppercase;
-	letter-spacing: 0.05em;
-	padding-top: 2px;
+.page :has(> figure + figure) img {
+	width: 100%;
+	aspect-ratio: 4 / 3;
+	object-fit: contain;
+	background: #eee;
 }
-.page .lines dd {
-	margin: 0;
-}
-
-/* tables: wrap in a .sticker to scroll sideways on narrow screens */
 .page table {
 	border-collapse: collapse;
 	width: 100%;
-	font-size: 14px;
-	background: var(--paper);
-	border: 3px solid var(--ink);
-	border-radius: 12px;
-	box-shadow: 5px 5px 0 var(--ink);
-	margin: 14px 0;
-}
-.page .sticker > table {
-	border: 0;
-	box-shadow: none;
-	margin: 0;
 }
 .page th,
 .page td {
 	text-align: left;
-	padding: 7px 10px;
-	border-bottom: 2px solid var(--ink);
 	vertical-align: top;
+	padding: 6px 10px;
+	border-bottom: 1px solid #ddd;
 }
-.page tr:last-child > td {
-	border-bottom: 0;
+.page code {
+	font-size: 0.9em;
 }
-.page th {
-	font-size: 12px;
-	text-transform: uppercase;
-	letter-spacing: 0.05em;
-	background: var(--sand);
-}
-.page td a {
-	font-weight: 800;
-	text-decoration: none;
-}
-
-/* figures, images, video */
-.page figure {
-	margin: 0;
-	min-width: 0;
-}
-.page :where(figure) :is(img, video),
-.page > main > :is(img, video),
-.page > article > :is(img, video) {
-	display: block;
-	width: 100%;
-	height: auto;
-	object-fit: contain;
-	background: #ece3cd;
-	border: 2px solid var(--ink);
-	border-radius: 8px;
-}
-.page figcaption {
-	margin-top: 4px;
-	font-size: 13px;
-	color: #5b544b;
-	overflow-wrap: anywhere;
-}
-.page :where(div, section, article):has(> figure ~ figure) {
-	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-	gap: 16px;
-	margin: 14px 0;
-}
-.page :where(div, section, article):has(> figure ~ figure) :is(img, video) {
-	aspect-ratio: 16 / 10;
-	height: auto;
-}
-
-/* dialogs (full-screen viewers) */
-.page dialog::backdrop {
-	background: #1d1a17cc;
+.page a {
+	color: #2457c5;
 }
