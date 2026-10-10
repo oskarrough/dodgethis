@@ -75,9 +75,10 @@ Tell the tiers apart from above. Walls are weathered stone; team colour goes onl
 
 ## UI skin
 
-- Cream cards with 3 px ink borders and hard offset shadows, square or tilted a degree; corners chamfered like cut stone, never pillow-rounded. Icons use the world's ink line.
+- **Painted cards** are the approved UI skin (Oskar, 2026-10-10: "now we're talking"): deckled paper ground, a hand-inked 9-slice frame and a watercolour wash behind the title, apricot by day and orchid by night; focus lifts the card and bleeds the wash out behind it. Materials in [look/splash/frames/](look/splash/frames/), code in `front/skin.css` and `tune.skin`; every new screen reuses them, never hard bezels, double rules or flat ink bands. Icons use the world's ink line.
+- **HUD chips** (corner buttons, unit frame, ability tiles) are still cream with 3 px ink borders and hard offset shadows until they move to the painted skin.
 - **Unit frame** (portrait, HP, XP, trait chip) sits top-left at the same rect in lobby and match, like WoW's player frame. Q, W and E sit alone at the bottom centre.
-- **Minimap** floats top-right with the inspect lens beside it, following the map's real footprint; heroes as team dots, tower/core icons, absent from the lobby.
+- **Minimap** sits bottom-right with the inspect lens beside it, following the map's real footprint; heroes as team dots, tower/core icons, absent from the lobby.
 - **Top bar:** your side left in your colour, the enemy's mirrored right; clock, level rosettes, takedowns, structure icons with HP slivers, wave and Ball countdown rings.
 - **Inspection:** hover (or long-press, or pad Y hold) for a tooltip card built live from `tune` (`tooltip.js`); world units get a slim nameplate, Alt for the full card in a corner that never covers play. The planned Tab scoreboard lives in `.claude/queue/09-tooltips.md`.
 - Pause and result are `core/overlay.js` cards: Resume and Leave game, VICTORY or DEFEAT relative to you.
