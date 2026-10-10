@@ -269,20 +269,22 @@ export function mobaFront(app, map) {
 					...buttons.filter((button) => button !== picked),
 					picked,
 				].filter(Boolean)
-				// Each flies out along the line from the screen's centre through its own, far enough
-				// to clear the screen whatever its size.
-				const away = Math.hypot(innerWidth, innerHeight)
-				const flights = order.map((node) => {
-					const box = node.getBoundingClientRect()
-					const x = box.left + box.width / 2 - innerWidth / 2
-					const y = box.top + box.height / 2 - innerHeight / 2
-					const length = Math.hypot(x, y) || 1
-					return `${(x / length) * away}px ${(y / length) * away}px`
-				})
+				// The title and notice fly up and left, the map cards shrink as they fall, Bonus falls.
+				const { title, card, bonus, cardScale } = tune.tile.leave
+				const flight = (node) => {
+					const [x, y] =
+						node === chrome.querySelector('.front-heading') || node === notice
+							? title
+							: node.classList.contains('front-bonus')
+								? bonus
+								: card
+					const scale = node.classList.contains('front-tile') ? cardScale : 1
+					return { translate: `${x * 100}vw ${y * 100}vh`, scale }
+				}
 				Promise.all(
 					order.map(
 						(node, i) =>
-							node.animate([{ translate: flights[i], rotate: i % 2 ? '-4deg' : '4deg' }], {
+							node.animate([{ ...flight(node), rotate: i % 2 ? '-4deg' : '4deg' }], {
 								duration: tune.tile.drop * 1000,
 								delay: i * tune.tile.stagger * 1000,
 								easing: 'cubic-bezier(0.5, 0, 0.9, 0.4)',

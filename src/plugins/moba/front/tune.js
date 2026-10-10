@@ -90,8 +90,8 @@ export const tune = {
 	chrome: { shift: 72, stagger: 0.06, land: 0.3, corner: 0.2 },
 	back: { freq: 174.61, slideTo: 130.81, dur: 0.25, gain: 0.055 },
 	// Menu tiles: the response is a spring, not a fade. `drop` is the flight out under the lobby
-	// shot, away from the screen centre along the line to each element's centre, title first and
-	// each tile `stagger` s after the last (the picked one leaves last);
+	// shot, title first and each tile `stagger` s after the last (the picked one leaves last);
+	// `leave` the flight in screen widths and heights per element, the cards shrinking to `cardScale`;
 	// `pop` the spring back in as the splash shot lands.
 	// The title sits still for `calm` ms (min, max), then one letter dodges or the Ball glints.
 	title: { calm: [3500, 9000] },
@@ -110,6 +110,7 @@ export const tune = {
 		tilt: 1,
 		drop: 0.2,
 		stagger: 0.05,
+		leave: { title: [-0.7, -0.7], card: [0, 1], bonus: [0, 1], cardScale: 0.4 },
 		pop: 0.35,
 	},
 	// The card skin every front screen shares. `style` picks one ('?skin=' overrides it):
