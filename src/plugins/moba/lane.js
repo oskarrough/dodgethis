@@ -23,6 +23,15 @@ export const inReach = (a, b, range) => {
 }
 
 // Plain agents: lane routes and pursuit paths, no character controllers or render-time decisions.
+// Seconds between waves at match time `seconds`: `interval`, then from `match.late` it starts at
+// `lateInterval` and shortens by `lateStep` each minute down to `minInterval`.
+export function waveInterval(seconds) {
+	const w = tune.waves
+	if (seconds < tune.match.late) return w.interval
+	const minutes = Math.floor((seconds - tune.match.late) / 60)
+	return Math.max(w.minInterval, w.lateInterval - w.lateStep * minutes)
+}
+
 export function createLane({
 	layout,
 	structures: withStructures = true,
@@ -48,8 +57,7 @@ export function createLane({
 	const minions = []
 	const teams = { A: { xp: 0, level: 1 }, B: { xp: 0, level: 1 } }
 	const globes = []
-	// Each enemy tower a team takes adds one minion to every later wave of theirs.
-	const reinforcements = { A: 0, B: 0 }
+	const reinforcements = {} // `${team}-${lane}` → extra minions, one per enemy fort taken in that lane
 	const match = { winner: null, endedTick: null, phase: 'early' }
 	const structures = (withStructures ? layout.structures : []).map(
 		({ id, kind, team, x, z, lane, after = [] }) => ({
@@ -166,7 +174,9 @@ export function createLane({
 					: ['melee', 'ranged', 'wizard']
 				).entries()) {
 					const stats = tune.minions[kind]
-					const count = stats.count + (kind === tune.waves.reinforcement ? reinforcements[team] : 0)
+					const count =
+						stats.count +
+						(kind === tune.waves.reinforcement ? (reinforcements[`${team}-${lane.id}`] ?? 0) : 0)
 					const growth = 1 + tune.waves.growth * Math.floor((t * STEP) / tune.waves.growthPeriod)
 					for (let file = 0; file < count; file++) {
 						const spacing =
@@ -278,7 +288,10 @@ export function createLane({
 		unit.killedBy = killerTeam
 		if (unit.structure) {
 			removeTower(unit)
-			if (unit.kind === 'tower') reinforcements[unit.team === 'A' ? 'B' : 'A']++
+			if (unit.kind === 'fort') {
+				const key = `${unit.team === 'A' ? 'B' : 'A'}-${unit.lane}`
+				reinforcements[key] = (reinforcements[key] ?? 0) + 1
+			}
 			const xp = tune[unit.kind].xp ?? tune.waves.structureXp
 			addXp(killerTeam, xp, unit.body.position, false, credit(xp))
 			present({
@@ -390,7 +403,7 @@ export function createLane({
 		}
 		if (t >= nextWave) {
 			if (wavesEnabled()) spawn(t)
-			nextWave += ticks(t * STEP >= tune.match.late ? tune.waves.lateInterval : tune.waves.interval)
+			nextWave += ticks(waveInterval(t * STEP))
 		}
 		const candidates = [...minions, ...structures, ...heroes]
 		const byId = new Map(candidates.map((u) => [u.id, u]))

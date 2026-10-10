@@ -38,7 +38,7 @@ Damage in the table is early-phase damage. At 6:00 guns deal one twentieth of it
 
 ## Minions
 
-- **Waves:** from each core every 30 s, the first at 0:15. Each wave is 3 melee, 2 ranged and 1 wizard (stats in the plan). Taking the enemy tower adds a fourth melee to every later wave of the team that took it. From 6:00 waves come every 15 s and a brute joins every wave: 3500 HP, 50 damage, double damage to structures, range 1.2, speed 3, 120 XP. Minion HP and damage gain 4% per whole minute, frozen for each wave. Each minion's snapshot carries `damageScale`. Brutes have a larger body and block helmet, a square tell, their own pose and hit cue, and a separate cached path grid for their radius.
+- **Waves:** from each core every 30 s, the first at 0:15. Each wave is 3 melee, 2 ranged and 1 wizard (stats in the plan). Taking an enemy fort adds one melee to every later wave of the team that took it, in that lane only. From 6:00 waves come every 20 s, 0.5 s sooner each minute down to 15 s, and a brute joins every wave: 3500 HP, 50 damage, double damage to structures, range 1.2, speed 3, 120 XP. Minion HP and damage gain 4% per whole minute, frozen for each wave. Each minion's snapshot carries `damageScale`. Brutes have a larger body and block helmet, a square tell, their own pose and hit cue, and a separate cached path grid for their radius.
 - **Pathing:** they walk the centreline in three files (z −2, 0, +2), 1.2 m apart, and never enter the flanks. Aggro goes to the nearest enemy within 6 m: minion, then structure, then hero. The same call-for-help rule as structures pulls them onto a hero who hits an allied hero. Each chase records its starting point. After travelling more than 8 m from that point, or when its target dies, the minion returns to that x and its lane file. A fresh call-for-help overrides the return leg. Minions plan obstacle-safe routes on new goals or target displacement, not every tick, so all six pass their own tower.
 - **Soak and globes:** XP as in the plan (an enemy hero within 12 m). A wizard's globe goes to the team that killed it: that team sees it in its colour and can pick it up (1 m radius), the other sees it grey. +15% max HP, lasts 15 s.
 
@@ -52,11 +52,11 @@ Damage in the table is early-phase damage. At 6:00 guns deal one twentieth of it
 
 ## Match timer and state
 
-| Time      | Phase     | What changes                                                                           |
-| --------- | --------- | -------------------------------------------------------------------------------------- |
-| 0:00–3:00 | Early     | Laning; first wave 0:15, trickle XP from 0:30, first Ball 1:00                         |
-| 3:00–6:00 | Objective | A Ball every 2:30; the HUD counts down to the next wave and Ball, or a live Ball's pop |
-| 6:00–     | Late      | One-twentieth-strength guns, waves every 15 s with a brute in each, a Ball every 0:30  |
+| Time      | Phase     | What changes                                                                                        |
+| --------- | --------- | --------------------------------------------------------------------------------------------------- |
+| 0:00–3:00 | Early     | Laning; first wave 0:15, trickle XP from 0:30, first Ball 1:00                                      |
+| 3:00–6:00 | Objective | A Ball every 2:30; the HUD counts down to the next wave and Ball, or a live Ball's pop              |
+| 6:00–     | Late      | One-twentieth-strength guns, waves every 20 s shrinking to 15 s, a brute in each, a Ball every 0:30 |
 
 Win by destroying the enemy core. There's no hard cap. XP comes to about 960/min fully soaked, so level 10 lands around 9–10 min. If seeded bot matches run past 15 min, shorten the Ball interval first. `matchOver` freezes the sim, plays a distinct win cue and burst, shows a banner, and offers R / pad Start to restart. The 3 s slow-motion core shatter (skipped in shared sessions) remains slice 6. The full-lane snapshot includes `match: { phase, nextWave, winner, endedTick }`, team XP/levels, structure vulnerability and killer-team globes `{ id, team, pos, expires }`. Ball-slice snapshot additions, all timers in ticks: `match: { phase, nextWave, nextBall, winner, endedTick }`, `ball: { id, team, contested, releaseTick, releasePos, state: 'warning'|'loose'|'channel'|'carried'|'flying', pos, carrier, channel: { hero, endTick }, shot: { pos, dir, travelled }, pickableAt, popAt }` (null between Balls), `stunUntil` on heroes and `silentUntil` on structures. Facts: `ballContested`, `ballWarn`, `ballSpawn`, `ballChannel`, `ballInterrupted` (damage, movement or contest), `ballPickup`, `ballWindup`, `ballThrow`, `ballHit` (hero or structure), `ballBounce` (shield or cover), `ballDrop` (death, hero hit, bounce or miss), `ballPop` (expired, spent or consumed by an intercept), `ballDenied`. The Ball also records `spawnAt` and `warnAt`; pickup channels record `startTick`, and heroes record `ballThrow: { dir, startTick, endTick }`. A stun cancels a dash or windup; released shots keep flying. Silence cancels a structure's pending tell, not its released orbs.
 

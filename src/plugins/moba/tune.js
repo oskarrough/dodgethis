@@ -268,7 +268,9 @@ export const tune = {
 	waves: {
 		first: 15,
 		interval: 30,
-		lateInterval: 20,
+		lateInterval: 20, // from match.late; shortens by lateStep each minute down to minInterval
+		lateStep: 0.5,
+		minInterval: 15,
 		growth: 0.04,
 		growthPeriod: 60,
 		spawnX: 32,
@@ -283,7 +285,7 @@ export const tune = {
 		soak: 12,
 		structureXp: 300,
 		abilityStructure: 0.25,
-		reinforcement: 'melee', // one more per wave for each enemy tower taken
+		reinforcement: 'melee', // one more per wave in a lane for each enemy fort taken in that lane
 	},
 	// Mercenary camps (Flagfall's jungle, `camps.js`): guards wait at the camp marks, fight back
 	// within `leash` m of the mark, and heal after `calm` s alone. The last hit's team gets

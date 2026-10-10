@@ -1,5 +1,6 @@
 import { tune } from './tune.js'
 import { structureName } from './gates.js'
+import { waveInterval } from './lane.js'
 
 // A cream sticker card for the stat nerds. Builders are pure: they read live state and `tune`
 // on every call, so an open card follows a `&debug` edit or a level-up. The card element only
@@ -239,7 +240,6 @@ export function killsCard(kills, { mine = true } = {}) {
 
 // The clock's card carries the countdowns the top bar no longer shows.
 export function clockCard({ elapsed = 0, nextWave = 0, nextBall, ballPop = null } = {}) {
-	const late = elapsed >= tune.match.late
 	const kinds = Object.entries(tune.minions).map(([kind, m]) => `${m.count} ${kind}`)
 	const ball =
 		ballPop != null
@@ -255,7 +255,7 @@ export function clockCard({ elapsed = 0, nextWave = 0, nextBall, ballPop = null 
 			['Next wave', `in ${Math.max(0, Math.ceil(nextWave))} s`],
 			['Each wave', kinds.join(', ')],
 			...(ball ? [['The Ball', ball]] : []),
-			['Waves', `every ${n(late ? tune.waves.lateInterval : tune.waves.interval)} s`],
+			['Waves', `every ${n(waveInterval(elapsed))} s`],
 			['Wave growth', `+${pct(tune.waves.growth)} every ${n(tune.waves.growthPeriod)} s`],
 			['Late Ball', `every ${n(tune.ball.lateInterval)} s`],
 			['Late guns', `${pct(tune.match.lateGunDamage)} of their damage`],
