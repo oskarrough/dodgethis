@@ -1,0 +1,1206 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>How it spreads · dodgethis</title>
+		<style>
+			:root {
+				--cream: #f6eedb;
+				--paper: #fffaf0;
+				--ink: #1d1a17;
+				--blue: #3a6ee0;
+				--blue-soft: #c9d8f8;
+				--red: #e0453a;
+				--red-soft: #f7cdc8;
+				--gold: #f2b632;
+				--sand: #d8c7a3;
+				--teal: #5f9e98;
+				--grey: #9a9288;
+			}
+			* {
+				box-sizing: border-box;
+			}
+			body {
+				margin: 0;
+				background: var(--cream);
+				color: var(--ink);
+				font:
+					15px/1.45 ui-rounded,
+					'Nunito',
+					'Trebuchet MS',
+					system-ui,
+					sans-serif;
+			}
+			main {
+				max-width: 1100px;
+				margin: 0 auto;
+				padding: 28px 20px 80px;
+			}
+			h1 {
+				font-size: 44px;
+				line-height: 1;
+				margin: 0 0 8px;
+				letter-spacing: -0.02em;
+			}
+			h2 {
+				font-size: 28px;
+				margin: 56px 0 6px;
+			}
+			h2 .num {
+				display: inline-block;
+				background: var(--ink);
+				color: var(--paper);
+				border-radius: 8px;
+				padding: 0 10px;
+				margin-right: 8px;
+				transform: rotate(-2deg);
+			}
+			p {
+				margin: 0 0 8px;
+			}
+			a {
+				color: inherit;
+			}
+			code {
+				font-size: 13px;
+				background: #efe7d4;
+				border-radius: 4px;
+				padding: 0 4px;
+			}
+			.lede {
+				max-width: 780px;
+				font-size: 16px;
+			}
+			.sub {
+				max-width: 780px;
+				color: #4a443d;
+			}
+			.sticker {
+				background: var(--paper);
+				border: 3px solid var(--ink);
+				border-radius: 12px;
+				box-shadow: 5px 5px 0 var(--ink);
+			}
+			.chip {
+				display: inline-block;
+				border: 2px solid var(--ink);
+				border-radius: 999px;
+				padding: 0 9px;
+				font-size: 12px;
+				font-weight: 800;
+				background: var(--paper);
+				white-space: nowrap;
+			}
+			.chip.gold {
+				background: var(--gold);
+			}
+			.chip.red {
+				background: var(--red-soft);
+			}
+			.chip.blue {
+				background: var(--blue-soft);
+			}
+			.note {
+				display: inline-block;
+				margin: 10px 0 0;
+				padding: 6px 12px;
+				transform: rotate(-1deg);
+				background: var(--gold);
+				border: 3px solid var(--ink);
+				border-radius: 8px;
+				box-shadow: 3px 3px 0 var(--ink);
+				font-weight: 700;
+			}
+			.howto {
+				margin-left: 10px;
+				transform: rotate(0.8deg);
+				background: var(--paper);
+			}
+			.thesis {
+				margin: 26px 0 0;
+				padding: 16px 20px;
+				max-width: 900px;
+				font-size: 17px;
+			}
+			.thesis b {
+				background: var(--gold);
+				padding: 0 3px;
+			}
+
+			table {
+				border-collapse: collapse;
+				width: 100%;
+				font-size: 14px;
+			}
+			th,
+			td {
+				text-align: left;
+				padding: 7px 10px;
+				border-bottom: 2px solid var(--ink);
+				vertical-align: top;
+			}
+			tr:last-child td {
+				border-bottom: 0;
+			}
+			th {
+				font-size: 12px;
+				text-transform: uppercase;
+				letter-spacing: 0.05em;
+				background: var(--sand);
+			}
+			td a {
+				font-weight: 800;
+				text-decoration: none;
+			}
+			.strip {
+				overflow-x: auto;
+				margin-top: 14px;
+			}
+
+			.item {
+				margin: 22px 0;
+				padding: 14px 18px 16px;
+			}
+			.item.pick {
+				background: #fff4d6;
+			}
+			.item header {
+				display: flex;
+				gap: 12px;
+				align-items: center;
+				flex-wrap: wrap;
+				margin-bottom: 8px;
+			}
+			.badge {
+				font-size: 20px;
+				font-weight: 900;
+				background: var(--blue);
+				color: #fff;
+				border: 3px solid var(--ink);
+				border-radius: 10px;
+				padding: 0 10px;
+				transform: rotate(-2deg);
+				box-shadow: 3px 3px 0 var(--ink);
+			}
+			.item h3 {
+				font-size: 21px;
+				margin: 0;
+			}
+			.lines {
+				display: grid;
+				grid-template-columns: 74px 1fr;
+				gap: 4px 12px;
+				margin: 0;
+			}
+			.lines dt {
+				font-weight: 900;
+				font-size: 12px;
+				text-transform: uppercase;
+				letter-spacing: 0.05em;
+				padding-top: 2px;
+			}
+			.lines dd {
+				margin: 0;
+			}
+			.flag {
+				background: var(--red-soft);
+				border: 2px solid var(--ink);
+				border-radius: 8px;
+				padding: 6px 10px;
+				margin: 10px 0 0;
+			}
+			sup a {
+				text-decoration: none;
+				font-weight: 800;
+				font-size: 11px;
+				color: var(--blue);
+			}
+			.small {
+				font-size: 12.5px;
+				color: #5b544b;
+			}
+
+			.flow {
+				display: flex;
+				gap: 8px;
+				flex-wrap: wrap;
+				align-items: stretch;
+				margin: 16px 0 6px;
+			}
+			.flow div {
+				flex: 1 1 140px;
+				padding: 8px 10px;
+				font-size: 13.5px;
+			}
+			.flow b {
+				display: block;
+				font-size: 12px;
+				text-transform: uppercase;
+				letter-spacing: 0.05em;
+			}
+
+			.miles {
+				display: grid;
+				grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+				gap: 16px;
+				margin-top: 14px;
+			}
+			.miles .sticker {
+				padding: 14px 16px;
+			}
+			.miles h3 {
+				margin: 6px 0 6px;
+				font-size: 21px;
+			}
+			.miles ul {
+				padding-left: 18px;
+				margin: 6px 0;
+			}
+			.miles li {
+				margin: 3px 0;
+			}
+			.miles .play {
+				background: var(--blue-soft);
+				border: 2px solid var(--ink);
+				border-radius: 8px;
+				padding: 6px 10px;
+				margin-top: 8px;
+			}
+
+			ol.sources {
+				font-size: 13px;
+				padding-left: 22px;
+			}
+			ol.sources li {
+				margin: 4px 0;
+				word-break: break-word;
+			}
+			ol.sources li:target {
+				background: var(--gold);
+			}
+		</style>
+	</head>
+	<body>
+		<main>
+			<h1>How it spreads</h1>
+			<p class="lede">
+				Oskar, 2026-10-10: “it needs a domain, it needs pvp nice online, but online will only go
+				viral once we have some kind of ranked list.” And on the roadmap: a league, “make a team,
+				climb, see who gets rank 1.”
+			</p>
+			<p class="sub">
+				Five parts: the loop that spreads it, the smallest ranked ladder, what blocks a stranger
+				match today, a plan in five playable milestones, and what the eventual name has to do. Each
+				part names one top pick.
+			</p>
+			<span class="note">Facts link to sources at the bottom. My estimates say so.</span>
+			<span class="note howto">Reply by code: “R4 ✓”, “cut S6”, “M2 before M1”.</span>
+
+			<div class="sticker thesis">
+				<p>
+					<b>The first ranked list shouldn't wait for nice PvP.</b> Today the host's browser is the
+					server: it decides every result, gets a ~230 ms head start on every dodge, and ends the
+					match when its tab sleeps. A ladder built on that is unfair before it's ever cheated.
+				</p>
+				<p style="margin: 0">
+					So: make every link drop a stranger into a bot's seat (M1), ship a <b>daily gauntlet</b>
+					against bots as the first ranked list (M2, no netcode involved), then fix the plumbing and
+					the host's head start, and only then open PvP ranked and clubs.
+				</p>
+			</div>
+
+			<h2>At a glance</h2>
+			<div class="sticker strip">
+				<table>
+					<tr>
+						<th>Part</th>
+						<th>Top pick</th>
+						<th>Why</th>
+					</tr>
+					<tr>
+						<td>1 · Loop</td>
+						<td>
+							<a href="#S1">S1</a> + <a href="#S3">S3</a> The link is the lobby; you take a bot's
+							seat
+						</td>
+						<td>A friend's link becomes a match in seconds, never a waiting room</td>
+					</tr>
+					<tr>
+						<td>2 · Ranked</td>
+						<td>
+							<a href="#R4">R4</a> Daily gauntlet, then <a href="#R2">R2</a> OpenSkill for PvP
+						</td>
+						<td>A real list with three players online, and checkable by replay</td>
+					</tr>
+					<tr>
+						<td>2 · Storage</td>
+						<td><a href="#R8">R8</a> One Ladder Durable Object with SQLite, not D1 or TinyJoin</td>
+						<td>Same pattern as the lobby directory already in <code>worker/index.js</code></td>
+					</tr>
+					<tr>
+						<td>3 · PvP gaps</td>
+						<td><a href="#P5">P5</a> Relay rooms through a Durable Object</td>
+						<td>Drops PeerJS and public TURN, and makes rejoin possible</td>
+					</tr>
+					<tr>
+						<td>4 · Plan</td>
+						<td><a href="#M1">M1</a> Link in, before anything ranked</td>
+						<td>Cheapest step, and every later one needs it</td>
+					</tr>
+					<tr>
+						<td>5 · Name</td>
+						<td><a href="#N4">N4</a> Pick the name before identity ships</td>
+						<td>Saved keys are tied to the domain; moving later strands everyone's rank</td>
+					</tr>
+				</table>
+			</div>
+
+			<!-- 1 · LOOP -->
+			<h2><span class="num">1</span>The loop that spreads it</h2>
+			<p class="sub">
+				Every game in the research spread the same way: no install, one link or code, and something
+				worth showing someone else. agar.io went from a 4chan post to about 5M daily players on
+				YouTubers alone<sup><a href="#src-agar">1</a></sup
+				>; Among Us sat at 30–50 concurrent players for two years until streamers shouted room codes
+				across calls<sup><a href="#src-amongus">5</a></sup
+				>; Wordle's grid took it from 90 to 2M daily players in three months<sup
+					><a href="#src-wordle">10</a></sup
+				>.
+			</p>
+			<div class="flow">
+				<div class="sticker">
+					<b>0 s</b>Friend pastes a link in Discord; it unfurls with a picture
+				</div>
+				<div class="sticker"><b>~2 s</b>Tap; 3.2 MB of script and physics download</div>
+				<div class="sticker">
+					<b>&lt;10 s</b>You walk in the lobby or lane, in a bot's seat, named
+				</div>
+				<div class="sticker">
+					<b>~5 min</b>Match ends; one tap shares a result card and a rematch link
+				</div>
+				<div class="sticker"><b>loop</b>Their friend taps that link</div>
+			</div>
+
+			<div class="sticker item pick" id="S1">
+				<header>
+					<span class="badge">S1</span>
+					<h3>The link is the lobby</h3>
+					<span class="chip gold">top pick</span><span class="chip">small</span>
+				</header>
+				<dl class="lines">
+					<dt>Today</dt>
+					<dd>Rooms join by a five-letter code typed into a box; there's no join by link.</dd>
+					<dt>Do</dt>
+					<dd>
+						<code>dodgethis.0sk.ar/ABCDE</code> skips the splash and opens straight into the host's
+						walking lobby. “Share code” becomes “Copy link”. A dead code lands in solo practice with
+						a notice, never on an error screen. skribbl.io's private rooms work only by link<sup
+							><a href="#src-skribbl">12</a></sup
+						>.
+					</dd>
+					<dt>Size</dt>
+					<dd>
+						About 2 slices: a Worker route that serves <code>index.html</code>, and a boot path.
+					</dd>
+				</dl>
+			</div>
+
+			<div class="sticker item" id="S2">
+				<header>
+					<span class="badge">S2</span>
+					<h3>Ten seconds, counted</h3>
+					<span class="chip">small</span>
+				</header>
+				<dl class="lines">
+					<dt>Today</dt>
+					<dd>
+						Today's <code>dist</code> is 3.2 MB gzipped (scripts and the Rapier WASM), about 1.3 s
+						on a 20 Mbit line. Nobody has timed the rest (WASM init, textures, shader compile).
+						Phones are unproven, and shared links mostly get opened on phones.
+					</dd>
+					<dt>Do</dt>
+					<dd>
+						Time tap-to-moving on a cold cache and put it in the verify skill. No name prompt before
+						play: a generated sticker (“Brisk Otter”) you can rename later. The first input moves
+						you. A phone at least gets to watch the match it was invited to, with “send this to my
+						computer”.
+					</dd>
+					<dt>Size</dt>
+					<dd>One slice to measure; the fixes depend on what the measurement shows.</dd>
+				</dl>
+			</div>
+
+			<div class="sticker item pick" id="S3">
+				<header>
+					<span class="badge">S3</span>
+					<h3>Strangers take a bot's seat</h3>
+					<span class="chip gold">top pick</span><span class="chip">medium</span>
+				</header>
+				<dl class="lines">
+					<dt>Today</dt>
+					<dd>
+						The lobby already fills empty seats with host-only bots, but lanes refuse new peers. A
+						friend who arrives mid-match waits for a round trip.
+					</dd>
+					<dt>Do</dt>
+					<dd>
+						Make it the joining rule: anyone who opens a link takes over a bot, mid-match included,
+						inheriting its hero, spot and HP. A solo player is always in a match; a friend's arrival
+						never costs a restart. Rocket League added bots back to fill short Casual games instead
+						of cancelling them<sup><a href="#src-rl-bots">8</a></sup
+						>; Fortnite gives new players bots and keeps competitive queues bot-free<sup
+							><a href="#src-fortnite">9</a></sup
+						>.
+					</dd>
+					<dt>Bonus</dt>
+					<dd>
+						The same handoff run backwards is rejoin (<a href="#P6">P6</a>): a dropped human's bot
+						holds the seat until they're back.
+					</dd>
+					<dt>Size</dt>
+					<dd>About 4 slices.</dd>
+				</dl>
+			</div>
+
+			<div class="sticker item" id="S4">
+				<header>
+					<span class="badge">S4</span>
+					<h3>The share-back card</h3>
+					<span class="chip">small</span>
+				</header>
+				<dl class="lines">
+					<dt>Today</dt>
+					<dd>
+						<code>index.html</code> has a <code>&lt;title&gt;</code> and nothing else: no
+						<code>og:image</code>, so a pasted link unfurls as bare text.
+					</dd>
+					<dt>Do</dt>
+					<dd>
+						Preview tags with a key-art image. On the result screen, one tap copies a short card: an
+						emoji strip of the match (win, KOs, dunks, your hero) plus a rematch link to the same
+						room. Wordle's grid spread because it showed the shape of a game without spoiling it,
+						and players were already sharing it by hand before it was built in<sup
+							><a href="#src-wordle">10</a></sup
+						>.
+					</dd>
+					<dt>Size</dt>
+					<dd>About 2 slices.</dd>
+				</dl>
+			</div>
+
+			<div class="sticker item" id="S5">
+				<header>
+					<span class="badge">S5</span>
+					<h3>Eight-second clips</h3>
+					<span class="chip">large</span><span class="chip red">later</span>
+				</header>
+				<dl class="lines">
+					<dt>Why</dt>
+					<dd>
+						Fall Guys and Among Us spread through streams of chaos that reads at a glance<sup
+							><a href="#src-fallguys">6</a></sup
+						><sup><a href="#src-amongus-cnbc">5b</a></sup
+						>. A clip of your last dunk is the strongest share there is. Highlight clips are
+						shelved; replays already reproduce a match, so the hard half exists.
+					</dd>
+					<dt>When</dt>
+					<dd>After a season is running; a clip with a rank badge beats a clip without one.</dd>
+				</dl>
+			</div>
+
+			<div class="sticker item" id="S6">
+				<header>
+					<span class="badge">S6</span>
+					<h3>A Discord Activity</h3>
+					<span class="chip">medium</span><span class="chip red">later</span>
+				</header>
+				<dl class="lines">
+					<dt>Why</dt>
+					<dd>
+						Discord runs web games inside a voice call as Activities<sup
+							><a href="#src-discord">17</a></sup
+						>. That's Among Us's “shout the code” loop with the code removed.
+					</dd>
+					<dt>Catch</dt>
+					<dd>
+						Activities reach the network through Discord's proxy, so PeerJS and public TURN are
+						likely out. It wants the relay rooms of <a href="#P5">P5</a> first.
+					</dd>
+				</dl>
+			</div>
+
+			<!-- 2 · RANKED -->
+			<h2><span class="num">2</span>Ranked: the smallest ladder that works</h2>
+			<p class="sub">
+				Identity without accounts, a rating that handles teams, short seasons, clubs, a ladder that
+				works with three people online, and abuse rules sized for tens of players, not millions.
+			</p>
+
+			<div class="sticker item" id="R1">
+				<header>
+					<span class="badge">R1</span>
+					<h3>A name and a key, no account</h3>
+					<span class="chip">small</span>
+				</header>
+				<dl class="lines">
+					<dt>Do</dt>
+					<dd>
+						First play mints a random secret in <code>localStorage</code> and a public player id.
+						The server stores the id, the name and a hash of the secret. You only pick a name the
+						first time you'd appear on a list. To carry a rank to another device: a one-time
+						transfer link or QR now, a passkey once someone asks. No email, no password.
+					</dd>
+					<dt>Why</dt>
+					<dd>
+						Every .io game in the research asked for nothing but a name<sup
+							><a href="#src-io">4</a></sup
+						>. Lichess lets you play anonymously<sup><a href="#src-lichess-anon">15</a></sup
+						>. Accounts are friction at the exact moment a stranger is deciding whether to stay.
+					</dd>
+					<dt>Today</dt>
+					<dd>Humans have no names at all, just P1/P2 tags.</dd>
+				</dl>
+			</div>
+
+			<div class="sticker item pick" id="R2">
+				<header>
+					<span class="badge">R2</span>
+					<h3>OpenSkill underneath, points on top</h3>
+					<span class="chip gold">top pick (PvP)</span><span class="chip">small</span>
+				</header>
+				<dl class="lines">
+					<dt>Do</dt>
+					<dd>
+						OpenSkill (Weng-Lin, MIT, an npm package) rates teams natively<sup
+							><a href="#src-openskill">16</a></sup
+						>; Glicko-2 is built for one-on-one and wants 10–15 games per rating period<sup
+							><a href="#src-glicko">13</a></sup
+						>. Rocket League runs on the same Weng-Lin mu and sigma<sup
+							><a href="#src-rl-mmr">7b</a></sup
+						>. Sort the board by μ − 3σ, the conservative estimate: it starts low and rises as the
+						system learns you, so a newcomer sees themselves climb. Show tiers, not raw numbers;
+						Rocket League hides MMR below Grand Champion<sup><a href="#src-rl">7</a></sup
+						>.
+					</dd>
+					<dt>Cut</dt>
+					<dd>
+						Separate trophy-style points (Brawl Stars' Trophy Road<sup
+							><a href="#src-brawl">11</a></sup
+						>) only if tiers alone feel dead.
+					</dd>
+				</dl>
+			</div>
+
+			<div class="sticker item" id="R3">
+				<header>
+					<span class="badge">R3</span>
+					<h3>Four-week seasons, and rank 1 lives in the lobby</h3>
+					<span class="chip">small</span>
+				</header>
+				<dl class="lines">
+					<dt>Do</dt>
+					<dd>
+						Four weeks while balance changes weekly; Krunker runs monthly ranked seasons too<sup
+							><a href="#src-krunker-ranked">3</a></sup
+						>. Soft reset: σ widens and tiers restart, the way Rocket League places returning
+						players again<sup><a href="#src-rl">7</a></sup
+						>. Last season's tier becomes a sticker on your name tag.
+					</dd>
+					<dt>The fun bit</dt>
+					<dd>
+						The menu is the game, so the ladder is a scoreboard you walk past in the lobby, and last
+						season's rank 1 stands on a plinth beside the hero stands. That answers “see who gets
+						rank 1” without a menu screen.
+					</dd>
+				</dl>
+			</div>
+
+			<div class="sticker item pick" id="R4">
+				<header>
+					<span class="badge">R4</span>
+					<h3>The daily gauntlet: a ranked list that needs no one online</h3>
+					<span class="chip gold">top pick</span><span class="chip">medium</span>
+				</header>
+				<dl class="lines">
+					<dt>Do</dt>
+					<dd>
+						Every day, one seed, one map, one set of Hard bots for everyone. Score: time to the
+						enemy core, with KOs as the tie-break. The board resets at midnight UTC, and the card
+						reads “Gauntlet #12 · 4:31 · rank 37 of 210”.
+					</dd>
+					<dt>Why first</dt>
+					<dd>
+						It's a real “who's rank 1” with three players in the world, it needs no netcode, and
+						it's checkable: replays already reproduce a match from its inputs (the replay viewer
+						says so when a build doesn't), so the top scores can be re-run in bun overnight on the
+						office box. GeoGuessr's ranked is a weekly ladder of small divisions<sup
+							><a href="#src-geo">14</a></sup
+						>; Wordle proved a daily puzzle with a shareable score is enough<sup
+							><a href="#src-wordle">10</a></sup
+						>.
+					</dd>
+					<dt>Catch</dt>
+					<dd>
+						Re-running needs the same build and WASM as the player had, so submissions carry the
+						build id and get checked against that revision. Rapier's WASM inside a Worker is
+						unproven, so verify on the box, not at the edge.
+					</dd>
+				</dl>
+			</div>
+
+			<div class="sticker item" id="R5">
+				<header>
+					<span class="badge">R5</span>
+					<h3>Clubs: the league, summed</h3>
+					<span class="chip">medium</span>
+				</header>
+				<dl class="lines">
+					<dt>Do</dt>
+					<dd>
+						A club is a name, a three-letter tag and up to 30 members. A club's score is the sum of
+						its members' best season results, gauntlet included. The tag sits on your name sticker.
+						Brawl Stars clubs hold 30<sup><a href="#src-brawl-club">11b</a></sup
+						>; Krunker's Turf Wars counts only a clan's top 20<sup
+							><a href="#src-krunker-turf">3b</a></sup
+						>, and that cap stops one huge clan from just winning on headcount.
+					</dd>
+					<dt>Why summed</dt>
+					<dd>
+						It doesn't need three clubmates online at once. A ladder of fixed trios (“make a team”
+						in the strict sense) comes when queues hold enough humans for 3v3.
+					</dd>
+				</dl>
+			</div>
+
+			<div class="sticker item" id="R6">
+				<header>
+					<span class="badge">R6</span>
+					<h3>Matchmaking with few players online</h3>
+					<span class="chip">medium</span>
+				</header>
+				<dl class="lines">
+					<dt>Do</dt>
+					<dd>
+						Queue for 20 s at a widening rating window, then fill every empty seat with bots,
+						labelled as bots. Rating only moves on human-against-human outcomes: one human a side
+						plus four bots is still a fair one-on-one read. Gather people with a nightly “ranked
+						hour” and a countdown on the splash.
+					</dd>
+					<dt>Not</dt>
+					<dd>
+						Disguised bots. Fall Guys and Brawl Stars never confirmed theirs<sup
+							><a href="#src-fg-wiki">6b</a></sup
+						>, and players spent years suspecting them. Fortnite admits its bots and keeps them out
+						of competitive play<sup><a href="#src-fortnite">9</a></sup
+						>; that's the honest version.
+					</dd>
+				</dl>
+			</div>
+
+			<div class="sticker item" id="R7">
+				<header>
+					<span class="badge">R7</span>
+					<h3>Abuse rules at our scale</h3>
+					<span class="chip">small</span>
+				</header>
+				<dl class="lines">
+					<dt>Hole</dt>
+					<dd>The host's browser runs the sim, so it could report any result it likes.</dd>
+					<dt>Do</dt>
+					<dd>
+						Every human client reports the result, and a mismatch voids the match. Rating gained
+						from the same opponent is capped per day, which stops farming an alt. New players are
+						provisional (σ already handles it). Keep ranked inputs for spot checks, and put
+						Cloudflare Turnstile on claiming a name.
+					</dd>
+					<dt>Later</dt>
+					<dd>
+						Running the sim inside a Durable Object is the real fix. Do it when someone actually
+						cheats, not before. With tens of players, a cheater would be a nice problem to have.
+						Krunker needed a native client for anti-cheat only at real scale<sup
+							><a href="#src-krunker-ranked">3</a></sup
+						>.
+					</dd>
+				</dl>
+			</div>
+
+			<div class="sticker item pick" id="R8">
+				<header>
+					<span class="badge">R8</span>
+					<h3>On Cloudflare: one Ladder Durable Object</h3>
+					<span class="chip gold">top pick</span><span class="chip">small</span>
+				</header>
+				<dl class="lines">
+					<dt>Shape</dt>
+					<dd>
+						<code>/api/ladder/*</code> goes to one <code>Ladder</code> Durable Object with SQLite
+						storage, the same pattern as <code>LobbyDirectory</code> in
+						<code>worker/index.js</code>. It holds players, matches, ratings, seasons, clubs and
+						gauntlet scores. A single writer makes rating updates atomic with no locking. Later, a
+						<code>Matchmaker</code> object holds the queue on hibernating WebSockets. Replays go to
+						R2 if they're kept at all.
+					</dd>
+					<dt>Why not D1</dt>
+					<dd>
+						D1's row prices are identical<sup><a href="#src-d1">19</a></sup
+						>. It earns its place only when a second service needs the data, or one object outgrows
+						its storage. Neither is close.
+					</dd>
+					<dt>Cost</dt>
+					<dd>
+						Free plan: 100k Durable Object requests and 100k rows written a day<sup
+							><a href="#src-do">18</a></sup
+						>, which covers the ladder alone for a long time. My estimate for 1,000 players playing
+						20k matches a month: about 260k row writes and 40k requests, inside the $5 Paid plan's
+						allowance (50M writes, 1M requests). Relay rooms (<a href="#P5">P5</a>) are what push it
+						onto Paid.
+					</dd>
+				</dl>
+			</div>
+
+			<div class="sticker item" id="R9">
+				<header>
+					<span class="badge">R9</span>
+					<h3>TinyJoin, weighed seriously</h3>
+					<span class="chip red">not for the ladder</span>
+				</header>
+				<dl class="lines">
+					<dt>What it is</dt>
+					<dd>
+						A Rust/WASM relational database that runs in the browser, saved to OPFS, 354 KiB<sup
+							><a href="#src-tinyjoin">20</a></sup
+						>. Nicely made, and smaller and faster than SQLite in the browser by its own benchmarks.
+					</dd>
+					<dt>Fit</dt>
+					<dd>
+						A ladder is one shared truth every player trusts. TinyJoin has “no server, and no sync”:
+						it never leaves the player's machine<sup><a href="#src-tinyjoin-c">20b</a></sup
+						>. Anything a player can write locally is a rank they can edit. It can't hold identity
+						either: storage the browser may evict is no place for the key to your rank.
+					</dd>
+					<dt>Maturity</dt>
+					<dd>
+						v0.6.0, two months old (repo created 2026-08-09, 33 stars on GitHub), “experimental and
+						verified on Chromium only”. Releases may require recreating the database rather than
+						migrating it<sup><a href="#src-tinyjoin-c">20b</a></sup
+						>.
+					</dd>
+					<dt>Cost, lock-in</dt>
+					<dd>
+						Free and MIT, no lock-in. A Durable Object is Cloudflare-only, but its SQL is plain
+						SQLite and moving off it is a dump.
+					</dd>
+					<dt>Verdict</dt>
+					<dd>
+						The ladder lives in the Durable Object. TinyJoin's only plausible job is a local cache
+						of your own match history, and <code>localStorage</code> does that today. Look again if
+						it ships sync.
+					</dd>
+				</dl>
+			</div>
+
+			<!-- 3 · PVP GAPS -->
+			<h2><span class="num">3</span>What blocks a stranger match today</h2>
+			<p class="sub">
+				From <a href="../../network.md">network.md</a> and the Shared play section of
+				<a href="../../moba-plan.md">moba-plan.md</a>. Ordered by how soon a stranger hits it.
+			</p>
+
+			<div class="sticker strip">
+				<table>
+					<tr>
+						<th>#</th>
+						<th>Gap</th>
+						<th>What a stranger sees</th>
+						<th>Fix</th>
+						<th>Size</th>
+					</tr>
+					<tr id="P1">
+						<td>P1</td>
+						<td>No join by link</td>
+						<td>A code to type, from a chat they're reading on a phone</td>
+						<td><a href="#S1">S1</a></td>
+						<td>small</td>
+					</tr>
+					<tr id="P2">
+						<td>P2</td>
+						<td>Version lock</td>
+						<td>
+							Every push to main deploys, and mismatched protocols refuse to join. A friend's stale
+							tab can't join your fresh one.
+						</td>
+						<td>Rooms carry a build id; a mismatched joiner gets a “new version, reload” button</td>
+						<td>small</td>
+					</tr>
+					<tr id="P3">
+						<td>P3</td>
+						<td>No names</td>
+						<td>“P2 killed you”</td>
+						<td><a href="#R1">R1</a></td>
+						<td>small</td>
+					</tr>
+					<tr id="P4">
+						<td>P4</td>
+						<td>Flagfall is offline only</td>
+						<td>Shared handoffs force Overthrow; the map with Dunk can't be played together</td>
+						<td>Flagfall's replica</td>
+						<td>medium</td>
+					</tr>
+					<tr id="P5">
+						<td>P5</td>
+						<td>Plumbing on borrowed goodwill</td>
+						<td>
+							Public PeerJS signalling and OpenRelay TURN, with “no production reliability
+							guarantee”. Strangers behind strict NATs need TURN.
+						</td>
+						<td><b>Relay rooms</b>, below</td>
+						<td>medium</td>
+					</tr>
+					<tr id="P6">
+						<td>P6</td>
+						<td>No rejoin</td>
+						<td>A refresh or Wi-Fi blip loses your seat for good</td>
+						<td>A bot holds the seat for 60 s (<a href="#S3">S3</a> backwards)</td>
+						<td>medium</td>
+					</tr>
+					<tr id="P7">
+						<td>P7</td>
+						<td>The host is the server</td>
+						<td>
+							Host alt-tabs, the browser throttles its timers to about once a second<sup
+								><a href="#src-chrome">21</a></sup
+							>, and after 10 s everyone's session ends. Host leaves: same.
+						</td>
+						<td>Sim in a Durable Object (<a href="#R7">R7</a> later), or host migration</td>
+						<td>large</td>
+					</tr>
+					<tr id="P8">
+						<td>P8</td>
+						<td>The host's head start</td>
+						<td>
+							A guest's own click moves after about 233 ms at 100 ms ping, 333 ms at 200. Only the
+							host dodges a centred Q on sight. In a dodge game, that decides fights.
+						</td>
+						<td>Local-hero prediction, already designed (<code>git show 655bd1d</code>)</td>
+						<td>large</td>
+					</tr>
+				</table>
+			</div>
+
+			<div class="sticker item pick" style="margin-top: 26px">
+				<header>
+					<span class="badge">P5</span>
+					<h3>Relay rooms: one Durable Object per room</h3>
+					<span class="chip gold">top pick</span><span class="chip">medium</span>
+				</header>
+				<dl class="lines">
+					<dt>Do</dt>
+					<dd>
+						Every player opens a WebSocket to the room's Durable Object, which forwards host
+						envelopes and guest intents. The host stays authoritative and <code>link.js</code>
+						barely notices, but PeerJS, STUN, TURN and NAT trouble are gone. The room knows who's
+						seated, so rejoin (P6) and build checks (P2) live there naturally. Once the room is the
+						hub, moving the sim into it (P7) is a later step, not a rewrite.
+					</dd>
+					<dt>Cost</dt>
+					<dd>
+						Incoming WebSocket messages bill 20 to a request; outgoing are free; duration bills at
+						128 MB per object<sup><a href="#src-do">18</a></sup
+						>. My estimate for a full 3v3 of humans over 10 minutes: about 250 incoming messages a
+						second (intents plus host envelopes), so 150k messages, 7.5k billed requests and 75
+						GB-s. At 1,000 such matches a month, about $1 over the $5 plan; at 10k, about $20.
+						One-human-a-side ranked costs a fraction of that.
+					</dd>
+					<dt>Catch</dt>
+					<dd>
+						The Free plan's 100k requests a day covers only about a dozen full matches, so relay
+						rooms mean the $5 plan. It adds a hop to the nearest Cloudflare edge, usually a few ms.
+						Measure it before believing it.
+					</dd>
+				</dl>
+				<p class="flag">
+					PvP ranked waits on P8. Asking strangers to climb a ladder where the host dodges and they
+					can't is how a game earns “rigged” in its first Reddit thread.
+				</p>
+			</div>
+
+			<!-- 4 · PLAN -->
+			<h2><span class="num">4</span>Five milestones, each playable</h2>
+			<p class="sub">
+				Sizes in build slices of about 30 minutes, the unit from moba-plan. My estimates, before any
+				surprises.
+			</p>
+			<div class="miles">
+				<div class="sticker" id="M1">
+					<span class="badge">M1</span> <span class="chip gold">first</span>
+					<span class="chip">~10 slices</span>
+					<h3>Link in</h3>
+					<ul>
+						<li>Join by link (S1), generated names (R1's first half)</li>
+						<li>Take a bot's seat in the lobby and lane (S3); rejoin holds it (P6)</li>
+						<li>Preview tags and the result card (S4); build-id reload (P2)</li>
+					</ul>
+					<div class="play">
+						Send a link to your phone or the laptop, open it, and be moving in the lane in under 10
+						s, in place of a bot.
+					</div>
+				</div>
+				<div class="sticker" id="M2">
+					<span class="badge">M2</span> <span class="chip">~10 slices</span>
+					<h3>The daily gauntlet</h3>
+					<ul>
+						<li>Player key and name (R1), Ladder Durable Object (R8)</li>
+						<li>Daily seed, score submit, overnight replay check of the top 20 (R4)</li>
+						<li>Board on the splash and in the lobby; gauntlet card</li>
+					</ul>
+					<div class="play">
+						Play today's gauntlet, see your name at rank N, send the card to someone and watch them
+						try to beat it.
+					</div>
+				</div>
+				<div class="sticker" id="M3">
+					<span class="badge">M3</span> <span class="chip">~12 slices</span>
+					<h3>Relay rooms</h3>
+					<ul>
+						<li>Room Durable Object replaces PeerJS and TURN (P5)</li>
+						<li>Rejoin through the room; Flagfall online (P4)</li>
+						<li>Workers Paid plan from here</li>
+					</ul>
+					<div class="play">
+						A match against someone on a phone hotspot across town, with a refresh mid-match that
+						puts them back in their seat.
+					</div>
+				</div>
+				<div class="sticker" id="M4">
+					<span class="badge">M4</span> <span class="chip">~18 slices</span>
+					<h3>Ranked, season 1</h3>
+					<ul>
+						<li>Local-hero prediction first (P8), about half the slices</li>
+						<li>Queue with bot fill after 20 s (R6), OpenSkill (R2), both sides report (R7)</li>
+						<li>Four-week season, the lobby scoreboard and plinth (R3)</li>
+					</ul>
+					<div class="play">
+						Queue as a guest and dodge a Q on sight; meet a human or bots after 20 s; see your tier
+						move.
+					</div>
+				</div>
+				<div class="sticker" id="M5">
+					<span class="badge">M5</span> <span class="chip">~8 slices</span>
+					<h3>The league</h3>
+					<ul>
+						<li>Clubs with tags, a summed club board (R5)</li>
+						<li>End of season: the rank 1 player and the top club on the plinth</li>
+						<li>The sim moves into the Durable Object only if P7 or cheating bites</li>
+					</ul>
+					<div class="play">Make a club with two friends and see it on the board.</div>
+				</div>
+			</div>
+			<p class="small" style="margin-top: 14px">
+				Clips (S5) and a Discord Activity (S6) come after M4, once there's a rank worth showing off.
+			</p>
+
+			<!-- 5 · NAME -->
+			<h2><span class="num">5</span>What the name and domain need to do</h2>
+			<p class="sub">
+				The domain stays <code>dodgethis.0sk.ar</code> until the rebrand lands; picking the name is
+				Oskar's call. What it has to do:
+			</p>
+
+			<div class="sticker item" id="N1">
+				<header>
+					<span class="badge">N1</span>
+					<h3>Survive being said out loud</h3>
+				</header>
+				<p>
+					Among Us spread through voice calls and streams. Someone hears the name once and types it
+					right: no doubled letters to guess, no puns that need spelling out, one obvious way to
+					write it.
+				</p>
+			</div>
+			<div class="sticker item" id="N2">
+				<header>
+					<span class="badge">N2</span>
+					<h3>Make a short link that looks safe</h3>
+				</header>
+				<p>
+					Room links are the loop, so <code>name.gg/ABCDE</code> must fit in a chat line and look
+					like a game, not phishing. A <code>.gg</code> reads as a game; a <code>.com</code> reads
+					as trustworthy to everyone else. A subdomain of a personal domain reads as neither.
+				</p>
+			</div>
+			<div class="sticker item" id="N3">
+				<header>
+					<span class="badge">N3</span>
+					<h3>Be findable</h3>
+				</header>
+				<p>
+					Searching the name plus “game” should land on us, not on a band, a common word or another
+					game. Agar.io's name came from a 4chan commenter<sup><a href="#src-agar">1</a></sup
+					>; what made it stick was that it was the only thing with that name.
+				</p>
+			</div>
+			<div class="sticker item pick" id="N4">
+				<header>
+					<span class="badge">N4</span>
+					<h3>Land before identity does</h3>
+					<span class="chip gold">top pick</span>
+				</header>
+				<p>
+					<code>localStorage</code> belongs to one origin. If player keys ship on
+					<code>dodgethis.0sk.ar</code> and the game moves later, every rank is stranded behind a
+					transfer step most players will skip. Either pick the name before M2, or build M2's
+					transfer link to double as the move. Room paths stay domain-free, so the old domain
+					redirects <code>/ABCDE</code> straight across.
+				</p>
+			</div>
+
+			<h2>Sources</h2>
+			<ol class="sources">
+				<li id="src-agar">
+					agar.io: 4chan launch, YouTubers, ~5M daily players.
+					<a href="https://en.wikipedia.org/wiki/Agar.io">Wikipedia</a>,
+					<a href="https://knowyourmeme.com/memes/agario">Know Your Meme</a>
+				</li>
+				<li id="src-slither">
+					slither.io: YouTubers, ads, servers ~$15k/month in 2016.
+					<a href="https://en.wikipedia.org/wiki/Slither.io">Wikipedia</a>,
+					<a href="https://www.thegamer.com/slitherio-history-success-guide-strategy/">TheGamer</a>
+				</li>
+				<li id="src-krunker-ranked">
+					Krunker monthly ranked seasons, native client for anti-cheat.
+					<a href="https://frvr.com/blog/news/krunker-devs-already-working-on-season-9-content"
+						>FRVR</a
+					>
+					· <span id="src-krunker-turf">3b</span> Turf Wars counts a clan's top 20:
+					<a href="https://frvr.com/announcements/introducing-krunker-turf-wars/">FRVR</a> · FRVR
+					bought Krunker in 2022:
+					<a
+						href="https://www.gamedeveloper.com/press-release/frvr-acquires-popular-free-to-play-shooter-krunkerio"
+						>Game Developer</a
+					>
+				</li>
+				<li id="src-io">
+					The .io genre: free, no install, browser multiplayer.
+					<a href="https://en.wikipedia.org/wiki/.io_games">Wikipedia</a>
+				</li>
+				<li id="src-amongus">
+					Among Us: June 2018 launch at 30–50 concurrent players, streamers in 2020, 3.8M peak.
+					<a href="https://en.wikipedia.org/wiki/Among_Us">Wikipedia</a> ·
+					<span id="src-amongus-cnbc">5b</span> Twitch viewers 460 → 53,000 in two months:
+					<a
+						href="https://www.cnbc.com/2020/10/14/how-among-us-became-a-mega-hit-thanks-to-amazon-twitch.html"
+						>CNBC</a
+					>
+				</li>
+				<li id="src-fallguys">
+					Fall Guys: streamer beta keys, most-watched on Twitch in beta.
+					<a
+						href="https://kotaku.com/an-unreleased-indie-game-took-over-twitch-but-it-didnt-1844520348"
+						>Kotaku</a
+					>, <a href="https://en.wikipedia.org/wiki/Fall_Guys">Wikipedia</a> ·
+					<span id="src-fg-wiki">6b</span> bots, unconfirmed by the studio:
+					<a href="https://fallguysultimateknockout.fandom.com/wiki/Matchmaking">fan wiki</a>
+				</li>
+				<li id="src-rl">
+					Rocket League ranks, divisions, placement, soft reset.
+					<a href="https://www.epicgames.com/help/en-US/c-Category_RocketLeague/a000084481"
+						>Epic help</a
+					>
+					· <span id="src-rl-mmr">7b</span> Weng-Lin mu/sigma:
+					<a
+						href="https://www.pcgamesn.com/rocket-league/heres-how-official-ranked-season-play-will-work-in-rocket-leagues-near-future"
+						>PCGamesN</a
+					>
+				</li>
+				<li id="src-rl-bots">
+					Rocket League 1.36 bots fill missing Casual slots.
+					<a
+						href="https://www.gosunoob.com/news/rocket-league-update-1-36-released-full-patch-notes/"
+						>GosuNoob</a
+					>
+				</li>
+				<li id="src-fortnite">
+					Fortnite bots for new players, none in competitive.
+					<a href="https://www.pcgamer.com/uk/fortnite-is-getting-skill-based-matchmaking-and-bots"
+						>PC Gamer</a
+					>
+				</li>
+				<li id="src-wordle">
+					Wordle: share grid, 90 → 2M daily players.
+					<a href="https://en.wikipedia.org/wiki/Wordle">Wikipedia</a>
+				</li>
+				<li id="src-brawl">
+					Brawl Stars trophies, clubs, ranked.
+					<a href="https://en.wikipedia.org/wiki/Brawl_Stars">Wikipedia</a> ·
+					<span id="src-brawl-club">11b</span> Club League, clubs of 30:
+					<a href="https://www.dualshockers.com/how-to-play-brawl-stars-club-league-mode/"
+						>DualShockers</a
+					>
+				</li>
+				<li id="src-skribbl">
+					skribbl.io private rooms by link.
+					<a href="https://ahaslides.com/blog/how-to-play-skribblo">AhaSlides</a>; Gartic Phone and
+					streamers:
+					<a
+						href="https://knowyourmeme.com/editorials/guides/what-is-gartic-phone-and-why-do-streamers-love-it-the-multiplayer-drawing-game-explained"
+						>Know Your Meme</a
+					>
+				</li>
+				<li id="src-glicko">
+					Glicko-2 (Glickman). <a href="https://www.glicko.net/glicko/glicko2.pdf">PDF</a>;
+					TrueSkill:
+					<a
+						href="https://papers.nips.cc/paper_files/paper/2006/file/f44ee263952e65b3610b8ba51229d1f9-Paper.pdf"
+						>NIPS 2006</a
+					>
+				</li>
+				<li id="src-geo">
+					GeoGuessr ranked as weekly divisions (unofficial guide, take lightly).
+					<a href="https://looksmax.org/threads/geoguessr-ranked-explained.1036986/">forum</a>
+				</li>
+				<li id="src-lichess-anon">
+					Lichess: Glicko-2 <a href="https://lichess.org/page/rating-systems">rating systems</a>;
+					anonymous play, forum only:
+					<a
+						href="https://lichess.org/forum/lichess-feedback/how-to-change-preferences-when-playing-without-an-account"
+						>forum</a
+					>
+				</li>
+				<li id="src-openskill">
+					OpenSkill, MIT, teams. <a href="https://www.npmjs.com/package/openskill">npm</a>,
+					<a href="https://arxiv.org/html/2401.05451v1">paper</a>
+				</li>
+				<li id="src-discord">
+					Discord Activities.
+					<a href="https://discord.com/developers/docs/activities/overview"
+						>Discord developer docs</a
+					>
+				</li>
+				<li id="src-do">
+					Durable Objects pricing, fetched 2026-10-10: Paid includes 1M requests ($0.15/M after),
+					400k GB-s ($12.50/M after), 50M rows written; incoming WebSocket messages 20:1, outgoing
+					free; Free plan 100k requests and 100k rows written a day.
+					<a href="https://developers.cloudflare.com/durable-objects/platform/pricing/"
+						>Cloudflare</a
+					>; Workers Paid $5/month:
+					<a href="https://developers.cloudflare.com/workers/platform/pricing/">Cloudflare</a>
+				</li>
+				<li id="src-d1">
+					D1 pricing: same row prices, storage $0.75/GB-month past 5 GB.
+					<a href="https://developers.cloudflare.com/d1/platform/pricing/">Cloudflare</a>
+				</li>
+				<li id="src-tinyjoin">
+					TinyJoin. <a href="https://tinyjoin.org">tinyjoin.org</a>,
+					<a href="https://github.com/tinyplex/tinyjoin">GitHub</a> ·
+					<span id="src-tinyjoin-c">20b</span>
+					<a href="https://tinyjoin.org/guides/caveats/">Caveats</a>
+				</li>
+				<li id="src-chrome">
+					Chrome throttles timers in background tabs.
+					<a href="https://developer.chrome.com/blog/timer-throttling-in-chrome-88">Chrome blog</a>
+				</li>
+			</ol>
+		</main>
+	</body>
+</html>
