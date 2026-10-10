@@ -44,6 +44,7 @@ Gotchas:
 - Corner buttons are `.corner-nav .back-button` and `.corner-nav .online-entry` (`src/core/corner-nav.js`); query them after the screen lands, they don't exist on the splash.
 - Two-browser online proofs: open the host in its own window and keep it visible (a hidden tab stops simulating), then wait on `dt.screen()` in the guest with `--timeout 60000`.
 - Host a room from the console: in the lobby `dt.game.online.host(false)` returns the code; `dt.key('KeyH'); dt.key('Enter')` starts the lane. The guest opens `<url>/CODE`; a bot-only lane ends in about 7 minutes, after which a link is turned away.
+- Performance: frame stats are `dt.game.perf`; `dt.game.benchmark()` is dodgeball-only (it crashes in moba). To time one system, wrap it in `performance.now()` temporarily and remove the hook before committing. The headless GPU is SwiftShader (software), so whole-frame ms mean nothing; trust only CPU spans, compared in the same run under the same load.
 
 ## Join by link: ten seconds, counted
 
