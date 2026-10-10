@@ -4,7 +4,7 @@ Every player-facing feature, grouped by screen, one line each: the feature in pl
 
 Don't read big files whole. `ast-grep outline <file>` lists a file's symbols with line numbers; `ast-grep run -p '<pattern>' -l js src` finds structure (callers, `tune.x.y` uses). Whoever adds or moves a feature updates its line here. To prove a feature in the running game, use `.claude/skills/verify/SKILL.md`.
 
-Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` means `src/plugins/moba/tune.js` (key in backticks); other tune files are named in full. `tune.js` keeps the match rules and assembles the rest, so every `tune.x.y` path is unchanged but the values live elsewhere: `map` and `overthrowTerrain` in `maps/overthrow-tune.js`, `flagfall` in `maps/flagfall-tune.js`, `lobby` in `front/lobby-tune.js`, every ability's numbers (`loose`, `rain`, `vault`, `toss`, `catch`, `dive`, `gloveSlap`) in `abilities/<id>/tune.js`, heroes' (`heroes.mitts`, Carom, Skip) in `heroes/<id>/tune.js`. Docs live in `docs/`.
+Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` means `src/plugins/moba/tune.js` (key in backticks); other tune files are named in full. `tune.js` keeps the match rules and assembles the rest, so every `tune.x.y` path is unchanged but the values live elsewhere: `map` and `overthrowTerrain` in `maps/overthrow-tune.js`, `flagfall` in `maps/flagfall/tune.js`, `lobby` in `front/lobby-tune.js`, every ability's numbers (`loose`, `rain`, `vault`, `toss`, `catch`, `dive`, `gloveSlap`) in `abilities/<id>/tune.js`, heroes' (`heroes.mitts`, Carom, Skip) in `heroes/<id>/tune.js`. Docs live in `docs/`.
 
 ## Shell and splash
 
@@ -32,7 +32,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Difficulty gallery, three standees you shoot to pick: `lobby-props.js` `createDifficultyGallery`; `tune.js` `lobby.gallery`
 - Horseshoe magnets with sleepy, calm and angry faces: `lobby-magnets.js` `createMagnets`, `createFaceKit`
 - Lobby props in the scene (stands, magnets, ready marks): `lobby-props.js` `createLobbyProps`; `tune.js` `lobby.marks`
-- Lobby practice dummies: `dummy-view.js` `dressDummy`; `match.js` `dummies`; `tune.js` `dummies`, `lobby.practice`; `look.js` `dummyView`
+- Lobby practice dummies: `dummy-view.js` `dressDummy`; piece `pieces/dummies/` (dressed through its `view.js`); `tune.js` `dummies`, `lobby.practice`; `look.js` `dummyView`
 - Lobby camera (fits the whole saucer) and intro swoop: `lobby.js` `createLobby` (`fitSaucer`); `lobby-floor.js` `saucerExtent`; `lobby-bowl.js` `bowlExtent`; `tune.js` `lobby.camera`, `lobby.intro`
 - Lobby HUD (tooltips on heroes): `lobby.js`; `hud.js` `createHud({ lobby: true })`; `tune.js` `lobby.hud`
 - Fall off the floor and respawn: `lobby.js`; `tune.js` `lobby.fall`, `lobby.respawn`
@@ -70,10 +70,10 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Edge pips for off-screen allies, enemies, Ball: `pips.js` `edgePip`, `createPips`; `look.js` `pips`
 - Minimap, its camera-view outline and click/drag to move the camera: `minimap.js` `createMinimap` (`drawView`, `onFocus` → `follow.focus`); `maps/index.js` `matchRecipe`; `hud.js`; `hud.css` `.moba-minimap`
 - Fog of war (on by default, `?fog=0` turns it off; sight, hidden enemies, dimmed ground): `fog.js` `createFog`; `tune.js` `fog`; hooked in `index.js` present
-- Flagfall mercenary camps (neutral guards at the camp marks fight back and leash; clearing one sends mercs down the nearest lane; respawn; bots clear them when their lane is quiet): `camps.js` `createCamps`, bots `camp-bots.js` `campBots` (`escort` phase); piece `camps` in `match.js`, on in `maps/index.js` flagfall; `layout.camps` in `maps/flagfall.js`; `tune.js` `camps`; lane hooks `passive`, team `'N'`, `route` in `lane.js`
-- Flagfall jungle (rooms, spine walls, brush, camp/flag/gatehouse marks): `maps/flagfall.js` `flagfallLayout`; `tune.js` `flagfall.jungle`; marks and brush mats in `map.js` `buildFlagfall`
-- Flagfall gates, two kinds on one mechanic (own team passes, enemies are held out and siege it, shots hit it): the gatehouse, a no-gun stone tower at the fort's chalk bar that the fort waits for (rubble when it falls), and the laser gate, two posts and a hologram beam between fort and core that waits for the fort and that the core waits for (stubs when it falls): `gates.js` `addGates`, `holdGates`, `GATES`; `tune.js` `gatehouse`, `laser`, `flagfall.jungle.gatehouseX`/`laserX`; laser look in `lane-view.js` `makeBody` (`look.laneView.laser`), beam shader shared with the lobby holograms in `hologram.js`; hooked in `maps/flagfall.js`, `sim.js` step, `match.js` structures obstacles (`obstacle: false`), `lane.js` (no gun, `tune[kind].xp`)
-- Flagfall centre flag (hoist clock, hold the ring, team XP and per-lane silence; HUD line, minimap dot; bots' nearest two go): `flag.js` `createFlag`; `flag-view.js`; `flag-bots.js` `flagBots`; piece `match.js` `flag`; `minimap.js` objectives; `tune.js` `flagfall.flag`, `bots.flagGo`
+- Flagfall mercenary camps (neutral guards at the camp marks fight back and leash; clearing one sends mercs down the nearest lane; respawn; bots clear them when their lane is quiet): `pieces/camps/camps.js` `createCamps`, bots `pieces/camps/bots.js` `campBots` (`escort` phase); piece `pieces/camps/`, on in `maps/flagfall/index.js` `pieces`; `layout.camps` in `maps/flagfall/layout.js`; `tune.js` `camps`; lane hooks `passive`, team `'N'`, `route` in `lane.js`
+- Flagfall jungle (rooms, spine walls, brush, camp/flag/gatehouse marks): `maps/flagfall/layout.js` `flagfallLayout`; `tune.js` `flagfall.jungle`; marks and brush mats in `maps/flagfall/ground.js` `ground`
+- Flagfall gates, two kinds on one mechanic (own team passes, enemies are held out and siege it, shots hit it): the gatehouse, a no-gun stone tower at the fort's chalk bar that the fort waits for (rubble when it falls), and the laser gate, two posts and a hologram beam between fort and core that waits for the fort and that the core waits for (stubs when it falls): `gates.js` `addGates`, `holdGates`, `GATES`; `tune.js` `gatehouse`, `laser`, `flagfall.jungle.gatehouseX`/`laserX`; laser look in `lane-view.js` `makeBody` (`look.laneView.laser`), beam shader shared with the lobby holograms in `hologram.js`; hooked in `maps/flagfall/layout.js`, `sim.js` step, `pieces/structures/index.js` obstacles (`obstacle: false`), `lane.js` (no gun, `tune[kind].xp`)
+- Flagfall centre flag (hoist clock, hold the ring, team XP and per-lane silence; HUD line, minimap dot; bots' nearest two go): `pieces/flag/flag.js` `createFlag`; `pieces/flag/view.js` `view`; `pieces/flag/bots.js` `flagBots`; piece `pieces/flag/`; `minimap.js` objectives; `tune.js` `flagfall.flag`, `bots.flagGo`
 - Scoreboard (Tab or pad Select, live table mid-match): `recap.js` `createRecap` (the `board` aside, class `moba-scoreboard`); `match-stats.js` `createMatchStats`; `moba-recap.md`
 - Pause menu (Esc, pad Start, or the top-left menu tile): `menu.js` `createMatchMenu`, `openMenu`, the manual page `pausePage` (Quick cast as a checkbox under the actions), Leave game to the splash `quit`; tile from `src/core/corner-nav.js`; `menu.css`; `tune.js` `hud`
 - Onboarding cues (floor arrow, hero ring, You sticker, Ball and goal pointer): `onboarding.js` `createOnboarding`; `look.js` `onboarding`; `moba-onboarding.md`
@@ -101,8 +101,8 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 
 ## Match: lane, minions, towers
 
-- Lane: minion waves, towers, fort, core: `lane.js` `createLane`; `match.js` `lane`, `structures`, `minions`; `tune.js` `waves`, `minions`, `tower`, `fort`, `core`; `moba-lane.md`
-- Wave timing and spawns: `lane.js`; `match.js` `minions`; `tune.js` `waves`
+- Lane: minion waves, towers, fort, core: `lane.js` `createLane`; `pieces/lane.js` `lane` (drawn by `lane-view.js`, projected by `lane-replica.js`, both wired in `sim.js`), pieces `pieces/structures/`, `pieces/minions/`; `tune.js` `waves`, `minions`, `tower`, `fort`, `core`; `moba-lane.md`
+- Wave timing and spawns: `lane.js`; `pieces/minions/`; `tune.js` `waves`
 - Lane bots (the minions' walk and fights under guns): `lane-bots.js` `laneBots`; `maps/paths.js` `laneRoute`
 - Lane drawing (minions, towers, fort, core): `lane-view.js` `createLaneView`; `look.js` `laneView`
 - Team stamps on the ground: `stamps.js` `createStamps`
@@ -112,20 +112,20 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 
 ## Match: the Ball
 
-- Ball (neutral objective, carried to score on structures): `ball.js` `createBall`; `match.js` `ball`; `tune.js` `ball`; `moba-lane.md`
+- Ball (neutral objective, carried to score on structures): `ball.js` `createBall`; `pieces/ball/` (view `ball-view.js` through `pieces/ball/view.js`); `tune.js` `ball`; `moba-lane.md`
 - Ball drawing and trail: `ball-view.js` `createBallView`; `tune.js` `ballView`
 - Ball confetti on pop: `feedback.js` `createFeedback`; `look.js` `ballConfetti`
 - Ball bot behaviour (who fetches, who carries): `ball-bots.js`; `tune.js` `bots`
 
 ## Match: maps and props
 
-- How a map's features plug in: `maps/index.js` lists each map's `pieces` (`match.js`: structures, minions, ball, bots, camps, flag); `sim.js` reads a piece's `lane`, `create`, `botHabit`, `obstacles`, `controllers`. Structures become team-blind obstacles via `obstacles` and Rapier colliders via `sim.js` `towerColliders`. Bot goal names live in each habit's `botGoals` and must be unique within a map: lane `retreat commitSiege defend siege advance`, ball `urgent objective escort` (Overthrow), camps `escort` and flag `objective` (Flagfall).
+- How a map's features plug in: a map's manifest names its `pieces` by id (`pieces/<id>/index.js`: structures, minions, ball, bots, camps, flag, dummies; generated `pieces/index.js`), `maps/recipes.js` `matchRecipe` resolves them; `sim.js` reads a piece's `lane`, `create`, `botHabit`, `obstacles`, `controllers`. A piece's view hooks (`view`, `dress`, `onboarding`) sit in its `view.js`, listed in generated `pieces/views.js`; `index.js` and `sim.js` look them up by piece id. A map declares `kind` (`lane`, `garden`, `lobby`) and `order`; its `ground.js` and `scenery.js` are listed in generated `maps/views.js` and called by `map.js` and `isle.js`. `maps/index.js` is generated too (`bun run registry`). Structures become team-blind obstacles via `obstacles` and Rapier colliders via `sim.js` `towerColliders`. Bot goal names live in each habit's `botGoals` and must be unique within a map: lane `retreat commitSiege defend siege advance`, ball `urgent objective escort` (Overthrow), camps `escort` and flag `objective` (Flagfall).
 - Overthrow (the first map): `maps/overthrow.js` `overthrowLayout`; `match-terrain.js` `createMatchTerrain`; `tune.js` `overthrowTerrain`, `map`; `moba-lane.md`
 - Overthrow by day (cliff, moss lip, rim ink, cloud sea, cloud banks, far spires and arches, waterfalls, haze): `isle.js` `createIsle`; court moss and printed cast shadows: `match-terrain.js`; stone cover and pillars: `map.js` `buildMap` (`stoneCover`); stone towers and core: `lane-view.js` (`structureStyle: 'stone'`); the sun: `tune.js` `overthrowTerrain.light`, `core/stylepass.js` `setPalette`
-- Flagfall (the second map): `maps/flagfall.js` `flagfallLayout`, `flagfallLayoutTune`; `tune.js` `flagfall`; `moba-map-2.md`
-- Flagfall by night (the shared isle with night `colors`, `light`, `pool`, `haze`, `clouds`; moon, rim garden of leaf fans and glowing orchid bells, specks): `isle.js` `createIsle`; `tune.js` `flagfall`
-- Flagfall cover (rim kerb cut at the Dunk gaps, dark-teal leaf-bank hedges, stone walls and drums, lantern posts): `map.js` `buildFlagfall`, `buildMap`; `tune.js` `flagfall.kerb`, `flagfall.glow`, `flagfall.hedge`
-- Flagfall dunk (fence gaps, slick, shove into the sea): `combat.js` `shove`, `dunk`; `map.js` `buildFlagfall` (kerb cut, slick print); `feedback.js` `'dunk'`; `core/death.js` `overboard`; bots `fight-bots.js` `slick`, `inland`; `tune.js` `flagfall.gaps`, `flagfall.dunk`, `bots.slick*`
+- Flagfall (the second map): `maps/flagfall/index.js` (manifest, `kind: 'garden'`), `maps/flagfall/layout.js` `flagfallLayout`, `flagfallLayoutTune`; `maps/flagfall/tune.js` (`tune.flagfall`); `moba-map-2.md`
+- Flagfall by night (the shared isle with night `colors`, `light`, `pool`, `haze`, `clouds`; moon, rim garden of leaf fans and glowing orchid bells, specks): `isle.js` `createIsle`, `maps/flagfall/scenery.js` `scenery`; `tune.js` `flagfall`
+- Flagfall cover (rim kerb cut at the Dunk gaps, dark-teal leaf-bank hedges, stone walls and drums, lantern posts): `maps/flagfall/ground.js` `ground`, `map.js` `buildMap`; `tune.js` `flagfall.kerb`, `flagfall.glow`, `flagfall.hedge`
+- Flagfall dunk (fence gaps, slick, shove into the sea): `combat.js` `shove`, `dunk`; `maps/flagfall/ground.js` `ground` (kerb cut, slick print); `feedback.js` `'dunk'`; `core/death.js` `overboard`; bots `fight-bots.js` `slick`, `inland`; `tune.js` `flagfall.gaps`, `flagfall.dunk`, `bots.slick*`
 - Flagfall bot rotation across the yard: `lane-bots.js` `advance`; `tune.js` `bots.rotateRange`, `bots.rotateQuiet`
 - Flagfall lane split (a human claims the lane they stand in, bots take the others): `bots.js` `createBot` `pickLane`; `tune.js` `bots.laneClaim`
 - Map registry and layout recipe: `maps/index.js` `mapLayout`, `matchRecipe`; `tune.js` `map`

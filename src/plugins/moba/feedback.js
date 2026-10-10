@@ -5,7 +5,7 @@ import { abilityOf } from './ability.js'
 import { heroDefinition } from './heroes.js'
 import { tune } from './tune.js'
 import { look } from './look.js'
-import { flagfallLayoutTune } from './maps/flagfall.js'
+import { flagfallLayoutTune } from './maps/flagfall/layout.js'
 
 // Moba's fact switch (docs/moba-plan.md, "Hit feedback"): each fact becomes juice-kit verbs, sfx, rumble, pings and HUD.
 // `local` is this machine's participant id; facts about anyone else get the quieter version.

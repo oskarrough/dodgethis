@@ -5,6 +5,7 @@ import { tune } from './tune.js'
 import { look } from './look.js'
 import { FLOOR } from './obstacles.js'
 import { matchRecipe, onlineMaps } from './maps/index.js'
+import pieceViews from './pieces/views.js'
 import { castAbility } from './ability.js'
 import { createSim } from './sim.js'
 import { practiceRoster } from './bots.js'
@@ -297,7 +298,8 @@ export default function moba(app, map) {
 			)
 			// Assigned boxes are reservations, not won claims; walking into one stamps the claim tick.
 			if (isLobby) for (const seat of simulation.readySeats.seats) seat.claimTick = null
-			const ballView = pieces.find((piece) => piece.view)?.view(scene) ?? null
+			const ballView =
+				pieces.map((piece) => pieceViews[piece.id]?.view).find(Boolean)?.(scene) ?? null
 			const replica = !app.session.authoritative
 				? isLobby
 					? createLobbyReplica(simulation, scene)
@@ -311,7 +313,11 @@ export default function moba(app, map) {
 			}
 			const hero = sim.heroes.find((h) => h.id === local)
 			const onboarding =
-				pieces.find((piece) => piece.onboarding)?.onboarding({ scene, sim, hero }) ?? null
+				pieces.map((piece) => pieceViews[piece.id]?.onboarding).find(Boolean)?.({
+					scene,
+					sim,
+					hero,
+				}) ?? null
 			const feedback = createFeedback({
 				juice,
 				sfx,

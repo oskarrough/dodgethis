@@ -1,7 +1,6 @@
 // --- Tunables ----------------------------------------------------------------
 // Moba's live values (docs/moba-plan.md, "Feel numbers"), shared by the debug GUI, the sim and DOM-free tests. Metres and seconds.
 import { overthrowMap, overthrowTerrain } from './maps/overthrow-tune.js'
-import { flagfall } from './maps/flagfall-tune.js'
 import { lobby } from './front/lobby-tune.js'
 import * as tunes from './tunes.js'
 
@@ -17,7 +16,6 @@ export const tune = {
 	// Static layout and dressing: applies on mode restart.
 	map: overthrowMap,
 	overthrowTerrain,
-	flagfall,
 	lobby,
 	collision: { epsilon: 1e-6, separation: 1e-3, clampPasses: 8 },
 	// The hero's movement profile (core/body.js). Obedience first: full speed in ~25 ms, a dead stop, no air.

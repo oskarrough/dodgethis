@@ -3,7 +3,9 @@ import { abilityOf } from './ability.js'
 import { dressHero } from './hero-view.js'
 import { createReadySeats } from './lobby-state.js'
 import { createScriptedHero } from './scripted.js'
-import { dummies as dummiesPiece } from './match.js'
+import PIECES from './pieces/index.js'
+import pieceViews from './pieces/views.js'
+import { createLaneView } from './lane-view.js'
 import { createMatchStats } from './match-stats.js'
 import { createBody } from '../../core/body.js'
 import { PALETTE } from '../../core/style.js'
@@ -34,7 +36,7 @@ export function createSim({
 	smooth = null,
 	present: emit = () => {},
 	rng = Math.random,
-	pieces = [dummiesPiece],
+	pieces = [{ id: 'dummies', ...PIECES.dummies }],
 	lobby = false, // Combat allegiance A for heroes, B for dummies; seatTeam retains the pick.
 	layout = mapLayout(lobby ? 'lobby' : undefined),
 	spawns = null, // Participant-specific spawn overrides, copied for death/recovery.
@@ -52,7 +54,7 @@ export function createSim({
 }) {
 	if (layout.late) tune.match.late = layout.late // each map sets when late game starts
 	const lanePiece = pieces.find((piece) => piece.lane)?.lane
-	const laneView = lanePiece?.view(scene, smooth, layout) ?? null
+	const laneView = lanePiece ? createLaneView(scene, smooth, layout) : null
 	const towerObstacles = pieces.flatMap((piece) => piece.obstacles?.(layout) ?? [])
 	const obstacles = [...mapObstacles, ...towerObstacles]
 	// Lobby orders and dashes may aim past the floor's open edges, so you can walk off it.
@@ -294,6 +296,7 @@ export function createSim({
 			vulnerable: (unit) => lane?.vulnerable(unit) ?? true,
 			obstacles,
 			present,
+			view: pieceViews[piece.id] ?? {},
 			endCast: (...args) => ctx.endCast(...args),
 			damage(shot, unit, damage) {
 				hit(
@@ -354,7 +357,6 @@ export function createSim({
 		heroes,
 		dummies,
 		lane,
-		lanePiece,
 		ball,
 		readySeats,
 		matchStats,

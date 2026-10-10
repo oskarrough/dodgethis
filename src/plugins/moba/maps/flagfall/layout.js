@@ -1,5 +1,5 @@
-import { tune } from '../tune.js'
-import { addGates } from '../gates.js'
+import { tune } from '../../tune.js'
+import { addGates } from '../../gates.js'
 
 export function flagfallLayout() {
 	const s = flagfallLayoutTune()

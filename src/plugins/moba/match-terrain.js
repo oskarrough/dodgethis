@@ -12,7 +12,7 @@ export function createMatchTerrain(
 	layout,
 	s,
 	chalkLayout,
-	{ footprints, casts = null } = {},
+	{ footprints, casts = null, scenery = null } = {},
 ) {
 	const bounds = layout.bounds
 	const name = layout.name.toLowerCase()
@@ -154,7 +154,7 @@ diffuseColor.rgb *= 1.0 - courtPool.x * (1.0 - exp(-dot(poolAt, poolAt) * 1.6));
 	sheet.layers.set(FORWARD_LAYER)
 	sheet.renderOrder = -4
 	meshes.push(opaque, sheet)
-	const skin = createIsle(parent, s, extent, s.light.dir)
+	const skin = createIsle(parent, s, extent, s.light.dir, scenery)
 	const strokes = []
 	const line = (width, length, x, z) =>
 		strokes.push(

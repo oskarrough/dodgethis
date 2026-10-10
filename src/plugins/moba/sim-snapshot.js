@@ -1,3 +1,5 @@
+import { projectLaneSnapshot } from './lane-replica.js'
+
 const q = (v) => Math.round(v * 1000) / 1000 || 0
 
 // The sim's whole state as plain JSON, for replicas, replays and traces; `wire` packs the lane for the network.
@@ -6,7 +8,6 @@ export function createSnapshot(ctx) {
 		heroes,
 		dummies,
 		lane,
-		lanePiece,
 		ball,
 		matchStats,
 		botIds,
@@ -147,7 +148,7 @@ export function createSnapshot(ctx) {
 				travelled: q(s.travelled),
 			})),
 		}
-		return wire && lane ? lanePiece.snapshot(state) : state
+		return wire && lane ? projectLaneSnapshot(state) : state
 	}
 
 	return { snapshot }

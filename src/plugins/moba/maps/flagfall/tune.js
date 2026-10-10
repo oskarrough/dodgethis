@@ -1,7 +1,7 @@
-// Flagfall's tunables, assembled into tune.flagfall by ../tune.js.
+// Flagfall's tunables, spread into tune.flagfall by ../../tune.js (tunes.js).
 
 // Flagfall: two lanes on the shared court in the shallows. All geometry applies on restart.
-export const flagfall = {
+const flagfall = {
 	name: 'Flagfall',
 	scale: 1, // one multiplier for every layout metre; applies on restart
 	// Flagfall by night: Overthrow's stone isle (isle.js) under a moon. These replace
@@ -190,3 +190,5 @@ export const flagfall = {
 		radii: { tower: 1.4, fort: 2, core: 2.6, post: 0.6 },
 	},
 }
+
+export default { flagfall }

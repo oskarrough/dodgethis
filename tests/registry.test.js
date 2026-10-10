@@ -3,7 +3,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { MOBA, registryFiles } from '../scripts/registry.js'
 
-// Every hero, ability and piece folder is in its generated registry (docs/mods.md). Run `bun run registry`.
+// Every hero, ability, map and piece folder is in its generated registry (docs/mods.md). Run `bun run registry`.
 test('generated registries list every folder', () => {
 	for (const [path, contents] of Object.entries(registryFiles())) {
 		const file = join(MOBA, path)
@@ -12,14 +12,16 @@ test('generated registries list every folder', () => {
 })
 
 // The sim loads the manifests and tunes, so they stay free of view code (docs/mods.md):
-// no Three.js, view files, front/ or the view registry anywhere in their static imports,
-// and a folder tune.js imports nothing at all.
+// no Three.js, view files, front/ or a view registry anywhere in their static imports,
+// and a folder tune.js imports nothing at all. The walk stays inside the plugin: core is the
+// engine every sim file already shares (STEP comes from core/app.js).
 test('manifests and tunes stay sim-safe', () => {
-	const banned = /(^three($|\/))|-view\.js$|(^|\/)front\/|(^|\/)(views|costume|numbers)\.js$/
+	const banned =
+		/(^three($|\/))|-view\.js$|(^|\/)front\/|(^|\/)(views?|costume|numbers|ground|scenery)\.js$/
 	const importsOf = (file) =>
 		[
 			...readFileSync(file, 'utf8').matchAll(
-				/^\s*(?:import|export)\s[^'"]*?from\s+['"]([^'"]+)['"]/gm,
+				/^\s*(?:import|export)\s(?:[^'"]*?from\s+)?['"]([^'"]+)['"]/gm,
 			),
 		].map((m) => m[1])
 	const seen = new Set()
@@ -29,11 +31,19 @@ test('manifests and tunes stay sim-safe', () => {
 		seen.add(file)
 		for (const spec of importsOf(file)) {
 			expect(spec, `${file} imports ${spec}`).not.toMatch(banned)
-			if (spec.startsWith('.')) walk(join(file, '..', spec))
+			const target = join(file, '..', spec)
+			if (spec.startsWith('.') && target.startsWith(MOBA)) walk(target)
 		}
 	}
-	for (const entry of ['heroes/index.js', 'abilities/index.js', 'tunes.js']) walk(join(MOBA, entry))
-	for (const kind of ['heroes', 'abilities'])
+	for (const entry of [
+		'heroes/index.js',
+		'abilities/index.js',
+		'pieces/index.js',
+		'maps/index.js',
+		'tunes.js',
+	])
+		walk(join(MOBA, entry))
+	for (const kind of ['heroes', 'abilities', 'maps'])
 		for (const folder of readdirSync(join(MOBA, kind), { withFileTypes: true })) {
 			const tuneFile = join(MOBA, kind, folder.name, 'tune.js')
 			if (folder.isDirectory() && existsSync(tuneFile))

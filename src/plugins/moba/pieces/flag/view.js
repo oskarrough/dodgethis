@@ -1,11 +1,11 @@
 import * as THREE from 'three'
-import { makeStyleMaterial } from '../../core/stylepass.js'
-import { STEP } from '../../core/app.js'
-import { tune } from './tune.js'
+import { makeStyleMaterial } from '../../../../core/stylepass.js'
+import { STEP } from '../../../../core/app.js'
+import { tune } from '../../tune.js'
 
 // The centre flag, plain: a pole whose pennant climbs during the warning and takes the holder's
 // colour, a ring on the ground, and one line of HUD text. Oskar owns the look.
-export function createFlagView(scene) {
+export function view(scene) {
 	const f = () => tune.flagfall.flag
 	const owned = []
 	const root = new THREE.Group()

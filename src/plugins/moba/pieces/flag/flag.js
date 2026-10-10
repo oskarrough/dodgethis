@@ -1,5 +1,5 @@
-import { STEP } from '../../core/app.js'
-import { tune } from './tune.js'
+import { STEP } from '../../../../core/app.js'
+import { tune } from '../../tune.js'
 
 const ticks = (s) => Math.max(1, Math.round(s / STEP))
 

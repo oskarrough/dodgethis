@@ -11,6 +11,7 @@ import abilities_vault from './abilities/vault/tune.js'
 import heroes_carom from './heroes/carom/tune.js'
 import heroes_mitts from './heroes/mitts/tune.js'
 import heroes_skip from './heroes/skip/tune.js'
+import maps_flagfall from './maps/flagfall/tune.js'
 
 export const abilities = {
 	bank: abilities_bank,
@@ -28,4 +29,6 @@ export const heroes = {
 	mitts: heroes_mitts,
 	skip: heroes_skip,
 }
-export const maps = {}
+export const maps = {
+	flagfall: maps_flagfall,
+}

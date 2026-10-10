@@ -18,3 +18,13 @@ export function lobbyLayout() {
 		dummyPosts: tune.lobby.dummyPosts,
 	}
 }
+
+// Hand-imported by maps/index.js until the lobby gets its folder (docs/mods.md, step 7).
+export const lobby = {
+	kind: 'lobby',
+	layout: lobbyLayout,
+	pieces: ['dummies'],
+	palette: () => ({}),
+	debugTune: null,
+	online: true,
+}
