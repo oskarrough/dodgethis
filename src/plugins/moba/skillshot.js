@@ -1,4 +1,5 @@
-import { OBSTACLES, FLOOR, sweepHit, sweepObstacles, mapExit } from './obstacles.js'
+import { tune } from './tune.js'
+import { OBSTACLES, FLOOR, sweepHit, sweepObstacles, mapExit, contactNormal } from './obstacles.js'
 export { sweepHit } from './obstacles.js'
 
 // Closest approach of a→b to a point: the fraction along it and the distance.
@@ -41,8 +42,27 @@ export function interceptShot(shot, dt, intercept, context) {
 	)
 }
 
+// A bouncing shot with cushions left turns off the surface it touched instead of ending there,
+// banking damage. Returns the cushion point, or null when the shot should end as usual.
+function cushion(shot, cover, bounds) {
+	const bounce = shot.bounce
+	if (!bounce || shot.target || (shot.cushions ?? 0) >= bounce.max) return null
+	const n = contactNormal(shot, shot.radius, cover, bounds)
+	const dot = shot.dx * n.x + shot.dz * n.z
+	if (!(dot < 0)) return null
+	const point = { x: shot.x, z: shot.z }
+	shot.dx -= 2 * dot * n.x
+	shot.dz -= 2 * dot * n.z
+	shot.cushions = (shot.cushions ?? 0) + 1
+	shot.damage += bounce.damagePerCushion ?? 0
+	shot.x += n.x * tune.projectile.cushionGap
+	shot.z += n.z * tune.projectile.cushionGap
+	return point
+}
+
 // Advance one shot by `dt` against `targets` ({ id, x, z, radius }). Returns { hit, point } for the first body touched,
 // { expired } once the range is spent, and lists `nearMisses` it passed within `nearMiss` of without touching.
+// A bouncing shot reflects off cover and edges (listing each in `cushions`) and spends the rest of the step on the new heading.
 export function stepShot(shot, dt, targets, nearMiss, obstacles = OBSTACLES, bounds = FLOOR) {
 	const step = Math.min(shot.speed * dt, shot.range - shot.travelled)
 	const ax = shot.x
@@ -53,14 +73,8 @@ export function stepShot(shot, dt, targets, nearMiss, obstacles = OBSTACLES, bou
 	const from = { x: ax, z: az },
 		to = { x: bx, z: bz }
 	// Homing attacks check sight before windup; once released, cover cannot dodge them.
-	const obstacle = shot.target
-		? null
-		: sweepObstacles(
-				from,
-				to,
-				shot.radius,
-				obstacles.filter((o) => !['tower', 'core'].includes(o.kind)),
-			)
+	const cover = shot.target ? null : obstacles.filter((o) => !['tower', 'core'].includes(o.kind))
+	const obstacle = cover && sweepObstacles(from, to, shot.radius, cover)
 	const edge = mapExit(from, to, shot.radius, bounds)
 	const blocked = obstacle === null ? edge : edge === null ? obstacle : Math.min(obstacle, edge)
 	let at = blocked ?? Infinity
@@ -84,6 +98,22 @@ export function stepShot(shot, dt, targets, nearMiss, obstacles = OBSTACLES, bou
 		shot.x = ax + (bx - ax) * end
 		shot.z = az + (bz - az) * end
 		shot.travelled += step * end
+		const banked = blocked !== null && cushion(shot, cover, bounds)
+		if (banked) {
+			const rest = stepShot(
+				shot,
+				(step * (1 - end)) / shot.speed,
+				targets,
+				nearMiss,
+				obstacles,
+				bounds,
+			)
+			return {
+				...rest,
+				hits: [...hits, ...(rest.hits ?? [])],
+				cushions: [banked, ...(rest.cushions ?? [])],
+			}
+		}
 		return {
 			hit: null,
 			hits,
@@ -103,6 +133,18 @@ export function stepShot(shot, dt, targets, nearMiss, obstacles = OBSTACLES, bou
 		shot.x = ax + (bx - ax) * blocked
 		shot.z = az + (bz - az) * blocked
 		shot.travelled += step * blocked
+		const banked = cushion(shot, cover, bounds)
+		if (banked) {
+			const rest = stepShot(
+				shot,
+				(step * (1 - blocked)) / shot.speed,
+				targets,
+				nearMiss,
+				obstacles,
+				bounds,
+			)
+			return { ...rest, cushions: [banked, ...(rest.cushions ?? [])] }
+		}
 		return {
 			hit: null,
 			blocked: true,

@@ -396,6 +396,7 @@ export const tune = {
 	projectile: {
 		height: 1.1, // flight height, for presentation only
 		nearMiss: 0.8, // a pass this close to a body's edge cues "close"
+		cushionGap: 0.01, // m a bounced shot steps off the surface, so it can't touch it again at once
 	},
 	// The pad's right stick: hero + dir × range × remap(magnitude).
 	stickAim: {

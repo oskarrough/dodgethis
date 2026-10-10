@@ -147,6 +147,16 @@ export function createProjectiles(ctx) {
 			)
 			if (from)
 				touch(shot, { kind: 'shot', from, to: { x: shot.x, z: shot.z }, radius: shot.radius })
+			for (const [index, point] of (r.cushions ?? []).entries())
+				present({
+					type: 'cushion',
+					ability: shot.ability,
+					source: shot.owner,
+					projectile: shot.id,
+					slot: shot.slot,
+					cushions: shot.cushions - r.cushions.length + index + 1,
+					point: { ...point, y: tune.projectile.height },
+				})
 			for (const n of r.nearMisses)
 				present({
 					type: 'nearMiss',
@@ -269,6 +279,7 @@ export function createProjectiles(ctx) {
 			travelled: 0,
 			passed: [hero.id],
 		}
+		if (shot.bounce) shot.cushions = 0
 		shots.push(shot)
 		if (stats.aim) trace(hero, shot, stats.aim, stats.ability)
 		present({

@@ -151,6 +151,37 @@ export function sweepObstacles(a, b, radius = 0, obstacles = OBSTACLES) {
 	return at
 }
 
+// The outward normal of whatever a disc at `p` is touching: the nearest obstacle surface or map edge.
+// Called once per contact (a bounce), never per tick.
+export function contactNormal(p, radius = 0, obstacles = OBSTACLES, bounds = FLOOR) {
+	let best = null,
+		gap = Infinity
+	const keep = (g, x, z) => {
+		if (Math.abs(g) >= gap) return
+		gap = Math.abs(g)
+		best = { x, z }
+	}
+	keep(bounds.halfX - radius - Math.abs(p.x), -Math.sign(p.x), 0)
+	keep(bounds.halfZ - radius - Math.abs(p.z), 0, -Math.sign(p.z))
+	for (const o of obstacles) {
+		const cx = o.r !== undefined ? o.x : Math.max(o.x - o.halfX, Math.min(o.x + o.halfX, p.x))
+		const cz = o.r !== undefined ? o.z : Math.max(o.z - o.halfZ, Math.min(o.z + o.halfZ, p.z))
+		const dx = p.x - cx,
+			dz = p.z - cz,
+			d = Math.hypot(dx, dz)
+		if (d > 0) {
+			keep(d - radius - (o.r ?? 0), dx / d, dz / d)
+			continue
+		}
+		// Centre inside a box: push out along the shallower axis.
+		const px = o.halfX - Math.abs(p.x - o.x),
+			pz = o.halfZ - Math.abs(p.z - o.z)
+		if (px < pz) keep(-px - radius, Math.sign(p.x - o.x) || 1, 0)
+		else keep(-pz - radius, 0, Math.sign(p.z - o.z) || 1)
+	}
+	return best
+}
+
 export function segmentClear(a, b, inflate = 0, obstacles = OBSTACLES, bounds = FLOOR) {
 	if (Math.abs(b.x) > bounds.halfX - inflate || Math.abs(b.z) > bounds.halfZ - inflate) return false
 	return sweepObstacles(a, b, Math.max(0, inflate - tune.collision.epsilon), obstacles) === null

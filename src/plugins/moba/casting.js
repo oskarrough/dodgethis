@@ -211,7 +211,7 @@ export function createCasting(ctx) {
 			slot,
 			pierce: ability.pierce,
 			heal: ability.heal,
-			bounce: ability.bounce,
+			bounce: skill.bounce ?? false,
 			catchable: ability.catchable,
 			isAbility: true,
 			slow: skill.slow ? { factor: 1 - skill.slow, duration: skill.duration } : null,

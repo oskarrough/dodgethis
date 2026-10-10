@@ -72,6 +72,7 @@ const columns = {
 		'travelled',
 		'range',
 		'target',
+		'cushions',
 	],
 }
 const heroDefaults = {
