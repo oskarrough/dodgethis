@@ -2,6 +2,7 @@ import { el } from '../../core/dom.js'
 import { tune as frontTune } from './front/tune.js'
 
 const titleCase = (word) => word[0].toUpperCase() + word.slice(1)
+const stats = ['kills', 'deaths', 'heroDamage', 'structureDamage', 'xp']
 const number = (value) => value.toLocaleString(undefined, { maximumFractionDigits: 1 })
 
 // One run's facts, not a second combat simulation. Only the local death gets a card.
@@ -59,19 +60,8 @@ export function createRecap({ sim, hero, canvas }) {
 				: 'Arrows or screen edges to look around · Space to centre'
 		if (help.textContent !== hint) help.textContent = hint
 	}
-	function showTable(card) {
-		if (!card) return
-		for (const [key, value] of Object.entries(frontTune.tile)) {
-			const unit = ['snap', 'press'].includes(key)
-				? 's'
-				: key === 'lift'
-					? 'px'
-					: key === 'tilt'
-						? 'deg'
-						: ''
-			card.style.setProperty(`--tile-${key}`, `${value}${unit}`)
-		}
-		const wrap = el('div', 'moba-results')
+	function buildTable(parent) {
+		const wrap = el('div', 'moba-results', parent)
 		const table = el('table', '', wrap)
 		el('caption', '', table).textContent = 'Your match, by hero'
 		const header = el('tr', '', el('thead', '', table))
@@ -94,20 +84,55 @@ export function createRecap({ sim, hero, canvas }) {
 				const name = el('th', '', line)
 				name.scope = 'row'
 				name.textContent = `${heroName(row)} · ${id === hero.id ? 'You' : row.bot ? `bot ${++bot}` : 'Player'}`
-				for (const stat of ['kills', 'deaths', 'heroDamage', 'structureDamage', 'xp'])
-					el('td', '', line).textContent = number(row[stat])
+				for (const stat of stats) el('td', '', line).textContent = number(row[stat])
 			}
 		}
+		return wrap
+	}
+	// The end screen's table, live; Tab or Select toggles it. Rebuilt only when a number moves.
+	let board = null
+	let boardKey = ''
+	function updateBoard(show) {
+		if (!canvas) return
+		if (!show) {
+			if (board) board.hidden = true
+			return
+		}
+		board ??= el('aside', 'moba-scoreboard', document.body)
+		board.hidden = false
+		const key = Object.entries(sim.matchStats ?? {})
+			.map(([id, row]) => [id, ...stats.map((stat) => number(row[stat]))].join())
+			.join('|')
+		if (key === boardKey && board.firstChild) return
+		boardKey = key
+		board.replaceChildren()
+		buildTable(board)
+	}
+	function showTable(card) {
+		if (!card) return
+		for (const [key, value] of Object.entries(frontTune.tile)) {
+			const unit = ['snap', 'press'].includes(key)
+				? 's'
+				: key === 'lift'
+					? 'px'
+					: key === 'tilt'
+						? 'deg'
+						: ''
+			card.style.setProperty(`--tile-${key}`, `${value}${unit}`)
+		}
+		const wrap = buildTable()
 		el('p', 'moba-result-note', wrap).textContent =
 			'XP: minion soak shared between nearby heroes; takedowns and siege credited to the killer. Passive and minion-earned team XP excluded.'
 		card.querySelector('.actions').before(wrap)
 	}
 	return {
 		update,
+		updateBoard,
 		showTable,
 		dispose() {
 			canvas?.classList.remove('moba-dead-world')
 			root?.remove()
+			board?.remove()
 		},
 	}
 }

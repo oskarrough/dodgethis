@@ -21,6 +21,8 @@ export function createMatchMenu({
 	let paused = false
 	let resultShown = false
 	let backHeld = false
+	let selectHeld = false
+	let board = false
 	let endingElapsed = null
 	const frozen = () => paused || !!sim.lane?.match.winner
 	const resetInput = () => {
@@ -84,6 +86,7 @@ export function createMatchMenu({
 			device: app.input.activeDevice?.(),
 			hidden: app.overlay.visible,
 		})
+		recap.updateBoard(board && !app.overlay.visible && !resultShown)
 		if (!sim.lane?.match.winner || resultShown) return
 		if (endingElapsed === null) {
 			endingElapsed = 0
@@ -122,6 +125,16 @@ export function createMatchMenu({
 	window.addEventListener(
 		'keydown',
 		(event) => {
+			if (event.code !== 'Tab' || event.defaultPrevented || app.overlay.visible) return
+			if (event.target?.closest?.('input, textarea, select, [contenteditable]')) return
+			event.preventDefault()
+			if (!event.repeat) board = !board
+		},
+		{ signal: run.signal },
+	)
+	window.addEventListener(
+		'keydown',
+		(event) => {
 			if (event.defaultPrevented || event.repeat || event.code !== 'Escape') return
 			// Esc first drops a held aim or an armed attack-move (the intents sampler sees the same key).
 			if (!paused && (controls.attackArmed || Object.keys(app.intents.get(hero.id).held).length))
@@ -135,6 +148,9 @@ export function createMatchMenu({
 		const back = !!app.input.pad()?.buttons[1]
 		const pressed = back && !backHeld
 		backHeld = back
+		const select = !!app.input.pad()?.buttons[8]
+		if (select && !selectHeld && !app.overlay.visible) board = !board
+		selectHeld = select
 		if (!ready() || !app.overlay.visible) return
 		if (paused) {
 			const hint = document.querySelector('.overlay[data-theme="moba-pause"] .sub')

@@ -143,6 +143,27 @@ canvas.moba-dead-world {
 .moba-results tr[data-local='true'] {
 	background: color-mix(in srgb, var(--ui-gold) 20%, var(--ui-cream));
 }
+.moba-scoreboard {
+	position: fixed;
+	z-index: 5;
+	top: 50%;
+	left: 50%;
+	width: min(760px, calc(100vw - 44px));
+	max-height: calc(100vh - 44px);
+	overflow: auto;
+	box-sizing: border-box;
+	padding: 4px 22px 18px;
+	color: var(--ui-text);
+	background: var(--ui-cream);
+	border: 3px solid var(--ui-text);
+	border-radius: 20px;
+	box-shadow: 5px 6px 0 var(--ui-text);
+	transform: translate(-50%, -50%);
+	pointer-events: none;
+}
+.moba-scoreboard[hidden] {
+	display: none;
+}
 .moba-result-note {
 	margin: 12px 0 0;
 	font-size: 13px;
