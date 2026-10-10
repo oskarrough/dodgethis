@@ -1,5 +1,7 @@
 import { defineConfig } from 'vite'
 import wasm from 'vite-plugin-wasm'
+import { existsSync } from 'node:fs'
+import { join } from 'node:path'
 
 // Rapier (non-compat) ships its physics engine as a real .wasm file. vite-plugin-wasm
 // rewrites Rapier's `import * as wasm from './…_bg.wasm'` into a generated module that
@@ -17,8 +19,28 @@ import wasm from 'vite-plugin-wasm'
 // The payoff stands: the ~1.5 MB wasm is emitted as its own cacheable, streamable
 // asset instead of base64-inlined into the JS — the initial JS bundle drops from
 // ~906 kB gzip (the -compat build) to ~180 kB gzip.
+// Review pages (/review, /docs/look/…) are folders with an index.html; without the
+// trailing slash Vite's SPA fallback serves the game instead.
+const folderSlash = {
+	name: 'folder-slash',
+	configureServer(server) {
+		server.middlewares.use((req, res, next) => {
+			const path = req.url.split('?')[0]
+			if (
+				path !== '/' &&
+				!path.endsWith('/') &&
+				existsSync(join(server.config.root, path, 'index.html'))
+			) {
+				res.writeHead(301, { Location: path + '/' + req.url.slice(path.length) })
+				return res.end()
+			}
+			next()
+		})
+	},
+}
+
 export default defineConfig({
-	plugins: [wasm()],
+	plugins: [wasm(), folderSlash],
 	server: {
 		// Vite rejects Host headers it does not recognise. Two dev setups need
 		// naming: portless gives each app a stable https://<name>.localhost URL,
