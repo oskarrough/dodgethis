@@ -22,6 +22,7 @@ Our own generations live in [pages/](pages/), committed so later agents start fr
 
 - [Gallery](pages/vibes/index.html), [prompts](pages/vibes/prompts.json): the two picked directions. Sun Spell is Overthrow's day, Neon Dream is Flagfall's night; both names are working labels only. Take their construction, palette and value; correct their creatures, which are too round and soft (see Units).
 - Oskar's [sheet](pages/vibes/oskar/three-directions.png): its left and centre panels are the source of both. His [floating pillars](pages/vibes/oskar/floating-pillars-ref.png): massing, cloud depth, tall stone with grass caps, a plain court readable from above.
+- [Sonic & Knuckles ad, 1994](https://d2w9rnfcy7mm78.cloudfront.net/8001096/original_8f12c68bba999aec388740e69c7167f3.png): blue and red heads locked into one gold-ringed emblem; a candidate shape for the versus moment and the logo (2026-10-10).
 - [Oskar's Are.na board, video games](https://www.are.na/don-leche/video-games-anhjn10fbwq): taste for the rebrand (2026-10-10).
 - Superseded (schoolyard and seaside, archived 2026-10-10): the [Overthrow fight](pages/archive/overthrow-fight.webp) (concept K), [lobby](pages/archive/overthrow-lobby.webp) and [side view](pages/archive/overthrow-side.webp); [Flagfall water](pages/archive/flagfall-water.webp) and its [prompt](pages/archive/flagfall-water-prompt.md), still the plate shipped under Flagfall until a night plate replaces it.
 
