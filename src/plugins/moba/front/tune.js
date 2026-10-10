@@ -12,7 +12,7 @@ export const tune = {
 		duration: 2.4,
 		// After shader readiness and the reveal you look at the lane for `preview` s while the
 		// camera creeps `creep` of the way into the descent, then dives for `duration` s.
-		preview: 4,
+		preview: 3,
 		creep: 0.06,
 		reveal: 0.7,
 		height: 22,
