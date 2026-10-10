@@ -92,7 +92,7 @@ export const HEROES = {
 		get basic() {
 			return { ...tune.attack, range: tune.orders.attackRange }
 		},
-		abilities: { slot1: loose, slot2: vault, slot3: rain, slot4: null },
+		abilities: { slot1: loose, slot2: rain, slot3: vault, slot4: null },
 		traits: {
 			onHit({ source, shot, target, ticks }) {
 				if (shot.traitProcs !== false && shot.ability === loose.id && target.hero && !source.dead)
