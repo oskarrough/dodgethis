@@ -1,5 +1,16 @@
 [
 	{
+		"at": "2026-10-10T20:08:23.519Z",
+		"title": "Fog of war on Flagfall",
+		"ask": "First take behind ?fog: your heroes, minions and structures see 10/7/10 m; enemy units outside vanish and the ground dims. Is the dim strong enough, and should it read as darkness or as haze?",
+		"status": "To review",
+		"decision": "",
+		"media": ["review/media/2026-10-10-fog-of-war-on-flagfall/fog-flagfall.png"],
+		"links": [],
+		"thread": "thr_egsuf57dc2",
+		"page": "2026-10-10-fog-of-war-on-flagfall/"
+	},
+	{
 		"at": "2026-10-10T20:00:06.411Z",
 		"title": "Three lanes or a richer Flagfall",
 		"ask": "Grow Flagfall toward your HotS map (88 × 44 m, a tight jungle of 4 m paths and brush, flags inside, gates at the forts) and park three lanes until 5v5 bots exist?",

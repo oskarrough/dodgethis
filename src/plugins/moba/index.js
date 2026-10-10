@@ -21,6 +21,7 @@ import { createStamps } from './stamps.js'
 import { createMatchMenu } from './menu.js'
 import { parseMatchSetup } from './setup.js'
 import { createDebugLayout, createMatchDebug } from './debug.js'
+import { createFog } from './fog.js'
 import { addSliders, sliderSections } from './sliders.js'
 import { createLobby } from './lobby.js'
 import { createDifficultyGallery } from './lobby-props.js'
@@ -162,6 +163,7 @@ export default function moba(app, map) {
 				!app.session.authoritative ? (object, read) => replica.smooth(object, read) : run.smooth,
 			)
 			const skillsView = createSkillsView(scene)
+			const fog = !isLobby && query.has('fog') ? createFog(scene, layout.bounds) : null
 			const hud = createHud({ lobby: isLobby, layout, pieces })
 			const pips = createPips()
 			const follow = createFollow(tune.follow, layout.bounds)
@@ -509,6 +511,8 @@ export default function moba(app, map) {
 					sim.tick + (sim.lane?.match.winner ? menu.endingTime() / app.clock.step : blend),
 				)
 				sim.laneView?.update(sim.lane, sim.heroes, blend, locate, step, hero.team)
+				fog?.update(sim, hero.team)
+				const unseen = (unit) => fog && !fog.seen.has(unit.id)
 				const lineAbility = hero.cast
 					? castAbility(hero)
 					: Object.entries(hero.definition.abilities).find(
@@ -542,7 +546,9 @@ export default function moba(app, map) {
 					obstacles: sim.obstacles,
 					boards: sim.boards,
 					zones: sim.zones,
-					casters: [...sim.heroes, ...sim.dummies].filter((unit) => unit.team !== hero.team),
+					casters: [...sim.heroes, ...sim.dummies].filter(
+						(unit) => unit.team !== hero.team && !unseen(unit),
+					),
 					alpha: blend,
 				})
 				feedback.fizzle(gone)
@@ -551,13 +557,14 @@ export default function moba(app, map) {
 				feedback.stride(hero)
 				shadows.update((cast) => {
 					for (const d of [...sim.heroes, ...sim.dummies]) {
-						if (d.dead) continue
+						if (d.dead || unseen(d)) continue
 						const q = d.body.mesh.position
 						cast(q.x, q.y - d.body.radius - d.body.halfHeight, q.z, 0.5)
 					}
 				})
 				hud.update(dt, {
 					...(lobby ? lobby.hudFrame(blend) : matchFrame(sim, hero, blend, app.clock.step)),
+					seen: fog?.seen,
 					aim: frame.aim,
 					camera: app.camera.view,
 					pad: input.pad(),
@@ -574,18 +581,23 @@ export default function moba(app, map) {
 						...sim.dummies,
 						...(sim.lane?.minions ?? []),
 						...(sim.lane?.structures ?? []),
-					],
+					].filter((unit) => !unseen(unit)),
 					app.camera.view,
 					app.renderer.domElement.getBoundingClientRect(),
 					local,
 					hero.team,
 					names,
 				)
-				pips.update(app.camera.view, [...sim.heroes, ...sim.dummies], hero.team, {
-					hero,
-					ball: null, // Onboarding owns the team-coloured objective pointer.
-					carrying: sim.ball?.carrying(hero) ?? false,
-				})
+				pips.update(
+					app.camera.view,
+					[...sim.heroes, ...sim.dummies].filter((unit) => !unseen(unit)),
+					hero.team,
+					{
+						hero,
+						ball: null, // Onboarding owns the team-coloured objective pointer.
+						carrying: sim.ball?.carrying(hero) ?? false,
+					},
+				)
 				onboarding?.update({
 					camera: app.camera.view,
 					alpha: blend,
@@ -663,6 +675,7 @@ export default function moba(app, map) {
 				ballView?.dispose()
 				view.dispose()
 				skillsView.dispose()
+				fog?.dispose()
 				hud.dispose()
 				pips.dispose()
 				juice.dispose()

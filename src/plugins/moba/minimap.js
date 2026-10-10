@@ -40,7 +40,7 @@ export function createMinimap(icons, layout = matchRecipe().layout, pieces = mat
 	}
 	document.body.append(root)
 	return {
-		update({ sim, hero, lobby }) {
+		update({ sim, hero, lobby, seen }) {
 			const hidden = lobby || !sim
 			if (root.style.display !== (hidden ? 'none' : '')) root.style.display = hidden ? 'none' : ''
 			if (hidden) return
@@ -48,7 +48,7 @@ export function createMinimap(icons, layout = matchRecipe().layout, pieces = mat
 				...(liveStructures ? (sim.lane?.structures ?? []) : []),
 				...sim.heroes,
 				...sim.dummies,
-			]
+			].filter((unit) => !seen || seen.has(unit.id))
 			const ids = new Set(units.map((unit) => unit.id))
 			for (const [id, marker] of markers) {
 				if (ids.has(id)) continue

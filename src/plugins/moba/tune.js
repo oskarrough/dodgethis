@@ -833,6 +833,14 @@ export const tune = {
 		warn: 5, // timers pulse in their last seconds
 	},
 	match: { objective: 180, late: 360, lateGunDamage: 0.05 },
+	// ?fog: sight radii (m) per viewer, and the dim laid over unseen ground (rgb, alpha, px per m).
+	fog: {
+		sight: { hero: 10, minion: 7, structure: 10 },
+		color: '20, 18, 30',
+		dim: 0.5,
+		resolution: 2,
+		height: 0.08,
+	},
 	waves: {
 		first: 15,
 		interval: 30,
