@@ -25,7 +25,7 @@ export function createLaneView(scene, smooth = null, layout = null) {
 			owned.push(m)
 			return m
 		}
-		const teamMaterial = material(team === 'A' ? 'teamA' : 'teamB')
+		const teamMaterial = material(team === 'A' ? 'teamA' : team === 'B' ? 'teamB' : 'cream')
 		const ink = material('ink'),
 			cream = material('cream')
 		function part(geometry, mat, y) {

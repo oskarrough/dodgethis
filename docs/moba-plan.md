@@ -36,7 +36,8 @@ Early gun damage is shown above. At 6:00 guns deal 5% of it, waves accelerate an
 | Mount | —        | 1 s channel, then `speedMul` 1.3. Movement cancels the channel; damage, attacking or casting dismounts                    |
 
 - **Bots (built):** hero bots play through `app.intents` exactly like players; see [Hero bots](#hero-bots-m4).
-- **Cut:** talents (Oskar's call), mana, items, extra lanes, mercenary camps, hearthstone, gates, fountains, shift-queue, minimap, catch-up XP, and heroes not yet marked playable.
+- **Back in:** mercenary camps, on Flagfall only (Oskar, 2026-10-10: modular).
+- **Cut:** talents (Oskar's call), mana, items, extra lanes, hearthstone, gates, fountains, shift-queue, minimap, catch-up XP, and heroes not yet marked playable.
 
 ## Playtest links
 
