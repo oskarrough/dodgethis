@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { createBody } from '../../core/body.js'
 import { PALETTE } from '../../core/style.js'
+import { hologramMaterial } from './hologram.js'
 import { FORWARD_LAYER } from '../../core/stylepass.js'
 import { dressHero } from './hero-view.js'
 import { HEROES } from './heroes.js'
@@ -192,43 +193,7 @@ export function createLobbyProps(scene, el, gallery, readySeats, local, audio) {
 	const holo = tune.lobby.ready.hologram
 	const holoMaterials = Object.fromEntries(
 		['A', 'B'].map((team) => {
-			const m = new THREE.ShaderMaterial({
-				uniforms: {
-					uColor: { value: new THREE.Color(PALETTE[team === 'A' ? 'teamA' : 'teamB']) },
-					uTime: { value: 0 },
-					uOpacity: { value: holo.opacity },
-					uLines: { value: holo.lines },
-				},
-				vertexShader: `
-					varying vec3 vNormal;
-					varying vec3 vView;
-					varying float vY;
-					void main() {
-						vec4 world = modelMatrix * vec4(position, 1.0);
-						vY = world.y;
-						vec4 view = viewMatrix * world;
-						vView = normalize(-view.xyz);
-						vNormal = normalize(normalMatrix * normal);
-						gl_Position = projectionMatrix * view;
-					}`,
-				fragmentShader: `
-					uniform vec3 uColor;
-					uniform float uTime;
-					uniform float uOpacity;
-					uniform float uLines;
-					varying vec3 vNormal;
-					varying vec3 vView;
-					varying float vY;
-					void main() {
-						float rim = pow(1.0 - abs(dot(normalize(vNormal), vView)), 2.0);
-						float scan = 0.5 + 0.5 * sin((vY * uLines - uTime * 0.35) * 6.2832);
-						float breathe = 0.85 + 0.15 * sin(uTime * 1.3);
-						float alpha = uOpacity * (0.3 + 0.7 * rim) * (0.7 + 0.3 * scan) * breathe;
-						gl_FragColor = vec4(mix(uColor, vec3(1.0), rim * 0.55), alpha);
-					}`,
-				transparent: true,
-				depthWrite: false,
-			})
+			const m = hologramMaterial(team, { opacity: holo.opacity, lines: holo.lines })
 			owned.push(m)
 			return [team, m]
 		}),

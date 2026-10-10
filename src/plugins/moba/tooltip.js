@@ -1,4 +1,5 @@
 import { tune } from './tune.js'
+import { structureName } from './gates.js'
 
 // A cream sticker card for the stat nerds. Builders are pure: they read live state and `tune`
 // on every call, so an open card follows a `&debug` edit or a level-up. The card element only
@@ -140,7 +141,7 @@ export function structureCard(
 	if (unit.silentUntil > tick)
 		notes.push(`Silenced by the Ball for ${Math.ceil((unit.silentUntil - tick) * step)} s`)
 	return {
-		title: `${side(unit.team, localTeam)} ${unit.kind}`,
+		title: `${side(unit.team, localTeam)} ${structureName(unit.kind)}`,
 		tone: unit.team,
 		summary: `${title(unit.kind)}. Shoots the nearest enemy in range; heroes who hit its allies come first.`,
 		rows: [
@@ -166,7 +167,7 @@ export function minionCard(unit, { localTeam } = {}) {
 	]
 	if (t.structureDamage) rows.push(['vs structures', `×${n(t.structureDamage)}`])
 	return {
-		title: `${side(unit.team, localTeam)} ${unit.kind}`,
+		title: `${side(unit.team, localTeam)} ${structureName(unit.kind)}`,
 		tone: unit.team,
 		summary:
 			scale > 1 ? `Wave minion, ${pct(scale - 1)} stronger than the first wave.` : 'Wave minion.',

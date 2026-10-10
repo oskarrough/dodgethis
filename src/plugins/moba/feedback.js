@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { structureName } from './gates.js'
 import { STEP } from '../../core/app.js'
 import { abilityOf } from './ability.js'
 import { heroDefinition } from './heroes.js'
@@ -73,7 +74,8 @@ export function createFeedback({
 		if (unit.id === local) return said('you')
 		const side = unit.team === localTeam ? 'ally' : 'enemy'
 		if (unit.definition) return said(`${side} ${titleCase(unit.definition.id)}`)
-		if (unit.structure) return said(`${unit.team === localTeam ? 'your' : 'enemy'} ${unit.kind}`)
+		if (unit.structure)
+			return said(`${unit.team === localTeam ? 'your' : 'enemy'} ${structureName(unit.kind)}`)
 		return said(`${side} minions`)
 	}
 	function ruling(fact, unit, mine, onMe, verb = 'got', after = ' out') {

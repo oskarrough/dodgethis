@@ -122,7 +122,8 @@ export const flagfall = {
 		],
 		midBrush: { halfX: 2, z: [3.5, 7] }, // the clearing's two lane holes
 		camps: { x: 19, z: 4.25 }, // mercenary camps (`camps.js`): a lantern and a chalk square
-		gateX: 29, // the lane gates in front of each fort (gates.js, tune.gate)
+		gatehouseX: 29, // the gatehouses in front of each fort (gates.js, tune.gatehouse)
+		laserX: 37, // the laser gates between each fort and the core (gates.js, tune.laser)
 	},
 	// Dunk gaps in the shore fence: |x| ranges, mirrored to both halves of both shores.
 	gaps: [[5, 11]],

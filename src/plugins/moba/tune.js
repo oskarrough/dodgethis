@@ -45,9 +45,9 @@ export const tune = {
 		ringNear: 3,
 		height: 5,
 	},
-	// Flagfall's lane gates (gates.js): no gun, low HP so a wave and a hero break one in ~10 s.
+	// Flagfall's gatehouses (gates.js): no gun, low HP so a wave and a hero break one in ~10 s.
 	// The radius spans the lane, so every enemy shot across it lands; depth is the wall's thickness.
-	gate: {
+	gatehouse: {
 		hp: 1500,
 		xp: 0, // a speed bump, not a prize: tower XP here snowballed matches shorter
 		damage: 0,
@@ -59,6 +59,21 @@ export const tune = {
 		tell: 0.3,
 		ringNear: 3,
 		height: 1.2,
+	},
+	// Flagfall's laser gates (gates.js), the second line between fort and core: same deal, a bit
+	// tougher. Height is the posts'; the beam fills between them.
+	laser: {
+		hp: 2000,
+		xp: 0,
+		damage: 0,
+		rate: 1,
+		range: 0,
+		radius: 3.5,
+		depth: 0.6,
+		speed: 16,
+		tell: 0.3,
+		ringNear: 3,
+		height: 2.4,
 	},
 	core: {
 		x: 40,

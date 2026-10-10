@@ -101,7 +101,7 @@ export function flagfallLayout() {
 		spawnSpacing: tune.map.spawnSpacing,
 		bases: { A: { x: -s.baseX }, B: { x: s.baseX } },
 		lanes,
-		structures: addGates(structures, lanes, j.gateX),
+		structures: addGates(structures, lanes, j),
 		posts: s.posts,
 		camps: [-1, 1].flatMap((side) =>
 			[-1, 1].map((flank) => ({ x: side * j.camps.x, z: flank * j.camps.z })),

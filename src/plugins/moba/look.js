@@ -89,6 +89,16 @@ export const look = {
 		},
 		rubbleRadius: 0.7,
 		rubbleHeight: 0.35,
+		// Flagfall's laser gate: two emitter posts and a hologram beam sheet between them.
+		laser: {
+			post: 0.45, // the posts' half-width
+			cap: 0.35, // the team-coloured emitter on top
+			stub: 0.6, // what's left of a post once the gate falls
+			beamInset: 0.15, // the sheet's gap above the ground and below the caps
+			opacity: 1.3,
+			lines: 6,
+			flicker: 0.6,
+		},
 		shatterLife: 0.8,
 		shatterSpread: 2,
 		shatterLift: 1.5,

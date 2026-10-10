@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { structureName } from './gates.js'
 import './hud.css'
 import { heroDefinition } from './heroes.js'
 import { tune } from './tune.js'
@@ -414,7 +415,7 @@ export function createHud({ lobby = false, layout, pieces, onMinimap } = {}) {
 				if (!unit) return null
 				if (unit.dead)
 					return {
-						title: `${source.which === 'mine' ? 'Your' : 'Enemy'} ${unit.kind}`,
+						title: `${source.which === 'mine' ? 'Your' : 'Enemy'} ${structureName(unit.kind)}`,
 						tone: unit.team,
 						summary: 'Destroyed.',
 						rows: [],

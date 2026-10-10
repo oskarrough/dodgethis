@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { structureName } from './gates.js'
 import './health-bars.css'
 import { tune } from './tune.js'
 import { look } from './look.js'
@@ -76,7 +77,7 @@ export function createHealthBars() {
 				bar.element.style.setProperty('--tick-spacing', `${(tickHp / unit.maxHp) * 100}%`)
 				bar.fill.style.width = `${Math.max(0, Math.min(1, unit.hp / unit.maxHp)) * 100}%`
 				const text = unit.structure
-					? `${unit.team === localTeam ? 'Your' : 'Enemy'} ${unit.kind}`
+					? `${unit.team === localTeam ? 'Your' : 'Enemy'} ${structureName(unit.kind)}`
 					: names.has(unit.id)
 						? names.get(unit.id)
 						: unit.heroId

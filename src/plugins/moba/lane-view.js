@@ -4,6 +4,7 @@ import { STEP } from '../../core/app.js'
 import { tune } from './tune.js'
 import { look } from './look.js'
 import { convexHull } from './match-terrain.js'
+import { hologramMaterial } from './hologram.js'
 
 // `layout.structureStyle === 'stone'` (both isles; `layout.light` picks sun or moon) builds towers and the core in stone
 // with team colour only on banners and crystals, and prints each one's shadow on the court.
@@ -39,7 +40,49 @@ export function createLaneView(scene, smooth = null, layout = null) {
 		let crystal = null
 		const cracks = []
 		let shadow = null
-		if (stone && tower) {
+		let laser = null
+		if (kind === 'laser') {
+			// Two stone posts with team emitters, a flickering hologram sheet strung between them.
+			const l = v.laser
+			const pale = material('scenery')
+			const base = -halfHeight
+			const capped = tune.laser.height - l.cap
+			laser = { tops: [], beam: null }
+			for (const side of [-1, 1]) {
+				const stub = part(
+					new THREE.BoxGeometry(l.post * 2, l.stub, l.post * 2),
+					pale,
+					base + l.stub / 2,
+				)
+				const top = part(
+					new THREE.BoxGeometry(l.post * 2, capped - l.stub, l.post * 2),
+					pale,
+					base + (l.stub + capped) / 2,
+				)
+				const cap = part(
+					new THREE.BoxGeometry(l.post * 2.2, l.cap, l.post * 2.2),
+					teamMaterial,
+					base + capped + l.cap / 2,
+				)
+				for (const piece of [stub, top, cap]) piece.position.z = side * radius
+				laser.tops.push(top, cap)
+			}
+			const sheet = capped - l.beamInset * 2
+			const glow = hologramMaterial(team, {
+				opacity: l.opacity,
+				lines: l.lines,
+				flicker: l.flicker,
+				side: THREE.DoubleSide,
+				blending: THREE.AdditiveBlending,
+			})
+			const geometry = new THREE.PlaneGeometry(radius * 2 - l.post * 2, sheet).rotateY(Math.PI / 2)
+			owned.push(glow, geometry)
+			laser.beam = new THREE.Mesh(geometry, glow)
+			laser.beam.name = 'moba-laser-beam'
+			laser.beam.position.y = base + l.beamInset + sheet / 2
+			laser.beam.layers.set(FORWARD_LAYER)
+			visual.add(laser.beam)
+		} else if (stone && tower) {
 			const s = look.laneView.stone
 			const pale = material('scenery'),
 				grey = material('courtShade')
@@ -268,6 +311,13 @@ export function createLaneView(scene, smooth = null, layout = null) {
 					mesh.visible = false
 					return
 				}
+				if (laser) {
+					// The beam collapses; the posts stay as broken stubs.
+					laser.beam.visible = false
+					for (const piece of laser.tops) piece.visible = false
+					if (dome) dome.visible = false
+					return
+				}
 				if (kind === 'core') {
 					crystal.visible = false
 					for (const crack of cracks) crack.visible = false
@@ -336,6 +386,7 @@ export function createLaneView(scene, smooth = null, layout = null) {
 			pose,
 			dome,
 			crystal,
+			laser,
 			cracks,
 			helpTether,
 			aggroFlash: 0,
@@ -368,6 +419,8 @@ export function createLaneView(scene, smooth = null, layout = null) {
 				unit.body.shieldFlash = Math.max(0, unit.body.shieldFlash - dt)
 				unit.body.dome.scale.setScalar(1 + (v.shieldPulse * unit.body.shieldFlash) / v.shieldLife)
 			}
+			if (unit.body.laser)
+				unit.body.laser.beam.material.uniforms.uTime.value = (lane.time + alpha) * STEP
 			if (unit.body.crystal) {
 				unit.body.crystal.rotation.y = (lane.time + alpha) * STEP * v.coreSpin
 				for (const [i, crack] of unit.body.cracks.entries())

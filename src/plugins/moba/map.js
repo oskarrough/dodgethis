@@ -196,7 +196,7 @@ export function buildMap(scene, world, RAPIER, kind = DEFAULT_MAP) {
 				)
 		}
 		// Marks for what will work later: chalk squares on the camps, a cross on the flag,
-		// a bar across each lane in front of the forts where the gates will stand.
+		// a bar across each lane in front of the forts where the gatehouses stand.
 		const j = s.jungle
 		const w = terrain.chalkWidth
 		for (const post of layout.posts.filter((p) => p.x !== 0)) {
@@ -211,7 +211,12 @@ export function buildMap(scene, world, RAPIER, kind = DEFAULT_MAP) {
 		for (const side of [-1, 1])
 			for (const flank of [-1, 1])
 				for (const d of [-0.4, 0.4])
-					chalkLine(w, s.lane.outerZ - s.lane.innerZ, side * j.gateX + d, flank * s.lane.centreZ)
+					chalkLine(
+						w,
+						s.lane.outerZ - s.lane.innerZ,
+						side * j.gatehouseX + d,
+						flank * s.lane.centreZ,
+					)
 		// A low coursed-stone kerb on the safe rim, never a collider. The long shores' runs are
 		// what the dunk gaps leave, so the drawn gaps are exactly the sim's.
 		const k = s.kerb
