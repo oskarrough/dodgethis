@@ -143,10 +143,6 @@ export function mobaFront(app, map) {
 			app.intents.cancel()
 			app.audio.setMusicScene('wind')
 			map.dispose()
-			const url = new URL(location.href)
-			url.searchParams.delete('play')
-			url.searchParams.delete('mode')
-			if (url.href !== location.href) history.replaceState(null, '', url)
 			const el = document.createElement('main')
 			el.className = 'moba-front'
 			el.dataset.screen = 'modes'
@@ -246,14 +242,8 @@ export function mobaFront(app, map) {
 				if (leaving) return
 				leaving = true
 				const mode = buttons[index].dataset.mode
-				const url = new URL(location.href)
-				url.searchParams.set('mode', mode)
 				if (mode === 'moba') {
 					setup.map = buttons[index].dataset.map
-					url.searchParams.set('map', setup.map)
-				}
-				history.replaceState(null, '', url)
-				if (mode === 'moba') {
 					tune.enter.frequencies.forEach((freq, i) =>
 						app.audio.blip({ ...tune.enter, freq, delay: i * tune.enter.gap }),
 					)

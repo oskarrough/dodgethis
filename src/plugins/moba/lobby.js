@@ -259,11 +259,6 @@ export function createLobby({
 		setup.heroId = hero.heroId
 		setup.picks[hero.id] = { ...setup.picks[hero.id], heroId: hero.heroId, team: hero.seatTeam }
 		strip.sync(hero.heroId)
-		const url = new URL(location.href)
-		url.searchParams.set('hero', hero.heroId)
-		url.searchParams.set('map', setup.map)
-		url.searchParams.set('bots', setup.difficulty)
-		history.replaceState(null, '', url)
 	}
 	syncPick()
 	function finishGalleryShot() {
@@ -306,9 +301,6 @@ export function createLobby({
 			if (fact.ability === 'galleryShot') finishGalleryShot()
 			setup.difficulty = fact.difficulty
 			props.selectDifficulty()
-			const url = new URL(location.href)
-			url.searchParams.set('bots', fact.difficulty)
-			history.replaceState(null, '', url)
 			if (gallerySoundTick !== fact.tick) {
 				gallerySoundTick = fact.tick
 				app.audio.blip(tune.lobby.gallery.pickSound)

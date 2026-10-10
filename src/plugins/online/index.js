@@ -1,5 +1,5 @@
 import { createLink } from './link.js'
-import { MAX_PLAYERS, Net, roomCode } from './net.js'
+import { MAX_PLAYERS, Net } from './net.js'
 import { createOnlineSession } from './online-session.js'
 import { createOnlineUi } from './online-ui.js'
 
@@ -13,6 +13,7 @@ export default function online(app, { join = null } = {}) {
 	})
 	let link = null
 	let mode = null
+	let joining = null
 
 	function stop() {
 		if (!link) return
@@ -35,7 +36,6 @@ export default function online(app, { join = null } = {}) {
 				for (const participant of app.modes.current?.roomRoster?.() ?? [])
 					if (!state.humans.some((h) => h.id === participant.id))
 						app.modes.current?.removeParticipant?.(participant.id)
-			if (!state) forgetLink()
 			ui.render(state, message)
 			app.debug.panel?.setInert(!!state)
 		},
@@ -127,21 +127,15 @@ export default function online(app, { join = null } = {}) {
 	})
 	async function joinByLink(code) {
 		join = null
+		joining = code
 		try {
 			await session.join(code)
 		} catch (error) {
 			if (session.state) return
-			forgetLink()
 			ui.show(`${error.message}. You're playing solo.`)
+		} finally {
+			joining = null
 		}
-	}
-	// A refresh on a dead or left room's link would try it again.
-	function forgetLink() {
-		if (!roomCode(location.pathname)) return
-		const url = new URL(location.href)
-		url.pathname = '/'
-		url.searchParams.set('mode', 'moba')
-		history.replaceState(null, '', url)
 	}
 	app.on('menu', () => {
 		if (link && !ui.open) ui.show()
@@ -150,6 +144,10 @@ export default function online(app, { join = null } = {}) {
 	const keepalive = setInterval(() => link?.keepalive(), 1000)
 	app.debug.expose({
 		online: session,
+		// The room the address bar names: the one we're in, or the link's while it is joining.
+		get room() {
+			return session.state?.code ?? join ?? joining
+		},
 		get link() {
 			return link
 		},
