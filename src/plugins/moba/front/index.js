@@ -147,7 +147,7 @@ export function mobaFront(app, map) {
 			el.className = 'moba-front'
 			el.dataset.screen = 'modes'
 			el.setAttribute('aria-label', 'Choose a game or map')
-			// Everything but the backdrop moves as one sticker sheet: it drops out under the lobby
+			// Everything but the backdrop moves as one sticker sheet: it flies out under the lobby
 			// shot and pops back in on return.
 			// The title's o is the Ball; now and then one letter sidesteps a throw you never saw.
 			const title = [...'DodgeThis']
@@ -212,7 +212,7 @@ export function mobaFront(app, map) {
 			const inert = outside.map((child) => child.inert)
 			outside.forEach((child) => (child.inert = true))
 			document.body.append(el)
-			// The lobby takes `el` and the backdrop in it; the tiles fall away above it on their own sheet.
+			// The lobby takes `el` and the backdrop in it; the tiles fly away above it on their own sheet.
 			const sheet = document.createElement('div')
 			sheet.className = 'moba-front front-leaving'
 			sheet.inert = true
@@ -269,10 +269,20 @@ export function mobaFront(app, map) {
 					...buttons.filter((button) => button !== picked),
 					picked,
 				].filter(Boolean)
+				// Each flies out along the line from the screen's centre through its own, far enough
+				// to clear the screen whatever its size.
+				const away = Math.hypot(innerWidth, innerHeight)
+				const flights = order.map((node) => {
+					const box = node.getBoundingClientRect()
+					const x = box.left + box.width / 2 - innerWidth / 2
+					const y = box.top + box.height / 2 - innerHeight / 2
+					const length = Math.hypot(x, y) || 1
+					return `${(x / length) * away}px ${(y / length) * away}px`
+				})
 				Promise.all(
 					order.map(
 						(node, i) =>
-							node.animate([{ translate: '0 100vh', rotate: i % 2 ? '-4deg' : '4deg' }], {
+							node.animate([{ translate: flights[i], rotate: i % 2 ? '-4deg' : '4deg' }], {
 								duration: tune.tile.drop * 1000,
 								delay: i * tune.tile.stagger * 1000,
 								easing: 'cubic-bezier(0.5, 0, 0.9, 0.4)',

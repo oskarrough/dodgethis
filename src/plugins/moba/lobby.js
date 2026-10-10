@@ -76,8 +76,8 @@ export function createLobby({
 		['.front-lobby .back-button', -1, -1],
 		['.front-lobby .online-entry', -1, -1],
 		['.moba-hud:not(.moba-unit)', 0, 1],
-		['.mute', 1, 1],
-		['.fullscreen', 1, 1],
+		['.mute', 1, 1, frontTune.chrome.corner],
+		['.fullscreen', 1, 1, frontTune.chrome.corner],
 	]
 	let slides = []
 	function slide(node, x, y, { at = 0, time, out = false }) {
@@ -213,9 +213,9 @@ export function createLobby({
 	})
 	if (intro.t < intro.time) {
 		const { stagger, land } = frontTune.chrome
-		edges.forEach(([selector, x, y], i) =>
+		edges.forEach(([selector, x, y, early = 0], i) =>
 			slide(document.querySelector(selector), x, y, {
-				at: Math.max(0, fadeAt() - intro.t) + i * stagger,
+				at: Math.max(0, Math.max(0, fadeAt() - intro.t) + i * stagger - early),
 				time: land,
 			}),
 		)
