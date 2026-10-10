@@ -1,8 +1,12 @@
 import { tune } from './tune.js'
 import { controls, setQuickCast } from '../../core/controls.js'
 import { hex } from '../../core/style.js'
+import { createCornerNav } from '../../core/corner-nav.js'
 import { createRecap } from './recap.js'
 import './menu.css'
+
+const MENU_ICON =
+	'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6.5h14M5 12h14M5 17.5h14" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/></svg>'
 
 // Simulation stops on the winning tick; presentation finishes before the result card.
 export function createMatchMenu({
@@ -132,6 +136,7 @@ export function createMatchMenu({
 		},
 		{ signal: run.signal },
 	)
+	const openMenu = () => (app.session.shared ? app.emit('menu') : toggle())
 	window.addEventListener(
 		'keydown',
 		(event) => {
@@ -139,11 +144,18 @@ export function createMatchMenu({
 			// Esc first drops a held aim or an armed attack-move (the intents sampler sees the same key).
 			if (!paused && (controls.attackArmed || Object.keys(app.intents.get(hero.id).held).length))
 				return
-			if (app.session.shared) app.emit('menu')
-			else toggle()
+			openMenu()
 		},
 		{ signal: run.signal },
 	)
+	// The visible way out: the lobby's corner tile, wearing a menu icon. It sits off the canvas,
+	// so a click never reaches the move orders.
+	const corner = app.renderer ? createCornerNav(document.body, { label: 'Menu' }) : null
+	if (corner) {
+		corner.online.remove()
+		corner.back.innerHTML = MENU_ICON
+		corner.back.onclick = openMenu
+	}
 	run.system('input', () => {
 		const back = !!app.input.pad()?.buttons[1]
 		const pressed = back && !backHeld
@@ -165,6 +177,7 @@ export function createMatchMenu({
 		'abort',
 		() => {
 			recap.dispose()
+			corner?.el.remove()
 			app.overlay.hide()
 		},
 		{ once: true },

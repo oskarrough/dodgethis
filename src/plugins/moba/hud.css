@@ -395,9 +395,10 @@
 	pointer-events: none;
 }
 .moba-hud.moba-unit {
-	top: max(14px, 1.6vw);
+	/* Under the menu tile: its 12px margin, its size, then the same gap again. */
+	top: calc(24px + clamp(38px, 3.2vw, 52px));
 	bottom: auto;
-	left: max(14px, 1.6vw);
+	left: 12px;
 	width: auto;
 	transform: none;
 	justify-items: start;
