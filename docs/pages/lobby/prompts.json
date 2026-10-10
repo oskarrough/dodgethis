@@ -2,7 +2,7 @@
 	"method": "Built-in image generator",
 	"references": [
 		{
-			"path": "../lobby-before.png",
+			"path": "lobby-before.png",
 			"role": "Camera, framing and UI placement only; schoolyard materials superseded"
 		},
 		{
@@ -10,7 +10,7 @@
 			"role": "Approved world, aquarelle colour, sky and cliff mass"
 		},
 		{
-			"path": "../splash/frames/01-day-ink-frame.webp",
+			"path": "../frames/01-day-ink-frame.webp",
 			"role": "Painted parchment UI skin"
 		}
 	],

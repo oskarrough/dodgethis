@@ -19,7 +19,7 @@ import { join } from 'node:path'
 // The payoff stands: the ~1.5 MB wasm is emitted as its own cacheable, streamable
 // asset instead of base64-inlined into the JS — the initial JS bundle drops from
 // ~906 kB gzip (the -compat build) to ~180 kB gzip.
-// Review pages (/review, /docs/look/…) are folders with an index.html; without the
+// Review pages (/docs/pages/…) are folders with an index.html; without the
 // trailing slash Vite's SPA fallback serves the game instead.
 const folderSlash = {
 	name: 'folder-slash',

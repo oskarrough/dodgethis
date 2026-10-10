@@ -1,6 +1,6 @@
 {
 	"$schema": "./node_modules/oxfmt/configuration_schema.json",
-	"ignorePatterns": ["docs/look/archive/**"],
+	"ignorePatterns": ["docs/pages/archive/**"],
 	"semi": false,
 	"singleQuote": true,
 	"useTabs": true

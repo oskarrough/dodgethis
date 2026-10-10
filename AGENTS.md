@@ -22,8 +22,9 @@
 
 ## Browser proofs
 
-- Before opening a browser or proving a change by play, read `.claude/skills/verify/SKILL.md`: which proof to pick, the shared dev server, `window.dt`, evidence and cleanup. Every visual proof, clip or variant goes through `bun run review -- --title … --ask … --thread $BB_THREAD_ID <files>`; reports link http://office-linux.heron-mermaid.ts.net:5173/review/, never thread-storage paths. Oskar plays at http://office-linux.heron-mermaid.ts.net:5173, never `127.0.0.1`.
+- Before opening a browser or proving a change by play, read `.claude/skills/verify/SKILL.md`: which proof to pick, the shared dev server, `window.dt`, evidence and cleanup. Every visual proof, clip or variant goes through `bun run review -- --title … --ask … --thread $BB_THREAD_ID <files>`; reports link http://office-linux.heron-mermaid.ts.net:5173/docs/pages/review/, never thread-storage paths. Oskar plays at http://office-linux.heron-mermaid.ts.net:5173, never `127.0.0.1`.
 
+- Every HTML artifact lives in `docs/pages/<slug>/` and gets a row in `docs/pages/index.html` (title, what, date, status To review / Decided / Archived, Oskar's decision). The orchestrator updates the row when Oskar decides.
 - HTML artifacts (pitches, look pages, review) link `/docs/page.css` with `<body class="page">` and write no CSS of their own; helpers are listed at the top of that file.
 
 ## Vocabulary

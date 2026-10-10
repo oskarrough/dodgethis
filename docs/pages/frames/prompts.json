@@ -1,6 +1,6 @@
 {
 	"method": "Built-in image generator",
-	"reference": "../02-day-night-plate.webp",
+	"reference": "../splash/02-day-night-plate.webp",
 	"jobs": [
 		{
 			"id": "01-day-ink-frame",

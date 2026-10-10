@@ -3,7 +3,7 @@ import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from
 import { basename, join } from 'node:path'
 import { parseArgs } from 'node:util'
 
-const root = join(import.meta.dir, '..', 'review')
+const root = join(import.meta.dir, '..', 'docs', 'pages', 'review')
 const feedPath = join(root, 'feed.json')
 const { values, positionals } = parseArgs({
 	args: Bun.argv.slice(2).filter((a) => a !== '--'),
@@ -45,4 +45,4 @@ feed.unshift({
 })
 feed.sort((a, b) => b.at.localeCompare(a.at))
 writeFileSync(feedPath, JSON.stringify(feed, null, '\t') + '\n')
-console.log('http://office-linux.heron-mermaid.ts.net:5173/review/')
+console.log('http://office-linux.heron-mermaid.ts.net:5173/docs/pages/review/')

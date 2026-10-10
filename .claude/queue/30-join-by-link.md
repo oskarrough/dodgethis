@@ -1,4 +1,4 @@
-M1 of the [viral plan](../../docs/pitches/viral/index.html#M1): a shared link drops a stranger into a running room in under 10 s, in a bot's seat; the host's game keeps going. Slices of about 30 min; each done-check is two tabs on the agent dev server, A hosting. Landed 2026-10-10: 1–5.
+M1 of the [viral plan](../../docs/pages/viral/index.html#M1): a shared link drops a stranger into a running room in under 10 s, in a bot's seat; the host's game keeps going. Slices of about 30 min; each done-check is two tabs on the agent dev server, A hosting. Landed 2026-10-10: 1–5.
 
 1. ✓ Link boot. `/ABCDE` skips the splash into the walking lobby and joins that room; a dead code stays in solo practice with a notice. Owns `worker/index.js`, `src/main.js`, `online/index.js`. Check: B opens A's `/CODE` and walks in A's lobby (about 1 s); `/ZZZZZ` lands solo with "No lobby with that code".
 2. ✓ Copy link. The room panel's "Share code" becomes a link field and Copy link. Owns `online/online-ui.js`. Check: A copies, B opens it and joins.
