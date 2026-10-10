@@ -10,7 +10,6 @@ export const tune = {
 		minAspect: 0.1,
 		farMargin: 100,
 		duration: 2.4,
-		reducedDuration: 1 / 60,
 		// After shader readiness and the reveal you look at the lane for `preview` s while the
 		// camera creeps `creep` of the way into the descent, then dives for `duration` s.
 		preview: 4,
@@ -30,7 +29,7 @@ export const tune = {
 		// The canvas fades no lower than `floor`.
 		crane: { rise: 14, pitch: -12, nameAt: 0.3, letter: 0.03, letterTime: 0.35, floor: 0.02 },
 		drop: { freq: 660, slideTo: 330, dur: 0.5, gain: 0.03, type: 'triangle' },
-		// The cloud reveal; reduced motion keeps the plain cut. Cloud rolls in from the rim
+		// The cloud reveal. Cloud rolls in from the rim
 		// from `from` of the crane, holds while the lane builds, and from the start of the
 		// reveal parts around your hero over `part` s, out-eased by the power `ease` (it may run into the preview; the timing
 		// is unchanged). Drawn at `resolution` (0–1) of device pixels and upscaled, on purpose:

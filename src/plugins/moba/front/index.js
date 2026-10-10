@@ -168,33 +168,30 @@ export function mobaFront(app, map) {
 			const backdrop = options.backdrop ?? createBackdrop()
 			activeBackdrop = backdrop
 			el.prepend(backdrop.el)
-			const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches
-			if (!reduced) {
-				const letters = [...el.querySelectorAll('.front-letter')]
-				const ball = el.querySelector('.front-ball')
-				let blip = 0
-				const play = (target, name) => {
-					target.classList.remove(name)
-					void target.offsetWidth
-					target.classList.add(name)
-				}
-				const next = () => {
-					blip = setTimeout(
-						() => {
-							if (Math.random() < 0.3) play(ball, 'front-glint')
-							else {
-								const letter = letters[Math.floor(Math.random() * letters.length)]
-								letter.style.setProperty('--dodge', Math.random() < 0.5 ? -1 : 1)
-								play(letter, 'front-dodge')
-							}
-							next()
-						},
-						tune.title.calm[0] + Math.random() * (tune.title.calm[1] - tune.title.calm[0]),
-					)
-				}
-				next()
-				run.signal.addEventListener('abort', () => clearTimeout(blip))
+			const letters = [...el.querySelectorAll('.front-letter')]
+			const ball = el.querySelector('.front-ball')
+			let blip = 0
+			const play = (target, name) => {
+				target.classList.remove(name)
+				void target.offsetWidth
+				target.classList.add(name)
 			}
+			const next = () => {
+				blip = setTimeout(
+					() => {
+						if (Math.random() < 0.3) play(ball, 'front-glint')
+						else {
+							const letter = letters[Math.floor(Math.random() * letters.length)]
+							letter.style.setProperty('--dodge', Math.random() < 0.5 ? -1 : 1)
+							play(letter, 'front-dodge')
+						}
+						next()
+					},
+					tune.title.calm[0] + Math.random() * (tune.title.calm[1] - tune.title.calm[0]),
+				)
+			}
+			next()
+			run.signal.addEventListener('abort', () => clearTimeout(blip))
 			let pop = null
 			if (options.backdrop) {
 				// The lobby's exit has usually started the shot and the dawn home already.
@@ -202,12 +199,12 @@ export function mobaFront(app, map) {
 					backdrop.shot('splash')
 					backdrop.tint(0, tune.shot.splash.time)
 				}
-				const time = reduced ? 0 : tune.tile.pop
+				const time = tune.tile.pop
 				pop = chrome.animate(
 					[{ translate: '0 100vh' }, { translate: '0 -3vh', offset: 0.7 }, { translate: '0 0' }],
 					{
 						duration: time * 1000,
-						delay: reduced ? 0 : Math.max(0, backdrop.remaining - time) * 1000,
+						delay: Math.max(0, backdrop.remaining - time) * 1000,
 						easing: 'cubic-bezier(0.2, 0.8, 0.4, 1)',
 						fill: 'backwards',
 					},
@@ -286,8 +283,8 @@ export function mobaFront(app, map) {
 					order.map(
 						(node, i) =>
 							node.animate([{ translate: '0 100vh', rotate: i % 2 ? '-4deg' : '4deg' }], {
-								duration: (reduced ? 0 : tune.tile.drop) * 1000,
-								delay: (reduced ? 0 : i * tune.tile.stagger) * 1000,
+								duration: tune.tile.drop * 1000,
+								delay: i * tune.tile.stagger * 1000,
 								easing: 'cubic-bezier(0.5, 0, 0.9, 0.4)',
 								fill: 'forwards',
 							}).finished,

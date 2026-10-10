@@ -38,7 +38,6 @@ export function createBackdrop() {
 	el.innerHTML = `<div class="front-plate-layer"><div class="front-plate"><img alt="" decoding="async" fetchpriority="high" srcset="${widths.map((w) => `${src}-${w}.webp ${w}w`).join(', ')}" sizes="max(110vw, 196vh)" src="${src}-${widths.at(-1)}.webp"><div class="front-mist"></div><div class="front-mist front-mist-near"></div></div></div><div class="front-dusk"></div>`
 	const layers = [...el.querySelectorAll('.front-plate-layer')]
 	const wash = el.querySelector('.front-dusk')
-	const reduced = matchMedia('(prefers-reduced-motion: reduce)')
 	const pointer = { x: 0, y: 0, targetX: 0, targetY: 0 }
 	// `pose` is where the shot is now, `move` the ease under way from `from` to `name`.
 	const pose = { lift: 0, zoom: 1 }
@@ -103,17 +102,15 @@ export function createBackdrop() {
 		frame = null
 		const dt = (now - last) / 1000
 		last = now
-		if (reduced.matches) pointer.targetX = pointer.targetY = 0
 		pointer.x = easePointer(pointer.x, pointer.targetX, dt, tune.parallax.response)
 		pointer.y = easePointer(pointer.y, pointer.targetY, dt, tune.parallax.response)
 		const still =
-			reduced.matches ||
 			Math.max(
 				Math.abs(pointer.x - pointer.targetX) * innerWidth,
 				Math.abs(pointer.y - pointer.targetY) * innerHeight,
 			) *
 				tune.parallax.depth <
-				tune.parallax.settle
+			tune.parallax.settle
 		if (still) {
 			pointer.x = pointer.targetX
 			pointer.y = pointer.targetY
@@ -150,10 +147,6 @@ export function createBackdrop() {
 		pointer.targetY = Math.max(-1, Math.min(1, (event.clientY / innerHeight) * 2 - 1))
 		wake()
 	}
-	function motionPreference() {
-		if (reduced.matches && move) jump()
-		wake()
-	}
 	function jump() {
 		const to = tune.shot[current]
 		pose.lift = to.lift
@@ -167,7 +160,6 @@ export function createBackdrop() {
 	resize()
 	window.addEventListener('resize', resize)
 	window.addEventListener('pointermove', parallax)
-	reduced.addEventListener('change', motionPreference)
 	const api = {
 		el,
 		get shotName() {
@@ -186,7 +178,7 @@ export function createBackdrop() {
 			current = name
 			const { promise, resolve } = Promise.withResolvers()
 			move = { from: { ...pose }, elapsed: 0, time: tune.shot[name].time, resolve }
-			if (instant || reduced.matches) jump()
+			if (instant) jump()
 			else {
 				for (const layer of layers) layer.style.willChange = 'transform'
 				wake()
@@ -197,7 +189,7 @@ export function createBackdrop() {
 		tint(to, time = 0) {
 			if (disposed) return
 			to = Math.max(0, Math.min(1, to))
-			if (time > 0 && !reduced.matches) {
+			if (time > 0) {
 				blend = { from: dusk, to, elapsed: 0, time }
 				wake()
 			} else {
@@ -234,7 +226,6 @@ export function createBackdrop() {
 			if (frame !== null) cancelAnimationFrame(frame)
 			window.removeEventListener('resize', resize)
 			window.removeEventListener('pointermove', parallax)
-			reduced.removeEventListener('change', motionPreference)
 			if (globalThis.frontBackdrop === api) delete globalThis.frontBackdrop
 			el.remove()
 		},

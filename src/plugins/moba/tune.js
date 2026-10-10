@@ -514,7 +514,7 @@ export const tune = {
 			relief: 2.4, // dioramas exaggerate height
 			lift: 0.16,
 			turn: 0.12,
-			rest: 0.5, // the angle it holds under reduced motion
+			rest: 0.5, // the angle it starts from
 			bob: 0.025,
 			bobRate: 0.8,
 			// Printed on the saucer under the bowl, flush-left from `from` of its radius left of centre.

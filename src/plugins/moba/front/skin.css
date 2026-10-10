@@ -98,13 +98,6 @@
 .skin-card:active::before {
 	transition-duration: var(--skin-press);
 }
-@media (prefers-reduced-motion: reduce) {
-	.skin-card::before,
-	.skin-ring,
-	.skin-face::after {
-		transition-duration: 0s;
-	}
-}
 
 /* Painted skins ('wash', 'ink'): the card is deckled paper drawn by the SVG filters in
    `skin.js`. The filtered layers are their own SVGs so focus only fades or scales them. */
@@ -190,14 +183,6 @@
 .moba-front[data-skin='wash'] .skin-wash {
 	opacity: calc(0.5 + var(--skin-hot) * 0.5);
 	transition: opacity var(--skin-press) linear;
-}
-@media (prefers-reduced-motion: reduce) {
-	.skin-shadow,
-	.skin-halo,
-	.skin-bleed,
-	.skin-wash {
-		transition-duration: 0s;
-	}
 }
 
 /* Painted: the art thread's materials as 9-slice layers, paper under a hand-inked frame,

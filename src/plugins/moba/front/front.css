@@ -539,21 +539,3 @@
 		height: 52%;
 	}
 }
-@media (prefers-reduced-motion: reduce) {
-	.front-plate-layer,
-	.front-mist,
-	.front-tile {
-		will-change: auto;
-	}
-	.front-mist {
-		animation: none;
-	}
-	.front-tile,
-	.front-bonus,
-	.front-bonus svg,
-	.front-tile-art > img,
-	.front-tile-art::after,
-	.front-tile-label::before {
-		transition-duration: 0s;
-	}
-}

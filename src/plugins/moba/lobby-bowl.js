@@ -319,15 +319,13 @@ export function createWeatherBowl(scene, el, mapId, renderer) {
 	name.textContent = b.label.name.replace('{map}', layout.name)
 	label.append(caption, name)
 	el.append(label)
-	const still = matchMedia('(prefers-reduced-motion: reduce)')
 	const point = new THREE.Vector3()
 	return {
 		group,
 		label,
 		update(time, camera) {
-			island.rotation.y = still.matches ? b.rest : b.rest + time * b.turn
-			island.position.y =
-				bed.position.y + b.lift + (still.matches ? 0 : Math.sin(time * b.bobRate) * b.bob)
+			island.rotation.y = b.rest + time * b.turn
+			island.position.y = bed.position.y + b.lift + Math.sin(time * b.bobRate) * b.bob
 			// The label prints flush-left from the bowl's front-left, toward the camera.
 			point
 				.set(-b.radius * b.label.from, 0, b.radius * 0.8)

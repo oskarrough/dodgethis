@@ -745,11 +745,6 @@
 				opacity: 1;
 				pointer-events: auto;
 			}
-			@media (prefers-reduced-motion: reduce) {
-				.fade {
-					transition: none;
-				}
-			}
 			.hud[hidden],
 			.combat[hidden] {
 				display: none;
@@ -797,12 +792,6 @@
 				}
 			}
 
-			@media (prefers-reduced-motion: reduce) {
-				.splash-title .letter,
-				.splash-title .wob {
-					animation: none;
-				}
-			}
 			/* Every lobby's top-left row (src/core/corner-nav.js): the square back arrow and Play
 			   online beside it, 12px in, level with fullscreen and mute on the right. Keys stick on
 			   the outer corners like the ability slots. */

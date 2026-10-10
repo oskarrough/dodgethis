@@ -58,11 +58,6 @@
 		transform: translateX(60%) scale(1) rotate(-6deg) skewX(-10deg);
 	}
 }
-@media (prefers-reduced-motion: reduce) {
-	.lobby-pick-stamp.slam {
-		animation-duration: 0.01s;
-	}
-}
 /* Difficulty words read as paint under each target, not as buttons. */
 .lobby-label {
 	position: absolute;

@@ -37,12 +37,6 @@
 		transform: none;
 	}
 }
-@media (prefers-reduced-motion: reduce) {
-	.front-descent-name span {
-		animation: none;
-		opacity: 1;
-	}
-}
 .moba-descending > :not(.moba-front):not(script):not(.lil-gui) {
 	visibility: hidden;
 }

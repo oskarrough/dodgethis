@@ -21,12 +21,11 @@ export function startLoading(
 	const ownsRun = () => app.session === session && app.modes.current === contract
 	let dispose
 	dispose = app.use((scope) => {
-		const reduced = matchMedia('(prefers-reduced-motion: reduce)')
 		const gate = createDescentState(() => ({
-			crane: reduced.matches ? tune.loading.reducedDuration : tune.shot.apex.time,
+			crane: tune.shot.apex.time,
 			preview: tune.loading.preview,
-			duration: reduced.matches ? tune.loading.reducedDuration : tune.loading.duration,
-			creep: reduced.matches ? 0 : tune.loading.creep,
+			duration: tune.loading.duration,
+			creep: tune.loading.creep,
 		}))
 		const canvas = app.renderer.domElement
 		const cameras = [app.camera.view, app.camera.aim]
@@ -45,7 +44,7 @@ export function startLoading(
 		let dived = false
 		let buildHold = 0
 		let drawn = ''
-		const clouds = reduced.matches ? null : createClouds(setup?.map)
+		const clouds = createClouds(setup?.map)
 		const veiled = !!clouds
 		let revealing = false
 		let cloudTime = 0
@@ -197,11 +196,9 @@ export function startLoading(
 			}
 			// Under the cloud the lane cuts in whole; the cloud parting is the reveal.
 			const shown =
-				(reduced.matches || veiled) && revealing
+				veiled && revealing
 					? 1
-					: easeShot(
-							Math.min(1, revealTime / Math.max(tune.loading.reducedDuration, tune.loading.reveal)),
-						)
+					: easeShot(Math.min(1, revealTime / Math.max(1 / 60, tune.loading.reveal)))
 			backdrop.fade(shown)
 			canvas.style.opacity = String(floor + (1 - floor) * shown)
 			const eased = easeShot(progress)
@@ -284,7 +281,7 @@ export function startLoading(
 				apexTime += dt
 				if (built && apexTime >= buildHold) {
 					revealing = true
-					const reveal = reduced.matches ? 0 : Math.max(0, tune.loading.reveal)
+					const reveal = Math.max(0, tune.loading.reveal)
 					revealTime = Math.min(reveal, revealTime + dt)
 					if (revealTime >= reveal) gate.ready()
 				}

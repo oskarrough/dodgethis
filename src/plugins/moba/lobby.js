@@ -58,8 +58,7 @@ export function createLobby({
 	// The lobby opens by flying in along the camera's own view ray, on the backdrop's shot
 	// ease and time; the canvas fades up over the last 40% of the move.
 	const intro = { time: frontTune.shot.lobby.time, t: 0 }
-	const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)')
-	if (reducedMotion.matches || !(intro.time > 0)) intro.t = intro.time
+	if (!(intro.time > 0)) intro.t = intro.time
 	let leaving = false
 	const fadeAt = () => intro.time * tune.lobby.intro.fadeFrom
 	const fadeIntro = () => {
@@ -203,7 +202,7 @@ export function createLobby({
 		pick: (id) => pickHero(id),
 		openNumbers: () => numbers.toggle(),
 	})
-	if (!reducedMotion.matches && intro.t < intro.time) {
+	if (intro.t < intro.time) {
 		const { stagger, land } = frontTune.chrome
 		edges.forEach(([selector, x, y], i) =>
 			slide(document.querySelector(selector), x, y, {
@@ -462,7 +461,7 @@ export function createLobby({
 		el.inert = true
 		backdrop.shot('splash')
 		backdrop.tint(0, frontTune.shot.splash.time)
-		if (reducedMotion.matches || intro.t <= fadeAt()) return returnSplash()
+		if (intro.t <= fadeAt()) return returnSplash()
 		stopSlides()
 		const time = intro.t - fadeAt()
 		for (const [selector, x, y] of edges)

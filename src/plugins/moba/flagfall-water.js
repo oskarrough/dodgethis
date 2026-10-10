@@ -48,7 +48,6 @@ export function createFlagfallWater(parent, layout, terrain) {
 	}
 	const y = -s.drop * scale
 	const gap = s.layerGap * scale
-	const reduced = matchMedia('(prefers-reduced-motion: reduce)')
 	let time = 0
 	let disposed = false
 	const clock = { value: 0 }
@@ -480,8 +479,8 @@ diffuseColor.a *= wisp;`,
 		}
 	}
 	const update = (dt) => {
-		if (!reduced.matches) time += dt
-		const t = reduced.matches ? 0 : time
+		time += dt
+		const t = time
 		clock.value = t
 		for (let i = 0; i < foam.length; i++) {
 			const slot = foam[i]

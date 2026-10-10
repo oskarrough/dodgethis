@@ -123,9 +123,3 @@
 		transform: scale(0.8);
 	}
 }
-@media (prefers-reduced-motion: reduce) {
-	.moba-front .lobby-hero-strip button {
-		transition: none;
-		animation-duration: 0.01s !important;
-	}
-}
