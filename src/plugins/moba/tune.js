@@ -1032,7 +1032,7 @@ export const tune = {
 		height: 20,
 		back: 12.5, // pitch = atan(height / back) ≈ 58°
 		fov: 40, // one lens on every map, close like HotS; the camera pans to the rims rather than zooming out
-		rimShow: 3.5, // metres past each long walkable edge at mid-court, every map: the terrain rim (~2.4) and its drop
+		rimShow: 10, // metres past each long walkable edge the view may reach, every map: enough to centre a hero in either shore lane
 		response: 0.12, // seconds for the spring to cover ~90% of a step
 		lookAhead: 0.25, // fraction of the way toward the aim point
 		lookCap: 3,
