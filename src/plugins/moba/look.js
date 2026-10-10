@@ -27,7 +27,8 @@ export const look = {
 		pointerTop: 115,
 		pointerBottom: 180,
 		stickerBorder: 3,
-		stickerShadow: 4,
+		// Readouts, not buttons: no printed shadow (moba-look.md, Frame means press).
+		stickerShadow: 0,
 		stickerCorner: 12,
 		stickerPadding: 8,
 		font: 16,

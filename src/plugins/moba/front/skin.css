@@ -251,3 +251,10 @@
 .moba-front[data-skin='painted'] .skin-edge-paper {
 	stroke: #f8ebd5;
 }
+
+/* A readout ribbon: the painted paper alone, deckled edge, no frame and no shadow, so it never
+   reads as pressable. Values are printed on it in ink. Used by the match and lobby HUD. */
+.skin-ribbon {
+	border: var(--ribbon-paper, 22px) solid transparent;
+	border-image: url('/splash/paper.webp') 64 fill / var(--ribbon-paper, 22px) / 0 stretch;
+}

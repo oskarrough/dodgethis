@@ -33,7 +33,7 @@ export function createOnboarding({ scene, sim, hero }) {
 			parent.style.position = previousPosition
 		}
 		label.textContent = kind === 'wave' ? 'Wave in' : 'Ball in'
-		label.style.cssText = `position:absolute;top:100%;left:50%;transform:translateX(-50%);font:bold ${t.timerFont}px/1.2 var(--ui-font);color:${hex('ink')};background:${hex('cream')};padding:0 ${t.stickerBorder}px;white-space:nowrap`
+		label.style.cssText = `position:absolute;top:100%;left:50%;transform:translateX(-50%);font:bold ${t.timerFont}px/1.2 var(--ui-font);color:${hex('ink')};white-space:nowrap`
 		return label
 	})
 	const owned = []

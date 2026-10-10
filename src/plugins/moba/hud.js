@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import './front/skin.css'
 import './hud.css'
 import { heroDefinition } from './heroes.js'
 import { tune } from './tune.js'
@@ -178,7 +179,7 @@ export function createHud({ lobby = false, layout, pieces } = {}) {
 		return node
 	}
 
-	const top = el('div', 'moba-score moba-top')
+	const top = el('div', 'moba-score moba-top skin-ribbon')
 	top.setAttribute('role', 'group')
 	top.setAttribute('aria-label', 'Match status')
 	const summary = el('span', 'moba-sr', top)
@@ -222,7 +223,7 @@ export function createHud({ lobby = false, layout, pieces } = {}) {
 	const root = el('div', 'moba-hud')
 	const bar = el('div', 'moba-bar', root)
 	const unitFrame = el('div', 'moba-hud moba-unit')
-	const portrait = el('div', 'moba-portrait', unitFrame)
+	const portrait = el('div', 'moba-portrait skin-ribbon', unitFrame)
 	const avatar = el('div', 'moba-avatar', portrait)
 	// Only the badge opens the hero card; the whole frame sits too close to play to tip on every pass.
 	hot(el('span', 'moba-info', avatar), { kind: 'portrait' }).textContent = 'i'
