@@ -53,6 +53,12 @@ export function createMatchMenu({
 		}
 		app.modes.start('moba-lobby', { options: { setup } })
 	}
+	// Leaving from pause goes home to the splash; the result card's way out stays the lobby.
+	function quit() {
+		if (app.session.shared) return leave()
+		resetInput()
+		app.modes.start('moba-front', { options: { setup, heldKeys: ['Enter'] } })
+	}
 	const restart = () => {
 		resetInput()
 		app.modes.start('moba', { options: { setup } })
@@ -70,19 +76,20 @@ export function createMatchMenu({
 			spaceConfirm: false,
 			actions: [
 				{ label: 'Resume', onSelect: toggle },
+				{ label: 'Leave game', onSelect: quit },
+				// A setting, not an action: the last cursor stop, drawn as a checkbox under the two.
 				{ label: 'Quick cast', onSelect: toggleQuickCast },
-				{ label: 'Leave game', onSelect: leave },
 			],
 		})
 		const card = document.querySelector('.overlay[data-theme="moba-pause"] .dialog-card')
 		if (card) pausePage(card)
 	}
-	// The state is its own word on the button, rewritten in place so the selection stays put.
-	const quickCastState = () => (controls.quickCast ? 'On' : 'Off')
+	// The checkbox flips in place so the selection stays put.
 	function toggleQuickCast() {
 		setQuickCast(!controls.quickCast)
-		const state = document.querySelector('.overlay[data-theme="moba-pause"] .pause-state')
-		if (state) state.textContent = quickCastState()
+		document
+			.querySelector('.overlay[data-theme="moba-pause"] .pause-check')
+			?.setAttribute('aria-checked', String(controls.quickCast))
 	}
 	// Dresses the shared overlay card as a manual page: captions, the facts of the match, and the
 	// paused world as its figure. Readouts are printed; only the overlay's buttons are framed.
@@ -128,8 +135,19 @@ export function createMatchMenu({
 			card,
 			'<span>Fig. 1</span> The match, held where you left it.',
 		).setAttribute('aria-hidden', 'true')
-		const quick = card.querySelectorAll('.actions button')[1]
-		if (quick) el('span', 'pause-state', quick, quickCastState())
+		const quick = card.querySelectorAll('.actions button')[2]
+		if (!quick) return
+		quick.classList.add('pause-check')
+		quick.setAttribute('role', 'checkbox')
+		quick.setAttribute('aria-checked', String(controls.quickCast))
+		quick.prepend(
+			el(
+				'span',
+				'pause-box',
+				null,
+				'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>',
+			),
+		)
 	}
 	function result(dt = 0, alpha = 0) {
 		recap.update({

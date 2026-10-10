@@ -246,12 +246,6 @@ canvas.moba-dead-world {
 		--sticker-pad-y: 18px;
 	}
 }
-@media (prefers-reduced-motion: reduce) {
-	.overlay:has(.moba-results) .actions .sticker,
-	.overlay:has(.moba-results) .actions .sticker::before {
-		transition: none;
-	}
-}
 
 /* The pause page: a Japanese game manual on a Swiss grid, the paused match as its figure.
    Twelve visible columns. `manual` lays a cream sheet over the left seven; `obi` is a jewel-case
@@ -377,7 +371,7 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden]))
 	padding-right: clamp(0px, 2vw, 32px);
 	counter-reset: pause-item;
 }
-.overlay .moba-pause .actions button {
+.overlay .moba-pause .actions button:not(.pause-check) {
 	--sticker-radius: 4px;
 	--sticker-lift: 4px;
 	counter-increment: pause-item;
@@ -393,7 +387,7 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden]))
 		box-shadow 0.07s ease,
 		background 0.12s;
 }
-.overlay .moba-pause .actions button::before {
+.overlay .moba-pause .actions button:not(.pause-check)::before {
 	content: counter(pause-item, decimal-leading-zero);
 	display: grid;
 	place-items: center;
@@ -413,25 +407,16 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden]))
 .overlay .moba-pause .actions .cursor {
 	display: none;
 }
-.moba-pause .pause-state {
-	display: grid;
-	place-items: center;
-	min-width: 4.6em;
-	font: var(--caps);
-	letter-spacing: 0.18em;
-	text-transform: uppercase;
-	border-left: 1px solid var(--ui-text);
-}
-.overlay .moba-pause .actions button.selected {
+.overlay .moba-pause .actions button.selected:not(.pause-check) {
 	background: var(--ui-button);
 	transform: translate(-3px, -3px);
 	box-shadow: calc(var(--sticker-lift) + 4px) calc(var(--sticker-lift) + 4px) 0 var(--ui-text);
 }
-.overlay .moba-pause .actions button.selected::before {
+.overlay .moba-pause .actions button.selected:not(.pause-check)::before {
 	color: var(--ui-cream);
 	background: var(--ui-text);
 }
-.overlay .moba-pause .actions button:active {
+.overlay .moba-pause .actions button:active:not(.pause-check) {
 	transform: translate(var(--sticker-lift), var(--sticker-lift));
 	box-shadow: 0 0 0 var(--ui-text);
 }
@@ -483,6 +468,79 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden]))
 	text-transform: uppercase;
 	font-style: normal;
 	vertical-align: 0.5em;
+}
+/* Quick cast is a setting under the actions: an unnumbered row, a rule above it, and the box as
+   the only frame (frame means press). Your cursor on it lifts the box and fills it gold. */
+.overlay .moba-pause .actions button.pause-check {
+	justify-content: flex-start;
+	align-self: start;
+	gap: 0.6em;
+	margin-top: clamp(4px, 1vw, 14px);
+	padding: 14px 0.2em 0 0;
+	font: 400 clamp(18px, 1.6vw, 26px) / 1 var(--ui-font);
+	letter-spacing: 0;
+	text-transform: none;
+	color: inherit;
+	background: none;
+	border: 0;
+	border-top: 1px solid currentColor;
+	border-radius: 0;
+	box-shadow: none;
+	transform: none;
+}
+.overlay .moba-pause .actions .pause-check .label {
+	padding: 0 0 0.12em;
+}
+.moba-pause .pause-box {
+	display: grid;
+	place-items: center;
+	flex: none;
+	width: 1.15em;
+	height: 1.15em;
+	color: var(--ui-text);
+	background: var(--ui-cream);
+	border: 3px solid var(--ui-text);
+	border-radius: 4px;
+	box-shadow: 3px 3px 0 var(--ui-text);
+	transition:
+		transform 0.07s ease,
+		box-shadow 0.07s ease,
+		background 0.12s;
+}
+.moba-pause .pause-box svg {
+	width: 100%;
+	height: 100%;
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 4;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+	visibility: hidden;
+}
+.moba-pause .pause-check[aria-checked='true'] .pause-box svg {
+	visibility: visible;
+}
+.overlay .moba-pause .actions button.pause-check:is(.selected, :hover, :focus-visible) {
+	outline: none;
+	background: none;
+	transform: none;
+	box-shadow: none;
+}
+.moba-pause .pause-check:is(.selected, :hover) .pause-box {
+	background: var(--ui-button);
+	transform: translate(-2px, -2px);
+	box-shadow: 5px 5px 0 var(--ui-text);
+}
+.moba-pause .pause-check:active .pause-box {
+	transform: translate(3px, 3px);
+	box-shadow: 0 0 0 var(--ui-text);
+}
+.moba-pause[data-pause='obi'] .pause-box {
+	border-color: var(--ui-text);
+	box-shadow: 3px 3px 0 var(--pause-wash);
+}
+.moba-pause[data-pause='obi'] .pause-check:is(.selected, :hover) .pause-box {
+	box-shadow: 5px 5px 0 var(--pause-wash);
 }
 /* The world behind is the page's figure. */
 .moba-pause .pause-figure {
@@ -584,12 +642,12 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden]))
 	align-self: end;
 	margin: 24px 0 0;
 }
-.overlay .moba-pause[data-pause='obi'] .actions button {
+.overlay .moba-pause[data-pause='obi'] .actions button:not(.pause-check) {
 	color: var(--ui-text);
 	box-shadow: var(--sticker-lift) var(--sticker-lift) 0 var(--pause-wash);
 }
 /* Numbers hang in the gutter, outside the frame. */
-.overlay .moba-pause[data-pause='obi'] .actions button::before {
+.overlay .moba-pause[data-pause='obi'] .actions button:not(.pause-check)::before {
 	position: absolute;
 	right: 100%;
 	top: 0;
@@ -602,10 +660,10 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden]))
 	background: none;
 	border: 0;
 }
-.overlay .moba-pause[data-pause='obi'] .actions button.selected {
+.overlay .moba-pause[data-pause='obi'] .actions button.selected:not(.pause-check) {
 	box-shadow: calc(var(--sticker-lift) + 4px) calc(var(--sticker-lift) + 4px) 0 var(--pause-wash);
 }
-.overlay .moba-pause[data-pause='obi'] .actions button.selected::before {
+.overlay .moba-pause[data-pause='obi'] .actions button.selected:not(.pause-check)::before {
 	color: var(--ui-button);
 	background: none;
 }
@@ -716,10 +774,5 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden]))
 		grid-row: 4;
 		grid-column: 1 / -1;
 		padding: 0 6px 0 1.6em;
-	}
-}
-@media (prefers-reduced-motion: reduce) {
-	.overlay .moba-pause .actions button {
-		transition: none;
 	}
 }
