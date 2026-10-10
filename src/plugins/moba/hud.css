@@ -409,7 +409,8 @@
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	font-size: 18px;
+	font-size: 21px;
+	letter-spacing: 0.01em;
 }
 .moba-trait {
 	display: inline-flex;
@@ -584,16 +585,18 @@
 	position: fixed;
 	top: 28%;
 	left: 50%;
-	transform: translateX(-50%) rotate(-1deg);
-	text-align: center;
-	padding: 12px 16px;
+	transform: translateX(-50%);
+	/* A readout like the top bar: smooth cream pill, thin line, soft shadow; the shout is in the type. */
+	padding: 8px 22px 9px;
 	background: var(--ui-cream);
-	border: 3px solid var(--ui-text);
-	border-radius: 14px;
-	box-shadow: 4px 4px 0 var(--ui-text);
+	border: 1.5px solid var(--ui-text);
+	border-radius: 999px;
+	box-shadow: 0 4px 14px rgba(38, 68, 95, 0.25);
 	z-index: 5;
-	font: var(--fs-base) / 1.4 var(--ui-font);
+	font: 22px / 1.2 var(--ui-font);
+	letter-spacing: 0.01em;
 	color: var(--ui-text);
+	white-space: nowrap;
 }
 .moba-banner[hidden] {
 	display: none;
@@ -632,11 +635,11 @@
 	grid-template-columns: auto auto;
 	align-items: center;
 	gap: 2px 6px;
-	padding: 3px 7px 4px;
+	padding: 3px 8px 4px;
 	background: var(--ui-cream);
-	border: 2px solid var(--ui-text);
+	border: 1.5px solid var(--ui-text);
 	border-radius: 9px;
-	box-shadow: 2px 2px 0 var(--ui-text);
+	box-shadow: 0 2px 6px rgba(38, 68, 95, 0.22);
 	color: var(--ui-text);
 	pointer-events: none;
 	white-space: nowrap;
@@ -678,14 +681,14 @@
 .moba-tip-title {
 	font-size: 22px;
 }
+/* The tag is the card's index numeral: big, flush right, printed, never a chip. */
 .moba-tip-tag {
-	padding: 2px 7px;
-	font:
-		700 12px / 1.2 system-ui,
-		sans-serif;
-	color: var(--cream);
-	background: var(--ink);
-	border-radius: 8px;
+	font: 24px / 1 var(--ui-font);
+	font-variant-numeric: tabular-nums;
+	color: var(--tone, var(--ink));
+	-webkit-text-stroke: 1px var(--ink);
+	paint-order: stroke fill;
+	white-space: nowrap;
 }
 .moba-tip p {
 	margin: 0 0 6px;
@@ -699,12 +702,19 @@
 	gap: 3px 12px;
 	margin: 0;
 	padding-top: 6px;
-	border-top: 2px dashed rgba(38, 68, 95, 0.3);
+	border-top: 1.5px solid var(--ink);
 	font:
 		12px / 1.25 system-ui,
 		sans-serif;
 }
+/* Row captions in small caps, like a game manual's spec table. */
 .moba-tip dt {
+	font-size: 10px;
+	font-weight: 700;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	opacity: 0.7;
+	align-self: center;
 }
 .moba-tip dd {
 	margin: 0;

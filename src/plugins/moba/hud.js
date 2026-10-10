@@ -138,7 +138,7 @@ export function createHud({ lobby = false, layout, pieces } = {}) {
 		node.setAttribute('aria-describedby', 'moba-tip')
 		const anchor = () => {
 			const r = node.getBoundingClientRect?.()
-			return r ? { x: r.left + r.width / 2, y: r.top } : { x: 0, y: 0 }
+			return r ? { x: r.left + r.width / 2, y: r.top, bottom: r.bottom } : { x: 0, y: 0 }
 		}
 		node.addEventListener('pointerenter', (e) => {
 			if (e.pointerType === 'mouse' && !lobby && !touchScreen) hover = { source, anchor: anchor() }
@@ -524,7 +524,7 @@ export function createHud({ lobby = false, layout, pieces } = {}) {
 			if (picked) {
 				const r = picked.getBoundingClientRect?.()
 				source = sourceOf.get(picked)
-				anchor = r ? { x: r.left + r.width / 2, y: r.top } : { x: 0, y: 0 }
+				anchor = r ? { x: r.left + r.width / 2, y: r.top, bottom: r.bottom } : { x: 0, y: 0 }
 			} else if (sim) {
 				const unit = (aim && pickUnit(sim, aim, frame)) ?? frame.hero
 				if (unit && !unit.dead) {

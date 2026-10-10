@@ -280,6 +280,7 @@ export function cardHtml(card) {
 
 // One floating card. `show(card, anchor)`: anchor is a screen point { x, y } the card sits above
 // (below when there is no room), clamped inside the viewport. No pointer events, never pauses.
+// A HUD anchor may carry its element's `bottom`, so a card that drops below clears it.
 // A docked anchor ({ left, top } or { left, bottom }) pins the card's corner instead of floating it.
 export function createTooltip(parent = document.body, id = 'moba-tip') {
 	const root = document.createElement('div')
@@ -311,7 +312,8 @@ export function createTooltip(parent = document.body, id = 'moba-tip') {
 			const left = docked ? anchor.left : anchor.x - width / 2
 			const x = Math.round(Math.max(margin, Math.min(vw - width - margin, left)))
 			const above = anchor.y - height - 14
-			const below = anchor.y + 18
+			// A HUD element's anchor carries its bottom edge, so a card below clears the element.
+			const below = (anchor.bottom ?? anchor.y) + (anchor.bottom === undefined ? 18 : 8)
 			// Above when it fits, else below when it fits, else pinned inside the viewport (CSS caps the height).
 			const wanted = docked
 				? (anchor.top ?? vh - height - anchor.bottom)
