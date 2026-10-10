@@ -41,6 +41,13 @@ export function createMinimap(
 	)
 	const buildings = make('g', {}, root)
 	const heroes = make('g', {}, root)
+	// A piece may mark its objective: `minimap(sim)` returns { x, z, live, owner } or null.
+	const objectives = pieces
+		.filter((piece) => piece.minimap)
+		.map((piece) => ({
+			piece,
+			node: make('circle', { class: 'minimap-objective', r: 3 }, buildings),
+		}))
 	// The view can reach past the map; the outline stops at its edge.
 	const clip = make('clipPath', { id: 'minimap-clip' }, make('defs', {}, root))
 	make('rect', { x: 0, y: 0, width: 100, height }, clip)
@@ -101,6 +108,13 @@ export function createMinimap(
 			if (root.style.display !== (hidden ? 'none' : '')) root.style.display = hidden ? 'none' : ''
 			if (hidden) return
 			drawView(camera)
+			for (const { piece, node } of objectives) {
+				const mark = piece.minimap(sim)
+				put(node, 'display', mark?.live ? '' : 'none')
+				if (!mark?.live) continue
+				put(node, 'data-team', mark.owner ?? '')
+				put(node, 'transform', `translate(${50 + mark.x * scale} ${height / 2 + mark.z * scale})`)
+			}
 			const units = [
 				...(liveStructures ? (sim.lane?.structures ?? []) : []),
 				...sim.heroes,
