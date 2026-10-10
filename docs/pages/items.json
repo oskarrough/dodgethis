@@ -218,23 +218,6 @@
 		"page": "2026-10-10-match-menu-button/"
 	},
 	{
-		"at": "2026-10-10T09:33:00.000Z",
-		"title": "M1: join by link",
-		"ask": "Is joining by link obvious in the lobby?",
-		"status": "To review",
-		"decision": "",
-		"media": [
-			"review/media/2026-10-10-m1-join-by-link/dead-code.png",
-			"review/media/2026-10-10-m1-join-by-link/s1-guest-in-host-lobby.png",
-			"review/media/2026-10-10-m1-join-by-link/s1-host-lobby.png",
-			"review/media/2026-10-10-m1-join-by-link/s2-copy-link.png",
-			"review/media/2026-10-10-m1-join-by-link/s4-late-guest-in-lane.png"
-		],
-		"links": [],
-		"thread": "thr_yjwyw2ighr",
-		"page": "2026-10-10-m1-join-by-link/"
-	},
-	{
 		"at": "2026-10-10T09:24:34.000Z",
 		"title": "Shared Back and Play online buttons",
 		"ask": "Do Back and Play online match across both modes?",
@@ -304,17 +287,6 @@
 		"links": [],
 		"thread": "thr_79t4z3xyig",
 		"page": "2026-10-10-flagfall-explored/"
-	},
-	{
-		"at": "2026-10-10T08:18:14.000Z",
-		"title": "MOBA first, dodgeball as bonus (splash)",
-		"ask": "Is MOBA clearly the main door on the splash?",
-		"status": "To review",
-		"decision": "",
-		"media": ["review/media/2026-10-10-moba-first-dodgeball-as-bonus-splash/splash.png"],
-		"links": [],
-		"thread": "thr_uxndmi7kcy",
-		"page": "2026-10-10-moba-first-dodgeball-as-bonus-splash-/"
 	},
 	{
 		"at": "2026-10-10T11:00:00.000Z",
