@@ -12,7 +12,7 @@ export function createMatchTerrain(
 	layout,
 	s,
 	chalkLayout,
-	{ background, fence, footprints, water = false } = {},
+	{ background, fence, footprints, water = false, casts = null } = {},
 ) {
 	const bounds = layout.bounds
 	const name = layout.name.toLowerCase()
@@ -120,6 +120,51 @@ export function createMatchTerrain(
 		contactPrint.colorSpace = THREE.SRGBColorSpace
 		contactPrint.anisotropy = finish.anisotropy
 	}
+	// One low sun prints long violet shadows from cover onto the court, baked once like the
+	// contact above: the swept footprint of each box and pillar, never a shadow map.
+	let shadowPrint = null
+	if (isle && casts) {
+		const ppm = s.light.shadowPixelsPerMetre * devicePixelRatio
+		const canvas = document.createElement('canvas')
+		canvas.width = Math.ceil(extent.halfX * 2 * ppm)
+		canvas.height = Math.ceil(extent.halfZ * 2 * ppm)
+		const ctx = canvas.getContext('2d')
+		ctx.fillStyle = '#fff'
+		ctx.fillRect(0, 0, canvas.width, canvas.height)
+		const px = (x) => ((x + extent.halfX) / (2 * extent.halfX)) * canvas.width
+		const pz = (z) => ((z + extent.halfZ) / (2 * extent.halfZ)) * canvas.height
+		const [lx, ly, lz] = s.light.dir
+		const reach = s.light.shadowLength / Math.max(0.05, ly)
+		const offset = (h) => ({ x: -lx * reach * h, z: -lz * reach * h })
+		ctx.fillStyle = ctx.strokeStyle = '#000'
+		ctx.lineCap = 'round'
+		for (const b of layout.boxes) {
+			const o = offset(b.kind === 'hedge' ? casts.hedge : casts.wall)
+			const corners = []
+			for (const [sx, sz] of [
+				[-1, -1],
+				[1, -1],
+				[1, 1],
+				[-1, 1],
+			])
+				for (const d of [0, 1])
+					corners.push({ x: b.x + sx * b.halfX + o.x * d, z: b.z + sz * b.halfZ + o.z * d })
+			const hull = convexHull(corners)
+			ctx.beginPath()
+			hull.forEach((p, i) => ctx[i ? 'lineTo' : 'moveTo'](px(p.x), pz(p.z)))
+			ctx.fill()
+		}
+		for (const p of layout.pillars) {
+			const o = offset(casts.pillar)
+			ctx.lineWidth = p.r * 2 * ppm
+			ctx.beginPath()
+			ctx.moveTo(px(p.x), pz(p.z))
+			ctx.lineTo(px(p.x + o.x), pz(p.z + o.z))
+			ctx.stroke()
+		}
+		shadowPrint = own(new THREE.CanvasTexture(canvas))
+		shadowPrint.anisotropy = 4
+	}
 	// Broad, barely-visible tarmac patches, not texture detail or busy cracks.
 	ground.onBeforeCompile = (shader) => {
 		shader.uniforms.courtScale = { value: s.patchScale }
@@ -129,6 +174,10 @@ export function createMatchTerrain(
 				courtEdge: { value: new THREE.Vector2(extent.halfX, extent.halfZ) },
 				courtMoss: { value: new THREE.Color(s.colors.moss) },
 				courtLip: { value: new THREE.Vector2(s.cliff.lipMin, Math.min(s.cliff.lipMax, s.margin)) },
+				courtShadow: { value: new THREE.Color(s.light.shadow) },
+				courtShadowPrint: { value: shadowPrint },
+				courtShadowOn: { value: shadowPrint ? 1 : 0 },
+				courtShadowStrength: { value: s.light.shadowStrength },
 			})
 		if (finish)
 			Object.assign(shader.uniforms, {
@@ -174,6 +223,10 @@ float rim = min(edge.x, edge.y);
 float along = courtPoint.x + courtPoint.y * 1.37;
 float lip = mix(courtLip.x, courtLip.y, 0.6 * courtPatch(vec2(along * 1.9, 3.0)) + 0.4 * courtPatch(vec2(along * 5.3, 9.0)));
 diffuseColor.rgb = mix(diffuseColor.rgb, courtMoss, step(rim, lip));
+if (courtShadowOn > 0.5) {
+	float shaded = 1.0 - texture2D(courtShadowPrint, vec2(0.5) + vec2(courtPoint.x, -courtPoint.y) / (courtEdge * 2.0)).r;
+	diffuseColor.rgb = mix(diffuseColor.rgb, courtShadow.rgb, shaded * courtShadowStrength);
+}
 `
 		: ''
 }${
@@ -191,7 +244,8 @@ diffuseColor.rgb *= texture2D(contactPrint, vec2(0.5) + vec2(courtPoint.x, -cour
 			)
 		if (isle)
 			shader.fragmentShader =
-				'uniform vec2 courtEdge, courtLip;\nuniform vec3 courtMoss;\n' + shader.fragmentShader
+				'uniform vec2 courtEdge, courtLip;\nuniform vec3 courtMoss, courtShadow;\nuniform sampler2D courtShadowPrint;\nuniform float courtShadowOn, courtShadowStrength;\n' +
+				shader.fragmentShader
 		if (finish)
 			shader.fragmentShader =
 				`
@@ -393,4 +447,20 @@ diffuseColor.rgb *= (1.0 + stoneGrain * (strata + grain - 0.5)) * (1.0 - wet * s
 	}
 	dispose.update = (dt) => skin?.update(dt)
 	return dispose
+}
+
+// Andrew's monotone chain; the swept footprint of a box under a sun is their hull.
+function convexHull(points) {
+	const sorted = [...points].sort((a, b) => a.x - b.x || a.z - b.z)
+	const cross = (o, a, b) => (a.x - o.x) * (b.z - o.z) - (a.z - o.z) * (b.x - o.x)
+	const half = (list) => {
+		const out = []
+		for (const p of list) {
+			while (out.length >= 2 && cross(out.at(-2), out.at(-1), p) <= 0) out.pop()
+			out.push(p)
+		}
+		out.pop()
+		return out
+	}
+	return [...half(sorted), ...half(sorted.reverse())]
 }

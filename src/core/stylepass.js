@@ -11,8 +11,9 @@ export function styleRoleFromColor(color) {
 	return ROLE_BY_COLOR.get(new THREE.Color(color).getHex()) ?? 'cream'
 }
 
-// Sun direction in world space. The style pass only needs one light.
-const LIGHT_WORLD = new THREE.Vector3(0.4, 0.85, 0.35).normalize()
+// Sun direction in world space. The style pass only needs one light; a palette's `light` may move it.
+const LIGHT_DEFAULT = new THREE.Vector3(0.4, 0.85, 0.35).normalize()
+const LIGHT_WORLD = LIGHT_DEFAULT.clone()
 const shared = { uLightDir: { value: new THREE.Vector3(0, 1, 0) } }
 
 const dataVert = /* glsl */ `
@@ -73,6 +74,9 @@ uniform vec3 uColors[${ROLES.length}];
 uniform vec3 uInk;
 uniform vec3 uCream;
 uniform vec3 uSky;
+uniform vec3 uSunTint;
+uniform vec3 uShadeTint;
+uniform vec2 uBandMix; // lit band toward the sun tint, dark band toward the shade tint
 uniform mat4 uInvProj;
 uniform mat4 uInvView;
 uniform float uLine;
@@ -134,8 +138,8 @@ void main() {
 	if (shade >= 0.0) {
 		// Three flat bands, not a gradient: printed artwork, not lit plastic.
 		float band = shade > 0.66 ? 1.0 : (shade > 0.38 ? 0.5 : 0.0);
-		col = mix(base, uCream, band * 0.32);
-		col = mix(col, uInk, (1.0 - band) * 0.18);
+		col = mix(base, uSunTint, band * uBandMix.x);
+		col = mix(col, uShadeTint, (1.0 - band) * uBandMix.y);
 
 		// One halftone rule anchored in world space so dots sit ON the surface and don't swim; power-of-two distance stepping keeps on-screen density constant (no far moire).
 		vec4 clip = vec4(vUv * 2.0 - 1.0, z * 2.0 - 1.0, 1.0);
@@ -157,9 +161,9 @@ void main() {
 			float width = max(fwidth(stripe), 0.001);
 			float hatch = 1.0 - smoothstep(0.10, 0.10 + width, abs(fract(stripe) - 0.5));
 			vec3 hatched = mix(base, uInk, hatch * smoothstep(0.66, 0.16, shade) * 0.30);
-			col = mix(mix(col, uInk, dots * 0.30), hatched, uHatch);
+			col = mix(mix(col, uShadeTint, dots * 0.30), hatched, uHatch);
 		} else {
-			col = mix(col, uInk, dots * 0.30);
+			col = mix(col, uShadeTint, dots * 0.30);
 		}
 	}
 
@@ -249,6 +253,9 @@ export function createStylePass(canvas) {
 			uInk: { value: new THREE.Color(PALETTE.ink) },
 			uCream: { value: new THREE.Color(PALETTE.cream) },
 			uSky: { value: new THREE.Color(PALETTE.page) },
+			uSunTint: { value: new THREE.Color(PALETTE.cream) },
+			uShadeTint: { value: new THREE.Color(PALETTE.ink) },
+			uBandMix: { value: new THREE.Vector2(0.32, 0.18) },
 			uInvProj: { value: new THREE.Matrix4() },
 			uInvView: { value: new THREE.Matrix4() },
 			uLine: { value: 1 },
@@ -300,9 +307,16 @@ export function createStylePass(canvas) {
 		post.uniforms.uRes.value.set(rw, rh)
 	}
 
+	// `light` is optional: { dir: [x, y, z] toward the sun, sun and shade tints, bandMix: [lit, dark] }.
 	function setPalette(worldColors = {}) {
 		for (let i = 0; i < ROLES.length; i++) colors[i].set(worldColors[ROLES[i]] ?? PALETTE[ROLES[i]])
 		post.uniforms.uSky.value.set(worldColors.page ?? PALETTE.page)
+		const light = worldColors.light ?? {}
+		if (light.dir) LIGHT_WORLD.set(...light.dir).normalize()
+		else LIGHT_WORLD.copy(LIGHT_DEFAULT)
+		post.uniforms.uSunTint.value.set(light.sun ?? PALETTE.cream)
+		post.uniforms.uShadeTint.value.set(light.shade ?? PALETTE.ink)
+		post.uniforms.uBandMix.value.set(...(light.bandMix ?? [0.32, 0.18]))
 	}
 
 	function render(scene, camera) {

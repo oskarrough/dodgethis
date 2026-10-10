@@ -125,7 +125,16 @@ export const tune = {
 			waterShade: '#c6bfe4',
 		},
 		// One low warm sun from the upper left: lit faces warm, shade violet.
-		light: { dir: [-0.7, 0.62, -0.25] },
+		light: {
+			dir: [-0.7, 0.62, -0.25], // toward the sun
+			sun: 0xffe9c8, // lit band leans warm
+			shade: 0x55488a, // dark band and halftone lean violet, never black
+			bandMix: [0.36, 0.34],
+			shadow: '#8a80b0', // printed cast shadows lean the court toward this violet…
+			shadowStrength: 0.5, // …by this much
+			shadowLength: 0.85, // fraction of the true projected length
+			shadowPixelsPerMetre: 16,
+		},
 		palette: { page: 0xf2cdbd, courtShade: 0x708883, scenery: 0x899b9b },
 	},
 	// Flagfall: two lanes on the shared court in the shallows. All geometry applies on restart.

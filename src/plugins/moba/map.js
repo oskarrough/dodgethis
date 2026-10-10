@@ -238,7 +238,9 @@ diffuseColor.rgb *= 1.0 - coverShade * (1.0 - max(0.0, dot(n, normalize(vec3(0.4
 			chalkLine(terrain.chalkWidth, m.hedgeInnerZ * 2, side * m.hedgeInnerX, 0)
 		chalkLine(terrain.chalkWidth, (bounds.halfZ - terrain.courtInset) * 2, 0, 0)
 		chalkLayout.circles.push({ radius: m.plazaRadius, x: 0, z: 0 })
-		unterrain = createMatchTerrain(group, layout, terrain, chalkLayout)
+		unterrain = createMatchTerrain(group, layout, terrain, chalkLayout, {
+			casts: { hedge: m.hedgeHeight, wall: m.wallHeight, pillar: m.pillarHeight + m.capHeight },
+		})
 		// Ownership remains a small semantic print; it is not scenery.
 		for (const side of [-1, 1]) {
 			const team = material(side < 0 ? 'teamA' : 'teamB', { flat: true })

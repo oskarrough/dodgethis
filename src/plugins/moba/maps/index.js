@@ -9,7 +9,7 @@ export const maps = {
 	overthrow: {
 		layout: overthrowLayout,
 		pieces: [structures, minions, ball, bots],
-		palette: () => tune.overthrowTerrain.palette,
+		palette: () => ({ ...tune.overthrowTerrain.palette, light: tune.overthrowTerrain.light }),
 		debugTune: {
 			name: 'overthrow terrain (applies on restart)',
 			values: tune.overthrowTerrain,

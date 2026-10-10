@@ -209,8 +209,9 @@ export function startLoading(
 				hatch: 1 - eased,
 				alpha: true,
 			})
-			app.setPalette(
-				Object.fromEntries(
+			app.setPalette({
+				light: palette.light,
+				...Object.fromEntries(
 					Object.entries(colors).map(([role, color]) => [
 						role,
 						role === 'ink' || role === 'cream'
@@ -221,7 +222,7 @@ export function startLoading(
 									.getHex(),
 					]),
 				),
-			)
+			})
 		}
 
 		// Cloud rolls in with the crane and parts around your hero from the start of the reveal.
