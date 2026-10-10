@@ -92,7 +92,8 @@ export const tune = {
 	// Menu tiles: the response is a spring, not a fade. `drop` is the flight out under the lobby
 	// shot, title first and each tile `stagger` s after the last (the picked one leaves last);
 	// `leave` the flight in screen widths and heights per element, the cards shrinking to `cardScale`;
-	// `pop` the spring back in as the splash shot lands.
+	// `pop` the spring back in as the splash shot lands. A card lifts on hover in `hover` s and
+	// settles back in the slower `snap` s.
 	// The title sits still for `calm` ms (min, max), then one letter dodges or the Ball glints.
 	title: { calm: [3500, 9000] },
 	// Each map's illustration, `public/splash/<map>-<width>.webp`; `wash` is the cream veil on
@@ -104,6 +105,7 @@ export const tune = {
 		outlinePadding: 5,
 		outlineWidth: 1.5,
 		snap: 0.12,
+		hover: 0.05,
 		press: 0.06,
 		scale: 1.05,
 		lift: 8,

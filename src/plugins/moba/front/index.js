@@ -222,6 +222,7 @@ export function mobaFront(app, map) {
 					for (const target of [el, sheet]) {
 						for (const [key, unit] of [
 							['snap', 's'],
+							['hover', 's'],
 							['press', 's'],
 							['lift', 'px'],
 							['scale', ''],
@@ -240,8 +241,8 @@ export function mobaFront(app, map) {
 			let leaving = false
 			function activate(index) {
 				if (leaving) return
-				leaving = true
 				const mode = buttons[index].dataset.mode
+				leaving = true
 				if (mode === 'moba') {
 					setup.map = buttons[index].dataset.map
 					tune.enter.frequencies.forEach((freq, i) =>

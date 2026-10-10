@@ -418,11 +418,18 @@
 	height: 78%;
 }
 .front-tile.selected {
+	transition-duration: var(--tile-hover);
 	transform: translate(calc(var(--skin-lift) * -0.5), calc(var(--skin-lift) * -1))
 		rotate(calc(var(--tile-rest) * var(--tile-tilt) * -0.6)) scale(var(--tile-scale));
 }
 .front-tile:active {
-	transform: translate(3px, 4px) scale(0.97);
+	transform: rotate(calc(var(--tile-rest) * var(--tile-tilt))) scale(0.97);
+	transition-duration: var(--skin-press);
+}
+/* Pressing a lifted card squeezes it where it floats rather than dropping the lift. */
+.front-tile.selected:active {
+	transform: translate(calc(var(--skin-lift) * -0.5), calc(var(--skin-lift) * -1))
+		rotate(calc(var(--tile-rest) * var(--tile-tilt) * -0.6)) scale(calc(var(--tile-scale) * 0.97));
 	transition-duration: var(--skin-press);
 }
 /* Dodgeball, the bonus round: a small stone tag under the maps, not a peer card. */
@@ -475,14 +482,18 @@
 	color: var(--ui-cream);
 }
 .moba-front .front-bonus.selected {
+	transition-duration: var(--tile-hover);
 	transform: translate(-50%, -4px) rotate(-1deg) scale(1.06);
 }
 .front-bonus.selected > svg:not(.skin-paint) {
 	transform: rotate(-20deg);
 }
 .moba-front .front-bonus:active {
-	transform: translate(-50%, 2px) scale(0.97);
+	transform: translate(-50%, 0) scale(0.97);
 	transition-duration: var(--skin-press);
+}
+.moba-front .front-bonus.selected:active {
+	transform: translate(-50%, -4px) rotate(-1deg) scale(1.03);
 }
 .moba-front kbd {
 	display: inline-block;
