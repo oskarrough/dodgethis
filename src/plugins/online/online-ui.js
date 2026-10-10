@@ -12,6 +12,8 @@ export function createOnlineUi(session, { inMatch = () => false, signal } = {}) 
 	let noGames = false
 	let hostPublic = true
 	let copiedCode = ''
+	// This page's build is older than the room's: the only way in is a reload.
+	let stale = false
 	// Screens own their entry markup; delegation also reaches entries in fresh mode runs.
 	document.addEventListener(
 		'click',
@@ -64,6 +66,7 @@ export function createOnlineUi(session, { inMatch = () => false, signal } = {}) 
 			} catch (e) {
 				if (e.code === 'NO_PUBLIC_LOBBIES') noGames = true
 				else error = e.message
+				stale = e.code === 'stale-build'
 			}
 			busy = false
 			render()
@@ -261,6 +264,7 @@ export function createOnlineUi(session, { inMatch = () => false, signal } = {}) 
 		back.disabled = false
 		if (state) actions.append(back)
 		else {
+			if (stale) actions.append(button('Reload', () => location.reload()))
 			back.classList.add('online-close')
 			back.setAttribute('aria-label', 'Close')
 			children.unshift(back)
@@ -279,8 +283,9 @@ export function createOnlineUi(session, { inMatch = () => false, signal } = {}) 
 		get open() {
 			return panel.open
 		},
-		show(message = '') {
+		show(message = '', { reload = false } = {}) {
 			error = message
+			stale = reload
 			render()
 			open()
 		},

@@ -206,7 +206,10 @@ test('private host and guest exchange welcome/hello with protocol metadata and r
 		metadata: { v: PROTO },
 	})
 	expect(outgoing.sent).toEqual([{ t: 'hello', d: { v: PROTO } }])
-	expect(outgoing.other.sent[0]).toEqual({ t: 'welcome', d: { v: PROTO, hostId: server.id } })
+	expect(outgoing.other.sent[0]).toEqual({
+		t: 'welcome',
+		d: { v: PROTO, hostId: server.id, build: server.build },
+	})
 })
 
 test('roster broadcast inside onPeerJoin is received after guest adoption, before join resolves', async () => {
@@ -601,6 +604,6 @@ test('private code collision retries use a fresh peer, and six-character codes c
 	await flush()
 	const conn = client.peer.connections[0]
 	conn.start()
-	conn.emit('data', { t: 'welcome', d: { v: PROTO, hostId: 'dodgethis-ABCDEF' } })
+	conn.emit('data', { t: 'welcome', d: { v: PROTO, hostId: 'dodgethis-ABCDEF', build: 0 } })
 	expect(await joining).toBe('ABCDEF')
 })

@@ -1,5 +1,5 @@
 import { createLink } from './link.js'
-import { MAX_PLAYERS, Net } from './net.js'
+import { BUILD, MAX_PLAYERS, Net } from './net.js'
 import { createOnlineSession } from './online-session.js'
 import { createOnlineUi } from './online-ui.js'
 import { playerName, seatKey, validName } from './names.js'
@@ -8,7 +8,11 @@ import { playerName, seatKey, validName } from './names.js'
 // Leaving restarts that mode solo. Online never names the mode, and the mode never learns it is online.
 // `join` is a room code from a link: the first frame joins it, and a dead code stays solo with a notice.
 export default function online(app, { join = null } = {}) {
+	// `?build=1` in dev fakes a page from an old build, to see the reload notice.
+	const fakeBuild =
+		import.meta.env?.DEV && Number(new URLSearchParams(location.search).get('build'))
 	const net = new Net({
+		build: fakeBuild || BUILD,
 		capacity: () => app.modes.current?.capacity ?? MAX_PLAYERS,
 		validJoinData: (data) =>
 			validName(data?.name) && (app.modes.current?.validJoinData?.(data) ?? true),
@@ -146,7 +150,8 @@ export default function online(app, { join = null } = {}) {
 			await session.join(code)
 		} catch (error) {
 			if (session.state) return
-			ui.show(`${error.message}. You're playing solo.`)
+			if (error.code === 'stale-build') ui.show(error.message, { reload: true })
+			else ui.show(`${error.message}. You're playing solo.`)
 		} finally {
 			joining = null
 		}

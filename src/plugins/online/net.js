@@ -1,8 +1,11 @@
 // Private, host-and-spoke PeerJS transport. Lobby/game authority lives in the session model.
 import { tune } from './tune.js'
 
-// 4: the host's mode id is part of the lobby/start contract.
-export const PROTO = 4
+// 4: the host's mode id is part of the lobby/start contract. 5: the welcome carries the build id, hello a seat key.
+export const PROTO = 5
+// The page's build (vite.config.js `define`); a guest from another build is turned away with a reload notice.
+// oxlint-disable-next-line no-undef
+export const BUILD = typeof __BUILD__ === 'number' ? __BUILD__ : 0
 export const MAX_PLAYERS = 8
 export const REMOVAL_MESSAGES = Object.freeze({
 	'input-abuse': 'Player removed: invalid or excessive input.',
@@ -52,6 +55,18 @@ function errorMessage(error) {
 	}
 }
 const cancelled = () => new Error('Connection attempt cancelled')
+// The newer side can't help the older one: an old guest reloads, a new guest waits for the host to.
+function staleBuild(host, mine) {
+	const behind = !(host <= mine)
+	return Object.assign(
+		new Error(
+			behind
+				? 'New version out. Reload to join.'
+				: 'This room runs an older version; the host needs to reload',
+		),
+		{ code: behind ? 'stale-build' : 'old-room' },
+	)
+}
 const makeCode = () =>
 	Array.from({ length: 5 }, () => ALPHABET[Math.floor(Math.random() * ALPHABET.length)]).join('')
 // A room link is the bare code as the path: dodgethis.0sk.ar/ABCDE.
@@ -83,7 +98,9 @@ export class Net {
 		handshakeTimeout = 5000,
 		capacity = () => MAX_PLAYERS,
 		validJoinData = () => true,
+		build = BUILD,
 	} = {}) {
+		this.build = build
 		this.Peer = Peer
 		this.peerOptions = peerOptions
 		this.timers = timers
@@ -291,6 +308,7 @@ export class Net {
 				}
 				if (conn.peer !== this.hostId || message.d.hostId !== this.hostId)
 					return finish(new Error('Lobby returned an invalid host identity'))
+				if (message.d.build !== this.build) return finish(staleBuild(message.d.build, this.build))
 				// Adopt BEFORE acknowledging: onPeerJoin can immediately publish a roster.
 				// Session listeners registered before join() receive it even before await returns.
 				this.conns.set(conn.peer, conn)
@@ -340,7 +358,7 @@ export class Net {
 				return
 			}
 			welcomed = true
-			this._send(conn, { t: 'welcome', d: { v: PROTO, hostId: this.id } })
+			this._send(conn, { t: 'welcome', d: { v: PROTO, hostId: this.id, build: this.build } })
 		})
 		conn.on('data', (raw) => {
 			if (!current()) return

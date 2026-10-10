@@ -41,6 +41,8 @@ const folderSlash = {
 
 export default defineConfig({
 	plugins: [wasm(), folderSlash],
+	// The build's id, its time: online rooms only seat guests from the same build (online/net.js `BUILD`).
+	define: { __BUILD__: String(Date.now()) },
 	server: {
 		// Vite rejects Host headers it does not recognise. Two dev setups need
 		// naming: portless gives each app a stable https://<name>.localhost URL,
