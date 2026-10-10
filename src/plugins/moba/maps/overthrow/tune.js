@@ -1,4 +1,4 @@
-// Overthrow's tunables, assembled into tune.map and tune.overthrowTerrain by ../tune.js.
+// Overthrow's tunables, assembled into tune.map and tune.overthrowTerrain by ../../tune.js.
 
 // Static layout and dressing: applies on mode restart.
 export const overthrowMap = {
@@ -60,7 +60,7 @@ export const overthrowTerrain = {
 	chalkSegments: 96,
 	surroundSize: 600,
 	surroundDrop: 12,
-	// Overthrow by day (isle.js): the court is the flat top of a stone isle over a sea of cloud.
+	// Overthrow by day (scenery.js): the court is the flat top of a stone isle over a sea of cloud.
 	// Metres; everything applies on restart.
 	cliff: {
 		depth: 46, // the face falls out of frame into cloud
@@ -150,3 +150,5 @@ export const overthrowTerrain = {
 	// Lavender-grey stone (walls, cover), pale stone (pillars, towers), moss.
 	palette: { page: 0xf2cdbd, courtShade: 0xa99db3, scenery: 0xc6bac6, court: 0x8e9c50 },
 }
+
+export default { map: overthrowMap, overthrowTerrain }

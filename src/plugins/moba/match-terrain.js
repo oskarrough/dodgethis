@@ -12,7 +12,7 @@ export function createMatchTerrain(
 	layout,
 	s,
 	chalkLayout,
-	{ footprints, casts = null, scenery = null } = {},
+	{ footprints, casts = null, shadows = null, scenery = null } = {},
 ) {
 	const bounds = layout.bounds
 	const name = layout.name.toLowerCase()
@@ -35,52 +35,7 @@ export function createMatchTerrain(
 	// The renderer survives map switches; closure contents aren't in Three's default
 	// program key, so never reuse Flagfall's shader for Overthrow (or vice versa).
 	ground.customProgramCacheKey = () => (s.pool ? 'night-court' : 'overthrow-court')
-	// One low sun prints long violet shadows from cover onto the court, baked once like the
-	// contact above: the swept footprint of each box and pillar, never a shadow map.
-	let shadowPrint = null
-	// Headless builds (tests, the bot harness) have no canvas; the print is presentation only.
-	if (casts && typeof document !== 'undefined') {
-		const ppm = s.light.shadowPixelsPerMetre * devicePixelRatio
-		const canvas = document.createElement('canvas')
-		canvas.width = Math.ceil(extent.halfX * 2 * ppm)
-		canvas.height = Math.ceil(extent.halfZ * 2 * ppm)
-		const ctx = canvas.getContext('2d')
-		ctx.fillStyle = '#fff'
-		ctx.fillRect(0, 0, canvas.width, canvas.height)
-		const px = (x) => ((x + extent.halfX) / (2 * extent.halfX)) * canvas.width
-		const pz = (z) => ((z + extent.halfZ) / (2 * extent.halfZ)) * canvas.height
-		const [lx, ly, lz] = s.light.dir
-		const reach = s.light.shadowLength / Math.max(0.05, ly)
-		const offset = (h) => ({ x: -lx * reach * h, z: -lz * reach * h })
-		ctx.fillStyle = ctx.strokeStyle = '#000'
-		ctx.lineCap = 'round'
-		for (const b of layout.boxes) {
-			const o = offset(b.kind === 'hedge' ? casts.hedge : casts.wall)
-			const corners = []
-			for (const [sx, sz] of [
-				[-1, -1],
-				[1, -1],
-				[1, 1],
-				[-1, 1],
-			])
-				for (const d of [0, 1])
-					corners.push({ x: b.x + sx * b.halfX + o.x * d, z: b.z + sz * b.halfZ + o.z * d })
-			const hull = convexHull(corners)
-			ctx.beginPath()
-			hull.forEach((p, i) => ctx[i ? 'lineTo' : 'moveTo'](px(p.x), pz(p.z)))
-			ctx.fill()
-		}
-		for (const p of layout.pillars) {
-			const o = offset(casts.pillar)
-			ctx.lineWidth = p.r * 2 * ppm
-			ctx.beginPath()
-			ctx.moveTo(px(p.x), pz(p.z))
-			ctx.lineTo(px(p.x + o.x), pz(p.z + o.z))
-			ctx.stroke()
-		}
-		shadowPrint = own(new THREE.CanvasTexture(canvas))
-		shadowPrint.anisotropy = 4
-	}
+	const shadowPrint = shadows?.({ layout, s, extent, casts, own }) ?? null
 	// Broad, barely-visible tarmac patches, not texture detail or busy cracks.
 	ground.onBeforeCompile = (shader) => {
 		shader.uniforms.courtScale = { value: s.patchScale }

@@ -1,5 +1,5 @@
 import { tune } from './tune.js'
-import { overthrowLayout } from './maps/overthrow.js'
+import { overthrowLayout } from './maps/overthrow/layout.js'
 export { mapLayout } from './maps/index.js'
 export { flagfallLayoutTune } from './maps/flagfall/layout.js'
 

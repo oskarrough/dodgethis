@@ -12,6 +12,7 @@ import heroes_carom from './heroes/carom/tune.js'
 import heroes_mitts from './heroes/mitts/tune.js'
 import heroes_skip from './heroes/skip/tune.js'
 import maps_flagfall from './maps/flagfall/tune.js'
+import maps_overthrow from './maps/overthrow/tune.js'
 
 export const abilities = {
 	bank: abilities_bank,
@@ -31,4 +32,5 @@ export const heroes = {
 }
 export const maps = {
 	flagfall: maps_flagfall,
+	overthrow: maps_overthrow,
 }

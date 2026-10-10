@@ -4,7 +4,7 @@ Every player-facing feature, grouped by screen, one line each: the feature in pl
 
 Don't read big files whole. `ast-grep outline <file>` lists a file's symbols with line numbers; `ast-grep run -p '<pattern>' -l js src` finds structure (callers, `tune.x.y` uses). Whoever adds or moves a feature updates its line here. To prove a feature in the running game, use `.claude/skills/verify/SKILL.md`.
 
-Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` means `src/plugins/moba/tune.js` (key in backticks); other tune files are named in full. `tune.js` keeps the match rules and assembles the rest, so every `tune.x.y` path is unchanged but the values live elsewhere: `map` and `overthrowTerrain` in `maps/overthrow-tune.js`, `flagfall` in `maps/flagfall/tune.js`, `lobby` in `front/lobby-tune.js`, every ability's numbers (`loose`, `rain`, `vault`, `toss`, `catch`, `dive`, `gloveSlap`) in `abilities/<id>/tune.js`, heroes' (`heroes.mitts`, Carom, Skip) in `heroes/<id>/tune.js`. Docs live in `docs/`.
+Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` means `src/plugins/moba/tune.js` (key in backticks); other tune files are named in full. `tune.js` keeps the match rules and assembles the rest, so every `tune.x.y` path is unchanged but the values live elsewhere: `map` and `overthrowTerrain` in `maps/overthrow/tune.js`, `flagfall` in `maps/flagfall/tune.js`, `lobby` in `front/lobby-tune.js`, every ability's numbers (`loose`, `rain`, `vault`, `toss`, `catch`, `dive`, `gloveSlap`) in `abilities/<id>/tune.js`, heroes' (`heroes.mitts`, Carom, Skip) in `heroes/<id>/tune.js`. Docs live in `docs/`.
 
 ## Shell and splash
 
@@ -25,7 +25,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Back and Play online, the top-left row in both modes' lobbies: `src/core/corner-nav.js` `createCornerNav`; `index.html` `.corner-nav`; used by `lobby.js` `createLobby` and `src/plugins/dodgeball/index.js`
 - Seats, roster, ready state: `lobby-state.js` `createReadySeats`; `lobby-heroes.js` `createLobbyHeroes`; `tune.js` `lobby.ready`
 - Ready plates inlaid in the saucer's glaze, the Ready label beside yours, the glaze fill: `lobby-props.js` `createLobbyProps`, `plate`; `tune.js` `lobby.ready`; `lobby.js` `createLobby`
-- Lobby floor, the glazed saucer in its magnetic cradles: `lobby-floor.js` `createLobbyFloor`, `saucerShape`; its elliptical collider: `obstacles.js` `buildColliders` (`island.round`); `maps/lobby.js` `lobbyLayout`; `tune.js` `lobby.floor`
+- Lobby floor, the glazed saucer in its magnetic cradles: `lobby-floor.js` `createLobbyFloor`, `saucerShape`; its elliptical collider: `obstacles.js` `buildColliders` (`island.round`); `maps/lobby/layout.js` `lobbyLayout`; `maps/lobby/ground.js` glaze; `tune.js` `lobby.floor`
 - Weather bowl, the next map turning in miniature under a sky cap, with its label: `lobby-bowl.js` `createWeatherBowl`; `tune.js` `lobby.bowl`
 - Hero stands and the hero strip (pick a hero): `lobby-heroes.js` `heroStands`, `createHeroStrip`; `tune.js` `lobby.pick`
 - Hero numbers panel (stats, level slider): `front/numbers.js` `createNumbers`; `front/stats.js` `heroStats`, `numberLines`; `tune.js` `lobby.inspect`
@@ -120,8 +120,8 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 ## Match: maps and props
 
 - How a map's features plug in: a map's manifest names its `pieces` by id (`pieces/<id>/index.js`: structures, minions, ball, bots, camps, flag, dummies; generated `pieces/index.js`), `maps/recipes.js` `matchRecipe` resolves them; `sim.js` reads a piece's `lane`, `create`, `botHabit`, `obstacles`, `controllers`. A piece's view hooks (`view`, `dress`, `onboarding`) sit in its `view.js`, listed in generated `pieces/views.js`; `index.js` and `sim.js` look them up by piece id. A map declares `kind` (`lane`, `garden`, `lobby`) and `order`; its `ground.js` and `scenery.js` are listed in generated `maps/views.js` and called by `map.js` and `isle.js`. `maps/index.js` is generated too (`bun run registry`). Structures become team-blind obstacles via `obstacles` and Rapier colliders via `sim.js` `towerColliders`. Bot goal names live in each habit's `botGoals` and must be unique within a map: lane `retreat commitSiege defend siege advance`, ball `urgent objective escort` (Overthrow), camps `escort` and flag `objective` (Flagfall).
-- Overthrow (the first map): `maps/overthrow.js` `overthrowLayout`; `match-terrain.js` `createMatchTerrain`; `tune.js` `overthrowTerrain`, `map`; `moba-lane.md`
-- Overthrow by day (cliff, moss lip, rim ink, cloud sea, cloud banks, far spires and arches, waterfalls, haze): `isle.js` `createIsle`; court moss and printed cast shadows: `match-terrain.js`; stone cover and pillars: `map.js` `buildMap` (`stoneCover`); stone towers and core: `lane-view.js` (`structureStyle: 'stone'`); the sun: `tune.js` `overthrowTerrain.light`, `core/stylepass.js` `setPalette`
+- Overthrow (the first map): `maps/overthrow/layout.js` `overthrowLayout`; `maps/overthrow/ground.js` `ground`; `match-terrain.js` `createMatchTerrain`; `tune.js` `overthrowTerrain`, `map`; `moba-lane.md`
+- Overthrow by day (cliff, moss lip, rim ink, cloud sea, cloud banks, far spires and arches, waterfalls, haze): `isle.js` `createIsle` (shared cliff, moss lip, rim ink, cloud sea and banks, far spires and arches, haze); waterfalls: `maps/overthrow/scenery.js` `scenery`; lane chalk, kerbs and printed cast shadows: `maps/overthrow/ground.js` `ground`; shared court moss: `match-terrain.js`; stone cover and pillars: `map.js` `buildMap` (`stoneCover`); stone towers and core: `lane-view.js` (`structureStyle: 'stone'`); the sun: `tune.js` `overthrowTerrain.light`, `core/stylepass.js` `setPalette`
 - Flagfall (the second map): `maps/flagfall/index.js` (manifest, `kind: 'garden'`), `maps/flagfall/layout.js` `flagfallLayout`, `flagfallLayoutTune`; `maps/flagfall/tune.js` (`tune.flagfall`); `moba-map-2.md`
 - Flagfall by night (the shared isle with night `colors`, `light`, `pool`, `haze`, `clouds`; moon, rim garden of leaf fans and glowing orchid bells, specks): `isle.js` `createIsle`, `maps/flagfall/scenery.js` `scenery`; `tune.js` `flagfall`
 - Flagfall cover (rim kerb cut at the Dunk gaps, dark-teal leaf-bank hedges, stone walls and drums, lantern posts): `maps/flagfall/ground.js` `ground`, `map.js` `buildMap`; `tune.js` `flagfall.kerb`, `flagfall.glow`, `flagfall.hedge`
@@ -158,7 +158,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 ## Debug, Try Mode, proof
 
 - Debug panel and Try Mode folder: `debug.js` `createDebugLayout`, `createMatchDebug`; `setup.js` `parseTrySetup`; `src/core/debug.js` `createDebugPanel`
-- Tuning sliders: `sliders.js` `sliderSections`, `addSliders`; new debug folders also go in `debugSections`
+- Tuning sliders: `sliders.js` `sliderSections`, `addSliders`, `debugSections`; Terrain section names come from generated `maps/index.js` `playableMaps` and each manifest's `debugTune.name`; other new debug folders go in `debugSections`
 - `window.dt` (keys, pad, screen, device, game): `src/core/proof.js` `createProofApi`; `verification.md`
 - Simulation tables and bot experiments: `agent-match.js`; `verification.md`
 

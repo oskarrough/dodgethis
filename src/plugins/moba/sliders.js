@@ -1,6 +1,7 @@
 // Tune GUI: moba's sections come and go with the run; the values live in tune.js and survive restarts.
 // Each section maps a key to [min, max, step, label?, object?]. T is one clock step.
 import { ABILITIES } from './ability.js'
+import { maps, playableMaps } from './maps/index.js'
 
 export const T = 'clock step'
 
@@ -296,7 +297,7 @@ export const debugSections = {
 	},
 	Presentation: {
 		Feedback: ['hud', 'out', 'card', 'juice', 'damageNumbers'],
-		Terrain: ['overthrow terrain (applies on restart)', 'flagfall (applies on restart)'],
+		Terrain: playableMaps.flatMap((id) => (maps[id].debugTune ? [maps[id].debugTune.name] : [])),
 		Audio: ['squeak'],
 	},
 	'Camera / input': {

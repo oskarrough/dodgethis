@@ -1,5 +1,5 @@
-import { tune } from '../tune.js'
-import { overthrowLayout } from './overthrow.js'
+import { tune } from '../../tune.js'
+import { overthrowLayout } from '../overthrow/layout.js'
 
 export function lobbyLayout() {
 	const court = overthrowLayout()
@@ -17,14 +17,4 @@ export function lobbyLayout() {
 		structures: [],
 		dummyPosts: tune.lobby.dummyPosts,
 	}
-}
-
-// Hand-imported by maps/index.js until the lobby gets its folder (docs/mods.md, step 7).
-export const lobby = {
-	kind: 'lobby',
-	layout: lobbyLayout,
-	pieces: ['dummies'],
-	palette: () => ({}),
-	debugTune: null,
-	online: true,
 }

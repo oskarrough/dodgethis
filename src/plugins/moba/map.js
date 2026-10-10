@@ -4,10 +4,8 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 import { FORWARD_LAYER, makeStyleMaterial } from '../../core/stylepass.js'
 import { tune as coreTune } from '../../core/tune.js'
 import { tune } from './tune.js'
-import { saucerShape } from './lobby-floor.js'
-import { createMatchTerrain } from './match-terrain.js'
 import { glowTexture } from './isle.js'
-import { FLOOR, buildColliders } from './obstacles.js'
+import { buildColliders } from './obstacles.js'
 import { DEFAULT_MAP, maps, mapLayout } from './maps/index.js'
 import mapViews from './maps/views.js'
 export { FLOOR, PILLARS, SPAWN, walkable, clampWalkable } from './obstacles.js'
@@ -113,10 +111,6 @@ export function buildMap(scene, world, RAPIER, kind = DEFAULT_MAP) {
 		add(mergeGeometries(geometries), mat, 0, 0, 0).name = name
 		for (const g of geometries) g.dispose()
 	}
-	const buildLobby = () => {
-		// The saucer's glaze, not an endless plane: nothing is drawn beyond it, so the sky shows through.
-		add(saucerShape(), cream, 0, m.printLayers.lobby, 0)
-	}
 	let unterrain = null
 	const kerbStones = []
 	const lanterns = []
@@ -163,50 +157,24 @@ export function buildMap(scene, world, RAPIER, kind = DEFAULT_MAP) {
 			0,
 		)
 	}
-	const buildLane = () => {
-		for (const side of [-1, 1])
-			chalkLine(terrain.chalkWidth, m.hedgeInnerZ * 2, side * m.hedgeInnerX, 0)
-		chalkLine(terrain.chalkWidth, (bounds.halfZ - terrain.courtInset) * 2, 0, 0)
-		chalkLayout.circles.push({ radius: m.plazaRadius, x: 0, z: 0 })
-		unterrain = createMatchTerrain(group, layout, terrain, chalkLayout, {
-			scenery: views.scenery,
-			casts: { hedge: m.hedgeHeight, wall: m.wallHeight, pillar: m.pillarHeight + m.capHeight },
-		})
-		// Ownership remains a small semantic print; it is not scenery.
-		for (const side of [-1, 1]) {
-			const team = material(side < 0 ? 'teamA' : 'teamB', { flat: true })
-			const kerbs = []
-			for (let x = m.dashSpacing; x < FLOOR.halfX; x += m.dashSpacing)
-				for (const flank of [-1, 1])
-					kerbs.push(
-						new THREE.PlaneGeometry(m.dashLength, m.lineWidth * 2)
-							.rotateX(-Math.PI / 2)
-							.translate(side * x, m.printLayers.marks, flank * (m.hedgeInnerZ - m.lineWidth)),
-					)
-			print(kerbs, team, `moba-kerbs-${side}`)
-		}
-	}
-	if (map.kind === 'lobby') buildLobby()
-	else if (views.ground)
-		unterrain = views.ground({
-			layout,
-			terrain,
-			scale,
-			m,
-			group,
-			add,
-			print,
-			material,
-			owned,
-			scenery,
-			chalkLine,
-			chalkLayout,
-			kerbStones,
-			lanterns,
-			isleScenery: views.scenery,
-		})
-	else buildLane()
-	// Overthrow by day: cover and base walls are coursed, chipped stone blocks on the same
+	unterrain = (views.ground ?? mapViews[DEFAULT_MAP].ground)({
+		layout,
+		terrain,
+		scale,
+		m,
+		group,
+		add,
+		print,
+		material,
+		owned,
+		scenery,
+		chalkLine,
+		chalkLayout,
+		kerbStones,
+		lanterns,
+		isleScenery: views.scenery,
+	})
+	// Shared stone cover: cover and base walls are coursed, chipped blocks on the same
 	// collision boxes, moss on the low cover's tops; pillars are stacked faceted drums.
 	const stoneCover = kind !== 'lobby'
 	const stones = { blocks: [], moss: [], drums: [], caps: [] }
