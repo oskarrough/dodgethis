@@ -1,9 +1,8 @@
 import { tune, profile } from './tune.js'
 import { clampMap } from './obstacles.js'
+import { dirOf } from './sim-kit.js'
 
 const TAU = Math.PI * 2
-// Yaw ↔ ground direction, matching body.face: yaw = atan2(x, z) + π.
-export const dirOf = (yaw) => ({ x: -Math.sin(yaw), z: -Math.cos(yaw) })
 
 // Read-only queries over the sim's live units: what a click, an attack-move or the pad's stick lands on.
 export function createTargeting({ heroes, dummies, lane, ball, field }) {
