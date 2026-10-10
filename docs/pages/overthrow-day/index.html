@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Overthrow day · dodgethis</title>
+		<link rel="stylesheet" href="/docs/page.css" />
+	</head>
+	<body class="page">
+		<main>
+			<p><a href="../">All reviews</a></p>
+			<h1>Overthrow day</h1>
+			<p><small>To review · 2026-10-10</small></p>
+			<p><strong>Is this Overthrow?</strong></p>
+			<p>
+				One Sun Spell direction at the shipped match camera: quiet butter-green court, lavender
+				stone with weight, navy ink, sharp creatures and loud combat colour. These are restyle
+				targets, not imported game assets.
+			</p>
+			<section>
+				<h2>01 · Establishing</h2>
+				<figure>
+					<a href="01-establishing.webp"
+						><img
+							src="01-establishing.webp"
+							width="1672"
+							height="941"
+							alt="Quiet Overthrow midfield at the match camera: four chipped lavender pillars, low edge cover, blue and red Fletchers approaching across a butter-green court."
+					/></a>
+					<figcaption>
+						Opening at mid. The four central pillars and the clipped cover keep their shipped
+						positions.
+					</figcaption>
+				</figure>
+			</section>
+			<section>
+				<h2>02 · Crowded fight</h2>
+				<figure>
+					<a href="02-fight.webp"
+						><img
+							src="02-fight.webp"
+							width="1672"
+							height="941"
+							loading="lazy"
+							alt="Blue and red heroes and minions fight between the same four pillars. Team discs, health bars, cream and red rectangular telegraphs and the gold Ball stand out over quiet ground."
+					/></a>
+					<figcaption>
+						The readability test: identify teams, the Ball and both ground tells before noticing the
+						floor.
+					</figcaption>
+				</figure>
+			</section>
+			<section>
+				<h2>03 · Tower and core</h2>
+				<figure>
+					<a href="03-tower-core.webp"
+						><img
+							src="03-tower-core.webp"
+							width="1672"
+							height="941"
+							loading="lazy"
+							alt="The same match camera panned to the blue base: a large faceted blue core on stepped stone at left and a tapered stone tower with blue tip and banner at right."
+					/></a>
+					<figcaption>
+						Core at −40, tower at −18; camera panned to −29. Core is a diamond; tower is a drum with
+						a point. No extra fort.
+					</figcaption>
+				</figure>
+			</section>
+			<section>
+				<h2>Builder translation</h2>
+				<ul>
+					<li>
+						Keep the 104 × 26 m footprint, one lane, both flanks and every collision box. Each side
+						has one tower and one core.
+					</li>
+					<li>
+						Keep the shipped 58° match camera and HUD rectangles. The first two frames are midfield;
+						the third pans along the lane. The close camera crops the surround: do not widen the
+						lens to fit this art.
+					</li>
+					<li>
+						Use a single flat court colour, no ink or lighting gradient on the floor. Stone inlays
+						differ by at most 10%; any grain stays within ±7%. Do not reproduce the generator's soft
+						floor shading.
+					</li>
+					<li>
+						Build stone from bevelled prisms, drums and stepped plinths; use a few geometry splits
+						for chips. Tower height 4 m; core height 7 m. The core crystal floats above its plinth
+						and wears a dashed cream dome while shielded.
+					</li>
+					<li>
+						Thick navy outlines on units and structures; thin outlines on scenery; no floor
+						outlines. Print ellipse shadows. Team foot discs and exact hitbox tells carry the fight;
+						only the player gets a cream outer ring.
+					</li>
+					<li>
+						Reserve saturated blue and red for combat and team accents, gold for the Ball and ammo.
+						Replace decorative shield bosses with ivory/navy. Preserve hero silhouettes and the 0.6
+						minion scale.
+					</li>
+					<li>
+						Outside this crop, follow the day-isles surround in the look notes: dark lavender cliff
+						below the butter-green cap, pale peach cloud, white/lilac waterfalls, distant stone
+						isles and a pale moon. Plants stay on the outer rim.
+					</li>
+					<li>
+						Code builds every unit, structure and spell. A cloud plate and a quiet seamless ground
+						tile are the optional painted textures; these frames themselves never ship into WebGL.
+					</li>
+				</ul>
+				<p>
+					Built-in image generator; exact <a href="prompts.json">prompts and correction</a>.
+					References: <a href="../vibes/sun-spell/03-match.webp">picked Sun Spell style</a>,
+					<a href="../../moba-look.md">look direction</a>,
+					<a href="../../moba-lane.md">map contract</a> and the live shipped Overthrow match.
+				</p>
+			</section>
+		</main>
+	</body>
+</html>

@@ -1,5 +1,20 @@
 [
 	{
+		"at": "2026-10-10T14:43:48.999Z",
+		"title": "Overthrow day",
+		"ask": "Is this Overthrow?",
+		"status": "To review",
+		"decision": "",
+		"media": [
+			"overthrow-day/01-establishing.webp",
+			"overthrow-day/02-fight.webp",
+			"overthrow-day/03-tower-core.webp"
+		],
+		"links": [],
+		"thread": "thr_42fyq3tca8",
+		"page": "overthrow-day/"
+	},
+	{
 		"at": "2026-10-10T14:35:43.222Z",
 		"title": "Top bar pill: steady width",
 		"ask": "Same pill at 0:09 / 0-0 and 3:30 / 3-0: identical width (421 px), every item centred on one line, Ball icon + seconds all match, no 'Ball in'. Good?",
