@@ -5,6 +5,42 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<title>All pages · dodgethis</title>
 		<link rel="stylesheet" href="/docs/page.css" />
+		<style>
+			dialog {
+				width: 100vw;
+				height: 100vh;
+				max-width: none;
+				max-height: none;
+				margin: 0;
+				padding: 0;
+				border: 0;
+				background: #111e;
+				color: #ddd;
+			}
+			.page dialog img {
+				width: 100%;
+				height: calc(100% - 32px);
+				object-fit: contain;
+				margin: 0;
+				cursor: default;
+				border: 0;
+				background: none;
+			}
+			dialog p {
+				margin: 0;
+				text-align: center;
+				line-height: 32px;
+			}
+			#feed div:has(> figure) {
+				display: grid;
+				grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+				gap: 16px;
+			}
+			#feed figure :is(img, video) {
+				aspect-ratio: 16 / 10;
+				cursor: zoom-in;
+			}
+		</style>
 	</head>
 	<body class="page">
 		<main>
@@ -25,7 +61,7 @@
 				</thead>
 				<tbody>
 					<tr>
-						<td><a href="review/">Review feed</a></td>
+						<td><a href="#latest">Review feed</a></td>
 						<td>Screenshots and clips agents publish for Oskar to judge.</td>
 						<td>ongoing</td>
 						<td><span class="chip gold">To review</span></td>
@@ -92,6 +128,54 @@
 					</tr>
 				</tbody>
 			</table>
+			<h2 id="latest">Latest</h2>
+			<dialog id="viewer">
+				<img />
+				<p></p>
+			</dialog>
+			<div id="feed">No entries yet. Agents add them with <code>bun run review</code>.</div>
+			<script>
+				const isVideo = (f) => /\.(webm|mp4)$/i.test(f)
+				const src = (f) => 'review/' + f
+				fetch('review/feed.json')
+					.then((r) => r.json())
+					.then((feed) => {
+						document.getElementById('feed').innerHTML = feed
+							.map(
+								(e) => `<section>
+<h3>${e.title}</h3>
+<small>${new Date(e.at).toLocaleString()} · ${e.thread}</small>
+<p><b>${e.ask}</b></p>
+<div>${e.media.map((f) => `<figure>${isVideo(f) ? `<video src="${src(f)}" controls></video>` : `<img src="${src(f)}" loading="lazy">`}<figcaption>${f.split('/').pop()}</figcaption></figure>`).join('')}</div>
+<p>${e.links.map((l) => `<a href="${l}">${l}</a>`).join(' · ')}</p>
+</section>`,
+							)
+							.join('')
+					})
+					.catch(() => {})
+				const viewer = document.getElementById('viewer')
+				let index = 0
+				const all = () => [...document.querySelectorAll('#feed img')]
+				const show = (i) => {
+					const imgs = all()
+					index = (i + imgs.length) % imgs.length
+					viewer.querySelector('img').src = imgs[index].src
+					const title = imgs[index].closest('section').querySelector('h3').textContent
+					viewer.querySelector('p').textContent =
+						`${index + 1} / ${imgs.length} · ${title} · ← → to browse, Esc to close`
+				}
+				document.addEventListener('click', (e) => {
+					if (e.target.closest('#feed') && e.target.tagName === 'IMG') {
+						show(all().indexOf(e.target))
+						viewer.showModal()
+					} else if (e.target.closest('dialog')) viewer.close()
+				})
+				document.addEventListener('keydown', (e) => {
+					if (!viewer.open) return
+					if (e.key === 'ArrowRight') show(index + 1)
+					if (e.key === 'ArrowLeft') show(index - 1)
+				})
+			</script>
 		</main>
 	</body>
 </html>

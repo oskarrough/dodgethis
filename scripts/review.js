@@ -45,4 +45,4 @@ feed.unshift({
 })
 feed.sort((a, b) => b.at.localeCompare(a.at))
 writeFileSync(feedPath, JSON.stringify(feed, null, '\t') + '\n')
-console.log('http://office-linux.heron-mermaid.ts.net:5173/docs/pages/review/')
+console.log('http://office-linux.heron-mermaid.ts.net:5173/docs/pages/')
