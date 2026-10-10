@@ -13,6 +13,7 @@
 		"test:slow": "SLOW=1 bun test",
 		"profile:dodgeball": "bun scripts/bench.js",
 		"simulate": "bun scripts/farm.js",
+		"review": "bun scripts/review.js",
 		"play:headless": "bun scripts/play.js",
 		"verify:browser": "node scripts/verify-moba-playability.mjs",
 		"deploy": "wrangler deploy"

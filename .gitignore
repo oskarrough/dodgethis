@@ -3,3 +3,5 @@ dist/
 .wrangler/
 runs/
 .aws
+review/media/
+review/feed.json

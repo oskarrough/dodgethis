@@ -1,0 +1,51 @@
+<!doctype html>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Review feed</title>
+<style>
+	body {
+		font: 16px system-ui;
+		max-width: 1200px;
+		margin: 0 auto;
+		padding: 16px;
+	}
+	img,
+	video {
+		width: 240px;
+		margin: 0 8px 8px 0;
+		cursor: zoom-in;
+	}
+	video {
+		width: 480px;
+	}
+	img.big {
+		width: auto;
+		max-width: 100%;
+		cursor: zoom-out;
+	}
+</style>
+<h1>Review feed</h1>
+<div id="feed">No entries yet. Agents add them with <code>bun run review</code>.</div>
+<script>
+	const isVideo = (f) => /\.(webm|mp4)$/i.test(f)
+	fetch('feed.json')
+		.then((r) => r.json())
+		.then((feed) => {
+			document.getElementById('feed').innerHTML = feed
+				.map(
+					(e) => `<section>
+<h2>${e.title}</h2>
+<small>${new Date(e.at).toLocaleString()} · ${e.thread}</small>
+<p><b>${e.ask}</b></p>
+<div>${e.media.map((f) => (isVideo(f) ? `<video src="${f}" controls></video>` : `<img src="${f}" loading="lazy">`)).join('')}</div>
+<p>${e.links.map((l) => `<a href="${l}">${l}</a>`).join(' · ')}</p>
+</section>`,
+				)
+				.join('')
+		})
+		.catch(() => {})
+	document.addEventListener(
+		'click',
+		(e) => e.target.tagName === 'IMG' && e.target.classList.toggle('big'),
+	)
+</script>

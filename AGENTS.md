@@ -22,7 +22,7 @@
 
 ## Browser proofs
 
-- Before opening a browser or proving a change by play, read `.claude/skills/verify/SKILL.md`: which proof to pick, the shared dev server, `window.dt`, evidence and cleanup. Oskar plays at http://office-linux.heron-mermaid.ts.net:5173, never `127.0.0.1`.
+- Before opening a browser or proving a change by play, read `.claude/skills/verify/SKILL.md`: which proof to pick, the shared dev server, `window.dt`, evidence and cleanup. Every visual proof, clip or variant goes through `bun run review -- --title … --ask … --thread $BB_THREAD_ID <files>`; reports link http://office-linux.heron-mermaid.ts.net:5173/review/, never thread-storage paths. Oskar plays at http://office-linux.heron-mermaid.ts.net:5173, never `127.0.0.1`.
 
 ## Vocabulary
 
