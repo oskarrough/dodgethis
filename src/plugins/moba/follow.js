@@ -17,12 +17,31 @@ function viewFootprint(t, aspect, fov = t.fov) {
 	}
 }
 
+// The lens that shows the court's full depth plus `rimShow` metres past each long edge,
+// enough for the terrain rim and its drop.
+function rimFov(t, bounds) {
+	const reach = 2 * (bounds.halfZ + (t.rimShow ?? tune.follow.rimShow))
+	const depth = (fov) => {
+		const p = viewFootprint(t, 1, fov)
+		return p.maxZ - p.minZ
+	}
+	if (depth(t.fov) >= reach) return t.fov
+	let low = t.fov,
+		high = 170
+	for (let i = 0; i < tune.follow.fitIterations; i++) {
+		const mid = (low + high) / 2
+		if (depth(mid) < reach) low = mid
+		else high = mid
+	}
+	return low
+}
+
 export function clampView(point, t, aspect = 1, reserve = 0, bounds = FLOOR) {
-	let fov = t.fov + reserve,
+	let fov = Math.max(t.fov, rimFov(t, bounds)) + reserve,
 		footprint = viewFootprint(t, aspect, fov)
 	const padding = t.viewPadding ?? tune.follow.viewPadding
-	const fits = (p) =>
-		p.halfX + padding <= bounds.halfX && p.maxZ - p.minZ + padding * 2 <= bounds.halfZ * 2
+	const reach = bounds.halfZ + (t.rimShow ?? tune.follow.rimShow)
+	const fits = (p) => p.halfX + padding <= bounds.halfX && p.maxZ - p.minZ <= reach * 2 + 1e-6
 	if (!fits(footprint)) {
 		let low = tune.follow.minFov,
 			high = fov
@@ -36,7 +55,9 @@ export function clampView(point, t, aspect = 1, reserve = 0, bounds = FLOOR) {
 	}
 	// Clamp the camera's ground target, not its whole footprint. Hiding the boundary
 	// by narrowing the lens magnified the core and pushed the opening hero aside.
+	// Depth keeps the footprint within the rims plus the drop, so a full-depth lens pins it.
 	const at = clampMap(point, padding, bounds)
+	at.z = Math.max(-reach - footprint.minZ, Math.min(reach - footprint.maxZ, point.z))
 	return { ...at, fov: Math.max(tune.follow.minFov, fov - reserve) }
 }
 

@@ -1005,7 +1005,8 @@ export const tune = {
 		edgeSpeed: 1, // fraction of pan speed; smoothstep from the band's inner boundary
 		height: 20,
 		back: 12.5, // pitch = atan(height / back) ≈ 58°
-		fov: 40,
+		fov: 40, // floor; the lens widens until both long rims show (rimShow)
+		rimShow: 3.5, // metres past each long walkable edge at mid-court, every map: the terrain rim (~2.4) and its drop
 		response: 0.12, // seconds for the spring to cover ~90% of a step
 		lookAhead: 0.25, // fraction of the way toward the aim point
 		lookCap: 3,

@@ -49,7 +49,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 
 ## Match: camera, controls, cursor
 
-- Follow camera and edge reserve: `follow.js` `createFollow`, `stepCamera`, `clampView`, `viewFootprint`; `tune.js` `follow`
+- Follow camera, rim-fit lens and edge reserve: `follow.js` `createFollow`, `stepCamera`, `clampView`, `rimFov`, `viewFootprint`; `tune.js` `follow` (`rimShow`)
 - Camera controls (lock, pan, zoom): `camera-controls.js` `createCameraControls`; `tune.js` `follow`
 - Right-click move and attack-move orders: `orders.js` `issue`, `steer`, `move`, `attackAhead`; `src/core/intents.js` `pointClick`, `createIntents`; `tune.js` `orders`
 - Pad stick aim: `targeting.js` `stickAim`; `src/core/intents.js` `stickVector`; `tune.js` `stickAim`
