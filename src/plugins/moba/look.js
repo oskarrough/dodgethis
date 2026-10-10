@@ -3,7 +3,6 @@
 export const look = {
 	onboarding: {
 		youLife: 8,
-		timerLife: 12,
 		goalLift: { tower: 4.5, core: 7.5 },
 		walkDistance: 10,
 		arrowFade: 0.8,
@@ -32,7 +31,6 @@ export const look = {
 		stickerCorner: 999,
 		stickerPadding: 8,
 		font: 16,
-		timerFont: 12,
 	},
 	pips: {
 		inset: 0.92,

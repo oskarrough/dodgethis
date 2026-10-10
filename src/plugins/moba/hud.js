@@ -30,7 +30,6 @@ const KEY_INSPECT = 'KeyI'
 const PAD_INSPECT = 3
 const PAD_LEFT = 14
 const PAD_RIGHT = 15
-const BALL_SOON = 30 // seconds out, the Ball countdown joins the top bar
 
 const svg = (body) => `<svg viewBox="0 0 48 48" aria-hidden="true">${body}</svg>`
 export const ICONS = {
@@ -163,8 +162,8 @@ export function createHud({ lobby = false, layout, pieces } = {}) {
 		return node
 	}
 
-	// One slim pill: who's alive on each side, the takedown score, the clock. Wave and Ball
-	// countdowns live in the clock's card; the Ball shows here only when it's close or live.
+	// One slim pill: who's alive on each side, the takedown score, the clock and the Ball countdown.
+	// The next wave lives in the clock's card. Every number has a reserved width, so the pill never resizes.
 	const top = el('div', 'moba-score moba-top')
 	top.setAttribute('role', 'group')
 	top.setAttribute('aria-label', 'Match status')
@@ -677,20 +676,12 @@ export function createHud({ lobby = false, layout, pieces } = {}) {
 							: late
 								? tune.ball.lateInterval
 								: tune.ball.interval
-				text(
-					ball.seconds,
-					carryingBall ? 'yours' : ballState === 'off' ? '' : `${Math.ceil(ballLeft)}`,
-				)
+				text(ball.seconds, carryingBall || ballState === 'off' ? '' : `${Math.ceil(ballLeft)}`)
 				prop(ball.face, '--f', String(carryingBall ? 1 : ring(ballLeft, ballTotal)))
 				flag(
 					ball.node,
 					'warn',
 					ballState === 'live' || (ballState === 'next' && ballLeft <= tune.hud.warn),
-				)
-				flag(
-					ball.node,
-					'soon',
-					ballState !== 'off' && (ballState !== 'next' || ballLeft <= BALL_SOON),
 				)
 				const alive = (t) => sim?.heroes?.filter((h) => h.team === t && !h.dead).length ?? 0
 				// One plain sentence for screen readers and scripts; only rewritten when a whole second ticks.

@@ -178,6 +178,15 @@
 	pointer-events: none;
 	white-space: nowrap;
 }
+/* Numbers sit in fixed-width boxes, centred, trimmed to their digits, so the pill never resizes or wobbles. */
+.moba-top b {
+	display: block;
+	line-height: 1;
+	font-weight: 400;
+	font-variant-numeric: tabular-nums;
+	text-align: center;
+	text-box: trim-both cap alphabetic;
+}
 .moba-side {
 	display: flex;
 	align-items: center;
@@ -189,6 +198,7 @@
 }
 .moba-dots {
 	display: flex;
+	align-items: center;
 	gap: 5px;
 	padding: 4px 0;
 }
@@ -209,12 +219,9 @@
 	transform: scale(0.8);
 }
 /* Takedowns: the score, chunky ink numerals beside the dots. */
-.moba-kills {
-	min-width: 1ch;
+.moba-top .moba-kills {
+	width: 1.3em; /* two digits */
 	font-size: 26px;
-	font-weight: 400;
-	font-variant-numeric: tabular-nums;
-	text-align: center;
 }
 .moba-clock {
 	display: flex;
@@ -225,10 +232,9 @@
 	border-inline: 1.5px solid rgba(38, 68, 95, 0.18);
 }
 .moba-clock > b {
+	width: 2.9em; /* 00:00 */
 	font-size: 26px;
-	font-weight: 400;
 	letter-spacing: 0.02em;
-	font-variant-numeric: tabular-nums;
 }
 .moba-ring {
 	position: absolute;
@@ -240,15 +246,11 @@
 	-webkit-mask: radial-gradient(circle, transparent 57%, #000 58%);
 	mask: radial-gradient(circle, transparent 57%, #000 58%);
 }
-/* The Ball joins the pill when it's close, live or yours. */
+/* The Ball keeps its seat all match: icon and seconds, a full gold ring while live or carried. */
 .moba-timer {
-	display: none;
+	display: flex;
 	align-items: center;
 	gap: 4px;
-}
-.moba-timer.soon,
-.moba-timer:has(.moba-timer-label:not([hidden])) {
-	display: flex;
 }
 .moba-timer .moba-ring {
 	position: relative;
@@ -267,11 +269,9 @@
 	width: 18px;
 	height: 18px;
 }
-.moba-timer b {
-	min-width: 1.6em;
+.moba-top .moba-timer b {
+	width: 1.9em; /* three digits */
 	font-size: 16px;
-	font-weight: 400;
-	font-variant-numeric: tabular-nums;
 	text-align: left;
 }
 .moba-timer.ball[data-state='live'],
@@ -279,7 +279,7 @@
 	--ring: var(--gold);
 }
 .moba-timer.ball[data-state='off'] {
-	display: none;
+	visibility: hidden;
 }
 .moba-timer.warn .moba-ring {
 	animation: moba-warn 0.8s ease-in-out infinite alternate;
@@ -744,7 +744,7 @@
 		width: 11px;
 		height: 11px;
 	}
-	.moba-kills,
+	.moba-top .moba-kills,
 	.moba-clock > b {
 		font-size: 19px;
 	}

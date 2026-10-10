@@ -24,11 +24,6 @@ export function createOnboarding({ scene, sim, hero }) {
 	const you = sticker('moba-you', 'You')
 	const pointer = sticker('moba-ball-pointer', '')
 	pointer.style.whiteSpace = 'nowrap'
-	// Printed inline before the Ball countdown in the top bar, so it rides the pill.
-	const ballLabel = el('small', 'moba-timer-label')
-	ballLabel.textContent = 'Ball in'
-	ballLabel.style.cssText = `font:bold ${t.timerFont}px/1.2 var(--ui-font);color:${hex('ink')};white-space:nowrap`
-	document.querySelector('.moba-timer.ball')?.prepend(ballLabel)
 	const owned = []
 	const material = (role) => {
 		const mat = makeStyleMaterial(role, { flat: true })
@@ -144,7 +139,6 @@ void main() {
 				).length >= t.crowdCount
 			place(you, p, camera, t.labelHeight)
 			you.hidden ||= hero.dead || (elapsed >= t.youLife && !crowded)
-			ballLabel.hidden = elapsed >= t.timerLife
 			pointer.hidden = true
 			if (sim.lane.match.winner) return
 			// Carrying, the pointer swaps the Ball for where to throw it.
@@ -192,7 +186,6 @@ void main() {
 		},
 		dispose() {
 			root.remove()
-			ballLabel.remove()
 			group.removeFromParent()
 			for (const resource of owned) resource.dispose()
 		},

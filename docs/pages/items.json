@@ -1,5 +1,19 @@
 [
 	{
+		"at": "2026-10-10T14:35:43.222Z",
+		"title": "Top bar pill: steady width",
+		"ask": "Same pill at 0:09 / 0-0 and 3:30 / 3-0: identical width (421 px), every item centred on one line, Ball icon + seconds all match, no 'Ball in'. Good?",
+		"status": "To review",
+		"decision": "",
+		"media": [
+			"review/media/2026-10-10-top-bar-pill-steady-width/pill-a-crop.png",
+			"review/media/2026-10-10-top-bar-pill-steady-width/pill-b-crop.png"
+		],
+		"links": [],
+		"thread": "thr_83etfu9ugy",
+		"page": "2026-10-10-top-bar-pill-steady-width/"
+	},
+	{
 		"at": "2026-10-10T14:33:00.710Z",
 		"title": "Lobby whole saucer in frame",
 		"ask": "Does the lobby now read as one whole floating saucer in an unbroken sky at wide, desktop and phone sizes?",
