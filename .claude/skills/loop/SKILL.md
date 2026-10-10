@@ -22,4 +22,4 @@ Rules: prototyping, so no git ceremony. Commit only at explicitly authorized che
 
 The harness is the orchestrator's job too: when the skill, queue, rules or a brief misled a thread or Oskar, fix the file in the same turn.
 
-Every HTML artifact lives in `docs/pages/<slug>/` and gets a row in `docs/pages/index.html`; update the row's status (To review / Decided / Archived) and Oskar's decision when he decides.
+Every HTML artifact lives in `docs/pages/<slug>/` and is an item in `docs/pages/items.json` (`bun run review` adds proofs); when Oskar decides, the orchestrator records it by setting the item's `status` and `decision`.

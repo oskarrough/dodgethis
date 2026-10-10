@@ -3,178 +3,54 @@
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<title>All pages · dodgethis</title>
+		<title>For Oskar to decide · dodgethis</title>
 		<link rel="stylesheet" href="/docs/page.css" />
 		<style>
-			dialog {
-				width: 100vw;
-				height: 100vh;
-				max-width: none;
-				max-height: none;
-				margin: 0;
-				padding: 0;
-				border: 0;
-				background: #111e;
-				color: #ddd;
-			}
-			.page dialog img {
-				width: 100%;
-				height: calc(100% - 32px);
-				object-fit: contain;
-				margin: 0;
-				cursor: default;
-				border: 0;
-				background: none;
-			}
-			dialog p {
-				margin: 0;
-				text-align: center;
-				line-height: 32px;
-			}
-			#feed div:has(> figure) {
-				display: grid;
-				grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+			#items li {
+				display: flex;
 				gap: 16px;
+				align-items: flex-start;
+				margin-bottom: 16px;
+				list-style: none;
 			}
-			#feed figure :is(img, video) {
+			#items img {
+				width: 96px;
 				aspect-ratio: 16 / 10;
-				cursor: zoom-in;
+				flex: none;
 			}
 		</style>
 	</head>
 	<body class="page">
 		<main>
-			<h1>All pages</h1>
+			<h1>For Oskar to decide</h1>
 			<p class="lede">
-				Every HTML artifact lives in <code>docs/pages/&lt;slug&gt;/</code> and has a row here.
-				Newest first within each status; the orchestrator updates a row when Oskar decides.
+				Every item has a page. To review first, then Decided; the orchestrator records Oskar's
+				answer on the item in <code>items.json</code>.
 			</p>
-			<table>
-				<thead>
-					<tr>
-						<th>Page</th>
-						<th>What it is</th>
-						<th>Date</th>
-						<th>Status</th>
-						<th>Oskar's decision</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr>
-						<td><a href="#latest">Review feed</a></td>
-						<td>Screenshots and clips agents publish for Oskar to judge.</td>
-						<td>ongoing</td>
-						<td><span class="chip gold">To review</span></td>
-						<td></td>
-					</tr>
-					<tr>
-						<td><a href="lobby/">Lobby concepts</a></td>
-						<td>Three homes for the lobby screen, v2.</td>
-						<td>2026-10-10</td>
-						<td><span class="chip gold">Decided</span></td>
-						<td>
-							Pocket weather (v2/02): a huge ceramic saucer in magnetic cradles; a turning diorama
-							in a bowl previews the next map. Oskar, 2026-10-10.
-						</td>
-					</tr>
-					<tr>
-						<td><a href="heroes/">Hero pitches</a></td>
-						<td>Eight hero pitches for the roster (issue #24).</td>
-						<td>2026-10-10</td>
-						<td><span class="chip gold">To review</span></td>
-						<td></td>
-					</tr>
-					<tr>
-						<td><a href="viral/">Viral plan</a></td>
-						<td>How the game spreads: join by link and the milestones behind it.</td>
-						<td>2026-10-10</td>
-						<td><span class="chip gold">To review</span></td>
-						<td></td>
-					</tr>
-					<tr>
-						<td><a href="frames/">Splash frames</a></td>
-						<td>Card frame materials: ink, wash and paper.</td>
-						<td>2026-10-10</td>
-						<td><span class="chip blue">Decided</span></td>
-						<td>Painted.</td>
-					</tr>
-					<tr>
-						<td><a href="splash/">Splash art</a></td>
-						<td>Backdrop studies for the splash screen.</td>
-						<td>2026-10-10</td>
-						<td><span class="chip blue">Decided</span></td>
-						<td>Day-night plate.</td>
-					</tr>
-					<tr>
-						<td><a href="vibes/">Rebrand gallery</a></td>
-						<td>The two picked visual directions, Sun Spell and Neon Dream.</td>
-						<td>2026-10-10</td>
-						<td><span class="chip blue">Decided</span></td>
-						<td>Day isles and night garden style; the names were rejected.</td>
-					</tr>
-					<tr>
-						<td><a href="archive/boards/">Setting boards</a></td>
-						<td>Reference boards for the world's setting.</td>
-						<td>2026-10-10</td>
-						<td><span class="chip">Archived</span></td>
-						<td></td>
-					</tr>
-					<tr>
-						<td><a href="archive/vibes/archive.html">Archive</a></td>
-						<td>Superseded concepts: the seven unpicked directions, schoolyard and seaside art.</td>
-						<td>2026-10-10</td>
-						<td><span class="chip">Archived</span></td>
-						<td></td>
-					</tr>
-				</tbody>
-			</table>
-			<h2 id="latest">Latest</h2>
-			<dialog id="viewer">
-				<img />
-				<p></p>
-			</dialog>
-			<div id="feed">No entries yet. Agents add them with <code>bun run review</code>.</div>
+			<ul id="items"></ul>
+			<details>
+				<summary>Archived</summary>
+				<ul id="archived"></ul>
+			</details>
 			<script>
-				const isVideo = (f) => /\.(webm|mp4)$/i.test(f)
-				const src = (f) => 'review/' + f
-				fetch('review/feed.json')
+				const chip = { 'To review': 'gold', Decided: 'blue', Archived: '' }
+				fetch('items.json')
 					.then((r) => r.json())
-					.then((feed) => {
-						document.getElementById('feed').innerHTML = feed
-							.map(
-								(e) => `<section>
-<h3>${e.title}</h3>
-<small>${new Date(e.at).toLocaleString()} · ${e.thread}</small>
-<p><b>${e.ask}</b></p>
-<div>${e.media.map((f) => `<figure>${isVideo(f) ? `<video src="${src(f)}" controls></video>` : `<img src="${src(f)}" loading="lazy">`}<figcaption>${f.split('/').pop()}</figcaption></figure>`).join('')}</div>
-<p>${e.links.map((l) => `<a href="${l}">${l}</a>`).join(' · ')}</p>
-</section>`,
-							)
-							.join('')
+					.then((items) => {
+						const rank = { 'To review': 0, Decided: 1, Archived: 2 }
+						items.sort((a, b) => rank[a.status] - rank[b.status] || b.at.localeCompare(a.at))
+						for (const i of items) {
+							const thumb = i.media.find((f) => !/\.(webm|mp4)$/i.test(f))
+							document
+								.getElementById(i.status === 'Archived' ? 'archived' : 'items')
+								.insertAdjacentHTML(
+									'beforeend',
+									`<li>${thumb ? `<img src="${thumb}" alt="" loading="lazy">` : ''}<div>
+<span class="chip ${chip[i.status]}">${i.status}</span> <a href="${i.page}"><b>${i.title}</b></a> <small>${i.at.slice(0, 10)}</small>
+<p>${i.status === 'Decided' && i.decision ? i.decision : i.ask}</p></div></li>`,
+								)
+						}
 					})
-					.catch(() => {})
-				const viewer = document.getElementById('viewer')
-				let index = 0
-				const all = () => [...document.querySelectorAll('#feed img')]
-				const show = (i) => {
-					const imgs = all()
-					index = (i + imgs.length) % imgs.length
-					viewer.querySelector('img').src = imgs[index].src
-					const title = imgs[index].closest('section').querySelector('h3').textContent
-					viewer.querySelector('p').textContent =
-						`${index + 1} / ${imgs.length} · ${title} · ← → to browse, Esc to close`
-				}
-				document.addEventListener('click', (e) => {
-					if (e.target.closest('#feed') && e.target.tagName === 'IMG') {
-						show(all().indexOf(e.target))
-						viewer.showModal()
-					} else if (e.target.closest('dialog')) viewer.close()
-				})
-				document.addEventListener('keydown', (e) => {
-					if (!viewer.open) return
-					if (e.key === 'ArrowRight') show(index + 1)
-					if (e.key === 'ArrowLeft') show(index - 1)
-				})
 			</script>
 		</main>
 	</body>

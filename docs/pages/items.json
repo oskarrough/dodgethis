@@ -1,0 +1,271 @@
+[
+	{
+		"at": "2026-10-10T10:59:00.000Z",
+		"title": "Hero pitches",
+		"ask": "Eight hero pitches for the roster (issue #24). Do the sheets show who they are?",
+		"status": "To review",
+		"decision": "",
+		"page": "heroes/",
+		"media": [
+			"review/media/2026-10-10-hero-pitches-as-html/heroes-full.png",
+			"review/media/2026-10-10-hero-pitches-as-html/heroes.png",
+			"review/media/2026-10-10-hero-pitches-as-html/part0.png",
+			"review/media/2026-10-10-hero-pitches-as-html/part1.png",
+			"review/media/2026-10-10-hero-pitches-as-html/part2.png"
+		],
+		"links": [],
+		"thread": "thr_j4kk2h362t"
+	},
+	{
+		"at": "2026-10-10T10:58:00.000Z",
+		"title": "Viral plan",
+		"ask": "How the game spreads: join by link and the milestones behind it. Is this the plan?",
+		"status": "To review",
+		"decision": "",
+		"page": "viral/",
+		"media": [],
+		"links": [],
+		"thread": ""
+	},
+	{
+		"at": "2026-10-10T10:51:19.622Z",
+		"title": "Readouts printed on a ribbon",
+		"ask": "Top bar and unit frame are now unframed paper with ink values; cogs lost their shadow. Do they still read as buttons?",
+		"status": "To review",
+		"decision": "",
+		"media": [
+			"review/media/2026-10-10-readouts-printed-on-a-ribbon/before-match.png",
+			"review/media/2026-10-10-readouts-printed-on-a-ribbon/after-match-1440.png",
+			"review/media/2026-10-10-readouts-printed-on-a-ribbon/after-lobby-1440.png",
+			"review/media/2026-10-10-readouts-printed-on-a-ribbon/narrow.png"
+		],
+		"links": [],
+		"thread": "thr_3s3ps6wjph",
+		"page": "2026-10-10-readouts-printed-on-a-ribbon/"
+	},
+	{
+		"at": "2026-10-10T10:25:46.000Z",
+		"title": "Lobby hero strip and table proposal",
+		"ask": "Does the painted hero strip read right? Is the table proposal the lobby you want?",
+		"status": "To review",
+		"decision": "",
+		"media": [
+			"review/media/2026-10-10-lobby-hero-strip-and-table-proposal/lobby-1440.png",
+			"review/media/2026-10-10-lobby-hero-strip-and-table-proposal/lobby-strip-1440.png",
+			"review/media/2026-10-10-lobby-hero-strip-and-table-proposal/lobby-strip-mitts-1440.png",
+			"review/media/2026-10-10-lobby-hero-strip-and-table-proposal/lobby-strip-playable-1440.png",
+			"review/media/2026-10-10-lobby-hero-strip-and-table-proposal/lobby-table-proposal.png",
+			"review/media/2026-10-10-lobby-hero-strip-and-table-proposal/crop-strip.png",
+			"review/media/2026-10-10-lobby-hero-strip-and-table-proposal/before-lobby.png"
+		],
+		"links": [],
+		"thread": "thr_afenmtsc4e",
+		"page": "2026-10-10-lobby-hero-strip-and-table-proposal/"
+	},
+	{
+		"at": "2026-10-10T09:49:17.000Z",
+		"title": "Match menu button",
+		"ask": "Is the menu button findable without being in the way?",
+		"status": "To review",
+		"decision": "",
+		"media": [
+			"review/media/2026-10-10-match-menu-button/menu-button-1440.png",
+			"review/media/2026-10-10-match-menu-button/menu-paused.png"
+		],
+		"links": [],
+		"thread": "thr_e55itbx3g3",
+		"page": "2026-10-10-match-menu-button/"
+	},
+	{
+		"at": "2026-10-10T09:33:00.000Z",
+		"title": "M1: join by link",
+		"ask": "Is joining by link obvious in the lobby?",
+		"status": "To review",
+		"decision": "",
+		"media": [
+			"review/media/2026-10-10-m1-join-by-link/dead-code.png",
+			"review/media/2026-10-10-m1-join-by-link/s1-guest-in-host-lobby.png",
+			"review/media/2026-10-10-m1-join-by-link/s1-host-lobby.png",
+			"review/media/2026-10-10-m1-join-by-link/s2-copy-link.png",
+			"review/media/2026-10-10-m1-join-by-link/s4-late-guest-in-lane.png"
+		],
+		"links": [],
+		"thread": "thr_yjwyw2ighr",
+		"page": "2026-10-10-m1-join-by-link/"
+	},
+	{
+		"at": "2026-10-10T09:24:34.000Z",
+		"title": "Shared Back and Play online buttons",
+		"ask": "Do Back and Play online match across both modes?",
+		"status": "To review",
+		"decision": "",
+		"media": [
+			"review/media/2026-10-10-shared-back-and-play-online-buttons/dodgeball-full.png",
+			"review/media/2026-10-10-shared-back-and-play-online-buttons/dodgeball-top-left.png",
+			"review/media/2026-10-10-shared-back-and-play-online-buttons/moba-full.png",
+			"review/media/2026-10-10-shared-back-and-play-online-buttons/moba-top-left.png"
+		],
+		"links": [],
+		"thread": "thr_v9vmze9pfi",
+		"page": "2026-10-10-shared-back-and-play-online-buttons/"
+	},
+	{
+		"at": "2026-10-10T09:15:33.000Z",
+		"title": "Move Play online button",
+		"ask": "Is Play online in the right place?",
+		"status": "To review",
+		"decision": "",
+		"media": [
+			"review/media/2026-10-10-move-play-online-button/before.png",
+			"review/media/2026-10-10-move-play-online-button/lobby-online-1440.png",
+			"review/media/2026-10-10-move-play-online-button/lobby-topleft-1440.png"
+		],
+		"links": [],
+		"thread": "thr_a8kpuv5mvr",
+		"page": "2026-10-10-move-play-online-button/"
+	},
+	{
+		"at": "2026-10-10T09:10:49.000Z",
+		"title": "Cut wordy match tips",
+		"ask": "Is the early match screen calmer?",
+		"status": "To review",
+		"decision": "",
+		"media": ["review/media/2026-10-10-cut-wordy-match-tips/early-match.png"],
+		"links": [],
+		"thread": "thr_hvq8sta7gd",
+		"page": "2026-10-10-cut-wordy-match-tips/"
+	},
+	{
+		"at": "2026-10-10T08:46:42.000Z",
+		"title": "Scoreboard and result",
+		"ask": "Does the scoreboard read at a glance?",
+		"status": "To review",
+		"decision": "",
+		"media": [
+			"review/media/2026-10-10-scoreboard-and-result/result.png",
+			"review/media/2026-10-10-scoreboard-and-result/scoreboard.png"
+		],
+		"links": [],
+		"thread": "thr_b79iwnezdu",
+		"page": "2026-10-10-scoreboard-and-result/"
+	},
+	{
+		"at": "2026-10-10T08:38:03.000Z",
+		"title": "Flagfall, explored",
+		"ask": "Does Flagfall feel like its own night place?",
+		"status": "To review",
+		"decision": "",
+		"media": [
+			"review/media/2026-10-10-flagfall-explored/flagfall-post-a.png",
+			"review/media/2026-10-10-flagfall-explored/flagfall-south-lane.png",
+			"review/media/2026-10-10-flagfall-explored/flagfall-yard.png"
+		],
+		"links": [],
+		"thread": "thr_79t4z3xyig",
+		"page": "2026-10-10-flagfall-explored/"
+	},
+	{
+		"at": "2026-10-10T08:18:14.000Z",
+		"title": "MOBA first, dodgeball as bonus (splash)",
+		"ask": "Is MOBA clearly the main door on the splash?",
+		"status": "To review",
+		"decision": "",
+		"media": ["review/media/2026-10-10-moba-first-dodgeball-as-bonus-splash/splash.png"],
+		"links": [],
+		"thread": "thr_uxndmi7kcy",
+		"page": "2026-10-10-moba-first-dodgeball-as-bonus-splash-/"
+	},
+	{
+		"at": "2026-10-10T11:00:00.000Z",
+		"title": "Lobby concepts",
+		"ask": "Which of the three homes for the lobby screen?",
+		"status": "Decided",
+		"decision": "Pocket weather (v2/02): a huge ceramic saucer in magnetic cradles; a turning diorama in a bowl previews the next map. Oskar, 2026-10-10.",
+		"page": "lobby/",
+		"media": [],
+		"links": [],
+		"thread": ""
+	},
+	{
+		"at": "2026-10-10T10:57:00.000Z",
+		"title": "Splash frames",
+		"ask": "Which skin is the splash? Card frame materials: ink, wash, paper; skins wash, ink, stone, painted.",
+		"status": "Decided",
+		"decision": "Painted.",
+		"page": "frames/",
+		"media": [
+			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/skin-ink-1440.png",
+			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/skin-painted-1440-flagfall.png",
+			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/skin-painted-1440.png",
+			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/skin-painted-390.png",
+			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/skin-stone-1440.png",
+			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/skin-wash-1440-flagfall.png",
+			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/skin-wash-1440.png",
+			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/skin-wash-390.png",
+			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/crop-wash.png",
+			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/crop-ink.png",
+			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/crop-painted.png",
+			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/splash-390.png",
+			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/splash-1440-bonus.png",
+			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/splash-1440-flagfall.png",
+			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/splash-1440.png",
+			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/before-splash.png",
+			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/splash-motion.webm",
+			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/motion-sheet.png",
+			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/apex-1440.png",
+			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/back-1440.png",
+			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/crop-tl.png",
+			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/crop-br.png"
+		],
+		"links": [],
+		"thread": "thr_afenmtsc4e"
+	},
+	{
+		"at": "2026-10-10T10:56:00.000Z",
+		"title": "Splash art",
+		"ask": "Which backdrop for the splash screen?",
+		"status": "Decided",
+		"decision": "Day-night plate.",
+		"page": "splash/",
+		"media": [],
+		"links": [],
+		"thread": ""
+	},
+	{
+		"at": "2026-10-10T10:55:00.000Z",
+		"title": "Rebrand gallery",
+		"ask": "Which direction feels like the brand: Sun Spell or Neon Dream?",
+		"status": "Decided",
+		"decision": "Day isles and night garden style; the names were rejected.",
+		"page": "vibes/",
+		"media": [
+			"review/media/2026-10-10-rebrand-concept-art/current.png",
+			"review/media/2026-10-10-rebrand-concept-art/frames.png",
+			"review/media/2026-10-10-rebrand-concept-art/gallery.png"
+		],
+		"links": [],
+		"thread": "thr_tigr5zz3kv"
+	},
+	{
+		"at": "2026-10-10T10:54:00.000Z",
+		"title": "Setting boards",
+		"ask": "Reference boards for the world’s setting.",
+		"status": "Archived",
+		"decision": "",
+		"page": "archive/boards/",
+		"media": [],
+		"links": [],
+		"thread": ""
+	},
+	{
+		"at": "2026-10-10T10:53:00.000Z",
+		"title": "Archive",
+		"ask": "Superseded concepts: the seven unpicked directions, schoolyard and seaside art.",
+		"status": "Archived",
+		"decision": "",
+		"page": "archive/vibes/archive.html",
+		"media": [],
+		"links": [],
+		"thread": ""
+	}
+]
