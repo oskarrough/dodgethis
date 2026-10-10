@@ -474,6 +474,14 @@ export class Net {
 		if (conn) this._drop(conn)
 	}
 
+	// Host: turn an admitted peer away with a notice it reads before the channel closes.
+	refuse(peerId, reason) {
+		const conn = this.conns.get(peerId)
+		if (!conn) return
+		this.conns.delete(peerId)
+		this._refuse(conn, reason, this._generation)
+	}
+
 	reject(peerId) {
 		const conn = this.conns.get(peerId)
 		if (conn) this._reject(conn)

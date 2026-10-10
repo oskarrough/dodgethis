@@ -115,8 +115,11 @@ export function createOnlineSession(
 			const joinOrder = Math.max(-1, ...state.humans.map((h, i) => h.joinOrder ?? i)) + 1
 			const seat = seatLate({ joinOrder, prefer })
 			net.accepting = openSeats()
-			// A lost race leaves the peer unseated; it gives up waiting for a roster.
-			if (!seat) return
+			// No bot seat left (taken, or the lane just ended): turn the peer away rather than leave it waiting.
+			if (!seat) {
+				net.refuse?.(peerId, 'That match has no free seat right now; try again in the lobby')
+				return
+			}
 			state.humans.push({
 				id: seat.id,
 				peerId,
@@ -150,10 +153,13 @@ export function createOnlineSession(
 	}
 	net.onPeerLeave = (peerId, code) => {
 		if (!net.isHost || !state) return
-		const id = state.humans.find((p) => p.peerId === peerId)?.id ?? peerId
-		state.humans = state.humans.filter((p) => p.peerId !== peerId)
 		const key = keys.get(peerId)
 		keys.delete(peerId)
+		// A peer that never got a seat leaves nothing behind.
+		const human = state.humans.find((p) => p.peerId === peerId)
+		if (!human) return
+		const id = human.id
+		state.humans = state.humans.filter((p) => p.peerId !== peerId)
 		if (key && state.phase === 'match') left.set(key, { id, matchId: state.matchId, at: now() })
 		const reason = Object.hasOwn(REMOVAL_MESSAGES, code) ? REMOVAL_MESSAGES[code] : null
 		if (reason) state.message = reason

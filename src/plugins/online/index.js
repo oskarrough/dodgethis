@@ -150,7 +150,7 @@ export default function online(app, { join = null } = {}) {
 		} catch (error) {
 			if (session.state) return
 			if (error.code === 'stale-build') ui.show(error.message, { reload: true })
-			else ui.show(`${error.message}. You're playing solo.`)
+			else ui.show(`${error.message.replace(/\.$/, '')}. You're playing solo.`)
 		} finally {
 			joining = null
 		}
