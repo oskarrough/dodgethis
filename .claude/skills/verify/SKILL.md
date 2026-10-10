@@ -46,7 +46,8 @@ Gotchas:
 
 ## Evidence
 
-Save to `$BB_THREAD_STORAGE/proof/`, then publish with `bun run review -- --title … --ask … --thread $BB_THREAD_ID <files>` and report http://office-linux.heron-mermaid.ts.net:5173/docs/pages/, never the storage path. `agent-browser set viewport <w> <h>` (there is no `resize`), `agent-browser mouse move 0 0`, assert the state you claim with `eval`, then `agent-browser screenshot <path>`. A screenshot for layout, a short clip for motion; a screenshot alone doesn't prove feel. Report the action, the asserted state and how the proof was made.
+- Look at most one screenshot yourself per proof, resized to ≤800 px wide; send the rest straight to `bun run review` without reading them back.
+  Save to `$BB_THREAD_STORAGE/proof/`, then publish with `bun run review -- --title … --ask … --thread $BB_THREAD_ID <files>` and report http://office-linux.heron-mermaid.ts.net:5173/docs/pages/, never the storage path. `agent-browser set viewport <w> <h>` (there is no `resize`), `agent-browser mouse move 0 0`, assert the state you claim with `eval`, then `agent-browser screenshot <path>`. A screenshot for layout, a short clip for motion; a screenshot alone doesn't prove feel. Report the action, the asserted state and how the proof was made.
 
 ## Cleanup
 
