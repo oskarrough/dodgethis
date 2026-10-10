@@ -337,13 +337,17 @@ export const tune = {
 			width: 1.5,
 			depth: 1.3,
 			fillTime: 1,
-			borderWidth: 0.045,
-			boxY: 0.19,
-			borderY: 0.185,
-			fillY: 0.195,
+			// Plates inlaid in the glaze: an ink groove `borderWidth` wide, a band of team glaze `band` wide
+			// (team colour `tint` of the way to cream), a cream `well` the ready fill glazes over.
+			borderWidth: 0.035,
+			band: 0.11,
+			corner: 0.22,
+			tint: 0.35,
+			well: '#fbf6ea',
+			fillY: 0.05, // holograms and stickers stand on the plate here
 			// A bot's hero floats over its seat as a hologram.
 			hologram: {
-				float: 0.22,
+				float: 0.32,
 				bob: 0.06,
 				bobRate: 1.1,
 				sway: 0.5,
@@ -435,8 +439,8 @@ export const tune = {
 		},
 		// The lobby's camera starts `distance`× back along its view ray; the canvas fades in from `fadeFrom` of the move.
 		intro: { distance: 4, fadeFrom: 0.6 },
-		// Where you can walk: a rectangle kept over 1 m inside the floor's torn outline
-		// (floor.halfX/halfZ minus floor.jag, minus the 1 m). Gallery, seats, dummies and marks all sit inside it.
+		// Where you can walk: a rectangle whose corners sit over 1 m inside the saucer's glaze ellipse
+		// (floor.halfX/halfZ). Gallery, seats, dummies and marks all sit inside it.
 		bounds: { halfX: 9, halfZ: 6.5 },
 		// The props the camera frames; it slides to follow once you leave `followX` or this depth.
 		frame: { halfZ: 6.2, followX: 5, followEase: 6 },
@@ -445,39 +449,51 @@ export const tune = {
 			{ x: -1.5, z: -4.3 },
 			{ x: 1.5, z: -4.3 },
 		],
-		// The lobby floor: finite pale tarmac over a torn rock rim, floating over the desert. Geometry, texture and
-		// colours apply on restart. The outline only ever pulls in from the halfX/halfZ rectangle by up to `jag`.
+		// The lobby floor: a huge glazed saucer in magnetic cradles, floating in the splash sky. Geometry, glaze and
+		// colours apply on restart. The walkable glaze is an ellipse holding the walking bounds with over 1 m to spare
+		// at their corners; the lip and its collider run `rim.width` further out.
 		floor: {
-			halfX: 11,
-			halfZ: 8.1,
-			jag: 0.6,
+			halfX: 13.7,
+			halfZ: 10.2,
+			segments: 160,
 			seed: 7,
-			step: 0.9, // metres between outline vertices
-			rockDepth: 3,
-			courses: 3,
-			courseInset: 0.3, // each rock course juts out this much further than the one above (the camera only sees outward steps), give or take half
-			courseJitter: 0.3,
-			pixelsPerMeter: 40,
-			colors: {
-				tarmac: '#f4ecda',
-				blotch: '#e4d9c3',
-				speck: '#9c8f7a',
-				crack: '#a39682',
-				chalk: '#ffffff',
-				ledge: '#e0c79e',
-				rock: '#c4a57c',
-				rockDark: '#6a6088',
+			pixelsPerMeter: 44,
+			well: 0.45, // the glaze pools darker this far in from the lip
+			rim: { width: 0.9, height: 0.17, glazeLine: 0.14 },
+			depth: 1.5, // the unglazed body under the lip
+			gloss: 0.12,
+			speckles: 1800,
+			crazing: { cell: 0.5, jitter: 0.9, width: 0.018, alpha: 0.085, gaps: 0.35 },
+			wear: { patches: 26, chips: 5, lip: 0.015 },
+			// Each cradle is a horseshoe magnet stood round the rim at `angles` (degrees, 0 = +x, 90 = near edge),
+			// its jaws `reach` m clear of the saucer's edge, open `open`° either side of the saucer's middle.
+			cradle: {
+				angles: [210, 40, 125],
+				radius: 2.3,
+				tube: 0.62,
+				reach: 0.35,
+				y: -0.7,
+				open: 38,
+				pole: 0.36,
+				steps: 14,
 			},
-			speckles: 5200,
-			cracks: 13,
-			chalkWidth: 0.1,
-			seatPad: 0.12,
-			circle: { x: 0, z: -3.4, radius: 1.5 },
-			hopscotch: { x: -7.4, z: 0.2, cell: 0.95 },
-			arcRadius: 9, // gallery arc: a shallow curve 0.9 m behind the cards
+			colors: {
+				glaze: '#f1e9d6',
+				pool: '#cfc2a6',
+				wear: '#fbf7ec',
+				speck: '#76695a',
+				craze: '#8f8068',
+				biscuit: '#cdb38c',
+				chipEdge: '#8d7458',
+				rim: '#f4eddc',
+				body: '#8d82a8',
+				bodyDark: '#4a4468',
+				iron: '#5f6677',
+				pole: '#d8d0bf',
+			},
 		},
-		// Schoolyard scenery only; all fence settings apply on restart. Coordinates are fractions
-		// of the safe rim rectangle, outside walking bounds even at the smallest supported floor.
+		// Flagfall's shore fence builds from these (map.js); the lobby has none. All apply on restart;
+		// coordinates are fractions of the safe rim rectangle.
 		fence: {
 			edgeMargin: 0.3,
 			height: 1.35,
@@ -510,7 +526,7 @@ export const tune = {
 				[1, -0.72],
 			],
 		},
-		// The floor has open edges: orders reach `reach` metres past it, so walk off, fall `depth` metres, then
+		// The saucer has open edges: orders reach `reach` metres past its glaze, so walk off over the lip, fall `depth` metres, then
 		// drop back in from `height` over a random spot inside the walking bounds.
 		fall: { reach: 2, depth: 6, height: 7 },
 		onlineNotice: 'The online lobby is not ready yet. Play local practice.',

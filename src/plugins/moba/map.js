@@ -4,7 +4,7 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 import { FORWARD_LAYER, makeStyleMaterial } from '../../core/stylepass.js'
 import { tune as coreTune } from '../../core/tune.js'
 import { tune } from './tune.js'
-import { floorShape } from './lobby-floor.js'
+import { saucerShape } from './lobby-floor.js'
 import { BOLLARD_ROLES, bollardGeometries } from './bollard.js'
 import { WINDBREAK_ROLES, windbreakGeometries } from './windbreak.js'
 import { createMatchTerrain } from './match-terrain.js'
@@ -196,8 +196,8 @@ diffuseColor.rgb *= 1.0 - coverShade * (1.0 - max(0.0, dot(n, normalize(vec3(0.4
 		for (const g of geometries) g.dispose()
 	}
 	const buildLobby = () => {
-		// The lobby floor's outline, not an endless plane: nothing is drawn beyond it, so the desert shows through.
-		add(floorShape(), cream, 0, m.printLayers.lobby, 0)
+		// The saucer's glaze, not an endless plane: nothing is drawn beyond it, so the sky shows through.
+		add(saucerShape(), cream, 0, m.printLayers.lobby, 0)
 	}
 	let unterrain = null
 	let water = null
@@ -449,8 +449,9 @@ diffuseColor.rgb *= 1.0 - coverShade * (1.0 - max(0.0, dot(n, normalize(vec3(0.4
 		scale,
 		kind === 'lobby'
 			? {
-					halfX: tune.lobby.floor.halfX - tune.lobby.floor.jag,
-					halfZ: tune.lobby.floor.halfZ - tune.lobby.floor.jag,
+					halfX: tune.lobby.floor.halfX + tune.lobby.floor.rim.width,
+					halfZ: tune.lobby.floor.halfZ + tune.lobby.floor.rim.width,
+					round: true,
 				}
 			: null,
 	)

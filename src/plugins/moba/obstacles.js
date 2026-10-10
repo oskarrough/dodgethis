@@ -156,8 +156,21 @@ export function segmentClear(a, b, inflate = 0, obstacles = OBSTACLES, bounds = 
 	return sweepObstacles(a, b, Math.max(0, inflate - tune.collision.epsilon), obstacles) === null
 }
 
+// Top at y = 0, `depth` deep: the ring's points for a convex hull.
+function ellipsePrism(halfX, halfZ, depth, segments = 64) {
+	const points = []
+	for (let i = 0; i < segments; i++) {
+		const t = (i / segments) * Math.PI * 2
+		const x = Math.cos(t) * halfX,
+			z = Math.sin(t) * halfZ
+		points.push(x, 0, z, x, -depth, z)
+	}
+	return new Float32Array(points)
+}
+
 // Rapier movement and analytical queries consume the same descriptors.
-// An `island` ({ halfX, halfZ }) swaps the endless ground for a slab with open edges to walk off.
+// An `island` ({ halfX, halfZ, round }) swaps the endless ground for a slab, or an elliptical one,
+// with open edges to walk off.
 export function buildColliders(
 	world,
 	RAPIER,
@@ -170,9 +183,11 @@ export function buildColliders(
 	// A flat arena needs no terrain triangles: their seams snag capsules and slow every sweep.
 	// The boundary colliders below contain the lane.
 	world.createCollider(
-		island
-			? RAPIER.ColliderDesc.cuboid(island.halfX, 1, island.halfZ).setTranslation(0, -1, 0)
-			: new RAPIER.ColliderDesc(new RAPIER.HalfSpace({ x: 0, y: 1, z: 0 })),
+		island?.round
+			? RAPIER.ColliderDesc.convexHull(ellipsePrism(island.halfX, island.halfZ, 2))
+			: island
+				? RAPIER.ColliderDesc.cuboid(island.halfX, 1, island.halfZ).setTranslation(0, -1, 0)
+				: new RAPIER.ColliderDesc(new RAPIER.HalfSpace({ x: 0, y: 1, z: 0 })),
 		body,
 	)
 	for (const o of obstacles) {

@@ -1,12 +1,30 @@
 import * as THREE from 'three'
 import { createBody } from '../../core/body.js'
 import { PALETTE } from '../../core/style.js'
-import { FORWARD_LAYER, makeStyleMaterial } from '../../core/stylepass.js'
+import { FORWARD_LAYER } from '../../core/stylepass.js'
 import { dressHero } from './hero-view.js'
 import { HEROES } from './heroes.js'
 import { tune } from './tune.js'
 import { closest } from './skillshot.js'
 import { createFaceKit, createMagnets } from './lobby-magnets.js'
+
+// A rounded rectangle laid flat, centred on its group.
+function plate(width, depth, corner) {
+	const w = width / 2,
+		d = depth / 2,
+		c = Math.max(0, Math.min(corner, w, d))
+	const shape = new THREE.Shape()
+	shape.moveTo(-w + c, -d)
+	shape.lineTo(w - c, -d)
+	shape.quadraticCurveTo(w, -d, w, -d + c)
+	shape.lineTo(w, d - c)
+	shape.quadraticCurveTo(w, d, w - c, d)
+	shape.lineTo(-w + c, d)
+	shape.quadraticCurveTo(-w, d, -w, d - c)
+	shape.lineTo(-w, -d + c)
+	shape.quadraticCurveTo(-w, -d, -w + c, -d)
+	return new THREE.ShapeGeometry(shape, 6).rotateX(-Math.PI / 2)
+}
 
 // DOM-free picking: the sim offers only the footprint that actually happened,
 // clipped by cover/body contact, and retains a successful result on its cast token.
@@ -119,14 +137,30 @@ export function createLobbyProps(scene, el, gallery, readySeats, local, audio) {
 	root.name = 'lobby-props'
 	scene.add(root)
 	const owned = []
-	const material = (role) => {
-		const m = makeStyleMaterial(role, { flat: true, side: THREE.DoubleSide })
+	// Seat plates are glaze, not prints: forward meshes laid on the saucer's glaze in paint order.
+	const glaze = (color, order) => {
+		const m = new THREE.MeshBasicMaterial({
+			color,
+			depthWrite: false,
+			polygonOffset: true,
+			polygonOffsetFactor: -2,
+			polygonOffsetUnits: -8,
+		})
 		owned.push(m)
-		return m
+		return { m, order }
 	}
-	const ink = material('ink'),
-		cream = material('cream')
-	const picked = material('ammo')
+	const tone = (role) =>
+		new THREE.Color(PALETTE[role]).lerp(new THREE.Color(PALETTE.cream), tune.lobby.ready.tint)
+	const groove = glaze(PALETTE.ink, -1.9),
+		well = glaze(tune.lobby.ready.well, -1.7)
+	const picked = glaze(tone('ammo'), -1.6)
+	function inlay(geometry, { m, order }, parent) {
+		const glazed = mesh(geometry, m, parent)
+		glazed.position.y = tune.map.printLayers.lobby
+		glazed.layers.set(FORWARD_LAYER)
+		glazed.renderOrder = order
+		return glazed
+	}
 	function mesh(geometry, mat, parent) {
 		owned.push(geometry)
 		const m = new THREE.Mesh(geometry, mat)
@@ -146,7 +180,8 @@ export function createLobbyProps(scene, el, gallery, readySeats, local, audio) {
 		return p
 	})
 	const r = tune.lobby.ready
-	const seatColors = { A: material('teamA'), B: material('teamB') }
+	const bands = { A: glaze(tone('teamA'), -1.8), B: glaze(tone('teamB'), -1.8) }
+	const seatColors = { A: glaze(tone('teamA'), -1.6), B: glaze(tone('teamB'), -1.6) }
 	// A bot's seat holds a hologram of its hero: see-through, scanlined, rimmed, bobbing above the plate.
 	const holo = tune.lobby.ready.hologram
 	const holoMaterials = Object.fromEntries(
@@ -204,25 +239,19 @@ export function createLobbyProps(scene, el, gallery, readySeats, local, audio) {
 		const group = new THREE.Group()
 		group.position.set(seat.x, 0, seat.z)
 		root.add(group)
-		const border = mesh(new THREE.PlaneGeometry(r.width, r.depth).rotateX(-Math.PI / 2), ink, group)
-		border.position.y = r.borderY
-		const background = mesh(
-			new THREE.PlaneGeometry(r.width - r.borderWidth * 2, r.depth - r.borderWidth * 2).rotateX(
-				-Math.PI / 2,
-			),
-			cream,
+		// Inlaid in the glaze: an ink groove, a band of team glaze, a cream well the fill glazes over.
+		const inset = r.borderWidth * 2,
+			inner = inset + r.band * 2
+		inlay(plate(r.width, r.depth, r.corner), groove, group)
+		inlay(
+			plate(r.width - inset, r.depth - inset, r.corner - r.borderWidth),
+			bands[seat.team],
 			group,
 		)
-		background.position.y = r.boxY
-		// The inset covers the backing print, leaving an ink frame; fill has its own layer.
-		const fill = mesh(
-			new THREE.PlaneGeometry(r.width - r.borderWidth * 2, r.depth - r.borderWidth * 2).rotateX(
-				-Math.PI / 2,
-			),
-			seatColors[seat.team],
-			group,
-		)
-		fill.position.y = r.fillY
+		const wellPlate = () =>
+			plate(r.width - inner, r.depth - inner, r.corner - r.borderWidth - r.band)
+		inlay(wellPlate(), well, group)
+		const fill = inlay(wellPlate(), seatColors[seat.team], group)
 		const holograms = definitions
 			.filter((d) => d.playable)
 			.map((definition) => {
@@ -284,7 +313,9 @@ export function createLobbyProps(scene, el, gallery, readySeats, local, audio) {
 				p.face.scale.setScalar(shown.head.size)
 			}
 			for (const id in p.moods) p.moods[id].visible = id === gallery.difficulty
-			p.fill.material = owner?.id === local ? picked : seatColors[p.seat.team]
+			const fill = owner?.id === local ? picked : seatColors[p.seat.team]
+			p.fill.material = fill.m
+			p.fill.renderOrder = fill.order
 		}
 	}
 	// Presentation-only inspection targets: these never enter the sim's unit database.
@@ -355,7 +386,7 @@ export function createLobbyProps(scene, el, gallery, readySeats, local, audio) {
 				const progress = readySeats.progress(p.seat, tick, step)
 				p.fill.visible = progress > 0
 				p.fill.scale.x = progress
-				p.fill.position.x = ((progress - 1) * (r.width - r.borderWidth * 2)) / 2
+				p.fill.position.x = ((progress - 1) * (r.width - r.borderWidth * 2 - r.band * 2)) / 2
 			}
 			magnets.update(time, step)
 			for (const p of galleryProps) {

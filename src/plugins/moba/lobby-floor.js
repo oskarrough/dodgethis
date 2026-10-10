@@ -1,12 +1,14 @@
 import * as THREE from 'three'
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'
 import { FORWARD_LAYER } from '../../core/stylepass.js'
+import { PALETTE } from '../../core/style.js'
 import { tune } from './tune.js'
 
-// The lobby's floor: a finite piece of pale tarmac over a torn rock rim, floating above the desert
-// backdrop. The sheet and rock are forward-pass meshes, so the deferred pass keeps no ink on the
-// rim and the props still stand on it; the deferred ground underneath is the same outline
-// (see `floorShape`), kept so the lobby keeps its depth, and nothing is drawn beyond it.
+// The lobby's floor is a huge glazed saucer resting in magnetic cradles, floating in the splash
+// sky. The glaze, rim and cradles are forward-pass meshes, so the deferred pass keeps no ink on
+// them and the props still stand on the glaze; the deferred ground underneath is the same ellipse
+// (see `saucerShape`), kept so the lobby keeps its depth, and nothing is drawn beyond it.
+// `floorOutline`, `floorShape` and `createFences` are Flagfall's torn shore, built from its extent.
 
 function rng(seed) {
 	let a = seed >>> 0 || 1
@@ -21,7 +23,7 @@ function rng(seed) {
 
 // Counter-clockwise (seen from above, x right, z toward the camera) torn outline. Only ever pulls
 // in from the halfX/halfZ rectangle, by 0..jag, so the walkable rectangle can sit jag + 1 m inside.
-export function floorOutline(s = tune.lobby.floor) {
+export function floorOutline(s) {
 	const rand = rng(s.seed)
 	const corners = [
 		[-s.halfX, -s.halfZ],
@@ -68,211 +70,11 @@ export function floorOutline(s = tune.lobby.floor) {
 	return out
 }
 
-export function floorShape(s = tune.lobby.floor) {
+export function floorShape(s) {
 	// Shape x/y map to world x/z once the geometry is laid flat.
 	const outline = floorOutline(s)
 	const shape = new THREE.Shape(outline.map((p) => new THREE.Vector2(p.x, -p.z)))
 	return new THREE.ShapeGeometry(shape).rotateX(-Math.PI / 2)
-}
-
-function drawTexture(s) {
-	const ppm = s.pixelsPerMeter
-	const w = Math.ceil(s.halfX * 2 * ppm),
-		h = Math.ceil(s.halfZ * 2 * ppm)
-	const canvas = document.createElement('canvas')
-	canvas.width = w
-	canvas.height = h
-	const g = canvas.getContext('2d')
-	const c = s.colors
-	const rand = rng(s.seed + 101)
-	const px = (x) => (x + s.halfX) * ppm,
-		pz = (z) => (z + s.halfZ) * ppm
-	g.fillStyle = c.tarmac
-	g.fillRect(0, 0, w, h)
-	g.fillStyle = c.blotch
-	for (let i = 0; i < 46; i++) {
-		g.globalAlpha = 0.04 + rand() * 0.06
-		g.beginPath()
-		g.ellipse(
-			rand() * w,
-			rand() * h,
-			(1.2 + rand() * 3) * ppm,
-			(0.8 + rand() * 2) * ppm,
-			rand() * 3,
-			0,
-			7,
-		)
-		g.fill()
-	}
-	g.globalAlpha = 1
-	g.fillStyle = c.speck
-	for (let i = 0; i < s.speckles; i++) {
-		g.globalAlpha = 0.1 + rand() * 0.22
-		const r = 0.6 + rand() * 1.4
-		g.fillRect(rand() * w, rand() * h, r, r)
-	}
-	g.strokeStyle = c.crack
-	g.lineCap = g.lineJoin = 'round'
-	for (let i = 0; i < s.cracks; i++) {
-		g.globalAlpha = 0.07 + rand() * 0.06
-		g.lineWidth = 0.8 + rand() * 0.9
-		let x = rand() * w,
-			y = rand() * h,
-			a = rand() * 6.28
-		g.beginPath()
-		g.moveTo(x, y)
-		for (let k = 0, n = 6 + rand() * 12; k < n; k++) {
-			a += (rand() - 0.5) * 1.2
-			x += Math.cos(a) * (0.15 + rand() * 0.3) * ppm
-			y += Math.sin(a) * (0.15 + rand() * 0.3) * ppm
-			g.lineTo(x, y)
-		}
-		g.stroke()
-	}
-	g.globalAlpha = 1
-	g.strokeStyle = c.chalk
-	g.lineCap = 'round'
-	g.lineJoin = 'round'
-	g.lineWidth = s.chalkWidth * ppm
-	g.globalAlpha = 0.9
-	const r = tune.lobby.ready
-	const seats = [-1, 1].flatMap((side) =>
-		[-1, 0, 1].map((row) => ({ x: side * r.x, z: r.z + row * r.spacing })),
-	)
-	for (const seat of seats) {
-		const hw = r.width / 2 + s.seatPad,
-			hd = r.depth / 2 + s.seatPad
-		g.strokeRect(px(seat.x - hw), pz(seat.z - hd), hw * 2 * ppm, hd * 2 * ppm)
-	}
-	const ga = tune.lobby.gallery
-	const arcZ = ga.z - 0.9,
-		R = s.arcRadius,
-		reach = Math.min(s.halfX - s.jag - 1, (ga.spacing * 5) / 2 + 1)
-	g.beginPath()
-	g.arc(
-		px(ga.x),
-		pz(arcZ - R),
-		R * ppm,
-		Math.PI / 2 - Math.asin(reach / R),
-		Math.PI / 2 + Math.asin(reach / R),
-	)
-	g.stroke()
-	const ci = s.circle
-	g.beginPath()
-	g.arc(px(ci.x), pz(ci.z), ci.radius * ppm, 0, Math.PI * 2)
-	g.stroke()
-	g.beginPath()
-	g.moveTo(px(ci.x - ci.radius), pz(ci.z))
-	g.lineTo(px(ci.x + ci.radius), pz(ci.z))
-	g.stroke()
-	// Hopscotch: 1, 2-3, 4-5 up the floor (toward -z).
-	const hs = s.hopscotch,
-		k = hs.cell
-	const cells = [
-		[0, 0, 1],
-		[-0.5, -1, 2],
-		[0.5, -1, 3],
-		[-0.5, -2, 4],
-		[0.5, -2, 5],
-	]
-	g.font = `${Math.round(k * 0.5 * ppm)}px sans-serif`
-	g.textAlign = 'center'
-	g.textBaseline = 'middle'
-	g.fillStyle = c.chalk
-	for (const [cx, cz, n] of cells) {
-		const x = hs.x + cx * k,
-			z = hs.z + cz * k
-		g.strokeRect(px(x - k / 2), pz(z - k / 2), k * ppm, k * ppm)
-		g.fillText(String(n), px(x), pz(z))
-	}
-	g.globalCompositeOperation = 'source-over'
-	g.fillStyle = c.tarmac
-	for (let i = 0; i < s.speckles * 0.5; i++) {
-		g.globalAlpha = 0.35 + rand() * 0.4
-		const q = 0.8 + rand() * 1.6
-		g.fillRect(rand() * w, rand() * h, q, q)
-	}
-	g.globalAlpha = 1
-	return canvas
-}
-
-// Flat-shaded rock: courses of ledges jutting out as they go down (steps inward would hide behind the rim), every face its own colour.
-function rockGeometry(outline, s) {
-	const rand = rng(s.seed + 303)
-	const light = new THREE.Vector3(-0.4, 0.8, 0.45).normalize()
-	const base = new THREE.Color(s.colors.rock),
-		dark = new THREE.Color(s.colors.rockDark),
-		ledge = new THREE.Color(s.colors.ledge)
-	const positions = [],
-		colors = []
-	const a = new THREE.Vector3(),
-		b = new THREE.Vector3(),
-		n = new THREE.Vector3(),
-		tint = new THREE.Color()
-	const tri = (p, q, r, color) => {
-		a.subVectors(q, p)
-		b.subVectors(r, p)
-		n.crossVectors(a, b).normalize()
-		const shade = 0.78 + 0.32 * Math.max(0, n.dot(light))
-		tint.copy(color).multiplyScalar(shade + (rand() - 0.5) * 0.08)
-		for (const v of [p, q, r]) {
-			positions.push(v.x, v.y, v.z)
-			colors.push(tint.r, tint.g, tint.b)
-		}
-	}
-	const quad = (p, q, r, t, color) => {
-		tri(p, q, r, color)
-		tri(p, r, t, color)
-	}
-	const count = outline.length
-	const centre = { x: 0, z: 0 }
-	const stepIn = (p, inset) => {
-		const dx = centre.x - p.x,
-			dz = centre.z - p.z
-		const d = Math.hypot(dx, dz) || 1
-		return { x: p.x - (dx / d) * inset, z: p.z - (dz / d) * inset }
-	}
-	const courseHeight = s.rockDepth / s.courses
-	let ring = outline.map((p) => ({ ...p }))
-	for (let c = 0; c < s.courses; c++) {
-		const top = -c * courseHeight,
-			bottom = -(c + 1) * courseHeight
-		const next = outline.map((p) => {
-			const inset = (c + 1) * s.courseInset * (0.5 + rand())
-			const q = stepIn(p, inset)
-			return { x: q.x + (rand() - 0.5) * s.courseJitter, z: q.z + (rand() - 0.5) * s.courseJitter }
-		})
-		const drop = ring.map(() => (rand() - 0.3) * courseHeight * 0.45)
-		const wallColor = base.clone().lerp(dark, (c + 1) / s.courses)
-		for (let i = 0; i < count; i++) {
-			const j = (i + 1) % count
-			const p0 = new THREE.Vector3(ring[i].x, top, ring[i].z)
-			const p1 = new THREE.Vector3(ring[j].x, top, ring[j].z)
-			const p2 = new THREE.Vector3(ring[j].x, bottom + drop[j], ring[j].z)
-			const p3 = new THREE.Vector3(ring[i].x, bottom + drop[i], ring[i].z)
-			// Wind so the face looks outward from the floor.
-			quad(p0, p1, p2, p3, wallColor)
-			if (c < s.courses - 1) {
-				const q0 = new THREE.Vector3(next[i].x, bottom + drop[i], next[i].z)
-				const q1 = new THREE.Vector3(next[j].x, bottom + drop[j], next[j].z)
-				quad(p3, q0, q1, p2, ledge.clone().lerp(base, c * 0.35))
-			}
-		}
-		ring = next
-	}
-	// Underside cap: shows only if the camera ever dips below the rim.
-	const bottom = -s.rockDepth
-	for (let i = 1; i < count - 1; i++)
-		tri(
-			new THREE.Vector3(ring[0].x, bottom, ring[0].z),
-			new THREE.Vector3(ring[i + 1].x, bottom, ring[i + 1].z),
-			new THREE.Vector3(ring[i].x, bottom, ring[i].z),
-			dark,
-		)
-	const geometry = new THREE.BufferGeometry()
-	geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
-	geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3))
-	return geometry
 }
 
 // Four broken runs rather than a perimeter cage. The safe rectangle is inside every possible
@@ -403,15 +205,286 @@ export function createFences(floor, s, y, name, depthMaterial = null) {
 	return group
 }
 
+// x = halfX cos t, z = halfZ sin t; seen from above, t runs clockwise from +x through the near edge.
+function ellipsePoint(s, t) {
+	return { x: Math.cos(t) * s.halfX, z: Math.sin(t) * s.halfZ }
+}
+
+// Outward normal of the ellipse at t.
+function ellipseNormal(s, t) {
+	const x = Math.cos(t) / s.halfX,
+		z = Math.sin(t) / s.halfZ
+	const d = Math.hypot(x, z)
+	return new THREE.Vector3(x / d, 0, z / d)
+}
+
+// The glaze's walkable ellipse, laid flat; the rim's lip starts at its edge.
+export function saucerShape(s = tune.lobby.floor) {
+	const shape = new THREE.Shape()
+	for (let i = 0; i < s.segments; i++) {
+		const p = ellipsePoint(s, (i / s.segments) * Math.PI * 2)
+		if (i === 0) shape.moveTo(p.x, -p.z)
+		else shape.lineTo(p.x, -p.z)
+	}
+	return new THREE.ShapeGeometry(shape).rotateX(-Math.PI / 2)
+}
+
+function drawGlaze(s) {
+	const ppm = s.pixelsPerMeter
+	const w = Math.ceil(s.halfX * 2 * ppm),
+		h = Math.ceil(s.halfZ * 2 * ppm)
+	const canvas = document.createElement('canvas')
+	canvas.width = w
+	canvas.height = h
+	const g = canvas.getContext('2d')
+	const c = s.colors
+	const rand = rng(s.seed + 101)
+	const px = (x) => (x + s.halfX) * ppm,
+		pz = (z) => (z + s.halfZ) * ppm
+	g.fillStyle = c.glaze
+	g.fillRect(0, 0, w, h)
+	g.save()
+	g.beginPath()
+	g.ellipse(w / 2, h / 2, s.halfX * ppm, s.halfZ * ppm, 0, 0, Math.PI * 2)
+	g.clip()
+	// Glaze pools a shade deeper toward the well, then catches light just inside the lip.
+	g.save()
+	g.translate(w / 2, h / 2)
+	g.scale(s.halfX * ppm, s.halfZ * ppm)
+	const well = 1 - s.well / Math.min(s.halfX, s.halfZ)
+	const pool = g.createRadialGradient(0, 0, 0, 0, 0, 1)
+	pool.addColorStop(0, 'rgba(255, 252, 240, 0.35)')
+	pool.addColorStop(0.55, 'rgba(255, 252, 240, 0)')
+	pool.addColorStop(well - 0.03, c.pool + '00')
+	pool.addColorStop(well, c.pool + 'aa')
+	pool.addColorStop(well + 0.012, c.pool + '33')
+	pool.addColorStop(1, c.pool + '88')
+	g.fillStyle = pool
+	g.fillRect(-1, -1, 2, 2)
+	g.restore()
+	// Worn, duller patches where feet go.
+	g.fillStyle = c.wear
+	for (let i = 0; i < s.wear.patches; i++) {
+		g.globalAlpha = 0.05 + rand() * 0.07
+		g.beginPath()
+		g.ellipse(
+			px((rand() * 2 - 1) * s.halfX * 0.7),
+			pz((rand() * 2 - 1) * s.halfZ * 0.7),
+			(0.8 + rand() * 2.2) * ppm,
+			(0.6 + rand() * 1.4) * ppm,
+			rand() * 3,
+			0,
+			7,
+		)
+		g.fill()
+	}
+	// Iron speckle, as in stoneware.
+	g.fillStyle = c.speck
+	for (let i = 0; i < s.speckles; i++) {
+		g.globalAlpha = 0.12 + rand() * 0.3
+		const r = 0.5 + rand() * 1.1
+		g.fillRect(rand() * w, rand() * h, r, r)
+	}
+	// Crazing: a jittered net of hairlines, broken here and there, patchy across the glaze.
+	const cz = s.crazing,
+		cell = cz.cell * ppm
+	const cols = Math.ceil(w / cell) + 1,
+		rows = Math.ceil(h / cell) + 1
+	const net = []
+	for (let j = 0; j <= rows; j++)
+		for (let i = 0; i <= cols; i++)
+			net.push([(i + (rand() - 0.5) * cz.jitter) * cell, (j + (rand() - 0.5) * cz.jitter) * cell])
+	g.strokeStyle = c.craze
+	g.lineWidth = Math.max(1, cz.width * ppm)
+	g.lineCap = g.lineJoin = 'round'
+	const patch = (x, y) =>
+		0.5 + 0.5 * Math.sin(x * 0.011 + 1.3) * Math.cos(y * 0.014 - 0.4) * Math.sin((x + y) * 0.006)
+	const hair = (a, b) => {
+		const amount = patch(a[0], a[1])
+		if (amount < 0.25 || rand() < cz.gaps) return
+		g.globalAlpha = cz.alpha * amount * (0.6 + rand() * 0.6)
+		const mx = (a[0] + b[0]) / 2 + (rand() - 0.5) * cell * 0.3,
+			my = (a[1] + b[1]) / 2 + (rand() - 0.5) * cell * 0.3
+		g.beginPath()
+		g.moveTo(a[0], a[1])
+		g.lineTo(mx, my)
+		g.lineTo(b[0], b[1])
+		g.stroke()
+	}
+	for (let j = 0; j <= rows; j++)
+		for (let i = 0; i <= cols; i++) {
+			const p = net[j * (cols + 1) + i]
+			if (i < cols) hair(p, net[j * (cols + 1) + i + 1])
+			if (j < rows) hair(p, net[(j + 1) * (cols + 1) + i])
+		}
+	// Chips near the lip show the biscuit under the glaze.
+	for (let i = 0; i < s.wear.chips; i++) {
+		const t = rand() * Math.PI * 2
+		const inset = 0.15 + rand() * 0.6
+		const e = ellipsePoint(s, t),
+			n = ellipseNormal(s, t)
+		const cx = px(e.x - n.x * inset),
+			cy = pz(e.z - n.z * inset)
+		const r = (0.05 + rand() * 0.14) * ppm
+		g.beginPath()
+		for (let k = 0, sides = 5 + Math.floor(rand() * 3); k < sides; k++) {
+			const a = (k / sides) * Math.PI * 2,
+				q = r * (0.55 + rand() * 0.6)
+			g.lineTo(cx + Math.cos(a) * q, cy + Math.sin(a) * q * 0.8)
+		}
+		g.closePath()
+		g.globalAlpha = 0.9
+		g.fillStyle = c.biscuit
+		g.fill()
+		g.globalAlpha = 0.5
+		g.lineWidth = 1
+		g.strokeStyle = c.chipEdge
+		g.stroke()
+	}
+	g.restore()
+	g.globalAlpha = 1
+	return canvas
+}
+
+// One sweep for rim, band and cradles: `profile` [u, v] points laid along `path` frames
+// ({ o, u, v } vectors). Indexed, so smooth unless flattened.
+function sweep(path, profile, { closePath = false, closeProfile = false } = {}) {
+	const positions = []
+	for (const f of path)
+		for (const [u, v] of profile)
+			positions.push(
+				f.o.x + f.u.x * u + f.v.x * v,
+				f.o.y + f.u.y * u + f.v.y * v,
+				f.o.z + f.u.z * u + f.v.z * v,
+			)
+	const n = profile.length,
+		index = []
+	const runs = closePath ? path.length : path.length - 1
+	const bands = closeProfile ? n : n - 1
+	for (let i = 0; i < runs; i++) {
+		const a = i * n,
+			b = ((i + 1) % path.length) * n
+		for (let k = 0; k < bands; k++) {
+			const k1 = (k + 1) % n
+			index.push(a + k, b + k, b + k1, a + k, b + k1, a + k1)
+		}
+	}
+	const geometry = new THREE.BufferGeometry()
+	geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
+	geometry.setIndex(index)
+	return geometry
+}
+
+const LIGHT = new THREE.Vector3(-0.4, 0.8, 0.45).normalize()
+const HALF = LIGHT.clone()
+	.add(new THREE.Vector3(0, 0.85, 0.53))
+	.normalize()
+
+// Baked light into vertex colours: `color(i)` per vertex, glaze gets a soft highlight.
+function bake(geometry, color, { flat = false, gloss = 0 } = {}) {
+	const g = flat ? geometry.toNonIndexed() : geometry
+	if (flat) geometry.dispose()
+	g.computeVertexNormals()
+	const normals = g.attributes.normal,
+		count = normals.count
+	const n = new THREE.Vector3(),
+		out = new Float32Array(count * 3),
+		tint = new THREE.Color()
+	for (let i = 0; i < count; i++) {
+		n.fromBufferAttribute(normals, i)
+		// Shading is symmetric under DoubleSide, so a flipped winding never goes dark.
+		if (n.y < -0.98) n.negate()
+		const shade = 0.74 + 0.34 * Math.max(0, n.dot(LIGHT))
+		tint.copy(color(i)).multiplyScalar(shade)
+		const spec = gloss * Math.max(0, n.dot(HALF)) ** 18
+		out[i * 3] = Math.min(1, tint.r + spec)
+		out[i * 3 + 1] = Math.min(1, tint.g + spec)
+		out[i * 3 + 2] = Math.min(1, tint.b + spec)
+	}
+	g.setAttribute('color', new THREE.BufferAttribute(out, 3))
+	return g
+}
+
+function rimFrames(s) {
+	const frames = []
+	const up = new THREE.Vector3(0, 1, 0)
+	for (let i = 0; i < s.segments; i++) {
+		const t = (i / s.segments) * Math.PI * 2
+		const p = ellipsePoint(s, t)
+		frames.push({ o: new THREE.Vector3(p.x, 0, p.z), u: ellipseNormal(s, t), v: up, t })
+	}
+	return frames
+}
+
+// A horseshoe magnet stood on edge round the rim at angle `deg`, its jaws either side of the
+// saucer's edge with a hand's width of air: the saucer floats in them.
+function cradleGeometry(s, deg) {
+	const k = s.cradle
+	const t = (deg * Math.PI) / 180
+	const e = ellipsePoint(s, t)
+	const out = ellipseNormal(s, t)
+	const up = new THREE.Vector3(0, 1, 0)
+	const axis = new THREE.Vector3().crossVectors(out, up)
+	const centre = new THREE.Vector3(e.x, k.y, e.z).addScaledVector(out, s.rim.width + k.reach)
+	const arc = (from, to, steps) => {
+		const frames = []
+		for (let i = 0; i <= steps; i++) {
+			const a = from + ((to - from) * i) / steps
+			const dir = out.clone().multiplyScalar(Math.cos(a)).addScaledVector(up, Math.sin(a))
+			frames.push({ o: centre.clone().addScaledVector(dir, k.radius), u: dir, v: axis })
+		}
+		return frames
+	}
+	const square = (h, w) => [
+		[-h, -w],
+		[h, -w],
+		[h, w],
+		[-h, w],
+	]
+	const open = (k.open * Math.PI) / 180
+	const pole = k.pole / k.radius
+	const parts = []
+	const add = (frames, profile, color) => {
+		const g = sweep(frames, profile, { closeProfile: true })
+		// Cap both ends: two triangles across the square.
+		const pos = [...g.attributes.position.array]
+		const idx = [...g.index.array]
+		for (const end of [frames[0], frames.at(-1)]) {
+			const start = pos.length / 3
+			for (const [u, v] of profile)
+				pos.push(
+					end.o.x + end.u.x * u + end.v.x * v,
+					end.o.y + end.u.y * u + end.v.y * v,
+					end.o.z + end.u.z * u + end.v.z * v,
+				)
+			idx.push(start, start + 1, start + 2, start, start + 2, start + 3)
+		}
+		const capped = new THREE.BufferGeometry()
+		capped.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3))
+		capped.setIndex(idx)
+		g.dispose()
+		parts.push(bake(capped, () => color, { flat: true }))
+	}
+	const iron = new THREE.Color(s.colors.iron),
+		cap = new THREE.Color(s.colors.pole)
+	const reach = Math.PI - open
+	add(arc(-reach + pole, reach - pole, k.steps), square(k.tube / 2, k.tube / 2), iron)
+	for (const side of [-1, 1]) {
+		const a = side * (reach - pole),
+			b = side * reach
+		add(arc(Math.min(a, b), Math.max(a, b), 2), square(k.tube * 0.54, k.tube * 0.54), cap)
+	}
+	return parts
+}
+
 export function createLobbyFloor(scene, renderer) {
 	const s = tune.lobby.floor
-	const canvas = drawTexture(s)
+	const canvas = drawGlaze(s)
 	const texture = new THREE.CanvasTexture(canvas)
 	texture.colorSpace = THREE.SRGBColorSpace
 	texture.anisotropy = renderer?.capabilities.getMaxAnisotropy() ?? 1
-	const outline = floorOutline(s)
-	// One non-repeating texture across the whole floor: UVs are world position over its extent.
-	const top = floorShape(s)
+	// One non-repeating texture across the whole glaze: UVs are world position over its extent.
+	const top = saucerShape(s)
 	const pos = top.attributes.position,
 		uv = new Float32Array(pos.count * 2)
 	for (let i = 0; i < pos.count; i++) {
@@ -419,44 +492,109 @@ export function createLobbyFloor(scene, renderer) {
 		uv[i * 2 + 1] = 1 - (pos.getZ(i) + s.halfZ) / (s.halfZ * 2)
 	}
 	top.setAttribute('uv', new THREE.BufferAttribute(uv, 2))
-	const topMaterial = new THREE.MeshBasicMaterial({
-		map: texture,
-		depthWrite: false,
-		// The forward pass tests against a copied depth buffer; pull the sheet onto the ground.
-		polygonOffset: true,
-		polygonOffsetFactor: -2,
-		polygonOffsetUnits: -8,
-	})
-	const sheet = new THREE.Mesh(top, topMaterial)
-	sheet.name = 'lobby-floor'
-	sheet.position.y = tune.map.printLayers.lobby
-	sheet.layers.set(FORWARD_LAYER)
-	sheet.renderOrder = -2 // under stamps and every other forward effect
-
-	const rockGeo = rockGeometry(outline, s)
-	const rockMaterial = new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide })
-	const rock = new THREE.Mesh(rockGeo, rockMaterial)
-	rock.name = 'lobby-rock'
-	rock.position.y = tune.map.printLayers.lobby - 0.01
-	rock.layers.set(FORWARD_LAYER)
-	rock.renderOrder = -3
-	rock.frustumCulled = false
-	const fences = createFences(s, tune.lobby.fence, tune.map.printLayers.lobby, 'lobby-fences')
-	scene.add(sheet, rock, fences)
+	const group = new THREE.Group()
+	group.name = 'lobby-saucer'
+	group.position.y = tune.map.printLayers.lobby
+	const owned = [texture]
+	const forward = (geometry, material, name, order) => {
+		const mesh = new THREE.Mesh(geometry, material)
+		mesh.name = name
+		mesh.layers.set(FORWARD_LAYER)
+		mesh.renderOrder = order
+		mesh.frustumCulled = false
+		group.add(mesh)
+		owned.push(geometry, material)
+		return mesh
+	}
+	forward(
+		top,
+		new THREE.MeshBasicMaterial({
+			map: texture,
+			depthWrite: false,
+			// The forward pass tests against a copied depth buffer; pull the glaze onto the ground.
+			polygonOffset: true,
+			polygonOffsetFactor: -2,
+			polygonOffsetUnits: -8,
+		}),
+		'lobby-floor',
+		-2, // under stamps and every other forward effect
+	)
+	const frames = rimFrames(s)
+	const r = s.rim
+	const rand = rng(s.seed + 303)
+	// Worn spots on the lip, where the glaze has gone and the biscuit shows.
+	const worn = frames.map(() => rand() < s.wear.lip)
+	const glaze = new THREE.Color(s.colors.rim),
+		biscuit = new THREE.Color(s.colors.biscuit)
+	// Lip profile: up from the glaze's edge to a rounded crest, then over and down to the glaze line.
+	const lip = [
+		[0, 0],
+		[r.width * 0.3, r.height * 0.35],
+		[r.width * 0.55, r.height * 0.85],
+		[r.width * 0.72, r.height],
+		[r.width * 0.88, r.height * 0.8],
+		[r.width * 0.97, r.height * 0.35],
+		[r.width, -r.glazeLine],
+	]
+	const crest = new Set([2, 3, 4])
+	const lipGeo = bake(
+		sweep(frames, lip, { closePath: true }),
+		(i) => (worn[Math.floor(i / lip.length)] && crest.has(i % lip.length) ? biscuit : glaze),
+		{ gloss: s.gloss },
+	)
+	const vertexMaterial = () =>
+		new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide })
+	forward(lipGeo, vertexMaterial(), 'lobby-saucer-lip', -3)
+	// The unglazed body: a thick band that tucks in to a foot ring, darkening as it goes down.
+	const d = s.depth
+	const band = [
+		[r.width, -r.glazeLine],
+		[r.width * 1.03, -d * 0.35],
+		[r.width * 0.98, -d * 0.75],
+		[r.width * 0.75, -d * 0.92],
+		[r.width * 0.3, -d],
+		[-r.width * 1.5, -d * 1.04],
+	]
+	const body = new THREE.Color(s.colors.body),
+		dark = new THREE.Color(s.colors.bodyDark),
+		mix = new THREE.Color()
+	const bandGeo = bake(
+		sweep(frames, band, { closePath: true }),
+		(i) => mix.copy(body).lerp(dark, (i % band.length) / (band.length - 1)),
+		{ flat: true },
+	)
+	forward(bandGeo, vertexMaterial(), 'lobby-saucer-band', -3)
+	// Thin ink on the silhouette: the lip's outer edge and the foot.
+	const lineMaterial = new THREE.LineBasicMaterial({ color: PALETTE.ink })
+	owned.push(lineMaterial)
+	for (const [u, v] of [
+		[r.width * 0.99, 0],
+		[r.width * 0.3, -d],
+	]) {
+		const points = frames.map((f) => f.o.clone().addScaledVector(f.u, u).setY(v))
+		const geometry = new THREE.BufferGeometry().setFromPoints(points)
+		const line = new THREE.LineLoop(geometry, lineMaterial)
+		line.layers.set(FORWARD_LAYER)
+		line.frustumCulled = false
+		group.add(line)
+		owned.push(geometry)
+	}
+	const cradleParts = s.cradle.angles.flatMap((deg) => cradleGeometry(s, deg))
+	const cradles = mergeGeometries(cradleParts)
+	for (const part of cradleParts) part.dispose()
+	forward(cradles, vertexMaterial(), 'lobby-cradles', -3)
+	const edges = new THREE.EdgesGeometry(cradles, 30)
+	const cradleLines = new THREE.LineSegments(edges, lineMaterial)
+	cradleLines.layers.set(FORWARD_LAYER)
+	cradleLines.frustumCulled = false
+	group.add(cradleLines)
+	owned.push(edges)
+	scene.add(group)
 	return {
+		group,
 		dispose() {
-			fences.removeFromParent()
-			fences.traverse((object) => {
-				object.geometry?.dispose()
-				object.material?.dispose()
-			})
-			sheet.removeFromParent()
-			rock.removeFromParent()
-			top.dispose()
-			rockGeo.dispose()
-			topMaterial.dispose()
-			rockMaterial.dispose()
-			texture.dispose()
+			group.removeFromParent()
+			for (const item of owned) item.dispose()
 		},
 	}
 }
