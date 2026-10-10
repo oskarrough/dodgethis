@@ -1,0 +1,123 @@
+{
+	"method": "Built-in image generator",
+	"reference": "../02-day-night-plate.webp",
+	"jobs": [
+		{
+			"id": "01-day-ink-frame",
+			"size": [1024, 1024],
+			"slice": 160,
+			"prompt": "Use case: stylized-concept. Asset is a FLAT 2D UI MATERIAL painted on paper, not a screenshot or a rendered object. Take the supplied splash illustration ONLY as the aquarelle-and-ink STYLE and colour reference. Hand-painted watercolor pigment with paper grain, soft capillary blooms and lightly bleeding washes; decisive uneven hand-ink line where requested. Warm weathered mineral/parchment feeling, calm European comic illustration, mature rather than cute. Genuine transparent background / RGBA: no white background and no baked checkerboard. No text, icons, letters, symbols, controls, logos, metal, bevels, gradients that look plastic, glass, neon edge, stitching, drop shadow, buttons or scenery.\nCreate one complete hollow square 9-slice frame, exactly1024x1024. Straight-on perfectly flat painting. A modestly wobbly near-square dark charcoal ink contour runs around x64..960 y64..960 with loose softly squared corners, mild human imperfections, no systematic angular/chamfered geometry. Stroke width around6px at this resolution. There is a 35\u201355px wide faded sandstone/ochre pale parchment wash bleeding along the ink toward both sides. Think someone drew a rectangular border in a travel sketchbook then brushed dilute warm ochre over it. The contour plus all wash must stay within the outside160px on ALL FOUR sides. Entire inner square x160..864 y160..864 MUST be completely transparent, not paper white. Outer margin x0..24 and y0..24 transparent too, no marks clipped at canvas. Long middle of each edge is almost straight and repeat-friendly, no motifs crossing slice boundaries, corners self-contained inside160x160. NOT a stone picture-frame object: just a single organic painted line and wash on alpha. No corner embellishments or multiple nested border lines. Enough texture to feel aquarelle but substantial negative space.",
+			"output": {
+				"file": "01-day-ink-frame.webp",
+				"alpha_checks": {
+					"native_dimensions": [1254, 1254],
+					"output_dimensions": [1024, 1024],
+					"transparent_pixels": 817209,
+					"partial_alpha_pixels": 230314,
+					"opaque_pixels": 1053,
+					"nonzero_alpha_bbox": [0, 20, 1016, 1024],
+					"centre_alpha_extrema": [0, 248]
+				},
+				"bytes": 221230
+			}
+		},
+		{
+			"id": "02-night-ink-frame",
+			"size": [1024, 1024],
+			"slice": 160,
+			"prompt": "Use case: stylized-concept. Asset is a FLAT 2D UI MATERIAL painted on paper, not a screenshot or a rendered object. Take the supplied splash illustration ONLY as the aquarelle-and-ink STYLE and colour reference. Hand-painted watercolor pigment with paper grain, soft capillary blooms and lightly bleeding washes; decisive uneven hand-ink line where requested. Warm weathered mineral/parchment feeling, calm European comic illustration, mature rather than cute. Genuine transparent background / RGBA: no white background and no baked checkerboard. No text, icons, letters, symbols, controls, logos, metal, bevels, gradients that look plastic, glass, neon edge, stitching, drop shadow, buttons or scenery.\nCreate one complete hollow square 9-slice frame, exactly1024x1024. A hand-inked near-square deep blue-black/charcoal contour around x64..960 y64..960 with uneven subtly softly squared corners; around6px stroke, same simple proportions as day counterpart. Faded warm parchment/mineral wash around the contour carries a dilute bruised violet/slate-blue pigment bloom, quiet and earthy, not glowing. 35\u201355px broad wash, broken dry-brush specks only close to contour. All pigment stays inside the outer160px on each side, and central square x160..864 y160..864 MUST be truly transparent. Outer24px margin transparent, no clipping. Long central stretches of each edge almost straight, repeat-friendly; isolated corners inside160x160, no ornament. Painted on paper style but paper itself absent; alpha background and hollow alpha centre. One natural ink outline with a washed rim, NO bevel, solid ornamental frame, cybernetic geometry, perspective, symmetry-perfect corners, stitching, glitter or cartoon decorations. Not a rendered object.",
+			"output": {
+				"file": "02-night-ink-frame.webp",
+				"alpha_checks": {
+					"native_dimensions": [1254, 1254],
+					"output_dimensions": [1024, 1024],
+					"transparent_pixels": 799322,
+					"partial_alpha_pixels": 248303,
+					"opaque_pixels": 951,
+					"nonzero_alpha_bbox": [0, 9, 1011, 1024],
+					"centre_alpha_extrema": [0, 1]
+				},
+				"bytes": 217018
+			}
+		},
+		{
+			"id": "03-day-title-wash",
+			"size": [1024, 256],
+			"slice": 96,
+			"prompt": "Use case: stylized-concept. Asset is a FLAT 2D UI MATERIAL painted on paper, not a screenshot or a rendered object. Take the supplied splash illustration ONLY as the aquarelle-and-ink STYLE and colour reference. Hand-painted watercolor pigment with paper grain, soft capillary blooms and lightly bleeding washes; decisive uneven hand-ink line where requested. Warm weathered mineral/parchment feeling, calm European comic illustration, mature rather than cute. Genuine transparent background / RGBA: no white background and no baked checkerboard. No text, icons, letters, symbols, controls, logos, metal, bevels, gradients that look plastic, glass, neon edge, stitching, drop shadow, buttons or scenery.\nCreate one elongated horizontal watercolor swatch exactly1024x256. Light warm sandstone, dilute burnt ochre and soft peach. A broad continuous pale wash band across centre with soft organic ragged brush edges, water blooms and sparse dry paper-grain gaps. Transparent RGBA edges with many intermediate-alpha paint fades. Entire outer24px perimeter transparent. Keep central x96..928 y60..196 comparatively uniform, quiet and translucent so dark title lettering laid over it stays readable. Left and right brush ends inside96px caps, neither sharp rectangle nor capsule shape. Broad dry brush swipe, sophisticated low-contrast aquarelle. NO ink outline, no symbols, no lettering. Not a ribbon or banner object, only pigment floating on alpha. Middle horizontal span should be gently stretchable for CSS3-slice scaling, no dominant central blotch.",
+			"output": {
+				"file": "03-day-title-wash.webp",
+				"alpha_checks": {
+					"native_dimensions": [2172, 724],
+					"output_dimensions": [1024, 256],
+					"transparent_pixels": 145420,
+					"partial_alpha_pixels": 115537,
+					"opaque_pixels": 1187,
+					"nonzero_alpha_bbox": [19, 9, 995, 246],
+					"centre_alpha_extrema": [0, 255]
+				},
+				"bytes": 79670
+			}
+		},
+		{
+			"id": "04-night-title-wash",
+			"size": [1024, 256],
+			"slice": 96,
+			"prompt": "Use case: stylized-concept. Asset is a FLAT 2D UI MATERIAL painted on paper, not a screenshot or a rendered object. Take the supplied splash illustration ONLY as the aquarelle-and-ink STYLE and colour reference. Hand-painted watercolor pigment with paper grain, soft capillary blooms and lightly bleeding washes; decisive uneven hand-ink line where requested. Warm weathered mineral/parchment feeling, calm European comic illustration, mature rather than cute. Genuine transparent background / RGBA: no white background and no baked checkerboard. No text, icons, letters, symbols, controls, logos, metal, bevels, gradients that look plastic, glass, neon edge, stitching, drop shadow, buttons or scenery.\nCreate one elongated horizontal watercolor swatch exactly1024x256. Dilute dusty violet, slate lilac and a little neutral warm stone tone; pale enough to underlie dark ink title text. A continuous broad watercolor brush band through centre with soft organic ragged brush edges, paper-grain gaps and capillary blooms. Truly transparent alpha canvas; outer24px perimeter zero alpha. Central x96..928 y60..196 low contrast, translucent and nearly uniform, no dark central blotch. Left/right brush ends within96px caps; middle can stretch horizontally in CSS without distorting tips. Gentle mature mineral pigments, not neon or candy lavender. NO border, lettering, stars, icons, outlined ribbon, capsule or rectangular solid fill. Just a painted aquarelle wash swatch on transparency.",
+			"output": {
+				"file": "04-night-title-wash.webp",
+				"alpha_checks": {
+					"native_dimensions": [2172, 724],
+					"output_dimensions": [1024, 256],
+					"transparent_pixels": 169656,
+					"partial_alpha_pixels": 91233,
+					"opaque_pixels": 1255,
+					"nonzero_alpha_bbox": [54, 4, 971, 252],
+					"centre_alpha_extrema": [0, 255]
+				},
+				"bytes": 52340
+			}
+		},
+		{
+			"id": "05-deckled-paper",
+			"size": [1024, 1024],
+			"slice": 128,
+			"prompt": "Use case: stylized-concept. Asset is a FLAT 2D UI MATERIAL painted on paper, not a screenshot or a rendered object. Take the supplied splash illustration ONLY as the aquarelle-and-ink STYLE and colour reference. Hand-painted watercolor pigment with paper grain, soft capillary blooms and lightly bleeding washes; decisive uneven hand-ink line where requested. Warm weathered mineral/parchment feeling, calm European comic illustration, mature rather than cute. Genuine transparent background / RGBA: no white background and no baked checkerboard. No text, icons, letters, symbols, controls, logos, metal, bevels, gradients that look plastic, glass, neon edge, stitching, drop shadow, buttons or scenery.\nCreate one FLAT unprinted square of warm ivory watercolor paper exactly1024x1024, genuine transparent surrounding background. Paper covers x32..992 y32..992, full opaque quiet warm cream central ground, subtle fine natural cold-pressed tooth visible, tiny slight warm mineral variations. Soft manually deckled irregular torn edges, a few fine paper fibres, restrained natural irregularity rather than aggressively ripped paper. Corners gently softened but squarish, all deckle within outer128px, central x128..896 y128..896 completely plain unmarked paper and gentle even texture. Outer16px margin fully transparent; physical edge alpha anti-aliasing, not a painted checkerboard. No ink, stains, decorations, age spots, heavy grunge, folded/curling corners, shadow, 3D depth, lighting or border. Straight-on scanning-style MATERIAL, paper perimeter designed for CSS9-slice fill with128px corners.",
+			"output": {
+				"file": "05-deckled-paper.webp",
+				"alpha_checks": {
+					"native_dimensions": [1254, 1254],
+					"output_dimensions": [1024, 1024],
+					"transparent_pixels": 193845,
+					"partial_alpha_pixels": 854032,
+					"opaque_pixels": 699,
+					"nonzero_alpha_bbox": [0, 17, 1013, 1024],
+					"centre_alpha_extrema": [250, 254]
+				},
+				"bytes": 355830
+			}
+		}
+	],
+	"slicing": {
+		"ink_frames": {
+			"source_cut_px": [160, 160, 160, 160],
+			"render_border_px": 30,
+			"repeat": "stretch",
+			"fill": false,
+			"centre": "Discard the centre cell; tiny detached pigment flecks there do not enter the rendered frame."
+		},
+		"title_washes": {
+			"source_cut_px": [0, 96, 0, 96],
+			"render_border_px": [0, 18, 0, 18],
+			"repeat": "stretch",
+			"fill": true
+		},
+		"paper_ground": {
+			"source_cut_px": [128, 128, 128, 128],
+			"render_border_px": 24,
+			"repeat": "stretch",
+			"fill": true
+		}
+	},
+	"alpha_validation": "All five have transparent and intermediate-alpha pixels. Frames use border-image without fill, so the centre cell is omitted. Paper central alpha is 250\u2013254/255; use a warm cream base behind it if needed."
+}

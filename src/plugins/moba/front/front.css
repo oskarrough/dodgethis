@@ -320,7 +320,7 @@
 	place-items: center;
 	background: var(--ui-text);
 }
-.front-tile-plan svg {
+.front-tile-plan svg:not(.skin-paint) {
 	width: 70%;
 	stroke: var(--ui-cream);
 	stroke-linecap: round;
@@ -351,20 +351,92 @@
 .front-tile-label > * {
 	position: relative;
 }
-.front-tile-kicker {
-	font-size: clamp(13px, 1.1vw, 18px);
-	font-weight: 400;
-	letter-spacing: 0.3em;
-	transition: color var(--tile-press) linear;
-}
 .front-tile-name {
-	font: 400 clamp(32px, 3.8vw, 68px) / 0.95 var(--ui-font);
+	font: 400 clamp(36px, 4.4vw, 80px) / 0.95 var(--ui-font);
 	text-align: center;
 	letter-spacing: 0.01em;
 	transition: color var(--tile-press) linear;
 }
-.front-tile.selected :is(.front-tile-kicker, .front-tile-name) {
+.moba-front[data-skin='stone'] .front-tile.selected .front-tile-name {
 	color: var(--ui-cream);
+}
+/* Painted skins: the picture's straight edge disappears under deckled paper, no band. */
+.moba-front:not([data-skin='stone'])
+	:is(.front-tile-art, .front-tile-art > img, .front-tile-art::after, .front-tile-label) {
+	clip-path: none;
+}
+.moba-front:not([data-skin='stone']) .front-tile-art {
+	padding: 0;
+	background: none;
+}
+.moba-front:not([data-skin='stone']) .front-tile-art::after {
+	inset: 0;
+}
+.moba-front:not([data-skin='stone']) .front-tile-label::before {
+	display: none;
+}
+.moba-front:not([data-skin='stone']) .front-tile-label {
+	padding-bottom: 0.9em;
+}
+.front-tile-art > .skin-edge {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	overflow: visible;
+}
+.skin-edge .skin-edge-paper {
+	stroke: var(--ui-cream);
+	stroke-width: 18px;
+}
+.skin-edge .skin-edge-pen {
+	stroke: var(--ui-text);
+	stroke-width: 2px;
+}
+.moba-front[data-skin='wash'] .skin-edge-pen,
+.moba-front[data-skin='stone'] .skin-edge {
+	display: none;
+}
+/* Painted: the art's straight edge sinks under paper-coloured deckle, the title sits on a
+   painted wash swatch. */
+.moba-front[data-skin='painted'] .skin-edge-paper {
+	stroke: #f8ebd5;
+}
+.moba-front[data-skin='painted'] .front-tile-label {
+	isolation: isolate;
+}
+.moba-front[data-skin='painted'] .front-tile-label::after {
+	content: '';
+	position: absolute;
+	inset: 4% 3% 14%;
+	z-index: -1;
+	border: 0 solid transparent;
+	border-inline-width: 18px;
+	border-image: url('/splash/wash-day.webp') 0 48 fill / 0 18px / 0 stretch;
+	opacity: calc(0.6 + var(--skin-hot) * 0.4);
+	transition: opacity var(--tile-press) linear;
+}
+.moba-front[data-skin='painted'] [data-light='night'] .front-tile-label::after {
+	border-image-source: url('/splash/wash-night.webp');
+}
+.moba-front[data-skin='painted'] .front-tile {
+	padding: var(--sheet-frame, 30px) var(--sheet-frame, 30px) 8px;
+}
+.moba-front[data-skin='painted'] .front-tile-art {
+	margin: 0;
+}
+.moba-front[data-skin='painted'] .front-tile-label {
+	padding-bottom: 1.3em;
+}
+.moba-front[data-skin='painted'] .front-bonus {
+	--sheet-paper: 12px;
+	--sheet-frame: 14px;
+}
+.front-tile-label > .skin-wash {
+	left: 4%;
+	top: 6%;
+	width: 92%;
+	height: 78%;
 }
 .front-tile.selected {
 	transform: translate(calc(var(--tile-lift) * -0.5), calc(var(--tile-lift) * -1))
@@ -398,7 +470,7 @@
 	-webkit-tap-highlight-color: transparent;
 	user-select: none;
 }
-.front-bonus svg {
+.front-bonus > svg:not(.skin-paint) {
 	width: 1.9em;
 	height: 1.9em;
 	fill: color-mix(in srgb, var(--ui-red) 45%, var(--ui-cream));
@@ -407,7 +479,7 @@
 	stroke-linecap: round;
 	transition: transform var(--tile-snap) cubic-bezier(0.2, 1.9, 0.45, 1);
 }
-.front-bonus svg path {
+.front-bonus > svg:not(.skin-paint) path {
 	fill: none;
 }
 .front-bonus-kicker {
@@ -420,11 +492,13 @@
 	font: 400 1.35em / 1 var(--ui-font);
 	translate: 0 0.06em;
 }
-.moba-front .front-bonus.selected {
+.moba-front[data-skin='stone'] .front-bonus.selected {
 	color: var(--ui-cream);
+}
+.moba-front .front-bonus.selected {
 	transform: translate(-50%, -4px) rotate(-1deg) scale(1.06);
 }
-.front-bonus.selected svg {
+.front-bonus.selected > svg:not(.skin-paint) {
 	transform: rotate(-20deg);
 }
 .moba-front .front-bonus:active {
@@ -480,6 +554,10 @@
 	}
 	.front-tile-name {
 		font-size: clamp(26px, 8vw, 44px);
+	}
+	.front-tile-label > .skin-wash {
+		top: 24%;
+		height: 52%;
 	}
 }
 @media (prefers-reduced-motion: reduce) {

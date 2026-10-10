@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Painted card materials · dodgethis</title>
+		<style>
+			* {
+				box-sizing: border-box;
+			}
+			body {
+				margin: 0;
+				color: #303c41;
+				background: #faf7ef;
+				font:
+					16px/1.5 system-ui,
+					sans-serif;
+			}
+			main {
+				max-width: 1120px;
+				margin: auto;
+				padding: 36px 24px;
+			}
+			h1 {
+				font-size: 36px;
+				line-height: 1.1;
+				letter-spacing: -0.035em;
+				margin: 10px 0 14px;
+			}
+			h2 {
+				font-size: 23px;
+				margin: 0 0 12px;
+			}
+			p {
+				margin: 0 0 10px;
+			}
+			.eyebrow {
+				font-size: 12px;
+				text-transform: uppercase;
+				letter-spacing: 0.15em;
+				color: #72766b;
+			}
+			a {
+				color: inherit;
+				text-underline-offset: 3px;
+			}
+			.intro {
+				max-width: 740px;
+			}
+			.study {
+				margin: 26px 0 32px;
+				background: center/cover url('../02-day-night-plate.webp');
+				padding: 36px 18px;
+				border-radius: 10px;
+				display: flex;
+				flex-wrap: wrap;
+				justify-content: center;
+				gap: 30px;
+			}
+			.card {
+				position: relative;
+				width: 285px;
+				min-height: 350px;
+				padding: 30px 25px;
+				isolation: isolate;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: space-between;
+				transform: rotate(-1.3deg);
+			}
+			.card.night {
+				transform: rotate(1.1deg);
+			}
+			.card:before {
+				content: '';
+				position: absolute;
+				inset: 0;
+				border: 24px solid transparent;
+				border-image: url('05-deckled-paper.webp') 128 fill/24px/0 stretch;
+				z-index: -2;
+			}
+			.card:after {
+				content: '';
+				position: absolute;
+				inset: 0;
+				border: 30px solid transparent;
+				border-image: url('01-day-ink-frame.webp') 160/30px/0 stretch;
+				z-index: -1;
+				pointer-events: none;
+			}
+			.card.night:after {
+				border-image-source: url('02-night-ink-frame.webp');
+			}
+			.art {
+				width: 100%;
+				height: auto;
+				display: block;
+			}
+			.band {
+				position: relative;
+				isolation: isolate;
+				width: 100%;
+				text-align: center;
+				font-size: 27px;
+				line-height: 1.1;
+				font-weight: 650;
+				padding: 14px 3px;
+				color: #273947;
+			}
+			.band:before {
+				content: '';
+				position: absolute;
+				inset: 0;
+				border: 0 solid transparent;
+				border-left-width: 18px;
+				border-right-width: 18px;
+				border-image: url('03-day-title-wash.webp') 0 96 fill/0 18px/0 stretch;
+				z-index: -1;
+			}
+			.night .band:before {
+				border-image-source: url('04-night-title-wash.webp');
+			}
+			.card small {
+				font-size: 11px;
+				letter-spacing: 0.17em;
+				margin: 12px 0 3px;
+			}
+			.hint {
+				font-size: 13px;
+				color: #72766b;
+			}
+			.assets {
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				gap: 24px;
+				margin-top: 16px;
+			}
+			figure {
+				margin: 0;
+			}
+			.checker {
+				background-color: #ecece7;
+				background-image:
+					linear-gradient(45deg, #d9ddd8 25%, transparent 25%),
+					linear-gradient(-45deg, #d9ddd8 25%, transparent 25%),
+					linear-gradient(45deg, transparent 75%, #d9ddd8 75%),
+					linear-gradient(-45deg, transparent 75%, #d9ddd8 75%);
+				background-size: 20px 20px;
+				background-position:
+					0 0,
+					0 10px,
+					10px -10px,
+					-10px 0;
+				border-radius: 7px;
+				padding: 14px;
+				display: block;
+			}
+			.checker img {
+				display: block;
+				width: 100%;
+				height: 240px;
+				object-fit: contain;
+			}
+			.wash img {
+				height: 125px;
+			}
+			figcaption {
+				margin-top: 12px;
+			}
+			h3 {
+				font-size: 18px;
+				margin: 0 0 6px;
+			}
+			figcaption p {
+				font-size: 14px;
+				margin-bottom: 6px;
+			}
+			.file {
+				font-size: 12px;
+				color: #657169;
+			}
+			code {
+				font-size: 0.85em;
+				background: #ebe8dd;
+				padding: 2px 4px;
+				border-radius: 3px;
+			}
+			.notes {
+				border-top: 1px solid #dbd8cc;
+				margin-top: 30px;
+				padding-top: 20px;
+				max-width: 900px;
+			}
+			.notes p {
+				font-size: 14px;
+			}
+			.notes pre {
+				font-size: 12px;
+				line-height: 1.6;
+				overflow: auto;
+				background: #eeeae0;
+				padding: 14px;
+				border-radius: 6px;
+			}
+			footer {
+				font-size: 12px;
+				color: #72766b;
+				border-top: 1px solid #dbd8cc;
+				margin-top: 25px;
+				padding-top: 16px;
+			}
+			@media (max-width: 650px) {
+				main {
+					padding: 25px 16px;
+				}
+				.assets {
+					grid-template-columns: 1fr;
+				}
+				.study {
+					padding: 28px 10px;
+					gap: 20px;
+				}
+				.card {
+					width: 270px;
+				}
+				.checker img {
+					height: 220px;
+				}
+				.wash img {
+					height: 100px;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<main>
+			<p class="eyebrow">dodgethis / splash / painted card materials</p>
+			<h1>Ink, wash and paper.</h1>
+			<p class="intro">
+				Two loose hand-ink frames, two title washes and one deckled paper ground. Warm mineral
+				pigments and paper tooth take the cards toward the splash’s aquarelle feel. No ornament,
+				hard bevels or stitched seams.
+			</p>
+			<div class="study" aria-label="Layered material studies">
+				<div class="card">
+					<img
+						class="art"
+						src="../03-overthrow-tile.webp"
+						width="1280"
+						height="960"
+						alt="Overthrow day isles"
+					/><small>MOBA</small>
+					<div class="band">Overthrow</div>
+				</div>
+				<div class="card night">
+					<img
+						class="art"
+						src="../04-flagfall-tile.webp"
+						width="1280"
+						height="960"
+						alt="Flagfall violet garden"
+					/><small>MOBA</small>
+					<div class="band">Flagfall</div>
+				</div>
+			</div>
+			<p class="hint">
+				Layered study using the actual WebPs and the slice recipes below. These are materials;
+				labels remain live text. Checkerboards below show transparency and are not baked into the
+				images.
+			</p>
+			<section style="margin-top: 28px">
+				<h2>Five materials</h2>
+				<div class="assets">
+					<figure>
+						<a class="checker" href="01-day-ink-frame.webp"
+							><img
+								src="01-day-ink-frame.webp"
+								width="1024"
+								height="1024"
+								alt="Hollow warm sandstone wash frame with wobbly charcoal ink line."
+						/></a>
+						<figcaption>
+							<h3>01 / Day ink frame</h3>
+							<p>
+								9-slice: cut 160 px from each side; keep corner cells fixed, stretch the four middle
+								edges. Leave the centre empty. Start with a 30 px rendered border.
+							</p>
+							<a class="file" href="01-day-ink-frame.webp" download
+								>01-day-ink-frame.webp · 1024 × 1024 · alpha</a
+							>
+						</figcaption>
+					</figure>
+					<figure>
+						<a class="checker" href="02-night-ink-frame.webp"
+							><img
+								src="02-night-ink-frame.webp"
+								width="1024"
+								height="1024"
+								alt="Hollow mineral violet wash frame with uneven dark ink line."
+						/></a>
+						<figcaption>
+							<h3>02 / Night ink frame</h3>
+							<p>
+								Same 160 px cuts and 30 px border as day. Quiet violet pigment around the hand-drawn
+								line; centre remains transparent.
+							</p>
+							<a class="file" href="02-night-ink-frame.webp" download
+								>02-night-ink-frame.webp · 1024 × 1024 · alpha</a
+							>
+						</figcaption>
+					</figure>
+					<figure>
+						<a class="checker wash" href="03-day-title-wash.webp"
+							><img
+								src="03-day-title-wash.webp"
+								width="1024"
+								height="256"
+								alt="Pale ochre and peach watercolour brush swatch fading to transparency."
+						/></a>
+						<figcaption>
+							<h3>03 / Warm title wash</h3>
+							<p>
+								Horizontal 3-slice: 96 px left and right caps, 832 px middle. Keep caps about 18 px
+								wide and stretch the middle. Use <code>0 96 fill</code>; the wash’s soft top and
+								bottom edges stay in the middle cell.
+							</p>
+							<a class="file" href="03-day-title-wash.webp" download
+								>03-day-title-wash.webp · 1024 × 256 · alpha</a
+							>
+						</figcaption>
+					</figure>
+					<figure>
+						<a class="checker wash" href="04-night-title-wash.webp"
+							><img
+								src="04-night-title-wash.webp"
+								width="1024"
+								height="256"
+								alt="Dusty violet and lilac watercolour swatch with softly bleeding alpha edges."
+						/></a>
+						<figcaption>
+							<h3>04 / Violet title wash</h3>
+							<p>
+								Same 96 px horizontal caps. Keep the band about 48–64 px high; set dark ink text
+								over the pale centre.
+							</p>
+							<a class="file" href="04-night-title-wash.webp" download
+								>04-night-title-wash.webp · 1024 × 256 · alpha</a
+							>
+						</figcaption>
+					</figure>
+					<figure>
+						<a class="checker" href="05-deckled-paper.webp"
+							><img
+								src="05-deckled-paper.webp"
+								width="1024"
+								height="1024"
+								alt="Unprinted warm ivory paper with quiet grain and soft deckled edges on transparency."
+						/></a>
+						<figcaption>
+							<h3>05 / Deckled paper ground</h3>
+							<p>
+								9-slice: 128 px all around, with <code>fill</code>. Keep corners at 24 px, stretch
+								edge cells and fill the plain centre. Lay it under either hollow frame.
+							</p>
+							<a class="file" href="05-deckled-paper.webp" download
+								>05-deckled-paper.webp · 1024 × 1024 · alpha</a
+							>
+						</figcaption>
+					</figure>
+				</div>
+			</section>
+			<section class="notes">
+				<h2>Slice recipe</h2>
+				<p>
+					Layer order: paper ground → ink frame → illustration and title wash → live text. The frame
+					files already include their pigment bleed. Use <code>stretch</code> for the edges: the
+					wash is softly variable, not a guaranteed seamless repeat tile. Keep each corner fixed;
+					avoid scaling the whole frame to a tall card.
+				</p>
+				<pre>
+/* Hollow frame, on its own overlay layer */
+border: 30px solid transparent;
+border-image: url("01-day-ink-frame.webp") 160 / 30px / 0 stretch;
+
+/* Paper ground, on a separate layer */
+border: 24px solid transparent;
+border-image: url("05-deckled-paper.webp") 128 fill / 24px / 0 stretch;
+
+/* Title wash, horizontal caps; fill carries the full middle */
+border: 0 solid transparent;
+border-left-width: 18px;
+border-right-width: 18px;
+border-image: url("03-day-title-wash.webp") 0 96 fill / 0 18px / 0 stretch;</pre>
+				<p>
+					Paint is intentionally irregular. Let the drawn frame establish the contour; a second
+					geometric border or heavy offset shadow would bring the hard card back.
+				</p>
+			</section>
+			<footer>
+				<a href="../index.html">Splash plates and tile art</a> ·
+				<a href="prompts.json">Full prompts and alpha checks</a> · Built-in image generator. Alpha
+				preserved in the WebPs.
+			</footer>
+		</main>
+	</body>
+</html>

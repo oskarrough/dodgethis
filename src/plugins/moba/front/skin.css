@@ -104,3 +104,125 @@
 		transition-duration: 0s;
 	}
 }
+
+/* Painted skins ('wash', 'ink'): the card is deckled paper drawn by the SVG filters in
+   `skin.js`. The filtered layers are their own SVGs so focus only fades or scales them. */
+.skin-card > .skin-paint {
+	--o: 0px;
+	position: absolute;
+	inset: calc(var(--o) * -1);
+	width: calc(100% + var(--o) * 2);
+	height: calc(100% + var(--o) * 2);
+	overflow: visible;
+	pointer-events: none;
+}
+.moba-front:not([data-skin='stone']) .skin-card::before,
+.moba-front:not([data-skin='stone']) .skin-card > :is(.skin-ring, .skin-face),
+.moba-front[data-skin='stone'] .skin-paint {
+	display: none;
+}
+.skin-paint rect {
+	fill: none;
+}
+.skin-shadow {
+	translate: var(--skin-drop) var(--skin-drop);
+	transition: translate var(--tile-snap) cubic-bezier(0.2, 1.9, 0.45, 1);
+}
+.skin-paint .skin-shadow-paint {
+	fill: var(--ui-text);
+}
+.skin-paint .skin-paper-fill {
+	fill: var(--ui-cream);
+}
+.skin-paint .skin-pen-line {
+	stroke: var(--ui-text);
+	stroke-width: 2.5px;
+	stroke-linejoin: round;
+}
+.skin-halo,
+.skin-bleed {
+	opacity: var(--skin-hot);
+	scale: calc(0.94 + var(--skin-hot) * 0.06);
+	transition:
+		opacity var(--tile-press) linear,
+		scale var(--tile-snap) cubic-bezier(0.2, 1.9, 0.45, 1);
+	will-change: opacity, scale;
+}
+.skin-card > .skin-halo {
+	--o: 2px;
+}
+.skin-paint .skin-ring-paint {
+	stroke: var(--ui-text);
+	stroke-width: 9px;
+	stroke-linejoin: round;
+}
+.skin-card > .skin-bleed {
+	--o: 34px;
+}
+.skin-paint .skin-bleed-wash {
+	fill: var(--wash);
+}
+.skin-paint.skin-wash {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	overflow: visible;
+}
+.skin-wash rect {
+	fill: var(--wash);
+}
+/* Ink: a heavier pen and a hard, wobbling printed shadow; no wash. */
+.moba-front[data-skin='ink'] :is(.skin-bleed, .skin-wash) {
+	display: none;
+}
+/* Wash: a lighter pen, a soft violet shadow, no ring; the wash does the talking. */
+.moba-front[data-skin='wash'] .skin-halo {
+	display: none;
+}
+.moba-front[data-skin='wash'] .skin-pen-line {
+	stroke-width: 1.6px;
+}
+.moba-front[data-skin='wash'] .skin-shadow-paint {
+	fill: color-mix(in srgb, var(--ui-text) 35%, transparent);
+}
+.moba-front[data-skin='wash'] .skin-wash {
+	opacity: calc(0.5 + var(--skin-hot) * 0.5);
+	transition: opacity var(--tile-press) linear;
+}
+@media (prefers-reduced-motion: reduce) {
+	.skin-shadow,
+	.skin-halo,
+	.skin-bleed,
+	.skin-wash {
+		transition-duration: 0s;
+	}
+}
+
+/* Painted: the art thread's materials as 9-slice layers, paper under a hand-inked frame,
+   with the wash bloom kept for focus. The frame draws the contour; no shadow, no second line. */
+.skin-card > .skin-sheet {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+}
+.moba-front:not([data-skin='painted']) .skin-sheet,
+.moba-front[data-skin='painted'] .skin-paint:not(.skin-bleed) {
+	display: none;
+}
+.skin-sheet::before,
+.skin-sheet::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	border: var(--sheet-paper, 24px) solid transparent;
+	border-image: url('/splash/paper.webp') 64 fill / var(--sheet-paper, 24px) / 0 stretch;
+}
+.skin-sheet::after {
+	inset: -4px;
+	border-width: var(--sheet-frame, 30px);
+	border-image: url('/splash/frame-day.webp') 80 / var(--sheet-frame, 30px) / 0 stretch;
+}
+[data-light='night'] > .skin-sheet::after {
+	border-image-source: url('/splash/frame-night.webp');
+}

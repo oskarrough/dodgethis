@@ -88,9 +88,35 @@ export const tune = {
 		stagger: 0.05,
 		pop: 0.35,
 	},
-	// The stone-card skin every front screen shares (px): ink `line`, hard `shadow` offset, the
-	// cream `ring` round whatever you're on, and the chipped corner `cut`s (tl, tr, br, bl).
-	skin: { line: 3, shadow: 6, ring: 5, cut: [18, 7, 15, 5] },
+	// The card skin every front screen shares. `style` picks one ('?skin=' overrides it):
+	// 'painted' the art thread's paper, ink frame and title wash (`public/splash/`), wash bleed;
+	// 'wash' deckled paper, a watercolour wash behind the title, focus bleeds the wash out;
+	// 'ink' deckled paper and a wobbling pen line, focus is a thick painted ring;
+	// 'stone' chamfered cream card, ink band, cream ring (the first pass).
+	// Stone numbers (px): ink `line`, hard `shadow` offset, `ring`, corner `cut`s (tl, tr, br, bl).
+	// `paint`: noise `frequency` (per px) and displacement `scale` (px) for the paper's edge,
+	// the pen line and the washes; a wash also softens, pools pigment and darkens a `rim`.
+	// Applied when the splash is built.
+	skin: {
+		style: 'wash',
+		line: 3,
+		shadow: 6,
+		ring: 5,
+		cut: [18, 7, 15, 5],
+		paint: {
+			deckle: { frequency: 0.05, scale: 9 },
+			pen: { frequency: 0.009, scale: 9 },
+			// The focus ring's dry brush: bristle `grain` (per px) and how `dry` (0–1) it runs.
+			brush: { grain: 0.12, dry: 0.35 },
+			wash: { frequency: 0.02, scale: 20, soften: 1.4, pooling: 2, rim: 3 },
+			// The wash that bleeds out behind the card you're on.
+			bloom: { frequency: 0.008, scale: 60, soften: 4, pooling: 2.2, rim: 5 },
+		},
+		// Each map's wash: apricot by day, orchid by night, never a team hue.
+		wash: { overthrow: '#f0b48a', flagfall: '#b99ad8', bonus: '#e9c9b0' },
+		// Painted materials per map light: frame and title wash, by day or night.
+		light: { overthrow: 'day', flagfall: 'night', bonus: 'day' },
+	},
 	move: { freq: 880, slideTo: 1175, dur: 0.045, gain: 0.03, type: 'square' },
 	enter: { frequencies: [392, 587.33], gap: 0.06, dur: 0.3, gain: 0.05, type: 'triangle' },
 	deny: { freq: 116.54, slideTo: 98, dur: 0.16, gain: 0.06, type: 'square', shake: 0.24 },
