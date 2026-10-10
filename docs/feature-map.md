@@ -1,0 +1,193 @@
+# Feature map
+
+Every player-facing feature, grouped by screen, one line each: the feature in plain words, then its files and entry symbols, its `tune.js` key and its doc. Grep this file for the word a player would say ("scoreboard", "bollard"), land on the code, then read only that code.
+
+Don't read big files whole. `ast-grep outline <file>` lists a file's symbols with line numbers; `ast-grep run -p '<pattern>' -l js src` finds structure (callers, `tune.x.y` uses). Whoever adds or moves a feature updates its line here.
+
+Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` means `src/plugins/moba/tune.js` (key in backticks); other tune files are named in full. Docs live in `docs/`.
+
+## Shell and splash
+
+- Splash with map tiles (Overthrow, Flagfall): `front/index.js` `mobaFront`; `front/backdrop.js` `createBackdrop`; `front/tune.js` `tile`, `title`, `dusk`; `moba-front.md`
+- Dodgeball bonus sticker under the tiles: `front/index.js` (`bonus` const, `.front-bonus`); `moba-front.md`, `roadmap.md`
+- Splash keyboard and pad focus, deny shake, back button: `front/controls.js` `createControls`; `front/tune.js` `deny`, `back`, `move`, `enter`
+- Stickers, mute button, online panel, shell CSS: `index.html`; `src/core/browser.js` `createBrowserApp`
+- Boot error screen: `src/core/browser.js` `reportBootError`
+- Mode registration, `window.game.moba`: `index.js` `moba` (default export); `src/core/app.js` `createApp`; `plugin-architecture.md`
+- Match setup from the URL (`?mode=moba&play&bots=&hero=&seed=&debug`): `setup.js` `parseMatchSetup`, `wantsDirectPlay`, `matchLink`; `moba-agents.md`
+- Which screen is up (splash, lobby, match, paused, result): `src/core/proof.js` `createProofApi` (`dt.screen()`); `verification.md`
+
+## Lobby
+
+- Lobby screen (walk around, pick, ready, back): `lobby.js` `createLobby`; `tune.js` `lobby`; `moba-lobby.md`
+- Seats, roster, ready state: `lobby-state.js` `createReadySeats`; `lobby-heroes.js` `createLobbyHeroes`; `tune.js` `lobby.ready`
+- Ready pad on the floor: `lobby-floor.js` (`tune.lobby.ready`); `lobby.js` `createLobby`
+- Lobby floor, rocks and fences: `lobby-floor.js` `createLobbyFloor`, `floorOutline`, `createFences`; `maps/lobby.js` `lobbyLayout`; `tune.js` `lobby.floor`, `lobby.fence`
+- Hero stands and the hero strip (pick a hero): `lobby-heroes.js` `heroStands`, `createHeroStrip`; `tune.js` `lobby.pick`
+- Hero numbers panel (stats, level slider): `front/numbers.js` `createNumbers`; `front/stats.js` `heroStats`, `numberLines`; `tune.js` `lobby.inspect`
+- Difficulty gallery, three standees you shoot to pick: `lobby-props.js` `createDifficultyGallery`; `tune.js` `lobby.gallery`
+- Horseshoe magnets with sleepy, calm and angry faces: `lobby-magnets.js` `createMagnets`, `createFaceKit`
+- Lobby props in the scene (stands, magnets, ready marks): `lobby-props.js` `createLobbyProps`; `tune.js` `lobby.marks`
+- Lobby practice dummies: `dummy-view.js` `dressDummy`; `match.js` `dummies`; `tune.js` `dummies`, `dummyView`, `lobby.practice`
+- Lobby camera and intro swoop: `lobby.js` `createLobby`; `tune.js` `lobby.camera`, `lobby.intro`, `lobby.frame`
+- Lobby HUD (tooltips on heroes): `lobby.js`; `hud.js` `createHud({ lobby: true })`; `tune.js` `lobby.hud`
+- Fall off the floor and respawn: `lobby.js`; `tune.js` `lobby.fall`, `lobby.respawn`
+- Lobby sim replica for online: `lobby-replica.js` `createLobbyReplica`, `createUnitReplica`; `network.md`
+- Online "someone joined" notice: `tune.js` `lobby.onlineNotice`; `lobby.js`
+
+## Descent
+
+- Crane descent from lobby to match: `front/descent.js` `startLoading`; `front/descent-state.js` `createDescentState`, `descentProgress`, `descentFrame`, `localLoadingHero`; `front/tune.js` `loading`; `moba-front.md`
+- Descent camera projection and pointer easing: `front/geometry.js` `projectFrame`, `easePointer`
+- Sky fade, parallax, dusk light on the splash and descent: `front/backdrop.js` `easeShot`; `front/tune.js` `skyFade`, `parallax`, `shot`, `dusk`
+- Volley on the splash (balls flying behind the title): `front/backdrop.js`; `front/tune.js` `volley`
+
+## Match: camera, controls, cursor
+
+- Follow camera and edge reserve: `follow.js` `createFollow`, `stepCamera`, `clampView`, `viewFootprint`; `tune.js` `follow`
+- Camera controls (lock, pan, zoom): `camera-controls.js` `createCameraControls`; `tune.js` `follow`
+- Right-click move and attack-move orders: `sim.js` `issue`, `steer`, `move`, `attackAhead`; `src/core/intents.js` `pointClick`, `createIntents`; `tune.js` `orders`
+- Pad stick aim: `sim.js` `stickAim`; `src/core/intents.js` `stickVector`; `tune.js` `stickAim`
+- Keyboard and gamepad reading: `src/core/input.js` `moveVector`, `pollGamepad`, `consumeKeys`, `rumble`; `src/core/intents.js` `readIntent`
+- Cursor (move and attack icons): `cursor.js` `createCursor`; `cursors/move.svg`, `cursors/attack.svg`
+- Pathfinding around walls: `path.js` `createPathPlanner`, `pursue`; `sim.js` `plan`, `offPath`; `tune.js` `orders`
+
+## Match: HUD
+
+- HUD (portrait, ability slots, cooldown rings, level, health): `hud.js` `createHud`, `matchFrame`; `hud.css`; `tune.js` `hud`; `moba-plan.md`
+- Ability slot keys (Q, W, E and pad RB, RT, LB): `hud.js` `KEYS`, `SLOTS`
+- Inspect mode (hold I or pad button, hover to read cards): `hud.js` `KEY_INSPECT`, `PAD_INSPECT`, `pickUnit`
+- Tooltips and unit cards (hero, tower, minion, wave, Ball, level, kills, clock): `tooltip.js` `createTooltip`, `heroCard`, `abilityCard`, `structureCard`, `minionCard`, `waveCard`, `ballCard`, `levelCard`, `killsCard`, `clockCard`; `hud.js` `cardFor`, `updateTip`
+- Match clock: `tooltip.js` `clock`, `clockCard`; `hud.js`
+- Health bars over units: `health-bars.js` `createHealthBars`; `health-bars.css`; `tune.js` `healthBars`
+- Damage numbers: `damage-numbers.js` `createDamageNumbers`; `tune.js` `damageNumbers`
+- Edge pips for off-screen allies, enemies, Ball: `pips.js` `edgePip`, `createPips`; `tune.js` `pips`
+- Minimap: `minimap.js` `createMinimap`; `maps/index.js` `matchRecipe`; `hud.js`
+- Scoreboard (Tab or pad Select, live table mid-match): `recap.js` `createRecap` (the `board` aside, class `moba-scoreboard`); `match-stats.js` `createMatchStats`; `moba-recap.md`
+- Pause menu: `menu.js` `createMatchMenu`; `menu.css`; `tune.js` `hud`
+- Onboarding hints (first match prompts, guide to the Ball): `onboarding.js` `createOnboarding`; `tune.js` `onboarding`; `moba-onboarding.md`
+- Dead-world grey-out and respawn timer: `recap.js` `createRecap` (`moba-dead-world`); `sim.js` `respawn`; `tune.js` `respawn`
+- Combat log: `src/core/debug.js` `createCombatLog`
+
+## Match: heroes and kits
+
+- Hero table and kit definitions: `heroes.js` `heroDefinition`, `HEROES`, `freshAbilityState`; `ability.js` `abilityOf`, `castAbility`, `slowFactor`; `tune.js` `heroes`, `hero`; `moba-heroes.md`
+- Casting, cast points, release: `sim.js` `casts`, `release`, `cancelChannel`, `stepHeroState`; `tune.js` `cast`
+- Basic attack: `sim.js` `basicAttack`, `aimBasic`; `tune.js` `attack`
+- Damage and hit resolution: `sim.js` `hit`; `skillshot.js` `stepShot`, `interceptShot`
+- Skillshot shapes and sweeps: `skillshot.js` `stepShot`, `closest`; `obstacles.js` `sweepHit`, `sweepObstacles`; `skills-view.js` `lineReach`
+- Ability telegraphs for enemies (ground line tell): `skills-view.js` `createSkillsView`; `tune.js` `abilityView`; `moba-heroes.md`
+- Fletcher, ranged poke. Q Loose (arrow shot), W Vault (dash), E Rain (zone): `heroes.js` `loose`, `vault`, `rain`; `tune.js` `loose`, `vault`, `rain`; `moba-heroes.md`
+- Mitts, keeper. Q Toss (throw caught shots), W Catch (stance), E Dive (dash): `heroes.js` `toss`, `catchStance`, `dive`; `tune.js` `toss`, `catch`, `dive`, `gloveSlap`, `mittsView`
+- Mitts glove slap (basic): `heroes.js` `gloveSlap`; `tune.js` `gloveSlap`
+- Catching and the Pocket (caught shots held and thrown back): `sim.js` `openCatch`, `throwCaught`, `resolveInterception`, `traitContext`; `tune.js` `catch`, `catching`, `momentum`
+- Carom and Skip: tuned (`tune.js` `heroes`) and designed in `moba-heroes.md`, but not in the `heroes.js` table yet
+- Hero costumes and silhouettes: `hero-view.js` `dressHero`; `tune.js` `silhouettes`, `heroProof`; `moba-look.md`
+- Level, XP and stat growth: `tooltip.js` `levelProgress`; `sim.js` `hit`; `tune.js` `levels`
+- Globes (health pickups): `lane.js` `createLane`; `lane-view.js` `createLaneView`; `tune.js` `globes`
+- Scripted test hero: `scripted.js` `createScriptedHero`; `tune.js` `scripted`
+
+## Match: lane, minions, towers
+
+- Lane: minion waves, towers, fort, core: `lane.js` `createLane`; `match.js` `lane`, `structures`, `minions`; `tune.js` `waves`, `minions`, `tower`, `fort`, `core`; `moba-lane.md`
+- Wave timing and spawns: `lane.js`; `match.js` `minions`; `tune.js` `waves`
+- Lane bots (the minions' walk and fights under guns): `lane-bots.js` `laneBots`; `maps/paths.js` `laneRoute`
+- Lane drawing (minions, towers, fort, core): `lane-view.js` `createLaneView`; `tune.js` `laneView`
+- Team stamps on the ground: `stamps.js` `createStamps`
+- Match end rules (objective, late-game gun damage, winner): `lane.js` `createLane`; `tune.js` `match`
+- Base healing: `lane.js` `createLane`; `tune.js` `base`
+- Lane replica for online: `lane-replica.js` `createLaneReplica`, `projectLaneSnapshot`; `network.md`
+
+## Match: the Ball
+
+- Ball (neutral objective, carried to score on structures): `ball.js` `createBall`; `match.js` `ball`; `tune.js` `ball`; `moba-lane.md`
+- Ball drawing and trail: `ball-view.js` `createBallView`; `tune.js` `ballView`
+- Ball confetti on pop: `feedback.js` `createFeedback`; `tune.js` `ballConfetti`
+- Ball bot behaviour (who fetches, who carries): `ball-bots.js`; `tune.js` `bots`
+
+## Match: maps and props
+
+- Overthrow (the first map): `maps/overthrow.js` `overthrowLayout`; `match-terrain.js` `createMatchTerrain`; `tune.js` `overthrowTerrain`, `map`; `moba-lane.md`
+- Flagfall (the second map): `maps/flagfall.js` `flagfallLayout`, `flagfallLayoutTune`; `tune.js` `flagfall`; `moba-map-2.md`
+- Flagfall water: `flagfall-water.js` `createFlagfallWater`, `loadFlagfallTile`; `tune.js` `flagfall.water`
+- Flagfall windbreaks (striped screens): `windbreak.js` `windbreakGeometries`; `tune.js` `flagfall`
+- Flagfall bollards (mooring posts): `bollard.js` `bollardGeometries`; `tune.js` `flagfall`
+- Flagfall hedges and fence: `match-terrain.js` `createMatchTerrain`; `tune.js` `flagfall.hedge`, `flagfall.fence`
+- Map registry and layout recipe: `maps/index.js` `mapLayout`, `matchRecipe`; `tune.js` `map`
+- Ground and walls build: `map.js` `buildMap`, `createMapScope`; `match-terrain.js` `createMatchTerrain`
+- Colliders and walkable test: `obstacles.js` `buildColliders`, `walkable`, `clampWalkable`, `segmentClear`, `clampMap`
+- Look reference boards and textures: `docs/look/`; `moba-look.md`
+
+## Match: view, feedback, sound
+
+- Match scene root: `view.js` `createView`; `index.js`
+- Feedback (facts turn into sound, popups, shake, hit flash): `feedback.js` `createFeedback`; `index.js` `validFact`; `tune.js` `juice`, `out`, `squeak`
+- Sounds: `sounds.js` `createSounds`; `tune.js` `sounds`; `src/core/audio.js`, `src/core/music.js`
+- Screen shake, hit flash, impact: `src/core/juice.js` `createJuice`; `tune.js` `juice`
+- Hero and dummy death animation: `src/core/death.js` `startDeath`
+- Style pass (inked outlines, palette): `src/core/stylepass.js`, `src/core/style.js` `PALETTE`; `moba-look.md`
+
+## Match: bots and agents
+
+- Bots: difficulty, roster, intercept maths: `bots.js` `createBots`, `createBot`, `practiceRoster`, `botRandom`, `interceptTime`; `tune.js` `bots`
+- Lane walking bot: `lane-bots.js`; fight bot (who to hit): `fight-bots.js` `createFightBot`; dodge bot: `dodge-bots.js` `createDodgeBot`; Ball bot: `ball-bots.js`
+- Headless match for simulations: `agent-match.js` `createAgentMatch`, `replayHash`, `readReplay`; `bun run simulate`; `verification.md`
+- Agent protocol (observations and actions for LLM or scripted players): `agents.js` `agentRoster`, `observation`, `agentAction`, `createAgentDecisions`; `tune.js` `agents`, `proof`; `moba-agents.md`
+- Match replay (record, load, play back): `replay.js` `mobaReplay`, `loadReplay`; `replay.css`
+
+## Result
+
+- Recap screen (end table, stats, replay shot): `recap.js` `createRecap`; `match-stats.js` `createMatchStats`; `moba-recap.md`
+- Winner freezes the match and opens the recap: `index.js` `moba` (`sim.lane.match.winner`); `menu.js` `createMatchMenu`
+
+## Debug, Try Mode, proof
+
+- Debug panel and Try Mode folder: `debug.js` `createDebugLayout`, `createMatchDebug`; `setup.js` `parseTrySetup`; `src/core/debug.js` `createDebugPanel`
+- Tuning sliders: `sliders.js` `sliderSections`, `addSliders`; new debug folders also go in `debugSections`
+- `window.dt` (keys, pad, screen, device, game): `src/core/proof.js` `createProofApi`; `verification.md`
+- Simulation tables and bot experiments: `agent-match.js`; `verification.md`
+
+## Online rooms
+
+- Online plugin and room panel: `src/plugins/online/index.js` `online`; `src/plugins/online/online-ui.js` `createOnlineUi`; `network.md`
+- Room session (host, join, lobby, match): `src/plugins/online/online-session.js` `createOnlineSession`; `src/plugins/online/tune.js` `link`, `input`
+- Room list and join codes: `src/plugins/online/lobby-directory.js` `createLobbyDirectory`
+- Transport (peer link, envelopes): `src/plugins/online/net.js` `Net`, `plainJoinData`; `src/plugins/online/link.js` `createLink`
+- Remote players as replicas: `lane-replica.js`, `lobby-replica.js`; `src/plugins/dodgeball/replica.js`
+
+## Dodgeball (bonus mode)
+
+Plugin in `src/plugins/dodgeball/`; its snapshots are locked by `tests/characterization.test.js`. Tune keys are in `src/plugins/dodgeball/tune.js`.
+
+- Dodgeball plugin entry: `index.js` `dodgeball` (default export)
+- Round and match flow: `matchflow.js` `createMatchFlow`; `round.js`
+- Court and arena: `court.js` `buildCourt`; `arena.js` `bounds`, `spawnPoint`, `ammoPoint`
+- Arrows (the balls: flight, landing, throw): `arrow.js` `createArrow`, `projectArrowFlight`, `solveLaunch`, `launchVelocity`; tune `arrow`
+- Weapons and charge meter: `weapons.js` `createChargeMeter`; `weaponhud.js` `createWeaponHud`; tune `weapons`
+- Loadout and hand point: `loadout.js` `createLoadout`, `handPoint`
+- Aim line: `aimline.js` `createAimLine`; `aim.js`
+- Near-miss tracker: `nearmiss.js` `createNearMissTracker`
+- Opponent brain: `ai.js` `createBrain`; tune `ai`
+- Scoreboard (dodgeball): `scoreboard.js` `createScoreboard`
+- Portal pads (pick the number of enemies): `portal.js` `createPortal`, `buildPortalPad`
+- Sandbox mode and scenarios: `sandbox.js` `createSandbox`; `scenario.js` `scenario`, `scenarioFromURL`
+- God mode effects and cheats: `godmodefx.js` `createGodmodeFx`; tune `cheats`, `fx`
+- Feedback and impact: `feedback.js`; `impact.js`
+- Lobby handoff: `index.js` (`lobbyExit`)
+
+## Landmarks in the big files
+
+`sim.js` (about 2300 lines) and `tune.js` (about 1400) are the two files every thread re-read. Use `ast-grep outline` or these landmarks rather than reading them whole.
+
+- `tune.js`: every number, one top-level key per system. `grep -n "^	<key>: " src/plugins/moba/tune.js` jumps to one. Sliders for it: `sliders.js`; new debug folders also go in `debugSections`.
+- `sim.js`: one `createSim` closure. Heroes are `sim.heroes[i]`; bodies come from `src/core/body.js` (`body.position`, `body.place(x, y, z)`). Landmarks, in file order:
+  - `makeHero`, `bodyAt`: building a hero
+  - `pick`, `nearestToClick`: what the pointer hits
+  - `plan`, `offPath`, `issue`, `attackAhead`, `steer`, `move`, `face`: orders and movement
+  - `casts`, `release`, `aimBasic`: input to abilities
+  - `control`: per-tick hero logic; `strafe`
+  - `dropIn`, `respawn`, `swapHero`: arriving and returning
+  - `basicAttack`, `hit`: damage
+  - `cancelChannel`, `stepHeroState`, `openCatch`, `launchShot`, `throwCaught`, `resolveInterception`: ability state, shots and catches
+  - `rebuildBots`, `step` (the tick), `stickAim`, `snapshot`, `dispose`, `removeHero`
+- Core engine: `src/core/` (`input.js`/`intents.js` controls, `proof.js` is `window.dt`, `body.js` bodies, `app.js` the clock and modes).

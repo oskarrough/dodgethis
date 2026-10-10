@@ -45,7 +45,8 @@
 - `src/core/` is the engine; `src/plugins/{dodgeball,online,moba}/` are plugins. The contract is the 10 lines at the top of `docs/plugin-architecture.md`. Core never imports plugins, and plugins never import each other; `tests/boundaries.test.js` enforces this.
 - `tests/characterization.test.js` locks dodgeball's behaviour. Its snapshots must stay identical unless a change is deliberate and explained.
 - Modes: `/` opens the splash. `?mode=moba&play&bots=easy&hero=fletcher&seed=2&debug` jumps straight into a match with the debug panel.
-- Where is X in `src/plugins/moba/`: read `docs/code-map.md` first; `sim.js` and `tune.js` are huge, so read the landmark, not the file.
+- Where is X: read `docs/feature-map.md` first (grep it for the player's word). Whoever adds or moves a feature updates its line there. `sim.js` and `tune.js` are huge: read the landmark, not the file.
+- To see a file's symbols without reading it: `ast-grep outline <file>`. For structural search (callers of a function, every `tune.x.y` use) use `ast-grep run -p '<pattern>' -l js src` instead of regex grep.
 - Docs: `docs/roadmap.md` (the big picture), `docs/world.md` (setting), `docs/moba-plan.md` (scope, feel, milestones), `docs/moba-lane.md` (map, structures, Ball), `docs/moba-ideas.md` (creative pitches), `docs/network.md`, `docs/verification.md`.
 
 ## Orchestration
