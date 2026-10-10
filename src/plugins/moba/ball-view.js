@@ -220,7 +220,7 @@ export function createBallView(scene, rng = Math.random) {
 						)
 						tape.rotation.z = sign * v.gagAngle
 					}
-					group.position.set(u.body.position.x, tune.laneView[`${u.kind}Height`], u.body.position.z)
+					group.position.set(u.body.position.x, tune[u.kind].height, u.body.position.z)
 					gags.set(u.id, group)
 				}
 				const gag = gags.get(u.id)

@@ -580,6 +580,7 @@ export const tune = {
 		speed: 16,
 		tell: 0.3,
 		ringNear: 3,
+		height: 5,
 	},
 	fort: {
 		hp: 1400,
@@ -590,6 +591,7 @@ export const tune = {
 		speed: 16,
 		tell: 0.3,
 		ringNear: 3,
+		height: 5,
 	},
 	core: {
 		x: 40,
@@ -601,6 +603,7 @@ export const tune = {
 		speed: 16,
 		tell: 0.3,
 		ringNear: 3,
+		height: 8.5,
 	},
 	levels: {
 		cap: 10,
@@ -854,9 +857,6 @@ export const tune = {
 		shatterPieces: 5,
 		shatterSize: 0.5,
 		shatterSpin: 3,
-		towerHeight: 5,
-		fortHeight: 5,
-		coreHeight: 8.5,
 		domeSegments: 16,
 		domeWidth: 0.045,
 		crenels: 8,

@@ -10,7 +10,7 @@ export function createLaneView(scene, smooth = null) {
 		const tower = Object.hasOwn(tune, kind) && !Object.hasOwn(tune.minions, kind)
 		const radius = tower ? tune[kind].radius : kind === 'brute' ? v.bruteRadius : tune.waves.radius
 		const height = kind === 'brute' ? v.bruteHeight : v.minionHeight
-		const halfHeight = tower ? v[`${kind}Height`] / 2 : height / 2
+		const halfHeight = tower ? tune[kind].height / 2 : height / 2
 		const mesh = new THREE.Group()
 		const visual = new THREE.Group()
 		mesh.add(visual)

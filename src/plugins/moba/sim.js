@@ -72,9 +72,9 @@ export function createSim({
 		towerObstacles.map((o) => [
 			o.id,
 			world.createCollider(
-				RAPIER.ColliderDesc.cylinder(tune.laneView[`${o.kind}Height`] / 2, o.r).setTranslation(
+				RAPIER.ColliderDesc.cylinder(tune[o.kind].height / 2, o.r).setTranslation(
 					o.x,
-					tune.laneView[`${o.kind}Height`] / 2,
+					tune[o.kind].height / 2,
 					o.z,
 				),
 			),
