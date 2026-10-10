@@ -255,7 +255,7 @@ export const tune = {
 		hpTick: 200, // HP per tick on the portrait bar
 		warn: 5, // timers pulse in their last seconds
 	},
-	match: { objective: 180, late: 360, lateGunDamage: 0.05 },
+	match: { objective: 180, late: 360, lateGunDamage: 0.05 }, // late is set per map (maps/index.js)
 	// Fog of war (on unless ?fog=0): sight radii (m) per viewer, and the dim laid over unseen ground (rgb, alpha, px per m).
 	fog: {
 		sight: { hero: 10, minion: 7, structure: 10 },

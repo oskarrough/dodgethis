@@ -7,6 +7,7 @@ import { tune } from '../tune.js'
 export const DEFAULT_MAP = 'overthrow'
 export const maps = {
 	overthrow: {
+		late: 180, // late game (tune.match.late) from 3:00 on this map (Oskar, 2026-10-11)
 		layout: overthrowLayout,
 		pieces: [structures, minions, ball, bots],
 		palette: () => ({ ...tune.overthrowTerrain.palette, light: tune.overthrowTerrain.light }),
@@ -43,6 +44,7 @@ export const maps = {
 		online: true,
 	},
 	flagfall: {
+		late: 360,
 		layout: flagfallLayout,
 		pieces: [structures, minions, camps, flag, bots],
 		palette: () => ({ ...tune.flagfall.palette, light: tune.flagfall.light }),
@@ -73,5 +75,5 @@ export function mapLayout(kind = DEFAULT_MAP) {
 }
 export function matchRecipe(kind = DEFAULT_MAP) {
 	const map = maps[kind] ?? maps[DEFAULT_MAP]
-	return { ...map, layout: map.layout(), palette: map.palette() }
+	return { ...map, layout: { ...map.layout(), late: map.late }, palette: map.palette() }
 }

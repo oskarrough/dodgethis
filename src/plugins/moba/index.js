@@ -98,6 +98,7 @@ export default function moba(app, map) {
 			const kind = isLobby ? 'lobby' : setup.map
 			const match = matchRecipe(kind)
 			const { layout, pieces, palette, debugTune, online } = match
+			if (layout.late) tune.match.late = layout.late // guests build no sim; the HUD reads it too
 			if (!online && app.session.shared) {
 				// Mode start must finish before its replacement can abort it. No map/sim is built.
 				queueMicrotask(() => {

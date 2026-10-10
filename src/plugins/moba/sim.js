@@ -50,6 +50,7 @@ export function createSim({
 	intercept = null,
 	footprint = null, // Lobby observer: aimed props and real, clipped cast footprints.
 }) {
+	if (layout.late) tune.match.late = layout.late // each map sets when late game starts
 	const lanePiece = pieces.find((piece) => piece.lane)?.lane
 	const laneView = lanePiece?.view(scene, smooth, layout) ?? null
 	const towerObstacles = pieces.flatMap((piece) => piece.obstacles?.(layout) ?? [])
