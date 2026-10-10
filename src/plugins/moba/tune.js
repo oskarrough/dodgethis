@@ -837,7 +837,7 @@ export const tune = {
 	fog: {
 		sight: { hero: 10, minion: 7, structure: 10 },
 		color: '20, 18, 30',
-		dim: 0.5,
+		dim: 0.6,
 		resolution: 2,
 		height: 0.08,
 	},
@@ -1013,7 +1013,7 @@ export const tune = {
 		edgeSpeed: 1, // fraction of pan speed; smoothstep from the band's inner boundary
 		height: 20,
 		back: 12.5, // pitch = atan(height / back) ≈ 58°
-		fov: 40, // floor; the lens widens until both long rims show (rimShow)
+		fov: 40, // one lens on every map, close like HotS; the camera pans to the rims rather than zooming out
 		rimShow: 3.5, // metres past each long walkable edge at mid-court, every map: the terrain rim (~2.4) and its drop
 		response: 0.12, // seconds for the spring to cover ~90% of a step
 		lookAhead: 0.25, // fraction of the way toward the aim point
