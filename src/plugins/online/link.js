@@ -4,10 +4,10 @@ import { tune } from './tune.js'
 export const INPUT_TIMEOUT = 0.5
 export const HOST_TIMEOUT = 10
 // A guest whose tab died sends nothing; after this long its seat goes back to the room.
-export const SEAT_TIMEOUT = 10
-export const SEND_INTERVAL = 1 / 20
+const SEAT_TIMEOUT = 10
+const SEND_INTERVAL = 1 / 20
 // Protocol ceiling, captured once so a live tune edit cannot exceed the receiver's limit.
-export const MAX_FACTS = tune.link.maxFacts
+const MAX_FACTS = tune.link.maxFacts
 const MIN_GAP = 0.014 // a changed frame waits this long after the last send: every frame at 60 Hz, every third at 144
 const safeInt = (n) => Number.isSafeInteger(n) && n >= 0
 

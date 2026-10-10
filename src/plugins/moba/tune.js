@@ -75,9 +75,6 @@ export const tune = {
 		lineWidth: 0.06,
 		dashLength: 1,
 		dashSpacing: 2,
-		dotSpacing: 1,
-		dotRadius: 0.045,
-		printSegments: 32,
 		wallHeight: 2.4,
 		boundaryThickness: 0.5,
 		dummyPosts: [
@@ -350,23 +347,6 @@ export const tune = {
 			fitPasses: 6,
 			fitGrowth: 1.2,
 		},
-		// Cardboard cutouts of the ready-line bots; geometry applies on lobby restart.
-		cutout: {
-			width: 1.8,
-			height: 2.2,
-			thickness: 0.08,
-			printGap: 0.01,
-			barWidth: 1.3,
-			barHeight: 0.5,
-			headRadius: 0.3,
-			legHeight: 0.35,
-			legWidth: 0.13,
-			legSpread: 0.3,
-			footWidth: 0.4,
-			footHeight: 0.08,
-			footDepth: 0.65,
-			segments: 24,
-		},
 		// Picking from the hero row: the new body comes round edge-on, like a cutout turned on a pin.
 		pick: {
 			// Authored points that pick intents name heroes by; nothing stands there.
@@ -393,7 +373,6 @@ export const tune = {
 			boxY: 0.19,
 			borderY: 0.185,
 			fillY: 0.195,
-			cardScale: 0.36,
 			// A bot's hero floats over its seat as a hologram.
 			hologram: {
 				float: 0.22,
@@ -785,7 +764,7 @@ export const tune = {
 		maxSeconds: 900,
 	},
 	scripted: { think: 0.1, tell: 0.3, retreat: 0.35, recover: 0.9, file: 2, hold: 3 },
-	proof: { batch: 3600, afterKill: 1, siegeLimit: 600, trace: 128, queryBudgetMs: 2 },
+	proof: { batch: 3600, trace: 128 },
 	hud: {
 		bannerLife: 2.5,
 		ending: 1.5,
@@ -934,9 +913,7 @@ export const tune = {
 		tetherHeight: 0.04,
 		tetherY: 1.3,
 		orbScale: 1.5,
-		labelWidth: 3,
 		labelHeight: 0.75,
-		labelLift: 0.6,
 		feedbackDecay: 12,
 	},
 	damageNumbers: {
@@ -1146,7 +1123,6 @@ export const tune = {
 			shockGrow: 0.35,
 		},
 	},
-	heroProof: { pixels: 20, canvas: 80, zoom: 4 },
 
 	// Q, Loose: a line skillshot, first hit.
 	loose: {

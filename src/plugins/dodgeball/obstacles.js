@@ -28,7 +28,7 @@ export const LAYOUTS = Object.freeze({
 	],
 })
 
-export const SIGHT_HEIGHT = 1.2 // obstacles at least this tall block a shot; lower ones are jumped and shot over
+const SIGHT_HEIGHT = 1.2 // obstacles at least this tall block a shot; lower ones are jumped and shot over
 
 // Signed distance from (x,z) to the shape's footprint (negative inside) and the outward normal at the closest point.
 export function distanceTo(x, z, o, out = { d: 0, nx: 0, nz: 0 }) {

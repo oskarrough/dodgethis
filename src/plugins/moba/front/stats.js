@@ -2,21 +2,7 @@ import { STEP } from '../../../core/app.js'
 import { heroDefinition } from '../heroes.js'
 import { stepHorizontalVelocity } from '../../../core/move.js'
 
-// Fractional final tick uses the same velocity integration as the body at 60 Hz.
-export function travelAt(seconds, profile) {
-	let left = Math.max(0, seconds)
-	let distance = 0
-	let vx = 0
-	while (left > 0) {
-		const velocity = stepHorizontalVelocity(vx, 0, 1, 0, true, STEP, profile)
-		distance += velocity.vx * Math.min(STEP, left)
-		vx = velocity.vx
-		left = Math.max(0, left - STEP)
-	}
-	return distance
-}
-
-export function escapeTime(distance, profile) {
+function escapeTime(distance, profile) {
 	if (distance <= 0) return 0
 	if (!(profile.speed > 0 && profile.accel > 0)) return Infinity
 	let elapsed = 0

@@ -211,13 +211,13 @@ export function pointerDown() {
 }
 
 // Swallow pending edges so a click dismissing the overlay cannot loose an arrow.
-export function clearShoot() {
+function clearShoot() {
 	pressQueued = false
 	releaseQueued = false
 }
 
 // Swallow a pending dash when changing rounds or opening a modal.
-export function clearDash() {
+function clearDash() {
 	dashQueued = false
 	padDashQueued = false
 }

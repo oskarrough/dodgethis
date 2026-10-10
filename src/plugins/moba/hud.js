@@ -107,7 +107,7 @@ const ring = (left, total) =>
 	total > 0 ? Math.round(Math.max(0, Math.min(1, left / total)) * 200) / 200 : 0
 
 // Seconds until a live Ball pops: at its own pop time, or sooner if the next spawn replaces it. Null while none is live.
-export const ballPopIn = (ball, tick, blend, step) =>
+const ballPopIn = (ball, tick, blend, step) =>
 	ball.state && ball.state.state !== 'warning'
 		? Math.max(0, Math.min(ball.state.popAt, ball.nextBall) - tick - blend) * step
 		: null

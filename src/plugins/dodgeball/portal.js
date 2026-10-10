@@ -62,7 +62,7 @@ function starTexture() {
 }
 
 // Build the static sticker as four semantic batches, independent of canvas labels.
-export function buildPortalPad(enemies) {
+function buildPortalPad(enemies) {
 	const group = new THREE.Group()
 	const batches = new Map()
 	function flat(geometry, role, y, x = 0, z = 0) {

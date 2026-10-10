@@ -44,7 +44,7 @@ export function createDescentState(times) {
 // The descent's eased share at `time` s: a slow creep to `creep` over the `preview` while
 // you look at the map, then the dive, which leaves the creep at its speed and lands still.
 // Returned pre-ease, since descentFrame eases its own progress.
-export function descentProgress(time, preview, duration, creep) {
+function descentProgress(time, preview, duration, creep) {
 	const c = preview > 0 ? Math.max(0, Math.min(1, creep)) : 0
 	let shown
 	if (time < preview) shown = c * (time / preview) ** 2
@@ -65,12 +65,6 @@ export function descentProgress(time, preview, duration, creep) {
 const ease = (p) => {
 	const t = Math.max(0, Math.min(1, p))
 	return t * t * (3 - 2 * t)
-}
-
-export function localLoadingHero(snapshot, local) {
-	const hero = snapshot.heroes.find((hero) => hero.id === local)
-	if (!hero) throw new Error('Local hero missing from loading match')
-	return hero.pos
 }
 
 export function descentFrame(progress, hero, start, follow, bounds, aspect = 1) {

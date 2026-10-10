@@ -42,11 +42,6 @@ export const COURT_THEMES = Object.freeze({
 	},
 })
 
-// Re-exported for readability at call sites that only want the dimensions.
-export const COURT = ARENA
-export const KILL_Y = ARENA.killY
-
-// Build matching Three floor geometry and fixed Rapier collision from ARENA dimensions.
 export function buildCourt(scene, world, RAPIER) {
 	const { width, depth, thickness } = ARENA
 	// Everything built below is collected under one root and one collider list, so another mode can have the floor to itself.

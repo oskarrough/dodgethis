@@ -3,7 +3,7 @@ import { FLOOR, clampMap } from './obstacles.js'
 
 // Ground intersections of the four view corners. Pitch stays fixed; oversized
 // live camera tunes still fit the lane's width without changing scale near a base.
-export function viewFootprint(t, aspect, fov = t.fov) {
+function viewFootprint(t, aspect, fov = t.fov) {
 	const height = Math.max(t.minHeight ?? tune.follow.minHeight, t.height)
 	const back = Math.max(0, t.back)
 	const distance = Math.hypot(height, back),
