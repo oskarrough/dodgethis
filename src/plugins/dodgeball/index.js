@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { createCornerNav } from '../../core/corner-nav.js'
 import { createShadows } from '../../core/shadows.js'
 import { tune as coreTune } from '../../core/tune.js'
 import { tune } from './tune.js'
@@ -31,7 +32,9 @@ export default function dodgeball(app, { lobbyExit = null } = {}) {
 	const scoreEl = document.querySelector('.score')
 	const fadeEl = document.querySelector('.fade')
 	const splashEl = document.querySelector('.splash')
-	const exitEl = splashEl.querySelector('.lobby-exit')
+	// The splash carries the corner row, so it hides with the splash; back shows only while there's somewhere to go.
+	const { back: exitEl } = createCornerNav(splashEl, { label: 'Back to the menu' })
+	exitEl.hidden = true
 	const hitConfirmation = document.querySelector('.hit-confirmation')
 	const hitmarker = document.querySelector('.hitmarker')
 

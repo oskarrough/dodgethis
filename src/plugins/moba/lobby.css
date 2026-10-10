@@ -1,11 +1,6 @@
 .moba-front.front-lobby {
 	z-index: 0;
 }
-/* Back and Play online share the top-left row, level with fullscreen and mute on the right. */
-.front-lobby .back-button {
-	top: 12px;
-	left: 12px;
-}
 .moba-top[hidden],
 .front-lobby .front-distant-fletcher {
 	display: none;
@@ -183,63 +178,6 @@
 	text-align: center;
 }
 
-/* Play online: the back tile's neighbour, same row and height, its key stuck on the far corner.
-   The top-right corner belongs to fullscreen and mute. */
-.front-lobby .online-entry {
-	position: absolute;
-	top: 12px;
-	left: calc(24px + clamp(38px, 3.2vw, 52px));
-	z-index: 1;
-	display: flex;
-	align-items: center;
-	gap: 0.45em;
-	height: clamp(38px, 3.2vw, 52px);
-	margin: 0;
-	/* This font's caps ride low; lift the label like every sticker does. */
-	padding: 0 0.9em 0.26em 0.6em;
-	border: 3px solid var(--ui-text);
-	border-radius: 10px;
-	background: var(--ui-cream);
-	box-shadow: 3px 4px 0 var(--ui-text);
-	color: var(--ui-text);
-	font: 400 clamp(15px, 1.2vw, 20px) / 1 var(--ui-font);
-	letter-spacing: 0.04em;
-	text-transform: uppercase;
-	cursor: pointer;
-	pointer-events: auto;
-	transition: transform 0.12s cubic-bezier(0.2, 1.9, 0.45, 1);
-}
-.front-lobby .online-entry svg {
-	width: 1.3em;
-	height: 1.3em;
-	margin-top: 0.26em; /* the icon has no low caps: keep it on true centre */
-}
-.front-lobby .online-entry kbd {
-	position: absolute;
-	top: -10px;
-	right: -9px;
-	margin: 0;
-	padding: 0.1em 0.35em 0;
-	border: 2px solid var(--ui-text);
-	border-radius: 0.55em;
-	background: var(--ui-cream);
-	box-shadow: 2px 3px 0 var(--ui-text);
-	font: 400 clamp(12px, 0.9vw, 15px) / 1.2 var(--ui-font);
-	rotate: 8deg;
-}
-.front-lobby .online-entry kbd:empty {
-	display: none;
-}
-.front-lobby .online-entry:hover,
-.front-lobby .online-entry:focus-visible {
-	outline: none;
-	background: var(--ui-button);
-	transform: translate(1px, -2px) rotate(2deg);
-}
-.front-lobby .online-entry:active {
-	transform: translate(2px, 3px) scale(0.95);
-	transition-duration: 0.06s;
-}
 .lobby-label.lobby-player-tag {
 	translate: none;
 	padding: 0.15em 0.35em 0;

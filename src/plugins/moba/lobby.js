@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { PALETTE } from '../../core/style.js'
+import { createCornerNav } from '../../core/corner-nav.js'
 import { clampMap } from './obstacles.js'
 import { tune } from './tune.js'
 import { DEFAULT_MAP, onlineMaps } from './maps/index.js'
@@ -32,13 +33,8 @@ export function createLobby({
 	el.className = 'moba-front front-lobby'
 	el.dataset.screen = 'lobby'
 	el.setAttribute('aria-label', 'Try your hero in the lobby')
-	el.innerHTML = `<button type="button" class="back-button" aria-label="Back to splash"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12H5m6-7-7 7 7 7" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg><kbd></kbd></button><div class="lobby-pick-stamp" aria-live="polite"></div>`
-	const onlineEntry = document.createElement('button')
-	onlineEntry.type = 'button'
-	onlineEntry.className = 'online-entry'
-	onlineEntry.innerHTML =
-		'<svg viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18"/></g></svg>Play online<kbd></kbd>'
-	el.append(onlineEntry)
+	el.innerHTML = '<div class="lobby-pick-stamp" aria-live="polite"></div>'
+	const { back: backButton, online: onlineEntry } = createCornerNav(el, { label: 'Back to splash' })
 	el.prepend(backdrop.el, canvas)
 	canvas.classList.add('front-canvas')
 	canvas.inert = false
@@ -417,7 +413,6 @@ export function createLobby({
 	const blockedKeys = new Set(heldKeys)
 	let previous = app.input.pad()?.buttons.slice() ?? []
 	let blockedPad = new Set(previous.flatMap((held, i) => (held ? [i] : [])))
-	const backButton = el.querySelector('.back-button')
 	const returnSplash = () => {
 		if (transferred || run.signal.aborted) return
 		transferred = true

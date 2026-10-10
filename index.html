@@ -640,16 +640,13 @@
 			   can preserve the tilt while animating transform. */
 			.splash {
 				position: fixed;
-				top: max(20px, 3vh);
-				/* Clear of the corner back button. */
-				left: calc(max(14px, 1.6vw) + clamp(38px, 3.2vw, 52px) + 28px);
+				/* Under the corner row (back, Play online). */
+				top: calc(12px + clamp(38px, 3.2vw, 52px) + max(16px, 2vh));
+				left: 18px;
 				right: 5vw;
 				z-index: 5;
 				display: grid;
-				grid-template-columns: minmax(0, 1fr) auto;
-				align-items: center;
 				justify-items: start;
-				column-gap: 32px;
 				row-gap: 16px;
 				text-align: left;
 				pointer-events: none;
@@ -800,60 +797,29 @@
 				}
 			}
 
-			.hub-actions {
-				grid-area: 1 / 2 / 3 / 3;
-				display: flex;
-				justify-self: end;
-				padding: 6px;
-			}
-			.hub-actions .online-entry {
-				--sticker-lift: 5px;
-				--sticker-radius: 16px;
-				--sticker-pad-x: 24px;
-				--sticker-pad-y: 14px;
-				margin: 0;
-				font-size: clamp(18px, 1.5vw, 24px);
-				background: var(--ui-button);
-				text-decoration: none;
-			}
-			.hub-actions .online-entry:focus-visible {
-				outline: 3px solid var(--ui-text);
-				outline-offset: 6px;
-			}
-			@media (max-width: 700px) {
-				.splash {
-					grid-template-columns: minmax(0, 1fr);
-					row-gap: 12px;
-				}
-				.hub-actions {
-					grid-area: 3 / 1;
-					justify-self: start;
-					padding: 0 6px 6px 0;
-				}
-				.hub-actions .online-entry {
-					--sticker-pad-y: 10px;
-				}
-			}
 			@media (prefers-reduced-motion: reduce) {
 				.splash-title .letter,
 				.splash-title .wob {
 					animation: none;
 				}
 			}
-			/* Every screen's way back: one square arrow tile in the top-left corner, its key stuck
-			   on the corner like the ability slots. Dodge's hub and the moba plaza both use it. */
-			.back-button {
-				--back-inset: max(14px, 1.6vw);
-				--back-size: clamp(38px, 3.2vw, 52px);
+			/* Every lobby's top-left row (src/core/corner-nav.js): the square back arrow and Play
+			   online beside it, 12px in, level with fullscreen and mute on the right. Keys stick on
+			   the outer corners like the ability slots. */
+			.corner-nav {
+				--corner-size: clamp(38px, 3.2vw, 52px);
 				position: fixed;
-				top: var(--back-inset);
-				left: var(--back-inset);
+				top: 12px;
+				left: 12px;
 				z-index: 6;
-				display: grid;
-				place-items: center;
-				width: var(--back-size);
-				height: var(--back-size);
-				padding: 0;
+				display: flex;
+				gap: 12px;
+				pointer-events: none;
+			}
+			.corner-nav :is(.back-button, .online-entry) {
+				position: relative;
+				height: var(--corner-size);
+				margin: 0;
 				border: 3px solid var(--ui-text);
 				border-radius: 10px;
 				background: var(--ui-cream);
@@ -863,15 +829,10 @@
 				pointer-events: auto;
 				transition: transform 0.12s cubic-bezier(0.2, 1.9, 0.45, 1);
 			}
-			.back-button[hidden] {
+			.corner-nav :is(.back-button, .online-entry)[hidden] {
 				display: none;
 			}
-			.back-button svg {
-				display: block;
-				width: 55%;
-				height: 55%;
-			}
-			button.back-button kbd {
+			.corner-nav :is(.back-button, .online-entry) kbd {
 				position: absolute;
 				top: -10px;
 				left: -9px;
@@ -885,22 +846,56 @@
 				font: 400 clamp(12px, 0.9vw, 15px) / 1.2 var(--ui-font);
 				rotate: -8deg;
 			}
-			button.back-button kbd:empty {
+			.corner-nav :is(.back-button, .online-entry) kbd:empty {
 				display: none;
 			}
-			.back-button:hover,
-			.back-button:focus-visible {
+			.corner-nav :is(.back-button, .online-entry):hover,
+			.corner-nav :is(.back-button, .online-entry):focus-visible {
 				outline: none;
 				background: var(--ui-button);
-				transform: translate(-1px, -2px) rotate(-4deg);
 			}
-			.back-button:active {
+			.corner-nav :is(.back-button, .online-entry):active {
 				transform: translate(2px, 3px) scale(0.95);
 				transition-duration: 0.06s;
 			}
-			.online-entry {
-				pointer-events: auto;
-				margin-top: 18px;
+			.corner-nav .back-button {
+				display: grid;
+				place-items: center;
+				width: var(--corner-size);
+				padding: 0;
+			}
+			.corner-nav .back-button svg {
+				display: block;
+				width: 55%;
+				height: 55%;
+			}
+			.corner-nav .back-button:hover,
+			.corner-nav .back-button:focus-visible {
+				transform: translate(-1px, -2px) rotate(-4deg);
+			}
+			.corner-nav .online-entry {
+				display: flex;
+				align-items: center;
+				gap: 0.45em;
+				/* This font's caps ride low; lift the label like every sticker does. */
+				padding: 0 0.9em 0.26em 0.6em;
+				font: 400 clamp(15px, 1.2vw, 20px) / 1 var(--ui-font);
+				letter-spacing: 0.04em;
+				text-transform: uppercase;
+			}
+			.corner-nav .online-entry svg {
+				width: 1.3em;
+				height: 1.3em;
+				margin-top: 0.26em; /* the icon has no low caps: keep it on true centre */
+			}
+			.corner-nav .online-entry kbd {
+				left: auto;
+				right: -9px;
+				rotate: 8deg;
+			}
+			.corner-nav .online-entry:hover,
+			.corner-nav .online-entry:focus-visible {
+				transform: translate(1px, -2px) rotate(2deg);
 			}
 			.online-panel {
 				width: min(520px, 92vw);
@@ -1066,22 +1061,6 @@
 				><span class="letter" style="--i: 8"><span class="wob">S</span></span>
 			</h1>
 			<p class="splash-hint">Walk into a portal · or press 1–3</p>
-			<div class="hub-actions">
-				<button class="sticker online-entry" type="button">Play online</button>
-			</div>
-			<button class="back-button lobby-exit" type="button" aria-label="Back to the menu" hidden>
-				<svg viewBox="0 0 24 24" aria-hidden="true">
-					<path
-						d="M20 12H5m6-7-7 7 7 7"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="3.5"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-					/>
-				</svg>
-				<kbd>Esc</kbd>
-			</button>
 		</div>
 		<div class="fade" aria-hidden="true"></div>
 		<script type="module" src="/src/main.js"></script>
