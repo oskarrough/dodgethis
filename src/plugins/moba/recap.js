@@ -63,7 +63,6 @@ export function createRecap({ sim, hero, canvas }) {
 	function buildTable(parent) {
 		const wrap = el('div', 'moba-results', parent)
 		const table = el('table', '', wrap)
-		el('caption', '', table).textContent = 'Your match, by hero'
 		const header = el('tr', '', el('thead', '', table))
 		for (const label of ['Hero', 'Kills', 'Deaths', 'Hero damage', 'Siege damage', 'XP']) {
 			const cell = el('th', '', header)
