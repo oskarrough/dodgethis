@@ -78,7 +78,7 @@ export function createLobby({
 	const edges = [
 		['.front-lobby .lobby-hero-strip', -1, 0],
 		['.front-lobby .back-button', -1, -1],
-		['.front-lobby .online-entry', 1, -1],
+		['.front-lobby .online-entry', -1, -1],
 		['.moba-hud:not(.moba-unit)', 0, 1],
 		['.mute', 1, 1],
 		['.fullscreen', 1, 1],

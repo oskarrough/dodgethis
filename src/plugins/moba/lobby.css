@@ -186,11 +186,12 @@
 	text-align: center;
 }
 
-/* Play online: the back tile's twin in the top-right corner, its key stuck on the far corner. */
+/* Play online: the back tile's neighbour, same row and height, its key stuck on the far corner.
+   The top-right corner belongs to fullscreen and mute. */
 .front-lobby .online-entry {
 	position: absolute;
-	top: max(14px, 1.6vw);
-	right: max(14px, 1.6vw);
+	top: calc(max(14px, 1.6vw) + 100px);
+	left: calc(2 * max(14px, 1.6vw) + clamp(38px, 3.2vw, 52px));
 	z-index: 1;
 	display: flex;
 	align-items: center;
@@ -241,6 +242,11 @@
 .front-lobby .online-entry:active {
 	transform: translate(2px, 3px) scale(0.95);
 	transition-duration: 0.06s;
+}
+@media (max-width: 720px) {
+	.front-lobby .online-entry {
+		top: 114px;
+	}
 }
 .lobby-label.lobby-player-tag {
 	translate: none;

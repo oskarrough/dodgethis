@@ -20,6 +20,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 ## Lobby
 
 - Lobby screen (walk around, pick, ready, back): `lobby.js` `createLobby`; `tune.js` `lobby`; `moba-lobby.md`
+- Play online button (top left, beside back): `lobby.js` `createLobby` (`onlineEntry`); `lobby.css` `.front-lobby .online-entry`
 - Seats, roster, ready state: `lobby-state.js` `createReadySeats`; `lobby-heroes.js` `createLobbyHeroes`; `tune.js` `lobby.ready`
 - Ready pad on the floor: `lobby-floor.js` (`tune.lobby.ready`); `lobby.js` `createLobby`
 - Lobby floor, rocks and fences: `lobby-floor.js` `createLobbyFloor`, `floorOutline`, `createFences`; `maps/lobby.js` `lobbyLayout`; `tune.js` `lobby.floor`, `lobby.fence`

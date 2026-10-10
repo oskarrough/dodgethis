@@ -12,19 +12,22 @@ A small, toy-like hero brawler that grew out of dodgeball, set in the world over
 
 ## Now
 
-- Oskar plays the lobby; then its feel pass (the flip, squash, sounds, a calmer layout).
+- Find the game's look and name: rebrand gallery, Oskar's own directions, floating arenas keep recurring.
+- Flagfall: Dunk (knock heroes into the sea) and lanes that meet.
+- Make the agent harness faster: feature map, verify skill, ast-grep.
 
-### Todo (2026-10-09)
+### Waiting on Oskar
 
-- [x] Play online button matches the back tile; no more crooked label.
-- [x] Seat plates: no icon or cardboard. Bots float on theirs as holograms; humans just stand on it.
-- [x] Your own hero has no name tag; other players get a small P2 tag.
-- [x] Creating an online game over a LAN or tailnet address no longer crashes (`crypto.randomUUID`).
-- [x] Minimap draws each map's layout, Flagfall and Overthrow.
-- [x] Oskar: judge the holograms. Approved.
+Agents add a line when they need a call; the orchestrator removes it once answered.
+
+- [ ] Rebrand gallery, six directions plus your three: http://office-linux.heron-mermaid.ts.net:5173/docs/look/vibes/
+- [ ] Hero pitches as a numbered deck (coming): /docs/pitches/heroes/
+- [ ] Should a skill pressed early in a cast be buffered instead of dropped (Melee-style)?
+- [ ] Cut the wordy first-match tip stickers, keep the arrows?
 - [ ] Is Flagfall's dark water frame on the minimap too heavy?
-- [x] Walk-on hero rings removed; pick from the strip or with H, confirm on a seat.
-- [ ] Oskar: walk Flagfall's shore lane; do the sandstone walls sit right beside the hedges?
+
+### Agent todo
+
 - [ ] Check whether restarts stutter while the three big textures reload.
 - [ ] Still unproven online: a hidden guest tab catching up, and play over a real network.
 
