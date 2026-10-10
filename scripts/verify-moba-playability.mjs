@@ -179,7 +179,7 @@ try {
 		`)
 	})
 	timed('Dodgeball portal', () => {
-		browser('click', '.front-tile[data-mode=dodgeball]')
+		browser('click', '.front-bonus[data-mode=dodgeball]')
 		browser('wait', '.splash:not([hidden])')
 		evaluate(`
 			proof.assert(dt.game.phase==='menu'&&!dt.game.moba,'Dodgeball tile did not open its hub');

@@ -22,7 +22,7 @@ Layout: `src/main.js` (composition only), `src/core/`, `src/plugins/dodgeball/`,
 - `feedback.js`: core gets a juice kit of verbs (`burst`, `mark`, `flash`, `retire`). Each mode keeps its own fact-to-verb switch. It moves into dodgeball whole for now and is extracted at moba M1.
 - Camera: core owns the rig, shake, FOV kick and the unshaken aim camera. The mode supplies `frame(dt) → { eye, target }`, applied to both cameras, with shake applied to the render camera only.
 - Unit visual: it lives on the core body (root `mesh`, a cosmetic `visual` child, a default mannequin). Loadouts parent their parts to `visual`.
-- Lobby: dodgeball owns its difficulty portals. A fresh visit opens the splash in `moba/front/`, where Dodgeball and MOBA are chosen; there's no in-game mode switch. `?mode=dodgeball` opens the hub, `?mode=moba` opens MOBA difficulty, and adding `&play` starts the match directly.
+- Lobby: dodgeball owns its difficulty portals. A fresh visit opens the splash in `moba/front/`, where the MOBA maps are the default and Dodgeball is a bonus pick; there's no in-game mode switch. `?mode=dodgeball` opens the hub, `?mode=moba` opens MOBA difficulty, and adding `&play` starts the match directly.
 - Oskar's calls: one input path for solo and online humans; `shared` as the single social flag; each mode owns its replica; movement feel is a per-mode tune value; no talents in the MVP; pad casts hold to aim and release to fire.
 
 ## Splitting player.js

@@ -5,29 +5,28 @@ import { parseMatchSetup } from '../setup.js'
 import { playableMaps, mapLayout } from '../maps/index.js'
 import './front.css'
 
-const modes = [
-	{
-		mode: 'dodgeball',
-		name: 'Dodgeball',
-		glyph:
-			'<circle cx="32" cy="32" r="22" class="front-glyph-fill"/><path d="M12 25 Q34 27 41 53 M25 10 Q24 33 11 41 M41 11 Q38 34 53 41"/>',
-	},
-	...playableMaps.map((id) => {
-		const layout = mapLayout(id)
-		const { halfX, halfZ } = layout.bounds
-		const padding = tune.tile.outlinePadding
-		const rect = (x, z) => `<rect x="${-x}" y="${-z}" width="${x * 2}" height="${z * 2}"/>`
-		const plan = layout.preview ?? ''
-		const name = layout.name
-		return {
-			mode: 'moba',
-			map: id,
-			name,
-			viewBox: `${-halfX - padding} ${-halfZ - padding} ${(halfX + padding) * 2} ${(halfZ + padding) * 2}`,
-			glyph: `<g fill="none" stroke-width="${tune.tile.outlineWidth}">${rect(halfX, halfZ)}${plan}</g>`,
-		}
-	}),
-]
+// The MOBA maps are the front door; Dodgeball is a bonus sticker under them, last in the cursor order.
+const bonus = {
+	mode: 'dodgeball',
+	name: 'Dodgeball',
+	glyph:
+		'<circle cx="32" cy="32" r="22" class="front-glyph-fill"/><path d="M12 25 Q34 27 41 53 M25 10 Q24 33 11 41 M41 11 Q38 34 53 41"/>',
+}
+const maps = playableMaps.map((id) => {
+	const layout = mapLayout(id)
+	const { halfX, halfZ } = layout.bounds
+	const padding = tune.tile.outlinePadding
+	const rect = (x, z) => `<rect x="${-x}" y="${-z}" width="${x * 2}" height="${z * 2}"/>`
+	const plan = layout.preview ?? ''
+	const name = layout.name
+	return {
+		mode: 'moba',
+		map: id,
+		name,
+		viewBox: `${-halfX - padding} ${-halfZ - padding} ${(halfX + padding) * 2} ${(halfZ + padding) * 2}`,
+		glyph: `<g fill="none" stroke-width="${tune.tile.outlineWidth}">${rect(halfX, halfZ)}${plan}</g>`,
+	}
+})
 
 // The splash is the only menu before the playable lobby.
 export function mobaFront(app, map) {
@@ -141,7 +140,8 @@ export function mobaFront(app, map) {
 				.map((c, i) => `<span class="front-letter${i === 1 ? ' front-ball' : ''}">${c}</span>`)
 				.join('')
 			el.innerHTML = `<div class="front-chrome"><h1 class="front-heading" aria-label="DodgeThis"><span aria-hidden="true">${title}</span></h1><p class="front-notice" role="status" hidden></p>
-				<div class="front-tiles front-modes" role="group" aria-label="Game or map">${modes.map((tile) => `<button type="button" class="front-tile" data-mode="${tile.mode}" ${tile.map ? `data-map="${tile.map}"` : ''}><span class="front-tile-face"></span><svg viewBox="${tile.viewBox ?? '0 0 64 64'}" aria-hidden="true">${tile.glyph}</svg>${tile.map ? '<small class="front-tile-kicker">MOBA</small>' : ''}<span class="front-tile-name">${tile.name}</span></button>`).join('')}</div></div>`
+				<div class="front-tiles front-modes" role="group" aria-label="Game or map">${maps.map((tile) => `<button type="button" class="front-tile" data-mode="${tile.mode}" data-map="${tile.map}"><span class="front-tile-face"></span><svg viewBox="${tile.viewBox}" aria-hidden="true">${tile.glyph}</svg><small class="front-tile-kicker">MOBA</small><span class="front-tile-name">${tile.name}</span></button>`).join('')}</div>
+				<button type="button" class="front-bonus" data-mode="${bonus.mode}"><svg viewBox="0 0 64 64" aria-hidden="true">${bonus.glyph}</svg><small class="front-bonus-kicker">Bonus</small><span class="front-bonus-name">${bonus.name}</span></button></div>`
 			const chrome = el.querySelector('.front-chrome')
 			const notice = el.querySelector('.front-notice')
 			notice.textContent = options.notice ?? ''
@@ -222,7 +222,7 @@ export function mobaFront(app, map) {
 			}
 			activeFront = front
 			front.retune()
-			const buttons = [...el.querySelectorAll('.front-tile')]
+			const buttons = [...el.querySelectorAll('.front-tile, .front-bonus')]
 			let transferred = false
 			let leaving = false
 			function activate(index) {

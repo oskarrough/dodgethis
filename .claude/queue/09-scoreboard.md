@@ -1,5 +1,5 @@
-Model: GPT 6.1. After: 01d (tooltips moved there). Only the Tab scoreboard remains: kills, deaths, XP contribution, damage.
-Tooltips for the stat nerds: hover or long-press on skills, heroes, structures and minions shows exact numbers (damage, range, cooldown, cast time, scaling per level), read live from the tune data so they never lie. Pad-friendly. Plus a Tab scoreboard with kills, deaths, XP contribution and damage. Check green, mashed commit. Report in 5 lines.
+Model: Opus 5.5 builds. After: nothing.
+Tab toggles the end screen's per-hero table during a match (recap.js `showTable`: kills, deaths, hero damage, siege damage, XP), live from the match facts. Same table, same look, so there's one scoreboard, not two. Pad: Select or the nearest free button toggles it too. Prove by play, one screenshot mid-match. Tooltips below are built; the spec stays as reference.
 
 The full spec, moved from docs/moba-look.md on 2026-10-09 (tooltips are built; the scoreboard isn't):
 

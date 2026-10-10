@@ -321,6 +321,72 @@
 .front-tile:active::before {
 	transition-duration: var(--tile-press);
 }
+/* Dodgeball, the bonus round: a small sticker pinned under the maps, not a peer tile. */
+.moba-front .front-bonus {
+	--bonus-shadow: 4px;
+	position: absolute;
+	left: 50%;
+	bottom: max(22px, 5vh);
+	display: flex;
+	align-items: center;
+	gap: 0.5em;
+	padding: 0.35em 1.1em 0.3em 0.45em;
+	border-radius: 999px;
+	background: var(--ui-cream);
+	border: clamp(3px, 0.25vw, 4px) solid var(--ui-text);
+	box-shadow: var(--bonus-shadow) var(--bonus-shadow) 0 var(--ui-text);
+	pointer-events: auto;
+	color: var(--ui-text);
+	transform: translateX(-50%) rotate(1.5deg);
+	transition:
+		transform var(--tile-snap) cubic-bezier(0.2, 1.9, 0.45, 1),
+		box-shadow var(--tile-snap) cubic-bezier(0.2, 1.9, 0.45, 1);
+	-webkit-tap-highlight-color: transparent;
+	user-select: none;
+}
+.front-bonus svg {
+	width: 1.9em;
+	height: 1.9em;
+	fill: color-mix(in srgb, var(--ui-red) 45%, var(--ui-cream));
+	stroke: var(--ui-text);
+	stroke-width: 3.4;
+	stroke-linecap: round;
+	transition: transform var(--tile-snap) cubic-bezier(0.2, 1.9, 0.45, 1);
+}
+.front-bonus svg path {
+	fill: none;
+}
+.front-bonus-kicker {
+	font-size: 0.7em;
+	font-weight: 700;
+	letter-spacing: 0.15em;
+	text-transform: uppercase;
+	opacity: 0.75;
+}
+.front-bonus-name {
+	font: 400 1.35em / 1 var(--ui-font);
+	translate: 0 0.06em;
+}
+.moba-front .front-bonus.selected {
+	--bonus-shadow: 7px;
+	z-index: 1;
+	background: var(--ui-red);
+	color: var(--ui-cream);
+	transform: translate(-50%, -4px) rotate(-1deg) scale(1.06);
+}
+.front-bonus.selected svg {
+	fill: var(--ui-cream);
+	transform: rotate(-20deg);
+}
+.front-bonus.selected .front-bonus-name {
+	-webkit-text-stroke: 0.1em var(--ui-text);
+	paint-order: stroke fill;
+}
+.moba-front .front-bonus:active {
+	--bonus-shadow: 2px;
+	transform: translate(-50%, 2px) scale(0.97);
+	transition-duration: var(--tile-press);
+}
 .moba-front kbd {
 	display: inline-block;
 	min-width: 1.6em;
@@ -371,6 +437,8 @@
 		will-change: auto;
 	}
 	.front-tile,
+	.front-bonus,
+	.front-bonus svg,
 	.front-tile::before,
 	.front-tile svg,
 	.front-tile-face::before {

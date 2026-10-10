@@ -4,6 +4,10 @@ The big picture, one line per idea. Details live in the docs each line links to.
 
 ## Where it's going
 
+Oskar, 2026-10-10: "the game is fast, snappy and fun and rewards mechanics ala super smash bro melee, heroes of the storm, wow etc. easy to start, hard to master. quick to play. fun vs bots, fun in multiplayer"
+
+And: "the game feels alive, in sackboy the menu IS the game. i love that."
+
 A small, toy-like hero brawler that grew out of dodgeball, set in the world over the fence ([world.md](world.md)). It's played solo against bots for weeks, then with friends, and then put out in public.
 
 ## Now
@@ -22,7 +26,6 @@ A small, toy-like hero brawler that grew out of dodgeball, set in the world over
 - [x] Walk-on hero rings removed; pick from the strip or with H, confirm on a seat.
 - [ ] Oskar: walk Flagfall's shore lane; do the sandstone walls sit right beside the hedges?
 - [ ] Check whether restarts stutter while the three big textures reload.
-- [ ] Oskar: two-window online run; judge guest responsiveness to decide on guest-side prediction.
 - [ ] Still unproven online: a hidden guest tab catching up, and play over a real network.
 
 ## Next
@@ -35,6 +38,9 @@ A small, toy-like hero brawler that grew out of dodgeball, set in the world over
 
 ## Later
 
+- A league: make a team, climb, see who gets rank 1.
+- Guest-side prediction, once guest latency actually bites.
+- The camera tilts out to the horizon when a core dies.
 - The heroic layer: mounts and R abilities (M5).
 - Talents, once the kits settle and the farm can measure them.
 - A second map ([moba-map-2.md](moba-map-2.md)), 5v5.
