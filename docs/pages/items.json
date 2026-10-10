@@ -14,8 +14,8 @@
 		"at": "2026-10-10T20:08:23.519Z",
 		"title": "Fog of war on Flagfall",
 		"ask": "First take behind ?fog: your heroes, minions and structures see 10/7/10 m; enemy units outside vanish and the ground dims. Is the dim strong enough, and should it read as darkness or as haze?",
-		"status": "To review",
-		"decision": "",
+		"status": "Decided",
+		"decision": "Love it; 10% darker, on in every match (Oskar)",
 		"media": ["review/media/2026-10-10-fog-of-war-on-flagfall/fog-flagfall.png"],
 		"links": [],
 		"thread": "thr_egsuf57dc2",
@@ -50,8 +50,8 @@
 		"at": "2026-10-10T15:37:18.325Z",
 		"title": "Match camera shows both long rims",
 		"ask": "Mid-court at 1440×900: do both long rims show on each map, and are the heroes still big enough?",
-		"status": "To review",
-		"decision": "",
+		"status": "Archived",
+		"decision": "Replaced: one close lens on every map that pans past the rims (Oskar, 2026-10-10)",
 		"media": [
 			"review/media/2026-10-10-match-camera-shows-both-long-rims/overthrow-midcourt.png",
 			"review/media/2026-10-10-match-camera-shows-both-long-rims/flagfall-midcourt.png"
