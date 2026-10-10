@@ -141,9 +141,17 @@ export function createJuice(scene, { deathPace = () => 1, hitFlash = () => 0.07 
 
 	// Play `mesh` out as a corpse: it leaves its parent for the scene and owns fresh materials from here on.
 	// `style: 'card'` with `card` timings and a hit `direction` tips the corpse over like a cardboard standee.
+	// `style: 'overboard'` with `overboard` (reach, hop, time, sink, water) throws it along `direction` into water.
 	function retire(
 		mesh,
-		{ fell = false, radius = 0.4, style = null, direction = null, card = null } = {},
+		{
+			fell = false,
+			radius = 0.4,
+			style = null,
+			direction = null,
+			card = null,
+			overboard = null,
+		} = {},
 	) {
 		for (const [material, f] of flashes) unflashUnder(mesh, material, f)
 		scene.attach(mesh) // preserve world pose, free the logical root from death motion
@@ -156,6 +164,7 @@ export function createJuice(scene, { deathPace = () => 1, hitFlash = () => 0.07 
 				style,
 				direction,
 				card,
+				overboard,
 			}),
 		)
 	}

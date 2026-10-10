@@ -54,6 +54,8 @@ const FACTS = [
 	'hit',
 	'nearMiss',
 	'death',
+	'shove',
+	'dunk',
 	'spawn',
 	'denied',
 	'impact',
@@ -113,6 +115,37 @@ export default function moba(app, map) {
 				}
 			}
 			const local = app.session.local[0]
+			// A late guest joins a lane already running; the host's next snapshots carry its seating.
+			if (
+				!isLobby &&
+				app.session.shared &&
+				!app.session.authoritative &&
+				!options.handoff &&
+				!options.seating
+			) {
+				const session = app.session
+				let seated = false
+				return {
+					epoch: 0,
+					snapshot: () => ({ screen: 'joining' }),
+					apply(state) {
+						const next = state?.seating
+						if (seated) return true
+						if (!validPlan(next, local)) return false
+						seated = true
+						queueMicrotask(() => {
+							if (run.signal.aborted) return
+							app.modes.start('moba', {
+								session,
+								roster: next.roster,
+								options: { setup: { ...next.setup, edgePan: setup.edgePan }, seating: next },
+							})
+						})
+						return true
+					},
+					validFact,
+				}
+			}
 			if (!options.handoff && !options.sharedLobby) departed.clear()
 			app.setPalette(palette)
 			document.documentElement.style.removeProperty('--page-bg')
@@ -564,6 +597,7 @@ export default function moba(app, map) {
 			addSliders(run.debug, sliderSections(tune, setup), app.clock.step)
 			run.debug.tune('cast', tune.cast, (f, t) => {
 				f.add(t, 'cancelLockout', app.clock.step, 2, app.clock.step).name('cancel lockout (s)')
+				f.add(t, 'buffer', app.clock.step, 1, app.clock.step).name('press buffer (s)')
 			})
 			run.debug.tune('hud', tune.hud, (f, t) => {
 				f.add(t, 'hoverDelay', 0, 2, 0.05).name('hover delay')
@@ -634,7 +668,45 @@ export default function moba(app, map) {
 				shadows.dispose()
 			})
 
+			// Mid-lane, a late human takes a bot's seat as it stands, on the side with fewer humans.
+			let seating = null
+			function seatLate({ joinOrder }) {
+				if (!openSeats()) return null
+				const humans = (team) =>
+					seats.filter((seat) => seat.team === team && seat.controller === 'human').length
+				const index = seats
+					.map((seat, i) => i)
+					.filter((i) => seats[i].controller === 'bot')
+					.sort((a, b) => humans(seats[a].team) - humans(seats[b].team) || a - b)[0]
+				const seat = seats[index]
+				if (!sim.releaseBot(seat.id)) return null
+				seats[index] = { ...seat, controller: 'human', joinOrder }
+				seating = {
+					id: (seating?.id ?? 0) + 1,
+					tick: sim.tick,
+					roster: seats.map(({ id, team, heroId, controller, joinOrder }) => ({
+						id,
+						team,
+						heroId,
+						controller,
+						...(controller === 'human' ? { joinOrder } : {}),
+					})),
+					setup: { ...structuredClone(setup), edgePan: false },
+				}
+				return { id: seat.id, team: seat.team, data: { heroId: seat.heroId } }
+			}
+			function openSeats() {
+				return (
+					!isLobby &&
+					app.session.authoritative &&
+					app.session.shared &&
+					!sim.lane?.match.winner &&
+					seats.some((seat) => seat.controller === 'bot')
+				)
+			}
 			return {
+				openSeats,
+				seatLate,
 				capacity: tune.lobby.capacity,
 				joinData: () => ({ heroId: hero.heroId }),
 				validJoinData: (data) => data?.heroId == null || HEROES[data.heroId]?.playable === true,
@@ -656,8 +728,18 @@ export default function moba(app, map) {
 				returnToLobby: () => app.session.authoritative && returnToLobby(),
 				removeParticipant(id) {
 					if (!app.session.shared || id === local) return false
-					departed.add(id)
-					return sim.removeHero(id)
+					const index = isLobby ? -1 : seats.findIndex((seat) => seat.id === id)
+					if (index < 0 || seats[index].controller !== 'human') {
+						departed.add(id)
+						return sim.removeHero(id)
+					}
+					// Mid-lane a leaver's hero plays on as a bot, and the seat is open to the next link.
+					const seat = { ...seats[index], controller: 'bot' }
+					delete seat.joinOrder
+					seats[index] = seat
+					if (app.session.authoritative)
+						sim.adoptBot({ ...seat, difficulty: seat.difficulty ?? setup.difficulty })
+					return true
 				},
 				soloStart: () => ({
 					mode: 'moba-lobby',
@@ -674,6 +756,9 @@ export default function moba(app, map) {
 				snapshot: () => ({
 					...sim.snapshot({ wire: true }),
 					...(options.sharedLobby ? { lobbyReturn: options.sharedLobby } : {}),
+					...(seating && (sim.tick - seating.tick) * app.clock.step < tune.lobby.handoffFor
+						? { seating: { id: seating.id, roster: seating.roster, setup: seating.setup } }
+						: {}),
 					...(lobby?.handoff ||
 					(options.handoff &&
 						(!(options.ready?.() ?? true) || sim.tick * app.clock.step < tune.lobby.handoffFor))
@@ -683,31 +768,7 @@ export default function moba(app, map) {
 				apply(state, nowSeconds) {
 					const next = state?.lobbyReturn
 					if (!lobby && next && next.id !== options.sharedLobby?.id) {
-						if (
-							app.session.authoritative ||
-							!app.session.shared ||
-							!Number.isSafeInteger(next.id) ||
-							next.id < 0 ||
-							!Array.isArray(next.roster) ||
-							!next.roster.length ||
-							next.roster.length > tune.lobby.capacity ||
-							new Set(next.roster.map((seat) => seat?.id)).size !== next.roster.length ||
-							!next.roster.some((seat) => seat.id === local && seat.controller === 'human') ||
-							!next.roster.every(
-								(seat) =>
-									typeof seat?.id === 'string' &&
-									['A', 'B'].includes(seat.team) &&
-									HEROES[seat.heroId]?.playable &&
-									['human', 'bot'].includes(seat.controller) &&
-									(seat.controller === 'bot' ||
-										(Number.isSafeInteger(seat.joinOrder) && seat.joinOrder >= 0)),
-							) ||
-							!onlineMaps.includes(next.setup?.map) ||
-							!['easy', 'normal', 'hard'].includes(next.setup.difficulty) ||
-							!Number.isSafeInteger(next.setup.seed) ||
-							next.setup.seed < 0 ||
-							next.setup.seed > tune.testing.seedMax
-						)
+						if (app.session.authoritative || !app.session.shared || !validPlan(next, local))
 							return false
 						return returnToLobby(structuredClone(next))
 					}
@@ -724,6 +785,33 @@ export default function moba(app, map) {
 		start: (run, { roster = [], options = {} } = {}) =>
 			definition.start(run, { roster, options: { ...options, lobby: true } }),
 	})
+}
+
+// A room plan from the host (a lobby return or a late seating): seats, map and seed, with the local player seated.
+function validPlan(next, local) {
+	return (
+		Number.isSafeInteger(next?.id) &&
+		next.id >= 0 &&
+		Array.isArray(next.roster) &&
+		next.roster.length > 0 &&
+		next.roster.length <= tune.lobby.capacity &&
+		new Set(next.roster.map((seat) => seat?.id)).size === next.roster.length &&
+		next.roster.some((seat) => seat.id === local && seat.controller === 'human') &&
+		next.roster.every(
+			(seat) =>
+				typeof seat?.id === 'string' &&
+				['A', 'B'].includes(seat.team) &&
+				HEROES[seat.heroId]?.playable &&
+				['human', 'bot'].includes(seat.controller) &&
+				(seat.controller === 'bot' ||
+					(Number.isSafeInteger(seat.joinOrder) && seat.joinOrder >= 0)),
+		) &&
+		onlineMaps.includes(next.setup?.map) &&
+		['easy', 'normal', 'hard'].includes(next.setup.difficulty) &&
+		Number.isSafeInteger(next.setup.seed) &&
+		next.setup.seed >= 0 &&
+		next.setup.seed <= tune.testing.seedMax
+	)
 }
 
 // A fact is a known type carrying plain data: finite numbers, strings, booleans and nulls, shallowly nested.

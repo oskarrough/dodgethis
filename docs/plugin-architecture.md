@@ -89,7 +89,7 @@ Where the plan's integration section differs from this doc:
 
 - Intent shape: `moveTo` and `order` merge into one `order` point, which moba resolves to move or attack, because the device adapter can't see units. `moveDir` is `move`. A cast is a `pressed` edge whose `at` holds the aim at that moment. The mapping is Q/W/E/R → `slot1`–`slot4`, mount → `slot5`, attack → `primary`, S → `stop`, pad B → `cancel`.
 - Pad hold-to-release: `pointClick` emits a slot's press edge when the button is released, using the release aim. `held.slotN` means "aiming", for the indicator. So moba sees one cast rule for both devices.
-- There are no mode systems in `input`. Order and cast buffering happen in `simulate`, from intents; on a guest an `input`-phase system would run on the wrong machine. The core buffers edges per action with windows the scheme sets (slots 0.15 s). "Latest press wins" is moba's rule.
+- There are no mode systems in `input`. Order and cast buffering happen in `simulate`, from intents; on a guest an `input`-phase system would run on the wrong machine. The core buffers edges per action with windows the scheme sets (slots 0.15 s). "Latest press wins" is moba's rule, and moba holds a slot press past the core window itself (`tune.cast.buffer`).
 - Moba's `cast`, `hit`, `death`, `levelUp` and the rest are `present` facts with a `type`, not new core events. Online replicates them.
 - Pathing, carrot pursuit and arrival belong to moba. The body takes a wish vector plus a max speed.
 - Minions as non-Rapier agents and projectiles as swept circles are fine. They register with `app.smooth` like anything else.

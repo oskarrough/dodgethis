@@ -5,6 +5,7 @@ import { parseMatchSetup, wantsDirectPlay } from './plugins/moba/setup.js'
 import { mobaFront } from './plugins/moba/front/index.js'
 import { createMapScope } from './plugins/moba/map.js'
 import online from './plugins/online/index.js'
+import { roomCode } from './plugins/online/net.js'
 
 // Composition owns the lobby's cross-plugin destination; plugins never import each other.
 try {
@@ -26,7 +27,9 @@ try {
 	)
 	app.use((scope) => moba(scope, map))
 	app.use((scope) => mobaFront(scope, map))
-	app.use(online)
+	// A room link (/ABCDE) skips the splash: solo practice in the lobby while online joins the room.
+	const room = roomCode(location.pathname)
+	app.use((scope) => online(scope, { join: room }))
 	// Registered last so app teardown aborts every run before freeing the shared world.
 	app.use(() => () => map.dispose())
 	const query = new URLSearchParams(location.search)
@@ -34,9 +37,9 @@ try {
 		const { mobaReplay, loadReplay } = await import('./plugins/moba/replay.js')
 		app.use(mobaReplay)
 		app.modes.start('moba-replay', { options: { replay: await loadReplay(query.get('replay')) } })
-	} else if (query.get('mode') === 'moba') {
+	} else if (room || query.get('mode') === 'moba') {
 		const setup = parseMatchSetup(query)
-		app.modes.start(wantsDirectPlay(query) ? 'moba' : 'moba-lobby', {
+		app.modes.start(!room && wantsDirectPlay(query) ? 'moba' : 'moba-lobby', {
 			options: { setup },
 		})
 	} else if (query.get('mode') === 'dodgeball') app.modes.start('dodgeball')

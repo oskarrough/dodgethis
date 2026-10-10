@@ -148,7 +148,16 @@ export function createBot(
 ) {
 	const habits = modules.map((m) => m.createBot())
 	const random = botRandom(seed, id)
-	const combat = createFightBot({ id, team, file, difficulty }, botIds, random, interceptTime)
+	// Minds Flagfall's slick for the whole match, or never: a careless bot is a dunk waiting to happen.
+	// Its own stream, so the deal leaves every other draw (and Overthrow) untouched.
+	const slickCare =
+		botRandom(seed, `slick:${id}`)() < (tune.bots[difficulty] ?? tune.bots.normal).slickCare
+	const combat = createFightBot(
+		{ id, team, file, difficulty, slickCare },
+		botIds,
+		random,
+		interceptTime,
+	)
 	let nextThink = Math.floor(random() * tune.bots.thinkTicks)
 	const dodge = createDodgeBot(random)
 	const phases = {}

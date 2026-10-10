@@ -111,6 +111,22 @@ const STYLES = {
 	},
 }
 
+// Thrown off the court: sails `reach` metres along the shove with a `hop`, tumbling, lands at `water` (a height)
+// after `time` seconds, then sinks and fades over `sink`.
+const _turn = new THREE.Quaternion()
+function overboardPose(mesh, seconds, ctx, { reach, hop, time, sink, water }) {
+	const k = clamp01(seconds / Math.max(0.001, time))
+	mesh.position.set(
+		ctx.from.x + ctx.dir.x * reach * k,
+		ctx.from.y + hop * 4 * k * (1 - k) + (water - ctx.from.y) * k * k,
+		ctx.from.z + ctx.dir.z * reach * k,
+	)
+	const under = Math.max(0, seconds - time)
+	mesh.position.y -= under * 2.5
+	mesh.quaternion.copy(ctx.yaw).premultiply(_turn.setFromAxisAngle(ctx.spin, k * Math.PI * 0.9))
+	fade(ctx, 1 - clamp01(under / Math.max(0.001, sink)))
+}
+
 // Tips over like a cardboard standee: pivots on its foot away from the hit, slaps flat with a small bounce,
 // is pressed into the print and fades. Timings are seconds from `card` (fall, bounce, press, hold, fade); flat, rebound and tint are fractions.
 function cardPose(mesh, seconds, ctx) {
@@ -139,16 +155,20 @@ export function startDeath(
 		style = null,
 		direction = null,
 		card = null,
+		overboard = null,
 	} = {},
 ) {
 	mesh.visible = true
 	const name = fell
 		? 'sink'
-		: style === 'card' && card
-			? 'card'
-			: PICKABLE[(Math.random() * PICKABLE.length) | 0]
-	const squash = fell || name === 'card' ? 1 : 0.65
-	const wide = fell || name === 'card' ? 1 : 1.2
+		: style === 'overboard' && overboard
+			? 'overboard'
+			: style === 'card' && card
+				? 'card'
+				: PICKABLE[(Math.random() * PICKABLE.length) | 0]
+	const whole = fell || name === 'card' || name === 'overboard'
+	const squash = whole ? 1 : 0.65
+	const wide = whole ? 1 : 1.2
 	mesh.scale.set(wide, squash, wide)
 	mesh.position.y *= squash
 	const baseY = mesh.position.y
@@ -164,7 +184,7 @@ export function startDeath(
 			transparent: true,
 			depthWrite: false,
 		})
-		material.color.lerp(DARK, name === 'card' ? card.tint : 0.85) // a card keeps its print colour
+		material.color.lerp(DARK, name === 'card' ? card.tint : name === 'overboard' ? 0 : 0.85) // a card keeps its print colour
 		o.material = material
 		o.layers.set(FORWARD_LAYER)
 		previous.dispose()
@@ -187,7 +207,19 @@ export function startDeath(
 		ctx.axis = new THREE.Vector3(dz, 0, -dx) // up × direction: the top falls along the hit
 		ctx.card = card
 	}
-	const total = name === 'card' ? card.fall + card.bounce + card.press + card.hold + card.fade : 0
+	const total =
+		name === 'card'
+			? card.fall + card.bounce + card.press + card.hold + card.fade
+			: name === 'overboard'
+				? overboard.time + overboard.sink
+				: 0
+	if (name === 'overboard') {
+		const length = Math.hypot(direction?.x ?? 0, direction?.z ?? 0) || 1
+		ctx.from = mesh.position.clone()
+		ctx.dir = { x: (direction?.x ?? 0) / length, z: (direction?.z ?? 1) / length }
+		ctx.spin = new THREE.Vector3(ctx.dir.z, 0, -ctx.dir.x) // tumbles head first along the flight
+		ctx.yaw = mesh.quaternion.clone()
+	}
 
 	let t = 0
 	let done = false
@@ -195,6 +227,18 @@ export function startDeath(
 
 	function update(dt) {
 		if (done) return
+		if (name === 'overboard') {
+			t += dt / Math.max(0.001, total * Math.max(0.1, pace()))
+			overboardPose(mesh, clamp01(t) * total, ctx, overboard)
+			tint(ctx, 0)
+			flash -= dt
+			if (flash > 0) for (const m of mats) m.mat.color.copy(CREAM)
+			if (t >= 1) {
+				done = true
+				mesh.visible = false
+			}
+			return
+		}
 		if (name === 'card') {
 			t += dt / Math.max(0.001, total * Math.max(0.1, pace()))
 			cardPose(mesh, clamp01(t) * total, ctx)

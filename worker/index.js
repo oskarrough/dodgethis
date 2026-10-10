@@ -1,8 +1,12 @@
 export default {
 	async fetch(request, env) {
-		if (new URL(request.url).pathname === '/api/lobbies') {
+		const url = new URL(request.url)
+		if (url.pathname === '/api/lobbies') {
 			return env.LOBBIES.get(env.LOBBIES.idFromName('public')).fetch(request)
 		}
+		// A room link (/ABCDE) is the game page; the page reads the code from its path.
+		if (/^\/[A-HJ-NP-Z2-9]{5}\/?$/i.test(url.pathname))
+			return env.ASSETS.fetch(new Request(new URL('/', url), request))
 		return env.ASSETS.fetch(request)
 	},
 }

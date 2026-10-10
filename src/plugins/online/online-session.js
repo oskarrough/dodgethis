@@ -21,6 +21,10 @@ export function createOnlineSession(
 		rosterSelections = () => [],
 		// A mode with its own walk-around lobby takes the room there at once; it seats bots itself.
 		hasRoomLobby = () => false,
+		// Mid-match, a joiner takes over a bot: `seatLate({ joinOrder })` returns its `{ id, team, data }` or null.
+		openSeats = () => false,
+		seatLate = () => null,
+		onSeat = () => {},
 		rosterTimeout = 7000,
 		directory = createLobbyDirectory(),
 	} = {},
@@ -82,8 +86,27 @@ export function createOnlineSession(
 		})
 	}
 	net.onPeerJoin = (peerId, data) => {
-		if (!net.isHost || !state || state.phase !== 'lobby') return
+		if (!net.isHost || !state) return
 		if (state.humans.some((p) => p.peerId === peerId)) return
+		if (state.phase === 'match') {
+			const joinOrder = Math.max(-1, ...state.humans.map((h, i) => h.joinOrder ?? i)) + 1
+			const seat = seatLate({ joinOrder })
+			net.accepting = openSeats()
+			// A lost race leaves the peer unseated; it gives up waiting for a roster.
+			if (!seat) return
+			state.humans.push({
+				id: seat.id,
+				peerId,
+				team: seat.team,
+				joinOrder,
+				controller: 'human',
+				...(seat.data ? { data: seat.data } : {}),
+			})
+			publish()
+			onSeat(peerId, seat.id)
+			return
+		}
+		if (state.phase !== 'lobby') return
 		const team =
 			state.humans.filter((p) => p.team === 'A').length <=
 			state.humans.filter((p) => p.team === 'B').length
@@ -104,10 +127,12 @@ export function createOnlineSession(
 	}
 	net.onPeerLeave = (peerId, code) => {
 		if (!net.isHost || !state) return
+		const id = state.humans.find((p) => p.peerId === peerId)?.id ?? peerId
 		state.humans = state.humans.filter((p) => p.peerId !== peerId)
 		const reason = Object.hasOwn(REMOVAL_MESSAGES, code) ? REMOVAL_MESSAGES[code] : null
 		if (reason) state.message = reason
-		const kept = state.matchId && onPeerLeave(peerId)
+		const kept = state.matchId && onPeerLeave(id)
+		if (kept && state.phase === 'match') net.accepting = openSeats()
 		if (state.phase === 'match' && !kept) {
 			state.phase = 'lobby'
 			state.liveLobby = false
@@ -311,7 +336,7 @@ export function createOnlineSession(
 			state.phase = lobby ? 'lobby' : 'match'
 			state.liveLobby = lobby
 			state.modeId = modeId()
-			net.accepting = lobby
+			net.accepting = lobby || openSeats()
 			publish()
 		},
 		backToLobby(message = '') {
@@ -388,12 +413,15 @@ function validLobby(state, hostId, localId) {
 		return false
 	}
 	return (
+		new Set(state.humans.map((p) => p.peerId)).size === state.humans.length &&
 		state.humans.every(
 			(p) =>
 				p.controller === 'human' &&
-				p.id === p.peerId &&
+				typeof p.peerId === 'string' &&
+				p.peerId.length <= 80 &&
 				plainJoinData(p.data) &&
 				(p.joinOrder == null || (Number.isSafeInteger(p.joinOrder) && p.joinOrder >= 0)),
-		) && [hostId, localId].every((id) => state.humans.some((p) => p.peerId === id))
+		) &&
+		[hostId, localId].every((id) => state.humans.some((p) => p.peerId === id))
 	)
 }

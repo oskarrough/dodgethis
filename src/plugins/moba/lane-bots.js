@@ -210,6 +210,24 @@ export const laneBots = {
 				advance(ctx) {
 					const { team, p, h, b, route, melee, move, attack, safe, frame, setState } = ctx
 					if (!route) return null
+					// Two lanes hear each other: with no enemy near, cross the yard to a teammate's fight.
+					if (ctx.perceived.lanes?.length > 1 && !ctx.near(ctx.enemies, p, b.rotateQuiet).length) {
+						const call = ctx.own
+							.filter(
+								(u) =>
+									u.id !== h.id &&
+									distance(u.pos, p) <= b.rotateRange &&
+									ctx.near(ctx.enemies, u.pos, b.fightRange).length > 0,
+							)
+							.sort(
+								(a, c) => distance(a.pos, p) - distance(c.pos, p) || a.id.localeCompare(c.id),
+							)[0]
+						if (call) {
+							setState('rotate')
+							move(call.pos)
+							return frame
+						}
+					}
 					const { minions, wave, siege, open, homeGuard, midpoint } = lane
 					setState('advance')
 					if (siege && distance(p, siege.pos) <= tune[siege.kind].range + h.body.radius) {

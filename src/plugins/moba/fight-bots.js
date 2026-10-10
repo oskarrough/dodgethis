@@ -8,7 +8,12 @@ const distance = (a, b) => Math.hypot(a.x - b.x, a.z - b.z)
 const position = (u) => ({ x: u.body.position.x, z: u.body.position.z })
 
 // Hero combat and its memory. No match population or objective is assumed.
-export function createFightBot({ id, team, file, difficulty }, botIds, random, interceptTime) {
+export function createFightBot(
+	{ id, team, file, difficulty, slickCare = true },
+	botIds,
+	random,
+	interceptTime,
+) {
 	const side = team === 'A' ? -1 : 1
 	const normal = () =>
 		Math.sqrt(-2 * Math.log(Math.max(Number.EPSILON, random()))) * Math.cos(2 * Math.PI * random())
@@ -57,6 +62,26 @@ export function createFightBot({ id, team, file, difficulty }, botIds, random, i
 		const own = perceived.heroes.filter((u) => !u.dead && u.team === team)
 		const enemies = perceived.heroes.filter((u) => !u.dead && u.team !== team)
 		const near = (units, at, range) => units.filter((u) => distance(u.pos, at) <= range)
+		// The shore flank (−1 or 1) when `at` stands on a gap's slick, widened by `margin`; else 0.
+		const slick = (at, margin = 0) => {
+			const flank = at.z < 0 ? -1 : 1
+			return sim.gaps?.some(
+				(g) =>
+					g.flank === flank &&
+					at.x >= g.x0 - margin &&
+					at.x <= g.x1 + margin &&
+					Math.abs(at.z) >= sim.shore - tune.flagfall.dunk.slick - margin,
+			)
+				? flank
+				: 0
+		}
+		const wary = slickCare && near(enemies, p, b.slickWary).length > 0
+		const inland = (at) => {
+			const flank = wary ? slick(at, b.slickMargin) : 0
+			return flank
+				? { x: at.x, z: flank * (sim.shore - tune.flagfall.dunk.slick - b.slickMargin) }
+				: at
+		}
 		const effective = (u) => u.hp * (1 + tune.levels.growth * u.level)
 		const ctx = {
 			sim,
@@ -84,6 +109,9 @@ export function createFightBot({ id, team, file, difficulty }, botIds, random, i
 			enemies,
 			near,
 			effective,
+			slick,
+			wary,
+			inland,
 			blockers: [],
 			pressure: 0,
 			skillsLocked: false,
@@ -99,7 +127,7 @@ export function createFightBot({ id, team, file, difficulty }, botIds, random, i
 		}
 		const move = (goal) => {
 			const at = clampWalkable(
-				goal,
+				inland(goal),
 				h.body.radius,
 				tune.orders.clearance,
 				sim.obstacles,
@@ -285,6 +313,18 @@ export function createFightBot({ id, team, file, difficulty }, botIds, random, i
 							c.count - a.count || effective(a.u) - effective(c.u) || a.u.id.localeCompare(c.u.id),
 					)[0]
 			if (cluster && cluster.count >= b.rainHeroes) predicted = cluster.u.pos
+			// A hero on the slick: land Rain just inland of them, so its shove carries them out to sea.
+			const mark =
+				rain &&
+				predictedHeroes
+					.filter((u) => canFocus(u) && ctx.slick(u.pos) && distance(p, u.pos) <= rain.range)
+					.sort((a, c) => effective(a) - effective(c) || a.id.localeCompare(c.id))[0]
+			if (mark) {
+				const out = ctx.slick(mark.pos)
+				const inset = Math.min(b.dunkRain, rain.radius)
+				predicted = { x: mark.pos.x, z: mark.pos.z - out * inset }
+				if (distance(p, predicted) > rain.range) predicted = mark.pos
+			}
 			if (
 				rain &&
 				distance(p, predicted) <= rain.range &&

@@ -10,7 +10,6 @@ import { createBody } from '../../core/body.js'
 import { PALETTE } from '../../core/style.js'
 import { styleId } from '../../core/stylepass.js'
 import { STEP } from '../../core/app.js'
-import { SCHEMES } from '../../core/intents.js'
 import { tune, profile } from './tune.js'
 import { mapLayout, clampWalkable, clampMap, segmentClear } from './obstacles.js'
 import { createPathPlanner, pursue } from './path.js'
@@ -68,6 +67,9 @@ export function createSim({
 	// Soft walking limits are separate from the terrain walls and dash bounds.
 	const walkingBounds = bounds ?? layout.walkingBounds
 	const field = layout.fieldBounds ?? floor
+	// Flagfall's broken shore fence: inside a gap the court is slick, and a shove out through it dunks.
+	const gaps = lobby || bounds ? [] : (layout.gaps ?? [])
+	const gapAt = (x, flank) => gaps.find((g) => g.flank === flank && x >= g.x0 && x <= g.x1)
 	const towerColliders = new Map(
 		towerObstacles.map((o) => [
 			o.id,
@@ -203,7 +205,7 @@ export function createSim({
 			ballThrow: null,
 			cd: SLOTS.map(() => 0),
 			cancelUntil: SLOTS.map(() => 0),
-			judged: new WeakSet(), // slot edges already checked against the cooldown
+			buffered: null, // the newest slot press waiting for its first legal tick: { edge, until }
 			lastOrder: -Infinity,
 			stall: 0,
 			lastRemaining: null,
@@ -649,47 +651,60 @@ export function createSim({
 		h.body.face(dirOf(h.yaw))
 	}
 
-	// Latest slot press wins; it fires on the first legal tick inside the core's buffer, and a press that cannot become legal in time is denied at once.
+	// Ticks until a slot could fire.
+	function castWait(h, ability, i) {
+		const returning = ability.returnsPocket && h.abilityState.pocket
+		return Math.max(
+			returning ? 0 : h.cd[i],
+			h.cancelUntil[i] - t,
+			h.cast?.left ?? 0,
+			h.attack?.phase === 'windup' ? h.attack.left - 1 : 0,
+			ticks(h.body.dashTime),
+		)
+	}
+
+	function busyReason(h, i) {
+		return h.cd[i] > 0 || h.cancelUntil[i] > t
+			? 'cooldown'
+			: h.cast
+				? 'casting'
+				: h.attack?.phase === 'windup'
+					? 'windup'
+					: 'dashing'
+	}
+
+	// The newest slot press wins and waits on the hero, not in the core frame, for up to tune.cast.buffer.
+	// It fires on the first legal tick; a press that cannot become legal in time is denied at once.
 	function casts(h, frame) {
 		const edges = frame.pressed.filter((e) => SLOTS.includes(e.action))
-		if (!edges.length) return
-		for (const e of edges.slice(0, -1)) intents.consume(h.id, e.action)
-		const latest = edges.at(-1)
-		const slot = latest.action
-		const ability = h.definition.abilities[slot]
-		if (!ability) {
-			intents.consume(h.id, slot)
-			present({ type: 'denied', hero: h.id, slot, reason: 'no-ability' })
-			return
-		}
-		const returning = ability.returnsPocket && h.abilityState.pocket
-		const i = SLOTS.indexOf(slot)
-		if (!h.judged.has(latest)) {
-			h.judged.add(latest)
-			const wait = Math.max(
-				returning ? 0 : h.cd[i],
-				h.cancelUntil[i] - t,
-				h.cast?.left ?? 0,
-				h.attack?.phase === 'windup' ? h.attack.left - 1 : 0,
-				ticks(h.body.dashTime),
-			)
-			if (wait * STEP >= SCHEMES.pointClick.windows[slot] - 1e-9) {
-				intents.consume(h.id, slot)
-				present({
-					type: 'denied',
-					hero: h.id,
-					slot,
-					reason:
-						h.cd[i] > 0 || h.cancelUntil[i] > t
-							? 'cooldown'
-							: h.cast
-								? 'casting'
-								: h.attack?.phase === 'windup'
-									? 'windup'
-									: 'dashing',
-				})
+		if (edges.length) {
+			for (const e of edges) intents.consume(h.id, e.action)
+			h.buffered = null
+			const latest = edges.at(-1)
+			const slot = latest.action
+			const ability = h.definition.abilities[slot]
+			if (!ability) {
+				present({ type: 'denied', hero: h.id, slot, reason: 'no-ability' })
 				return
 			}
+			const i = SLOTS.indexOf(slot)
+			const window = Math.max(1, ticks(tune.cast.buffer))
+			if (castWait(h, ability, i) >= window) {
+				present({ type: 'denied', hero: h.id, slot, reason: busyReason(h, i) })
+				return
+			}
+			h.buffered = { edge: latest, until: t + window }
+		}
+		if (!h.buffered) return
+		const latest = h.buffered.edge
+		const slot = latest.action
+		const ability = h.definition.abilities[slot]
+		const returning = ability.returnsPocket && h.abilityState.pocket
+		const i = SLOTS.indexOf(slot)
+		if (t >= h.buffered.until) {
+			h.buffered = null
+			present({ type: 'denied', hero: h.id, slot, reason: busyReason(h, i) })
+			return
 		}
 		if (h.attack?.phase === 'windup' && h.attack.left <= 1) basicAttack(h)
 		if (
@@ -700,8 +715,8 @@ export function createSim({
 			(!returning && h.cd[i] > 0)
 		)
 			return
+		h.buffered = null
 		h.attack = null // abilities cut the backswing, not the windup
-		intents.consume(h.id, slot)
 		const p = h.body.position
 		const at = latest.at
 		const dx = at ? at.x - p.x : dirOf(h.yaw).x
@@ -889,10 +904,19 @@ export function createSim({
 				h.readyWalk = false
 			}
 			intents.cancel(h.id)
+			h.buffered = null
 			if (t >= h.respawnTick) respawn(h)
 			return
 		}
 		if (lobby && h.body.position.y < -tune.lobby.fall.depth) dropIn(h)
+		if (h.shove) {
+			// The slide is committed; orders and presses wait for it rather than being swallowed.
+			if (t < h.shove.until) return h.body.update({ x: 0, z: 0 }, dt, 0)
+			const shoved = h.shove
+			h.shove = null
+			if (shoved.dunk) return dunk(h, shoved)
+			if (h.order?.goal) h.order.path = plan(h, h.order.goal)
+		}
 		const frame = intents.get(h.id)
 		if (readySeats) {
 			const box = readySeats.seatOf(h.id)
@@ -961,6 +985,10 @@ export function createSim({
 				intents.consume(h.id, e.action)
 				present({ type: 'denied', hero: h.id, slot: e.action, reason: 'disabled' })
 			}
+			if (h.buffered) {
+				present({ type: 'denied', hero: h.id, slot: h.buffered.edge.action, reason: 'disabled' })
+				h.buffered = null
+			}
 			h.body.update({ x: 0, z: 0 }, dt, 0)
 			return
 		}
@@ -1011,11 +1039,14 @@ export function createSim({
 		for (const e of frame.pressed.slice()) {
 			if (e.action === 'stop') {
 				h.order = null
+				h.buffered = null
 				for (const s of frame.pressed.slice())
 					if (SLOTS.includes(s.action)) intents.consume(h.id, s.action)
 				intents.consume(h.id, 'stop')
-			} else if (e.action === 'cancel') intents.consume(h.id, 'cancel') // channels arrive with mount and R
-			else if (e.action === 'primary') {
+			} else if (e.action === 'cancel') {
+				h.buffered = null
+				intents.consume(h.id, 'cancel') // channels arrive with mount and R
+			} else if (e.action === 'primary') {
 				if (!heldBall && !aimBasic(h, e.at)) attackAhead(h, e.at)
 				intents.consume(h.id, 'primary')
 			}
@@ -1024,6 +1055,7 @@ export function createSim({
 		if (Math.hypot(frame.move.x, frame.move.z) > 0.01) h.order = null
 		if (frame.order && ['move', 'attack-move'].includes(h.order?.kind)) h.attack = null
 		if (!heldBall) casts(h, frame)
+		else h.buffered = null
 		if (h.cast?.left === 0) release(h)
 		h.body.speedMul =
 			slowFactor(h, t) * (h.stance?.factor ?? 1) * (ball?.carrying(h) ? tune.ball.carrySpeed : 1)
@@ -1125,7 +1157,9 @@ export function createSim({
 		if (unit.definition) unit.cancelUntil = SLOTS.map(() => 0)
 		unit.dead = false
 		if (unit.post) unit.maxHp = tune.dummies.hp
-		unit.hp = unit.maxHp
+		unit.hp = unit.dunked ? Math.min(unit.maxHp, unit.dunked.hp) : unit.maxHp
+		unit.dunked = null
+		unit.shove = null
 		unit.respawnTick = null
 		unit.slow = { until: 0, factor: 1 }
 		unit.freezeUntil = 0
@@ -1304,7 +1338,10 @@ export function createSim({
 			hp: unit.hp,
 			maxHp: unit.maxHp,
 		})
-		if (!lethal) return
+		if (!lethal) {
+			if (target.hero && !unit.post) shove(unit, shot)
+			return
+		}
 		unit.dead = true
 		if (!unit.kind) ball?.hurt(unit)
 		unit.corpse = unit.body
@@ -1317,27 +1354,96 @@ export function createSim({
 		}
 		if (lane && !unit.post)
 			lane.reward(unit, shot.team ?? (unit.team === 'A' ? 'B' : 'A'), t, shot.owner)
-		unit.respawnTick =
-			t +
-			ticks(
-				unit.post
-					? tune.dummies.respawn
-					: (respawnSeconds ?? tune.respawn.base + tune.respawn.perLevel * unit.level),
-			)
-		unit.cast = null
-		if (!unit.post) {
-			unit.abilityState = freshAbilityState()
-			unit.stance = null
-			unit.catchWindow = null
-			unit.freezeUntil = 0
-			unit.proneUntil = 0
-			cancelChannel(unit, 'death')
-			unit.definition.traits.onDeath?.(traitContext(unit, { shot }))
-			unit.order = null
-			unit.attack = null
-			intents.cancel(unit.id)
-		}
+		bench(
+			unit,
+			unit.post
+				? tune.dummies.respawn
+				: (respawnSeconds ?? tune.respawn.base + tune.respawn.perLevel * unit.level),
+			shot,
+		)
 		present({ type: 'death', source: shot.owner, target: target.id, point: at, direction })
+	}
+
+	// Out of play until `seconds` pass: a death or a dunk. The caller has retired the body.
+	function bench(unit, seconds, shot) {
+		unit.respawnTick = t + ticks(seconds)
+		unit.cast = null
+		unit.shove = null
+		if (unit.post) return
+		unit.abilityState = freshAbilityState()
+		unit.stance = null
+		unit.catchWindow = null
+		unit.freezeUntil = 0
+		unit.proneUntil = 0
+		cancelChannel(unit, 'death')
+		unit.definition.traits.onDeath?.(traitContext(unit, { shot }))
+		unit.order = null
+		unit.attack = null
+		intents.cancel(unit.id)
+	}
+
+	// A skillshot on the slick strip of a gap slides the hero along the shot (Rain: away from its centre).
+	// A slide that reaches the court's edge inside the gap goes over: the hero is dunked when it ends.
+	function shove(unit, shot) {
+		const d = tune.flagfall.dunk
+		if (!gaps.length || !d.abilities.includes(shot.ability) || unit.dead) return
+		if (unit.shove || t < (unit.slickImmuneUntil ?? 0)) return
+		const p = unit.body.position
+		const flank = p.z < 0 ? -1 : 1
+		const shore = layout.bounds.halfZ
+		if (Math.abs(p.z) < shore - d.slick || !gapAt(p.x, flank)) return
+		const dx = shot.from ? p.x - shot.from.x : shot.dx
+		const dz = shot.from ? p.z - shot.from.z : shot.dz
+		const length = Math.hypot(dx, dz)
+		if (!(length > 1e-4)) return
+		const dir = { x: dx / length, z: dz / length }
+		// Metres along the push until the body touches the walking edge on this shore.
+		const out =
+			dir.z * flank > 1e-4
+				? Math.max(0, (shore - unit.body.radius - Math.abs(p.z)) / (dir.z * flank))
+				: Infinity
+		const dunked = out <= d.push && !!gapAt(p.x + dir.x * out, flank)
+		const distance = dunked ? out : d.push
+		const steps = Math.max(1, Math.ceil((d.time * distance) / d.push / STEP))
+		unit.body.cancelDash()
+		unit.dashAbility = null
+		cancelChannel(unit, 'disabled')
+		if (distance > 1e-3) unit.body.dash(dir, { distance, time: steps * STEP - 1e-9 })
+		unit.shove = {
+			until: t + steps,
+			dunk: dunked,
+			dir,
+			source: shot.owner,
+			team: shot.team ?? (unit.team === 'A' ? 'B' : 'A'),
+		}
+		unit.slickImmuneUntil = t + steps + ticks(d.immunity)
+		present({
+			type: 'shove',
+			source: shot.owner,
+			target: unit.id,
+			point: { x: p.x, y: 0, z: p.z },
+			direction: { x: dir.x, y: 0, z: dir.z },
+			dunk: dunked,
+		})
+	}
+
+	// Over the edge: not a death. The hero swims home and climbs out at base on the HP they had.
+	function dunk(h, shoved) {
+		const p = h.body.position
+		h.dead = true
+		h.dunked = { hp: h.hp }
+		ball?.hurt(h)
+		h.corpse = h.body
+		h.body.retire()
+		if (lane) lane.reward(h, shoved.team, t, shoved.source)
+		bench(h, tune.flagfall.dunk.swim, null)
+		present({
+			type: 'dunk',
+			source: shoved.source,
+			target: h.id,
+			point: { x: p.x, y: 0, z: p.z },
+			direction: { x: shoved.dir.x, y: 0, z: shoved.dir.z },
+		})
 	}
 
 	function swapHero(id, heroId) {
@@ -1844,6 +1950,7 @@ export function createSim({
 						ability: zone.ability,
 						dx: 0,
 						dz: 0,
+						from: { x: zone.x, z: zone.z },
 					},
 					e,
 					{
@@ -2175,6 +2282,27 @@ export function createSim({
 		return true
 	}
 
+	// A late human takes a bot's hero as it stands (spot, HP, cooldowns); only the brain leaves.
+	function releaseBot(id) {
+		const index = botSeats.findIndex((seat) => seat.id === id)
+		if (index < 0) return false
+		botSeats.splice(index, 1)
+		intents.cancel(id)
+		const hero = heroes.find((h) => h.id === id)
+		if (hero) hero.order = null
+		rebuildBots()
+		return true
+	}
+	// The reverse: a departed human's hero plays on as a bot from where it stands.
+	function adoptBot(seat) {
+		if (!heroes.some((h) => h.id === seat.id) || botSeats.some((s) => s.id === seat.id))
+			return false
+		intents.cancel(seat.id)
+		botSeats.push(seat)
+		rebuildBots()
+		return true
+	}
+
 	const api = {
 		heroes,
 		dummies,
@@ -2194,6 +2322,8 @@ export function createSim({
 		obstacles,
 		bounds: field,
 		lanes: layout.lanes,
+		gaps,
+		shore: layout.bounds.halfZ,
 		find,
 		get bots() {
 			return botTeam
@@ -2265,6 +2395,8 @@ export function createSim({
 			return hero
 		},
 		removeHero,
+		releaseBot,
+		adoptBot,
 		clearHeroes(team, exceptId) {
 			for (const hero of heroes.slice())
 				if (hero.team === team && hero.id !== exceptId) removeHero(hero.id)

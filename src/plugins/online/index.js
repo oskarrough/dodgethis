@@ -1,11 +1,12 @@
 import { createLink } from './link.js'
-import { MAX_PLAYERS, Net } from './net.js'
+import { MAX_PLAYERS, Net, roomCode } from './net.js'
 import { createOnlineSession } from './online-session.js'
 import { createOnlineUi } from './online-ui.js'
 
 // Online play. A started match restarts the running mode under a shared session with the lobby's roster; the link carries it.
 // Leaving restarts that mode solo. Online never names the mode, and the mode never learns it is online.
-export default function online(app) {
+// `join` is a room code from a link: the first frame joins it, and a dead code stays solo with a notice.
+export default function online(app, { join = null } = {}) {
 	const net = new Net({
 		capacity: () => app.modes.current?.capacity ?? MAX_PLAYERS,
 		validJoinData: (data) => app.modes.current?.validJoinData?.(data) ?? true,
@@ -26,11 +27,15 @@ export default function online(app) {
 		joinData: () => app.modes.current?.joinData?.(),
 		rosterSelections: () => app.modes.current?.roomRoster?.() ?? [],
 		hasRoomLobby: () => app.modes.current?.roomLobby === true,
+		openSeats: () => app.modes.current?.openSeats?.() ?? false,
+		seatLate: (joiner) => app.modes.current?.seatLate?.(joiner) ?? null,
+		onSeat: (peerId, id) => link?.seat(peerId, id),
 		onChange(state, message) {
 			if (link && state && app.session.shared)
 				for (const participant of app.modes.current?.roomRoster?.() ?? [])
 					if (!state.humans.some((h) => h.id === participant.id))
 						app.modes.current?.removeParticipant?.(participant.id)
+			if (!state) forgetLink()
 			ui.render(state, message)
 			app.debug.panel?.setInert(!!state)
 		},
@@ -39,10 +44,12 @@ export default function online(app) {
 			link = null
 			mode = hostMode
 			const previousMode = app.modes.active
+			const humans = session.state.humans
+			const local = humans.find((h) => h.peerId === net.id)?.id ?? net.id
 			try {
 				app.modes.start(mode, {
 					roster,
-					session: { local: [net.id], authoritative: net.isHost, shared: true, actions: [] },
+					session: { local: [local], authoritative: net.isHost, shared: true, actions: [] },
 				})
 			} catch (error) {
 				session.leave()
@@ -54,6 +61,8 @@ export default function online(app) {
 				net,
 				matchId,
 				roster,
+				local,
+				peers: humans.filter((h) => h.peerId !== net.id),
 				contract: () => app.modes.current,
 				intents: app.intents,
 				present: app.present,
@@ -61,6 +70,7 @@ export default function online(app) {
 					session.leave()
 					ui.show(message)
 				},
+				onSilent: (peerId) => net.drop(peerId),
 			})
 			ui.hide()
 			if (app.modes.current?.roomLobby) session.setRoomPhase(true)
@@ -81,7 +91,13 @@ export default function online(app) {
 		onPeerLeave(id) {
 			const current = app.modes.current
 			const removed = current?.removeParticipant?.(id) ?? false
-			if (removed && session.state.humans.length === 1 && !current.roomLobby)
+			// A lane that hands the seat to a bot plays on; one that dropped the hero regroups.
+			if (
+				removed &&
+				session.state.humans.length === 1 &&
+				!current.roomLobby &&
+				!current.openSeats?.()
+			)
 				current.returnToLobby?.()
 			return removed
 		},
@@ -105,11 +121,33 @@ export default function online(app) {
 		if (app.modes.current?.roomLobby != null) session.setRoomPhase(app.modes.current.roomLobby)
 	})
 	app.on('present', (fact) => link?.record(fact))
-	app.system('replicate', ({ dt }) => link?.update(dt))
+	app.system('replicate', ({ dt }) => {
+		if (join) joinByLink(join)
+		link?.update(dt)
+	})
+	async function joinByLink(code) {
+		join = null
+		try {
+			await session.join(code)
+		} catch (error) {
+			if (session.state) return
+			forgetLink()
+			ui.show(`${error.message}. You're playing solo.`)
+		}
+	}
+	// A refresh on a dead or left room's link would try it again.
+	function forgetLink() {
+		if (!roomCode(location.pathname)) return
+		const url = new URL(location.href)
+		url.pathname = '/'
+		url.searchParams.set('mode', 'moba')
+		history.replaceState(null, '', url)
+	}
 	app.on('menu', () => {
 		if (link && !ui.open) ui.show()
 	})
 
+	const keepalive = setInterval(() => link?.keepalive(), 1000)
 	app.debug.expose({
 		online: session,
 		get link() {
@@ -118,6 +156,7 @@ export default function online(app) {
 	})
 
 	return () => {
+		clearInterval(keepalive)
 		link?.dispose()
 		link = null
 	}

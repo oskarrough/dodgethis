@@ -33,6 +33,8 @@ export function matchReport(roster, { STEP, towerRange }) {
 					structureHits: 0,
 					deaths: 0,
 					catches: 0,
+					dunks: 0,
+					dunked: 0,
 				},
 			]),
 		),
@@ -76,6 +78,11 @@ export function matchReport(roster, { STEP, towerRange }) {
 			}
 			// Ball catches aren't skill; only caught ability shots count.
 			if (row.kind === 'caught' && seat && row.fact?.ability) r.seats[seat].catches++
+			// Flagfall: a shove off the court through a fence gap.
+			if (row.kind === 'dunk') {
+				if (seats.has(row.target)) r.seats[row.target].dunked++
+				if (seats.has(row.fact?.source)) r.seats[row.fact.source].dunks++
+			}
 			if (row.kind === 'structureDown' && row.target?.startsWith('tower') && r.firstTower === null)
 				r.firstTower = row.tick * STEP
 			if (row.kind === 'death' && seats.has(row.target)) {
@@ -153,11 +160,22 @@ export function mergeReport(totals, report, winner) {
 			deaths: 0,
 			structureHits: 0,
 			catches: 0,
+			dunks: 0,
+			dunked: 0,
 		})
 		h.seats++
 		if (winner) h.decided++
 		if (winner === s.team) h.wins++
-		for (const k of ['damage', 'heroDamage', 'deaths', 'structureHits', 'catches']) h[k] += s[k]
+		for (const k of [
+			'damage',
+			'heroDamage',
+			'deaths',
+			'structureHits',
+			'catches',
+			'dunks',
+			'dunked',
+		])
+			h[k] += s[k]
 	}
 	// Edge: in a decided match where one team fields more of this hero, did that team win? One sample
 	// per match, so it takes a Wilson interval; for one-hero teams it is simply the hero's win rate.
@@ -342,6 +360,8 @@ export function summarySections(sides, labels) {
 				per('deaths', 1),
 				per('structureHits', 1),
 				per('catches', 1),
+				per('dunks', 2),
+				per('dunked', 2),
 			])
 		}
 	})
@@ -358,6 +378,8 @@ export function summarySections(sides, labels) {
 				'deaths',
 				'struct hits',
 				'catches',
+				'dunks',
+				'dunked',
 			],
 			heroes,
 		),

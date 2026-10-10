@@ -10,11 +10,8 @@ export const tune = {
 		rosterMax: 24,
 	},
 	onboarding: {
-		objectiveLife: 7,
 		youLife: 8,
 		timerLife: 12,
-		xpLife: 9,
-		ballHintLife: 10,
 		goalLift: { tower: 4.5, core: 7.5 },
 		walkDistance: 10,
 		arrowFade: 0.8,
@@ -33,7 +30,6 @@ export const tune = {
 		stipplePixels: 2,
 		labelHeight: 1.3,
 		levelLife: 2.2,
-		levelRise: 1.2,
 		levelPulse: 0.55,
 		pointerMargin: 64,
 		pointerTop: 115,
@@ -43,10 +39,6 @@ export const tune = {
 		stickerCorner: 12,
 		stickerPadding: 8,
 		font: 16,
-		objectiveFont: 26,
-		objectiveTop: 118,
-		hintBottom: 160,
-		hintWidth: 568, // room for the two-sentence hints without orphaned words
 		timerFont: 10,
 	},
 	// Static layout and dressing: applies on mode restart.
@@ -258,12 +250,10 @@ export const tune = {
 			cloudOpacity: 0.09,
 			segments: 32,
 		},
-		// Broken fence runs on the safe rim, not colliders or a new fence style.
+		// Fence on the safe rim, not colliders. The long shores' runs are cut wherever `gaps` open
+		// (map.js), so the drawn gaps are exactly the sim's; these are the end runs behind the bases.
 		fence: {
 			runs: [
-				{ from: [-0.96, -1], to: [-0.7, -1] },
-				{ from: [-0.28, -1], to: [0.28, -1] },
-				{ from: [0.7, -1], to: [0.96, -1] },
 				{ from: [-1, -0.28], to: [-1, 0.28] },
 				{ from: [1, -0.28], to: [1, 0.28] },
 			],
@@ -274,21 +264,25 @@ export const tune = {
 				[0.5, 1],
 			],
 		},
-		bounds: { halfX: 52, halfZ: 20 },
-		lane: { innerZ: 10, outerZ: 20, centreZ: 15 },
-		yard: { halfX: 28, halfZ: 8 },
-		baseBlock: { innerX: 28, outerX: 38, halfZ: 10 },
+		// Squeezed: the lanes sit close enough to hear each other across an 8 m yard.
+		bounds: { halfX: 52, halfZ: 16 },
+		lane: { innerZ: 6, outerZ: 16, centreZ: 11, pathZ: 12.5 }, // waves and towers walk the shore side
+		yard: { halfX: 28, halfZ: 4 },
+		baseBlock: { innerX: 28, outerX: 38, halfZ: 6 },
 		baseX: 46,
 		hedge: {
-			innerZ: 8,
-			outerZ: 10,
+			innerZ: 4,
+			outerZ: 6,
 			runs: [
-				[4, 12],
-				[18, 28],
+				[3, 8],
+				[12, 16],
+				[20, 28],
 			],
 		},
-		pillarRadius: 1.1,
-		yardPillars: { x: 7, z: 2 },
+		// Dunk gaps in the shore fence: |x| ranges, mirrored to both halves of both shores.
+		gaps: [[5, 11]],
+		pillarRadius: 0.8,
+		yardPillars: { x: 6, z: 2 },
 		spawns: { A: { x: -49, z: 0 }, B: { x: 49, z: 0 } },
 		structures: { towerX: 18, fortX: 32, coreX: 42 },
 		waveSpawnX: 40,
@@ -297,11 +291,32 @@ export const tune = {
 			{ x: 16, z: -3 },
 		],
 		dummyPosts: [
-			{ x: -2, z: -4 },
-			{ x: 2, z: -4 },
+			{ x: -2, z: -2 },
+			{ x: 2, z: -2 },
 		],
+		// A skillshot hitting a hero on the slick strip at a fence gap shoves them along the shot;
+		// a shove that leaves the court through the gap dunks them. Seconds unless noted; live.
+		dunk: {
+			slick: 3.5, // m of wet court inside each gap
+			push: 3, // m a shove carries
+			time: 0.2, // the shove's slide
+			immunity: 1, // no second shove this soon after one ends
+			swim: 4, // out of play, then back at base on the HP you had
+			abilities: ['loose', 'toss', 'rain'], // Rain shoves away from its centre
+			// Presentation
+			flight: 3.6, // m out from the court's edge where the body lands in the water
+			hop: 1.1, // m of lift on the way out
+			fly: 0.45, // s in the air
+			sink: 0.6, // s under the surface before it's gone
+			wet: '#7f9fa3', // the slick print
+			wetOpacity: 0.55,
+			wetStripe: 0.6, // m between the hazard stripes on the slick
+			splash: { count: 28, speed: 2.2, life: 0.7, lifeStep: 0.1, size: 0.14, sizeStep: 0.05 },
+			spray: { count: 10, speed: 4, life: 0.45, lifeStep: 0.05, size: 0.09, sizeStep: 0.03 },
+			scuff: { count: 6, speed: 1.2, streak: true },
+		},
 		print: {
-			layers: { marks: 0.06, chalk: 0.075 },
+			layers: { marks: 0.06, chalk: 0.075, wet: 0.052 },
 			kerbWidth: 0.08,
 			footprintWidth: 0.12,
 			radii: { tower: 1.4, fort: 2, core: 2.6, post: 0.6 },
@@ -719,6 +734,13 @@ export const tune = {
 		siegeBackoff: 1,
 		siegeLowHp: 0.35,
 		openingX: 8,
+		// Flagfall's slick (tune.flagfall.dunk): step off it with an enemy hero this close; aim Rain this
+		// far inland of a hero standing on it, so the shove goes out to sea.
+		rotateRange: 28, // two-lane maps: join a teammate's fight this close, through the yard
+		rotateQuiet: 14, // ... when no enemy hero is this close to you
+		slickWary: 12,
+		slickMargin: 0.5,
+		dunkRain: 1.6,
 		easy: {
 			focusUntil: 300,
 			humanAttackers: 1,
@@ -728,6 +750,7 @@ export const tune = {
 			leadError: 0.35,
 			dodge: 0.2,
 			aggression: 0.3,
+			slickCare: 0, // chance a bot minds the slick at all
 			catchRate: 0.1,
 		},
 		normal: {
@@ -737,6 +760,7 @@ export const tune = {
 			leadError: 0.2,
 			dodge: 0.5,
 			aggression: 0.6,
+			slickCare: 0.5, // chance a bot minds the slick at all
 			catchRate: 0.3,
 		},
 		hard: {
@@ -746,6 +770,7 @@ export const tune = {
 			leadError: 0.1,
 			dodge: 0.75,
 			aggression: 0.9,
+			slickCare: 0.75, // chance a bot minds the slick at all
 			catchRate: 0.5,
 		},
 	},
@@ -1030,7 +1055,7 @@ export const tune = {
 	},
 	respawn: { base: 8, perLevel: 2 },
 	momentum: { reduction: 2 },
-	cast: { cancelLockout: 0.75 },
+	cast: { cancelLockout: 0.75, buffer: 0.4 }, // buffer: how early (s) a skill press may land and still fire on its first legal tick
 	catching: { returnTell: 0.5, pocketLife: 6, bagLimit: 6 },
 	gloveSlap: {
 		damage: 130,
@@ -1277,6 +1302,8 @@ export const tune = {
 		whistle: { freq: 2250, slideTo: 2400, type: 'sine', dur: 0.34, gain: 0.07 },
 		cardSlap: { freq: 150, slideTo: 55, type: 'square', dur: 0.07, gain: 0.13 },
 		squeak: { freq: 1250, slideTo: 2150, type: 'triangle', dur: 0.07, gain: 0.05 },
+		shove: { freq: 260, slideTo: 140, type: 'triangle', dur: 0.14, gain: 0.12 },
+		plunk: { freq: 140, slideTo: 48, type: 'sine', dur: 0.32, gain: 0.3 },
 	},
 	// Hero takedowns leave a small crossed-disc print under the victim, with the ref's whistle.
 	out: {

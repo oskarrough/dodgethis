@@ -3,6 +3,8 @@ import { tune } from './tune.js'
 
 export const INPUT_TIMEOUT = 0.5
 export const HOST_TIMEOUT = 10
+// A guest whose tab died sends nothing; after this long its seat goes back to the room.
+export const SEAT_TIMEOUT = 10
 export const SEND_INTERVAL = 1 / 20
 // Protocol ceiling, captured once so a live tune edit cannot exceed the receiver's limit.
 export const MAX_FACTS = tune.link.maxFacts
@@ -20,10 +22,15 @@ export function createLink({
 	intents,
 	present,
 	onLost = () => {},
+	onSilent = () => {},
 	now = () => performance.now() / 1000,
+	// The local participant, and each remote human's peer and seat. A late joiner may take a bot's seat id.
+	local = net.id,
+	peers = roster
+		.filter((p) => p.controller === 'human' && p.id !== local)
+		.map((p) => ({ peerId: p.id, id: p.id })),
 }) {
 	const host = net.isHost
-	const local = net.id
 	const sizes = []
 	let sampleIndex = 0
 	const encoder = new TextEncoder()
@@ -50,16 +57,13 @@ export function createLink({
 			return sizes.length
 		},
 	}
-	// Host: remote humans by peer id, which online makes their participant id.
-	const seats = new Map(
-		host
-			? roster
-					.filter((p) => p.controller === 'human' && p.id !== local)
-					.map((p) => [p.id, { seq: -1, seen: now(), silent: false, fact: 0 }])
-			: [],
-	)
-	let seq = 0
+	// Host: remote humans by peer id, each feeding its participant's seat.
+	const seats = new Map()
+	const addSeat = (peerId, id) =>
+		seats.set(peerId, { id, seq: -1, seen: now(), silent: false, fact: factId })
 	let factId = 0
+	if (host) for (const peer of peers) addSeat(peer.peerId, peer.id)
+	let seq = 0
 	let facts = []
 	let sendClock = 0
 	// Guest
@@ -98,7 +102,7 @@ export function createLink({
 		seat.seen = time
 		seat.silent = false
 		stats.intents++
-		intents.feed(from, frame)
+		intents.feed(seat.id, frame)
 		return true
 	}
 
@@ -214,12 +218,17 @@ export function createLink({
 				}
 				return
 			}
-			// A silent seat stands still and drops its charge, once.
-			for (const [id, seat] of seats)
+			// A silent seat stands still and drops its charge, once; a long-silent peer is let go.
+			for (const [peerId, seat] of seats) {
 				if (!seat.silent && now() - seat.seen > INPUT_TIMEOUT) {
 					seat.silent = true
-					intents.feed(id, { ...neutralFrame(), pressed: [{ action: 'cancel', at: null }] })
+					intents.feed(seat.id, { ...neutralFrame(), pressed: [{ action: 'cancel', at: null }] })
 				}
+				if (now() - seat.seen > SEAT_TIMEOUT) {
+					seats.delete(peerId)
+					onSilent(peerId)
+				}
+			}
 			sendClock += dt
 			if (sendClock >= SEND_INTERVAL) {
 				sendClock %= SEND_INTERVAL
@@ -227,6 +236,14 @@ export function createLink({
 			}
 		},
 		broadcast,
+		// Guest: a hidden tab draws no frames, but its throttled timers still say it is here.
+		keepalive() {
+			if (!host && !disposed && now() - lastSent >= 1) sendIntent()
+		},
+		// Host: a peer seated mid-run starts from the next fact.
+		seat(peerId, id) {
+			if (host && !disposed) addSeat(peerId, id)
+		},
 		dispose() {
 			disposed = true
 			seats.clear()

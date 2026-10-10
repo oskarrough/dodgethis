@@ -100,7 +100,7 @@ test('a full-speed reversal takes at most 8 steps', () => {
 	expect(steps).toBeLessThanOrEqual(8)
 })
 
-test('a slot press buffers for 0.15 s: it fires on the first legal step, or is denied at once', () => {
+test('a slot press buffers for tune.cast.buffer: it fires on the first legal step, or is denied at once', () => {
 	place(0, 8)
 	press('slot1', { x: 0, z: 0 })
 	step()
@@ -118,7 +118,7 @@ test('a slot press buffers for 0.15 s: it fires on the first legal step, or is d
 	expect(steps).toBe(7) // the step the cooldown hits zero
 	expect(hero().cd[0]).toBe(cooldown)
 
-	step(cooldown - 13) // 0.2 s left: outside the buffer
+	step(cooldown - Math.round((tune.cast.buffer + 0.1) * 60)) // 0.1 s past the buffer
 	press('slot1', { x: 0, z: 0 })
 	step()
 	expect(facts.at(-1)).toMatchObject({ type: 'denied', hero: ID, slot: 'slot1' })

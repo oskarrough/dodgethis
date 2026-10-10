@@ -274,6 +274,59 @@ diffuseColor.rgb *= 1.0 - coverShade * (1.0 - max(0.0, dot(n, normalize(vec3(0.4
 		for (const key of Object.keys(fence))
 			if (typeof fence[key] === 'number' && key !== 'curveSteps' && key !== 'radialSegments')
 				fence[key] *= scale
+		// The long shores' runs are what the dunk gaps leave, in createFences' fractions of its rim.
+		const fenceHalfX =
+			bounds.halfX +
+			terrain.margin -
+			fence.edgeMargin -
+			Math.max(fence.capRadius, fence.bollardRadius) -
+			Math.abs(fence.bow)
+		for (const flank of [-1, 1]) {
+			const cuts = layout.gaps
+				.filter((gap) => gap.flank === flank)
+				.map((gap) => [gap.x0 / fenceHalfX, gap.x1 / fenceHalfX])
+				.sort((a, b) => a[0] - b[0])
+			let from = -0.96
+			for (const [x0, x1] of [...cuts, [0.96, 0.96]]) {
+				if (x0 > from) fence.runs = [...fence.runs, { from: [from, flank], to: [x0, flank] }]
+				from = Math.max(from, x1)
+			}
+		}
+		// The slick inside each gap: a wet print with hazard stripes, so you can see where you can be dunked.
+		const wet = new THREE.MeshBasicMaterial({
+			color: s.dunk.wet,
+			transparent: true,
+			opacity: s.dunk.wetOpacity,
+			depthWrite: false,
+			polygonOffset: true,
+			polygonOffsetFactor: -1,
+		})
+		owned.push(wet)
+		const slick = Math.min(s.dunk.slick, bounds.halfZ)
+		const wetPrints = layout.gaps.flatMap((gap) => {
+			const z = gap.flank * (bounds.halfZ - slick / 2)
+			const width = gap.x1 - gap.x0
+			const stripes = []
+			for (let x = gap.x0 + s.dunk.wetStripe / 2; x < gap.x1; x += s.dunk.wetStripe * 2)
+				stripes.push(
+					new THREE.PlaneGeometry(Math.min(s.dunk.wetStripe, gap.x1 - x), slick)
+						.rotateX(-Math.PI / 2)
+						.translate(x + Math.min(s.dunk.wetStripe, gap.x1 - x) / 2, layers.wet, z),
+				)
+			return [
+				new THREE.PlaneGeometry(width, slick)
+					.rotateX(-Math.PI / 2)
+					.translate((gap.x0 + gap.x1) / 2, layers.wet, z),
+				...stripes,
+			]
+		})
+		if (wetPrints.length) {
+			const mesh = add(mergeGeometries(wetPrints), wet, 0, 0, 0)
+			mesh.name = 'flagfall-slick'
+			mesh.layers.set(FORWARD_LAYER)
+			mesh.renderOrder = -3
+			for (const g of wetPrints) g.dispose()
+		}
 		unterrain = createMatchTerrain(group, layout, terrain, chalkLayout, {
 			water: true,
 			fence,

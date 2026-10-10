@@ -29,8 +29,8 @@ export function flagfallLayout() {
 	const lanes = [-1, 1].map((flank) => ({
 		id: flank === -1 ? 'south' : 'north',
 		path: [
-			{ x: -s.waveSpawnX, z: flank * s.lane.centreZ },
-			{ x: s.waveSpawnX, z: flank * s.lane.centreZ },
+			{ x: -s.waveSpawnX, z: flank * s.lane.pathZ },
+			{ x: s.waveSpawnX, z: flank * s.lane.pathZ },
 		],
 	}))
 	const structures = ['A', 'B'].flatMap((team) => [
@@ -57,6 +57,16 @@ export function flagfallLayout() {
 			z: 0,
 		},
 	])
+	// Each gap is an x range on one shore (flank −1 south, 1 north); the court's edge is bounds.halfZ.
+	const gaps = [-1, 1].flatMap((flank) =>
+		[-1, 1].flatMap((side) =>
+			s.gaps.map(([inner, outer]) => ({
+				flank,
+				x0: Math.min(side * inner, side * outer),
+				x1: Math.max(side * inner, side * outer),
+			})),
+		),
+	)
 	return {
 		name: s.name,
 		preview: `<rect x="${-s.yard.halfX}" y="${-s.yard.halfZ}" width="${s.yard.halfX * 2}" height="${s.yard.halfZ * 2}"/>${[-1, 1].map((side) => `<path d="M${-bounds.halfX},${side * s.lane.innerZ} H${bounds.halfX}"/>`).join('')}`,
@@ -73,6 +83,7 @@ export function flagfallLayout() {
 		structures,
 		posts: s.posts,
 		dummyPosts: s.dummyPosts,
+		gaps,
 	}
 }
 
@@ -96,6 +107,7 @@ export function flagfallLayoutTune() {
 			'baseX',
 			'waveSpawnX',
 			'hedge',
+			'gaps',
 			'pillarRadius',
 			'yardPillars',
 			'spawns',

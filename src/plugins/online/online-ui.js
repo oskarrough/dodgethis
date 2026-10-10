@@ -11,6 +11,7 @@ export function createOnlineUi(session, { inMatch = () => false, signal } = {}) 
 	let joinCode = ''
 	let noGames = false
 	let hostPublic = true
+	let copiedCode = ''
 	// Screens own their entry markup; delegation also reaches entries in fresh mode runs.
 	document.addEventListener(
 		'click',
@@ -140,15 +141,30 @@ export function createOnlineUi(session, { inMatch = () => false, signal } = {}) 
 			choices.append(quick, join, host)
 			children.push(choices)
 		} else {
+			// The link is the invitation; the code inside it still works typed into Join.
+			const share = el('div', 'online-share')
+			const url = el('input', 'selectable', share)
+			url.readOnly = true
+			url.value = `${location.origin}/${state.code}`
+			url.setAttribute('aria-label', 'Room link')
+			url.onfocus = () => url.select()
+			const copy = el('button', 'sticker', share)
+			copy.type = 'button'
+			copy.textContent = copiedCode === state.code ? 'Copied' : 'Copy link'
+			copy.onclick = async () => {
+				try {
+					await navigator.clipboard.writeText(url.value)
+				} catch {
+					// Plain-http LAN play has no async clipboard.
+					url.select()
+					document.execCommand('copy')
+				}
+				copiedCode = state.code
+				copy.textContent = 'Copied'
+			}
 			const hint = el('p', 'line')
-			const code = el('b', 'selectable')
-			code.textContent = state.code
-			hint.append(
-				'Share code ',
-				code,
-				` with friends. ${state.humans.length}/${state.capacity ?? MAX_PLAYERS} humans connected.`,
-			)
-			children.push(hint)
+			hint.textContent = `${state.humans.length}/${state.capacity ?? MAX_PLAYERS} humans connected.`
+			children.push(share, hint)
 			const editable = session.net.isHost && state.phase === 'lobby'
 			// A walk-around lobby picks teams by box and fills empty boxes with bots, so it needs neither control.
 			for (const human of state.liveLobby ? [] : state.humans) {

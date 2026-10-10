@@ -54,6 +54,11 @@ function errorMessage(error) {
 const cancelled = () => new Error('Connection attempt cancelled')
 const makeCode = () =>
 	Array.from({ length: 5 }, () => ALPHABET[Math.floor(Math.random() * ALPHABET.length)]).join('')
+// A room link is the bare code as the path: dodgethis.0sk.ar/ABCDE.
+export function roomCode(pathname) {
+	const match = /^\/([A-HJ-NP-Z2-9]{5})\/?$/i.exec(pathname)
+	return match ? match[1].toUpperCase() : null
+}
 
 // Modes may seed a participant with shallow, plain selection data, never identity or ownership.
 export function plainJoinData(data) {
@@ -443,6 +448,12 @@ export class Net {
 			raw.length <= tune.input.cap &&
 			new TextEncoder().encode(raw).byteLength <= tune.input.cap
 		)
+	}
+
+	// Host: let a peer go as if its channel closed.
+	drop(peerId) {
+		const conn = this.conns.get(peerId)
+		if (conn) this._drop(conn)
 	}
 
 	reject(peerId) {

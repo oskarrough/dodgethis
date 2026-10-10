@@ -3,6 +3,7 @@ import { STEP } from '../../core/app.js'
 import { abilityOf } from './ability.js'
 import { heroDefinition } from './heroes.js'
 import { tune } from './tune.js'
+import { flagfallLayoutTune } from './maps/flagfall.js'
 
 // Moba's fact switch (docs/moba-plan.md, "Hit feedback"): each fact becomes juice-kit verbs, sfx, rumble, pings and HUD.
 // `local` is this machine's participant id; facts about anyone else get the quieter version.
@@ -33,8 +34,11 @@ export function createFeedback({
 	// Your own takedowns get a short hitstop; the core ignores it when the session is shared.
 	let stop = 0
 	let freeze = 0
+	const later = [] // { left, run }: presentation timed to an animation, like a splash on landing
 	function beat(dt) {
 		const elapsed = Math.max(0, Math.min(dt, 0.1))
+		for (let i = later.length - 1; i >= 0; i--)
+			if ((later[i].left -= elapsed) <= 0) later.splice(i, 1)[0].run()
 		const frozen = Math.min(freeze, elapsed)
 		freeze = Math.max(0, freeze - elapsed)
 		const slowed = Math.min(stop, elapsed - frozen)
@@ -72,7 +76,7 @@ export function createFeedback({
 		if (unit.structure) return said(`${unit.team === localTeam ? 'your' : 'enemy'} ${unit.kind}`)
 		return said(`${side} minions`)
 	}
-	function ruling(fact, unit, mine, onMe) {
+	function ruling(fact, unit, mine, onMe, verb = 'got', after = ' out') {
 		const taker = unitOf(fact.source)
 		const team = taker?.team ?? (unit.team === 'A' ? 'B' : 'A')
 		const tick = fact.tick ?? sim.tick
@@ -94,7 +98,7 @@ export function createFeedback({
 		if (hero && !onMe)
 			hud.banner?.(
 				!wiped
-					? `${who(taker, true)} got ${who(unit)} out`
+					? `${who(taker, true)} ${verb} ${who(unit)}${after}`
 					: unit.team === unitOf(local)?.team
 						? 'All out! Your whole team is out'
 						: 'All out! The whole enemy team is out',
@@ -421,6 +425,63 @@ export function createFeedback({
 				}
 				return
 			}
+			case 'shove': {
+				// A shove on the slick: a scuff trail behind the feet, a lean into the slide.
+				const unit = unitOf(fact.target)
+				juice.burst(
+					{ ...fact.point, y: 0.1 },
+					{ x: -fact.direction.x, y: 0, z: -fact.direction.z },
+					tune.flagfall.dunk.scuff,
+				)
+				unit?.body.lean(fact.direction, 40)
+				cue('shove', fact, mine || onMe ? 1 : 0.5)
+				return
+			}
+			case 'dunk': {
+				// Over the edge: the body sails out tumbling and splashes down; the ref calls it OUT at the edge.
+				const unit = unitOf(fact.target)
+				const corpse = unit?.corpse ?? unit?.body
+				corpse?.resetAbilityPose?.()
+				const d = tune.flagfall.dunk
+				const layout = flagfallLayoutTune()
+				const flank = fact.point.z < 0 ? -1 : 1
+				// Out, not along: keep the shove's sideways drift but always clear the rim.
+				const out = Math.max(Math.abs(fact.direction.z), 0.75)
+				const length = Math.hypot(fact.direction.x, out)
+				const direction = { x: fact.direction.x / length, y: 0, z: (flank * out) / length }
+				const reach =
+					(layout.bounds.halfZ + d.flight - Math.abs(fact.point.z)) / Math.abs(direction.z)
+				const water = -layout.water.drop * layout.scale
+				const splashAt = {
+					x: fact.point.x + direction.x * reach,
+					y: water,
+					z: fact.point.z + direction.z * reach,
+				}
+				if (corpse)
+					juice.retire(corpse.visual, {
+						radius: corpse.radius,
+						style: 'overboard',
+						direction,
+						overboard: { reach, hop: d.hop, time: d.fly, sink: d.sink, water },
+					})
+				later.push({
+					left: d.fly,
+					run() {
+						juice.burst(splashAt, { x: 0, y: 1, z: 0 }, d.splash)
+						juice.burst(splashAt, direction, d.spray)
+						cue('plunk', { ...fact, point: splashAt }, mine || onMe ? 1 : 0.5)
+						sfx.splash?.(splashAt, mine || onMe ? 1 : 0.5)
+						if (onMe || mine) camera.shake(tune.juice.shakeTakedown)
+					},
+				})
+				if (unit) ruling(fact, unit, mine, onMe, 'dunked', '')
+				if (onMe) input.rumble(0.35, 0.6, 85)
+				if (mine && !onMe) {
+					hitmark('kill', fact.point)
+					input.rumble(0.35, 0.6, 85)
+				}
+				return
+			}
 			case 'spawn': {
 				unitOf(fact.target)?.body.squash(0.35)
 				juice.burst({ ...fact.point, y: 0.2 }, { x: 0, y: 1, z: 0 }, { count: 5, speed: 0.8 })
@@ -464,6 +525,7 @@ export function createFeedback({
 			for (const dummy of sim.dummies) dummy.body.resetAbilityPose?.()
 			stop = 0
 			freeze = 0
+			later.length = 0
 			aggroPingTick = -1
 			sounded.clear()
 			streaks.clear()

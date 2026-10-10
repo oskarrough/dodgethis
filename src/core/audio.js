@@ -284,6 +284,9 @@ export const sfx = {
 		scuff(point, true)
 	},
 	step: (point) => scuff(point),
+	// Something heavy into water: a broad falling hiss.
+	splash: (point, gain = 1) =>
+		noise({ point, from: 2600, to: 380, dur: 0.25, gain: 0.22 * gain, q: 0.5 }),
 	// An arrow zipping past your ear: a falling noise sweep, louder the closer it came (closeness 0..1).
 	whoosh: (point, closeness = 1) =>
 		noise({

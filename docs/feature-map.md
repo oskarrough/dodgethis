@@ -11,7 +11,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Splash with map tiles (Overthrow, Flagfall): `front/index.js` `mobaFront`; `front/backdrop.js` `createBackdrop`; `front/tune.js` `tile`, `title`, `dusk`; `moba-front.md`
 - Dodgeball bonus sticker under the tiles: `front/index.js` (`bonus` const, `.front-bonus`); `moba-front.md`, `roadmap.md`
 - Splash keyboard and pad focus, deny shake, back button: `front/controls.js` `createControls`; `front/tune.js` `deny`, `back`, `move`, `enter`
-- Stickers, mute button, online panel, shell CSS: `index.html`; `src/core/browser.js` `createBrowserApp`
+- Stickers, mute button, corner row, online panel, shell CSS: `index.html`; `src/core/browser.js` `createBrowserApp`
 - Boot error screen: `src/core/browser.js` `reportBootError`
 - Mode registration, `window.game.moba`: `index.js` `moba` (default export); `src/core/app.js` `createApp`; `plugin-architecture.md`
 - Match setup from the URL (`?mode=moba&play&bots=&hero=&seed=&debug`): `setup.js` `parseMatchSetup`, `wantsDirectPlay`, `matchLink`; `moba-agents.md`
@@ -20,7 +20,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 ## Lobby
 
 - Lobby screen (walk around, pick, ready, back): `lobby.js` `createLobby`; `tune.js` `lobby`; `moba-lobby.md`
-- Play online button (top left, beside back): `lobby.js` `createLobby` (`onlineEntry`); `lobby.css` `.front-lobby .online-entry`
+- Back and Play online, the top-left row in both modes' lobbies: `src/core/corner-nav.js` `createCornerNav`; `index.html` `.corner-nav`; used by `lobby.js` `createLobby` and `src/plugins/dodgeball/index.js`
 - Seats, roster, ready state: `lobby-state.js` `createReadySeats`; `lobby-heroes.js` `createLobbyHeroes`; `tune.js` `lobby.ready`
 - Ready pad on the floor: `lobby-floor.js` (`tune.lobby.ready`); `lobby.js` `createLobby`
 - Lobby floor, rocks and fences: `lobby-floor.js` `createLobbyFloor`, `floorOutline`, `createFences`; `maps/lobby.js` `lobbyLayout`; `tune.js` `lobby.floor`, `lobby.fence`
@@ -73,7 +73,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 ## Match: heroes and kits
 
 - Hero table and kit definitions: `heroes.js` `heroDefinition`, `HEROES`, `freshAbilityState`; `ability.js` `abilityOf`, `castAbility`, `slowFactor`; `tune.js` `heroes`, `hero`; `moba-heroes.md`
-- Casting, cast points, release: `sim.js` `casts`, `release`, `cancelChannel`, `stepHeroState`; `tune.js` `cast`
+- Casting, cast points, release, skill press buffer: `sim.js` `casts`, `castWait`, `release`, `cancelChannel`, `stepHeroState`; `tune.js` `cast`
 - Basic attack: `sim.js` `basicAttack`, `aimBasic`; `tune.js` `attack`
 - Damage and hit resolution: `sim.js` `hit`; `skillshot.js` `stepShot`, `interceptShot`
 - Skillshot shapes and sweeps: `skillshot.js` `stepShot`, `closest`; `obstacles.js` `sweepHit`, `sweepObstacles`; `skills-view.js` `lineReach`
@@ -114,10 +114,12 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Flagfall windbreaks (striped screens): `windbreak.js` `windbreakGeometries`; `tune.js` `flagfall`
 - Flagfall bollards (mooring posts): `bollard.js` `bollardGeometries`; `tune.js` `flagfall`
 - Flagfall hedges and fence: `match-terrain.js` `createMatchTerrain`; `tune.js` `flagfall.hedge`, `flagfall.fence`
+- Flagfall dunk (fence gaps, slick, shove into the sea): `sim.js` `shove`, `dunk`; `map.js` `buildFlagfall` (fence cut, slick print); `feedback.js` `'dunk'`; `core/death.js` `overboard`; bots `fight-bots.js` `slick`, `inland`; `tune.js` `flagfall.gaps`, `flagfall.dunk`, `bots.slick*`
+- Flagfall bot rotation across the yard: `lane-bots.js` `advance`; `tune.js` `bots.rotateRange`, `bots.rotateQuiet`
 - Map registry and layout recipe: `maps/index.js` `mapLayout`, `matchRecipe`; `tune.js` `map`
 - Ground and walls build: `map.js` `buildMap`, `createMapScope`; `match-terrain.js` `createMatchTerrain`
 - Colliders and walkable test: `obstacles.js` `buildColliders`, `walkable`, `clampWalkable`, `segmentClear`, `clampMap`
-- Look reference boards and textures: `docs/look/`; `moba-look.md`
+- Look references: `docs/look/vibes/` (the picked directions), `docs/look/archive/` (superseded, history only); `moba-look.md`
 
 ## Match: view, feedback, sound
 
@@ -153,6 +155,8 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Online plugin and room panel: `src/plugins/online/index.js` `online`; `src/plugins/online/online-ui.js` `createOnlineUi`; `network.md`
 - Room session (host, join, lobby, match): `src/plugins/online/online-session.js` `createOnlineSession`; `src/plugins/online/tune.js` `link`, `input`
 - Room list and join codes: `src/plugins/online/lobby-directory.js` `createLobbyDirectory`
+- Join by link (`/ABCDE`), Copy link: `src/main.js`; `net.js` `roomCode`; online `index.js` `joinByLink`; `online-ui.js`; `worker/index.js`
+- Late joiner takes a bot's seat, leaver hands it back: moba `index.js` `seatLate`, `openSeats`, `removeParticipant`; `sim.js` `releaseBot`, `adoptBot`; `online-session.js` `onPeerJoin`; `link.js` `SEAT_TIMEOUT`
 - Transport (peer link, envelopes): `src/plugins/online/net.js` `Net`, `plainJoinData`; `src/plugins/online/link.js` `createLink`
 - Remote players as replicas: `lane-replica.js`, `lobby-replica.js`; `src/plugins/dodgeball/replica.js`
 
