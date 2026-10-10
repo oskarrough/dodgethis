@@ -44,7 +44,10 @@ export function matchReport(roster, { STEP, towerRange }) {
 		taken: {},
 		states: {},
 		siege: {},
+		lanes: {},
+		lost: {},
 	}
+	const player = roster.find((seat) => seat.controller === 'agent')?.id
 	const ability = (seat, id) =>
 		(r.abilities[`${hero(seat)} ${id ?? '?'}`] ??= { casts: 0, hits: 0, heroHits: 0, damage: 0 })
 	const add = (bucket, key, value) => (bucket[key] = (bucket[key] ?? 0) + value)
@@ -93,6 +96,16 @@ export function matchReport(roster, { STEP, towerRange }) {
 			}
 		},
 		tick(sim) {
+			if (sim.lanes?.length > 1) {
+				for (const h of sim.heroes) {
+					if (h.dead) continue
+					const key = h.id === player ? `${h.id} (player)` : h.id
+					add((r.lanes[key] ??= {}), zone(sim.lanes, h), STEP)
+				}
+				r.lost = {}
+				for (const s of sim.lane.structures)
+					if (s.dead && s.lane) add((r.lost[s.team] ??= {}), s.lane, 1)
+			}
 			const brains = sim.bots?.brains
 			if (!brains) return
 			const lane = sim.lane
@@ -121,6 +134,28 @@ export function matchReport(roster, { STEP, towerRange }) {
 	}
 }
 
+// Two-lane maps: the lane a hero stands in (within LANE_BAND of its path), home near its spawn, else yard.
+const LANE_BAND = 6
+const HOME = 15
+function zone(lanes, h) {
+	const p = h.body.position
+	if (h.spawn && Math.hypot(p.x - h.spawn.x, p.z - h.spawn.z) <= HOME) return 'home'
+	const near = (path) =>
+		Math.min(
+			...path.slice(1).map((to, i) => {
+				const from = path[i],
+					dx = to.x - from.x,
+					dz = to.z - from.z,
+					t = Math.max(
+						0,
+						Math.min(1, ((p.x - from.x) * dx + (p.z - from.z) * dz) / (dx * dx + dz * dz || 1)),
+					)
+				return Math.hypot(p.x - from.x - dx * t, p.z - from.z - dz * t)
+			}),
+		)
+	return lanes.find((l) => near(l.path) <= LANE_BAND)?.id ?? 'yard'
+}
+
 export function emptyTotals() {
 	return {
 		matches: 0,
@@ -131,6 +166,8 @@ export function emptyTotals() {
 		taken: {},
 		states: {},
 		siege: {},
+		lanes: {},
+		lost: {},
 	}
 }
 
@@ -186,7 +223,7 @@ export function mergeReport(totals, report, winner) {
 			h.edge++
 			if ((a > b ? 'A' : 'B') === winner) h.edgeWins++
 		}
-	for (const key of ['abilities', 'deathsBy', 'taken', 'states', 'siege'])
+	for (const key of ['abilities', 'deathsBy', 'taken', 'states', 'siege', 'lanes', 'lost'])
 		sumInto(totals[key], report[key])
 }
 
@@ -442,6 +479,7 @@ export function reportSections(sides) {
 
 	for (const [title, pick, share] of [
 		['\nBot state, % of alive time', (t) => t.states, true],
+		['\nWhere each seat spends its alive time, % (two-lane maps)', (t) => t.lanes, true],
 		[
 			'\nBot state in a siege window (≥2 friendly minions at a vulnerable enemy tower), seconds per bot and match; in = within tower range, out = within 20 m',
 			(t) => t.siege,
@@ -477,5 +515,17 @@ export function reportSections(sides) {
 			),
 		)
 	}
+	const lostLanes = inner((t) => t.lost)
+	if (lostLanes.length)
+		out.push(
+			'\nStructures lost per match, by team and lane',
+			table(
+				['team', ...lostLanes],
+				keys((t) => t.lost).map((team) => [
+					team,
+					...lostLanes.map((l) => val((t) => (t.lost[team]?.[l] ?? 0) / t.matches, 2)),
+				]),
+			),
+		)
 	return out.join('\n')
 }

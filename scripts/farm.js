@@ -45,8 +45,9 @@ export function gameModules(root = ROOT) {
 					'src/plugins/moba/obstacles.js',
 					'src/plugins/moba/agent-match.js',
 					'src/plugins/moba/maps/index.js',
+					'src/plugins/moba/bots.js',
 				].map(at),
-			).then(([app, core, moba, agents, obstacles, match, maps]) => ({
+			).then(([app, core, moba, agents, obstacles, match, maps, bots]) => ({
 				STEP: app.STEP,
 				coreTune: core.tune,
 				tune: moba.tune,
@@ -54,6 +55,7 @@ export function gameModules(root = ROOT) {
 				buildColliders: obstacles.buildColliders,
 				createAgentMatch: match.createAgentMatch,
 				matchRecipe: maps.matchRecipe,
+				createBots: bots.createBots,
 				baseline: new Map(),
 			})),
 		)
@@ -92,8 +94,9 @@ export function farmRoster(heroes, difficulty, index, crossOnly = false, seed = 
 
 // Seats for one match on one checkout: its agentRoster places them, the lineups say who plays.
 // Idle seats stand still like a practice player who walked away; practice allies play normal.
-function matchRoster(mods, lineups, { difficulty, idle = [], practice = false }) {
-	return mods.agentRoster({ seats: [], idle, difficulty }).map((seat) => ({
+function matchRoster(mods, lineups, { difficulty, idle = [], practice = false, player = null }) {
+	const seats = player ? [player.id] : []
+	return mods.agentRoster({ seats, idle, difficulty }).map((seat) => ({
 		...seat,
 		heroId: lineups[seat.team === 'A' ? 0 : 1][Number(seat.id[1]) - 1],
 		difficulty: practice && seat.team === 'A' ? 'normal' : seat.difficulty,
@@ -174,6 +177,7 @@ export async function runFarmMatch({
 	summary = false,
 	sample = false,
 	map = null,
+	player = null,
 	mods,
 }) {
 	mods ??= await gameModules()
@@ -222,8 +226,11 @@ export async function runFarmMatch({
 				if (buffer.length >= 64 * 1024) flush()
 			},
 		})
+		const drive = player
+			? playerBot(mods, match.sim, recipe ?? mods.matchRecipe(), roster, seed, player)
+			: () => []
 		const limit = Math.ceil(maxSeconds / STEP)
-		while (match.sim.tick < limit && match.step()) if (sample && stats) stats.tick(match.sim)
+		while (match.sim.tick < limit && match.step(drive())) if (sample && stats) stats.tick(match.sim)
 		const reason = match.sim.lane.match.winner ? 'matchOver' : 'limit'
 		const tape = match.finish(reason)
 		tape.botReplay = true
@@ -256,6 +263,26 @@ export async function runFarmMatch({
 	return result
 }
 
+// `--player A1:north`: a stand-in human. Its own bot drives the seat, outside the team's lane deal
+// (bots treat it as a human teammate), and lanes where asked: the chosen lane comes first in its view.
+function playerBot(mods, sim, recipe, roster, seed, { id, lane }) {
+	const pieces = Object.values(recipe).filter((piece) => piece && typeof piece === 'object')
+	const modules = [
+		...new Set(pieces.flatMap((piece) => [piece.lane?.botHabit ?? piece.botHabit].filter(Boolean))),
+	]
+	const bot = mods.createBots([roster.find((seat) => seat.id === id)], seed, modules)
+	const lanes = sim.lanes ?? []
+	if (lane && !lanes.some((l) => l.id === lane))
+		throw new Error(`--player ${id}:${lane}: lanes are ${lanes.map((l) => l.id).join(', ')}`)
+	const ordered = lane ? [...lanes].sort((a, b) => (b.id === lane) - (a.id === lane)) : lanes
+	const view = new Proxy(sim, { get: (t, k) => (k === 'lanes' ? ordered : t[k]) })
+	return () => {
+		const actions = []
+		bot.step(view, { feed: (seat, frame) => actions.push([seat, frame]) })
+		return actions
+	}
+}
+
 const HELP = `bun run simulate [options]
 Plays headless bot matches. Default: write logs and tapes for \`bun run simulate --logs runs\`; --summary prints tables.
 
@@ -264,6 +291,7 @@ Teams
   --lineup a,b,c            a team of those seats (repeatable); \`random\` draws a seeded playable hero
   --cross-only              skip mirror matchups
   --idle A1[,B2]            seats that stand still; --practice = idle A1, allies normal, enemies --difficulty
+  --player A1[:north]       a stand-in human: its own bot plays the seat outside the team's lane deal, in that lane
   --difficulty hard         easy, normal or hard
   --map flagfall            overthrow or flagfall (default: the game's default map)
 Sampling
@@ -309,6 +337,7 @@ export async function farm(argv = process.argv.slice(2)) {
 			base: { type: 'string' },
 			until: { type: 'string' },
 			idle: { type: 'string', multiple: true, default: [] },
+			player: { type: 'string' },
 			practice: { type: 'boolean' },
 			set: { type: 'string', multiple: true, default: [] },
 			seed: { type: 'string', default: String(tune.bots.seed) },
@@ -365,7 +394,9 @@ export async function farm(argv = process.argv.slice(2)) {
 			...values.idle.flatMap((list) => list.split(',').map((id) => id.trim())),
 		]),
 	].filter(Boolean)
-	agentRoster({ seats: [], idle, difficulty: values.difficulty })
+	const [playerId, playerLane] = values.player?.split(':') ?? []
+	const player = playerId ? { id: playerId.trim(), lane: playerLane?.trim() || null } : null
+	agentRoster({ seats: player ? [player.id] : [], idle, difficulty: values.difficulty })
 	const requested = [
 		...new Set(
 			(values.heroes ?? (values.lineup.length ? '' : 'fletcher,mitts'))
@@ -424,7 +455,7 @@ export async function farm(argv = process.argv.slice(2)) {
 	const runId = crypto.randomUUID()
 	const perRound = sides.length * variants.length * matches
 	console.log(
-		`run=${runId} commit=${commit.slice(0, 12)}${values.base ? ` base=${values.base} (${sides[0].commit.slice(0, 12)})` : ''} matches=${matches}${values.until ? ` until ${cap}` : ''}${variants.length > 1 ? ` x ${variants.length} variants` : ''}${sides.length > 1 ? ' x 2 revisions' : ''}${idle.length ? ` idle=${idle}` : ''}${values.map ? ` map=${values.map}` : ''}`,
+		`run=${runId} commit=${commit.slice(0, 12)}${values.base ? ` base=${values.base} (${sides[0].commit.slice(0, 12)})` : ''} matches=${matches}${values.until ? ` until ${cap}` : ''}${variants.length > 1 ? ` x ${variants.length} variants` : ''}${sides.length > 1 ? ' x 2 revisions' : ''}${idle.length ? ` idle=${idle}` : ''}${values.player ? ` player=${values.player}` : ''}${values.map ? ` map=${values.map}` : ''}`,
 	)
 	const { cores, budget, release } = await reserveCores(Math.min(jobs, perRound), {
 		log: (line) => console.log(line),
@@ -459,6 +490,7 @@ export async function farm(argv = process.argv.slice(2)) {
 		map: values.map ?? null,
 		difficulty: values.difficulty,
 		idle,
+		player,
 		practice: !!values.practice,
 		maxSeconds,
 		directory: values.out,
