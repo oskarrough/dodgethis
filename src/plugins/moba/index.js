@@ -673,14 +673,20 @@ export default function moba(app, map) {
 			const names = new Map()
 			// Mid-lane, a late human takes a bot's seat as it stands, on the side with fewer humans.
 			let seating = null
-			function seatLate({ joinOrder }) {
+			function seatLate({ joinOrder, prefer = null }) {
 				if (!openSeats()) return null
 				const humans = (team) =>
 					seats.filter((seat) => seat.team === team && seat.controller === 'human').length
+				// A refreshed tab gets its own hero back, as the bot left it.
 				const index = seats
 					.map((seat, i) => i)
 					.filter((i) => seats[i].controller === 'bot')
-					.sort((a, b) => humans(seats[a].team) - humans(seats[b].team) || a - b)[0]
+					.sort(
+						(a, b) =>
+							(seats[b].id === prefer) - (seats[a].id === prefer) ||
+							humans(seats[a].team) - humans(seats[b].team) ||
+							a - b,
+					)[0]
 				const seat = seats[index]
 				if (!sim.releaseBot(seat.id)) return null
 				seats[index] = { ...seat, controller: 'human', joinOrder }

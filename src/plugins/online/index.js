@@ -2,7 +2,7 @@ import { createLink } from './link.js'
 import { MAX_PLAYERS, Net } from './net.js'
 import { createOnlineSession } from './online-session.js'
 import { createOnlineUi } from './online-ui.js'
-import { playerName, validName } from './names.js'
+import { playerName, seatKey, validName } from './names.js'
 
 // Online play. A started match restarts the running mode under a shared session with the lobby's roster; the link carries it.
 // Leaving restarts that mode solo. Online never names the mode, and the mode never learns it is online.
@@ -29,6 +29,8 @@ export default function online(app, { join = null } = {}) {
 	const session = createOnlineSession(net, {
 		modeId: () => app.modes.active,
 		joinData: () => ({ ...app.modes.current?.joinData?.(), name }),
+		seatKey,
+		silent: (peerId) => link?.silent(peerId) ?? true,
 		rosterSelections: () => app.modes.current?.roomRoster?.() ?? [],
 		hasRoomLobby: () => app.modes.current?.roomLobby === true,
 		openSeats: () => app.modes.current?.openSeats?.() ?? false,

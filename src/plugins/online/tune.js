@@ -1,6 +1,7 @@
 // All inbound guest messages, including lobby/control traffic, spend the same seat budget.
 export const tune = {
 	link: { queuedEnvelopes: 2, samples: 6000, maxFacts: 256 },
+	room: { rejoinFor: 60 }, // seconds a refreshed tab may take its old seat back
 	input: {
 		rate: 120, // tokens refilled per second
 		burst: 360, // enough for fresh input behind a short stall's backlog

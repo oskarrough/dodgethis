@@ -1,6 +1,8 @@
 import { createLobbyDirectory } from './lobby-directory.js'
 import { validateRoster } from '../../core/roster.js'
 import { MAX_PLAYERS, REMOVAL_MESSAGES, plainJoinData } from './net.js'
+import { validKey } from './names.js'
+import { tune } from './tune.js'
 
 export const MAX_BOTS = 12
 const teams = ['A', 'B']
@@ -21,11 +23,16 @@ export function createOnlineSession(
 		rosterSelections = () => [],
 		// A mode with its own walk-around lobby takes the room there at once; it seats bots itself.
 		hasRoomLobby = () => false,
-		// Mid-match, a joiner takes over a bot: `seatLate({ joinOrder })` returns its `{ id, team, data }` or null.
+		// Mid-match, a joiner takes over a bot: `seatLate({ joinOrder, prefer })` returns its `{ id, team, data }` or null,
+		// taking the `prefer` seat when it is a bot.
 		openSeats = () => false,
 		seatLate = () => null,
 		onSeat = () => {},
 		rosterTimeout = 7000,
+		// This tab's seat key, sent on join; the host keeps each guest's to itself.
+		seatKey = () => null,
+		silent = () => true,
+		now = () => performance.now() / 1000,
 		directory = createLobbyDirectory(),
 	} = {},
 ) {
@@ -34,6 +41,9 @@ export function createOnlineSession(
 	let lastRevision = -1
 	let pendingRoster = null
 	let generation = 0
+	// Host: each guest's seat key by peer id, and the seat a key left mid-match.
+	const keys = new Map()
+	const left = new Map()
 	function settleRoster(error) {
 		if (!pendingRoster) return
 		const pending = pendingRoster
@@ -85,12 +95,25 @@ export function createOnlineSession(
 				: p
 		})
 	}
-	net.onPeerJoin = (peerId, data) => {
+	net.onPeerJoin = (peerId, joined) => {
 		if (!net.isHost || !state) return
 		if (state.humans.some((p) => p.peerId === peerId)) return
+		const { key, ...rest } = joined ?? {}
+		const data = joined ? rest : joined
+		if (validKey(key)) keys.set(peerId, key)
 		if (state.phase === 'match') {
+			// A refresh may beat its old connection's close; that quiet seat goes back to a bot first, then to this tab.
+			// A duplicated tab copies the key too, but its original still talks and keeps its seat.
+			const stale =
+				validKey(key) && state.humans.find((h) => keys.get(h.peerId) === key && silent(h.peerId))
+			if (stale) net.drop(stale.peerId)
+			const back = validKey(key) && left.get(key)
+			const prefer =
+				back && back.matchId === state.matchId && now() - back.at < tune.room.rejoinFor
+					? back.id
+					: null
 			const joinOrder = Math.max(-1, ...state.humans.map((h, i) => h.joinOrder ?? i)) + 1
-			const seat = seatLate({ joinOrder })
+			const seat = seatLate({ joinOrder, prefer })
 			net.accepting = openSeats()
 			// A lost race leaves the peer unseated; it gives up waiting for a roster.
 			if (!seat) return
@@ -129,6 +152,9 @@ export function createOnlineSession(
 		if (!net.isHost || !state) return
 		const id = state.humans.find((p) => p.peerId === peerId)?.id ?? peerId
 		state.humans = state.humans.filter((p) => p.peerId !== peerId)
+		const key = keys.get(peerId)
+		keys.delete(peerId)
+		if (key && state.phase === 'match') left.set(key, { id, matchId: state.matchId, at: now() })
 		const reason = Object.hasOwn(REMOVAL_MESSAGES, code) ? REMOVAL_MESSAGES[code] : null
 		if (reason) state.message = reason
 		const kept = state.matchId && onPeerLeave(id)
@@ -269,7 +295,8 @@ export function createOnlineSession(
 			settleRoster(new Error('Connection attempt cancelled'))
 			lastRevision = -1
 			state = null
-			await net.join(code, joinData())
+			const key = seatKey()
+			await net.join(code, { ...joinData(), ...(key ? { key } : {}) })
 			if (operation !== generation) throw new Error('Connection attempt cancelled')
 			if (state) return
 			await new Promise((resolve, reject) => {

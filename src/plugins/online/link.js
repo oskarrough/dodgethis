@@ -239,6 +239,8 @@ export function createLink({
 		keepalive() {
 			if (!host && !disposed && now() - lastSent >= 1) sendIntent()
 		},
+		// Host: a peer whose frames stopped arriving.
+		silent: (peerId) => seats.get(peerId)?.silent ?? true,
 		// Host: a peer seated mid-run starts from the next fact.
 		seat(peerId, id) {
 			if (host && !disposed) addSeat(peerId, id)

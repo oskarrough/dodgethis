@@ -61,6 +61,7 @@ const ANIMALS = [
 	'Yak',
 ]
 const KEY = 'dodgethis-name'
+const SEAT_KEY = 'dodgethis-seat'
 const pick = (list, random) => list[Math.floor(random() * list.length)]
 
 export const stickerName = (random = Math.random) =>
@@ -82,6 +83,19 @@ export function playerName(storage = globalThis.sessionStorage) {
 	}
 	return name
 }
+
+// The tab's seat key: a refresh sends it again, and the host gives the same seat back (online-session `rejoinFor`).
+export function seatKey(storage = globalThis.sessionStorage) {
+	let key = null
+	try {
+		key = storage?.getItem(SEAT_KEY)
+		if (!validKey(key)) storage?.setItem(SEAT_KEY, (key = crypto.randomUUID()))
+	} catch {
+		key = crypto.randomUUID()
+	}
+	return key
+}
+export const validKey = (key) => typeof key === 'string' && /^[a-f0-9-]{36}$/.test(key)
 
 // A guest's client picks its own name, so the host only checks it is a short pair of words.
 export const validName = (name) =>
