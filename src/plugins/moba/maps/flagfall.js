@@ -119,9 +119,11 @@ export function flagfallLayoutTune() {
 	const metres = (value) =>
 		typeof value === 'number'
 			? value * scale
-			: Array.isArray(value)
-				? value.map(metres)
-				: Object.fromEntries(Object.entries(value).map(([key, v]) => [key, metres(v)]))
+			: typeof value !== 'object'
+				? value // names like `frontGate` pass through
+				: Array.isArray(value)
+					? value.map(metres)
+					: Object.fromEntries(Object.entries(value).map(([key, v]) => [key, metres(v)]))
 	const scaled = Object.fromEntries(
 		[
 			'bounds',

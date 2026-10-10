@@ -7,11 +7,11 @@ import { tune } from './tune.js'
 // leaves rubble, a fallen laser gate two stubs, and the lane is open.
 export const GATES = new Set(['gatehouse', 'laser'])
 
-// Layout hook: per team per lane a gatehouse at ±gatehouseX that the fort waits for, and a laser
+// Layout hook: per team per lane a front gate (`frontGate`, a gatehouse unless the map says laser) at ±gatehouseX that the fort waits for, and a laser
 // gate at ±laserX that waits for the fort; the core waits for any laser gate instead of any fort.
-export function addGates(structures, lanes, { gatehouseX, laserX }) {
-	const gate = (kind, team, lane, x, after) => ({
-		id: `${kind}-${team}-${lane.id}`,
+export function addGates(structures, lanes, { gatehouseX, laserX, frontGate = 'gatehouse' }) {
+	const gate = (kind, team, lane, x, after, slot = kind) => ({
+		id: `${slot}-${team}-${lane.id}`,
 		team,
 		lane: lane.id,
 		kind,
@@ -22,12 +22,12 @@ export function addGates(structures, lanes, { gatehouseX, laserX }) {
 	})
 	const gates = ['A', 'B'].flatMap((team) =>
 		lanes.flatMap((lane) => [
-			gate('gatehouse', team, lane, gatehouseX, []),
+			gate(frontGate, team, lane, gatehouseX, [], 'front'),
 			gate('laser', team, lane, laserX, [`fort-${team}-${lane.id}`]),
 		]),
 	)
 	const gated = structures.map((s) => {
-		if (s.kind === 'fort') return { ...s, after: [...s.after, `gatehouse-${s.team}-${s.lane}`] }
+		if (s.kind === 'fort') return { ...s, after: [...s.after, `front-${s.team}-${s.lane}`] }
 		if (s.kind === 'core')
 			return { ...s, after: { ...s.after, any: lanes.map((l) => `laser-${s.team}-${l.id}`) } }
 		return s

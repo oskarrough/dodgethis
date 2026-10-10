@@ -123,6 +123,7 @@ export const flagfall = {
 		],
 		midBrush: { halfX: 2, z: [7, 10.5] }, // the clearing's two lane holes
 		camps: { x: 19, z: 4.25 }, // mercenary camps (`camps.js`): a lantern and a chalk square
+		frontGate: 'laser', // the front gate's kind: 'gatehouse' or 'laser' (Oskar, 2026-10-11: laser)
 		gatehouseX: 29, // the gatehouses in front of each fort (gates.js, tune.gatehouse)
 		laserX: 37, // the laser gates between each fort and the core (gates.js, tune.laser)
 	},
