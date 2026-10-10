@@ -8,6 +8,14 @@ Magic, not school. One world of old stone floating above cloud, seen in two ligh
 
 Super Smash Bros. Melee is the feel reference: responsive controls, fast animations, fluid movement. Polish never adds input latency or lengthens a windup. League of Legends and Heroes of the Storm inform readability (HP, combat information), not rendered style. The slowly animating ring around the Ball spawn is the reference for information carried by the world rather than by labels.
 
+**Why the floating-pillars reference works** (docs/pages/vibes/oskar/floating-pillars-ref.webp; Oskar: "the contrast between back and front, the colors, the glowy feel"). Every match frame needs these five, or it goes flat:
+
+1. Depth falloff: the court is crisp, sunlit and the most saturated thing in frame; everything behind and below dissolves into warm haze, losing contrast and saturation with distance.
+2. A drop: the court is a plateau with visible edges and cliff faces plunging into cloud. You always see where the ground ends; that edge is also where Dunk happens.
+3. One warm light: a low sun, warm lit faces against cool violet shadows, a soft bloom in the haze. Never flat, shadowless light.
+4. A muted base, few accents: peach sky, sage moss, pale stone, violet shade; team colours, the Ball and pickups pop because nothing else is saturated.
+5. Big shapes, little noise: broad planes and chunky props, texture only up close.
+
 **At a glance.** Read the whole fight in half a second: the ground stays quiet, units are loud, and every telegraph is the exact shape of its hitbox. The court is _printed_: flat, low contrast, no shading, no line. Anything that can hurt or be hurt _stands up_: shaded, inked and team coloured. The camera reads roofs, hats and the floor under a unit, not faces.
 
 - **Colour.** Team blue (`teamA`), team red (`teamB`) and Ball gold (`ammo`) are the only saturated colours, and only on things that fight. Scenery keeps clear of all three: waterfalls are white shaded lilac, never sky blue; flowers are apricot by day and orchid by night, never coral; glows are cream or pale teal, never gold. Test: in a crowded-fight screenshot, every saturated patch is a unit, a telegraph, a structure's team part or the Ball.
