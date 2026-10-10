@@ -16,17 +16,10 @@ export function defineAbility(id, manifest) {
 	}
 }
 
-// Every ability by id: folders from abilities/index.js; heroes.js adds the ones still inline.
+// Every ability by id, from the folders in abilities/index.js.
 export const ABILITIES = Object.fromEntries(
 	Object.entries(manifests).map(([id, manifest]) => [id, defineAbility(id, manifest)]),
 )
-
-export function registerAbility(ability) {
-	if (Object.hasOwn(ABILITIES, ability.id))
-		throw new Error(`MOBA ability registered twice: ${ability.id}`)
-	ABILITIES[ability.id] = ability
-	return ability
-}
 
 // Identity survives a slot change, a snapshot, or a caught shot. Custom hero
 // definitions can resolve their own ability without changing the shared table.

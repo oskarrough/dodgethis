@@ -2,8 +2,10 @@
 import * as carom_costume from './carom/costume.js'
 import * as fletcher_costume from './fletcher/costume.js'
 import * as fletcher_numbers from './fletcher/numbers.js'
+import * as mitts_costume from './mitts/costume.js'
 
 export default {
 	carom: { costume: carom_costume },
 	fletcher: { costume: fletcher_costume, numbers: fletcher_numbers },
+	mitts: { costume: mitts_costume },
 }

@@ -68,9 +68,6 @@ export const ICONS = {
 	pocket: svg(
 		'<path class="cream" d="M10 14 L38 14 L36 38 Q24 44 12 38 Z"/><circle class="gold" cx="24" cy="24" r="6"/>',
 	),
-	mitts: svg(
-		'<rect class="tone" x="9" y="13" width="30" height="27" rx="8"/><path class="cream" d="M30 9 Q34 6 37 9 L38 18 L31 19 Z M37 22 Q42 20 44 24 L40 31 L36 28 Z"/><circle class="cream" cx="18" cy="24" r="4"/>',
-	),
 	carom: svg('<path class="tone" d="M24 8 L42 40 L6 40 Z"/>'),
 	skip: svg('<rect class="tone" x="8" y="18" width="32" height="14" rx="5"/>'),
 	empty: svg('<path class="ink-line" d="M16 24 L32 24" opacity="0.4"/>'),

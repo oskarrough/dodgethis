@@ -1,64 +1,9 @@
 import { tune } from './tune.js'
-import { ABILITIES, defineAbility, registerAbility } from './ability.js'
+import { ABILITIES } from './ability.js'
 import manifests from './heroes/index.js'
 
 // Definitions stay plugin-local. Getters keep live tuning live; mutable state
 // belongs to each sim hero, never to this table. A basic and abilities make a kit.
-// Mitts is still written out here; folder heroes come from heroes/index.js.
-const ability = (id, kind, properties = {}) =>
-	registerAbility(defineAbility(id, { kind, ...properties }))
-const toss = ability('toss', 'shot', {
-	pierce: false,
-	heal: false,
-	bounce: false,
-	catchable: true,
-	returnsPocket: true,
-	aimAssist: true,
-	tell: 'line',
-	held: 'line',
-	effects: { cast: 'tossWindup', projectile: 'toss', hit: 'tossHit', pose: 'toss' },
-})
-const catchStance = ability('catch', 'stance', {
-	catchesShots: true,
-	acceptBall: true,
-	held: 'cone',
-	effects: { cast: 'catch', effect: 'catch', pose: 'catch' },
-	onStart({ hero, sim, ability, slot, dir }) {
-		sim.openCatch(hero, {
-			ability: ability.id,
-			dir,
-			duration: ability.stats.duration,
-			radius: ability.stats.radius,
-			angle: ability.stats.angle,
-			acceptBall: true,
-			resetSlot: slot,
-			resetCooldown: ability.stats.resetCooldown,
-		})
-	},
-})
-const dive = ability('dive', 'dash', {
-	catchesShots: true,
-	acceptBall: false,
-	held: 'arrow',
-	effects: { cast: 'dive', effect: 'dive', pose: 'dive' },
-	onRelease({ hero, sim, ability }) {
-		sim.openCatch(hero, {
-			ability: ability.id,
-			duration: ability.stats.time + ability.stats.prone,
-			radius: ability.stats.radius,
-			angle: ability.stats.angle,
-			acceptBall: false,
-		})
-	},
-	onDashEnd({ hero, tick, ticks, ability }) {
-		hero.proneUntil = tick + ticks(ability.stats.prone)
-		if (hero.catchWindow) hero.catchWindow.until = hero.proneUntil
-	},
-})
-const gloveSlap = ability('gloveSlap', 'melee', {
-	tell: 'line',
-	effects: { cast: 'slapWindup', impact: 'slap', pose: 'slap' },
-})
 const SLOTS = ['slot1', 'slot2', 'slot3', 'slot4']
 const titleCase = (id) => id[0].toUpperCase() + id.slice(1)
 
@@ -92,39 +37,10 @@ export function heroFromManifest(id, { kit = {}, basic = null, ...manifest }) {
 	}
 }
 
-const mitts = {
-	id: 'mitts',
-	name: 'Mitts',
-	order: 2,
-	color: 'red',
-	silhouette: 'square',
-	get base() {
-		return { ...tune.hero, ...tune.heroes.mitts }
-	},
-	get basic() {
-		return { ...gloveSlap, ...tune.gloveSlap }
-	},
-	abilities: { slot1: toss, slot2: catchStance, slot3: dive, slot4: null },
-	returnPose: 'toss',
-	traits: {
-		onCatch({ hero, source }) {
-			if (hero.abilityState.pocket) hero.abilityState.pocket.team = source.team
-		},
-		onDeath({ hero }) {
-			hero.body.cancelDash()
-			hero.dashAbility = null
-		},
-	},
-}
-
-// Folder heroes first, so Fletcher precedes Mitts: seeded random seats index into this order.
-export const HEROES = {}
-for (const [id, manifest] of Object.entries(manifests)) {
-	if (Object.hasOwn(HEROES, id)) throw new Error(`MOBA hero defined twice: ${id}`)
-	HEROES[id] = heroFromManifest(id, manifest)
-}
-if (Object.hasOwn(HEROES, mitts.id)) throw new Error(`MOBA hero defined twice: ${mitts.id}`)
-HEROES.mitts = mitts
+// Registry order is by id; seeded random seats index into it, so a new id can shift them.
+export const HEROES = Object.fromEntries(
+	Object.entries(manifests).map(([id, manifest]) => [id, heroFromManifest(id, manifest)]),
+)
 
 // `playable` means "may play" and gates every validator, drafts included. `listed` is
 // playable and not a draft, the same on every peer whatever the URL says.

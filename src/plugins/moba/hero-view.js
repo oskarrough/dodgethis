@@ -1,77 +1,13 @@
 import * as THREE from 'three'
-import { makeStyleMaterial, styleId } from '../../core/stylepass.js'
-import { tune } from './tune.js'
+import { makeStyleMaterial } from '../../core/stylepass.js'
 import { look } from './look.js'
 import { STEP } from '../../core/app.js'
 import { castAbility } from './ability.js'
 import { DEFAULT_HERO, heroDefinition } from './heroes.js'
 import HERO_VIEWS from './heroes/views.js'
 
-// Costumes by hero id; a hero without one wears the box. A costume dresses the torso, adds
-// parts and returns the rig its poses need (Fletcher's bow, Mitts's glove). Hero folders
-// bring theirs through heroes/views.js.
-function dressMitts({
-	costume,
-	torso,
-	footDisc,
-	discY,
-	part,
-	own,
-	rounded,
-	roots,
-	t,
-	look,
-	materials,
-}) {
-	const { glove: gloveMaterial, pocket: pocketMaterial } = materials
-	torso.geometry = own(rounded(t.mittsWidth, t.mittsDepth, t.mittsHeight))
-	const glove = new THREE.Group()
-	glove.name = 'moba-glove'
-	costume.add(glove)
-	roots.push(glove)
-	const pocketRing = part(
-		new THREE.RingGeometry(
-			look.mittsView.pocketRadius - look.mittsView.pocketWidth,
-			look.mittsView.pocketRadius,
-			look.mittsView.segments,
-		).rotateX(-Math.PI / 2),
-		pocketMaterial,
-		0,
-		look.mittsView.pocketY,
-		0,
-		footDisc,
-	)
-	pocketRing.name = 'moba-pocket-ring'
-	pocketRing.visible = false
-	// Palm ends before the thumb: the intervening gap is real geometry, not paint.
-	part(
-		rounded(t.gloveWidth, t.gloveDepth, t.fingerRadius * 2),
-		gloveMaterial,
-		t.gloveX,
-		discY + t.mittsHeight / 2,
-		t.gloveZ,
-		glove,
-	)
-	for (let i = 0; i < t.fingerCount; i++)
-		part(
-			new THREE.SphereGeometry(t.fingerRadius, 8, 6),
-			gloveMaterial,
-			t.gloveX + (i - (t.fingerCount - 1) / 2) * t.fingerSpacing,
-			discY + t.mittsHeight / 2,
-			t.gloveZ - t.gloveDepth / 2,
-			glove,
-		)
-	part(
-		new THREE.SphereGeometry(t.fingerRadius, 8, 6),
-		gloveMaterial,
-		t.gloveX - t.gloveWidth / 2 - t.fingerRadius,
-		discY + t.mittsHeight / 2,
-		t.gloveZ + t.gloveDepth / 2,
-		glove,
-	)
-	return { glove, pocketRing }
-}
-
+// A hero folder's costume (heroes/views.js) dresses the torso, adds parts and returns the rig
+// its poses need: the bow posed here, or parts its own animate() poses. Without one, the box.
 function dressBox({ torso, part, own, t, materials }) {
 	const { ink, team: teamMaterial } = materials
 	torso.geometry = own(new THREE.BoxGeometry(t.skipWidth, t.skipHeight, t.skipDepth))
@@ -96,8 +32,6 @@ function dressBox({ torso, part, own, t, materials }) {
 	).rotation.y = Math.PI
 	return {}
 }
-
-const COSTUMES = { mitts: dressMitts }
 
 // Same costume on the lane body and the select replica. The capsule collider
 // remains untouched; every costume sits above the same inked collision disc.
@@ -173,7 +107,7 @@ export function dressHero(body, heroId = DEFAULT_HERO, team = 'A') {
 		0,
 		body.mesh,
 	)
-	const dress = HERO_VIEWS[heroId]?.costume?.dress ?? COSTUMES[heroId] ?? dressBox
+	const { dress = dressBox, animate = null } = HERO_VIEWS[heroId]?.costume ?? {}
 	const dressed = dress({
 		costume,
 		torso,
@@ -194,14 +128,7 @@ export function dressHero(body, heroId = DEFAULT_HERO, team = 'A') {
 			pocket: pocketMaterial,
 		},
 	})
-	const {
-		glove = null,
-		pocketRing = null,
-		bow = null,
-		hand = null,
-		bowString = null,
-		drawArm = null,
-	} = dressed
+	const { bow = null, hand = null, bowString = null, drawArm = null } = dressed
 	// Move geometry, not the animated root: core's capsule centre is still physics.
 	torso.geometry.computeBoundingBox()
 	torso.geometry.translate(0, discY - torso.geometry.boundingBox.min.y, 0)
@@ -238,16 +165,11 @@ export function dressHero(body, heroId = DEFAULT_HERO, team = 'A') {
 		releaseTick = -Infinity
 		costume.rotation.set(0, 0, 0)
 		drawn.visible = false
-		if (glove) {
-			glove.position.set(0, 0, 0)
-			glove.rotation.set(0, 0, 0)
-			pocketRing.visible = false
-		}
 		body.poseAbility?.(null, 0, null, Number.isFinite(lastTick) ? lastTick : 0)
 	}
 	// Only a real projectile fact arms the snap. Cast disappearance is cancellation.
 	body.releaseAbilityPose = (pose, tick) => {
-		if ((pose === 'draw' && bow) || (pose === 'toss' && glove)) {
+		if ((pose === 'draw' && bow) || dressed.releases?.[pose]) {
 			releasePose = pose
 			releaseTick = tick
 		}
@@ -264,10 +186,13 @@ export function dressHero(body, heroId = DEFAULT_HERO, team = 'A') {
 			: 0
 		const time = tick + alpha
 		const elapsed = Math.max(0, (time - releaseTick) * STEP)
-		const a = look.abilityView,
-			v = look.mittsView
-		const snap = releasePose === 'draw' ? a.drawSnap : v.tossSnap
-		const recover = releasePose === 'draw' ? a.drawRecover : v.tossRecover
+		const a = look.abilityView
+		const release =
+			releasePose === 'draw'
+				? { snap: a.drawSnap, recover: a.drawRecover }
+				: dressed.releases?.[releasePose]
+		const snap = release?.snap ?? 0,
+			recover = release?.recover ?? 0
 		const releasing =
 			!cast &&
 			!unit?.stance &&
@@ -334,60 +259,19 @@ export function dressHero(body, heroId = DEFAULT_HERO, team = 'A') {
 			}
 			string.needsUpdate = true
 		}
-		if (!glove) return
-		const pocket = unit?.abilityState?.pocket
-		gloveMaterial.uniforms.uStyleId.value = styleId(
-			(pocket?.team ?? team) === 'A' ? 'teamA' : 'teamB',
-		)
-		gloveMaterial.uniforms.uFlat.value = pocket ? 1 : 0
-		pocketRing.visible = !!pocket
-		if (pocket) {
-			const fraction = Math.max(
-				0,
-				Math.min(1, ((pocket.until - time) * STEP) / tune.catching.pocketLife),
-			)
-			const positions = pocketRing.geometry.attributes.position
-			for (let i = 0; i <= v.segments; i++) {
-				const angle = (i / v.segments) * Math.PI * 2 * fraction
-				for (let row = 0; row < 2; row++) {
-					const radius = v.pocketRadius - (1 - row) * v.pocketWidth
-					positions.setXYZ(
-						row * (v.segments + 1) + i,
-						Math.cos(angle) * radius,
-						0,
-						-Math.sin(angle) * radius,
-					)
-				}
-			}
-			positions.needsUpdate = true
-		}
-		glove.position.set(0, 0, 0)
-		glove.rotation.set(0, 0, 0)
-		if (pose === 'toss' || (releasing && releasePose === 'toss')) {
-			const windup = pose === 'toss' ? Math.sin((progress * Math.PI) / 2) : (1 - fire) * settle
-			glove.position.z = v.tossPull * windup - v.tossReach * fire * settle
-			glove.position.y = v.tossLift * windup
-			glove.rotation.y = v.gloveTurn * windup - v.tossTurn * fire * settle
-			glove.rotation.x = -v.tossTurn * fire * settle
-			costume.rotation.x = -v.tossLean * windup + v.tossLean * fire * settle
-			costume.rotation.y = -v.tossTurn * windup + v.tossTurn * fire * settle
-		} else if (unit?.stance?.ability === 'catch') {
-			glove.position.y = v.gloveLift
-			glove.rotation.z = -v.gloveTurn
-			const direction = unit.catchWindow?.dir ?? unit.stance.dir
-			if (direction)
-				glove.rotation.y = Math.atan2(direction.x, direction.z) + Math.PI - body.mesh.rotation.y
-		} else if (unit?.body?.dashing && unit.dashAbility === 'dive') {
-			costume.rotation.x = -v.diveLean
-			glove.position.z = -v.tossPull
-		} else if (time < (unit?.proneUntil ?? 0)) {
-			costume.rotation.x = -v.proneTurn
-		} else if (unit?.attack) {
-			const attack = unit.attack
-			const reach =
-				attack.phase === 'windup' ? 1 - (attack.left - alpha) / Math.max(1, attack.total) : 1
-			glove.position.z = -v.slapReach * Math.max(0, Math.min(1, reach))
-		}
+		animate?.(unit, dressed, {
+			pose,
+			progress,
+			alpha,
+			time,
+			releasing,
+			releasePose,
+			fire,
+			settle,
+			costume,
+			mesh: body.mesh,
+			team,
+		})
 	}
 	body.poseAbility(null)
 	let disposed = false

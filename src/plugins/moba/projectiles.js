@@ -459,6 +459,7 @@ export function createProjectiles(ctx) {
 				hero.abilityState.pocket = {
 					shot: frozen,
 					until: ctx.t + ticks(window.pocketLife ?? tune.catching.pocketLife),
+					team: shot.team, // the pocket wears the caught shot's team, whoever caught it
 				}
 		}
 		hero.definition.traits.onCatch?.(traitContext(hero, { source: shot, window }))

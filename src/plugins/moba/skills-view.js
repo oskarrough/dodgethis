@@ -8,6 +8,8 @@ import { heroDefinition } from './heroes.js'
 import { clampMap, projectMap, OBSTACLES, FLOOR, sweepObstacles, mapExit } from './obstacles.js'
 
 // Presentation reads ability identity and stats, never what happens to occupy Q/W/E.
+// Every catch window, Catch's or Dive's, wears Catch's fan.
+const fan = abilityOf('catch').look
 export function lineReach(point, yaw, stats, obstacles = OBSTACLES, bounds = FLOOR) {
 	const end = { x: point.x - Math.sin(yaw) * stats.range, z: point.z - Math.cos(yaw) * stats.range }
 	const blocked = sweepObstacles(
@@ -56,7 +58,7 @@ export function createSkillsView(scene) {
 	// Opaque ID writes, with holes that leave the ground visible. Alpha belongs
 	// to the forward layer, never the style buffer.
 	const catchFill = makeStyleMaterial('cream', { flat: true })
-	catchFill.uniforms.uStipplePixels = { value: look.mittsView.stipplePixels }
+	catchFill.uniforms.uStipplePixels = { value: fan.stipplePixels }
 	catchFill.fragmentShader =
 		'uniform float uStipplePixels;\n' +
 		catchFill.fragmentShader.replace(
@@ -68,17 +70,13 @@ export function createSkillsView(scene) {
 		parent.add(m)
 		return m
 	}
-	const coneGeometry = new THREE.RingGeometry(
-		look.mittsView.arcInset,
-		1,
-		look.mittsView.segments,
-	).rotateX(-Math.PI / 2)
+	const coneGeometry = new THREE.RingGeometry(fan.arcInset, 1, fan.segments).rotateX(-Math.PI / 2)
 	const heldCircle = mesh(ring, cream),
 		heldArrow = mesh(arrowGeometry, cream)
 	let heldCone = null
-	function arc(geometry, angle, fraction = 1, inset = look.mittsView.arcInset, outer = 1) {
+	function arc(geometry, angle, fraction = 1, inset = fan.arcInset, outer = 1) {
 		const positions = geometry.attributes.position,
-			segments = look.mittsView.segments
+			segments = fan.segments
 		for (let i = 0; i <= segments; i++) {
 			const theta = -angle / 2 + (i / segments) * angle * fraction
 			for (let row = 0; row < 2; row++) {
@@ -179,7 +177,7 @@ export function createSkillsView(scene) {
 				distance = Math.hypot(dx, dz)
 			if (cone) {
 				arc(coneGeometry, (cone.stats.angle * Math.PI) / 180)
-				heldCone.position.set(hero.x, look.mittsView.catchY, hero.z)
+				heldCone.position.set(hero.x, fan.catchY, hero.z)
 				heldCone.rotation.y = Math.atan2(dx, dz) + Math.PI
 				heldCone.scale.setScalar(cone.stats.radius)
 			}
@@ -316,7 +314,7 @@ export function createSkillsView(scene) {
 				tell.fill.scale.setScalar(stats.radius * progress)
 			}
 		}
-		catchFill.uniforms.uStipplePixels.value = Math.max(1, look.mittsView.stipplePixels)
+		catchFill.uniforms.uStipplePixels.value = Math.max(1, fan.stipplePixels)
 		const catching = [...units, ...(unit && !units.includes(unit) ? [unit] : [])].filter(
 			(u) => !u.dead && u.catchWindow,
 		)
@@ -339,26 +337,25 @@ export function createSkillsView(scene) {
 				const timer = mesh(coneGeometry.clone(), gold, root)
 				const border = mesh(coneGeometry.clone(), ink, root)
 				const sides = [mesh(lineGeometry, ink, root), mesh(lineGeometry, ink, root)]
-				for (const side of sides)
-					side.position.y = look.mittsView.catchFillY - look.mittsView.catchY
-				edge.position.y = look.mittsView.arcLift
-				timer.position.y = look.mittsView.catchFillY - look.mittsView.catchY
+				for (const side of sides) side.position.y = fan.catchFillY - fan.catchY
+				edge.position.y = fan.arcLift
+				timer.position.y = fan.catchFillY - fan.catchY
 				catchTells.set(u.id, (tell = { root, edge, timer, border, sides }))
 			}
 			const window = u.catchWindow,
 				angle = (window.angle * Math.PI) / 180
 			const left = window.until - tick - alpha
 			const radius = Math.max(tune.collision.epsilon, window.radius)
-			const edgeWidth = Math.min(radius, look.mittsView.edgeWidth) / radius
+			const edgeWidth = Math.min(radius, fan.edgeWidth) / radius
 			arc(tell.edge.geometry, angle, 1, 0, 1 - edgeWidth)
 			arc(tell.border.geometry, angle, 1, 1 - edgeWidth, 1)
-			const timerInset = 1 + look.mittsView.timerGap / radius
+			const timerInset = 1 + fan.timerGap / radius
 			arc(
 				tell.timer.geometry,
 				angle,
 				Math.max(0, Math.min(1, (left * STEP) / window.duration)),
 				timerInset,
-				timerInset + look.mittsView.timerWidth / radius,
+				timerInset + fan.timerWidth / radius,
 			)
 			for (let i = 0; i < tell.sides.length; i++) {
 				tell.sides[i].visible = window.angle < 360
@@ -367,7 +364,7 @@ export function createSkillsView(scene) {
 			}
 			tell.root.position.set(
 				u.body.mesh.position.x,
-				window.ability === 'dive' ? look.mittsView.diveY : look.mittsView.catchY,
+				window.ability === 'dive' ? fan.diveY : fan.catchY,
 				u.body.mesh.position.z,
 			)
 			const direction = window.dir

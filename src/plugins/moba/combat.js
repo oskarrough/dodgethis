@@ -199,7 +199,7 @@ export function createCombat(ctx) {
 		const catchShield =
 			!unit.dead &&
 			unit.respawnTick == null &&
-			unit.stance?.ability === 'catch' &&
+			abilityOf(unit.stance?.ability, unit)?.catchesShots &&
 			unit.stance.until > ctx.t &&
 			unit.catchWindow?.until > ctx.t &&
 			ctx.t >= Math.max(unit.stunUntil, unit.freezeUntil, unit.proneUntil)

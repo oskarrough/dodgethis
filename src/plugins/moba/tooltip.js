@@ -39,30 +39,9 @@ const KIND = {
 	stance: 'Stance that catches shots in front of you.',
 	melee: 'Short melee swing.',
 }
-// Ability-specific lines, keyed by ability id, for abilities without a `card`. Numbers come
-// from tune at call time.
-const SUMMARY = {
-	toss: () => 'Line skillshot. With a caught shot in your pocket, Toss sends that back instead.',
-	catch: () =>
-		`Catch the first skillshot or Ball entering your cone for no damage. Until caught or disabled, take ${pct(tune.catch.damageReduction)} less damage from hits that still land while Catch is active.`,
-	dive: () => 'Dive toward your aim, catching shots all around on the way, then lie prone.',
-}
-const NOTES = {
-	toss: () => [`Pocketed shots last ${n(tune.catching.pocketLife)} s`],
-}
-
-// Trait per hero id, for heroes without a `trait()`: the portrait chip and its card.
-const TRAITS = {
-	mitts: () => ({
-		name: 'Pocket',
-		icon: 'pocket',
-		chip: `${n(tune.catching.pocketLife)}s`,
-		summary: `Hold a caught shot for ${n(tune.catching.pocketLife)} s, then send it back with Toss.`,
-	}),
-}
 export function heroTrait(heroId) {
 	const definition = Object.hasOwn(HEROES, heroId) ? HEROES[heroId] : null
-	return definition?.trait?.() ?? TRAITS[heroId]?.() ?? null
+	return definition?.trait?.() ?? null
 }
 export function traitCard(heroId) {
 	const trait = heroTrait(heroId)
@@ -87,11 +66,11 @@ export function abilityCard(ability, { level = 1, key = '' } = {}) {
 	const notes = []
 	if (s.damage && level < tune.levels.cap)
 		notes.push(`+${n(s.damage * tune.levels.growth)} damage per level`)
-	notes.push(...((ability.card?.notes ?? NOTES[ability.id])?.() ?? []))
+	notes.push(...(ability.card?.notes?.() ?? []))
 	return {
 		title: abilityName(ability),
 		tag: key,
-		summary: (ability.card?.summary ?? SUMMARY[ability.id])?.() ?? KIND[ability.kind] ?? '',
+		summary: ability.card?.summary?.() ?? KIND[ability.kind] ?? '',
 		rows,
 		notes,
 	}
