@@ -30,6 +30,7 @@ export function overthrowLayout() {
 		name: m.name,
 		preview: `<path d="M${-m.halfX},0 H${m.halfX}"/>${[-1, 1].map((side) => `<path d="M${side * m.baseWallX},${-m.halfZ} V${-m.throat / 2} M${side * m.baseWallX},${m.throat / 2} V${m.halfZ}"/>`).join('')}`,
 		bounds: { id: 'overthrow', halfX: m.halfX, halfZ: m.halfZ, thickness: m.thickness },
+		structureStyle: 'stone',
 		obstacles,
 		boxes,
 		pillars,

@@ -50,7 +50,7 @@ export function createSim({
 	footprint = null, // Lobby observer: aimed props and real, clipped cast footprints.
 }) {
 	const lanePiece = pieces.find((piece) => piece.lane)?.lane
-	const laneView = lanePiece?.view(scene, smooth) ?? null
+	const laneView = lanePiece?.view(scene, smooth, layout) ?? null
 	const towerObstacles = pieces.flatMap((piece) => piece.obstacles?.(layout) ?? [])
 	const obstacles = [...mapObstacles, ...towerObstacles]
 	// Lobby orders and dashes may aim past the floor's open edges, so you can walk off it.

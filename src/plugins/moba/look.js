@@ -67,6 +67,26 @@ export const look = {
 		tickMinGap: 4,
 	},
 	laneView: {
+		// Overthrow's stone structures (lane-view.js); metres from the structure's foot.
+		stone: {
+			sides: 10,
+			drum: 1.1,
+			shaft: 2.3,
+			shaftTop: 0.62,
+			shaftBottom: 0.78,
+			crown: 0.86,
+			crownHeight: 0.55,
+			crenels: 6,
+			crenelSize: 0.38,
+			tip: 0.5,
+			tipAspect: 1.7,
+			bannerWidth: 0.75,
+			bannerHeight: 1.5,
+			bannerDepth: 0.08,
+			plinth: 0.9,
+			step: 0.78,
+			shadowY: 0.012, // between the court's inlays (0.01) and road prints (0.015)
+		},
 		rubbleRadius: 0.7,
 		rubbleHeight: 0.35,
 		shatterLife: 0.8,

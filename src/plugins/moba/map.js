@@ -377,7 +377,63 @@ diffuseColor.rgb *= 1.0 - coverShade * (1.0 - max(0.0, dot(n, normalize(vec3(0.4
 	else if (layout.settings?.lane) buildFlagfall()
 	else buildLane()
 	const windbreak = { sand: [], wood: [], stripes: [[], [], []] }
+	// Overthrow by day: cover and base walls are coursed, chipped stone blocks on the same
+	// collision boxes, moss on the low cover's tops; pillars are stacked faceted drums.
+	const stoneCover = !finish && kind !== 'lobby'
+	const stones = { blocks: [], moss: [], drums: [], caps: [] }
+	const chance = (i) => {
+		const v = Math.sin(i * 12.9898 + 4.1) * 43758.5453
+		return v - Math.floor(v)
+	}
+	let chip = 0
+	const coursed = (b) => {
+		const c = tune.overthrowTerrain.stone
+		const hedge = b.kind === 'hedge'
+		const h = hedge ? m.hedgeHeight : m.wallHeight
+		const courses = hedge ? 1 : c.wallCourses
+		const alongX = b.halfX >= b.halfZ
+		const length = (alongX ? b.halfX : b.halfZ) * 2
+		const depth = (alongX ? b.halfZ : b.halfX) * 2
+		const course = h / courses
+		for (let k = 0; k < courses; k++) {
+			let from = -length / 2 - (k % 2 ? c.blockMin / 2 : 0)
+			while (from < length / 2) {
+				const size = c.blockMin + chance(chip++) * (c.blockMax - c.blockMin)
+				const a = Math.max(-length / 2, from),
+					z = Math.min(length / 2, from + size)
+				from += size
+				if (z - a < 0.3) continue
+				const top = k === courses - 1
+				const tall = course - (top ? chance(chip++) * c.sag : 0)
+				const inset = chance(chip++) * c.inset
+				const block = new RoundedBoxGeometry(
+					z - a - c.joint,
+					tall - c.joint,
+					depth - inset * 2,
+					1,
+					c.bevel,
+				).translate((a + z) / 2, k * course + tall / 2, 0)
+				if (!alongX) block.rotateY(Math.PI / 2)
+				stones.blocks.push(block.translate(b.x, 0, b.z))
+				if (hedge && chance(chip++) < c.mossChance) {
+					const moss = new RoundedBoxGeometry(
+						(z - a) * 0.86,
+						c.mossHeight,
+						(depth - inset * 2) * 0.82,
+						1,
+						c.mossHeight / 2,
+					).translate((a + z) / 2, tall - c.joint / 2, 0)
+					if (!alongX) moss.rotateY(Math.PI / 2)
+					stones.moss.push(moss.translate(b.x, 0, b.z))
+				}
+			}
+		}
+	}
 	for (const b of layout.boxes) {
+		if (stoneCover) {
+			coursed(b)
+			continue
+		}
 		if (finish && b.kind === 'hedge') {
 			const parts = windbreakGeometries(b, m.hedgeHeight, scale)
 			windbreak.sand.push(...parts.sand)
@@ -421,6 +477,25 @@ diffuseColor.rgb *= 1.0 - coverShade * (1.0 - max(0.0, dot(n, normalize(vec3(0.4
 	const bollards = layout.settings?.lane
 	const bollard = Object.fromEntries(Object.keys(BOLLARD_ROLES).map((key) => [key, []]))
 	for (const p of layout.pillars) {
+		if (stoneCover) {
+			const c = tune.overthrowTerrain.stone
+			let y = 0
+			c.drums.forEach(([share, shrink], i) => {
+				const tall = m.pillarHeight * share
+				stones.drums.push(
+					new THREE.CylinderGeometry(p.r * shrink * 0.97, p.r * shrink, tall - 0.03, c.sides)
+						.rotateY(i * 0.45 + p.x)
+						.translate(p.x, y + tall / 2, p.z),
+				)
+				y += tall
+			})
+			stones.caps.push(
+				new THREE.CylinderGeometry(p.r * c.capScale, p.r * c.capScale, c.capHeight, c.sides)
+					.rotateY(p.z)
+					.translate(p.x, m.pillarHeight + c.capHeight / 2 - 0.02, p.z),
+			)
+			continue
+		}
 		if (bollards) {
 			const parts = bollardGeometries(p, m.pillarHeight)
 			for (const key of Object.keys(bollard)) bollard[key].push(...parts[key])
@@ -442,6 +517,10 @@ diffuseColor.rgb *= 1.0 - coverShade * (1.0 - max(0.0, dot(n, normalize(vec3(0.4
 			p.z,
 		)
 	}
+	print(stones.blocks, shade, 'overthrow-stone-blocks')
+	print(stones.moss, material('court'), 'overthrow-stone-moss')
+	print(stones.drums, scenery, 'overthrow-pillar-drums')
+	print(stones.caps, scenery, 'overthrow-pillar-caps')
 	for (const [key, list] of Object.entries(bollard))
 		print(list, material(BOLLARD_ROLES[key]), `bollard-${key}`)
 	const uncollide = buildColliders(

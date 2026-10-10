@@ -130,12 +130,33 @@ export const tune = {
 			sun: 0xffe9c8, // lit band leans warm
 			shade: 0x55488a, // dark band and halftone lean violet, never black
 			bandMix: [0.36, 0.34],
-			shadow: '#8a80b0', // printed cast shadows lean the court toward this violet…
-			shadowStrength: 0.5, // …by this much
-			shadowLength: 0.85, // fraction of the true projected length
+			shadow: '#7a6fae', // printed cast shadows lean the court toward this violet…
+			shadowStrength: 0.42, // …by this much
+			shadowLength: 0.6, // fraction of the true projected length
 			shadowPixelsPerMetre: 16,
 		},
-		palette: { page: 0xf2cdbd, courtShade: 0x708883, scenery: 0x899b9b },
+		// Cover, base walls and pillars as chipped stone on the unchanged collision shapes.
+		stone: {
+			wallCourses: 3,
+			blockMin: 1.4,
+			blockMax: 2.6,
+			joint: 0.05, // the gap the ink reads as a joint
+			bevel: 0.09, // chipped edges
+			sag: 0.14, // top blocks sit up to this much low, never above the collider
+			inset: 0.06,
+			mossChance: 0.75,
+			mossHeight: 0.1,
+			sides: 8,
+			drums: [
+				[0.42, 1],
+				[0.33, 0.93],
+				[0.25, 0.86],
+			], // share of pillar height, radius scale; wider at the bottom
+			capScale: 0.98,
+			capHeight: 0.16,
+		},
+		// Lavender-grey stone (walls, cover), pale stone (pillars, towers), moss.
+		palette: { page: 0xf2cdbd, courtShade: 0xa99db3, scenery: 0xc6bac6, court: 0x8e9c50 },
 	},
 	// Flagfall: two lanes on the shared court in the shallows. All geometry applies on restart.
 	flagfall: {

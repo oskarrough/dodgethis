@@ -123,7 +123,8 @@ export function createMatchTerrain(
 	// One low sun prints long violet shadows from cover onto the court, baked once like the
 	// contact above: the swept footprint of each box and pillar, never a shadow map.
 	let shadowPrint = null
-	if (isle && casts) {
+	// Headless builds (tests, the bot harness) have no canvas; the print is presentation only.
+	if (isle && casts && typeof document !== 'undefined') {
 		const ppm = s.light.shadowPixelsPerMetre * devicePixelRatio
 		const canvas = document.createElement('canvas')
 		canvas.width = Math.ceil(extent.halfX * 2 * ppm)
@@ -450,7 +451,7 @@ diffuseColor.rgb *= (1.0 + stoneGrain * (strata + grain - 0.5)) * (1.0 - wet * s
 }
 
 // Andrew's monotone chain; the swept footprint of a box under a sun is their hull.
-function convexHull(points) {
+export function convexHull(points) {
 	const sorted = [...points].sort((a, b) => a.x - b.x || a.z - b.z)
 	const cross = (o, a, b) => (a.x - o.x) * (b.z - o.z) - (a.z - o.z) * (b.x - o.x)
 	const half = (list) => {

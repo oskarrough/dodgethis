@@ -1,11 +1,15 @@
 import * as THREE from 'three'
-import { makeStyleMaterial } from '../../core/stylepass.js'
+import { FORWARD_LAYER, makeStyleMaterial } from '../../core/stylepass.js'
 import { STEP } from '../../core/app.js'
 import { tune } from './tune.js'
 import { look } from './look.js'
+import { convexHull } from './match-terrain.js'
 
-export function createLaneView(scene, smooth = null) {
+// `layout.structureStyle === 'stone'` (Overthrow by day) builds towers and the core in stone
+// with team colour only on banners and crystals, and prints each one's shadow on the court.
+export function createLaneView(scene, smooth = null, layout = null) {
 	const bodies = new Set()
+	const stone = layout?.structureStyle === 'stone'
 	function makeBody(x, z, team, kind) {
 		const v = look.laneView
 		const tower = Object.hasOwn(tune, kind) && !Object.hasOwn(tune.minions, kind)
@@ -34,7 +38,91 @@ export function createLaneView(scene, smooth = null) {
 		}
 		let crystal = null
 		const cracks = []
-		if (kind === 'core') {
+		let shadow = null
+		if (stone && tower) {
+			const s = look.laneView.stone
+			const pale = material('scenery'),
+				grey = material('courtShade')
+			const base = -halfHeight
+			const prism = (top, bottom, height, sides, mat, y, turn = 0) =>
+				part(new THREE.CylinderGeometry(top, bottom, height, sides).rotateY(turn), mat, y)
+			if (kind === 'core') {
+				// A stepped stone plinth under the faceted team crystal.
+				prism(radius * 0.97, radius, s.plinth, s.sides, pale, base + s.plinth / 2)
+				prism(
+					radius * s.step,
+					radius * s.step,
+					s.plinth * 0.8,
+					s.sides,
+					grey,
+					base + s.plinth * 1.4,
+					Math.PI / s.sides,
+				)
+				crystal = part(
+					new THREE.OctahedronGeometry(radius * v.coreWidth).scale(1, v.coreAspect, 1),
+					teamMaterial,
+					0,
+				)
+				for (const sign of [-1, 1]) {
+					const crack = part(new THREE.BoxGeometry(v.domeWidth, radius, v.domeWidth), ink, 0)
+					crack.position.z = -radius / 2
+					crack.position.x = (sign * radius) / 2
+					crack.rotation.z = (sign * Math.PI) / 4
+					cracks.push(crack)
+				}
+			} else {
+				// Drum, tapered shaft, crenellated crown, crystal tip; the banner hangs toward the camera.
+				prism(radius * 0.94, radius * 1.04, s.drum, s.sides, pale, base + s.drum / 2)
+				const shaftBottom = base + s.drum
+				prism(
+					radius * s.shaftTop,
+					radius * s.shaftBottom,
+					s.shaft,
+					s.sides,
+					grey,
+					shaftBottom + s.shaft / 2,
+				)
+				const crown = shaftBottom + s.shaft
+				prism(
+					radius * s.crown,
+					radius * s.shaftTop,
+					s.crownHeight,
+					s.sides,
+					pale,
+					crown + s.crownHeight / 2,
+				)
+				for (let i = 0; i < s.crenels; i++) {
+					const angle = ((i + 0.5) / s.crenels) * Math.PI * 2
+					const crenel = part(
+						new THREE.BoxGeometry(s.crenelSize, s.crenelSize, s.crenelSize),
+						pale,
+						crown + s.crownHeight + s.crenelSize / 2,
+					)
+					crenel.position.x = Math.cos(angle) * radius * s.crown * 0.82
+					crenel.position.z = Math.sin(angle) * radius * s.crown * 0.82
+					crenel.rotation.y = -angle
+				}
+				crystal = part(
+					new THREE.OctahedronGeometry(s.tip).scale(1, s.tipAspect, 1),
+					teamMaterial,
+					crown + s.crownHeight + s.tip * s.tipAspect,
+				)
+				const banner = part(
+					new THREE.BoxGeometry(s.bannerWidth, s.bannerHeight, s.bannerDepth),
+					teamMaterial,
+					crown - s.bannerHeight / 2 - 0.05,
+				)
+				// Lean with the shaft's taper so it lies flat on the stone.
+				const lean = Math.atan((radius * (s.shaftBottom - s.shaftTop)) / s.shaft)
+				const at = (crown - banner.position.y) / s.shaft
+				banner.position.z =
+					radius * (s.shaftTop + (s.shaftBottom - s.shaftTop) * at) + s.bannerDepth
+				banner.rotation.x = -lean
+				const rod = part(new THREE.BoxGeometry(s.bannerWidth * 1.25, 0.08, 0.08), ink, crown - 0.05)
+				rod.position.z = banner.position.z
+			}
+			shadow = printShadow(x, z, radius, tune[kind].height)
+		} else if (kind === 'core') {
 			part(
 				new THREE.CylinderGeometry(radius, radius, v.drumHeight, v.crenels),
 				ink,
@@ -121,6 +209,37 @@ export function createLaneView(scene, smooth = null) {
 			}
 			mesh.add(dome)
 		}
+		// The low sun's printed shadow: base circle swept toward the tip, never a shadow map.
+		function printShadow(px, pz, r, height) {
+			const light = tune.overthrowTerrain.light
+			const [lx, ly, lz] = light.dir
+			const reach = (light.shadowLength / Math.max(0.05, ly)) * height
+			const points = []
+			for (let i = 0; i < 24; i++) {
+				const a = (i / 24) * Math.PI * 2
+				points.push({ x: Math.cos(a) * r, z: Math.sin(a) * r })
+				points.push({
+					x: -lx * reach + Math.cos(a) * r * 0.35,
+					z: -lz * reach + Math.sin(a) * r * 0.35,
+				})
+			}
+			const shape = new THREE.Shape(convexHull(points).map((p) => new THREE.Vector2(p.x, -p.z)))
+			const geometry = new THREE.ShapeGeometry(shape).rotateX(-Math.PI / 2)
+			const print = new THREE.MeshBasicMaterial({
+				color: light.shadow,
+				transparent: true,
+				opacity: light.shadowStrength,
+				depthWrite: false,
+			})
+			owned.push(geometry, print)
+			const mesh = new THREE.Mesh(geometry, print)
+			mesh.name = 'moba-structure-shadow'
+			mesh.position.set(px, look.laneView.stone.shadowY, pz)
+			mesh.layers.set(FORWARD_LAYER)
+			mesh.renderOrder = -3
+			scene.add(mesh)
+			return mesh
+		}
 		const pose = {
 			position: new THREE.Vector3(x, halfHeight, z),
 			quaternion: new THREE.Quaternion(),
@@ -166,6 +285,7 @@ export function createLaneView(scene, smooth = null) {
 					visual.visible = false
 				}
 				if (dome) dome.visible = false
+				if (shadow) shadow.visible = false
 				const geometry = new THREE.CylinderGeometry(
 					radius * v.rubbleRadius,
 					radius,
@@ -173,7 +293,7 @@ export function createLaneView(scene, smooth = null) {
 					v.segments,
 				)
 				owned.push(geometry)
-				const rubble = new THREE.Mesh(geometry, ink)
+				const rubble = new THREE.Mesh(geometry, stone ? material('scenery') : ink)
 				rubble.position.y = -halfHeight + v.rubbleHeight / 2
 				mesh.add(rubble)
 			},
@@ -208,6 +328,7 @@ export function createLaneView(scene, smooth = null) {
 			dispose() {
 				unsmooth?.()
 				scene.remove(mesh)
+				if (shadow) scene.remove(shadow)
 				if (helpTether) scene.remove(helpTether)
 				for (const item of owned) item.dispose()
 				bodies.delete(body)
