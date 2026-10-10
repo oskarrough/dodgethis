@@ -2,11 +2,12 @@ import * as THREE from 'three'
 import { makeStyleMaterial } from '../../core/stylepass.js'
 import { STEP } from '../../core/app.js'
 import { tune } from './tune.js'
+import { look } from './look.js'
 
 export function createLaneView(scene, smooth = null) {
 	const bodies = new Set()
 	function makeBody(x, z, team, kind) {
-		const v = tune.laneView
+		const v = look.laneView
 		const tower = Object.hasOwn(tune, kind) && !Object.hasOwn(tune.minions, kind)
 		const radius = tower ? tune[kind].radius : kind === 'brute' ? v.bruteRadius : tune.waves.radius
 		const height = kind === 'brute' ? v.bruteHeight : v.minionHeight
@@ -179,16 +180,16 @@ export function createLaneView(scene, smooth = null) {
 			animateShatter(dt) {
 				if (!shatter) return
 				shatter.age += Math.max(0, dt)
-				const progress = Math.min(1, shatter.age / Math.max(STEP, tune.laneView.shatterLife))
+				const progress = Math.min(1, shatter.age / Math.max(STEP, look.laneView.shatterLife))
 				for (const [i, piece] of shatter.pieces.entries()) {
 					const angle = (i * Math.PI * 2) / shatter.pieces.length
 					piece.position.set(
-						Math.cos(angle) * tune.laneView.shatterSpread * progress,
-						(-halfHeight + tune.laneView.shatterSize) * progress * progress +
-							tune.laneView.shatterLift * Math.sin(Math.PI * progress),
-						Math.sin(angle) * tune.laneView.shatterSpread * progress,
+						Math.cos(angle) * look.laneView.shatterSpread * progress,
+						(-halfHeight + look.laneView.shatterSize) * progress * progress +
+							look.laneView.shatterLift * Math.sin(Math.PI * progress),
+						Math.sin(angle) * look.laneView.shatterSpread * progress,
 					)
-					piece.rotation.set(progress * tune.laneView.shatterSpin, angle, progress * angle)
+					piece.rotation.set(progress * look.laneView.shatterSpin, angle, progress * angle)
 				}
 			},
 			squeeze: 0,
@@ -227,7 +228,7 @@ export function createLaneView(scene, smooth = null) {
 	const marks = new Map()
 	const globeMarks = new Map()
 	function update(lane, heroes, alpha, locate, dt = 0, localTeam = null) {
-		const v = tune.laneView
+		const v = look.laneView
 		for (const unit of [...lane.structures, ...lane.minions]) {
 			unit.body.animateShatter?.(dt)
 			unit.body.squeeze *= Math.exp(-v.feedbackDecay * dt)
@@ -353,10 +354,10 @@ export function createLaneView(scene, smooth = null) {
 	return {
 		makeBody,
 		shield(body) {
-			if (body) body.shieldFlash = tune.laneView.shieldLife
+			if (body) body.shieldFlash = look.laneView.shieldLife
 		},
 		aggro(body) {
-			if (body) body.aggroFlash = tune.laneView.aggroLife
+			if (body) body.aggroFlash = look.laneView.aggroLife
 		},
 		update,
 		dispose() {

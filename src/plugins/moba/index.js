@@ -2,6 +2,7 @@ import { createJuice } from '../../core/juice.js'
 import { createShadows } from '../../core/shadows.js'
 import { tune as coreTune } from '../../core/tune.js'
 import { tune } from './tune.js'
+import { look } from './look.js'
 import { FLOOR } from './obstacles.js'
 import { matchRecipe, onlineMaps } from './maps/index.js'
 import { castAbility } from './ability.js'
@@ -594,7 +595,7 @@ export default function moba(app, map) {
 
 			run.on('blur', () => app.intents.cancel(local))
 
-			addSliders(run.debug, sliderSections(tune, setup), app.clock.step)
+			addSliders(run.debug, sliderSections(tune, look, setup), app.clock.step)
 			run.debug.tune('cast', tune.cast, (f, t) => {
 				f.add(t, 'cancelLockout', app.clock.step, 2, app.clock.step).name('cancel lockout (s)')
 				f.add(t, 'buffer', app.clock.step, 1, app.clock.step).name('press buffer (s)')

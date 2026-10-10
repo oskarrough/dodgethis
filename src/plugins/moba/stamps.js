@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'
 import { PALETTE } from '../../core/style.js'
 import { FORWARD_LAYER } from '../../core/stylepass.js'
-import { tune } from './tune.js'
+import { look } from './look.js'
 
 // Normalised artwork: open, ink-edged ring and a compact X. Only a short arc carries team colour.
 function symbolGeometry(team) {
@@ -49,7 +49,7 @@ export function createStamps(scene) {
 	group.name = 'moba-stamps'
 	scene.add(group)
 	const geometries = { A: symbolGeometry(PALETTE.teamA), B: symbolGeometry(PALETTE.teamB) }
-	const prints = Array.from({ length: Math.max(1, Math.floor(tune.out.max)) }, () => {
+	const prints = Array.from({ length: Math.max(1, Math.floor(look.out.max)) }, () => {
 		const material = new THREE.MeshBasicMaterial({
 			vertexColors: true,
 			transparent: true,
@@ -77,14 +77,14 @@ export function createStamps(scene) {
 	let next = 0
 	let disposed = false
 
-	// `tilt` is −1..1 of tune.out.tilt; `onLand` runs once when the print settles.
+	// `tilt` is −1..1 of look.out.tilt; `onLand` runs once when the print settles.
 	function stamp(point, { team = 'A', tilt = 0, onLand = null } = {}) {
 		if (disposed) return
 		const p = prints[next]
 		next = (next + 1) % prints.length
 		p.mesh.geometry = geometries[team === 'A' ? 'A' : 'B']
-		p.mesh.position.set(point.x, tune.out.stampY, point.z)
-		p.mesh.rotation.y = (Math.max(-1, Math.min(1, tilt)) * tune.out.tilt * Math.PI) / 180
+		p.mesh.position.set(point.x, look.out.stampY, point.z)
+		p.mesh.rotation.y = (Math.max(-1, Math.min(1, tilt)) * look.out.tilt * Math.PI) / 180
 		p.age = 0
 		p.landed = false
 		p.onLand = onLand
@@ -93,12 +93,12 @@ export function createStamps(scene) {
 	}
 
 	function pose(p) {
-		const { slam, slamScale, squish: give, width, opacity, life } = tune.out
+		const { slam, slamScale, squish: give, width, opacity, life } = look.out
 		const k = Math.min(1, p.age / Math.max(1e-3, slam))
 		const settle = Math.min(1, Math.max(0, (p.age - slam) / Math.max(1e-3, slam)))
 		const squish = 1 - give * Math.sin(Math.PI * settle)
 		p.mesh.scale.setScalar(width * (slamScale + (1 - slamScale) * k * k) * squish)
-		const hold = life * tune.out.hold
+		const hold = life * look.out.hold
 		const fade = p.age <= hold ? 1 : Math.max(0, 1 - (p.age - hold) / Math.max(1e-3, life - hold))
 		p.material.opacity = opacity * (0.55 + 0.45 * k) * fade
 	}
@@ -109,14 +109,14 @@ export function createStamps(scene) {
 		for (const p of prints) {
 			if (!p.mesh.visible) continue
 			p.age += dt
-			if (!p.landed && p.age >= tune.out.slam) {
+			if (!p.landed && p.age >= look.out.slam) {
 				p.landed = true
 				const onLand = p.onLand
 				p.onLand = null
 				onLand?.(p.mesh.position)
 			}
 			pose(p)
-			if (p.age >= tune.out.life) p.mesh.visible = false
+			if (p.age >= look.out.life) p.mesh.visible = false
 		}
 	}
 

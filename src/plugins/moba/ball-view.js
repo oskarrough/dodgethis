@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import { makeStyleMaterial } from '../../core/stylepass.js'
 import { STEP } from '../../core/app.js'
 import { tune } from './tune.js'
+import { look } from './look.js'
 import { clampMap } from './obstacles.js'
 
 // Opaque print geometry; tick interpolation owns every fill and projectile position.
@@ -58,9 +59,9 @@ export function createBallView(scene, rng = Math.random) {
 	const gags = new Map()
 	const confetti = new THREE.Group()
 	root.add(confetti)
-	const chips = Array.from({ length: tune.ballConfetti.count }, (_, i) => {
+	const chips = Array.from({ length: look.ballConfetti.count }, (_, i) => {
 		const chip = mesh(
-			new THREE.BoxGeometry(tune.ballConfetti.size, tune.ballConfetti.size, v.seamWidth),
+			new THREE.BoxGeometry(look.ballConfetti.size, look.ballConfetti.size, v.seamWidth),
 			[cream, teams.A, teams.B][i % 3],
 			confetti,
 		)
@@ -90,7 +91,7 @@ export function createBallView(scene, rng = Math.random) {
 		present(fact) {
 			if (fact.type === 'ballHit' && fact.kind === 'structure') {
 				burst = { point: fact.point, tick: fact.tick }
-				const c = tune.ballConfetti
+				const c = look.ballConfetti
 				flights = chips.map(() => {
 					const angle = rng() * Math.PI * 2
 					const speed = c.speed * (c.speedMin + (1 - c.speedMin) * rng())
@@ -198,9 +199,9 @@ export function createBallView(scene, rng = Math.random) {
 				}
 			}
 			const age = burst ? (effectTick - burst.tick) * STEP : Infinity
-			confetti.visible = age >= 0 && age < tune.ballConfetti.life
+			confetti.visible = age >= 0 && age < look.ballConfetti.life
 			if (confetti.visible) {
-				const c = tune.ballConfetti
+				const c = look.ballConfetti
 				confetti.position.set(burst.point.x, burst.point.y, burst.point.z)
 				for (const [i, chip] of chips.entries()) {
 					const f = flights[i]

@@ -3,6 +3,7 @@ import { STEP } from '../../core/app.js'
 import { abilityOf } from './ability.js'
 import { heroDefinition } from './heroes.js'
 import { tune } from './tune.js'
+import { look } from './look.js'
 import { flagfallLayoutTune } from './maps/flagfall.js'
 
 // Moba's fact switch (docs/moba-plan.md, "Hit feedback"): each fact becomes juice-kit verbs, sfx, rumble, pings and HUD.
@@ -80,7 +81,7 @@ export function createFeedback({
 		const team = taker?.team ?? (unit.team === 'A' ? 'B' : 'A')
 		const tick = fact.tick ?? sim.tick
 		const last = streaks.get(team)
-		const count = last && (tick - last.tick) * STEP <= tune.out.streak ? last.count + 1 : 1
+		const count = last && (tick - last.tick) * STEP <= look.out.streak ? last.count + 1 : 1
 		streaks.set(team, { count, tick })
 		const hero = sim.heroes.includes(unit)
 		const side = sim.heroes.filter((h) => h.team === unit.team)
@@ -89,8 +90,8 @@ export function createFeedback({
 			team,
 			tilt: ((tick * 7919) % 201) / 100 - 1,
 			onLand(at) {
-				juice.burst({ x: at.x, y: 0.1, z: at.z }, { x: 0, y: 1, z: 0 }, tune.out.splat)
-				if (mine && !onMe) camera.kick(tune.out.kick)
+				juice.burst({ x: at.x, y: 0.1, z: at.z }, { x: 0, y: 1, z: 0 }, look.out.splat)
+				if (mine && !onMe) camera.kick(look.out.kick)
 			},
 		})
 		cue('whistle', fact, mine || onMe ? 1 : 0.5, wiped ? 3 : count)
@@ -111,7 +112,7 @@ export function createFeedback({
 		if (!hero || sim.tick === squeak.tick) return
 		squeak.tick = sim.tick
 		const seconds = sim.tick * STEP
-		const { speed, window, cooldown, fatigue, quieter } = tune.squeak
+		const { speed, window, cooldown, fatigue, quieter } = look.squeak
 		const top = (hero.definition?.base?.speed ?? tune.hero.speed) * (hero.body.speedMul ?? 1)
 		const v = hero.dead ? { x: 0, z: 0 } : hero.body.velocity
 		const now = Math.hypot(v.x, v.z)
@@ -120,7 +121,7 @@ export function createFeedback({
 			seconds - squeak.ran <= window &&
 			now >= speed * top * 0.5 &&
 			(squeak.x * v.x + squeak.z * v.z) / Math.max(1e-6, was * now) <=
-				Math.cos((tune.squeak.turn * Math.PI) / 180)
+				Math.cos((look.squeak.turn * Math.PI) / 180)
 		if (now >= speed * top) {
 			squeak.x = v.x
 			squeak.z = v.z
@@ -155,7 +156,7 @@ export function createFeedback({
 				return
 			case 'ballSpawn':
 				hud.banner?.('Ball is live! Stand on it to pick up')
-				juice.burst(fact.point, { x: 0, y: 1, z: 0 }, tune.juice.ballBurst)
+				juice.burst(fact.point, { x: 0, y: 1, z: 0 }, look.juice.ballBurst)
 				cue('ballSpawn', fact)
 				return
 			case 'ballChannel':
@@ -182,16 +183,16 @@ export function createFeedback({
 					hud.banner?.(
 						`${friendly ? 'GOAL!' : 'Enemy scored!'} ${unitOf(fact.target)?.kind === 'core' ? 'Core' : 'Tower'} silenced ${tune.ball.silence} s`,
 					)
-					freeze = Math.max(freeze, tune.juice.ballGoal.freeze)
-					camera.shake(tune.juice.ballGoal.shake)
-					camera.kick(tune.juice.ballGoal.kick)
+					freeze = Math.max(freeze, look.juice.ballGoal.freeze)
+					camera.shake(look.juice.ballGoal.shake)
+					camera.kick(look.juice.ballGoal.kick)
 					if (mine || onMe || unitOf(fact.target)?.team === unitOf(local)?.team)
 						input.rumble(
-							tune.juice.ballGoal.rumbleLow,
-							tune.juice.ballGoal.rumbleHigh,
-							tune.juice.ballGoal.rumbleMs,
+							look.juice.ballGoal.rumbleLow,
+							look.juice.ballGoal.rumbleHigh,
+							look.juice.ballGoal.rumbleMs,
 						)
-				} else juice.burst(fact.point, { x: 0, y: 1, z: 0 }, tune.juice.ballBurst)
+				} else juice.burst(fact.point, { x: 0, y: 1, z: 0 }, look.juice.ballBurst)
 				cue(fact.kind === 'structure' ? 'ballGoal' : 'ballHit', fact)
 				return
 			case 'ballBounce':
@@ -202,12 +203,12 @@ export function createFeedback({
 			case 'ballDrop':
 				if (mine && fact.reason === 'death')
 					hud.banner?.('You died carrying the Ball · Ball dropped')
-				juice.burst(fact.point, { x: 0, y: 1, z: 0 }, tune.juice.ballDrop)
+				juice.burst(fact.point, { x: 0, y: 1, z: 0 }, look.juice.ballDrop)
 				cue('ballDrop', fact)
 				return
 			case 'ballPop':
 				if (fact.reason === 'spent') return // structure hit owns the confetti and its cue
-				juice.burst(fact.point, { x: 0, y: 1, z: 0 }, tune.juice.ballBurst)
+				juice.burst(fact.point, { x: 0, y: 1, z: 0 }, look.juice.ballBurst)
 				cue('ballPop', fact)
 				return
 			case 'ballInterrupted':
@@ -230,11 +231,11 @@ export function createFeedback({
 			case 'cast':
 				source?.body.squash(
 					fact.slot === 'primary' && !effects.pose
-						? tune.juice.attackSquash
+						? look.juice.attackSquash
 						: ({
-								draw: tune.juice.castSquash,
-								vault: tune.juice.vaultSquash,
-								rain: tune.juice.rainSquash,
+								draw: look.juice.castSquash,
+								vault: look.juice.vaultSquash,
+								rain: look.juice.rainSquash,
 							}[effects.pose] ?? 0),
 				)
 				if (effects.cast) cue(effects.cast, fact, mine ? 1 : 0.45)
@@ -243,8 +244,8 @@ export function createFeedback({
 					juice.burst(fact.point, { ...fact.direction, y: 0 }, { count: 8, streak: true })
 				} else if (effects.effect === 'rain') {
 					if (mine) skillsView?.rain(fact.target, ability.stats)
-				} else if (tune.juice[effects.effect])
-					juice.burst(fact.point, { ...fact.direction, y: 0 }, tune.juice[effects.effect])
+				} else if (look.juice[effects.effect])
+					juice.burst(fact.point, { ...fact.direction, y: 0 }, look.juice[effects.effect])
 				return
 			case 'projectile': {
 				source?.body.releaseAbilityPose?.(
@@ -253,8 +254,8 @@ export function createFeedback({
 				)
 				const shot = sim.shots.find((s) => s.id === fact.id)
 				if (shot) view.bolt(shot, fact.point)
-				if (tune.juice[effects.projectile])
-					juice.burst(fact.point, { ...fact.direction, y: 0 }, tune.juice[effects.projectile])
+				if (look.juice[effects.projectile])
+					juice.burst(fact.point, { ...fact.direction, y: 0 }, look.juice[effects.projectile])
 				unitOf(fact.hero)?.body.kick(0.18)
 				cue(
 					['tower', 'core', 'ranged', 'wizard'].includes(fact.slot)
@@ -276,7 +277,7 @@ export function createFeedback({
 				sim.laneView?.aggro(unitOf(fact.source)?.body)
 				if (onMe && aggroPingTick !== fact.tick) {
 					aggroPingTick = fact.tick
-					view.ping('aggro', fact.point, { follow: local, size: tune.laneView.aggroPing })
+					view.ping('aggro', fact.point, { follow: local, size: look.laneView.aggroPing })
 				}
 				return
 			case 'xp':
@@ -294,7 +295,7 @@ export function createFeedback({
 				if (fact.team !== hero?.team) return
 				// Shared XP may level us at base: the pop and sound belong at our hero, not the kill.
 				const point = hero.body.mesh.position
-				if (!hero.dead) juice.burst(point, { x: 0, y: 1, z: 0 }, tune.juice.levelUp)
+				if (!hero.dead) juice.burst(point, { x: 0, y: 1, z: 0 }, look.juice.levelUp)
 				cue('levelUp', { ...fact, point })
 				return
 			}
@@ -303,31 +304,31 @@ export function createFeedback({
 					view.ping('move', fact.point)
 					return
 				}
-				juice.burst(fact.point, { x: 0, y: 1, z: 0 }, tune.juice.globe)
+				juice.burst(fact.point, { x: 0, y: 1, z: 0 }, look.juice.globe)
 				cue('globe', fact)
 				return
 			case 'matchOver':
-				juice.burst(fact.point, { x: 0, y: 1, z: 0 }, tune.juice.matchOver)
+				juice.burst(fact.point, { x: 0, y: 1, z: 0 }, look.juice.matchOver)
 				cue('matchOver', fact)
-				camera.kick(tune.juice.winKick)
+				camera.kick(look.juice.winKick)
 				return
 			case 'structureDown':
-				juice.burst(fact.point, { x: 0, y: 1, z: 0 }, tune.juice.structureDown)
+				juice.burst(fact.point, { x: 0, y: 1, z: 0 }, look.juice.structureDown)
 				cue('structureDown', fact)
 				hud.banner?.(
 					unitOf(fact.target)?.team === unitOf(local)?.team
 						? `Your ${unitOf(fact.target).kind} fell`
 						: `Enemy ${unitOf(fact.target)?.kind ?? 'structure'} destroyed`,
 				)
-				camera.kick(tune.juice.structureKick)
-				camera.shake(tune.juice.structureShake)
+				camera.kick(look.juice.structureKick)
+				camera.shake(look.juice.structureShake)
 				return
 			case 'blocked':
 				view.unbolt(fact.projectile) // Prevent the generic expiry fizzle from also firing.
 				juice.burst(
 					fact.point,
 					{ x: -fact.direction.x, y: 0, z: -fact.direction.z },
-					tune.juice.blocked,
+					look.juice.blocked,
 				)
 				cue('blocked', fact)
 				return
@@ -335,23 +336,23 @@ export function createFeedback({
 				juice.burst(
 					fact.point,
 					{ x: 0, y: 1, z: 0 },
-					tune.juice[effects.impact] ?? { count: 20, speed: 3, life: 0.35, size: 0.1 },
+					look.juice[effects.impact] ?? { count: 20, speed: 3, life: 0.35, size: 0.1 },
 				)
 				cue(effects.impact, fact) // once per tick, including multi-target impacts
-				if (mine && fact.hit && effects.impact === 'rain') camera.shake(tune.juice.shakeRain)
+				if (mine && fact.hit && effects.impact === 'rain') camera.shake(look.juice.shakeRain)
 				return
 			case 'hit': {
 				view.unbolt(fact.projectile)
 				const unit = unitOf(fact.target)
 				if (unit) {
-					juice.flash(unit.body.visual, tune.juice.flash)
+					juice.flash(unit.body.visual, look.juice.flash)
 					unit.body.squash(0.28)
 					unit.body.wobble?.(fact.direction)
 				}
 				juice.burst(
 					fact.point,
 					fact.direction,
-					tune.juice[effects.hit] ?? { count: 6, speed: 1.4, life: 0.3, size: 0.07 },
+					look.juice[effects.hit] ?? { count: 6, speed: 1.4, life: 0.3, size: 0.07 },
 				)
 				if (fact.slot !== 'ball' && !effects.impact)
 					cue(
@@ -363,9 +364,9 @@ export function createFeedback({
 						fact,
 					)
 				if (mine) view.damage?.(fact)
-				if (mine && fact.crit) camera.shake(tune.juice.shakeTaken)
+				if (mine && fact.crit) camera.shake(look.juice.shakeTaken)
 				if (onMe) {
-					camera.shake(tune.juice.shakeTaken)
+					camera.shake(look.juice.shakeTaken)
 					input.rumble(0.2, 0.3, 60)
 				}
 				if (mine) {
@@ -399,7 +400,7 @@ export function createFeedback({
 						radius: corpse.radius,
 						style: 'card',
 						direction: fact.direction,
-						card: tune.card,
+						card: look.card,
 					})
 				juice.burst(fact.point, fact.direction, {
 					count: 12,
@@ -413,12 +414,12 @@ export function createFeedback({
 				if (unit && (sim.heroes.includes(unit) || sim.dummies.includes(unit)))
 					ruling(fact, unit, mine, onMe)
 				if (onMe) {
-					camera.shake(tune.juice.shakeTakedown)
+					camera.shake(look.juice.shakeTakedown)
 					input.rumble(0.35, 0.6, 85)
 				}
 				// Your takedown: hitstop now, then the camera kicks when the stamp lands. No shake.
 				if (mine && !onMe) {
-					stop = tune.juice.hitstop
+					stop = look.juice.hitstop
 					hitmark('kill', fact.point)
 					input.rumble(0.35, 0.6, 85)
 				}
@@ -468,7 +469,7 @@ export function createFeedback({
 						juice.burst(splashAt, direction, d.spray)
 						cue('plunk', { ...fact, point: splashAt }, mine || onMe ? 1 : 0.5)
 						sfx.splash?.(splashAt, mine || onMe ? 1 : 0.5)
-						if (onMe || mine) camera.shake(tune.juice.shakeTakedown)
+						if (onMe || mine) camera.shake(look.juice.shakeTakedown)
 					},
 				})
 				if (unit) ruling(fact, unit, mine, onMe, 'dunked', '')
@@ -489,7 +490,7 @@ export function createFeedback({
 			case 'catchExpired':
 			case 'channelCancelled':
 			case 'channelEnd':
-				juice.burst(fact.point, { x: 0, y: 1, z: 0 }, tune.juice[fact.type])
+				juice.burst(fact.point, { x: 0, y: 1, z: 0 }, look.juice[fact.type])
 				cue(fact.type, fact, mine ? 1 : 0.45)
 				return
 			case 'denied':

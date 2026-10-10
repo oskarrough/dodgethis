@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { FORWARD_LAYER } from '../../core/stylepass.js'
-import { tune } from './tune.js'
+import { look } from './look.js'
 
 const easeOut = (x) => 1 - (1 - x) ** 3
 const easeOutBack = (x, s) => 1 + (s + 1) * (x - 1) ** 3 + s * (x - 1) ** 2
@@ -11,9 +11,9 @@ export function createDamageNumbers(parent) {
 	function pop(
 		text,
 		point,
-		{ color = tune.damageNumbers.colors.damage, scale = 1, crit = false } = {},
+		{ color = look.damageNumbers.colors.damage, scale = 1, crit = false } = {},
 	) {
-		const t = tune.damageNumbers
+		const t = look.damageNumbers
 		const label = String(text)
 		const canvas = document.createElement('canvas')
 		const context = canvas.getContext('2d')
@@ -58,7 +58,7 @@ export function createDamageNumbers(parent) {
 	}
 
 	function hit(fact) {
-		const t = tune.damageNumbers
+		const t = look.damageNumbers
 		if (!t.enabled || !(fact.damage >= 0.5)) return
 		const size = Math.min(
 			t.sizing.max,
@@ -73,8 +73,8 @@ export function createDamageNumbers(parent) {
 
 	function xp(amount, point) {
 		pop(`+${amount} XP`, point, {
-			color: tune.damageNumbers.colors.xp,
-			scale: tune.damageNumbers.sizing.xp,
+			color: look.damageNumbers.colors.xp,
+			scale: look.damageNumbers.sizing.xp,
 		})
 	}
 
@@ -85,7 +85,7 @@ export function createDamageNumbers(parent) {
 	}
 
 	function update(dt) {
-		const t = tune.damageNumbers
+		const t = look.damageNumbers
 		for (let i = labels.length - 1; i >= 0; i--) {
 			const label = labels[i]
 			label.age += dt

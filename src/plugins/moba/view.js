@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { makeStyleMaterial } from '../../core/stylepass.js'
 import { tune } from './tune.js'
+import { look } from './look.js'
 import { lineReach } from './skills-view.js'
 import { projectMap } from './obstacles.js'
 import { createHealthBars } from './health-bars.js'
@@ -96,7 +97,7 @@ export function createView(scene, smooth) {
 				: boltMaterial,
 		)
 		if (shot.slot === 'primary') body.scale.setScalar(tune.attack.visualScale)
-		if (shot.slot === 'tower') body.scale.setScalar(tune.laneView.orbScale)
+		if (shot.slot === 'tower') body.scale.setScalar(look.laneView.orbScale)
 		const trail = new THREE.Mesh(trailGeometry, trailMaterial)
 		trail.scale.z = 0.001
 		mesh.add(body, trail)

@@ -37,8 +37,8 @@ const sound = {
 	gain: [0, 1, 0.01],
 }
 
-// [name, tune object, sliders] in GUI order.
-export function sliderSections(tune, setup) {
+// [name, tune or look object, sliders] in GUI order.
+export function sliderSections(tune, look, setup) {
 	const sections = {
 		tower: structure([10, 25], 6000, 2, 300),
 		core: structure([26, 43], 10000, 3, 400),
@@ -185,7 +185,7 @@ export function sliderSections(tune, setup) {
 			castEvery: [1, 10, 0.25, 'cast interval'],
 			respawn: [0.2, 10, 0.1, 'respawn (s)'],
 		},
-		...Object.fromEntries(Object.keys(tune.sounds).map((name) => [`sound ${name}`, sound])),
+		...Object.fromEntries(Object.keys(look.sounds).map((name) => [`sound ${name}`, sound])),
 		out: {
 			width: [1, 8, 0.1, 'stamp width (m)'],
 			slam: [T, 0.5, T, 'slam (s)'],
@@ -229,13 +229,13 @@ export function sliderSections(tune, setup) {
 			popIn: [0.01, 0.5, 0.01, 'pop in (s)'],
 			overshoot: [0, 5, 0.1],
 			spread: [0, 2, 0.05],
-			punch: [1, 3, 0.05, 'crit punch ×', tune.damageNumbers.crit],
-			tilt: [0, 0.5, 0.01, 'crit tilt (rad)', tune.damageNumbers.crit],
-			min: [0.2, 2, 0.05, 'smallest ×', tune.damageNumbers.sizing],
-			max: [0.2, 3, 0.05, 'largest ×', tune.damageNumbers.sizing],
-			growth: [0, 1, 0.01, 'growth per 10× damage', tune.damageNumbers.sizing],
-			crit: [1, 3, 0.05, 'crit ×', tune.damageNumbers.sizing],
-			xp: [0.1, 2, 0.05, 'XP ×', tune.damageNumbers.sizing],
+			punch: [1, 3, 0.05, 'crit punch ×', look.damageNumbers.crit],
+			tilt: [0, 0.5, 0.01, 'crit tilt (rad)', look.damageNumbers.crit],
+			min: [0.2, 2, 0.05, 'smallest ×', look.damageNumbers.sizing],
+			max: [0.2, 3, 0.05, 'largest ×', look.damageNumbers.sizing],
+			growth: [0, 1, 0.01, 'growth per 10× damage', look.damageNumbers.sizing],
+			crit: [1, 3, 0.05, 'crit ×', look.damageNumbers.sizing],
+			xp: [0.1, 2, 0.05, 'XP ×', look.damageNumbers.sizing],
 		},
 		juice: {
 			...each(['attackSquash', 'castSquash', 'vaultSquash', 'rainSquash'], () => [-0.3, 0.3, 0.01]),
@@ -251,8 +251,8 @@ export function sliderSections(tune, setup) {
 			: name.startsWith('bots ')
 				? tune.bots[name.slice(5)]
 				: name.startsWith('sound ')
-					? tune.sounds[name.slice(6)]
-					: (tune.minions[name] ?? tune[name])
+					? look.sounds[name.slice(6)]
+					: (tune.minions[name] ?? tune[name] ?? look[name])
 	return Object.entries(sections).map(([name, sliders]) => [name, object(name), sliders])
 }
 

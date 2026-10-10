@@ -30,7 +30,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Difficulty gallery, three standees you shoot to pick: `lobby-props.js` `createDifficultyGallery`; `tune.js` `lobby.gallery`
 - Horseshoe magnets with sleepy, calm and angry faces: `lobby-magnets.js` `createMagnets`, `createFaceKit`
 - Lobby props in the scene (stands, magnets, ready marks): `lobby-props.js` `createLobbyProps`; `tune.js` `lobby.marks`
-- Lobby practice dummies: `dummy-view.js` `dressDummy`; `match.js` `dummies`; `tune.js` `dummies`, `dummyView`, `lobby.practice`
+- Lobby practice dummies: `dummy-view.js` `dressDummy`; `match.js` `dummies`; `tune.js` `dummies`, `lobby.practice`; `look.js` `dummyView`
 - Lobby camera and intro swoop: `lobby.js` `createLobby`; `tune.js` `lobby.camera`, `lobby.intro`, `lobby.frame`
 - Lobby HUD (tooltips on heroes): `lobby.js`; `hud.js` `createHud({ lobby: true })`; `tune.js` `lobby.hud`
 - Fall off the floor and respawn: `lobby.js`; `tune.js` `lobby.fall`, `lobby.respawn`
@@ -61,13 +61,13 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Inspect mode (hold I or pad button, hover to read cards): `hud.js` `KEY_INSPECT`, `PAD_INSPECT`, `pickUnit`
 - Tooltips and unit cards (hero, tower, minion, wave, Ball, level, kills, clock): `tooltip.js` `createTooltip`, `heroCard`, `abilityCard`, `structureCard`, `minionCard`, `waveCard`, `ballCard`, `levelCard`, `killsCard`, `clockCard`; `hud.js` `cardFor`, `updateTip`
 - Match clock: `tooltip.js` `clock`, `clockCard`; `hud.js`
-- Health bars over units: `health-bars.js` `createHealthBars`; `health-bars.css`; `tune.js` `healthBars`
-- Damage numbers: `damage-numbers.js` `createDamageNumbers`; `tune.js` `damageNumbers`
-- Edge pips for off-screen allies, enemies, Ball: `pips.js` `edgePip`, `createPips`; `tune.js` `pips`
+- Health bars over units: `health-bars.js` `createHealthBars`; `health-bars.css`; `look.js` `healthBars`
+- Damage numbers: `damage-numbers.js` `createDamageNumbers`; `look.js` `damageNumbers`
+- Edge pips for off-screen allies, enemies, Ball: `pips.js` `edgePip`, `createPips`; `look.js` `pips`
 - Minimap: `minimap.js` `createMinimap`; `maps/index.js` `matchRecipe`; `hud.js`
 - Scoreboard (Tab or pad Select, live table mid-match): `recap.js` `createRecap` (the `board` aside, class `moba-scoreboard`); `match-stats.js` `createMatchStats`; `moba-recap.md`
 - Pause menu (Esc, pad Start, or the top-left menu tile): `menu.js` `createMatchMenu`, `openMenu`; tile from `src/core/corner-nav.js`; `menu.css`; `tune.js` `hud`
-- Onboarding cues (floor arrow, hero ring, You sticker, Ball and goal pointer): `onboarding.js` `createOnboarding`; `tune.js` `onboarding`; `moba-onboarding.md`
+- Onboarding cues (floor arrow, hero ring, You sticker, Ball and goal pointer): `onboarding.js` `createOnboarding`; `look.js` `onboarding`; `moba-onboarding.md`
 - Dead-world grey-out and respawn timer: `recap.js` `createRecap` (`moba-dead-world`); `combat.js` `respawn`; `tune.js` `respawn`
 - Combat log: `src/core/debug.js` `createCombatLog`
 
@@ -78,13 +78,13 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Basic attack: `combat.js` `basicAttack`; `casting.js` `aimBasic`; `tune.js` `attack`
 - Damage and hit resolution: `combat.js` `hit`; `skillshot.js` `stepShot`, `interceptShot`
 - Skillshot shapes and sweeps: `skillshot.js` `stepShot`, `closest`; `obstacles.js` `sweepHit`, `sweepObstacles`; `skills-view.js` `lineReach`
-- Ability telegraphs for enemies (ground line tell): `skills-view.js` `createSkillsView`; `tune.js` `abilityView`; `moba-heroes.md`
+- Ability telegraphs for enemies (ground line tell): `skills-view.js` `createSkillsView`; `look.js` `abilityView`; `moba-heroes.md`
 - Fletcher, ranged poke. Q Loose (arrow shot), W Vault (dash), E Rain (zone): `heroes.js` `loose`, `vault`, `rain`; `tune.js` `loose`, `vault`, `rain`; `moba-heroes.md`
-- Mitts, keeper. Q Toss (throw caught shots), W Catch (stance), E Dive (dash): `heroes.js` `toss`, `catchStance`, `dive`; `tune.js` `toss`, `catch`, `dive`, `gloveSlap`, `mittsView`
+- Mitts, keeper. Q Toss (throw caught shots), W Catch (stance), E Dive (dash): `heroes.js` `toss`, `catchStance`, `dive`; `tune.js` `toss`, `catch`, `dive`, `gloveSlap`; `look.js` `mittsView`
 - Mitts glove slap (basic): `heroes.js` `gloveSlap`; `tune.js` `gloveSlap`
 - Catching and the Pocket (caught shots held and thrown back): `projectiles.js` `openCatch`, `throwCaught`, `resolveInterception`; `casting.js` `traitContext`; `tune.js` `catch`, `catching`, `momentum`
 - Carom and Skip: tuned (`tune.js` `heroes`) and designed in `moba-heroes.md`, but not in the `heroes.js` table yet
-- Hero costumes and silhouettes: `hero-view.js` `dressHero`; `tune.js` `silhouettes`, `heroProof`; `moba-look.md`
+- Hero costumes and silhouettes: `hero-view.js` `dressHero`; `look.js` `silhouettes`; `moba-look.md`
 - Level, XP and stat growth: `tooltip.js` `levelProgress`; `combat.js` `hit`; `tune.js` `levels`
 - Globes (health pickups): `lane.js` `createLane`; `lane-view.js` `createLaneView`; `tune.js` `globes`
 - Scripted test hero: `scripted.js` `createScriptedHero`; `tune.js` `scripted`
@@ -94,7 +94,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Lane: minion waves, towers, fort, core: `lane.js` `createLane`; `match.js` `lane`, `structures`, `minions`; `tune.js` `waves`, `minions`, `tower`, `fort`, `core`; `moba-lane.md`
 - Wave timing and spawns: `lane.js`; `match.js` `minions`; `tune.js` `waves`
 - Lane bots (the minions' walk and fights under guns): `lane-bots.js` `laneBots`; `maps/paths.js` `laneRoute`
-- Lane drawing (minions, towers, fort, core): `lane-view.js` `createLaneView`; `tune.js` `laneView`
+- Lane drawing (minions, towers, fort, core): `lane-view.js` `createLaneView`; `look.js` `laneView`
 - Team stamps on the ground: `stamps.js` `createStamps`
 - Match end rules (objective, late-game gun damage, winner): `lane.js` `createLane`; `tune.js` `match`
 - Base healing: `lane.js` `createLane`; `tune.js` `base`
@@ -104,7 +104,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 
 - Ball (neutral objective, carried to score on structures): `ball.js` `createBall`; `match.js` `ball`; `tune.js` `ball`; `moba-lane.md`
 - Ball drawing and trail: `ball-view.js` `createBallView`; `tune.js` `ballView`
-- Ball confetti on pop: `feedback.js` `createFeedback`; `tune.js` `ballConfetti`
+- Ball confetti on pop: `feedback.js` `createFeedback`; `look.js` `ballConfetti`
 - Ball bot behaviour (who fetches, who carries): `ball-bots.js`; `tune.js` `bots`
 
 ## Match: maps and props
@@ -125,9 +125,9 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 ## Match: view, feedback, sound
 
 - Match scene root: `view.js` `createView`; `index.js`
-- Feedback (facts turn into sound, popups, shake, hit flash): `feedback.js` `createFeedback`; `index.js` `validFact`; `tune.js` `juice`, `out`, `squeak`
-- Sounds: `sounds.js` `createSounds`; `tune.js` `sounds`; `src/core/audio.js`, `src/core/music.js`
-- Screen shake, hit flash, impact: `src/core/juice.js` `createJuice`; `tune.js` `juice`
+- Feedback (facts turn into sound, popups, shake, hit flash): `feedback.js` `createFeedback`; `index.js` `validFact`; `look.js` `juice`, `out`, `squeak`
+- Sounds: `sounds.js` `createSounds`; `look.js` `sounds`; `src/core/audio.js`, `src/core/music.js`
+- Screen shake, hit flash, impact: `src/core/juice.js` `createJuice`; `look.js` `juice`
 - Hero and dummy death animation: `src/core/death.js` `startDeath`
 - Style pass (inked outlines, palette): `src/core/stylepass.js`, `src/core/style.js` `PALETTE`; `moba-look.md`
 
@@ -183,7 +183,7 @@ Plugin in `src/plugins/dodgeball/`; its snapshots are locked by `tests/character
 
 ## Landmarks in the big files
 
-`tune.js` (about 1350 lines) is the file every thread re-reads; use `ast-grep outline` or these landmarks rather than reading it whole.
+`tune.js` (about 900 lines; presentation numbers are in `look.js`) is the file every thread re-reads; use `ast-grep outline` or these landmarks rather than reading it whole.
 
 - `tune.js`: every number, one top-level key per system. `grep -n "^	<key>: " src/plugins/moba/tune.js` jumps to one. Sliders for it: `sliders.js`; new debug folders also go in `debugSections`.
 - `sim.js`: `createSim` builds the world, heroes and pieces, wires the systems through one shared `ctx`, and runs `step` (the tick). Heroes are `sim.heroes[i]`; bodies come from `src/core/body.js` (`body.position`, `body.place(x, y, z)`). Each system is a `create…(ctx)` in its own file:

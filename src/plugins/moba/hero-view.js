@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { makeStyleMaterial, styleId } from '../../core/stylepass.js'
 import { tune } from './tune.js'
+import { look } from './look.js'
 import { STEP } from '../../core/app.js'
 import { castAbility } from './ability.js'
 import { heroDefinition } from './heroes.js'
@@ -9,7 +10,7 @@ import { heroDefinition } from './heroes.js'
 // remains untouched; every costume sits above the same inked collision disc.
 export function dressHero(body, heroId = 'fletcher', team = 'A') {
 	heroDefinition(heroId)
-	const t = tune.silhouettes
+	const t = look.silhouettes
 	const original = body.visual.geometry
 	const hidden = body.visual.children.map((part) => [part, part.visible])
 	hidden.forEach(([part]) => (part.visible = false))
@@ -128,13 +129,13 @@ export function dressHero(body, heroId = 'fletcher', team = 'A') {
 		roots.push(glove)
 		pocketRing = part(
 			new THREE.RingGeometry(
-				tune.mittsView.pocketRadius - tune.mittsView.pocketWidth,
-				tune.mittsView.pocketRadius,
-				tune.mittsView.segments,
+				look.mittsView.pocketRadius - look.mittsView.pocketWidth,
+				look.mittsView.pocketRadius,
+				look.mittsView.segments,
 			).rotateX(-Math.PI / 2),
 			pocketMaterial,
 			0,
-			tune.mittsView.pocketY,
+			look.mittsView.pocketY,
 			0,
 			footDisc,
 		)
@@ -259,7 +260,7 @@ export function dressHero(body, heroId = 'fletcher', team = 'A') {
 	const armDirection = new THREE.Vector3(),
 		armUp = new THREE.Vector3(0, 1, 0)
 	if (heroId === 'fletcher') {
-		const a = tune.abilityView
+		const a = look.abilityView
 		bow = new THREE.Group()
 		bow.name = 'moba-bow'
 		costume.add(bow)
@@ -318,8 +319,8 @@ export function dressHero(body, heroId = 'fletcher', team = 'A') {
 			: 0
 		const time = tick + alpha
 		const elapsed = Math.max(0, (time - releaseTick) * STEP)
-		const a = tune.abilityView,
-			v = tune.mittsView
+		const a = look.abilityView,
+			v = look.mittsView
 		const snap = releasePose === 'draw' ? a.drawSnap : v.tossSnap
 		const recover = releasePose === 'draw' ? a.drawRecover : v.tossRecover
 		const releasing =

@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import './health-bars.css'
 import { tune } from './tune.js'
+import { look } from './look.js'
 
 // Screen-sized labels projected from the same interpolated meshes the scene renders.
 export function createHealthBars() {
@@ -19,7 +20,7 @@ export function createHealthBars() {
 
 	return {
 		update(units, camera, viewport, local, localTeam) {
-			const t = tune.healthBars
+			const t = look.healthBars
 			const live = new Set(units.map((unit) => unit.id))
 			for (const [id, bar] of bars)
 				if (!live.has(id)) {

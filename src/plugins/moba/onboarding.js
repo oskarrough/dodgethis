@@ -5,14 +5,14 @@ import { makeStyleMaterial } from '../../core/stylepass.js'
 import { STEP } from '../../core/app.js'
 import { clampMap } from './obstacles.js'
 import { edgePip } from './pips.js'
-import { tune } from './tune.js'
+import { look } from './look.js'
 
 const arrowFor = (angle) =>
 	['→', '↘', '↓', '↙', '←', '↖', '↑', '↗'][((Math.round(angle / (Math.PI / 4)) % 8) + 8) % 8]
 
 // Render-only guidance. All lifetime and movement state belongs to this match.
 export function createOnboarding({ scene, sim, hero }) {
-	const t = tune.onboarding
+	const t = look.onboarding
 	const root = el('div', 'moba-onboarding', document.body)
 	root.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:3'
 	const sticker = (name, text) => {

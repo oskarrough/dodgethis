@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { hex } from '../../core/style.js'
 import { el } from '../../core/dom.js'
-import { tune } from './tune.js'
+import { look } from './look.js'
 
 // NDC → inset screen edge. Points behind the eye need their projected direction reversed.
 export function edgePip(point, behind = false) {
@@ -13,8 +13,8 @@ export function edgePip(point, behind = false) {
 	}
 	const extent = Math.max(Math.abs(x), Math.abs(y))
 	if (!Number.isFinite(extent)) return null
-	if (!extent) return { x: 0, y: -tune.pips.inset }
-	return { x: (x / extent) * tune.pips.inset, y: (y / extent) * tune.pips.inset }
+	if (!extent) return { x: 0, y: -look.pips.inset }
+	return { x: (x / extent) * look.pips.inset, y: (y / extent) * look.pips.inset }
 }
 
 export function createPips() {
@@ -44,13 +44,13 @@ export function createPips() {
 					pip.style.cssText = `position:absolute;border:2px solid ${hex('ink')};border-radius:50%;background:${hex(unit.label ? 'cream' : unit.team === 'A' ? 'teamA' : 'teamB')};transform:translate(-50%,-50%)`
 					if (unit.label) {
 						pip.dataset.marker = unit.label
-						pip.style.cssText += `;border-width:${tune.pips.markerBorder}px;border-radius:${tune.pips.markerCorner}px;padding:${tune.pips.markerPadding}px ${tune.pips.markerPadding * 2}px;white-space:nowrap;box-shadow:${tune.pips.markerBorder}px ${tune.pips.markerBorder}px 0 ${hex('ink')};font:${tune.pips.markerFont}px/1 var(--ui-font);color:${hex('ink')}`
+						pip.style.cssText += `;border-width:${look.pips.markerBorder}px;border-radius:${look.pips.markerCorner}px;padding:${look.pips.markerPadding}px ${look.pips.markerPadding * 2}px;white-space:nowrap;box-shadow:${look.pips.markerBorder}px ${look.pips.markerBorder}px 0 ${hex('ink')};font:${look.pips.markerFont}px/1 var(--ui-font);color:${hex('ink')}`
 					}
 					pips.set(unit.id, pip)
 				}
 				// Mesh positions already contain render interpolation, never read sim positions here.
 				point.copy(unit.point ?? unit.body.mesh.position)
-				point.y = tune.pips.height
+				point.y = look.pips.height
 				local.copy(point).applyMatrix4(camera.matrixWorldInverse)
 				const at = edgePip(point.project(camera), local.z >= 0)
 				pip.hidden = !at
@@ -62,8 +62,8 @@ export function createPips() {
 					]
 					const text = `${direction} ${unit.label}`
 					if (pip.textContent !== text) pip.textContent = text
-				} else pip.style.width = pip.style.height = `${tune.pips.size}px`
-				const margin = unit.label ? tune.pips.markerMargin : 0
+				} else pip.style.width = pip.style.height = `${look.pips.size}px`
+				const margin = unit.label ? look.pips.markerMargin : 0
 				pip.style.left = `clamp(${margin}px, ${(at.x + 1) * 50}%, calc(100% - ${margin}px))`
 				pip.style.top = `clamp(${margin}px, ${(1 - at.y) * 50}%, calc(100% - ${margin}px))`
 			}

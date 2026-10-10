@@ -1,13 +1,14 @@
 import * as THREE from 'three'
 import { makeStyleMaterial } from '../../core/stylepass.js'
 import { tune } from './tune.js'
+import { look } from './look.js'
 import { STEP } from '../../core/app.js'
 
 // A sparring dummy's body: a burlap sack on a coil spring. Same contract as dressHero: hides the
 // mannequin, keeps the inked collision disc, returns an undress.
 export function dressDummy(body, _heroId, team = 'B') {
-	const t = tune.silhouettes
-	const v = tune.dummyView
+	const t = look.silhouettes
+	const v = look.dummyView
 	const original = body.visual.geometry
 	const hidden = body.visual.children.map((part) => [part, part.visible])
 	hidden.forEach(([part]) => (part.visible = false))
