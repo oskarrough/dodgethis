@@ -46,3 +46,12 @@
 .moba-descending > :not(.moba-front):not(script):not(.lil-gui) {
 	visibility: hidden;
 }
+/* The cloud reveal: drawn small, so the browser's upscale keeps it soft. */
+.front-clouds {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 0;
+	pointer-events: none;
+}

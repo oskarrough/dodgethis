@@ -4,6 +4,7 @@ import { el as make } from '../../../core/dom.js'
 import { tune as kit } from '../tune.js'
 import { matchRecipe } from '../maps/index.js'
 import { easeShot } from './backdrop.js'
+import { createClouds } from './clouds.js'
 import { createDescentState, descentFrame } from './descent-state.js'
 import { tune } from './tune.js'
 import './descent.css'
@@ -44,6 +45,14 @@ export function startLoading(
 		let dived = false
 		let buildHold = 0
 		let drawn = ''
+		const clouds = reduced.matches ? null : createClouds(setup?.map)
+		const veiled = !!clouds
+		let revealing = false
+		let cloudTime = 0
+		let partTime = 0
+		let parted = false
+		let veil = { cover: 0, part: 0 }
+		const spot = new THREE.Vector3()
 		scope.clock.pause(() => true)
 		scope.intents.suspend(() => true)
 		app.intents.cancel()
@@ -68,6 +77,7 @@ export function startLoading(
 				)
 				.join('')}</h1>`,
 		)
+		if (clouds) root.prepend(clouds.el)
 		root.dataset.phase = 'crane'
 		root.setAttribute('aria-label', 'Rising over the lobby')
 		const lettering = root.querySelector('.front-descent-name')
@@ -175,7 +185,7 @@ export function startLoading(
 		)
 		const cream = new THREE.Color(PALETTE.cream)
 		function draw({ phase, crane: rise, progress }) {
-			const key = `${phase}:${rise}:${progress}:${revealTime}`
+			const key = `${phase}:${rise}:${progress}:${revealTime}:${revealing}`
 			if (key === drawn) return
 			drawn = key
 			// Never fully clear: Chrome stops compositing an opacity-0 canvas, and the lane's
@@ -185,8 +195,9 @@ export function startLoading(
 				canvas.style.opacity = String(floor + (1 - floor) * (1 - easeShot(rise)))
 				return
 			}
+			// Under the cloud the lane cuts in whole; the cloud parting is the reveal.
 			const shown =
-				reduced.matches && built && apexTime >= buildHold
+				(reduced.matches || veiled) && revealing
 					? 1
 					: easeShot(
 							Math.min(1, revealTime / Math.max(tune.loading.reducedDuration, tune.loading.reveal)),
@@ -214,6 +225,32 @@ export function startLoading(
 					]),
 				),
 			)
+		}
+
+		// Cloud rolls in with the crane and parts around your hero from the start of the reveal.
+		function veilFrame(state, dt) {
+			const c = tune.loading.clouds
+			cloudTime += dt
+			if (revealing && !capturing) partTime += dt
+			const from = Math.max(0, Math.min(0.99, c.from))
+			const cover =
+				state.phase === 'crane' ? easeShot(Math.max(0, (state.crane - from) / (1 - from))) : 1
+			// Out-eased: the hole opens fast around your hero, then spreads.
+			const part = 1 - (1 - Math.min(1, partTime / Math.max(1 / 60, c.part))) ** Math.max(1, c.ease)
+			let hole = { x: 0, y: 0 }
+			if (hero) {
+				spot.set(hero.x, 0, hero.z).project(app.camera.view)
+				const aspect = innerWidth / innerHeight
+				const x = Math.max(-1, Math.min(1, spot.x)),
+					y = Math.max(-1, Math.min(1, spot.y))
+				hole = { x: x * 0.5 * aspect, y: y * 0.5 }
+			}
+			veil = { cover, part }
+			clouds.draw({ cover, part, rise: easeShot(state.crane), time: cloudTime, hole })
+			if (part >= 1) {
+				parted = true
+				clouds.dispose()
+			}
 		}
 
 		// Esc or B quits to the splash from anywhere in the crane or the dive. Local play only:
@@ -246,6 +283,7 @@ export function startLoading(
 			if (before === 'apex' && !capturing) {
 				apexTime += dt
 				if (built && apexTime >= buildHold) {
+					revealing = true
 					const reveal = reduced.matches ? 0 : Math.max(0, tune.loading.reveal)
 					revealTime = Math.min(reveal, revealTime + dt)
 					if (revealTime >= reveal) gate.ready()
@@ -272,6 +310,7 @@ export function startLoading(
 			}
 			draw(state)
 			app.camera.update(0)
+			if (clouds && !parted) veilFrame(state, dt)
 			if (state.phase === 'landed' && !capturing) {
 				ending = true
 				app.intents.cancel()
@@ -294,6 +333,7 @@ export function startLoading(
 						apexTime,
 						revealTime,
 						built,
+						clouds: veiled ? veil : null,
 						tick: match?.snapshot().t ?? null,
 						camera: app.camera.view.position.toArray(),
 					}
@@ -320,6 +360,7 @@ export function startLoading(
 		})
 		return () => {
 			capture?.resolve(null)
+			clouds?.dispose()
 			if (!ending && !quitting) backdrop.dispose()
 			restore?.()
 			unframe()

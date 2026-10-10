@@ -30,6 +30,29 @@ export const tune = {
 		// The canvas fades no lower than `floor`.
 		crane: { rise: 14, pitch: -12, nameAt: 0.3, letter: 0.03, letterTime: 0.35, floor: 0.02 },
 		drop: { freq: 660, slideTo: 330, dur: 0.5, gain: 0.03, type: 'triangle' },
+		// The cloud reveal; reduced motion keeps the plain cut. Cloud rolls in from the rim
+		// from `from` of the crane, holds while the lane builds, and from the start of the
+		// reveal parts around your hero over `part` s, out-eased by the power `ease` (it may run into the preview; the timing
+		// is unchanged). Drawn at `resolution` (0–1) of device pixels and upscaled, on purpose:
+		// soft and cheap. `scale` is puffs per screen height, `warp` the swirl; `rough` and
+		// `soft` (screen heights) how ragged and how feathered the edge runs. As it parts the
+		// field swells by `zoom`; it slides `lift` as the crane rises and drifts `drift` per s.
+		// `bloom` lights the soft edge. `color` is light and shade per map.
+		clouds: {
+			from: 0.1,
+			part: 2.2,
+			ease: 2,
+			resolution: 0.25,
+			scale: 2.2,
+			warp: 0.7,
+			rough: 0.35,
+			soft: 0.1,
+			zoom: 0.9,
+			lift: 1.2,
+			drift: [0.04, 0.015],
+			bloom: 0.15,
+			color: { overthrow: ['#fffcf7', '#f6dcd3'], flagfall: ['#f5f1ff', '#b9a8e2'] },
+		},
 	},
 	level: { growth: 0.04, cap: 10 },
 	volley: {
