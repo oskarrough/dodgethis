@@ -3,6 +3,7 @@ import './hud.css'
 import { heroDefinition } from './heroes.js'
 import { tune } from './tune.js'
 import { createMinimap } from './minimap.js'
+import { el } from '../../core/dom.js'
 import {
 	abilityCard,
 	ballCard,
@@ -91,14 +92,6 @@ export const ICONS = {
 	carom: svg('<path class="tone" d="M24 8 L42 40 L6 40 Z"/>'),
 	skip: svg('<rect class="tone" x="8" y="18" width="32" height="14" rx="5"/>'),
 	empty: svg('<path class="ink-line" d="M16 24 L32 24" opacity="0.4"/>'),
-}
-
-function el(tag, className, parent, html) {
-	const node = document.createElement(tag)
-	if (className) node.className = className
-	if (html) node.innerHTML = html
-	parent?.append(node)
-	return node
 }
 
 // Countdown ring fraction for a timer that resets to `total`, quantised so the ring only rewrites when it moves.
