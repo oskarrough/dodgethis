@@ -8,6 +8,7 @@
 - A red check in files you don't own isn't yours (another thread's half-done edit; don't `git archive` main to prove it): name them in your report and leave them alone. Iterate with `bun test <file>`; finish with `bunx oxlint <your files>`, `bunx oxfmt <your files>` and the test files near your change. In a shared checkout the orchestrator runs the full `bun run check` at the checkpoint, so don't loop on it: other threads' half-done edits make it red.
 - The machine is shared: browser sessions and full checks starve each other (load past 12 turns timing tests into random failures). Open a browser only when the change is visual or someone asked, and close it when done.
 - Commit freely but don't push: every push to `main` deploys and costs CI. Push only when Oskar asks or the orchestrator ships a batch (Oskar, 2026-10-10).
+- The game ignores reduced-motion settings: every animation always plays. Never add `prefers-reduced-motion` paths (Oskar, 2026-10-10).
 - Deploys happen automatically when `main` moves on GitHub (Cloudflare Workers build). Never run `wrangler deploy` by hand. `bun run build` runs `bun run check` first, so a lint or test failure blocks the deploy. MOBA work goes on `main`.
 
 ## Git worktrees
