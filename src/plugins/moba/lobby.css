@@ -97,7 +97,23 @@
 	display: none;
 }
 .lobby-label.lobby-bowl-label {
-	translate: 0 0.2em;
+	display: grid;
+	justify-items: start;
+	gap: 0.2em;
+	transform: none;
+	translate: 0 0.3em;
+	text-align: left;
+}
+.lobby-bowl-label small {
+	padding-top: 0.3em;
+	border-top: 2px solid var(--ui-text);
+	font-size: 0.6em;
+	letter-spacing: 0.16em;
+}
+.lobby-bowl-label b {
+	font-size: 1.7em;
+	font-weight: inherit;
+	letter-spacing: 0.02em;
 }
 .moba-front .lobby-gallery-label kbd {
 	margin-right: 0.4em;

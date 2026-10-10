@@ -381,7 +381,7 @@ const HALF = LIGHT.clone()
 	.normalize()
 
 // Baked light into vertex colours: `color(i, normal)` per vertex, glaze gets a soft highlight.
-export function bake(geometry, color, { flat = false, gloss = 0 } = {}) {
+export function bake(geometry, color, { flat = false, gloss = 0, light = [0.74, 0.34] } = {}) {
 	const g = flat ? geometry.toNonIndexed() : geometry
 	if (flat) geometry.dispose()
 	g.computeVertexNormals()
@@ -394,7 +394,7 @@ export function bake(geometry, color, { flat = false, gloss = 0 } = {}) {
 		n.fromBufferAttribute(normals, i)
 		// Shading is symmetric under DoubleSide, so a flipped winding never goes dark.
 		if (n.y < -0.98) n.negate()
-		const shade = 0.74 + 0.34 * Math.max(0, n.dot(LIGHT))
+		const shade = light[0] + light[1] * Math.max(0, n.dot(LIGHT))
 		tint.copy(color(i, n)).multiplyScalar(shade)
 		const spec = gloss * Math.max(0, n.dot(HALF)) ** 18
 		out[i * 3] = Math.min(1, tint.r + spec)
@@ -463,7 +463,8 @@ function cradleGeometry(s, deg) {
 		capped.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3))
 		capped.setIndex(idx)
 		g.dispose()
-		parts.push(bake(capped, () => color, { flat: true }))
+		// Iron takes the light harder than glaze: chunky facets, dark on the shadow side.
+		parts.push(bake(capped, () => color, { flat: true, light: [0.58, 0.62] }))
 	}
 	const iron = new THREE.Color(s.colors.iron),
 		cap = new THREE.Color(s.colors.pole)
@@ -527,19 +528,27 @@ export function createLobbyFloor(scene, renderer) {
 	const glaze = new THREE.Color(s.colors.rim),
 		biscuit = new THREE.Color(s.colors.biscuit)
 	// Lip profile: up from the glaze's edge to a rounded crest, then over and down to the glaze line.
+	// Restaurant ware: a painted band rides the crest, crisp at both edges.
 	const lip = [
 		[0, 0],
 		[r.width * 0.3, r.height * 0.35],
-		[r.width * 0.55, r.height * 0.85],
+		[r.width * 0.5, r.height * 0.78],
+		[r.width * 0.505, r.height * 0.79],
 		[r.width * 0.72, r.height],
-		[r.width * 0.88, r.height * 0.8],
+		[r.width * 0.84, r.height * 0.86],
+		[r.width * 0.845, r.height * 0.85],
 		[r.width * 0.97, r.height * 0.35],
 		[r.width, -r.glazeLine],
 	]
-	const crest = new Set([2, 3, 4])
+	const painted = new Set([3, 4, 5])
+	const paint = new THREE.Color(s.colors.band)
 	const lipGeo = bake(
 		sweep(frames, lip, { closePath: true }),
-		(i) => (worn[Math.floor(i / lip.length)] && crest.has(i % lip.length) ? biscuit : glaze),
+		(i) => {
+			const k = i % lip.length
+			if (worn[Math.floor(i / lip.length)] && k >= 2 && k <= 6) return biscuit
+			return painted.has(k) ? paint : glaze
+		},
 		{ gloss: s.gloss },
 	)
 	const vertexMaterial = () =>

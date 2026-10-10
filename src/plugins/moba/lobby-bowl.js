@@ -313,7 +313,11 @@ export function createWeatherBowl(scene, el, mapId, renderer) {
 	const label = document.createElement('div')
 	label.className = 'lobby-label lobby-bowl-label'
 	label.dataset.picked = 'true'
-	label.textContent = b.label.replace('{map}', layout.name)
+	const caption = document.createElement('small'),
+		name = document.createElement('b')
+	caption.textContent = b.label.caption
+	name.textContent = b.label.name.replace('{map}', layout.name)
+	label.append(caption, name)
 	el.append(label)
 	const still = matchMedia('(prefers-reduced-motion: reduce)')
 	const point = new THREE.Vector3()
@@ -324,8 +328,11 @@ export function createWeatherBowl(scene, el, mapId, renderer) {
 			island.rotation.y = still.matches ? b.rest : b.rest + time * b.turn
 			island.position.y =
 				bed.position.y + b.lift + (still.matches ? 0 : Math.sin(time * b.bobRate) * b.bob)
-			// The label prints on the bowl's front, toward the camera.
-			point.set(0, 0, b.radius).applyMatrix4(group.matrixWorld).project(camera)
+			// The label prints flush-left from the bowl's front-left, toward the camera.
+			point
+				.set(-b.radius * b.label.from, 0, b.radius * 0.8)
+				.applyMatrix4(group.matrixWorld)
+				.project(camera)
 			label.hidden = point.z < -1 || point.z > 1
 			label.style.left = `${((point.x + 1) * innerWidth) / 2}px`
 			label.style.top = `${((1 - point.y) * innerHeight) / 2}px`

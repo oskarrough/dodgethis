@@ -342,7 +342,7 @@ export const tune = {
 			borderWidth: 0.035,
 			band: 0.11,
 			corner: 0.22,
-			tint: 0.35,
+			tint: 0.18,
 			well: '#fbf6ea',
 			fillY: 0.05, // holograms and labels stand on the plate here
 			label: 'Ready', // printed beside your plate until you stand in it
@@ -489,25 +489,26 @@ export const tune = {
 				biscuit: '#cdb38c',
 				chipEdge: '#8d7458',
 				rim: '#f4eddc',
+				band: '#3f3a6e', // the painted line round the lip
 				body: '#8d82a8',
 				bodyDark: '#4a4468',
-				iron: '#5f6677',
-				pole: '#d8d0bf',
+				iron: '#424a66',
+				pole: '#efe6d2',
 			},
 		},
 		// The weather bowl on the saucer's far right holds the next map in miniature, turning `turn` rad/s under a
 		// painted sky cap. Shapes and colours apply on restart; turning and the label are live. Each map's `look` is
 		// its light in miniature: Overthrow by day, Flagfall by night. Lengths in `maps` are that map's metres.
 		bowl: {
-			x: 11.7,
-			z: -4.4,
+			x: 11.4,
+			z: -3.4,
 			radius: 2.3,
 			height: 1.05,
 			wall: 0.16,
 			floor: 0.14,
 			segments: 48,
 			capRadius: 1.75, // the sky arch's half-width; keep it inside radius
-			capHeight: 1.75, // and its height behind the middle of the rim
+			capHeight: 1.55, // and its height behind the middle of the rim
 			skyPixels: 256,
 			island: 1.7, // the miniature's half-diagonal; keep it inside the cloud bed
 			relief: 2.4, // dioramas exaggerate height
@@ -516,7 +517,8 @@ export const tune = {
 			rest: 0.5, // the angle it holds under reduced motion
 			bob: 0.025,
 			bobRate: 0.8,
-			label: 'Next: {map}',
+			// Printed on the saucer under the bowl, flush-left from `from` of its radius left of centre.
+			label: { caption: 'Next map', name: '{map}', from: 0.6 },
 			colors: { glaze: '#f4eddc', inside: '#e6dcc6', foot: '#8d82a8' },
 			maps: {
 				overthrow: {
