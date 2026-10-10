@@ -1,8 +1,6 @@
 import { tune, profile } from './tune.js'
 import { clampMap } from './obstacles.js'
-import { dirOf } from './sim-kit.js'
-
-const TAU = Math.PI * 2
+import { TAU, dirOf } from './sim-kit.js'
 
 // Read-only queries over the sim's live units: what a click, an attack-move or the pad's stick lands on.
 export function createTargeting({ heroes, dummies, lane, ball, field }) {
