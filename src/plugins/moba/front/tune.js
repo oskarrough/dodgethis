@@ -44,31 +44,24 @@ export const tune = {
 	// The Numbers sheet's reference distance, not an animated portrait.
 	preview: { distance: 8 },
 	parallax: { depth: 0.009, response: 0.18, settle: 0.05 },
+	// The splash plate (`public/splash/plate-<width>.webp`): `focus` is the point, in % of the
+	// plate, that stays put when the screen's aspect crops it.
+	plate: { src: '/splash/plate', widths: [960, 1672], focus: [50, 62] },
+	// Two mist bands drift across the cloud sea, far then near, one loop every `period` s.
+	mist: { period: [190, 110], opacity: 0.55 },
 	// Backdrop shots in the 1440 × 900 frame: `lift` raises it (negative tilts up to the sky),
-	// `zoom` scales on Fletcher's ridge point and `time` is the move into the shot. `depth`
-	// multiplies both per layer, far to near; `ease` is the in-out power every front move shares.
+	// `zoom` scales on the focus point and `time` is the move into the shot. `depth`
+	// multiplies both for the plate; `ease` is the in-out power every front move shares.
 	shot: {
 		ease: 3,
-		depth: [0.8, 0.9, 1, 1.1],
+		depth: [1],
 		splash: { lift: 0, zoom: 1, time: 0.7 },
 		lobby: { lift: 400, zoom: 1.15, time: 0.7 },
 		apex: { lift: -480, zoom: 1, time: 0.6 },
 	},
-	// Dusk behind the lobby floor so the pale tarmac and its drop read: violet far ground,
-	// teal-blue dunes, lilac sky. The backdrop blends to it as the lobby flies in, and back.
-	dusk: {
-		lilac: '#b8abcf',
-		mint: '#a7a3c6',
-		peach: '#c2aaca',
-		planet: '#f1eaf3',
-		'planet-line': '#d3c8de',
-		cloud: '#e4dcef',
-		far: '#6f6a8a',
-		mesa: '#625f82',
-		ridge: '#58607e',
-		dune: '#4f5d70',
-		shadow: '#3f4358',
-	},
+	// Dusk behind the lobby floor so the pale floor and its drop read: a violet wash over the
+	// plate at `amount` opacity, blended in as the lobby flies in, and back.
+	dusk: { color: '#29285a', amount: 0.5 },
 	// The lobby's chrome slides `shift` px between its place and its own edge over `land` s:
 	// in one piece `stagger` s after another, out together as the lane fades.
 	chrome: { shift: 72, stagger: 0.06, land: 0.3 },
@@ -78,18 +71,26 @@ export const tune = {
 	// `pop` the spring back in as the splash shot lands.
 	// The title sits still for `calm` ms (min, max), then one letter dodges or the Ball glints.
 	title: { calm: [3500, 9000] },
+	// Each map's illustration, `public/splash/<map>-<width>.webp`; `wash` is the cream veil on
+	// the art of a tile you're not on.
 	tile: {
+		art: { overthrow: '/splash/overthrow', flagfall: '/splash/flagfall' },
+		artWidths: [480, 960],
+		wash: 0.22,
 		outlinePadding: 5,
 		outlineWidth: 1.5,
 		snap: 0.12,
 		press: 0.06,
-		scale: 1.06,
+		scale: 1.05,
 		lift: 8,
-		tilt: 2.5,
+		tilt: 1,
 		drop: 0.2,
 		stagger: 0.05,
 		pop: 0.35,
 	},
+	// The stone-card skin every front screen shares (px): ink `line`, hard `shadow` offset, the
+	// cream `ring` round whatever you're on, and the chipped corner `cut`s (tl, tr, br, bl).
+	skin: { line: 3, shadow: 6, ring: 5, cut: [18, 7, 15, 5] },
 	move: { freq: 880, slideTo: 1175, dur: 0.045, gain: 0.03, type: 'square' },
 	enter: { frequencies: [392, 587.33], gap: 0.06, dur: 0.3, gain: 0.05, type: 'triangle' },
 	deny: { freq: 116.54, slideTo: 98, dur: 0.16, gain: 0.06, type: 'square', shake: 0.24 },

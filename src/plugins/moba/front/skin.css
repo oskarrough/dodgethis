@@ -1,0 +1,106 @@
+/* The stone-card skin: a cream card cut like stone, a 3 px ink line, a hard printed shadow, and
+   a cream ring round whatever you're on (the same ring your unit wears in the match). Numbers
+   come from `tune.skin` as --skin-line, --skin-shadow, --skin-ring and the four corner cuts
+   --skin-tl/tr/br/bl. Markup: `.skin-card` > `.skin-ring` + `.skin-face` + your content;
+   `.selected` lights the ring. */
+
+/* One chamfer for every layer: --g grows (or with a negative value shrinks) the shape by that
+   much on every side while keeping each cut parallel. */
+.skin-cut,
+.skin-card::before,
+.skin-ring,
+.skin-ring::before,
+.skin-face,
+.skin-face::before {
+	--k: calc(var(--g, 0px) * 0.586);
+	clip-path: polygon(
+		calc(var(--skin-tl) + var(--k)) 0,
+		calc(100% - var(--skin-tr) - var(--k)) 0,
+		100% calc(var(--skin-tr) + var(--k)),
+		100% calc(100% - var(--skin-br) - var(--k)),
+		calc(100% - var(--skin-br) - var(--k)) 100%,
+		calc(var(--skin-bl) + var(--k)) 100%,
+		0 calc(100% - var(--skin-bl) - var(--k)),
+		0 calc(var(--skin-tl) + var(--k))
+	);
+}
+.skin-card {
+	--skin-hot: 0;
+	--skin-drop: var(--skin-shadow);
+	position: relative;
+	isolation: isolate;
+}
+.skin-card > * {
+	position: relative;
+}
+/* The printed shadow: the card's own shape in ink, offset down and right. */
+.skin-card::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+	background: var(--ui-text);
+	translate: var(--skin-drop) var(--skin-drop);
+	transition: translate var(--tile-snap) cubic-bezier(0.2, 1.9, 0.45, 1);
+}
+.skin-card > .skin-ring,
+.skin-card > .skin-face {
+	position: absolute;
+}
+/* Ink outside, cream inside, then the card's own ink line: readable on any sky. */
+.skin-ring {
+	--g: calc(var(--skin-ring) + var(--skin-line));
+	inset: calc(var(--g) * -1);
+	background: var(--ui-text);
+	opacity: var(--skin-hot);
+	scale: calc(0.96 + var(--skin-hot) * 0.04);
+	transition:
+		opacity var(--tile-press) linear,
+		scale var(--tile-snap) cubic-bezier(0.2, 1.9, 0.45, 1);
+}
+.skin-ring::before {
+	--g: var(--skin-ring);
+	content: '';
+	position: absolute;
+	inset: var(--skin-line);
+	background: var(--ui-cream);
+}
+.skin-face {
+	inset: 0;
+	background: var(--ui-text);
+}
+.skin-face::before,
+.skin-face::after {
+	content: '';
+	position: absolute;
+	inset: var(--skin-line);
+}
+.skin-face::before {
+	--g: calc(var(--skin-line) * -1);
+	background: var(--ui-cream);
+}
+/* The ink flood, for small cards whose whole face inverts when you're on them. */
+.skin-face::after {
+	inset: 0;
+	background: var(--ui-text);
+	transform: scaleY(var(--skin-flood, 0));
+	transform-origin: bottom;
+	transition: transform var(--tile-snap) cubic-bezier(0.3, 1.3, 0.5, 1);
+}
+.skin-card.selected {
+	--skin-hot: 1;
+	--skin-drop: calc(var(--skin-shadow) + var(--tile-lift));
+	z-index: 1;
+}
+.skin-card:active {
+	--skin-drop: calc(var(--skin-shadow) * 0.3);
+}
+.skin-card:active::before {
+	transition-duration: var(--tile-press);
+}
+@media (prefers-reduced-motion: reduce) {
+	.skin-card::before,
+	.skin-ring,
+	.skin-face::after {
+		transition-duration: 0s;
+	}
+}

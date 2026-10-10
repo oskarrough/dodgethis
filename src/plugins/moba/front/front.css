@@ -57,35 +57,90 @@
 .front-backdrop {
 	z-index: -1;
 }
-.front-backdrop > svg {
+/* The plate layer sits 5% outside the viewport for parallax; the plate covers it, pinned at
+   its focus, with sky above and cloud below so a shot never reaches its border. */
+.front-plate-layer {
 	inset: -5%;
 	width: 110%;
 	height: 110%;
+	container-type: size;
 	will-change: transform;
 }
-.front-sky {
+.front-plate {
+	position: absolute;
+	left: var(--plate-x);
+	top: var(--plate-y);
+	width: max(100cqw, 177.78cqh);
+	aspect-ratio: 16 / 9;
+	translate: calc(var(--plate-x) * -1) calc(var(--plate-y) * -1);
+}
+.front-plate img {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+.front-plate::before,
+.front-plate::after {
+	content: '';
+	position: absolute;
+	left: 0;
+	right: 0;
+	height: 200%;
+}
+/* The plate's own top and bottom rows, run on. */
+.front-plate::before {
+	bottom: calc(100% - 1px);
 	background: linear-gradient(
-		to bottom,
-		var(--front-lilac) 0%,
-		var(--front-lilac) 42%,
-		var(--front-mint) 44%,
-		var(--front-mint) 71%,
-		var(--front-peach) 73%,
-		var(--front-peach) 100%
+		to right,
+		#fdba9e,
+		#e2aba9 12%,
+		#b290ad 31%,
+		#776da9 44%,
+		#4c549b 56%,
+		#3f4a93 69%,
+		#333c7e 81%,
+		#272a5f
 	);
 }
-.front-sky-next {
+.front-plate::after {
+	top: calc(100% - 1px);
+	background: linear-gradient(#3a3557, #1d2037 30%);
+}
+/* Lineless mist: soft cream ellipses on a strip two plates wide, looping by half its width. */
+.front-mist {
+	position: absolute;
+	left: 0;
+	bottom: 18%;
+	width: 200%;
+	height: 34%;
+	opacity: var(--mist-opacity);
+	background:
+		radial-gradient(ellipse 20% 32% at 10% 60%, #fff1ea 0, #fff1ea00 100%),
+		radial-gradient(ellipse 16% 24% at 30% 42%, #fbe6ee 0, #fbe6ee00 100%),
+		radial-gradient(ellipse 22% 30% at 55% 66%, #fff1ea 0, #fff1ea00 100%),
+		radial-gradient(ellipse 15% 22% at 80% 48%, #ece2f4 0, #ece2f400 100%);
+	background-size: 50% 100%;
+	animation: front-mist var(--mist-far) linear infinite;
+	will-change: transform;
+}
+.front-mist-near {
+	bottom: 2%;
+	height: 30%;
+	background:
+		radial-gradient(ellipse 24% 34% at 22% 70%, #fff1ea 0, #fff1ea00 100%),
+		radial-gradient(ellipse 18% 26% at 62% 58%, #f4e6f2 0, #f4e6f200 100%),
+		radial-gradient(ellipse 14% 22% at 88% 72%, #fff1ea 0, #fff1ea00 100%);
+	background-size: 50% 100%;
+	animation-duration: var(--mist-near);
+}
+@keyframes front-mist {
+	to {
+		transform: translateX(-50%);
+	}
+}
+.front-dusk {
+	background: var(--dusk);
 	opacity: 0;
-	will-change: opacity;
-	background: linear-gradient(
-		to bottom,
-		var(--front-peach) 0%,
-		var(--front-peach) 42%,
-		var(--front-lilac) 44%,
-		var(--front-lilac) 71%,
-		var(--front-mint) 73%,
-		var(--front-mint) 100%
-	);
 }
 .moba-front button {
 	color: inherit;
@@ -100,7 +155,7 @@
 	display: none !important;
 }
 
-/* Cut-out stickers on a Moebius desert: ink line from the world, weight from the toybox. */
+/* Stone cards over the day-into-night plate: ink line and chipped corners from the world. */
 .front-chrome {
 	position: absolute;
 	inset: 0;
@@ -181,25 +236,20 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	gap: 3vw;
+	gap: 3.5vw;
 	padding: clamp(150px, 26vh, 260px) 5vw clamp(110px, 16vh, 170px);
 	pointer-events: none;
 }
+/* A map card: the illustration in an ink frame, the name on a band that floods ink when
+   you're on it. */
 .front-tile {
-	--tile-color: var(--ui-button);
 	--tile-rest: -1;
-	--tile-hot: 0;
-	--tile-shadow: 7px;
-	position: relative;
-	flex: 0 1 min(27vw, 440px);
+	--tile-pad: clamp(10px, 1vw, 16px);
+	flex: 0 1 min(28vw, 460px);
 	min-width: 0;
-	align-self: stretch;
-	max-height: 480px;
 	display: grid;
-	grid-template-rows: 1fr auto auto;
-	justify-items: center;
-	align-content: center;
-	padding: 4% 2% 5%;
+	grid-template-rows: auto auto;
+	padding: var(--tile-pad) var(--skin-line) var(--skin-line);
 	background: transparent;
 	pointer-events: auto;
 	color: var(--ui-text);
@@ -212,135 +262,139 @@
 .front-tile:nth-child(2n) {
 	--tile-rest: 1;
 }
-.front-tile[data-mode='dodgeball'] {
-	--tile-color: var(--ui-red);
+/* The frame takes smaller cuts than its card, chipped on the opposite corners. */
+.front-tile-art {
+	--skin-tl: calc(var(--skin-cut-small, 6px));
+	--skin-tr: calc(var(--skin-cut-small, 6px) * 2);
+	--skin-br: calc(var(--skin-cut-small, 6px) * 0.6);
+	--skin-bl: calc(var(--skin-cut-small, 6px) * 1.6);
+	margin: 0 calc(var(--tile-pad) - var(--skin-line));
+	aspect-ratio: 4 / 3;
+	padding: var(--skin-line);
+	background: var(--ui-text);
 }
-.front-tile[data-mode='moba'] {
-	--tile-color: var(--ui-blue);
+.front-tile-art,
+.front-tile-art > * {
+	display: block;
 }
-/* Hard ink shadow, then the card, then a flood that rises from the bottom edge. */
-.front-tile::before,
-.front-tile-face,
-.front-tile-face::before,
-.front-tile-face::after {
+.front-tile-art > img,
+.front-tile-art::after {
+	--g: calc(var(--skin-line) * -1);
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+.front-tile-art,
+.front-tile-art > img,
+.front-tile-art::after {
+	clip-path: polygon(
+		calc(var(--skin-tl) + var(--g, 0px) * 0.586) 0,
+		calc(100% - var(--skin-tr) - var(--g, 0px) * 0.586) 0,
+		100% calc(var(--skin-tr) + var(--g, 0px) * 0.586),
+		100% calc(100% - var(--skin-br) - var(--g, 0px) * 0.586),
+		calc(100% - var(--skin-br) - var(--g, 0px) * 0.586) 100%,
+		calc(var(--skin-bl) + var(--g, 0px) * 0.586) 100%,
+		0 calc(100% - var(--skin-bl) - var(--g, 0px) * 0.586),
+		0 calc(var(--skin-tl) + var(--g, 0px) * 0.586)
+	);
+}
+/* A cream veil on the card you're not on. */
+.front-tile-art::after {
+	content: '';
+	position: absolute;
+	inset: var(--skin-line);
+	width: auto;
+	height: auto;
+	background: var(--ui-cream);
+	opacity: calc(var(--tile-wash) * (1 - var(--skin-hot)));
+	transition: opacity var(--tile-snap) linear;
+}
+.front-tile-art > img {
+	transition: scale var(--tile-snap) cubic-bezier(0.2, 1.9, 0.45, 1);
+}
+.front-tile.selected .front-tile-art > img {
+	scale: 1.04;
+}
+.front-tile-plan {
+	display: grid;
+	place-items: center;
+	background: var(--ui-text);
+}
+.front-tile-plan svg {
+	width: 70%;
+	stroke: var(--ui-cream);
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+.front-tile-label {
+	display: grid;
+	justify-items: center;
+	padding: 0.5em 0.6em 0.7em;
+	clip-path: polygon(
+		0 0,
+		100% 0,
+		100% calc(100% - var(--skin-br) + var(--skin-line) * 0.586),
+		calc(100% - var(--skin-br) + var(--skin-line) * 0.586) 100%,
+		calc(var(--skin-bl) - var(--skin-line) * 0.586) 100%,
+		0 calc(100% - var(--skin-bl) + var(--skin-line) * 0.586)
+	);
+}
+.front-tile-label::before {
 	content: '';
 	position: absolute;
 	inset: 0;
-	border-radius: clamp(18px, 2.4vw, 34px);
-}
-.front-tile::before {
 	background: var(--ui-text);
-	transform: translate(var(--tile-shadow), var(--tile-shadow));
-	transition: transform var(--tile-snap) cubic-bezier(0.2, 1.9, 0.45, 1);
-}
-.front-tile-face {
-	overflow: hidden;
-	border: clamp(3px, 0.32vw, 5px) solid var(--ui-text);
-	background-color: color-mix(in srgb, var(--tile-color) 18%, var(--ui-cream));
-	background-image: radial-gradient(
-		color-mix(in srgb, var(--ui-text) 16%, transparent) 0.6px,
-		transparent 0.8px
-	);
-	background-size: 5px 5px;
-}
-.front-tile-face::before {
-	inset: -2px;
-	border-radius: 0;
-	background: var(--tile-color);
-	transform: scaleY(0);
+	transform: scaleY(var(--skin-hot));
 	transform-origin: bottom;
 	transition: transform var(--tile-snap) cubic-bezier(0.3, 1.3, 0.5, 1);
 }
-/* Stitching: the felt seam of a handmade toy. */
-.front-tile-face::after {
-	inset: clamp(7px, 0.8vw, 12px);
-	border: 2px dashed color-mix(in srgb, var(--ui-text) 45%, transparent);
-	border-radius: clamp(11px, 1.6vw, 22px);
-}
-.front-tile > :not(.front-tile-face) {
+.front-tile-label > * {
 	position: relative;
 }
-.front-tile svg {
-	align-self: center;
-	width: min(52%, 22vh);
-	height: auto;
-	fill: var(--ui-cream);
-	stroke: var(--ui-text);
-	stroke-width: 2.6;
-	stroke-linecap: round;
-	stroke-linejoin: round;
-	transition: transform var(--tile-snap) cubic-bezier(0.2, 1.9, 0.45, 1);
-}
-.front-tile svg path:not(.front-glyph-fill) {
-	fill: none;
-}
-.front-tile .front-glyph-fill {
-	fill: color-mix(in srgb, var(--tile-color) 45%, var(--ui-cream));
-}
 .front-tile-kicker {
-	font-size: clamp(14px, 1.5vw, 22px);
-	font-weight: 700;
-	letter-spacing: 0.15em;
-}
-.front-tile[data-map] svg {
-	fill: none;
-	stroke: var(--ui-text);
-}
-.front-tile[data-map].selected svg {
-	stroke: var(--ui-cream);
+	font-size: clamp(13px, 1.1vw, 18px);
+	font-weight: 400;
+	letter-spacing: 0.3em;
+	transition: color var(--tile-press) linear;
 }
 .front-tile-name {
-	font: 400 clamp(34px, 4.3vw, 78px) / 0.95 var(--ui-font);
+	font: 400 clamp(32px, 3.8vw, 68px) / 0.95 var(--ui-font);
 	text-align: center;
-	color: var(--ui-cream);
-	-webkit-text-stroke: 0.1em var(--ui-text);
-	paint-order: stroke fill;
 	letter-spacing: 0.01em;
+	transition: color var(--tile-press) linear;
+}
+.front-tile.selected :is(.front-tile-kicker, .front-tile-name) {
+	color: var(--ui-cream);
 }
 .front-tile.selected {
-	--tile-hot: 1;
-	--tile-shadow: calc(7px + var(--tile-lift));
-	z-index: 1;
 	transform: translate(calc(var(--tile-lift) * -0.5), calc(var(--tile-lift) * -1))
 		rotate(calc(var(--tile-rest) * var(--tile-tilt) * -0.6)) scale(var(--tile-scale));
 }
-.front-tile.selected .front-tile-face::before {
-	transform: scaleY(1);
-}
-.front-tile.selected svg {
-	transform: rotate(calc(var(--tile-rest) * -8deg)) scale(1.08);
-}
-.front-tile.selected .front-glyph-fill {
-	fill: var(--ui-cream);
-}
 .front-tile:active {
-	--tile-shadow: 2px;
 	transform: translate(3px, 4px) scale(0.97);
 	transition-duration: var(--tile-press);
 }
-.front-tile:active::before {
-	transition-duration: var(--tile-press);
-}
-/* Dodgeball, the bonus round: a small sticker pinned under the maps, not a peer tile. */
+/* Dodgeball, the bonus round: a small stone tag under the maps, not a peer card. */
 .moba-front .front-bonus {
-	--bonus-shadow: 4px;
+	--skin-tl: 10px;
+	--skin-tr: 4px;
+	--skin-br: 10px;
+	--skin-bl: 4px;
+	--skin-flood: var(--skin-hot);
 	position: absolute;
 	left: 50%;
 	bottom: max(22px, 5vh);
 	display: flex;
 	align-items: center;
 	gap: 0.5em;
-	padding: 0.35em 1.1em 0.3em 0.45em;
-	border-radius: 999px;
-	background: var(--ui-cream);
-	border: clamp(3px, 0.25vw, 4px) solid var(--ui-text);
-	box-shadow: var(--bonus-shadow) var(--bonus-shadow) 0 var(--ui-text);
+	padding: 0.4em 1.1em 0.35em 0.6em;
+	background: transparent;
 	pointer-events: auto;
 	color: var(--ui-text);
-	transform: translateX(-50%) rotate(1.5deg);
+	transform: translateX(-50%) rotate(1deg);
 	transition:
 		transform var(--tile-snap) cubic-bezier(0.2, 1.9, 0.45, 1),
-		box-shadow var(--tile-snap) cubic-bezier(0.2, 1.9, 0.45, 1);
+		color var(--tile-press) linear;
 	-webkit-tap-highlight-color: transparent;
 	user-select: none;
 }
@@ -348,7 +402,7 @@
 	width: 1.9em;
 	height: 1.9em;
 	fill: color-mix(in srgb, var(--ui-red) 45%, var(--ui-cream));
-	stroke: var(--ui-text);
+	stroke: currentColor;
 	stroke-width: 3.4;
 	stroke-linecap: round;
 	transition: transform var(--tile-snap) cubic-bezier(0.2, 1.9, 0.45, 1);
@@ -358,32 +412,22 @@
 }
 .front-bonus-kicker {
 	font-size: 0.7em;
-	font-weight: 700;
-	letter-spacing: 0.15em;
+	letter-spacing: 0.2em;
 	text-transform: uppercase;
-	opacity: 0.75;
+	opacity: 0.8;
 }
 .front-bonus-name {
 	font: 400 1.35em / 1 var(--ui-font);
 	translate: 0 0.06em;
 }
 .moba-front .front-bonus.selected {
-	--bonus-shadow: 7px;
-	z-index: 1;
-	background: var(--ui-red);
 	color: var(--ui-cream);
 	transform: translate(-50%, -4px) rotate(-1deg) scale(1.06);
 }
 .front-bonus.selected svg {
-	fill: var(--ui-cream);
 	transform: rotate(-20deg);
 }
-.front-bonus.selected .front-bonus-name {
-	-webkit-text-stroke: 0.1em var(--ui-text);
-	paint-order: stroke fill;
-}
 .moba-front .front-bonus:active {
-	--bonus-shadow: 2px;
 	transform: translate(-50%, 2px) scale(0.97);
 	transition-duration: var(--tile-press);
 }
@@ -399,49 +443,60 @@
 	text-align: center;
 	color: var(--ui-text);
 }
-/* Narrow and tall: the stickers stack and lie flat in landscape strips. */
+/* Narrow and tall: the cards stack as strips, art left and name right. */
 @media (max-width: 700px) {
 	.front-tiles {
 		flex-direction: column;
-		gap: 18px;
+		gap: 26px;
 		padding: clamp(110px, 18vh, 150px) 7vw clamp(96px, 14vh, 130px);
 	}
 	.front-tile {
-		flex: 1 1 0;
+		flex: 0 0 auto;
 		width: 100%;
-		max-height: 220px;
-		grid-template: 1fr auto auto 1fr / auto 1fr;
-		justify-items: start;
-		align-items: center;
-		column-gap: 16px;
-		padding: 16px 24px;
+		grid-template: auto / minmax(0, 46%) 1fr;
+		align-items: stretch;
+		padding: var(--tile-pad) var(--skin-line) var(--skin-line) var(--tile-pad);
+		padding-top: var(--skin-line);
 	}
-	.front-tile svg {
-		grid-area: 1 / 1 / 5 / 2;
-		width: min(22vw, 12vh);
+	.front-tile-art {
+		margin: calc(var(--tile-pad) - var(--skin-line)) 0;
+		align-self: center;
 	}
-	.front-tile-kicker {
-		grid-area: 2 / 2;
+	.front-tile-label {
+		align-content: center;
+		padding: 0.4em 0.5em;
+		clip-path: polygon(
+			0 0,
+			calc(100% - var(--skin-tr) + var(--skin-line) * 0.586) 0,
+			100% calc(var(--skin-tr) - var(--skin-line) * 0.586),
+			100% calc(100% - var(--skin-br) + var(--skin-line) * 0.586),
+			calc(100% - var(--skin-br) + var(--skin-line) * 0.586) 100%,
+			0 100%
+		);
 	}
-	.front-tile[data-map] .front-tile-name {
-		grid-area: 3 / 2;
+	.front-tile-label::before {
+		transform: scaleX(var(--skin-hot));
+		transform-origin: left;
 	}
 	.front-tile-name {
-		grid-area: 2 / 2;
-		font-size: clamp(30px, 9vw, 48px);
+		font-size: clamp(26px, 8vw, 44px);
 	}
 }
 @media (prefers-reduced-motion: reduce) {
-	.front-backdrop > svg,
+	.front-plate-layer,
+	.front-mist,
 	.front-tile {
 		will-change: auto;
+	}
+	.front-mist {
+		animation: none;
 	}
 	.front-tile,
 	.front-bonus,
 	.front-bonus svg,
-	.front-tile::before,
-	.front-tile svg,
-	.front-tile-face::before {
+	.front-tile-art > img,
+	.front-tile-art::after,
+	.front-tile-label::before {
 		transition-duration: 0s;
 	}
 }

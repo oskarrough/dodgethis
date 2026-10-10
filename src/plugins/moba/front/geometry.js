@@ -1,22 +1,4 @@
-const ridge = [
-	[0, 778],
-	[195, 760],
-	[374, 748],
-	[533, 725],
-	[660, 743],
-	[797, 753],
-	[952, 738],
-	[1153, 732],
-	[1440, 767],
-]
-export const ridgePath =
-	`M${ridge[0].join(' ')} ` +
-	Array.from(
-		{ length: 4 },
-		(_, i) => `Q${ridge[i * 2 + 1].join(' ')} ${ridge[i * 2 + 2].join(' ')}`,
-	).join(' ')
-
-// The same slice projection anchors the DOM sign and the four SVG planes.
+// The same slice projection anchors the DOM sign and the backdrop's zoom.
 export function projectFrame(width, height) {
 	const scale = Math.max((width * 1.1) / 1440, (height * 1.1) / 900)
 	return {

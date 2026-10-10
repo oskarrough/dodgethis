@@ -3,6 +3,7 @@ import { createControls } from './controls.js'
 import { tune } from './tune.js'
 import { parseMatchSetup } from '../setup.js'
 import { playableMaps, mapLayout } from '../maps/index.js'
+import './skin.css'
 import './front.css'
 
 // The MOBA maps are the front door; Dodgeball is a bonus sticker under them, last in the cursor order.
@@ -19,13 +20,12 @@ const maps = playableMaps.map((id) => {
 	const rect = (x, z) => `<rect x="${-x}" y="${-z}" width="${x * 2}" height="${z * 2}"/>`
 	const plan = layout.preview ?? ''
 	const name = layout.name
-	return {
-		mode: 'moba',
-		map: id,
-		name,
-		viewBox: `${-halfX - padding} ${-halfZ - padding} ${(halfX + padding) * 2} ${(halfZ + padding) * 2}`,
-		glyph: `<g fill="none" stroke-width="${tune.tile.outlineWidth}">${rect(halfX, halfZ)}${plan}</g>`,
-	}
+	const art = tune.tile.art[id]
+	// A map with an illustration shows it; a new map shows its chalk plan until it gets one.
+	const picture = art
+		? `<img alt="" decoding="async" srcset="${tune.tile.artWidths.map((w) => `${art}-${w}.webp ${w}w`).join(', ')}" sizes="(max-width: 700px) 45vw, 27vw" src="${art}-${tune.tile.artWidths[0]}.webp">`
+		: `<svg viewBox="${`${-halfX - padding} ${-halfZ - padding} ${(halfX + padding) * 2} ${(halfZ + padding) * 2}`}" aria-hidden="true"><g fill="none" stroke-width="${tune.tile.outlineWidth}">${rect(halfX, halfZ)}${plan}</g></svg>`
+	return { mode: 'moba', map: id, name, picture }
 })
 
 // The splash is the only menu before the playable lobby.
@@ -90,8 +90,26 @@ export function mobaFront(app, map) {
 			['scale', 1, 1.2, 0.01],
 			['lift', 0, 24, 1],
 			['tilt', 0, 8, 0.5],
+			['wash', 0, 0.6, 0.01],
 		])
 			tile.add(values.tile, key, min, max, step).onChange(() => activeFront?.retune())
+		for (const key of ['line', 'shadow', 'ring'])
+			tile
+				.add(values.skin, key, 0, 16, 0.5)
+				.name('skin ' + key)
+				.onChange(() => activeFront?.retune())
+		values.skin.cut.forEach((_, i) =>
+			tile
+				.add(values.skin.cut, i, 0, 40, 1)
+				.name(`skin cut ${['tl', 'tr', 'br', 'bl'][i]}`)
+				.onChange(() => activeFront?.retune()),
+		)
+		const plate = folder.addFolder('plate')
+		plate.add(values.mist, 'opacity', 0, 1, 0.01).name('mist opacity')
+		plate.add(values.mist.period, 0, 20, 400, 1).name('far mist loop (s)')
+		plate.add(values.mist.period, 1, 20, 400, 1).name('near mist loop (s)')
+		plate.add(values.dusk, 'amount', 0, 1, 0.01).name('dusk wash')
+		for (const controller of plate.controllers) controller.onChange(() => activeBackdrop?.retune())
 		tile.add(values.tile, 'drop', app.clock.step, 1, app.clock.step).name('drop out (s)')
 		tile.add(values.tile, 'pop', app.clock.step, 1, app.clock.step).name('pop in (s)')
 		tile.add(values.deny, 'shake', app.clock.step, 1, app.clock.step).name('deny shake (s)')
@@ -140,8 +158,8 @@ export function mobaFront(app, map) {
 				.map((c, i) => `<span class="front-letter${i === 1 ? ' front-ball' : ''}">${c}</span>`)
 				.join('')
 			el.innerHTML = `<div class="front-chrome"><h1 class="front-heading" aria-label="DodgeThis"><span aria-hidden="true">${title}</span></h1><p class="front-notice" role="status" hidden></p>
-				<div class="front-tiles front-modes" role="group" aria-label="Game or map">${maps.map((tile) => `<button type="button" class="front-tile" data-mode="${tile.mode}" data-map="${tile.map}"><span class="front-tile-face"></span><svg viewBox="${tile.viewBox}" aria-hidden="true">${tile.glyph}</svg><small class="front-tile-kicker">MOBA</small><span class="front-tile-name">${tile.name}</span></button>`).join('')}</div>
-				<button type="button" class="front-bonus" data-mode="${bonus.mode}"><svg viewBox="0 0 64 64" aria-hidden="true">${bonus.glyph}</svg><small class="front-bonus-kicker">Bonus</small><span class="front-bonus-name">${bonus.name}</span></button></div>`
+				<div class="front-tiles front-modes" role="group" aria-label="Game or map">${maps.map((tile) => `<button type="button" class="front-tile skin-card" data-mode="${tile.mode}" data-map="${tile.map}"><span class="skin-ring"></span><span class="skin-face"></span><span class="front-tile-art${tile.picture.startsWith('<svg') ? ' front-tile-plan' : ''}">${tile.picture}</span><span class="front-tile-label"><small class="front-tile-kicker">MOBA</small><span class="front-tile-name">${tile.name}</span></span></button>`).join('')}</div>
+				<button type="button" class="front-bonus skin-card" data-mode="${bonus.mode}"><span class="skin-ring"></span><span class="skin-face"></span><svg viewBox="0 0 64 64" aria-hidden="true">${bonus.glyph}</svg><small class="front-bonus-kicker">Bonus</small><span class="front-bonus-name">${bonus.name}</span></button></div>`
 			const chrome = el.querySelector('.front-chrome')
 			const notice = el.querySelector('.front-notice')
 			notice.textContent = options.notice ?? ''
@@ -209,15 +227,22 @@ export function mobaFront(app, map) {
 			sheet.setAttribute('aria-hidden', 'true')
 			const front = {
 				retune() {
-					for (const [key, unit] of [
-						['snap', 's'],
-						['press', 's'],
-						['scale', ''],
-						['lift', 'px'],
-						['tilt', 'deg'],
-					])
-						for (const target of [el, sheet])
+					for (const target of [el, sheet]) {
+						for (const [key, unit] of [
+							['snap', 's'],
+							['press', 's'],
+							['scale', ''],
+							['lift', 'px'],
+							['tilt', 'deg'],
+							['wash', ''],
+						])
 							target.style.setProperty('--tile-' + key, tune.tile[key] + unit)
+						// The stone-card skin rides on `el` into the lobby, so later screens share it.
+						for (const key of ['line', 'shadow', 'ring'])
+							target.style.setProperty('--skin-' + key, tune.skin[key] + 'px')
+						for (const [i, corner] of ['tl', 'tr', 'br', 'bl'].entries())
+							target.style.setProperty('--skin-' + corner, tune.skin.cut[i] + 'px')
+					}
 				},
 			}
 			activeFront = front

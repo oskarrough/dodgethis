@@ -8,8 +8,9 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 
 ## Shell and splash
 
-- Splash with map tiles (Overthrow, Flagfall): `front/index.js` `mobaFront`; `front/backdrop.js` `createBackdrop`; `front/tune.js` `tile`, `title`, `dusk`; `moba-front.md`
-- Dodgeball bonus sticker under the tiles: `front/index.js` (`bonus` const, `.front-bonus`); `moba-front.md`, `roadmap.md`
+- Splash with map tiles (Overthrow, Flagfall), their illustrations in `public/splash/`: `front/index.js` `mobaFront`; `front/backdrop.js` `createBackdrop`; `front/tune.js` `tile`, `title`, `dusk`; `moba-front.md`
+- Stone-card UI skin (chamfered cream card, ink line, printed shadow, cream ring on the focused card), shared by the next front screens: `front/skin.css`; `front/tune.js` `skin`; `moba-look.md` UI skin
+- Dodgeball bonus tag under the tiles: `front/index.js` (`bonus` const, `.front-bonus`); `moba-front.md`, `roadmap.md`
 - Splash keyboard and pad focus, deny shake, back button: `front/controls.js` `createControls`; `front/tune.js` `deny`, `back`, `move`, `enter`
 - Stickers, mute button, corner row, online panel, shell CSS: `index.html`; `src/core/browser.js` `createBrowserApp`
 - Boot error screen: `src/core/browser.js` `reportBootError`
@@ -40,7 +41,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 
 - Crane descent from lobby to match: `front/descent.js` `startLoading`; `front/descent-state.js` `createDescentState`, `descentProgress`, `descentFrame`, `localLoadingHero`; `front/tune.js` `loading`; `moba-front.md`
 - Descent camera projection and pointer easing: `front/geometry.js` `projectFrame`, `easePointer`
-- Sky fade, parallax, dusk light on the splash and descent: `front/backdrop.js` `easeShot`; `front/tune.js` `skyFade`, `parallax`, `shot`, `dusk`
+- Splash plate (day into night), mist drift, parallax, dusk wash on the splash and descent: `front/backdrop.js` `createBackdrop`, `easeShot`; `public/splash/plate-*.webp`; `front/tune.js` `plate`, `mist`, `parallax`, `shot`, `dusk`
 - Volley on the splash (balls flying behind the title): `front/backdrop.js`; `front/tune.js` `volley`
 
 ## Match: camera, controls, cursor

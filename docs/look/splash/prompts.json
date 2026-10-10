@@ -1,0 +1,66 @@
+{
+	"method": "Built-in image generator",
+	"brief": "Overthrow = bright day isles. Flagfall = night violet garden. Names stay open. Weathered stone, heft, ink line, vast quiet skies; creatures with some edge.",
+	"reference_root": "../vibes/",
+	"jobs": [
+		{
+			"id": "01-day-plate",
+			"name": "Day isles",
+			"size": [2560, 1440],
+			"refs": ["sun-spell/03-match.webp", "oskar/floating-pillars-ref.webp"],
+			"prompt": "Use case: stylized-concept. New original art for a fast 3v3 hero brawler made with three.js flat colours and ink outlines. Reference images are STYLE AND PALETTE references only, not edit targets: evolve their floating islands and flora toward Oskar's requested Moebius / Warhammer blend. Vast quiet skies, confident precise dark ink contour, restrained sparse hatch on rock side planes, flat graphic colour fields, chunky primitive-buildable geometry, tangible weathered stone, chipped edges and weight. European science-fantasy comic landscape with small tough mischievous creatures rather than sugary mascots. No existing franchise characters or iconography. No chibi baby faces, smiling moons, sparkles, candy softness, generic medieval fantasy, cyberpunk, photorealism or rich painterly texture. No text, lettering, logos, watermarks, menu controls or card frames.\nAsset: clean full-bleed 16:9 splash background plate, exactly 2560x1440. Frame a huge pale warm cream and dusty peach sky above a pink cloud sea. Monumental grassy floating sandstone/lavender stone pillars with old worn tiled caps, one broken simple stone arch, narrow waterfalls, a few angular olive leaves and burnt orange bell flowers. Put the closest heavy rock pillars at far left lower edge and far right lower edge, with small distant low-contrast isles along the low horizon at y~1100. A tiny weather-beaten horned leaf traveller with a square battered shoulder plate and ragged little cape stands on the FAR RIGHT lower ledge, surveying the vast drop; a small scale accent, not a focal hero. Strong mass and real height, still inviting and sunny. Composition is a production menu backing: UPPER LEFT x100\u20131050,y70\u2013350 absolutely quiet pale sky for the real logo; CENTRAL x500\u20132060,y360\u20131160 very quiet open atmosphere for TWO real tall menu cards side by side. Do NOT draw either logo or cards. Reserve low centre for the bonus button. All dark silhouettes, flowers, creature and arch remain OUTSIDE the central menu area. Airy, almost austere, no busy clouds or centre island. Continuous natural scene, no hard empty rectangle. Upper two-thirds predominantly calm sky.",
+			"output": {
+				"file": "01-day-plate.webp",
+				"native_dimensions": [1672, 941],
+				"delivery_dimensions": [2560, 1440],
+				"bytes": 242796,
+				"resampled": true
+			}
+		},
+		{
+			"id": "02-day-night-plate",
+			"name": "Day into night",
+			"size": [2560, 1440],
+			"refs": ["sun-spell/03-match.webp", "neon-dream/03-match.webp"],
+			"prompt": "Use case: stylized-concept. New original art for a fast 3v3 hero brawler made with three.js flat colours and ink outlines. Reference images are STYLE AND PALETTE references only, not edit targets: evolve their floating islands and flora toward Oskar's requested Moebius / Warhammer blend. Vast quiet skies, confident precise dark ink contour, restrained sparse hatch on rock side planes, flat graphic colour fields, chunky primitive-buildable geometry, tangible weathered stone, chipped edges and weight. European science-fantasy comic landscape with small tough mischievous creatures rather than sugary mascots. No existing franchise characters or iconography. No chibi baby faces, smiling moons, sparkles, candy softness, generic medieval fantasy, cyberpunk, photorealism or rich painterly texture. No text, lettering, logos, watermarks, menu controls or card frames.\nAsset: clean full-bleed 16:9 splash background plate, exactly 2560x1440. One continuous panorama, daylight at left merging gradually into violet night at right, NOT two separate pictures or a split screen. The LEFT OUTER EDGE has warm peach air, tall grassy weathered pale stone island columns with narrow waterfalls and spare ochre flora. The RIGHT OUTER EDGE has weighty bruised violet basalt island columns and giant angular teal leaves, just two hanging magenta bell flowers with tiny warm cream luminous stamens. A plain pale crescent (no face) small near far upper right; almost no stars. Layers of low mist unite both halves. Ink contour and economical hatch give mass and age. A tiny solitary angular ghost-like stone creature with a pointed hood and one chipped shoulder guard on extreme bottom-right ledge; no smiling mascot or cute face. Composition must fit the real menu: UPPER LEFT x100\u20131050,y70\u2013350 completely quiet pale sky for logo. CENTRAL x500\u20132060,y360\u20131160 quiet empty atmosphere, soft desaturated pale peach to muted mauve/blue violet, for TWO tall live map cards. No arch, bright flower, waterfall, creature or strong contours behind those central cards. Reserve low centre for a bonus button. Keep all interesting hard-edged scene detail in the OUTERMOST quarter on each side and at the bottom rim. The mood is immense, calm and strange; night remains coloured and legible, not black horror. Do not draw UI.",
+			"output": {
+				"file": "02-day-night-plate.webp",
+				"native_dimensions": [1672, 941],
+				"delivery_dimensions": [2560, 1440],
+				"bytes": 337722,
+				"resampled": true
+			}
+		},
+		{
+			"id": "03-overthrow-tile",
+			"name": "Overthrow",
+			"size": [1280, 960],
+			"refs": ["sun-spell/03-match.webp", "oskar/floating-pillars-ref.webp"],
+			"prompt": "Use case: stylized-concept. New original art for a fast 3v3 hero brawler made with three.js flat colours and ink outlines. Reference images are STYLE AND PALETTE references only, not edit targets: evolve their floating islands and flora toward Oskar's requested Moebius / Warhammer blend. Vast quiet skies, confident precise dark ink contour, restrained sparse hatch on rock side planes, flat graphic colour fields, chunky primitive-buildable geometry, tangible weathered stone, chipped edges and weight. European science-fantasy comic landscape with small tough mischievous creatures rather than sugary mascots. No existing franchise characters or iconography. No chibi baby faces, smiling moons, sparkles, candy softness, generic medieval fantasy, cyberpunk, photorealism or rich painterly texture. No text, lettering, logos, watermarks, menu controls or card frames.\nAsset: standalone 4:3 map tile illustration exactly 1280x960, opaque. It will be inset in the upper part of an existing tilted thick-ink menu card, shown at about 280x210 px, so read in one glance. NO card, border, name, labels, HUD or UI. Centre a single broad long rectangular grassy floating arena seen from a clear elevated three-quarter/top-down MOBA angle. ONE broad straight pale worn-tile lane connects two opposing chunky weathered stone bastions, left and right. Only a few simple low broken stone cover blocks at sides, quiet central floor. Massive purple-grey polygonal stone roots descend into pale peach clouds, narrow vertical waterfall off one corner. Olive grass rim, a few orange flowers at OUTER edges, heavy chipped stone and spare black ink contour/hatch. Two tiny angular impish creature silhouettes face off on lane: horned leaf scout with rugged cape, sturdy chipped stone companion; no baby faces. One small warm amber thrown ball with economical broken arc reads the brawler. Warm cream, ochre, olive, lavender shadows, cool violet side planes. The arena and its depth fill centre 80%; generous atmospheric margins prevent crop at rounded inset corners. Evokes selected bright floating island style with more ancient stone heft and comic-book edge. No castle spires or flags invented as centrepiece.",
+			"output": {
+				"file": "03-overthrow-tile.webp",
+				"native_dimensions": [1448, 1086],
+				"delivery_dimensions": [1280, 960],
+				"bytes": 284034,
+				"resampled": true
+			}
+		},
+		{
+			"id": "04-flagfall-tile",
+			"name": "Flagfall",
+			"size": [1280, 960],
+			"refs": ["neon-dream/03-match.webp", "sun-spell/03-match.webp"],
+			"prompt": "Use case: stylized-concept. New original art for a fast 3v3 hero brawler made with three.js flat colours and ink outlines. Reference images are STYLE AND PALETTE references only, not edit targets: evolve their floating islands and flora toward Oskar's requested Moebius / Warhammer blend. Vast quiet skies, confident precise dark ink contour, restrained sparse hatch on rock side planes, flat graphic colour fields, chunky primitive-buildable geometry, tangible weathered stone, chipped edges and weight. European science-fantasy comic landscape with small tough mischievous creatures rather than sugary mascots. No existing franchise characters or iconography. No chibi baby faces, smiling moons, sparkles, candy softness, generic medieval fantasy, cyberpunk, photorealism or rich painterly texture. No text, lettering, logos, watermarks, menu controls or card frames.\nAsset: standalone 4:3 map tile illustration exactly 1280x960, opaque. It will be inset in the upper part of an existing tilted thick-ink menu card, shown at about 280x210 px. NO card, border, name, labels, HUD or UI. Clear elevated three-quarter/top-down MOBA angle of one broad floating garden arena of weathered violet basalt and muted lilac worn tiles, with TWO legible parallel lanes running left-to-right around a long low central rectangular stone garden divider. Opposing chunky stone goal pedestals at left/right ends carry a small pennant each. Same primitive shape language and lineweight as day counterpart, much weight and chipped edges. Dark blue-violet void and vast quiet distant sky surround the stage; giant angular teal leaves and two magenta bell flowers with warm luminous cream stamens frame only outer corners, no busy jungle on playable floor. Sparse purple crescent far away, no face. Two tiny sharp silhouettes on paths, pointed hooded ghost creature and horned leaf imp with battered square shoulder guard, no baby faces. One amber ball and short broken throwing arc. Pale mauve floor clearly lighter than violet surround, crisp black indigo outlines, sparse hatching on vertical sides, no airbrush glow bath. Arena and stone depth occupy centre 80%, margins safe for rounded corner crop. It feels quiet, wild, a little dangerous, still playful. No generic fantasy temple or cyberpunk lighting.",
+			"output": {
+				"file": "04-flagfall-tile.webp",
+				"native_dimensions": [1448, 1086],
+				"delivery_dimensions": [1280, 960],
+				"bytes": 360142,
+				"resampled": true
+			}
+		}
+	],
+	"ship_choice": "02-day-night-plate.webp with 03-overthrow-tile.webp and 04-flagfall-tile.webp",
+	"reason": "One quiet horizon introduces both selected map styles while keeping the live cards legible.",
+	"plate_correction": "Use case: precise-object-edit. Edit this splash background plate. Make ONE targeted composition correction: the top-left logo safe area needs clean sky. Move/lower the tall foreground ruins, arch, stone towers, trees, flowers and waterfall heads along the LEFT EDGE so their uppermost tips sit BELOW y=450 in a 2560x1440 frame (below the top 31% of the image). Fill the entire upper-left region x=0..1100 y=0..410 with the existing smooth pale warm sky and only extremely faint thin cloud strokes. This is continuous sky, no visible rectangular patch. Preserve the day palette, right-side scenery, central open menu space, line art and precise natural scene style. Preserve any left-to-right day/night transition exactly. Retain the left foreground cliffs and waterfalls in lower left with their tops now lower, and a small worn arch below the safe area. No text, UI, logo, labels, watermark. Preserve wide16:9 composition, deliver2560x1440."
+}

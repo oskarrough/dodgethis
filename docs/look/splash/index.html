@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Day isles, night garden · Splash studies</title>
+		<meta
+			name="description"
+			content="Two splash plates and two map illustrations: bright day isles for Overthrow, violet night garden for Flagfall."
+		/>
+		<style>
+			:root {
+				color-scheme: light;
+				--ink: #263b45;
+				--paper: #faf8f2;
+				--muted: #64716e;
+				--line: #dddcd1;
+			}
+			* {
+				box-sizing: border-box;
+			}
+			body {
+				margin: 0;
+				background: var(--paper);
+				color: var(--ink);
+				font:
+					16px/1.55 system-ui,
+					sans-serif;
+			}
+			main {
+				max-width: 1260px;
+				margin: auto;
+				padding: 44px 30px 60px;
+			}
+			h1,
+			h2,
+			h3,
+			p {
+				margin: 0;
+			}
+			h1 {
+				font-size: clamp(30px, 5vw, 52px);
+				line-height: 1.1;
+				letter-spacing: -0.04em;
+				margin: 10px 0 14px;
+			}
+			h2 {
+				font-size: 25px;
+				letter-spacing: -0.025em;
+			}
+			h3 {
+				font-size: 20px;
+			}
+			.eyebrow {
+				font-size: 12px;
+				text-transform: uppercase;
+				letter-spacing: 0.15em;
+				color: var(--muted);
+			}
+			.intro {
+				max-width: 740px;
+			}
+			.ship {
+				margin: 22px 0 30px;
+				padding: 16px 20px;
+				border-left: 4px solid #63725b;
+				background: #edf0e5;
+				max-width: 880px;
+			}
+			.ship strong {
+				display: block;
+			}
+			.ship p {
+				font-size: 15px;
+			}
+			a {
+				color: inherit;
+				text-underline-offset: 3px;
+			}
+			nav {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 14px;
+				margin: 22px 0;
+			}
+			button {
+				font: inherit;
+				cursor: pointer;
+				color: inherit;
+				border: 1px solid var(--line);
+				border-radius: 6px;
+				background: transparent;
+				padding: 7px 12px;
+			}
+			button[aria-pressed='true'] {
+				background: var(--ink);
+				color: #fff;
+				border-color: var(--ink);
+			}
+			.switches {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 8px;
+				margin: 14px 0;
+			}
+			.stage {
+				position: relative;
+				width: 100%;
+				aspect-ratio: 16/9;
+				border-radius: 12px;
+				overflow: hidden;
+				container-type: inline-size;
+				background: #d8c6bb;
+			}
+			.stage .plate {
+				width: 100%;
+				height: 100%;
+				object-fit: cover;
+				position: absolute;
+				inset: 0;
+			}
+			.ui {
+				position: absolute;
+				inset: 0;
+				pointer-events: none;
+				color: #294958;
+			}
+			.ui[hidden] {
+				display: none;
+			}
+			.logo {
+				position: absolute;
+				top: 5%;
+				left: 5%;
+				font:
+					900 6.2cqw/0.9 system-ui,
+					sans-serif;
+				letter-spacing: -0.04em;
+				transform: rotate(-2deg);
+				color: #fff9eb;
+				-webkit-text-stroke: 0.12cqw #294958;
+				paint-order: stroke fill;
+				text-shadow: 0.2cqw 0.2cqw #294958;
+			}
+			.logo span {
+				color: #ffbf36;
+			}
+			.tiles {
+				position: absolute;
+				top: 26%;
+				left: 21%;
+				right: 21%;
+				height: 53%;
+				display: flex;
+				gap: 5.2%;
+				align-items: stretch;
+			}
+			.tile {
+				position: relative;
+				flex: 1;
+				display: flex;
+				align-items: center;
+				justify-content: flex-end;
+				flex-direction: column;
+				padding: 5% 4% 10%;
+				border: 0.3cqw solid #294958;
+				border-radius: 2.4cqw;
+				background: #e3ebef;
+				box-shadow: 0.6cqw 0.6cqw #294958;
+				transform: rotate(-1deg);
+			}
+			.tile:nth-child(2) {
+				transform: rotate(1deg);
+			}
+			.tile:after {
+				content: '';
+				position: absolute;
+				inset: 0.8cqw;
+				border: 1px dashed #29495877;
+				border-radius: 1.6cqw;
+				pointer-events: none;
+			}
+			.tile img {
+				width: 85%;
+				aspect-ratio: 4/3;
+				object-fit: contain;
+				display: block;
+				margin: auto;
+				border-radius: 0.6cqw;
+			}
+			.tile small {
+				font-size: 1.5cqw;
+				font-weight: 700;
+				letter-spacing: 0.15em;
+				margin-top: 1cqw;
+			}
+			.tile b {
+				font-size: 4.3cqw;
+				line-height: 0.95;
+				letter-spacing: -0.045em;
+				margin-top: 1.3cqw;
+				color: #fff9eb;
+				-webkit-text-stroke: 0.2cqw #294958;
+				paint-order: stroke fill;
+				white-space: nowrap;
+			}
+			.bonus {
+				position: absolute;
+				bottom: 4.5%;
+				left: 50%;
+				transform: translateX(-50%);
+				font-size: 1.6cqw;
+				font-weight: 700;
+				background: #fff9eb;
+				padding: 0.55cqw 1.4cqw;
+				border: 0.25cqw solid #294958;
+				border-radius: 3cqw;
+				box-shadow: 0.3cqw 0.3cqw #294958;
+				white-space: nowrap;
+			}
+			.caption {
+				margin-top: 12px;
+				color: var(--muted);
+				font-size: 14px;
+				max-width: 850px;
+			}
+			.collection {
+				margin-top: 40px;
+				padding-top: 26px;
+				border-top: 1px solid var(--line);
+			}
+			.assets {
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				gap: 26px;
+				margin-top: 18px;
+			}
+			figure {
+				margin: 0;
+				min-width: 0;
+			}
+			figure > a {
+				display: block;
+			}
+			figure img {
+				display: block;
+				width: 100%;
+				height: auto;
+				border-radius: 8px;
+				background: #e7e2d8;
+			}
+			figcaption {
+				margin-top: 12px;
+			}
+			figcaption p {
+				font-size: 14px;
+				margin-top: 5px;
+				color: var(--muted);
+			}
+			.links {
+				font-size: 13px;
+				margin-top: 8px;
+			}
+			footer {
+				border-top: 1px solid var(--line);
+				margin-top: 40px;
+				padding-top: 20px;
+				font-size: 13px;
+				color: var(--muted);
+			}
+			footer p + p {
+				margin-top: 8px;
+			}
+			@media (max-width: 650px) {
+				main {
+					padding: 26px 16px 40px;
+				}
+				.assets {
+					grid-template-columns: 1fr;
+					gap: 24px;
+				}
+				.stage {
+					border-radius: 6px;
+				}
+				.ship {
+					padding: 12px 15px;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<main>
+			<header>
+				<p class="eyebrow">dodgethis / splash studies / 10 October 2026</p>
+				<h1>Day isles. Night garden.</h1>
+				<p class="intro">
+					Overthrow takes the bright floating islands; Flagfall takes the violet garden. Weathered
+					stone, heft and clear ink give both some edge. Sun Spell and Neon Dream are style
+					references; naming stays open.
+				</p>
+			</header>
+			<aside class="ship">
+				<strong>I would ship the day-to-night plate with both map illustrations.</strong>
+				<p>
+					One horizon introduces both worlds. The quiet centre leaves the cards readable; the day
+					plate is the calmer alternative.
+				</p>
+			</aside>
+			<section aria-labelledby="layout-title">
+				<h2 id="layout-title">In the splash layout</h2>
+				<div class="switches" aria-label="Background plate">
+					<button type="button" data-plate="02-day-night-plate.webp" aria-pressed="true">
+						Day into night · ship choice</button
+					><button type="button" data-plate="01-day-plate.webp" aria-pressed="false">
+						Day isles</button
+					><button type="button" id="show-ui" aria-pressed="true">Hide layout overlay</button>
+				</div>
+				<div class="stage">
+					<img
+						class="plate"
+						id="preview-plate"
+						src="02-day-night-plate.webp"
+						width="2560"
+						height="1440"
+						alt="Warm day isles merge into a violet night garden around a vast quiet sky."
+					/>
+					<div class="ui" id="layout-overlay">
+						<div class="logo">D<span>o</span>dgeThis</div>
+						<div class="tiles">
+							<div class="tile">
+								<img
+									src="03-overthrow-tile.webp"
+									width="1280"
+									height="960"
+									alt="Overthrow day arena illustration"
+								/><small>MOBA</small><b>Overthrow</b>
+							</div>
+							<div class="tile">
+								<img
+									src="04-flagfall-tile.webp"
+									width="1280"
+									height="960"
+									alt="Flagfall night arena illustration"
+								/><small>MOBA</small><b>Flagfall</b>
+							</div>
+						</div>
+						<div class="bonus">◉ &nbsp; Bonus &nbsp; Dodgeball</div>
+					</div>
+				</div>
+				<p class="caption">
+					Layout study using the current splash’s title position, two tilted cards and bonus button.
+					Map art sits inside the cards above their live labels. The logo is a placement stand-in;
+					all delivered images are free of text and UI.
+				</p>
+			</section>
+			<section class="collection" aria-labelledby="plates-title">
+				<h2 id="plates-title">Background plates</h2>
+				<div class="assets">
+					<figure>
+						<a href="01-day-plate.webp" target="_blank" rel="noopener"
+							><img
+								src="01-day-plate.webp"
+								width="2560"
+								height="1440"
+								loading="lazy"
+								alt="Sunlit floating stone isles, narrow waterfalls and a small horned traveller frame a pale peach sky."
+						/></a>
+						<figcaption>
+							<h3>01 / Day isles</h3>
+							<p>
+								Warm cloud sea, grass-topped stone and a distant traveller. Takes Sun Spell’s open
+								air and waterfalls, with chipped masonry and quieter colour.
+							</p>
+							<p class="links">
+								<a href="01-day-plate.webp" download>Download WebP · 2560 × 1440</a>
+							</p>
+						</figcaption>
+					</figure>
+					<figure>
+						<a href="02-day-night-plate.webp" target="_blank" rel="noopener"
+							><img
+								src="02-day-night-plate.webp"
+								width="2560"
+								height="1440"
+								loading="lazy"
+								alt="One continuous floating-island panorama shifts from peach daylight to a violet garden with hanging lantern flowers."
+						/></a>
+						<figcaption>
+							<h3>02 / Day into night · ship choice</h3>
+							<p>
+								Overthrow’s warm stone at left, Flagfall’s violet rock and luminous bell flowers at
+								right. A continuous sky ties the maps together.
+							</p>
+							<p class="links">
+								<a href="02-day-night-plate.webp" download>Download WebP · 2560 × 1440</a>
+							</p>
+						</figcaption>
+					</figure>
+				</div>
+			</section>
+			<section class="collection" aria-labelledby="tiles-title">
+				<h2 id="tiles-title">Map tile illustrations</h2>
+				<div class="assets">
+					<figure>
+						<a href="03-overthrow-tile.webp" target="_blank" rel="noopener"
+							><img
+								src="03-overthrow-tile.webp"
+								width="1280"
+								height="960"
+								loading="lazy"
+								alt="One open lane across a sunlit floating stone arena, two hefty creatures and an amber ball."
+						/></a>
+						<figcaption>
+							<h3>03 / Overthrow</h3>
+							<p>
+								One open lane, an immense drop and opposing stone bastions. Angular creatures and
+								battered shoulder plates give the friendly palette some bite.
+							</p>
+							<p class="links">
+								<a href="03-overthrow-tile.webp" download>Download WebP · 1280 × 960</a>
+							</p>
+						</figcaption>
+					</figure>
+					<figure>
+						<a href="04-flagfall-tile.webp" target="_blank" rel="noopener"
+							><img
+								src="04-flagfall-tile.webp"
+								width="1280"
+								height="960"
+								loading="lazy"
+								alt="Two lanes around a stone garden divider on a violet floating island, framed by teal leaves and magenta bell flowers."
+						/></a>
+						<figcaption>
+							<h3>04 / Flagfall</h3>
+							<p>
+								Two lanes around a low stone garden. Violet mass, a lighter readable floor and warm
+								flower lights carry Neon Dream’s night palette.
+							</p>
+							<p class="links">
+								<a href="04-flagfall-tile.webp" download>Download WebP · 1280 × 960</a>
+							</p>
+						</figcaption>
+					</figure>
+				</div>
+			</section>
+			<footer>
+				<p>
+					Build target: broad stone prisms, slab tops, a few leaf planes, sparse crack lines and
+					simple creature silhouettes. Surface hatching is concept finish; preserve the masses and
+					flat colour when building the maps. Tile art communicates mood and lane count rather than
+					exact collision geometry.
+				</p>
+				<p>
+					References: <a href="../vibes/#sun-spell">Sun Spell</a>,
+					<a href="../vibes/#neon-dream">Neon Dream</a> and
+					<a href="../vibes/oskar/floating-pillars-ref.webp">Oskar’s floating pillars</a>. Generated
+					with the built-in image generator;
+					<a href="prompts.json">full prompts and output details</a>. Plates were generated at 1672
+					× 941 and resampled to the requested 2560 × 1440; tiles were generated at 1448 × 1086 and
+					reduced to 1280 × 960.
+				</p>
+			</footer>
+		</main>
+		<script>
+			const plate = document.getElementById('preview-plate')
+			for (const button of document.querySelectorAll('[data-plate]'))
+				button.addEventListener('click', () => {
+					plate.src = button.dataset.plate
+					plate.alt = button.dataset.plate.startsWith('01')
+						? 'Sunlit floating stone isles frame a pale peach sky.'
+						: 'Warm day isles merge into a violet night garden around a vast quiet sky.'
+					for (const other of document.querySelectorAll('[data-plate]'))
+						other.setAttribute('aria-pressed', String(other === button))
+				})
+			const toggle = document.getElementById('show-ui')
+			toggle.addEventListener('click', () => {
+				const overlay = document.getElementById('layout-overlay')
+				overlay.hidden = !overlay.hidden
+				toggle.setAttribute('aria-pressed', String(!overlay.hidden))
+				toggle.textContent = overlay.hidden ? 'Show layout overlay' : 'Hide layout overlay'
+			})
+		</script>
+	</body>
+</html>
