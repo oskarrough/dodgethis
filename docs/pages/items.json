@@ -3,8 +3,8 @@
 		"at": "2026-10-10T14:33:00.710Z",
 		"title": "Lobby whole saucer in frame",
 		"ask": "Does the lobby now read as one whole floating saucer in an unbroken sky at wide, desktop and phone sizes?",
-		"status": "To review",
-		"decision": "",
+		"status": "Decided",
+		"decision": "Style fine; whole saucer in frame. Keep improving.",
 		"media": [
 			"review/media/2026-10-10-lobby-whole-saucer-in-frame/fit-wide.png",
 			"review/media/2026-10-10-lobby-whole-saucer-in-frame/fit-desk.png",
@@ -18,8 +18,8 @@
 		"at": "2026-10-10T14:28:59.587Z",
 		"title": "Pause: manual with vertical PAUSED",
 		"ask": "Manual is now the only pause page, with PAUSED running down the first column. Right weight and place?",
-		"status": "To review",
-		"decision": "",
+		"status": "Decided",
+		"decision": "Decided: manual with vertical PAUSED.",
 		"media": ["review/media/2026-10-10-pause-manual-with-vertical-paused/vertical-1440.png"],
 		"links": [],
 		"thread": "thr_ra883cf55x",
@@ -57,8 +57,8 @@
 		"at": "2026-10-10T11:16:41.559Z",
 		"title": "Lobby Pocket weather pass",
 		"ask": "Cute with swagger yet? Judge the painted lip band, the iron cradles and the NEXT MAP caption, by day and by night.",
-		"status": "To review",
-		"decision": "",
+		"status": "Decided",
+		"decision": "Style fine; whole saucer in frame. Keep improving.",
 		"media": [
 			"review/media/2026-10-10-lobby-pocket-weather-pass/lobby-pocket-weather-day.png",
 			"review/media/2026-10-10-lobby-pocket-weather-pass/lobby-pocket-weather-night.png"
@@ -85,8 +85,8 @@
 		"at": "2026-10-10T11:14:31.991Z",
 		"title": "Lobby Ready on the saucer",
 		"ask": "Is it clear you walk onto your plate to ready, and does the glaze filling in from the middle feel like part of the saucer?",
-		"status": "To review",
-		"decision": "",
+		"status": "Decided",
+		"decision": "Style fine; whole saucer in frame. Keep improving.",
 		"media": [
 			"review/media/2026-10-10-lobby-ready-on-the-saucer/ready-on-the-saucer.png",
 			"review/media/2026-10-10-lobby-ready-on-the-saucer/ready-filling.png"
@@ -115,8 +115,8 @@
 		"at": "2026-10-10T11:10:13.349Z",
 		"title": "Lobby weather bowl",
 		"ask": "Does the turning bowl read as the next map (Flagfall by night here, Overthrow by day), and is it big enough to notice?",
-		"status": "To review",
-		"decision": "",
+		"status": "Decided",
+		"decision": "Style fine; whole saucer in frame. Keep improving.",
 		"media": [
 			"review/media/2026-10-10-lobby-weather-bowl/weather-bowl-flagfall.png",
 			"review/media/2026-10-10-lobby-weather-bowl/bowl-turn-crop.webm"
@@ -129,8 +129,8 @@
 		"at": "2026-10-10T11:06:46.078Z",
 		"title": "Match HUD: swagger pass",
 		"ask": "Cards drop below the pill and read like a manual spec table (small-caps captions, solid rule, big index numeral); callout banner and nameplates went smooth. Right direction?",
-		"status": "To review",
-		"decision": "",
+		"status": "Decided",
+		"decision": "Style fine; fixing alignment, Ball label and pill width.",
 		"media": [
 			"review/media/2026-10-10-match-hud-swagger-pass/swag-clock-card-crop.png",
 			"review/media/2026-10-10-match-hud-swagger-pass/swag-level-crop.png",
@@ -144,8 +144,8 @@
 		"at": "2026-10-10T11:04:31.422Z",
 		"title": "Match HUD: smooth cream pill",
 		"ask": "Top bar is one slim pill (dots for heroes alive, takedowns, clock; Ball joins inside 30 s). Unit frame smooth too. Right weight?",
-		"status": "To review",
-		"decision": "",
+		"status": "Decided",
+		"decision": "Style fine; fixing alignment, Ball label and pill width.",
 		"media": [
 			"review/media/2026-10-10-match-hud-smooth-cream-pill/pill-2.png",
 			"review/media/2026-10-10-match-hud-smooth-cream-pill/pill-ball-soon-crop.png",
@@ -159,8 +159,8 @@
 		"at": "2026-10-10T11:03:52.457Z",
 		"title": "Lobby saucer",
 		"ask": "Does the glazed saucer in its iron cradles read as one floating ceramic world, and do the seat plates read as inlaid glaze?",
-		"status": "To review",
-		"decision": "",
+		"status": "Decided",
+		"decision": "Style fine; whole saucer in frame. Keep improving.",
 		"media": ["review/media/2026-10-10-lobby-saucer/lobby-saucer.png"],
 		"links": [],
 		"thread": "thr_dwbukqxwup",
