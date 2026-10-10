@@ -45,7 +45,8 @@ window.addEventListener('keydown', (e) => {
 	if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
 		if (!e.repeat) dashQueued = true
 	}
-	const typing = !!e.target?.closest?.('input, textarea')
+	// Ctrl/Cmd/Alt chords belong to the browser (Ctrl+1 switches tabs), never to the game.
+	const typing = !!e.target?.closest?.('input, textarea') || e.ctrlKey || e.metaKey || e.altKey
 	const digit = /^Digit([1-5])$/.exec(e.code)
 	if (digit && !e.repeat && !typing) slotQueued = `slot${digit[1]}`
 	if (!e.repeat && !typing && keyEdges.length < 16) keyEdges.push(e.code)
