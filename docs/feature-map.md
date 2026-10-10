@@ -2,7 +2,7 @@
 
 Every player-facing feature, grouped by screen, one line each: the feature in plain words, then its files and entry symbols, its `tune.js` key and its doc. Grep this file for the word a player would say ("scoreboard", "bollard"), land on the code, then read only that code.
 
-Don't read big files whole. `ast-grep outline <file>` lists a file's symbols with line numbers; `ast-grep run -p '<pattern>' -l js src` finds structure (callers, `tune.x.y` uses). Whoever adds or moves a feature updates its line here.
+Don't read big files whole. `ast-grep outline <file>` lists a file's symbols with line numbers; `ast-grep run -p '<pattern>' -l js src` finds structure (callers, `tune.x.y` uses). Whoever adds or moves a feature updates its line here. To prove a feature in the running game, use `.claude/skills/verify/SKILL.md`.
 
 Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` means `src/plugins/moba/tune.js` (key in backticks); other tune files are named in full. Docs live in `docs/`.
 
@@ -15,7 +15,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Boot error screen: `src/core/browser.js` `reportBootError`
 - Mode registration, `window.game.moba`: `index.js` `moba` (default export); `src/core/app.js` `createApp`; `plugin-architecture.md`
 - Match setup from the URL (`?mode=moba&play&bots=&hero=&seed=&debug`): `setup.js` `parseMatchSetup`, `wantsDirectPlay`, `matchLink`; `moba-agents.md`
-- Which screen is up (splash, lobby, match, paused, result): `src/core/proof.js` `createProofApi` (`dt.screen()`); `verification.md`
+- Which screen is up (splash, lobby, descent, match, paused, result): `src/core/proof.js` `createProofApi` (`dt.screen()`); `verification.md`
 
 ## Lobby
 
@@ -64,7 +64,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Edge pips for off-screen allies, enemies, Ball: `pips.js` `edgePip`, `createPips`; `tune.js` `pips`
 - Minimap: `minimap.js` `createMinimap`; `maps/index.js` `matchRecipe`; `hud.js`
 - Scoreboard (Tab or pad Select, live table mid-match): `recap.js` `createRecap` (the `board` aside, class `moba-scoreboard`); `match-stats.js` `createMatchStats`; `moba-recap.md`
-- Pause menu: `menu.js` `createMatchMenu`; `menu.css`; `tune.js` `hud`
+- Pause menu (Esc): `menu.js` `createMatchMenu`; `menu.css`; `tune.js` `hud`
 - Onboarding hints (first match prompts, guide to the Ball): `onboarding.js` `createOnboarding`; `tune.js` `onboarding`; `moba-onboarding.md`
 - Dead-world grey-out and respawn timer: `recap.js` `createRecap` (`moba-dead-world`); `sim.js` `respawn`; `tune.js` `respawn`
 - Combat log: `src/core/debug.js` `createCombatLog`
@@ -177,7 +177,7 @@ Plugin in `src/plugins/dodgeball/`; its snapshots are locked by `tests/character
 
 ## Landmarks in the big files
 
-`sim.js` (about 2300 lines) and `tune.js` (about 1400) are the two files every thread re-read. Use `ast-grep outline` or these landmarks rather than reading them whole.
+`sim.js` (about 2300 lines) and `tune.js` (about 1350) are the two files every thread re-read. Use `ast-grep outline` or these landmarks rather than reading them whole.
 
 - `tune.js`: every number, one top-level key per system. `grep -n "^	<key>: " src/plugins/moba/tune.js` jumps to one. Sliders for it: `sliders.js`; new debug folders also go in `debugSections`.
 - `sim.js`: one `createSim` closure. Heroes are `sim.heroes[i]`; bodies come from `src/core/body.js` (`body.position`, `body.place(x, y, z)`). Landmarks, in file order:

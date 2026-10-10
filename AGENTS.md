@@ -21,19 +21,7 @@
 
 ## Browser proofs
 
-- Oskar plays from another machine: his URL is http://office-linux.heron-mermaid.ts.net:5173 (the dev server on this checkout), never `127.0.0.1` or the agent port.
-- When the user is testing in the browser, hand over the URL and one thing to judge, and skip your own visual proof: a human look costs seconds, an agent session minutes. Otherwise browse when the change needs it, as below.
-- Keep browser proof proportional to the change: one focused session, one device and one width; expand only the axis changed by input or layout work. Use headless checks for logic. Don't repeat proof after it passes unless a new edit or failure warrants it.
-- For a local visual fix, go straight to the relevant screen. Prove the full route once at a checkpoint when navigation or transitions changed, rather than replaying a whole match per builder. Capture a screenshot for layout or a short clip for animation; screenshots alone don't prove feel.
-- If browser setup stalls, report the exact proof gap and a working manual-review URL instead of burning the build on automation. Close only your own browser session when finished; leave the shared server running.
-- `bun run dev:agent` prints the shared agent server's URL (always `http://127.0.0.1:5199/`), starting it if nothing answers; run it once, then use the URL. Every thread reuses it; never stop it. It doesn't live-reload, so other threads' edits can't wipe your page: reload yourself when you want fresh code. A boot error after a reload may be another thread's half-done edit; read `agent-browser errors` before blaming yours.
-- `export AGENT_BROWSER_SESSION=$BB_THREAD_ID` first. Without it every thread drives the same browser tab.
-- Wait on conditions (`agent-browser wait --fn "<js>"`, `wait <selector>`), never `sleep`. To pause, `wait <ms>` or await a promise in `eval`; `wait --fn "false"` is a sleep too. Before a screenshot, `agent-browser set viewport <w> <h>` (there is no `resize`), park the mouse in a corner, and assert the state you claim.
-- Drive the game through `window.dt` (`src/core/proof.js`), since agent-browser's own key presses don't reach it: `dt.key('KeyH', { hold, until })`, `dt.pad.press('start')`, `dt.pad.stick(x, y)`, `dt.device()`, `dt.game` (window.game), and `dt.game.moba.focus({ x, z })`, which parks the match camera on a world point (wait ~0.5 s to settle; Flagfall coordinates are scaled, read `dt.game.moba.sim.obstacles` for real positions), and `dt.screen()`, which names splash, lobby, descent, match, paused or result (else the mode id). In dev both are always there; a prod build shows them after a Backquote toggles diagnostics, and `dt` stays when it toggles back.
-- Poke state from `eval`, don't dump `Object.keys` to find it: match `dt.game.moba.sim` (lobby: `dt.game.lobby.sim`), heroes are `.heroes[i]` with `.body.position` `{x, y, z}` and `.body.place(x, y, z)` to teleport. Other keys: `dt.game.moba.snapshot()`, `sim.obstacles`.
-- The template, no sleeps: `open $URL/` → `wait --fn "window.dt?.screen()==='splash'"` → `eval "dt.key('Enter')"` → `wait --fn "dt.screen()==='lobby'"` → `eval "dt.key('KeyH')"` → `eval "dt.key('Enter')"` → `wait --timeout 60000 --fn "dt.screen()==='match'"`. `?mode=moba&play&hero=mitts&bots=hard` skips straight to `match`: a fast setup, not a proof of the route.
-- Reset match preserves Try Mode settings, including its paused state. Resume explicitly before waiting for a cast, movement or death; repeated resets do not fix a paused capture.
-- Frozen builds (`bunx vite build --outDir /tmp/<slug>`) are for checkpoint smokes the orchestrator runs, not for builders.
+- Before opening a browser or proving a change by play, read `.claude/skills/verify/SKILL.md`: which proof to pick, the shared dev server, `window.dt`, evidence and cleanup. Oskar plays at http://office-linux.heron-mermaid.ts.net:5173, never `127.0.0.1`.
 
 ## Vocabulary
 

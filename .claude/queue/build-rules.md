@@ -11,7 +11,7 @@ No new unit tests for now (user, 2026-10-04); delete a test rather than nurse it
 - Update the docs line your change contradicts.
 - App-wide and run-owned debug APIs share one namespace: check both registrations before renaming a key, keep duplicate protection, and prove unregister/re-entry. Scope helpers by action or mode so a lobby object cannot collide with a lobby action.
 - The local hero is looked up by participant id, never heroes[0].
-- Browser work follows the "Browser proofs" lines in AGENTS.md. Never `pkill` anything; you share the box.
+- Browser work follows `.claude/skills/verify/SKILL.md`. Never `pkill` anything; you share the box.
 
 ## Sim, bots and net
 
