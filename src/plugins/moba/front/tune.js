@@ -98,7 +98,7 @@ export const tune = {
 	// the pen line and the washes; a wash also softens, pools pigment and darkens a `rim`.
 	// Applied when the splash is built.
 	skin: {
-		style: 'wash',
+		style: 'painted',
 		line: 3,
 		shadow: 6,
 		ring: 5,
