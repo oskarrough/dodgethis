@@ -172,8 +172,8 @@
 		"at": "2026-10-10T10:51:19.622Z",
 		"title": "Readouts printed on a ribbon",
 		"ask": "Top bar and unit frame are now unframed paper with ink values; cogs lost their shadow. Do they still read as buttons?",
-		"status": "To review",
-		"decision": "",
+		"status": "Archived",
+		"decision": "Superseded by the smooth cream pill.",
 		"media": [
 			"review/media/2026-10-10-readouts-printed-on-a-ribbon/before-match.png",
 			"review/media/2026-10-10-readouts-printed-on-a-ribbon/after-match-1440.png",
@@ -188,8 +188,8 @@
 		"at": "2026-10-10T10:25:46.000Z",
 		"title": "Lobby hero strip and table proposal",
 		"ask": "Does the painted hero strip read right? Is the table proposal the lobby you want?",
-		"status": "To review",
-		"decision": "",
+		"status": "Archived",
+		"decision": "Superseded by the Pocket weather lobby.",
 		"media": [
 			"review/media/2026-10-10-lobby-hero-strip-and-table-proposal/lobby-1440.png",
 			"review/media/2026-10-10-lobby-hero-strip-and-table-proposal/lobby-strip-1440.png",
@@ -237,8 +237,8 @@
 		"at": "2026-10-10T09:15:33.000Z",
 		"title": "Move Play online button",
 		"ask": "Is Play online in the right place?",
-		"status": "To review",
-		"decision": "",
+		"status": "Archived",
+		"decision": "Superseded by the shared corner buttons.",
 		"media": [
 			"review/media/2026-10-10-move-play-online-button/before.png",
 			"review/media/2026-10-10-move-play-online-button/lobby-online-1440.png",
@@ -263,8 +263,8 @@
 		"at": "2026-10-10T08:46:42.000Z",
 		"title": "Scoreboard and result",
 		"ask": "Does the scoreboard read at a glance?",
-		"status": "To review",
-		"decision": "",
+		"status": "Decided",
+		"decision": "Done: Tab toggles it, title removed.",
 		"media": [
 			"review/media/2026-10-10-scoreboard-and-result/result.png",
 			"review/media/2026-10-10-scoreboard-and-result/scoreboard.png"
