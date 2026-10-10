@@ -95,16 +95,17 @@ export const flagfall = {
 	},
 	// Presentation only: how far a dunked body falls, and the minimap's void.
 	water: { drop: 3, color: '#2b2550' },
-	// Two 7 m lanes on the shores; between them an 18 m jungle of rooms, walls and brush.
-	bounds: { halfX: 52, halfZ: 16 },
-	lane: { innerZ: 9, outerZ: 16, centreZ: 12.5, pathZ: 12.5 }, // waves and towers walk the shore side
+	// Two 7 m lanes on the shores; between them a 25 m jungle of rooms, walls and brush, deep enough
+	// that every camp stands over 3 m outside its nearest tower's range.
+	bounds: { halfX: 52, halfZ: 19.5 },
+	lane: { innerZ: 12.5, outerZ: 19.5, centreZ: 16, pathZ: 16 }, // waves and towers walk the shore side
 	baseX: 46,
 	plaza: { x: 30 }, // |x| past which each base opens onto both lanes
-	clearing: { halfX: 10, halfZ: 7 }, // the open middle, where the flag will stand
+	clearing: { halfX: 10, halfZ: 10.5 }, // the open middle, where the flag will stand
 	// The jungle's rim along each lane: hedge runs over |x|; the holes between are the ways in.
 	hedge: {
-		innerZ: 7,
-		outerZ: 9,
+		innerZ: 10.5,
+		outerZ: 12.5,
 		runs: [
 			[4, 12],
 			[16, 22],
@@ -115,12 +116,12 @@ export const flagfall = {
 	// shuts the base side, so each room opens on two lane holes and the clearing. Metres, |x| and |z|.
 	jungle: {
 		spine: { x: [10, 30], halfZ: 1.5 },
-		end: { x: [28, 30], z: [1.5, 7] },
+		end: { x: [28, 30], z: [1.5, 10.5] },
 		brush: [
-			{ x: [12, 16], z: [3.5, 7] }, // inside each room's inner lane hole
-			{ x: [22, 26], z: [3.5, 7] }, // and its outer one
+			{ x: [12, 16], z: [7, 10.5] }, // inside each room's inner lane hole
+			{ x: [22, 26], z: [7, 10.5] }, // and its outer one
 		],
-		midBrush: { halfX: 2, z: [3.5, 7] }, // the clearing's two lane holes
+		midBrush: { halfX: 2, z: [7, 10.5] }, // the clearing's two lane holes
 		camps: { x: 19, z: 4.25 }, // mercenary camps (`camps.js`): a lantern and a chalk square
 		gatehouseX: 29, // the gatehouses in front of each fort (gates.js, tune.gatehouse)
 		laserX: 37, // the laser gates between each fort and the core (gates.js, tune.laser)
