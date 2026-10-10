@@ -9,7 +9,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 ## Shell and splash
 
 - Splash with map tiles (Overthrow, Flagfall), their illustrations in `public/splash/`: `front/index.js` `mobaFront`; `front/backdrop.js` `createBackdrop`; `front/tune.js` `tile`, `title`, `dusk`; `moba-front.md`
-- Stone-card UI skin (chamfered cream card, ink line, printed shadow, cream ring on the focused card), shared by the next front screens: `front/skin.css`; `front/tune.js` `skin`; `moba-look.md` UI skin
+- Card skin for front screens (variants `wash`, `ink`, `stone`; `?skin=` to compare): painted paper edges, title wash and focus bloom or brush ring from SVG filters in `front/skin.js` `ensureSkinDefs`, `paintedCard`; `front/skin.css`; `front/tune.js` `skin`
 - Dodgeball bonus tag under the tiles: `front/index.js` (`bonus` const, `.front-bonus`); `moba-front.md`, `roadmap.md`
 - Splash keyboard and pad focus, deny shake, back button: `front/controls.js` `createControls`; `front/tune.js` `deny`, `back`, `move`, `enter`
 - Stickers, mute button, corner row, online panel, shell CSS: `index.html`; `src/core/browser.js` `createBrowserApp`
@@ -40,7 +40,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 ## Descent
 
 - Crane descent from lobby to match: `front/descent.js` `startLoading`; `front/descent-state.js` `createDescentState`, `descentProgress`, `descentFrame`, `localLoadingHero`; `front/tune.js` `loading`; `moba-front.md`
-- Descent camera projection and pointer easing: `front/geometry.js` `projectFrame`, `easePointer`
+- Descent camera projection and pointer easing: `front/backdrop.js` `projectFrame`, `easePointer`
 - Splash plate (day into night), mist drift, parallax, dusk wash on the splash and descent: `front/backdrop.js` `createBackdrop`, `easeShot`; `public/splash/plate-*.webp`; `front/tune.js` `plate`, `mist`, `parallax`, `shot`, `dusk`
 - Volley on the splash (balls flying behind the title): `front/backdrop.js`; `front/tune.js` `volley`
 
@@ -48,11 +48,11 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 
 - Follow camera and edge reserve: `follow.js` `createFollow`, `stepCamera`, `clampView`, `viewFootprint`; `tune.js` `follow`
 - Camera controls (lock, pan, zoom): `camera-controls.js` `createCameraControls`; `tune.js` `follow`
-- Right-click move and attack-move orders: `sim.js` `issue`, `steer`, `move`, `attackAhead`; `src/core/intents.js` `pointClick`, `createIntents`; `tune.js` `orders`
-- Pad stick aim: `sim.js` `stickAim`; `src/core/intents.js` `stickVector`; `tune.js` `stickAim`
+- Right-click move and attack-move orders: `orders.js` `issue`, `steer`, `move`, `attackAhead`; `src/core/intents.js` `pointClick`, `createIntents`; `tune.js` `orders`
+- Pad stick aim: `targeting.js` `stickAim`; `src/core/intents.js` `stickVector`; `tune.js` `stickAim`
 - Keyboard and gamepad reading: `src/core/input.js` `moveVector`, `pollGamepad`, `consumeKeys`, `rumble`; `src/core/intents.js` `readIntent`
 - Cursor (move and attack icons): `cursor.js` `createCursor`; `cursors/move.svg`, `cursors/attack.svg`
-- Pathfinding around walls: `path.js` `createPathPlanner`, `pursue`; `sim.js` `plan`, `offPath`; `tune.js` `orders`
+- Pathfinding around walls: `path.js` `createPathPlanner`, `pursue`; `orders.js` `plan`, `offPath`; `tune.js` `orders`
 
 ## Match: HUD
 
@@ -68,24 +68,24 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Scoreboard (Tab or pad Select, live table mid-match): `recap.js` `createRecap` (the `board` aside, class `moba-scoreboard`); `match-stats.js` `createMatchStats`; `moba-recap.md`
 - Pause menu (Esc, pad Start, or the top-left menu tile): `menu.js` `createMatchMenu`, `openMenu`; tile from `src/core/corner-nav.js`; `menu.css`; `tune.js` `hud`
 - Onboarding cues (floor arrow, hero ring, You sticker, Ball and goal pointer): `onboarding.js` `createOnboarding`; `tune.js` `onboarding`; `moba-onboarding.md`
-- Dead-world grey-out and respawn timer: `recap.js` `createRecap` (`moba-dead-world`); `sim.js` `respawn`; `tune.js` `respawn`
+- Dead-world grey-out and respawn timer: `recap.js` `createRecap` (`moba-dead-world`); `combat.js` `respawn`; `tune.js` `respawn`
 - Combat log: `src/core/debug.js` `createCombatLog`
 
 ## Match: heroes and kits
 
 - Hero table and kit definitions: `heroes.js` `heroDefinition`, `HEROES`, `freshAbilityState`; `ability.js` `abilityOf`, `castAbility`, `slowFactor`; `tune.js` `heroes`, `hero`; `moba-heroes.md`
-- Casting, cast points, release, skill press buffer: `sim.js` `casts`, `castWait`, `release`, `cancelChannel`, `stepHeroState`; `tune.js` `cast`
-- Basic attack: `sim.js` `basicAttack`, `aimBasic`; `tune.js` `attack`
-- Damage and hit resolution: `sim.js` `hit`; `skillshot.js` `stepShot`, `interceptShot`
+- Casting, cast points, release, skill press buffer: `casting.js` `casts`, `castWait`, `release`, `cancelChannel`, `stepHeroState`; `tune.js` `cast`
+- Basic attack: `combat.js` `basicAttack`; `casting.js` `aimBasic`; `tune.js` `attack`
+- Damage and hit resolution: `combat.js` `hit`; `skillshot.js` `stepShot`, `interceptShot`
 - Skillshot shapes and sweeps: `skillshot.js` `stepShot`, `closest`; `obstacles.js` `sweepHit`, `sweepObstacles`; `skills-view.js` `lineReach`
 - Ability telegraphs for enemies (ground line tell): `skills-view.js` `createSkillsView`; `tune.js` `abilityView`; `moba-heroes.md`
 - Fletcher, ranged poke. Q Loose (arrow shot), W Vault (dash), E Rain (zone): `heroes.js` `loose`, `vault`, `rain`; `tune.js` `loose`, `vault`, `rain`; `moba-heroes.md`
 - Mitts, keeper. Q Toss (throw caught shots), W Catch (stance), E Dive (dash): `heroes.js` `toss`, `catchStance`, `dive`; `tune.js` `toss`, `catch`, `dive`, `gloveSlap`, `mittsView`
 - Mitts glove slap (basic): `heroes.js` `gloveSlap`; `tune.js` `gloveSlap`
-- Catching and the Pocket (caught shots held and thrown back): `sim.js` `openCatch`, `throwCaught`, `resolveInterception`, `traitContext`; `tune.js` `catch`, `catching`, `momentum`
+- Catching and the Pocket (caught shots held and thrown back): `projectiles.js` `openCatch`, `throwCaught`, `resolveInterception`; `casting.js` `traitContext`; `tune.js` `catch`, `catching`, `momentum`
 - Carom and Skip: tuned (`tune.js` `heroes`) and designed in `moba-heroes.md`, but not in the `heroes.js` table yet
 - Hero costumes and silhouettes: `hero-view.js` `dressHero`; `tune.js` `silhouettes`, `heroProof`; `moba-look.md`
-- Level, XP and stat growth: `tooltip.js` `levelProgress`; `sim.js` `hit`; `tune.js` `levels`
+- Level, XP and stat growth: `tooltip.js` `levelProgress`; `combat.js` `hit`; `tune.js` `levels`
 - Globes (health pickups): `lane.js` `createLane`; `lane-view.js` `createLaneView`; `tune.js` `globes`
 - Scripted test hero: `scripted.js` `createScriptedHero`; `tune.js` `scripted`
 
@@ -115,7 +115,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Flagfall windbreaks (striped screens): `windbreak.js` `windbreakGeometries`; `tune.js` `flagfall`
 - Flagfall bollards (mooring posts): `bollard.js` `bollardGeometries`; `tune.js` `flagfall`
 - Flagfall hedges and fence: `match-terrain.js` `createMatchTerrain`; `tune.js` `flagfall.hedge`, `flagfall.fence`
-- Flagfall dunk (fence gaps, slick, shove into the sea): `sim.js` `shove`, `dunk`; `map.js` `buildFlagfall` (fence cut, slick print); `feedback.js` `'dunk'`; `core/death.js` `overboard`; bots `fight-bots.js` `slick`, `inland`; `tune.js` `flagfall.gaps`, `flagfall.dunk`, `bots.slick*`
+- Flagfall dunk (fence gaps, slick, shove into the sea): `combat.js` `shove`, `dunk`; `map.js` `buildFlagfall` (fence cut, slick print); `feedback.js` `'dunk'`; `core/death.js` `overboard`; bots `fight-bots.js` `slick`, `inland`; `tune.js` `flagfall.gaps`, `flagfall.dunk`, `bots.slick*`
 - Flagfall bot rotation across the yard: `lane-bots.js` `advance`; `tune.js` `bots.rotateRange`, `bots.rotateQuiet`
 - Map registry and layout recipe: `maps/index.js` `mapLayout`, `matchRecipe`; `tune.js` `map`
 - Ground and walls build: `map.js` `buildMap`, `createMapScope`; `match-terrain.js` `createMatchTerrain`
@@ -183,17 +183,16 @@ Plugin in `src/plugins/dodgeball/`; its snapshots are locked by `tests/character
 
 ## Landmarks in the big files
 
-`sim.js` (about 2300 lines) and `tune.js` (about 1350) are the two files every thread re-read. Use `ast-grep outline` or these landmarks rather than reading them whole.
+`tune.js` (about 1350 lines) is the file every thread re-reads; use `ast-grep outline` or these landmarks rather than reading it whole.
 
 - `tune.js`: every number, one top-level key per system. `grep -n "^	<key>: " src/plugins/moba/tune.js` jumps to one. Sliders for it: `sliders.js`; new debug folders also go in `debugSections`.
-- `sim.js`: one `createSim` closure. Heroes are `sim.heroes[i]`; bodies come from `src/core/body.js` (`body.position`, `body.place(x, y, z)`). Landmarks, in file order:
-  - `makeHero`, `bodyAt`: building a hero
-  - `pick`, `nearestToClick`: what the pointer hits
-  - `plan`, `offPath`, `issue`, `attackAhead`, `steer`, `move`, `face`: orders and movement
-  - `casts`, `release`, `aimBasic`: input to abilities
-  - `control`: per-tick hero logic; `strafe`
-  - `dropIn`, `respawn`, `swapHero`: arriving and returning
-  - `basicAttack`, `hit`: damage
-  - `cancelChannel`, `stepHeroState`, `openCatch`, `launchShot`, `throwCaught`, `resolveInterception`: ability state, shots and catches
-  - `rebuildBots`, `step` (the tick), `stickAim`, `snapshot`, `dispose`, `removeHero`
+- `sim.js`: `createSim` builds the world, heroes and pieces, wires the systems through one shared `ctx`, and runs `step` (the tick). Heroes are `sim.heroes[i]`; bodies come from `src/core/body.js` (`body.position`, `body.place(x, y, z)`). Each system is a `create…(ctx)` in its own file:
+  - `sim.js`: `bodyAt`, `makeHero`, `swapHero`, `step`, `dispose`, `removeHero`, `releaseBot`, `adoptBot`, the public `api`
+  - `targeting.js`: `enemiesOf`, `find`, `pick`, `nearestToClick`, `stickAim`: what a click or the stick lands on
+  - `control.js`: `control` (a hero's tick: intents to orders, casts and movement), `strafe` (a dummy's)
+  - `orders.js`: `plan`, `offPath`, `issue`, `attackAhead`, `steer`, `move`, `face`
+  - `casting.js`: `casts`, `release`, `aimBasic`, `traitContext`, `cancelChannel`, `stepHeroState`
+  - `combat.js`: `basicAttack`, `hit`, `bench`, `shove`, `dunk`, `respawn`, `dropIn`
+  - `projectiles.js`: `stepShots`, `stepZones`, `expireBoards`, `launchShot`, `openCatch`, `throwCaught`, `resolveInterception`
+  - `sim-snapshot.js`: `snapshot`; `sim-kit.js`: `SLOTS`, `ticks`, `yawOf`, `dirOf`
 - Core engine: `src/core/` (`input.js`/`intents.js` controls, `proof.js` is `window.dt`, `body.js` bodies, `app.js` the clock and modes).
