@@ -22,8 +22,6 @@ Agents add a line when they need a call; the orchestrator removes it once answer
 
 - [ ] Rebrand gallery, six directions plus your three: http://office-linux.heron-mermaid.ts.net:5173/docs/look/vibes/
 - [ ] Hero pitches as a numbered deck (coming): /docs/pitches/heroes/
-- [ ] Should a skill pressed early in a cast be buffered instead of dropped (Melee-style)?
-- [ ] Cut the wordy first-match tip stickers, keep the arrows?
 - [ ] Is Flagfall's dark water frame on the minimap too heavy?
 
 ### Agent todo
