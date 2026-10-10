@@ -165,9 +165,14 @@ export default function moba(app, map) {
 			const skillsView = createSkillsView(scene)
 			const fog =
 				!isLobby && query.get('fog') !== '0' ? createFog(scene, layout.bounds, layout.brush) : null
-			const hud = createHud({ lobby: isLobby, layout, pieces })
-			const pips = createPips()
 			const follow = createFollow(tune.follow, layout.bounds)
+			const hud = createHud({
+				lobby: isLobby,
+				layout,
+				pieces,
+				onMinimap: (point) => cameraControls.enabled() && follow.focus(point),
+			})
+			const pips = createPips()
 			const cameraControls = createCameraControls(
 				window,
 				run.signal,

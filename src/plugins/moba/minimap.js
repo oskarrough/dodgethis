@@ -1,9 +1,16 @@
+import * as THREE from 'three'
 import { matchRecipe } from './maps/index.js'
 import { tune } from './tune.js'
 
 // A presentation-only map: the same rendered positions as the world, no input or snapshots.
 // The layout (court, lanes, cover, footprints) is drawn once; only unit markers move.
-export function createMinimap(icons, layout = matchRecipe().layout, pieces = matchRecipe().pieces) {
+// Left press or drag moves the camera there through `onFocus`; the world underneath never sees it.
+export function createMinimap(
+	icons,
+	layout = matchRecipe().layout,
+	pieces = matchRecipe().pieces,
+	onFocus = null,
+) {
 	const liveStructures = pieces.some((piece) => piece.structures)
 	const name = layout.name
 	const bounds = layout.bounds
@@ -34,16 +41,66 @@ export function createMinimap(icons, layout = matchRecipe().layout, pieces = mat
 	)
 	const buildings = make('g', {}, root)
 	const heroes = make('g', {}, root)
+	// The view can reach past the map; the outline stops at its edge.
+	const clip = make('clipPath', { id: 'minimap-clip' }, make('defs', {}, root))
+	make('rect', { x: 0, y: 0, width: 100, height }, clip)
+	const viewOutline = make(
+		'polygon',
+		{ class: 'minimap-view', 'clip-path': 'url(#minimap-clip)' },
+		root,
+	)
+	const corners = [-1, 1, 1, -1].map((x, i) => [x, i < 2 ? 1 : -1])
+	const eye = new THREE.Vector3()
+	const ray = new THREE.Vector3()
+	let dragging = null
+	const focusAt = (e) => {
+		const box = root.getBoundingClientRect()
+		const x = ((e.clientX - box.left) / box.width) * 100
+		const y = ((e.clientY - box.top) / box.height) * height
+		onFocus?.({ x: (x - 50) / scale, z: (y - height / 2) / scale })
+	}
+	root.addEventListener('pointerdown', (e) => {
+		e.preventDefault()
+		if (e.button !== 0 || !onFocus) return
+		dragging = e.pointerId
+		root.setPointerCapture?.(e.pointerId)
+		focusAt(e)
+	})
+	root.addEventListener('pointermove', (e) => {
+		if (e.pointerId === dragging) focusAt(e)
+	})
+	const release = (e) => {
+		if (e.pointerId === dragging) dragging = null
+	}
+	root.addEventListener('pointerup', release)
+	root.addEventListener('pointercancel', release)
+	root.addEventListener('contextmenu', (e) => e.preventDefault())
 	const markers = new Map()
 	const put = (node, key, value) => {
 		if (node.getAttribute(key) !== value) node.setAttribute(key, value)
 	}
+	// The camera's ground footprint: its four screen corners cast onto y = 0.
+	function drawView(camera) {
+		if (!camera) return
+		eye.setFromMatrixPosition(camera.matrixWorld)
+		const points = []
+		for (const [nx, ny] of corners) {
+			ray.set(nx, ny, 0.5).unproject(camera).sub(eye)
+			if (ray.y >= -1e-6) return
+			const k = -eye.y / ray.y
+			points.push(
+				`${(50 + (eye.x + ray.x * k) * scale).toFixed(1)},${(height / 2 + (eye.z + ray.z * k) * scale).toFixed(1)}`,
+			)
+		}
+		put(viewOutline, 'points', points.join(' '))
+	}
 	document.body.append(root)
 	return {
-		update({ sim, hero, lobby, seen }) {
+		update({ sim, hero, lobby, seen, camera }) {
 			const hidden = lobby || !sim
 			if (root.style.display !== (hidden ? 'none' : '')) root.style.display = hidden ? 'none' : ''
 			if (hidden) return
+			drawView(camera)
 			const units = [
 				...(liveStructures ? (sim.lane?.structures ?? []) : []),
 				...sim.heroes,

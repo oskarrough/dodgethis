@@ -70,15 +70,23 @@
 	white-space: nowrap;
 }
 
-/* A quiet map sticker; never an input target. */
+/* A quiet map sticker; press or drag it to move the camera. */
 .moba-minimap {
 	position: fixed;
 	bottom: 14px;
 	right: 14px;
-	width: clamp(168px, 15vw, 216px);
+	width: clamp(202px, 18vw, 260px);
 	height: auto;
 	z-index: 3;
 	overflow: visible;
+	cursor: pointer;
+	touch-action: none;
+}
+.moba-minimap .minimap-view {
+	fill: none;
+	stroke: var(--ui-cream);
+	stroke-width: 1.5px;
+	vector-effect: non-scaling-stroke;
 	pointer-events: none;
 }
 .moba-minimap .minimap-floor {

@@ -35,8 +35,12 @@ export function createCameraControls(
 			if (!e.repeat) follow.snap()
 		} else keys.add(e.code)
 	}
+	// Over the minimap the pointer steers the camera there, not by the screen edge.
 	const onPointer = (e) => {
-		pointer = active() && e.pointerType === 'mouse' ? { x: e.clientX, y: e.clientY } : null
+		pointer =
+			active() && e.pointerType === 'mouse' && !e.target?.closest?.('.moba-minimap')
+				? { x: e.clientX, y: e.clientY }
+				: null
 	}
 	// A windowed mouse can overshoot the edge it's panning toward; pin it there so the pan keeps going.
 	const leave = (e) => {
@@ -101,6 +105,7 @@ export function createCameraControls(
 	signal.addEventListener('abort', clear, { once: true })
 	return {
 		clear,
+		enabled: active,
 		read() {
 			if (!active()) clear()
 			const pan = {

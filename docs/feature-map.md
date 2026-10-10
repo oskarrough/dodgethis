@@ -68,7 +68,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Health bars over units: `health-bars.js` `createHealthBars`; `health-bars.css`; `look.js` `healthBars`
 - Damage numbers: `damage-numbers.js` `createDamageNumbers`; `look.js` `damageNumbers`
 - Edge pips for off-screen allies, enemies, Ball: `pips.js` `edgePip`, `createPips`; `look.js` `pips`
-- Minimap: `minimap.js` `createMinimap`; `maps/index.js` `matchRecipe`; `hud.js`
+- Minimap, its camera-view outline and click/drag to move the camera: `minimap.js` `createMinimap` (`drawView`, `onFocus` → `follow.focus`); `maps/index.js` `matchRecipe`; `hud.js`; `hud.css` `.moba-minimap`
 - Fog of war (on by default, `?fog=0` turns it off; sight, hidden enemies, dimmed ground): `fog.js` `createFog`; `tune.js` `fog`; hooked in `index.js` present
 - Flagfall jungle (rooms, spine walls, brush, camp/flag/gate marks): `maps/flagfall.js` `flagfallLayout`; `tune.js` `flagfall.jungle`; marks and brush mats in `map.js` `buildFlagfall`
 - Scoreboard (Tab or pad Select, live table mid-match): `recap.js` `createRecap` (the `board` aside, class `moba-scoreboard`); `match-stats.js` `createMatchStats`; `moba-recap.md`
