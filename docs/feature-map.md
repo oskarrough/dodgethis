@@ -4,7 +4,7 @@ Every player-facing feature, grouped by screen, one line each: the feature in pl
 
 Don't read big files whole. `ast-grep outline <file>` lists a file's symbols with line numbers; `ast-grep run -p '<pattern>' -l js src` finds structure (callers, `tune.x.y` uses). Whoever adds or moves a feature updates its line here. To prove a feature in the running game, use `.claude/skills/verify/SKILL.md`.
 
-Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` means `src/plugins/moba/tune.js` (key in backticks); other tune files are named in full. Docs live in `docs/`.
+Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` means `src/plugins/moba/tune.js` (key in backticks); other tune files are named in full. `tune.js` keeps the match rules and assembles the rest, so every `tune.x.y` path is unchanged but the values live elsewhere: `map` and `overthrowTerrain` in `maps/overthrow-tune.js`, `flagfall` in `maps/flagfall-tune.js`, `lobby` in `front/lobby-tune.js`, Mitts's `gloveSlap`, `toss`, `catch`, `dive` in `mitts-tune.js`, Fletcher's `loose`, `rain`, `vault` in `fletcher-tune.js`. Docs live in `docs/`.
 
 ## Shell and splash
 
