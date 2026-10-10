@@ -1,5 +1,16 @@
 [
 	{
+		"at": "2026-10-10T20:00:06.411Z",
+		"title": "Three lanes or a richer Flagfall",
+		"ask": "Grow Flagfall toward your HotS map (yard as jungle, flags, gates at the forts) and park three lanes until 5v5 bots exist?",
+		"status": "To review",
+		"decision": "",
+		"media": ["three-lanes/hots-reference.webp"],
+		"links": ["/docs/pages/three-lanes/"],
+		"thread": "thr_ns72rgdbmc",
+		"page": "three-lanes/"
+	},
+	{
 		"at": "2026-10-10T15:43:45.825Z",
 		"title": "Flagfall by night, built",
 		"ask": "Does the built Flagfall read as the night concept, with a lighter court and team blue clear of the violet?",

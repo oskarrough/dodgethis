@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Three lanes or a richer Flagfall · dodgethis</title>
+		<link rel="stylesheet" href="/docs/page.css" />
+	</head>
+	<body class="page">
+		<main>
+			<p><a href="../">All reviews</a></p>
+			<h1>Three lanes or a richer Flagfall</h1>
+			<p><small>To review · 2026-10-10</small></p>
+			<p>
+				<strong
+					>Pick: grow Flagfall toward the reference (yard as jungle, flags at its heart, gates at
+					the forts) and park a three-lane map until 5v5 bots exist.</strong
+				>
+			</p>
+			<figure>
+				<a href="hots-reference.webp"
+					><img
+						src="hots-reference.webp"
+						alt="Oskar's favourite Heroes of the Storm map: three lanes, jungle between them, a central objective, a core with towers at each end."
+				/></a>
+				<figcaption>
+					The reference: three lanes, a jungle between, a centre objective, walled cores.
+				</figcaption>
+			</figure>
+
+			<h2>Why not three lanes</h2>
+			<p>
+				Three lanes are a 5v5 shape. With three heroes a side, everyone solo-lanes, fights only
+				happen on rotation, and the game turns into three quiet 1v1s. That breaks “small teams” and
+				“fast” at once.
+			</p>
+			<table>
+				<thead>
+					<tr>
+						<th></th>
+						<th>Third map, three lanes</th>
+						<th>Flagfall, more like the reference</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>Team size</td>
+						<td>Wants 5v5 (1-3-1 or 2-1-2). At 3v3 it is one hero per lane, all match.</td>
+						<td>Stays 3v3. Two lanes already force the 2–1 split that makes the choice.</td>
+					</tr>
+					<tr>
+						<td>Match length</td>
+						<td>
+							Three towers and three forts a side to siege. Flagfall’s two lanes already end at
+							11–13 min headless; a third lane pushes past the 15 min ceiling.
+						</td>
+						<td>Same structures; gates add a short third tier per lane (see below).</td>
+					</tr>
+					<tr>
+						<td>Bots</td>
+						<td>
+							Need a new layer: lane assignment, top-to-bottom rotations of ~50 m, “which lane is
+							losing”. That is where bots look dumbest.
+						</td>
+						<td>Today’s one-hop rotation across the yard, plus the flag roles already designed.</td>
+					</tr>
+					<tr>
+						<td>Camera</td>
+						<td>
+							The camera sees ~30 m of lane and ~21 m of depth; a map ~50 m deep leaves two lanes
+							off-screen at all times.
+						</td>
+						<td>Unchanged; a yard fight already sits at the camera’s edge from either lane.</td>
+					</tr>
+					<tr>
+						<td>Minimap</td>
+						<td>
+							Becomes the main way to read the match. Our “readable at a glance” pillar flips.
+						</td>
+						<td>Stays a helper.</td>
+					</tr>
+					<tr>
+						<td>Code</td>
+						<td>
+							Layouts already take a list of lanes, so the map itself is mostly data. The cost is
+							50% more minions, bot rotation logic, a new look, tuning and online bytes.
+						</td>
+						<td>Flags (already specced in moba-map-2) plus gates.</td>
+					</tr>
+					<tr>
+						<td>Online</td>
+						<td>
+							Three live waves and two more structures per side; the 7 KB envelope gets tight.
+						</td>
+						<td>As planned for Flagfall.</td>
+					</tr>
+				</tbody>
+			</table>
+			<p>
+				What Flagfall gains: the reference’s best idea, a middle worth leaving your lane for. The
+				yard becomes the jungle, the flags its objective. What it loses: nothing that matters, as
+				long as we skip mercenary camps (still on the cut list) and keep it two lanes.
+			</p>
+
+			<h2>Gates</h2>
+			<p>
+				<strong>Fit: Flagfall only.</strong> Its forts and courtyards are the HotS-shaped part of
+				our maps, and a gate across each lane at the base block (x ±28) walls in fort and core.
+				Overthrow has one lane, no fort and the Ball as its siege opener; a gate there only
+				lengthens the match. No third map, so no question there.
+			</p>
+			<p>
+				Make them a speed bump, not a wall: low HP so one wave with a hero chews through in about
+				ten seconds. They give the losing team a breather and a place to turn a fight, which helps
+				comebacks against bots.
+			</p>
+			<p>What they cost:</p>
+			<ul>
+				<li>
+					Obstacles are team-blind and static today. Gates need a per-team obstacle list (yours
+					without your gates) and a path grid per team, rebuilt when a gate falls. The grid is built
+					once per start now; brutes already keep their own, so two more is a known pattern.
+				</li>
+				<li>
+					Skillshot sweeps and sight lines take the shooter’s team: enemy shots stop, ours pass.
+				</li>
+				<li>
+					Minions and bots already attack structures, so a gate is a structure with a lane id and no
+					gun. Siege goals need to treat it as the next target in the lane.
+				</li>
+				<li>
+					A view (a low stone gate in team ink), rubble when it falls, a minimap mark, a snapshot
+					field.
+				</li>
+				<li>
+					Proof: <code>simulate --summary --base</code> on Flagfall. If gates push seeds past 15
+					min, lower their HP first.
+				</li>
+			</ul>
+			<p>
+				Order: flags first (they are the reason to leave a lane), gates after, each its own brief.
+			</p>
+
+			<h2>Layout sketch: Flagfall, grown</h2>
+			<p>
+				Top-down, x along the lane, team A on the left. Same court as today (104 × 32 m); new are
+				the gates and the yard as the objective ground.
+			</p>
+			<figure>
+				<svg
+					viewBox="-56 -21 112 42"
+					role="img"
+					aria-label="Flagfall top-down: two lanes, the yard between them with flag posts, gates across each lane in front of the forts."
+				>
+					<rect
+						x="-52"
+						y="-16"
+						width="104"
+						height="32"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="0.4"
+					/>
+					<!-- lanes -->
+					<rect x="-38" y="-16" width="76" height="10" fill="currentColor" fill-opacity="0.08" />
+					<rect x="-38" y="6" width="76" height="10" fill="currentColor" fill-opacity="0.08" />
+					<!-- base blocks -->
+					<rect x="-38" y="-6" width="10" height="12" fill="currentColor" fill-opacity="0.35" />
+					<rect x="28" y="-6" width="10" height="12" fill="currentColor" fill-opacity="0.35" />
+					<!-- hedges -->
+					<g stroke="currentColor" stroke-width="1.6" stroke-opacity="0.5">
+						<line x1="-28" y1="-5" x2="-20" y2="-5" />
+						<line x1="-16" y1="-5" x2="-12" y2="-5" />
+						<line x1="-8" y1="-5" x2="-3" y2="-5" />
+						<line x1="3" y1="-5" x2="8" y2="-5" />
+						<line x1="12" y1="-5" x2="16" y2="-5" />
+						<line x1="20" y1="-5" x2="28" y2="-5" />
+						<line x1="-28" y1="5" x2="-20" y2="5" />
+						<line x1="-16" y1="5" x2="-12" y2="5" />
+						<line x1="-8" y1="5" x2="-3" y2="5" />
+						<line x1="3" y1="5" x2="8" y2="5" />
+						<line x1="12" y1="5" x2="16" y2="5" />
+						<line x1="20" y1="5" x2="28" y2="5" />
+					</g>
+					<!-- gates -->
+					<g stroke="#2a6fdb" stroke-width="1.2">
+						<line x1="-28" y1="-16" x2="-28" y2="-6" />
+						<line x1="-28" y1="6" x2="-28" y2="16" />
+					</g>
+					<g stroke="#d9412b" stroke-width="1.2">
+						<line x1="28" y1="-16" x2="28" y2="-6" />
+						<line x1="28" y1="6" x2="28" y2="16" />
+					</g>
+					<!-- towers, forts, cores -->
+					<g fill="#2a6fdb">
+						<circle cx="-18" cy="-12.5" r="1.4" />
+						<circle cx="-18" cy="12.5" r="1.4" />
+						<rect x="-34" y="-14" width="4" height="3" />
+						<rect x="-34" y="11" width="4" height="3" />
+						<circle cx="-42" cy="0" r="2.5" />
+					</g>
+					<g fill="#d9412b">
+						<circle cx="18" cy="-12.5" r="1.4" />
+						<circle cx="18" cy="12.5" r="1.4" />
+						<rect x="30" y="-14" width="4" height="3" />
+						<rect x="30" y="11" width="4" height="3" />
+						<circle cx="42" cy="0" r="2.5" />
+					</g>
+					<!-- pillars -->
+					<g fill="currentColor" fill-opacity="0.6">
+						<circle cx="-7" cy="-2" r="1.1" />
+						<circle cx="7" cy="-2" r="1.1" />
+						<circle cx="-7" cy="2" r="1.1" />
+						<circle cx="7" cy="2" r="1.1" />
+					</g>
+					<!-- flag posts -->
+					<g font-size="3" text-anchor="middle" fill="currentColor">
+						<text x="-16" y="-1.5" fill="#2a6fdb">⚑A</text>
+						<text x="16" y="4.5" fill="#d9412b">⚑B</text>
+						<text x="0" y="1">yard</text>
+						<text x="0" y="-10.5">north lane</text>
+						<text x="0" y="13.5">south lane</text>
+						<text x="-28" y="-17.5">gate</text>
+						<text x="28" y="-17.5">gate</text>
+						<text x="-48" y="1">base</text>
+						<text x="48" y="1">base</text>
+					</g>
+				</svg>
+				<figcaption>
+					Circles in lanes are towers, squares forts, big circles cores. Coloured bars across the
+					lanes are gates: your colour walks through, the other has to break them. Grey bars are the
+					yard hedges with their gaps.
+				</figcaption>
+			</figure>
+			<p>
+				If Oskar wants three lanes anyway, the honest order is: bots hold 5v5 on Flagfall first,
+				then a big map as a fourth mode, not a third map in the quick-play rotation.
+			</p>
+		</main>
+	</body>
+</html>
