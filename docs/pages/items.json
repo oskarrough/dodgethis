@@ -233,8 +233,8 @@
 		"at": "2026-10-10T09:49:17.000Z",
 		"title": "Match menu button",
 		"ask": "Is the menu button findable without being in the way?",
-		"status": "To review",
-		"decision": "",
+		"status": "Decided",
+		"decision": "Fine.",
 		"media": [
 			"review/media/2026-10-10-match-menu-button/menu-button-1440.png",
 			"review/media/2026-10-10-match-menu-button/menu-paused.png"
