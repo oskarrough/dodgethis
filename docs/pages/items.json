@@ -1,5 +1,20 @@
 [
 	{
+		"at": "2026-10-10T14:33:00.710Z",
+		"title": "Lobby whole saucer in frame",
+		"ask": "Does the lobby now read as one whole floating saucer in an unbroken sky at wide, desktop and phone sizes?",
+		"status": "To review",
+		"decision": "",
+		"media": [
+			"review/media/2026-10-10-lobby-whole-saucer-in-frame/fit-wide.png",
+			"review/media/2026-10-10-lobby-whole-saucer-in-frame/fit-desk.png",
+			"review/media/2026-10-10-lobby-whole-saucer-in-frame/fit-phone.png"
+		],
+		"links": [],
+		"thread": "thr_dwbukqxwup",
+		"page": "2026-10-10-lobby-whole-saucer-in-frame/"
+	},
+	{
 		"at": "2026-10-10T14:28:59.587Z",
 		"title": "Pause: manual with vertical PAUSED",
 		"ask": "Manual is now the only pause page, with PAUSED running down the first column. Right weight and place?",

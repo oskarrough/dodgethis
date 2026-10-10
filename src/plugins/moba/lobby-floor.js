@@ -478,6 +478,42 @@ function cradleGeometry(s, deg) {
 	return parts
 }
 
+// Points that bound everything the saucer shows: the lip, the foot and the cradles' outer arcs.
+// The lobby camera fits them into the frame.
+export function saucerExtent(s = tune.lobby.floor) {
+	const points = []
+	const r = s.rim
+	for (let i = 0; i < 48; i++) {
+		const t = (i / 48) * Math.PI * 2
+		const e = ellipsePoint(s, t),
+			n = ellipseNormal(s, t)
+		for (const [out, y] of [
+			[r.width * 1.03, r.height],
+			[r.width * 1.03, -s.depth],
+		])
+			points.push(new THREE.Vector3(e.x + n.x * out, y, e.z + n.z * out))
+	}
+	const k = s.cradle
+	for (const deg of k.angles) {
+		const t = (deg * Math.PI) / 180
+		const e = ellipsePoint(s, t),
+			n = ellipseNormal(s, t)
+		const reach = Math.PI - (k.open * Math.PI) / 180
+		for (let i = 0; i <= 12; i++) {
+			const a = -reach + (2 * reach * i) / 12
+			const out = r.width + k.reach + Math.cos(a) * (k.radius + k.tube * 0.54)
+			points.push(
+				new THREE.Vector3(
+					e.x + n.x * out,
+					k.y + Math.sin(a) * (k.radius + k.tube * 0.54),
+					e.z + n.z * out,
+				),
+			)
+		}
+	}
+	return points
+}
+
 export function createLobbyFloor(scene, renderer) {
 	const s = tune.lobby.floor
 	const canvas = drawGlaze(s)

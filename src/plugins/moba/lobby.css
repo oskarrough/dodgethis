@@ -215,3 +215,12 @@
 	font-size: clamp(11px, 0.9vw, 14px);
 	opacity: 1;
 }
+/* On a narrow screen the whole saucer is small, so its printed labels shrink with it. */
+@media (max-width: 600px) {
+	.lobby-label {
+		font-size: 9px;
+	}
+	.lobby-bowl-label b {
+		font-size: 1.3em;
+	}
+}

@@ -405,6 +405,11 @@ export function createLobbyProps(scene, el, gallery, readySeats, local, audio) {
 				point.set(mine.x + side * (r.width / 2 + r.labelGap), r.fillY, mine.z).project(camera)
 				readyLabel.dataset.side = side < 0 ? 'left' : 'right'
 				place(readyLabel)
+				// Never under the hero strip: a narrow screen pushes it right, over the saucer.
+				const strip = el.querySelector('.lobby-hero-strip')
+				const clear = (strip ? strip.offsetLeft + strip.offsetWidth : 0) + tune.lobby.camera.margin
+				if (side < 0)
+					readyLabel.style.left = `${Math.max(parseFloat(readyLabel.style.left), clear + readyLabel.offsetWidth)}px`
 			}
 			magnets.update(time, step)
 			for (const p of galleryProps) {

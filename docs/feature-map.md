@@ -32,7 +32,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Horseshoe magnets with sleepy, calm and angry faces: `lobby-magnets.js` `createMagnets`, `createFaceKit`
 - Lobby props in the scene (stands, magnets, ready marks): `lobby-props.js` `createLobbyProps`; `tune.js` `lobby.marks`
 - Lobby practice dummies: `dummy-view.js` `dressDummy`; `match.js` `dummies`; `tune.js` `dummies`, `lobby.practice`; `look.js` `dummyView`
-- Lobby camera and intro swoop: `lobby.js` `createLobby`; `tune.js` `lobby.camera`, `lobby.intro`, `lobby.frame`
+- Lobby camera (fits the whole saucer) and intro swoop: `lobby.js` `createLobby` (`fitSaucer`); `lobby-floor.js` `saucerExtent`; `lobby-bowl.js` `bowlExtent`; `tune.js` `lobby.camera`, `lobby.intro`
 - Lobby HUD (tooltips on heroes): `lobby.js`; `hud.js` `createHud({ lobby: true })`; `tune.js` `lobby.hud`
 - Fall off the floor and respawn: `lobby.js`; `tune.js` `lobby.fall`, `lobby.respawn`
 - Lobby sim replica for online: `lobby-replica.js` `createLobbyReplica`, `createUnitReplica`; `network.md`

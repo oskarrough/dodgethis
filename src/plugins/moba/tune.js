@@ -303,18 +303,10 @@ export const tune = {
 			openSound: { freq: 710, slideTo: 1060, dur: 0.12, gain: 0.045, type: 'sine' },
 			closeSound: { freq: 590, slideTo: 390, dur: 0.1, gain: 0.045, type: 'triangle' },
 		},
-		// Full playable lobby, live; height/back retain the lane's 58° pitch.
-		camera: {
-			x: 0,
-			z: 2.65,
-			height: 11,
-			back: 6.875,
-			fov: 66,
-			fitAspect: 0.9,
-			minAspect: 0.4,
-			fitPasses: 6,
-			fitGrowth: 1.2,
-		},
+		// The camera fits the whole saucer, cradles and bowl beside the hero strip, `margin` px clear of it, the
+		// HUD and the screen edges, and `top` px under the screen's top for the corner buttons; live.
+		// height/back keep the lane's 58° pitch.
+		camera: { height: 11, back: 6.875, fov: 40, margin: 16, top: 64, passes: 12 },
 		// Picking from the hero row: the new body comes round edge-on, like a cutout turned on a pin.
 		pick: {
 			// Authored points that pick intents name heroes by; nothing stands there.
@@ -444,9 +436,7 @@ export const tune = {
 		intro: { distance: 4, fadeFrom: 0.6 },
 		// Where you can walk: a rectangle whose corners sit over 1 m inside the saucer's glaze ellipse
 		// (floor.halfX/halfZ). Gallery, seats, dummies and marks all sit inside it.
-		bounds: { halfX: 9, halfZ: 6.5 },
-		// The props the camera frames; it slides to follow once you leave `followX` or this depth.
-		frame: { halfZ: 6.2, followX: 5, followEase: 6 },
+		bounds: { halfX: 7, halfZ: 6.2 },
 		// The lobby's training dummies strafe `dummies.span` either side of these; keep the gallery >2 m off.
 		dummyPosts: [
 			{ x: -1.5, z: -4.3 },
@@ -456,8 +446,8 @@ export const tune = {
 		// colours apply on restart. The walkable glaze is an ellipse holding the walking bounds with over 1 m to spare
 		// at their corners; the lip and its collider run `rim.width` further out.
 		floor: {
-			halfX: 13.7,
-			halfZ: 10.2,
+			halfX: 11,
+			halfZ: 9.8,
 			segments: 160,
 			seed: 7,
 			pixelsPerMeter: 44,
@@ -471,9 +461,9 @@ export const tune = {
 			// Each cradle is a horseshoe magnet stood round the rim at `angles` (degrees, 0 = +x, 90 = near edge),
 			// its jaws `reach` m clear of the saucer's edge, open `open`° either side of the saucer's middle.
 			cradle: {
-				angles: [210, 40, 125],
-				radius: 2.3,
-				tube: 0.62,
+				angles: [215, 25, 140],
+				radius: 1.9,
+				tube: 0.56,
 				reach: 0.35,
 				y: -0.7,
 				open: 38,
@@ -500,17 +490,17 @@ export const tune = {
 		// painted sky cap. Shapes and colours apply on restart; turning and the label are live. Each map's `look` is
 		// its light in miniature: Overthrow by day, Flagfall by night. Lengths in `maps` are that map's metres.
 		bowl: {
-			x: 11.4,
-			z: -3.4,
-			radius: 2.3,
+			x: 9.3,
+			z: -3.8,
+			radius: 2,
 			height: 1.05,
 			wall: 0.16,
 			floor: 0.14,
 			segments: 48,
-			capRadius: 1.75, // the sky arch's half-width; keep it inside radius
-			capHeight: 1.55, // and its height behind the middle of the rim
+			capRadius: 1.5, // the sky arch's half-width; keep it inside radius
+			capHeight: 1.4, // and its height behind the middle of the rim
 			skyPixels: 256,
-			island: 1.7, // the miniature's half-diagonal; keep it inside the cloud bed
+			island: 1.45, // the miniature's half-diagonal; keep it inside the cloud bed
 			relief: 2.4, // dioramas exaggerate height
 			lift: 0.16,
 			turn: 0.12,

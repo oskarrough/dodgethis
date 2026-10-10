@@ -1,7 +1,6 @@
 import * as THREE from 'three'
 import { PALETTE } from '../../core/style.js'
 import { createCornerNav } from '../../core/corner-nav.js'
-import { clampMap } from './obstacles.js'
 import { tune } from './tune.js'
 import { DEFAULT_MAP, onlineMaps } from './maps/index.js'
 import { tune as frontTune } from './front/tune.js'
@@ -9,8 +8,8 @@ import { createBackdrop, easeShot } from './front/backdrop.js'
 import { startLoading } from './front/descent.js'
 import { applySkin } from './front/skin.js'
 import { createLobbyProps } from './lobby-props.js'
-import { createLobbyFloor } from './lobby-floor.js'
-import { createWeatherBowl } from './lobby-bowl.js'
+import { createLobbyFloor, saucerExtent } from './lobby-floor.js'
+import { bowlExtent, createWeatherBowl } from './lobby-bowl.js'
 import { HEROES } from './heroes.js'
 import { createHeroStrip, createLobbyHeroes } from './lobby-heroes.js'
 import { createNumbers } from './front/numbers.js'
@@ -119,64 +118,74 @@ export function createLobby({
 		intro.t = Math.min(intro.time, intro.t + dt)
 		fadeIntro()
 	})
-	const follow = { x: 0, z: 0 }
-	run.system('present', ({ dt }) => {
-		const f = tune.lobby.frame,
-			p = hero.body.position
-		const past = (v, edge) => Math.sign(v) * Math.max(0, Math.abs(v) - edge)
-		const k = 1 - Math.exp(-f.followEase * dt)
-		follow.x += (past(p.x, f.followX) - follow.x) * k
-		follow.z += (past(p.z, f.halfZ) - follow.z) * k
-	})
-	run.camera.frame(() => {
+	// The whole saucer, its cradles and the bowl, fitted into the frame beside the hero strip and
+	// above the HUD at the lane's pitch. Nothing follows: every walkable spot is always in view.
+	const extent = [...saucerExtent(), ...bowlExtent()]
+	const fitter = new THREE.PerspectiveCamera()
+	const fit = { key: '', x: 0, z: 0, distance: 30 }
+	const point = new THREE.Vector3()
+	function fitSaucer() {
 		const c = tune.lobby.camera
-		// Fit the whole playable lobby, not only its far half. Portrait widens the lens,
-		// never stretching scenery or moving the marks outside the visible ground.
-		const scale = Math.max(1, c.fitAspect / Math.max(c.minAspect, innerWidth / innerHeight))
-		const back = c.back
-		let target = clampMap({
-			x: Math.max(-tune.lobby.bounds.halfX, Math.min(tune.lobby.bounds.halfX, c.x)),
-			z: Math.max(-tune.lobby.frame.halfZ, Math.min(tune.lobby.frame.halfZ, c.z)),
-		})
-		const hud = document.querySelector('.moba-hud')
-		const safeBottom = Math.max(
-			tune.lobby.hud.margin,
-			(hud?.getBoundingClientRect().top ?? innerHeight) - tune.lobby.hud.margin,
-		)
-		const distance = Math.hypot(c.height, back),
-			sin = c.height / distance,
-			cos = back / distance
-		const baseZ = target.z
-		let tangent = Math.tan((c.fov * Math.PI) / 360) * scale
-		for (let i = 0; i < c.fitPasses; i++) {
-			const pixels = innerHeight / (2 * tangent)
-			const dz = tune.lobby.frame.halfZ - baseZ
-			const bottom = innerHeight / 2 + (pixels * sin * dz) / (distance - cos * dz)
-			const k = (safeBottom - innerHeight / 2) / pixels
-			if (bottom > safeBottom && sin + k * cos > tune.collision.epsilon)
-				target = clampMap({
-					...target,
-					z: tune.lobby.frame.halfZ - (k * distance) / (sin + k * cos),
-				})
-			const far = -tune.lobby.frame.halfZ - target.z
-			const head = (hero.body.radius + hero.body.halfHeight) * 2
-			const top =
-				innerHeight / 2 + (pixels * (sin * far - cos * head)) / (distance - cos * far - sin * head)
-			if (top >= 0) break
-			tangent *= c.fitGrowth
+		// Layout boxes, not animated ones: the chrome slides in without dragging the camera.
+		const strip = el.querySelector('.lobby-hero-strip')
+		const hud = document.querySelector('.moba-hud:not(.moba-unit)')
+		const left = (strip ? strip.offsetLeft + strip.offsetWidth : 0) + c.margin
+		const right = innerWidth - c.margin
+		const top = c.top
+		const bottom = Math.min(innerHeight, hud?.offsetTop || innerHeight) - c.margin
+		const key = [innerWidth, innerHeight, left, bottom, c.fov, c.margin, c.top].join()
+		if (key === fit.key) return fit
+		fit.key = key
+		const pitch = Math.atan2(c.height, c.back)
+		const ray = new THREE.Vector3(0, -Math.sin(pitch), -Math.cos(pitch))
+		fitter.fov = c.fov
+		fitter.aspect = innerWidth / innerHeight
+		fitter.updateProjectionMatrix()
+		const safe = {
+			x0: (left / innerWidth) * 2 - 1,
+			x1: (right / innerWidth) * 2 - 1,
+			y0: 1 - (bottom / innerHeight) * 2,
+			y1: 1 - (top / innerHeight) * 2,
 		}
-		const eye = clampMap({ x: target.x, z: target.z + back })
-		const fov = (Math.atan(tangent) * 360) / Math.PI
+		const tangent = Math.tan((c.fov * Math.PI) / 360)
+		for (let i = 0; i < c.passes; i++) {
+			fitter.position.set(fit.x, 0, fit.z).addScaledVector(ray, -fit.distance)
+			fitter.lookAt(fit.x, 0, fit.z)
+			fitter.updateMatrixWorld()
+			let x0 = Infinity,
+				x1 = -Infinity,
+				y0 = Infinity,
+				y1 = -Infinity
+			for (const p of extent) {
+				point.copy(p).project(fitter)
+				x0 = Math.min(x0, point.x)
+				x1 = Math.max(x1, point.x)
+				y0 = Math.min(y0, point.y)
+				y1 = Math.max(y1, point.y)
+			}
+			// Moving the rig right moves the content left; content high on screen wants the rig further back; a perspective fit needs a few damped passes.
+			const grow = Math.max((x1 - x0) / (safe.x1 - safe.x0), (y1 - y0) / (safe.y1 - safe.y0))
+			fit.distance *= Math.min(2, Math.max(0.5, grow))
+			const half = fit.distance * tangent
+			fit.x += ((x0 + x1) / 2 - (safe.x0 + safe.x1) / 2) * half * fitter.aspect
+			fit.z -= (((y0 + y1) / 2 - (safe.y0 + safe.y1) / 2) * half) / Math.sin(pitch)
+		}
+		fit.ray = ray
+		return fit
+	}
+	run.camera.frame(() => {
+		const { x, z, distance, ray } = fitSaucer()
+		// The intro flies in along the same ray from `intro.distance` times as far.
 		const out =
 			1 + (tune.lobby.intro.distance - 1) * (1 - easeShot(Math.min(1, intro.t / intro.time)))
-		const far = clampMap({
-			x: target.x + (eye.x - target.x) * out,
-			z: target.z + (eye.z - target.z) * out,
-		})
 		return {
-			eye: { x: far.x + follow.x, y: c.height * out, z: far.z + follow.z },
-			target: { x: target.x + follow.x, y: 0, z: target.z + follow.z },
-			fov,
+			eye: {
+				x: x - ray.x * distance * out,
+				y: -ray.y * distance * out,
+				z: z - ray.z * distance * out,
+			},
+			target: { x, y: 0, z },
+			fov: tune.lobby.camera.fov,
 		}
 	})
 	app.camera.update(0)
@@ -665,16 +674,14 @@ export function createLobby({
 	// inherited navigation keys and the initial pad buttons also have their own release guard.
 	app.intents.cancel(hero.id)
 	run.debug.tune('lobby camera', tune.lobby.camera, (f, c) => {
-		f.add(c, 'x', -tune.lobby.bounds.halfX, tune.lobby.bounds.halfX, 0.1)
-		f.add(c, 'z', -tune.lobby.bounds.halfZ, tune.lobby.bounds.halfZ, 0.1)
-		f.add(c, 'height', 1, 30, 0.1)
-		f.add(c, 'back', 0, 13, 0.1)
 		f.add(c, 'fov', 20, 90, 1)
+		f.add(c, 'margin', 0, 80, 1)
+		f.add(c, 'top', 0, 160, 1)
 	})
 	run.debug.tune('lobby floor (applies on restart)', tune.lobby.floor, (f, c) => {
 		// Never smaller than today's ellipse, which keeps the walking bounds' corners over 1 m on the glaze.
-		f.add(c, 'halfX', 13.7, 20, 0.1)
-		f.add(c, 'halfZ', 10.2, 20, 0.1)
+		f.add(c, 'halfX', 11, 20, 0.1)
+		f.add(c, 'halfZ', 9.8, 20, 0.1)
 		f.add(c, 'seed', 0, 999, 1)
 		f.add(c, 'depth', 0.5, 4, 0.1)
 		f.add(c, 'gloss', 0, 0.5, 0.01)

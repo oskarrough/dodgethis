@@ -247,6 +247,23 @@ function drawSky(look, size) {
 	return canvas
 }
 
+// Points that bound the bowl and its sky arch, for the lobby camera's fit.
+export function bowlExtent(b = tune.lobby.bowl) {
+	const points = []
+	for (let i = 0; i < 16; i++) {
+		const a = (i / 16) * Math.PI * 2
+		points.push(
+			new THREE.Vector3(b.x + Math.cos(a) * b.radius, 0, b.z + Math.sin(a) * b.radius),
+			new THREE.Vector3(
+				b.x + Math.cos(a) * b.capRadius,
+				b.height + b.capHeight,
+				b.z + Math.sin(a) * b.capRadius,
+			),
+		)
+	}
+	return points
+}
+
 export function createWeatherBowl(scene, el, mapId, renderer) {
 	const b = tune.lobby.bowl
 	const layout = mapLayout(mapId)
@@ -255,9 +272,6 @@ export function createWeatherBowl(scene, el, mapId, renderer) {
 	const group = new THREE.Group()
 	group.name = 'lobby-weather-bowl'
 	group.position.set(b.x, tune.map.printLayers.lobby, b.z)
-	// Face the lobby camera, so the sky cap stands behind the miniature.
-	const c = tune.lobby.camera
-	group.rotation.y = Math.atan2(c.x - b.x, c.z + c.back - b.z)
 	const forward = (object) => {
 		object.layers.set(FORWARD_LAYER)
 		object.frustumCulled = false
@@ -324,6 +338,9 @@ export function createWeatherBowl(scene, el, mapId, renderer) {
 		group,
 		label,
 		update(time, camera) {
+			// Face the camera, so the sky arch stands behind the miniature.
+			group.rotation.y = Math.atan2(camera.position.x - b.x, camera.position.z - b.z)
+			group.updateMatrixWorld()
 			island.rotation.y = b.rest + time * b.turn
 			island.position.y = bed.position.y + b.lift + Math.sin(time * b.bobRate) * b.bob
 			// The label prints flush-left from the bowl's front-left, toward the camera.
@@ -332,7 +349,9 @@ export function createWeatherBowl(scene, el, mapId, renderer) {
 				.applyMatrix4(group.matrixWorld)
 				.project(camera)
 			label.hidden = point.z < -1 || point.z > 1
-			label.style.left = `${((point.x + 1) * innerWidth) / 2}px`
+			// Never past the screen's right edge: on a narrow screen the name tucks in under the bowl.
+			const x = ((point.x + 1) * innerWidth) / 2
+			label.style.left = `${Math.min(x, innerWidth - label.offsetWidth - tune.lobby.camera.margin)}px`
 			label.style.top = `${((1 - point.y) * innerHeight) / 2}px`
 		},
 		dispose() {

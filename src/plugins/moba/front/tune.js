@@ -78,7 +78,7 @@ export const tune = {
 		ease: 3,
 		depth: [1],
 		splash: { lift: 0, zoom: 1, time: 0.7 },
-		lobby: { lift: 400, zoom: 1.15, time: 0.7 },
+		lobby: { lift: 0, zoom: 1.15, time: 0.7 }, // no lift: the plate keeps covering the frame
 		apex: { lift: -480, zoom: 1, time: 0.6 },
 	},
 	// Dusk behind the lobby floor so the pale floor and its drop read: a violet wash over the
