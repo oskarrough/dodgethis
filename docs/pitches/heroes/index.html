@@ -1,0 +1,1662 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Hero pitches · dodgethis</title>
+		<style>
+			:root {
+				--cream: #f6eedb;
+				--paper: #fffaf0;
+				--ink: #1d1a17;
+				--blue: #3a6ee0;
+				--blue-soft: #c9d8f8;
+				--red: #e0453a;
+				--red-soft: #f7cdc8;
+				--gold: #f2b632;
+				--sand: #d8c7a3;
+				--teal: #5f9e98;
+				--violet: #8b7fa8;
+				--grey: #9a9288;
+			}
+			* {
+				box-sizing: border-box;
+			}
+			body {
+				margin: 0;
+				background: var(--cream);
+				color: var(--ink);
+				font:
+					15px/1.4 ui-rounded,
+					'Nunito',
+					'Trebuchet MS',
+					system-ui,
+					sans-serif;
+			}
+			main {
+				max-width: 1240px;
+				margin: 0 auto;
+				padding: 28px 20px 80px;
+			}
+			h1 {
+				font-size: 44px;
+				line-height: 1;
+				margin: 0 0 8px;
+				letter-spacing: -0.02em;
+			}
+			h2 {
+				font-size: 26px;
+				margin: 48px 0 14px;
+			}
+			p {
+				margin: 0 0 8px;
+			}
+			.lede {
+				max-width: 760px;
+				font-size: 16px;
+			}
+			.sticker {
+				background: var(--paper);
+				border: 3px solid var(--ink);
+				border-radius: 12px;
+				box-shadow: 5px 5px 0 var(--ink);
+			}
+			.chip {
+				display: inline-block;
+				border: 2px solid var(--ink);
+				border-radius: 999px;
+				padding: 0 9px;
+				font-size: 12px;
+				font-weight: 800;
+				background: var(--paper);
+				white-space: nowrap;
+			}
+			.chip.gold {
+				background: var(--gold);
+			}
+			.chip.blue {
+				background: var(--blue);
+				color: #fff;
+			}
+			.note {
+				display: inline-block;
+				margin: 10px 0 0;
+				padding: 6px 12px;
+				transform: rotate(-1deg);
+				background: var(--gold);
+				border: 3px solid var(--ink);
+				border-radius: 8px;
+				box-shadow: 3px 3px 0 var(--ink);
+				font-weight: 700;
+			}
+			.howto {
+				margin-left: 10px;
+				transform: rotate(0.8deg);
+				background: var(--paper);
+			}
+
+			/* comparison strip */
+			.strip {
+				overflow-x: auto;
+				padding: 0;
+			}
+			table {
+				border-collapse: collapse;
+				width: 100%;
+				font-size: 14px;
+			}
+			th,
+			td {
+				text-align: left;
+				padding: 7px 10px;
+				border-bottom: 2px solid var(--ink);
+				vertical-align: top;
+			}
+			tr:last-child td {
+				border-bottom: 0;
+			}
+			th {
+				font-size: 12px;
+				text-transform: uppercase;
+				letter-spacing: 0.05em;
+				background: var(--sand);
+			}
+			tr.built td {
+				background: #efe7d4;
+				color: #4a443d;
+			}
+			td a {
+				color: inherit;
+				font-weight: 800;
+				text-decoration: none;
+			}
+			.dots {
+				white-space: nowrap;
+				letter-spacing: 1px;
+			}
+			.dots b {
+				display: inline-block;
+				width: 9px;
+				height: 9px;
+				border: 2px solid var(--ink);
+				border-radius: 50%;
+				margin-right: 2px;
+			}
+			.dots b.on {
+				background: var(--ink);
+			}
+			.small {
+				font-size: 12px;
+				color: #5b544b;
+			}
+
+			/* hero cards */
+			.hero {
+				margin: 34px 0;
+				padding: 18px 20px 20px;
+			}
+			.hero header {
+				display: flex;
+				gap: 14px;
+				align-items: center;
+				flex-wrap: wrap;
+				margin-bottom: 10px;
+			}
+			.badge {
+				font-size: 26px;
+				font-weight: 900;
+				background: var(--blue);
+				color: #fff;
+				border: 3px solid var(--ink);
+				border-radius: 10px;
+				padding: 2px 12px;
+				transform: rotate(-2deg);
+				box-shadow: 3px 3px 0 var(--ink);
+			}
+			.hero h3 {
+				font-size: 30px;
+				margin: 0;
+			}
+			.lines {
+				display: grid;
+				grid-template-columns: 82px 1fr;
+				gap: 4px 12px;
+				max-width: 980px;
+				margin-bottom: 14px;
+			}
+			.lines dt {
+				font-weight: 900;
+				font-size: 12px;
+				text-transform: uppercase;
+				letter-spacing: 0.05em;
+				padding-top: 2px;
+			}
+			.lines dd {
+				margin: 0;
+			}
+			.flag {
+				background: var(--red-soft);
+				border: 2px solid var(--ink);
+				border-radius: 8px;
+				padding: 6px 10px;
+				margin: 0 0 14px;
+				max-width: 980px;
+			}
+			.abilities {
+				display: grid;
+				grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+				gap: 14px;
+			}
+			.ab {
+				border: 3px solid var(--ink);
+				border-radius: 10px;
+				background: #fff;
+				padding: 10px;
+				display: flex;
+				flex-direction: column;
+				gap: 6px;
+			}
+			.ab h4 {
+				margin: 0;
+				font-size: 16px;
+				display: flex;
+				gap: 8px;
+				align-items: center;
+			}
+			.ab h4 .code {
+				font-size: 12px;
+				font-weight: 900;
+				background: var(--ink);
+				color: var(--paper);
+				border-radius: 6px;
+				padding: 1px 7px;
+			}
+			.ab h4 .slot {
+				margin-left: auto;
+				font-size: 11px;
+				color: #6b645a;
+				text-transform: uppercase;
+				letter-spacing: 0.05em;
+			}
+			.ab svg {
+				width: 100%;
+				height: auto;
+				display: block;
+				background: #f3ecdc;
+				border: 2px solid var(--ink);
+				border-radius: 6px;
+			}
+			.ab p {
+				font-size: 13.5px;
+				margin: 0;
+			}
+			.tl {
+				position: relative;
+				height: 20px;
+				border: 2px solid var(--ink);
+				border-radius: 5px;
+				background: repeating-linear-gradient(
+					90deg,
+					transparent 0 calc(25% - 1px),
+					#d9cfbb calc(25% - 1px) 25%
+				);
+				overflow: hidden;
+				font-size: 10px;
+				font-weight: 800;
+			}
+			.tl span {
+				position: absolute;
+				top: 0;
+				bottom: 0;
+				display: flex;
+				align-items: center;
+				padding: 0 4px;
+				white-space: nowrap;
+				overflow: hidden;
+				border-right: 2px solid var(--ink);
+			}
+			.tl .tell {
+				background: repeating-linear-gradient(135deg, var(--red-soft) 0 4px, #fff 4px 8px);
+			}
+			.tl .active {
+				background: var(--blue-soft);
+			}
+			.tl .sweet {
+				background: var(--gold);
+			}
+			.tl .lock {
+				background: #d6d0e6;
+			}
+			.tl .travel {
+				background: #e8e2d2;
+			}
+			.tl .more {
+				right: 0;
+				border: 0;
+				border-left: 2px solid var(--ink);
+				background: var(--ink);
+				color: var(--paper);
+			}
+			.tlscale {
+				display: flex;
+				justify-content: space-between;
+				font-size: 10px;
+				color: #7a7266;
+				margin-top: -4px;
+			}
+
+			/* legend and refs */
+			.legend {
+				display: flex;
+				gap: 16px;
+				flex-wrap: wrap;
+				align-items: center;
+				font-size: 13px;
+				padding: 10px 14px;
+				margin-top: 18px;
+			}
+			.legend svg {
+				vertical-align: middle;
+			}
+			.refs {
+				display: grid;
+				grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+				gap: 14px;
+			}
+
+			/* recommendation */
+			.rec {
+				display: grid;
+				grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+				gap: 16px;
+			}
+			.rec .sticker {
+				padding: 14px 16px;
+			}
+			.rec .step {
+				font-size: 13px;
+				font-weight: 900;
+				text-transform: uppercase;
+				letter-spacing: 0.06em;
+			}
+			.rec h3 {
+				margin: 2px 0 6px;
+				font-size: 22px;
+			}
+			.cuts {
+				padding: 6px 18px;
+			}
+			.cuts li {
+				margin: 8px 0;
+			}
+			.cuts .code,
+			.qs .code {
+				font-weight: 900;
+				background: var(--ink);
+				color: var(--paper);
+				border-radius: 6px;
+				padding: 0 6px;
+				font-size: 12px;
+				margin-right: 6px;
+			}
+			ul.plain {
+				list-style: none;
+				padding: 0;
+				margin: 0;
+			}
+		</style>
+	</head>
+	<body>
+		<main>
+			<h1>Eight hero pitches</h1>
+			<p class="lede">
+				Each kit takes one verb Fletcher (poke and kite) and Mitts (catch and return) don't own. All
+				keep the house rules: anything that touches an enemy shows its hitbox for a cast point of at
+				least 0.3 s, and every dodgeable shot leaves at least 0.45 s to dodge. The test: a
+				first-timer wins something by pressing Q at someone, and a good player gets something the
+				first-timer can't even see.
+			</p>
+			<span class="note">Names are placeholders, named by mechanic until the setting settles.</span>
+			<span class="note howto">Reply by code: "H3.W too strong", "cut H6.R", "H1 ✓".</span>
+
+			<h2>At a glance</h2>
+			<div class="sticker strip">
+				<table id="compare"></table>
+			</div>
+			<p class="small" style="margin-top: 10px">
+				Floor and ceiling dots are my read of the pitch, not numbers from it. Floor: how hard the
+				first win is. Ceiling: how much room there is to get better.
+			</p>
+
+			<div class="sticker legend" id="legend"></div>
+
+			<h2>For scale: the built two</h2>
+			<p class="small">
+				Every diagram uses one scale, 8 px per metre (the panel is 32 × 17 m from above). Grey
+				dashed shapes in the hero diagrams are these built abilities, live numbers from
+				<code>tune.js</code>.
+			</p>
+			<div class="refs" id="refs"></div>
+
+			<div id="heroes"></div>
+
+			<h2>Build next: Hook, then Parry</h2>
+			<div class="rec">
+				<div class="sticker">
+					<div class="step">1st</div>
+					<h3><a href="#H1">H1 Hook</a></h3>
+					<p>
+						Nothing built or planned can start a fight, and a hook is the purest dodge test there
+						is: one straight shot with a long, readable tell. It reuses the straight shot and forces
+						one new mechanism, pulling another hero, which Shove, Splash and Fuse all need later.
+					</p>
+				</div>
+				<div class="sticker">
+					<div class="step">2nd</div>
+					<h3><a href="#H3">H3 Parry</a></h3>
+					<p>
+						The purest timing test and almost free: it's the catch resolver with a 0.1–0.4 s window
+						that throws back at once. With Fletcher and Mitts it gives the throw-and-answer loop its
+						third voice. Build it before anything else that intercepts: two interceptors is the
+						ceiling, or nobody throws.
+					</p>
+				</div>
+				<div class="sticker">
+					<div class="step">3rd</div>
+					<h3><a href="#H2">H2 Bank</a></h3>
+					<p>Half its board already exists in the sim.</p>
+				</div>
+			</div>
+
+			<h2>Cut from moba-heroes.md</h2>
+			<div class="sticker cuts">
+				<ul class="plain">
+					<li>
+						<span class="code">C1</span><b>Skip, as a hero.</b> Red light moves to Whistle (H7.E);
+						Out, not gone becomes the game-wide rule moba-ideas already pitches. Pass, Tag out and
+						Back in! are support by numbers: nothing in them gets better with practice.
+					</li>
+					<li>
+						<span class="code">C2</span><b>Carom's Kiss:</b> a homing basic that bounces for free
+						damage.
+					</li>
+					<li>
+						<span class="code">C3</span><b>Carom's Trick Shot:</b> a 40 m path printed for everyone
+						to step off. The skill lives in the guide line, not the player. Bank keeps Bank, Kick
+						off and Backboard.
+					</li>
+					<li>
+						<span class="code">C4</span><b>Mitts' 25% damage reduction during Catch.</b> It pays you
+						for a read you got wrong, and the whiff should sting. The rest of Mitts stays; it's the
+						best kit in the doc.
+					</li>
+					<li>
+						<span class="code">C5</span><b>From world.md's six:</b> Kite (a root with nothing to
+						master), Taw (Pocket, shields and the Ball in one kit) and Shuttle (Skater does the
+						reset dive with more to learn). Yo-yo and Mascot survive as Hook and Shove; Ref survives
+						as Whistle.
+					</li>
+				</ul>
+			</div>
+
+			<h2>Interactions to settle</h2>
+			<div class="sticker cuts qs">
+				<p class="small" style="margin-top: 8px">
+					Not in the pitch; questions the diagrams raised.
+				</p>
+				<ul class="plain">
+					<li>
+						<span class="code">I1</span>Can Mitts catch the yo-yo (H1.Q)? It's a straight hero shot,
+						so the resolver says yes. Then what does she hold?
+					</li>
+					<li>
+						<span class="code">I2</span>Does Parry (H3.Q) return Hook, Hot potato (H8.E) or a lobbed
+						Balloon (H6.Q)? Lobs probably not.
+					</li>
+					<li>
+						<span class="code">I3</span>Three heroes push people around (Hook, Shove, Splash's
+						hose). Pushes stack how?
+					</li>
+					<li>
+						<span class="code">I4</span>Whistle's Foul (H7.Q) locks a slot mid-windup. Mitts' return
+						tell is 0.5 s, so she's the favourite target. Fine?
+					</li>
+				</ul>
+			</div>
+		</main>
+
+		<script>
+			// One scale for every diagram: 8 px per metre, panel 32.5 × 17.5 m.
+			const S = 8
+			const W = 260
+			const H = 140
+			const C = {
+				ink: '#1d1a17',
+				cream: '#fffaf0',
+				blue: '#3a6ee0',
+				blueSoft: '#c9d8f8',
+				red: '#e0453a',
+				gold: '#f2b632',
+				sand: '#d8c7a3',
+				teal: '#5f9e98',
+				grey: '#9a9288',
+			}
+
+			function drawer() {
+				const out = []
+				const m = (v) => +(v * S).toFixed(1)
+				const pts = (list) => list.map(([x, y]) => `${m(x)},${m(y)}`).join(' ')
+				const arc = (x, y, r, a0, a1) => {
+					const rad = (a) => (a * Math.PI) / 180
+					const p0 = [x + r * Math.cos(rad(a0)), y + r * Math.sin(rad(a0))]
+					const p1 = [x + r * Math.cos(rad(a1)), y + r * Math.sin(rad(a1))]
+					const large = Math.abs(a1 - a0) > 180 ? 1 : 0
+					return { p0, p1, large }
+				}
+				const d = {
+					raw: (s) => out.push(s),
+					wall(x1, y1, x2, y2) {
+						out.push(
+							`<line x1="${m(x1)}" y1="${m(y1)}" x2="${m(x2)}" y2="${m(y2)}" stroke="${C.ink}" stroke-width="7" stroke-linecap="round"/>`,
+						)
+						out.push(
+							`<line x1="${m(x1)}" y1="${m(y1)}" x2="${m(x2)}" y2="${m(y2)}" stroke="${C.sand}" stroke-width="4" stroke-linecap="round"/>`,
+						)
+					},
+					pillar(x, y, r = 0.8) {
+						out.push(
+							`<circle cx="${m(x)}" cy="${m(y)}" r="${m(r)}" fill="${C.sand}" stroke="${C.ink}" stroke-width="2"/>`,
+						)
+					},
+					hedge(x, y, w, h) {
+						out.push(
+							`<rect x="${m(x)}" y="${m(y)}" width="${m(w)}" height="${m(h)}" rx="5" fill="${C.teal}" stroke="${C.ink}" stroke-width="2"/>`,
+						)
+					},
+					touchline(y) {
+						out.push(
+							`<line x1="4" y1="${m(y)}" x2="${W - 4}" y2="${m(y)}" stroke="#fff" stroke-width="2.5" stroke-dasharray="10 4"/>`,
+						)
+					},
+					unit(x, y, fill, { ring = false, fade = false, label } = {}) {
+						const o = fade ? ' opacity="0.35"' : ''
+						if (ring)
+							out.push(
+								`<circle cx="${m(x)}" cy="${m(y)}" r="7.5" fill="none" stroke="${C.cream}" stroke-width="3"${o}/>`,
+							)
+						out.push(
+							`<circle cx="${m(x)}" cy="${m(y)}" r="5" fill="${fill}" stroke="${C.ink}" stroke-width="2"${o}/>`,
+						)
+						if (label) d.text(x, y + 1.6, label, { size: 9, anchor: 'middle' })
+					},
+					me: (x, y, o = {}) => d.unit(x, y, C.blue, { ring: true, ...o }),
+					ally: (x, y, o = {}) => d.unit(x, y, C.blue, o),
+					foe: (x, y, o = {}) => d.unit(x, y, C.red, o),
+					minion(x, y) {
+						out.push(
+							`<circle cx="${m(x)}" cy="${m(y)}" r="3" fill="${C.grey}" stroke="${C.ink}" stroke-width="1.5"/>`,
+						)
+					},
+					toy(x, y) {
+						out.push(
+							`<circle cx="${m(x)}" cy="${m(y)}" r="3.2" fill="${C.ink}"/><circle cx="${m(x)}" cy="${m(y)}" r="1.2" fill="${C.cream}"/>`,
+						)
+					},
+					ball(x, y, fill = C.gold) {
+						out.push(
+							`<circle cx="${m(x)}" cy="${m(y)}" r="3.4" fill="${fill}" stroke="${C.ink}" stroke-width="1.6"/>`,
+						)
+					},
+					star(x, y, r = 1) {
+						const p = []
+						for (let i = 0; i < 16; i++) {
+							const a = (i * Math.PI) / 8
+							const rr = i % 2 ? r * 0.45 : r
+							p.push([x + rr * Math.cos(a), y + rr * Math.sin(a)])
+						}
+						out.push(
+							`<polygon points="${pts(p)}" fill="${C.gold}" stroke="${C.ink}" stroke-width="1.5"/>`,
+						)
+					},
+					x(x, y) {
+						out.push(
+							`<path d="M${m(x) - 4} ${m(y) - 4}L${m(x) + 4} ${m(y) + 4}M${m(x) + 4} ${m(y) - 4}L${m(x) - 4} ${m(y) + 4}" stroke="${C.red}" stroke-width="3" stroke-linecap="round"/>`,
+						)
+					},
+					// A hitbox along a polyline: own tells are cream with an ink keyline.
+					band(list, width, style = 'own') {
+						const fill = style === 'foe' ? 'rgba(224,69,58,0.3)' : C.cream
+						const edge = style === 'foe' ? C.red : C.ink
+						out.push(
+							`<polyline points="${pts(list)}" fill="none" stroke="${edge}" stroke-width="${m(width) + 4}" stroke-linejoin="round" stroke-linecap="round"/>`,
+						)
+						out.push(
+							`<polyline points="${pts(list)}" fill="none" stroke="${fill === C.cream ? C.cream : '#f6c3be'}" stroke-width="${m(width)}" stroke-linejoin="round" stroke-linecap="round"/>`,
+						)
+					},
+					circle(x, y, r, style = 'own') {
+						const s = {
+							own: `fill="${C.cream}" fill-opacity="0.85" stroke="${C.ink}" stroke-width="2"`,
+							foe: `fill="${C.red}" fill-opacity="0.3" stroke="${C.red}" stroke-width="2"`,
+							ring: `fill="none" stroke="${C.ink}" stroke-width="2" stroke-dasharray="4 3"`,
+							ghost: `fill="none" stroke="${C.grey}" stroke-width="1.5" stroke-dasharray="3 3"`,
+							puddle: `fill="${C.blueSoft}" fill-opacity="0.8" stroke="${C.blue}" stroke-width="1.5" stroke-dasharray="2 2"`,
+						}[style]
+						out.push(`<circle cx="${m(x)}" cy="${m(y)}" r="${m(r)}" ${s}/>`)
+					},
+					rect(x, y, w, h, style = 'own', rot = 0, cx = x, cy = y) {
+						const s = {
+							own: `fill="${C.cream}" stroke="${C.ink}" stroke-width="2"`,
+							body: `fill="${C.blue}" stroke="${C.ink}" stroke-width="2"`,
+							board: `fill="${C.cream}" stroke="${C.ink}" stroke-width="2.5"`,
+							ghost: `fill="none" stroke="${C.grey}" stroke-width="1.5" stroke-dasharray="3 3"`,
+							zone: `fill="${C.cream}" fill-opacity="0.7" stroke="${C.ink}" stroke-width="2" stroke-dasharray="5 3"`,
+						}[style]
+						out.push(
+							`<rect x="${m(x)}" y="${m(y)}" width="${m(w)}" height="${m(h)}" rx="2" ${s} transform="rotate(${rot} ${m(cx)} ${m(cy)})"/>`,
+						)
+					},
+					cone(x, y, r, dir, span, style = 'own') {
+						const { p0, p1, large } = arc(x, y, r, dir - span / 2, dir + span / 2)
+						const s =
+							style === 'ghost'
+								? `fill="none" stroke="${C.grey}" stroke-width="1.5" stroke-dasharray="3 3"`
+								: `fill="${C.cream}" fill-opacity="0.9" stroke="${C.ink}" stroke-width="2"`
+						out.push(
+							`<path d="M${m(x)} ${m(y)}L${m(p0[0])} ${m(p0[1])}A${m(r)} ${m(r)} 0 ${large} 1 ${m(p1[0])} ${m(p1[1])}Z" ${s}/>`,
+						)
+					},
+					// Arrow along points; curve=true smooths through them.
+					arrow(list, { color = C.ink, dash = '', width = 2, curve = false, head = true } = {}) {
+						let path
+						if (curve && list.length > 2) {
+							path = `M${m(list[0][0])} ${m(list[0][1])}`
+							for (let i = 1; i < list.length - 1; i++) {
+								const [x, y] = list[i]
+								const [nx, ny] = list[i + 1]
+								const end = i === list.length - 2 ? [nx, ny] : [(x + nx) / 2, (y + ny) / 2]
+								path += `Q${m(x)} ${m(y)} ${m(end[0])} ${m(end[1])}`
+							}
+						} else path = 'M' + list.map(([x, y]) => `${m(x)} ${m(y)}`).join('L')
+						const id = {
+							[C.ink]: 'ai',
+							[C.red]: 'ar',
+							[C.blue]: 'ab',
+							[C.gold]: 'ag',
+							[C.grey]: 'ay',
+						}[color]
+						out.push(
+							`<path d="${path}" fill="none" stroke="${color}" stroke-width="${width}" stroke-linecap="round" stroke-linejoin="round"${dash ? ` stroke-dasharray="${dash}"` : ''}${head ? ` marker-end="url(#${id})"` : ''}/>`,
+						)
+					},
+					text(x, y, s, { size = 10, anchor = 'start', color = C.ink, weight = 800 } = {}) {
+						out.push(
+							`<text x="${m(x)}" y="${m(y)}" font-size="${size}" font-weight="${weight}" text-anchor="${anchor}" fill="${color}" paint-order="stroke" stroke="#f3ecdc" stroke-width="2.5">${s}</text>`,
+						)
+					},
+					// Built-hero reference shapes, bottom of the panel.
+					ref(kind) {
+						const g = C.grey
+						const refs = {
+							loose: () => {
+								d.arrow(
+									[
+										[1, 16.4],
+										[12, 16.4],
+									],
+									{ color: g, dash: '3 3', width: 1.5 },
+								)
+								d.text(12.6, 16.8, 'Loose 11 m', { size: 9, color: g })
+							},
+							toss: () => {
+								d.arrow(
+									[
+										[1, 16.4],
+										[8, 16.4],
+									],
+									{ color: g, dash: '3 3', width: 1.5 },
+								)
+								d.text(8.6, 16.8, 'Toss 7 m', { size: 9, color: g })
+							},
+							vault: () => {
+								d.arrow(
+									[
+										[1, 16.4],
+										[5, 16.4],
+									],
+									{ color: g, dash: '3 3', width: 1.5 },
+								)
+								d.text(5.6, 16.8, 'Vault 4 m', { size: 9, color: g })
+							},
+							rain: () => {
+								d.circle(29.4, 14.3, 2.5, 'ghost')
+								d.text(29.4, 14.6, 'Rain', { size: 8, color: g, anchor: 'middle' })
+							},
+							catch: () => {
+								d.cone(28.2, 14.6, 2, 0, 100, 'ghost')
+								d.text(28.4, 17, 'Catch 2 m', { size: 8, color: g, anchor: 'middle' })
+							},
+						}
+						refs[kind]()
+					},
+				}
+				d.svg = () => {
+					const mk = (id, c) =>
+						`<marker id="${id}" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="${c}"/></marker>`
+					const defs = `<defs>${mk('ai', C.ink)}${mk('ar', C.red)}${mk('ab', C.blue)}${mk('ag', C.gold)}${mk('ay', C.grey)}</defs>`
+					return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">${defs}${out.join('')}</svg>`
+				}
+				return d
+			}
+
+			// Timeline: [start s, length s, kind, label]; the bar spans 0–4 s.
+			function timeline(segs) {
+				if (!segs) return ''
+				const span = 4
+				let more = ''
+				const html = segs
+					.map(([t, len, kind, label]) => {
+						const end = t + len
+						if (end > span) more = `<span class="more">→ ${+end.toFixed(2)} s</span>`
+						const w = (Math.min(end, span) - t) / span
+						return `<span class="${kind}" style="left:${(t / span) * 100}%;width:${w * 100}%" title="${label}">${label}</span>`
+					})
+					.join('')
+				return `<div class="tl">${html}${more}</div><div class="tlscale"><span>0</span><span>1 s</span><span>2 s</span><span>3 s</span><span>4 s</span></div>`
+			}
+
+			const L = (a, b) => [a, b]
+
+			const heroes = [
+				{
+					id: 'H1',
+					name: 'Hook',
+					role: 'initiator',
+					floor: 1,
+					ceil: 4,
+					verb: 'pull',
+					counters: 'Backliners and the Ball carrier mid-pickup',
+					status: 'Build 1st',
+					moment:
+						'The carry sidesteps the hook. You walk left, the returning yo-yo sweeps across like a scythe and drags them under your tower.',
+					ceiling:
+						'Steering the return by moving, so one throw covers two lines; strings across chokepoints; zipping after a miss to reposition; hooking the Ball carrier mid-pickup.',
+					floorText: 'Aim at someone, press Q, and they come to you.',
+					abilities: [
+						{
+							slot: 'Q',
+							name: 'Throw',
+							text: '0.4 s windup, a yo-yo flies 10 m straight, then reels back to wherever you are now. Any hero it touches, out or back, is dragged to you.',
+							time: [
+								[0, 0.4, 'tell', 'windup'],
+								[0.4, 1.1, 'travel', 'out and back (speed open)'],
+							],
+							draw(d) {
+								d.band([L(4, 7), L(14, 7)], 0.7)
+								d.me(4, 7, { fade: true })
+								d.arrow([L(4, 7.8), L(6, 11.2)], { color: C.blue, dash: '2 3', width: 1.5 })
+								d.arrow([L(14, 7), L(12, 13), L(6.8, 12.2)], { curve: true, dash: '4 3' })
+								d.toy(14, 7)
+								d.foe(10.9, 11.3)
+								d.arrow([L(10.9, 11.3), L(7.6, 12)], { color: C.red, width: 2.5 })
+								d.me(6, 12)
+								d.text(9, 5.8, '10 m', { anchor: 'middle' })
+								d.text(15.2, 7.3, 'reels to where you are now', { size: 9 })
+								d.ref('loose')
+							},
+						},
+						{
+							slot: 'W',
+							name: 'Sleeper',
+							text: 'With the yo-yo out, park it spinning for 2 s; the string between you is a tripwire (0.5 s trip). Press again to zip yourself to it.',
+							time: [[0, 2, 'active', 'parked 2 s']],
+							draw(d) {
+								d.band([L(4, 10), L(16, 4)], 0.3)
+								d.circle(16, 4, 1.1, 'ring')
+								d.toy(16, 4)
+								d.me(4, 10)
+								d.foe(10, 9.6)
+								d.arrow([L(10, 9.6), L(10, 6.4)], { color: C.red, dash: '3 2' })
+								d.star(10, 7, 0.9)
+								d.text(11.2, 8.6, 'trips 0.5 s', { size: 9 })
+								d.arrow([L(5, 11.2), L(16, 6)], { color: C.blue, dash: '2 3', width: 1.5 })
+								d.text(17.5, 7.4, 'press again: zip', { size: 9, color: C.blue })
+							},
+						},
+						{
+							slot: 'E',
+							name: 'Around the world',
+							text: 'A 1 s loop at 2.5 m that knocks anyone it touches 2 m outward. Peel.',
+							time: [[0, 1, 'active', 'loop 1 s']],
+							draw(d) {
+								d.circle(10, 8.5, 2.5, 'ring')
+								d.arrow([L(12.5, 8.5), L(10, 11), L(7.5, 8.5), L(10, 6)], { curve: true, width: 3 })
+								d.toy(10, 6)
+								d.me(10, 8.5)
+								d.foe(12.3, 7.3)
+								d.arrow([L(12.9, 7), L(14.6, 6.2)], { color: C.red })
+								d.foe(8.2, 10.6)
+								d.arrow([L(7.7, 11.1), L(6.4, 12.6)], { color: C.red })
+								d.text(15, 6, '2 m out', { size: 9 })
+								d.text(10, 13.8, 'r 2.5 m', { anchor: 'middle', size: 9 })
+								d.ref('rain')
+							},
+						},
+						{
+							slot: 'R',
+							name: 'Walk the dog',
+							text: 'The yo-yo rolls 25 m along the ground over 2 s, steered by your aim; the first hero it touches comes all the way back with it.',
+							time: [
+								[0, 2, 'active', 'rolls 2 s'],
+								[2, 1.2, 'travel', 'carries back'],
+							],
+							draw(d) {
+								d.band([L(3, 13), L(9, 6), L(17, 4), L(25, 7.5)], 0.6)
+								d.me(3, 13)
+								d.toy(25, 7.5)
+								d.foe(26.2, 8.2)
+								d.arrow([L(25, 9), L(17, 5.8), L(9.6, 7.8), L(4.4, 12.6)], {
+									curve: true,
+									color: C.red,
+									dash: '4 3',
+								})
+								d.text(13, 2.8, '25 m, steered by aim', { anchor: 'middle' })
+								d.ref('loose')
+							},
+						},
+					],
+				},
+				{
+					id: 'H2',
+					name: 'Bank',
+					role: 'trick-shot burst',
+					floor: 3,
+					ceil: 5,
+					verb: 'ricochet',
+					counters: 'Anyone hiding behind pillars and cover',
+					status: 'Build 3rd',
+					moment:
+						'You box the enemy Mitts and her carry, and one ball rattles round the room six times before it finds them both.',
+					ceiling:
+						'Angles off pillars that nobody reads as a threat; the board as shield and cushion in the same second; Kick off chains in the lobby.',
+					floorText: 'The aim line shows the bounce, so aiming at a wall is learnable in one game.',
+					abilities: [
+						{
+							slot: 'Q',
+							name: 'Bank',
+							text: 'A straight shot that cushions off walls, pillars and your board up to twice, +50% damage per cushion. Your own aim line draws the whole path.',
+							time: [[0, 0.35, 'tell', 'cast (Carom’s)']],
+							draw(d) {
+								d.wall(1, 2.6, 31, 2.6)
+								d.pillar(12, 9.5, 0.9)
+								d.band([L(3, 10), L(7.5, 3.2), L(11.3, 8.8), L(18, 4.5)], 0.35)
+								d.me(3, 10)
+								d.foe(18.5, 4.3)
+								d.text(7.5, 4.6, '×1.5', { anchor: 'middle' })
+								d.text(11.5, 11.8, '×2', { anchor: 'middle' })
+								d.text(20, 5, 'up to 2 cushions', { size: 9 })
+								d.ref('loose')
+							},
+						},
+						{
+							slot: 'W',
+							name: 'Kick off',
+							text: 'A 4 m dash that reflects off walls and keeps going; each reflection takes 1.5 s off the cooldown. Wall-jumps.',
+							time: [[0, 0.2, 'active', 'dash']],
+							draw(d) {
+								d.wall(12, 2, 12, 15)
+								d.me(8.5, 11.5, { fade: true })
+								d.arrow([L(8.5, 11.5), L(11.5, 9.2), L(9.6, 7.6)], { color: C.blue, width: 3 })
+								d.me(9.4, 7.4)
+								d.text(13.2, 9.6, 'bounce: −1.5 s cooldown', { size: 9 })
+								d.text(4, 6, '4 m total', { size: 9 })
+								d.ref('vault')
+							},
+						},
+						{
+							slot: 'E',
+							name: 'Backboard',
+							text: 'A 3 m board for 4 s; your shots cushion off it, everyone else’s stop on it.',
+							time: [
+								[0, 0.3, 'tell', 'cast'],
+								[0.3, 4, 'active', 'board 4 s'],
+							],
+							draw(d) {
+								d.rect(11.6, 6.5, 0.6, 3, 'board')
+								d.me(4, 10)
+								d.arrow([L(4.5, 9.6), L(11.5, 7.2), L(5.5, 3.5)], { color: C.blue })
+								d.foe(5, 3)
+								d.foe(22, 8)
+								d.arrow([L(21, 8), L(13, 8)], { color: C.red, head: false })
+								d.x(12.6, 8)
+								d.text(13.6, 11.2, '3 m · yours bounce, theirs stop', { size: 9 })
+								d.ref('toss')
+							},
+						},
+						{
+							slot: 'R',
+							name: 'Four walls',
+							text: '0.5 s tell, then a 7 m square of boards for 3.5 s, solid to enemies; inside it, Bank cushions without limit until it hits.',
+							time: [
+								[0, 0.5, 'tell', 'tell'],
+								[0.5, 3.5, 'active', 'boxed 3.5 s'],
+							],
+							draw(d) {
+								d.rect(14, 4.5, 7, 7, 'board')
+								d.foe(16.5, 6.5)
+								d.foe(19, 10)
+								d.me(5, 9)
+								d.arrow(
+									[L(5.5, 8.8), L(20.6, 5.6), L(15.2, 4.8), L(14.4, 10.8), L(18.2, 11.2), L(17, 7)],
+									{ color: C.blue, width: 1.8 },
+								)
+								d.text(17.5, 3.6, '7 m', { anchor: 'middle' })
+								d.text(17.5, 13.4, 'cushions without limit', { anchor: 'middle', size: 9 })
+							},
+						},
+					],
+				},
+				{
+					id: 'H3',
+					name: 'Parry',
+					role: 'duelist',
+					floor: 2,
+					ceil: 5,
+					verb: 'return',
+					counters: 'Skillshot poke: Fletcher, Bank, Fuse',
+					status: 'Build 2nd',
+					moment:
+						'The Fletcher looses at your carry, you footwork into the line, swing late, and he eats 345 from his own arrow.',
+					ceiling:
+						'The 0.1 s sweet spot; returning a shot into someone other than its thrower; baiting a throw by stepping out of range. It’s Melee’s powershield on one button.',
+					floorText:
+						'Q hits whatever’s in front of you, and parries happen by accident and feel enormous.',
+					flag: 'It breaks the 0.5 s return tell on purpose. The windup is the tell, and the 20° cap keeps returns near their incoming line; measure it against the dodge deadline before tuning anything else.',
+					abilities: [
+						{
+							slot: 'Q',
+							name: 'Swing',
+							text: '0.3 s windup with the arc shown, then a 3 m swing for 140. A skillshot or the Ball in the arc goes back toward your aim (20° of bend); in the last 0.1 s it’s a kill shot, 50% faster and harder.',
+							time: [
+								[0, 0.3, 'tell', 'windup'],
+								[0.3, 0.2, 'active', 'swing'],
+								[0.5, 0.1, 'sweet', 'kill'],
+							],
+							draw(d) {
+								d.cone(8, 8.5, 3, 0, 120)
+								d.me(8, 8.5)
+								d.foe(25, 4)
+								d.arrow([L(24, 4.3), L(10.6, 7.6)], { color: C.red })
+								d.arrow([L(25, 4), L(10, 8)], { color: C.grey, dash: '2 3', width: 1, head: false })
+								d.raw('')
+								d.arrow([L(10.8, 8.4), L(24, 11)], { color: C.blue, width: 3 })
+								d.foe(25, 11.2)
+								d.text(18, 13.6, 'back toward aim, ≤20° bend', { anchor: 'middle', size: 9 })
+								d.text(8, 13.2, '3 m arc', { anchor: 'middle', size: 9 })
+								d.ref('catch')
+							},
+						},
+						{
+							slot: 'W',
+							name: 'Footwork',
+							text: 'Two charges of an instant 2 m sidestep, 3 s each. Gets you into the sweet spot.',
+							time: [[0, 0.05, 'active', '']],
+							draw(d) {
+								d.arrow([L(26, 8.5), L(5, 8.5)], { color: C.red, dash: '5 3' })
+								d.me(10, 8.5, { fade: true })
+								d.arrow([L(10, 7.8), L(10, 6.9)], { color: C.blue })
+								d.arrow([L(10, 9.2), L(10, 10.1)], { color: C.blue })
+								d.me(10, 6.5)
+								d.me(10, 10.5, { fade: true })
+								d.text(11.5, 5.3, '2 m, instant', { size: 9 })
+								d.text(11.5, 12.6, '2 charges · 3 s each', { size: 9 })
+								d.ref('vault')
+							},
+						},
+						{
+							slot: 'E',
+							name: 'Lunge',
+							text: 'A 4 m dash that ends in a free Swing.',
+							time: [
+								[0, 0.2, 'active', 'dash'],
+								[0.2, 0.2, 'sweet', 'swing'],
+							],
+							draw(d) {
+								d.me(4, 8.5, { fade: true })
+								d.arrow([L(4.8, 8.5), L(7.4, 8.5)], { color: C.blue, width: 3 })
+								d.cone(8, 8.5, 3, 0, 120)
+								d.me(8, 8.5)
+								d.foe(10.2, 7.8)
+								d.text(6, 6.6, '4 m', { anchor: 'middle', size: 9 })
+								d.text(12, 12.6, 'free Swing on arrival', { size: 9 })
+								d.ref('vault')
+							},
+						},
+						{
+							slot: 'R',
+							name: 'Rally',
+							text: 'Tether one enemy hero within 8 m for 6 s; a ball flies between you and each must Swing as it arrives. Whoever misses takes 150 per return so far.',
+							time: [[0, 6, 'active', 'rally 6 s']],
+							draw(d) {
+								d.circle(7, 8.5, 8, 'ring')
+								d.raw('')
+								d.arrow([L(7.6, 8.5), L(14, 8.5)], {
+									color: C.gold,
+									width: 1.5,
+									dash: '1 3',
+									head: false,
+								})
+								d.arrow([L(8, 9.4), L(11, 7.4), L(13.6, 9.6)], {
+									color: C.ink,
+									curve: true,
+									width: 1.5,
+								})
+								d.ball(11, 7.8)
+								d.me(7, 8.5)
+								d.foe(14.6, 8.5)
+								d.text(15.2, 2.2, 'within 8 m', { size: 9 })
+								d.text(17, 11.6, 'miss: 150 × returns', { size: 9 })
+							},
+						},
+					],
+				},
+				{
+					id: 'H4',
+					name: 'Skater',
+					role: 'diver',
+					floor: 2,
+					ceil: 4,
+					verb: 'build speed',
+					counters: 'Slow artillery caught in the open',
+					status: 'Later',
+					moment:
+						'You loop the pillar at full glide, hop the Loose aimed at you and check the Fletcher into the hedge for 260.',
+					ceiling:
+						'Routing for speed before the fight starts; carve angles; hopping a shot without losing a metre per second.',
+					floorText:
+						'Run in a straight line and press Q on someone. Click-to-move works, since straight paths glide.',
+					abilities: [
+						{
+							slot: 'T',
+							name: 'Glide',
+							text: 'Speed builds from 5 to 8 m/s over 1.5 s of moving straight; sharp turns and casts bleed it, and the trail shows how much you’ve got.',
+							time: [[0, 1.5, 'active', '5 → 8 m/s']],
+							draw(d) {
+								d.raw(
+									`<polygon points="${[
+										[2, 11.8],
+										[12, 11.2],
+										[12, 12.8],
+										[2, 12.2],
+									]
+										.map(([x, y]) => `${x * S},${y * S}`)
+										.join(' ')}" fill="${C.blueSoft}" stroke="${C.ink}" stroke-width="1.5"/>`,
+								)
+								d.raw(
+									`<rect x="${12 * S}" y="${11.2 * S}" width="${8 * S}" height="${1.6 * S}" fill="${C.blue}" stroke="${C.ink}" stroke-width="1.5"/>`,
+								)
+								d.me(20.5, 12)
+								d.arrow([L(21, 11.2), L(23, 5)], { color: C.blue, dash: '2 3' })
+								d.text(2, 10.2, '5 m/s', { size: 9 })
+								d.text(12, 10.2, '8 m/s after 1.5 s ≈ 10 m', { size: 9 })
+								d.text(23.6, 5.6, 'sharp turn bleeds it', { size: 9 })
+								d.ref('loose')
+							},
+						},
+						{
+							slot: 'Q',
+							name: 'Check',
+							text: 'Dash 5 m into the first enemy hero for 80 to 260 damage plus knockback, scaled by speed.',
+							time: [[0, 0.2, 'active', 'dash']],
+							draw(d) {
+								d.rect(1, 8.1, 3, 0.8, 'body')
+								d.me(4, 8.5)
+								d.arrow([L(4.8, 8.5), L(8.5, 8.5)], { color: C.blue, width: 3 })
+								d.foe(9.4, 8.5)
+								d.arrow([L(10.2, 8.5), L(14, 8.5)], { color: C.red, width: 2.5 })
+								d.star(9.4, 7.2, 0.8)
+								d.text(6.5, 6.6, '5 m', { anchor: 'middle', size: 9 })
+								d.text(9.4, 12, '80 at 5 m/s, 260 at 8 m/s', { anchor: 'middle', size: 9 })
+								d.ref('vault')
+							},
+						},
+						{
+							slot: 'W',
+							name: 'Carve',
+							text: 'For 0.6 s, turns cost nothing. The movement tech.',
+							time: [[0, 0.6, 'active', 'free turns']],
+							draw(d) {
+								d.rect(1, 10.6, 5, 0.8, 'body')
+								d.arrow([L(6, 11), L(8.4, 7.4), L(10.8, 11), L(13.2, 7.4)], {
+									color: C.blue,
+									width: 3,
+								})
+								d.me(13.6, 7)
+								d.pillar(10.8, 8, 0.7)
+								d.text(6, 5.4, '0.6 s at 8 m/s ≈ 4.8 m of turns', { size: 9 })
+								d.text(14.8, 11, 'speed kept', { size: 9 })
+							},
+						},
+						{
+							slot: 'E',
+							name: 'Hop',
+							text: 'A 0.35 s hop over units and skillshots (not zones); you land at the same speed.',
+							time: [[0, 0.35, 'active', 'airborne']],
+							draw(d) {
+								d.arrow([L(12, 1.5), L(12, 15)], { color: C.red, dash: '5 3' })
+								d.rect(3, 10.6, 7, 0.8, 'body')
+								d.arrow([L(10.6, 11), L(12, 7.8), L(13.4, 11)], {
+									color: C.blue,
+									curve: true,
+									width: 2.5,
+								})
+								d.me(14, 11)
+								d.text(15, 9.2, '0.35 s ≈ 2.8 m at 8 m/s', { size: 9 })
+								d.text(13, 3, 'skillshot', { size: 9, color: C.red })
+							},
+						},
+						{
+							slot: 'R',
+							name: 'Breakaway',
+							text: '3 s at top speed, passing through units; each Check that lands refunds Check and Hop.',
+							time: [[0, 3, 'active', 'top speed, through units']],
+							draw(d) {
+								d.arrow([L(2, 11), L(10, 8), L(18, 9.5), L(26, 7)], {
+									color: C.blue,
+									curve: true,
+									width: 4,
+								})
+								;[
+									[11, 7],
+									[12, 9.4],
+									[13.4, 8],
+									[12.6, 6.6],
+								].forEach(([x, y]) => d.minion(x, y))
+								d.me(2, 11)
+								d.foe(27, 6.8)
+								d.star(27, 5.4, 0.8)
+								d.text(14, 13, '3 s × 8 m/s ≈ 24 m', { anchor: 'middle', size: 9 })
+								d.text(23, 4.2, 'Check lands: refunds Q, E', { size: 9 })
+								d.ref('loose')
+							},
+						},
+					],
+				},
+				{
+					id: 'H5',
+					name: 'Shove',
+					role: 'tank · 2100 HP',
+					floor: 1,
+					ceil: 3,
+					verb: 'push into things',
+					counters: 'Teams that clump near walls (Mitts guarding a carry)',
+					status: 'Later',
+					moment:
+						'Their Fletcher and Mitts stand side by side; you shove Mitts into the Fletcher and both go down.',
+					ceiling:
+						'Geometry, meaning which wall, which hero, which angle; juggle timing; a Pratfall that eats the one Loose aimed at your carry.',
+					floorText: 'Walk at them and shove. 2100 HP forgives everything else.',
+					abilities: [
+						{
+							slot: 'Q',
+							name: 'Shove',
+							text: '0.3 s windup, a 3 m cone that pushes heroes 3.5 m. Shoved into a wall, a structure or another hero: both stunned 1 s.',
+							time: [
+								[0, 0.3, 'tell', 'windup'],
+								[0.3, 1, 'lock', 'stun 1 s on impact'],
+							],
+							draw(d) {
+								d.wall(13, 9.5, 13, 15)
+								d.cone(5, 9, 3, 0, 80)
+								d.me(5, 9)
+								d.foe(7.2, 7.9)
+								d.arrow([L(7.8, 7.6), L(10.2, 6.4)], { color: C.red, width: 2.5 })
+								d.foe(11.2, 5.9)
+								d.star(10.7, 6.1, 0.9)
+								d.foe(7.2, 10.2)
+								d.arrow([L(7.8, 10.5), L(11.8, 12.2)], { color: C.red, width: 2.5 })
+								d.star(12.4, 12.4, 0.9)
+								d.text(14, 5.2, 'into a hero: both stunned', { size: 9 })
+								d.text(14, 12.8, 'into a wall: stunned', { size: 9 })
+								d.ref('catch')
+							},
+						},
+						{
+							slot: 'W',
+							name: 'Belly bounce',
+							text: 'Hop 4 m; heroes under the landing pop up for 0.6 s and can’t act. Landing on a popped hero pops it again, three times at most.',
+							time: [
+								[0, 0.4, 'travel', 'hop'],
+								[0.4, 0.6, 'lock', 'pop 0.6'],
+							],
+							draw(d) {
+								d.me(4, 9, { fade: true })
+								d.arrow([L(4.6, 8.6), L(6, 5.6), L(7.6, 8.4)], {
+									color: C.blue,
+									curve: true,
+									width: 2.5,
+								})
+								d.circle(8, 9, 1.5)
+								d.foe(8.4, 9.4)
+								d.me(8, 8.8)
+								d.text(8, 12.6, 'pop 0.6 s · ×3 max', { anchor: 'middle', size: 9 })
+								d.text(10.5, 6.6, 'landing size open', { size: 9, color: C.grey })
+								d.ref('vault')
+							},
+						},
+						{
+							slot: 'E',
+							name: 'Pratfall',
+							text: 'Fall flat forward for 2 s, a 3 m body that blocks shots and walking. Bank cushions off it.',
+							time: [[0, 2, 'active', 'flat 2 s']],
+							draw(d) {
+								d.rect(5, 6.5, 1.2, 3, 'body')
+								d.me(4, 8, { fade: true })
+								d.ally(2, 8)
+								d.foe(22, 8)
+								d.arrow([L(21, 8), L(7, 8)], { color: C.red, head: false, dash: '5 3' })
+								d.x(7.2, 8)
+								d.text(6.8, 5.6, '3 m wall of you', { size: 9 })
+								d.text(8, 12, 'blocks shots and walking', { size: 9 })
+							},
+						},
+						{
+							slot: 'R',
+							name: 'The wave',
+							text: 'A 10 m crowd wave rolls out along your aim, carrying every enemy hero to its far edge; whoever it pins against terrain is stunned 1.5 s.',
+							time: [
+								[0, 0.6, 'travel', 'rolls'],
+								[0.6, 1.5, 'lock', 'pinned: stun 1.5 s'],
+							],
+							draw(d) {
+								d.rect(5, 5, 10, 8, 'zone')
+								d.wall(15.8, 9, 15.8, 14.5)
+								d.me(3.6, 9)
+								d.foe(7, 7)
+								d.arrow([L(7.8, 7), L(14.2, 7)], { color: C.red })
+								d.foe(15, 7)
+								d.foe(8.5, 11.2)
+								d.arrow([L(9.3, 11.2), L(14.2, 11.2)], { color: C.red })
+								d.foe(15, 11.2)
+								d.star(15, 9.9, 0.8)
+								d.text(10, 4, '10 m (width open)', { anchor: 'middle', size: 9 })
+								d.text(17, 12, 'pinned: 1.5 s', { size: 9 })
+								d.ref('loose')
+							},
+						},
+					],
+				},
+				{
+					id: 'H6',
+					name: 'Splash',
+					role: 'support',
+					floor: 2,
+					ceil: 3,
+					verb: 'heal by aim',
+					counters: 'Poke attrition and slow sieges',
+					status: 'Later',
+					moment:
+						'Your Fletcher vaults out of a bad dive; you pop the balloon early over where he’ll land, then hose the chaser into the hedge.',
+					ceiling:
+						'Leading allies who are moving fast; early pops; puddle chains as your own roads; hose angles that pin people on walls.',
+					floorText: 'Throw it at your friend. Heals are aimed, but the splash is generous.',
+					abilities: [
+						{
+							slot: 'Q',
+							name: 'Balloon',
+							text: 'Lob to a point over 0.6 s, 2 m splash: allies heal 160, enemies take 80 and are soaked (20% slow, 2 s). Press again to pop it early, mid-air. Each splash leaves a 4 s puddle.',
+							time: [
+								[0, 0.6, 'travel', 'lob'],
+								[0.6, 4, 'active', 'puddle 4 s'],
+							],
+							draw(d) {
+								d.circle(14, 8, 2, 'puddle')
+								d.circle(14, 8, 2)
+								d.me(4, 10)
+								d.arrow([L(4.6, 9.4), L(9, 3), L(13.6, 7.4)], {
+									color: C.ink,
+									curve: true,
+									dash: '3 3',
+								})
+								d.circle(8.6, 5, 0.9, 'ring')
+								d.text(3.6, 5.2, 'pop early', { size: 9 })
+								d.ally(13, 7.2, { label: '+160' })
+								d.foe(15.4, 8.8, { label: '−80 soak' })
+								d.ref('rain')
+							},
+						},
+						{
+							slot: 'W',
+							name: 'Hose',
+							text: 'A 1.2 s stream, 6 m, that pushes enemies back as you sweep it.',
+							time: [[0, 1.2, 'active', 'stream 1.2 s']],
+							draw(d) {
+								d.cone(4, 9, 6, 0, 50, 'ghost')
+								d.band([L(4, 9), L(9.6, 7)], 0.5)
+								d.arrow([L(10.4, 6.2), L(10.6, 9), L(10.2, 11.4)], { curve: true, dash: '2 2' })
+								d.me(4, 9)
+								d.foe(9.5, 6.4)
+								d.arrow([L(10.2, 6), L(12.8, 5)], { color: C.red, width: 2.5 })
+								d.text(12, 11.6, 'sweep', { size: 9 })
+								d.text(4, 4, '6 m', { size: 9 })
+								d.ref('toss')
+							},
+						},
+						{
+							slot: 'E',
+							name: 'Slide',
+							text: 'A 5 m belly slide that doesn’t stop while it’s on a puddle.',
+							time: [[0, 0.4, 'active', 'slide']],
+							draw(d) {
+								d.raw(
+									`<ellipse cx="${13 * S}" cy="${9 * S}" rx="${4.5 * S}" ry="${1.8 * S}" fill="${C.blueSoft}" stroke="${C.blue}" stroke-width="1.5" stroke-dasharray="2 2"/>`,
+								)
+								d.me(3, 9, { fade: true })
+								d.arrow([L(3.8, 9), L(8, 9)], { color: C.blue, width: 3 })
+								d.arrow([L(8, 9), L(17.4, 9)], { color: C.blue, width: 3, dash: '6 3' })
+								d.me(18, 9)
+								d.text(5.5, 7.2, '5 m', { size: 9, anchor: 'middle' })
+								d.text(13, 12.4, 'keeps going on the puddle', { anchor: 'middle', size: 9 })
+								d.ref('vault')
+							},
+						},
+						{
+							slot: 'R',
+							name: 'Sprinkler',
+							text: 'Plant it for 6 s; its jet sweeps a 6 m circle, healing allies and soaking and pushing enemies it passes.',
+							time: [[0, 6, 'active', 'sprinkler 6 s']],
+							draw(d) {
+								d.circle(13, 8.5, 6, 'ring')
+								d.band([L(13, 8.5), L(17.5, 4.5)], 0.4)
+								d.arrow([L(19, 7), L(18.6, 10.6), L(16, 13.6)], { curve: true, dash: '2 2' })
+								d.ball(13, 8.5, C.blueSoft)
+								d.me(7, 11)
+								d.ally(10, 5.6, { label: '+heal' })
+								d.foe(17.8, 3.6)
+								d.arrow([L(18.4, 3), L(20.4, 1.4)], { color: C.red })
+								d.text(20.5, 14, 'r 6 m', { size: 9 })
+								d.ref('rain')
+							},
+						},
+					],
+				},
+				{
+					id: 'H7',
+					name: 'Whistle',
+					role: 'control',
+					floor: 2,
+					ceil: 5,
+					verb: 'interrupt',
+					counters: 'Channels and committed casts: Dodge This, the Ball pickup',
+					status: 'Later',
+					moment:
+						'Mitts channels Dodge This with a full bag; the foul lands at 1.2 s and six shots spill on the floor.',
+					ceiling:
+						'A 0.3 s Foul can’t react to a 0.3 s cast, so it’s all reads: channels, the 0.75 s Ball pickup, Mitts’ 0.5 s return tell, the cast you know is coming. It’s WoW’s kick.',
+					floorText: 'Foul still does damage, and Red light just works on people who run.',
+					abilities: [
+						{
+							slot: 'Q',
+							name: 'Foul',
+							text: '0.3 s windup, an 8 m line. An enemy hit mid-windup or channel loses the cast and that slot locks for 2 s; anyone else takes 60.',
+							time: [
+								[0, 0.3, 'tell', 'windup'],
+								[0.3, 2, 'lock', 'their slot locked 2 s'],
+							],
+							draw(d) {
+								d.band([L(4, 9), L(12, 9)], 0.6)
+								d.me(4, 9)
+								d.cone(11.6, 9, 2.2, 180, 60, 'ghost')
+								d.foe(11.6, 9)
+								d.x(11.6, 6.8)
+								d.text(13, 6.6, 'cast lost, slot locked 2 s', { size: 9 })
+								d.text(8, 11.6, '8 m', { anchor: 'middle', size: 9 })
+								d.ref('loose')
+							},
+						},
+						{
+							slot: 'W',
+							name: 'Play on',
+							text: 'An ally within 8 m dashes 4 m toward your aim, cleansed.',
+							time: [[0, 0.2, 'active', 'ally dash']],
+							draw(d) {
+								d.circle(5, 9, 8, 'ring')
+								d.me(5, 9)
+								d.ally(9, 6, { fade: true })
+								d.arrow([L(9.8, 6), L(12.6, 6)], { color: C.blue, width: 3 })
+								d.ally(13.2, 6)
+								d.star(13.2, 4.6, 0.6)
+								d.text(14.4, 8.6, 'ally: 4 m, cleansed', { size: 9 })
+								d.text(13.6, 16.6, 'within 8 m', { size: 9 })
+							},
+						},
+						{
+							slot: 'E',
+							name: 'Red light',
+							text: 'A 0.5 s ring tell, then every enemy moving inside 5 m freezes for 1.25 s. Skip’s best idea, kept.',
+							time: [
+								[0, 0.5, 'tell', 'tell'],
+								[0.5, 1.25, 'lock', 'freeze 1.25 s'],
+							],
+							draw(d) {
+								d.circle(12, 8.5, 5)
+								d.me(12, 8.5)
+								d.foe(15.2, 6)
+								d.arrow([L(14, 6.6), L(15.2, 6)], { color: C.red, dash: '2 2', head: false })
+								d.raw(
+									`<circle cx="${15.2 * S}" cy="${6 * S}" r="8" fill="none" stroke="#7fb8ff" stroke-width="2.5"/>`,
+								)
+								d.foe(9, 11)
+								d.text(18, 4.8, 'moving: frozen', { size: 9 })
+								d.text(2, 13.4, 'standing still: safe', { size: 9 })
+								d.ref('rain')
+							},
+						},
+						{
+							slot: 'R',
+							name: 'Red card',
+							text: 'A 0.5 s line tell; the hero it hits is sent to the touchline for 4 s, harmless and untargetable, then walks back on.',
+							time: [
+								[0, 0.5, 'tell', 'tell'],
+								[0.5, 4, 'lock', 'off for 4 s'],
+							],
+							draw(d) {
+								d.touchline(1.6)
+								d.band([L(4, 11), L(20, 11)], 0.7)
+								d.me(4, 11)
+								d.foe(15, 11, { fade: true })
+								d.arrow([L(15, 10.2), L(15, 2.6)], { color: C.red, dash: '4 3' })
+								d.foe(15, 1.6)
+								d.text(16.4, 4.8, 'touchline 4 s, walks back', { size: 9 })
+								d.text(10, 13.6, 'length open', { size: 9, color: C.grey })
+							},
+						},
+					],
+				},
+				{
+					id: 'H8',
+					name: 'Fuse',
+					role: 'artillery',
+					floor: 2,
+					ceil: 4,
+					verb: 'cook and bounce',
+					counters: 'Static defenders and tower huggers',
+					status: 'Later',
+					moment:
+						'You cook a bomb to the floor, lob it behind the retreating Fletcher, then ride your own blast over the hedge after him.',
+					ceiling:
+						'Cooking that shrinks the dodge window to its legal minimum; bounce and roll prediction; rocket-jump routes; kicking the Ball away from a pickup.',
+					floorText: 'Hold, aim, let go. Bombs go off whether you’re clever or not.',
+					abilities: [
+						{
+							slot: 'T',
+							name: 'Rocket jump',
+							text: 'Your own bursts never hurt you; they launch you 4 m away from the blast.',
+							time: [[0, 0.3, 'active', 'launch']],
+							draw(d) {
+								d.circle(6, 11, 2)
+								d.star(6, 11, 0.9)
+								d.hedge(8.6, 6.5, 1.6, 4)
+								d.me(6.6, 10.4, { fade: true })
+								d.arrow([L(7, 9.8), L(9, 4.4), L(10.6, 7.6)], {
+									color: C.blue,
+									curve: true,
+									width: 2.5,
+								})
+								d.me(10.8, 8)
+								d.text(12.4, 6, '4 m, over the hedge', { size: 9 })
+								d.ref('vault')
+							},
+						},
+						{
+							slot: 'Q',
+							name: 'Fizz bomb',
+							text: 'Press to light a 2 s fuse, release to lob it 9 m; it bounces, rolls and bursts 2 m wide for 200. Holding cooks it, down to 0.5 s after landing; enemies see the fuse on the ground.',
+							time: [
+								[0, 1.5, 'active', 'cooking in hand'],
+								[1.5, 0.5, 'tell', '≥0.5 s on ground'],
+							],
+							draw(d) {
+								d.me(3, 10)
+								d.arrow([L(3.6, 9.4), L(7.5, 3.4), L(12, 9.6)], { curve: true, dash: '3 3' })
+								d.arrow([L(12, 9.8), L(13.2, 8.6), L(14.2, 9.8), L(15.6, 10)], {
+									curve: true,
+									width: 1.5,
+								})
+								d.circle(16, 10, 2, 'foe')
+								d.ball(16, 10, C.ink)
+								d.text(7.5, 12.6, '9 m lob', { anchor: 'middle', size: 9 })
+								d.text(18.5, 7, 'bounce, roll, 200', { size: 9 })
+								d.ref('rain')
+							},
+						},
+						{
+							slot: 'W',
+							name: 'Kick',
+							text: 'Punt any ball on the ground 8 m along your aim: your bombs, or the Ball.',
+							time: [[0, 0.15, 'active', 'kick']],
+							draw(d) {
+								d.me(4, 9)
+								d.ball(5.6, 9)
+								d.arrow([L(6.4, 9), L(13.4, 9)], { color: C.gold, width: 3 })
+								d.ball(13.8, 9)
+								d.foe(13, 5.4)
+								d.text(9.6, 7.4, '8 m', { anchor: 'middle', size: 9 })
+								d.text(9.6, 12, 'bombs or the Ball', { anchor: 'middle', size: 9 })
+								d.ref('toss')
+							},
+						},
+						{
+							slot: 'E',
+							name: 'Hot potato',
+							text: 'A straight sticky shot that clings to the first hero it hits and bursts in 2.5 s; touching any other hero passes it on.',
+							time: [
+								[0, 0.3, 'tell', 'cast'],
+								[0.3, 2.5, 'active', 'stuck 2.5 s'],
+							],
+							draw(d) {
+								d.band([L(4, 9), L(13, 9)], 0.4)
+								d.me(4, 9)
+								d.foe(13.5, 9)
+								d.ball(13.5, 7.7, C.ink)
+								d.foe(16, 11)
+								d.arrow([L(14.2, 9.6), L(15.4, 10.5)], { color: C.red, dash: '2 2' })
+								d.text(17, 13, 'touch: passed on', { size: 9 })
+								d.text(15, 6.8, 'bursts in 2.5 s', { size: 9 })
+								d.text(8.5, 11.4, 'range open', { anchor: 'middle', size: 9, color: C.grey })
+							},
+						},
+						{
+							slot: 'R',
+							name: 'Keg',
+							text: 'Drop a 4 s keg that bursts 3.5 m wide for 450; kicks, shots and shoves roll it.',
+							time: [[0, 4, 'tell', 'keg fuse 4 s']],
+							draw(d) {
+								d.circle(15, 8.5, 3.5, 'foe')
+								d.circle(9, 8.5, 3.5, 'ghost')
+								d.arrow([L(9.6, 8.5), L(14, 8.5)], { color: C.ink, dash: '3 2' })
+								d.raw(
+									`<rect x="${14.2 * S}" y="${7.7 * S}" width="13" height="13" rx="3" fill="#8a5a2b" stroke="${C.ink}" stroke-width="2"/>`,
+								)
+								d.me(5.4, 9.4)
+								d.foe(17, 7)
+								d.foe(16.4, 10.6)
+								d.text(15, 14.2, 'r 3.5 m · 450', { anchor: 'middle', size: 9 })
+								d.text(3, 6, 'kick rolls it', { size: 9 })
+								d.ref('rain')
+							},
+						},
+					],
+				},
+			]
+
+			// Built heroes, live numbers from tune.js, for scale.
+			const refs = [
+				{
+					code: 'F.Q / F.W / F.E',
+					name: 'Fletcher',
+					text: 'Loose 11 m line, 230 dmg, 0.3 s cast · Vault 4 m · Rain r 2.5 m up to 7 m away, lands in 0.7 s. 1400 HP, 5 m/s.',
+					draw(d) {
+						d.band([L(3, 6), L(14, 6)], 0.6)
+						d.me(3, 6)
+						d.text(8.5, 4.6, 'Loose 11 m', { anchor: 'middle' })
+						d.arrow([L(3.8, 11), L(6.8, 11)], { color: C.blue, width: 3 })
+						d.me(3, 11, { fade: true })
+						d.text(5, 13.4, 'Vault 4 m', { anchor: 'middle' })
+						d.circle(19, 11, 2.5)
+						d.arrow([L(13, 11), L(16.4, 11)], { color: C.grey, dash: '2 2', width: 1 })
+						d.text(19, 15.4, 'Rain r 2.5', { anchor: 'middle' })
+					},
+				},
+				{
+					code: 'M.Q / M.W / M.E',
+					name: 'Mitts',
+					text: 'Toss 7 m line, 120 dmg · Catch 100° cone, 2 m, 1 s · Dive 4 m then 0.4 s prone. 2200 HP, 5.6 m/s.',
+					draw(d) {
+						d.band([L(3, 5), L(10, 5)], 0.7)
+						d.me(3, 5)
+						d.text(6.5, 3.6, 'Toss 7 m', { anchor: 'middle' })
+						d.cone(15, 6, 2, 0, 100)
+						d.me(15, 6)
+						d.text(16, 9.6, 'Catch 2 m', { anchor: 'middle' })
+						d.me(3, 12, { fade: true })
+						d.arrow([L(3.8, 12), L(6.6, 12)], { color: C.blue, width: 3 })
+						d.me(7, 12)
+						d.text(5, 14.6, 'Dive 4 m', { anchor: 'middle' })
+					},
+				},
+			]
+
+			const slotName = { T: 'trait', Q: 'Q', W: 'W', E: 'E', R: 'heroic' }
+			const dots = (n) =>
+				[1, 2, 3, 4, 5].map((i) => `<b class="${i <= n ? 'on' : ''}"></b>`).join('')
+
+			document.getElementById('compare').innerHTML =
+				`<tr><th>#</th><th>Hero</th><th>Role</th><th>Its verb</th><th>Floor</th><th>Ceiling</th><th>Counters</th><th>Plan</th></tr>` +
+				heroes
+					.map(
+						(h) =>
+							`<tr><td><a href="#${h.id}">${h.id}</a></td><td><a href="#${h.id}">${h.name}</a></td><td>${h.role}</td><td>${h.verb}</td><td class="dots">${dots(h.floor)}</td><td class="dots">${dots(h.ceil)}</td><td>${h.counters}</td><td>${h.status.startsWith('Build') ? `<span class="chip gold">${h.status}</span>` : `<span class="small">${h.status}</span>`}</td></tr>`,
+					)
+					.join('') +
+				`<tr class="built"><td>F</td><td>Fletcher</td><td>ranged poke</td><td>poke and kite</td><td class="dots">${dots(1)}</td><td class="dots">${dots(3)}</td><td>Slow frontliners in the open</td><td class="small">built</td></tr>` +
+				`<tr class="built"><td>M</td><td>Mitts</td><td>keeper, frontline</td><td>catch and return</td><td class="dots">${dots(2)}</td><td class="dots">${dots(4)}</td><td>Skillshot poke</td><td class="small">built</td></tr>`
+
+			{
+				const d = drawer()
+				document.getElementById('legend').innerHTML =
+					[
+						['me', 'You (cream ring)'],
+						['foe', 'Enemy hero'],
+						['tell', 'Your hitbox'],
+						['foetell', 'Enemy-side zone'],
+						['ghost', 'Built ability, for scale'],
+						['wall', 'Wall, pillar, board'],
+					]
+						.map(([k, label]) => {
+							const dd = drawer()
+							if (k === 'me') dd.me(1.6, 1.4)
+							if (k === 'foe') dd.foe(1.6, 1.4)
+							if (k === 'tell') dd.band([L(0.5, 1.4), L(2.8, 1.4)], 0.7)
+							if (k === 'foetell') dd.circle(1.6, 1.4, 1, 'foe')
+							if (k === 'ghost') dd.circle(1.6, 1.4, 1, 'ghost')
+							if (k === 'wall') dd.wall(0.5, 1.4, 2.8, 1.4)
+							return `<span>${dd.svg().replace('viewBox="0 0 260 140"', 'viewBox="0 0 26 22" width="34" height="28"')} ${label}</span>`
+						})
+						.join('') +
+					`<span>Timelines: <span class="chip" style="background:var(--red-soft)">tell</span> <span class="chip" style="background:var(--blue-soft)">active</span> <span class="chip gold">sweet spot</span> <span class="chip" style="background:#d6d0e6">locked / stunned</span></span>`
+			}
+
+			document.getElementById('refs').innerHTML = refs
+				.map((r) => {
+					const d = drawer()
+					r.draw(d)
+					return `<div class="ab"><h4><span class="code">${r.code.split(' ')[0][0]}</span>${r.name}<span class="slot">built</span></h4>${d.svg()}<p>${r.text}</p></div>`
+				})
+				.join('')
+
+			document.getElementById('heroes').innerHTML = heroes
+				.map((h) => {
+					const abs = h.abilities
+						.map((a) => {
+							const d = drawer()
+							a.draw(d)
+							const code = `${h.id}.${a.slot}`
+							return `<div class="ab" id="${code}"><h4><span class="code">${code}</span>${a.name}<span class="slot">${slotName[a.slot]}</span></h4>${d.svg()}<p>${a.text}</p>${timeline(a.time)}</div>`
+						})
+						.join('')
+					return `<section class="sticker hero" id="${h.id}">
+						<header><span class="badge">${h.id}</span><h3>${h.name}</h3><span class="chip">${h.role}</span>${h.status.startsWith('Build') ? `<span class="chip gold">${h.status}</span>` : ''}</header>
+						<dl class="lines">
+							<dt>Moment</dt><dd>${h.moment}</dd>
+							<dt>Ceiling</dt><dd>${h.ceiling}</dd>
+							<dt>Floor</dt><dd>${h.floorText}</dd>
+						</dl>
+						${h.flag ? `<p class="flag"><b>${h.id} flag.</b> ${h.flag}</p>` : ''}
+						<div class="abilities">${abs}</div>
+					</section>`
+				})
+				.join('')
+		</script>
+	</body>
+</html>
