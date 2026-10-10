@@ -32,7 +32,7 @@ test.each([
 	['map', '', 'map'],
 	['bots', 'HARD', 'difficulty'],
 	['bots', '', 'difficulty'],
-	['hero', 'carom', 'heroId'],
+	['hero', 'skip', 'heroId'],
 	['hero', '', 'heroId'],
 	...['', '-1', '1.5', 'NaN', 'Infinity', '1e3', '0x10', ' 2 ', '4294967296'].map((v) => [
 		'seed',

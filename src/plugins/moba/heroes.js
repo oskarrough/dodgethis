@@ -66,10 +66,13 @@ export const listed = Object.keys(HEROES).filter((id) => HEROES[id].listed)
 export const DEFAULT_HERO = listed.map((id) => HEROES[id]).sort(byOrder)[0].id
 
 // The strip, the stands, H and the debug dropdowns: listed heroes, plus a draft when
-// ?hero= names it (setup.heroId) or with setup.debug, by order.
+// ?hero= names it (setup.heroId) or with setup.debug, by order. Never in a shared (online)
+// lobby: picks travel as a stand index, so a draft on one peer's strip would shift the stands.
 export function listedHeroes(setup = {}) {
 	return Object.values(HEROES)
-		.filter((h) => h.listed || (h.playable && (setup.debug || h.id === setup.heroId)))
+		.filter(
+			(h) => h.listed || (!setup.shared && h.playable && (setup.debug || h.id === setup.heroId)),
+		)
 		.sort(byOrder)
 }
 

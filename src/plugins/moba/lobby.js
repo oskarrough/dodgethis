@@ -194,6 +194,7 @@ export function createLobby({
 	const readySeats = sim.readySeats
 	const heroChoices = listedHeroes({
 		...setup,
+		shared: !!app.session.shared,
 		debug: new URLSearchParams(globalThis.location?.search).has('debug'),
 	})
 	const props = createLobbyProps(

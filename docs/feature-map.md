@@ -93,7 +93,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Mitts, keeper. Q Toss (throw caught shots), W Catch (stance), E Dive (dash): `heroes/mitts/index.js`, `abilities/{toss,catch,dive}/`; glove and pocket poses in `heroes/mitts/costume.js` `animate`; the catch window's fan in `abilities/catch/index.js` `look`
 - Mitts glove slap (basic): `abilities/gloveSlap/`
 - Catching and the Pocket (caught shots held and thrown back): `projectiles.js` `openCatch`, `throwCaught`, `resolveInterception` (the pocket takes the caught shot's team); `casting.js` `traitContext`; `tune.js` `catching`, `momentum`
-- Carom and Skip: tuned (`tune.js` `heroes`) and designed in `moba-heroes.md`, costume and tune in `heroes/{carom,skip}/`, no `index.js` yet so not heroes
+- Carom: a draft hero (`draft: true`, shown only for `?hero=carom` or `?debug`, never in shared lobbies), `heroes/carom/` (costume, tune, `index.js`), Q Bank `abilities/bank/` (bounces, data in its tune), E `abilities/kickOff/` (plain dash for now). W Trick Shot, Kiss's bounce and Backboard are not built; design in `moba-heroes.md`. Skip: tuned and designed, costume and tune in `heroes/skip/`, no `index.js` yet so not a hero.
 - Hero costumes and silhouettes: `hero-view.js` `dressHero`, costumes in `heroes/<id>/costume.js` (`dress`, optional `animate`); `look.js` `silhouettes`; `moba-look.md`
 - Level, XP and stat growth: `tooltip.js` `levelProgress`; `combat.js` `hit`; `tune.js` `levels`
 - Globes (health pickups): `lane.js` `createLane`; `lane-view.js` `createLaneView`; `tune.js` `globes`
