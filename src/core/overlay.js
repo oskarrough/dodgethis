@@ -127,7 +127,7 @@ export function createOverlay(selector = '.overlay') {
 	function setIndex(i, focus = false) {
 		const n = actions.length
 		if (!n) return
-		index = ((i % n) + n) % n // wrap both directions
+		index = ((i % n) + n) % n
 		render()
 		if (focus) buttons[index].focus()
 	}
@@ -151,7 +151,6 @@ export function createOverlay(selector = '.overlay') {
 		renderPrompts()
 	}
 
-	// Gamepad movement changes selection and confirm invokes it.
 	function handleGamepad({ move, confirm }) {
 		if (el.hidden || !actions.length) return
 		if (move) {

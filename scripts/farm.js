@@ -142,7 +142,6 @@ export function parseSets(sets) {
 		tuneSlot(path)
 		return values.map((value) => [path, value])
 	})
-	// Several --set flags sweep as a grid.
 	return axes.reduce(
 		(grid, axis) => grid.flatMap((row) => axis.map((cell) => [...row, cell])),
 		[[]],
@@ -199,7 +198,7 @@ export async function runFarmMatch({
 	world.timestep = STEP
 	let match, unbuild, result
 	try {
-		// No map plays createAgentMatch's default with the default walls, exactly as before --map.
+		// No map plays createAgentMatch's default with the default walls.
 		const recipe = map ? mods.matchRecipe(map) : undefined
 		const { obstacles, bounds, settings } = recipe?.layout ?? {}
 		unbuild = recipe
@@ -285,7 +284,6 @@ Machine
 Saved logs
   --logs path               analyse saved logs with DuckDB instead of playing; directory, file or glob`
 
-// `--base` may come without a revision.
 function withBaseDefault(argv) {
 	const i = argv.indexOf('--base')
 	if (i < 0 || (argv[i + 1] !== undefined && !argv[i + 1].startsWith('--'))) return argv
@@ -416,7 +414,6 @@ export async function farm(argv = process.argv.slice(2)) {
 		head('jj', ['log', '-r', '@', '--no-graph', '-T', 'commit_id']) ??
 		head('git', ['rev-parse', 'HEAD'])
 	if (!commit) throw new Error('Cannot record the farm commit: jj log and git rev-parse failed')
-	// Sides: the base revision first, when there is one, then the working copy.
 	const sides = []
 	if (values.base) {
 		const base = checkoutRevision(ROOT, values.base)

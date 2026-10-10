@@ -1,13 +1,11 @@
 // The game's palette by role — one definition per color; DOM-free, and applyCssVariables() mirrors the same numbers into CSS at boot so HTML chrome and WebGL world can't drift.
 export const PALETTE = {
-	// World
 	page: 0xb5dce8, // sky behind the court
 	court: 0x79bd86,
 	courtLine: 0xfff7c7,
 	courtRim: 0xffd35d, // painted edge warning — no collision
 	courtShade: 0x4aa653, // printed drop shadow on the court
 	scenery: 0x91aeb3, // quiet bleacher paint
-	// Print language
 	ink: 0x26445f, // every outline, badge and mark
 	cream: 0xfffdf4, // highlight and sticker fill
 	hole: 0x16233a, // the dark inside a portal
@@ -15,10 +13,8 @@ export const PALETTE = {
 	portalChill: 0x1b9f5a,
 	portalSpicy: 0xff9f1c,
 	portalChaos: 0xff4f6d,
-	// Identity
 	teamA: 0x5db4ff,
 	teamB: 0xff5d5d,
-	// Ammo and weapons
 	ammo: 0xffd35d, // the scarce-arrow accent: trail, reticle, marker
 	ammoShaft: 0xcaa15a,
 	ammoTip: 0xdfe6f0,
@@ -29,7 +25,6 @@ export const PALETTE = {
 	godmodeGlow: 0xc8f0ff,
 	godmodeCore: 0xe8fbff,
 	godmodeDeep: 0x1a4466,
-	// Seaside scenery
 	sand: 0xc4ad82,
 	driftwood: 0x8a6c4c,
 	seaTeal: 0x5f9a98,

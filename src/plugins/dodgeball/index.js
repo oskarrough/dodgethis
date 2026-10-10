@@ -70,7 +70,7 @@ export default function dodgeball(app, { lobbyExit = null } = {}) {
 	let actions = createActions()
 	const may = (verb) => app.session.actions.includes(verb)
 
-	// Flick the hitmarker at a world point (the near-miss or the eliminated unit), restarting its CSS animation via a forced reflow.
+	// Flick the hitmarker at a world point; a forced reflow restarts its CSS animation.
 	const _hm = new THREE.Vector3()
 	function hitmark(kind, point) {
 		if (!point) return
@@ -137,7 +137,6 @@ export default function dodgeball(app, { lobbyExit = null } = {}) {
 	}
 	const renderScore = () => scoreboard.render(flow)
 
-	// --- Weapons and aim -------------------------------------------------------
 	// Human seats hold the weapon and the bow's charge meter (actions.js). The simulation drives them; a replica previews its own.
 	const local = () => app.session.local[0]
 	const mySeat = () => actions.seat(local())
@@ -154,7 +153,6 @@ export default function dodgeball(app, { lobbyExit = null } = {}) {
 	const _hand = new THREE.Vector3()
 	const aim = createAimPreview(scene, app.renderer.domElement)
 
-	// Present the local seat: switch feedback, charge ticks, and the aim preview from the rendered hand to the frame's ground point.
 	function presentAim(show) {
 		const seat = mySeat()
 		if (seat.weapon !== shownWeapon) {
@@ -176,12 +174,10 @@ export default function dodgeball(app, { lobbyExit = null } = {}) {
 		aimDir.normalize()
 		const hand = handPoint(p, aimDir, _hand)
 		if (seat.weapon !== 'bow') {
-			// The bowl rolls along the ground.
 			aim.untarget()
 			aim.ground(hand, aimDir)
 			return
 		}
-		// Ratchet ticks: rising pitch per step up, brighter cue entering perfect.
 		const { meter } = seat
 		if (meter.charging) {
 			const step = Math.floor(meter.value / CHARGE_STEP)
@@ -259,7 +255,6 @@ export default function dodgeball(app, { lobbyExit = null } = {}) {
 		})
 	}
 
-	// --- Debug GUI and window.game ---------------------------------------------
 	app.debug.tune('shortcuts', {}, (f) => {
 		for (const [key, action] of [
 			['`', 'toggle debug'],
@@ -312,7 +307,6 @@ export default function dodgeball(app, { lobbyExit = null } = {}) {
 		f.add(t, 'trails')
 		f.add(t, 'deathTime', 0.25, 3, 0.05).name('death length ×')
 	})
-	// godmode toggles live (also bound to the G key below).
 	app.debug.tune('cheats', tune.cheats, (f, t) => {
 		f.add(t, 'godmode').name('godmode (G)').listen()
 		f.add(t, 'infiniteAmmo').name('infinite ammo (H)').listen()
@@ -348,7 +342,6 @@ export default function dodgeball(app, { lobbyExit = null } = {}) {
 			else leaveHub()
 			return
 		}
-		// Number keys enter the matching difficulty portal.
 		if (flow.phase === 'lobby') {
 			const pick = /^Digit([1-3])$/.exec(e.code)
 			if (pick) flow.enterPortal(Number(pick[1]))
@@ -436,7 +429,6 @@ export default function dodgeball(app, { lobbyExit = null } = {}) {
 				actions.preview(local(), frame, dt, armed)
 			})
 
-			// Every human seat's frame runs through the same actions, then the round steps.
 			run.system('simulate', (step) => flow.step(step, app.intents))
 
 			let hudTimer = 0

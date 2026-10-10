@@ -112,7 +112,6 @@ void main() {
 	return {
 		present(fact) {
 			if (fact.team !== hero.team) return
-			// A level pulses the hero's ring; the sound and HP flash say the rest.
 			if (fact.type === 'levelUp') levelAt = sim.tick
 		},
 		update({ camera, alpha, ballPosition, frozen = false }) {

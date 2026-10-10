@@ -11,7 +11,7 @@ export function createView(scene, smooth) {
 	const group = new THREE.Group()
 	group.name = 'moba-view'
 	scene.add(group)
-	const owned = [] // geometries and materials to dispose
+	const owned = []
 	function own(x) {
 		owned.push(x)
 		return x
@@ -44,7 +44,6 @@ export function createView(scene, smooth) {
 		p.mesh.visible = true
 	}
 
-	// --- Hover: the enemy an RMB would attack. ---
 	const hover = new THREE.Mesh(
 		own(new THREE.RingGeometry(0.58, 0.7, 40).rotateX(-Math.PI / 2)),
 		flat('teamB'),
@@ -52,7 +51,7 @@ export function createView(scene, smooth) {
 	hover.visible = false
 	group.add(hover)
 
-	// --- Reticle: the aim point while a key aims. The OS hides its pointer during key repeat, so we draw our own. ---
+	// The OS hides its pointer during key repeat, so the reticle is drawn.
 	const reticle = new THREE.Mesh(
 		own(
 			new THREE.RingGeometry(tune.map.reticle.inner, tune.map.reticle.outer, 32).rotateX(
@@ -64,7 +63,6 @@ export function createView(scene, smooth) {
 	reticle.visible = false
 	group.add(reticle)
 
-	// --- Held aim: Q's line, as long as its range and as wide as the arrow. ---
 	const line = new THREE.Mesh(
 		own(new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2).translate(0, 0, -0.5)),
 		flat('cream'),
@@ -83,7 +81,6 @@ export function createView(scene, smooth) {
 
 	const numbers = createDamageNumbers(group)
 
-	// --- Skillshots: a bright bolt with a trail that grows from the hand. ---
 	const boltGeometry = own(new THREE.CapsuleGeometry(0.12, 0.7, 4, 8).rotateX(Math.PI / 2))
 	const trailGeometry = own(new THREE.BoxGeometry(0.1, 0.06, 1).translate(0, 0, -0.5))
 	const boltMaterial = flat('ammo')

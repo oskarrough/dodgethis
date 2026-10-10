@@ -3,9 +3,8 @@ import { makeStyleMaterial } from '../../core/stylepass.js'
 import { tune } from './tune.js'
 import { STEP } from '../../core/app.js'
 
-// A sparring dummy's body: a burlap sack on a coil spring, a painted target, one X eye and one button eye.
-// Same contract as dressHero: it hides the mannequin, keeps the inked collision disc, and returns an undress.
-// Hits throw it into an underdamped wobble; strafing makes it hop and rock instead of walk.
+// A sparring dummy's body: a burlap sack on a coil spring. Same contract as dressHero: hides the
+// mannequin, keeps the inked collision disc, returns an undress.
 export function dressDummy(body, _heroId, team = 'B') {
 	const t = tune.silhouettes
 	const v = tune.dummyView
@@ -97,7 +96,6 @@ export function dressDummy(body, _heroId, team = 'B') {
 		)
 		cap.castShadow = false
 	})
-	// Side seams: short ink stitches across each flank, top to bottom.
 	for (const side of [-1, 1])
 		for (let i = 0; i < v.seamStitches; i++) {
 			const polar = ((i + 1) / (v.seamStitches + 1)) * Math.PI
@@ -181,7 +179,6 @@ export function dressDummy(body, _heroId, team = 'B') {
 		tuft.rotation.set(-0.25, 0, offset * v.strawFan)
 	}
 
-	// Stub arms hinge at the shoulder; the shape hangs off the hinge.
 	const arms = [-1, 1].map((side) => {
 		const shoulder = group(
 			rig,
@@ -232,7 +229,6 @@ export function dressDummy(body, _heroId, team = 'B') {
 		}
 	}
 
-	// A hit rocks the top away from the shot.
 	body.wobble = (direction) => push(direction ?? { x: 0, z: 1 }, v.wobbleHit)
 	body.resetAbilityPose = () => {
 		wobble.x = wobble.z = wobble.vx = wobble.vz = 0
@@ -241,7 +237,6 @@ export function dressDummy(body, _heroId, team = 'B') {
 		rig.position.y = discY
 		for (const arm of arms) arm.shoulder.rotation.set(0, 0, -arm.side * v.armDroop)
 	}
-	// The Loose leaves with a lurch toward its target.
 	body.releaseAbilityPose = () => {
 		const yaw = body.mesh.rotation.y
 		push({ x: -Math.sin(yaw), z: -Math.cos(yaw) }, v.wobbleRelease)

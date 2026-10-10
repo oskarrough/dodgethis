@@ -40,7 +40,7 @@ export function createLoadout(body, { id, participant, hp = 1, replica = false }
 	bow.add(hand)
 	hand.position.set(0.28, 0, 0)
 
-	let dashCd = 0 // >0 while dash is on cooldown (counts down from dashCooldown)
+	let dashCd = 0
 	const _hand = new THREE.Vector3()
 	const unit = {
 		id, // transient presentation/physics identity; use participantId across rounds
@@ -55,7 +55,7 @@ export function createLoadout(body, { id, participant, hp = 1, replica = false }
 		controller: participant.controller,
 		characterController: body.characterController,
 		alive: true,
-		hp, // hits left before elimination (damage() spends them)
+		hp,
 		maxHp: hp,
 		heldArrow: null,
 		aim: new THREE.Vector3(0, 0, -1), // facing/launch direction (set by actions or AI)
@@ -69,7 +69,7 @@ export function createLoadout(body, { id, participant, hp = 1, replica = false }
 		get yaw() {
 			return body.yaw
 		},
-		/** Velocity (m/s) — useful for tests / leading. */
+		/** m/s */
 		get velocity() {
 			return body.velocity
 		},
@@ -126,7 +126,7 @@ export function createLoadout(body, { id, participant, hp = 1, replica = false }
 		return unit.alive && body.jump()
 	}
 
-	// Dash in `dir` or, with no steer, along aim; return whether a live, ready unit fired it.
+	// No steer dashes along aim. Returns whether a live, ready unit fired.
 	function dash(dir) {
 		if (replica || !unit.alive || dashCd > 0 || body.dashing) return false
 		let dx = dir ? dir.x : 0
@@ -152,13 +152,12 @@ export function createLoadout(body, { id, participant, hp = 1, replica = false }
 		else if (event.type === 'pickup') body.squash(0.16)
 		else if (event.type === 'land') body.squash(Math.min(0.22, 0.05 + event.speed * 0.015))
 		else if (event.type === 'impact' && event.outcome === 'hurt') {
-			// A survived hit still stings: squash plus a bounded kick along the facing.
 			body.squash(0.2)
 			body.kick(0.2)
 		}
 	}
 
-	// The mannequin plus the armed pose; `charge` (0–1) is the windup. Returns true on a footstep.
+	// `charge` is the 0–1 windup. Returns true on a footstep.
 	function updateVisual(dt, charge = 0) {
 		bow.visible = !!unit.heldArrow
 		if (!unit.alive) return false // feedback owns the detached corpse
@@ -173,7 +172,7 @@ export function createLoadout(body, { id, participant, hp = 1, replica = false }
 		return stepped
 	}
 
-	// Spend hit points from a live unit; true means the pool hit zero and the caller must eliminate().
+	// True means the pool hit zero and the caller must eliminate().
 	function damage(amount = 1) {
 		if (!unit.alive) return false
 		unit.hp = Math.max(0, unit.hp - amount)
@@ -203,7 +202,7 @@ export function createLoadout(body, { id, participant, hp = 1, replica = false }
 		if (!state.alive) eliminate()
 	}
 
-	// Free the loadout's parts, then the body. The Round calls it on every unit to reset without a reload.
+	// The Round calls it on every unit to reset without a reload.
 	function dispose() {
 		for (const part of [badge, bow, hand]) {
 			part.geometry.dispose()

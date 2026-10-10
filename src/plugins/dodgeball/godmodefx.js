@@ -3,7 +3,7 @@ import { tune } from './tune.js'
 import { PALETTE } from '../../core/style.js'
 import { FORWARD_LAYER } from '../../core/stylepass.js'
 
-// Translucent bubble-shield aura for the human while godmode is on; follows the player mesh, hidden when the cheat is off or the unit is gone.
+// Translucent bubble-shield aura for the human while godmode is on.
 
 const BUBBLE_N = 20
 const SHIELD_R = 1.38

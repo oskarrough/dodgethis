@@ -8,7 +8,7 @@ const clamp = (v, lo, hi) => (v < lo ? lo : v > hi ? hi : v)
 const UP = new THREE.Vector3(0, 1, 0)
 
 // A body is the core of anything that walks: the sim pose, a manually moved Rapier kinematic capsule with hand-applied gravity and collider sliding, and the mannequin that renders it.
-// `profile` is the movement profile, read live so tuning applies at once (speed, accel, friction, stopFriction, stopSpeed, airAccel, airSpeedMul, radius, halfHeight, jumpSpeed, gravityMul, coyoteTime).
+// `profile` is the movement profile, read live so tuning applies at once.
 // `bounds(radius)` returns the { x, z } half-extents a dash may not leave; `smooth` is app.smooth. A replica has no physics: its rendered root is its pose.
 export function createBody(
 	scene,
@@ -163,7 +163,6 @@ export function createBody(
 		dispose,
 	}
 
-	// Point the body along a horizontal direction.
 	function face(dir) {
 		if (dir.x === 0 && dir.z === 0) return
 		const yaw = Math.atan2(dir.x, dir.z) + Math.PI
@@ -384,7 +383,6 @@ export function createBody(
 		dashDir.copy(state.dashDirection)
 	}
 
-	// Free everything this body put into the world and scene.
 	function dispose() {
 		if (disposed) return
 		disposed = true

@@ -1,9 +1,7 @@
 import * as THREE from 'three'
 
-// Flagfall's yard cover, redrawn as a mooring bollard: a fat painted iron post with a flared
-// cap, a few coils of rope round its waist and a lifebuoy lying round its foot, on a sand pad.
-// Faceted and a little wonky, like the windbreaks. Pure geometry; map.js merges each role
-// into one mesh.
+// Flagfall's yard cover: a mooring bollard with rope coils and a lifebuoy, faceted and a little
+// wonky. Pure geometry; map.js merges each role into one mesh.
 
 export const BOLLARD_ROLES = {
 	sand: 'sand',
@@ -27,7 +25,6 @@ const hash = (x, z, i) => {
 	return v - Math.floor(v) - 0.5
 }
 
-// Lathe the profile ([radius, height] pairs) and nudge the top over, so no two posts match.
 function lathe(points, x, z, lean, seed) {
 	const g = new THREE.LatheGeometry(
 		points.map(([r, y]) => new THREE.Vector2(r, y)),
@@ -57,8 +54,8 @@ function ring(radius, tube, y, x, z, seed, arc = Math.PI * 2, spin = 0) {
 	return flat(g)
 }
 
-// `p` is the pillar's collision circle ({ x, z, r }), `height` the old pillar height
-// (already map-scaled). Everything stays inside the circle.
+// `p` is the pillar's collision circle ({ x, z, r }), `height` the map-scaled pillar height.
+// Everything stays inside the circle.
 export function bollardGeometries(p, height) {
 	const { x, z, r } = p
 	const out = { sand: [], body: [], cap: [], rope: [], buoy: [], bands: [] }
@@ -86,7 +83,6 @@ export function bollardGeometries(p, height) {
 			seed,
 		),
 	)
-	// Flared cap: a lip that overhangs the waist, then a blunt dome-ish top.
 	out.cap.push(
 		lathe(
 			[
@@ -103,7 +99,6 @@ export function bollardGeometries(p, height) {
 		),
 	)
 
-	// Rope: two fat coils on the waist, each a touch off level.
 	for (let i = 0; i < 2; i++)
 		out.rope.push(
 			ring(
@@ -119,7 +114,6 @@ export function bollardGeometries(p, height) {
 	// A coil of spare rope on top: the camera looks down, so the top has to read too.
 	out.rope.push(ring(waist * 0.8, r * 0.13, h + r * 0.05, x, z, seed + 20))
 
-	// Lifebuoy lying round the foot: terracotta ring with four cream bands.
 	const buoyRadius = r * 0.78
 	const buoyTube = r * 0.2
 	const buoyY = padHeight + buoyTube * 0.8

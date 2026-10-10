@@ -373,7 +373,6 @@ diffuseColor.rgb *= 1.0 - coverShade * (1.0 - max(0.0, dot(n, normalize(vec3(0.4
 	if (kind === 'lobby') buildLobby()
 	else if (layout.settings?.lane) buildFlagfall()
 	else buildLane()
-	// Flagfall draws its hedges as windbreaks, merged into one mesh per colour.
 	const windbreak = { sand: [], wood: [], stripes: [[], [], []] }
 	for (const b of layout.boxes) {
 		if (finish && b.kind === 'hedge') {
@@ -416,7 +415,6 @@ diffuseColor.rgb *= 1.0 - coverShade * (1.0 - max(0.0, dot(n, normalize(vec3(0.4
 		print(list, material(WINDBREAK_ROLES.stripes[i]), `windbreak-canvas-${i}`),
 	)
 
-	// Flagfall's yard cover is a mooring bollard, merged into one mesh per colour.
 	const bollards = layout.settings?.lane
 	const bollard = Object.fromEntries(Object.keys(BOLLARD_ROLES).map((key) => [key, []]))
 	for (const p of layout.pillars) {

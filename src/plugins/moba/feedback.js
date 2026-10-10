@@ -62,8 +62,7 @@ export function createFeedback({
 		sfx[name]?.(fact.point, gain, ...extra)
 	}
 
-	// A hero takedown leaves a crossed disc with the takers' accent, the ref's whistle and,
-	// unless you're the one out (the recap says so), a banner relative to you. Streaks count per team.
+	// Streaks count per team. No banner for the hero who is out; the recap says so.
 	const streaks = new Map() // team → { count, tick }
 	const titleCase = (word) => word[0].toUpperCase() + word.slice(1)
 	function who(unit, subject) {
@@ -426,7 +425,6 @@ export function createFeedback({
 				return
 			}
 			case 'shove': {
-				// A shove on the slick: a scuff trail behind the feet, a lean into the slide.
 				const unit = unitOf(fact.target)
 				juice.burst(
 					{ ...fact.point, y: 0.1 },
@@ -438,7 +436,6 @@ export function createFeedback({
 				return
 			}
 			case 'dunk': {
-				// Over the edge: the body sails out tumbling and splashes down; the ref calls it OUT at the edge.
 				const unit = unitOf(fact.target)
 				const corpse = unit?.corpse ?? unit?.body
 				corpse?.resetAbilityPose?.()
@@ -502,7 +499,6 @@ export function createFeedback({
 		}
 	}
 
-	// Skillshots that ran out of range fizzle where they stopped.
 	function fizzle(gone) {
 		for (const b of gone) {
 			if (!b) continue

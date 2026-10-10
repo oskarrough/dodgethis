@@ -24,7 +24,6 @@ function buildGrid({ radius, clearance, grid }, obstacles, bounds) {
 		const p = point(c)
 		open[c] = walkable(p.x, p.z, margin, 0, obstacles, bounds) ? 1 : 0
 	}
-	// A* scratch, reset on every search.
 	const scratch = {
 		g: new Float32Array(nx * nz),
 		from: new Int32Array(nx * nz),

@@ -1,4 +1,3 @@
-// --- Tunables ----------------------------------------------------------------
 // Dodgeball's live game-feel values, shared by the debug GUI, game logic, and DOM-free tests. Core's live in src/core/tune.js.
 export const tune = {
 	lobbyHint: {

@@ -15,7 +15,6 @@ export function createActions() {
 		return s
 	}
 
-	// Apply `frames` (participant id → frame) to `round` for one step and return each seat's move.
 	// `consume(id, action)` acknowledges a buffered press that took effect, so it is not retried.
 	function step(round, frames, dt, consume = () => {}) {
 		const moves = new Map()
@@ -46,7 +45,7 @@ export function createActions() {
 		step,
 		seat,
 		preview,
-		// Drop every charge in progress (round changes, modals, blur).
+		// Round changes, modals, blur.
 		cancel() {
 			for (const s of seats.values()) s.meter.cancel()
 		},
@@ -118,7 +117,7 @@ function fire(round, unit, seat, target) {
 	})
 }
 
-// Point the unit at a ground point; no point keeps the old aim.
+// No point keeps the old aim.
 export function aimAt(unit, target) {
 	if (!target) return
 	unit.aim.set(target.x - unit.position.x, 0, target.z - unit.position.z)

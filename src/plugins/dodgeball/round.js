@@ -105,7 +105,6 @@ export function createRound(
 	let overDelay = 0
 	let ending = false
 
-	// --- Shared actions (used by both the human and the AI brains). ---
 	// `opts` carries the human weapon and perfect shot; AI omission means plain arrows.
 	function looseArrow(unit, dir, speed, opts = {}) {
 		if (over || !unit.alive) return
@@ -128,7 +127,6 @@ export function createRound(
 		present({ ...a.snapshotImpact(), type: 'shot' })
 	}
 
-	// The human's shot — main.js solves the aim direction + speed + weapon opts.
 	function looseHuman(dir, speed, opts = {}) {
 		looseArrow(localPlayer, dir, speed, opts)
 	}
@@ -150,10 +148,8 @@ export function createRound(
 		}
 	}
 
-	// Infinite-ammo cheat: the human's quiver never empties. Whenever they have no
-	// arrow in hand — just loosed one, or the cheat was toggled on empty-handed —
-	// nock a fresh arrow so shooting never stalls on the scarce pool. A new arrow
-	// enters the pool each time, which is the point of "infinite".
+	// Infinite-ammo cheat: with no arrow in hand (just loosed, or toggled on empty-handed), nock a
+	// fresh one so shooting never stalls on the scarce pool.
 	function nockInfinite(unit) {
 		if (!tune.cheats.infiniteAmmo || lobby || over || !unit.alive || unit.heldArrow) return
 		const a = createArrow(scene, world, RAPIER, { position: [0, 0, 0], smooth })
@@ -178,21 +174,19 @@ export function createRound(
 		return dashUnit(localPlayer, direction)
 	}
 
-	// Run every brain: move, maybe grab, maybe shoot.
 	function thinkAI(dt) {
 		if (!tune.ai.enabled) return
 		const ictx = { units, arrows, obstacles: ctx.obstacles ?? [] }
 		for (const b of brains) {
 			if (!b.unit.alive) continue
 			const intent = b.think(ictx, dt)
-			if (intent.dash) dashUnit(b.unit, intent.move) // burst out of an imminent arrow
+			if (intent.dash) dashUnit(b.unit, intent.move)
 			b.unit.update(intent.move, dt)
 			if (intent.grab) grabNearestArrow(b.unit)
 			if (intent.shoot) looseArrow(b.unit, intent.shoot, solveLaunch(intent.shoot.dist))
 		}
 	}
 
-	// --- Collision events: flying arrow vs enemy unit → elimination. ---
 	function resolveHits() {
 		if (over) return // round already decided; ignore late contacts
 		eventQueue.drainCollisionEvents((h1, h2, started) => {
@@ -352,12 +346,11 @@ export function createRound(
 			if (u.alive && u.heldArrow) u.heldArrow.carry(u.handPosition(), u.aim)
 		}
 
-		// Deciding-death grace period: let the animation breathe, then end the round.
 		if (ending) {
 			overDelay -= dt
 			if (overDelay <= 0) {
 				ending = false
-				onOver(winner) // signal up to the match controller (null = draw)
+				onOver(winner)
 			}
 		}
 	}
@@ -369,7 +362,6 @@ export function createRound(
 		}
 	}
 
-	// --- Live roster editing (debug/sandbox) ----------------------------------
 	// Debug roster edits add AI units to either team and can decide the round when removing the last opponent.
 	function addUnit(team) {
 		const isB = team === 'B'

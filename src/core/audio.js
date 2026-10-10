@@ -115,7 +115,6 @@ function wake() {
 globalThis.window?.addEventListener('pointerdown', wake)
 globalThis.window?.addEventListener('keydown', wake)
 
-// --- Sample player ----------------------------------------------------------
 // Decode per URL into a cached AudioBuffer; each play() uses a fresh one-shot BufferSourceNode, so no pooling.
 
 const buffers = new Map() // url -> Promise<AudioBuffer>
@@ -284,7 +283,6 @@ export const sfx = {
 		scuff(point, true)
 	},
 	step: (point) => scuff(point),
-	// Something heavy into water: a broad falling hiss.
 	splash: (point, gain = 1) =>
 		noise({ point, from: 2600, to: 380, dur: 0.25, gain: 0.22 * gain, q: 0.5 }),
 	// An arrow zipping past your ear: a falling noise sweep, louder the closer it came (closeness 0..1).
@@ -324,7 +322,6 @@ export const sfx = {
 		),
 	// Menu cursor-move blip — a short square wave, very handheld (D-pad thunk).
 	nav: () => blip({ freq: 660, type: 'square', dur: 0.05, gain: 0.12 }),
-	// Portal: a downward suck-in sweep, then a rising pop-out on arrival.
 	portal: () => {
 		blip({ freq: 900, slideTo: 80, type: 'sawtooth', dur: 0.3, gain: 0.18 })
 		blip({ freq: 160, slideTo: 900, type: 'square', dur: 0.22, gain: 0.16, delay: 0.3 })

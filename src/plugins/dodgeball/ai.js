@@ -10,7 +10,7 @@ import { blocksSight, steerAround } from './obstacles.js'
 export function createBrain(unit, { reactionMul = 1, jitterMul = 1, rng = Math.random } = {}) {
 	let aimTimer = 0
 	let lastTarget = null
-	let strafeDir = rng() < 0.5 ? 1 : -1 // circle-strafe handedness (flips over time)
+	let strafeDir = rng() < 0.5 ? 1 : -1
 	let strafeTimer = 0
 	let sightless = 0 // seconds the armed bot has lacked a clear line to its target
 	// Seeded phases stagger five-Hz strategic scans; steering, leading, weaving, and dodging still run every step.
@@ -21,7 +21,7 @@ export function createBrain(unit, { reactionMul = 1, jitterMul = 1, rng = Math.r
 	let pickup = { arrow: null, contested: false }
 	let pickupInitialized = false
 	const lastPos = new THREE.Vector3()
-	const tvel = new THREE.Vector3() // estimated target velocity (for leading)
+	const tvel = new THREE.Vector3()
 	const move = new THREE.Vector3()
 	const aim = new THREE.Vector3()
 	const pred = new THREE.Vector3()
@@ -39,11 +39,11 @@ export function createBrain(unit, { reactionMul = 1, jitterMul = 1, rng = Math.r
 			if (vlen2 < 1e-4) continue
 			const rx = me.x - a.position.x // me relative to the arrow, ground plane
 			const rz = me.z - a.position.z
-			const t = -(rx * v.x + rz * v.z) / vlen2 // time of closest approach
-			if (t < 0 || t > DODGE_HORIZON) continue // already past me, or not soon
-			const mx = rx + v.x * t // miss vector at closest approach
+			const t = -(rx * v.x + rz * v.z) / vlen2
+			if (t < 0 || t > DODGE_HORIZON) continue
+			const mx = rx + v.x * t
 			const mz = rz + v.z * t
-			if (mx * mx + mz * mz > HIT_R * HIT_R) continue // it'll sail by
+			if (mx * mx + mz * mz > HIT_R * HIT_R) continue
 			threatened = true
 			if (t < minT) minT = t
 			// Step toward the current side of the path, weighted so the most imminent arrow dominates.
@@ -62,7 +62,7 @@ export function createBrain(unit, { reactionMul = 1, jitterMul = 1, rng = Math.r
 		ex += -me.x * 0.03 // gentle pull to center so a panic-dodge avoids the rim
 		ez += -me.z * 0.03
 		if (ex * ex + ez * ez < 1e-6) return null
-		return { x: ex, z: ez, urgent: minT < DASH_TTI } // dash only on imminent hits
+		return { x: ex, z: ez, urgent: minT < DASH_TTI }
 	}
 
 	function think(ctx, dt) {
@@ -87,7 +87,6 @@ export function createBrain(unit, { reactionMul = 1, jitterMul = 1, rng = Math.r
 		const dz = target.position.z - me.z
 		const d2 = dx * dx + dz * dz
 
-		// Estimate the target's velocity from frame-to-frame movement (for leading).
 		if (target === lastTarget && dt > 0) {
 			tvel.set((target.position.x - lastPos.x) / dt, 0, (target.position.z - lastPos.z) / dt)
 		} else {
@@ -97,18 +96,16 @@ export function createBrain(unit, { reactionMul = 1, jitterMul = 1, rng = Math.r
 		lastTarget = target
 		lastPos.copy(target.position)
 
-		// --- threatened: dodge an inbound arrow (still facing the target). ---
 		const dodge = incomingDodge(ctx.arrows, me)
 		if (dodge) {
 			move.set(dodge.x, 0, dodge.z)
 			unit.aim.set(target.position.x - me.x, 0, target.position.z - me.z)
 			if (unit.aim.lengthSq() > 1e-4) unit.aim.normalize()
 			const out = norm(move, grab, shoot, me, obstacles, dodge) // dodge steers too, but keeps its escape direction
-			out.dash = dodge.urgent // burst out of the way when a hit is imminent
+			out.dash = dodge.urgent
 			return out
 		}
 
-		// --- armed: aim with lead + jitter and loose after a reaction beat. ---
 		if (unit.heldArrow) {
 			pickupInitialized = false
 			const dist = Math.max(Math.sqrt(d2), 1e-4)
@@ -120,20 +117,19 @@ export function createBrain(unit, { reactionMul = 1, jitterMul = 1, rng = Math.r
 			aim.normalize()
 			unit.aim.copy(aim)
 
-			// Armed bots circle-strafe at a standoff while aiming independently at the lead.
 			const standoff = tune.ai.standoff
 			const band = 2.5
-			const rx = (target.position.x - me.x) / dist // unit dir toward target
+			const rx = (target.position.x - me.x) / dist
 			const rz = (target.position.z - me.z) / dist
 			let radial = 0
-			if (dist > standoff + band) radial = 1 // too far → close in
-			else if (dist < standoff - band) radial = -1 // too close → back off
+			if (dist > standoff + band) radial = 1
+			else if (dist < standoff - band) radial = -1
 			strafeTimer += dt
 			if (strafeTimer > 2.2) {
 				strafeTimer = 0
 				if (rng() < 0.5) strafeDir = -strafeDir // stay unpredictable
 			}
-			let sx = -rz * strafeDir // tangent (perpendicular to the line to target)
+			let sx = -rz * strafeDir
 			let sz = rx * strafeDir
 			const rim = bounds(ARENA.inset.aiKite) // flip rather than grind the lava rim
 			if (
@@ -166,7 +162,7 @@ export function createBrain(unit, { reactionMul = 1, jitterMul = 1, rng = Math.r
 			if (aimTimer >= tune.ai.reaction * reactionMul) {
 				aimTimer = 0
 				unit.windup = 0
-				const j = (rng() * 2 - 1) * tune.ai.jitter * jitterMul // rotate aim by jitter
+				const j = (rng() * 2 - 1) * tune.ai.jitter * jitterMul
 				const c = Math.cos(j)
 				const s = Math.sin(j)
 				const distPred = Math.hypot(pred.x - me.x, pred.z - me.z)
@@ -175,7 +171,6 @@ export function createBrain(unit, { reactionMul = 1, jitterMul = 1, rng = Math.r
 			return norm(move, grab, shoot, me)
 		}
 
-		// --- noArrow: claim an arrow worth walking to, without walking into a shot. ---
 		if (
 			!pickupInitialized ||
 			pickupTimer <= 0 ||
@@ -217,7 +212,6 @@ const HIT_R = 1.0
 // Reserve dashes for imminent hits; distant threats get a cheap strafe.
 const DASH_TTI = 0.5
 
-// --- Ammo economy -----------------------------------------------------------
 // Score shared grounded arrows by distance plus the deficit to the nearest empty-handed rival, avoiding wasted pickup races.
 const CONTEST_PENALTY = 1.5
 // A race within this margin is winnable enough to spend a dash.

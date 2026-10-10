@@ -77,7 +77,7 @@ export function createFeedback(scene, { sfx, confirm, addShake = () => {}, kickF
 			return
 		}
 		if (event.outcome === 'nearMiss') {
-			// The dodge reward: it zipped past your ear. Nearly hitting someone gets a bright tick and streaks instead.
+			// The dodge reward: it zipped past your ear.
 			if (event.target?.isLocal ?? event.target?.isHuman) {
 				sfx.whoosh(event.point, 1 - Math.min(1, (event.distance ?? 0) / 1.5))
 				addShake(0.18)
@@ -112,7 +112,6 @@ export function createFeedback(scene, { sfx, confirm, addShake = () => {}, kickF
 		} else if (event.outcome === 'deflected') sfx.deflect(event.point)
 		else if (event.outcome === 'landed') sfx.land(event.point)
 		else if (event.outcome === 'hurt') {
-			// A survived hit: softer thump and shake, a short HIT flash for the human, no death.
 			sfx.hit(event.point)
 			addShake(event.target.isHuman ? 0.35 : 0.2)
 			kickFov(1)

@@ -21,9 +21,8 @@ import {
 	waveCard,
 } from './tooltip.js'
 
-// The match HUD: a top bar (levels, takedowns, the lane's structures, clock, wave and Ball rings),
-// the portrait with HP and XP, three ability slots, and tooltips on all of it plus world units.
-// Every DOM write goes through `put`, which skips unchanged values. Removed with the run.
+// The match HUD: top bar, portrait, ability slots and tooltips, including world units.
+// Every DOM write goes through `put`, which skips unchanged values.
 
 const SLOTS = ['slot1', 'slot2', 'slot3']
 const KEYS = { keyboard: ['Q', 'W', 'E'], gamepad: ['RB', 'RT', 'LB'] }
@@ -186,7 +185,6 @@ export function createHud({ lobby = false, layout, pieces } = {}) {
 		return node
 	}
 
-	// --- Top bar: [structures][takedowns][LEVEL] clock [LEVEL][takedowns][structures] ---
 	const top = el('div', 'moba-score moba-top')
 	top.setAttribute('role', 'group')
 	top.setAttribute('aria-label', 'Match status')
@@ -228,7 +226,6 @@ export function createHud({ lobby = false, layout, pieces } = {}) {
 	const ball = timer('ball')
 	side('theirs')
 
-	// --- Bottom: portrait and slots ---
 	const root = el('div', 'moba-hud')
 	const bar = el('div', 'moba-bar', root)
 	const unitFrame = el('div', 'moba-hud moba-unit')
@@ -588,7 +585,6 @@ export function createHud({ lobby = false, layout, pieces } = {}) {
 		updateWorld(dt, frame, !source && !hover && !press && !inspect.by)
 	}
 
-	// World hover: a slim nameplate over the unit; hold Alt for its full card in the dock.
 	function updateWorld(dt, frame, free) {
 		const { sim, aim, camera, device } = frame
 		const moved = pointer.moved
@@ -603,7 +599,6 @@ export function createHud({ lobby = false, layout, pieces } = {}) {
 		const unit = world?.unit
 		const ready = !!unit && world.dwell >= tune.hud.hoverDelay
 		const card = ready ? cardFor({ kind: 'unit', unit }, frame) : null
-		// The nameplate rides above the unit's rendered head: name and exact HP, nothing else.
 		if (card && camera) {
 			const at = screenOf(unit, camera)
 			text(plateName, card.title)
@@ -762,7 +757,6 @@ export function createHud({ lobby = false, layout, pieces } = {}) {
 			}
 			if (bannerLeft > 0 && (bannerLeft -= dt) <= 0) banner.hidden = true
 
-			// Portrait.
 			const level = hero?.level ?? teams?.[localTeam].level ?? 1
 			data(root, 'team', localTeam)
 			data(unitFrame, 'team', localTeam)
@@ -805,7 +799,6 @@ export function createHud({ lobby = false, layout, pieces } = {}) {
 				)
 			}
 
-			// Slots.
 			const keys = KEYS[device] ?? KEYS.keyboard
 			for (const [i, s] of slots.entries()) {
 				const ability = definition.abilities[s.action]

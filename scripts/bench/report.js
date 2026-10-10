@@ -1,4 +1,5 @@
 // `farm --summary --report`: per-match counters gathered in the worker from the combat log and the
+// bots' brains, merged per side and variant in the main thread, printed as compact sections.
 import {
 	deltaCell,
 	deltaDecided,
@@ -7,7 +8,6 @@ import {
 	rateCell,
 	rateDecided,
 } from './stats.js'
-// bots' brains, merged per side and variant in the main thread, printed as compact sections.
 
 const structure = (id) => /^(tower|core)-/.test(id ?? '')
 const killerKind = (source, seats) =>
@@ -121,7 +121,6 @@ export function matchReport(roster, { STEP, towerRange }) {
 	}
 }
 
-// Sum of many matches' reports, with the match count and each hero's seat-matches and wins.
 export function emptyTotals() {
 	return {
 		matches: 0,
@@ -191,7 +190,6 @@ export function mergeReport(totals, report, winner) {
 		sumInto(totals[key], report[key])
 }
 
-// One summary cell per side and variant: matchup rows plus the merged report.
 export const emptyCell = () => ({ rows: {}, totals: emptyTotals() })
 
 export function addResult(cell, { pair, winner, duration, report }) {

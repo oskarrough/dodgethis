@@ -43,7 +43,6 @@ try {
 			options: { setup },
 		})
 	} else if (query.get('mode') === 'dodgeball') app.modes.start('dodgeball')
-	// A fresh visit lands on the splash, where the mode is chosen.
 	else app.modes.start('moba-front')
 	app.run()
 } catch (err) {

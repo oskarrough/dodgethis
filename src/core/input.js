@@ -79,7 +79,6 @@ export function consumeJump() {
 	return queued
 }
 
-// True once per dash tap; clears the flag so each press is a single burst.
 export function consumeDash() {
 	if (dashQueued || padDashQueued) {
 		dashQueued = false
@@ -105,7 +104,6 @@ export function moveVector() {
 	return { x, z }
 }
 
-// --- Pointer (aim) + shoot edge-detect ---
 // The left button provides press, release, and held signals; blur cancels held state without firing.
 const canvas = document.querySelector('.app')
 const pointer = { x: 0, y: 0 }
@@ -187,7 +185,6 @@ export function pointerNDC() {
 	return pointer
 }
 
-// True once per press; clears the flag so each click fires a single shot.
 export function consumePress() {
 	if (pressQueued) {
 		pressQueued = false
@@ -196,7 +193,6 @@ export function consumePress() {
 	return false
 }
 
-// True once per release of the left button.
 export function consumeRelease() {
 	if (releaseQueued) {
 		releaseQueued = false
@@ -205,7 +201,6 @@ export function consumeRelease() {
 	return false
 }
 
-// Is the left button currently held? (drives the charge meter)
 export function pointerDown() {
 	return pointerHeld || padShootHeld
 }
@@ -222,7 +217,6 @@ function clearDash() {
 	padDashQueued = false
 }
 
-// --- Gamepad (plan.md: stick move + aim, trigger shoot) ---
 // Main polls each frame: left stick moves, right stick drives the shared NDC aim cursor, and RT or A mirrors mouse press, hold, and release.
 const DEADZONE = 0.18
 const AIM_SPEED = 1.7 // NDC units per second at full stick deflection

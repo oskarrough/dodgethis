@@ -123,7 +123,6 @@ export async function createBrowserApp() {
 	document.addEventListener('fullscreenchange', renderFullscreen)
 	renderFullscreen()
 
-	// --- Collider debug overlay (GUI toggle) ----------------------------------
 	const debugGeom = new THREE.BufferGeometry()
 	const debugLines = new THREE.LineSegments(
 		debugGeom,
@@ -144,7 +143,7 @@ export async function createBrowserApp() {
 			col.array.set(colors)
 			col.needsUpdate = true
 		} else {
-			debugGeom.dispose() // release the old buffers before replacing
+			debugGeom.dispose()
 			debugGeom.setAttribute('position', new THREE.BufferAttribute(vertices, 3))
 			debugGeom.setAttribute('color', new THREE.BufferAttribute(colors, 4))
 		}
@@ -177,7 +176,6 @@ export async function createBrowserApp() {
 		f.add({ dumpLog: () => log.dump() }, 'dumpLog').name('dump log → console')
 	})
 
-	// --- Diagnostics: Backquote toggles the HUD, combat log, GUI and window.game --
 	// window.dt (core/proof.js) stays once shown, so a proof can hide the HUD for a screenshot.
 	const hud = document.querySelector('.hud')
 	const combatEl = document.querySelector('.combat')
@@ -248,7 +246,6 @@ export async function createBrowserApp() {
 		if (perf.enabled) simulationEnd = performance.now()
 	})
 
-	// --- Frame loop ------------------------------------------------------------
 	let last = performance.now()
 	window.addEventListener('blur', () => app.emit('blur'))
 	// Reset stale rAF time on tab return to avoid an artificial 0.1s simulation step.
@@ -292,7 +289,6 @@ export async function createBrowserApp() {
 	return app
 }
 
-// Put a boot failure where the player can see it.
 export function reportBootError(err) {
 	console.error(err)
 	log.error('boot failed', String(err))

@@ -68,7 +68,6 @@ export function floorOutline(s = tune.lobby.floor) {
 	return out
 }
 
-// The ground the deferred pass draws and the sheet lies over.
 export function floorShape(s = tune.lobby.floor) {
 	// Shape x/y map to world x/z once the geometry is laid flat.
 	const outline = floorOutline(s)
@@ -90,7 +89,6 @@ function drawTexture(s) {
 		pz = (z) => (z + s.halfZ) * ppm
 	g.fillStyle = c.tarmac
 	g.fillRect(0, 0, w, h)
-	// Big quiet blotches: patched tarmac, not a pattern.
 	g.fillStyle = c.blotch
 	for (let i = 0; i < 46; i++) {
 		g.globalAlpha = 0.04 + rand() * 0.06
@@ -107,14 +105,12 @@ function drawTexture(s) {
 		g.fill()
 	}
 	g.globalAlpha = 1
-	// Speckle.
 	g.fillStyle = c.speck
 	for (let i = 0; i < s.speckles; i++) {
 		g.globalAlpha = 0.1 + rand() * 0.22
 		const r = 0.6 + rand() * 1.4
 		g.fillRect(rand() * w, rand() * h, r, r)
 	}
-	// Hairline cracks: short wandering walks.
 	g.strokeStyle = c.crack
 	g.lineCap = g.lineJoin = 'round'
 	for (let i = 0; i < s.cracks; i++) {
@@ -134,7 +130,6 @@ function drawTexture(s) {
 		g.stroke()
 	}
 	g.globalAlpha = 1
-	// Chalk: a little dusty, broken by wear.
 	g.strokeStyle = c.chalk
 	g.lineCap = 'round'
 	g.lineJoin = 'round'
@@ -190,7 +185,6 @@ function drawTexture(s) {
 		g.strokeRect(px(x - k / 2), pz(z - k / 2), k * ppm, k * ppm)
 		g.fillText(String(n), px(x), pz(z))
 	}
-	// Weather the chalk: knock tarmac-coloured specks back over it.
 	g.globalCompositeOperation = 'source-over'
 	g.fillStyle = c.tarmac
 	for (let i = 0; i < s.speckles * 0.5; i++) {
@@ -248,7 +242,6 @@ function rockGeometry(outline, s) {
 			const q = stepIn(p, inset)
 			return { x: q.x + (rand() - 0.5) * s.courseJitter, z: q.z + (rand() - 0.5) * s.courseJitter }
 		})
-		// Per-vertex drop so each course's lower edge is ragged.
 		const drop = ring.map(() => (rand() - 0.3) * courseHeight * 0.45)
 		const wallColor = base.clone().lerp(dark, (c + 1) / s.courses)
 		for (let i = 0; i < count; i++) {
@@ -259,7 +252,6 @@ function rockGeometry(outline, s) {
 			const p3 = new THREE.Vector3(ring[i].x, bottom + drop[i], ring[i].z)
 			// Wind so the face looks outward from the floor.
 			quad(p0, p1, p2, p3, wallColor)
-			// The ledge below: a step from this course's foot to the next course's top.
 			if (c < s.courses - 1) {
 				const q0 = new THREE.Vector3(next[i].x, bottom + drop[i], next[i].z)
 				const q1 = new THREE.Vector3(next[j].x, bottom + drop[j], next[j].z)
@@ -329,7 +321,6 @@ export function createFences(floor, s, y, name, depthMaterial = null) {
 			upright(p.x, p.z, s.height + s.postExtra, s.postRadius, s.capHeight, s.capRadius, 'posts')
 		}
 		for (let panel = 0; panel < panels; panel++) {
-			// Warp the diamond grid with the rail: it hangs from the posts rather than a rigid rectangle.
 			const point = (x, y) => {
 				const t = x / width,
 					arch = 4 * t * (1 - t),

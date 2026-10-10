@@ -15,7 +15,7 @@ export function createAimLine(scene, { samples = 32, width = 0.08, outline = 0.0
 		geom.setAttribute('position', new THREE.BufferAttribute(positions, 3))
 		const index = []
 		for (let i = 0; i < samples - 1; i++) {
-			if (i % DASH_PERIOD >= DASH_ON) continue // the gap between dashes
+			if (i % DASH_PERIOD >= DASH_ON) continue
 			const a = i * 2
 			index.push(a, a + 1, a + 3, a, a + 3, a + 2)
 		}
@@ -41,7 +41,6 @@ export function createAimLine(scene, { samples = 32, width = 0.08, outline = 0.0
 	const parts = [ribbon(PALETTE.ink, width / 2 + outline, 0), ribbon(PALETTE.ammo, width / 2, 1)]
 
 	return {
-		// `path` is `samples` xyz points; `dir` is their shared horizontal heading.
 		update(path, dir, color) {
 			left.set(-dir.z, 0, dir.x)
 			for (const part of parts) {

@@ -236,7 +236,6 @@ export function createLaneView(scene, smooth = null) {
 			const progress = unit.attack
 				? 1 - Math.max(0, unit.attack.left - alpha) / unit.attack.total
 				: 0
-			// Separate attack silhouettes: drum charge, shield jab, club swing, stick lean, hat hop.
 			const visual = unit.body.visual
 			visual.scale.set(1, 1, 1)
 			visual.rotation.x = 0
@@ -256,7 +255,6 @@ export function createLaneView(scene, smooth = null) {
 			else if (unit.kind === 'fort') visual.rotation.z = progress * v.fortPose
 			else if (unit.kind === 'core') visual.position.y = progress * v.corePose
 			else {
-				// Minions wind up like cartoons: pull back and crouch, hang at the peak, then snap through.
 				if (!unit.attack && unit.body.windup > v.strikeFrom) unit.body.strike = 1
 				unit.body.windup = progress
 				const held = Math.min(1, progress / v.windupHold)

@@ -275,7 +275,6 @@ export function dressHero(body, heroId = 'fletcher', team = 'A') {
 		part(new THREE.SphereGeometry(a.handRadius, 8, 6), cream, 0, 0, -a.bowCurve, bow)
 		drawArm = part(new THREE.CylinderGeometry(a.armRadius, a.armRadius, 1, 4), teamMaterial)
 		drawArm.name = 'moba-draw-arm'
-		// Two opaque ribbon triangles per string leg, updated in place.
 		const stringGeometry = new THREE.BufferGeometry()
 		stringGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(36), 3))
 		bowString = new THREE.Mesh(own(stringGeometry), fins)
@@ -351,7 +350,6 @@ export function dressHero(body, heroId = 'fletcher', team = 'A') {
 			bow.position.set(a.bowX, a.bowY, a.bowZ)
 			bow.rotation.y = a.drawTurn * pull
 			bow.scale.z = 1 + a.bowFlex * pull
-			// Hand travels from quiver to string before drawing it back.
 			hand.position.set(
 				pulling ? a.handX * fetching : a.handX,
 				pulling ? t.arrowY + (a.handY - t.arrowY) * fetching : a.handY,

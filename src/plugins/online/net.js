@@ -1,7 +1,7 @@
 // Private, host-and-spoke PeerJS transport. Lobby/game authority lives in the session model.
 import { tune } from './tune.js'
 
-// 4: the host's mode id is part of the lobby/start contract (3 introduced bounded raw strings).
+// 4: the host's mode id is part of the lobby/start contract.
 export const PROTO = 4
 export const MAX_PLAYERS = 8
 export const REMOVAL_MESSAGES = Object.freeze({

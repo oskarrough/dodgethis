@@ -65,7 +65,6 @@ export function makeRng(seed) {
 	}
 }
 
-// A scattered ammo position inside the safe region.
 export function ammoPoint(rng = Math.random) {
 	return {
 		x: (rng() - 0.5) * (ARENA.width - ARENA.ammoInsetX),

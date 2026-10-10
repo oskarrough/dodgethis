@@ -1,8 +1,7 @@
 import * as THREE from 'three'
 
-// Flagfall's hedge, redrawn as a beach windbreak: striped canvas panels zig-zagging between
-// wooden poles, on a low sand berm that fills the old hedge footprint. Faceted and a little
-// wonky, like the towers. Pure geometry; map.js merges each role into one mesh.
+// Flagfall's hedge as a beach windbreak: striped canvas panels zig-zagging between wooden
+// poles, on a low sand berm. Pure geometry; map.js merges each role into one mesh.
 
 export const WINDBREAK_ROLES = {
 	sand: 'sand',
@@ -70,7 +69,7 @@ function pole(x, z, base, height, seed) {
 	return flat(g)
 }
 
-// `height` is the old hedge height (already map-scaled); `box` the hedge's collision box.
+// `height` is the hedge height (already map-scaled); `box` the hedge's collision box.
 export function windbreakGeometries(box, height, scale = 1) {
 	const out = { sand: [], wood: [], stripes: [[], [], []] }
 	const bermHeight = height * 0.3

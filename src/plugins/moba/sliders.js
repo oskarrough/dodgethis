@@ -1,4 +1,4 @@
-// --- Tune GUI: moba's sections come and go with the run; the values live in tune.js and survive restarts. ---
+// Tune GUI: moba's sections come and go with the run; the values live in tune.js and survive restarts.
 // Each section maps a key to [min, max, step, label?, object?]. T is one clock step.
 export const T = 'clock step'
 
@@ -284,7 +284,6 @@ export const debugSections = {
 	Engine: { Diagnostics: ['physics', 'output', 'debug'] },
 }
 
-// One GUI folder per section; T resolves to the run's clock step.
 export function addSliders(debug, sections, step) {
 	const at = (v) => (v === T ? step : v)
 	for (const [name, object, sliders] of sections)

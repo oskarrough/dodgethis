@@ -1,4 +1,3 @@
-// --- Tunables ----------------------------------------------------------------
 // Core's live values. Each plugin keeps its own tune module; the debug GUI shows them all.
 export const tune = {
 	physics: {

@@ -66,7 +66,6 @@ export function createLink({
 	let seq = 0
 	let facts = []
 	let sendClock = 0
-	// Guest
 	let lastSeq = -1
 	let lastEpoch = -1
 	let lastFact = 0

@@ -109,7 +109,6 @@ function drawLayout(layout, liveStructures, scale, height, parent, make) {
 		make('line', { class: cls, x1: X(x1), y1: Y(z1), x2: X(x2), y2: Y(z2) }, parent)
 	const terrain = tune.overthrowTerrain
 	const inset = terrain.courtInset * (s?.scale ?? 1)
-	// Flagfall's court stands in the shallows; a band of its water frames the floor.
 	if (s?.water) {
 		const shore = 3 / scale
 		box('minimap-water', 0, 0, bounds.halfX + shore, bounds.halfZ + shore, {
@@ -120,7 +119,6 @@ function drawLayout(layout, liveStructures, scale, height, parent, make) {
 	// The floating footprint keeps the lane's real proportions, with no enclosing disc.
 	box('minimap-floor', 0, 0, bounds.halfX, bounds.halfZ, { rx: 1 })
 	if (s?.lane) {
-		// Two flank lanes and the yard between the base blocks.
 		for (const flank of [-1, 1])
 			box(
 				'minimap-lane',

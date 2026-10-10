@@ -34,7 +34,6 @@ export function createApp(services = {}) {
 
 	let session = SOLO
 
-	// Keep `item` in `list` until `signal` aborts.
 	function enlist(list, item, signal) {
 		list.push(item)
 		onAbort(signal, () => {
@@ -59,7 +58,6 @@ export function createApp(services = {}) {
 		})
 	}
 
-	// A child scope aborts with its parent, or on its own.
 	function child(parent) {
 		const controller = new AbortController()
 		const abort = () => controller.abort()
@@ -332,7 +330,6 @@ function freezeSession({ local, authoritative, shared, actions }) {
 	})
 }
 
-// Run `fn` when `signal` aborts; returns the unsubscribe.
 function onAbort(signal, fn) {
 	if (signal.aborted) {
 		fn()

@@ -37,7 +37,6 @@ export function createSkillsView(scene) {
 	arrow.lineTo(0.18, 0)
 	const arrowGeometry = new THREE.ShapeGeometry(arrow).rotateX(-Math.PI / 2)
 	const lineGeometry = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2).translate(0, 0, -0.5)
-	// One rain arrow: an ink shaft standing on its tip, a gold fletch on top.
 	const rainView = tune.abilityView.rain
 	const shaftGeometry = new THREE.BoxGeometry(0.04, rainView.shaft, 0.04).translate(
 		0,
@@ -208,7 +207,6 @@ export function createSkillsView(scene) {
 		const r = tune.abilityView.rain
 		for (const [id, tell] of tells)
 			if (!live.has(id)) {
-				// Landed: flash the zone, snap a ring out, leave the arrows stuck where they fell.
 				if (!tell.done) {
 					tell.done = true
 					tell.after = 0

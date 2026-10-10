@@ -2,7 +2,6 @@
 
 const EPS = 1e-6
 
-/** Apply Quake-style friction to a horizontal velocity. */
 export function applyFriction(vx, vz, friction, stopSpeed, dt) {
 	const speed = Math.hypot(vx, vz)
 	if (speed < EPS) return { vx: 0, vz: 0 }

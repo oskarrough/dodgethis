@@ -286,7 +286,6 @@ export function createMagnets(root, gallery, kit, audio) {
 				if (b.state !== 'drop' && b.state !== 'floor' && dt > 0)
 					b.velocity.subVectors(pos, b.prev).divideScalar(dt)
 			}
-			// Loose balls shoulder each other apart instead of sharing a spot.
 			for (let i = 0; i < p.balls.length; i++)
 				for (let j = i + 1; j < p.balls.length; j++) {
 					if (!loose(p.balls[i]) || !loose(p.balls[j])) continue

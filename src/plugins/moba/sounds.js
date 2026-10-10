@@ -36,7 +36,6 @@ export function createSounds(audio) {
 			delay: tune.card.fall,
 			point,
 		})
-	// Pitched by how fast you were running.
 	sounds.squeak = (point, gain = 1, pitch = 1) =>
 		audio.blip({
 			...tune.sounds.squeak,

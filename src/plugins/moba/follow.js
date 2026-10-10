@@ -53,7 +53,6 @@ export function createFollow(t = tune.follow, bounds = FLOOR) {
 	const eye = { x: 0, y: 0, z: 0 }
 	const target = { x: 0, y: 0, z: 0 }
 
-	// The spring's goal: the hero, plus lookAhead of the way to the aim, capped at lookCap.
 	function goal(hero, aim) {
 		let lx = 0
 		let lz = 0

@@ -48,7 +48,6 @@ export function startLoading(
 		scope.intents.suspend(() => true)
 		app.intents.cancel()
 
-		// The lobby camera as it stands now, with the look split into yaw and pitch.
 		const aim = app.camera.aim
 		const from = aim.position.clone()
 		const look = aim.getWorldDirection(new THREE.Vector3())
@@ -186,7 +185,6 @@ export function startLoading(
 				canvas.style.opacity = String(floor + (1 - floor) * (1 - easeShot(rise)))
 				return
 			}
-			// The lane shows itself at the apex, still sketched; the dive then inks it in.
 			const shown =
 				reduced.matches && built && apexTime >= buildHold
 					? 1
@@ -250,7 +248,6 @@ export function startLoading(
 				if (built && apexTime >= buildHold) {
 					const reveal = reduced.matches ? 0 : Math.max(0, tune.loading.reveal)
 					revealTime = Math.min(reveal, revealTime + dt)
-					// The map creeps into the dive while you look at it; no hold, no spinner.
 					if (revealTime >= reveal) gate.ready()
 				}
 			}

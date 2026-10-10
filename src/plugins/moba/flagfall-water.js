@@ -201,7 +201,6 @@ diffuseColor.a *= smoothstep(0.0, waterFeather, min(min(waterUV.x, 1.0-waterUV.x
 	}
 	const rings = []
 	const outline = floorOutline(extent)
-	// The exact rock outline at the waterline, not a rectangle floating near it.
 	const waterline = outline.map((p) => ({
 		x: p.x + Math.sign(p.x) * terrain.rockFlare * Math.min(1, -y / terrain.rockDepth),
 		z: p.z + Math.sign(p.z) * terrain.rockFlare * Math.min(1, -y / terrain.rockDepth),
@@ -266,7 +265,6 @@ diffuseColor.a *= smoothstep(0.0, waterFeather, min(min(waterUV.x, 1.0-waterUV.x
 					`#include <color_fragment>
 float drift = sin(shoreUV.y * 180.0 + shoreTime * 6.283185 / shorePeriod);
 float glow = pow(1.0 - shoreUV.x, 2.0) * (0.8 + 0.2 * drift);
-// Foam: a crisp line against the rock whose brightness breaks along its length.
 float wave = 0.5 + 0.5 * sin(shoreUV.y * 1700.0 + 4.0 * sin(shoreUV.y * 230.0) - shoreTime * 6.283185 / shorePeriod);
 float foam = (1.0 - smoothstep(0.08, 0.4, shoreUV.x)) * (0.55 + 0.45 * wave) + 0.35 * glow;
 diffuseColor.a *= mix(glow, foam, shoreBreak);`,
@@ -362,7 +360,6 @@ diffuseColor.a *= mix(glow, foam, shoreBreak);`,
 			),
 		)
 	}
-	// One draw per pad, including its fine print and optional blossom.
 	const leaf = own(mergeGeometries([pad, rim, ...veins]))
 	const floweringLeaf = own(mergeGeometries([pad, rim, ...veins, ...flowers]))
 	for (let i = 0; i < s.padCount; i++) {

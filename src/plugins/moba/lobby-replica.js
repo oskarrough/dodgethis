@@ -94,7 +94,6 @@ export function createUnitReplica(
 	function valid(state) {
 		if (!state || !Number.isSafeInteger(state.t) || state.t < 0 || state.t < lastAcceptedTick)
 			return false
-		// Validate all plain payload data before mutating any entity or buffer.
 		const plain = (value, depth = 0) => {
 			if (value == null || typeof value === 'string' || typeof value === 'boolean') return true
 			if (typeof value === 'number') return finite(value)

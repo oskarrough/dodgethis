@@ -256,7 +256,6 @@ export function createLobbyProps(scene, el, gallery, readySeats, local, audio) {
 					},
 				}
 			})
-		// The bot wears the picked difficulty's face: sleepy, calm or angry.
 		const face = new THREE.Group()
 		face.rotation.y = Math.PI
 		const moods = {}

@@ -77,7 +77,6 @@ export function createStamps(scene) {
 	let next = 0
 	let disposed = false
 
-	// Legacy `text` options remain accepted, but never affect the symbol or allocate resources.
 	// `tilt` is −1..1 of tune.out.tilt; `onLand` runs once when the print settles.
 	function stamp(point, { team = 'A', tilt = 0, onLand = null } = {}) {
 		if (disposed) return

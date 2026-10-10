@@ -11,7 +11,6 @@ export function createRenderer() {
 	// No lights, no fog, no shadow map: the style pass derives shading from surface normals in one shader that also paints the sky.
 	const scene = new THREE.Scene()
 
-	// Fixed isometric-ish camera looking down the court.
 	const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 200)
 	const camBase = new THREE.Vector3(0, 22, 26)
 	camera.position.copy(camBase)
@@ -31,7 +30,6 @@ export function createRenderer() {
 	window.addEventListener('resize', resize)
 	resize()
 
-	// --- Screenshake: a decaying energy that jitters the camera off its base. ---
 	let shake = 0
 	let settled = true // camera resting at camBase, no per-frame work needed
 	const _o = new THREE.Vector3()

@@ -82,7 +82,6 @@ export function createOnlineUi(session, { inMatch = () => false, signal } = {}) 
 		children.push(heading)
 		const actions = el('div', 'actions')
 		if (!state) {
-			// Three ways in, one row each: just play, bring a code, or make your own.
 			const choices = el('div', 'online-choices')
 			const quick = document.createElement('section')
 			quick.append(

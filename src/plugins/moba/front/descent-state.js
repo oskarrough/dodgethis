@@ -10,7 +10,6 @@ export function createDescentState(times) {
 		arrived = false,
 		ready = false
 	return {
-		// The backdrop reached its apex shot.
 		arrive() {
 			arrived = true
 		},

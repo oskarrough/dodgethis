@@ -13,7 +13,7 @@ const LAYOUT_BY_ENEMIES = { 1: 'open', 2: 'pillars', 3: 'walls' }
 const PHASES = ['playing', 'roundOver', 'matchOver']
 const count = (n, max = Number.MAX_SAFE_INTEGER) => Number.isSafeInteger(n) && n >= 0 && n <= max
 
-// Owns match lifetime, score, menus, and the input handoff between scenes.
+// Owns match lifetime, score, menus, and the input handoff between screens.
 // `session` decides the rest: a solo flow has the lobby, fades and pause; a shared one plays a fixed roster, and only its authority builds rounds.
 export function createMatchFlow({
 	ctx,
@@ -28,8 +28,7 @@ export function createMatchFlow({
 	actions = createActions(),
 	onMenu = () => {},
 }) {
-	// --- Game state machine (Godot framing) -----------------------------------
-	// phase drives the frame loop and which overlay is up (lobby → playing → roundOver → … → matchOver); match holds the best-of-N score, `round` is the live scene or null.
+	// phase drives the frame loop and which overlay is up (lobby → playing → roundOver → … → matchOver); match holds the best-of-N score.
 	const { combat } = ctx
 	const { shared, authoritative } = session
 	const BEST_OF = 3
@@ -128,7 +127,6 @@ export function createMatchFlow({
 		})
 	}
 
-	// --- The lobby: a live, physical splash ------------------------------------
 	// The menu IS a lobby round — no enemies, no scoring; free-roam and step into a portal to commit to a match.
 	function enterLobby() {
 		clearActions()
@@ -140,7 +138,7 @@ export function createMatchFlow({
 		clearPortals()
 		overlay.hide()
 		phase = 'lobby'
-		onTheme(0, 'open') // the lobby round is always the open court
+		onTheme(0, 'open')
 		// Re-showing restarts the CSS letter animations, so the title bounces in fresh.
 		splashEl.hidden = false
 		round = createRound(ctx, { enemies: 0, arrowCount: 0, roundNum: 0, lobby: true })
@@ -166,7 +164,6 @@ export function createMatchFlow({
 		transition('ROUND 1', () => startMatch(enemies))
 	}
 
-	// Step-into-portal check, run each frame while roaming the lobby.
 	function checkPortals() {
 		if (!round || !round.localPlayer || !round.localPlayer.alive) return
 		const p = round.localPlayer.position
@@ -245,13 +242,13 @@ export function createMatchFlow({
 		onChange()
 	}
 
-	// Build a fresh round (incrementing the counter) and start play — disposing the old round is the real reset that replaced location.reload().
+	// Disposing the old round is the real reset.
 	function startRound() {
 		match.round++
 		spawnRound()
 	}
 
-	// Replay the current round without touching the score (R / restart button).
+	// Keeps the score (R / restart button).
 	function restartRound() {
 		if (match.round === 0 || roundScored || phase === 'lobby') return
 		transition(`ROUND ${match.round} · AGAIN`, spawnRound)
@@ -264,7 +261,7 @@ export function createMatchFlow({
 		clearActions()
 		resetPresentation()
 		if (round) round.dispose()
-		clearPortals() // leave the lobby's portals behind when a match begins
+		clearPortals()
 		round = createRound(ctx, {
 			enemies: match.enemies,
 			allies: match.allies,
@@ -283,7 +280,7 @@ export function createMatchFlow({
 		onChange()
 	}
 
-	// round.onOver handler: tally the win, then advance or end the match; a null winner (simultaneous wipe) is a draw — nobody scores, round replays. Card is verdict + actions only.
+	// round.onOver handler. A null winner (simultaneous wipe) is a draw: nobody scores, the round replays. The card is verdict + actions only.
 	function endRound(winner) {
 		if (phase !== 'playing' || roundScored) return
 		lastWinner = winner ?? null
@@ -379,7 +376,6 @@ export function createMatchFlow({
 		})
 	}
 
-	// One simulation step: every human seat's intent frame through the actions, then the round.
 	function step(dt, intents) {
 		const frames = new Map()
 		for (const unit of round.units)

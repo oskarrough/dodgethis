@@ -57,7 +57,6 @@ export function buildCourt(scene, world, RAPIER) {
 	mesh.receiveShadow = true
 	scene.add(mesh)
 
-	// Center line (the "net" line) for orientation.
 	const line = new THREE.Mesh(
 		new THREE.BoxGeometry(width, 0.02, 0.12),
 		makeStyleMaterial('courtLine', { flat: true }),
@@ -269,7 +268,7 @@ export function buildCourt(scene, world, RAPIER) {
 			for (const [key, group] of themeGroups) group.visible = key === selected
 			return COURT_THEMES[selected]
 		},
-		// Show one obstacle layout's meshes and enable only its colliders; unknown names fall back to the open court.
+		// Unknown names fall back to the open court.
 		setLayout(name) {
 			const selected = Object.hasOwn(LAYOUTS, name) ? name : 'open'
 			activeLayout = selected

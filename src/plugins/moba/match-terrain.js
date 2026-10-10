@@ -346,7 +346,6 @@ diffuseColor.rgb *= (1.0 + stoneGrain * (strata + grain - 0.5)) * (1.0 - wet * s
 		strokes.push(
 			new THREE.PlaneGeometry(width, length).rotateX(-Math.PI / 2).translate(x, s.chalkY, z),
 		)
-	// Every map authors court marks, not a second ground renderer.
 	for (const { width, length, x, z } of chalkLayout.lines) line(width, length, x, z)
 	for (const { radius, x, z } of chalkLayout.circles)
 		strokes.push(

@@ -58,7 +58,6 @@ export function createLobby({
 	const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)')
 	if (reducedMotion.matches || !(intro.time > 0)) intro.t = intro.time
 	let leaving = false
-	// The intro time below which the canvas is fully faded.
 	const fadeAt = () => intro.time * tune.lobby.intro.fadeFrom
 	const fadeIntro = () => {
 		canvas.style.opacity =
@@ -105,7 +104,6 @@ export function createLobby({
 		slides = []
 	}
 	run.system('present', ({ dt }) => {
-		// Leaving runs the arrival backwards: pull out along the same ray as the canvas fades.
 		if (leaving) {
 			intro.t = Math.max(0, intro.t - dt)
 			fadeIntro()
@@ -119,7 +117,6 @@ export function createLobby({
 		intro.t = Math.min(intro.time, intro.t + dt)
 		fadeIntro()
 	})
-	// The camera holds on the props and slides only once you walk out past them.
 	const follow = { x: 0, z: 0 }
 	run.system('present', ({ dt }) => {
 		const f = tune.lobby.frame,
@@ -202,7 +199,6 @@ export function createLobby({
 		pick: (id) => pickHero(id),
 		openNumbers: () => numbers.toggle(),
 	})
-	// The chrome slides in one piece after another as the lane fades up, labels once it lands.
 	if (!reducedMotion.matches && intro.t < intro.time) {
 		const { stagger, land } = frontTune.chrome
 		edges.forEach(([selector, x, y], i) =>
@@ -401,7 +397,6 @@ export function createLobby({
 		while (frame.pressed.some((e) => e.action === 'ready')) run.intents.consume(hero.id, 'ready')
 		readyQueued = false
 		galleryShot = { stand, projectile: null }
-		// One path plan per shortcut. Walk to the firing mark first.
 		app.intents.get(hero.id).order = { ...tune.lobby.gallery.firingMark, kind: 'move' }
 	}
 
@@ -458,7 +453,6 @@ export function createLobby({
 		syncPick()
 		ending = true
 		app.audio.blip({ ...frontTune.back, type: 'sine' })
-		// The backdrop eases back to the splash shot alongside the camera's pull-out.
 		leaving = true
 		app.intents.cancel(hero.id)
 		el.inert = true

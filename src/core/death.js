@@ -13,7 +13,6 @@ const tailFade = (t, start = 0.6) => (t < start ? 1 : 1 - (t - start) / (1 - sta
 const DARK = new THREE.Color(PALETTE.ink)
 const CREAM = new THREE.Color(PALETTE.cream)
 
-// Drain every material on the unit toward a corpse-grey by k (0..1).
 function tint(ctx, k) {
 	k = clamp01(k)
 	for (const m of ctx.mats) m.mat.color.copy(m.color0).lerp(DARK, k)

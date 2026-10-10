@@ -2,7 +2,7 @@ import { el as make } from '../../../core/dom.js'
 import { tune } from './tune.js'
 import { easePointer, projectFrame } from './geometry.js'
 
-// Fletcher's old ridge point in the 1440 × 900 frame: shots zoom on it, so the lobby's tabletop
+// The focus point in the 1440 × 900 frame: shots zoom on it, so the lobby's tabletop
 // lands where the splash's eye rests.
 const focus = { x: 606, y: 740 }
 const shots = ['splash', 'lobby', 'apex']
@@ -29,7 +29,6 @@ export function createBackdrop() {
 	const pose = { lift: 0, zoom: 1 }
 	let current = 'splash'
 	let move = null
-	// How far the colours sit towards the lobby's dusk, and the blend under way.
 	let dusk = 0
 	let blend = null
 	let frame = null
@@ -159,7 +158,6 @@ export function createBackdrop() {
 		get shotName() {
 			return current
 		},
-		// Seconds left in the current shot move.
 		get remaining() {
 			return move ? Math.max(0, move.time - move.elapsed) : 0
 		},
@@ -193,7 +191,6 @@ export function createBackdrop() {
 				paint()
 			}
 		},
-		// The descent: the backdrop thins away as the lane comes up through it.
 		fade(progress) {
 			const p = Math.max(0, Math.min(1, Number(progress) || 0))
 			el.style.opacity = String(1 - p)

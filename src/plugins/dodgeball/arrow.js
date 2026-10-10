@@ -105,7 +105,7 @@ function buildMesh() {
 	return g
 }
 
-const TRAIL_N = 20 // points in an arrow's fading trail
+const TRAIL_N = 20
 
 export function createArrow(
 	scene,
@@ -118,8 +118,7 @@ export function createArrow(
 	let replicaInitialized = false
 	const mesh = buildMesh()
 	scene.add(mesh)
-	// Sim poses for the arrow and the ball: gameplay reads these, smoothing renders between them. The simulation writes a
-	// mesh and then keeps it here, so tests without smoothing see the same transforms they always did.
+	// Sim poses for the arrow and the ball: gameplay reads these, smoothing renders between them.
 	const pose = { position: new THREE.Vector3(), quaternion: new THREE.Quaternion(), heading: 0 }
 	const ballPose = { position: new THREE.Vector3(), quaternion: new THREE.Quaternion() }
 	function keep() {
@@ -141,7 +140,6 @@ export function createArrow(
 	pickup.add(pickupFill)
 	scene.add(pickup)
 
-	// A flying bowl shows this ball instead of the arrow mesh.
 	const ball = new THREE.Mesh(new THREE.SphereGeometry(1, 18, 14), bowlMat)
 	ball.castShadow = true
 	ball.visible = false
@@ -150,7 +148,7 @@ export function createArrow(
 		? []
 		: [smooth?.(mesh, () => pose), smooth?.(ball, () => ballPose)].filter(Boolean)
 
-	// A short polyline that follows a flying arrow (newest point at index 0).
+	// Newest trail point at index 0.
 	const trailPos = new Float32Array(TRAIL_N * 3)
 	const trailGeom = new THREE.BufferGeometry()
 	trailGeom.setAttribute('position', new THREE.BufferAttribute(trailPos, 3))
@@ -190,8 +188,8 @@ export function createArrow(
 	let body = null
 	let collider = null
 	let ownerTeam = null
-	let kind = 'arrow' // 'arrow' | 'bowl' — how the in-flight body behaves
-	let perfect = false // was this loosed on a perfect charge release?
+	let kind = 'arrow' // 'arrow' | 'bowl'
+	let perfect = false
 	let source = null
 	const launchDirection = new THREE.Vector3()
 	const _lv = new THREE.Vector3() // last known velocity (for AI threat detection)
@@ -217,7 +215,6 @@ export function createArrow(
 		}
 	}
 
-	// Picked up: arrow leaves the world, becomes the holder's nocked arrow.
 	function hold() {
 		if (replica) return
 		destroyBody()
@@ -386,7 +383,6 @@ export function createArrow(
 		}
 
 		if (t.y <= GROUND_Y + 0.02 && lv.y <= 0.5) {
-			// Touched down — freeze it lying along its travel heading.
 			return settle(t.x, t.z, Math.atan2(lv.x, lv.z))
 		}
 
@@ -461,8 +457,7 @@ export function createArrow(
 		if (state === 'flying') pushTrail(position.x, position.y, position.z)
 	}
 
-	// Free the arrow's body + meshes. Module-level materials are shared across all
-	// arrows, so dispose only the per-instance geometries (and this trail).
+	// Module-level materials are shared, so dispose only the per-instance geometries (and this trail).
 	function dispose() {
 		if (disposed) return
 		disposed = true

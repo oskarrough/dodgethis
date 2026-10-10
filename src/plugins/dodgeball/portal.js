@@ -10,7 +10,6 @@ const PORTAL_ROLES = { 1: 'portalChill', 2: 'portalSpicy', 3: 'portalChaos' }
 const INK = hex('ink')
 const CREAM = hex('cream')
 
-// Canvas label outlines the difficulty number in cream and ink.
 function makeLabel(enemies, color, label = String(enemies), labelSize = 150) {
 	const c = document.createElement('canvas')
 	const dpr = globalThis.devicePixelRatio || 1
@@ -61,7 +60,6 @@ function starTexture() {
 	return _starTex
 }
 
-// Build the static sticker as four semantic batches, independent of canvas labels.
 function buildPortalPad(enemies) {
 	const group = new THREE.Group()
 	const batches = new Map()
@@ -125,7 +123,6 @@ export function createPortal(scene, { x, z, enemies, label, labelSize }) {
 		group.add(print)
 	}
 
-	// Star sparkles drifting up out of the hole — upward motion, zero rotation.
 	const sparkles = []
 	const N_SPARK = 6
 	for (let i = 0; i < N_SPARK; i++) {
@@ -141,7 +138,7 @@ export function createPortal(scene, { x, z, enemies, label, labelSize }) {
 		const size = 0.14 + Math.random() * 0.14
 		sprite.scale.set(size, size, 1)
 		const sp = { sprite, y: 0, max: 1, speed: 1, angle: 0, r: 0 }
-		resetSparkle(sp, Math.random() * 1.4) // stagger initial heights
+		resetSparkle(sp, Math.random() * 1.4)
 		sparkles.push(sp)
 		group.add(sprite)
 	}
@@ -181,7 +178,7 @@ export function createPortal(scene, { x, z, enemies, label, labelSize }) {
 			const dz = playerPos.z - z
 			near = dx * dx + dz * dz < NEAR * NEAR
 		}
-		if (near && !wasNear) sfx.hover() // soft click the instant it wakes
+		if (near && !wasNear) sfx.hover()
 		wasNear = near
 
 		wake += ((near ? 1 : 0) - wake) * Math.min(1, dt * 9)

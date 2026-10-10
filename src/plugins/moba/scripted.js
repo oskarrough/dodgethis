@@ -2,7 +2,7 @@ import { STEP } from '../../core/app.js'
 import { neutralFrame } from '../../core/intents.js'
 import { tune } from './tune.js'
 
-// Slice-three sparring partner, not the M4 tactical brain. Orders and Q only.
+// Sparring partner. Orders and Q only.
 export function createScriptedHero(id) {
 	let nextThink = 0
 	let retreating = false

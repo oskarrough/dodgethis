@@ -1,7 +1,6 @@
 import GUI from 'lil-gui'
 import { tune } from './tune.js'
 
-// --- Logging -----------------------------------------------------------------
 // Leveled console logging + a ring buffer you can dump or surface in the HUD.
 const LEVELS = { debug: 0, info: 1, warn: 2, error: 3 }
 const ring = []
@@ -34,7 +33,6 @@ export const log = {
 	dump: () => console.log(ring.join('\n')),
 }
 
-// --- Combat log --------------------------------------------------------------
 // Inspect combat history on screen; entries also reach log.info's ring buffer for log.dump().
 export function createCombatLog(selector = '.combat', max = 12) {
 	const el = document.querySelector(selector)
@@ -65,7 +63,6 @@ export function createCombatLog(selector = '.combat', max = 12) {
 	return { push }
 }
 
-// --- GUI ---------------------------------------------------------------------
 // The panel behind app.debug: each tune section with a `build(folder)` becomes a folder, each cheat a button in "cheats".
 export function createDebugPanel() {
 	const gui = new GUI({ title: 'dodgethis / debug' })
