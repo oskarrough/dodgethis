@@ -1,5 +1,20 @@
 [
 	{
+		"at": "2026-10-11T12:09:25.826Z",
+		"title": "Paper screens",
+		"ask": "Do result, scoreboard and death recap belong with the pause menu?",
+		"status": "To review",
+		"decision": "",
+		"media": [
+			"review/media/2026-10-11-paper-screens/result.png",
+			"review/media/2026-10-11-paper-screens/scoreboard.png",
+			"review/media/2026-10-11-paper-screens/death.png"
+		],
+		"links": [],
+		"thread": "thr_nq4drca5xd",
+		"page": "2026-10-11-paper-screens/"
+	},
+	{
 		"at": "2026-10-11T11:43:42.450Z",
 		"title": "Feed drum",
 		"ask": "Does the drum read, and is it in the right spot?",
