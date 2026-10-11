@@ -28,7 +28,7 @@ export function createMatchMenu({
 	setup = { difficulty },
 	returnToLobby = () => false,
 }) {
-	const recap = createRecap({ sim, hero, canvas: app.renderer?.domElement })
+	const recap = createRecap({ sim, hero, canvas: app.renderer?.domElement, paper })
 	let paused = false
 	let resultShown = false
 	let backHeld = false
@@ -88,21 +88,40 @@ export function createMatchMenu({
 			.querySelector('.overlay[data-theme="moba-pause"] .pause-check')
 			?.setAttribute('aria-checked', String(controls.quickCast))
 	}
-	// Dresses the shared overlay card as a manual page: captions and the facts of the match.
-	// Readouts are printed; only the overlay's buttons are framed.
-	function pausePage(card) {
+	// The front end's paper for anything that stops play: the map's wash, day or night, and the
+	// two team inks (menu.css).
+	function paper(node) {
 		const map = setup.map ?? 'overthrow'
+		node.classList.add('moba-paper')
+		node.dataset.light = front.skin.light[map] ?? 'day'
+		node.style.setProperty('--page-wash', front.skin.wash[map] ?? front.skin.wash.bonus)
+		node.style.setProperty('--page-mine', hex(hero.team === 'A' ? 'teamA' : 'teamB'))
+		node.style.setProperty('--page-theirs', hex(hero.team === 'A' ? 'teamB' : 'teamA'))
+		return node
+	}
+	// The shared overlay card as a manual page on that paper: the running head and the page's
+	// word in Japanese down the sheet.
+	function page(card, kind, kana) {
+		const map = setup.map ?? 'overthrow'
+		paper(card).classList.add('moba-page', kind)
+		el(
+			'header',
+			'page-head',
+			card,
+			`<span>Dodgethis <span lang="ja">取扱説明書</span></span><span>${map}<span lang="ja">${MAP_KANA[map] ?? ''}</span></span>`,
+		).setAttribute('aria-hidden', 'true')
+		el('p', 'page-kana', card, kana).setAttribute('aria-hidden', 'true')
+	}
+	// The pause page adds the facts of the match. Readouts are printed; only the overlay's
+	// buttons are framed.
+	function pausePage(card) {
 		const mine = hero.team
 		const kills = { A: 0, B: 0 }
 		for (const row of Object.values(sim.matchStats ?? {}))
 			if (row.team) kills[row.team === 'A' ? 'B' : 'A'] += row.deaths
 		const heroId = hero.heroId ?? DEFAULT_HERO
 		const level = hero.level ?? sim.lane?.teams?.[mine].level ?? 1
-		card.classList.add('moba-pause')
-		card.style.setProperty('--pause-wash', front.skin.wash[map] ?? front.skin.wash.bonus)
-		card.dataset.light = front.skin.light[map] ?? 'day'
-		card.style.setProperty('--pause-mine', hex(mine === 'A' ? 'teamA' : 'teamB'))
-		card.style.setProperty('--pause-theirs', hex(mine === 'A' ? 'teamB' : 'teamA'))
+		page(card, 'moba-pause', 'ポーズ')
 		const fact = (label, value, kana) =>
 			`<div><small>${label}<span lang="ja">${kana}</span></small><b>${value}</b></div>`
 		const facts = el(
@@ -118,13 +137,6 @@ export function createMatchMenu({
 				fact('Hero', `${heroId[0].toUpperCase()}${heroId.slice(1)} <em>Lv ${level}</em>`, '勇者'),
 		)
 		facts.setAttribute('aria-label', 'Match so far')
-		el(
-			'header',
-			'pause-head',
-			card,
-			`<span>Dodgethis <span lang="ja">取扱説明書</span></span><span>${map}<span lang="ja">${MAP_KANA[map] ?? ''}</span></span>`,
-		).setAttribute('aria-hidden', 'true')
-		el('p', 'pause-kana', card, 'ポーズ').setAttribute('aria-hidden', 'true')
 		const quick = card.querySelectorAll('.actions button')[2]
 		if (!quick) return
 		quick.classList.add('pause-check')
@@ -179,7 +191,10 @@ export function createMatchMenu({
 						share,
 					],
 		})
-		if (app.renderer) recap.showTable(document.querySelector('.overlay .dialog-card'))
+		const card = document.querySelector('.overlay .dialog-card')
+		if (!app.renderer || !card) return
+		recap.showTable(card)
+		page(card, 'moba-result', sim.lane.match.winner === hero.team ? '勝利' : '敗北')
 	}
 	// The result card's brag: a line of the match and the link the address bar shows, the room's in a shared match.
 	const share = {

@@ -1,102 +1,128 @@
-.overlay[data-theme^='moba'] {
-	background: rgba(255, 253, 244, 0.12);
-	backdrop-filter: blur(0.3px);
-}
-.overlay[data-theme^='moba'] .dialog-card {
-	background: var(--ui-cream);
-}
-.overlay[data-theme^='moba'] h1 {
-	display: inline-block;
-	font: 400 clamp(38px, 6vw, 72px) / 1 var(--ui-font);
-	letter-spacing: 0.01em;
-	color: var(--ui-cream);
-	background: var(--overlay-accent);
-	border: 3px solid var(--ui-text);
-	border-radius: 14px;
-	padding: 10px 18px;
-	box-shadow: 4px 4px 0 var(--ui-text);
-	-webkit-text-stroke: 1px var(--ui-text);
-	paint-order: stroke fill;
-	transform: rotate(-1deg);
-}
-.overlay[data-theme^='moba'] .sub {
-	font-family: 'Josefin Sans', sans-serif;
-	text-transform: none;
-	letter-spacing: 0;
+/* The pages that stop play (pause, result) and the two cards over a stopped hero (death recap,
+   Tab scoreboard) are front end, drawn in its ligne claire (docs/look.md, Front end and match):
+   the splash's deckled paper, one thin navy line for the rules, titles inked on a watercolour
+   wash, and the lobby's painted cards for the actions. Readouts are printed; actions are the only
+   frames. `paper()` in menu.js adds `.moba-paper` and sets `--page-wash`, the team inks and
+   `data-light` from the map. */
+.moba-paper {
+	--rule: color-mix(in srgb, var(--ui-text) 55%, transparent);
+	--caps: 600 clamp(11px, 0.95vw, 14px) / 1.2 'Josefin Sans', sans-serif;
+	--wash: url('/splash/wash-day.webp');
+	--wash-tall: url('/splash/wash-day-tall.webp');
+	--frame: url('/splash/frame-day.webp');
 	color: var(--ui-text);
+}
+.moba-paper[data-light='night'] {
+	--wash: url('/splash/wash-night.webp');
+	--wash-tall: url('/splash/wash-night-tall.webp');
+	--frame: url('/splash/frame-night.webp');
+}
+.moba-paper [lang='ja'] {
+	margin-left: 0.7em;
+	font-family: var(--ui-font);
+	font-weight: 400;
+	letter-spacing: 0.05em;
+	opacity: 0.65;
 }
 
 /* The world loses its colour, not its camera or its live HUD. */
 canvas.moba-dead-world {
 	filter: grayscale(1);
 }
-.moba-death {
+/* The death recap and the scoreboard: a sheet of the splash's paper laid over play, lifted like
+   the card you're on. They take no clicks, so no frame. */
+:is(.moba-death, .moba-scoreboard) {
 	position: fixed;
 	z-index: 5;
+	isolation: isolate;
+	box-sizing: border-box;
+	filter: drop-shadow(3px 7px 5px color-mix(in srgb, var(--ui-text) 16%, transparent));
+	pointer-events: none;
+}
+:is(.moba-death, .moba-scoreboard)::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+	border: 22px solid transparent;
+	border-image: url('/splash/paper.webp') 64 fill / 22px / 0 stretch;
+	filter: saturate(0.55) brightness(1.06);
+}
+:is(.moba-death, .moba-scoreboard)[hidden] {
+	display: none;
+}
+.moba-death {
 	top: 120px;
 	left: 22px;
 	width: min(330px, calc(100vw - 44px));
-	box-sizing: border-box;
-	padding: 16px 20px;
-	color: var(--ui-text);
-	background: var(--ui-cream);
-	border: 3px solid var(--ui-text);
-	border-radius: 20px;
-	box-shadow: 5px 6px 0 var(--ui-text);
+	padding: 22px 26px;
 	font:
 		400 18px / 1.3 'Josefin Sans',
 		sans-serif;
 	font-variant-numeric: tabular-nums;
-	pointer-events: none;
-	transform: rotate(-1deg);
 }
-.moba-death[hidden] {
-	display: none;
+/* Titles are ink on a wash swatch, as on the splash. */
+:is(.moba-death h2, .moba-respawn-sticker, .overlay .moba-result h1) {
+	position: relative;
+	isolation: isolate;
+	justify-self: start;
+}
+:is(.moba-death h2, .moba-respawn-sticker, .overlay .moba-result h1)::after {
+	content: '';
+	position: absolute;
+	inset: 4% -0.3em 10%;
+	z-index: -1;
+	border: 0 solid transparent;
+	border-inline-width: 18px;
+	border-image: var(--wash) 0 48 fill / 0 18px / 0 stretch;
+	opacity: 0.6;
 }
 .moba-death h2 {
+	display: inline-block;
 	margin: 0;
 	font: 400 30px / 1.1 var(--ui-font);
 }
 .moba-death ol {
 	padding: 0;
-	margin: 14px 0;
+	margin: 10px 0 14px;
 	list-style: none;
+	border-top: 1px solid var(--rule);
 }
 .moba-death li {
 	display: flex;
 	justify-content: space-between;
 	gap: 12px;
 	padding: 6px 0;
-	border-bottom: 1px dashed var(--ui-text);
+	border-bottom: 1px solid var(--rule);
 }
 .moba-recap-caption {
-	margin: 8px 0 0;
-	font-size: 14px;
+	margin: 12px 0 0;
+	font: var(--caps);
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
 }
+/* The respawn timer is a readout: ink printed on one painted ribbon. */
 .moba-respawn-sticker {
 	display: inline-block;
 	margin: 0;
-	padding: 8px 14px;
-	background: var(--ui-gold);
-	border: 3px solid var(--ui-text);
-	border-radius: 12px;
-	box-shadow: 3px 3px 0 var(--ui-text);
+	padding: 4px 6px;
 	font: 400 26px / 1 var(--ui-font);
-	transform: rotate(2deg);
 }
-.overlay:is([data-theme='moba-victory'], [data-theme='moba-defeat']) {
+.moba-respawn-sticker::after {
+	opacity: 0.85;
+}
+.moba-scoreboard {
+	top: 50%;
+	left: 50%;
+	width: min(760px, calc(100vw - 44px));
+	max-height: calc(100vh - 44px);
 	overflow: auto;
-	padding: 20px;
-	box-sizing: border-box;
+	padding: 18px 30px 26px;
+	transform: translate(-50%, -50%);
 }
-.overlay:is([data-theme='moba-victory'], [data-theme='moba-defeat']) .dialog-card {
-	width: min(920px, 100%);
-	max-width: none;
-	box-sizing: border-box;
-	padding: 28px;
-}
+/* The table on the scoreboard and the result page: thin rules, small caps heads, each team named
+   in its own ink, your row on the map's wash. */
 .moba-results {
-	margin-top: 22px;
 	font:
 		400 18px / 1.4 'Josefin Sans',
 		sans-serif;
@@ -108,168 +134,63 @@ canvas.moba-dead-world {
 	border-collapse: collapse;
 }
 .moba-results :is(th, td) {
-	padding: 8px 10px;
-	border-bottom: 1px solid color-mix(in srgb, var(--ui-text) 20%, transparent);
+	padding: 7px 10px;
+	border-bottom: 1px solid var(--rule);
 	text-align: right;
 }
 .moba-results th:first-child {
+	padding-left: 0;
 	text-align: left;
 }
 .moba-results thead th {
-	font-size: 14px;
+	font: var(--caps);
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	border-bottom-color: var(--ui-text);
 }
 .moba-result-team th {
-	background: color-mix(in srgb, var(--ui-blue) 22%, var(--ui-cream));
-	font-weight: 700;
+	padding-top: 16px;
+	font: var(--caps);
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+	color: var(--page-theirs);
 }
 .moba-result-team:has(~ tr[data-local='true']) th {
-	background: color-mix(in srgb, var(--ui-gold) 35%, var(--ui-cream));
+	color: var(--page-mine);
 }
 .moba-results tr[data-local='true'] {
-	background: color-mix(in srgb, var(--ui-gold) 20%, var(--ui-cream));
+	background: color-mix(in srgb, var(--page-wash) 35%, transparent);
 }
-.moba-scoreboard {
-	position: fixed;
-	z-index: 5;
-	top: 50%;
-	left: 50%;
-	width: min(760px, calc(100vw - 44px));
-	max-height: calc(100vh - 44px);
-	overflow: auto;
-	box-sizing: border-box;
-	padding: 4px 22px 18px;
-	color: var(--ui-text);
-	background: var(--ui-cream);
-	border: 3px solid var(--ui-text);
-	border-radius: 20px;
-	box-shadow: 5px 6px 0 var(--ui-text);
-	transform: translate(-50%, -50%);
-	pointer-events: none;
-}
-.moba-scoreboard[hidden] {
-	display: none;
+.moba-results tr[data-local='true'] th {
+	padding-left: 8px;
 }
 .moba-result-note {
 	margin: 12px 0 0;
 	font-size: 13px;
-}
-.overlay:has(.moba-results) .actions .cursor {
-	display: none;
-}
-.overlay:has(.moba-results) .actions .label {
-	margin-left: 0;
-}
-/* Same hard shadow, stitched edge and rising flood as the difficulty tiles. */
-.overlay:has(.moba-results) .actions .sticker {
-	--flood: var(--ui-blue);
-	--sticker-radius: 18px;
-	--sticker-lift: 6px;
-	--sticker-pad-y: 22px;
-	--sticker-pad-x: 34px;
-	isolation: isolate;
-	overflow: hidden;
-	min-width: 180px;
-	font-size: clamp(26px, 3vw, 42px);
-	text-transform: none;
-	background: var(--ui-cream);
-	transform: rotate(var(--tile-tilt));
-	transition:
-		transform var(--tile-snap) cubic-bezier(0.2, 1.9, 0.45, 1),
-		box-shadow var(--tile-snap);
-}
-.overlay:has(.moba-results) .actions .sticker:first-child {
-	--flood: var(--ui-gold);
-	transform: rotate(calc(-1 * var(--tile-tilt)));
-}
-.overlay:has(.moba-results) .actions .sticker::before {
-	content: '';
-	position: absolute;
-	inset: 0;
-	z-index: -1;
-	background: var(--flood);
-	transform: scaleY(0);
-	transform-origin: bottom;
-	transition: transform var(--tile-snap) cubic-bezier(0.3, 1.3, 0.5, 1);
-}
-.overlay:has(.moba-results) .actions .sticker::after {
-	content: '';
-	position: absolute;
-	inset: 5px;
-	border: 2px dashed color-mix(in srgb, var(--ui-text) 45%, transparent);
-	border-radius: 10px;
-	pointer-events: none;
-}
-.overlay:has(.moba-results) .actions .sticker:is(.selected, :focus-visible) {
-	background: var(--ui-cream);
-	transform: translate(-3px, -6px) rotate(0deg) scale(var(--tile-scale));
-	box-shadow: 9px 12px 0 var(--ui-text);
-	outline: none;
-}
-.overlay:has(.moba-results) .actions .sticker.selected::before {
-	transform: scaleY(1);
-}
-.overlay:has(.moba-results) .actions .sticker:active {
-	transform: translate(3px, 4px) scale(0.97);
-	box-shadow: 2px 2px 0 var(--ui-text);
-	transition-duration: var(--tile-press);
-}
-@media (max-width: 700px) {
-	.moba-death {
-		top: 116px;
-		left: 14px;
-		width: min(300px, calc(100vw - 28px));
-		padding: 12px 16px;
-	}
-	.overlay:has(.moba-results) {
-		padding: 12px;
-	}
-	.overlay:has(.moba-results) .dialog-card {
-		padding: 18px 10px;
-	}
-	.moba-results {
-		font-size: 13px;
-	}
-	.moba-results :is(th, td) {
-		padding: 7px 3px;
-	}
-	.moba-results thead th {
-		font-size: 11px;
-	}
-	.overlay:has(.moba-results) .actions .sticker {
-		min-width: 130px;
-		--sticker-pad-x: 22px;
-		--sticker-pad-y: 18px;
-	}
+	opacity: 0.8;
 }
 
-/* The pause page: a Japanese game manual on a Swiss grid, the paused match as its figure, drawn
-   in the front end's ligne claire (docs/look.md, Front end and match): the splash's deckled paper
-   for the sheet, one thin navy line for the rules, PAUSED inked on a watercolour wash, and the
-   lobby's painted cards for the actions. Twelve faint columns, the sheet over the left seven.
-   Readouts are printed; the actions are the only frames. Markup is the shared overlay card plus
-   `pausePage` in menu.js, which sets `--pause-wash` and `data-light` from the map. */
-.overlay[data-theme='moba-pause'] {
+/* The two pages: a Japanese game manual on a Swiss grid, the stopped match as its figure.
+   Twelve faint columns, the sheet over the left ones. Markup is the shared overlay card plus
+   `pausePage` and `resultPage` in menu.js. */
+.overlay[data-theme^='moba'] {
 	place-items: stretch;
 	overflow: auto;
 	background: none;
 	backdrop-filter: none;
 }
-/* Paused, the page shows only itself over the world: the HUD, its pill, the minimap and the corner buttons
+/* A page shows only itself over the world: the HUD, its pill, the minimap and the corner buttons
    step out; health bars stay as part of the figure. */
-body:has(> .overlay[data-theme='moba-pause']:not([hidden]))
+body:has(> .overlay[data-theme^='moba']:not([hidden]))
 	> :not(canvas, .overlay, .fade, .lil-gui, .moba-health-bars) {
 	visibility: hidden;
 }
-.overlay .dialog-card.moba-pause {
+.overlay .dialog-card.moba-page {
 	--pad: clamp(16px, 3.4vw, 56px);
 	--cols: 12;
 	--sheet: 7;
 	--col: calc((100% - 2 * var(--pad)) / var(--cols));
 	--grid-line: color-mix(in srgb, var(--ui-text) 8%, transparent);
-	--rule: color-mix(in srgb, var(--ui-text) 55%, transparent);
-	--caps: 600 clamp(11px, 0.95vw, 14px) / 1.2 'Josefin Sans', sans-serif;
-	--wash-tall: url('/splash/wash-day-tall.webp');
-	--frame: url('/splash/frame-day.webp');
 	position: relative;
 	isolation: isolate;
 	display: grid;
@@ -280,20 +201,15 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden]))
 	box-sizing: border-box;
 	padding: var(--pad);
 	text-align: left;
-	color: var(--ui-text);
 	/* The world behind goes pale, like the sky behind the splash. No blur: it would redraw every frame. */
 	background: color-mix(in srgb, var(--ui-cream) 28%, transparent);
 	border: 0;
 	border-radius: 0;
 	box-shadow: none;
 }
-.dialog-card.moba-pause[data-light='night'] {
-	--wash-tall: url('/splash/wash-night-tall.webp');
-	--frame: url('/splash/frame-night.webp');
-}
 /* The sheet, then the column lines over everything, the world included. */
-.dialog-card.moba-pause::before,
-.dialog-card.moba-pause::after {
+.dialog-card.moba-page::before,
+.dialog-card.moba-page::after {
 	content: '';
 	position: absolute;
 	z-index: -1;
@@ -302,7 +218,7 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden]))
 }
 /* Deckled paper, its top, left and bottom edges pushed off the page so only the torn right edge
    shows, no ink rule. */
-.dialog-card.moba-pause::before {
+.dialog-card.moba-page::before {
 	inset: -40px auto -40px -40px;
 	width: calc(40px + var(--pad) + var(--sheet) * var(--col));
 	border: 40px solid transparent;
@@ -310,22 +226,15 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden]))
 	/* Paled toward the lobby's cream cards. */
 	filter: saturate(0.55) brightness(1.06);
 }
-.dialog-card.moba-pause::after {
+.dialog-card.moba-page::after {
 	inset: 0 var(--pad);
 	background: linear-gradient(to right, var(--grid-line) 1px, transparent 1px) 0 0 /
 		calc(100% / var(--cols)) 100%;
 	border-right: 1px solid var(--grid-line);
 }
-.moba-pause [lang='ja'] {
-	margin-left: 0.7em;
-	font-family: var(--ui-font);
-	font-weight: 400;
-	letter-spacing: 0.05em;
-	opacity: 0.65;
-}
-.moba-pause .pause-head {
+.moba-page .page-head {
 	grid-row: 1;
-	grid-column: 1 / span 7;
+	grid-column: 1 / span var(--sheet);
 	display: grid;
 	grid-template-columns: subgrid;
 	align-items: end;
@@ -335,12 +244,83 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden]))
 	letter-spacing: 0.16em;
 	text-transform: uppercase;
 }
-.moba-pause .pause-head > :nth-child(1) {
+.moba-page .page-head > :nth-child(1) {
 	grid-column: span 4;
 }
-.moba-pause .pause-head > :nth-child(2) {
+.moba-page .page-head > :nth-child(2) {
 	grid-column: span 2;
 }
+/* The page's word in Japanese, running down the sheet's torn edge. */
+.moba-page .page-kana {
+	grid-row: 2;
+	grid-column: var(--sheet);
+	justify-self: end;
+	margin: 0.6em 0.4em 0 0;
+	writing-mode: vertical-rl;
+	font: 400 clamp(20px, 2.2vw, 34px) / 1 var(--ui-font);
+	letter-spacing: 0.12em;
+	opacity: 0.7;
+}
+/* The lobby's painted card: paper under a hand-inked frame; the one you're on lifts and the
+   map's wash bleeds out behind it. */
+.overlay .moba-page .actions button:not(.pause-check) {
+	--frame-w: 18px;
+	isolation: isolate;
+	justify-content: flex-start;
+	align-items: stretch;
+	padding: 0;
+	font-size: clamp(24px, 2.5vw, 42px);
+	letter-spacing: 0;
+	text-transform: none;
+	background: none;
+	border: var(--frame-w) solid transparent;
+	border-image: var(--frame) 80 / var(--frame-w) / 0 stretch;
+	border-radius: 0;
+	box-shadow: none;
+	transform: rotate(-0.4deg);
+	transition:
+		transform var(--tile-snap, 0.18s) cubic-bezier(0.2, 1.9, 0.45, 1),
+		filter var(--tile-snap, 0.18s);
+}
+.overlay .moba-page .actions button:not(.pause-check):nth-child(2) {
+	transform: rotate(0.5deg);
+}
+.overlay .moba-page .actions button:not(.pause-check)::after {
+	content: '';
+	position: absolute;
+	inset: calc(var(--frame-w) * -0.8);
+	z-index: -1;
+	border: 22px solid transparent;
+	border-image: url('/splash/paper.webp') 64 fill / 22px / 0 stretch;
+	box-shadow: 0 0 0 0 transparent;
+	transition: box-shadow var(--tile-snap, 0.18s) ease-out;
+}
+.overlay .moba-page .actions .label {
+	flex: 1;
+	margin: 0;
+	text-align: left;
+	padding: 0.2em 0.6em 0.34em;
+}
+.overlay .moba-page .actions .cursor {
+	display: none;
+}
+.overlay .moba-page .actions button:not(.pause-check):focus-visible {
+	outline: none;
+}
+.overlay .moba-page .actions button.selected:not(.pause-check) {
+	background: none;
+	transform: translate(-2px, -5px) rotate(0deg) scale(1.02);
+	box-shadow: none;
+	filter: drop-shadow(3px 7px 5px color-mix(in srgb, var(--ui-text) 16%, transparent));
+}
+.overlay .moba-page .actions button.selected:not(.pause-check)::after {
+	box-shadow: 0 0 34px 16px color-mix(in srgb, var(--page-wash) 75%, transparent);
+}
+.overlay .moba-page .actions button:active:not(.pause-check) {
+	transform: translate(-2px, -5px) scale(0.98);
+	transition-duration: var(--tile-press, 0.06s);
+}
+
 /* PAUSED is a readout: ink printed on one painted wash running down the sheet, no frame. */
 .overlay .moba-pause h1 {
 	position: relative;
@@ -373,16 +353,6 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden]))
 	border-image: var(--wash-tall) 48 0 fill / 40px 0 / 0 stretch;
 	opacity: 0.5;
 }
-.moba-pause .pause-kana {
-	grid-row: 2;
-	grid-column: 7;
-	justify-self: end;
-	margin: 0.6em 0.4em 0 0;
-	writing-mode: vertical-rl;
-	font: 400 clamp(20px, 2.2vw, 34px) / 1 var(--ui-font);
-	letter-spacing: 0.12em;
-	opacity: 0.7;
-}
 .overlay .moba-pause .actions {
 	grid-row: 2;
 	grid-column: 2 / span 5;
@@ -392,65 +362,6 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden]))
 	gap: clamp(10px, 1.4vw, 18px);
 	margin: clamp(12px, 2vw, 28px) 0 0;
 	padding-right: clamp(0px, 2vw, 32px);
-}
-/* The lobby's painted card: paper under a hand-inked frame; the one you're on lifts and the
-   map's wash bleeds out behind it. */
-.overlay .moba-pause .actions button:not(.pause-check) {
-	--frame-w: 18px;
-	isolation: isolate;
-	justify-content: flex-start;
-	align-items: stretch;
-	padding: 0;
-	font-size: clamp(24px, 2.5vw, 42px);
-	letter-spacing: 0;
-	text-transform: none;
-	background: none;
-	border: var(--frame-w) solid transparent;
-	border-image: var(--frame) 80 / var(--frame-w) / 0 stretch;
-	border-radius: 0;
-	box-shadow: none;
-	transform: rotate(-0.4deg);
-	transition:
-		transform var(--tile-snap, 0.18s) cubic-bezier(0.2, 1.9, 0.45, 1),
-		filter var(--tile-snap, 0.18s);
-}
-.overlay .moba-pause .actions button:not(.pause-check):nth-child(2) {
-	transform: rotate(0.5deg);
-}
-.overlay .moba-pause .actions button:not(.pause-check)::after {
-	content: '';
-	position: absolute;
-	inset: calc(var(--frame-w) * -0.8);
-	z-index: -1;
-	border: 22px solid transparent;
-	border-image: url('/splash/paper.webp') 64 fill / 22px / 0 stretch;
-	box-shadow: 0 0 0 0 transparent;
-	transition: box-shadow var(--tile-snap, 0.18s) ease-out;
-}
-.overlay .moba-pause .actions .label {
-	flex: 1;
-	margin: 0;
-	text-align: left;
-	padding: 0.2em 0.6em 0.34em;
-}
-.overlay .moba-pause .actions .cursor {
-	display: none;
-}
-.overlay .moba-pause .actions button:not(.pause-check):focus-visible {
-	outline: none;
-}
-.overlay .moba-pause .actions button.selected:not(.pause-check) {
-	background: none;
-	transform: translate(-2px, -5px) rotate(0deg) scale(1.02);
-	box-shadow: none;
-	filter: drop-shadow(3px 7px 5px color-mix(in srgb, var(--ui-text) 16%, transparent));
-}
-.overlay .moba-pause .actions button.selected:not(.pause-check)::after {
-	box-shadow: 0 0 34px 16px color-mix(in srgb, var(--pause-wash) 75%, transparent);
-}
-.overlay .moba-pause .actions button:active:not(.pause-check) {
-	transform: translate(-2px, -5px) scale(0.98);
-	transition-duration: var(--tile-press, 0.06s);
 }
 .moba-pause .pause-facts {
 	grid-row: 3;
@@ -489,10 +400,10 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden]))
 	font-style: normal;
 }
 .moba-pause .pause-facts .mine {
-	color: var(--pause-mine);
+	color: var(--page-mine);
 }
 .moba-pause .pause-facts .theirs {
-	color: var(--pause-theirs);
+	color: var(--page-theirs);
 }
 .moba-pause .pause-facts em {
 	font: var(--caps);
@@ -558,37 +469,101 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden]))
 	box-shadow: none;
 }
 .moba-pause .pause-check:is(.selected, :hover) .pause-box {
-	background: var(--pause-wash);
+	background: var(--page-wash);
 	transform: translate(-1px, -3px) rotate(-3deg);
 	box-shadow:
 		3px 6px 6px color-mix(in srgb, var(--ui-text) 22%, transparent),
-		0 0 18px 6px color-mix(in srgb, var(--pause-wash) 70%, transparent);
+		0 0 18px 6px color-mix(in srgb, var(--page-wash) 70%, transparent);
 }
 .moba-pause .pause-check:active .pause-box {
 	transform: scale(0.92);
 }
+
+/* The result page: a wider sheet for the table, VICTORY or DEFEAT inked on the wash, the actions
+   in a row under the table. */
+.overlay .dialog-card.moba-result {
+	--sheet: 8;
+	grid-template-rows: repeat(4, auto) 1fr;
+}
+.overlay .moba-result h1 {
+	grid-row: 2;
+	grid-column: 1 / span 6;
+	margin: clamp(18px, 3vw, 44px) 0 0;
+	padding: 0 0.1em;
+	font: 400 clamp(48px, min(8vw, 13vh), 120px) / 1 var(--ui-font);
+	letter-spacing: 0.02em;
+	color: var(--ui-text);
+	background: none;
+	border: 0;
+	border-radius: 0;
+	box-shadow: none;
+	-webkit-text-stroke: 0;
+	transform: none;
+}
+.overlay .moba-result .sub {
+	grid-row: 3;
+	grid-column: 1 / span 6;
+	margin: 10px 0 0;
+	font: var(--caps);
+	letter-spacing: 0.16em;
+	text-transform: uppercase;
+	color: var(--ui-text);
+}
+.moba-result .moba-results {
+	grid-row: 4;
+	grid-column: 1 / span var(--sheet);
+	margin-top: clamp(14px, 2vw, 28px);
+}
+.overlay .moba-result .actions {
+	grid-row: 5;
+	grid-column: 1 / span var(--sheet);
+	align-self: start;
+	flex-wrap: wrap;
+	justify-content: flex-start;
+	gap: clamp(12px, 1.6vw, 22px);
+	margin: clamp(18px, 2.4vw, 34px) 0 0;
+}
+.overlay .moba-result .actions button:not(.pause-check) {
+	font-size: clamp(22px, 2.2vw, 36px);
+}
+
 @media (max-width: 700px) {
+	.moba-death {
+		top: 116px;
+		left: 14px;
+		width: min(300px, calc(100vw - 28px));
+		padding: 18px 20px;
+	}
+	.moba-results {
+		font-size: 13px;
+	}
+	.moba-results :is(th, td) {
+		padding: 7px 3px;
+	}
+	.moba-results thead th {
+		font-size: 11px;
+	}
 	/* Clear of the corner buttons; the sheet takes the whole phone. */
-	.overlay .dialog-card.moba-pause {
+	.overlay .dialog-card.moba-page {
 		--cols: 6;
 		--sheet: 6;
 		padding-top: 76px;
 	}
-	.dialog-card.moba-pause::before {
+	.dialog-card.moba-page::before {
 		width: calc(100% + 80px);
 		opacity: 0.94;
 	}
-	.moba-pause .pause-head,
+	.moba-page .page-head,
 	.moba-pause .pause-facts {
 		grid-column: 1 / -1;
 	}
-	.moba-pause .pause-head > :nth-child(1) {
+	.moba-page .page-head > :nth-child(1) {
 		grid-column: span 3;
 	}
-	.moba-pause .pause-head > :nth-child(2) {
+	.moba-page .page-head > :nth-child(2) {
 		grid-column: span 2;
 	}
-	.moba-pause .pause-kana {
+	.moba-page .page-kana {
 		display: none;
 	}
 	.overlay .moba-pause .actions {
@@ -606,5 +581,8 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden]))
 	.moba-pause .pause-facts em {
 		display: block;
 		vertical-align: 0;
+	}
+	.overlay .moba-result :is(h1, .sub) {
+		grid-column: 1 / -1;
 	}
 }

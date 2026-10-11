@@ -7,13 +7,13 @@ const stats = ['kills', 'deaths', 'heroDamage', 'structureDamage', 'xp']
 const number = (value) => value.toLocaleString(undefined, { maximumFractionDigits: 1 })
 
 // One run's facts, not a second combat simulation. Only the local death gets a card.
-export function createRecap({ sim, hero, canvas }) {
+export function createRecap({ sim, hero, canvas, paper = (node) => node }) {
 	const structures = new Map((sim.lane?.structures ?? []).map((unit) => [unit.id, unit.kind]))
 	let shownDeath = null
 	let root, heading, hits, countdown, help
 	let lastCountdown = ''
 	if (canvas) {
-		root = el('aside', 'moba-death', document.body)
+		root = paper(el('aside', 'moba-death', document.body))
 		root.hidden = true
 		root.setAttribute('aria-label', 'Death recap')
 		heading = el('h2', '', root)
@@ -98,7 +98,7 @@ export function createRecap({ sim, hero, canvas }) {
 			if (board) board.hidden = true
 			return
 		}
-		board ??= el('aside', 'moba-scoreboard', document.body)
+		board ??= paper(el('aside', 'moba-scoreboard', document.body))
 		board.hidden = false
 		const key = Object.entries(sim.matchStats ?? {})
 			.map(([id, row]) => [id, ...stats.map((stat) => number(row[stat]))].join())
