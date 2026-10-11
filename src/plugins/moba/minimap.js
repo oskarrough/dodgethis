@@ -93,8 +93,9 @@ export function createMinimap(
 		const points = []
 		for (const [nx, ny] of corners) {
 			ray.set(nx, ny, 0.5).unproject(camera).sub(eye)
-			if (ray.y >= -1e-6) return
+			if (!(ray.y < -1e-6)) return // also skips a camera with no size yet (NaN) on the first frames
 			const k = -eye.y / ray.y
+			if (!Number.isFinite(eye.x + ray.x * k + eye.z + ray.z * k)) return
 			points.push(
 				`${(50 + (eye.x + ray.x * k) * scale).toFixed(1)},${(height / 2 + (eye.z + ray.z * k) * scale).toFixed(1)}`,
 			)
