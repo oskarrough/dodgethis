@@ -3,35 +3,28 @@ import { slowFactor } from './ability.js'
 import { tune } from './tune.js'
 import { clampWalkable } from './obstacles.js'
 import { createPathPlanner } from './path.js'
+import { createStructures, vulnerability } from './lane-structures.js'
+import { createWaves, route } from './lane-waves.js'
+import { createRewards } from './lane-rewards.js'
+
+export { waveInterval } from './lane-waves.js'
 
 const ticks = (s) => Math.max(1, Math.round(s / STEP))
-// A lane's normal is authored A→B, so files keep their side on the reverse march.
-const direction = (a, b) => {
-	const length = Math.hypot(b.x - a.x, b.z - a.z) || 1
-	return { x: (b.x - a.x) / length, z: (b.z - a.z) / length }
-}
-const offset = (point, forward, file) => ({
-	x: point.x - forward.z * file,
-	z: point.z + forward.x * file,
-})
-const distance = (a, b) =>
-	Math.hypot(a.body.position.x - b.body.position.x, a.body.position.z - b.body.position.z)
 export const inReach = (a, b, range) => {
 	const dx = a.body.position.x - b.body.position.x,
 		dz = a.body.position.z - b.body.position.z
 	return dx * dx + dz * dz <= (range + b.body.radius) ** 2
 }
-
-// Plain agents: lane routes and pursuit paths, no character controllers or render-time decisions.
-// Seconds between waves at match time `seconds`: `interval`, then from the map's late mark it starts at
-// `lateInterval` and shortens by `lateStep` each minute down to `minInterval`.
-export function waveInterval(seconds, late = tune.match.late) {
-	const w = tune.waves
-	if (seconds < late) return w.interval
-	const minutes = Math.floor((seconds - late) / 60)
-	return Math.max(w.minInterval, w.lateInterval - w.lateStep * minutes)
+// A lane's normal is authored A→B, so files keep their side on the reverse march.
+const direction = (a, b) => {
+	const length = Math.hypot(b.x - a.x, b.z - a.z) || 1
+	return { x: (b.x - a.x) / length, z: (b.z - a.z) / length }
 }
 
+// Plain agents: lane routes and pursuit paths, no character controllers or render-time decisions.
+// The lane: waves (lane-waves.js), structures (lane-structures.js), XP and globes (lane-rewards.js),
+// and here the step order and the unit brain every minion and gun runs: targeting, calls for help,
+// leash, attacks and the march.
 export function createLane({
 	layout,
 	structures: withStructures = true,
@@ -53,67 +46,53 @@ export function createLane({
 	}
 	let time = 0
 	let serial = 0
-	let nextWave = ticks(tune.waves.first)
 	const minions = []
 	const teams = { A: { xp: 0, level: 1 }, B: { xp: 0, level: 1 } }
 	const globes = []
 	const reinforcements = {} // `${team}-${lane}` → extra minions, one per enemy fort taken in that lane
 	const match = { winner: null, endedTick: null, phase: 'early' }
-	const structures = (withStructures ? layout.structures : []).map(
-		({ id, kind, team, x, z, lane, after = [] }) => ({
-			id,
-			team,
-			kind,
-			structure: true,
-			lane,
-			after,
-			hp: tune[kind].hp,
-			maxHp: tune[kind].hp,
-			dead: false,
-			body: makeBody(x, z, team, kind),
-			target: null,
-			forced: null,
-			aggroUntil: 0,
-			silentUntil: 0,
-			attackTick: 0,
-			attack: null,
-		}),
-	)
-	const vulnerable = (unit) => {
-		if (!unit.structure) return true
-		const after = unit.after
-		const fallen = (id) => structures.find((s) => s.id === id)?.dead === true
-		return Array.isArray(after)
-			? after.every(fallen)
-			: (after.all ?? []).every(fallen) && (!after.any?.length || after.any.some(fallen))
+	const structures = createStructures({ layout, makeBody, enabled: withStructures })
+	const vulnerable = vulnerability(structures)
+	const shared = {
+		layout,
+		heroes,
+		present,
+		makeBody,
+		removeTower,
+		obstacles,
+		wavesEnabled,
+		minions,
+		structures,
+		teams,
+		globes,
+		reinforcements,
+		match,
+		nextSerial: () => ++serial,
 	}
-	function route(lane, team, file) {
-		const path = team === 'A' ? lane.path : [...lane.path].reverse()
-		const points = path.map((point, i) => {
-			const forward = direction(path[Math.max(0, i - 1)], path[Math.max(1, i)])
-			return offset(point, team === 'A' ? forward : { x: -forward.x, z: -forward.z }, file)
-		})
-		const core = structures.find((s) => s.kind === 'core' && s.team !== team)
-		if (core) {
-			const end = path.at(-1)
-			const forward = direction(path.at(-2), end)
-			const towardCore = direction(end, core.body.position)
-			const goal = offset(
-				{
-					x:
-						core.body.position.x - towardCore.x * (core.body.radius + tune.waves.structureStandoff),
-					z:
-						core.body.position.z - towardCore.z * (core.body.radius + tune.waves.structureStandoff),
-				},
-				team === 'A' ? towardCore : { x: -towardCore.x, z: -towardCore.z },
-				file,
-			)
-			// A collinear core extends the final leg; an off-lane core needs the courtyard turn.
-			if (forward.x * towardCore.z - forward.z * towardCore.x === 0)
-				points[points.length - 1] = goal
-			else points.push(goal)
+	const waves = createWaves(shared)
+	const { addXp, reward, passiveXp, stepGlobes } = createRewards(shared)
+	shared.addXp = addXp
+	function step(t, dt) {
+		time = t
+		match.phase =
+			t * STEP >= (layout.late ?? tune.match.late)
+				? 'late'
+				: t * STEP >= tune.match.objective
+					? 'objective'
+					: 'early'
+		passiveXp(t)
+		for (const h of heroes) {
+			if (!h.dead && (h.team === 'A' ? -1 : 1) * (h.body.position.x - layout.bases[h.team].x) >= 0)
+				h.hp = Math.min(h.maxHp, h.hp + h.maxHp * tune.base.heal * dt)
 		}
-		return points
+		stepGlobes(t)
+		waves.step(t)
+		units(t, dt)
+		for (let i = minions.length - 1; i >= 0; i--)
+			if (minions[i].dead) {
+				minions[i].body.dispose()
+				minions.splice(i, 1)
+			}
 	}
 	function lanePoint(unit, point, width = null) {
 		const a = unit.route[unit.routeLeg - 1],
@@ -164,67 +143,6 @@ export function createLane({
 		}
 		return best
 	}
-	function spawn(t) {
-		for (const lane of layout.lanes)
-			for (const team of ['A', 'B']) {
-				const path = team === 'A' ? lane.path : [...lane.path].reverse()
-				const forward = direction(path[0], path[1])
-				for (const [row, kind] of (t * STEP >= (layout.late ?? tune.match.late)
-					? ['melee', 'ranged', 'wizard', 'brute']
-					: ['melee', 'ranged', 'wizard']
-				).entries()) {
-					const stats = tune.minions[kind]
-					const count =
-						stats.count +
-						(kind === tune.waves.reinforcement ? (reinforcements[`${team}-${lane.id}`] ?? 0) : 0)
-					const growth = 1 + tune.waves.growth * Math.floor((t * STEP) / tune.waves.growthPeriod)
-					for (let file = 0; file < count; file++) {
-						const spacing =
-							(count === 2 ? file * 2 - 1 : file - (count - 1) / 2) * tune.waves.fileSpacing
-						const start = offset(
-							{
-								x: path[0].x - forward.x * row * tune.waves.rowSpacing,
-								z: path[0].z - forward.z * row * tune.waves.rowSpacing,
-							},
-							team === 'A' ? forward : { x: -forward.x, z: -forward.z },
-							spacing,
-						)
-						const unit = {
-							id: `minion-${++serial}`,
-							team,
-							kind,
-							hp: stats.hp * growth,
-							maxHp: stats.hp * growth,
-							damageScale: growth,
-							dead: false,
-							body: makeBody(start.x, start.z, team, kind),
-							lane: lane.id,
-							route: route(lane, team, spacing),
-							routeLeg: 1,
-							halfWidth: lane.halfWidth,
-							file: spacing,
-							target: null,
-							forced: null,
-							aggroUntil: 0,
-							attackTick: t,
-							attack: null,
-							slow: { until: 0, factor: 1 },
-						}
-						const safe = clampWalkable(
-							unit.body.position,
-							unit.body.radius,
-							tune.orders.clearance,
-							obstacles,
-							layout.bounds,
-						)
-						unit.body.position.x = safe.x
-						unit.body.position.z = safe.z
-						minions.push(unit)
-						present({ type: 'spawn', target: unit.id, point: { ...unit.body.position } })
-					}
-				}
-			}
-	}
 	function help(source, victim, t) {
 		if (source?.kind || victim.kind || source?.team === victim.team || !source || source.dead)
 			return
@@ -254,157 +172,7 @@ export function createLane({
 			})
 		}
 	}
-	function addXp(team, amount, point, passive = false, contributions = {}) {
-		const state = teams[team]
-		state.xp += amount
-		present({
-			type: 'xp',
-			team,
-			amount,
-			total: state.xp,
-			passive,
-			contributions,
-			point: { ...point },
-		})
-		let threshold = 0
-		for (let level = 1; level < tune.levels.cap; level++) {
-			threshold += tune.levels.first + tune.levels.increment * (level - 1)
-			if (state.xp < threshold || state.level > level) continue
-			state.level = level + 1
-			for (const h of heroes.filter((h) => h.team === team)) {
-				const previous = h.maxHp
-				h.level = state.level
-				h.maxHp = (h.definition?.base.hp ?? tune.hero.hp) * (1 + tune.levels.growth * (h.level - 1))
-				if (!h.dead) h.hp = Math.min(h.maxHp, h.hp + h.maxHp - previous)
-			}
-			present({ type: 'levelUp', team, level: state.level, point: { ...point } })
-		}
-	}
-	function reward(unit, killerTeam, t, source) {
-		// A last-hit earns siege/takedown credit; minion soak is shared equally
-		// by the heroes who earned it. Passive and lane-only kills have no hero credit.
-		const killer = heroes.find((hero) => hero.id === source && hero.team === killerTeam)
-		const credit = (amount) => (killer ? { [killer.id]: amount } : {})
-		unit.killedBy = killerTeam
-		if (unit.structure) {
-			removeTower(unit)
-			if (unit.kind === 'fort') {
-				const key = `${unit.team === 'A' ? 'B' : 'A'}-${unit.lane}`
-				reinforcements[key] = (reinforcements[key] ?? 0) + 1
-			}
-			const xp = tune[unit.kind].xp ?? tune.waves.structureXp
-			addXp(killerTeam, xp, unit.body.position, false, credit(xp))
-			present({
-				type: 'structureDown',
-				target: unit.id,
-				team: killerTeam,
-				point: { ...unit.body.position },
-			})
-			if (unit.kind === 'core' && !match.winner) {
-				match.winner = killerTeam
-				match.endedTick = t
-				present({
-					type: 'matchOver',
-					team: killerTeam,
-					target: unit.id,
-					point: { ...unit.body.position },
-				})
-			}
-		} else if (!unit.kind) {
-			addXp(
-				killerTeam,
-				tune.levels.takedown + tune.levels.victimLevel * unit.level,
-				unit.body.position,
-				false,
-				credit(tune.levels.takedown + tune.levels.victimLevel * unit.level),
-			)
-		} else {
-			const soaking = heroes.filter(
-				(h) =>
-					!h.dead &&
-					h.team !== unit.team &&
-					(unit.team !== 'N' || h.team === killerTeam) &&
-					distance(unit, h) <= tune.waves.soak,
-			)
-			if (soaking.length) {
-				const amount = tune.minions[unit.kind].xp
-				addXp(
-					unit.team === 'N' ? killerTeam : unit.team === 'A' ? 'B' : 'A',
-					amount,
-					unit.body.position,
-					false,
-					Object.fromEntries(soaking.map((h) => [h.id, amount / soaking.length])),
-				)
-			}
-		}
-		if (unit.kind === 'wizard') {
-			const globe = {
-				id: ++serial,
-				team: killerTeam,
-				pos: { x: unit.body.position.x, y: tune.globes.height, z: unit.body.position.z },
-				expires: t + ticks(tune.globes.life),
-			}
-			globes.push(globe)
-			present({ type: 'globe', state: 'spawn', team: killerTeam, point: { ...globe.pos } })
-		}
-	}
-	function step(t, dt) {
-		time = t
-		match.phase =
-			t * STEP >= (layout.late ?? tune.match.late)
-				? 'late'
-				: t * STEP >= tune.match.objective
-					? 'objective'
-					: 'early'
-		if (t >= ticks(tune.levels.passiveStart) && t % ticks(1) === 0) {
-			for (const team of ['A', 'B'])
-				addXp(
-					team,
-					tune.levels.passive,
-					{
-						x: layout.bases[team].x,
-						y: 0,
-						z: 0,
-					},
-					true,
-				)
-		}
-		for (const h of heroes) {
-			if (!h.dead && (h.team === 'A' ? -1 : 1) * (h.body.position.x - layout.bases[h.team].x) >= 0)
-				h.hp = Math.min(h.maxHp, h.hp + h.maxHp * tune.base.heal * dt)
-		}
-		for (let i = globes.length - 1; i >= 0; i--) {
-			const globe = globes[i]
-			const hero = heroes.find(
-				(h) =>
-					!h.dead &&
-					t < globe.expires &&
-					h.team === globe.team &&
-					Math.hypot(h.body.position.x - globe.pos.x, h.body.position.z - globe.pos.z) <=
-						tune.globes.pickup,
-			)
-			if (hero) {
-				const heal = Math.min(hero.maxHp - hero.hp, hero.maxHp * tune.globes.heal)
-				hero.hp += heal
-				present({
-					type: 'globe',
-					state: 'pickup',
-					target: hero.id,
-					team: globe.team,
-					heal,
-					point: { ...globe.pos },
-				})
-			}
-			if (hero || t >= globe.expires) {
-				if (!hero)
-					present({ type: 'globe', state: 'expired', team: globe.team, point: { ...globe.pos } })
-				globes.splice(i, 1)
-			}
-		}
-		if (t >= nextWave) {
-			if (wavesEnabled()) spawn(t)
-			nextWave += ticks(waveInterval(t * STEP, layout.late ?? tune.match.late))
-		}
+	function units(t, dt) {
 		const candidates = [...minions, ...structures, ...heroes]
 		const enemies = new Map()
 		const byId = new Map(candidates.map((u) => [u.id, u]))
@@ -569,17 +337,12 @@ export function createLane({
 				unit.body.face(unit.yaw)
 			}
 		}
-		for (let i = minions.length - 1; i >= 0; i--)
-			if (minions[i].dead) {
-				minions[i].body.dispose()
-				minions.splice(i, 1)
-			}
 	}
 	return {
 		minions,
 		structures,
 		teams,
-		route,
+		route: (lane, team, file) => route(structures, lane, team, file),
 		globes,
 		match,
 		reinforcements,
@@ -593,7 +356,7 @@ export function createLane({
 			return time
 		},
 		get nextWave() {
-			return nextWave
+			return waves.nextWave
 		},
 	}
 }
