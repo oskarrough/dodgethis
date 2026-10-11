@@ -139,10 +139,12 @@
 				font-weight: 800;
 				letter-spacing: 0.02em;
 			}
-			.bar h1::after {
-				content: ' ·  dodgethis';
-				font-weight: 400;
-				color: var(--soft);
+			.bar > * {
+				white-space: nowrap;
+				flex: none;
+			}
+			.bar .grow {
+				flex: 1;
 			}
 			.bar .grow {
 				flex: 1;
@@ -197,6 +199,37 @@
 			.bar output {
 				font-size: 13px;
 				color: var(--soft);
+			}
+			.hint {
+				display: flex;
+				align-items: center;
+				gap: 5px;
+				font-size: 12px;
+				color: var(--soft);
+				padding-left: 12px;
+				border-left: 1px solid var(--edge);
+			}
+			.hint b {
+				font:
+					700 14px/1.2 system-ui,
+					sans-serif;
+				margin-left: 7px;
+				padding: 0 5px;
+				border-radius: 4px;
+				background: var(--key);
+				box-shadow: 0 1px 0 var(--edge);
+				color: var(--ink);
+				font-size: 11px;
+			}
+			.hint b.nope {
+				color: var(--red);
+			}
+			.hint b.like {
+				color: var(--green);
+			}
+			.hint b.keep-dot {
+				color: #fff;
+				background: var(--orange);
 			}
 			.legend {
 				display: flex;
@@ -797,15 +830,21 @@
 				><i data-status="kept"></i>picked <i data-status="trying"></i>not kept yet
 				<i></i>untouched</span
 			>
+			<span
+				class="hint"
+				title="↑↓ moves between events, ←→ through candidates for one, X nopes a file for good, S likes it, K keeps the likes or the card"
+				><b>↑↓</b> event <b>←→</b> candidate <b class="nope">X</b> nope <b class="like">S</b> like
+				<b class="keep-dot">K</b> keep</span
+			>
 			<output id="notice"></output>
 			<span class="grow"></span>
-			<button id="find" type="button"><kbd>⌘K</kbd>Find anything</button>
+			<button id="find" type="button"><kbd>⌘K</kbd>Find</button>
 			<button
 				id="fight"
 				type="button"
 				title="A seeded burst of fight sounds through the game's mix"
 			>
-				Crowded fight
+				Fight
 			</button>
 			<button id="stop" type="button">Stop music</button>
 			<button
@@ -813,7 +852,7 @@
 				type="button"
 				title="New sounds go in Dropbox under Rough Resources/Sounds/osk-sfx/ (any folder). Resync copies them in and rebuilds every shortlist."
 			>
-				Resync from Dropbox
+				Resync
 			</button>
 			<output id="resync-status"></output>
 		</header>
