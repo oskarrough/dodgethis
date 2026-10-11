@@ -40,12 +40,18 @@ function playBuiltin(id) {
 	else if (use.recipe) audio.blip(use.recipe())
 	else use.play?.(audio, null, 1)
 }
+// Top five library files per use (`bun run sound:check --shortlist <uses>` writes sounds/shortlists.json).
+const shortlists = await fetch('/sounds/shortlists.json')
+	.then((r) => r.json())
+	.catch(() => ({}))
+const shortlist = (id) => shortlists[id] ?? []
 const same = (a, b) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null)
 const local = (id) => swap.swapList().find(([key]) => key === id)?.[1]
 function playing(id) {
 	const s = swap.swapOf(id)
 	if (s?.kept) return `kept ${s.kept}`
 	if (s?.file) return `file ${s.file}`
+	if (s?.library) return `library ${s.library}`
 	if (s?.voice) return s.voice
 	return uses[id].music ? 'synth music' : `built in (${uses[id].voice ?? 'synth'})`
 }
@@ -67,7 +73,7 @@ const factsOf = (id) =>
 const numbers = new Map()
 async function measureUse(id) {
 	const chosen = swap.swapOf(id)
-	const url = chosen?.kept ? swap.keptUrl(chosen.kept) : chosen?.file && swap.fileUrl(chosen.file)
+	const url = swap.swapUrl(chosen)
 	const buffer = await audio.render(() => playUse(audio, id), { warm: url ? [url] : [] })
 	numbers.set(id, measure(buffer))
 }
@@ -247,18 +253,20 @@ function buildDetail(id) {
 		const next =
 			kind === 'file'
 				? { file: name, gain: Number(parts.level.value) }
-				: kind === 'voice'
-					? { voice: name }
-					: kind === 'builtin' && swap.kept[id]
-						? { builtin: true }
-						: null
+				: kind === 'library'
+					? { library: name, gain: shortlist(id).find((c) => c.file === name)?.gain ?? 0.5 }
+					: kind === 'voice'
+						? { voice: name }
+						: kind === 'builtin' && swap.kept[id]
+							? { builtin: true }
+							: null
 		await swap.setSwap(id, next)
 		play(id)
 		measureUse(id).then(draw)
 	})
 	parts.level.addEventListener('change', async () => {
 		const chosen = swap.swapOf(id)
-		if (!chosen?.file && !chosen?.kept) return
+		if (!swap.swapUrl(chosen)) return
 		await swap.setSwap(id, { ...chosen, gain: Number(parts.level.value) })
 		play(id)
 		measureUse(id).then(draw)
@@ -269,6 +277,27 @@ function buildDetail(id) {
 		el('p', {}, el('label', {}, 'Sound ', parts.select)),
 		el('p', {}, el('label', {}, 'File level ', parts.level)),
 		el('p', { textContent: 'Arrow keys through the list play each candidate.' }),
+		...(shortlist(id).length
+			? [
+					el('h3', { textContent: 'Shortlist' }),
+					el(
+						'ol',
+						{},
+						...shortlist(id).map((c) =>
+							el(
+								'li',
+								{},
+								button('▶', () => {
+									parts.select.value = `library:${c.file}`
+									parts.select.dispatchEvent(new Event('change'))
+								}),
+								` ${c.file} `,
+								el('small', { textContent: `(${c.why}, level ${c.gain})` }),
+							),
+						),
+					),
+				]
+			: []),
 		el(
 			'p',
 			{},
@@ -300,6 +329,16 @@ function updateDetail() {
 		]
 		if (kept)
 			options.push(el('option', { value: 'kept', textContent: `Kept: ${kept.kept ?? kept.voice}` }))
+		if (shortlist(id).length)
+			options.push(
+				el(
+					'optgroup',
+					{ label: 'Shortlist from your library, best fit first' },
+					...shortlist(id).map((c) =>
+						el('option', { value: `library:${c.file}`, textContent: c.file }),
+					),
+				),
+			)
 		if (files.length)
 			options.push(
 				el(
@@ -322,15 +361,17 @@ function updateDetail() {
 			mine && !same(mine, kept)
 				? mine.file
 					? `file:${mine.file}`
-					: mine.voice
-						? `voice:${mine.voice}`
-						: 'builtin'
+					: mine.library
+						? `library:${mine.library}`
+						: mine.voice
+							? `voice:${mine.voice}`
+							: 'builtin'
 				: kept
 					? 'kept'
 					: 'builtin'
 	const chosen = swap.swapOf(id)
 	detail.level.value = chosen?.gain ?? 0.5
-	detail.level.disabled = !chosen?.file && !chosen?.kept
+	detail.level.disabled = !swap.swapUrl(chosen)
 	detail.keep.disabled = !mine || same(mine, kept) || (mine.builtin && !kept)
 }
 
@@ -339,7 +380,11 @@ async function keepSwap(id) {
 	const chosen = local(id)
 	const q = new URLSearchParams({ use: id })
 	let body = null
-	if (chosen?.file) {
+	if (chosen?.library) {
+		q.set('name', chosen.library)
+		q.set('gain', chosen.gain ?? 0.5)
+		body = await (await fetch(swap.libraryUrl(chosen.library))).blob()
+	} else if (chosen?.file) {
 		q.set('name', chosen.file)
 		q.set('gain', chosen.gain ?? 0.5)
 		body = swap.fileBlob(chosen.file)
@@ -589,7 +634,7 @@ function changesTool() {
 			.filter(([id, s]) => !same(s, swap.kept[id]) && !(s.builtin && !swap.kept[id]))
 			.map(
 				([id, s]) =>
-					`${id} → ${s.file ? `file ${s.file} at ${s.gain ?? 0.5}` : (s.voice ?? 'built in')} (this browser only)`,
+					`${id} → ${s.file || s.library ? `${s.file ? 'file' : 'library'} ${s.file ?? s.library} at ${s.gain ?? 0.5}` : (s.voice ?? 'built in')} (this browser only)`,
 			),
 	]
 	return [

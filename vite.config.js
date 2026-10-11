@@ -47,6 +47,10 @@ const folderSlash = {
 const soundKeep = {
 	name: 'sound-keep',
 	apply: 'serve',
+	// A Keep must not reload the game mid-match; open pages mirror the change until their next reload.
+	handleHotUpdate({ file }) {
+		if (file.endsWith('src/core/sfx/kept.json') || file.includes('/public/sfx/kept/')) return []
+	},
 	configureServer(server) {
 		server.middlewares.use('/__sound/keep', async (req, res) => {
 			const q = new URL(req.url, 'http://board').searchParams

@@ -1,13 +1,13 @@
 import { tune } from './tune.js'
 import { createMusic } from './music.js'
 import {
-	fileUrl,
 	keptUrl,
 	kept,
 	mixOf,
 	onSwapChange,
 	registerVoices,
 	swapOf,
+	swapUrl,
 	voiceNamed,
 } from './sound-swap.js'
 
@@ -444,7 +444,7 @@ export async function render(play, { seconds = 2, rate = 44100, warm = [] } = {}
 export function swapped(id, point = null, gain = 1, ...extra) {
 	const swap = swapOf(id)
 	if (!swap) return false
-	const url = swap.kept ? keptUrl(swap.kept) : swap.file && fileUrl(swap.file)
+	const url = swapUrl(swap)
 	if (url) sample(url, { gain: (swap.gain ?? 0.5) * gain, point })
 	else voiceNamed(swap.voice)?.(point, gain, ...extra)
 	return true
