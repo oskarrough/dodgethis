@@ -519,7 +519,7 @@ export default function moba(app, map) {
 					sim.tick >= hero.freezeUntil &&
 					hero.body.animate(step, hero.cast || hero.attack || hero.ballThrow ? 1 : 0)
 				)
-					sfx.play('step', p)
+					sfx.playOwn('step', p)
 				for (const d of [...sim.heroes.filter((h) => h.id !== local), ...sim.dummies])
 					if (!d.dead && sim.tick >= (d.freezeUntil ?? 0))
 						d.body.animate(step, d.cast || d.attack || d.ballThrow ? 1 : 0)

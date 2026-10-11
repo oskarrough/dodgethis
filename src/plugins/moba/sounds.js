@@ -53,16 +53,21 @@ export function createSounds(audio) {
 		if (swap) return swap.kept ? `kept:${swap.kept}` : swap.file ? `file:${swap.file}` : swap.voice
 		return uses[id]?.voice ?? (uses[id] ? id : undefined)
 	}
-	sounds.play = (id, point, gain = 1, ...extra) => playUse(audio, id, point, gain, ...extra)
+	sounds.play = (id, ...rest) => playUse(audio, id, ...rest)
+	sounds.playOwn = (id, ...rest) => playOwn(audio, id, ...rest)
 	return sounds
 }
 
 // Play a use from the sound table (sound-table.js): the board's swap or a kept file, else its voice, recipe or player.
-export function playUse(audio, id, point = null, gain = 1, ...extra) {
+// A hero use plays on the `mine` bus when it's yours (`playOwn`: the fact names you), else on `others`.
+export const playUse = (audio, id, point, gain, ...extra) =>
+	play(audio, false, id, point, gain, ...extra)
+export const playOwn = (audio, id, point, gain, ...extra) =>
+	play(audio, true, id, point, gain, ...extra)
+function play(audio, own, id, point = null, gain = 1, ...extra) {
 	const use = uses[id]
 	if (!use) return
-	const bus = use.bus === 'hero' ? (audio.isOwn(point) ? 'mine' : 'others') : use.bus
-	audio.onBus(bus, () => {
+	audio.onBus(use.bus === 'hero' ? (own ? 'mine' : 'others') : use.bus, () => {
 		if (audio.swapped(id, point, gain, ...extra)) return
 		if (use.voice) voiceNamed(use.voice)?.(point, gain, ...extra)
 		else if (use.recipe) {

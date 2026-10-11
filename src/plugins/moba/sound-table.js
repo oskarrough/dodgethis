@@ -200,7 +200,7 @@ export const uses = {
 	'music.defeat': { source: 'Music', about: 'Defeat sting', music: 'defeat' },
 }
 
-// The bus each source plays on (tune.mix); every other source is a hero's, on `mine` or `others` (audio.isOwn).
+// The bus each source plays on (tune.mix); every other source is a hero's, on `mine` or `others` (`playOwn` in sounds.js).
 const BUS = {
 	Menus: 'ui',
 	'Splash and descent': 'ui',

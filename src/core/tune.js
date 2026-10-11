@@ -21,13 +21,12 @@ export const tune = {
 	// `caps` sounds in any `capWindow` seconds, and a fight sound ducks the music to `duck` for `duckRelease` s.
 	mix: {
 		ui: 1,
-		mine: 1, // your own hero: hero sounds within ownRadius metres of the listener
+		mine: 1, // your own hero: hero sounds whose fact names you
 		others: 1,
 		world: 1, // Ball, structures, minions
 		music: 1,
 		caps: { ui: 3, mine: 4, others: 6, world: 6 },
 		capWindow: 0.15,
-		ownRadius: 1.5,
 		duck: 0.6,
 		duckRelease: 0.6,
 	},

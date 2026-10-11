@@ -64,7 +64,8 @@ export function createFeedback({
 		const voice = sfx.voiceOf(use)
 		if (!voice || sounded.get(voice) === tick) return
 		sounded.set(voice, tick)
-		sfx.play(use, fact.point, gain, ...extra)
+		const own = fact.hero === local || fact.source === local || fact.target === local
+		;(own ? sfx.playOwn : sfx.play)(use, fact.point, gain, ...extra)
 	}
 
 	// Calls in words go to the game log; the feed shows the log through its filter.
@@ -123,7 +124,7 @@ export function createFeedback({
 		const gain = quieter ** squeak.recent.length
 		squeak.recent.push(seconds)
 		squeak.at = seconds
-		sfx.play(
+		sfx.playOwn(
 			'squeak',
 			hero.body.mesh.position,
 			gain,
@@ -363,7 +364,7 @@ export function createFeedback({
 			case 'nearMiss':
 				// The close cue plays for both players; the shooter also gets a cream streak along the pass.
 				if (mine) {
-					sfx.play('nearMiss', fact.point)
+					sfx.playOwn('nearMiss', fact.point)
 					const shot = sim.shots.find((s) => s.id === fact.projectile)
 					if (shot)
 						juice.mark(fact.point.x, 0.03, fact.point.z, Math.atan2(shot.dx, shot.dz), {
@@ -374,7 +375,7 @@ export function createFeedback({
 						})
 				}
 				if (onMe)
-					sfx.play(
+					sfx.playOwn(
 						'nearMiss.passed',
 						fact.point,
 						1 - Math.min(1, fact.distance / tune.projectile.nearMiss),
@@ -458,7 +459,11 @@ export function createFeedback({
 						juice.burst(splashAt, { x: 0, y: 1, z: 0 }, d.splash)
 						juice.burst(splashAt, direction, d.spray)
 						cue('dunk', { ...fact, point: splashAt }, mine || onMe ? 1 : 0.5)
-						sfx.play('dunk.splash', splashAt, mine || onMe ? 1 : 0.5)
+						;(mine || onMe ? sfx.playOwn : sfx.play)(
+							'dunk.splash',
+							splashAt,
+							mine || onMe ? 1 : 0.5,
+						)
 						if (onMe || mine) camera.shake(look.juice.shakeTakedown)
 					},
 				})

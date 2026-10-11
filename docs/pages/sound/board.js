@@ -262,7 +262,6 @@ const MIX = [
 		1,
 	]),
 	['capWindow', 'cap window (s)', 0.05, 0.5, 0.05],
-	['ownRadius', 'own radius (m)', 0, 4, 0.25],
 	['duck', 'music under a fight', 0, 1, 0.05],
 	['duckRelease', 'music comes back over (s)', 0.1, 2, 0.1],
 ]
@@ -400,7 +399,7 @@ $('fight').addEventListener('click', () => {
 				const voice = sounds.voiceOf(id)
 				if (sounded.get(voice) === tick) return
 				sounded.set(voice, tick)
-				sounds.play(id, point, gain, 1)
+				;(own ? sounds.playOwn : sounds.play)(id, point, gain, 1)
 			},
 			(tick * 1000) / 60,
 		)

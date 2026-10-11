@@ -122,10 +122,6 @@ onSwapChange(() => {
 let bus = 'world'
 let capped = true
 const started = { ui: [], mine: [], others: [], world: [] }
-// Hero sounds at the listener (your hero) are yours.
-export function isOwn(point) {
-	return !point || Math.hypot(point.x - listener.x, point.z - listener.z) <= tune.mix.ownRadius
-}
 // Play on one bus: past its cap the sound is dropped; a fight sound ducks the music under it.
 export function onBus(name, play) {
 	if (capped && started[name]) {
