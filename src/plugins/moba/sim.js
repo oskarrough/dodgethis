@@ -373,6 +373,7 @@ export function createSim({
 		dummies,
 		lane,
 		ball,
+		flag,
 		readySeats,
 		matchStats,
 		training,

@@ -9,6 +9,8 @@ export function createSnapshot(ctx) {
 		dummies,
 		lane,
 		ball,
+		flag,
+		obstacles,
 		matchStats,
 		botIds,
 		readySeats,
@@ -74,6 +76,11 @@ export function createSnapshot(ctx) {
 						})),
 					}
 				: {}),
+			...(flag && { flag: structuredClone(flag.state) }),
+			// Cover an ability placed (Cushion), so a guest sees and aims around the same walls.
+			cover: obstacles
+				.filter((o) => o.kind === 'cushion')
+				.map((o) => ({ ...o, x: q(o.x), z: q(o.z) })),
 			map: floor.id ?? layout.bounds.id ?? field.id,
 			...(readySeats && { readySeats: structuredClone(readySeats.seats) }),
 			heroes: heroes.map((h) => ({

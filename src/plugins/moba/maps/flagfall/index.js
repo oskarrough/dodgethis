@@ -19,5 +19,5 @@ export default {
 			f.add(s, 'scale', 0.75, 1, 0.01).name('scale (applies on restart)')
 		},
 	},
-	online: false,
+	online: true,
 }

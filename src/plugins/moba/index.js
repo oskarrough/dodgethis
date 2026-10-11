@@ -79,6 +79,11 @@ const FACTS = [
 	'readyWalk',
 	'readyCancel',
 	'globe',
+	'camp',
+	'flagWarn',
+	'flagUp',
+	'flagTaken',
+	'flagLowered',
 	'matchOver',
 ]
 

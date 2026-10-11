@@ -146,7 +146,8 @@ export function projectLaneSnapshot(state) {
 					if (field === 'slow' && value.until === 0 && value.factor === 1) return null
 				}
 				if (coordinateFields[key]?.includes(field) && value) return [value.x, value.z]
-				if (key === 'minions' && field === 'id') return Number(value.slice('minion-'.length))
+				if (key === 'minions' && field === 'id' && value.startsWith('minion-'))
+					return Number(value.slice('minion-'.length))
 				return value
 			})
 			if (key === 'heroes')
@@ -170,6 +171,8 @@ export function projectLaneSnapshot(state) {
 const finite = Number.isFinite
 const tick = (n) => Number.isSafeInteger(n) && n >= 0
 const team = (value) => ['A', 'B'].includes(value)
+// Lane minions travel as numbers; camp guards (team N) and their mercs keep their string ids.
+const neutralId = (id) => typeof id === 'string' && /^(camp-\d+-\d+|merc-\d+)$/.test(id)
 const point = (p) => p && finite(p.x) && finite(p.z)
 const lerp = (a, b, blend) => a + (b - a) * blend
 const health = (u) =>
@@ -226,7 +229,7 @@ export function createLaneReplica(simulation, scene) {
 			) ||
 			!!state.match.winner !== (state.match.endedTick !== null) ||
 			!tick(state.match.nextWave) ||
-			!tick(state.match.nextBall)
+			!(state.match.nextBall === undefined || tick(state.match.nextBall))
 		)
 			return 'Invalid lane match clock'
 		for (const side of ['A', 'B']) {
@@ -246,7 +249,8 @@ export function createLaneReplica(simulation, scene) {
 				return `Invalid ${key} population`
 			const seen = new Set()
 			for (const u of state[key]) {
-				if (!u || seen.has(u.id) || !team(u.team)) return `Invalid ${key} identity`
+				if (!u || seen.has(u.id) || !(team(u.team) || (key === 'minions' && u.team === 'N')))
+					return `Invalid ${key} identity`
 				seen.add(u.id)
 				if (key === 'globes') {
 					if (!tick(u.id) || !point(u.pos) || !tick(u.expires)) return 'Invalid globe'
@@ -265,7 +269,7 @@ export function createLaneReplica(simulation, scene) {
 							return 'Invalid structure'
 					} else if (
 						typeof u.id !== 'string' ||
-						!u.id.startsWith('minion-') ||
+						!(u.id.startsWith('minion-') || neutralId(u.id)) ||
 						!Object.hasOwn(tune.minions, u.kind) ||
 						!point(u.pos) ||
 						!finite(u.yaw) ||
@@ -277,9 +281,30 @@ export function createLaneReplica(simulation, scene) {
 			}
 			if (key === 'structures' && seen.size !== structures.size) return 'Missing structure'
 		}
+		const f = state.flag
+		if (
+			f !== undefined &&
+			(!f ||
+				!['down', 'rising', 'up'].includes(f.phase) ||
+				!point(f) ||
+				!tick(f.nextHoist) ||
+				!tick(f.upUntil) ||
+				!(f.owner === null || team(f.owner)) ||
+				!finite(f.progress))
+		)
+			return 'Invalid flag'
+		if (
+			!Array.isArray(state.cover) ||
+			state.cover.length > tune.proof.trace ||
+			!state.cover.every(
+				(o) =>
+					o?.kind === 'cushion' && typeof o.id === 'string' && point(o) && finite(o.r) && o.r > 0,
+			)
+		)
+			return 'Invalid cover'
 		const b = state.ball
 		if (
-			b !== null &&
+			b != null &&
 			(!b ||
 				!tick(b.id) ||
 				!point(b.pos) ||
@@ -391,6 +416,12 @@ export function createLaneReplica(simulation, scene) {
 				lane.globes.splice(0, lane.globes.length, ...structuredClone(before.globes))
 				sim.matchStats = structuredClone(before.matchStats)
 				ball = structuredClone(before.ball)
+				if (before.flag && simulation.flag)
+					Object.assign(simulation.flag.state, structuredClone(before.flag))
+				const wanted = new Map(before.cover.map((o) => [o.id, o]))
+				for (const o of simulation.obstacles.filter((o) => o.kind === 'cushion'))
+					if (!wanted.delete(o.id)) simulation.removeCover(o)
+				for (const o of wanted.values()) simulation.addCover({ ...o })
 				const live = new Set(before.minions.map((u) => u.id))
 				for (const [id, u] of minions)
 					if (!live.has(id)) {
@@ -459,7 +490,7 @@ export function createLaneReplica(simulation, scene) {
 						unit[field] =
 							Array.isArray(value) && value.length === 2 ? { x: value[0], z: value[1] } : null
 					}
-					if (key === 'minions') {
+					if (key === 'minions' && !neutralId(unit.id)) {
 						if (!tick(unit.id)) return null
 						unit.id = `minion-${unit.id}`
 					}
