@@ -15,7 +15,9 @@
 	left: 50%;
 	z-index: 2;
 	translate: -50% -50%;
-	padding: 0.05em 0.4em 0;
+	/* Trim the box to cap height so the uppercase name sits dead centre. */
+	padding: 0.16em 0.4em;
+	text-box: trim-both cap alphabetic;
 	border: 0.06em solid var(--ui-text);
 	background: var(--ui-gold);
 	box-shadow: 0.08em 0.1em 0 var(--ui-text);
@@ -32,6 +34,10 @@
 }
 .lobby-pick-stamp[style*='--hero-color'] {
 	color: var(--ui-cream);
+}
+/* A cream hero (Pong) gets ink lettering, or the name vanishes into its own stamp. */
+.lobby-pick-stamp[style*='--ui-cream'] {
+	color: var(--ui-text);
 }
 .lobby-pick-stamp.slam {
 	animation: lobby-slam 1.1s cubic-bezier(0.2, 0.9, 0.3, 1) both;
