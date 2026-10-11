@@ -1,7 +1,8 @@
-// Sound swaps: the sound board (docs/pages/sound/) replaces the sound of one use, and a running game in another tab
-// hears it on the next event. A swap is { voice } (another built-in sound) or { file, gain } (an audio file Oskar
-// dropped on the board). Swaps and files live in this browser's IndexedDB. Kept swaps ship: the board's Keep button
-// copies the file to public/sfx/kept/ and writes { kept, gain } into sfx/kept.json, the layer under local swaps.
+// Sound swaps: the sound board (docs/pages/sound/) replaces the sound of one use, and the game open in another tab
+// hears it on its next event. A swap is { voice } (another built-in sound), { library, gain } (a file from Oskar's
+// library), { file, gain } (a file dropped on the board), { kept, gain } or { shuffle: [swap…] }. Local swaps and
+// dropped files live in this browser's IndexedDB; kept swaps ship: Keep copies the file to public/sfx/kept/ and
+// writes the swap into sfx/kept.json, the layer under local swaps.
 import kept from './sfx/kept.json'
 
 const DB = 'dodgethis-sound'
