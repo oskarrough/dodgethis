@@ -122,7 +122,8 @@ export function generatePanel(id) {
 			if (where().use === id) {
 				setPile(`generated/${id}`)
 				// An existing generated pile may have older files: start on the first fresh candidate.
-				deck.at = pileFiles(id).indexOf(result.files[0]) - 1
+				deck.at = Math.max(pileFiles(id).indexOf(result.files[0]), 0)
+				deck.heard = false
 				deckStep(1)
 			}
 			status.textContent = `${result.files.length} candidates ready · ${Math.round((Date.now() - started) / 1000)} s. Saved to Dropbox and the library.`

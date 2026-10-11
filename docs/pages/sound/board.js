@@ -11,6 +11,7 @@ import {
 	shortName,
 	pickable,
 	status,
+	isTrying,
 	flags,
 	where,
 	go,
@@ -35,7 +36,7 @@ function el(tag, props = {}, ...children) {
 // The bar: how far along the pick is.
 function drawProgress() {
 	const kept = pickable.filter((id) => status(id) === 'kept').length
-	const trying = pickable.filter((id) => status(id) === 'trying').length
+	const trying = pickable.filter(isTrying).length
 	const leds = 24
 	const on = Math.round((kept / pickable.length) * leds)
 	const tried = Math.ceil((trying / pickable.length) * leds)
@@ -75,6 +76,7 @@ function drawStrip() {
 								ariaLabel: id,
 							})
 							light.dataset.status = status(id)
+							if (isTrying(id)) light.dataset.trying = ''
 							if (flagged[id]) light.dataset.flag = ''
 							if (id === use) light.ariaCurrent = 'true'
 							light.addEventListener('click', () => go({ use: id }))
@@ -120,7 +122,19 @@ function drawSources() {
 							...ids.map((id) => {
 								const dot = el('span', { className: 'dot' })
 								dot.dataset.status = status(id)
-								const a = el('a', { href: `#u=${id}`, title: uses[id].about }, dot, shortName(id))
+								// Minions has three hits: the prefix (brute., wizard.) tells them apart.
+								const prefix = id.includes('.') ? id.slice(0, id.indexOf('.') + 1) : ''
+								const a = el(
+									'a',
+									{ href: `#u=${id}`, title: uses[id].about },
+									dot,
+									el(
+										'span',
+										{},
+										el('span', { className: 'pre', textContent: prefix }),
+										shortName(id),
+									),
+								)
 								if (id === use) a.ariaCurrent = 'true'
 								return el('li', {}, a)
 							}),

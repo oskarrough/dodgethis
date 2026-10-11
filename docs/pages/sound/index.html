@@ -195,6 +195,8 @@
 			/* The strip: an LED per sound. */
 			.strip {
 				display: flex;
+				flex-wrap: wrap;
+				row-gap: 8px;
 				gap: 16px;
 				padding: 10px 16px 12px;
 				overflow-x: auto;
@@ -249,6 +251,11 @@
 			.app .light[data-flag] {
 				outline: 1.5px solid #ff3b3baa;
 				outline-offset: 1px;
+			}
+			.app .light[data-status='kept'][data-trying] {
+				box-shadow:
+					0 0 0 2px var(--blue),
+					0 0 6px #2bd67b99;
 			}
 			.app .light[aria-current='true'] {
 				outline: 2px solid var(--ink);
@@ -314,6 +321,12 @@
 				font-size: 11px;
 				color: var(--soft);
 				font-variant-numeric: tabular-nums;
+			}
+			.sources .pre {
+				color: var(--soft);
+			}
+			.sources a[aria-current='true'] .pre {
+				color: var(--dim);
 			}
 			.sources ul ul a {
 				padding-left: 22px;
@@ -477,6 +490,7 @@
 				cursor: pointer;
 			}
 			.card .name {
+				min-height: 3.2em;
 				font-size: 17px;
 				font-weight: 600;
 				overflow-wrap: anywhere;
@@ -617,12 +631,10 @@
 			.shuffle button {
 				padding: 2px 8px;
 			}
-			.flag:empty {
-				display: none;
-			}
 			.flag {
 				color: var(--red);
 				font-size: 12px;
+				min-height: 1.45em;
 			}
 			.app details {
 				border-top: 1px solid var(--edge);

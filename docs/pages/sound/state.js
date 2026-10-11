@@ -98,7 +98,9 @@ export function nearest(n, count = 24) {
 
 // The deck: the selected use's candidates, one at a time. The pile is 'shortlist', 'near' (files near the last
 // candidate, or near what the use plays now), '' (everything) or a library folder; noped files drop out.
-export const deck = { use: null, pile: 'shortlist', at: -1, near: [] }
+// `at` is the card on show; until `heard`, it's only up next and → plays it without moving on. `extra` is a file
+// picked from outside the pile (the map, the find box), shown once; → goes back to the pile.
+export const deck = { use: null, pile: 'shortlist', at: 0, heard: false, extra: null, near: [] }
 export function pileFiles(id, pile = deck.pile) {
 	if (!id) return []
 	const files =
@@ -109,7 +111,7 @@ export function pileFiles(id, pile = deck.pile) {
 				: inFolder(pile)
 	return files.filter((path) => !isNoped(id, path))
 }
-export const candidate = () => pileFiles(where().use)[deck.at] ?? null
+export const candidate = () => deck.extra ?? pileFiles(where().use)[deck.at] ?? null
 // A new sound's deck starts on its shortlist when there is one; otherwise the last pile picked stays. Runs on
 // 'select' before any pane draws (state.js registers first), so the map and inspector agree.
 export function resetDeck() {
@@ -118,7 +120,7 @@ export function resetDeck() {
 	deck.use = use
 	if (shortlist(use).length) deck.pile = 'shortlist'
 	else if (deck.pile === 'shortlist' || deck.pile === 'near') deck.pile = ''
-	deck.at = -1
+	Object.assign(deck, { at: 0, heard: false, extra: null })
 }
 export function setPile(pile) {
 	const { use } = where()
@@ -126,28 +128,33 @@ export function setPile(pile) {
 		deck.near = nearest(candidate() ? numbersOf(candidate()) : numbers.get(use)).filter(
 			(path) => path !== candidate(),
 		)
-	deck.pile = pile
-	deck.at = -1
+	Object.assign(deck, { pile, at: 0, heard: false, extra: null })
 	emit('change')
 }
-// Move through the pile and audition; `to` jumps to a file (from the map or the find box), switching to
-// everything when it isn't in the pile.
+// Move through the pile and audition. The first → plays the card on show; after that it moves on.
 export function deckStep(by) {
 	const { use } = where()
 	deck.use = use
 	const files = pileFiles(use)
 	if (!use || !files.length) return
-	deck.at = (Math.max(deck.at, by > 0 ? -1 : 0) + by + files.length) % files.length
+	if (deck.extra) deck.extra = null
+	else if (!deck.heard && by > 0) deck.heard = true
+	else deck.at = (((deck.at + by) % files.length) + files.length) % files.length
+	deck.heard = true
+	deck.at = Math.min(deck.at, files.length - 1)
 	audition(use, files[deck.at])
 	emit('change')
 }
+// Try one file: in the pile it becomes the card on show; from outside it's shown once and → returns to the pile.
 export function deckTo(path) {
 	const { use } = where()
 	deck.use = use
 	if (!use) return
 	if (isNoped(use, path)) nope(use, path, true)
-	if (!pileFiles(use).includes(path)) deck.pile = ''
-	deck.at = pileFiles(use).indexOf(path)
+	const at = pileFiles(use).indexOf(path)
+	if (at >= 0) Object.assign(deck, { at, extra: null })
+	else deck.extra = path
+	deck.heard = true
 	audition(use, path)
 	emit('change')
 }
@@ -213,14 +220,18 @@ export async function approve(id, off = false) {
 	if (response.ok) approved = new Set(await response.json())
 	emit('change')
 }
-// 'music', 'trying' (a swap in this browser, not kept), 'kept' (Oskar picked a file, or approved the built-in
-// sound) or 'builtin' (nobody has listened yet).
-export function status(id) {
-	if (uses[id].music) return 'music'
+// 'music', 'kept' (Oskar picked a file, or approved the built-in sound), 'trying' (a swap in this browser on a
+// sound not picked yet) or 'builtin' (nobody has listened yet). A picked sound being retried stays 'kept'; ask
+// `isTrying` for that.
+export function isTrying(id) {
 	const mine = local(id)
 	const kept = swap.kept[id]
-	if (mine && !same(mine, kept) && !(mine.builtin && !kept)) return 'trying'
-	return kept || approved.has(id) ? 'kept' : 'builtin'
+	return !!mine && !same(mine, kept) && !(mine.builtin && !kept)
+}
+export function status(id) {
+	if (uses[id].music) return 'music'
+	if (swap.kept[id] || approved.has(id)) return 'kept'
+	return isTrying(id) ? 'trying' : 'builtin'
 }
 export const pickable = ORDER.filter((id) => !uses[id].music)
 

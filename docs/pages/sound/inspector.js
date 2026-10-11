@@ -28,6 +28,7 @@ import {
 	previewMusic,
 	playing,
 	status,
+	isTrying,
 	busOf,
 	factsOf,
 	numbers,
@@ -97,12 +98,14 @@ export const actions = {
 		swipe('left', async () => {
 			nope(use, path)
 			lastNope.push({ use, path })
+			// The next card slides into the noped one's place (or the pile resumes after a one-off).
+			if (deck.extra === path) deck.extra = null
 			if (pileFiles(use).length) {
-				deck.at -= 1
+				deck.heard = false
 				return deckStep(1)
 			}
 			// Nothing left: the noped file mustn't stay as the sound being tried.
-			deck.at = -1
+			deck.at = 0
 			await swap.setSwap(use, null)
 			measureUse(use).then(() => emit('change'))
 		})
@@ -116,6 +119,7 @@ export const actions = {
 		const gain = swap.swapOf(use)?.library === path ? swap.swapOf(use).gain : gainFor(use, path)
 		if (!list.some((s) => s.library === path)) list.push({ library: path, gain })
 		saveLikes()
+		emit('notice', `Liked ${fileName(path)} · ${list.length} liked, K keeps them`)
 		swipe('right', () => deckStep(1))
 	},
 	near: () => setPile('near'),
@@ -219,7 +223,9 @@ export function drawInspector(root) {
 function pileOptions(id) {
 	const option = (value, textContent) => el('option', { value, textContent })
 	return [
-		...(shortlist(id).length ? [option('shortlist', `Shortlist (${shortlist(id).length})`)] : []),
+		...(shortlist(id).length
+			? [option('shortlist', `Shortlist (${pileFiles(id, 'shortlist').length})`)]
+			: []),
 		option('near', 'Near this one'),
 		option('', `Everything (${library.length})`),
 		...folders.map((folder) => {
@@ -281,6 +287,22 @@ function readouts() {
 			)
 		},
 	}
+}
+// The rule flags (numbers.js) in words that say what to do.
+function plain(list = []) {
+	return list
+		.map((f) =>
+			f.startsWith('slow attack')
+				? 'Starts soft: try one that hits at once'
+				: f.startsWith('tail')
+					? 'Rings too long for a fight: try a shorter one'
+					: f.startsWith('peak')
+						? 'Too loud for a menu: try a softer one'
+						: f.startsWith('timbre')
+							? `${Number(f.split(' ')[1]) > Number(f.split(' ').at(-1)) ? 'Brighter' : 'Duller'} than its family: try N for neighbours`
+							: f,
+		)
+		.join(' · ')
 }
 const STATUS = {
 	kept: ['picked', 'green'],
@@ -440,15 +462,15 @@ function update() {
 	const v = view
 	const id = v.id
 	const [tag, colour] = STATUS[status(id)]
-	v.tag.textContent = tag
+	v.tag.textContent = status(id) === 'kept' && isTrying(id) ? 'picked · trying' : tag
 	v.tag.style.color = `var(--${colour})`
 	if (uses[id].music) return
 	const n = numbers.get(id)
 	v.nowNumbers.show(n)
 	// The card compares against the sound the use had when Oskar arrived, not against itself.
-	if (!v.reference && n && !candidate()) v.reference = n
+	if (!v.reference && n && !deck.heard) v.reference = n
 	v.nowText.textContent = playing(id)
-	v.flag.textContent = flags()[id]?.join('; ') ?? ''
+	v.flag.textContent = plain(flags()[id])
 	const buffer = rendered.get(id)
 	if (v.drawnNow !== buffer) {
 		v.drawnNow = buffer
@@ -472,7 +494,11 @@ function update() {
 	// The card.
 	const files = pileFiles(id)
 	const path = candidate()
-	v.cardMeta.textContent = path ? `${deck.at + 1} / ${files.length}` : `${files.length}`
+	v.cardMeta.textContent = deck.extra
+		? 'one-off · → back to the pile'
+		: path
+			? `${deck.heard ? '' : 'up next · '}${deck.at + 1} / ${files.length}`
+			: `${files.length}`
 	if (v.drawnCard !== path) {
 		v.drawnCard = path
 		if (!path) {
@@ -521,7 +547,9 @@ function update() {
 			? 'Keep this one'
 			: picked
 				? 'Picked'
-				: 'Built in is fine'
+				: flags()[id]
+					? 'Keep the built-in anyway'
+					: 'Built in is fine'
 	v.keepHint.textContent = list.length
 		? 'one plays at random, then the next sound'
 		: !untouched
