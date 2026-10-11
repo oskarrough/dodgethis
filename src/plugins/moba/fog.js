@@ -7,9 +7,12 @@ import { tune } from './tune.js'
 // the sim and the bots stay omniscient.
 export function createFog(scene, bounds, brush = []) {
 	const f = tune.fog
+	// The dim runs past the floor's edge, so the visible rim beyond it never shows a lit strip.
+	const halfX = bounds.halfX + f.margin,
+		halfZ = bounds.halfZ + f.margin
 	const canvas = document.createElement('canvas')
-	canvas.width = Math.ceil(bounds.halfX * 2 * f.resolution)
-	canvas.height = Math.ceil(bounds.halfZ * 2 * f.resolution)
+	canvas.width = Math.ceil(halfX * 2 * f.resolution)
+	canvas.height = Math.ceil(halfZ * 2 * f.resolution)
 	const ctx = canvas.getContext('2d')
 	const texture = new THREE.CanvasTexture(canvas)
 	const material = new THREE.MeshBasicMaterial({
@@ -18,7 +21,7 @@ export function createFog(scene, bounds, brush = []) {
 		depthWrite: false,
 	})
 	const plane = new THREE.Mesh(
-		new THREE.PlaneGeometry(bounds.halfX * 2, bounds.halfZ * 2).rotateX(-Math.PI / 2),
+		new THREE.PlaneGeometry(halfX * 2, halfZ * 2).rotateX(-Math.PI / 2),
 		material,
 	)
 	plane.position.y = f.height
@@ -80,8 +83,8 @@ export function createFog(scene, bounds, brush = []) {
 			let same = n === count
 			for (let i = 0; i < viewers.length; i++) {
 				const q = at(viewers[i])
-				const x = (q.x + bounds.halfX) * s
-				const y = (q.z + bounds.halfZ) * s
+				const x = (q.x + halfX) * s
+				const y = (q.z + halfZ) * s
 				const r = radii[i] * s
 				circles[i * 3] = x
 				circles[i * 3 + 1] = y

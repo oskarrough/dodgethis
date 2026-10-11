@@ -258,6 +258,7 @@ export const tune = {
 		dim: 0.6,
 		resolution: 2,
 		height: 0.08,
+		margin: 14, // m of dim past the floor's edge, wider than the camera's rim view
 	},
 	waves: {
 		first: 15,
