@@ -1,5 +1,21 @@
 [
 	{
+		"at": "2026-10-11T00:44:24.302Z",
+		"title": "Carom redesign",
+		"ask": "Billiards or ping pong for Carom?",
+		"status": "To review",
+		"decision": "",
+		"media": [
+			"carom-redesign/carom-sheet.webp",
+			"carom-redesign/carom-match.webp",
+			"carom-redesign/pong-sheet.webp",
+			"carom-redesign/pong-match.webp"
+		],
+		"links": ["http://office-linux.heron-mermaid.ts.net:5173/docs/pages/carom-redesign/"],
+		"thread": "thr_fgrufkvvdh",
+		"page": "carom-redesign/"
+	},
+	{
 		"at": "2026-10-10T22:06:44.756Z",
 		"title": "Flagfall laser gate",
 		"ask": "First take on the laser gate: two posts, a flickering team-colour beam. Keep, recolour, or rethink?",
