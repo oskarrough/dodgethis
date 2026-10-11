@@ -1,4 +1,4 @@
-// Replica interpolation (docs/plugin-architecture.md, line 5): keep the last few timestamped states and sample a little in the past, between two of them.
+// Replica interpolation (docs/extending.md, Modes, contract 5): keep the last few timestamped states and sample a little in the past, between two of them.
 export function createSnapshotBuffer({ delay = 0.08, size = 6 } = {}) {
 	const history = []
 

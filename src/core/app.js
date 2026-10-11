@@ -2,7 +2,7 @@ import { tune } from './tune.js'
 import { createIntents, SCHEMES } from './intents.js'
 import { createSmoother } from './smooth.js'
 
-// The kernel (docs/plugin-architecture.md): plugin scopes, the five-phase loop, events, modes, the session, intents, render interpolation and keyed registration.
+// The kernel (docs/extending.md): plugin scopes, the five-phase loop, events, modes, the session, intents, render interpolation and keyed registration.
 // DOM-free: the browser shell (browser.js) passes devices and renderers in as services and drives frame(dt).
 
 export const STEP = 1 / 60

@@ -1,4 +1,4 @@
-// Intents (docs/plugin-architecture.md, line 3): devices become one plain frame per participant per step, and modes read only frames.
+// Intents (docs/extending.md, Modes, contract 3): devices become one plain frame per participant per step, and modes read only frames.
 // DOM-free: the browser shell hands the kernel a device, and a scheme binds that device to the action vocabulary.
 
 import { controls } from './controls.js'

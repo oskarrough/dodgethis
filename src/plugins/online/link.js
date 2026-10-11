@@ -11,7 +11,7 @@ const MAX_FACTS = tune.link.maxFacts
 const MIN_GAP = 0.014 // a changed frame waits this long after the last send: every frame at 60 Hz, every third at 144
 const safeInt = (n) => Number.isSafeInteger(n) && n >= 0
 
-// One match's wire (docs/plugin-architecture.md, line 9). The host seats every remote human's intent frames and sends
+// One match's wire (docs/extending.md, Modes, contract 9). The host seats every remote human's intent frames and sends
 // `{ matchId, epoch, seq, state, facts }` at 20 Hz; a guest sends its own frames and applies envelopes. It calls only the
 // mode's contract (`epoch snapshot apply validFact`) and the core's intents, and never knows which game it carries.
 export function createLink({

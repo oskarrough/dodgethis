@@ -3,7 +3,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { MOBA, collectModFiles } from '../scripts/collect-mods.js'
 
-// Every hero, ability, map and mechanic folder is in its generated registry (docs/mods.md). Run `bun run collect-mods`.
+// Every hero, ability, map and mechanic folder is in its generated registry (docs/extending.md). Run `bun run collect-mods`.
 test('generated registries list every folder', () => {
 	for (const [path, contents] of Object.entries(collectModFiles())) {
 		const file = join(MOBA, path)
@@ -11,7 +11,7 @@ test('generated registries list every folder', () => {
 	}
 })
 
-// The sim loads the manifests and tunes, so they stay free of view code (docs/mods.md):
+// The sim loads the manifests and tunes, so they stay free of view code (docs/extending.md):
 // no Three.js, view files, front/ or a view registry anywhere in their static imports,
 // and a folder <id>-tune.js imports nothing at all. The walk stays inside the plugin: core is the
 // engine every sim file already shares (STEP comes from core/app.js).

@@ -14,7 +14,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Splash keyboard and pad focus, deny shake, back button: `front/controls.js` `createControls`; `front/tune.js` `deny`, `back`, `move`, `enter`
 - Stickers, mute button, corner row, online panel, shell CSS: `index.html`; `src/core/browser.js` `createBrowserApp`
 - Boot error screen: `src/core/browser.js` `reportBootError`
-- Mode registration, `window.game.moba`: `index.js` `moba` (default export); `src/core/app.js` `createApp`; `plugin-architecture.md`
+- Mode registration, `window.game.moba`: `index.js` `moba` (default export); `src/core/app.js` `createApp`; `extending.md`
 - Match setup from the URL (`?mode=moba&play&bots=&hero=&seed=&debug`): `setup.js` `parseMatchSetup`, `wantsDirectPlay`, `matchLink`; `moba-agents.md`
 - Address bar follows the screen (URL per screen, Back/Forward, reload lands there): `src/address.js` `followScreen`, `addressFor`; boot routing is `main.js` `route`
 - Which screen is up (splash, lobby, descent, match, paused, result): `src/core/proof.js` `createProofApi` (`dt.screen()`); `verify.md`
@@ -23,7 +23,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 
 - Lobby screen (walk around, pick, ready, back): `lobby.js` `createLobby`; `tune.js` `lobby`; `moba-lobby.md`
 - Back and Play online, the top-left row in both modes' lobbies: `src/core/corner-nav.js` `createCornerNav`; `index.html` `.corner-nav`; used by `lobby.js` `createLobby` and `src/plugins/dodgeball/index.js`
-- Seats, roster, ready state: `lobby-state.js` `createReadySeats`; `lobby-heroes.js` `createLobbyHeroes`; `tune.js` `lobby.ready`
+- Seats, roster, ready state (1 s fill; stepping out cancels): `lobby-state.js` `createReadySeats`; `lobby-heroes.js` `createLobbyHeroes`; `tune.js` `lobby.ready`
 - Ready plates inlaid in the saucer's glaze, the Ready label beside yours, the glaze fill: `lobby-props.js` `createLobbyProps`, `plate`; `tune.js` `lobby.ready`; `lobby.js` `createLobby`
 - Lobby floor, the glazed saucer in its magnetic cradles: `lobby-floor.js` `createLobbyFloor`, `saucerShape`; its elliptical collider: `obstacles.js` `buildColliders` (`island.round`); `maps/lobby/lobby-layout.js` `lobbyLayout`; `maps/lobby/lobby-view.js` glaze; `tune.js` `lobby.floor`
 - Weather bowl, the next map turning in miniature under a sky cap, with its label: `lobby-bowl.js` `createWeatherBowl`; `tune.js` `lobby.bowl`
@@ -41,7 +41,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 
 ## Descent
 
-- Crane descent from lobby to match: `front/descent.js` `startLoading`; `front/descent-state.js` `createDescentState`, `descentFrame`; `front/tune.js` `loading`; `moba-front.md`
+- Crane descent from lobby to match (no skip): `front/descent.js` `startLoading`; `front/descent-state.js` `createDescentState`, `descentFrame`; `front/tune.js` `loading`; `moba-front.md`
 - Cloud reveal (cloud rolls in on the crane, parts around your hero): `front/clouds.js` `createClouds`; `front/descent.js` `veilFrame`; `front/tune.js` `loading.clouds`
 - Descent camera projection and pointer easing: `front/backdrop.js` `projectFrame`, `easePointer`
 - Splash plate (day into night), mist drift, parallax, dusk wash on the splash and descent: `front/backdrop.js` `createBackdrop`, `easeShot`; `public/splash/plate-*.webp`; `front/tune.js` `plate`, `mist`, `parallax`, `shot`, `dusk`
@@ -74,15 +74,15 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Flagfall jungle (rooms, spine walls, brush, camp/flag/gatehouse marks): `maps/flagfall/flagfall-layout.js` `flagfallLayout`; `tune.js` `flagfall.jungle`; marks and brush mats in `maps/flagfall/flagfall-view.js` `ground`
 - Flagfall gates, two kinds on one mechanic (own team passes, enemies are held out and siege it, shots hit it): the gatehouse, a no-gun stone tower at the fort's chalk bar that the fort waits for (rubble when it falls), and the laser gate, two posts and a hologram beam between fort and core that waits for the fort and that the core waits for (stubs when it falls): `gates.js` `addGates`, `holdGates`, `GATES`; `tune.js` `gatehouse`, `laser`, `flagfall.jungle.gatehouseX`/`laserX`; laser look in `lane-view.js` `makeBody` (`look.laneView.laser`), beam shader shared with the lobby holograms in `hologram.js`; hooked in `maps/flagfall/flagfall-layout.js`, `sim.js` step, `mechanics/structures/structures.js` obstacles (`obstacle: false`), `lane.js` (no gun, `tune[kind].xp`)
 - Flagfall centre flag (hoist clock, hold the ring, team XP and per-lane silence; HUD line, minimap dot; bots' nearest two go): `mechanics/flag/flag-objective.js` `createFlag`; `mechanics/flag/flag-view.js` `view`; `mechanics/flag/flag-bots.js` `flagBots`; mechanic `mechanics/flag/`; `minimap.js` objectives; `tune.js` `flagfall.flag`, `bots.flagGo`
-- Scoreboard (Tab or pad Select, live table mid-match): `recap.js` `createRecap` (the `board` aside, class `moba-scoreboard`); `match-stats.js` `createMatchStats`; `moba-recap.md`
+- Scoreboard (Tab or pad Select, live table mid-match): `recap.js` `createRecap` (the `board` aside, class `moba-scoreboard`); `match-stats.js` `createMatchStats`
 - Pause menu (Esc, pad Start, or the top-left menu tile): `menu.js` `createMatchMenu`, `openMenu`, the manual page `pausePage` (Quick cast as a checkbox under the actions), Leave game to the splash `quit`; tile from `src/core/corner-nav.js`; `menu.css`; `tune.js` `hud`
-- Onboarding cues (floor arrow, hero ring, You sticker, Ball and goal pointer): `onboarding.js` `createOnboarding`; `look.js` `onboarding`; `moba-onboarding.md`
+- Onboarding cues (floor arrow, hero ring, You sticker, Ball and goal pointer): `onboarding.js` `createOnboarding`; `look.js` `onboarding`
 - Dead-world grey-out and respawn timer: `recap.js` `createRecap` (`moba-dead-world`); `combat.js` `respawn`; `tune.js` `respawn`
 - Combat log: `src/core/debug.js` `createCombatLog`
 
 ## Match: heroes and kits
 
-- Hero, ability, map and mechanic folders (how to add one): `mods.md`
+- Hero, ability, map and mechanic folders (how to add one): `extending.md`
 - Hero table and kit definitions: `heroes.js` `heroDefinition`, `HEROES`, `freshAbilityState`; `ability.js` `abilityOf`, `castAbility`, `slowFactor`; `tune.js` `heroes`, `hero`; `moba-heroes.md`
 - Casting, cast points, release, skill press buffer: `casting.js` `casts`, `castWait`, `release`, `cancelChannel`, `stepHeroState`; `tune.js` `cast`
 - Basic attack: `combat.js` `basicAttack`; `casting.js` `aimBasic`; `tune.js` `attack`
@@ -152,7 +152,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 
 ## Result
 
-- Recap screen (end table, stats, replay shot): `recap.js` `createRecap`; `match-stats.js` `createMatchStats`; `moba-recap.md`
+- Recap screen (end table, stats, replay shot): `recap.js` `createRecap`; `match-stats.js` `createMatchStats`
 - Winner freezes the match and opens the recap: `index.js` `moba` (`sim.lane.match.winner`); `menu.js` `createMatchMenu`
 
 ## Debug, Try Mode, proof

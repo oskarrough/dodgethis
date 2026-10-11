@@ -45,7 +45,7 @@ test('a smoothed registration ends with its plugin', () => {
 	expect(object.position.x).toBe(3)
 })
 
-// docs/plugin-architecture.md: a unit at constant velocity on a 144 Hz screen moves the same distance every frame.
+// docs/extending.md: a unit at constant velocity on a 144 Hz screen moves the same distance every frame.
 test('at 144 Hz a walking body renders constant per-frame displacement', () => {
 	const app = createApp()
 	const scene = new THREE.Scene()

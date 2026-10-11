@@ -36,7 +36,7 @@
 
 ## Layout
 
-- `src/core/` is the engine; `src/plugins/{dodgeball,online,moba}/` are plugins. The contract is the 10 lines at the top of `docs/plugin-architecture.md`. Core never imports plugins, and plugins never import each other; `tests/boundaries.test.js` enforces this.
+- `src/core/` is the engine; `src/plugins/{dodgeball,online,moba}/` are plugins. The contract is the 10 numbered contract lines under Modes in `docs/extending.md`. Core never imports plugins, and plugins never import each other; `tests/boundaries.test.js` enforces this.
 - `tests/characterization.test.js` locks dodgeball's behaviour. Its snapshots must stay identical unless a change is deliberate and explained.
 - Modes: `/` opens the splash. `?mode=moba&play&bots=easy&hero=fletcher&seed=2&debug` jumps straight into a match with the debug panel.
 - Where is X: `bun run where <word>` prints feature-map entries and source locations; use a quoted phrase or entry symbol to narrow it, `--all` for every hit. Whoever adds or moves a feature updates its line there. `tune.js` holds match rules and assembles each map's, the lobby's and each hero's tune file (`maps/<id>/<id>-tune.js`, `front/lobby-tune.js`, `abilities/<id>/<id>-tune.js`, `heroes/<id>/<id>-tune.js`); edit the block where it lives, and read the landmark, not the file.
@@ -74,6 +74,6 @@ Every HTML artifact lives in `docs/pages/<slug>/` and is an item in `docs/pages/
 ### Review brief template
 
 Model: reverse of the author (GPT reviews Opus, Opus reviews GPT). After: the thing under review lands.
-Adversarial review of <WHAT> in dodgethis `?mode=moba`. Context: `docs/moba-plan.md`, `docs/moba-lane.md`, `docs/plugin-architecture.md`, the diff since the last checkpoint.
+Adversarial review of <WHAT> in dodgethis `?mode=moba`. Context: `docs/moba-plan.md`, `docs/moba-lane.md`, `docs/extending.md`, the diff since the last checkpoint.
 Review the named commits at the checkpoint tip (`jj show <rev>` for scope; run and read code at the tip, since one feature can span several commits) or the doc. Never use the live working copy (other threads are writing in it) unless the brief names files to read there because no checkpoint exists yet. Find what's wrong; don't summarise. Bugs, feel regressions (judder, input lag, unreadable telegraphs), numbers that don't add up, boundary violations, dodgeball changes (characterization snapshots must be identical), tricky logic nobody proved by play (no new unit tests, per Oskar).
 Don't edit files. At most 8 findings, most severe first, one or two lines each with a concrete fix.

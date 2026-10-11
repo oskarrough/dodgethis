@@ -11,7 +11,7 @@ Discoverable names. Agents find code by plain-text search, so every identifier i
 - One definition site per symbol: move, don't copy, and rename in the same commit as the behaviour change.
 - A new fact type gets an entry in `index.js` `FACTS`, or guests drop every packet carrying it.
 
-No new unit tests for now (user, 2026-10-04); delete a test rather than nurse it when a deliberate change makes it obsolete. Rules below that ask for tests mean a quick proof, in a headless match or a browser trace. A surgical edit outside your owned files (a setter, an export, a hook) is fine without asking; name it in the report.
+A surgical edit outside your owned files (a setter, an export, a hook) is fine without asking; name it in the report.
 
 - When the user's judgment is useful, report the actual local dev URL and shortest route plus one specific thing to judge. The coordinator pings them; don't leave review hidden in a long completion report.
 - A proof says how it was made: a bots-only fast-forward proves nothing about a human playing.

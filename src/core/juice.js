@@ -5,7 +5,7 @@ import { instanceStyle, makeStyleMaterial, styleId } from './stylepass.js'
 const PARTICLES = 64
 const MARKS = 48
 
-// The juice kit (docs/plugin-architecture.md, "Settled"): verbs a mode's fact switch calls. Nothing here knows a fact.
+// The juice kit (docs/extending.md, "Settled"): verbs a mode's fact switch calls. Nothing here knows a fact.
 // `burst` throws ink chips, `mark` prints a stroke on the floor, `flash` prints a mesh cream for a moment, `retire` plays a corpse out.
 // Chips and marks are fixed GPU pools; the oldest entry is replaced when one runs out. `deathPace()` and `hitFlash()` are read per retire.
 export function createJuice(scene, { deathPace = () => 1, hitFlash = () => 0.07 } = {}) {

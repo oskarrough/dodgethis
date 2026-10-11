@@ -2,7 +2,7 @@ import { expect, test } from 'bun:test'
 import { readdirSync, readFileSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'node:path'
 
-// src/core imports nothing from src/plugins, and no plugin imports another (docs/plugin-architecture.md, line 10).
+// src/core imports nothing from src/plugins, and no plugin imports another (docs/extending.md, Modes, contract 10).
 // ALLOWED is the burn-down of violations that predate the rule: entries may only be removed, and a fixed one must be deleted here.
 const ALLOWED = []
 

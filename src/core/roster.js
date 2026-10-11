@@ -1,4 +1,4 @@
-// A roster is the people a mode starts with (docs/plugin-architecture.md, line 4). Two teams, human or bot.
+// A roster is the people a mode starts with (docs/extending.md, Modes, contract 4). Two teams, human or bot.
 // Return owned, immutable records so caller edits cannot invalidate a live round.
 export function validateRoster(roster) {
 	if (!Array.isArray(roster) || !roster.length) throw new Error('Roster must be a non-empty array')

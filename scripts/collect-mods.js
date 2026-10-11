@@ -1,4 +1,4 @@
-// Collects the moba plugin's mods (docs/mods.md): one plain file per kind with static
+// Collects the moba plugin's mods (docs/extending.md): one plain file per kind with static
 // imports sorted by id. A folder is found by convention; this script is the only list.
 // `bun run collect-mods` after adding or removing a folder; dev and check also collect.
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'

@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 
-// Render interpolation (docs/plugin-architecture.md, "Solo render interpolation"): the simulation runs at 60 Hz, the screen at whatever it likes.
+// Render interpolation (docs/extending.md, "Modes"): the simulation runs at 60 Hz, the screen at whatever it likes.
 // After every step `capture()` records each object's sim pose; `pose(alpha)` then places the rendered object between the last two.
 export function createSmoother() {
 	const entries = new Map()

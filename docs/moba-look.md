@@ -24,6 +24,12 @@ Super Smash Bros. Melee is the feel reference: responsive controls, fast animati
 - **Mass.** Stone is chunky faceted prisms, wider at the bottom, with chipped bevels, horizontal strata and moss only on top. Things look old: worn edges, cracks, a lean. Plants are few, big, simple planes, at the rim only.
 - **Never.** Schoolyard or seaside props (tarmac, chalk, chain-link, buckets, cones, cardboard, windbreaks); plush, felt or sackcloth; blush cheeks or big glossy eyes; rainbows; sparkle or foliage on the court; bloom larger than its source; a scenery glow in a team hue; gold anywhere but the Ball and ammo.
 
+## Front end and match
+
+**The two looks share an ink and differ in weight.** The front end is the world in ligne claire: one thin navy line, pastels mixed 60–85% toward cream, fine hatching, a lot of sky. The match is that world printed loud: thick ink, loud flat colour, a crowded ground. Same `ink`, `cream` and team colours. The descent is where one becomes the other: the line thickens and the colours saturate as the camera lands. The quiet in the front end is what makes the match loud.
+
+**Feel comes before the line.** Menus answer like Smash (snappy, chunky, instant) and are made like Sackboy (tactile, handmade). Only what you can touch is thick and springy: cards on deckled paper with a hand-drawn pen line and a watercolour wash behind the title (`front/skin.js`, `tune.skin.style`); the one you're on lifts and its wash bleeds out behind it. The landscape stays quiet.
+
 ## References
 
 Our own generations live in [pages/](pages/), committed so later agents start from what we based work on. Keep each one we build from or ship, with its prompt beside it; leave rejected sets in thread storage. Superseded sets move to [look/archive/](pages/archive/README.md): history only, never build from them.
