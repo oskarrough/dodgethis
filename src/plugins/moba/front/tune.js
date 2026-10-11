@@ -52,6 +52,12 @@ export const tune = {
 			bloom: 0.15,
 			color: { overthrow: ['#fffcf7', '#f6dcd3'], flagfall: ['#f5f1ff', '#b9a8e2'] },
 		},
+		// The sky behind the descent per map: top, horizon and the map name's colour. The horizon
+		// is the map's haze, so the cloud sea runs into it without a seam.
+		sky: {
+			overthrow: ['#e5ad9c', '#f2cdbd', 'var(--ui-text)'],
+			flagfall: ['#0d0b20', '#1d1839', '#fffdf4'],
+		},
 	},
 	level: { growth: 0.04, cap: 10 },
 	volley: {

@@ -77,6 +77,10 @@ export function startLoading(
 				.join('')}</h1>`,
 		)
 		if (clouds) root.prepend(clouds.el)
+		const sky = tune.loading.sky[setup?.map] ?? tune.loading.sky.overthrow
+		root.style.setProperty('--sky-top', sky[0])
+		root.style.setProperty('--sky-horizon', sky[1])
+		root.style.setProperty('--sky-name', sky[2])
 		root.dataset.phase = 'crane'
 		root.setAttribute('aria-label', 'Rising over the lobby')
 		const lettering = root.querySelector('.front-descent-name')

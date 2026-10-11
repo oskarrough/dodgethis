@@ -4,6 +4,10 @@
 	opacity: 0;
 	transition: opacity var(--crane-fade) ease-in;
 }
+/* A painted sky behind the lane, never the page's blank cream. */
+.moba-front.front-descent {
+	background: linear-gradient(var(--sky-top), var(--sky-horizon) 60%);
+}
 .moba-front.front-descent[data-phase='crane'] {
 	background: transparent;
 	pointer-events: none;
@@ -17,7 +21,7 @@
 	margin: 0;
 	text-align: center;
 	font: 400 clamp(40px, 7vw, 132px) / 1.1 var(--ui-font);
-	color: var(--ui-text);
+	color: var(--sky-name, var(--ui-text));
 	pointer-events: none;
 }
 /* Lettered across the sky one stroke after another, as the crane arrives. */
