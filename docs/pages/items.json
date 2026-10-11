@@ -1,11 +1,26 @@
 [
 	{
+		"at": "2026-10-11T13:59:48.474Z",
+		"title": "Sound board walkthrough",
+		"ask": "Agree with the worst friction?",
+		"status": "To review",
+		"decision": "",
+		"media": [
+			"review/media/2026-10-11-sound-board-walkthrough/walkthrough.png"
+		],
+		"links": [],
+		"thread": "thr_zg6p82q57t",
+		"page": "2026-10-11-sound-board-walkthrough/"
+	},
+	{
 		"at": "2026-10-11T13:52:55.562Z",
 		"title": "Generate sounds",
 		"ask": "Does generating feel quick enough?",
 		"status": "To review",
 		"decision": "",
-		"media": ["review/media/2026-10-11-generate-sounds/generate-sounds.png"],
+		"media": [
+			"review/media/2026-10-11-generate-sounds/generate-sounds.png"
+		],
 		"links": [],
 		"thread": "thr_56cjyats25",
 		"page": "2026-10-11-generate-sounds/"
@@ -16,7 +31,9 @@
 		"ask": "Does scrubbing feel right?",
 		"status": "To review",
 		"decision": "",
-		"media": ["review/media/2026-10-11-sound-map/sound-map.png"],
+		"media": [
+			"review/media/2026-10-11-sound-map/sound-map.png"
+		],
 		"links": [],
 		"thread": "thr_m6gtdxtin8",
 		"page": "2026-10-11-sound-map/"
@@ -67,7 +84,9 @@
 		"ask": "Is PAUSED quiet enough, and does Esc toggle fast now?",
 		"status": "To review",
 		"decision": "",
-		"media": ["review/media/2026-10-11-pause-menu-vibe-quieter/pause2.png"],
+		"media": [
+			"review/media/2026-10-11-pause-menu-vibe-quieter/pause2.png"
+		],
 		"links": [],
 		"thread": "thr_piszjt2sgm",
 		"page": "2026-10-11-pause-menu-vibe-quieter/"
@@ -78,7 +97,9 @@
 		"ask": "Does the bounce preview read?",
 		"status": "To review",
 		"decision": "",
-		"media": ["review/media/2026-10-11-bank-bounce-preview/bank-bounce.png"],
+		"media": [
+			"review/media/2026-10-11-bank-bounce-preview/bank-bounce.png"
+		],
 		"links": [],
 		"thread": "thr_4xnq2c8zbt",
 		"page": "2026-10-11-bank-bounce-preview/"
@@ -132,7 +153,9 @@
 		"ask": "Pong's costume (stone head, brow, beak, team paddle, back net) and the Cushion net: keep, or what changes?",
 		"status": "To review",
 		"decision": "",
-		"media": ["review/media/2026-10-11-p-pong-first-build/pong-match.png"],
+		"media": [
+			"review/media/2026-10-11-p-pong-first-build/pong-match.png"
+		],
 		"links": [],
 		"thread": "thr_zhs8vb5rkp",
 		"page": "2026-10-11-p-pong-first-build/"
@@ -149,7 +172,9 @@
 			"carom-redesign/pong-sheet.webp",
 			"carom-redesign/pong-match.webp"
 		],
-		"links": ["http://office-linux.heron-mermaid.ts.net:5173/docs/pages/carom-redesign/"],
+		"links": [
+			"http://office-linux.heron-mermaid.ts.net:5173/docs/pages/carom-redesign/"
+		],
 		"thread": "thr_fgrufkvvdh",
 		"page": "carom-redesign/"
 	},
@@ -159,7 +184,9 @@
 		"ask": "First take on the laser gate: two posts, a flickering team-colour beam. Keep, recolour, or rethink?",
 		"status": "To review",
 		"decision": "",
-		"media": ["review/media/2026-10-10-flagfall-laser-gate/laser-gate.png"],
+		"media": [
+			"review/media/2026-10-10-flagfall-laser-gate/laser-gate.png"
+		],
 		"links": [],
 		"thread": "thr_zujatwsc6m",
 		"page": "2026-10-10-flagfall-laser-gate/"
@@ -170,7 +197,9 @@
 		"ask": "The gate is a placeholder stone drum spanning the lane. Is a drum fine for now, or should it read as a wall?",
 		"status": "To review",
 		"decision": "",
-		"media": ["review/media/2026-10-10-flagfall-gates/flagfall-gate.png"],
+		"media": [
+			"review/media/2026-10-10-flagfall-gates/flagfall-gate.png"
+		],
 		"links": [],
 		"thread": "thr_88z9qrycxv",
 		"page": "2026-10-10-flagfall-gates/"
@@ -181,7 +210,9 @@
 		"ask": "Plain flag at the chalk cross: HUD line, ring with fill arc, minimap dot. Look is yours.",
 		"status": "To review",
 		"decision": "",
-		"media": ["review/media/2026-10-10-flagfall-centre-flag/flag.png"],
+		"media": [
+			"review/media/2026-10-10-flagfall-centre-flag/flag.png"
+		],
 		"links": [],
 		"thread": "thr_wfq8ficigf",
 		"page": "2026-10-10-flagfall-centre-flag/"
@@ -192,7 +223,9 @@
 		"ask": "Does the fog look unchanged: same edge, same darkness?",
 		"status": "To review",
 		"decision": "",
-		"media": ["review/media/2026-10-10-cheaper-fog-of-war/fog-after.png"],
+		"media": [
+			"review/media/2026-10-10-cheaper-fog-of-war/fog-after.png"
+		],
 		"links": [],
 		"thread": "thr_ut6hmdpqhz",
 		"page": "2026-10-10-cheaper-fog-of-war/"
@@ -203,7 +236,9 @@
 		"ask": "Camp guards (plain cream for now) at a jungle camp mark, 55 s in. Clear one and its mercs march the nearest lane for you. Does the camp read as neutral?",
 		"status": "To review",
 		"decision": "",
-		"media": ["review/media/2026-10-10-flagfall-mercenary-camps/camp.png"],
+		"media": [
+			"review/media/2026-10-10-flagfall-mercenary-camps/camp.png"
+		],
 		"links": [],
 		"thread": "thr_bxbcth5sxc",
 		"page": "2026-10-10-flagfall-mercenary-camps/"
@@ -214,7 +249,9 @@
 		"ask": "Block gone; four jungle rooms behind a stone spine, each opening on two lane holes and the clearing, moss brush at the holes. Lantern + chalk square = camp, cross = flag, bars across the lanes = gates (all marks only). Does it feel worth walking into under fog?",
 		"status": "To review",
 		"decision": "",
-		"media": ["review/media/2026-10-10-flagfall-jungle-rooms-brush-marks/jungle.png"],
+		"media": [
+			"review/media/2026-10-10-flagfall-jungle-rooms-brush-marks/jungle.png"
+		],
 		"links": [],
 		"thread": "thr_egsuf57dc2",
 		"page": "2026-10-10-flagfall-jungle-rooms-brush-marks/"
@@ -225,7 +262,9 @@
 		"ask": "First take behind ?fog: your heroes, minions and structures see 10/7/10 m; enemy units outside vanish and the ground dims. Is the dim strong enough, and should it read as darkness or as haze?",
 		"status": "Decided",
 		"decision": "Love it; 10% darker, on in every match (Oskar)",
-		"media": ["review/media/2026-10-10-fog-of-war-on-flagfall/fog-flagfall.png"],
+		"media": [
+			"review/media/2026-10-10-fog-of-war-on-flagfall/fog-flagfall.png"
+		],
 		"links": [],
 		"thread": "thr_egsuf57dc2",
 		"page": "2026-10-10-fog-of-war-on-flagfall/"
@@ -236,8 +275,12 @@
 		"ask": "Grow Flagfall toward your HotS map (88 × 44 m, a tight jungle of 4 m paths and brush, flags inside, gates at the forts) and park three lanes until 5v5 bots exist?",
 		"status": "To review",
 		"decision": "",
-		"media": ["three-lanes/hots-reference.webp"],
-		"links": ["/docs/pages/three-lanes/"],
+		"media": [
+			"three-lanes/hots-reference.webp"
+		],
+		"links": [
+			"/docs/pages/three-lanes/"
+		],
 		"thread": "thr_ns72rgdbmc",
 		"page": "three-lanes/"
 	},
@@ -251,7 +294,9 @@
 			"review/media/2026-10-10-flagfall-by-night-built/flagfall-night-built.webp",
 			"review/media/2026-10-10-flagfall-by-night-built/02-fight.webp"
 		],
-		"links": ["/docs/pages/flagfall-night/"],
+		"links": [
+			"/docs/pages/flagfall-night/"
+		],
 		"thread": "thr_md62iqhzu8",
 		"page": "2026-10-10-flagfall-by-night-built/"
 	},
@@ -365,7 +410,9 @@
 		"ask": "Manual is now the only pause page, with PAUSED running down the first column. Right weight and place?",
 		"status": "Decided",
 		"decision": "Decided: manual with vertical PAUSED.",
-		"media": ["review/media/2026-10-10-pause-manual-with-vertical-paused/vertical-1440.png"],
+		"media": [
+			"review/media/2026-10-10-pause-manual-with-vertical-paused/vertical-1440.png"
+		],
 		"links": [],
 		"thread": "thr_ra883cf55x",
 		"page": "2026-10-10-pause-manual-with-vertical-paused/"
@@ -506,7 +553,9 @@
 		"ask": "Does the glazed saucer in its iron cradles read as one floating ceramic world, and do the seat plates read as inlaid glaze?",
 		"status": "Decided",
 		"decision": "Style fine; whole saucer in frame. Keep improving.",
-		"media": ["review/media/2026-10-10-lobby-saucer/lobby-saucer.png"],
+		"media": [
+			"review/media/2026-10-10-lobby-saucer/lobby-saucer.png"
+		],
 		"links": [],
 		"thread": "thr_dwbukqxwup",
 		"page": "2026-10-10-lobby-saucer/"
