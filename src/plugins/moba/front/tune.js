@@ -9,12 +9,12 @@ export const tune = {
 		fitMargin: 1.18,
 		minAspect: 0.1,
 		farMargin: 100,
-		duration: 2.4,
+		duration: 1.9,
 		// After shader readiness and the reveal you look at the lane for `preview` s while the
 		// camera creeps `creep` of the way into the descent, then dives for `duration` s.
-		preview: 3,
+		preview: 2.2,
 		creep: 0.06,
-		reveal: 0.7,
+		reveal: 0.45,
 		height: 22,
 		back: 110,
 		fov: 55,
@@ -27,7 +27,7 @@ export const tune = {
 		// The crane takes shot.apex.time: the lobby camera rises `rise` m and tilts to `pitch`°
 		// (negative looks up). The map name letters in from `nameAt` of the way, `letter` s apart.
 		// The canvas fades no lower than `floor`.
-		crane: { rise: 14, pitch: -12, nameAt: 0.3, letter: 0.03, letterTime: 0.35, floor: 0.02 },
+		crane: { rise: 14, pitch: -12, nameAt: 0.3, letter: 0.025, letterTime: 0.25, floor: 0.02 },
 		drop: { freq: 660, slideTo: 330, dur: 0.5, gain: 0.03, type: 'triangle' },
 		// The cloud reveal. Cloud rolls in from the rim
 		// from `from` of the crane, holds while the lane builds, and from the start of the
@@ -39,8 +39,8 @@ export const tune = {
 		// `bloom` lights the soft edge. `color` is light and shade per map.
 		clouds: {
 			from: 0.1,
-			part: 2.2,
-			ease: 2,
+			part: 1.6,
+			ease: 2.5,
 			resolution: 0.25,
 			scale: 2.2,
 			warp: 0.7,
