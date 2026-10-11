@@ -83,6 +83,22 @@ export function createSim({
 			),
 		]),
 	)
+	// Cover an ability places (Cushion): shots sweep it, bodies collide with it. Paths are not replanned.
+	const coverColliders = new Map()
+	function addCover(o) {
+		obstacles.push(o)
+		coverColliders.set(
+			o,
+			world.createCollider(RAPIER.ColliderDesc.cylinder(1, o.r).setTranslation(o.x, 1, o.z)),
+		)
+	}
+	function removeCover(o) {
+		const index = obstacles.indexOf(o)
+		if (index >= 0) obstacles.splice(index, 1)
+		const collider = coverColliders.get(o)
+		if (collider) world.removeCollider(collider, true)
+		coverColliders.delete(o)
+	}
 	const clampBounds = (point, margin = 0) => clampMap(point, margin, floor)
 	const walkGoal = (point, radius = profile.radius) =>
 		clampWalkable(
@@ -508,6 +524,8 @@ export function createSim({
 			const dashing = h.body.dashing
 			stepHeroState(h, dt)
 			h.definition.traits.onTick?.(traitContext(h, { dt }))
+			for (const ability of Object.values(h.definition.abilities))
+				ability?.watch?.(traitContext(h, { ability, dt }))
 			control(h, dt)
 			if (dashing && !h.body.dashing) dashEnds.push(h)
 			if (h.cast && --h.cast.left <= 0) release(h)
@@ -561,6 +579,7 @@ export function createSim({
 	function dispose() {
 		laneView?.dispose()
 		for (const collider of towerColliders.values()) world.removeCollider(collider, true)
+		for (const o of coverColliders.keys()) removeCover(o)
 		for (const h of heroes) {
 			h.corpse?.dispose()
 			if (!h.dead) h.body.dispose()
@@ -637,6 +656,8 @@ export function createSim({
 		ball,
 		flag,
 		obstacles,
+		addCover,
+		removeCover,
 		bounds: field,
 		layout,
 		lanes: layout.lanes,

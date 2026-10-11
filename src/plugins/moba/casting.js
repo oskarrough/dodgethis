@@ -60,6 +60,11 @@ export function createCasting(ctx) {
 				present({ type: 'denied', hero: h.id, slot, reason: 'no-ability' })
 				return
 			}
+			// An ability with `ready` (Swap needs a live Bank) is denied while it has nothing to act on.
+			if (ability.ready && !ability.ready(traitContext(h, { ability }))) {
+				present({ type: 'denied', hero: h.id, slot, reason: 'unready' })
+				return
+			}
 			const i = SLOTS.indexOf(slot)
 			const window = Math.max(1, ticks(tune.cast.buffer))
 			if (castWait(h, ability, i) >= window) {
@@ -182,6 +187,7 @@ export function createCasting(ctx) {
 			return
 		}
 		ability.onRelease?.(context)
+		if (ability.kind === 'instant') return
 		if (castFootprint && h.catchWindow) footprints.set(h.catchWindow, castFootprint)
 		if (ability.kind === 'dash') {
 			// Whole fixed steps avoid overshooting the advertised distance on the final dash tick.

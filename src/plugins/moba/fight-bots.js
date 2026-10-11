@@ -57,6 +57,8 @@ export function createFightBot(
 		const [shotSlot, shotAbility] = abilities.find(([, a]) => a.kind === 'shot') ?? []
 		const [zoneSlot, zoneAbility] = abilities.find(([, a]) => a.kind === 'zone') ?? []
 		const [dashSlot, dashAbility] = abilities.find(([, a]) => a.kind === 'dash') ?? []
+		const [swapSlot, swapAbility] = abilities.find(([, a]) => a.blinkTo) ?? []
+		const [coverSlot, coverAbility] = abilities.find(([, a]) => a.placesCover) ?? []
 		const melee = h.definition.basic?.kind === 'melee'
 		const catchAbility = abilities.find(([, a]) => a.kind === 'stance' && a.catchesShots)
 		const own = perceived.heroes.filter((u) => !u.dead && u.team === team)
@@ -103,6 +105,10 @@ export function createFightBot(
 			zoneAbility,
 			dashSlot,
 			dashAbility,
+			swapSlot,
+			swapAbility,
+			coverSlot,
+			coverAbility,
 			melee,
 			catchAbility,
 			own,
@@ -279,6 +285,11 @@ export function createFightBot(
 			zoneSlot,
 			dashAbility,
 			dashSlot,
+			swapAbility,
+			swapSlot,
+			coverAbility,
+			coverSlot,
+			shotSlot,
 			advantage,
 			near,
 			move,
@@ -289,6 +300,27 @@ export function createFightBot(
 		} = ctx
 
 		const { target, attackReach, targetDistance, attackSpot, canFocus } = ctx
+		// Swap (trade places with your own Bank shot): out when hurt, in on a low target.
+		const mark = swapAbility?.blinkTo({ hero: h, sim, tick: now })
+		if (mark) {
+			const threat = (at) => Math.min(...enemies.map((u) => distance(u.pos, at)))
+			if (
+				h.hp < h.maxHp * b.retreatHp &&
+				enemies.length &&
+				threat(mark) > threat(p) + b.stutter &&
+				cast(swapSlot, mark)
+			)
+				return frame
+			if (
+				target &&
+				target.hp < target.maxHp * b.chaseHp &&
+				distance(p, target.pos) > attackReach &&
+				distance(mark, target.pos) <= attackReach &&
+				safe(mark, [target]) &&
+				cast(swapSlot, mark)
+			)
+				return frame
+		}
 		if (target && advantage >= -k.aggression) {
 			state = 'fight'
 			holdUntil = now + ticks(b.hold)
@@ -334,6 +366,25 @@ export function createFightBot(
 					rain.radius,
 				) &&
 				cast(zoneSlot, predicted)
+			)
+				return frame
+			// Cushion: no cover near the target to bank off, so put a wall behind them before Bank.
+			const bank = shotAbility?.stats.bounce && shotAbility.stats
+			const reach = targetDistance || 1
+			const behind = coverAbility && {
+				x: target.pos.x + ((target.pos.x - p.x) / reach) * coverAbility.stats.radius,
+				z: target.pos.z + ((target.pos.z - p.z) / reach) * coverAbility.stats.radius,
+			}
+			if (
+				bank &&
+				behind &&
+				!h.cd[Number(shotSlot.slice(-1)) - 1] &&
+				distance(p, target.pos) <= bank.range &&
+				distance(p, behind) <= coverAbility.stats.range &&
+				!sim.obstacles.some(
+					(o) => !['tower', 'core'].includes(o.kind) && distance(o, target.pos) <= bank.range / 3,
+				) &&
+				cast(coverSlot, behind)
 			)
 				return frame
 			if (now - seenAt >= ticks(k.reaction) && shoot(target)) return frame

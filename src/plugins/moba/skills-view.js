@@ -91,6 +91,7 @@ export function createSkillsView(scene) {
 		}
 		positions.needsUpdate = true
 	}
+	const posts = new Map() // placeholder Cushion posts, keyed by obstacle
 	const tells = new Map(),
 		enemyTells = new Map(),
 		catchTells = new Map(),
@@ -201,6 +202,19 @@ export function createSkillsView(scene) {
 				)
 				heldArrow.scale.set(1, 1, Math.hypot(end.x - hero.x, end.z - hero.z))
 			}
+		}
+		// Placeholder look for Cushion: a gold disc per post until the hero redesign brings a wall.
+		for (const [o, post] of posts)
+			if (!obstacles.includes(o)) {
+				group.remove(post)
+				posts.delete(o)
+			}
+		for (const o of obstacles) {
+			if (o.kind !== 'cushion' || posts.has(o)) continue
+			const post = mesh(disc, gold)
+			post.position.set(o.x, GROUND + 0.004, o.z)
+			post.scale.setScalar(o.r)
+			posts.set(o, post)
 		}
 		const live = new Set(zones.map((z) => z.id))
 		const r = look.abilityView.rain

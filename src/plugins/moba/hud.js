@@ -746,6 +746,11 @@ export function createHud({ lobby = false, layout, pieces, onMinimap } = {}) {
 				}
 				prop(s.slot, '--cd', `${fraction}turn`)
 				flag(s.slot, 'cooling', cooldown > 0)
+				flag(
+					s.slot,
+					'unready',
+					!!ability?.ready && !!sim && !!hero && !ability.ready({ hero, sim, tick: sim.tick }),
+				)
 				text(
 					s.left,
 					cooldown > 0 ? (cooldown > 1 ? String(Math.ceil(cooldown)) : cooldown.toFixed(1)) : '',

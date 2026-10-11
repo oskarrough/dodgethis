@@ -532,7 +532,8 @@
 	display: block;
 	transition: filter 0.1s;
 }
-.moba-slot.cooling .icon svg {
+.moba-slot.cooling .icon svg,
+.moba-slot.unready .icon svg {
 	filter: saturate(0.3);
 }
 .moba-slot .sweep {
