@@ -4,3 +4,6 @@ dist/
 runs/
 .aws
 docs/pages/review/media/
+
+# Oskar's sound library (copied from Dropbox Rough Resources/Sounds); only Kept picks are committed
+/sounds/
