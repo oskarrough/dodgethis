@@ -598,25 +598,43 @@
 	outline-offset: 3px;
 	border-radius: 12px;
 }
-.moba-banner {
+.moba-feed {
+	/* A drum mid-right printed with the calls: bare cream lines, right-aligned. The newest faces you; older lines
+	   ride the cylinder up and away, so perspective makes them smaller and squashed, and they fade. */
+	--radius: 58px;
+	--step: 23deg;
 	position: fixed;
-	top: 78px;
+	top: 46%;
 	right: 18px;
-	/* A kill feed like League's: bare lines, right-aligned under the corner buttons, clear of the unit frame. */
-	display: flex;
-	flex-direction: column;
-	align-items: flex-end;
-	gap: 2px;
+	width: 0;
+	height: 0;
 	z-index: 5;
 	pointer-events: none;
-	font: 17px / 1.25 var(--ui-font);
+	perspective: 240px;
+	perspective-origin: 100% 50%;
+	font: 19px / 1.25 var(--ui-font);
 	color: var(--ui-cream);
 	-webkit-text-stroke: 3px var(--ui-text);
 	paint-order: stroke fill;
 	white-space: nowrap;
 }
-.moba-banner p {
+.moba-feed p {
+	position: absolute;
+	right: 0;
+	top: 0;
 	margin: 0;
+	transform-origin: 100% 50%;
+	transform: translateY(-50%) translateZ(calc(-1 * var(--radius)))
+		rotateX(calc(var(--age) * var(--step))) translateZ(var(--radius));
+	--far: max(var(--age), -1 * var(--age));
+	opacity: calc(1 - min(1, var(--far)) * 0.4 - var(--far) * 0.13);
+	backface-visibility: hidden;
+	transition:
+		transform 0.38s cubic-bezier(0.2, 0.9, 0.3, 1.15),
+		opacity 0.38s ease-out;
+}
+.moba-feed p.gone {
+	opacity: 0;
 }
 
 /* --- Tooltip card --- */

@@ -61,6 +61,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 
 - HUD (portrait, ability slots, cooldown rings, level, health): `hud.js` `createHud`, `matchFrame`; `hud.css`; `tune.js` `hud`; `moba.md`
 - Top bar (one cream pill: team dots for heroes alive, takedowns, clock, the Ball countdown; fixed width): `hud.js` `createHud` (`moba-top`); `hud.css` Top bar
+- Game log and feed (fact → sentence for the local player; the feed drum mid-right shows kills, wipes, structures, goals and Ball calls): `game-log.js` `createGameLog`, `FEED`; `feedback.js` `log.record`; `hud.js` `feed`; `hud.css` `.moba-feed`; `tune.js` `hud.feedLife`, `feedLines`
 - Ability slot keys (Q, W, E and pad RB, RT, LB): `hud.js` `KEYS`, `SLOTS`
 - Inspect mode (hold I or pad button, hover to read cards): `hud.js` `KEY_INSPECT`, `PAD_INSPECT`, `pickUnit`
 - Tooltips and unit cards (hero, tower, minion, Ball, level, kills, clock): `tooltip.js` `createTooltip`, `heroCard`, `abilityCard`, `structureCard`, `minionCard`, `ballCard`, `levelCard`, `killsCard`, `clockCard`; `hud.js` `cardFor`, `updateTip`

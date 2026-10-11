@@ -1,5 +1,4 @@
 import * as THREE from 'three'
-import { structureName } from './gates.js'
 import { STEP } from '../../core/app.js'
 import { abilityOf } from './ability.js'
 import { heroDefinition } from './heroes.js'
@@ -7,6 +6,7 @@ import { tune } from './tune.js'
 import { look } from './look.js'
 import { flagfallLayoutTune } from './maps/flagfall/flagfall-layout.js'
 import { abilityUse } from './sound-table.js'
+import { createGameLog } from './game-log.js'
 
 // Moba's fact switch (docs/feature-map.md, "Match: view, feedback, sound"): each fact becomes juice-kit verbs, sfx, rumble, pings and HUD.
 // `local` is this machine's participant id; facts about anyone else get the quieter version.
@@ -67,21 +67,13 @@ export function createFeedback({
 		sfx.play(use, fact.point, gain, ...extra)
 	}
 
-	// Streaks count per team. No banner for the hero who is out; the recap says so.
+	// Calls in words go to the game log; the feed shows the log through its filter.
+	const log = createGameLog({ sim, local, unitOf })
+	log.listen((entry) => hud.feed?.(entry.text))
+
+	// Streaks count per team. No feed line for the hero who is out; the recap says so.
 	const streaks = new Map() // team → { count, tick }
-	const titleCase = (word) => word[0].toUpperCase() + word.slice(1)
-	function who(unit, subject) {
-		const localTeam = unitOf(local)?.team
-		const said = (text) => (subject ? titleCase(text) : text)
-		if (!unit) return said('the enemy')
-		if (unit.id === local) return said('you')
-		const side = unit.team === localTeam ? 'ally' : 'enemy'
-		if (unit.definition) return said(`${side} ${titleCase(unit.definition.id)}`)
-		if (unit.structure)
-			return said(`${unit.team === localTeam ? 'your' : 'enemy'} ${structureName(unit.kind)}`)
-		return said(`${side} minions`)
-	}
-	function ruling(fact, unit, mine, onMe, verb = 'got', after = ' out') {
+	function ruling(fact, unit, mine, onMe) {
 		const taker = unitOf(fact.source)
 		const team = taker?.team ?? (unit.team === 'A' ? 'B' : 'A')
 		const tick = fact.tick ?? sim.tick
@@ -100,14 +92,7 @@ export function createFeedback({
 			},
 		})
 		cue('out', fact, mine || onMe ? 1 : 0.5, wiped ? 3 : count)
-		if (hero && !onMe)
-			hud.banner?.(
-				!wiped
-					? `${who(taker, true)} ${verb} ${who(unit)}${after}`
-					: unit.team === unitOf(local)?.team
-						? 'All out! Your whole team is out'
-						: 'All out! The whole enemy team is out',
-			)
+		if (hero && !onMe) log.record(fact, { unit, wiped })
 	}
 
 	// Your sneakers squeak when you reverse out of a run: read once per sim tick against the last running velocity,
@@ -156,16 +141,16 @@ export function createFeedback({
 		const effects = ability?.effects ?? {}
 		switch (fact.type) {
 			case 'ballContested':
-				hud.banner?.('Ball contested! Clear the lobby')
+				log.record(fact)
 				view.ping('move', fact.point)
 				cue('ballContested', fact)
 				return
 			case 'ballWarn':
-				hud.banner?.(`Ball at mid in ${Math.ceil(fact.seconds)} s`)
+				log.record(fact)
 				cue('ballWarn', fact)
 				return
 			case 'ballSpawn':
-				hud.banner?.('Ball is live! Stand on it to pick up')
+				log.record(fact)
 				juice.burst(fact.point, { x: 0, y: 1, z: 0 }, look.juice.ballBurst)
 				cue('ballSpawn', fact)
 				return
@@ -173,9 +158,7 @@ export function createFeedback({
 				cue('ballChannel', fact, mine ? 1 : 0.4)
 				return
 			case 'ballPickup':
-				hud.banner?.(
-					`${mine ? 'You have' : fact.team === unitOf(local)?.team ? 'Your team has' : 'Enemy has'} the Ball!`,
-				)
+				log.record(fact)
 				unitOf(fact.hero)?.body.squash(tune.ballView.pickupSquash)
 				cue('ballPickup', fact)
 				return
@@ -189,10 +172,7 @@ export function createFeedback({
 				return
 			case 'ballHit':
 				if (fact.kind === 'structure') {
-					const friendly = unitOf(fact.hero)?.team === unitOf(local)?.team
-					hud.banner?.(
-						`${friendly ? 'GOAL!' : 'Enemy scored!'} ${unitOf(fact.target)?.kind === 'core' ? 'Core' : 'Tower'} silenced ${tune.ball.silence} s`,
-					)
+					log.record(fact)
 					freeze = Math.max(freeze, look.juice.ballGoal.freeze)
 					camera.shake(look.juice.ballGoal.shake)
 					camera.kick(look.juice.ballGoal.kick)
@@ -211,8 +191,7 @@ export function createFeedback({
 				cue('ballBounce', fact)
 				return
 			case 'ballDrop':
-				if (mine && fact.reason === 'death')
-					hud.banner?.('You died carrying the Ball · Ball dropped')
+				log.record(fact)
 				juice.burst(fact.point, { x: 0, y: 1, z: 0 }, look.juice.ballDrop)
 				cue('ballDrop', fact)
 				return
@@ -325,11 +304,7 @@ export function createFeedback({
 			case 'structureDown':
 				juice.burst(fact.point, { x: 0, y: 1, z: 0 }, look.juice.structureDown)
 				cue('structureDown', fact)
-				hud.banner?.(
-					unitOf(fact.target)?.team === unitOf(local)?.team
-						? `Your ${unitOf(fact.target).kind} fell`
-						: `Enemy ${unitOf(fact.target)?.kind ?? 'structure'} destroyed`,
-				)
+				log.record(fact)
 				camera.kick(look.juice.structureKick)
 				camera.shake(look.juice.structureShake)
 				return
@@ -487,7 +462,7 @@ export function createFeedback({
 						if (onMe || mine) camera.shake(look.juice.shakeTakedown)
 					},
 				})
-				if (unit) ruling(fact, unit, mine, onMe, 'dunked', '')
+				if (unit) ruling(fact, unit, mine, onMe)
 				if (onMe) input.rumble(0.35, 0.6, 85)
 				if (mine && !onMe) {
 					hitmark('kill', fact.point)
@@ -530,6 +505,7 @@ export function createFeedback({
 	return {
 		present,
 		fizzle,
+		log,
 		beat,
 		stride,
 		reset() {
@@ -541,6 +517,7 @@ export function createFeedback({
 			aggroPingTick = -1
 			sounded.clear()
 			streaks.clear()
+			log.reset()
 			stamps?.reset()
 			squeak.tick = -1
 			squeak.x = squeak.z = 0

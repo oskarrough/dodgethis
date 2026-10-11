@@ -198,11 +198,12 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 		const left = el('span', 'left', slot)
 		return { action, slot, icon, key, left, deniedFor: 0, fraction: -1 }
 	})
-	// Kill and objective calls stack top right, newest last, each line on its own clock.
-	const banner = el('div', 'moba-banner')
-	banner.setAttribute('aria-live', 'polite')
+	// The feed: a drum mid-right printed with the game log's calls. A new line turns the drum, so the newest sits
+	// sharp at the front and older ones roll up and away; each line keeps its own clock.
+	const feed = el('div', 'moba-feed')
+	feed.setAttribute('aria-live', 'polite')
 	// The lobby is for walking and picking; the hero frame only earns its corner in a match.
-	document.body.append(top, root, ...(lobby ? [] : [unitFrame]), banner)
+	document.body.append(top, root, ...(lobby ? [] : [unitFrame]), feed)
 	const tip = createTooltip(document.body)
 	// World units get their own card and a slim nameplate, so a slot card never fights a unit card.
 	const worldTip = createTooltip(document.body, 'moba-tip-world')
@@ -214,6 +215,12 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 	const plateHp = el('b', '', plate)
 	document.body.append(plate)
 	const lines = []
+	// A line leaving the drum fades where it is, or rolls one more step over the top when pushed off.
+	function drop(line, age) {
+		if (age != null) line.node.style.setProperty('--age', age)
+		line.node.classList.add('gone')
+		setTimeout(() => line.node.remove(), 400)
+	}
 	let lastSwap = null
 
 	// `moved` marks a real pointer move since the last frame: a unit walking under a still cursor opens nothing.
@@ -562,10 +569,14 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 	}
 
 	return {
-		banner(message, seconds = tune.hud.bannerLife) {
-			lines.push({ node: el('p', '', banner), left: seconds })
-			lines.at(-1).node.textContent = message
-			while (lines.length > tune.hud.bannerLines) lines.shift().node.remove()
+		feed(message, seconds = tune.hud.feedLife) {
+			const node = el('p', '', feed)
+			node.textContent = message
+			node.style.setProperty('--age', -1)
+			node.getBoundingClientRect() // enter from below the front, so the turn animates
+			lines.push({ node, left: seconds })
+			while (lines.length > tune.hud.feedLines) drop(lines.shift(), tune.hud.feedLines)
+			lines.forEach((line, i) => line.node.style.setProperty('--age', lines.length - 1 - i))
 		},
 		// A press on cooldown outside the buffer: the icon flashes for 60 ms.
 		deny(action) {
@@ -674,7 +685,7 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 				)
 			}
 			for (let i = lines.length - 1; i >= 0; i--)
-				if ((lines[i].left -= dt) <= 0) lines.splice(i, 1)[0].node.remove()
+				if ((lines[i].left -= dt) <= 0) drop(lines.splice(i, 1)[0])
 
 			const level = hero?.level ?? teams?.[localTeam].level ?? 1
 			data(root, 'team', localTeam)
@@ -781,7 +792,7 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 			root.remove()
 			unitFrame.remove()
 			lens?.remove()
-			banner.remove()
+			feed.remove()
 			tip.dispose()
 		},
 	}
