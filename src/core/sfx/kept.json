@@ -2,5 +2,17 @@
 	"blocked": {
 		"kept": "blocked--beep-tapped.ogg",
 		"gain": 0.5
+	},
+	"loose.shot": {
+		"shuffle": [
+			{
+				"kept": "loose.shot--monster-bite-001.ogg",
+				"gain": 0.5
+			},
+			{
+				"kept": "loose.shot--monster-bite-002.ogg",
+				"gain": 0.5
+			}
+		]
 	}
 }

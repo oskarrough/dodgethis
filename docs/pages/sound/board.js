@@ -45,10 +45,20 @@ const shortlists = await fetch('/sounds/shortlists.json')
 	.then((r) => r.json())
 	.catch(() => ({}))
 const shortlist = (id) => shortlists[id] ?? []
+// Every file in the library (sounds/numbers.json, written by `sound:check --files`), for the find box.
+const library = await fetch('/sounds/numbers.json')
+	.then((r) => r.json())
+	.then((numbers) => Object.keys(numbers).sort())
+	.catch(() => [])
+document.body.append(
+	el('datalist', { id: 'library-files' }, ...library.map((path) => el('option', { value: path }))),
+)
 const same = (a, b) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null)
 const local = (id) => swap.swapList().find(([key]) => key === id)?.[1]
+const nameOf = (s) => s.kept ?? s.file ?? s.library ?? s.voice
 function playing(id) {
 	const s = swap.swapOf(id)
+	if (s?.shuffle) return `shuffle of ${s.shuffle.length}: ${s.shuffle.map(nameOf).join(', ')}`
 	if (s?.kept) return `kept ${s.kept}`
 	if (s?.file) return `file ${s.file}`
 	if (s?.library) return `library ${s.library}`
@@ -89,20 +99,20 @@ globalThis.soundNumbers = async () => {
 	return { rows: rows(), flags: check(rows()) }
 }
 
-// Folders: sources grouped like the game, then the board's own tools.
+// Folders: the board's own tools, then sources in the order a player meets them, heroes last (a–z).
 const sources = [...new Set(Object.values(uses).map((u) => u.source))]
+const screens = ['Splash and descent', 'Lobby', 'Menus', 'Music']
 const match = ['Ball', 'Structures', 'Minions', 'Combat', 'Outs', 'Movement', 'Progress']
-const screens = ['Menus', 'Splash and descent', 'Lobby', 'Music']
+const TOOLS = ['Rule check', 'Mix', 'Your files', 'Changes', 'Silent facts']
 const GROUPS = [
-	['Heroes', sources.filter((s) => !match.includes(s) && !screens.includes(s))],
-	['Match', match.filter((s) => sources.includes(s))],
+	['Board', TOOLS],
 	['Screens and music', screens],
-	['Board', ['Rule check', 'Mix', 'Your files', 'Changes', 'Silent facts']],
+	['Match', match.filter((s) => sources.includes(s))],
+	['Heroes', sources.filter((s) => !match.includes(s) && !screens.includes(s)).sort()],
 ]
-const TOOLS = GROUPS.at(-1)[1]
 const where = () => {
 	const q = new URLSearchParams(location.hash.slice(1))
-	return { folder: q.get('f') ?? GROUPS[0][1][0], use: q.get('u') }
+	return { folder: q.get('f') ?? screens[0], use: q.get('u') }
 }
 const link = (folder, use) => `#${new URLSearchParams(use ? { f: folder, u: use } : { f: folder })}`
 const idsIn = (folder) => Object.keys(uses).filter((id) => uses[id].source === folder)
@@ -248,26 +258,56 @@ function buildDetail(id) {
 		ariaLabel: `Level for ${id}`,
 	})
 	parts.keep = button('Keep', () => keepSwap(id))
+	// A select value (`file:…`, `library:…`, `voice:…`, `builtin`) as a swap.
+	const swapFor = (value) => {
+		const [kind, name] = value.split(':')
+		return kind === 'file'
+			? { file: name, gain: Number(parts.level.value) }
+			: kind === 'library'
+				? { library: name, gain: shortlist(id).find((c) => c.file === name)?.gain ?? 0.5 }
+				: kind === 'voice'
+					? { voice: name }
+					: kind === 'builtin' && swap.kept[id]
+						? { builtin: true }
+						: null
+	}
 	parts.select.addEventListener('change', async () => {
-		const [kind, name] = parts.select.value.split(':')
-		const next =
-			kind === 'file'
-				? { file: name, gain: Number(parts.level.value) }
-				: kind === 'library'
-					? { library: name, gain: shortlist(id).find((c) => c.file === name)?.gain ?? 0.5 }
-					: kind === 'voice'
-						? { voice: name }
-						: kind === 'builtin' && swap.kept[id]
-							? { builtin: true }
-							: null
-		await swap.setSwap(id, next)
+		if (parts.select.value === 'shuffle') return
+		parts.candidate = swapFor(parts.select.value)
+		await swap.setSwap(id, parts.candidate)
 		play(id)
 		measureUse(id).then(draw)
+	})
+	// Add to shuffle: the sound picked in the list joins the shuffle, and each play picks one at random. The list
+	// lives here too, so auditioning the next candidate doesn't lose it.
+	parts.shuffle = el('ul')
+	parts.list = [...(swap.swapOf(id)?.shuffle ?? [])]
+	parts.find = el('input', { type: 'search', placeholder: 'Find in your library', size: 32 })
+	parts.find.setAttribute('list', 'library-files')
+	parts.find.addEventListener('change', async () => {
+		if (!library.includes(parts.find.value)) return
+		parts.candidate = { library: parts.find.value, gain: Number(parts.level.value) || 0.5 }
+		await swap.setSwap(id, parts.candidate)
+		play(id)
+		measureUse(id).then(draw)
+	})
+	parts.add = button('Add to shuffle', async () => {
+		const item = parts.candidate ?? swapFor(parts.select.value)
+		if (!swap.swapUrl(item) || parts.list.some((s) => same(s, item))) return
+		parts.list.push(item)
+		await swap.setSwap(id, { shuffle: parts.list })
+		play(id)
 	})
 	parts.level.addEventListener('change', async () => {
 		const chosen = swap.swapOf(id)
 		if (!swap.swapUrl(chosen)) return
-		await swap.setSwap(id, { ...chosen, gain: Number(parts.level.value) })
+		const gain = Number(parts.level.value)
+		await swap.setSwap(
+			id,
+			chosen.shuffle
+				? { shuffle: chosen.shuffle.map((s) => ({ ...s, gain })) }
+				: { ...chosen, gain },
+		)
 		play(id)
 		measureUse(id).then(draw)
 	})
@@ -275,6 +315,8 @@ function buildDetail(id) {
 		el('h2', {}, el('code', { textContent: id })),
 		...rest,
 		el('p', {}, el('label', {}, 'Sound ', parts.select)),
+		el('p', {}, parts.find, ' ', parts.add),
+		parts.shuffle,
 		el('p', {}, el('label', {}, 'File level ', parts.level)),
 		el('p', { textContent: 'Arrow keys through the list play each candidate.' }),
 		...(shortlist(id).length
@@ -321,14 +363,23 @@ function updateDetail() {
 	const files = swap.fileNames()
 	const kept = swap.kept[id]
 	const mine = local(id)
-	const key = JSON.stringify([files, kept])
+	const key = JSON.stringify([files, kept, mine?.shuffle?.length])
 	if (detail.files !== key) {
 		detail.files = key
 		const options = [
 			el('option', { value: 'builtin', textContent: `Built in: ${uses[id].voice ?? 'synth'}` }),
 		]
 		if (kept)
-			options.push(el('option', { value: 'kept', textContent: `Kept: ${kept.kept ?? kept.voice}` }))
+			options.push(
+				el('option', {
+					value: 'kept',
+					textContent: `Kept: ${kept.shuffle ? `shuffle of ${kept.shuffle.length}` : nameOf(kept)}`,
+				}),
+			)
+		if (mine?.shuffle && !same(mine, kept))
+			options.push(
+				el('option', { value: 'shuffle', textContent: `Shuffle of ${mine.shuffle.length}` }),
+			)
 		if (shortlist(id).length)
 			options.push(
 				el(
@@ -359,13 +410,15 @@ function updateDetail() {
 	if (document.activeElement !== detail.select)
 		detail.select.value =
 			mine && !same(mine, kept)
-				? mine.file
-					? `file:${mine.file}`
-					: mine.library
-						? `library:${mine.library}`
-						: mine.voice
-							? `voice:${mine.voice}`
-							: 'builtin'
+				? mine.shuffle
+					? 'shuffle'
+					: mine.file
+						? `file:${mine.file}`
+						: mine.library
+							? `library:${mine.library}`
+							: mine.voice
+								? `voice:${mine.voice}`
+								: 'builtin'
 				: kept
 					? 'kept'
 					: 'builtin'
@@ -373,12 +426,36 @@ function updateDetail() {
 	detail.level.value = chosen?.gain ?? 0.5
 	detail.level.disabled = !swap.swapUrl(chosen)
 	detail.keep.disabled = !mine || same(mine, kept) || (mine.builtin && !kept)
+	detail.shuffle.replaceChildren(
+		...detail.list.map((item, i) =>
+			el(
+				'li',
+				{},
+				button('▶', () => audio.sample(swap.swapUrl(item), { gain: item.gain ?? 0.5 })),
+				` ${nameOf(item)} `,
+				button('Remove', () => {
+					detail.list.splice(i, 1)
+					swap.setSwap(id, detail.list.length ? { shuffle: detail.list } : null)
+				}),
+			),
+		),
+	)
 }
 
 // Keep writes the swap into the repo (vite.config.js `soundKeep`); this browser mirrors it until a reload.
 async function keepSwap(id) {
 	const chosen = local(id)
+	if (chosen?.shuffle) {
+		for (const [i, item] of chosen.shuffle.entries()) await keepOne(id, item, i > 0)
+		return swap.setSwap(id, swap.kept[id])
+	}
+	await keepOne(id, chosen)
+	await swap.setSwap(id, swap.kept[id] ?? { builtin: true })
+}
+// Keep one sound; `append` adds it to the use's kept shuffle.
+async function keepOne(id, chosen, append = false) {
 	const q = new URLSearchParams({ use: id })
+	if (append) q.set('append', 1)
 	let body = null
 	if (chosen?.library) {
 		q.set('name', chosen.library)
@@ -399,7 +476,6 @@ async function keepSwap(id) {
 	const now = await response.json()
 	if (now) swap.kept[id] = now
 	else delete swap.kept[id]
-	await swap.setSwap(id, now ?? { builtin: true })
 }
 
 // Board tools, drawn in the middle pane.
@@ -618,6 +694,14 @@ async function measureFiles(names, items) {
 	}
 }
 
+const describeSwap = (s) =>
+	s.shuffle
+		? `shuffle of ${s.shuffle.map(describeSwap).join(' + ')}`
+		: s.builtin
+			? 'built in'
+			: s.voice
+				? s.voice
+				: `${nameOf(s)} at ${s.gain ?? 0.5}`
 function changesTool() {
 	const mixed = MIX.map(([key]) => key).filter((key) => {
 		const [head, tail] = key.split('.')
@@ -626,16 +710,12 @@ function changesTool() {
 	const lines = [
 		...mixed.map((key) => `tune.mix.${key} → ${mixValue(key)} (this browser only)`),
 		...Object.entries(swap.kept).map(
-			([id, s]) =>
-				`${id} → kept ${s.kept ? `${s.kept} at ${s.gain}` : s.voice} (in the repo, waiting for a commit)`,
+			([id, s]) => `${id} → kept ${describeSwap(s)} (in the repo, waiting for a commit)`,
 		),
 		...swap
 			.swapList()
 			.filter(([id, s]) => !same(s, swap.kept[id]) && !(s.builtin && !swap.kept[id]))
-			.map(
-				([id, s]) =>
-					`${id} → ${s.file || s.library ? `${s.file ? 'file' : 'library'} ${s.file ?? s.library} at ${s.gain ?? 0.5}` : (s.voice ?? 'built in')} (this browser only)`,
-			),
+			.map(([id, s]) => `${id} → ${describeSwap(s)} (this browser only)`),
 	]
 	return [
 		el('p', { textContent: 'Your swaps, to paste back to the sound thread.' }),

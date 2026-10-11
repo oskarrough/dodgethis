@@ -60,7 +60,8 @@ const soundKeep = {
 			const listPath = join(root, 'src/core/sfx/kept.json')
 			const dir = join(root, 'public/sfx/kept')
 			const list = JSON.parse(readFileSync(listPath, 'utf8'))
-			const old = list[id]?.kept
+			const names = (entry) => (entry?.shuffle ?? [entry]).map((s) => s?.kept).filter(Boolean)
+			const old = names(list[id])
 			const gain = Number(q.get('gain') ?? 0.5)
 			if (q.get('name')) {
 				const chunks = []
@@ -92,11 +93,17 @@ const soundKeep = {
 					writeFileSync(join(dir, file), readFileSync(temp))
 				}
 				rmSync(temp, { force: true })
-				list[id] = { kept: file, gain }
+				// append=1 adds the file to the use's shuffle instead of replacing its sound.
+				const before = q.get('append')
+					? (list[id]?.shuffle ?? (list[id]?.kept ? [list[id]] : []))
+					: []
+				list[id] = before.length
+					? { shuffle: [...before, { kept: file, gain }] }
+					: { kept: file, gain }
 			} else if (q.get('voice')) list[id] = { voice: q.get('voice') }
 			else delete list[id]
-			if (old && old !== list[id]?.kept && !Object.values(list).some((s) => s.kept === old))
-				rmSync(join(dir, old), { force: true })
+			const used = new Set(Object.values(list).flatMap(names))
+			for (const name of old) if (!used.has(name)) rmSync(join(dir, name), { force: true })
 			writeFileSync(listPath, JSON.stringify(list, null, '\t') + '\n')
 			res.setHeader('content-type', 'application/json')
 			res.end(JSON.stringify(list[id] ?? null))

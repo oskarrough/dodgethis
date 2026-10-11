@@ -213,7 +213,10 @@ function preload() {
 		tick2Url,
 		unboxUrl,
 		...BOT_TALK,
-		...Object.values(kept).map((swap) => keptUrl(swap.kept)),
+		...Object.values(kept)
+			.flatMap((swap) => swap.shuffle ?? [swap])
+			.filter((swap) => swap.kept)
+			.map((swap) => keptUrl(swap.kept)),
 	])
 		load(url).catch(() => {})
 }
@@ -441,9 +444,18 @@ export async function render(play, { seconds = 2, rate = 44100, warm = [] } = {}
 }
 
 // A use the sound board swapped or kept (./sound-swap.js) plays that instead; returns whether it did.
+// A shuffle plays one of its sounds at random, never the same one twice in a row.
+const shuffled = new Map() // use id → last pick
 export function swapped(id, point = null, gain = 1, ...extra) {
-	const swap = swapOf(id)
+	let swap = swapOf(id)
 	if (!swap) return false
+	if (swap.shuffle?.length) {
+		const count = swap.shuffle.length
+		let pick = Math.floor(Math.random() * count)
+		if (count > 1 && pick === shuffled.get(id)) pick = (pick + 1) % count
+		shuffled.set(id, pick)
+		swap = swap.shuffle[pick]
+	}
 	const url = swapUrl(swap)
 	if (url) sample(url, { gain: (swap.gain ?? 0.5) * gain, point })
 	else voiceNamed(swap.voice)?.(point, gain, ...extra)

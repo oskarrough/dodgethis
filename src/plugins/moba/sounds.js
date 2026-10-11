@@ -50,6 +50,7 @@ export function createSounds(audio) {
 	// The voice key a use plays now, so one sound plays once per tick however many uses set it off.
 	sounds.voiceOf = (id) => {
 		const swap = swapOf(id)
+		if (swap?.shuffle) return `shuffle:${id}`
 		if (swap) return swap.kept ? `kept:${swap.kept}` : swap.file ? `file:${swap.file}` : swap.voice
 		return uses[id]?.voice ?? (uses[id] ? id : undefined)
 	}

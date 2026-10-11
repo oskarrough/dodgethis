@@ -85,15 +85,18 @@ export const keptUrl = (name) => `/sfx/kept/${encodeURIComponent(name)}`
 // { library } swaps play a file from Oskar's library (sounds/osk-sfx/), which only the dev server serves.
 export const libraryUrl = (path) =>
 	`/sounds/osk-sfx/${path.split('/').map(encodeURIComponent).join('/')}`
-// The URL a file swap plays, or null for a voice swap.
+// The URL a file swap plays, or null for a voice swap. { shuffle: [swap…] } plays one of its swaps at random
+// (audio.js `swapped`); its URL here is the first one's.
 export const swapUrl = (swap) =>
-	swap?.kept
-		? keptUrl(swap.kept)
-		: swap?.library
-			? libraryUrl(swap.library)
-			: swap?.file
-				? fileUrl(swap.file)
-				: null
+	swap?.shuffle
+		? swapUrl(swap.shuffle[0])
+		: swap?.kept
+			? keptUrl(swap.kept)
+			: swap?.library
+				? libraryUrl(swap.library)
+				: swap?.file
+					? fileUrl(swap.file)
+					: null
 export const fileNames = () => [...files.keys()].sort()
 export const fileBlob = (name) => files.get(name)
 export function fileUrl(name) {
