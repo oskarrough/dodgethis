@@ -207,6 +207,12 @@ function dragToSwipe(v) {
 	v.card.addEventListener('pointercancel', end)
 }
 
+function tapped(node) {
+	node.classList.remove('tapped')
+	void node.offsetWidth
+	node.classList.add('tapped')
+}
+
 let view = null
 export function drawInspector(root) {
 	const { use } = where()
@@ -374,7 +380,18 @@ function build(root, id) {
 		v.cardNumbers.node,
 		v.cardWave,
 	)
-	v.cardWave.addEventListener('click', () => !v.dragged && candidate() && play(id))
+	// Tap either screen to hear it: the top one plays what the sound plays now, the card plays its candidate
+	// (trying it first if it's only up next).
+	v.card.addEventListener('click', (e) => {
+		if (v.dragged || e.target.closest('select, button') || !candidate()) return
+		if (deck.heard) play(id)
+		else deckStep(1)
+		tapped(v.card)
+	})
+	screen.addEventListener('click', () => {
+		play(id)
+		tapped(screen)
+	})
 	dragToSwipe(v)
 	v.keep = el('button', { type: 'button', className: 'keep', ariaLabel: 'Keep (K)' })
 	v.keep.dataset.key = 'K'
