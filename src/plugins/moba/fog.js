@@ -62,7 +62,9 @@ export function createFog(scene, bounds, brush = []) {
 
 	return {
 		seen,
-		update(sim, team) {
+		// The dim reaches past the island, so from the descent's side view it would hang over the cloud sea.
+		update(sim, team, shown = true) {
+			plane.visible = shown
 			const lane = sim.lane
 			viewers.length = radii.length = 0
 			for (const u of sim.heroes) look(u, team, f.sight.hero)

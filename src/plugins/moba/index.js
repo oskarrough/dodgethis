@@ -541,7 +541,7 @@ export default function moba(app, map) {
 					sim.tick + (sim.lane?.match.winner ? menu.endingTime() / app.clock.step : blend),
 				)
 				sim.laneView?.update(sim.lane, sim.heroes, blend, locate, step, hero.team)
-				fog?.update(sim, hero.team)
+				fog?.update(sim, hero.team, options.ready?.() ?? true)
 				const unseen = (unit) => fog && !fog.seen.has(unit.id)
 				const lineAbility = hero.cast
 					? castAbility(hero)
