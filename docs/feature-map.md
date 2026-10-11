@@ -141,7 +141,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Sounds: `sound-table.js` `uses`, `facts` (every use and fact, one line each); `sounds.js` `createSounds`, `play`; `look.js` `sounds`; `src/core/audio.js`, `src/core/music.js`
 - Sound board, swaps and kept sounds (audition, swap files into a running game, keep them): `docs/pages/sound/board.js`; `src/core/sound-swap.js` `setSwap`, `swapOf`; `src/core/audio.js` `swapped`, `ui`; `vite.config.js` `soundKeep`; `src/core/sfx/kept.json`
 - Mix bus (bus levels, caps, music duck): `src/core/audio.js` `onBus`; `src/core/tune.js` `mix`; `sound-table.js` `BUS`; `sounds.js` `playOwn`
-- Sound library and shortlists: `scripts/sound-library.js` `libraryNumbers`, `decode`; `scripts/sound-check.js` (`--files`, `--shortlist`); `src/core/sound-swap.js` `libraryUrl`, `swapUrl`
+- Sound library and shortlists (`bun run sound:sync` mirrors Dropbox, measures and rebuilds every shortlist): `scripts/sound-library.js` `libraryNumbers`, `writeShortlists`, `decode`; `scripts/sound-check.js` (`--files`, `--shortlist`); `src/core/sound-swap.js` `libraryUrl`, `swapUrl`
 - Sound numbers and rule check: `docs/pages/sound/numbers.js` `measure`, `check`; `src/core/audio.js` `render`; `scripts/sound-check.js`
 - Screen shake, hit flash, impact: `src/core/juice.js` `createJuice`; `look.js` `juice`
 - Hero and dummy death animation: `src/core/death.js` `startDeath`
