@@ -50,7 +50,7 @@ export const lobby = {
 		fillY: 0.05, // holograms and labels stand on the plate here
 		label: 'Ready', // printed beside your plate until you stand in it
 		labelGap: 0.12,
-		badge: { keyboard: 'Enter', mouse: 'Enter', gamepad: 'Start', touch: '' },
+		badge: { keyboard: '', mouse: '', gamepad: 'Start', touch: '' }, // one word on keyboard; pads still learn Start
 		// A bot's hero floats over its seat as a hologram.
 		hologram: {
 			float: 0.32,
