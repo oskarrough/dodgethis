@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { makeStyleMaterial } from '../../core/stylepass.js'
 import { tune } from './tune.js'
 import { look } from './look.js'
-import { lineReach } from './skills-view.js'
+import { lineReach, bouncedLinePath } from './skills-view.js'
 import { projectMap } from './obstacles.js'
 import { createHealthBars } from './health-bars.js'
 import { createDamageNumbers } from './damage-numbers.js'
@@ -70,6 +70,7 @@ export function createView(scene, smooth) {
 	)
 	line.visible = false
 	group.add(line)
+	const lines = [line] // Reuse one strip per leg; geometry and material belong to the first.
 	const tip = new THREE.Mesh(
 		own(new THREE.CircleGeometry(0.35, 3).rotateX(-Math.PI / 2).rotateY(Math.PI / 2)),
 		flat('cream'),
@@ -155,25 +156,46 @@ export function createView(scene, smooth) {
 		if (target) reticle.position.set(target.x, tune.map.markerLayers.reticle, target.z)
 
 		const showLine = !!(held && aim && hero)
-		line.visible = tip.visible = showLine
+		for (const leg of lines) leg.visible = false
+		tip.visible = showLine
 		if (showLine) {
 			const dx = aim.x - hero.x
 			const dz = aim.z - hero.z
 			const yaw = Math.atan2(dx, dz) + Math.PI
-			const length = lineReach(hero, yaw, lineStats, obstacles, bounds)
-			const end = projectMap(
-				hero,
-				{
-					x: hero.x - Math.sin(yaw) * length,
-					z: hero.z - Math.cos(yaw) * length,
-				},
-				bounds,
-			)
-			line.position.set(hero.x, tune.map.markerLayers.aim, hero.z)
-			line.rotation.y = yaw
-			line.scale.set(lineStats.radius * 2, 1, length)
-			tip.position.set(end.x, tune.map.markerLayers.aimTip, end.z)
-			tip.rotation.y = yaw
+			if (lineStats.bounce) {
+				const path = bouncedLinePath(hero, yaw, lineStats, obstacles, bounds)
+				for (const [i, { from, to }] of path.entries()) {
+					if (!lines[i]) {
+						lines[i] = new THREE.Mesh(line.geometry, line.material)
+						group.add(lines[i])
+					}
+					const leg = lines[i]
+					const turn = Math.atan2(to.x - from.x, to.z - from.z) + Math.PI
+					leg.visible = true
+					leg.position.set(from.x, tune.map.markerLayers.aim, from.z)
+					leg.rotation.y = turn
+					leg.scale.set(lineStats.radius * 2, 1, Math.hypot(to.x - from.x, to.z - from.z))
+					tip.position.set(to.x, tune.map.markerLayers.aimTip, to.z)
+					tip.rotation.y = turn
+				}
+				tip.visible = path.length > 0
+			} else {
+				const length = lineReach(hero, yaw, lineStats, obstacles, bounds)
+				const end = projectMap(
+					hero,
+					{
+						x: hero.x - Math.sin(yaw) * length,
+						z: hero.z - Math.cos(yaw) * length,
+					},
+					bounds,
+				)
+				line.visible = true
+				line.position.set(hero.x, tune.map.markerLayers.aim, hero.z)
+				line.rotation.y = yaw
+				line.scale.set(lineStats.radius * 2, 1, length)
+				tip.position.set(end.x, tune.map.markerLayers.aimTip, end.z)
+				tip.rotation.y = yaw
+			}
 		}
 
 		const gone = []
@@ -199,7 +221,8 @@ export function createView(scene, smooth) {
 			p.life = 0
 			p.mesh.visible = false
 		}
-		hover.visible = reticle.visible = line.visible = tip.visible = false
+		for (const leg of lines) leg.visible = false
+		hover.visible = reticle.visible = tip.visible = false
 	}
 
 	function dispose() {

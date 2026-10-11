@@ -5,6 +5,7 @@ import { tune } from './tune.js'
 import { look } from './look.js'
 import { abilityOf, castAbility } from './ability.js'
 import { heroDefinition } from './heroes.js'
+import { stepShot } from './skillshot.js'
 import { clampMap, projectMap, OBSTACLES, FLOOR, sweepObstacles, mapExit } from './obstacles.js'
 
 // Presentation reads ability identity and stats, never what happens to occupy Q/W/E.
@@ -19,6 +20,35 @@ export function lineReach(point, yaw, stats, obstacles = OBSTACLES, bounds = FLO
 		obstacles.filter((o) => !['tower', 'core'].includes(o.kind)),
 	)
 	return stats.range * Math.min(blocked ?? 1, mapExit(point, end, stats.radius, bounds) ?? 1)
+}
+
+// Trace a disposable shot through the same sweeps, cushion normals and range budget as play.
+// Bodies aren't predicted: this shows the bank route through the current cover and map edges.
+export function bouncedLinePath(point, yaw, stats, obstacles = OBSTACLES, bounds = FLOOR) {
+	const shot = {
+		x: point.x,
+		z: point.z,
+		dx: -Math.sin(yaw),
+		dz: -Math.cos(yaw),
+		radius: stats.radius,
+		range: stats.range,
+		speed: stats.speed,
+		bounce: stats.bounce,
+		damage: 0,
+		travelled: 0,
+		passed: [],
+	}
+	const legs = []
+	let remaining = shot.range / shot.speed
+	while (remaining > 0) {
+		const from = { x: shot.x, z: shot.z }
+		const result = stepShot(shot, remaining, [], 0, obstacles, bounds)
+		const to = result.cushions?.[0] ?? { x: shot.x, z: shot.z }
+		legs.push({ from, to })
+		if (!result.cushions || result.expired) break
+		remaining = result.remaining
+	}
+	return legs
 }
 
 // Ground tells lie just above the map's top print layer (and under the cursor markers);

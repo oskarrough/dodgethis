@@ -87,7 +87,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Casting, cast points, release, skill press buffer (latest press wins; stop/cancel abort and refund; abilities have no backswing): `casting.js` `casts`, `castWait`, `release`, `cancelChannel`, `stepHeroState`; `tune.js` `cast`
 - Basic attack: `combat.js` `basicAttack`; `casting.js` `aimBasic`; `tune.js` `attack`
 - Damage and hit resolution: `combat.js` `hit`; `skillshot.js` `stepShot`, `interceptShot`
-- Skillshot shapes and sweeps: `skillshot.js` `stepShot`, `closest`; `obstacles.js` `sweepHit`, `sweepObstacles`; `skills-view.js` `lineReach`
+- Skillshot shapes and sweeps: `skillshot.js` `stepShot`, `closest`; `obstacles.js` `sweepHit`, `sweepObstacles`; `skills-view.js` `lineReach`, `bouncedLinePath` (held Bank preview traces the sim's `stepShot`); `view.js` held line legs
 - Ability telegraphs for enemies (ground line tell): `skills-view.js` `createSkillsView`; `look.js` `abilityView`; `heroes.md`
 - Fletcher, ranged poke. Q Loose (arrow shot), W Rain (zone), E Vault (dash): `abilities/{loose,vault,rain}/`, `heroes/fletcher/`; `heroes.md`
 - Mitts, keeper. Q Toss (throw caught shots), W Catch (stance), E Dive (dash): `heroes/mitts/mitts.js`, `abilities/{toss,catch,dive}/`; glove and pocket poses in `heroes/mitts/mitts-view.js` `animate`; the catch window's fan in `abilities/catch/catch.js` `look`
