@@ -600,23 +600,23 @@
 }
 .moba-banner {
 	position: fixed;
-	top: 28%;
-	left: 50%;
-	transform: translateX(-50%);
-	/* A readout like the top bar: smooth cream pill, thin line, soft shadow; the shout is in the type. */
-	padding: 8px 22px 9px;
-	background: var(--ui-cream);
-	border: 1.5px solid var(--ui-text);
-	border-radius: 999px;
-	box-shadow: 0 4px 14px rgba(38, 68, 95, 0.25);
+	top: 78px;
+	right: 18px;
+	/* A kill feed like League's: bare lines, right-aligned under the corner buttons, clear of the unit frame. */
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: 2px;
 	z-index: 5;
-	font: 22px / 1.2 var(--ui-font);
-	letter-spacing: 0.01em;
-	color: var(--ui-text);
+	pointer-events: none;
+	font: 17px / 1.25 var(--ui-font);
+	color: var(--ui-cream);
+	-webkit-text-stroke: 3px var(--ui-text);
+	paint-order: stroke fill;
 	white-space: nowrap;
 }
-.moba-banner[hidden] {
-	display: none;
+.moba-banner p {
+	margin: 0;
 }
 
 /* --- Tooltip card --- */

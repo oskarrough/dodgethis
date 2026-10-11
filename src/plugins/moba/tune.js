@@ -239,7 +239,8 @@ export const tune = {
 	scripted: { think: 0.1, tell: 0.3, retreat: 0.35, recover: 0.9, file: 2, hold: 3 },
 	proof: { batch: 3600, trace: 128 },
 	hud: {
-		bannerLife: 2.5,
+		bannerLife: 4,
+		bannerLines: 4,
 		ending: 1.5,
 		recapSources: 3,
 		hoverDelay: 0.25, // a world unit's nameplate opens after the cursor rests this long

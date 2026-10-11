@@ -198,8 +198,9 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 		const left = el('span', 'left', slot)
 		return { action, slot, icon, key, left, deniedFor: 0, fraction: -1 }
 	})
+	// Kill and objective calls stack top right, newest last, each line on its own clock.
 	const banner = el('div', 'moba-banner')
-	banner.hidden = true
+	banner.setAttribute('aria-live', 'polite')
 	// The lobby is for walking and picking; the hero frame only earns its corner in a match.
 	document.body.append(top, root, ...(lobby ? [] : [unitFrame]), banner)
 	const tip = createTooltip(document.body)
@@ -212,7 +213,7 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 	const plateBar = el('i', '', plate)
 	const plateHp = el('b', '', plate)
 	document.body.append(plate)
-	let bannerLeft = 0
+	const lines = []
 	let lastSwap = null
 
 	// `moved` marks a real pointer move since the last frame: a unit walking under a still cursor opens nothing.
@@ -562,9 +563,9 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 
 	return {
 		banner(message, seconds = tune.hud.bannerLife) {
-			banner.textContent = message
-			banner.hidden = false
-			bannerLeft = seconds
+			lines.push({ node: el('p', '', banner), left: seconds })
+			lines.at(-1).node.textContent = message
+			while (lines.length > tune.hud.bannerLines) lines.shift().node.remove()
 		},
 		// A press on cooldown outside the buffer: the icon flashes for 60 ms.
 		deny(action) {
@@ -672,7 +673,8 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 					`Your team ${alive(localTeam)} up, ${kills[localTeam]} kills · ${clock(elapsed)} · Enemy ${alive(enemy)} up, ${kills[enemy]} kills · wave ${Math.ceil(Math.max(0, nextWave ?? 0))}s${ballPop != null ? ` · Ball pops in ${Math.ceil(ballPop)}s` : nextBall === undefined ? '' : ` · Ball ${Math.ceil(ballLeft)}s`}`,
 				)
 			}
-			if (bannerLeft > 0 && (bannerLeft -= dt) <= 0) banner.hidden = true
+			for (let i = lines.length - 1; i >= 0; i--)
+				if ((lines[i].left -= dt) <= 0) lines.splice(i, 1)[0].node.remove()
 
 			const level = hero?.level ?? teams?.[localTeam].level ?? 1
 			data(root, 'team', localTeam)
