@@ -8,6 +8,7 @@ import { createSkillsView } from './skills-view.js'
 import { createBallView } from './ball-view.js'
 import { createFollow, stepCamera } from './follow.js'
 import { createHud, matchFrame } from './hud.js'
+import { mapLayout } from './maps/index.js'
 import { createSounds } from './sounds.js'
 import { createFeedback } from './feedback.js'
 import { createStamps } from './stamps.js'
@@ -42,7 +43,8 @@ export function mobaReplay(app) {
 			const view = createView(scene, run.smooth)
 			const skillsView = createSkillsView(scene)
 			const ballView = createBallView(scene)
-			const hud = createHud()
+			// Replays play Overthrow (tapes carry no map yet); its layout carries the late mark.
+			const hud = createHud({ layout: mapLayout() })
 			const juice = createJuice(scene)
 			const stamps = createStamps(scene)
 			const sfx = createSounds(app.audio)
