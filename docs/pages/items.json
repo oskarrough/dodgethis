@@ -1,5 +1,16 @@
 [
 	{
+		"at": "2026-10-11T11:29:46.000Z",
+		"title": "Sound board",
+		"ask": "Can you hear every sound, and does swapping in your own files work for you?",
+		"status": "To review",
+		"decision": "",
+		"media": [],
+		"links": [],
+		"thread": "thr_hvktytzm83",
+		"page": "sound/"
+	},
+	{
 		"at": "2026-10-11T11:27:20.618Z",
 		"title": "Pause menu vibe, quieter",
 		"ask": "Is PAUSED quiet enough, and does Esc toggle fast now?",
