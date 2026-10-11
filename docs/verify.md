@@ -11,7 +11,7 @@ Pick the cheapest proof that answers the question.
 
 `bun run check` from the repository root runs lint, formatting and tests in parallel, printing only failures. Iterate with `bun test <file>`; tests cover logic and contracts, not tuning, timing budgets or visuals. `bun run test:slow` adds the long agent-session proof. `bun run build` also runs the fast check. Gameplay and replica tests use real Rapier worlds; transport failure tests use fake PeerJS connections and clocks.
 
-`bun run play:headless --help` controls a MOBA seat and saves a replay; see [agent play](moba-agents.md). `bun run profile:dodgeball [preset] [seed]` measures physics and AI tick time (defaults: 20v20, seed 42), not rendering or FPS.
+`bun run profile:dodgeball [preset] [seed]` measures physics and AI tick time (defaults: 20v20, seed 42), not rendering or FPS.
 
 `bun run simulate --summary` plays headless bot matches through `createAgentMatch`, printing tables without logs. Use simulations for bot behavior and balance, before writing a probe script, a `git archive` baseline or an env-var hack. Name the question first; a short play proof is cheaper for a local mechanic or human interaction. Bot-only samples cannot prove human winnability or how bots treat a human seat; an idle seat is no human.
 
@@ -32,6 +32,14 @@ Pick the cheapest proof that answers the question.
 `bun run simulate --logs runs` analyses completed `.jsonl` logs in gitignored `runs/<date>/` with the DuckDB CLI. `--logs` accepts a recursive directory, single file or quoted glob. Facts include effective damage (HP removed, excluding overkill), actor seat/kit, ability and position, retaining the original fact. Match rows record roster, result, simulation id, commit and tuning fingerprint; timeouts have no winner and don't enter win rates, but count in match length. `createAgentMatch` exposes `logRows` or streams through `onLog` without retaining rows. [DuckDB queries](../scripts/balance.sql) separate results by simulation, commit, tuning fingerprint, difficulty and map, without pooling; legacy logs lacking provenance stay separate. Kill participation includes the killer or a damaging hit in the victim's preceding ten seconds.
 
 For a one-off, use `bun -e 'const { bootMoba } = await import("./tests/moba-harness.js"); const h = bootMoba(); try { h.step(60); console.log(h.sim.snapshot()); } finally { h.dispose(); }'`, not a new harness. `bootMoba` boots the sim, `shot()` fires a test shot, `sim.launchShot(hero, dir, stats, origin)` a real one. Floor changes need movement, wall contact and dashes in lobby and match; short bot timings measure simulation cost, not displayed FPS or balance. Record and replay on the same build.
+
+### Headless play
+
+Commands and actions: `bun run play:headless --help`. Protocol: [agents.js](../src/plugins/moba/agents.js).
+
+Use a fresh session name per match. Detached sessions stay frozen between calls; invalid JSON/actions can be retried without advancing time. With several agents, reply to each `act <seat>` before time advances.
+
+Replay uses the CLI's WASM build and validates its final state.
 
 ## Browser proofs
 
