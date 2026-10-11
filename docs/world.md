@@ -17,7 +17,7 @@ Written for the retired lost-property setting: the kits and voices stand, the or
 
 - **Fletcher** (Long Grass): a quiver that went over after its arrows, one summer at a time. Restless, cheerful, never where you left him. "Thirty-seven arrows went over that fence. I've found three." "Seen one? Green fletching. Answers to nothing."
 - **Mitts** (Cupboard): the catcher's mitt that missed the one ball that went over, and went after it. She hasn't dropped anything since. "I dropped one once. Once." On a return: "Ta. Have it back."
-- **Carom** (Cupboard): a squash racket from a basement court, raised in a room with four walls and no sky. Brilliant by a pillar, nervous in the open road. "Walls are just friends who stand still." "Too much sky. Nothing to argue with."
+- **P. Pong** (Cupboard): a squash racket from a basement court, raised in a room with four walls and no sky. Brilliant by a pillar, nervous in the open road. "Walls are just friends who stand still." "Too much sky. Nothing to argue with."
 - **Skip** (Window): a life-size cutout of a captain from a sports-shop window, nine years a picture of someone who plays. Out, not gone, is what a cutout is for. "I pick the last one first." On Back in!: "Nobody sits out on my team."
 
 ## The next six
@@ -31,4 +31,4 @@ The roster caps at ten. Ranked by build order: what the four lack first, and che
 5. **Taw** (Drain, bruiser): the shooter marble, old money. Draws a ring, and whatever he knocks out of it he keeps for a moment: a shield, a pocketed shot, the Ball.
 6. **Shuttle** (Long Grass, assassin): a garden shuttlecock that always lands nose-first; dives on an arc, and landing on a hero resets the dive.
 
-Yo-yo and Mascot come next because nobody in the four can start a fight: Mitts holds a line, Carom finishes, Skip saves. A hook is the purest dodge test there is, one straight shot with a long tell, and Mascot is the body a 5v5 needs to stand behind. Both reuse the straight shot, the dash and the swap. Taw touches Pocket, shields and the Ball at once, and Shuttle doubles Carom's job with reset maths on top, so they go last. Oskar: the order.
+Yo-yo and Mascot come next because nobody in the four can start a fight: Mitts holds a line, Pong finishes, Skip saves. A hook is the purest dodge test there is, one straight shot with a long tell, and Mascot is the body a 5v5 needs to stand behind. Both reuse the straight shot, the dash and the swap. Taw touches Pocket, shields and the Ball at once, and Shuttle doubles Pong's job with reset maths on top, so they go last. Oskar: the order.

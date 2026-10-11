@@ -91,7 +91,42 @@ export function createSkillsView(scene) {
 		}
 		positions.needsUpdate = true
 	}
-	const posts = new Map() // placeholder Cushion posts, keyed by obstacle
+	const nets = new Map() // Cushion nets, keyed by cast: `cushion-<hero>-<tick>`
+	const wood = makeStyleMaterial('driftwood', { flat: true })
+	const netPost = new THREE.CylinderGeometry(1, 1, 1, 8).translate(0, 0.5, 0)
+	const netBox = new THREE.BoxGeometry(1, 1, 1).translate(0, 0.5, 0)
+	const netView = {
+		postRadius: 0.08,
+		postHeight: 0.75,
+		low: 0.18,
+		high: 0.62,
+		tape: 0.07,
+		mesh: 0.25,
+	}
+	// A short net strung between the cast's two end posts, built along +x.
+	function buildNet(a, b) {
+		const n = netView
+		const net = new THREE.Group()
+		const length = Math.hypot(b.x - a.x, b.z - a.z)
+		net.position.set((a.x + b.x) / 2, GROUND, (a.z + b.z) / 2)
+		net.rotation.y = -Math.atan2(b.z - a.z, b.x - a.x)
+		const box = (material, x, y, w, h, d) => {
+			const m = mesh(netBox, material, net)
+			m.position.set(x, y, 0)
+			m.scale.set(w, h, d)
+		}
+		box(cream, 0, n.low, length, n.high - n.low, 0.03)
+		box(ink, 0, n.high, length, n.tape, 0.05)
+		const strings = Math.max(1, Math.round(length / n.mesh))
+		for (let i = 1; i < strings; i++)
+			box(ink, (i / strings - 0.5) * length, n.low, 0.025, n.high - n.low, 0.04)
+		for (const side of [-1, 1]) {
+			const p = mesh(netPost, wood, net)
+			p.position.x = (side * length) / 2
+			p.scale.set(n.postRadius, n.postHeight, n.postRadius)
+		}
+		return net
+	}
 	const tells = new Map(),
 		enemyTells = new Map(),
 		catchTells = new Map(),
@@ -203,18 +238,26 @@ export function createSkillsView(scene) {
 				heldArrow.scale.set(1, 1, Math.hypot(end.x - hero.x, end.z - hero.z))
 			}
 		}
-		// Placeholder look for Cushion: a gold disc per post until the hero redesign brings a wall.
-		for (const [o, post] of posts)
-			if (!obstacles.includes(o)) {
-				group.remove(post)
-				posts.delete(o)
-			}
+		// Cushion: one net per cast, end post to end post.
+		const casts = new Map()
 		for (const o of obstacles) {
-			if (o.kind !== 'cushion' || posts.has(o)) continue
-			const post = mesh(disc, gold)
-			post.position.set(o.x, GROUND + 0.004, o.z)
-			post.scale.setScalar(o.r)
-			posts.set(o, post)
+			if (o.kind !== 'cushion') continue
+			const key = o.id.replace(/-\d+$/, '')
+			if (!casts.has(key)) casts.set(key, [])
+			casts.get(key).push(o)
+		}
+		for (const [key, net] of nets)
+			if (!casts.has(key)) {
+				group.remove(net)
+				nets.delete(key)
+			}
+		for (const [key, list] of casts) {
+			if (nets.has(key)) continue
+			const order = (o) => Number(o.id.slice(key.length + 1))
+			list.sort((p, q) => order(p) - order(q))
+			const net = buildNet(list[0], list.at(-1))
+			group.add(net)
+			nets.set(key, net)
 		}
 		const live = new Set(zones.map((z) => z.id))
 		const r = look.abilityView.rain

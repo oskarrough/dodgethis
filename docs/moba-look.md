@@ -72,7 +72,7 @@ Tell the tiers apart from above. Walls are weathered stone; team colour goes onl
 - A size ladder: minions at 0.6, heroes and brutes at 1.0. Every unit stands on a flat team foot disc with an ink rim; yours gets a cream outer ring.
 - Creatures with an edge: every silhouette has at least one hard angle (horn, beak, blade, notched ear, hooked claw) and a planted, bottom-heavy stance. Eyes are small and set under a brow line; no blush, no glossy highlights. Materials read as hide, bark, stone, cloth, bone or enamel, worn at the edges. Proportion may be cute (big head, small feet); material and expression may not.
 - Minion roles show in one prop visible from above (shield, staff, horned hood, stone helm). Minions are instanced; hit flash goes per instance in `instanceColor`.
-- Hero silhouettes are judged at the 58° match camera at one shared scale: Fletcher a slim circle with three quiver arrows tilted back, Mitts a low rounded square with big glove fingers, Carom a forward triangle and open racket, Skip a 1.3 m bar and megaphone ([moba-heroes.md](moba-heroes.md)). Recasting them for the isles keeps these silhouettes.
+- Hero silhouettes are judged at the 58° match camera at one shared scale: Fletcher a slim circle with three quiver arrows tilted back, Mitts a low rounded square with big glove fingers, P. Pong a forward triangle and open paddle, Skip a 1.3 m bar and megaphone ([moba-heroes.md](moba-heroes.md)). Recasting them for the isles keeps these silhouettes.
 - Screen-sized, camera-facing HP bars with thick ink borders, team fills, dark missing HP and countable ticks (`health-bars.js`). Check in grayscale: outline and foot disc alone separate hero, minion and structure.
 
 ## Ability VFX, hits and deaths

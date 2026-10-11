@@ -32,7 +32,7 @@ Agents add a line when they need a call; the orchestrator removes it once answer
 
 - Balance from the farm once bots play every kit properly; Mitts tuning.
 - Online MOBA through the existing rooms, then the lobby's online seats.
-- Carom and Skip, then Yo-yo and Mascot: six built heroes, ten designed at most.
+- Pong and Skip, then Yo-yo and Mascot: six built heroes, ten designed at most.
 - Juice and sound everywhere; the frozen briefs come back one by one.
 - The world shows up in the art: Overthrow's day isles over cloud, Flagfall's night garden, keeps ([moba-look.md](moba-look.md)).
 

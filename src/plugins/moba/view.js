@@ -85,16 +85,21 @@ export function createView(scene, smooth) {
 	const boltGeometry = own(new THREE.CapsuleGeometry(0.12, 0.7, 4, 8).rotateX(Math.PI / 2))
 	const trailGeometry = own(new THREE.BoxGeometry(0.1, 0.06, 1).translate(0, 0, -0.5))
 	const boltMaterial = flat('ammo')
+	// Bank's celluloid ball: cream, so gold stays the Ball's and the ammo's.
+	const celluloidGeometry = own(new THREE.SphereGeometry(0.2, 12, 8))
+	const celluloidMaterial = flat('cream')
 	const trailMaterial = flat('cream')
 	const bolts = new Map() // shot id → { mesh, trail, shot, from, pose, unsmooth }
 	const UP = new THREE.Vector3(0, 1, 0)
 	function bolt(shot, from) {
 		const mesh = new THREE.Group()
 		const body = new THREE.Mesh(
-			boltGeometry,
-			shot.slot === 'primary' || ['tower', 'ranged', 'wizard'].includes(shot.slot)
-				? barColors[shot.team]
-				: boltMaterial,
+			shot.ability === 'bank' ? celluloidGeometry : boltGeometry,
+			shot.ability === 'bank'
+				? celluloidMaterial
+				: shot.slot === 'primary' || ['tower', 'ranged', 'wizard'].includes(shot.slot)
+					? barColors[shot.team]
+					: boltMaterial,
 		)
 		if (shot.slot === 'primary') body.scale.setScalar(tune.attack.visualScale)
 		if (shot.slot === 'tower') body.scale.setScalar(look.laneView.orbScale)

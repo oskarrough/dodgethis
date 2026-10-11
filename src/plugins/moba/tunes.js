@@ -9,8 +9,8 @@ import abilities_rain from './abilities/rain/tune.js'
 import abilities_swap from './abilities/swap/tune.js'
 import abilities_toss from './abilities/toss/tune.js'
 import abilities_vault from './abilities/vault/tune.js'
-import heroes_carom from './heroes/carom/tune.js'
 import heroes_mitts from './heroes/mitts/tune.js'
+import heroes_pong from './heroes/pong/tune.js'
 import heroes_skip from './heroes/skip/tune.js'
 import maps_flagfall from './maps/flagfall/tune.js'
 import maps_overthrow from './maps/overthrow/tune.js'
@@ -28,8 +28,8 @@ export const abilities = {
 	vault: abilities_vault,
 }
 export const heroes = {
-	carom: heroes_carom,
 	mitts: heroes_mitts,
+	pong: heroes_pong,
 	skip: heroes_skip,
 }
 export const maps = {
