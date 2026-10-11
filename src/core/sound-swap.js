@@ -1,14 +1,11 @@
 // Sound swaps: the sound board (docs/pages/sound/) replaces the sound of one use, and the game open in another tab
 // hears it on its next event. A swap is { voice } (another built-in sound), { library, gain } (a file from Oskar's
-// library), { file, gain } (a file dropped on the board), { kept, gain } or { shuffle: [swap…] }. Local swaps and
-// dropped files live in this browser's IndexedDB; kept swaps ship: Keep copies the file to public/sfx/kept/ and
-// writes the swap into sfx/kept.json, the layer under local swaps.
+// library), { kept, gain } or { shuffle: [swap…] }. Local swaps live in this browser's IndexedDB; kept swaps ship:
+// Keep copies the file to public/sfx/kept/ and writes the swap into sfx/kept.json, the layer under local swaps.
 import kept from './sfx/kept.json'
 
 const DB = 'dodgethis-sound'
 const swaps = new Map() // use id → swap
-const files = new Map() // file name → Blob
-const urls = new Map() // file name → object URL
 const listeners = new Set()
 let mix = {} // the board's mix sliders, over tune.mix
 const channel = globalThis.window && globalThis.BroadcastChannel ? new BroadcastChannel(DB) : null
@@ -27,7 +24,7 @@ function open() {
 		const r = indexedDB.open(DB, 1)
 		r.onupgradeneeded = () => {
 			r.result.createObjectStore('swaps')
-			r.result.createObjectStore('files')
+			r.result.createObjectStore('files') // the board's old dropped files, emptied on load
 		}
 		r.onsuccess = () => resolve(r.result)
 		r.onerror = () => resolve(null) // private modes: swaps stay off, the game plays its own sounds
@@ -51,23 +48,21 @@ async function write(store, key, value) {
 }
 
 async function reload() {
-	const [nextSwaps, nextFiles] = await Promise.all([all('swaps'), all('files')])
+	const nextSwaps = await all('swaps')
 	swaps.clear()
 	mix = {}
 	for (const [id, swap] of nextSwaps)
 		if (id === '#mix') mix = swap
-		else swaps.set(id, swap)
-	for (const name of files.keys())
-		if (!nextFiles.some(([n]) => n === name)) {
-			URL.revokeObjectURL(urls.get(name))
-			urls.delete(name)
-		}
-	files.clear()
-	for (const [name, blob] of nextFiles) files.set(name, blob)
+		else if (!swap.file) swaps.set(id, swap) // a swap to an old dropped file has nothing left to play
 	for (const fn of listeners) fn()
 }
 
-export const loaded = reload().catch(() => {})
+// Dropped files are gone from the board (the library replaces them): free what they took.
+async function clearFiles() {
+	const d = await open()
+	if (d) await request(d.transaction('files', 'readwrite').objectStore('files').clear())
+}
+export const loaded = Promise.all([reload(), clearFiles()]).catch(() => {})
 channel?.addEventListener('message', () => reload().catch(() => {}))
 
 async function changed() {
@@ -95,17 +90,7 @@ export const swapUrl = (swap) =>
 			? keptUrl(swap.kept)
 			: swap?.library
 				? libraryUrl(swap.library)
-				: swap?.file
-					? fileUrl(swap.file)
-					: null
-export const fileNames = () => [...files.keys()].sort()
-export const fileBlob = (name) => files.get(name)
-export function fileUrl(name) {
-	const blob = files.get(name)
-	if (!blob) return null
-	if (!urls.has(name)) urls.set(name, URL.createObjectURL(blob))
-	return urls.get(name)
-}
+				: null
 // The sounds a swap may name: core sfx and each plugin's voices register here.
 const voices = {}
 export const registerVoices = (named) => Object.assign(voices, named)
@@ -126,16 +111,3 @@ export async function setMix(values) {
 	await write('swaps', '#mix', values)
 	await changed()
 }
-// Files keep their folder path (a folder pick's webkitRelativePath), so a whole folder can go at once.
-export async function addFiles(list) {
-	for (const file of list) await write('files', file.webkitRelativePath || file.name, file)
-	await changed()
-}
-export async function removeFiles(names) {
-	for (const name of names) {
-		await write('files', name, null)
-		for (const [id, swap] of swaps) if (swap.file === name) await write('swaps', id, null)
-	}
-	await changed()
-}
-export const removeFile = (name) => removeFiles([name])

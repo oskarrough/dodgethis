@@ -59,12 +59,11 @@ document.body.append(
 )
 const same = (a, b) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null)
 const local = (id) => swap.swapList().find(([key]) => key === id)?.[1]
-const nameOf = (s) => s.kept ?? s.file ?? s.library ?? s.voice
+const nameOf = (s) => s.kept ?? s.library ?? s.voice
 function playing(id) {
 	const s = swap.swapOf(id)
 	if (s?.shuffle) return `shuffle of ${s.shuffle.length}: ${s.shuffle.map(nameOf).join(', ')}`
 	if (s?.kept) return `kept ${s.kept}`
-	if (s?.file) return `file ${s.file}`
 	if (s?.library) return `library ${s.library}`
 	if (s?.voice) return s.voice
 	return uses[id].music ? 'synth music' : `built in (${uses[id].voice ?? 'synth'})`

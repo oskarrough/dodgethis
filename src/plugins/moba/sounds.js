@@ -51,7 +51,8 @@ export function createSounds(audio) {
 	sounds.voiceOf = (id) => {
 		const swap = swapOf(id)
 		if (swap?.shuffle) return `shuffle:${id}`
-		if (swap) return swap.kept ? `kept:${swap.kept}` : swap.file ? `file:${swap.file}` : swap.voice
+		if (swap)
+			return swap.kept ? `kept:${swap.kept}` : swap.library ? `library:${swap.library}` : swap.voice
 		return uses[id]?.voice ?? (uses[id] ? id : undefined)
 	}
 	sounds.play = (id, ...rest) => playUse(audio, id, ...rest)
