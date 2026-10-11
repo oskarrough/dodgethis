@@ -1,6 +1,6 @@
 # MOBA heroes
 
-The next three heroes after the Fletcher, for [moba-plan.md](moba-plan.md). Mitts comes from [moba-ideas.md](moba-ideas.md); P. Pong and Skip are new. Each one takes a dodgeball rule the Fletcher doesn't use: catch, ricochet, out-not-gone. Slice 1 is built: plugin-local definitions, Fletcher's retuned kit and all four silhouettes. Mitts is playable in practice with Pocket, Toss, Catch and Dive. Skip remains an art-only stand-in. R abilities wait for M5, like Volley.
+The next three heroes after the Fletcher, for [moba.md](moba.md). Mitts comes from [moba-ideas.md](moba-ideas.md); P. Pong and Skip are new. Each one takes a dodgeball rule the Fletcher doesn't use: catch, ricochet, out-not-gone. Slice 1 is built: plugin-local definitions, Fletcher's retuned kit and all four silhouettes. Mitts is playable in practice with Pocket, Toss, Catch and Dive. Skip remains an art-only stand-in. R abilities wait for M5, like Volley.
 
 **Dodge deadline.** The latest tick a centred target at 8 m can start moving and still clear, measured in the stepper (projectile radius, edge contact and tick order included), not derived by formula. The host needs 0.2 s of it; at 100 ms RTT a guest loses 0.12 s on average and 0.21 s at worst. So every dodgeable shot here has a deadline of at least 0.45 s, and most of it is windup that shows the hitbox. Measured on this design: Toss 0.55, Bank 0.60, Trick Shot 0.67, Pass 0.48, touchline throw 0.82 s.
 

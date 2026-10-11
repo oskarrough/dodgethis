@@ -1,6 +1,6 @@
 # World
 
-What the MOBA is about, under the mechanics, worked out against [moba-heroes.md](moba-heroes.md), [moba-look.md](moba-look.md), [moba-front.md](moba-front.md) and [moba-lobby.md](moba-lobby.md). Nothing here changes a number. **Settled** means it reads straight off what's built or Oskar's direction (2026-10-10); **Oskar** marks a choice that's his. The schoolyard setting (Lost Property, the Yard, sandcastles) is retired.
+What the MOBA is about, under the mechanics, worked out against [moba-heroes.md](moba-heroes.md), [moba-look.md](moba-look.md) and [moba.md](moba.md). Nothing here changes a number. **Settled** means it reads straight off what's built or Oskar's direction (2026-10-10); **Oskar** marks a choice that's his. The schoolyard setting (Lost Property, the Yard, sandcastles) is retired.
 
 ## The setting
 

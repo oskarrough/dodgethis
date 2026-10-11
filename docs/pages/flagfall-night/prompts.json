@@ -2,7 +2,7 @@
 	"generator": "Built-in image generator",
 	"date": "2026-10-10",
 	"camera": "Overthrow round 2: 58° downward gameplay angle, midfield framing revealing both rims and front cliff; third frame pans to south shore +8 and crops closer at the same angle.",
-	"geometryAuthority": "../../moba-map-2.md, checked against src/plugins/moba/maps/flagfall.js and current tune.flagfall (scale1,104×32, lane paths z±12.5, four yard pillars x±6,z±2,r0.8). Current code supersedes stale introductory dimensions and extra tower pillars in map document.",
+	"geometryAuthority": "src/plugins/moba/maps/flagfall/flagfall-layout.js and src/plugins/moba/maps/flagfall/flagfall-tune.js (tune.flagfall; scale1,104×32, lane paths z±12.5, four yard pillars x±6,z±2,r0.8).",
 	"ball": "Included as requested for concept readability; the shipped Flagfall recipe currently omits the Ball and capture-the-flag objective.",
 	"frames": [
 		{

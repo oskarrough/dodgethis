@@ -7,7 +7,7 @@ import { tune } from './tune.js'
 import { look } from './look.js'
 import { flagfallLayoutTune } from './maps/flagfall/flagfall-layout.js'
 
-// Moba's fact switch (docs/moba-plan.md, "Hit feedback"): each fact becomes juice-kit verbs, sfx, rumble, pings and HUD.
+// Moba's fact switch (docs/feature-map.md, "Match: view, feedback, sound"): each fact becomes juice-kit verbs, sfx, rumble, pings and HUD.
 // `local` is this machine's participant id; facts about anyone else get the quieter version.
 export function createFeedback({
 	juice,

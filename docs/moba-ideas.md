@@ -1,6 +1,6 @@
 # MOBA ideas
 
-Pitches for `?mode=moba` beyond [moba-lane.md](moba-lane.md). Nothing here is planned yet. The rule for picking: it has to come out of dodgeball, the playground or a cartoon, and it has to make a moment somebody tells a friend about.
+Pitches for `?mode=moba` beyond [moba.md](moba.md). Nothing here is planned yet. The rule for picking: it has to come out of dodgeball, the playground or a cartoon, and it has to make a moment somebody tells a friend about.
 
 ## Build these first
 

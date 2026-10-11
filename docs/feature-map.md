@@ -8,9 +8,9 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 
 ## Shell and splash
 
-- Splash with map tiles (Overthrow, Flagfall), their illustrations in `public/splash/`: `front/index.js` `mobaFront`; `front/backdrop.js` `createBackdrop`; `front/tune.js` `tile`, `title`, `dusk`; `moba-front.md`
+- Splash with map tiles (Overthrow, Flagfall), their illustrations in `public/splash/`: `front/index.js` `mobaFront`; `front/backdrop.js` `createBackdrop`; `front/tune.js` `tile`, `title`, `dusk`; `moba.md`
 - Card skin for the splash cards and the lobby hero strip (default `painted`; `wash`, `ink`, `stone` via `?skin=`): `front/skin.js` `applySkin`, `paintedCard`; `front/skin.css` (`.skin-card`, `.skin-sheet`, `.skin-title`); art in `public/splash/`; `front/tune.js` `skin`
-- Dodgeball bonus tag under the tiles: `front/index.js` (`bonus` const, `.front-bonus`); `moba-front.md`, `roadmap.md`
+- Dodgeball bonus tag under the tiles: `front/index.js` (`bonus` const, `.front-bonus`); `moba.md`, `roadmap.md`
 - Splash keyboard and pad focus, deny shake, back button: `front/controls.js` `createControls`; `front/tune.js` `deny`, `back`, `move`, `enter`
 - Stickers, mute button, corner row, online panel, shell CSS: `index.html`; `src/core/browser.js` `createBrowserApp`
 - Boot error screen: `src/core/browser.js` `reportBootError`
@@ -21,18 +21,18 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 
 ## Lobby
 
-- Lobby screen (walk around, pick, ready, back): `lobby.js` `createLobby`; `tune.js` `lobby`; `moba-lobby.md`
+- Lobby screen (walk around, pick, ready, back): `lobby.js` `createLobby`; `tune.js` `lobby`; `moba.md`
 - Back and Play online, the top-left row in both modes' lobbies: `src/core/corner-nav.js` `createCornerNav`; `index.html` `.corner-nav`; used by `lobby.js` `createLobby` and `src/plugins/dodgeball/index.js`
 - Seats, roster, ready state (1 s fill; stepping out cancels): `lobby-state.js` `createReadySeats`; `lobby-heroes.js` `createLobbyHeroes`; `tune.js` `lobby.ready`
 - Ready plates inlaid in the saucer's glaze, the Ready label beside yours, the glaze fill: `lobby-props.js` `createLobbyProps`, `plate`; `tune.js` `lobby.ready`; `lobby.js` `createLobby`
 - Lobby floor, the glazed saucer in its magnetic cradles: `lobby-floor.js` `createLobbyFloor`, `saucerShape`; its elliptical collider: `obstacles.js` `buildColliders` (`island.round`); `maps/lobby/lobby-layout.js` `lobbyLayout`; `maps/lobby/lobby-view.js` glaze; `tune.js` `lobby.floor`
 - Weather bowl, the next map turning in miniature under a sky cap, with its label: `lobby-bowl.js` `createWeatherBowl`; `tune.js` `lobby.bowl`
-- Hero stands and the hero strip (pick a hero): `lobby-heroes.js` `heroStands`, `createHeroStrip`; `tune.js` `lobby.pick`
+- Hero stands and the hero strip (pick a hero; shots already out finish after a swap): `lobby-heroes.js` `heroStands`, `createHeroStrip`; `tune.js` `lobby.pick`
 - Hero numbers panel (stats, level slider): `front/numbers.js` `createNumbers`; `front/stats.js` `heroStats`, `numberLines`; `tune.js` `lobby.inspect`
 - Difficulty gallery, three standees you shoot to pick: `lobby-props.js` `createDifficultyGallery`; `tune.js` `lobby.gallery`
 - Horseshoe magnets with sleepy, calm and angry faces: `lobby-magnets.js` `createMagnets`, `createFaceKit`
 - Lobby props in the scene (stands, magnets, ready marks): `lobby-props.js` `createLobbyProps`; `tune.js` `lobby.marks`
-- Lobby practice dummies: `dummy-view.js` `dressDummy`; mechanic `mechanics/dummies/` (dressed through `mechanics/dummies/dummies-view.js`); `tune.js` `dummies`, `lobby.practice`; `look.js` `dummyView`
+- Lobby practice dummies (players can't hit each other): `dummy-view.js` `dressDummy`; mechanic `mechanics/dummies/` (dressed through `mechanics/dummies/dummies-view.js`); `tune.js` `dummies`, `lobby.practice`; `look.js` `dummyView`
 - Lobby camera (fits the whole saucer) and intro swoop: `lobby.js` `createLobby` (`fitSaucer`); `lobby-floor.js` `saucerExtent`; `lobby-bowl.js` `bowlExtent`; `tune.js` `lobby.camera`, `lobby.intro`
 - Lobby HUD (tooltips on heroes): `lobby.js`; `hud.js` `createHud({ lobby: true })`; `tune.js` `lobby.hud`
 - Fall off the floor and respawn: `lobby.js`; `tune.js` `lobby.fall`, `lobby.respawn`
@@ -41,7 +41,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 
 ## Descent
 
-- Crane descent from lobby to match (no skip): `front/descent.js` `startLoading`; `front/descent-state.js` `createDescentState`, `descentFrame`; `front/tune.js` `loading`; `moba-front.md`
+- Crane descent from lobby to match (no skip): `front/descent.js` `startLoading`; `front/descent-state.js` `createDescentState`, `descentFrame`; `front/tune.js` `loading`; `moba.md`
 - Cloud reveal (cloud rolls in on the crane, parts around your hero): `front/clouds.js` `createClouds`; `front/descent.js` `veilFrame`; `front/tune.js` `loading.clouds`
 - Descent camera projection and pointer easing: `front/backdrop.js` `projectFrame`, `easePointer`
 - Splash plate (day into night), mist drift, parallax, dusk wash on the splash and descent: `front/backdrop.js` `createBackdrop`, `easeShot`; `public/splash/plate-*.webp`; `front/tune.js` `plate`, `mist`, `parallax`, `shot`, `dusk`
@@ -53,13 +53,13 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Camera controls (lock, pan, zoom): `camera-controls.js` `createCameraControls`; `tune.js` `follow`
 - Right-click move and attack-move orders: `orders.js` `issue`, `steer`, `move`, `attackAhead`; `src/core/intents.js` `pointClick`, `createIntents`; `tune.js` `orders`
 - Pad stick aim: `targeting.js` `stickAim`; `src/core/intents.js` `stickVector`; `tune.js` `stickAim`
-- Keyboard and gamepad reading: `src/core/input.js` `moveVector`, `pollGamepad`, `consumeKeys`, `rumble`; `src/core/intents.js` `readIntent`
+- Keyboard and gamepad reading (held presses across a screen change are ignored until released): `src/core/input.js` `moveVector`, `pollGamepad`, `consumeKeys`, `rumble`; `src/core/intents.js` `readIntent`
 - Cursor (move and attack icons): `cursor.js` `createCursor`; `cursors/move.svg`, `cursors/attack.svg`
 - Pathfinding around walls: `path.js` `createPathPlanner`, `pursue`; `orders.js` `plan`, `offPath`; `tune.js` `orders`
 
 ## Match: HUD
 
-- HUD (portrait, ability slots, cooldown rings, level, health): `hud.js` `createHud`, `matchFrame`; `hud.css`; `tune.js` `hud`; `moba-plan.md`
+- HUD (portrait, ability slots, cooldown rings, level, health): `hud.js` `createHud`, `matchFrame`; `hud.css`; `tune.js` `hud`; `moba.md`
 - Top bar (one cream pill: team dots for heroes alive, takedowns, clock, the Ball countdown; fixed width): `hud.js` `createHud` (`moba-top`); `hud.css` Top bar
 - Ability slot keys (Q, W, E and pad RB, RT, LB): `hud.js` `KEYS`, `SLOTS`
 - Inspect mode (hold I or pad button, hover to read cards): `hud.js` `KEY_INSPECT`, `PAD_INSPECT`, `pickUnit`
@@ -84,7 +84,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 
 - Hero, ability, map and mechanic folders (how to add one): `extending.md`
 - Hero table and kit definitions: `heroes.js` `heroDefinition`, `HEROES`, `freshAbilityState`; `ability.js` `abilityOf`, `castAbility`, `slowFactor`; `tune.js` `heroes`, `hero`; `moba-heroes.md`
-- Casting, cast points, release, skill press buffer: `casting.js` `casts`, `castWait`, `release`, `cancelChannel`, `stepHeroState`; `tune.js` `cast`
+- Casting, cast points, release, skill press buffer (latest press wins; stop/cancel abort and refund; abilities have no backswing): `casting.js` `casts`, `castWait`, `release`, `cancelChannel`, `stepHeroState`; `tune.js` `cast`
 - Basic attack: `combat.js` `basicAttack`; `casting.js` `aimBasic`; `tune.js` `attack`
 - Damage and hit resolution: `combat.js` `hit`; `skillshot.js` `stepShot`, `interceptShot`
 - Skillshot shapes and sweeps: `skillshot.js` `stepShot`, `closest`; `obstacles.js` `sweepHit`, `sweepObstacles`; `skills-view.js` `lineReach`
@@ -101,7 +101,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 
 ## Match: lane, minions, towers
 
-- Lane: minion waves, towers, fort, core: `lane.js` `createLane` (the step order and the minion and gun brain: targeting, help, leash, attacks, march), `lane-waves.js` (spawns, routes), `lane-structures.js` (`after` vulnerability, deaths, reinforcements), `lane-rewards.js` (XP, levels, kill credit, globes); `mechanics/lane.js` `lane` (drawn by `lane-view.js`, projected by `lane-replica.js`, both wired in `sim.js`), mechanics `mechanics/structures/`, `mechanics/minions/`; `tune.js` `waves`, `minions`, `tower`, `fort`, `core`; `moba-lane.md`
+- Lane: minion waves, towers, fort, core: `lane.js` `createLane` (the step order and the minion and gun brain: targeting, help, leash, attacks, march), `lane-waves.js` (spawns, routes), `lane-structures.js` (`after` vulnerability, deaths, reinforcements), `lane-rewards.js` (XP, levels, kill credit, globes); `mechanics/lane.js` `lane` (drawn by `lane-view.js`, projected by `lane-replica.js`, both wired in `sim.js`), mechanics `mechanics/structures/`, `mechanics/minions/`; `tune.js` `waves`, `minions`, `tower`, `fort`, `core`; `moba.md`
 - Wave timing and spawns: `lane-waves.js` `waveInterval`, `createWaves`, `route`; `mechanics/minions/`; `tune.js` `waves`
 - Lane bots (the minions' walk and fights under guns): `lane-bots.js` `laneBots`; `maps/paths.js` `laneRoute`
 - Lane drawing (minions, towers, fort, core): `lane-view.js` `createLaneView`; `look.js` `laneView`
@@ -112,7 +112,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 
 ## Match: the Ball
 
-- Ball (neutral objective, carried to score on structures): `ball.js` `createBall`; `mechanics/ball/` (view `ball-view.js` through `mechanics/ball/ball-view.js`); `tune.js` `ball`; `moba-lane.md`
+- Ball (neutral objective, carried to score on structures): `ball.js` `createBall`; `mechanics/ball/` (view `ball-view.js` through `mechanics/ball/ball-view.js`); `tune.js` `ball`; `moba.md`
 - Ball drawing and trail: `ball-view.js` `createBallView`; `tune.js` `ballView`
 - Ball confetti on pop: `feedback.js` `createFeedback`; `look.js` `ballConfetti`
 - Ball bot behaviour (who fetches, who carries): `ball-bots.js`; `tune.js` `bots`
@@ -120,9 +120,9 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 ## Match: maps and props
 
 - How a map's features plug in: a map's manifest names its `mechanics` by id (`mechanics/<id>/<id>.js`: structures, minions, ball, bots, camps, flag, dummies; generated `mechanics/all-mechanics.js`), `maps/recipes.js` `matchRecipe` resolves them; `sim-mechanics.js` wires them in two passes: `layMechanicGround` (a mechanic's `lane` view, `obstacles`, tower colliders, cover) before any body, `plugMechanics` (the `lane`, camps, each mechanic's `create`) after the heroes; `sim.js` reads `botHabit` and `controllers`. A mechanic's view hooks (`view`, `dress`, `onboarding`) sit in its `<id>-view.js`, listed in generated `mechanics/all-mechanic-views.js`; `index.js` and `sim-mechanics.js` look them up by mechanic id. A map declares `kind` (`lane`, `garden`, `lobby`) and `order`; its `ground` and `scenery` hooks come from `<id>-view.js`, listed in generated `maps/all-map-views.js` and called by `map.js` and `isle.js`. `maps/all-maps.js` is generated too (`bun run collect-mods`). Structures become team-blind obstacles via `obstacles` and Rapier colliders via `sim-mechanics.js` `layMechanicGround`. Bot goal names live in each habit's `botGoals` and must be unique within a map: lane `retreat commitSiege defend siege advance`, ball `urgent objective escort` (Overthrow), camps `escort` and flag `objective` (Flagfall).
-- Overthrow (the first map): `maps/overthrow/overthrow-layout.js` `overthrowLayout`; `maps/overthrow/overthrow-view.js` `ground`; `match-terrain.js` `createMatchTerrain`; `tune.js` `overthrowTerrain`, `map`; `moba-lane.md`
+- Overthrow (the first map): `maps/overthrow/overthrow-layout.js` `overthrowLayout`; `maps/overthrow/overthrow-view.js` `ground`; `match-terrain.js` `createMatchTerrain`; `tune.js` `overthrowTerrain`, `map`; `moba.md`
 - Overthrow by day (cliff, moss lip, rim ink, cloud sea, cloud banks, far spires and arches, waterfalls, haze): `isle.js` `createIsle` (shared cliff, moss lip, rim ink, cloud sea and banks, far spires and arches, haze); waterfalls: `maps/overthrow/overthrow-scenery.js` `scenery`; lane chalk and kerbs: `maps/overthrow/overthrow-view.js` `ground`; shared court moss and printed cast shadows (both maps): `match-terrain.js` `castShadows`; stone cover and pillars: `map.js` `buildMap` (`stoneCover`); stone towers and core: `lane-view.js` (`structureStyle: 'stone'`); the sun: `tune.js` `overthrowTerrain.light`, `core/stylepass.js` `setPalette`
-- Flagfall (the second map): `maps/flagfall/flagfall.js` (manifest, `kind: 'garden'`), `maps/flagfall/flagfall-layout.js` `flagfallLayout`, `flagfallLayoutTune`; `maps/flagfall/flagfall-tune.js` (`tune.flagfall`); `moba-map-2.md`
+- Flagfall (the second map): `maps/flagfall/flagfall.js` (manifest, `kind: 'garden'`), `maps/flagfall/flagfall-layout.js` `flagfallLayout`, `flagfallLayoutTune`; `maps/flagfall/flagfall-tune.js` (`tune.flagfall`); `moba.md`
 - Flagfall by night (the shared isle with night `colors`, `light`, `pool`, `haze`, `clouds`; moon, rim garden of leaf fans and glowing orchid bells, specks): `isle.js` `createIsle`, `maps/flagfall/flagfall-scenery.js` `scenery`; `tune.js` `flagfall`
 - Flagfall cover (rim kerb cut at the Dunk gaps, dark-teal leaf-bank hedges, stone walls and drums, lantern posts): `maps/flagfall/flagfall-view.js` `ground`, `map.js` `buildMap`; `tune.js` `flagfall.kerb`, `flagfall.glow`, `flagfall.hedge`
 - Flagfall dunk (fence gaps, slick, shove into the sea): `combat.js` `shove`, `dunk`; `maps/flagfall/flagfall-view.js` `ground` (kerb cut, slick print); `feedback.js` `'dunk'`; `core/death.js` `overboard`; bots `fight-bots.js` `slick`, `inland`; `tune.js` `flagfall.gaps`, `flagfall.dunk`, `bots.slick*`

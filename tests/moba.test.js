@@ -6,7 +6,7 @@ import { segmentClear } from '../src/plugins/moba/obstacles.js'
 import { createPathPlanner } from '../src/plugins/moba/path.js'
 import { closest, stepShot, sweepHit } from '../src/plugins/moba/skillshot.js'
 
-// The feel slice's headless checks (docs/moba-plan.md, M1): no overshoot on arrival, reversal time, buffer timing, order resumption, swept hits.
+// The feel slice's headless checks (docs/moba.md, "Controls and feel"): no overshoot on arrival, reversal time, buffer timing, order resumption, swept hits.
 let harness, facts, sim
 const ID = 'local'
 beforeEach(() => {

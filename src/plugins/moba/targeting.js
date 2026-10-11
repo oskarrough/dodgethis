@@ -66,7 +66,7 @@ export function createTargeting({ heroes, dummies, lane, ball, field }) {
 		return best
 	}
 
-	// The pad's right stick for hero `id` (docs/moba-plan.md, "Controls"): range × remap, a 10° assist toward enemy heroes on Q,
+	// The pad's right stick for hero `id` (docs/feature-map.md, "Match: camera, controls, cursor"): range × remap, a 10° assist toward enemy heroes on Q,
 	// and with the stick at rest the nearest enemy hero in range, then the facing.
 	function stickAim(id, dir, magnitude, slot) {
 		const h = heroes.find((x) => x.id === id)

@@ -41,7 +41,7 @@
 - Modes: `/` opens the splash. `?mode=moba&play&bots=easy&hero=fletcher&seed=2&debug` jumps straight into a match with the debug panel.
 - Where is X: `bun run where <word>` prints feature-map entries and source locations; use a quoted phrase or entry symbol to narrow it, `--all` for every hit. Whoever adds or moves a feature updates its line there. `tune.js` holds match rules and assembles each map's, the lobby's and each hero's tune file (`maps/<id>/<id>-tune.js`, `front/lobby-tune.js`, `abilities/<id>/<id>-tune.js`, `heroes/<id>/<id>-tune.js`); edit the block where it lives, and read the landmark, not the file.
 - To see a file's symbols without reading it: `ast-grep outline <file>`. For structural search (callers of a function, every `tune.x.y` use) use `ast-grep run -p '<pattern>' -l js src` instead of regex grep. Never `cat` a doc or any file over ~150 lines: `ast-grep outline` (or `grep -n` for docs) first, then `sed -n` only the range you need. Every token you read is re-read on every later call.
-- Docs: `docs/roadmap.md` (the big picture), `docs/world.md` (setting), `docs/moba-plan.md` (scope, feel, milestones), `docs/moba-lane.md` (map, structures, Ball), `docs/moba-ideas.md` (creative pitches), `docs/network.md`, `docs/verify.md`, `docs/sound.md` (music and sound effects).
+- Docs: `docs/roadmap.md` (the big picture), `docs/world.md` (setting), `docs/moba.md` (design), `docs/moba-ideas.md` (creative pitches), `docs/network.md`, `docs/verify.md`, `docs/sound.md` (music and sound effects).
 
 ## Orchestration
 
@@ -74,6 +74,6 @@ Every HTML artifact lives in `docs/pages/<slug>/` and is an item in `docs/pages/
 ### Review brief template
 
 Model: reverse of the author (GPT reviews Opus, Opus reviews GPT). After: the thing under review lands.
-Adversarial review of <WHAT> in dodgethis `?mode=moba`. Context: `docs/moba-plan.md`, `docs/moba-lane.md`, `docs/extending.md`, the diff since the last checkpoint.
+Adversarial review of <WHAT> in dodgethis `?mode=moba`. Context: `docs/moba.md`, `docs/extending.md`, the diff since the last checkpoint.
 Review the named commits at the checkpoint tip (`jj show <rev>` for scope; run and read code at the tip, since one feature can span several commits) or the doc. Never use the live working copy (other threads are writing in it) unless the brief names files to read there because no checkpoint exists yet. Find what's wrong; don't summarise. Bugs, feel regressions (judder, input lag, unreadable telegraphs), numbers that don't add up, boundary violations, dodgeball changes (characterization snapshots must be identical), tricky logic nobody proved by play (no new unit tests, per Oskar).
 Don't edit files. At most 8 findings, most severe first, one or two lines each with a concrete fix.

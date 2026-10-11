@@ -1,6 +1,6 @@
 # MOBA look
 
-Art direction for `?mode=moba`. [moba-lane.md](moba-lane.md) lists what exists; this says how it should look. Where they differ, this doc wins. The medium is the comic-sticker pass in `core/stylepass.js`: stylised primitives built in code, DOM text outside WebGL. Imported images are limited to our own generated scenery: a background plate under a map's court and quiet seamless tiles for its ground, water and cover. Everything a player reads (units, telegraphs, structures, UI) stays code-built.
+Art direction for `?mode=moba`. [feature-map.md](feature-map.md) lists what exists; this says how it should look. Where they differ, this doc wins. The medium is the comic-sticker pass in `core/stylepass.js`: stylised primitives built in code, DOM text outside WebGL. Imported images are limited to our own generated scenery: a background plate under a map's court and quiet seamless tiles for its ground, water and cover. Everything a player reads (units, telegraphs, structures, UI) stays code-built.
 
 ## Direction
 
