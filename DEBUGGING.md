@@ -69,7 +69,7 @@ game.snapshot() // same shape on both sides, for comparing host and guest
 To test the wire without browsers, [tests/shared-match.js](tests/shared-match.js) wires a
 host and a guest the way the browser does and delivers their messages by hand;
 [tests/link.test.js](tests/link.test.js) shows how to script both sides. The two-browser
-checks are in [docs/verification.md](docs/verification.md).
+checks are in [docs/verify.md](docs/verify.md).
 
 ## Measure a regression
 

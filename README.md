@@ -26,4 +26,4 @@ bun install
 bun run dev --host 0.0.0.0
 ```
 
-Open the displayed URL. Online play needs internet access for signaling and may need a TURN relay. See [network configuration](docs/network.md) and [verification](docs/verification.md).
+Open the displayed URL. Online play needs internet access for signaling and may need a TURN relay. See [network configuration](docs/network.md) and [verification](docs/verify.md).

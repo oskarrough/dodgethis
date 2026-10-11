@@ -17,7 +17,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Mode registration, `window.game.moba`: `index.js` `moba` (default export); `src/core/app.js` `createApp`; `plugin-architecture.md`
 - Match setup from the URL (`?mode=moba&play&bots=&hero=&seed=&debug`): `setup.js` `parseMatchSetup`, `wantsDirectPlay`, `matchLink`; `moba-agents.md`
 - Address bar follows the screen (URL per screen, Back/Forward, reload lands there): `src/address.js` `followScreen`, `addressFor`; boot routing is `main.js` `route`
-- Which screen is up (splash, lobby, descent, match, paused, result): `src/core/proof.js` `createProofApi` (`dt.screen()`); `verification.md`
+- Which screen is up (splash, lobby, descent, match, paused, result): `src/core/proof.js` `createProofApi` (`dt.screen()`); `verify.md`
 
 ## Lobby
 
@@ -69,7 +69,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Damage numbers: `damage-numbers.js` `createDamageNumbers`; `look.js` `damageNumbers`
 - Edge pips for off-screen allies, enemies, Ball: `pips.js` `edgePip`, `createPips`; `look.js` `pips`
 - Minimap, its camera-view outline and click/drag to move the camera: `minimap.js` `createMinimap` (`drawView`, `onFocus` → `follow.focus`); `maps/all-maps.js` `matchRecipe`; `hud.js`; `hud.css` `.moba-minimap`
-- Fog of war (on by default, `?fog=0` turns it off; sight, hidden enemies, dimmed ground): `fog.js` `createFog`; match rules `tune.js` `fog`; hooked in `index.js` present; minimap filtering in `minimap.js`; CPU proof: `docs/verify-reference.md` Performance (the dodgeball `benchmark()` cannot time MOBA)
+- Fog of war (on by default, `?fog=0` turns it off; sight, hidden enemies, dimmed ground): `fog.js` `createFog`; match rules `tune.js` `fog`; hooked in `index.js` present; minimap filtering in `minimap.js`; CPU proof: `docs/verify.md` Browser proofs (the dodgeball `benchmark()` cannot time MOBA)
 - Flagfall mercenary camps (neutral guards at the camp marks fight back and leash; clearing one sends mercs down the nearest lane; respawn; bots clear them when their lane is quiet): `mechanics/camps/camps-objective.js` `createCamps`, bots `mechanics/camps/camps-bots.js` `campBots` (`escort` phase); mechanic `mechanics/camps/`, on in `maps/flagfall/flagfall.js` `mechanics`; `layout.camps` in `maps/flagfall/flagfall-layout.js`; `tune.js` `camps`; lane hooks `passive`, team `'N'`, `route` in `lane.js`
 - Flagfall jungle (rooms, spine walls, brush, camp/flag/gatehouse marks): `maps/flagfall/flagfall-layout.js` `flagfallLayout`; `tune.js` `flagfall.jungle`; marks and brush mats in `maps/flagfall/flagfall-view.js` `ground`
 - Flagfall gates, two kinds on one mechanic (own team passes, enemies are held out and siege it, shots hit it): the gatehouse, a no-gun stone tower at the fort's chalk bar that the fort waits for (rubble when it falls), and the laser gate, two posts and a hologram beam between fort and core that waits for the fort and that the core waits for (stubs when it falls): `gates.js` `addGates`, `holdGates`, `GATES`; `tune.js` `gatehouse`, `laser`, `flagfall.jungle.gatehouseX`/`laserX`; laser look in `lane-view.js` `makeBody` (`look.laneView.laser`), beam shader shared with the lobby holograms in `hologram.js`; hooked in `maps/flagfall/flagfall-layout.js`, `sim.js` step, `mechanics/structures/structures.js` obstacles (`obstacle: false`), `lane.js` (no gun, `tune[kind].xp`)
@@ -146,7 +146,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 
 - Bots: difficulty, roster, intercept maths: `bots.js` `createBots`, `createBot`, `practiceRoster`, `botRandom`, `interceptTime`; `tune.js` `bots`
 - Lane walking bot: `lane-bots.js`; fight bot (who to hit): `fight-bots.js` `createFightBot`; dodge bot: `dodge-bots.js` `createDodgeBot`; Ball bot: `ball-bots.js`
-- Headless match for simulations: `agent-match.js` `createAgentMatch`, `replayHash`, `readReplay`; `bun run simulate`; `verification.md`
+- Headless match for simulations: `agent-match.js` `createAgentMatch`, `replayHash`, `readReplay`; `bun run simulate`; `verify.md`
 - Agent protocol (observations and actions for LLM or scripted players): `agents.js` `agentRoster`, `observation`, `agentAction`, `createAgentDecisions`; `tune.js` `agents`, `proof`; `moba-agents.md`
 - Match replay (record, load, play back): `replay.js` `mobaReplay`, `loadReplay`; `replay.css`; tapes record no map, so replays play on Overthrow only
 
@@ -159,8 +159,8 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 
 - Debug panel and Try Mode folder: `debug.js` `createDebugLayout`, `createMatchDebug`; `setup.js` `parseTrySetup`; `src/core/debug.js` `createDebugPanel`
 - Tuning sliders: `sliders.js` `sliderSections`, `addSliders`, `debugSections`; Match's late slider targets the current map's `debugTune.late` (shared `match` fallback); Terrain section names come from generated `maps/all-maps.js` `playableMaps` and each manifest's `debugTune.name`; other new debug folders go in `debugSections`
-- `window.dt` (keys, pad, screen, device, game): `src/core/proof.js` `createProofApi`; `verification.md`
-- Simulation tables and bot experiments: `agent-match.js`; `scripts/farm.js`; report tables `scripts/bench/report.js`; `verification.md` Bot simulations (read that section before writing a probe)
+- `window.dt` (keys, pad, screen, device, game): `src/core/proof.js` `createProofApi`; `verify.md`
+- Simulation tables and bot experiments: `agent-match.js`; `scripts/farm.js`; report tables `scripts/bench/report.js`; `verify.md` Check and headless tools (read that section before writing a probe)
 - Feature lookup for builders: `scripts/where.js`; `bun run where <word>` prints feature-map entries and source hits, `--all` removes output limits
 
 ## Online rooms

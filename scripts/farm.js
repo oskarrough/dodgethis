@@ -316,7 +316,7 @@ Sampling
   --matches N               default 4 for summaries, 20 for logs; rounded up to full matchup rotations; each rotation shares a seed
   --seed uint32  --max-seconds N  (a timeout has no winner)
   --set path=v[,v...]       override a tune number per variant (repeatable; flags make a grid)
-                            bots.exp.<flag>=0,1 toggles a logic experiment; see docs/verification.md
+                            bots.exp.<flag>=0,1 toggles a logic experiment; see docs/verify.md
   --quick                   --summary --cross-only --matches 4
 Comparing (all imply --summary)
   --base [rev]              play the same seeds on another revision too (default: @- in jj,

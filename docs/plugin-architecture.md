@@ -61,7 +61,7 @@ Each phase moves things in bulk, then repairs; tests may be red inside a phase. 
 
 - `bun run check` green
 - solo unchanged: lobby, portals, a full match, pause, restart, cheats, `game.preset`
-- online unchanged: the two-browser checks in [verification.md](verification.md), run with `agent-browser`
+- online unchanged: the two-browser checks in [verify.md](verify.md), run with `agent-browser`
 
 Before starting, add two characterization tests against today's code: a scripted solo round that records every shot's speed, direction and landing, and a host-plus-guest round that records the fact stream and final positions.
 
