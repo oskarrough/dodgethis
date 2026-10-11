@@ -39,7 +39,7 @@ The boundary can enter the view near a base: the lens never zooms in just to hid
             └─────────────────────── pause/result ▸ Modes ──────────────────┘
 ```
 
-There are three screens: splash, [lobby](#lobby) and match. The crane and descent between lobby and match are one camera move, not a screen, and take no input. Each screen gives Enter one meaning. `?mode=moba&play&hero=mitts&bots=hard` skips the front end and cuts straight into the match. `plugins/moba/front/` owns the splash, backdrop, descent and numbers sheet; `lobby.js` owns the lobby. The in-game look is [moba-look.md](moba-look.md).
+There are three screens: splash, [lobby](#lobby) and match. The crane and descent between lobby and match are one camera move, not a screen, and take no input. Each screen gives Enter one meaning. `?mode=moba&play&hero=mitts&bots=hard` skips the front end and cuts straight into the match. `plugins/moba/front/` owns the splash, backdrop, descent and numbers sheet; `lobby.js` owns the lobby. The in-game look is [look.md](look.md).
 
 Nearer layers travel further, so a move reads as a camera, not a slide.
 
@@ -53,7 +53,7 @@ The lobby is its own world: the same lobby whichever map you picked, but it show
 
 Picked direction: Pocket weather ([concept](pages/lobby/04-pocket-weather-v2.webp)): a huge ceramic saucer in magnetic cradles; a small turning diorama in a ceramic weather bowl previews the next map, and only the bowl's miniature, sky cap and label change. No stock fantasy: generic D&D-Steam props (training dummies, banner plinths, rune stones) read as AI filler.
 
-Moebius sets the line, the light and the empty sky. The isles set what things are made of: stone, bark and bone, weathered, per [moba-look.md](moba-look.md). The line is drawn; the props are built. They squash when bumped, rock when hit and settle with a little overshoot.
+Moebius sets the line, the light and the empty sky. The isles set what things are made of: stone, bark and bone, weathered, per [look.md](look.md). The line is drawn; the props are built. They squash when bumped, rock when hit and settle with a little overshoot.
 
 The toy moment is the flip: the body turns edge-on like a cutout spun on a pin, then comes round as the new hero, mid-stride, and the name slams on.
 

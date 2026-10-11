@@ -4,7 +4,7 @@
 	"references": {
 		"project": [
 			"docs/roadmap.md",
-			"docs/moba-look.md",
+			"docs/look.md",
 			"docs/world.md",
 			"docs/pages/archive/overthrow-fight.webp",
 			"docs/pages/archive/overthrow-lobby.webp"

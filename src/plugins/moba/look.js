@@ -25,7 +25,7 @@ export const look = {
 		pointerMargin: 64,
 		pointerTop: 115,
 		pointerBottom: 180,
-		// Readouts, not buttons: a thin line and a soft shadow's opacity (moba-look.md, Frame means press).
+		// Readouts, not buttons: a thin line and a soft shadow's opacity (look.md, Frame means press).
 		stickerBorder: 1.5,
 		stickerShadow: 0.22,
 		stickerCorner: 999,

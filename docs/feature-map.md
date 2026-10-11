@@ -83,18 +83,18 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 ## Match: heroes and kits
 
 - Hero, ability, map and mechanic folders (how to add one): `extending.md`
-- Hero table and kit definitions: `heroes.js` `heroDefinition`, `HEROES`, `freshAbilityState`; `ability.js` `abilityOf`, `castAbility`, `slowFactor`; `tune.js` `heroes`, `hero`; `moba-heroes.md`
+- Hero table and kit definitions: `heroes.js` `heroDefinition`, `HEROES`, `freshAbilityState`; `ability.js` `abilityOf`, `castAbility`, `slowFactor`; `tune.js` `heroes`, `hero`; `heroes.md`
 - Casting, cast points, release, skill press buffer (latest press wins; stop/cancel abort and refund; abilities have no backswing): `casting.js` `casts`, `castWait`, `release`, `cancelChannel`, `stepHeroState`; `tune.js` `cast`
 - Basic attack: `combat.js` `basicAttack`; `casting.js` `aimBasic`; `tune.js` `attack`
 - Damage and hit resolution: `combat.js` `hit`; `skillshot.js` `stepShot`, `interceptShot`
 - Skillshot shapes and sweeps: `skillshot.js` `stepShot`, `closest`; `obstacles.js` `sweepHit`, `sweepObstacles`; `skills-view.js` `lineReach`
-- Ability telegraphs for enemies (ground line tell): `skills-view.js` `createSkillsView`; `look.js` `abilityView`; `moba-heroes.md`
-- Fletcher, ranged poke. Q Loose (arrow shot), W Rain (zone), E Vault (dash): `abilities/{loose,vault,rain}/`, `heroes/fletcher/`; `moba-heroes.md`
+- Ability telegraphs for enemies (ground line tell): `skills-view.js` `createSkillsView`; `look.js` `abilityView`; `heroes.md`
+- Fletcher, ranged poke. Q Loose (arrow shot), W Rain (zone), E Vault (dash): `abilities/{loose,vault,rain}/`, `heroes/fletcher/`; `heroes.md`
 - Mitts, keeper. Q Toss (throw caught shots), W Catch (stance), E Dive (dash): `heroes/mitts/mitts.js`, `abilities/{toss,catch,dive}/`; glove and pocket poses in `heroes/mitts/mitts-view.js` `animate`; the catch window's fan in `abilities/catch/catch.js` `look`
 - Mitts glove slap (basic): `abilities/gloveSlap/`
 - Catching and the Pocket (caught shots held and thrown back): `projectiles.js` `openCatch`, `throwCaught`, `resolveInterception` (the pocket takes the caught shot's team); `casting.js` `traitContext`; `tune.js` `catching`, `momentum`
-- P. Pong (id `pong`, was Carom): `heroes/pong/` (stone-beaked costume with paddle and back net in `costume.js`, tune, `index.js`), Q Bank `abilities/bank/` (bounces, data in its tune; drawn as a cream celluloid ball in `view.js`), W Cushion `abilities/cushion/` (a short wall of posts at the cursor via `sim.addCover`, drawn as one net on two end posts per cast in `skills-view.js`), E Swap `abilities/swap/` (trade places with your live Bank shot, or where it stopped for `linger`; greyed tile via `ready`). Bots: `fight-bots.js` swaps out when hurt or in on a low target, and walls a target with no cover to bank off. Trick Shot, Kiss's bounce and Backboard are not built; design in `moba-heroes.md`. Skip: tuned and designed, costume and tune in `heroes/skip/`, no `index.js` yet so not a hero.
-- Hero costumes and silhouettes: `hero-view.js` `dressHero`, costumes in `heroes/<id>/<id>-view.js` (`dress`, optional `animate`); `look.js` `silhouettes`; `moba-look.md`
+- P. Pong (id `pong`, was Carom): `heroes/pong/` (stone-beaked costume with paddle and back net in `costume.js`, tune, `index.js`), Q Bank `abilities/bank/` (bounces, data in its tune; drawn as a cream celluloid ball in `view.js`), W Cushion `abilities/cushion/` (a short wall of posts at the cursor via `sim.addCover`, drawn as one net on two end posts per cast in `skills-view.js`), E Swap `abilities/swap/` (trade places with your live Bank shot, or where it stopped for `linger`; greyed tile via `ready`). Bots: `fight-bots.js` swaps out when hurt or in on a low target, and walls a target with no cover to bank off. Trick Shot, Kiss's bounce and Backboard are not built; design in `heroes.md`. Skip: tuned and designed, costume and tune in `heroes/skip/`, no `index.js` yet so not a hero.
+- Hero costumes and silhouettes: `hero-view.js` `dressHero`, costumes in `heroes/<id>/<id>-view.js` (`dress`, optional `animate`); `look.js` `silhouettes`; `look.md`
 - Level, XP and stat growth: `tooltip.js` `levelProgress`; `combat.js` `hit`; `tune.js` `levels`
 - Globes (health pickups): `lane-rewards.js` `createRewards` (`reward` drops them, `stepGlobes`); `lane-view.js` `createLaneView`; `tune.js` `globes`
 - Scripted test hero: `scripted.js` `createScriptedHero`; `tune.js` `scripted`
@@ -131,7 +131,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Map registry and layout recipe: `maps/all-maps.js` `mapLayout`, `matchRecipe`; `tune.js` `map`
 - Ground and walls build: `map.js` `buildMap`, `createMapScope`; `match-terrain.js` `createMatchTerrain`
 - Colliders and walkable test: `obstacles.js` `buildColliders`, `walkable`, `clampWalkable`, `segmentClear`, `clampMap`
-- Look references: `docs/pages/vibes/` (the picked directions), `docs/pages/archive/` (superseded, history only); `moba-look.md`
+- Look references: `docs/pages/vibes/` (the picked directions), `docs/pages/archive/` (superseded, history only); `look.md`
 
 ## Match: view, feedback, sound
 
@@ -140,7 +140,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Sounds: `sounds.js` `createSounds`; `look.js` `sounds`; `src/core/audio.js`, `src/core/music.js`
 - Screen shake, hit flash, impact: `src/core/juice.js` `createJuice`; `look.js` `juice`
 - Hero and dummy death animation: `src/core/death.js` `startDeath`
-- Style pass (inked outlines, palette): `src/core/stylepass.js`, `src/core/style.js` `PALETTE`; `moba-look.md`
+- Style pass (inked outlines, palette): `src/core/stylepass.js`, `src/core/style.js` `PALETTE`; `look.md`
 
 ## Match: bots and agents
 

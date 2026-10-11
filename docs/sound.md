@@ -1,6 +1,6 @@
 # Sound
 
-How the game should sound, for anyone composing music, generating tracks or making sound effects. The look is in [moba-look.md](moba-look.md); sound follows the same direction: cute with swagger, a 90s and early-2000s Japanese console soul, warm light over floating isles.
+How the game should sound, for anyone composing music, generating tracks or making sound effects. The look is in [look.md](look.md); sound follows the same direction: cute with swagger, a 90s and early-2000s Japanese console soul, warm light over floating isles.
 
 ## Direction
 
