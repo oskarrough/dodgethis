@@ -1,7 +1,6 @@
 import * as THREE from 'three'
 import { tune } from './tune.js'
-import { PALETTE } from './style.js'
-import { makeStyleMaterial, styleRoleFromColor } from './stylepass.js'
+import { makeStyleMaterial } from './stylepass.js'
 import { stepHorizontalVelocity } from './move.js'
 
 const clamp = (v, lo, hi) => (v < lo ? lo : v > hi ? hi : v)
@@ -14,14 +13,7 @@ export function createBody(
 	scene,
 	world,
 	RAPIER,
-	{
-		profile,
-		position = [0, 0, 0],
-		color = PALETTE.teamA,
-		bounds = null,
-		smooth = null,
-		replica = false,
-	},
+	{ profile, position = [0, 0, 0], role = 'teamA', bounds = null, smooth = null, replica = false },
 ) {
 	const { radius, halfHeight } = profile
 
@@ -29,7 +21,7 @@ export function createBody(
 	const mesh = new THREE.Group()
 	const visual = new THREE.Mesh(
 		new THREE.CapsuleGeometry(radius, halfHeight * 2, 8, 16),
-		makeStyleMaterial(styleRoleFromColor(color)),
+		makeStyleMaterial(role),
 	)
 	visual.castShadow = true
 	mesh.add(visual)
@@ -342,7 +334,6 @@ export function createBody(
 		return false
 	}
 
-	// Teleport while clearing velocity.
 	function place(x, y, z) {
 		rigidBody?.setTranslation({ x, y, z }, true)
 		vx = 0

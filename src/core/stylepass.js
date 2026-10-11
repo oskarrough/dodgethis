@@ -5,11 +5,6 @@ import { createStylePresets } from './style-presets.js'
 // Opaque shade/role/normal/depth → ink, highlights and halftone → layer-1 effects against copied depth; creators own materials.
 
 const ROLES = Object.keys(PALETTE)
-// Compatibility at construction boundaries that still accept a palette color.
-const ROLE_BY_COLOR = new Map(ROLES.map((role) => [new THREE.Color(PALETTE[role]).getHex(), role]))
-export function styleRoleFromColor(color) {
-	return ROLE_BY_COLOR.get(new THREE.Color(color).getHex()) ?? 'cream'
-}
 
 // Sun direction in world space. The style pass only needs one light; a palette's `light` may move it.
 const LIGHT_DEFAULT = new THREE.Vector3(0.4, 0.85, 0.35).normalize()

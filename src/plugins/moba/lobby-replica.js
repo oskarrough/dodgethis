@@ -1,7 +1,6 @@
 import { createBody } from '../../core/body.js'
 import { createSnapshotBuffer } from '../../core/snapshot-buffer.js'
 import { STEP } from '../../core/app.js'
-import { PALETTE } from '../../core/style.js'
 import { HEROES, heroDefinition } from './heroes.js'
 import { dressHero } from './hero-view.js'
 import { tune } from './tune.js'
@@ -74,7 +73,7 @@ export function createUnitReplica(
 		const body = createBody(scene, null, null, {
 			profile: definition.base,
 			position: [p.x, 0, p.z],
-			color: (unit.seatTeam ?? unit.team) === 'A' ? PALETTE.teamA : PALETTE.teamB,
+			role: (unit.seatTeam ?? unit.team) === 'A' ? 'teamA' : 'teamB',
 			replica: true,
 		})
 		const undress = (unit.dress ?? dressHero)(body, definition.id, unit.seatTeam ?? unit.team)

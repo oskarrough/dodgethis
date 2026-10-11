@@ -174,7 +174,7 @@ export function startLoading(
 			// The first lane frame compiles its shaders behind the sky, not on landing.
 			Promise.resolve()
 				.then(() => app.renderer.compileAsync?.(app.scene, app.camera.view))
-				.catch(() => {})
+				.catch((error) => console.warn('descent: shader precompile failed:', error))
 				.then(() => {
 					if (!scope.signal.aborted) built = true
 				})

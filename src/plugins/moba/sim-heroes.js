@@ -1,7 +1,6 @@
 import { DEFAULT_HERO, HEROES, heroDefinition, freshAbilityState } from './heroes.js'
 import { dressHero } from './hero-view.js'
 import { createBody } from '../../core/body.js'
-import { PALETTE } from '../../core/style.js'
 import { styleId } from '../../core/stylepass.js'
 import { tune, profile } from './tune.js'
 import { clampWalkable, clampMap } from './obstacles.js'
@@ -16,7 +15,7 @@ export function createHeroMaker({ scene, world, RAPIER, smooth, lobby, floor, wa
 		const body = createBody(scene, world, RAPIER, {
 			profile: definition.base,
 			position: [point.x, 0, point.z],
-			color: team === 'A' ? PALETTE.teamA : PALETTE.teamB,
+			role: team === 'A' ? 'teamA' : 'teamB',
 			bounds: (radius) => ({
 				x: floor.halfX - radius,
 				z: floor.halfZ - radius,

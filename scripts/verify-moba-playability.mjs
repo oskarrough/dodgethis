@@ -11,8 +11,8 @@ if (process.argv.includes('--help')) {
 	process.exit(0)
 }
 const base = process.argv[2] ?? 'http://127.0.0.1:4802'
-const dir = resolve(process.argv[3] ?? '/tmp/playability-shots')
-mkdirSync(dir, { recursive: true })
+const directory = resolve(process.argv[3] ?? '/tmp/playability-shots')
+mkdirSync(directory, { recursive: true })
 const session = `playability-proof-${process.pid}`
 // Keep the browser socket inside writable temporary storage, including agent sandboxes.
 const runtime = mkdtempSync(join(tmpdir(), 'dodgethis-browser-'))
@@ -55,11 +55,11 @@ function helpers() {
 		window.proof = {
 			assert(ok, message) { if (!ok) throw Error(message) },
 			frame: () => new Promise(requestAnimationFrame),
-			local: () => dt.game.moba.sim.heroes.find(h=>h.id==='local'),
+			local: () => dt.game.moba.sim.heroes.find(hero=>hero.id==='local'),
 			button(label) {
-				const b=[...document.querySelectorAll('.overlay button')].find(b=>b.querySelector('.label').textContent.startsWith(label));
-				if (!b) throw Error('Missing '+label);
-				b.click();
+				const button=[...document.querySelectorAll('.overlay button')].find((candidate)=>candidate.querySelector('.label').textContent.startsWith(label));
+				if (!button) throw Error('Missing '+label);
+				button.click();
 			}
 		};
 		proof.assert(!!window.dt,'Missing proof API');
@@ -69,7 +69,7 @@ function helpers() {
 function shot(name) {
 	// Keep hover out of evidence; the caller has already asserted the claimed screen.
 	browser('mouse', 'move', '0', '0')
-	browser('screenshot', `${dir}/${name}.png`)
+	browser('screenshot', `${directory}/${name}.png`)
 }
 
 try {
@@ -100,8 +100,8 @@ try {
 			evaluate(`
 				await proof.frame(); await proof.frame();
 				proof.assert(dt.screen()==='lobby','Resize left the lobby');
-				const r=s=>document.querySelector(s).getBoundingClientRect();
-				const strip=r('.lobby-hero-strip'),back=r('.back-button');
+				const rect=selector=>document.querySelector(selector).getBoundingClientRect();
+				const strip=rect('.lobby-hero-strip'),back=rect('.back-button');
 				proof.assert(strip.left>=0&&strip.bottom<=innerHeight&&strip.right<=innerWidth&&back.top>=0&&back.left>=0,'Lobby controls left the frame');
 				return true;
 			`)
@@ -198,7 +198,7 @@ try {
 			proof.assert(dt.game.moba.setup.seed===2&&dt.game.moba.proof.botsOnly,'Completion proof is not seeded bots-only');
 			proof.assert(dt.game.moba.sim.heroes.length===6,'Completion roster is not six heroes');
 			dt.game.pause(true);
-			return {seed:dt.game.moba.setup.seed,difficulty:dt.game.moba.setup.difficulty,players:'six bots; accelerated app frames',roster:dt.game.moba.sim.heroes.map(h=>({id:h.id,hero:h.heroId,team:h.team}))};
+			return {seed:dt.game.moba.setup.seed,difficulty:dt.game.moba.setup.difficulty,players:'six bots; accelerated app frames',roster:dt.game.moba.sim.heroes.map(hero=>({id:hero.id,hero:hero.heroId,team:hero.team}))};
 		`)
 		// A bounded integration proof through app.frame, including presentation; no injected HP.
 		let result
@@ -244,7 +244,7 @@ try {
 		}
 	})
 	report.seconds = Number(((performance.now() - started) / 1000).toFixed(2))
-	writeFileSync(`${dir}/report.json`, JSON.stringify(report, null, 2))
+	writeFileSync(`${directory}/report.json`, JSON.stringify(report, null, 2))
 	console.log(
 		`Browser proof ${report.passed ? 'passed' : 'failed'}: ${report.seconds}s, ${report.commands} commands`,
 	)

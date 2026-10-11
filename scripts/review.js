@@ -6,7 +6,7 @@ import { parseArgs } from 'node:util'
 
 const pages = join(import.meta.dir, '..', 'docs', 'pages')
 const itemsPath = join(pages, 'items.json')
-const isVideo = (f) => /\.(webm|mp4)$/i.test(f)
+const isVideo = (file) => /\.(webm|mp4)$/i.test(file)
 
 export const slugOf = (item) =>
 	`${item.at.slice(0, 10)}-${item.title
@@ -15,17 +15,17 @@ export const slugOf = (item) =>
 		.slice(0, 40)}`
 
 export function writePage(item) {
-	const dir = join(pages, item.page)
-	mkdirSync(dir, { recursive: true })
-	const fig = (f) => {
-		const name = basename(f)
-		const tag = isVideo(f)
-			? `<video src="../${f}" controls></video>`
-			: `<img src="../${f}" alt="${name}" loading="lazy" />`
+	const directory = join(pages, item.page)
+	mkdirSync(directory, { recursive: true })
+	const figure = (file) => {
+		const name = basename(file)
+		const tag = isVideo(file)
+			? `<video src="../${file}" controls></video>`
+			: `<img src="../${file}" alt="${name}" loading="lazy" />`
 		return `<figure>${tag}<figcaption>${name}</figcaption></figure>`
 	}
 	writeFileSync(
-		join(dir, 'index.html'),
+		join(directory, 'index.html'),
 		`<!doctype html>
 <html lang="en">
 <head>
@@ -40,8 +40,8 @@ export function writePage(item) {
 <p><small>${item.status} · ${item.at.slice(0, 10)}${item.thread ? ' · ' + item.thread : ''}</small></p>
 <p><b>${item.ask}</b></p>
 ${item.decision ? `<p>Decided: ${item.decision}</p>` : ''}
-<div class="media">${item.media.map(fig).join('\n')}</div>
-${item.links.length ? `<p>${item.links.map((l) => `<a href="${l}">${l}</a>`).join(' · ')}</p>` : ''}
+<div class="media">${item.media.map(figure).join('\n')}</div>
+${item.links.length ? `<p>${item.links.map((link) => `<a href="${link}">${link}</a>`).join(' · ')}</p>` : ''}
 <script src="../viewer.js"></script>
 </main>
 </body>
@@ -52,7 +52,7 @@ ${item.links.length ? `<p>${item.links.map((l) => `<a href="${l}">${l}</a>`).joi
 
 if (import.meta.main) {
 	const { values, positionals } = parseArgs({
-		args: Bun.argv.slice(2).filter((a) => a !== '--'),
+		args: Bun.argv.slice(2).filter((argument) => argument !== '--'),
 		allowPositionals: true,
 		options: {
 			title: { type: 'string' },
@@ -63,7 +63,7 @@ if (import.meta.main) {
 		},
 	})
 	const files = positionals.filter(
-		(f) => /\.(png|webp|jpe?g|gif|webm|mp4)$/i.test(f) && existsSync(f),
+		(file) => /\.(png|webp|jpe?g|gif|webm|mp4)$/i.test(file) && existsSync(file),
 	)
 	if (!values.title || !files.length) {
 		console.error(
@@ -84,8 +84,8 @@ if (import.meta.main) {
 	const slug = slugOf(item)
 	item.page = `${slug}/`
 	mkdirSync(join(pages, 'review', 'media', slug), { recursive: true })
-	for (const f of files) copyFileSync(f, join(pages, 'review', 'media', slug, basename(f)))
-	item.media = files.map((f) => `review/media/${slug}/${basename(f)}`)
+	for (const file of files) copyFileSync(file, join(pages, 'review', 'media', slug, basename(file)))
+	item.media = files.map((file) => `review/media/${slug}/${basename(file)}`)
 	const items = existsSync(itemsPath) ? JSON.parse(readFileSync(itemsPath, 'utf8')) : []
 	items.unshift(item)
 	writeFileSync(itemsPath, JSON.stringify(items, null, '\t') + '\n')

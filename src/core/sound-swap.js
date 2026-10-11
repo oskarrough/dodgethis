@@ -62,8 +62,12 @@ async function clearFiles() {
 	const d = await open()
 	if (d) await request(d.transaction('files', 'readwrite').objectStore('files').clear())
 }
-export const loaded = Promise.all([reload(), clearFiles()]).catch(() => {})
-channel?.addEventListener('message', () => reload().catch(() => {}))
+export const loaded = Promise.all([reload(), clearFiles()]).catch((error) =>
+	console.warn('sound-swap: load failed:', error),
+)
+channel?.addEventListener('message', () =>
+	reload().catch((error) => console.warn('sound-swap: reload failed:', error)),
+)
 
 async function changed() {
 	await reload()

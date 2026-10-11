@@ -31,7 +31,7 @@ export function createLobbyDirectory({ request = globalThis.fetch.bind(globalThi
 				accepting: state.phase === 'lobby',
 			}
 			const current = listing
-			queue = queue.catch(() => {}).then(() => send('PUT', current))
+			queue = queue.catch(() => {}).then(() => send('PUT', current)) // prior failure already went to its own caller
 			await queue
 			if (listing !== current) return
 			timer = setInterval(() => {
@@ -56,7 +56,7 @@ export function createLobbyDirectory({ request = globalThis.fetch.bind(globalThi
 				queue = queue
 					.catch(() => {})
 					.then(() => send('DELETE', previous))
-					.catch(() => {})
+					.catch((error) => console.warn('lobby-directory: delete failed:', error))
 		},
 	}
 }

@@ -98,7 +98,7 @@ export async function play(argv = process.argv.slice(2)) {
 		onInputs: (record) => appendFileSync(filename + '.inputs.jsonl', JSON.stringify(record) + '\n'),
 	})
 	const decisions = createAgentDecisions(
-		roster.filter((s) => s.controller === 'agent').map((s) => s.id),
+		roster.filter((seat) => seat.controller === 'agent').map((seat) => seat.id),
 	)
 	const transport =
 		command === 'serve' ? await sessionTransport(sessionDirectory(values.session)) : null

@@ -156,7 +156,9 @@ export async function sessionTransport(directory) {
 			await writeFile(join(directory, 'result'), result)
 			this.output(result)
 			await new Promise((resolve) => server.close(resolve))
-			await unlink(join(directory, 'socket')).catch(() => {})
+			await unlink(join(directory, 'socket')).catch((error) => {
+				if (error.code !== 'ENOENT') throw error
+			})
 		},
 	}
 }

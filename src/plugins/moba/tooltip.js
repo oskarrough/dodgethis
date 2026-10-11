@@ -213,7 +213,6 @@ export function killsCard(kills, { mine = true } = {}) {
 	}
 }
 
-// The clock's card carries the countdowns the top bar no longer shows.
 export function clockCard({ elapsed = 0, nextWave = 0, nextBall, ballPop = null, layout } = {}) {
 	const late = layout?.late ?? tune.match.late
 	const kinds = Object.entries(tune.minions).map(([kind, m]) => `${m.count} ${kind}`)

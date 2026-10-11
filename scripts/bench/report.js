@@ -20,7 +20,7 @@ const SIEGE_MINIONS = 2
 export function matchReport(roster, { STEP, towerRange, count = [] }) {
 	const seats = new Map(roster.map((seat) => [seat.id, seat]))
 	const hero = (id) => seats.get(id)?.heroId
-	const r = {
+	const counters = {
 		seats: Object.fromEntries(
 			roster.map((seat) => [
 				seat.id,
@@ -52,99 +52,118 @@ export function matchReport(roster, { STEP, towerRange, count = [] }) {
 	const firstHit = new Map()
 	const player = roster.find((seat) => seat.controller === 'agent')?.id
 	const ability = (seat, id) =>
-		(r.abilities[`${hero(seat)} ${id ?? '?'}`] ??= { casts: 0, hits: 0, heroHits: 0, damage: 0 })
+		(counters.abilities[`${hero(seat)} ${id ?? '?'}`] ??= {
+			casts: 0,
+			hits: 0,
+			heroHits: 0,
+			damage: 0,
+		})
 	const add = (bucket, key, value) => (bucket[key] = (bucket[key] ?? 0) + value)
 	return {
-		report: r,
+		report: counters,
 		row(row) {
-			if (row.kind in r.counts) add(r.counts[row.kind], row.team ?? '-', 1)
+			if (row.kind in counters.counts) add(counters.counts[row.kind], row.team ?? '-', 1)
 			if (row.kind === 'hit' && row.target && !firstHit.has(row.target))
 				firstHit.set(row.target, row.tick * STEP)
 			if (row.kind === 'structureDown')
-				r.falls.push({ id: row.target, at: row.tick * STEP, hit: firstHit.get(row.target) })
+				counters.falls.push({ id: row.target, at: row.tick * STEP, hit: firstHit.get(row.target) })
 			const seat = seats.has(row.seat) ? row.seat : null
 			if (row.kind === 'cast' && seat) ability(seat, row.ability_id).casts++
 			if (row.kind === 'hit' && seat) {
-				const a = ability(seat, row.ability_id),
-					s = r.seats[seat]
-				a.hits++
-				a.damage += row.effective_damage
-				s.damage += row.effective_damage
+				const abilityStats = ability(seat, row.ability_id),
+					seatStats = counters.seats[seat]
+				abilityStats.hits++
+				abilityStats.damage += row.effective_damage
+				seatStats.damage += row.effective_damage
 				if (seats.has(row.target)) {
-					a.heroHits++
-					s.heroDamage += row.effective_damage
+					abilityStats.heroHits++
+					seatStats.heroDamage += row.effective_damage
 				}
-				if (structure(row.target)) s.structureHits++
+				if (structure(row.target)) seatStats.structureHits++
 			}
 			if (
 				row.kind === 'hit' &&
 				seats.has(row.target) &&
-				!r.seats[row.target].idle &&
+				!counters.seats[row.target].idle &&
 				row.effective_damage
 			) {
 				const source = seat
 					? `${hero(seat)} ${row.ability_id ?? '?'}`
 					: killerKind(row.fact?.source, seats)
-				add((r.taken[hero(row.target)] ??= {}), source, row.effective_damage)
+				add((counters.taken[hero(row.target)] ??= {}), source, row.effective_damage)
 			}
 			// Ball catches aren't skill; only caught ability shots count.
-			if (row.kind === 'caught' && seat && row.fact?.ability) r.seats[seat].catches++
+			if (row.kind === 'caught' && seat && row.fact?.ability) counters.seats[seat].catches++
 			// Flagfall: a shove off the court through a fence gap.
 			if (row.kind === 'dunk') {
-				if (seats.has(row.target)) r.seats[row.target].dunked++
-				if (seats.has(row.fact?.source)) r.seats[row.fact.source].dunks++
+				if (seats.has(row.target)) counters.seats[row.target].dunked++
+				if (seats.has(row.fact?.source)) counters.seats[row.fact.source].dunks++
 			}
-			if (row.kind === 'structureDown' && row.target?.startsWith('tower') && r.firstTower === null)
-				r.firstTower = row.tick * STEP
+			if (
+				row.kind === 'structureDown' &&
+				row.target?.startsWith('tower') &&
+				counters.firstTower === null
+			)
+				counters.firstTower = row.tick * STEP
 			if (row.kind === 'death' && seats.has(row.target)) {
-				r.seats[row.target].deaths++
-				if (r.seats[row.target].idle) return
-				const by = (r.deathsBy[hero(row.target)] ??= {})
+				counters.seats[row.target].deaths++
+				if (counters.seats[row.target].idle) return
+				const by = (counters.deathsBy[hero(row.target)] ??= {})
 				add(by, killerKind(row.fact?.source, seats), 1)
 			}
 		},
 		// Fallen structures by kind; a laser gate reads as one.
 		finish(sim) {
-			const kinds = new Map(sim.lane.structures.map((s) => [s.id, s.kind]))
-			for (const fall of r.falls) {
+			const kinds = new Map(sim.lane.structures.map((item) => [item.id, item.kind]))
+			for (const fall of counters.falls) {
 				const kind = kinds.get(fall.id) ?? fall.id.split('-')[0]
 				fall.kind = kind === 'laser' ? 'laser gate' : kind
 			}
 		},
 		tick(sim) {
 			if (sim.lanes?.length > 1) {
-				for (const h of sim.heroes) {
-					if (h.dead) continue
-					const key = h.id === player ? `${h.id} (player)` : h.id
-					add((r.lanes[key] ??= {}), zone(sim.lanes, h), STEP)
+				for (const heroUnit of sim.heroes) {
+					if (heroUnit.dead) continue
+					const key = heroUnit.id === player ? `${heroUnit.id} (player)` : heroUnit.id
+					add((counters.lanes[key] ??= {}), zone(sim.lanes, heroUnit), STEP)
 				}
-				r.lost = {}
-				for (const s of sim.lane.structures)
-					if (s.dead && s.lane) add((r.lost[s.team] ??= {}), s.lane, 1)
+				counters.lost = {}
+				for (const item of sim.lane.structures)
+					if (item.dead && item.lane) add((counters.lost[item.team] ??= {}), item.lane, 1)
 			}
 			const brains = sim.bots?.brains
 			if (!brains) return
 			const lane = sim.lane
 			for (const brain of brains) {
-				const h = sim.heroes.find((u) => u.id === brain.id)
-				if (!h || h.dead) continue
-				const kit = hero(brain.id) ?? h.definition?.id
-				add((r.states[kit] ??= {}), brain.state ?? '?', STEP)
+				const heroUnit = sim.heroes.find((unit) => unit.id === brain.id)
+				if (!heroUnit || heroUnit.dead) continue
+				const kit = hero(brain.id) ?? heroUnit.definition?.id
+				add((counters.states[kit] ??= {}), brain.state ?? '?', STEP)
 				const tower = lane.structures.find(
-					(s) => !s.dead && s.team !== h.team && s.id.startsWith('tower') && lane.vulnerable(s),
+					(candidate) =>
+						!candidate.dead &&
+						candidate.team !== heroUnit.team &&
+						candidate.id.startsWith('tower') &&
+						lane.vulnerable(candidate),
 				)
 				if (!tower) continue
-				const tp = tower.body.position
+				const towerPosition = tower.body.position
 				const near = lane.minions.filter(
-					(u) =>
-						!u.dead &&
-						u.team === h.team &&
-						Math.hypot(u.body.position.x - tp.x, u.body.position.z - tp.z) <= towerRange,
+					(minion) =>
+						!minion.dead &&
+						minion.team === heroUnit.team &&
+						Math.hypot(
+							minion.body.position.x - towerPosition.x,
+							minion.body.position.z - towerPosition.z,
+						) <= towerRange,
 				).length
 				if (near < SIEGE_MINIONS) continue
-				const d = Math.hypot(h.body.position.x - tp.x, h.body.position.z - tp.z)
-				const where = d <= towerRange + 1.5 ? 'in' : d <= 20 ? 'out' : 'far'
-				add((r.siege[kit] ??= {}), `${brain.state ?? '?'}:${where}`, STEP)
+				const distance = Math.hypot(
+					heroUnit.body.position.x - towerPosition.x,
+					heroUnit.body.position.z - towerPosition.z,
+				)
+				const where = distance <= towerRange + 1.5 ? 'in' : distance <= 20 ? 'out' : 'far'
+				add((counters.siege[kit] ??= {}), `${brain.state ?? '?'}:${where}`, STEP)
 			}
 		},
 	}
@@ -153,23 +172,30 @@ export function matchReport(roster, { STEP, towerRange, count = [] }) {
 // Two-lane maps: the lane a hero stands in (within LANE_BAND of its path), home near its spawn, else yard.
 const LANE_BAND = 6
 const HOME = 15
-function zone(lanes, h) {
-	const p = h.body.position
-	if (h.spawn && Math.hypot(p.x - h.spawn.x, p.z - h.spawn.z) <= HOME) return 'home'
+function zone(lanes, heroUnit) {
+	const position = heroUnit.body.position
+	if (
+		heroUnit.spawn &&
+		Math.hypot(position.x - heroUnit.spawn.x, position.z - heroUnit.spawn.z) <= HOME
+	)
+		return 'home'
 	const near = (path) =>
 		Math.min(
-			...path.slice(1).map((to, i) => {
-				const from = path[i],
+			...path.slice(1).map((to, index) => {
+				const from = path[index],
 					dx = to.x - from.x,
 					dz = to.z - from.z,
 					t = Math.max(
 						0,
-						Math.min(1, ((p.x - from.x) * dx + (p.z - from.z) * dz) / (dx * dx + dz * dz || 1)),
+						Math.min(
+							1,
+							((position.x - from.x) * dx + (position.z - from.z) * dz) / (dx * dx + dz * dz || 1),
+						),
 					)
-				return Math.hypot(p.x - from.x - dx * t, p.z - from.z - dz * t)
+				return Math.hypot(position.x - from.x - dx * t, position.z - from.z - dz * t)
 			}),
 		)
-	return lanes.find((l) => near(l.path) <= LANE_BAND)?.id ?? 'yard'
+	return lanes.find((entry) => near(entry.path) <= LANE_BAND)?.id ?? 'yard'
 }
 
 export function emptyTotals() {
@@ -190,9 +216,9 @@ export function emptyTotals() {
 }
 
 const sumInto = (into, from) => {
-	for (const [k, v] of Object.entries(from)) {
-		if (typeof v === 'number') into[k] = (into[k] ?? 0) + v
-		else sumInto((into[k] ??= {}), v)
+	for (const [key, value] of Object.entries(from)) {
+		if (typeof value === 'number') into[key] = (into[key] ?? 0) + value
+		else sumInto((into[key] ??= {}), value)
 	}
 }
 
@@ -200,10 +226,10 @@ export function mergeReport(totals, report, winner) {
 	totals.matches++
 	if (winner) totals.decided++
 	const count = { A: {}, B: {} }
-	for (const s of Object.values(report.seats)) {
-		if (s.idle) continue
-		count[s.team][s.hero] = (count[s.team][s.hero] ?? 0) + 1
-		const h = (totals.heroes[s.hero] ??= {
+	for (const seat of Object.values(report.seats)) {
+		if (seat.idle) continue
+		count[seat.team][seat.hero] = (count[seat.team][seat.hero] ?? 0) + 1
+		const heroTotals = (totals.heroes[seat.hero] ??= {
 			seats: 0,
 			decided: 0,
 			wins: 0,
@@ -217,10 +243,10 @@ export function mergeReport(totals, report, winner) {
 			dunks: 0,
 			dunked: 0,
 		})
-		h.seats++
-		if (winner) h.decided++
-		if (winner === s.team) h.wins++
-		for (const k of [
+		heroTotals.seats++
+		if (winner) heroTotals.decided++
+		if (winner === seat.team) heroTotals.wins++
+		for (const statKey of [
 			'damage',
 			'heroDamage',
 			'deaths',
@@ -229,25 +255,25 @@ export function mergeReport(totals, report, winner) {
 			'dunks',
 			'dunked',
 		])
-			h[k] += s[k]
+			heroTotals[statKey] += seat[statKey]
 	}
 	// Edge: in a decided match where one team fields more of this hero, did that team win? One sample
 	// per match, so it takes a Wilson interval; for one-hero teams it is simply the hero's win rate.
 	if (winner)
-		for (const [id, h] of Object.entries(totals.heroes)) {
-			const a = count.A[id] ?? 0,
-				b = count.B[id] ?? 0
-			if (a === b) continue
-			h.edge++
-			if ((a > b ? 'A' : 'B') === winner) h.edgeWins++
+		for (const [id, heroTotals] of Object.entries(totals.heroes)) {
+			const aCount = count.A[id] ?? 0,
+				bCount = count.B[id] ?? 0
+			if (aCount === bCount) continue
+			heroTotals.edge++
+			if ((aCount > bCount ? 'A' : 'B') === winner) heroTotals.edgeWins++
 		}
 	for (const key of ['abilities', 'deathsBy', 'taken', 'states', 'siege', 'lanes', 'lost'])
 		sumInto(totals[key], report[key])
 	sumInto(totals.counts, report.counts)
 	for (const { kind, at, hit } of report.falls) {
-		const f = (totals.falls[kind] ??= { at: [], took: [] })
-		f.at.push(at)
-		if (hit !== undefined) f.took.push(at - hit)
+		const fallStats = (totals.falls[kind] ??= { at: [], took: [] })
+		fallStats.at.push(at)
+		if (hit !== undefined) fallStats.took.push(at - hit)
 	}
 }
 
@@ -272,48 +298,57 @@ export function addResult(cell, { pair, winner, duration, report }) {
 		row.towers++
 		row.towerSeconds += report.firstTower
 	}
-	for (const s of Object.values(report.seats))
-		for (const k of ['deaths', 'damage', 'structureHits']) row[s.team][k] += s[k]
+	for (const seat of Object.values(report.seats))
+		for (const statKey of ['deaths', 'damage', 'structureHits'])
+			row[seat.team][statKey] += seat[statKey]
 	mergeReport(cell.totals, report, winner)
 }
 
 export function table(header, rows) {
-	const widths = header.map((h, c) => Math.max(h.length, ...rows.map((l) => String(l[c]).length)))
+	const widths = header.map((heading, column) =>
+		Math.max(heading.length, ...rows.map((line) => String(line[column]).length)),
+	)
 	const fmt = (cells) =>
 		cells
-			.map((cell, c) => String(cell).padEnd(widths[c]))
+			.map((cell, column) => String(cell).padEnd(widths[column]))
 			.join('  ')
 			.trimEnd()
-	return [fmt(header), fmt(widths.map((w) => '-'.repeat(w))), ...rows.map(fmt)].join('\n')
+	return [fmt(header), fmt(widths.map((width) => '-'.repeat(width))), ...rows.map(fmt)].join('\n')
 }
 
 const clock = (seconds) =>
 	`${Math.floor(Math.round(seconds) / 60)}:${String(Math.round(seconds) % 60).padStart(2, '0')}`
 
 // One value, or "base → working" when there is a base.
-const pair = (base, work, f) => {
-	const show = (x) => (x === undefined || Number.isNaN(x) ? '-' : f(x))
+const pair = (base, work, format) => {
+	const show = (value) => (value === undefined || Number.isNaN(value) ? '-' : format(value))
 	return base === null ? show(work) : `${show(base)} → ${show(work)}`
 }
-const fixed = (digits) => (x) => x.toFixed(digits)
-const median = (xs) => {
-	if (!xs?.length) return undefined
-	const s = [...xs].sort((a, b) => a - b),
-		m = s.length >> 1
-	return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2
+const fixed = (digits) => (value) => value.toFixed(digits)
+const median = (values) => {
+	if (!values?.length) return undefined
+	const sorted = [...values].sort((a, b) => a - b),
+		middle = sorted.length >> 1
+	return sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2
 }
 
 // The headline win rates: each ordered cross matchup's A win % and each hero's edge.
 // Without a base a rate is decided when its interval leaves 50%; with one, when the delta's leaves 0.
 function headlines(cell, base) {
 	const rates = []
-	for (const [key, r] of Object.entries(cell.rows)) {
-		const [a, b] = key.split(' v ')
-		if (a !== b) rates.push([r.aWins, r.decided, base?.rows[key], (x) => [x.aWins, x.decided]])
+	for (const [key, row] of Object.entries(cell.rows)) {
+		const [left, right] = key.split(' v ')
+		if (left !== right)
+			rates.push([row.aWins, row.decided, base?.rows[key], (entry) => [entry.aWins, entry.decided]])
 	}
-	for (const [id, h] of Object.entries(cell.totals.heroes))
-		if (h.edge)
-			rates.push([h.edgeWins, h.edge, base?.totals.heroes[id], (x) => [x.edgeWins, x.edge]])
+	for (const [id, heroStats] of Object.entries(cell.totals.heroes))
+		if (heroStats.edge)
+			rates.push([
+				heroStats.edgeWins,
+				heroStats.edge,
+				base?.totals.heroes[id],
+				(entry) => [entry.edgeWins, entry.edge],
+			])
 	return rates
 }
 
@@ -321,27 +356,27 @@ export function undecided(cells, bases) {
 	let open = 0,
 		all = 0
 	cells.forEach((cell, i) => {
-		for (const [k, n, other, read] of headlines(cell, bases?.[i])) {
+		for (const [wins, decided, other, read] of headlines(cell, bases?.[i])) {
 			all++
 			if (bases) {
-				const [k0, n0] = other ? read(other) : [0, 0]
-				if (!deltaDecided(difference(k, n, k0, n0))) open++
-			} else if (!rateDecided(k, n)) open++
+				const [wins0, decided0] = other ? read(other) : [0, 0]
+				if (!deltaDecided(difference(wins, decided, wins0, decided0))) open++
+			} else if (!rateDecided(wins, decided)) open++
 		}
 	})
 	return { open, all }
 }
 
-const rateColumns = (k, n, other, read) => {
-	if (other === null) return [rateCell(k, n)]
-	const [k0, n0] = other ? read(other) : [0, 0]
-	const interval = difference(k, n, k0, n0)
-	const d = (n ? k / n : 0) - (n0 ? k0 / n0 : 0)
+const rateColumns = (wins, decided, other, read) => {
+	if (other === null) return [rateCell(wins, decided)]
+	const [wins0, decided0] = other ? read(other) : [0, 0]
+	const interval = difference(wins, decided, wins0, decided0)
+	const delta = (decided ? wins / decided : 0) - (decided0 ? wins0 / decided0 : 0)
 	return [
-		rateCell(k0, n0),
-		rateCell(k, n),
-		n && n0 ? deltaCell(interval, d) : '-',
-		n && n0 ? deltaVerdict(interval) : '-',
+		rateCell(wins0, decided0),
+		rateCell(wins, decided),
+		decided && decided0 ? deltaCell(interval, delta) : '-',
+		decided && decided0 ? deltaVerdict(interval) : '-',
 	]
 }
 
@@ -355,41 +390,45 @@ export function summarySections(sides, labels) {
 		two
 			? [`${name} base`, `${name} working`, 'Δ points [approx. 95%]', 'verdict']
 			: [`${name} [95%]`]
-	const out = []
+	const output = []
 
 	const matchups = []
-	work.forEach((cell, v) => {
-		const keys = [...new Set([...Object.keys(cell.rows), ...Object.keys(base?.[v].rows ?? {})])]
+	work.forEach((cell, index) => {
+		const keys = [...new Set([...Object.keys(cell.rows), ...Object.keys(base?.[index].rows ?? {})])]
 		for (const key of keys.sort()) {
-			const r = cell.rows[key],
-				b = base ? (base[v].rows[key] ?? undefined) : null
-			const avg = (x, f) => (x ? f(x) : undefined)
+			const row = cell.rows[key],
+				baseRow = base ? (base[index].rows[key] ?? undefined) : null
+			const avg = (entry, format) => (entry ? format(entry) : undefined)
 			matchups.push([
-				labels[v],
+				labels[index],
 				key,
-				two ? `${b?.n ?? 0}+${r?.n ?? 0}` : r.n,
-				...rateColumns(r?.aWins ?? 0, r?.decided ?? 0, b, (x) => [x.aWins, x.decided]),
+				two ? `${baseRow?.n ?? 0}+${row?.n ?? 0}` : row.n,
+				...rateColumns(row?.aWins ?? 0, row?.decided ?? 0, baseRow, (entry) => [
+					entry.aWins,
+					entry.decided,
+				]),
 				...(two
 					? []
 					: [
-							`${(r.B.deaths / r.n).toFixed(1)}-${(r.A.deaths / r.n).toFixed(1)}`,
-							`${Math.round(r.A.damage / r.n)}-${Math.round(r.B.damage / r.n)}`,
-							`${(r.A.structureHits / r.n).toFixed(1)}-${(r.B.structureHits / r.n).toFixed(1)}`,
+							`${(row.B.deaths / row.n).toFixed(1)}-${(row.A.deaths / row.n).toFixed(1)}`,
+							`${Math.round(row.A.damage / row.n)}-${Math.round(row.B.damage / row.n)}`,
+							`${(row.A.structureHits / row.n).toFixed(1)}-${(row.B.structureHits / row.n).toFixed(1)}`,
 						]),
 				pair(
-					b && avg(b, (x) => (x.towers ? x.towerSeconds / x.towers : NaN)),
-					avg(r, (x) => (x.towers ? x.towerSeconds / x.towers : NaN)),
+					baseRow &&
+						avg(baseRow, (entry) => (entry.towers ? entry.towerSeconds / entry.towers : NaN)),
+					avg(row, (entry) => (entry.towers ? entry.towerSeconds / entry.towers : NaN)),
 					clock,
 				),
 				pair(
-					b && avg(b, (x) => x.seconds / x.n / 60),
-					avg(r, (x) => x.seconds / x.n / 60),
+					baseRow && avg(baseRow, (entry) => entry.seconds / entry.n / 60),
+					avg(row, (entry) => entry.seconds / entry.n / 60),
 					fixed(1),
 				),
 			])
 		}
 	})
-	out.push(
+	output.push(
 		table(
 			[
 				'variant',
@@ -405,21 +444,35 @@ export function summarySections(sides, labels) {
 	)
 
 	const heroes = []
-	work.forEach((cell, v) => {
-		const t = cell.totals,
-			bt = base ? base[v].totals : null
-		const ids = [...new Set([...Object.keys(t.heroes), ...Object.keys(bt?.heroes ?? {})])].sort()
+	work.forEach((cell, index) => {
+		const totals = cell.totals,
+			baseTotals = base ? base[index].totals : null
+		const ids = [
+			...new Set([...Object.keys(totals.heroes), ...Object.keys(baseTotals?.heroes ?? {})]),
+		].sort()
 		for (const id of ids) {
-			const h = t.heroes[id],
-				bh = bt ? (bt.heroes[id] ?? undefined) : null
-			const per = (k, digits) => pair(bh && bh[k] / bh.seats, h && h[k] / h.seats, fixed(digits))
+			const heroStats = totals.heroes[id],
+				baseHero = baseTotals ? (baseTotals.heroes[id] ?? undefined) : null
+			const per = (stat, digits) =>
+				pair(
+					baseHero && baseHero[stat] / baseHero.seats,
+					heroStats && heroStats[stat] / heroStats.seats,
+					fixed(digits),
+				)
 			heroes.push([
-				labels[v],
+				labels[index],
 				id,
-				...(h?.edge || bh?.edge
-					? rateColumns(h?.edgeWins ?? 0, h?.edge ?? 0, bh, (x) => [x.edgeWins, x.edge])
+				...(heroStats?.edge || baseHero?.edge
+					? rateColumns(heroStats?.edgeWins ?? 0, heroStats?.edge ?? 0, baseHero, (entry) => [
+							entry.edgeWins,
+							entry.edge,
+						])
 					: rateHeader('').map(() => '-')),
-				pair(bh && (100 * bh.wins) / bh.decided, h && (100 * h.wins) / h.decided, fixed(0)),
+				pair(
+					baseHero && (100 * baseHero.wins) / baseHero.decided,
+					heroStats && (100 * heroStats.wins) / heroStats.decided,
+					fixed(0),
+				),
 				per('damage', 0),
 				per('heroDamage', 0),
 				per('deaths', 1),
@@ -430,7 +483,7 @@ export function summarySections(sides, labels) {
 			])
 		}
 	})
-	out.push(
+	output.push(
 		'\nPer hero, per seat and match. Edge: win % of the team fielding more of this hero.',
 		table(
 			[
@@ -449,7 +502,7 @@ export function summarySections(sides, labels) {
 			heroes,
 		),
 	)
-	return out.join('\n')
+	return output.join('\n')
 }
 
 // `--report`: per ability, deaths by killer, damage taken by source and bot states, for the first
@@ -460,18 +513,19 @@ export function reportSections(sides) {
 		base = two ? sides[0].cells[0].totals : null
 	const val = (fn, digits = 0) => pair(base && fn(base), fn(work), fixed(digits))
 	const all = [work, ...(base ? [base] : [])]
-	const keys = (pick) => [...new Set(all.flatMap((t) => Object.keys(pick(t))))].sort()
+	const keys = (pick) => [...new Set(all.flatMap((totals) => Object.keys(pick(totals))))].sort()
 	const inner = (pick) =>
-		[...new Set(all.flatMap((t) => Object.values(pick(t)).flatMap(Object.keys)))].sort()
-	const seats = (t, id) => t.heroes[id]?.seats || t.matches
-	const out = [two ? `\nReport (${sides[0].label} → ${sides[1].label})` : '\nReport']
+		[...new Set(all.flatMap((totals) => Object.values(pick(totals)).flatMap(Object.keys)))].sort()
+	const seats = (totals, id) => totals.heroes[id]?.seats || totals.matches
+	const output = [two ? `\nReport (${sides[0].label} → ${sides[1].label})` : '\nReport']
 
-	out.push(
+	output.push(
 		'\nPer ability, per match',
 		table(
 			['hero ability', 'casts', 'hits', 'hero hits', 'damage'],
-			keys((t) => t.abilities).map((id) => {
-				const per = (k) => (t) => (t.abilities[id] ? t.abilities[id][k] / t.matches : 0)
+			keys((totals) => totals.abilities).map((id) => {
+				const per = (stat) => (totals) =>
+					totals.abilities[id] ? totals.abilities[id][stat] / totals.matches : 0
 				return [
 					id,
 					val(per('casts'), 1),
@@ -483,62 +537,67 @@ export function reportSections(sides) {
 		),
 	)
 
-	const kinds = inner((t) => t.deathsBy)
-	out.push(
+	const kinds = inner((totals) => totals.deathsBy)
+	output.push(
 		'\nDeaths per seat and match, by killer',
 		table(
 			['victim', ...kinds],
-			keys((t) => t.deathsBy).map((v) => [
-				v,
-				...kinds.map((k) => val((t) => (t.deathsBy[v]?.[k] ?? 0) / seats(t, v), 2)),
+			keys((totals) => totals.deathsBy).map((victim) => [
+				victim,
+				...kinds.map((kind) =>
+					val((totals) => (totals.deathsBy[victim]?.[kind] ?? 0) / seats(totals, victim), 2),
+				),
 			]),
 		),
 	)
 
 	const taken = []
-	for (const victim of keys((t) => t.taken)) {
-		const sources = inner((t) => ({ v: t.taken[victim] ?? {} }))
-		const amount = (t, src) => (t.taken[victim]?.[src] ?? 0) / seats(t, victim)
+	for (const victim of keys((totals) => totals.taken)) {
+		const sources = inner((totals) => ({ victim: totals.taken[victim] ?? {} }))
+		const amount = (totals, source) => (totals.taken[victim]?.[source] ?? 0) / seats(totals, victim)
 		sources.sort((a, b) => amount(work, b) - amount(work, a))
-		for (const src of sources) taken.push([victim, src, val((t) => amount(t, src))])
+		for (const source of sources)
+			taken.push([victim, source, val((totals) => amount(totals, source))])
 	}
-	out.push(
+	output.push(
 		'\nDamage taken per seat and match, by source',
 		table(['victim', 'source', 'damage'], taken),
 	)
 
 	for (const [title, pick, share] of [
-		['\nBot state, % of alive time', (t) => t.states, true],
-		['\nWhere each seat spends its alive time, % (two-lane maps)', (t) => t.lanes, true],
+		['\nBot state, % of alive time', (totals) => totals.states, true],
+		['\nWhere each seat spends its alive time, % (two-lane maps)', (totals) => totals.lanes, true],
 		[
 			'\nBot state in a siege window (≥2 friendly minions at a vulnerable enemy tower), seconds per bot and match; in = within tower range, out = within 20 m',
-			(t) => t.siege,
+			(totals) => totals.siege,
 			false,
 		],
 	]) {
 		// Columns that never reach a second or a percent are noise.
 		const states = inner(pick).filter((state) =>
-			all.some((t) =>
-				Object.entries(pick(t)).some(([kit, row]) => {
-					const sum = Object.values(row).reduce((a, b) => a + b, 0)
+			all.some((totals) =>
+				Object.entries(pick(totals)).some(([kit, row]) => {
+					const sum = Object.values(row).reduce((total, value) => total + value, 0)
 					return share
 						? (100 * (row[state] ?? 0)) / sum >= 1
-						: (row[state] ?? 0) / seats(t, kit) >= 1
+						: (row[state] ?? 0) / seats(totals, kit) >= 1
 				}),
 			),
 		)
-		out.push(
+		output.push(
 			title,
 			table(
 				['hero', ...states],
 				keys(pick).map((kit) => [
 					kit,
 					...states.map((state) =>
-						val((t) => {
-							const row = pick(t)[kit]
+						val((totals) => {
+							const row = pick(totals)[kit]
 							if (!row) return undefined
-							const sum = Object.values(row).reduce((a, b) => a + b, 0)
-							return share ? (100 * (row[state] ?? 0)) / sum : (row[state] ?? 0) / seats(t, kit)
+							const sum = Object.values(row).reduce((total, value) => total + value, 0)
+							return share
+								? (100 * (row[state] ?? 0)) / sum
+								: (row[state] ?? 0) / seats(totals, kit)
 						}),
 					),
 				]),
@@ -546,50 +605,54 @@ export function reportSections(sides) {
 		)
 	}
 	const order = ['tower', 'gatehouse', 'laser gate', 'fort', 'core']
-	const fallKinds = keys((t) => t.falls).sort((a, b) => order.indexOf(a) - order.indexOf(b))
+	const fallKinds = keys((totals) => totals.falls).sort(
+		(a, b) => order.indexOf(a) - order.indexOf(b),
+	)
 	if (fallKinds.length)
-		out.push(
+		output.push(
 			'\nStructure falls: falls per match, median minute it falls, median seconds from first hit to falling',
 			table(
 				['structure', 'falls', 'minute', 'hit → fall s'],
 				fallKinds.map((kind) => [
 					kind,
-					val((t) => (t.falls[kind]?.at.length ?? 0) / t.matches, 2),
-					val((t) => median(t.falls[kind]?.at) / 60, 1),
-					val((t) => median(t.falls[kind]?.took)),
+					val((totals) => (totals.falls[kind]?.at.length ?? 0) / totals.matches, 2),
+					val((totals) => median(totals.falls[kind]?.at) / 60, 1),
+					val((totals) => median(totals.falls[kind]?.took)),
 				]),
 			),
 		)
-	const lostLanes = inner((t) => t.lost)
+	const lostLanes = inner((totals) => totals.lost)
 	if (lostLanes.length)
-		out.push(
+		output.push(
 			'\nStructures lost per match, by team and lane',
 			table(
 				['team', ...lostLanes],
-				keys((t) => t.lost).map((team) => [
+				keys((totals) => totals.lost).map((team) => [
 					team,
-					...lostLanes.map((l) => val((t) => (t.lost[team]?.[l] ?? 0) / t.matches, 2)),
+					...lostLanes.map((lane) =>
+						val((totals) => (totals.lost[team]?.[lane] ?? 0) / totals.matches, 2),
+					),
 				]),
 			),
 		)
-	return out.join('\n')
+	return output.join('\n')
 }
 
 // `--count kind,...`: named facts per team and match, per variant.
 export function countSections(sides, labels, kinds) {
 	const two = sides.length > 1
 	const rows = []
-	sides.at(-1).cells.forEach((cell, v) => {
-		const t = cell.totals,
-			b = two ? sides[0].cells[v].totals : null
-		const per = (x, kind, team) => (x.counts[kind]?.[team] ?? 0) / x.matches
+	sides.at(-1).cells.forEach((cell, index) => {
+		const totals = cell.totals,
+			baseTotals = two ? sides[0].cells[index].totals : null
+		const per = (source, kind, team) => (source.counts[kind]?.[team] ?? 0) / source.matches
 		for (const kind of kinds)
 			for (const team of ['A', 'B'])
 				rows.push([
-					labels[v],
+					labels[index],
 					kind,
 					team,
-					pair(b && per(b, kind, team), per(t, kind, team), fixed(2)),
+					pair(baseTotals && per(baseTotals, kind, team), per(totals, kind, team), fixed(2)),
 				])
 	})
 	return [

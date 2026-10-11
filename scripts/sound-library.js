@@ -27,14 +27,14 @@ export const asBuffer = (samples, rate = RATE) => ({
 	getChannelData: () => samples,
 })
 
-export function libraryFiles(dir = LIBRARY) {
-	const out = []
-	for (const entry of readdirSync(dir, { withFileTypes: true })) {
-		const path = join(dir, entry.name)
-		if (entry.isDirectory()) out.push(...libraryFiles(path))
-		else if (/\.(wav|ogg|mp3|flac|m4a)$/i.test(entry.name)) out.push(path)
+export function libraryFiles(directory = LIBRARY) {
+	const output = []
+	for (const entry of readdirSync(directory, { withFileTypes: true })) {
+		const path = join(directory, entry.name)
+		if (entry.isDirectory()) output.push(...libraryFiles(path))
+		else if (/\.(wav|ogg|mp3|flac|m4a)$/i.test(entry.name)) output.push(path)
 	}
-	return out.sort()
+	return output.sort()
 }
 
 // { 'impact/wood-light-001.ogg': numbers } for every library file, measuring only new or changed ones.
@@ -168,8 +168,8 @@ export async function writeShortlists(rows) {
 		const hint = USE[id] ?? PART[partOf(id)]
 		const fight = !CALM.includes(source)
 		const scored = Object.entries(library)
-			.filter(([file, n]) => n && !SKIP.test(file))
-			.map(([file, n]) => {
+			.filter(([file, numbers]) => numbers && !SKIP.test(file))
+			.map(([file, numbers]) => {
 				const why = []
 				let score = 0
 				if (hint?.test(file)) {
@@ -180,13 +180,13 @@ export async function writeShortlists(rows) {
 					score += 2
 					why.push(`${source} family`)
 				}
-				if (n.attack > 25) score -= Math.min(4, n.attack / 25)
-				if (fight && n.tail > 400) score -= 2
-				if (n.length > (fight ? 700 : 1500)) score -= 2
-				if (n.peak < -45) score -= 1
+				if (numbers.attack > 25) score -= Math.min(4, numbers.attack / 25)
+				if (fight && numbers.tail > 400) score -= 2
+				if (numbers.length > (fight ? 700 : 1500)) score -= 2
+				if (numbers.peak < -45) score -= 1
 				if (taken.get(source)?.has(file)) score -= 1.5
 				const gain = built
-					? Math.min(1.5, Math.max(0.05, 10 ** ((built.rms - n.rms) / 20) / 0.6))
+					? Math.min(1.5, Math.max(0.05, 10 ** ((built.rms - numbers.rms) / 20) / 0.6))
 					: 0.5
 				return {
 					file,
@@ -205,7 +205,7 @@ export async function writeShortlists(rows) {
 			})
 			.slice(0, 5)
 		if (!taken.has(source)) taken.set(source, new Set())
-		for (const c of lists[id].slice(0, 2)) taken.get(source).add(c.file)
+		for (const candidate of lists[id].slice(0, 2)) taken.get(source).add(candidate.file)
 	}
 	writeFileSync(path, JSON.stringify(lists, null, '\t'))
 	return lists
@@ -218,7 +218,7 @@ if (import.meta.main) {
 	const builtins = existsSync('sounds/builtins.json')
 		? JSON.parse(readFileSync('sounds/builtins.json', 'utf8'))
 		: []
-	const lists = await writeShortlists(builtins.filter((r) => r.numbers))
+	const lists = await writeShortlists(builtins.filter((row) => row.numbers))
 	console.log(
 		`${Object.keys(await libraryNumbers()).length} library files; shortlists for ${Object.keys(lists).length} sounds.`,
 	)

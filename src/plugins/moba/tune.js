@@ -1,4 +1,3 @@
-// --- Tunables ----------------------------------------------------------------
 // Moba's live values (docs/feature-map.md), shared by the debug GUI, the sim and DOM-free tests. Metres and seconds.
 import { lobby } from './front/lobby-tune.js'
 import * as tunes from './all-tunes.js'

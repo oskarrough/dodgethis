@@ -34,7 +34,7 @@ for (let run = 0; run < 3; run++) {
 			seed: setup.seed + run,
 		},
 	)
-	const startAlive = round.units.filter((u) => u.alive).length
+	const startAlive = round.units.filter((unit) => unit.alive).length
 	for (let i = 0; i < 10 * 60; i++) {
 		const start = performance.now()
 		round.step(world.timestep, { x: 0, z: 0 })
@@ -44,7 +44,7 @@ for (let run = 0; run < 3; run++) {
 	windows.push({
 		seed: setup.seed + run,
 		startAlive,
-		endAlive: round.units.filter((u) => u.alive).length,
+		endAlive: round.units.filter((unit) => unit.alive).length,
 	})
 	round.dispose()
 }
@@ -57,7 +57,7 @@ console.log(
 			ticks: times.length,
 			budgetMs: 1000 / 144,
 			simulationMs: {
-				mean: times.reduce((a, b) => a + b) / times.length,
+				mean: times.reduce((total, time) => total + time) / times.length,
 				p95: times[Math.ceil(times.length * 0.95) - 1],
 				max: times.at(-1),
 			},

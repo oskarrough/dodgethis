@@ -90,7 +90,7 @@ test('mixed roster: only bots get brains and move, remote human defaults to neut
 test('local identity may be on B and movement maps address participant ids, not unit ids', () => {
 	make([human('a', 'A'), human('b', 'B')], 'b')
 	const [remote, local] = round.units
-	expect(round.human).toBe(local)
+	expect(round.localPlayer).toBe(local)
 	expect(round.localPlayer).toBe(local)
 	expect(local.team).toBe('B')
 	ticks(

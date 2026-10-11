@@ -377,7 +377,7 @@ export function rumble(weak, strong, duration) {
 				weakMagnitude: weak,
 				strongMagnitude: strong,
 			})
-			?.catch(() => {})
+			?.catch(() => {}) // rumble is cancelled by disconnects and newer effects
 	} catch {
 		/* actuator support can disappear on disconnect */
 	}

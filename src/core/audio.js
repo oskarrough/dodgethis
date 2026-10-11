@@ -218,7 +218,7 @@ function preload() {
 			.filter((swap) => swap.kept)
 			.map((swap) => keptUrl(swap.kept)),
 	])
-		load(url).catch(() => {})
+		load(url).catch((error) => console.warn('audio: preload failed:', error))
 }
 
 // gain is relative (× tune.output.volume); rate sets base playback speed/pitch; rateJitter detunes by ±frac so repeats don't sound mechanical.
@@ -426,7 +426,11 @@ registerVoices(sfx)
 // `play` runs while the offline context stands in for the live one; `warm` lists sample URLs to decode first.
 export async function render(play, { seconds = 2, rate = 44100, warm = [] } = {}) {
 	preload()
-	await Promise.all([...warm.map(load), ...buffers.values()].map((p) => p.catch(() => {})))
+	await Promise.all(
+		[...warm.map(load), ...buffers.values()].map((p) =>
+			p.catch((error) => console.warn('audio: render sample failed:', error)),
+		),
+	)
 	const live = [ctx, master, buses, tune.output.sound]
 	const offline = new OfflineAudioContext(2, Math.ceil(seconds * rate), rate)
 	ctx = offline

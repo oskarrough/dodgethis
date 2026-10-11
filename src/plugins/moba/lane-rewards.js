@@ -81,7 +81,6 @@ export function createRewards(shared) {
 			present({ type: 'globe', state: 'spawn', team: killerTeam, point: { ...globe.pos } })
 		}
 	}
-	// Once a second after `passiveStart`, both teams trickle XP from their base.
 	function passiveXp(t) {
 		if (t >= ticks(tune.levels.passiveStart) && t % ticks(1) === 0) {
 			for (const team of ['A', 'B'])

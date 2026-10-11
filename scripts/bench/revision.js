@@ -15,18 +15,18 @@ export const hasJj = (root) => run('jj', ['root'], { cwd: root }).status === 0
 // The commit a revision names: jj syntax first when jj owns the checkout, git otherwise.
 export function resolveCommit(root, revision) {
 	if (hasJj(root)) {
-		const jj = run('jj', ['log', '-r', revision, '--no-graph', '-T', 'commit_id ++ "\\n"'], {
+		const jjLog = run('jj', ['log', '-r', revision, '--no-graph', '-T', 'commit_id ++ "\\n"'], {
 			cwd: root,
 		})
-		const lines = jj.stdout?.trim().split('\n') ?? []
-		if (jj.status === 0 && lines.length === 1 && commitId(lines[0])) return lines[0]
+		const lines = jjLog.stdout?.trim().split('\n') ?? []
+		if (jjLog.status === 0 && lines.length === 1 && commitId(lines[0])) return lines[0]
 	}
 	const git = run('git', ['rev-parse', '--verify', '--quiet', `${revision}^{commit}`], {
 		cwd: root,
 	})
-	const id = git.status === 0 && commitId(git.stdout)
-	if (!id) throw new Error(`--base ${revision}: no single commit by that name`)
-	return id
+	const commitHash = git.status === 0 && commitId(git.stdout)
+	if (!commitHash) throw new Error(`--base ${revision}: no single commit by that name`)
+	return commitHash
 }
 
 // What the working copy is compared against when --base has no value: the commit under your edits.
@@ -39,9 +39,9 @@ export function defaultBase(root) {
 
 export function checkoutRevision(root, revision) {
 	const commit = resolveCommit(root, revision)
-	const dir = `/tmp/dodgethis-rev-${commit.slice(0, 12)}`
-	if (!existsSync(join(dir, 'package.json'))) {
-		const staging = mkdtempSync(`${dir}.partial-`)
+	const directory = `/tmp/dodgethis-rev-${commit.slice(0, 12)}`
+	if (!existsSync(join(directory, 'package.json'))) {
+		const staging = mkdtempSync(`${directory}.partial-`)
 		try {
 			const archive = run('git', ['archive', '--format=tar', commit], {
 				cwd: root,
@@ -53,9 +53,9 @@ export function checkoutRevision(root, revision) {
 			if (untar.status !== 0) throw new Error(`tar failed: ${untar.stderr.trim()}`)
 			// A concurrent farm may have unpacked the same commit first; theirs is as good as ours.
 			try {
-				renameSync(staging, dir)
+				renameSync(staging, directory)
 			} catch (error) {
-				if (!existsSync(join(dir, 'package.json'))) throw error
+				if (!existsSync(join(directory, 'package.json'))) throw error
 				rmSync(staging, { recursive: true, force: true })
 			}
 		} catch (error) {
@@ -63,7 +63,7 @@ export function checkoutRevision(root, revision) {
 			throw error
 		}
 	}
-	const modules = join(dir, 'node_modules')
+	const modules = join(directory, 'node_modules')
 	if (!existsSync(modules)) {
 		try {
 			symlinkSync(realpathSync(join(root, 'node_modules')), modules)
@@ -71,5 +71,5 @@ export function checkoutRevision(root, revision) {
 			if (error.code !== 'EEXIST') throw error
 		}
 	}
-	return { root: dir, commit }
+	return { root: directory, commit }
 }

@@ -6,7 +6,6 @@ import { createBrain } from './ai.js'
 import { createNearMissTracker } from './nearmiss.js'
 import { nearest } from '../../core/spatial.js'
 import { tune } from './tune.js'
-import { PALETTE } from '../../core/style.js'
 import { createSoloRoster } from './roster.js'
 import { validateRoster } from '../../core/roster.js'
 
@@ -51,7 +50,7 @@ export function createRound(
 				teamIndices[participant.team]++,
 				teamCounts[participant.team],
 			),
-			color: participant.team === 'A' ? PALETTE.teamA : PALETTE.teamB,
+			role: participant.team === 'A' ? 'teamA' : 'teamB',
 			smooth,
 		}),
 	)
@@ -377,7 +376,7 @@ export function createRound(
 		} while (usedParticipantIds.has(id))
 		const u = createPlayer(scene, world, RAPIER, {
 			position,
-			color: isB ? PALETTE.teamB : PALETTE.teamA,
+			role: isB ? 'teamB' : 'teamA',
 			hp,
 			participant: { id, team, controller: 'bot' },
 			smooth,
@@ -423,7 +422,6 @@ export function createRound(
 	}
 
 	return {
-		human: localPlayer, // compatibility alias: not the only human, nor necessarily Team A
 		localPlayer,
 		localParticipantId,
 		lobby,

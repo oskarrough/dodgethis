@@ -1,6 +1,5 @@
 import { tune } from './tune.js'
 import { bounds } from './arena.js'
-import { PALETTE } from '../../core/style.js'
 import { createBody } from '../../core/body.js'
 import { validateRoster } from '../../core/roster.js'
 import { createLoadout } from './loadout.js'
@@ -15,7 +14,7 @@ export function createPlayer(
 	RAPIER,
 	{
 		position = [0, 0, 0],
-		color = PALETTE.teamA,
+		role = 'teamA',
 		team = 'A',
 		isHuman = false,
 		hp = 1,
@@ -36,7 +35,7 @@ export function createPlayer(
 	const body = createBody(scene, world, RAPIER, {
 		profile: tune.player,
 		position,
-		color,
+		role,
 		bounds,
 		smooth,
 		replica,

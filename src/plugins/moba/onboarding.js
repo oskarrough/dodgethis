@@ -100,7 +100,6 @@ void main() {
 			arrow.rotation.z = direction === 1 ? 0 : Math.PI
 			pointer.hidden = true
 			if (sim.lane.match.winner) return
-			// Carrying, the pointer swaps the Ball for where to throw it.
 			const goalUnit =
 				sim.ball?.carrying(hero) &&
 				sim.lane.structures.find((u) => !u.dead && u.team !== hero.team && sim.lane.vulnerable(u))

@@ -173,7 +173,6 @@ export function contactNormal(p, radius = 0, obstacles = OBSTACLES, bounds = FLO
 			keep(d - radius - (o.r ?? 0), dx / d, dz / d)
 			continue
 		}
-		// Centre inside a box: push out along the shallower axis.
 		const px = o.halfX - Math.abs(p.x - o.x),
 			pz = o.halfZ - Math.abs(p.z - o.z)
 		if (px < pz) keep(-px - radius, Math.sign(p.x - o.x) || 1, 0)

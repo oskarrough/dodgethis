@@ -72,7 +72,9 @@ export function gameModules(root = ROOT) {
 
 // Ordered team-kit pairs in rotation order; mirrors say nothing about a matchup, so a probe can drop them.
 export function farmPairs(heroes, crossOnly = false) {
-	return heroes.flatMap((a) => heroes.map((b) => [a, b])).filter(([a, b]) => !crossOnly || a !== b)
+	return heroes
+		.flatMap((first) => heroes.map((second) => [first, second]))
+		.filter(([first, second]) => !crossOnly || first !== second)
 }
 
 // A team is one hero for all three seats, or a lineup like `mitts,fletcher,random`. Practice fields
@@ -123,8 +125,8 @@ function tuneSlot(path, root = tune) {
 		if (node && typeof node[last] === 'number') return [node, last]
 	}
 	const keys = path.split('.')
-	const exp = keys.indexOf('exp')
-	if (exp >= 0 && exp < keys.length - 1) {
+	const expIndex = keys.indexOf('exp')
+	if (expIndex >= 0 && expIndex < keys.length - 1) {
 		let node = root
 		for (const key of keys.slice(0, -1)) {
 			if (node[key] === undefined) node[key] = {}
@@ -290,10 +292,12 @@ function playerBot(mods, sim, recipe, roster, seed, { id, lane }) {
 	]
 	const bot = mods.createBots([roster.find((seat) => seat.id === id)], seed, modules)
 	const lanes = sim.lanes ?? []
-	if (lane && !lanes.some((l) => l.id === lane))
-		throw new Error(`--player ${id}:${lane}: lanes are ${lanes.map((l) => l.id).join(', ')}`)
+	if (lane && !lanes.some((laneEntry) => laneEntry.id === lane))
+		throw new Error(
+			`--player ${id}:${lane}: lanes are ${lanes.map((laneEntry) => laneEntry.id).join(', ')}`,
+		)
 	const ordered = lane ? [...lanes].sort((a, b) => (b.id === lane) - (a.id === lane)) : lanes
-	const view = new Proxy(sim, { get: (t, k) => (k === 'lanes' ? ordered : t[k]) })
+	const view = new Proxy(sim, { get: (target, key) => (key === 'lanes' ? ordered : target[key]) })
 	return () => {
 		const actions = []
 		bot.step(view, { feed: (seat, frame) => actions.push([seat, frame]) })
@@ -332,9 +336,10 @@ Saved logs
   --logs path               analyse saved logs with DuckDB instead of playing; directory, file or glob`
 
 function withBaseDefault(argv) {
-	const i = argv.indexOf('--base')
-	if (i < 0 || (argv[i + 1] !== undefined && !argv[i + 1].startsWith('--'))) return argv
-	return [...argv.slice(0, i + 1), defaultBase(ROOT), ...argv.slice(i + 1)]
+	const baseIndex = argv.indexOf('--base')
+	if (baseIndex < 0 || (argv[baseIndex + 1] !== undefined && !argv[baseIndex + 1].startsWith('--')))
+		return argv
+	return [...argv.slice(0, baseIndex + 1), defaultBase(ROOT), ...argv.slice(baseIndex + 1)]
 }
 
 export async function farm(argv = process.argv.slice(2)) {
@@ -373,7 +378,7 @@ export async function farm(argv = process.argv.slice(2)) {
 			existsSync(values.logs) && statSync(values.logs).isDirectory()
 				? join(values.logs, '**', '*.jsonl')
 				: values.logs
-		const sql = await readFile(new URL('./balance.sql', import.meta.url), 'utf8')
+		const sqlText = await readFile(new URL('./balance.sql', import.meta.url), 'utf8')
 		const result = spawnSync(
 			'duckdb',
 			[
@@ -381,7 +386,7 @@ export async function farm(argv = process.argv.slice(2)) {
 				'-bail',
 				'-markdown',
 				'-c',
-				`SET VARIABLE logs = '${path.replaceAll("'", "''")}';\n${sql}`,
+				`SET VARIABLE logs = '${path.replaceAll("'", "''")}';\n${sqlText}`,
 			],
 			{ stdio: 'inherit' },
 		)
@@ -451,7 +456,7 @@ export async function farm(argv = process.argv.slice(2)) {
 	const pairs = pairList.length
 	if (!pairs) throw new Error('--cross-only needs at least two heroes')
 	const variants = parseSets(values.set)
-	const round = (n) => Math.ceil(n / pairs) * pairs
+	const round = (count) => Math.ceil(count / pairs) * pairs
 	const matches = round(requestedMatches)
 	const cap = values.until ? round(Number(values.until)) : matches
 	if (!Number.isSafeInteger(cap) || cap < matches)
@@ -502,7 +507,9 @@ export async function farm(argv = process.argv.slice(2)) {
 			seed: taskSeed,
 			lineups: drawn,
 			// Lineups report the heroes their random seats drew.
-			pair: pair.some((team) => team.includes(',')) ? drawn.map((l) => l.join(',')) : pair,
+			pair: pair.some((team) => team.includes(','))
+				? drawn.map((lineup) => lineup.join(','))
+				: pair,
 			matchId: `${runId}-${sides.length > 1 ? `s${side}-` : ''}${String(index * variants.length + variant + 1).padStart(5, '0')}`,
 		}
 	}
@@ -614,18 +621,18 @@ export async function farm(argv = process.argv.slice(2)) {
 if (!isMainThread) {
 	await RAPIER.init({})
 	const { roots, commits, variants } = workerData
-	parentPort.on('message', async (t) => {
-		const mods = await gameModules(roots[t.side])
-		applyVariant(variants[t.variant], mods)
+	parentPort.on('message', async (task) => {
+		const mods = await gameModules(roots[task.side])
+		applyVariant(variants[task.variant], mods)
 		const result = await runFarmMatch({
 			...workerData,
 			mods,
-			seed: t.seed,
-			matchId: t.matchId,
-			commit: commits[t.side],
-			roster: matchRoster(mods, t.lineups, workerData),
+			seed: task.seed,
+			matchId: task.matchId,
+			commit: commits[task.side],
+			roster: matchRoster(mods, task.lineups, workerData),
 		})
-		parentPort.postMessage({ ...result, side: t.side, variant: t.variant, pair: t.pair })
+		parentPort.postMessage({ ...result, side: task.side, variant: task.variant, pair: task.pair })
 	})
 } else if (import.meta.main) {
 	farm().catch((error) => {

@@ -100,9 +100,9 @@ test('a real round result scores once and cannot be restarted for another point'
 
 test('pause and resume preserve the live round, held ammo, and player position', () => {
 	const round = flow.round
-	round.human.place(2, 1, 4)
-	const position = { ...round.human.body.translation() }
-	const heldArrow = round.human.heldArrow
+	round.localPlayer.place(2, 1, 4)
+	const position = { ...round.localPlayer.body.translation() }
+	const heldArrow = round.localPlayer.heldArrow
 	flow.togglePause()
 	expect(flow.phase).toBe('paused')
 	expect(overlay.card.title).toBe('PAUSED')
@@ -113,8 +113,8 @@ test('pause and resume preserve the live round, held ammo, and player position',
 	expect(flow.phase).toBe('playing')
 	expect(overlay.card).toBeNull()
 	expect(flow.round).toBe(round)
-	expect(round.human.body.translation()).toEqual(position)
-	expect(round.human.heldArrow).toBe(heldArrow)
+	expect(round.localPlayer.body.translation()).toEqual(position)
+	expect(round.localPlayer.heldArrow).toBe(heldArrow)
 	expect(flow.match.round).toBe(1)
 })
 

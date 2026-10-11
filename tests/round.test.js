@@ -92,7 +92,7 @@ describe('headless round', () => {
 	test('a bowl drops ammo where its physics body was hit', () => {
 		const ctx = makeCtx()
 		const round = createRound(ctx, { enemies: 1, arrowCount: 2 })
-		const bowl = round.human.heldArrow
+		const bowl = round.localPlayer.heldArrow
 		round.looseHuman({ x: 1, z: 0 }, tune.weapons.bowlSpeed, { kind: 'bowl' })
 		for (let i = 0; i < 10; i++) round.step(1 / 60, STILL)
 		const before = { x: bowl.position.x, z: bowl.position.z }
@@ -116,14 +116,14 @@ describe('headless round', () => {
 		})
 		try {
 			expect(round.arrows).toHaveLength(0)
-			expect(round.human.heldArrow).toBeNull()
-			round.human.body.setTranslation({ x: 0, y: -20, z: 8 }, true)
+			expect(round.localPlayer.heldArrow).toBeNull()
+			round.localPlayer.body.setTranslation({ x: 0, y: -20, z: 8 }, true)
 			for (let i = 0; i < 120; i++) {
 				round.step(1 / 60, STILL)
 				round.lateUpdate(1 / 60)
 			}
-			expect(round.human.alive).toBe(true)
-			expect(round.human.position.y).toBeGreaterThan(0)
+			expect(round.localPlayer.alive).toBe(true)
+			expect(round.localPlayer.position.y).toBeGreaterThan(0)
 			expect(round.arrows).toHaveLength(0)
 			expect(round.over).toBe(false)
 			expect(overCalls).toBe(0)
@@ -148,7 +148,7 @@ describe('contact facts', () => {
 		tune.cheats.godmode = false
 		ctx = makeCtx()
 		round = createRound(ctx, { enemies: 1, arrowCount: 2 })
-		round.human.place(-4, 1, 4)
+		round.localPlayer.place(-4, 1, 4)
 		round.units[1].place(0, 1, 0)
 	})
 	afterEach(() => {
@@ -170,19 +170,19 @@ describe('contact facts', () => {
 		['arrow', true],
 		['bowl', false],
 	])('%s hit (perfect=%s) emits one copied elimination after teardown', (kind, perfect) => {
-		const shot = round.human.heldArrow
-		round.human.heldArrow = null
+		const shot = round.localPlayer.heldArrow
+		round.localPlayer.heldArrow = null
 		shot.loose(new THREE.Vector3(-1, 1, 0), { x: 1, z: 0 }, 'A', 12, {
 			kind,
 			perfect,
-			sourceId: round.human.id,
+			sourceId: round.localPlayer.id,
 			sourceIsHuman: true,
 		})
 		const event = stepUntilEvent()
 		expect(event.outcome).toBe('eliminated')
 		expect(event.kind).toBe(kind)
 		expect(event.perfect).toBe(perfect)
-		expect(event.source).toEqual({ id: round.human.id, team: 'A', isHuman: true })
+		expect(event.source).toEqual({ id: round.localPlayer.id, team: 'A', isHuman: true })
 		expect(event.target.id).toBe(round.units[1].id)
 		expect(event.surface).toBe('unit')
 		expect(event.pointKind).toBe('contact')
@@ -206,27 +206,27 @@ describe('contact facts', () => {
 		// checks feedback for retrieving the shot, not which grounded arrow is nearest.
 		round.units[1].heldArrow = round.arrows[1]
 		round.arrows[1].hold()
-		const shot = round.human.heldArrow
+		const shot = round.localPlayer.heldArrow
 		round.looseHuman({ x: 0, z: -1 }, 15)
 		round.looseHuman({ x: 0, z: -1 }, 15) // empty-handed: no second shot
 		expect(ctx.actions.map((event) => event.type)).toEqual(['shot'])
-		expect(round.human.heldArrow).toBeNull()
+		expect(round.localPlayer.heldArrow).toBeNull()
 		shot.ground()
 		round.lateUpdate()
 		round.lateUpdate()
-		expect(round.human.heldArrow).toBeNull() // rendering a paused fixture cannot pick up
+		expect(round.localPlayer.heldArrow).toBeNull() // rendering a paused fixture cannot pick up
 		round.step(1 / 60, STILL)
 		round.step(1 / 60, STILL)
 		expect(ctx.actions.map((event) => event.type)).toEqual(['shot', 'pickup'])
-		expect(round.human.heldArrow?.id).toBe(shot.id)
+		expect(round.localPlayer.heldArrow?.id).toBe(shot.id)
 		expect(ctx.actions[1].source.isHuman).toBe(true)
 		// A dash reports once too, and only when it was accepted, with its latched direction.
-		round.human.aim.set(1, 0, 0)
+		round.localPlayer.aim.set(1, 0, 0)
 		expect(round.dashHuman(STILL)).toBe(true)
 		expect(round.dashHuman({ x: 0, z: 1 })).toBe(false)
 		expect(ctx.actions.map((event) => event.type)).toEqual(['shot', 'pickup', 'dash'])
 		expect(ctx.actions[2].direction).toEqual({ x: 1, y: 0, z: 0 })
-		expect(ctx.actions[2].source.id).toBe(round.human.id)
+		expect(ctx.actions[2].source.id).toBe(round.localPlayer.id)
 	})
 
 	test.each([
@@ -234,7 +234,7 @@ describe('contact facts', () => {
 		[60, 'recovered'],
 	])('perfect miss at speed %s is %s, never a kill', (speed, outcome) => {
 		round.units[1].place(4, 1, 5)
-		round.human.place(0, 1, 5)
+		round.localPlayer.place(0, 1, 5)
 		round.looseHuman({ x: 0, z: -1 }, speed, { perfect: true })
 		const event = stepUntilEvent()
 		expect(event.outcome).toBe(outcome)
@@ -252,14 +252,14 @@ describe('contact facts', () => {
 
 	test('a whiff past an enemy reports one near miss before it lands', () => {
 		round.units[1].place(0.6, 1, 0)
-		round.human.place(0, 1, 5)
+		round.localPlayer.place(0, 1, 5)
 		round.looseHuman({ x: 0, z: -1 }, 12)
 		for (let i = 0; i < 600 && ctx.events.length < 2; i++) round.step(1 / 60, STILL)
 		expect(ctx.events.map((event) => event.outcome)).toEqual(['nearMiss', 'landed'])
 		const [miss] = ctx.events
 		expect(miss.type).toBe('impact')
 		expect(miss.target.id).toBe(round.units[1].id)
-		expect(miss.source).toEqual({ id: round.human.id, team: 'A', isHuman: true })
+		expect(miss.source).toEqual({ id: round.localPlayer.id, team: 'A', isHuman: true })
 		expect(miss.distance).toBeLessThan(tune.arrow.nearMiss)
 		expect(miss.distance).toBeGreaterThan(0.4)
 		expect(miss.point.z).toBeCloseTo(0, 0)
@@ -271,14 +271,14 @@ describe('contact facts', () => {
 
 	test('godmode deflects once without an elimination or ammo loss', () => {
 		tune.cheats.godmode = true
-		round.human.place(0, 1, 0)
+		round.localPlayer.place(0, 1, 0)
 		round.units[1].place(4, 1, 4)
 		const shot = round.arrows[1]
 		shot.loose(new THREE.Vector3(-1, 1, 0), { x: 1, z: 0 }, 'B', 12)
 		const event = stepUntilEvent()
 		expect(event.outcome).toBe('deflected')
 		expect(event.target.isHuman).toBe(true)
-		expect(round.human.alive).toBe(true)
+		expect(round.localPlayer.alive).toBe(true)
 		expect(round.over).toBe(false)
 		expect(shot.state).toBe('grounded')
 		for (let i = 0; i < 60; i++) round.step(1 / 60, STILL)
@@ -286,7 +286,7 @@ describe('contact facts', () => {
 	})
 
 	test('a fall reports a downward elimination without an arrow impact', () => {
-		round.human.place(0, -6, 0)
+		round.localPlayer.place(0, -6, 0)
 		const event = stepUntilEvent()
 		expect(event.type).toBe('fall')
 		expect(event.outcome).toBe('eliminated')
@@ -304,9 +304,9 @@ describe('contact facts', () => {
 			arrowCount: 2,
 			onOver: (winner) => winners.push(winner),
 		})
-		round.human.place(-2, 1, 0)
+		round.localPlayer.place(-2, 1, 0)
 		round.units[1].place(2, 1, 0)
-		round.human.heldArrow = null
+		round.localPlayer.heldArrow = null
 		round.arrows[0].loose(new THREE.Vector3(1.6, 1, 0), { x: 1, z: 0 }, 'A', 12)
 		round.arrows[1].loose(new THREE.Vector3(-1.6, 1, 0), { x: -1, z: 0 }, 'B', 12)
 		round.step(1 / 60, STILL)
@@ -327,15 +327,15 @@ describe('hit points', () => {
 		tune.ai.enabled = false
 		const round = createRound(ctx, { enemies: 1, arrowCount: 2, hp: 2 })
 		try {
-			round.human.place(-4, 1, 4)
+			round.localPlayer.place(-4, 1, 4)
 			const foe = round.units[1]
 			foe.place(0, 1, 0)
 			foe.heldArrow = round.arrows[1] // a wound must still cost the held arrow
 			round.arrows[1].hold()
-			const shot = round.human.heldArrow
+			const shot = round.localPlayer.heldArrow
 			shot.loose(new THREE.Vector3(-1, 1, 0), { x: 1, z: 0 }, 'A', 12, {
 				kind: 'arrow',
-				sourceId: round.human.id,
+				sourceId: round.localPlayer.id,
 				sourceIsHuman: true,
 			})
 			for (let i = 0; i < 600 && !ctx.events.length; i++) round.step(1 / 60, STILL)
@@ -352,7 +352,7 @@ describe('hit points', () => {
 			shot.hold()
 			shot.loose(new THREE.Vector3(-1, 1, 0), { x: 1, z: 0 }, 'A', 12, {
 				kind: 'arrow',
-				sourceId: round.human.id,
+				sourceId: round.localPlayer.id,
 				sourceIsHuman: true,
 			})
 			for (let i = 0; i < 600 && ctx.events.length < 2; i++) round.step(1 / 60, STILL)

@@ -4,7 +4,6 @@ import { createArrow } from './arrow.js'
 import { validateRoster } from '../../core/roster.js'
 import { createSnapshotBuffer } from '../../core/snapshot-buffer.js'
 import { spawnPoint } from './arena.js'
-import { PALETTE } from '../../core/style.js'
 
 const MAX_ARROWS = 1000
 const vector = (v) => ({ x: v.x, y: v.y, z: v.z })
@@ -84,7 +83,7 @@ export function createReplicaRound(ctx, { roster, localParticipantId }) {
 			participant,
 			replica: true,
 			position: spawnPoint(participant.team, indices[participant.team]++, counts[participant.team]),
-			color: participant.team === 'A' ? PALETTE.teamA : PALETTE.teamB,
+			role: participant.team === 'A' ? 'teamA' : 'teamB',
 		}),
 	)
 	const byParticipant = new Map(units.map((unit) => [unit.participantId, unit]))

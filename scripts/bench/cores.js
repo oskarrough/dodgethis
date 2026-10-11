@@ -34,7 +34,9 @@ function holders() {
 		}
 		try {
 			out.push({ pid, ...JSON.parse(readFileSync(join(DIR, name), 'utf8')) })
-		} catch {}
+		} catch (error) {
+			if (error.code !== 'ENOENT' && !(error instanceof SyntaxError)) throw error // gone, or half-written by a live worker
+		}
 	}
 	return out
 }
@@ -49,7 +51,9 @@ async function locked(fn) {
 			if (error.code !== 'EEXIST') throw error
 			try {
 				if (Date.now() - statSync(LOCK).mtimeMs > 10_000) rmSync(LOCK, { recursive: true })
-			} catch {}
+			} catch (error) {
+				if (error.code !== 'ENOENT') throw error // the lock's owner removed it first
+			}
 			await new Promise((resolve) => setTimeout(resolve, 50))
 		}
 	}

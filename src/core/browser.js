@@ -123,7 +123,7 @@ export async function createBrowserApp() {
 	fullscreenBtn.hidden = !document.fullscreenEnabled
 	fullscreenBtn.addEventListener('click', () => {
 		if (document.fullscreenElement) document.exitFullscreen()
-		else document.documentElement.requestFullscreen().catch(() => {})
+		else document.documentElement.requestFullscreen().catch(() => {}) // refused outside a user gesture or by the OS
 		fullscreenBtn.blur() // keep Space and Enter for the game
 	})
 	document.addEventListener('fullscreenchange', renderFullscreen)
