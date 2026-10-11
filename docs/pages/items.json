@@ -1,5 +1,20 @@
 [
 	{
+		"at": "2026-10-11T11:13:04.966Z",
+		"title": "Hero colours",
+		"ask": "Do the heroes read without team colours?",
+		"status": "To review",
+		"decision": "",
+		"media": [
+			"review/media/2026-10-11-hero-colours/stamp-fletcher.png",
+			"review/media/2026-10-11-hero-colours/stamp-mitts.png",
+			"review/media/2026-10-11-hero-colours/stamp-pong.png"
+		],
+		"links": [],
+		"thread": "thr_4a5jfuwbi2",
+		"page": "2026-10-11-hero-colours/"
+	},
+	{
 		"at": "2026-10-11T00:55:36.964Z",
 		"title": "P. Pong first build",
 		"ask": "Pong's costume (stone head, brow, beak, team paddle, back net) and the Cushion net: keep, or what changes?",
