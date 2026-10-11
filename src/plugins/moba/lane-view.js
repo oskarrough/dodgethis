@@ -463,6 +463,7 @@ export function createLaneView(scene, smooth = null, layout = null) {
 			}
 			if (!unit.structure) continue
 			const stats = tune[unit.kind]
+			if (!stats.range) continue // gates have no gun, so no range ring
 			let mark = marks.get(unit.id)
 			if (!mark) {
 				const material = makeStyleMaterial(unit.team === 'A' ? 'teamA' : 'teamB', { flat: true })
