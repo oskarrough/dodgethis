@@ -148,7 +148,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Lane walking bot: `lane-bots.js`; fight bot (who to hit): `fight-bots.js` `createFightBot`; dodge bot: `dodge-bots.js` `createDodgeBot`; Ball bot: `ball-bots.js`
 - Headless match for simulations: `agent-match.js` `createAgentMatch`, `replayHash`, `readReplay`; `bun run simulate`; `verification.md`
 - Agent protocol (observations and actions for LLM or scripted players): `agents.js` `agentRoster`, `observation`, `agentAction`, `createAgentDecisions`; `tune.js` `agents`, `proof`; `moba-agents.md`
-- Match replay (record, load, play back): `replay.js` `mobaReplay`, `loadReplay`; `replay.css`
+- Match replay (record, load, play back): `replay.js` `mobaReplay`, `loadReplay`; `replay.css`; tapes record no map, so replays play on Overthrow only
 
 ## Result
 

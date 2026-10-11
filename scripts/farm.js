@@ -253,6 +253,7 @@ export async function runFarmMatch({
 			matchId,
 			seed,
 			winner: tape.result.winner,
+			hash: tape.result.hash,
 			duration: tape.result.ticks * STEP,
 			reason,
 			filename,
@@ -545,7 +546,7 @@ export async function farm(argv = process.argv.slice(2)) {
 							process.stderr.write('.')
 						} else
 							console.log(
-								`${completed}/${total} ${result.matchId} seed=${result.seed} winner=${result.winner ?? 'none'} ${result.duration.toFixed(1)}s ${result.reason}`,
+								`${completed}/${total} ${result.matchId} seed=${result.seed} winner=${result.winner ?? 'none'} ${result.duration.toFixed(1)}s ${result.reason} hash=${result.hash} tape=${result.tapeFilename}`,
 							)
 						if (done === total) resolve()
 						else feed(worker)

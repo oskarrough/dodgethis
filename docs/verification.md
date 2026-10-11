@@ -34,6 +34,8 @@ Automated coverage includes roster/controller assignment, shared human actions, 
 - In the shared checkout, `--base` also measures other threads' uncommitted edits. To measure your own feature, give it a tune switch and run `--set <switch>=0,1` on the same seeds instead.
 - `--report` also prints structure falls: per kind (tower, gatehouse, laser gate, fort, core), falls per match, the median minute it falls and the median seconds from its first hit to falling.
 - `--count flagTaken,campCleared` counts those fact kinds per team and match (it implies `--summary` and works with `--base`). For anything richer, run without `--summary` and grep the saved logs; each line's `.fact` carries `kind`, `source`, `target` and `effective_damage`.
+- Without `--summary`, each finished match prints its replay hash and tape path (`hash=… tape=runs/…tape.json`); `--summary` writes no tape. `--lineup` seats the same lineup on both teams.
+- For a one-off headless proof, don't build a harness: `tests/moba-harness.js` `bootMoba` boots a sim, `shot()` fires a test shot, and `sim.launchShot(hero, dir, stats, origin)` fires a real one. Saved facts are jsonl: `death` carries `source`/`target`, `cast` carries `ability_id`.
 - `--base`, `--until` and `--report` imply `--summary`.
 - The machine is shared. Farms reserve worker threads from one per-machine budget (`FARM_CORES`, default cores − 2) in `/tmp/dodgethis-farm-cores`; a farm that can't get a quarter of it waits and says so, then takes what is free. `--jobs` caps the request (default 2).
 - Fresh bb worktrees have no `node_modules`; farm says so. Run `bun install`.

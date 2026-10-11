@@ -55,3 +55,4 @@ No new unit tests for now (user, 2026-10-04); delete a test rather than nurse it
 - A new screen or mode handles shared sessions or refuses them with a notice; a guest never sits on a frozen screen.
 - Proof screenshots use the real game camera and assert the state they claim (idle is idle, "mid-flight" waits for the flight). Start from a fresh `/` when proving the route; targeted visual fixes may use a direct setup and must say how they got there.
 - Trace interactions (pointer sweeps, reversals mid-transition), not just idle.
+- A new fact type gets an entry in `src/plugins/moba/index.js` `FACTS`, or online guests drop every packet carrying it.
