@@ -1,5 +1,16 @@
 [
 	{
+		"at": "2026-10-11T13:42:58.994Z",
+		"title": "Sound map",
+		"ask": "Does scrubbing feel right?",
+		"status": "To review",
+		"decision": "",
+		"media": ["review/media/2026-10-11-sound-map/sound-map.png"],
+		"links": [],
+		"thread": "thr_m6gtdxtin8",
+		"page": "2026-10-11-sound-map/"
+	},
+	{
 		"at": "2026-10-11T12:09:25.826Z",
 		"title": "Paper screens",
 		"ask": "Do result, scoreboard and death recap belong with the pause menu?",

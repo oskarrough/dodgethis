@@ -49,7 +49,12 @@ const soundKeep = {
 	apply: 'serve',
 	// A Keep must not reload the game mid-match; open pages mirror the change until their next reload.
 	handleHotUpdate({ file }) {
-		if (file.endsWith('src/core/sfx/kept.json') || file.includes('/public/sfx/kept/')) return []
+		if (
+			file.endsWith('src/core/sfx/kept.json') ||
+			file.endsWith('docs/pages/sound/approved.json') ||
+			file.includes('/public/sfx/kept/')
+		)
+			return []
 	},
 	configureServer(server) {
 		// Every audio file in Oskar's library (sounds/osk-sfx/) right now, with its folder path, so files dropped in
@@ -77,6 +82,20 @@ const soundKeep = {
 					res.end(error ? stderr || error.message : stdout)
 				},
 			)
+		})
+		// The board's K on a sound nobody swapped: Oskar heard the built-in sound and it stays. A list of use ids in
+		// docs/pages/sound/approved.json, which only the board reads; a Keep or a new swap takes the id back out.
+		server.middlewares.use('/__sound/approve', (req, res) => {
+			const q = new URL(req.url, 'http://board').searchParams
+			const id = q.get('use') ?? ''
+			if (req.method !== 'POST' || !/^[\w.-]+$/.test(id)) return res.writeHead(400).end()
+			const path = join(server.config.root, 'docs/pages/sound/approved.json')
+			const list = new Set(existsSync(path) ? JSON.parse(readFileSync(path, 'utf8')) : [])
+			if (q.get('off')) list.delete(id)
+			else list.add(id)
+			writeFileSync(path, JSON.stringify([...list].sort(), null, '\t') + '\n')
+			res.setHeader('content-type', 'application/json')
+			res.end(JSON.stringify([...list]))
 		})
 		server.middlewares.use('/__sound/keep', async (req, res) => {
 			const q = new URL(req.url, 'http://board').searchParams
