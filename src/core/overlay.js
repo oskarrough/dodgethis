@@ -1,5 +1,5 @@
 // Full-screen non-playing modal with persistent cursor navigation by keyboard or gamepad; actions are { label, key?, keyLabel?, onSelect }, where key is a KeyboardEvent.code and keyLabel is its button hint.
-import { sfx } from './audio.js'
+import { ui } from './audio.js'
 import { el as make } from './dom.js'
 
 export function createOverlay(selector = '.overlay') {
@@ -71,17 +71,17 @@ export function createOverlay(selector = '.overlay') {
 				b.addEventListener('pointerenter', () => {
 					if (guardPointer && !pointerMoved) return
 					setIndex(i)
-					sfx.hover()
+					ui('hover')
 				})
 				b.addEventListener('pointermove', () => {
 					pointerMoved = true
 					setIndex(i)
 				})
 				b.addEventListener('focus', () => setIndex(i))
-				b.addEventListener('pointerdown', () => sfx.press())
+				b.addEventListener('pointerdown', () => ui('press'))
 				b.addEventListener('click', (e) => {
 					e.stopPropagation()
-					sfx.confirm()
+					ui('confirm')
 					select(a)
 				})
 				row.append(b)
@@ -102,11 +102,11 @@ export function createOverlay(selector = '.overlay') {
 		}
 		render()
 		buttons[0]?.focus()
-		sfx.menuOpen()
+		ui('menuOpen')
 	}
 
 	function hide() {
-		if (!el.hidden) sfx.menuClose()
+		if (!el.hidden) ui('menuClose')
 		el.hidden = true
 		el.classList.remove('clear')
 		delete el.dataset.theme
@@ -155,10 +155,10 @@ export function createOverlay(selector = '.overlay') {
 		if (el.hidden || !actions.length) return
 		if (move) {
 			setIndex(index + move, true)
-			sfx.nav()
+			ui('nav')
 		}
 		if (confirm) {
-			sfx.click()
+			ui('click')
 			select(actions[index])
 		}
 	}
@@ -183,26 +183,26 @@ export function createOverlay(selector = '.overlay') {
 		) {
 			e.preventDefault()
 			setIndex(index + 1, true)
-			sfx.nav()
+			ui('nav')
 			return
 		}
 		if (e.code === 'ArrowUp' || e.code === 'ArrowLeft' || e.code === 'KeyW' || e.code === 'KeyA') {
 			e.preventDefault()
 			setIndex(index - 1, true)
-			sfx.nav()
+			ui('nav')
 			return
 		}
 		if (e.code === 'Enter' || e.code === 'Space') {
 			e.preventDefault()
 			if (e.repeat || (e.code === 'Space' && !allowSpace)) return
-			sfx.click()
+			ui('click')
 			select(actions[index])
 			return
 		}
 		const a = actions.find((x) => x.key === e.code)
 		if (a) {
 			e.preventDefault()
-			sfx.click()
+			ui('click')
 			select(a)
 		}
 	})

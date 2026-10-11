@@ -1,6 +1,8 @@
 // Sound swaps: the sound board (docs/pages/sound/) replaces the sound of one use, and a running game in another tab
 // hears it on the next event. A swap is { voice } (another built-in sound) or { file, gain } (an audio file Oskar
-// dropped on the board). Swaps and files live in this browser's IndexedDB; nothing here ships until it's committed.
+// dropped on the board). Swaps and files live in this browser's IndexedDB. Kept swaps ship: the board's Keep button
+// copies the file to public/sfx/kept/ and writes { kept, gain } into sfx/kept.json, the layer under local swaps.
+import kept from './sfx/kept.json'
 
 const DB = 'dodgethis-sound'
 const swaps = new Map() // use id → swap
@@ -68,15 +70,28 @@ async function changed() {
 	channel?.postMessage('changed')
 }
 
-export const swapOf = (id) => swaps.get(id)
+export { kept }
+// A local swap wins over a kept one; { builtin: true } hears the game's own sound past a kept one.
+export function swapOf(id) {
+	const local = swaps.get(id)
+	return local?.builtin ? undefined : (local ?? kept[id])
+}
 export const swapList = () => [...swaps]
+export const keptUrl = (name) => `/sfx/kept/${encodeURIComponent(name)}`
 export const fileNames = () => [...files.keys()].sort()
+export const fileBlob = (name) => files.get(name)
 export function fileUrl(name) {
 	const blob = files.get(name)
 	if (!blob) return null
 	if (!urls.has(name)) urls.set(name, URL.createObjectURL(blob))
 	return urls.get(name)
 }
+// The sounds a swap may name: core sfx and each plugin's voices register here.
+const voices = {}
+export const registerVoices = (named) => Object.assign(voices, named)
+export const voiceNamed = (name) => voices[name]
+export const voiceNames = () => Object.keys(voices).sort()
+
 export function onSwapChange(fn) {
 	listeners.add(fn)
 	return () => listeners.delete(fn)

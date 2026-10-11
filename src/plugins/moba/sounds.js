@@ -1,6 +1,6 @@
 import { look } from './look.js'
 import { uses } from './sound-table.js'
-import { swapOf, fileUrl } from '../../core/sound-swap.js'
+import { registerVoices, swapOf, voiceNamed } from '../../core/sound-swap.js'
 
 // Use the shared mixer and mute policy, but no dodgeball combat presets.
 export function createSounds(audio) {
@@ -46,17 +46,24 @@ export function createSounds(audio) {
 			gain: look.sounds.squeak.gain * gain,
 			point,
 		})
-	// Play a use from the sound table, or the swap the sound board set for it.
+	registerVoices(sounds)
+	// The voice key a use plays now, so one sound plays once per tick however many uses set it off.
 	sounds.voiceOf = (id) => {
 		const swap = swapOf(id)
-		return swap?.file ? `file:${swap.file}` : (swap?.voice ?? uses[id]?.voice)
+		if (swap) return swap.kept ? `kept:${swap.kept}` : swap.file ? `file:${swap.file}` : swap.voice
+		return uses[id]?.voice ?? (uses[id] ? id : undefined)
 	}
-	sounds.play = (id, point, gain = 1, ...extra) => {
-		const swap = swapOf(id)
-		const url = swap?.file && fileUrl(swap.file)
-		if (url) return audio.sample(url, { gain: (swap.gain ?? 0.5) * gain, point })
-		const voice = swap?.voice ?? uses[id]?.voice
-		if (voice) sounds[voice]?.(point, gain, ...extra)
-	}
+	sounds.play = (id, point, gain = 1, ...extra) => playUse(audio, id, point, gain, ...extra)
 	return sounds
+}
+
+// Play a use from the sound table (sound-table.js): the board's swap or a kept file, else its voice, recipe or player.
+export function playUse(audio, id, point = null, gain = 1, ...extra) {
+	if (audio.swapped(id, point, gain, ...extra)) return
+	const use = uses[id]
+	if (use?.voice) voiceNamed(use.voice)?.(point, gain, ...extra)
+	else if (use?.recipe) {
+		const recipe = use.recipe()
+		audio.blip({ ...recipe, gain: recipe.gain * gain, point })
+	} else use?.play?.(audio, point, gain)
 }

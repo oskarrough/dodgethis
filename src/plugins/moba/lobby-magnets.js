@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { makeStyleMaterial } from '../../core/stylepass.js'
 import { tune } from './tune.js'
+import { playUse } from './sounds.js'
 
 const MOODS = { easy: 'sleepy', normal: 'calm', hard: 'angry' }
 const COLORS = { easy: 'portalChill', normal: 'portalSpicy', hard: 'portalChaos' }
@@ -146,8 +147,7 @@ export function createMagnets(root, gallery, kit, audio) {
 	function sound(name, scale = 1) {
 		if (!audio || heard[name]) return
 		heard[name] = true
-		const s = m[name + 'Sound']
-		audio.blip({ ...s, gain: s.gain * scale })
+		playUse(audio, `lobby.magnet${name[0].toUpperCase()}${name.slice(1)}`, null, scale)
 	}
 	function orbit(p, i, time, out) {
 		const n = p.balls.length

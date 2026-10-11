@@ -5,14 +5,12 @@ import { tune } from './tune.js'
 import { tune as frontTune } from './front/tune.js'
 
 // The sound table (docs/sound.md): every use the game makes a sound for, by source. The game plays a use by id
-// (`sounds.play`), the sound board (docs/pages/sound/) auditions and swaps it, and `facts` says which uses each
+// (`playUse` in sounds.js), the sound board (docs/pages/sound/) auditions and swaps it, and `facts` says which uses each
 // fact can set off, an empty list meaning silent. `voice` names a sound in `sounds.js` (look.sounds or core sfx).
-// Uses with `where` are still played directly by that file and can't be swapped yet; `play` is how the board
-// plays them, and `music` names a music scene.
+// `recipe` is a blip read live from a tune block, `play` a custom player and `music` a music scene.
 
 const use = (source, about, voice) => ({ source, about, voice })
-const direct = (source, about, where, play) => ({ source, about, where, play })
-const blip = (recipe) => (audio) => audio.blip(recipe())
+const synth = (source, about, recipe) => ({ source, about, recipe })
 
 // Ability uses come from each ability's `effects`: cast, shot (its projectile), hit and impact.
 const parts = { cast: 'cast', shot: 'projectile', hit: 'hit', impact: 'impact' }
@@ -95,157 +93,104 @@ export const uses = {
 	globe: use('Progress', 'A globe is picked up', 'globe'),
 	matchOver: use('Progress', 'The match ends', 'matchOver'),
 
-	'ui.hover': direct('Menus', 'Pointer over a button', 'core/overlay.js', (audio) =>
-		audio.sfx.hover(),
-	),
-	'ui.press': direct('Menus', 'Mouse down on a button', 'core/overlay.js', (audio) =>
-		audio.sfx.press(),
-	),
-	'ui.confirm': direct('Menus', 'Mouse up on a button', 'core/overlay.js', (audio) =>
-		audio.sfx.confirm(),
-	),
-	'ui.click': direct('Menus', 'Keyboard or pad activates a button', 'core/overlay.js', (audio) =>
-		audio.sfx.click(),
-	),
-	'ui.nav': direct('Menus', 'Keyboard or pad moves the cursor', 'core/overlay.js', (audio) =>
-		audio.sfx.nav(),
-	),
-	'ui.switch': direct(
-		'Menus',
-		'Sound unmuted; a mode starts',
-		'core/browser.js, front/index.js',
-		(audio) => audio.sfx.switch(),
-	),
-	'ui.menuOpen': direct('Menus', 'A menu opens', 'core/overlay.js', (audio) =>
-		audio.sfx.menuOpen(),
-	),
-	'ui.menuClose': direct('Menus', 'A menu closes', 'core/overlay.js', (audio) =>
-		audio.sfx.menuClose(),
-	),
+	'ui.hover': use('Menus', 'Pointer over a button', 'hover'),
+	'ui.press': use('Menus', 'Mouse down on a button', 'press'),
+	'ui.confirm': use('Menus', 'Mouse up on a button', 'confirm'),
+	'ui.click': use('Menus', 'Keyboard or pad activates a button', 'click'),
+	'ui.nav': use('Menus', 'Keyboard or pad moves the cursor', 'nav'),
+	'ui.switch': use('Menus', 'Sound is unmuted', 'switch'),
+	'ui.menuOpen': use('Menus', 'A menu opens', 'menuOpen'),
+	'ui.menuClose': use('Menus', 'A menu closes', 'menuClose'),
 
-	'splash.move': direct(
+	'splash.move': synth(
 		'Splash and descent',
-		'Cursor moves between map tiles',
-		'front/index.js',
-		blip(() => frontTune.move),
+		'The cursor moves between map tiles',
+		() => frontTune.move,
 	),
-	'splash.enter': direct(
-		'Splash and descent',
-		'A map tile is chosen (two notes)',
-		'front/index.js',
-		(audio) =>
+	'splash.enter': {
+		source: 'Splash and descent',
+		about: 'A map tile is chosen (two notes)',
+		play: (audio, point, gain) =>
 			frontTune.enter.frequencies.forEach((freq, i) =>
-				audio.blip({ ...frontTune.enter, freq, delay: i * frontTune.enter.gap }),
+				audio.blip({
+					...frontTune.enter,
+					freq,
+					gain: frontTune.enter.gain * gain,
+					delay: i * frontTune.enter.gap,
+					point,
+				}),
 			),
-	),
-	'splash.deny': direct(
-		'Splash and descent',
-		'A locked tile is chosen',
-		'front/index.js',
-		blip(() => frontTune.deny),
-	),
-	'descent.back': direct(
-		'Splash and descent',
-		'Back out of the lobby or descent',
-		'front/descent.js, lobby.js',
-		blip(() => ({ ...frontTune.back, type: 'sine' })),
-	),
-	'descent.skip': direct(
-		'Splash and descent',
-		'The lobby hands over to the descent',
-		'lobby.js',
-		blip(() => frontTune.loading.skip),
-	),
-	'descent.drop': direct(
-		'Splash and descent',
-		'The crane lets go',
-		'front/descent.js',
-		blip(() => frontTune.loading.drop),
-	),
-	'descent.arrival': direct(
+	},
+	'splash.deny': synth('Splash and descent', 'A locked tile is chosen', () => frontTune.deny),
+	'splash.mode': use('Splash and descent', 'Another mode starts from the splash', 'switch'),
+	'descent.back': synth('Splash and descent', 'Back out of the descent', () => ({
+		...frontTune.back,
+		type: 'sine',
+	})),
+	'descent.drop': synth('Splash and descent', 'The crane lets go', () => frontTune.loading.drop),
+	'descent.arrival': synth(
 		'Splash and descent',
 		'You land in the match',
-		'front/descent.js',
-		blip(() => frontTune.loading.arrival),
+		() => frontTune.loading.arrival,
 	),
 
-	'lobby.inspectOpen': direct(
+	'lobby.start': synth(
+		'Lobby',
+		'The lobby hands over to the descent',
+		() => frontTune.loading.skip,
+	),
+	'lobby.back': synth('Lobby', 'Back out of the lobby', () => ({
+		...frontTune.back,
+		type: 'sine',
+	})),
+	'lobby.inspectOpen': synth(
 		'Lobby',
 		'The hero numbers panel opens',
-		'lobby.js',
-		blip(() => tune.lobby.inspect.openSound),
+		() => tune.lobby.inspect.openSound,
 	),
-	'lobby.inspectClose': direct(
+	'lobby.inspectClose': synth(
 		'Lobby',
 		'The hero numbers panel closes',
-		'lobby.js',
-		blip(() => tune.lobby.inspect.closeSound),
+		() => tune.lobby.inspect.closeSound,
 	),
-	'lobby.pick': direct(
-		'Lobby',
-		'You pick a hero',
-		'lobby.js',
-		blip(() => tune.lobby.pick.sound),
-	),
-	'lobby.pickDenied': direct(
-		'Lobby',
-		'A hero pick is refused',
-		'lobby.js',
-		blip(() => tune.lobby.pick.denySound),
-	),
-	'lobby.readyWalk': direct(
+	'lobby.pick': synth('Lobby', 'You pick a hero', () => tune.lobby.pick.sound),
+	'lobby.pickDenied': synth('Lobby', 'A hero pick is refused', () => tune.lobby.pick.denySound),
+	'lobby.readyWalk': synth(
 		'Lobby',
 		'You walk toward the ready pad',
-		'lobby.js',
-		blip(() => tune.lobby.ready.walkSound),
+		() => tune.lobby.ready.walkSound,
 	),
-	'lobby.seatEnter': direct(
+	'lobby.seatEnter': synth(
 		'Lobby',
 		'You step onto a ready seat',
-		'lobby.js',
-		blip(() => tune.lobby.ready.enterSound),
+		() => tune.lobby.ready.enterSound,
 	),
-	'lobby.seatReady': direct(
-		'Lobby',
-		'Every seat is ready',
-		'lobby.js',
-		blip(() => tune.lobby.ready.fullSound),
-	),
-	'lobby.readyCancel': direct(
+	'lobby.seatReady': synth('Lobby', 'Every seat is ready', () => tune.lobby.ready.fullSound),
+	'lobby.readyCancel': synth(
 		'Lobby',
 		'You leave the ready seat',
-		'lobby.js',
-		blip(() => tune.lobby.ready.cancelSound),
+		() => tune.lobby.ready.cancelSound,
 	),
-	'lobby.galleryShot': direct(
+	'lobby.galleryShot': synth(
 		'Lobby',
 		'You shoot at a difficulty magnet',
-		'lobby.js',
-		blip(() => tune.lobby.gallery.shotSound),
+		() => tune.lobby.gallery.shotSound,
 	),
-	'lobby.galleryPick': direct(
-		'Lobby',
-		'A difficulty is picked',
-		'lobby.js',
-		blip(() => tune.lobby.gallery.pickSound),
-	),
-	'lobby.magnetClack': direct(
+	'lobby.galleryPick': synth('Lobby', 'A difficulty is picked', () => tune.lobby.gallery.pickSound),
+	'lobby.magnetClack': synth(
 		'Lobby',
 		'Balls clack onto the picked magnet',
-		'lobby-magnets.js',
-		blip(() => tune.lobby.gallery.magnet.clackSound),
+		() => tune.lobby.gallery.magnet.clackSound,
 	),
-	'lobby.magnetThud': direct(
+	'lobby.magnetThud': synth(
 		'Lobby',
 		'A ball thuds onto a magnet',
-		'lobby-magnets.js',
-		blip(() => tune.lobby.gallery.magnet.thudSound),
+		() => tune.lobby.gallery.magnet.thudSound,
 	),
-	'lobby.magnetLeap': direct(
+	'lobby.magnetLeap': synth(
 		'Lobby',
 		'A ball leaps off a magnet',
-		'lobby-magnets.js',
-		blip(() => tune.lobby.gallery.magnet.leapSound),
+		() => tune.lobby.gallery.magnet.leapSound,
 	),
 
 	'music.lobby': { source: 'Music', about: 'Splash and lobby', music: 'lobby' },

@@ -1,6 +1,7 @@
 import { createBackdrop } from './backdrop.js'
 import { createControls } from './controls.js'
 import { tune } from './tune.js'
+import { playUse } from '../sounds.js'
 import { applySkin, paintedCard, paintedEdge, paintedWash } from './skin.js'
 import { parseMatchSetup } from '../setup.js'
 import { playableMaps, mapLayout } from '../maps/all-maps.js'
@@ -245,9 +246,7 @@ export function mobaFront(app, map) {
 				leaving = true
 				if (mode === 'moba') {
 					setup.map = buttons[index].dataset.map
-					tune.enter.frequencies.forEach((freq, i) =>
-						app.audio.blip({ ...tune.enter, freq, delay: i * tune.enter.gap }),
-					)
+					playUse(app.audio, 'splash.enter')
 					transferred = true
 					dropTiles()
 					app.modes.start('moba-lobby', {
@@ -255,7 +254,7 @@ export function mobaFront(app, map) {
 					})
 					document.body.append(sheet)
 				} else {
-					app.audio.sfx.switch()
+					playUse(app.audio, 'splash.mode')
 					app.modes.start(mode)
 				}
 			}
@@ -306,7 +305,7 @@ export function mobaFront(app, map) {
 				)
 			}
 			function deny() {
-				app.audio.blip(tune.deny)
+				playUse(app.audio, 'splash.deny')
 				el.querySelector('.front-modes').animate(
 					[0, -1, 1, -0.5, 0].map((x) => ({ translate: `${x * 1.5}vmin 0` })),
 					tune.deny.shake * 1000,
@@ -328,7 +327,7 @@ export function mobaFront(app, map) {
 						button.classList.toggle('selected', i === index)
 						button.setAttribute('aria-current', String(i === index))
 					})
-					if (focused !== index && focused >= 0) app.audio.blip(tune.move)
+					if (focused !== index && focused >= 0) playUse(app.audio, 'splash.move')
 					focused = index
 					if (document.activeElement !== buttons[index])
 						buttons[index].focus({ preventScroll: true })

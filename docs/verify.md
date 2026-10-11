@@ -3,6 +3,7 @@
 Pick the cheapest proof that answers the question.
 
 - Logic, sim, bots, balance: `bun test <file>`, `bun run play:headless --help`, `bun run simulate --summary`. No browser.
+- Sound: `bun run sound:check [words]` prints each sound's numbers and rule flags (docs/sound.md, Tooling). Never claim a sound is better by ear.
 - Oskar is testing: hand him http://office-linux.heron-mermaid.ts.net:5173 (never `127.0.0.1` or the agent port) and one thing to judge; skip your own visual proof.
 - Otherwise use one browser session, one device, one width; expand only the axis that input or layout work changed. A local visual fix goes straight to its screen. Prove the full route once at a checkpoint, only when navigation or transitions changed. Don't repeat a passing proof unless a new edit or failure calls for it.
 - Route and wiring on a prod build (`bun run verify:browser <preview URL> <shots directory>`) and frozen builds (`bunx vite build --outDir /tmp/<slug>`) are orchestrator checkpoint smokes, not builder work.

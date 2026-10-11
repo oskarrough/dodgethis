@@ -7,6 +7,7 @@ import { easeShot } from './backdrop.js'
 import { createClouds } from './clouds.js'
 import { createDescentState, descentFrame } from './descent-state.js'
 import { tune } from './tune.js'
+import { playUse } from '../sounds.js'
 import './descent.css'
 
 // The crane and descent: one camera move from the lobby to the match; its only input is Esc/B to quit.
@@ -261,7 +262,7 @@ export function startLoading(
 		function quit() {
 			if (ending || quitting || !app.session.actions.includes('restart')) return
 			quitting = true
-			app.audio.blip({ ...tune.back, type: 'sine' })
+			playUse(app.audio, 'descent.back')
 			dispose()
 			app.modes.start('moba-front', { options: { setup, backdrop, heldKeys: ['Escape'] } })
 		}
@@ -302,7 +303,7 @@ export function startLoading(
 				state.elapsed >= tune.loading.preview
 			) {
 				dived = true
-				app.audio.blip(tune.loading.drop)
+				playUse(app.audio, 'descent.drop')
 			}
 			const flying = state.phase === 'descent' || state.phase === 'landed'
 			if (capture && flying && state.progress >= capture.progress) {
@@ -320,7 +321,7 @@ export function startLoading(
 				// Prime the actual follow spring with neutral intents before its first live step.
 				unframe()
 				app.camera.update(0)
-				app.audio.blip(tune.loading.arrival)
+				playUse(app.audio, 'descent.arrival')
 				app.audio.setMusicScene('play')
 				dispose()
 				backdrop.dispose()

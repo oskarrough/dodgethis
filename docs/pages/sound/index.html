@@ -10,10 +10,11 @@
 		<main>
 			<h1>Sound board</h1>
 			<p>
-				Every sound the game makes, by source. Press play to hear one. Add your own files below,
-				then pick one in a row's list to swap it in: arrow keys through the list play each
-				candidate. Swaps reach a match running in another tab of this browser on the next event, so
-				keep a match open beside this page. Nothing ships until you send me the changes list.
+				Every sound the game makes, by source. Play hears what the game plays now, Built in hears
+				the game's own sound. Add your files below, then pick one in a row's list to swap it in:
+				arrow keys through the list play each candidate. A match open in another tab of this browser
+				hears a swap on its next event, from the splash and lobby to a fight. Keep writes the swap
+				into the game for everyone (it lands with the next commit).
 			</p>
 
 			<section>
@@ -44,6 +45,17 @@
 			</section>
 
 			<div id="sources"></div>
+
+			<section>
+				<h2>Rule check</h2>
+				<p>
+					Sounds that break the rules in docs/sound.md: the peak lands within 25 ms, fight tails end
+					within 400 ms, menus stay under −18 dB, and each fight source keeps one timbre family (its
+					brightness within 1.5 octaves of the source's middle). The numbers are what the game plays
+					now.
+				</p>
+				<ul id="flags"></ul>
+			</section>
 
 			<section>
 				<h2>Facts with no sound</h2>

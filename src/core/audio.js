@@ -1,5 +1,6 @@
 import { tune } from './tune.js'
 import { createMusic } from './music.js'
+import { fileUrl, keptUrl, kept, registerVoices, swapOf, voiceNamed } from './sound-swap.js'
 
 // Vite fingerprints these asset imports; the player below decodes each into an AudioBuffer on first use.
 import menuOpenUrl from './sfx/menu-open.mp3'
@@ -156,6 +157,7 @@ function preload() {
 		tick2Url,
 		unboxUrl,
 		...BOT_TALK,
+		...Object.values(kept).map((swap) => keptUrl(swap.kept)),
 	])
 		load(url).catch(() => {})
 }
@@ -357,4 +359,40 @@ export const sfx = {
 			tauntPlaying = false
 		}
 	},
+}
+registerVoices(sfx)
+
+// Render sounds into an OfflineAudioContext instead of the speakers, for their numbers (docs/pages/sound/numbers.js).
+// `play` runs while the offline context stands in for the live one; `warm` lists sample URLs to decode first.
+export async function render(play, { seconds = 2, rate = 44100, warm = [] } = {}) {
+	preload()
+	await Promise.all([...warm.map(load), ...buffers.values()].map((p) => p.catch(() => {})))
+	const live = [ctx, master, tune.output.sound]
+	const offline = new OfflineAudioContext(2, Math.ceil(seconds * rate), rate)
+	ctx = offline
+	master = offline.createGain()
+	master.connect(offline.destination)
+	tune.output.sound = true
+	try {
+		play()
+		await new Promise((resolve) => setTimeout(resolve)) // samples start once their cached decode resolves
+	} finally {
+		;[ctx, master, tune.output.sound] = live
+	}
+	return offline.startRendering()
+}
+
+// A use the sound board swapped or kept (./sound-swap.js) plays that instead; returns whether it did.
+export function swapped(id, point = null, gain = 1, ...extra) {
+	const swap = swapOf(id)
+	if (!swap) return false
+	const url = swap.kept ? keptUrl(swap.kept) : swap.file && fileUrl(swap.file)
+	if (url) sample(url, { gain: (swap.gain ?? 0.5) * gain, point })
+	else voiceNamed(swap.voice)?.(point, gain, ...extra)
+	return true
+}
+
+// Menu sounds are uses too (`ui.<name>` in the sound table), so the board can swap them.
+export function ui(name) {
+	if (!swapped(`ui.${name}`)) sfx[name]()
 }

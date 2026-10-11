@@ -1,7 +1,9 @@
 import { defineConfig } from 'vite'
 import wasm from 'vite-plugin-wasm'
-import { existsSync } from 'node:fs'
-import { join } from 'node:path'
+import { execFileSync } from 'node:child_process'
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { basename, join } from 'node:path'
 
 // Rapier (non-compat) ships its physics engine as a real .wasm file. vite-plugin-wasm
 // rewrites Rapier's `import * as wasm from './…_bg.wasm'` into a generated module that
@@ -39,8 +41,64 @@ const folderSlash = {
 	},
 }
 
+// The sound board's Keep button (docs/pages/sound/): a picked file lands in public/sfx/kept/ (as mp3 when
+// ffmpeg is around) and its swap in src/core/sfx/kept.json, so it ships with the next commit. No file and no
+// voice puts the use back on its built-in sound.
+const soundKeep = {
+	name: 'sound-keep',
+	apply: 'serve',
+	configureServer(server) {
+		server.middlewares.use('/__sound/keep', async (req, res) => {
+			const q = new URL(req.url, 'http://board').searchParams
+			const id = q.get('use') ?? ''
+			if (req.method !== 'POST' || !/^[\w.-]+$/.test(id)) return res.writeHead(400).end()
+			const root = server.config.root
+			const listPath = join(root, 'src/core/sfx/kept.json')
+			const dir = join(root, 'public/sfx/kept')
+			const list = JSON.parse(readFileSync(listPath, 'utf8'))
+			const old = list[id]?.kept
+			const gain = Number(q.get('gain') ?? 0.5)
+			if (q.get('name')) {
+				const chunks = []
+				for await (const chunk of req) chunks.push(chunk)
+				const raw = basename(q.get('name')).replace(/[^\w.-]+/g, '-')
+				const stem = `${id}--${raw.replace(/\.[^.]+$/, '')}`
+				const temp = join(tmpdir(), `sound-keep-${Date.now()}-${raw}`)
+				mkdirSync(dir, { recursive: true })
+				writeFileSync(temp, Buffer.concat(chunks))
+				let file = `${stem}.mp3`
+				try {
+					execFileSync('ffmpeg', [
+						'-v',
+						'error',
+						'-y',
+						'-i',
+						temp,
+						'-codec:a',
+						'libmp3lame',
+						'-q:a',
+						'4',
+						join(dir, file),
+					])
+				} catch {
+					file = `${stem}${raw.match(/\.[^.]+$/)?.[0] ?? ''}`
+					writeFileSync(join(dir, file), readFileSync(temp))
+				}
+				rmSync(temp, { force: true })
+				list[id] = { kept: file, gain }
+			} else if (q.get('voice')) list[id] = { voice: q.get('voice') }
+			else delete list[id]
+			if (old && old !== list[id]?.kept && !Object.values(list).some((s) => s.kept === old))
+				rmSync(join(dir, old), { force: true })
+			writeFileSync(listPath, JSON.stringify(list, null, '\t') + '\n')
+			res.setHeader('content-type', 'application/json')
+			res.end(JSON.stringify(list[id] ?? null))
+		})
+	},
+}
+
 export default defineConfig({
-	plugins: [wasm(), folderSlash],
+	plugins: [wasm(), folderSlash, soundKeep],
 	// The build's id, its time: online rooms only seat guests from the same build (online/net.js `BUILD`).
 	define: { __BUILD__: String(Date.now()) },
 	server: {

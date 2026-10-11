@@ -99,7 +99,7 @@ export async function createBrowserApp() {
 	muteBtn.addEventListener('click', () => {
 		audio.setSound(!tune.output.sound)
 		renderMute()
-		if (tune.output.sound) audio.sfx.switch() // audible confirmation when unmuting
+		if (tune.output.sound) audio.ui('switch') // audible confirmation when unmuting
 	})
 	renderMute()
 

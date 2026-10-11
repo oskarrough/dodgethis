@@ -15,6 +15,7 @@
 		"profile:dodgeball": "bun scripts/bench.js",
 		"simulate": "bun scripts/farm.js",
 		"review": "bun scripts/review.js",
+		"sound:check": "bun scripts/sound-check.js",
 		"where": "bun scripts/where.js",
 		"collect-mods": "bun scripts/collect-mods.js",
 		"play:headless": "bun scripts/play.js",

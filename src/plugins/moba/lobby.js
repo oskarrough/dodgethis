@@ -13,6 +13,7 @@ import { bowlExtent, createWeatherBowl } from './lobby-bowl.js'
 import { HEROES, listedHeroes } from './heroes.js'
 import { createHeroStrip, createLobbyHeroes } from './lobby-heroes.js'
 import { createNumbers } from './front/numbers.js'
+import { playUse } from './sounds.js'
 import './lobby.css'
 
 // The lobby uses the match's simulation and presentation, but owns navigation and framing.
@@ -248,7 +249,7 @@ export function createLobby({
 		app.intents.cancel(hero.id)
 		app.input.consumeMenuInput()
 		run.clock.reset()
-		app.audio.blip(tune.lobby.inspect[open ? 'openSound' : 'closeSound'])
+		playUse(app.audio, open ? 'lobby.inspectOpen' : 'lobby.inspectClose')
 	})
 	run.clock.pause(() => numbers.open && app.session.actions.includes('pause'))
 	run.intents.suspend(() => numbers.open || leaving)
@@ -301,15 +302,15 @@ export function createLobby({
 		}
 		if (fact.hero !== hero.id) return
 		const sound = {
-			readyWalk: 'walkSound',
-			seatEnter: 'enterSound',
-			seatReady: 'fullSound',
-			readyCancel: 'cancelSound',
-			seatEmpty: 'cancelSound',
+			readyWalk: 'lobby.readyWalk',
+			seatEnter: 'lobby.seatEnter',
+			seatReady: 'lobby.seatReady',
+			readyCancel: 'lobby.readyCancel',
+			seatEmpty: 'lobby.readyCancel',
 		}[fact.type]
 		if (sound && readySounds.get(sound) !== fact.tick) {
 			readySounds.set(sound, fact.tick)
-			app.audio.blip(tune.lobby.ready[sound])
+			playUse(app.audio, sound)
 		}
 		if (fact.type === 'pick') {
 			if (fact.ability === 'galleryShot') finishGalleryShot()
@@ -317,7 +318,7 @@ export function createLobby({
 			props.selectDifficulty()
 			if (gallerySoundTick !== fact.tick) {
 				gallerySoundTick = fact.tick
-				app.audio.blip(tune.lobby.gallery.pickSound)
+				playUse(app.audio, 'lobby.galleryPick')
 			}
 			return
 		}
@@ -326,7 +327,7 @@ export function createLobby({
 		slam(`${fact.heroId}!`, fact.heroId)
 		if (pickSoundTick !== fact.tick) {
 			pickSoundTick = fact.tick
-			app.audio.blip(tune.lobby.pick.sound)
+			playUse(app.audio, 'lobby.pick')
 		}
 	})
 	function slam(text, heroId = '') {
@@ -348,7 +349,7 @@ export function createLobby({
 		}
 		if (denySoundTick === sim.tick) return
 		denySoundTick = sim.tick
-		app.audio.blip(tune.lobby.pick.denySound)
+		playUse(app.audio, 'lobby.pickDenied')
 	}
 	function cycleHero(delta = 1) {
 		const index = heroChoices.findIndex((definition) => definition.id === hero.heroId)
@@ -402,7 +403,7 @@ export function createLobby({
 		if (!app.session.authoritative || hero.dead || galleryShot) {
 			if (!app.session.authoritative) {
 				slam('Host only')
-				app.audio.blip(tune.lobby.pick.denySound)
+				playUse(app.audio, 'lobby.pickDenied')
 			}
 			run.present({
 				type: 'denied',
@@ -472,7 +473,7 @@ export function createLobby({
 		}
 		syncPick()
 		ending = true
-		app.audio.blip({ ...frontTune.back, type: 'sine' })
+		playUse(app.audio, 'lobby.back')
 		leaving = true
 		app.intents.cancel(hero.id)
 		el.inert = true
@@ -543,7 +544,7 @@ export function createLobby({
 	}
 	function loadLane() {
 		ending = transferred = true
-		app.audio.blip(frontTune.loading.skip)
+		playUse(app.audio, 'lobby.start')
 		startLoading(app, {
 			el,
 			backdrop,
@@ -896,7 +897,7 @@ export function createLobby({
 					)
 					if (shotSoundTick !== sim.tick) {
 						shotSoundTick = sim.tick
-						app.audio.blip(tune.lobby.gallery.shotSound)
+						playUse(app.audio, 'lobby.galleryShot')
 					}
 					galleryShot.projectile = shot.id
 				}
