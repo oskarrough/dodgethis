@@ -6,12 +6,92 @@
 	"loose.shot": {
 		"shuffle": [
 			{
-				"kept": "loose.shot--monster-bite-001.ogg",
+				"kept": "loose.shot--game-player-hit-throw-001.ogg",
 				"gain": 0.5
 			},
 			{
-				"kept": "loose.shot--monster-bite-002.ogg",
+				"kept": "loose.shot--game-player-hit-throw-002.ogg",
+				"gain": 0.3
+			}
+		]
+	},
+	"splash.enter": {
+		"shuffle": [
+			{
+				"kept": "splash.enter--confirm-confirm-017.ogg",
+				"gain": 0.05
+			},
+			{
+				"kept": "splash.enter--confirm-confirm-016.ogg",
+				"gain": 0.05
+			}
+		]
+	},
+	"splash.move": {
+		"kept": "splash.move--tap-mouseclick-001.ogg",
+		"gain": 0.2
+	},
+	"lobby.pick": {
+		"kept": "lobby.pick--confirm-confirm-013.ogg",
+		"gain": 0.3
+	},
+	"lobby.pickDenied": {
+		"kept": "lobby.pickDenied--error-glitch-003.ogg",
+		"gain": 0.05
+	},
+	"ui.click": {
+		"shuffle": [
+			{
+				"kept": "ui.click--tap-click-003.ogg",
+				"gain": 0.05
+			},
+			{
+				"kept": "ui.click--tap-click-005.ogg",
+				"gain": 0.05
+			}
+		]
+	},
+	"ui.nav": {
+		"kept": "ui.nav--tap-click-011.ogg",
+		"gain": 0.05
+	},
+	"splash.deny": {
+		"kept": "splash.deny--error-error-001.ogg",
+		"gain": 0.05
+	},
+	"ui.menuClose": {
+		"kept": "ui.menuClose--open-close-close-001.ogg",
+		"gain": 0.05
+	},
+	"ballHit": {
+		"shuffle": [
+			{
+				"kept": "ballHit--impact-glass-heavy-003.ogg",
 				"gain": 0.5
+			},
+			{
+				"kept": "ballHit--impact-glass-heavy-004.ogg",
+				"gain": 0.3
+			}
+		]
+	},
+	"camp": {
+		"kept": "camp--popup-popup-002.ogg",
+		"gain": 0.5
+	},
+	"loose.hit": {
+		"shuffle": [
+			{
+				"kept": "loose.hit--impact-wood-light-001.ogg",
+				"gain": 0.35
+			},
+			{
+				"kept": "loose.hit--impact-wood-medium-001.ogg",
+				"gain": 0.35
+			},
+			{
+				"kept": "loose.hit--impact-wood-light-002.ogg",
+				"gain": 0.45
 			}
 		]
 	}
