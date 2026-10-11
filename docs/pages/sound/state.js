@@ -48,6 +48,11 @@ export async function addLibraryFiles(paths) {
 	emit('change')
 }
 
+// Files the cache hasn't measured yet (new since the last sync) get measured here in the background.
+const unmeasured = library.filter((path) => !numbersOf(path))
+if (unmeasured.length && unmeasured.length <= 40)
+	setTimeout(() => addLibraryFiles(unmeasured), 2000)
+
 // Top five library files per use: { file, score, gain, why }.
 const shortlists = await fetch('/sounds/shortlists.json')
 	.then((r) => r.json())

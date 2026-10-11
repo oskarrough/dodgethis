@@ -15,6 +15,7 @@ import {
 	deckTo,
 	setPile,
 	on,
+	numbers,
 } from './state.js'
 
 // A black screen with neon line work (the board's Teenage Engineering look). The axes wear their encoder
@@ -61,21 +62,23 @@ export function createMap(container) {
 	container.append(root)
 	const ctx = canvas.getContext('2d')
 
-	const points = library.flatMap((path) => {
-		const n = numbersOf(path)
-		const p = place(n)
-		if (!p || !Number.isFinite(p.x) || !Number.isFinite(p.y)) return []
-		// Anything over 4 s (ambience loops) sits along the top edge, so game-length sounds get the room.
-		return [
-			{
-				path,
-				n,
-				...p,
-				y: Math.min(p.y, LONG),
-				folder: folderOf(path).split('/')[0] || 'loose files',
-			},
-		]
-	})
+	const makePoints = () =>
+		library.flatMap((path) => {
+			const n = numbersOf(path)
+			const p = place(n)
+			if (!p || !Number.isFinite(p.x) || !Number.isFinite(p.y)) return []
+			// Anything over 4 s (ambience loops) sits along the top edge, so game-length sounds get the room.
+			return [
+				{
+					path,
+					n,
+					...p,
+					y: Math.min(p.y, LONG),
+					folder: folderOf(path).split('/')[0] || 'loose files',
+				},
+			]
+		})
+	let points = makePoints()
 	const folders = [
 		...new Set(library.map((path) => folderOf(path).split('/')[0] || 'loose files')),
 	].sort()
@@ -123,6 +126,8 @@ export function createMap(container) {
 		if (!frame) frame = requestAnimationFrame(draw)
 	}
 	function update() {
+		// Files generated while the board is open join the map.
+		if (points.length !== library.filter((path) => numbersOf(path)).length) points = makePoints()
 		use = where().use
 		active = new Set(pileFiles(use))
 		recommended = new Set(shortlist(use).map((item) => item.file))
@@ -360,6 +365,30 @@ export function createMap(container) {
 				ctx.strokeText(label, x, y)
 				ctx.fillStyle = ink
 				ctx.fillText(label, x, y)
+			}
+		}
+		// Where the selected sound sits now: a green crosshair, so "near" has a place to look.
+		const here = use && place(numbers.get(use))
+		if (here) {
+			const s = screen({ x: here.x, y: Math.min(here.y, LONG) })
+			if (inside(s)) {
+				ctx.strokeStyle = '#2bd67b'
+				ctx.lineWidth = 1.5
+				ctx.beginPath()
+				for (const [dx, dy] of [
+					[1, 0],
+					[-1, 0],
+					[0, 1],
+					[0, -1],
+				]) {
+					ctx.moveTo(s.x + dx * 5, s.y + dy * 5)
+					ctx.lineTo(s.x + dx * 13, s.y + dy * 13)
+				}
+				ctx.stroke()
+				ctx.fillStyle = '#2bd67b'
+				ctx.font = `700 9px ${font}`
+				ctx.textAlign = 'left'
+				ctx.fillText('NOW', s.x + 9, s.y - 9)
 			}
 		}
 		if (hovered) {

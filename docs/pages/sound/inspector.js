@@ -57,6 +57,7 @@ function el(tag, props = {}, ...children) {
 // A button with its key on it: key('K', 'Keep', fn).
 function key(letter, text, onClick, props = {}) {
 	const b = el('button', { type: 'button', ...props })
+	if (letter) b.dataset.key = letter
 	b.append(...(letter ? [el('kbd', { textContent: letter })] : []), text)
 	b.addEventListener('click', onClick)
 	return b
@@ -80,6 +81,8 @@ const forget = (id) => {
 	saveLikes()
 }
 
+const lastNope = []
+
 // Deck actions, shared with the keyboard (board.js).
 export const actions = {
 	next: () => swipe('right-soft', () => deckStep(1)),
@@ -93,6 +96,7 @@ export const actions = {
 		if (!use || !path) return
 		swipe('left', async () => {
 			nope(use, path)
+			lastNope.push({ use, path })
 			if (pileFiles(use).length) {
 				deck.at -= 1
 				return deckStep(1)
@@ -115,6 +119,18 @@ export const actions = {
 		swipe('right', () => deckStep(1))
 	},
 	near: () => setPile('near'),
+	// Z brings back the last file noped for this sound.
+	undoNope() {
+		const last = lastNope.pop()
+		if (!last) return
+		nope(last.use, last.path, true)
+		if (last.use === where().use) deckTo(last.path)
+	},
+	// 1–5 jump to that shortlist candidate.
+	jump(n) {
+		const file = shortlist(where().use)[n - 1]?.file
+		if (file) deckTo(file)
+	},
 	async keep() {
 		const { use } = where()
 		if (!use || uses[use].music) return
@@ -156,6 +172,37 @@ function swipe(direction, then) {
 	}, 180)
 }
 
+// Drag the card: past 90 px left nopes, right likes; less springs back.
+function dragToSwipe(v) {
+	let start = null
+	v.card.addEventListener('pointerdown', (e) => {
+		if (!candidate() || e.target.closest('select, button')) return
+		start = e.clientX
+		v.dragged = false
+		v.card.setPointerCapture(e.pointerId)
+	})
+	v.card.addEventListener('pointermove', (e) => {
+		if (start === null) return
+		const dx = e.clientX - start
+		if (Math.abs(dx) > 6) v.dragged = true
+		v.card.style.transform = `translateX(${dx}px) rotate(${dx / 30}deg)`
+		v.card.style.boxShadow =
+			dx < -40 ? 'inset 0 0 0 3px var(--red)' : dx > 40 ? 'inset 0 0 0 3px var(--green)' : ''
+	})
+	const end = (e) => {
+		if (start === null) return
+		const dx = e.clientX - start
+		start = null
+		v.card.style.transform = ''
+		v.card.style.boxShadow = ''
+		if (dx < -90) actions.nope()
+		else if (dx > 90) actions.like()
+		setTimeout(() => (v.dragged = false))
+	}
+	v.card.addEventListener('pointerup', end)
+	v.card.addEventListener('pointercancel', end)
+}
+
 let view = null
 export function drawInspector(root) {
 	const { use } = where()
@@ -190,13 +237,22 @@ function readouts() {
 	const cell = (label, colour) => {
 		const value = el('b')
 		const unit = el('small')
+		const delta = el('em')
 		const node = el(
 			'div',
 			{},
 			el('span', { textContent: label, style: `color:var(--${colour})` }),
 			el('div', {}, value, unit),
+			delta,
 		)
-		return { node, set: (v, u) => ((value.textContent = v), (unit.textContent = u)) }
+		return {
+			node,
+			set(v, u, d = '') {
+				value.textContent = v
+				unit.textContent = u
+				delta.textContent = d
+			},
+		}
 	}
 	const cells = [
 		cell('LENGTH', 'blue'),
@@ -204,15 +260,25 @@ function readouts() {
 		cell('PEAK', 'white'),
 		cell('BRIGHT', 'orange'),
 	]
+	// How a candidate differs from what the sound played when Oskar arrived, so a swipe compares without remembering numbers.
+	const diff = (a, b, digits = 0) => {
+		if (b == null || !Number.isFinite(a - b)) return ''
+		const d = Number((a - b).toFixed(digits))
+		return d ? `${d > 0 ? '+' : '−'}${Math.abs(d)} vs before` : 'same as before'
+	}
 	return {
 		node: el('div', { className: 'readouts' }, ...cells.map((c) => c.node)),
-		show(n) {
+		show(n, now) {
 			const [length, attack, peak, bright] = cells
 			if (!n) return cells.forEach((c) => c.set('–', ''))
-			length.set(Math.round(n.length), 'ms')
-			attack.set(Math.round(n.attack), 'ms')
-			peak.set(Number.isFinite(n.peak) ? Math.round(n.peak) : '–', 'dB')
-			bright.set((n.centroid / 1000).toFixed(1), 'kHz')
+			length.set(Math.round(n.length), 'ms', now && diff(n.length, now.length))
+			attack.set(Math.round(n.attack), 'ms', now && diff(n.attack, now.attack))
+			peak.set(Number.isFinite(n.peak) ? Math.round(n.peak) : '–', 'dB') // files and the game's render sit at different levels
+			bright.set(
+				(n.centroid / 1000).toFixed(1),
+				'kHz',
+				now && diff(n.centroid / 1000, now.centroid / 1000, 1),
+			)
 		},
 	}
 }
@@ -286,8 +352,10 @@ function build(root, id) {
 		v.cardNumbers.node,
 		v.cardWave,
 	)
-	v.cardWave.addEventListener('click', () => candidate() && play(id))
+	v.cardWave.addEventListener('click', () => !v.dragged && candidate() && play(id))
+	dragToSwipe(v)
 	v.keep = el('button', { type: 'button', className: 'keep', ariaLabel: 'Keep (K)' })
+	v.keep.dataset.key = 'K'
 	v.keep.addEventListener('click', actions.keep)
 	v.keepText = el('b')
 	v.keepHint = el('span')
@@ -377,6 +445,8 @@ function update() {
 	if (uses[id].music) return
 	const n = numbers.get(id)
 	v.nowNumbers.show(n)
+	// The card compares against the sound the use had when Oskar arrived, not against itself.
+	if (!v.reference && n && !candidate()) v.reference = n
 	v.nowText.textContent = playing(id)
 	v.flag.textContent = flags()[id]?.join('; ') ?? ''
 	const buffer = rendered.get(id)
@@ -408,7 +478,12 @@ function update() {
 		if (!path) {
 			v.cardName.replaceChildren(
 				files.length ? 'Press → to start' : 'Nothing left in this pile',
-				el('div', { className: 'meta', textContent: `${files.length} candidates` }),
+				el('div', {
+					className: 'meta',
+					textContent: files.length
+						? `${files.length} candidates · drag the card or use the keys below`
+						: 'N for sounds near this one, / to find any file, or generate new ones below',
+				}),
 			)
 			v.cardNumbers.show(null)
 			drawWave(v.cardWave, null)
@@ -427,7 +502,7 @@ function update() {
 						.join(' · '),
 				}),
 			)
-			v.cardNumbers.show(numbersOf(path))
+			v.cardNumbers.show(numbersOf(path), v.reference)
 			drawWave(v.cardWave, null)
 			libraryBuffer(path).then(
 				(b) => candidate() === path && drawWave(v.cardWave, b, { color: '#3fa9f5' }),

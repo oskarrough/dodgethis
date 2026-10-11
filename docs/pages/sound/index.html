@@ -376,6 +376,9 @@
 			.tool a {
 				color: var(--blue);
 			}
+			.tool button {
+				color: var(--ink);
+			}
 			.tool th,
 			.tool td {
 				border-color: #ffffff1a;
@@ -453,6 +456,12 @@
 				color: var(--white);
 				font-variant-numeric: tabular-nums;
 			}
+			.readouts em {
+				font-style: normal;
+				font-size: 9px;
+				color: var(--dim);
+				white-space: nowrap;
+			}
 			.readouts small {
 				font-size: 10px;
 				color: var(--dim);
@@ -480,6 +489,11 @@
 				color: var(--white);
 				border-color: #333;
 				font-size: 12px;
+			}
+			.card {
+				touch-action: pan-y;
+				user-select: none;
+				transition: box-shadow 0.1s;
 			}
 			.card.swipe-left {
 				animation: left 0.2s ease-in;

@@ -19,6 +19,7 @@ import {
 	measureAll,
 	previewMusic,
 	stopPreview,
+	play,
 } from './state.js'
 import { tool, fight } from './tools.js'
 import { drawInspector, actions } from './inspector.js'
@@ -181,6 +182,14 @@ function draw() {
 }
 on('change', draw)
 on('select', draw)
+// Arriving at a sound plays what it plays now, so the first thing Oskar hears is the thing to judge.
+let arrived = null
+on('select', () => {
+	const { use } = where()
+	if (!use || use === arrived || uses[use].music) return
+	arrived = use
+	setTimeout(() => where().use === use && play(use), 120)
+})
 on('redraw-tool', () => drawStage(true))
 let noticeTimer = 0
 on('notice', (text) => {
@@ -204,6 +213,8 @@ addEventListener('keydown', (e) => {
 		x: actions.nope,
 		n: actions.near,
 		k: actions.keep,
+		z: actions.undoNope,
+		...Object.fromEntries([1, 2, 3, 4, 5].map((n) => [String(n), () => actions.jump(n)])),
 		Escape: () => {
 			stopPreview()
 			previewMusic(null)
@@ -212,6 +223,13 @@ addEventListener('keydown', (e) => {
 	if (!act) return
 	e.preventDefault()
 	act()
+	// The key's button dips, so the keyboard feels like pressing the box.
+	const label =
+		{ ' ': '␣', ArrowLeft: '←', ArrowRight: '→', ArrowDown: '↓' }[e.key] ?? e.key.toUpperCase()
+	for (const b of document.querySelectorAll(`#inspector button[data-key="${CSS.escape(label)}"]`)) {
+		b.classList.add('pressed')
+		setTimeout(() => b.classList.remove('pressed'), 120)
+	}
 })
 
 $('find').addEventListener('click', openPalette)
