@@ -11,23 +11,23 @@ import {
 	voiceNamed,
 } from './sound-swap.js'
 
-// Shipped samples are Oskar's library files (sounds/osk-sfx/) as mp3 in public/sfx/kept/; the player below
+// Shipped samples are Oskar's library files (sounds/osk-sfx/) as Ogg in public/sfx/kept/; the player below
 // decodes each into an AudioBuffer on first use.
-const menuOpenUrl = '/sfx/kept/open-close--menu-open.mp3'
-const menuCloseUrl = '/sfx/kept/open-close--menu-close.mp3'
-const clickUrl = '/sfx/kept/tap--click-012.mp3'
-const click2Url = '/sfx/kept/tap--click-013.mp3'
-const clickSoftUrl = '/sfx/kept/tap--click-soft.mp3'
-const clickInUrl = '/sfx/kept/tap--click-in.mp3'
-const clickOutUrl = '/sfx/kept/tap--click-out.mp3'
-const tick1Url = '/sfx/kept/tap--tick-004.mp3'
-const tick2Url = '/sfx/kept/tap--tick-005.mp3'
-const unboxUrl = '/sfx/kept/misc--unbox.mp3'
-const botTalk1 = '/sfx/kept/voice--bot-talk-001.mp3'
-const botTalk2 = '/sfx/kept/voice--bot-talk-002.mp3'
-const botTalk3 = '/sfx/kept/voice--bot-talk-003.mp3'
-const botTalk4 = '/sfx/kept/voice--bot-talk-004.mp3'
-const botTalk5 = '/sfx/kept/voice--bot-talk-005.mp3'
+const menuOpenUrl = '/sfx/kept/open-close--menu-open.ogg'
+const menuCloseUrl = '/sfx/kept/open-close--menu-close.ogg'
+const clickUrl = '/sfx/kept/tap--click-012.ogg'
+const click2Url = '/sfx/kept/tap--click-013.ogg'
+const clickSoftUrl = '/sfx/kept/tap--click-soft.ogg'
+const clickInUrl = '/sfx/kept/tap--click-in.ogg'
+const clickOutUrl = '/sfx/kept/tap--click-out.ogg'
+const tick1Url = '/sfx/kept/tap--tick-004.ogg'
+const tick2Url = '/sfx/kept/tap--tick-005.ogg'
+const unboxUrl = '/sfx/kept/misc--unbox.ogg'
+const botTalk1 = '/sfx/kept/voice--bot-talk-001.ogg'
+const botTalk2 = '/sfx/kept/voice--bot-talk-002.ogg'
+const botTalk3 = '/sfx/kept/voice--bot-talk-003.ogg'
+const botTalk4 = '/sfx/kept/voice--bot-talk-004.ogg'
+const botTalk5 = '/sfx/kept/voice--bot-talk-005.ogg'
 
 const BOT_TALK = [botTalk1, botTalk2, botTalk3, botTalk4, botTalk5]
 
@@ -392,7 +392,7 @@ export const sfx = {
 		blip({ freq: 160, slideTo: 900, type: 'square', dur: 0.22, gain: 0.16, delay: 0.3 })
 	},
 
-	// Sample-backed cues (mp3s in ./sfx) — the UI / character layer.
+	// Sample-backed cues (Ogg files in public/sfx/kept/) — the UI / character layer.
 	grab: (point, gain = 1) => sample(unboxUrl, { gain: 0.6 * gain, rateJitter: 0.05, point }),
 	menuOpen: () => sample(menuOpenUrl, { gain: 0.5 }),
 	menuClose: () => sample(menuCloseUrl, { gain: 0.5 }),

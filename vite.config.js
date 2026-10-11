@@ -41,9 +41,9 @@ const folderSlash = {
 	},
 }
 
-// The sound board's Keep button (docs/pages/sound/): a picked file lands in public/sfx/kept/ (as mp3 when
-// ffmpeg is around) and its swap in src/core/sfx/kept.json, so it ships with the next commit. No file and no
-// voice puts the use back on its built-in sound.
+// The sound board's Keep button (docs/pages/sound/): a picked file lands in public/sfx/kept/ as Ogg and its swap
+// in src/core/sfx/kept.json, so it ships with the next commit. No file and no voice puts the use back on its
+// built-in sound.
 const soundKeep = {
 	name: 'sound-keep',
 	apply: 'serve',
@@ -70,20 +70,23 @@ const soundKeep = {
 				const temp = join(tmpdir(), `sound-keep-${Date.now()}-${raw}`)
 				mkdirSync(dir, { recursive: true })
 				writeFileSync(temp, Buffer.concat(chunks))
-				let file = `${stem}.mp3`
+				// Ogg ships as it is; anything else becomes Ogg Vorbis, or ships untouched without ffmpeg.
+				let file = `${stem}.ogg`
 				try {
-					execFileSync('ffmpeg', [
-						'-v',
-						'error',
-						'-y',
-						'-i',
-						temp,
-						'-codec:a',
-						'libmp3lame',
-						'-q:a',
-						'4',
-						join(dir, file),
-					])
+					if (/\.ogg$/i.test(raw)) writeFileSync(join(dir, file), readFileSync(temp))
+					else
+						execFileSync('ffmpeg', [
+							'-v',
+							'error',
+							'-y',
+							'-i',
+							temp,
+							'-codec:a',
+							'libvorbis',
+							'-q:a',
+							'4',
+							join(dir, file),
+						])
 				} catch {
 					file = `${stem}${raw.match(/\.[^.]+$/)?.[0] ?? ''}`
 					writeFileSync(join(dir, file), readFileSync(temp))
