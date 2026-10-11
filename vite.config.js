@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite'
 import wasm from 'vite-plugin-wasm'
-import { execFileSync } from 'node:child_process'
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { execFile, execFileSync } from 'node:child_process'
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { basename, join } from 'node:path'
 
@@ -52,6 +52,32 @@ const soundKeep = {
 		if (file.endsWith('src/core/sfx/kept.json') || file.includes('/public/sfx/kept/')) return []
 	},
 	configureServer(server) {
+		// Every audio file in Oskar's library (sounds/osk-sfx/) right now, with its folder path, so files dropped in
+		// show up on the board's next load without re-measuring.
+		server.middlewares.use('/__sound/library', (req, res) => {
+			const root = join(server.config.root, 'sounds/osk-sfx')
+			const files = existsSync(root)
+				? readdirSync(root, { recursive: true })
+						.map(String)
+						.filter((path) => /\.(mp3|wav|ogg|m4a|flac|aiff?|webm)$/i.test(path))
+						.sort()
+				: []
+			res.setHeader('content-type', 'application/json')
+			res.end(JSON.stringify(files))
+		})
+		// The board's Resync button: `bun run sound:sync` mirrors the library from Dropbox and rebuilds shortlists.
+		server.middlewares.use('/__sound/sync', (req, res) => {
+			if (req.method !== 'POST') return res.writeHead(400).end()
+			execFile(
+				'bun',
+				['run', 'sound:sync'],
+				{ cwd: server.config.root },
+				(error, stdout, stderr) => {
+					res.writeHead(error ? 500 : 200, { 'content-type': 'text/plain' })
+					res.end(error ? stderr || error.message : stdout)
+				},
+			)
+		})
 		server.middlewares.use('/__sound/keep', async (req, res) => {
 			const q = new URL(req.url, 'http://board').searchParams
 			const id = q.get('use') ?? ''
