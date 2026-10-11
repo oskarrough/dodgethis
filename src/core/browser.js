@@ -88,9 +88,14 @@ export async function createBrowserApp() {
 
 	// Mute the shared output so already-playing cues go silent too.
 	const muteBtn = document.querySelector('.mute')
+	const muteWaves = muteBtn.querySelectorAll('path')[1]
 	function renderMute() {
 		const muted = !tune.output.sound
-		muteBtn.textContent = muted ? '🔇' : '🔊'
+		// The speaker keeps its sound waves, or wears a cross when muted.
+		muteWaves.setAttribute(
+			'd',
+			muted ? 'M16 9l5.5 6M21.5 9L16 15' : 'M16 9a4.2 4.2 0 0 1 0 6M19.5 5.5a9 9 0 0 1 0 13',
+		)
 		muteBtn.classList.toggle('muted', muted)
 		muteBtn.title = muted ? 'Unmute' : 'Mute'
 		muteBtn.setAttribute('aria-label', muted ? 'Unmute sound' : 'Mute sound')

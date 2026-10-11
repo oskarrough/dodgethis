@@ -277,6 +277,7 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 	if (lens) {
 		lens.type = 'button'
 		lens.setAttribute('aria-label', 'Inspect')
+		lens.title = 'Inspect (I)'
 		lens.innerHTML =
 			'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="7"/><path d="M15.2 15.2 21 21"/></svg><kbd></kbd>'
 		lens.onclick = () => {
@@ -477,7 +478,8 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 		if (press?.source.node?.closest?.('[hidden]')) press = null
 		if (lens) {
 			put(lens, 'hidden', !!frame.inspectionDisabled, (hidden) => (lens.hidden = hidden))
-			const key = { gamepad: 'Y', touch: '' }[frame.device] ?? 'I'
+			// The pad's Y sticks on; the keyboard's I reads like a 1 there, so it lives in the tooltip.
+			const key = frame.device === 'gamepad' ? 'Y' : ''
 			put(lens.lastChild, 'key', key, (k) => (lens.lastChild.textContent = k))
 			put(lens, 'pressed', String(!!inspect.by), (v) => lens.setAttribute('aria-pressed', v))
 		}

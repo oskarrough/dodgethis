@@ -824,16 +824,17 @@
 		gap: 5px;
 	}
 }
-/* Inspect sits left of the fullscreen and mute buttons. */
+/* Inspect sits left of the fullscreen and mute tiles (index.html), the same size and spacing. */
 .moba-inspect {
+	--corner-size: clamp(38px, 3.2vw, 52px);
 	position: fixed;
 	top: 12px;
-	right: 124px;
+	right: calc(36px + 2 * var(--corner-size));
 	z-index: 6;
 	display: grid;
 	place-items: center;
-	width: clamp(38px, 3.2vw, 52px);
-	height: clamp(38px, 3.2vw, 52px);
+	width: var(--corner-size);
+	height: var(--corner-size);
 	padding: 0;
 	border: 3px solid var(--ui-text);
 	border-radius: 10px;
@@ -864,10 +865,7 @@
 	border-radius: 0.55em;
 	background: var(--ui-cream);
 	box-shadow: 2px 3px 0 var(--ui-text);
-	/* The display font draws I like a 1. */
-	font:
-		800 clamp(11px, 0.85vw, 14px) / 1.2 system-ui,
-		sans-serif;
+	font: 400 clamp(12px, 0.9vw, 15px) / 1.2 var(--ui-font);
 	rotate: -8deg;
 }
 .moba-inspect kbd:empty {

@@ -614,40 +614,49 @@
 				overflow: hidden;
 			}
 
-			/* Mute toggle — top-right, always reachable (above the overlay). */
-			.mute {
+			/* Mute and fullscreen, top-right and always reachable (above the overlay): the same
+			   square tile as the corner row on the left, mute outermost, fullscreen beside it
+			   (edge panning needs the real screen edge). */
+			:is(.mute, .fullscreen) {
+				--corner-size: clamp(38px, 3.2vw, 52px);
 				position: fixed;
 				top: 12px;
 				right: 12px;
 				z-index: 20;
-				--sticker-radius: 50%;
-				width: 48px;
-				height: 48px;
-				padding: 0; /* fixed square: the optical text correction would skew it */
-				font-size: 22px;
-			}
-			.mute.muted {
-				background: color-mix(in srgb, var(--ui-red) 30%, #fffdf4);
-			}
-			/* Fullscreen toggle, left of mute: edge panning needs the real screen edge. */
-			.fullscreen {
-				position: fixed;
-				top: 12px;
-				right: 68px;
-				z-index: 20;
-				--sticker-radius: 50%;
-				width: 48px;
-				height: 48px;
-				padding: 0;
 				display: grid;
 				place-items: center;
+				width: var(--corner-size);
+				height: var(--corner-size);
+				margin: 0;
+				padding: 0;
+				border: 3px solid var(--ui-text);
+				border-radius: 10px;
+				background: var(--ui-cream);
+				box-shadow: 3px 4px 0 var(--ui-text);
+				color: var(--ui-text);
+				cursor: pointer;
+				transition: transform 0.12s cubic-bezier(0.2, 1.9, 0.45, 1);
+			}
+			.fullscreen {
+				right: calc(24px + var(--corner-size));
 			}
 			.fullscreen[hidden] {
 				display: none;
 			}
-			.fullscreen svg {
-				width: 22px;
-				height: 22px;
+			:is(.mute, .fullscreen):hover,
+			:is(.mute, .fullscreen):focus-visible {
+				outline: none;
+				background: var(--ui-button);
+				transform: translate(-1px, -2px) rotate(4deg);
+			}
+			:is(.mute, .fullscreen):active {
+				transform: translate(2px, 3px) scale(0.95);
+				transition-duration: 0.06s;
+			}
+			:is(.mute, .fullscreen) svg {
+				display: block;
+				width: 55%;
+				height: 55%;
 			}
 
 			/* Splash title — big candy letters over the hub. The hub stays playable
@@ -1036,22 +1045,20 @@
 		<div class="hit-confirmation" role="status" hidden></div>
 		<div class="hitmarker" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
 		<div class="weapons" hidden></div>
-		<button
-			class="mute sticker"
-			type="button"
-			title="Mute"
-			aria-label="Mute sound"
-			aria-pressed="false"
-		>
-			🔊
+		<button class="mute" type="button" title="Mute" aria-label="Mute sound" aria-pressed="false">
+			<svg
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="3"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+			>
+				<path d="M2.5 9h4L12 4v16l-5.5-5h-4z" />
+				<path d="M16 9a4.2 4.2 0 0 1 0 6M19.5 5.5a9 9 0 0 1 0 13" />
+			</svg>
 		</button>
-		<button
-			class="fullscreen sticker"
-			type="button"
-			title="Fullscreen"
-			aria-label="Fullscreen"
-			hidden
-		>
+		<button class="fullscreen" type="button" title="Fullscreen" aria-label="Fullscreen" hidden>
 			<svg
 				viewBox="0 0 24 24"
 				fill="none"
