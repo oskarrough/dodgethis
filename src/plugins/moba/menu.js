@@ -9,6 +9,9 @@ import { el } from '../../core/dom.js'
 import { DEFAULT_HERO } from './heroes.js'
 import './menu.css'
 
+// The map's name in the manual's Japanese running head.
+const MAP_KANA = { overthrow: '転覆', flagfall: '旗落とし' }
+
 const MENU_ICON =
 	'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6.5h14M5 12h14M5 17.5h14" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/></svg>'
 
@@ -119,7 +122,7 @@ export function createMatchMenu({
 			'header',
 			'pause-head',
 			card,
-			`<span>Dodgethis <span lang="ja">取扱説明書</span></span><span>${map}</span>`,
+			`<span>Dodgethis <span lang="ja">取扱説明書</span></span><span>${map}<span lang="ja">${MAP_KANA[map] ?? ''}</span></span>`,
 		).setAttribute('aria-hidden', 'true')
 		el('p', 'pause-kana', card, 'ポーズ').setAttribute('aria-hidden', 'true')
 		const quick = card.querySelectorAll('.actions button')[2]
