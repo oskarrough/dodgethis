@@ -1,6 +1,6 @@
 # Feature map
 
-Every player-facing feature, grouped by screen, one line each: the feature in plain words, then its files and entry symbols, its `tune.js` key and its doc. Grep this file for the word a player would say ("scoreboard", "bollard"), land on the code, then read only that code.
+Every player-facing feature, grouped by screen, one line each: the feature in plain words, then its files and entry symbols, its `tune.js` key and its doc. Use `bun run where <word>` (or a quoted phrase such as `"lane split"`) for matching entries and source locations, then read only the relevant code range. Output is bounded; `--all` prints every match.
 
 Don't read big files whole. `ast-grep outline <file>` lists a file's symbols with line numbers; `ast-grep run -p '<pattern>' -l js src` finds structure (callers, `tune.x.y` uses). Whoever adds or moves a feature updates its line here. To prove a feature in the running game, use `docs/verify.md`.
 
@@ -69,7 +69,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Damage numbers: `damage-numbers.js` `createDamageNumbers`; `look.js` `damageNumbers`
 - Edge pips for off-screen allies, enemies, Ball: `pips.js` `edgePip`, `createPips`; `look.js` `pips`
 - Minimap, its camera-view outline and click/drag to move the camera: `minimap.js` `createMinimap` (`drawView`, `onFocus` → `follow.focus`); `maps/index.js` `matchRecipe`; `hud.js`; `hud.css` `.moba-minimap`
-- Fog of war (on by default, `?fog=0` turns it off; sight, hidden enemies, dimmed ground): `fog.js` `createFog`; `tune.js` `fog`; hooked in `index.js` present
+- Fog of war (on by default, `?fog=0` turns it off; sight, hidden enemies, dimmed ground): `fog.js` `createFog`; match rules `tune.js` `fog`; hooked in `index.js` present; minimap filtering in `minimap.js`; CPU proof: `docs/verify-reference.md` Performance (the dodgeball `benchmark()` cannot time MOBA)
 - Flagfall mercenary camps (neutral guards at the camp marks fight back and leash; clearing one sends mercs down the nearest lane; respawn; bots clear them when their lane is quiet): `pieces/camps/camps.js` `createCamps`, bots `pieces/camps/bots.js` `campBots` (`escort` phase); piece `pieces/camps/`, on in `maps/flagfall/index.js` `pieces`; `layout.camps` in `maps/flagfall/layout.js`; `tune.js` `camps`; lane hooks `passive`, team `'N'`, `route` in `lane.js`
 - Flagfall jungle (rooms, spine walls, brush, camp/flag/gatehouse marks): `maps/flagfall/layout.js` `flagfallLayout`; `tune.js` `flagfall.jungle`; marks and brush mats in `maps/flagfall/ground.js` `ground`
 - Flagfall gates, two kinds on one mechanic (own team passes, enemies are held out and siege it, shots hit it): the gatehouse, a no-gun stone tower at the fort's chalk bar that the fort waits for (rubble when it falls), and the laser gate, two posts and a hologram beam between fort and core that waits for the fort and that the core waits for (stubs when it falls): `gates.js` `addGates`, `holdGates`, `GATES`; `tune.js` `gatehouse`, `laser`, `flagfall.jungle.gatehouseX`/`laserX`; laser look in `lane-view.js` `makeBody` (`look.laneView.laser`), beam shader shared with the lobby holograms in `hologram.js`; hooked in `maps/flagfall/layout.js`, `sim.js` step, `pieces/structures/index.js` obstacles (`obstacle: false`), `lane.js` (no gun, `tune[kind].xp`)
@@ -160,7 +160,8 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Debug panel and Try Mode folder: `debug.js` `createDebugLayout`, `createMatchDebug`; `setup.js` `parseTrySetup`; `src/core/debug.js` `createDebugPanel`
 - Tuning sliders: `sliders.js` `sliderSections`, `addSliders`, `debugSections`; Match's late slider targets the current map's `debugTune.late` (shared `match` fallback); Terrain section names come from generated `maps/index.js` `playableMaps` and each manifest's `debugTune.name`; other new debug folders go in `debugSections`
 - `window.dt` (keys, pad, screen, device, game): `src/core/proof.js` `createProofApi`; `verification.md`
-- Simulation tables and bot experiments: `agent-match.js`; `verification.md`
+- Simulation tables and bot experiments: `agent-match.js`; `scripts/farm.js`; report tables `scripts/bench/report.js`; `verification.md` Bot simulations (read that section before writing a probe)
+- Feature lookup for builders: `scripts/where.js`; `bun run where <word>` prints feature-map entries and source hits, `--all` removes output limits
 
 ## Online rooms
 
@@ -175,7 +176,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Link previews (og tags, key art `public/og.jpg`) and the room's own preview title: `index.html`; `worker/index.js` `roomPage`
 - Result card Copy link (a line of the match plus the address bar's link, the room's when shared): moba `menu.js` `share`
 - Transport (peer link, envelopes): `src/plugins/online/net.js` `Net`, `plainJoinData`; `src/plugins/online/link.js` `createLink`
-- Remote players as replicas: `lane-replica.js`, `lobby-replica.js`; `src/plugins/dodgeball/replica.js`
+- Online parity, snapshot and replica wiring (Cushion cover, gates, camps, flag, guest fog): `sim-snapshot.js` `snapshot` writes host state; `lane-replica.js` `projectLaneSnapshot`, `createLaneReplica` packs/applies lane state; moba `index.js` `FACTS` whitelists feedback and registers guest fog; `lobby-replica.js` handles the lobby; `src/plugins/dodgeball/replica.js` handles dodgeball; `network.md`
 
 ## Dodgeball (bonus mode)
 
@@ -199,9 +200,9 @@ Plugin in `src/plugins/dodgeball/`; its snapshots are locked by `tests/character
 
 ## Landmarks in the big files
 
-`tune.js` (about 900 lines; presentation numbers are in `look.js`) is the file every thread re-reads; use `ast-grep outline` or these landmarks rather than reading it whole.
+`tune.js` assembles domain tunes; presentation numbers are in `look.js`. Use these owners rather than reading the assembled file or searching every caller.
 
-- `tune.js`: every number, one top-level key per system. `grep -n "^	<key>: " src/plugins/moba/tune.js` jumps to one. Sliders for it: `sliders.js`; new debug folders also go in `debugSections`.
+- Tune ownership: match rules (`bots`, `fog`, `camps`, waves, structures) in `tune.js`; Flagfall in `maps/flagfall/tune.js`; Overthrow in `maps/overthrow/tune.js`; lobby in `front/lobby-tune.js`; each ability/hero in its own `abilities/<id>/tune.js` or `heroes/<id>/tune.js`. `rg -n "^\s*<key>:" <owner>` jumps to the block; `ast-grep outline` misses object keys. Sliders: `sliders.js` `debugSections`.
 - `sim.js`: `createSim` builds the world, heroes and pieces, wires the systems through one shared `ctx`, and runs `step` (the tick). Heroes are `sim.heroes[i]`; bodies come from `src/core/body.js` (`body.position`, `body.place(x, y, z)`). Each system is a `create…(ctx)` in its own file:
   - `sim.js`: `bodyAt`, `makeHero`, `swapHero`, `step`, `dispose`, `removeHero`, `releaseBot`, `adoptBot`, the public `api`
   - `targeting.js`: `enemiesOf`, `find`, `pick`, `nearestToClick`, `stickAim`: what a click or the stick lands on
