@@ -65,3 +65,4 @@ A surgical edit outside your owned files (a setter, an export, a hook) is fine w
 - Proof screenshots use the real game camera and assert the state they claim (idle is idle, "mid-flight" waits for the flight). Start from a fresh `/` when proving the route; targeted visual fixes may use a direct setup and must say how they got there.
 - Trace interactions (pointer sweeps, reversals mid-transition), not just idle.
 - A new fact type gets an entry in `src/plugins/moba/index.js` `FACTS`, or online guests drop every packet carrying it.
+- Tunes may be prototype copies (`Object.create(tune.x)`, e.g. moba `index.js` `cameraTune`): never `{ ...t }` one, which keeps only own keys; override with `Object.assign(Object.create(t), { … })`.

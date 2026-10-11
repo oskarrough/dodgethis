@@ -142,7 +142,10 @@ export function createFollow(t = tune.follow, bounds = FLOOR) {
 		}
 		const bounded = clampView(
 			at,
-			free && !centred ? { ...t, fov: Math.max(tune.follow.minFov, t.fov - freeZoom) } : t,
+			// A prototype tune (index.js cameraTune) has no own keys, so spreading it would drop the lens rig.
+			free && !centred
+				? Object.assign(Object.create(t), { fov: Math.max(tune.follow.minFov, t.fov - freeZoom) })
+				: t,
 			aspect,
 			Math.max(0, cameraFov - lastFov) + pendingKick,
 			bounds,
