@@ -200,6 +200,18 @@ export const uses = {
 	'music.defeat': { source: 'Music', about: 'Defeat sting', music: 'defeat' },
 }
 
+// The bus each source plays on (tune.mix); every other source is a hero's, on `mine` or `others` (audio.isOwn).
+const BUS = {
+	Menus: 'ui',
+	'Splash and descent': 'ui',
+	Lobby: 'ui',
+	Music: 'music',
+	Ball: 'world',
+	Structures: 'world',
+	Minions: 'world',
+}
+for (const use of Object.values(uses)) use.bus = BUS[use.source] ?? 'hero'
+
 const ending = (suffix) => Object.keys(abilityUses).filter((id) => id.endsWith(suffix))
 const structures = ['tower', 'core', 'melee', 'brute', 'ranged', 'wizard']
 

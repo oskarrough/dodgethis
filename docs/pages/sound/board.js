@@ -3,6 +3,7 @@
 // each sound's numbers against the docs/sound.md rules.
 import * as audio from '/src/core/audio.js'
 import * as swap from '/src/core/sound-swap.js'
+import { tune } from '/src/core/tune.js'
 import { createSounds, playUse } from '/src/plugins/moba/sounds.js'
 import { uses, facts } from '/src/plugins/moba/sound-table.js'
 import { check, describe, measure } from './numbers.js'
@@ -244,8 +245,64 @@ async function fillLibrary() {
 	}
 }
 
+// The mix sliders (tune.mix): bus levels, caps per window, own radius and the music duck.
+const MIX = [
+	...['ui', 'mine', 'others', 'world', 'music'].map((name) => [
+		name,
+		`${name} level`,
+		0,
+		1.5,
+		0.05,
+	]),
+	...['ui', 'mine', 'others', 'world'].map((name) => [
+		`caps.${name}`,
+		`${name} cap (sounds per window)`,
+		1,
+		16,
+		1,
+	]),
+	['capWindow', 'cap window (s)', 0.05, 0.5, 0.05],
+	['ownRadius', 'own radius (m)', 0, 4, 0.25],
+	['duck', 'music under a fight', 0, 1, 0.05],
+	['duckRelease', 'music comes back over (s)', 0.1, 2, 0.1],
+]
+const mixValue = (key) => {
+	const [head, tail] = key.split('.')
+	const local = swap.mixOf()
+	return tail ? (local.caps?.[tail] ?? tune.mix.caps[tail]) : (local[head] ?? tune.mix[head])
+}
+const mixInputs = new Map()
+for (const [key, label, min, max, step] of MIX) {
+	const input = el('input', { type: 'range', min, max, step, ariaLabel: label })
+	const shown = el('output')
+	input.addEventListener('input', () => (shown.textContent = input.value))
+	input.addEventListener('change', () => {
+		const [head, tail] = key.split('.')
+		const local = swap.mixOf()
+		const value = Number(input.value)
+		swap.setMix(
+			tail
+				? { ...local, caps: { ...tune.mix.caps, ...local.caps, [tail]: value } }
+				: { ...local, [head]: value },
+		)
+	})
+	mixInputs.set(key, [input, shown])
+	$('mix').append(
+		el('tr', {}, el('th', { textContent: label }), el('td', {}, input), el('td', {}, shown)),
+	)
+}
+$('mix-reset').addEventListener('click', () => swap.setMix(null))
+function fillMix() {
+	for (const [key, [input, shown]] of mixInputs) input.value = shown.textContent = mixValue(key)
+}
+
 function fillChanges() {
+	const mixed = MIX.map(([key]) => key).filter((key) => {
+		const [head, tail] = key.split('.')
+		return mixValue(key) !== (tail ? tune.mix.caps[tail] : tune.mix[head])
+	})
 	const lines = [
+		...mixed.map((key) => `tune.mix.${key} → ${mixValue(key)} (this browser only)`),
 		...Object.entries(swap.kept).map(
 			([id, s]) =>
 				`${id} → kept ${s.kept ? `${s.kept} at ${s.gain}` : s.voice} (in the repo, waiting for a commit)`,
@@ -333,8 +390,11 @@ $('fight').addEventListener('click', () => {
 		const id = FIGHT[Math.floor(random() * FIGHT.length)]
 		if (!uses[id]) continue
 		const tick = Math.floor(random() * 90) // 1.5 s at 60 ticks a second
-		const point = { x: (random() - 0.5) * 24, y: 1, z: (random() - 0.5) * 16 }
-		const gain = random() < 0.3 ? 1 : 0.45 // your own sounds at full, everyone else's quieter
+		const own = random() < 0.3 // your own sounds at full and at your hero, everyone else's quieter and around
+		const point = own
+			? { x: 0, y: 1, z: 0 }
+			: { x: (random() - 0.5) * 24, y: 1, z: (random() - 0.5) * 16 }
+		const gain = own ? 1 : 0.45
 		setTimeout(
 			() => {
 				const voice = sounds.voiceOf(id)
@@ -348,6 +408,7 @@ $('fight').addEventListener('click', () => {
 })
 
 function refresh() {
+	fillMix()
 	fillSelects()
 	fillLibrary()
 	fillChanges()

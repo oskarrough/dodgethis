@@ -9,6 +9,7 @@ const swaps = new Map() // use id → swap
 const files = new Map() // file name → Blob
 const urls = new Map() // file name → object URL
 const listeners = new Set()
+let mix = {} // the board's mix sliders, over tune.mix
 const channel = globalThis.window && globalThis.BroadcastChannel ? new BroadcastChannel(DB) : null
 
 function request(r) {
@@ -51,7 +52,10 @@ async function write(store, key, value) {
 async function reload() {
 	const [nextSwaps, nextFiles] = await Promise.all([all('swaps'), all('files')])
 	swaps.clear()
-	for (const [id, swap] of nextSwaps) swaps.set(id, swap)
+	mix = {}
+	for (const [id, swap] of nextSwaps)
+		if (id === '#mix') mix = swap
+		else swaps.set(id, swap)
 	for (const name of files.keys())
 		if (!nextFiles.some(([n]) => n === name)) {
 			URL.revokeObjectURL(urls.get(name))
@@ -99,6 +103,11 @@ export function onSwapChange(fn) {
 
 export async function setSwap(id, swap) {
 	await write('swaps', id, swap)
+	await changed()
+}
+export const mixOf = () => mix
+export async function setMix(values) {
+	await write('swaps', '#mix', values)
 	await changed()
 }
 export async function addFiles(list) {

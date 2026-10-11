@@ -59,11 +59,15 @@ export function createSounds(audio) {
 
 // Play a use from the sound table (sound-table.js): the board's swap or a kept file, else its voice, recipe or player.
 export function playUse(audio, id, point = null, gain = 1, ...extra) {
-	if (audio.swapped(id, point, gain, ...extra)) return
 	const use = uses[id]
-	if (use?.voice) voiceNamed(use.voice)?.(point, gain, ...extra)
-	else if (use?.recipe) {
-		const recipe = use.recipe()
-		audio.blip({ ...recipe, gain: recipe.gain * gain, point })
-	} else use?.play?.(audio, point, gain)
+	if (!use) return
+	const bus = use.bus === 'hero' ? (audio.isOwn(point) ? 'mine' : 'others') : use.bus
+	audio.onBus(bus, () => {
+		if (audio.swapped(id, point, gain, ...extra)) return
+		if (use.voice) voiceNamed(use.voice)?.(point, gain, ...extra)
+		else if (use.recipe) {
+			const recipe = use.recipe()
+			audio.blip({ ...recipe, gain: recipe.gain * gain, point })
+		} else use.play?.(audio, point, gain)
+	})
 }

@@ -1,6 +1,15 @@
 import { tune } from './tune.js'
 import { createMusic } from './music.js'
-import { fileUrl, keptUrl, kept, registerVoices, swapOf, voiceNamed } from './sound-swap.js'
+import {
+	fileUrl,
+	keptUrl,
+	kept,
+	mixOf,
+	onSwapChange,
+	registerVoices,
+	swapOf,
+	voiceNamed,
+} from './sound-swap.js'
 
 // Vite fingerprints these asset imports; the player below decodes each into an AudioBuffer on first use.
 import menuOpenUrl from './sfx/menu-open.mp3'
@@ -25,6 +34,7 @@ const BOT_TALK = [botTalk1, botTalk2, botTalk3, botTalk4, botTalk5]
 
 let ctx = null
 let master = null
+let buses = null // bus name → GainNode into master (tune.mix)
 let music = null
 let musicScene = 'lobby'
 let musicEnabled = true
@@ -37,7 +47,7 @@ try {
 
 export function syncMusic() {
 	if (!gestureReceived || !ctx) return
-	if (!music) music = createMusic(ctx, master, { volume: () => tune.output.volume })
+	if (!music) music = createMusic(ctx, buses.music, { volume: () => tune.output.volume })
 	music.refreshVolume()
 	music.setScene(musicScene)
 	music.setEnabled(
@@ -91,12 +101,61 @@ export function spatialMix(point) {
 	}
 }
 
+// The mix bus: every sound plays on the bus `onBus` names (world when nothing does), each a gain into master.
+const BUSES = ['ui', 'mine', 'others', 'world', 'music']
+const mix = (key) => mixOf()[key] ?? tune.mix[key]
+function wire(context) {
+	const out = context.createGain()
+	out.connect(context.destination)
+	const named = {}
+	for (const name of BUSES) {
+		named[name] = context.createGain()
+		named[name].gain.value = mix(name)
+		named[name].connect(out)
+	}
+	return [out, named]
+}
+onSwapChange(() => {
+	if (buses) for (const name of BUSES) buses[name].gain.setValueAtTime(mix(name), ctx.currentTime)
+})
+
+let bus = 'world'
+let capped = true
+const started = { ui: [], mine: [], others: [], world: [] }
+// Hero sounds at the listener (your hero) are yours.
+export function isOwn(point) {
+	return !point || Math.hypot(point.x - listener.x, point.z - listener.z) <= tune.mix.ownRadius
+}
+// Play on one bus: past its cap the sound is dropped; a fight sound ducks the music under it.
+export function onBus(name, play) {
+	if (capped && started[name]) {
+		const now = performance.now() / 1000
+		const recent = started[name].filter((at) => now - at < mix('capWindow'))
+		if (recent.length >= (mix('caps')[name] ?? Infinity)) return
+		started[name] = [...recent, now]
+	}
+	if (name !== 'ui' && name !== 'music' && buses && ctx) {
+		const gain = buses.music.gain
+		const now = ctx.currentTime
+		gain.cancelScheduledValues(now)
+		gain.setValueAtTime(gain.value, now)
+		gain.setTargetAtTime(mix('music') * mix('duck'), now, 0.02)
+		gain.setTargetAtTime(mix('music'), now + 0.15, mix('duckRelease') / 3)
+	}
+	const was = bus
+	bus = name
+	try {
+		return play()
+	} finally {
+		bus = was
+	}
+}
+
 function ac() {
 	if (!ctx) {
 		ctx = new (window.AudioContext || window['webkitAudioContext'])()
-		master = ctx.createGain()
+		;[master, buses] = wire(ctx)
 		master.gain.value = tune.output.sound ? 1 : 0
-		master.connect(ctx.destination)
 		ctx.addEventListener?.('statechange', syncMusic)
 	}
 	return ctx
@@ -167,6 +226,7 @@ export async function sample(url, { gain = 1, rate = 1, rateJitter = 0, point = 
 	if (!tune.output.sound) return
 	const generation = soundGeneration
 	const c = ac()
+	const out = buses[bus]
 	let buf
 	try {
 		buf = await load(url)
@@ -183,7 +243,7 @@ export async function sample(url, { gain = 1, rate = 1, rateJitter = 0, point = 
 	g.gain.value = Math.max(0.0001, gain * tune.output.volume * mix.gain)
 	const panner = c.createStereoPanner()
 	panner.pan.value = mix.pan
-	src.connect(g).connect(panner).connect(master)
+	src.connect(g).connect(panner).connect(out)
 	return new Promise((resolve) => {
 		src.onended = () => {
 			src.disconnect()
@@ -221,7 +281,7 @@ export function blip({
 	g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur)
 	const panner = c.createStereoPanner()
 	panner.pan.value = mix.pan
-	osc.connect(g).connect(panner).connect(master)
+	osc.connect(g).connect(panner).connect(buses[bus])
 	osc.onended = () => {
 		osc.disconnect()
 		g.disconnect()
@@ -259,7 +319,7 @@ function noise({ point = null, from, to, dur, gain: level, q = 0.7 }) {
 	gain.gain.exponentialRampToValueAtTime(0.0001, now + dur)
 	const pan = c.createStereoPanner()
 	pan.pan.value = mix.pan
-	source.connect(filter).connect(gain).connect(pan).connect(master)
+	source.connect(filter).connect(gain).connect(pan).connect(buses[bus])
 	source.onended = () => {
 		source.disconnect()
 		filter.disconnect()
@@ -367,17 +427,18 @@ registerVoices(sfx)
 export async function render(play, { seconds = 2, rate = 44100, warm = [] } = {}) {
 	preload()
 	await Promise.all([...warm.map(load), ...buffers.values()].map((p) => p.catch(() => {})))
-	const live = [ctx, master, tune.output.sound]
+	const live = [ctx, master, buses, tune.output.sound]
 	const offline = new OfflineAudioContext(2, Math.ceil(seconds * rate), rate)
 	ctx = offline
-	master = offline.createGain()
-	master.connect(offline.destination)
+	;[master, buses] = wire(offline)
 	tune.output.sound = true
+	capped = false
 	try {
 		play()
 		await new Promise((resolve) => setTimeout(resolve)) // samples start once their cached decode resolves
 	} finally {
-		;[ctx, master, tune.output.sound] = live
+		;[ctx, master, buses, tune.output.sound] = live
+		capped = true
 	}
 	return offline.startRendering()
 }
@@ -394,5 +455,5 @@ export function swapped(id, point = null, gain = 1, ...extra) {
 
 // Menu sounds are uses too (`ui.<name>` in the sound table), so the board can swap them.
 export function ui(name) {
-	if (!swapped(`ui.${name}`)) sfx[name]()
+	onBus('ui', () => swapped(`ui.${name}`) || sfx[name]())
 }
