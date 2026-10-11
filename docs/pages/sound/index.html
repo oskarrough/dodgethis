@@ -9,87 +9,140 @@
 		     (every sound as a light, in the order a player meets them), then three panes: sources, the stage (the
 		     sound map or a tool) and the inspector with the deck. -->
 		<style>
+			/* Teenage Engineering for a sound board: a light grey hardware body, black screens with neon line work,
+			   chunky keys. Four colours mean the same number everywhere, like OP-1's four encoders: blue length,
+			   green attack, white level, orange brightness. */
 			html,
 			body {
 				height: 100%;
 			}
 			.page.app {
+				--body: #e3e3e0;
+				--module: #ededea;
+				--key: #f7f7f5;
+				--edge: #c9c9c4;
+				--ink: #1b1b1c;
+				--soft: #77776f;
+				--screen: #0c0c0d;
+				--dim: #8a8a86;
+				--blue: #3fa9f5;
+				--green: #2bd67b;
+				--white: #f1f1ef;
+				--orange: #ff5a1f;
+				--red: #ff3b3b;
+				--purple: #a07bff;
+				--trying: var(--blue);
+				--kept: var(--green);
+				--builtin: #cfcfca;
+				--line: #00000014;
 				max-width: none;
 				height: 100%;
 				padding: 0;
 				display: grid;
 				grid-template-rows: auto auto minmax(0, 1fr);
 				overflow: hidden;
-				--line: #1d1a1722;
-				--soft: #1d1a1799;
-				--paper: #fbf6ea;
-				--trying: #3a6ee0;
-				--kept: #f2b632;
-				--builtin: #c9bfa9;
+				background: var(--body);
+				color: var(--ink);
+				font:
+					14px/1.45 system-ui,
+					-apple-system,
+					'Segoe UI',
+					sans-serif;
 			}
 			.app h1,
 			.app h2,
-			.app h3 {
+			.app h3,
+			.app section {
 				margin: 0;
 			}
+			.label,
+			.app h3 {
+				font-size: 10px;
+				font-weight: 700;
+				letter-spacing: 0.12em;
+				text-transform: uppercase;
+				color: var(--soft);
+			}
+
+			/* Keys: raised tiles that press in. */
 			.app button {
 				font: inherit;
-				font-size: 14px;
-				border: 1px solid var(--line);
-				background: var(--paper);
-				border-radius: 6px;
-				padding: 3px 9px;
-				cursor: pointer;
+				font-size: 13px;
 				color: inherit;
+				border: 1px solid var(--edge);
+				border-radius: 8px;
+				background: var(--key);
+				box-shadow:
+					0 2px 0 var(--edge),
+					0 3px 6px #0000000d;
+				padding: 6px 10px;
+				cursor: pointer;
+				transition:
+					transform 60ms,
+					box-shadow 60ms;
 			}
 			.app button:hover {
 				background: #fff;
 			}
+			.app button:active,
+			.app button.pressed {
+				transform: translateY(2px);
+				box-shadow: 0 0 0 var(--edge);
+			}
 			.app button[aria-pressed='true'] {
 				background: var(--ink);
-				color: var(--cream);
+				color: var(--white);
+				border-color: var(--ink);
 			}
 			.app button:disabled {
 				opacity: 0.4;
 				cursor: default;
 			}
 			.app kbd {
-				font:
-					700 12px/1.4 system-ui,
-					sans-serif;
-				border: 1px solid var(--line);
-				border-bottom-width: 2px;
-				border-radius: 4px;
-				padding: 0 4px;
-				margin-right: 5px;
 				display: inline-block;
-				min-width: 1.4em;
+				min-width: 1.3em;
+				margin-right: 6px;
+				font:
+					700 11px/1.5 system-ui,
+					sans-serif;
 				text-align: center;
-				background: #fff;
+				color: var(--soft);
 			}
 			.app select,
-			.app input[type='search'] {
+			.app input[type='search'],
+			.app input[type='number'],
+			.app textarea {
 				font: inherit;
-				font-size: 14px;
-				border: 1px solid var(--line);
-				border-radius: 6px;
+				font-size: 13px;
+				color: inherit;
+				border: 1px solid var(--edge);
+				border-radius: 8px;
 				background: #fff;
-				padding: 3px 6px;
+				padding: 5px 8px;
 				max-width: 100%;
 			}
+			.app input[type='range'] {
+				accent-color: var(--orange);
+			}
 
-			/* The bar: name, how far Oskar has got, global actions, tools. */
+			/* The bar. */
 			.bar {
 				display: flex;
 				align-items: center;
-				gap: 10px;
-				padding: 8px 14px;
-				border-bottom: 1px solid var(--line);
-				background: var(--paper);
+				gap: 12px;
+				padding: 10px 16px;
+				background: var(--module);
+				border-bottom: 1px solid var(--edge);
 			}
 			.bar h1 {
-				font-size: 17px;
-				margin-right: 6px;
+				font-size: 15px;
+				font-weight: 800;
+				letter-spacing: 0.02em;
+			}
+			.bar h1::after {
+				content: ' ·  dodgethis';
+				font-weight: 400;
+				color: var(--soft);
 			}
 			.bar .grow {
 				flex: 1;
@@ -97,97 +150,142 @@
 			.progress {
 				display: flex;
 				align-items: center;
-				gap: 8px;
-				font-size: 13px;
+				gap: 10px;
+				font-size: 12px;
 				color: var(--soft);
+				padding: 5px 10px;
+				border-radius: 8px;
+				background: var(--screen);
 			}
-			.progress meter {
-				width: 140px;
-				height: 10px;
+			.progress .leds {
+				display: flex;
+				gap: 2px;
+			}
+			.progress .leds i {
+				width: 4px;
+				height: 12px;
+				border-radius: 1px;
+				background: #2a2a2b;
+			}
+			.progress .leds i.on {
+				background: var(--green);
+				box-shadow: 0 0 6px #2bd67b88;
+			}
+			.progress .leds i.try {
+				background: var(--blue);
+			}
+			.progress b {
+				color: var(--white);
+				font-weight: 300;
+				font-size: 18px;
+				font-variant-numeric: tabular-nums;
 			}
 			.bar output {
 				font-size: 13px;
 				color: var(--soft);
 			}
+			#notice:not(:empty) {
+				color: var(--ink);
+				background: #fff;
+				border-radius: 8px;
+				padding: 4px 10px;
+				box-shadow: 0 2px 0 var(--edge);
+			}
 
-			/* The strip: one light per sound, grouped by source, in the order a player meets them. */
+			/* The strip: an LED per sound. */
 			.strip {
 				display: flex;
-				gap: 14px;
-				padding: 8px 14px 10px;
+				gap: 16px;
+				padding: 10px 16px 12px;
 				overflow-x: auto;
-				border-bottom: 1px solid var(--line);
+				background: var(--module);
+				border-bottom: 1px solid var(--edge);
 				scrollbar-width: thin;
 			}
 			.strip .source {
 				display: grid;
-				gap: 4px;
+				gap: 5px;
 				flex: none;
 			}
 			.strip .source > span {
-				font-size: 11px;
+				font-size: 10px;
+				font-weight: 700;
+				letter-spacing: 0.08em;
+				text-transform: uppercase;
 				color: var(--soft);
 				white-space: nowrap;
 			}
 			.strip .group-start {
-				padding-left: 14px;
-				border-left: 1px solid var(--line);
+				padding-left: 16px;
+				border-left: 1px solid var(--edge);
 			}
 			.lights {
 				display: flex;
-				gap: 3px;
+				gap: 4px;
 			}
 			.app .light {
 				all: unset;
 				box-sizing: border-box;
-				width: 13px;
-				height: 13px;
-				border-radius: 3px;
+				width: 14px;
+				height: 14px;
+				border-radius: 50%;
 				cursor: pointer;
 				background: var(--builtin);
+				box-shadow: inset 0 1px 2px #0000002a;
+				transition: transform 80ms;
 			}
-			.light[data-status='kept'] {
-				background: var(--kept);
+			.app .light[data-status='kept'] {
+				background: var(--green);
+				box-shadow: 0 0 6px #2bd67b99;
 			}
-			.light[data-status='trying'] {
-				background: var(--trying);
+			.app .light[data-status='trying'] {
+				background: var(--blue);
+				box-shadow: 0 0 6px #3fa9f599;
 			}
-			.light[data-status='music'] {
+			.app .light[data-status='music'] {
 				background: transparent;
-				border: 1px dashed var(--soft);
+				box-shadow: inset 0 0 0 1.5px var(--edge);
 			}
-			.light[data-flag] {
-				box-shadow: inset 0 -3px 0 var(--red);
-			}
-			.light[aria-current='true'] {
-				outline: 2px solid var(--ink);
+			.app .light[data-flag] {
+				outline: 1.5px solid #ff3b3baa;
 				outline-offset: 1px;
 			}
-			.light:hover {
-				transform: scale(1.25);
+			.app .light[aria-current='true'] {
+				outline: 2px solid var(--ink);
+				outline-offset: 2px;
+				transform: scale(1.15);
+			}
+			.app .light:hover {
+				transform: scale(1.3);
 			}
 
-			/* Three panes. */
+			/* Panes. */
 			.panes {
 				display: grid;
-				grid-template-columns: 15rem minmax(0, 1fr) 24rem;
+				grid-template-columns: 14rem minmax(0, 1fr) 25rem;
+				gap: 10px;
+				padding: 10px;
 				min-height: 0;
 			}
 			.panes > * {
 				min-height: 0;
 				overflow: auto;
+				border-radius: 14px;
+				background: var(--module);
+				border: 1px solid var(--edge);
+				box-shadow: 0 2px 0 var(--edge);
 			}
 			.sources {
-				border-right: 1px solid var(--line);
-				padding: 10px 0;
-				font-size: 14px;
+				padding: 8px 0;
+				font-size: 13px;
 			}
 			.sources h2 {
-				font-size: 11px;
+				font-size: 10px;
+				font-weight: 700;
+				letter-spacing: 0.12em;
 				text-transform: uppercase;
-				letter-spacing: 0.06em;
 				color: var(--soft);
-				padding: 10px 14px 4px;
+				padding: 12px 14px 4px;
 			}
 			.sources ul {
 				list-style: none;
@@ -198,47 +296,48 @@
 				display: flex;
 				align-items: center;
 				gap: 8px;
-				padding: 3px 14px;
+				margin: 1px 6px;
+				padding: 3px 8px;
+				border-radius: 6px;
 				color: inherit;
 				text-decoration: none;
 			}
 			.sources a:hover {
-				background: #fff8;
+				background: #fff;
 			}
 			.sources a[aria-current='true'] {
-				background: var(--ink);
-				color: var(--cream);
+				background: var(--screen);
+				color: var(--white);
 			}
 			.sources .count {
 				margin-left: auto;
-				font-size: 12px;
+				font-size: 11px;
 				color: var(--soft);
-			}
-			.sources a[aria-current='true'] .count {
-				color: inherit;
+				font-variant-numeric: tabular-nums;
 			}
 			.sources ul ul a {
-				padding-left: 30px;
-				font-size: 13px;
+				padding-left: 22px;
+				font-size: 12px;
 			}
 			.dot {
-				width: 8px;
-				height: 8px;
+				width: 7px;
+				height: 7px;
 				border-radius: 50%;
 				flex: none;
 				background: var(--builtin);
 			}
 			.dot[data-status='kept'] {
-				background: var(--kept);
+				background: var(--green);
 			}
 			.dot[data-status='trying'] {
-				background: var(--trying);
+				background: var(--blue);
 			}
 			.dot[data-status='music'] {
 				background: transparent;
-				border: 1px dashed currentColor;
+				box-shadow: inset 0 0 0 1px currentColor;
 			}
 
+			/* The stage: the map is a screen. */
 			.stage {
 				display: grid;
 				grid-template-rows: auto minmax(0, 1fr);
@@ -246,18 +345,21 @@
 			}
 			.tabs {
 				display: flex;
-				gap: 4px;
-				padding: 8px 12px;
-				border-bottom: 1px solid var(--line);
+				gap: 6px;
+				padding: 10px 12px;
 			}
 			.tabs button {
-				border-color: transparent;
-				background: transparent;
+				font-size: 12px;
+				padding: 4px 12px;
 			}
 			#view {
 				position: relative;
 				min-height: 0;
 				overflow: auto;
+				margin: 0 10px 10px;
+				border-radius: 10px;
+				background: var(--screen);
+				color: var(--white);
 			}
 			#map {
 				position: absolute;
@@ -267,83 +369,134 @@
 				display: none;
 			}
 			.tool {
-				padding: 14px 20px;
-				max-width: 52rem;
+				padding: 16px 22px;
+				max-width: 54rem;
+				color: var(--white);
+			}
+			.tool a {
+				color: var(--blue);
+			}
+			.tool th,
+			.tool td {
+				border-color: #ffffff1a;
+			}
+			.tool pre {
+				color: var(--green);
 			}
 
+			/* The inspector: screens and keys. */
 			.inspector {
-				border-left: 1px solid var(--line);
-				background: var(--paper);
-				padding: 14px 16px 24px;
+				padding: 12px;
 				display: grid;
-				gap: 12px;
+				gap: 10px;
 				align-content: start;
 			}
-			.inspector h2 {
+			.screen {
+				background: var(--screen);
+				color: var(--white);
+				border-radius: 10px;
+				padding: 12px 14px;
+				display: grid;
+				gap: 8px;
+				box-shadow: inset 0 0 0 3px #1f1f21;
+			}
+			.screen h2 {
 				font:
-					600 18px ui-monospace,
+					600 17px ui-monospace,
+					'SF Mono',
 					monospace;
+				color: var(--white);
 			}
-			.inspector .about {
-				margin: 2px 0 0;
-				color: var(--soft);
-			}
-			.inspector h3 {
-				font-size: 11px;
-				text-transform: uppercase;
-				letter-spacing: 0.06em;
-				color: var(--soft);
-				margin-bottom: 4px;
-			}
-			.inspector p {
+			.screen .about {
 				margin: 0;
+				color: var(--dim);
+				font-size: 13px;
+			}
+			.screen .meta {
+				font-size: 11px;
+				color: var(--dim);
+				overflow-wrap: anywhere;
+			}
+			.screen .head {
+				display: flex;
+				justify-content: space-between;
+				align-items: baseline;
+				gap: 8px;
+			}
+			.screen .tag {
+				font-size: 10px;
+				font-weight: 700;
+				letter-spacing: 0.1em;
+				text-transform: uppercase;
+				padding: 1px 6px;
+				border: 1.5px solid currentColor;
+				border-radius: 4px;
+				white-space: nowrap;
+			}
+			.readouts {
+				display: grid;
+				grid-template-columns: repeat(4, 1fr);
+				gap: 6px;
+			}
+			.readouts > div {
+				display: grid;
+			}
+			.readouts span {
+				font-size: 9px;
+				font-weight: 700;
+				letter-spacing: 0.12em;
+			}
+			.readouts b {
+				font-weight: 200;
+				font-size: 26px;
+				line-height: 1.05;
+				color: var(--white);
+				font-variant-numeric: tabular-nums;
+			}
+			.readouts small {
+				font-size: 10px;
+				color: var(--dim);
+				margin-left: 2px;
 			}
 			.wave {
 				display: block;
 				width: 100%;
 				height: 56px;
-				border-radius: 6px;
-				background: #fff;
-				border: 1px solid var(--line);
-			}
-			.card {
-				border: 1px solid var(--line);
-				border-radius: 10px;
-				background: #fff;
-				padding: 12px;
-				display: grid;
-				gap: 8px;
-				box-shadow: 0 2px 0 var(--line);
 			}
 			.card .wave {
-				height: 72px;
-				border: 0;
-				background: var(--paper);
+				height: 76px;
+				cursor: pointer;
 			}
 			.card .name {
-				font-weight: 700;
+				font-size: 17px;
+				font-weight: 600;
 				overflow-wrap: anywhere;
 			}
-			.card .meta {
+			.card .name .meta {
+				font-weight: 400;
+			}
+			.card select {
+				background: #1c1c1e;
+				color: var(--white);
+				border-color: #333;
 				font-size: 12px;
-				color: var(--soft);
 			}
 			.card.swipe-left {
-				animation: left 0.22s ease-in;
+				animation: left 0.2s ease-in;
 			}
 			.card.swipe-right {
-				animation: right 0.22s ease-in;
+				animation: right 0.2s ease-in;
 			}
 			@keyframes left {
 				to {
-					transform: translateX(-30px) rotate(-3deg);
-					opacity: 0.2;
+					transform: translateX(-40px) rotate(-4deg);
+					opacity: 0.1;
 				}
 			}
 			@keyframes right {
 				to {
-					transform: translateX(30px) rotate(3deg);
-					opacity: 0.2;
+					transform: translateX(40px) rotate(4deg);
+					opacity: 0.1;
 				}
 			}
 			.row {
@@ -355,12 +508,70 @@
 			.row .grow {
 				flex: 1;
 			}
-			.keep {
-				background: var(--kept) !important;
-				font-weight: 700;
+			.keys {
+				display: grid;
+				grid-template-columns: repeat(5, 1fr);
+				gap: 6px;
+			}
+			.keys button {
+				display: grid;
+				justify-items: center;
+				gap: 1px;
+				padding: 7px 2px 6px;
+				font-size: 11px;
+			}
+			.keys button kbd {
+				margin: 0;
+				font-size: 15px;
+				color: var(--ink);
+			}
+			.keys .nope kbd {
+				color: var(--red);
+			}
+			.keys .like kbd {
+				color: var(--green);
+			}
+			.keys .near kbd {
+				color: var(--purple);
+			}
+			.keep-row {
+				display: flex;
+				align-items: center;
+				gap: 12px;
+			}
+			.app button.keep {
+				display: grid;
+				place-items: center;
+				padding: 0;
+			}
+			.app button.keep::before {
+				content: '';
+				width: 26px;
+				height: 26px;
+				border-radius: 50%;
+				background: var(--orange);
+				box-shadow: inset 0 -3px 0 #0000002a;
+			}
+			.app button.keep:disabled::before {
+				background: var(--builtin);
+			}
+			.keep-label {
+				display: flex;
+				gap: 8px;
+				align-items: baseline;
+				font-size: 13px;
+				justify-content: flex-end;
+				margin-top: -4px;
+			}
+			.keep-label b {
+				font-size: 15px;
+			}
+			.keep-label span {
+				color: var(--soft);
+				font-size: 12px;
 			}
 			.facts {
-				font-size: 13px;
+				font-size: 12px;
 				color: var(--soft);
 				display: grid;
 				grid-template-columns: auto 1fr;
@@ -376,7 +587,7 @@
 				list-style: none;
 				margin: 0;
 				padding: 0;
-				font-size: 13px;
+				font-size: 12px;
 				display: grid;
 				gap: 4px;
 			}
@@ -389,35 +600,59 @@
 				flex: 1;
 				overflow-wrap: anywhere;
 			}
+			.shuffle button {
+				padding: 2px 8px;
+			}
 			.flag:empty {
 				display: none;
 			}
 			.flag {
 				color: var(--red);
-				font-size: 13px;
+				font-size: 12px;
 			}
-			/* The palette. */
+			.app details {
+				border-top: 1px solid var(--edge);
+				padding-top: 8px;
+			}
+			.app summary {
+				cursor: pointer;
+				font-size: 10px;
+				font-weight: 700;
+				letter-spacing: 0.12em;
+				text-transform: uppercase;
+				color: var(--soft);
+			}
+			.app details[open] > summary {
+				margin-bottom: 8px;
+			}
+
+			/* The palette: a screen that drops in. */
 			.palette {
-				width: min(36rem, 90vw);
+				width: min(38rem, 90vw);
 				margin-top: 12vh;
 				padding: 0;
-				border: 1px solid var(--line);
-				border-radius: 12px;
-				background: var(--paper);
-				box-shadow: 0 20px 60px #1d1a1733;
+				border: 0;
+				border-radius: 14px;
+				background: var(--screen);
+				color: var(--white);
+				box-shadow:
+					inset 0 0 0 3px #1f1f21,
+					0 30px 80px #0006;
 			}
 			.palette::backdrop {
-				background: #1d1a1722;
+				background: #e3e3e0aa;
+				backdrop-filter: blur(2px);
 			}
 			.palette input {
 				width: 100%;
 				box-sizing: border-box;
 				border: 0 !important;
-				border-bottom: 1px solid var(--line) !important;
+				border-bottom: 1px solid #ffffff1a !important;
 				border-radius: 0 !important;
-				padding: 14px 16px !important;
-				font-size: 17px !important;
+				padding: 16px 18px !important;
+				font-size: 18px !important;
 				outline: none;
+				color: var(--white) !important;
 				background: transparent !important;
 			}
 			.palette ol {
@@ -434,26 +669,31 @@
 				display: flex;
 				gap: 12px;
 				align-items: baseline;
-				padding: 6px 10px;
-				border-radius: 6px;
+				padding: 6px 12px;
+				border-radius: 8px;
 				cursor: pointer;
 			}
 			.palette li small {
 				margin-left: auto;
-				color: var(--soft);
+				color: var(--dim);
 				white-space: nowrap;
 				overflow: hidden;
 				text-overflow: ellipsis;
 			}
 			.palette li[aria-selected='true'] {
-				background: var(--ink);
-				color: var(--cream);
+				background: var(--orange);
+				color: #000;
 			}
 			.palette li[aria-selected='true'] small {
-				color: inherit;
+				color: #000a;
+			}
+			/* The map draws its own chips; they shouldn't look like keys. */
+			#map button {
+				box-shadow: none;
+				transform: none;
 			}
 			.empty {
-				color: var(--soft);
+				color: var(--dim);
 				padding: 40px 20px;
 			}
 		</style>
@@ -462,7 +702,9 @@
 		<header class="bar">
 			<h1>Sound board</h1>
 			<div class="progress" id="progress"></div>
+			<output id="notice"></output>
 			<span class="grow"></span>
+			<button id="find" type="button"><kbd>⌘K</kbd>Find anything</button>
 			<button
 				id="fight"
 				type="button"

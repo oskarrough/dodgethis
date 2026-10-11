@@ -37,6 +37,17 @@ export const folders = [
 export const inFolder = (folder) =>
 	folder ? library.filter((path) => path.startsWith(folder + '/')) : library
 
+// Files that arrive while the board is open (generated ones): measured here, added to the library at once.
+export async function addLibraryFiles(paths) {
+	for (const path of paths) {
+		if (!library.includes(path)) library.push(path)
+		const buffer = await libraryBuffer(path).catch(() => null)
+		if (buffer) libraryNumbers[path] = { numbers: measure(buffer) }
+	}
+	library.sort()
+	emit('change')
+}
+
 // Top five library files per use: { file, score, gain, why }.
 const shortlists = await fetch('/sounds/shortlists.json')
 	.then((r) => r.json())
@@ -94,6 +105,16 @@ export function pileFiles(id, pile = deck.pile) {
 	return files.filter((path) => !isNoped(id, path))
 }
 export const candidate = () => pileFiles(where().use)[deck.at] ?? null
+// A new sound's deck starts on its shortlist when there is one; otherwise the last pile picked stays. Runs on
+// 'select' before any pane draws (state.js registers first), so the map and inspector agree.
+export function resetDeck() {
+	const { use } = where()
+	if (deck.use === use) return
+	deck.use = use
+	if (shortlist(use).length) deck.pile = 'shortlist'
+	else if (deck.pile === 'shortlist' || deck.pile === 'near') deck.pile = ''
+	deck.at = -1
+}
 export function setPile(pile) {
 	const { use } = where()
 	if (pile === 'near')
@@ -159,6 +180,7 @@ export function step(by) {
 	if (next) go({ use: next })
 }
 addEventListener('hashchange', () => emit('select'))
+on('select', () => resetDeck())
 
 // What a use plays now.
 export const same = (a, b) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null)
@@ -292,34 +314,66 @@ globalThis.soundNumbers = async () => {
 	return { rows: rows(), flags: check(rows()) }
 }
 
+// Other uses that already play a library file, kept (public/sfx/kept/<use>--<stem>.ogg) or being tried here.
+const stem = (name) =>
+	name
+		.replace(/^.*\//, '')
+		.replace(/\.[^.]+$/, '')
+		.replace(/[^\w.-]+/g, '-')
+export function usedBy(path, except) {
+	const mine = stem(path)
+	const plays = (s) =>
+		(s?.shuffle ?? [s]).some(
+			(item) =>
+				item?.library === path ||
+				(item?.kept && item.kept.replace(/\.[^.]+$/, '').endsWith(`--${mine}`)),
+		)
+	return pickable.filter((id) => id !== except && (plays(swap.kept[id]) || plays(local(id))))
+}
+
 // Keep writes the swap into the repo (vite.config.js `soundKeep`); this browser mirrors it until a reload.
+// Returns whether every file landed; on a failure the swap and likes stay as they were. Every file is fetched
+// before the first upload, because replacing a use's sound deletes its old kept files on the server.
 export async function keepSwap(id) {
 	const chosen = local(id)
-	if (chosen?.shuffle) {
-		for (const [i, item] of chosen.shuffle.entries()) await keepOne(id, item, i > 0)
-		return swap.setSwap(id, swap.kept[id])
+	const items = chosen?.shuffle ?? [chosen]
+	const bodies = []
+	for (const item of items) bodies.push(await bodyOf(item).catch(() => undefined))
+	if (bodies.includes(undefined)) {
+		alert('Keep failed: a file could not be read.')
+		return false
 	}
-	await keepOne(id, chosen)
+	for (const [i, item] of items.entries())
+		if (!(await keepOne(id, item, bodies[i], i > 0))) return false
 	await swap.setSwap(id, swap.kept[id] ?? { builtin: true })
+	return true
+}
+async function bodyOf(item) {
+	const url = item?.library
+		? swap.libraryUrl(item.library)
+		: item?.kept
+			? swap.keptUrl(item.kept)
+			: null
+	if (!url) return null
+	const response = await fetch(url)
+	if (!response.ok) throw new Error(`${url}: ${response.status}`)
+	return response.blob()
 }
 // Keep one sound; `append` adds it to the use's kept shuffle.
-async function keepOne(id, chosen, append = false) {
+async function keepOne(id, chosen, body, append = false) {
 	const q = new URLSearchParams({ use: id })
 	if (append) q.set('append', 1)
-	let body = null
-	if (chosen?.library) {
-		q.set('name', chosen.library)
+	if (body) {
+		q.set('name', chosen.library ?? chosen.kept)
 		q.set('gain', chosen.gain ?? 0.5)
-		body = await (await fetch(swap.libraryUrl(chosen.library))).blob()
 	} else if (chosen?.voice) q.set('voice', chosen.voice)
-	else if (chosen?.kept) {
-		q.set('name', chosen.kept)
-		q.set('gain', chosen.gain ?? 0.5)
-		body = await (await fetch(swap.keptUrl(chosen.kept))).blob()
-	}
 	const response = await fetch(`/__sound/keep?${q}`, { method: 'POST', body })
-	if (!response.ok) return alert(`Keep failed: ${response.status}. Is this the dev server?`)
+	if (!response.ok) {
+		alert(`Keep failed: ${response.status}. Is this the dev server?`)
+		return false
+	}
 	const now = await response.json()
 	if (now) swap.kept[id] = now
 	else delete swap.kept[id]
+	return true
 }

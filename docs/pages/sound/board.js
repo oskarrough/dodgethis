@@ -35,9 +35,20 @@ function el(tag, props = {}, ...children) {
 function drawProgress() {
 	const kept = pickable.filter((id) => status(id) === 'kept').length
 	const trying = pickable.filter((id) => status(id) === 'trying').length
+	const leds = 24
+	const on = Math.round((kept / pickable.length) * leds)
+	const tried = Math.ceil((trying / pickable.length) * leds)
 	$('progress').replaceChildren(
-		el('meter', { min: 0, max: pickable.length, value: kept, low: pickable.length / 2 }),
-		`${kept} of ${pickable.length} picked${trying ? ` · ${trying} being tried` : ''}`,
+		el('b', { textContent: kept }),
+		`/ ${pickable.length} picked`,
+		el(
+			'span',
+			{ className: 'leds' },
+			...Array.from({ length: leds }, (_, i) =>
+				el('i', { className: i < on ? 'on' : i < on + tried ? 'try' : '' }),
+			),
+		),
+		trying ? `${trying} trying` : '',
 	)
 }
 
@@ -171,6 +182,12 @@ function draw() {
 on('change', draw)
 on('select', draw)
 on('redraw-tool', () => drawStage(true))
+let noticeTimer = 0
+on('notice', (text) => {
+	$('notice').textContent = text
+	clearTimeout(noticeTimer)
+	noticeTimer = setTimeout(() => ($('notice').textContent = ''), 4000)
+})
 
 // Keys, the same on every pane; letters skip when typing in a field.
 addEventListener('keydown', (e) => {

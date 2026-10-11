@@ -19,6 +19,7 @@ import {
 	setPile,
 	deckStep,
 	deckTo,
+	resetDeck,
 	nope,
 	where,
 	step,
@@ -35,6 +36,7 @@ import {
 	libraryBuffer,
 	preview,
 	keepSwap,
+	usedBy,
 	approve,
 	isApproved,
 	local,
@@ -43,9 +45,9 @@ import {
 	measureUse,
 	emit,
 } from './state.js'
-import { describe } from './numbers.js'
 import { drawWave } from './waveform.js'
 import { fight } from './tools.js'
+import { generatePanel } from './generate.js'
 
 function el(tag, props = {}, ...children) {
 	const node = Object.assign(document.createElement(tag), props)
@@ -60,11 +62,22 @@ function key(letter, text, onClick, props = {}) {
 	return b
 }
 
-// Liked files per use: the shuffle Keep ships. Starts from a shuffle already being tried in this browser.
-const liked = new Map()
+// Liked files per use: the shuffle Keep ships. Kept in this browser (localStorage), so a reload or a Resync
+// doesn't lose them; starts from a shuffle already being tried here.
+const LIKES = 'dodgethis-sound-likes'
+const liked = new Map(Object.entries(JSON.parse(localStorage.getItem(LIKES) ?? '{}')))
+const saveLikes = () =>
+	localStorage.setItem(
+		LIKES,
+		JSON.stringify(Object.fromEntries([...liked].filter(([, l]) => l.length))),
+	)
 const likedOf = (id) => {
 	if (!liked.has(id)) liked.set(id, [...(local(id)?.shuffle ?? [])])
 	return liked.get(id)
+}
+const forget = (id) => {
+	liked.delete(id)
+	saveLikes()
 }
 
 // Deck actions, shared with the keyboard (board.js).
@@ -78,10 +91,16 @@ export const actions = {
 		const { use } = where()
 		const path = candidate()
 		if (!use || !path) return
-		swipe('left', () => {
+		swipe('left', async () => {
 			nope(use, path)
-			deck.at -= 1
-			deckStep(1)
+			if (pileFiles(use).length) {
+				deck.at -= 1
+				return deckStep(1)
+			}
+			// Nothing left: the noped file mustn't stay as the sound being tried.
+			deck.at = -1
+			await swap.setSwap(use, null)
+			measureUse(use).then(() => emit('change'))
 		})
 	},
 	like() {
@@ -89,8 +108,10 @@ export const actions = {
 		const path = candidate()
 		if (!use || !path) return
 		const list = likedOf(use)
-		if (!list.some((s) => s.library === path))
-			list.push({ library: path, gain: gainFor(use, path) })
+		// The level it was heard at, so Keep ships what Oskar liked.
+		const gain = swap.swapOf(use)?.library === path ? swap.swapOf(use).gain : gainFor(use, path)
+		if (!list.some((s) => s.library === path)) list.push({ library: path, gain })
+		saveLikes()
 		swipe('right', () => deckStep(1))
 	},
 	near: () => setPile('near'),
@@ -102,12 +123,23 @@ export const actions = {
 		const mine = local(use)
 		// Nothing tried: the sound that plays now stays, and an unswapped built-in sound counts as picked.
 		if (!mine || same(mine, swap.kept[use]) || (mine.builtin && !swap.kept[use])) {
-			if (!swap.kept[use] && !isApproved(use)) await approve(use)
+			if (!swap.kept[use] && !isApproved(use)) {
+				await approve(use)
+				emit('notice', `${use} keeps its built-in sound`)
+			}
 			return step(1)
 		}
-		if (isApproved(use)) await approve(use, true)
-		await keepSwap(use)
-		liked.delete(use)
+		if (!(await keepSwap(use))) return emit('notice', `Keep failed for ${use}; nothing changed`)
+		forget(use)
+		// Back to built in, kept: the built-in sound is the pick.
+		if (!swap.kept[use]) await approve(use)
+		else if (isApproved(use)) await approve(use, true)
+		emit(
+			'notice',
+			swap.kept[use]
+				? `Kept ${list.length ? `${list.length} files` : nameOf(mine)} for ${use}`
+				: `${use} keeps its built-in sound`,
+		)
 		measureUse(use).then(() => emit('change'))
 		step(1)
 	},
@@ -153,14 +185,58 @@ function pileOptions(id) {
 	]
 }
 
+// Four numbers, each in its encoder colour: blue length, green attack, white level, orange brightness.
+function readouts() {
+	const cell = (label, colour) => {
+		const value = el('b')
+		const unit = el('small')
+		const node = el(
+			'div',
+			{},
+			el('span', { textContent: label, style: `color:var(--${colour})` }),
+			el('div', {}, value, unit),
+		)
+		return { node, set: (v, u) => ((value.textContent = v), (unit.textContent = u)) }
+	}
+	const cells = [
+		cell('LENGTH', 'blue'),
+		cell('ATTACK', 'green'),
+		cell('PEAK', 'white'),
+		cell('BRIGHT', 'orange'),
+	]
+	return {
+		node: el('div', { className: 'readouts' }, ...cells.map((c) => c.node)),
+		show(n) {
+			const [length, attack, peak, bright] = cells
+			if (!n) return cells.forEach((c) => c.set('–', ''))
+			length.set(Math.round(n.length), 'ms')
+			attack.set(Math.round(n.attack), 'ms')
+			peak.set(Number.isFinite(n.peak) ? Math.round(n.peak) : '–', 'dB')
+			bright.set((n.centroid / 1000).toFixed(1), 'kHz')
+		},
+	}
+}
+const STATUS = {
+	kept: ['picked', 'green'],
+	trying: ['trying', 'blue'],
+	builtin: ['built in', 'dim'],
+	music: ['music', 'purple'],
+}
+
 function build(root, id) {
 	const use = uses[id]
 	const v = { id, drawnNow: null, drawnCard: undefined }
-	v.title = el('h2', { textContent: id })
+	v.tag = el('span', { className: 'tag' })
 	v.nowWave = el('canvas', { className: 'wave' })
 	v.nowText = el('p', { className: 'meta' })
 	v.flag = el('p', { className: 'flag' })
-	const head = el('div', {}, v.title, el('p', { className: 'about', textContent: use.about }))
+	v.nowNumbers = readouts()
+	const screen = el(
+		'section',
+		{ className: 'screen' },
+		el('div', { className: 'head' }, el('h2', { textContent: id }), v.tag),
+		el('p', { className: 'about', textContent: use.about }),
+	)
 	const facts = el(
 		'dl',
 		{ className: 'facts' },
@@ -171,7 +247,7 @@ function build(root, id) {
 	)
 	if (use.music) {
 		root.replaceChildren(
-			head,
+			screen,
 			el(
 				'div',
 				{ className: 'row' },
@@ -182,15 +258,10 @@ function build(root, id) {
 		)
 		return v
 	}
-	// A new deck starts on the shortlist when there is one; otherwise the last pile picked stays.
-	if (deck.use !== id) {
-		deck.use = id
-		if (shortlist(id).length) deck.pile = 'shortlist'
-		else if (deck.pile === 'shortlist' || deck.pile === 'near') deck.pile = ''
-		deck.at = -1
-	}
+	screen.append(v.nowNumbers.node, v.nowWave, v.nowText, v.flag)
+	resetDeck()
 
-	v.pile = el('select', { ariaLabel: 'Candidates from' }, ...pileOptions(id))
+	v.pile = el('select', { ariaLabel: 'Candidates from' })
 	v.pile.addEventListener('change', () => {
 		setPile(v.pile.value)
 		v.pile.blur()
@@ -203,12 +274,23 @@ function build(root, id) {
 		v.find.value = ''
 		v.find.blur()
 	})
-	v.cardWave = el('canvas', { className: 'wave' })
+	v.cardWave = el('canvas', { className: 'wave', title: 'Play again' })
 	v.cardName = el('div', { className: 'name' })
 	v.cardMeta = el('div', { className: 'meta' })
-	v.card = el('div', { className: 'card' }, v.cardMeta, v.cardName, v.cardWave)
+	v.cardNumbers = readouts()
+	v.card = el(
+		'section',
+		{ className: 'screen card' },
+		el('div', { className: 'head' }, v.pile, v.cardMeta),
+		v.cardName,
+		v.cardNumbers.node,
+		v.cardWave,
+	)
 	v.cardWave.addEventListener('click', () => candidate() && play(id))
-	v.keep = key('K', 'Keep', actions.keep, { className: 'keep' })
+	v.keep = el('button', { type: 'button', className: 'keep', ariaLabel: 'Keep (K)' })
+	v.keep.addEventListener('click', actions.keep)
+	v.keepText = el('b')
+	v.keepHint = el('span')
 	v.liked = el('ul', { className: 'shuffle' })
 	v.likedHead = el('h3')
 	v.level = el('input', { type: 'range', min: 0.05, max: 1.5, step: 0.05, ariaLabel: 'File level' })
@@ -216,6 +298,8 @@ function build(root, id) {
 		const chosen = swap.swapOf(id)
 		if (!swap.swapUrl(chosen)) return
 		const gain = Number(v.level.value)
+		for (const item of likedOf(id)) item.gain = gain
+		saveLikes()
 		await swap.setSwap(
 			id,
 			chosen.shuffle
@@ -241,41 +325,45 @@ function build(root, id) {
 		measureUse(id).then(() => emit('change'))
 	})
 	v.reset = key('', 'Back to built in', async () => {
-		liked.delete(id)
+		forget(id)
 		await swap.setSwap(id, swap.kept[id] ? { builtin: true } : null)
 		measureUse(id).then(() => emit('change'))
 	})
+	const pad = (letter, text, action, className, title) =>
+		key(letter, text, action, { className, ...(title ? { title } : {}) })
 	root.replaceChildren(
-		head,
-		el('section', {}, el('h3', { textContent: 'Plays now' }), v.nowWave, v.nowText, v.flag),
+		screen,
 		el(
 			'div',
-			{ className: 'row' },
-			key('Space', 'Play', actions.again),
-			key('B', 'Built in', actions.builtin),
-			key('F', 'In a fight', actions.fight),
-		),
-		el(
-			'section',
-			{ className: 'deck' },
-			el('h3', { textContent: 'Candidates' }),
-			el('div', { className: 'row' }, v.pile, v.find),
+			{ className: 'keys' },
+			pad('␣', 'play', actions.again),
+			pad('B', 'built in', actions.builtin),
+			pad('F', 'in a fight', actions.fight),
+			pad('N', 'near', actions.near, 'near', 'Candidates that sound like this one'),
+			pad('↓', 'skip', () => step(1), '', 'Next sound, keeping nothing'),
 		),
 		v.card,
 		el(
 			'div',
-			{ className: 'row' },
-			key('←', 'Back', actions.previous),
-			key('X', 'Nope', actions.nope, { title: 'Never offer this file for this sound again' }),
-			key('S', 'Like', actions.like, { title: 'Add to the shuffle and go on' }),
-			key('→', 'Next', actions.next),
-			key('N', 'Near', actions.near, { title: 'Candidates that sound like this one' }),
+			{ className: 'keys' },
+			pad('←', 'back', actions.previous),
+			pad('X', 'nope', actions.nope, 'nope', 'Never offer this file for this sound again'),
+			pad('S', 'like', actions.like, 'like', 'Add to the shuffle and go on'),
+			pad('→', 'next', actions.next),
+			v.keep,
 		),
-		el('div', { className: 'row' }, v.keep, el('span', { className: 'grow' })),
+		el('div', { className: 'keep-label' }, v.keepText, v.keepHint),
 		el('section', {}, v.likedHead, v.liked),
-		el('label', { className: 'row' }, 'Level ', v.level),
-		facts,
-		el('div', { className: 'row' }, v.voices, v.reset),
+		generatePanel(id),
+		el(
+			'details',
+			{},
+			el('summary', { textContent: 'More' }),
+			el('div', { className: 'row' }, v.find),
+			el('label', { className: 'row' }, 'Level ', v.level),
+			facts,
+			el('div', { className: 'row' }, v.voices, v.reset),
+		),
 	)
 	return v
 }
@@ -283,56 +371,90 @@ function build(root, id) {
 function update() {
 	const v = view
 	const id = v.id
+	const [tag, colour] = STATUS[status(id)]
+	v.tag.textContent = tag
+	v.tag.style.color = `var(--${colour})`
 	if (uses[id].music) return
 	const n = numbers.get(id)
-	v.nowText.textContent = [playing(id), n && describe(n)].filter(Boolean).join(' · ')
+	v.nowNumbers.show(n)
+	v.nowText.textContent = playing(id)
 	v.flag.textContent = flags()[id]?.join('; ') ?? ''
 	const buffer = rendered.get(id)
 	if (v.drawnNow !== buffer) {
 		v.drawnNow = buffer
-		drawWave(v.nowWave, buffer, { color: status(id) === 'kept' ? '#a87a10' : '#1d1a17' })
+		drawWave(v.nowWave, buffer, { color: '#2bd67b' })
+	}
+	// Pile choices, including one a generator or the map opened that the list lacks.
+	const options = pileOptions(id)
+	if (!options.some((o) => o.value === deck.pile))
+		options.splice(
+			1,
+			0,
+			el('option', { value: deck.pile, textContent: `${deck.pile}/ (${pileFiles(id).length})` }),
+		)
+	const optionsKey = JSON.stringify(options.map((o) => o.textContent))
+	if (v.pileKey !== optionsKey) {
+		v.pileKey = optionsKey
+		v.pile.replaceChildren(...options)
 	}
 	if (document.activeElement !== v.pile) v.pile.value = deck.pile
 
 	// The card.
 	const files = pileFiles(id)
 	const path = candidate()
+	v.cardMeta.textContent = path ? `${deck.at + 1} / ${files.length}` : `${files.length}`
 	if (v.drawnCard !== path) {
 		v.drawnCard = path
 		if (!path) {
-			v.cardMeta.textContent = `${files.length} candidates`
-			v.cardName.textContent = files.length ? 'Press → to start' : 'Nothing left in this pile'
+			v.cardName.replaceChildren(
+				files.length ? 'Press → to start' : 'Nothing left in this pile',
+				el('div', { className: 'meta', textContent: `${files.length} candidates` }),
+			)
+			v.cardNumbers.show(null)
 			drawWave(v.cardWave, null)
 		} else {
 			const c = shortlist(id).find((s) => s.file === path)
-			const numbersHere = numbersOf(path)
-			v.cardMeta.textContent = `${deck.at + 1} of ${files.length} · ${folderOf(path) || 'top'}/`
 			v.cardName.replaceChildren(
 				fileName(path),
 				el('div', {
 					className: 'meta',
-					textContent: [c?.why, numbersHere && describe(numbersHere)].filter(Boolean).join(' · '),
+					textContent: [
+						`${folderOf(path) || 'top'}/`,
+						c?.why,
+						usedBy(path, id).length && `also plays for ${usedBy(path, id).join(', ')}`,
+					]
+						.filter(Boolean)
+						.join(' · '),
 				}),
 			)
+			v.cardNumbers.show(numbersOf(path))
 			drawWave(v.cardWave, null)
 			libraryBuffer(path).then(
-				(b) => candidate() === path && drawWave(v.cardWave, b, { color: '#3a6ee0' }),
+				(b) => candidate() === path && drawWave(v.cardWave, b, { color: '#3fa9f5' }),
 			)
 		}
-	} else if (!path) v.cardMeta.textContent = `${files.length} candidates`
+	}
 
 	// Keep says what it will ship.
 	const list = likedOf(id)
 	const mine = local(id)
 	const untouched = !mine || same(mine, swap.kept[id]) || (mine.builtin && !swap.kept[id])
-	v.keep.lastChild.textContent = list.length
+	const picked = swap.kept[id] || isApproved(id)
+	v.keepText.textContent = list.length
 		? `Keep ${list.length} liked`
 		: !untouched
 			? 'Keep this one'
-			: swap.kept[id] || isApproved(id)
-				? 'Picked · next sound'
+			: picked
+				? 'Picked'
 				: 'Built in is fine'
-	v.likedHead.textContent = list.length ? `Liked: one plays at random` : ''
+	v.keepHint.textContent = list.length
+		? 'one plays at random, then the next sound'
+		: !untouched
+			? 'ships it to the game, then the next sound'
+			: picked
+				? 'K goes to the next sound'
+				: 'K marks it picked and moves on'
+	v.likedHead.textContent = list.length ? 'Liked' : ''
 	v.liked.replaceChildren(
 		...list.map((item, i) =>
 			el(
@@ -346,6 +468,7 @@ function update() {
 				el('span', { textContent: nameOf(item) }),
 				key('', '×', () => {
 					list.splice(i, 1)
+					saveLikes()
 					emit('change')
 				}),
 			),

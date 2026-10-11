@@ -3,7 +3,7 @@
 // sound runs off the edge with a fade.
 const SPAN = 0.5 // seconds across the full width
 
-export function drawWave(canvas, buffer, { color = '#1d1a17', rules = true } = {}) {
+export function drawWave(canvas, buffer, { color = '#f1f1ef', rules = true } = {}) {
 	const ratio = devicePixelRatio || 1
 	const width = canvas.clientWidth
 	const height = canvas.clientHeight
@@ -15,9 +15,9 @@ export function drawWave(canvas, buffer, { color = '#1d1a17', rules = true } = {
 	g.clearRect(0, 0, width, height)
 	const x = (seconds) => (seconds / SPAN) * width
 	if (rules) {
-		g.fillStyle = '#e0453a14'
+		g.fillStyle = '#ff3b3b1f'
 		g.fillRect(x(0.4), 0, width, height)
-		g.strokeStyle = '#1d1a1733'
+		g.strokeStyle = '#ffffff40'
 		g.setLineDash([3, 3])
 		for (const at of [0.025, 0.4]) {
 			g.beginPath()

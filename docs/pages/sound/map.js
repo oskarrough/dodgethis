@@ -17,27 +17,29 @@ import {
 	on,
 } from './state.js'
 
-const paper = '#f6eedb'
-const ink = '#1d1a17'
-const gold = '#ac7c25'
+// A black screen with neon line work (the board's Teenage Engineering look). The axes wear their encoder
+// colours: orange brightness, blue length.
+const paper = '#0c0c0d'
+const ink = '#f1f1ef'
+const gold = '#ff5a1f'
 const palette = [
-	'#697e6b',
-	'#a26850',
-	'#877442',
-	'#617b87',
-	'#a35e64',
-	'#79718f',
-	'#a27e58',
-	'#5f8580',
-	'#81784e',
-	'#8e6c79',
-	'#687a99',
-	'#9b755e',
-	'#76875b',
-	'#9d6a40',
-	'#797680',
-	'#528381',
-	'#9b7776',
+	'#3fa9f5',
+	'#2bd67b',
+	'#ff5a1f',
+	'#a07bff',
+	'#ffd23f',
+	'#ff4f9a',
+	'#5ee6e6',
+	'#f1f1ef',
+	'#9be15d',
+	'#ff8a3d',
+	'#7b8cff',
+	'#e86cff',
+	'#4fd1a5',
+	'#ffb3a1',
+	'#c2c2bd',
+	'#00b3ff',
+	'#ff3b3b',
 ]
 const font = 'system-ui, sans-serif'
 const clamp = (n, low, high) => Math.max(low, Math.min(high, n))
@@ -128,8 +130,8 @@ export function createMap(container) {
 		for (const [folder, chip] of chips) {
 			const selected = deck.pile === (folder === 'loose files' ? '' : folder)
 			chip.setAttribute('aria-pressed', String(selected))
-			chip.style.borderColor = selected ? '#c8bda6' : 'transparent'
-			chip.style.background = selected ? '#ece1c9' : 'transparent'
+			chip.style.borderColor = selected ? '#ffffff55' : 'transparent'
+			chip.style.background = selected ? '#ffffff14' : 'transparent'
 		}
 		invalidate()
 	}
@@ -228,7 +230,7 @@ export function createMap(container) {
 		ctx.lineWidth = 1
 		const bottom = plot.top + plot.height
 		const right = plot.left + plot.width
-		ctx.strokeStyle = '#d8cdb7'
+		ctx.strokeStyle = '#ffffff30'
 		ctx.beginPath()
 		ctx.moveTo(plot.left, plot.top)
 		ctx.lineTo(plot.left, bottom)
@@ -250,12 +252,12 @@ export function createMap(container) {
 			const horizontal = tick.axis === 'x'
 			if (horizontal ? tick.x < plot.left || tick.x > right : tick.y < plot.top || tick.y > bottom)
 				continue
-			ctx.strokeStyle = '#e8dec9'
+			ctx.strokeStyle = '#ffffff12'
 			ctx.beginPath()
 			ctx.moveTo(horizontal ? tick.x : plot.left, horizontal ? plot.top : tick.y)
 			ctx.lineTo(horizontal ? tick.x : right, horizontal ? bottom : tick.y)
 			ctx.stroke()
-			ctx.fillStyle = '#817866'
+			ctx.fillStyle = '#8a8a86'
 			ctx.textAlign = horizontal ? 'center' : 'right'
 			ctx.fillText(
 				tick.label,
@@ -263,14 +265,15 @@ export function createMap(container) {
 				horizontal ? bottom + 19 : tick.y + 3,
 			)
 		}
-		ctx.fillStyle = '#6e6456'
-		ctx.font = `11px ${font}`
+		ctx.font = `700 10px ${font}`
 		ctx.textAlign = 'center'
-		ctx.fillText('Brightness · kHz', plot.left + plot.width / 2, bottom + 40)
+		ctx.fillStyle = '#ff5a1f'
+		ctx.fillText('BRIGHT · kHz', plot.left + plot.width / 2, bottom + 40)
 		ctx.save()
 		ctx.translate(18, plot.top + plot.height / 2)
 		ctx.rotate(-Math.PI / 2)
-		ctx.fillText('Length', 0, 0)
+		ctx.fillStyle = '#3fa9f5'
+		ctx.fillText('LENGTH', 0, 0)
 		ctx.restore()
 	}
 	function tooltip(point) {
@@ -288,16 +291,16 @@ export function createMap(container) {
 		)
 		const x = clamp(s.x + 16, 8, width - boxWidth - 8)
 		const y = clamp(s.y - 78, plot.top, Math.max(plot.top, height - 78))
-		ctx.shadowColor = '#1d1a1720'
+		ctx.shadowColor = '#00000080'
 		ctx.shadowBlur = 14
 		ctx.shadowOffsetY = 3
-		ctx.fillStyle = '#fff9ec'
+		ctx.fillStyle = '#1c1c1e'
 		ctx.beginPath()
 		ctx.roundRect(x, y, boxWidth, 68, 6)
 		ctx.fill()
 		ctx.shadowBlur = 0
 		ctx.shadowOffsetY = 0
-		ctx.strokeStyle = '#d5c8af'
+		ctx.strokeStyle = '#ffffff22'
 		ctx.stroke()
 		ctx.textAlign = 'left'
 		ctx.font = `10px ${font}`
@@ -307,7 +310,7 @@ export function createMap(container) {
 		ctx.fillStyle = ink
 		ctx.fillText(name, x + 12, y + 35)
 		ctx.font = `10px ${font}`
-		ctx.fillStyle = '#7c715f'
+		ctx.fillStyle = '#8a8a86'
 		ctx.fillText(stats, x + 12, y + 53)
 	}
 	function draw() {
@@ -328,7 +331,7 @@ export function createMap(container) {
 				if ((!use || active.has(p.path)) !== strong) continue
 				const s = screen(p)
 				if (!inside(s)) continue
-				ctx.globalAlpha = strong ? 0.9 : 0.17
+				ctx.globalAlpha = strong ? 0.95 : 0.22
 				circle(s.x, s.y, strong ? 3 : 2.5, colours.get(p.folder))
 			}
 		}
@@ -367,7 +370,7 @@ export function createMap(container) {
 		}
 		ctx.restore()
 		ctx.font = `10px ${font}`
-		ctx.fillStyle = '#8b806d'
+		ctx.fillStyle = '#8a8a86'
 		ctx.textAlign = 'left'
 		ctx.fillText(
 			`${points.length} sounds${points.length < library.length ? ` · ${library.length - points.length} unmeasured` : ''}`,

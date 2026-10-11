@@ -7,3 +7,6 @@ docs/pages/review/media/
 
 # Oskar's sound library (copied from Dropbox Rough Resources/Sounds); only Kept picks are committed
 /sounds/
+
+# Local secrets (ElevenLabs key for the sound board)
+.env*.local
