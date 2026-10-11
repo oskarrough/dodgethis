@@ -281,9 +281,8 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden]))
 	padding: var(--pad);
 	text-align: left;
 	color: var(--ui-text);
-	/* The world behind goes soft and pale, like the sky behind the splash. */
-	background: color-mix(in srgb, var(--ui-cream) 22%, transparent);
-	backdrop-filter: blur(1.5px) saturate(0.85);
+	/* The world behind goes pale, like the sky behind the splash. No blur: it would redraw every frame. */
+	background: color-mix(in srgb, var(--ui-cream) 28%, transparent);
 	border: 0;
 	border-radius: 0;
 	box-shadow: none;
@@ -302,15 +301,14 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden]))
 	pointer-events: none;
 }
 /* Deckled paper, its top, left and bottom edges pushed off the page so only the torn right edge
-   shows, with a soft violet shadow instead of an ink rule. */
+   shows, no ink rule. */
 .dialog-card.moba-pause::before {
 	inset: -40px auto -40px -40px;
 	width: calc(40px + var(--pad) + var(--sheet) * var(--col));
 	border: 40px solid transparent;
 	border-image: url('/splash/paper.webp') 64 fill / 40px / 0 stretch;
 	/* Paled toward the lobby's cream cards. */
-	filter: saturate(0.55) brightness(1.06)
-		drop-shadow(6px 0 14px color-mix(in srgb, var(--ui-text) 22%, transparent));
+	filter: saturate(0.55) brightness(1.06);
 }
 .dialog-card.moba-pause::after {
 	inset: 0 var(--pad);
@@ -357,9 +355,9 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden]))
 	margin: clamp(12px, 2vw, 28px) 0 0 -0.04em;
 	padding: 0.25em 0.08em;
 	writing-mode: vertical-rl;
-	font: 400 clamp(56px, min(10vw, 16vh), 168px) / 0.9 var(--ui-font);
-	letter-spacing: -0.01em;
-	color: inherit;
+	font: 400 clamp(44px, min(7vw, 11vh), 116px) / 0.9 var(--ui-font);
+	letter-spacing: 0.02em;
+	color: color-mix(in srgb, var(--ui-text) 45%, transparent);
 	background: none;
 	border: 0;
 	border-radius: 0;
@@ -376,6 +374,7 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden]))
 	border: solid transparent;
 	border-width: 40px 0;
 	border-image: var(--wash-tall) 48 0 fill / 40px 0 / 0 stretch;
+	opacity: 0.5;
 }
 .moba-pause .pause-kana {
 	grid-row: 2;
@@ -396,14 +395,12 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden]))
 	gap: clamp(10px, 1.4vw, 18px);
 	margin: clamp(12px, 2vw, 28px) 0 0;
 	padding-right: clamp(0px, 2vw, 32px);
-	counter-reset: pause-item;
 }
 /* The lobby's painted card: paper under a hand-inked frame; the one you're on lifts and the
    map's wash bleeds out behind it. */
 .overlay .moba-pause .actions button:not(.pause-check) {
 	--frame-w: 18px;
 	isolation: isolate;
-	counter-increment: pause-item;
 	justify-content: flex-start;
 	align-items: stretch;
 	padding: 0;
@@ -433,23 +430,11 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden]))
 	box-shadow: 0 0 0 0 transparent;
 	transition: box-shadow var(--tile-snap, 0.18s) ease-out;
 }
-.overlay .moba-pause .actions button:not(.pause-check)::before {
-	content: counter(pause-item, decimal-leading-zero);
-	display: grid;
-	place-items: center;
-	flex: none;
-	width: 2.6em;
-	font: var(--caps);
-	font-size: clamp(13px, 1.1vw, 17px);
-	letter-spacing: 0.1em;
-	opacity: 0.7;
-	border-right: 1px solid var(--rule);
-}
 .overlay .moba-pause .actions .label {
 	flex: 1;
 	margin: 0;
 	text-align: left;
-	padding: 0.2em 0.5em 0.34em;
+	padding: 0.2em 0.6em 0.34em;
 }
 .overlay .moba-pause .actions .cursor {
 	display: none;
@@ -465,9 +450,6 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden]))
 }
 .overlay .moba-pause .actions button.selected:not(.pause-check)::after {
 	box-shadow: 0 0 34px 16px color-mix(in srgb, var(--pause-wash) 75%, transparent);
-}
-.overlay .moba-pause .actions button.selected:not(.pause-check)::before {
-	opacity: 1;
 }
 .overlay .moba-pause .actions button:active:not(.pause-check) {
 	transform: translate(-2px, -5px) scale(0.98);
