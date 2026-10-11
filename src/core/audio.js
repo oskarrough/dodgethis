@@ -11,22 +11,23 @@ import {
 	voiceNamed,
 } from './sound-swap.js'
 
-// Vite fingerprints these asset imports; the player below decodes each into an AudioBuffer on first use.
-import menuOpenUrl from './sfx/menu-open.mp3'
-import menuCloseUrl from './sfx/menu-close.mp3'
-import clickUrl from './sfx/click-1.mp3'
-import click2Url from './sfx/click-2.mp3'
-import clickSoftUrl from './sfx/click-soft.mp3'
-import clickInUrl from './sfx/click-in.mp3'
-import clickOutUrl from './sfx/click-out.mp3'
-import tick1Url from './sfx/tick-1.mp3'
-import tick2Url from './sfx/tick-2.mp3'
-import unboxUrl from './sfx/unbox.mp3'
-import botTalk1 from './sfx/bot-talk-1-v2.mp3'
-import botTalk2 from './sfx/bot-talk-2-v2.mp3'
-import botTalk3 from './sfx/bot-talk-3-v2.mp3'
-import botTalk4 from './sfx/bot-talk-4-v2.mp3'
-import botTalk5 from './sfx/bot-talk-5-v2.mp3'
+// Shipped samples are Oskar's library files (sounds/osk-sfx/) as mp3 in public/sfx/kept/; the player below
+// decodes each into an AudioBuffer on first use.
+const menuOpenUrl = '/sfx/kept/open-close--menu-open.mp3'
+const menuCloseUrl = '/sfx/kept/open-close--menu-close.mp3'
+const clickUrl = '/sfx/kept/tap--click-012.mp3'
+const click2Url = '/sfx/kept/tap--click-013.mp3'
+const clickSoftUrl = '/sfx/kept/tap--click-soft.mp3'
+const clickInUrl = '/sfx/kept/tap--click-in.mp3'
+const clickOutUrl = '/sfx/kept/tap--click-out.mp3'
+const tick1Url = '/sfx/kept/tap--tick-004.mp3'
+const tick2Url = '/sfx/kept/tap--tick-005.mp3'
+const unboxUrl = '/sfx/kept/misc--unbox.mp3'
+const botTalk1 = '/sfx/kept/voice--bot-talk-001.mp3'
+const botTalk2 = '/sfx/kept/voice--bot-talk-002.mp3'
+const botTalk3 = '/sfx/kept/voice--bot-talk-003.mp3'
+const botTalk4 = '/sfx/kept/voice--bot-talk-004.mp3'
+const botTalk5 = '/sfx/kept/voice--bot-talk-005.mp3'
 
 const BOT_TALK = [botTalk1, botTalk2, botTalk3, botTalk4, botTalk5]
 

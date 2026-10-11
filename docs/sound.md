@@ -46,7 +46,7 @@ Clean analog warmth, wide stereo, gentle tape saturation.
 - **Short and front-loaded.** The transient lands on the frame the action does; tails stay under 400 ms in a fight. Nothing delays feedback (the feel bar is Melee).
 - **Positional and capped.** Effects pan with the world and duck when many play at once; your own hero's sounds sit slightly louder.
 - **UI is soft and dry.** Clicks and focus sounds are quiet wood and paper (`click-*.mp3`), never beeps.
-- Shipped files live in `src/core/sfx/` as mp3, and many effects are synthesised in code; a new effect gets a line in [feature-map.md](feature-map.md).
+- Sample files come from Oskar's library (`sounds/osk-sfx/`, gitignored) and ship as mp3 in `public/sfx/kept/`; many effects are synthesised in code. A new effect gets a line in [feature-map.md](feature-map.md).
 
 ## Tooling
 

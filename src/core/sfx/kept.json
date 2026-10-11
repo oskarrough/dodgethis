@@ -1,1 +1,6 @@
-{}
+{
+	"blocked": {
+		"kept": "blocked--beep-tapped.mp3",
+		"gain": 0.5
+	}
+}
