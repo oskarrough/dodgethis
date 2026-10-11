@@ -147,6 +147,19 @@
 			.bar .grow {
 				flex: 1;
 			}
+			.app button.progress {
+				border: 0;
+				box-shadow: 0 2px 0 #000;
+				color: var(--dim);
+				font-size: 12px;
+			}
+			.app button.progress:hover {
+				background: #1d1d1f;
+			}
+			.progress .next {
+				color: var(--white);
+				font-weight: 600;
+			}
 			.progress {
 				display: flex;
 				align-items: center;
@@ -750,7 +763,12 @@
 	<body class="page app">
 		<header class="bar">
 			<h1>Sound board</h1>
-			<div class="progress" id="progress"></div>
+			<button
+				class="progress"
+				id="progress"
+				type="button"
+				title="Go to the next sound nobody has picked yet"
+			></button>
 			<output id="notice"></output>
 			<span class="grow"></span>
 			<button id="find" type="button"><kbd>⌘K</kbd>Find anything</button>

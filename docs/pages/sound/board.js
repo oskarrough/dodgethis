@@ -17,6 +17,7 @@ import {
 	go,
 	step,
 	on,
+	emit,
 	measureAll,
 	previewMusic,
 	stopPreview,
@@ -37,9 +38,9 @@ function el(tag, props = {}, ...children) {
 // The bar: how far along the pick is.
 function drawProgress() {
 	const kept = pickable.filter((id) => status(id) === 'kept').length
-	const trying = pickable.filter(isTrying).length
 	const leds = 24
 	const on = Math.round((kept / pickable.length) * leds)
+	const trying = pickable.filter(isTrying).length
 	const tried = Math.ceil((trying / pickable.length) * leds)
 	$('progress').replaceChildren(
 		el('b', { textContent: kept }),
@@ -51,9 +52,22 @@ function drawProgress() {
 				el('i', { className: i < on ? 'on' : i < on + tried ? 'try' : '' }),
 			),
 		),
-		trying ? `${trying} trying` : '',
+		el('span', {
+			className: 'next',
+			textContent: kept === pickable.length ? 'all picked' : 'next to pick →',
+		}),
 	)
 }
+// The counter is a button: it walks to the next sound nobody has picked, after the one on show.
+$('progress').addEventListener('click', () => {
+	const { use } = where()
+	const from = use ? ORDER.indexOf(use) + 1 : 0
+	const next = [...ORDER.slice(from), ...ORDER.slice(0, from)].find(
+		(id) => status(id) === 'builtin',
+	)
+	if (next) go({ use: next })
+	else emit('notice', 'Every sound is picked')
+})
 
 // The strip: a light per sound, a group per source, a rule between screens, match and heroes.
 function drawStrip() {
