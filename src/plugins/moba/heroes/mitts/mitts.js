@@ -7,7 +7,7 @@ export default {
 	basic: 'gloveSlap',
 	name: 'Mitts',
 	order: 2,
-	color: 'red',
+	color: 'terracotta',
 	silhouette: 'square',
 	icon: '<svg viewBox="0 0 48 48" aria-hidden="true"><rect class="tone" x="9" y="13" width="30" height="27" rx="8"/><path class="cream" d="M30 9 Q34 6 37 9 L38 18 L31 19 Z M37 22 Q42 20 44 24 L40 31 L36 28 Z"/><circle class="cream" cx="18" cy="24" r="4"/></svg>',
 	returnPose: 'toss',

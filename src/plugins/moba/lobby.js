@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { PALETTE } from '../../core/style.js'
+import { PALETTE, hex } from '../../core/style.js'
 import { createCornerNav } from '../../core/corner-nav.js'
 import { tune } from './tune.js'
 import { DEFAULT_MAP, onlineMaps } from './maps/all-maps.js'
@@ -333,7 +333,7 @@ export function createLobby({
 		stamp.textContent = text
 		stamp.dataset.hero = heroId
 		const color = HEROES[heroId]?.color
-		if (color) stamp.style.setProperty('--hero-color', `var(--ui-${color})`)
+		if (color) stamp.style.setProperty('--hero-color', hex(color))
 		else stamp.style.removeProperty('--hero-color')
 		stamp.classList.remove('slam')
 		void stamp.offsetWidth
