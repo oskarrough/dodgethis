@@ -300,7 +300,7 @@ export function createFightBot(
 		} = ctx
 
 		const { target, attackReach, targetDistance, attackSpot, canFocus } = ctx
-		// Swap (trade places with your own Bank shot): out when hurt, in on a low target.
+		// Swap (trade places with your own Ricochet shot): out when hurt, in on a low target.
 		const mark = swapAbility?.blinkTo({ hero: h, sim, tick: now })
 		if (mark) {
 			const threat = (at) => Math.min(...enemies.map((u) => distance(u.pos, at)))
