@@ -24,7 +24,7 @@
 
 ## Browser proofs
 
-- Before opening a browser or proving a change by play, read `.claude/skills/verify/SKILL.md`: which proof to pick, the shared dev server, `window.dt`, evidence and cleanup. Every visual proof, clip or variant goes through `bun run review -- --title … --ask … --thread $BB_THREAD_ID <files>`; reports link http://office-linux.heron-mermaid.ts.net:5173/docs/pages/, never thread-storage paths. `bun run review` also edits the shared `docs/pages/items.json`: builders commit only their page folder and leave `items.json` to the orchestrator. Oskar plays at http://office-linux.heron-mermaid.ts.net:5173, never `127.0.0.1`.
+- Before opening a browser or proving a change by play, read `docs/verify.md`: which proof to pick, the shared dev server, `window.dt`, evidence and cleanup. Every visual proof, clip or variant goes through `bun run review -- --title … --ask … --thread $BB_THREAD_ID <files>`; reports link http://office-linux.heron-mermaid.ts.net:5173/docs/pages/, never thread-storage paths. `bun run review` also edits the shared `docs/pages/items.json`: builders commit only their page folder and leave `items.json` to the orchestrator. Oskar plays at http://office-linux.heron-mermaid.ts.net:5173, never `127.0.0.1`.
 
 - Every HTML artifact lives in `docs/pages/<slug>/` and gets a row in `docs/pages/index.html` (title, what, date, status To review / Decided / Archived, Oskar's decision). The orchestrator updates the row when Oskar decides.
 - HTML artifacts (pitches, look pages, review) link `/docs/page.css` with `<body class="page">` and are plain semantic HTML: no CSS or styling classes of their own.
@@ -45,6 +45,6 @@
 
 ## Orchestration
 
-- The loop is `.claude/skills/loop/SKILL.md`; the queue of next briefs is `.claude/queue/`.
-- Build rules every builder follows: `.claude/queue/build-rules.md`.
+- The loop is `docs/orchestration.md`; briefs live in each thread's storage, there is no queue folder.
+- Build rules every builder follows: `docs/build-rules.md`.
 - The coordinating thread owns instructions, briefs, review and roadmap updates; builder BB threads implement game code in this shared checkout. No worktrees.

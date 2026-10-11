@@ -2,6 +2,15 @@ Build rules. Each one comes from a finding an earlier review caught. A brief quo
 
 ## Everyone
 
+Discoverable names. Agents find code by plain-text search, so every identifier is a search query.
+
+- One concept, one spelling. A thing has one name across code, docs and output (simulation, not run or tape; `heroId`, not `hero` here and `heroName` there). Reuse the codebase's words.
+- Exported symbols carry a domain word: `heroFromManifest`, not `build`; `listedHeroes`, not `list`. The folder isn't the context: `users/diff.js` and `orders/diff.js` both grep as `diff`.
+- No bare-role filenames (`utils.js`, `helpers.js`, `types.js`). The exception is a registered folder (`heroes/<id>/`, `abilities/<id>/`, `pieces/<id>/`, `maps/<id>/`), where the folder is the name and `index.js`, `tune.js`, `view.js` are the roles.
+- Keep strings whole: fact names, bot goals, tune keys, `--ui-*` tokens and error messages are never built from templates. An error message starts with a unique literal so a log line greps back to its throw site.
+- One definition site per symbol: move, don't copy, and rename in the same commit as the behaviour change.
+- A new fact type gets an entry in `index.js` `FACTS`, or guests drop every packet carrying it.
+
 No new unit tests for now (user, 2026-10-04); delete a test rather than nurse it when a deliberate change makes it obsolete. Rules below that ask for tests mean a quick proof, in a headless match or a browser trace. A surgical edit outside your owned files (a setter, an export, a hook) is fine without asking; name it in the report.
 
 - When the user's judgment is useful, report the actual local dev URL and shortest route plus one specific thing to judge. The coordinator pings them; don't leave review hidden in a long completion report.
@@ -11,7 +20,7 @@ No new unit tests for now (user, 2026-10-04); delete a test rather than nurse it
 - Update the docs line your change contradicts.
 - App-wide and run-owned debug APIs share one namespace: check both registrations before renaming a key, keep duplicate protection, and prove unregister/re-entry. Scope helpers by action or mode so a lobby object cannot collide with a lobby action.
 - The local hero is looked up by participant id, never heroes[0].
-- Browser work follows `.claude/skills/verify/SKILL.md`. Never `pkill` anything; you share the box.
+- Browser work follows `docs/verify.md`. Never `pkill` anything; you share the box.
 
 ## Sim, bots and net
 

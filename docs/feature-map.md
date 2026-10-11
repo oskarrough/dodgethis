@@ -2,7 +2,7 @@
 
 Every player-facing feature, grouped by screen, one line each: the feature in plain words, then its files and entry symbols, its `tune.js` key and its doc. Grep this file for the word a player would say ("scoreboard", "bollard"), land on the code, then read only that code.
 
-Don't read big files whole. `ast-grep outline <file>` lists a file's symbols with line numbers; `ast-grep run -p '<pattern>' -l js src` finds structure (callers, `tune.x.y` uses). Whoever adds or moves a feature updates its line here. To prove a feature in the running game, use `.claude/skills/verify/SKILL.md`.
+Don't read big files whole. `ast-grep outline <file>` lists a file's symbols with line numbers; `ast-grep run -p '<pattern>' -l js src` finds structure (callers, `tune.x.y` uses). Whoever adds or moves a feature updates its line here. To prove a feature in the running game, use `docs/verify.md`.
 
 Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` means `src/plugins/moba/tune.js` (key in backticks); other tune files are named in full. `tune.js` keeps the match rules and assembles the rest, so every `tune.x.y` path is unchanged but the values live elsewhere: `map` and `overthrowTerrain` in `maps/overthrow/tune.js`, `flagfall` in `maps/flagfall/tune.js`, `lobby` in `front/lobby-tune.js`, every ability's numbers (`loose`, `rain`, `vault`, `toss`, `catch`, `dive`, `gloveSlap`, `bank`, `cushion`, `swap`) in `abilities/<id>/tune.js`, heroes' (`heroes.mitts`, `heroes.pong`, Skip) in `heroes/<id>/tune.js`. Docs live in `docs/`.
 
