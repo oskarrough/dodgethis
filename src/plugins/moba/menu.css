@@ -242,10 +242,12 @@ canvas.moba-dead-world {
 	}
 }
 
-/* The pause page: a Japanese game manual on a Swiss grid, the paused match as its figure.
-   Twelve visible columns, a cream sheet over the left seven, PAUSED running down its first column.
+/* The pause page: a Japanese game manual on a Swiss grid, the paused match as its figure, drawn
+   in the front end's ligne claire (docs/look.md, Front end and match): the splash's deckled paper
+   for the sheet, one thin navy line for the rules, PAUSED inked on a watercolour wash, and the
+   lobby's painted cards for the actions. Twelve faint columns, the sheet over the left seven.
    Readouts are printed; the actions are the only frames. Markup is the shared overlay card plus
-   `pausePage` in menu.js. */
+   `pausePage` in menu.js, which sets `--pause-wash` and `data-light` from the map. */
 .overlay[data-theme='moba-pause'] {
 	place-items: stretch;
 	overflow: auto;
@@ -263,8 +265,11 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden]))
 	--cols: 12;
 	--sheet: 7;
 	--col: calc((100% - 2 * var(--pad)) / var(--cols));
-	--grid-line: color-mix(in srgb, var(--ui-text) 13%, transparent);
+	--grid-line: color-mix(in srgb, var(--ui-text) 8%, transparent);
+	--rule: color-mix(in srgb, var(--ui-text) 55%, transparent);
 	--caps: 600 clamp(11px, 0.95vw, 14px) / 1.2 'Josefin Sans', sans-serif;
+	--wash-tall: url('/splash/wash-day-tall.webp');
+	--frame: url('/splash/frame-day.webp');
 	position: relative;
 	isolation: isolate;
 	display: grid;
@@ -276,10 +281,16 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden]))
 	padding: var(--pad);
 	text-align: left;
 	color: var(--ui-text);
-	background: color-mix(in srgb, var(--ui-text) 12%, transparent);
+	/* The world behind goes soft and pale, like the sky behind the splash. */
+	background: color-mix(in srgb, var(--ui-cream) 22%, transparent);
+	backdrop-filter: blur(1.5px) saturate(0.85);
 	border: 0;
 	border-radius: 0;
 	box-shadow: none;
+}
+.dialog-card.moba-pause[data-light='night'] {
+	--wash-tall: url('/splash/wash-night-tall.webp');
+	--frame: url('/splash/frame-night.webp');
 }
 /* The sheet, then the column lines over everything, the world included. */
 .dialog-card.moba-pause::before,
@@ -290,11 +301,16 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden]))
 	inset: 0;
 	pointer-events: none;
 }
+/* Deckled paper, its top, left and bottom edges pushed off the page so only the torn right edge
+   shows, with a soft violet shadow instead of an ink rule. */
 .dialog-card.moba-pause::before {
-	right: auto;
-	width: calc(var(--pad) + var(--sheet) * var(--col));
-	background: var(--ui-cream);
-	border-right: 3px solid var(--ui-text);
+	inset: -40px auto -40px -40px;
+	width: calc(40px + var(--pad) + var(--sheet) * var(--col));
+	border: 40px solid transparent;
+	border-image: url('/splash/paper.webp') 64 fill / 40px / 0 stretch;
+	/* Paled toward the lobby's cream cards. */
+	filter: saturate(0.55) brightness(1.06)
+		drop-shadow(6px 0 14px color-mix(in srgb, var(--ui-text) 22%, transparent));
 }
 .dialog-card.moba-pause::after {
 	inset: 0 var(--pad);
@@ -316,7 +332,7 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden]))
 	grid-template-columns: subgrid;
 	align-items: end;
 	padding-bottom: 10px;
-	border-bottom: 3px solid currentColor;
+	border-bottom: 1px solid var(--rule);
 	font: var(--caps);
 	letter-spacing: 0.16em;
 	text-transform: uppercase;
@@ -330,13 +346,16 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden]))
 .moba-pause .pause-head > :nth-child(3) {
 	text-align: right;
 }
+/* PAUSED is a readout: ink printed on one painted wash running down the sheet, no frame. */
 .overlay .moba-pause h1 {
+	position: relative;
+	isolation: isolate;
 	grid-row: 2;
 	grid-column: 1;
 	justify-self: start;
 	align-self: start;
 	margin: clamp(12px, 2vw, 28px) 0 0 -0.04em;
-	padding: 0;
+	padding: 0.25em 0.08em;
 	writing-mode: vertical-rl;
 	font: 400 clamp(56px, min(10vw, 16vh), 168px) / 0.9 var(--ui-font);
 	letter-spacing: -0.01em;
@@ -348,6 +367,16 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden]))
 	-webkit-text-stroke: 0;
 	transform: none;
 }
+.overlay .moba-pause h1::after {
+	content: '';
+	position: absolute;
+	inset: 2% 6% 0 -4%;
+	z-index: -1;
+	/* Physical edges: in vertical writing the block axis runs sideways. */
+	border: solid transparent;
+	border-width: 40px 0;
+	border-image: var(--wash-tall) 48 0 fill / 40px 0 / 0 stretch;
+}
 .moba-pause .pause-kana {
 	grid-row: 2;
 	grid-column: 7;
@@ -356,6 +385,7 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden]))
 	writing-mode: vertical-rl;
 	font: 400 clamp(20px, 2.2vw, 34px) / 1 var(--ui-font);
 	letter-spacing: 0.12em;
+	opacity: 0.7;
 }
 .overlay .moba-pause .actions {
 	grid-row: 2;
@@ -368,9 +398,11 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden]))
 	padding-right: clamp(0px, 2vw, 32px);
 	counter-reset: pause-item;
 }
+/* The lobby's painted card: paper under a hand-inked frame; the one you're on lifts and the
+   map's wash bleeds out behind it. */
 .overlay .moba-pause .actions button:not(.pause-check) {
-	--sticker-radius: 4px;
-	--sticker-lift: 4px;
+	--frame-w: 18px;
+	isolation: isolate;
 	counter-increment: pause-item;
 	justify-content: flex-start;
 	align-items: stretch;
@@ -378,44 +410,68 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden]))
 	font-size: clamp(24px, 2.5vw, 42px);
 	letter-spacing: 0;
 	text-transform: none;
-	background: var(--ui-cream);
+	background: none;
+	border: var(--frame-w) solid transparent;
+	border-image: var(--frame) 80 / var(--frame-w) / 0 stretch;
+	border-radius: 0;
+	box-shadow: none;
+	transform: rotate(-0.4deg);
 	transition:
-		transform 0.07s ease,
-		box-shadow 0.07s ease,
-		background 0.12s;
+		transform var(--tile-snap, 0.18s) cubic-bezier(0.2, 1.9, 0.45, 1),
+		filter var(--tile-snap, 0.18s);
+}
+.overlay .moba-pause .actions button:not(.pause-check):nth-child(2) {
+	transform: rotate(0.5deg);
+}
+.overlay .moba-pause .actions button:not(.pause-check)::after {
+	content: '';
+	position: absolute;
+	inset: calc(var(--frame-w) * -0.8);
+	z-index: -1;
+	border: 22px solid transparent;
+	border-image: url('/splash/paper.webp') 64 fill / 22px / 0 stretch;
+	box-shadow: 0 0 0 0 transparent;
+	transition: box-shadow var(--tile-snap, 0.18s) ease-out;
 }
 .overlay .moba-pause .actions button:not(.pause-check)::before {
 	content: counter(pause-item, decimal-leading-zero);
 	display: grid;
 	place-items: center;
 	flex: none;
-	width: 3.2em;
+	width: 2.6em;
 	font: var(--caps);
 	font-size: clamp(13px, 1.1vw, 17px);
 	letter-spacing: 0.1em;
-	border-right: 3px solid var(--ui-text);
+	opacity: 0.7;
+	border-right: 1px solid var(--rule);
 }
 .overlay .moba-pause .actions .label {
 	flex: 1;
 	margin: 0;
 	text-align: left;
-	padding: 0.42em 0.6em 0.56em;
+	padding: 0.2em 0.5em 0.34em;
 }
 .overlay .moba-pause .actions .cursor {
 	display: none;
 }
+.overlay .moba-pause .actions button:not(.pause-check):focus-visible {
+	outline: none;
+}
 .overlay .moba-pause .actions button.selected:not(.pause-check) {
-	background: var(--ui-button);
-	transform: translate(-3px, -3px);
-	box-shadow: calc(var(--sticker-lift) + 4px) calc(var(--sticker-lift) + 4px) 0 var(--ui-text);
+	background: none;
+	transform: translate(-2px, -5px) rotate(0deg) scale(1.02);
+	box-shadow: none;
+	filter: drop-shadow(3px 7px 5px color-mix(in srgb, var(--ui-text) 16%, transparent));
+}
+.overlay .moba-pause .actions button.selected:not(.pause-check)::after {
+	box-shadow: 0 0 34px 16px color-mix(in srgb, var(--pause-wash) 75%, transparent);
 }
 .overlay .moba-pause .actions button.selected:not(.pause-check)::before {
-	color: var(--ui-cream);
-	background: var(--ui-text);
+	opacity: 1;
 }
 .overlay .moba-pause .actions button:active:not(.pause-check) {
-	transform: translate(var(--sticker-lift), var(--sticker-lift));
-	box-shadow: 0 0 0 var(--ui-text);
+	transform: translate(-2px, -5px) scale(0.98);
+	transition-duration: var(--tile-press, 0.06s);
 }
 .moba-pause .pause-facts {
 	grid-row: 3;
@@ -423,12 +479,12 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden]))
 	display: grid;
 	grid-template-columns: subgrid;
 	margin-top: clamp(16px, 2vw, 28px);
-	border-top: 1px solid currentColor;
+	border-top: 1px solid var(--rule);
 }
 .moba-pause .pause-facts > div {
 	grid-column: span 2;
 	padding: 12px 12px 0;
-	border-left: 1px solid currentColor;
+	border-left: 1px solid var(--rule);
 }
 .moba-pause .pause-facts > div:first-child {
 	padding-left: 0;
@@ -480,7 +536,7 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden]))
 	color: inherit;
 	background: none;
 	border: 0;
-	border-top: 1px solid currentColor;
+	border-top: 1px solid var(--rule);
 	border-radius: 0;
 	box-shadow: none;
 	transform: none;
@@ -496,12 +552,12 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden]))
 	height: 1.15em;
 	color: var(--ui-text);
 	background: var(--ui-cream);
-	border: 3px solid var(--ui-text);
-	border-radius: 4px;
-	box-shadow: 3px 3px 0 var(--ui-text);
+	border: 2px solid var(--ui-text);
+	border-radius: 5px 3px 6px 4px;
+	box-shadow: 2px 3px 4px color-mix(in srgb, var(--ui-text) 22%, transparent);
 	transition:
-		transform 0.07s ease,
-		box-shadow 0.07s ease,
+		transform var(--tile-snap, 0.18s) cubic-bezier(0.2, 1.9, 0.45, 1),
+		box-shadow var(--tile-snap, 0.18s),
 		background 0.12s;
 }
 .moba-pause .pause-box svg {
@@ -524,13 +580,14 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden]))
 	box-shadow: none;
 }
 .moba-pause .pause-check:is(.selected, :hover) .pause-box {
-	background: var(--ui-button);
-	transform: translate(-2px, -2px);
-	box-shadow: 5px 5px 0 var(--ui-text);
+	background: var(--pause-wash);
+	transform: translate(-1px, -3px) rotate(-3deg);
+	box-shadow:
+		3px 6px 6px color-mix(in srgb, var(--ui-text) 22%, transparent),
+		0 0 18px 6px color-mix(in srgb, var(--pause-wash) 70%, transparent);
 }
 .moba-pause .pause-check:active .pause-box {
-	transform: translate(3px, 3px);
-	box-shadow: 0 0 0 var(--ui-text);
+	transform: scale(0.92);
 }
 /* The world behind is the page's figure. */
 .moba-pause .pause-figure {
@@ -541,9 +598,8 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden]))
 	padding: 8px 0 0;
 	font: var(--caps);
 	letter-spacing: 0.08em;
-	color: var(--ui-cream);
-	border-top: 1px solid var(--ui-cream);
-	text-shadow: 0 1px 0 var(--ui-text);
+	color: var(--ui-text);
+	border-top: 1px solid var(--rule);
 }
 .moba-pause .pause-figure span {
 	margin-right: 0.6em;
@@ -559,8 +615,7 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden]))
 		padding-top: 76px;
 	}
 	.dialog-card.moba-pause::before {
-		width: 100%;
-		border-right: 0;
+		width: calc(100% + 80px);
 		opacity: 0.94;
 	}
 	.moba-pause .pause-head,

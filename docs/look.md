@@ -30,6 +30,8 @@ Super Smash Bros. Melee is the feel reference: responsive controls, fast animati
 
 **Feel comes before the line.** Menus answer like Smash (snappy, chunky, instant) and are made like Sackboy (tactile, handmade). Only what you can touch is thick and springy: cards on deckled paper with a hand-drawn pen line and a watercolour wash behind the title (`front/skin.js`, `tune.skin.style`); the one you're on lifts and its wash bleeds out behind it. The landscape stays quiet.
 
+**One direction, the front end's.** Any page that stops play (pause now; result and scoreboard next) is front end, not match: deckled paper, the inked frame, thin navy rules, titles on a wash, focus as lift plus wash bloom. Thick outlines and hard offset shadows belong to what moves in the match (units, HUD chips, ability tiles) until the front end's look is carried there too (Oskar, 2026-10-11).
+
 ## References
 
 Our own generations live in [pages/](pages/), committed so later agents start from what we based work on. Keep each one we build from or ship, with its prompt beside it; leave rejected sets in thread storage. Superseded sets move to [look/archive/](pages/archive/README.md): history only, never build from them.
@@ -97,6 +99,6 @@ Tell the tiers apart from above. Walls are weathered stone; team colour goes onl
 - **Minimap** sits bottom-right with the inspect lens beside it, following the map's real footprint; heroes as team dots, tower/core icons, absent from the lobby.
 - **Top bar:** your side left, the enemy's mirrored right: a dot per hero (hollow while dead), takedowns, the clock between. The Ball countdown sits beside the clock all match, icon and seconds only. Every number has a reserved width, so the pill never changes size. Hover the clock for the next wave and the Ball, your dots for team level; towers live on the minimap and in the world.
 - **Inspection:** hover (or long-press, or pad Y hold) for a tooltip card built live from `tune` (`tooltip.js`); world units get a slim nameplate, Alt for the full card in a corner that never covers play. The planned Tab scoreboard lives in `.claude/queue/09-tooltips.md`.
-- Pause is the first Swiss page: the `core/overlay.js` card dressed as a manual page with the match time, takedowns and your hero printed on it and PAUSED running down the sheet. Result is still an overlay card: VICTORY or DEFEAT relative to you.
+- Pause is the first Swiss page: the `core/overlay.js` card dressed as a manual page on the splash's deckled paper, with the match time, takedowns and your hero printed on it, PAUSED running down the sheet on a wash, and Resume and Leave game as the lobby's painted cards over a softened world. Result is still an overlay card: VICTORY or DEFEAT relative to you.
 
 **Budget.** 60 fps on a mid laptop: p95 of the whole frame in a crowded fight at 2560 × 1440. DPR is capped at 1.5; over 16.7 ms, drop DPR to 1.0, then unit halftone, then minion props, then ambient surround effects, clouds first. Merge static geometry, instance minions, no shadow maps; a shadow is a printed ink ellipse.

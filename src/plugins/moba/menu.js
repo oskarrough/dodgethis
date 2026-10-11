@@ -97,6 +97,7 @@ export function createMatchMenu({
 		const level = hero.level ?? sim.lane?.teams?.[mine].level ?? 1
 		card.classList.add('moba-pause')
 		card.style.setProperty('--pause-wash', front.skin.wash[map] ?? front.skin.wash.bonus)
+		card.dataset.light = front.skin.light[map] ?? 'day'
 		card.style.setProperty('--pause-mine', hex(mine === 'A' ? 'teamA' : 'teamB'))
 		card.style.setProperty('--pause-theirs', hex(mine === 'A' ? 'teamB' : 'teamA'))
 		const fact = (label, value, kana) =>
