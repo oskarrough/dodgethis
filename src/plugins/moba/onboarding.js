@@ -21,7 +21,6 @@ export function createOnboarding({ scene, sim, hero }) {
 		node.style.cssText = `position:absolute;background:${hex('cream')};color:${hex('ink')};border:${t.stickerBorder}px solid ${hex('ink')};border-radius:${t.stickerCorner}px;padding:${t.stickerPadding}px;box-shadow:0 3px 10px rgba(38,68,95,${t.stickerShadow});font:bold ${t.font}px/1.2 var(--ui-font);text-align:center`
 		return node
 	}
-	const you = sticker('moba-you', 'You')
 	const pointer = sticker('moba-ball-pointer', '')
 	pointer.style.whiteSpace = 'nowrap'
 	const owned = []
@@ -30,8 +29,6 @@ export function createOnboarding({ scene, sim, hero }) {
 		owned.push(mat)
 		return mat
 	}
-	const cream = material('cream'),
-		ink = material('ink')
 	const group = new THREE.Group()
 	scene.add(group)
 	const mesh = (geometry, mat) => {
@@ -41,18 +38,6 @@ export function createOnboarding({ scene, sim, hero }) {
 		group.add(node)
 		return node
 	}
-	const border = mesh(
-		new THREE.RingGeometry(
-			t.ringRadius - t.ringWidth - t.ringWidth / 2,
-			t.ringRadius + t.ringWidth / 2,
-			t.segments,
-		),
-		ink,
-	)
-	const ring = mesh(
-		new THREE.RingGeometry(t.ringRadius - t.ringWidth, t.ringRadius, t.segments),
-		cream,
-	)
 	const arrowMaterial = material('ammo')
 	arrowMaterial.uniforms.uFade = { value: 1 }
 	arrowMaterial.uniforms.uStipple = { value: t.stipplePixels * window.devicePixelRatio }
@@ -81,9 +66,7 @@ void main() {
 	let previous = null
 	let distance = 0
 	let fadedAt = null
-	let levelAt = null
 	let wasDead = hero.dead
-	const startTick = sim.tick
 	const text = (node, value) => {
 		if (node.textContent !== value) node.textContent = value
 	}
@@ -91,20 +74,15 @@ void main() {
 		point.copy(position).project(camera)
 		node.hidden = Math.abs(point.x) > 1 || Math.abs(point.y) > 1 || point.z < -1 || point.z > 1
 		point.set(position.x, position.y + lift, position.z).project(camera)
-		// A visible hero keeps its sticker; the raised anchor must not slip behind the HUD.
+		// The raised anchor must not slip behind the HUD.
 		const top = t.pointerTop + t.font + t.stickerPadding * 2 + t.stickerBorder * 2
 		node.style.left = `clamp(${t.pointerMargin}px,${(point.x + 1) * 50}%,calc(100% - ${t.pointerMargin}px))`
 		node.style.top = `clamp(${top}px,${(1 - point.y) * 50}%,calc(100% - ${t.pointerBottom}px))`
 		node.style.transform = 'translate(-50%,-100%)'
 	}
 	return {
-		present(fact) {
-			if (fact.team !== hero.team) return
-			if (fact.type === 'levelUp') levelAt = sim.tick
-		},
 		update({ camera, alpha, ballPosition, frozen = false }) {
 			const tick = sim.tick + alpha
-			const elapsed = (tick - startTick) * STEP
 			const p = hero.body.mesh.position
 			// Respawns jump to base. Never count the jump as walking, or restart the lesson.
 			if (previous && !hero.dead && !wasDead && !frozen)
@@ -120,25 +98,6 @@ void main() {
 			const at = clampMap({ x: p.x + direction * t.arrowOffset, z: p.z })
 			arrow.position.set(at.x, t.arrowY, at.z)
 			arrow.rotation.z = direction === 1 ? 0 : Math.PI
-			const pop = levelAt === null ? 0 : Math.max(0, 1 - ((tick - levelAt) * STEP) / t.levelLife)
-			const scale = 1 + t.levelPulse * Math.sin(pop * Math.PI)
-			for (const [node, y] of [
-				[ring, t.ringY],
-				[border, t.ringBorderY],
-			]) {
-				node.visible = !hero.dead
-				node.position.set(p.x, y, p.z)
-				node.scale.setScalar(scale)
-			}
-			const crowded =
-				[...sim.heroes, ...sim.lane.minions].filter(
-					(unit) =>
-						unit.id !== hero.id &&
-						!unit.dead &&
-						unit.body.mesh.position.distanceTo(p) <= t.crowdRadius,
-				).length >= t.crowdCount
-			place(you, p, camera, t.labelHeight)
-			you.hidden ||= hero.dead || (elapsed >= t.youLife && !crowded)
 			pointer.hidden = true
 			if (sim.lane.match.winner) return
 			// Carrying, the pointer swaps the Ball for where to throw it.

@@ -488,7 +488,6 @@ export default function moba(app, map) {
 				lobby?.afterStep()
 			})
 			onPresent(feedback.present)
-			if (onboarding) onPresent(onboarding.present)
 			if (ballView) onPresent(ballView.present)
 			const ballFacts = []
 			run.on('present', (fact) => {
