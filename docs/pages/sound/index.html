@@ -336,7 +336,7 @@
 			/* Panes. */
 			.panes {
 				display: grid;
-				grid-template-columns: 14rem minmax(0, 1fr) 25rem;
+				grid-template-columns: 14rem 25rem minmax(0, 1fr);
 				gap: 10px;
 				padding: 10px;
 				min-height: 0;
@@ -859,6 +859,7 @@
 		<nav class="strip" id="strip" aria-label="Every sound"></nav>
 		<main class="panes">
 			<nav class="sources" id="sources" aria-label="Sources"></nav>
+			<aside class="inspector" id="inspector"></aside>
 			<section class="stage">
 				<div class="tabs" id="tabs" role="tablist"></div>
 				<div id="view">
@@ -866,7 +867,6 @@
 					<div id="tool" class="tool" hidden></div>
 				</div>
 			</section>
-			<aside class="inspector" id="inspector"></aside>
 		</main>
 		<script type="module" src="./board.js"></script>
 	</body>

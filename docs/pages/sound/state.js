@@ -129,6 +129,7 @@ export function setPile(pile) {
 			(path) => path !== candidate(),
 		)
 	Object.assign(deck, { pile, at: 0, heard: false, extra: null })
+	for (const next of pileFiles(use).slice(0, 3)) libraryBuffer(next).catch(() => {})
 	emit('change')
 }
 // Move through the pile and audition. The first → plays the card on show; after that it moves on.
@@ -276,9 +277,13 @@ export function playBuiltin(id) {
 	else use.play?.(audio, null, 1)
 }
 // Try a library file in a use: it becomes the use's swap (the game in another tab hears it too) and plays.
+// It plays on the preview voice, so the next candidate cuts this one off and a skipped one never plays late;
+// the next few in the pile load meanwhile, so → is instant even in a pile scattered across folders.
 export async function audition(id, path) {
+	preview(path, gainFor(id, path))
+	const files = pileFiles(id)
+	for (const next of files.slice(deck.at + 1, deck.at + 4)) libraryBuffer(next).catch(() => {})
 	await swap.setSwap(id, { library: path, gain: gainFor(id, path) })
-	play(id)
 	measureUse(id).then(() => emit('change'))
 }
 
