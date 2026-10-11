@@ -198,6 +198,26 @@
 				font-size: 13px;
 				color: var(--soft);
 			}
+			.legend {
+				display: flex;
+				align-items: center;
+				gap: 6px;
+				font-size: 12px;
+				color: var(--soft);
+			}
+			.legend i {
+				width: 10px;
+				height: 10px;
+				border-radius: 50%;
+				margin-left: 6px;
+				background: var(--builtin);
+			}
+			.legend i[data-status='kept'] {
+				background: var(--green);
+			}
+			.legend i[data-status='trying'] {
+				background: var(--blue);
+			}
 			#notice:not(:empty) {
 				color: var(--ink);
 				background: #fff;
@@ -606,13 +626,16 @@
 			}
 			.app button.keep {
 				display: grid;
-				place-items: center;
-				padding: 0;
+				justify-items: center;
+				gap: 3px;
+				padding: 7px 2px 6px;
+				font-size: 11px;
+				font-weight: 600;
 			}
 			.app button.keep::before {
 				content: '';
-				width: 26px;
-				height: 26px;
+				width: 18px;
+				height: 18px;
 				border-radius: 50%;
 				background: var(--orange);
 				box-shadow: inset 0 -3px 0 #0000002a;
@@ -770,6 +793,10 @@
 				type="button"
 				title="Go to the next sound nobody has picked yet"
 			></button>
+			<span class="legend"
+				><i data-status="kept"></i>picked <i data-status="trying"></i>not kept yet
+				<i></i>untouched</span
+			>
 			<output id="notice"></output>
 			<span class="grow"></span>
 			<button id="find" type="button"><kbd>⌘K</kbd>Find anything</button>

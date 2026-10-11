@@ -312,7 +312,7 @@ function plain(list = []) {
 }
 const STATUS = {
 	kept: ['picked', 'green'],
-	trying: ['trying', 'blue'],
+	trying: ['not kept yet', 'blue'],
 	builtin: ['built in', 'dim'],
 	music: ['music', 'purple'],
 }
@@ -321,6 +321,8 @@ function build(root, id) {
 	const use = uses[id]
 	const v = { id, drawnNow: null, drawnCard: undefined }
 	v.tag = el('span', { className: 'tag' })
+	v.tag.title =
+		'Blue: you are listening to a file in this browser; the game gets it when you keep it (K). Green: picked.'
 	v.nowWave = el('canvas', { className: 'wave' })
 	v.nowText = el('p', { className: 'meta' })
 	v.flag = el('p', { className: 'flag' })
@@ -393,7 +395,12 @@ function build(root, id) {
 		tapped(screen)
 	})
 	dragToSwipe(v)
-	v.keep = el('button', { type: 'button', className: 'keep', ariaLabel: 'Keep (K)' })
+	v.keep = el('button', {
+		type: 'button',
+		className: 'keep',
+		title: 'Keep: puts this sound in the game (K)',
+	})
+	v.keep.append(el('span', { textContent: 'keep' }))
 	v.keep.dataset.key = 'K'
 	v.keep.addEventListener('click', actions.keep)
 	v.keepText = el('b')
@@ -479,7 +486,7 @@ function update() {
 	const v = view
 	const id = v.id
 	const [tag, colour] = STATUS[status(id)]
-	v.tag.textContent = status(id) === 'kept' && isTrying(id) ? 'picked · trying' : tag
+	v.tag.textContent = status(id) === 'kept' && isTrying(id) ? 'picked · trying another' : tag
 	v.tag.style.color = `var(--${colour})`
 	if (uses[id].music) return
 	const n = numbers.get(id)
