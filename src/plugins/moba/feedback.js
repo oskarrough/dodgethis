@@ -6,6 +6,7 @@ import { heroDefinition } from './heroes.js'
 import { tune } from './tune.js'
 import { look } from './look.js'
 import { flagfallLayoutTune } from './maps/flagfall/flagfall-layout.js'
+import { abilityUse } from './sound-table.js'
 
 // Moba's fact switch (docs/feature-map.md, "Match: view, feedback, sound"): each fact becomes juice-kit verbs, sfx, rumble, pings and HUD.
 // `local` is this machine's participant id; facts about anyone else get the quieter version.
@@ -57,11 +58,13 @@ export function createFeedback({
 	let aggroPingTick = -1
 	let pingedAt = -Infinity // the sim tick of the last order ring
 	const sounded = new Map()
-	function cue(name, fact, gain = 1, ...extra) {
+	// `use` is an id in sound-table.js; the same sound plays once per tick however many uses set it off.
+	function cue(use, fact, gain = 1, ...extra) {
 		const tick = fact.tick ?? sim.tick
-		if (sounded.get(name) === tick) return
-		sounded.set(name, tick)
-		sfx[name]?.(fact.point, gain, ...extra)
+		const voice = sfx.voiceOf(use)
+		if (!voice || sounded.get(voice) === tick) return
+		sounded.set(voice, tick)
+		sfx.play(use, fact.point, gain, ...extra)
 	}
 
 	// Streaks count per team. No banner for the hero who is out; the recap says so.
@@ -96,7 +99,7 @@ export function createFeedback({
 				if (mine && !onMe) camera.kick(look.out.kick)
 			},
 		})
-		cue('whistle', fact, mine || onMe ? 1 : 0.5, wiped ? 3 : count)
+		cue('out', fact, mine || onMe ? 1 : 0.5, wiped ? 3 : count)
 		if (hero && !onMe)
 			hud.banner?.(
 				!wiped
@@ -135,7 +138,12 @@ export function createFeedback({
 		const gain = quieter ** squeak.recent.length
 		squeak.recent.push(seconds)
 		squeak.at = seconds
-		sfx.squeak(hero.body.mesh.position, gain, 0.85 + 0.3 * Math.min(1, was / Math.max(1e-3, top)))
+		sfx.play(
+			'squeak',
+			hero.body.mesh.position,
+			gain,
+			0.85 + 0.3 * Math.min(1, was / Math.max(1e-3, top)),
+		)
 	}
 
 	function present(fact) {
@@ -240,7 +248,7 @@ export function createFeedback({
 								rain: look.juice.rainSquash,
 							}[effects.pose] ?? 0),
 				)
-				if (effects.cast) cue(effects.cast, fact, mine ? 1 : 0.45)
+				cue(abilityUse(ability, 'cast'), fact, mine ? 1 : 0.45)
 				if (effects.effect === 'vault') {
 					skillsView?.vault(fact.point, fact.direction, ability.stats)
 					juice.burst(fact.point, { ...fact.direction, y: 0 }, { count: 8, streak: true })
@@ -261,10 +269,10 @@ export function createFeedback({
 				unitOf(fact.hero)?.body.kick(0.18)
 				cue(
 					['tower', 'core', 'ranged', 'wizard'].includes(fact.slot)
-						? fact.slot
+						? `${fact.slot}.shot`
 						: fact.slot === 'primary'
-							? 'attack'
-							: effects.projectile,
+							? 'basic.shot'
+							: abilityUse(ability, 'shot'),
 					fact,
 					mine ? 1 : 0.45,
 				)
@@ -340,7 +348,7 @@ export function createFeedback({
 					{ x: 0, y: 1, z: 0 },
 					look.juice[effects.impact] ?? { count: 20, speed: 3, life: 0.35, size: 0.1 },
 				)
-				cue(effects.impact, fact) // once per tick, including multi-target impacts
+				cue(abilityUse(ability, 'impact'), fact) // once per tick, including multi-target impacts
 				if (mine && fact.hit && effects.impact === 'rain') camera.shake(look.juice.shakeRain)
 				return
 			case 'hit': {
@@ -359,10 +367,10 @@ export function createFeedback({
 				if (fact.slot !== 'ball' && !effects.impact)
 					cue(
 						['tower', 'core', 'melee', 'ranged', 'wizard', 'brute'].includes(fact.slot)
-							? fact.slot
+							? `${fact.slot}.hit`
 							: fact.slot === 'primary'
-								? 'attackHit'
-								: effects.hit,
+								? 'basic.hit'
+								: abilityUse(ability, 'hit'),
 						fact,
 					)
 				if (mine) view.damage?.(fact)
@@ -380,7 +388,7 @@ export function createFeedback({
 			case 'nearMiss':
 				// The close cue plays for both players; the shooter also gets a cream streak along the pass.
 				if (mine) {
-					sfx.close(fact.point)
+					sfx.play('nearMiss', fact.point)
 					const shot = sim.shots.find((s) => s.id === fact.projectile)
 					if (shot)
 						juice.mark(fact.point.x, 0.03, fact.point.z, Math.atan2(shot.dx, shot.dz), {
@@ -390,7 +398,12 @@ export function createFeedback({
 							cream: true,
 						})
 				}
-				if (onMe) sfx.whoosh(fact.point, 1 - Math.min(1, fact.distance / tune.projectile.nearMiss))
+				if (onMe)
+					sfx.play(
+						'nearMiss.passed',
+						fact.point,
+						1 - Math.min(1, fact.distance / tune.projectile.nearMiss),
+					)
 				return
 			case 'death': {
 				const unit = unitOf(fact.target)
@@ -412,7 +425,7 @@ export function createFeedback({
 					size: 0.1,
 					sizeStep: 0.025,
 				})
-				cue('cardSlap', fact, mine || onMe ? 1 : 0.4)
+				cue('death', fact, mine || onMe ? 1 : 0.4)
 				if (unit && (sim.heroes.includes(unit) || sim.dummies.includes(unit)))
 					ruling(fact, unit, mine, onMe)
 				if (onMe) {
@@ -469,8 +482,8 @@ export function createFeedback({
 					run() {
 						juice.burst(splashAt, { x: 0, y: 1, z: 0 }, d.splash)
 						juice.burst(splashAt, direction, d.spray)
-						cue('plunk', { ...fact, point: splashAt }, mine || onMe ? 1 : 0.5)
-						sfx.splash?.(splashAt, mine || onMe ? 1 : 0.5)
+						cue('dunk', { ...fact, point: splashAt }, mine || onMe ? 1 : 0.5)
+						sfx.play('dunk.splash', splashAt, mine || onMe ? 1 : 0.5)
 						if (onMe || mine) camera.shake(look.juice.shakeTakedown)
 					},
 				})

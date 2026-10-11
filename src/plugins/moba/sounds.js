@@ -1,4 +1,6 @@
 import { look } from './look.js'
+import { uses } from './sound-table.js'
+import { swapOf, fileUrl } from '../../core/sound-swap.js'
 
 // Use the shared mixer and mute policy, but no dodgeball combat presets.
 export function createSounds(audio) {
@@ -44,5 +46,17 @@ export function createSounds(audio) {
 			gain: look.sounds.squeak.gain * gain,
 			point,
 		})
+	// Play a use from the sound table, or the swap the sound board set for it.
+	sounds.voiceOf = (id) => {
+		const swap = swapOf(id)
+		return swap?.file ? `file:${swap.file}` : (swap?.voice ?? uses[id]?.voice)
+	}
+	sounds.play = (id, point, gain = 1, ...extra) => {
+		const swap = swapOf(id)
+		const url = swap?.file && fileUrl(swap.file)
+		if (url) return audio.sample(url, { gain: (swap.gain ?? 0.5) * gain, point })
+		const voice = swap?.voice ?? uses[id]?.voice
+		if (voice) sounds[voice]?.(point, gain, ...extra)
+	}
 	return sounds
 }

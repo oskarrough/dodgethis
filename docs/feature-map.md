@@ -137,7 +137,8 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 
 - Match scene root: `view.js` `createView`; `index.js`
 - Feedback (facts turn into sound, popups, shake, hit flash): `feedback.js` `createFeedback`; `index.js` `validFact`; `look.js` `juice`, `out`, `squeak`
-- Sounds: `sounds.js` `createSounds`; `look.js` `sounds`; `src/core/audio.js`, `src/core/music.js`
+- Sounds: `sound-table.js` `uses`, `facts` (every use and fact, one line each); `sounds.js` `createSounds`, `play`; `look.js` `sounds`; `src/core/audio.js`, `src/core/music.js`
+- Sound board and swaps (audition, swap files into a running match): `docs/pages/sound/board.js`; `src/core/sound-swap.js` `setSwap`, `swapOf`
 - Screen shake, hit flash, impact: `src/core/juice.js` `createJuice`; `look.js` `juice`
 - Hero and dummy death animation: `src/core/death.js` `startDeath`
 - Style pass (inked outlines, palette): `src/core/stylepass.js`, `src/core/style.js` `PALETTE`; `look.md`

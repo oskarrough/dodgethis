@@ -48,6 +48,12 @@ export function setMusicScene(scene) {
 	musicScene = scene
 	syncMusic()
 }
+// The sound board previews a scene (null for silence) without touching the saved music preference.
+export function previewMusic(scene) {
+	musicEnabled = !!scene
+	if (scene) musicScene = scene
+	syncMusic()
+}
 export function setMusicEnabled(enabled) {
 	musicEnabled = !!enabled
 	try {
@@ -155,7 +161,7 @@ function preload() {
 }
 
 // gain is relative (× tune.output.volume); rate sets base playback speed/pitch; rateJitter detunes by ±frac so repeats don't sound mechanical.
-async function sample(url, { gain = 1, rate = 1, rateJitter = 0, point = null } = {}) {
+export async function sample(url, { gain = 1, rate = 1, rateJitter = 0, point = null } = {}) {
 	if (!tune.output.sound) return
 	const generation = soundGeneration
 	const c = ac()

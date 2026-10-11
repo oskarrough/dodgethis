@@ -17,6 +17,7 @@ import { createSkillsView } from './skills-view.js'
 import { createHud, matchFrame } from './hud.js'
 import { createPips } from './pips.js'
 import { createSounds } from './sounds.js'
+import { facts as soundFacts } from './sound-table.js'
 import { createFeedback } from './feedback.js'
 import { createStamps } from './stamps.js'
 import { createMatchMenu } from './menu.js'
@@ -86,6 +87,9 @@ const FACTS = [
 	'flagLowered',
 	'matchOver',
 ]
+// Every fact has a line in the sound table, silent or not; the sound board lists the silent ones.
+const unsounded = FACTS.filter((type) => !Object.hasOwn(soundFacts, type))
+if (unsounded.length) console.warn(`sound-table.js has no line for facts: ${unsounded.join(', ')}`)
 
 // Practice: a player plus two allies against three intent-driven hero bots.
 // Boots with ?mode=moba. The map scope outlives individual gameplay runs.
@@ -515,7 +519,7 @@ export default function moba(app, map) {
 					sim.tick >= hero.freezeUntil &&
 					hero.body.animate(step, hero.cast || hero.attack || hero.ballThrow ? 1 : 0)
 				)
-					sfx.step(p)
+					sfx.play('step', p)
 				for (const d of [...sim.heroes.filter((h) => h.id !== local), ...sim.dummies])
 					if (!d.dead && sim.tick >= (d.freezeUntil ?? 0))
 						d.body.animate(step, d.cast || d.attack || d.ballThrow ? 1 : 0)

@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Sound board · dodgethis</title>
+		<link rel="stylesheet" href="/docs/page.css" />
+	</head>
+	<body class="page">
+		<main>
+			<h1>Sound board</h1>
+			<p>
+				Every sound the game makes, by source. Press play to hear one. Add your own files below,
+				then pick one in a row's list to swap it in: arrow keys through the list play each
+				candidate. Swaps reach a match running in another tab of this browser on the next event, so
+				keep a match open beside this page. Nothing ships until you send me the changes list.
+			</p>
+
+			<section>
+				<h2>Your sounds</h2>
+				<p>
+					<label>Add files <input id="files" type="file" accept="audio/*" multiple /></label>
+					<label>Add a folder <input id="folder" type="file" webkitdirectory multiple /></label>
+				</p>
+				<ul id="library"></ul>
+			</section>
+
+			<section>
+				<h2>Crowded fight</h2>
+				<p>
+					Twenty fight sounds in a second and a half, scattered around you, through the game's real
+					mix and swaps. The same fight every time, so you can compare.
+				</p>
+				<p><button id="fight" type="button">Play a crowded fight</button></p>
+			</section>
+
+			<section>
+				<h2>Changes</h2>
+				<p>
+					Your swaps, to paste back to the sound thread.
+					<button id="reset" type="button">Undo every swap</button>
+				</p>
+				<pre id="changes"></pre>
+			</section>
+
+			<div id="sources"></div>
+
+			<section>
+				<h2>Facts with no sound</h2>
+				<p>Things the game says happened that make no sound yet.</p>
+				<ul id="silent"></ul>
+			</section>
+		</main>
+		<script type="module" src="./board.js"></script>
+	</body>
+</html>

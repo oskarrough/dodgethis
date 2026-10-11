@@ -47,3 +47,9 @@ Clean analog warmth, wide stereo, gentle tape saturation.
 - **Positional and capped.** Effects pan with the world and duck when many play at once; your own hero's sounds sit slightly louder.
 - **UI is soft and dry.** Clicks and focus sounds are quiet wood and paper (`click-*.mp3`), never beeps.
 - Shipped files live in `src/core/sfx/` as mp3, and many effects are synthesised in code; a new effect gets a line in [feature-map.md](feature-map.md).
+
+## Tooling
+
+- Every use the game makes a sound for is a line in `src/plugins/moba/sound-table.js`, and every fact says which uses it sets off (an empty list is a silent fact). The game plays a use by id, never a voice name; a new sound is a new line there.
+- The sound board, http://office-linux.heron-mermaid.ts.net:5173/docs/pages/sound/, plays every use, a crowded fight, and swaps Oskar's own files (or another built-in sound) into a use. Swaps live in that browser and reach a match open in another tab on its next event; the board's changes list is what gets committed.
+- Agents can't hear: they prove a sound change with numbers, Oskar judges by ear on the board.
