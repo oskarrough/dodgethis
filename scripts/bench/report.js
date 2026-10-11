@@ -17,7 +17,7 @@ const killerKind = (source, seats) =>
 // friendly minions stand in its range. Bots' states in that window say whether they commit.
 const SIEGE_MINIONS = 2
 
-export function matchReport(roster, { STEP, towerRange }) {
+export function matchReport(roster, { STEP, towerRange, count = [] }) {
 	const seats = new Map(roster.map((seat) => [seat.id, seat]))
 	const hero = (id) => seats.get(id)?.heroId
 	const r = {
@@ -46,7 +46,10 @@ export function matchReport(roster, { STEP, towerRange }) {
 		siege: {},
 		lanes: {},
 		lost: {},
+		falls: [],
+		counts: Object.fromEntries(count.map((kind) => [kind, { A: 0, B: 0 }])),
 	}
+	const firstHit = new Map()
 	const player = roster.find((seat) => seat.controller === 'agent')?.id
 	const ability = (seat, id) =>
 		(r.abilities[`${hero(seat)} ${id ?? '?'}`] ??= { casts: 0, hits: 0, heroHits: 0, damage: 0 })
@@ -54,6 +57,11 @@ export function matchReport(roster, { STEP, towerRange }) {
 	return {
 		report: r,
 		row(row) {
+			if (row.kind in r.counts) add(r.counts[row.kind], row.team ?? '-', 1)
+			if (row.kind === 'hit' && row.target && !firstHit.has(row.target))
+				firstHit.set(row.target, row.tick * STEP)
+			if (row.kind === 'structureDown')
+				r.falls.push({ id: row.target, at: row.tick * STEP, hit: firstHit.get(row.target) })
 			const seat = seats.has(row.seat) ? row.seat : null
 			if (row.kind === 'cast' && seat) ability(seat, row.ability_id).casts++
 			if (row.kind === 'hit' && seat) {
@@ -93,6 +101,14 @@ export function matchReport(roster, { STEP, towerRange }) {
 				if (r.seats[row.target].idle) return
 				const by = (r.deathsBy[hero(row.target)] ??= {})
 				add(by, killerKind(row.fact?.source, seats), 1)
+			}
+		},
+		// Fallen structures by kind; a laser gate reads as one.
+		finish(sim) {
+			const kinds = new Map(sim.lane.structures.map((s) => [s.id, s.kind]))
+			for (const fall of r.falls) {
+				const kind = kinds.get(fall.id) ?? fall.id.split('-')[0]
+				fall.kind = kind === 'laser' ? 'laser gate' : kind
 			}
 		},
 		tick(sim) {
@@ -168,6 +184,8 @@ export function emptyTotals() {
 		siege: {},
 		lanes: {},
 		lost: {},
+		falls: {},
+		counts: {},
 	}
 }
 
@@ -225,6 +243,12 @@ export function mergeReport(totals, report, winner) {
 		}
 	for (const key of ['abilities', 'deathsBy', 'taken', 'states', 'siege', 'lanes', 'lost'])
 		sumInto(totals[key], report[key])
+	sumInto(totals.counts, report.counts)
+	for (const { kind, at, hit } of report.falls) {
+		const f = (totals.falls[kind] ??= { at: [], took: [] })
+		f.at.push(at)
+		if (hit !== undefined) f.took.push(at - hit)
+	}
 }
 
 export const emptyCell = () => ({ rows: {}, totals: emptyTotals() })
@@ -272,6 +296,12 @@ const pair = (base, work, f) => {
 	return base === null ? show(work) : `${show(base)} → ${show(work)}`
 }
 const fixed = (digits) => (x) => x.toFixed(digits)
+const median = (xs) => {
+	if (!xs?.length) return undefined
+	const s = [...xs].sort((a, b) => a - b),
+		m = s.length >> 1
+	return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2
+}
 
 // The headline win rates: each ordered cross matchup's A win % and each hero's edge.
 // Without a base a rate is decided when its interval leaves 50%; with one, when the delta's leaves 0.
@@ -515,6 +545,21 @@ export function reportSections(sides) {
 			),
 		)
 	}
+	const order = ['tower', 'gatehouse', 'laser gate', 'fort', 'core']
+	const fallKinds = keys((t) => t.falls).sort((a, b) => order.indexOf(a) - order.indexOf(b))
+	if (fallKinds.length)
+		out.push(
+			'\nStructure falls: falls per match, median minute it falls, median seconds from first hit to falling',
+			table(
+				['structure', 'falls', 'minute', 'hit → fall s'],
+				fallKinds.map((kind) => [
+					kind,
+					val((t) => (t.falls[kind]?.at.length ?? 0) / t.matches, 2),
+					val((t) => median(t.falls[kind]?.at) / 60, 1),
+					val((t) => median(t.falls[kind]?.took)),
+				]),
+			),
+		)
 	const lostLanes = inner((t) => t.lost)
 	if (lostLanes.length)
 		out.push(
@@ -528,4 +573,27 @@ export function reportSections(sides) {
 			),
 		)
 	return out.join('\n')
+}
+
+// `--count kind,...`: named facts per team and match, per variant.
+export function countSections(sides, labels, kinds) {
+	const two = sides.length > 1
+	const rows = []
+	sides.at(-1).cells.forEach((cell, v) => {
+		const t = cell.totals,
+			b = two ? sides[0].cells[v].totals : null
+		const per = (x, kind, team) => (x.counts[kind]?.[team] ?? 0) / x.matches
+		for (const kind of kinds)
+			for (const team of ['A', 'B'])
+				rows.push([
+					labels[v],
+					kind,
+					team,
+					pair(b && per(b, kind, team), per(t, kind, team), fixed(2)),
+				])
+	})
+	return [
+		'\nCounted facts per team and match',
+		table(['variant', 'fact', 'team', 'count'], rows),
+	].join('\n')
 }

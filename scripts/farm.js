@@ -7,7 +7,14 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { parseArgs } from 'node:util'
 import { Worker, isMainThread, workerData, parentPort } from 'node:worker_threads'
 import { coreBudget, reserveCores } from './bench/cores.js'
-import { addResult, emptyCell, reportSections, summarySections, undecided } from './bench/report.js'
+import {
+	addResult,
+	countSections,
+	emptyCell,
+	reportSections,
+	summarySections,
+	undecided,
+} from './bench/report.js'
 import { matchReport } from './bench/report.js'
 import { checkoutRevision, defaultBase } from './bench/revision.js'
 
@@ -177,12 +184,15 @@ export async function runFarmMatch({
 	sample = false,
 	map = null,
 	player = null,
+	count = [],
 	mods,
 }) {
 	mods ??= await gameModules()
 	const { STEP, coreTune, buildColliders, createAgentMatch } = mods
 	// A summary keeps only counters: no log, no tape, nothing on disk. `sample` adds per-tick bot states.
-	const stats = summary ? matchReport(roster, { STEP, towerRange: mods.tune.tower.range }) : null
+	const stats = summary
+		? matchReport(roster, { STEP, towerRange: mods.tune.tower.range, count })
+		: null
 	if (!summary) await mkdir(directory, { recursive: true })
 	const filename = join(directory ?? '', `${matchId}.jsonl`)
 	const partial = filename + '.partial'
@@ -230,6 +240,7 @@ export async function runFarmMatch({
 			: () => []
 		const limit = Math.ceil(maxSeconds / STEP)
 		while (match.sim.tick < limit && match.step(drive())) if (sample && stats) stats.tick(match.sim)
+		stats?.finish(match.sim)
 		const reason = match.sim.lane.match.winner ? 'matchOver' : 'limit'
 		const tape = match.finish(reason)
 		tape.botReplay = true
@@ -303,7 +314,8 @@ Comparing (all imply --summary)
   --base [rev]              play the same seeds on another revision too (default: @- in jj,
                             HEAD with a dirty git tree, else origin/main) and print deltas
   --until N                 keep adding --matches rounds until the headline intervals decide, up to N
-  --report                  per-ability, death-cause, damage-taken and bot-state sections
+  --report                  per-ability, death-cause, damage-taken, bot-state and structure-fall sections
+  --count flagTaken,...     count these fact kinds per team and match
 Machine
   --jobs N                  worker threads (default 2); a per-machine budget (FARM_CORES, default cores − 2) is
                             shared with other farms, which queue for it
@@ -333,6 +345,7 @@ export async function farm(argv = process.argv.slice(2)) {
 			summary: { type: 'boolean' },
 			quick: { type: 'boolean' },
 			report: { type: 'boolean' },
+			count: { type: 'string' },
 			base: { type: 'string' },
 			until: { type: 'string' },
 			idle: { type: 'string', multiple: true, default: [] },
@@ -369,7 +382,14 @@ export async function farm(argv = process.argv.slice(2)) {
 		if (result.status !== 0) throw new Error('Saved-log analysis failed')
 		return
 	}
-	const summary = !!(values.summary || values.quick || values.base || values.until || values.report)
+	const summary = !!(
+		values.summary ||
+		values.quick ||
+		values.base ||
+		values.until ||
+		values.report ||
+		values.count
+	)
 	const crossOnly = values['cross-only'] || values.quick
 	const requestedMatches = Number(values.matches ?? (summary ? 4 : 20)),
 		jobs = Number(values.jobs ?? Math.min(2, coreBudget())),
@@ -486,6 +506,7 @@ export async function farm(argv = process.argv.slice(2)) {
 	const shared = {
 		summary,
 		sample: !!values.report,
+		count: values.count?.split(',').filter(Boolean) ?? [],
 		map: values.map ?? null,
 		difficulty: values.difficulty,
 		idle,
@@ -573,6 +594,7 @@ export async function farm(argv = process.argv.slice(2)) {
 			console.log('Exploratory stopping: intervals are not sequentially valid confidence bounds.')
 		console.log(summarySections(sides, labels))
 		if (values.report) console.log(reportSections(sides))
+		if (shared.count.length) console.log(countSections(sides, labels, shared.count))
 		console.log(
 			`${completed} matches: ${wins} winners, ${completed - wins} timeouts${sides.length > 1 ? `; base ${values.base} = ${sides[0].commit.slice(0, 12)}` : ''}`,
 		)
