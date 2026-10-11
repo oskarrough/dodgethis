@@ -1,4 +1,4 @@
-// Flagfall's tunables, spread into tune.flagfall by ../../tune.js (tunes.js).
+// Flagfall's tunables, spread into tune.flagfall by ../../tune.js (all-tunes.js).
 
 // Flagfall: two lanes on the shared court in the shallows. All geometry applies on restart.
 const flagfall = {

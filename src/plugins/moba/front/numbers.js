@@ -1,6 +1,6 @@
 import { tune } from '../tune.js'
 import { heroCard, traitCard, abilityCard, cardHtml } from '../tooltip.js'
-import HERO_VIEWS from '../heroes/views.js'
+import HERO_VIEWS from '../heroes/all-hero-views.js'
 
 // A read-only, run-owned sheet. The caller owns the clock/input hold and closing-edge consumption.
 export function createNumbers(hero, onChange) {
@@ -71,8 +71,8 @@ export function createNumbers(hero, onChange) {
 						}),
 					),
 			].filter(Boolean)
-			const numbers = HERO_VIEWS[hero.heroId]?.numbers
-			if (numbers) cards.push(...numbers.cards({ hero, level: hero.level }))
+			const heroCards = HERO_VIEWS[hero.heroId]?.cards
+			if (heroCards) cards.push(...heroCards({ hero, level: hero.level }))
 			const html = cards.map((card) => '<article>' + cardHtml(card) + '</article>').join('')
 			if (html !== last) {
 				const at = scroll.scrollTop

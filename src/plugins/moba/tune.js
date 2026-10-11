@@ -1,7 +1,7 @@
 // --- Tunables ----------------------------------------------------------------
 // Moba's live values (docs/moba-plan.md, "Feel numbers"), shared by the debug GUI, the sim and DOM-free tests. Metres and seconds.
 import { lobby } from './front/lobby-tune.js'
-import * as tunes from './tunes.js'
+import * as tunes from './all-tunes.js'
 
 export const tune = {
 	testing: {
@@ -431,7 +431,7 @@ export const tune = {
 }
 
 // The body's movement profile is the hero section; its extra keys are ignored by the body.
-// Folder tunes (tunes.js): an ability's at tune[id], a hero's at tune.heroes[id], a map's keys at
+// Folder tunes (all-tunes.js): an ability's at tune[id], a hero's at tune.heroes[id], a map's keys at
 // the top. An ability or hero id that is already a top-level key would shadow it, so it throws.
 const claim = (key, owner) => {
 	if (Object.hasOwn(tune, key)) throw new Error(`MOBA ${owner} collides with tune.${key}`)

@@ -1,11 +1,11 @@
 import { createLaneView } from './lane-view.js'
-import pieceViews from './pieces/all-piece-views.js'
+import mechanicViews from './mechanics/all-mechanic-views.js'
 import { tune } from './tune.js'
 
-// Where map pieces plug into the sim, in two passes. The ground comes before any body: the lane's
+// Where map mechanics plug into the sim, in two passes. The ground comes before any body: the lane's
 // view, tower obstacles and their colliders, and the cover abilities place.
-export function layPieceGround({
-	pieces,
+export function layMechanicGround({
+	mechanics,
 	scene,
 	smooth,
 	layout,
@@ -14,9 +14,9 @@ export function layPieceGround({
 	RAPIER,
 	replan,
 }) {
-	const lanePiece = pieces.find((piece) => piece.lane)?.lane
-	const laneView = lanePiece ? createLaneView(scene, smooth, layout) : null
-	const towerObstacles = pieces.flatMap((piece) => piece.obstacles?.(layout) ?? [])
+	const laneMechanic = mechanics.find((mechanic) => mechanic.lane)?.lane
+	const laneView = laneMechanic ? createLaneView(scene, smooth, layout) : null
+	const towerObstacles = mechanics.flatMap((mechanic) => mechanic.obstacles?.(layout) ?? [])
 	const obstacles = [...mapObstacles, ...towerObstacles]
 	const towerColliders = new Map(
 		towerObstacles.map((o) => [
@@ -60,13 +60,13 @@ export function layPieceGround({
 		for (const collider of towerColliders.values()) world.removeCollider(collider, true)
 		for (const o of coverColliders.keys()) removeCover(o)
 	}
-	return { lanePiece, laneView, obstacles, addCover, removeCover, removeTower, dispose }
+	return { laneMechanic, laneView, obstacles, addCover, removeCover, removeTower, dispose }
 }
 
-// Then, once heroes stand, the pieces that act: the lane, neutral camps, and each piece's population
-// (Ball, dummies, flag). `systems()` reaches the sim's combat, wired after the pieces.
-export function plugPieces({
-	pieces,
+// Then, once heroes stand, the mechanics that act: the lane, neutral camps, and each mechanic's population
+// (Ball, dummies, flag). `systems()` reaches the sim's combat, wired after the mechanics.
+export function plugMechanics({
+	mechanics,
 	ground,
 	layout,
 	heroes,
@@ -76,13 +76,13 @@ export function plugPieces({
 	bodyAt,
 	systems,
 }) {
-	const { lanePiece, laneView, obstacles, removeTower } = ground
+	const { laneMechanic, laneView, obstacles, removeTower } = ground
 	const lane = laneView
-		? lanePiece.create({
+		? laneMechanic.create({
 				layout,
-				structures: pieces.some((piece) => piece.structures),
+				structures: mechanics.some((mechanic) => mechanic.structures),
 				heroes,
-				wavesEnabled: () => pieces.some((piece) => piece.waves) && training.waves,
+				wavesEnabled: () => mechanics.some((mechanic) => mechanic.waves) && training.waves,
 				present,
 				makeBody: laneView.makeBody,
 				obstacles,
@@ -107,15 +107,15 @@ export function plugPieces({
 		: null
 
 	// Neutral camps ride the lane's minion list; the map's recipe switches them on.
-	const campsPiece = pieces.find((piece) => piece.camps)?.camps
+	const campsMechanic = mechanics.find((mechanic) => mechanic.camps)?.camps
 	const camps =
-		lane && campsPiece
-			? campsPiece({ layout, lane, heroes, makeBody: laneView.makeBody, present, obstacles })
+		lane && campsMechanic
+			? campsMechanic({ layout, lane, heroes, makeBody: laneView.makeBody, present, obstacles })
 			: null
 	const populations = { ball: null, dummies: [], flag: null }
-	for (const piece of pieces) {
-		if (!piece.create) continue
-		populations[piece.population] = piece.create({
+	for (const mechanic of mechanics) {
+		if (!mechanic.create) continue
+		populations[mechanic.population] = mechanic.create({
 			heroes,
 			posts,
 			lane,
@@ -125,7 +125,7 @@ export function plugPieces({
 			vulnerable: (unit) => lane?.vulnerable(unit) ?? true,
 			obstacles,
 			present,
-			view: pieceViews[piece.id] ?? {},
+			view: mechanicViews[mechanic.id] ?? {},
 			endCast: (...args) => systems().endCast(...args),
 			damage(shot, unit, damage) {
 				systems().hit(

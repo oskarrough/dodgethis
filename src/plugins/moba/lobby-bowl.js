@@ -3,7 +3,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'
 import { PALETTE } from '../../core/style.js'
 import { FORWARD_LAYER } from '../../core/stylepass.js'
 import { bake } from './lobby-floor.js'
-import { mapLayout } from './maps/index.js'
+import { mapLayout } from './maps/all-maps.js'
 import { tune } from './tune.js'
 
 // The weather bowl: a small glazed bowl on the saucer holding the next map in miniature, built from

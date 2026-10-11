@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+export { scenery } from './overthrow-scenery.js'
 import { createMatchTerrain } from '../../match-terrain.js'
 
 export function ground(scope) {

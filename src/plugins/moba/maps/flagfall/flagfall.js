@@ -1,7 +1,7 @@
 import { tune } from '../../tune.js'
-import { flagfallLayout } from './layout.js'
+import { flagfallLayout } from './flagfall-layout.js'
 
-// Two lanes on the shared court by night; ground.js and scenery.js draw it (maps/views.js).
+// Two lanes on the shared court by night; flagfall-view.js draws it (maps/all-map-views.js).
 export default {
 	kind: 'garden',
 	order: 2,
@@ -9,7 +9,7 @@ export default {
 		return tune.flagfall.late
 	},
 	layout: flagfallLayout,
-	pieces: ['structures', 'minions', 'camps', 'flag', 'bots'],
+	mechanics: ['structures', 'minions', 'camps', 'flag', 'bots'],
 	palette: () => ({ ...tune.flagfall.palette, light: tune.flagfall.light }),
 	debugTune: {
 		name: 'flagfall (applies on restart)',

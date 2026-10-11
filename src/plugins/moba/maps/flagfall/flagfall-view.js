@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+export { scenery } from './flagfall-scenery.js'
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'
 import { FORWARD_LAYER } from '../../../../core/stylepass.js'
 import { createMatchTerrain } from '../../match-terrain.js'

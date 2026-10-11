@@ -1,5 +1,5 @@
 import { tune } from './tune.js'
-import manifests from './abilities/index.js'
+import manifests from './abilities/all-abilities.js'
 
 // Engine state keys in abilityState, and the caught-shot pseudo-ability; no ability takes them.
 const RESERVED = ['pocket', 'bag', 'return']
@@ -16,7 +16,7 @@ export function defineAbility(id, manifest) {
 	}
 }
 
-// Every ability by id, from the folders in abilities/index.js.
+// Every ability by id, from the folders in abilities/all-abilities.js.
 export const ABILITIES = Object.fromEntries(
 	Object.entries(manifests).map(([id, manifest]) => [id, defineAbility(id, manifest)]),
 )

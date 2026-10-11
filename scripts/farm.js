@@ -33,7 +33,7 @@ const { tune } = await import('../src/plugins/moba/tune.js')
 const { HEROES, listed } = await import('../src/plugins/moba/heroes.js')
 const { agentRoster } = await import('../src/plugins/moba/agents.js')
 const { botRandom } = await import('../src/plugins/moba/bots.js')
-const { playableMaps } = await import('../src/plugins/moba/maps/index.js')
+const { playableMaps } = await import('../src/plugins/moba/maps/all-maps.js')
 
 // The game modules of one checkout. The working copy's are the ones imported above; a --base
 // revision's come from its unpacked tree, so each side plays its own sim, bots and tune.
@@ -51,7 +51,7 @@ export function gameModules(root = ROOT) {
 					'src/plugins/moba/agents.js',
 					'src/plugins/moba/obstacles.js',
 					'src/plugins/moba/agent-match.js',
-					'src/plugins/moba/maps/index.js',
+					'src/plugins/moba/maps/all-maps.js',
 					'src/plugins/moba/bots.js',
 				].map(at),
 			).then(([app, core, moba, agents, obstacles, match, maps, bots]) => ({
@@ -278,9 +278,15 @@ export async function runFarmMatch({
 // `--player A1:north`: a stand-in human. Its own bot drives the seat, outside the team's lane deal
 // (bots treat it as a human teammate), and lanes where asked: the chosen lane comes first in its view.
 function playerBot(mods, sim, recipe, roster, seed, { id, lane }) {
-	const pieces = Object.values(recipe).filter((piece) => piece && typeof piece === 'object')
+	const mechanics = Object.values(recipe).filter(
+		(mechanic) => mechanic && typeof mechanic === 'object',
+	)
 	const modules = [
-		...new Set(pieces.flatMap((piece) => [piece.lane?.botHabit ?? piece.botHabit].filter(Boolean))),
+		...new Set(
+			mechanics.flatMap((mechanic) =>
+				[mechanic.lane?.botHabit ?? mechanic.botHabit].filter(Boolean),
+			),
+		),
 	]
 	const bot = mods.createBots([roster.find((seat) => seat.id === id)], seed, modules)
 	const lanes = sim.lanes ?? []

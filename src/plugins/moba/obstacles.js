@@ -1,7 +1,7 @@
 import { tune } from './tune.js'
-import { overthrowLayout } from './maps/overthrow/layout.js'
-export { mapLayout } from './maps/index.js'
-export { flagfallLayoutTune } from './maps/flagfall/layout.js'
+import { overthrowLayout } from './maps/overthrow/overthrow-layout.js'
+export { mapLayout } from './maps/all-maps.js'
+export { flagfallLayoutTune } from './maps/flagfall/flagfall-layout.js'
 
 const m = tune.map
 // Compatibility defaults for geometry helpers; each run gets its own layout.

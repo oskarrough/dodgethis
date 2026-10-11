@@ -4,9 +4,9 @@ import { look } from './look.js'
 import { STEP } from '../../core/app.js'
 import { castAbility } from './ability.js'
 import { DEFAULT_HERO, heroDefinition } from './heroes.js'
-import HERO_VIEWS from './heroes/views.js'
+import HERO_VIEWS from './heroes/all-hero-views.js'
 
-// A hero folder's costume (heroes/views.js) dresses the torso, adds parts and returns the rig
+// A hero folder's costume (heroes/all-hero-views.js) dresses the torso, adds parts and returns the rig
 // its poses need: the bow posed here, or parts its own animate() poses. Without one, the box.
 function dressBox({ torso, part, own, t, materials }) {
 	const { ink, team: teamMaterial } = materials
@@ -107,7 +107,7 @@ export function dressHero(body, heroId = DEFAULT_HERO, team = 'A') {
 		0,
 		body.mesh,
 	)
-	const { dress = dressBox, animate = null } = HERO_VIEWS[heroId]?.costume ?? {}
+	const { dress = dressBox, animate = null } = HERO_VIEWS[heroId] ?? {}
 	const dressed =
 		dress({
 			costume,

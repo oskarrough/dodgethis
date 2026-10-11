@@ -367,7 +367,7 @@ void main() {
 	}
 	forward(puffs, 'overthrow-cloud-banks')
 
-	// A map's own scenery (maps/views.js) shares the rim, the random stream and the isle's disposal.
+	// A map's own scenery (maps/all-map-views.js) shares the rim, the random stream and the isle's disposal.
 	scenery?.({
 		s,
 		own,

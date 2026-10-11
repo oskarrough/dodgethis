@@ -6,7 +6,7 @@ Discoverable names. Agents find code by plain-text search, so every identifier i
 
 - One concept, one spelling. A thing has one name across code, docs and output (simulation, not run or tape; `heroId`, not `hero` here and `heroName` there). Reuse the codebase's words.
 - Exported symbols carry a domain word: `heroFromManifest`, not `build`; `listedHeroes`, not `list`. The folder isn't the context: `users/diff.js` and `orders/diff.js` both grep as `diff`.
-- No bare-role filenames (`utils.js`, `helpers.js`, `types.js`). The exception is a registered folder (`heroes/<id>/`, `abilities/<id>/`, `pieces/<id>/`, `maps/<id>/`), where the folder is the name and `index.js`, `tune.js`, `view.js` are the roles.
+- No bare-role filenames (`utils.js`, `helpers.js`, `types.js`). In a registered folder (`heroes/<id>/`, `abilities/<id>/`, `mechanics/<id>/`, `maps/<id>/`), the three conventional filenames are `<id>.js`, `<id>-tune.js`, `<id>-view.js`. Every helper filename also carries the id; its role is the author's.
 - Keep strings whole: fact names, bot goals, tune keys, `--ui-*` tokens and error messages are never built from templates. An error message starts with a unique literal so a log line greps back to its throw site.
 - One definition site per symbol: move, don't copy, and rename in the same commit as the behaviour change.
 - A new fact type gets an entry in `index.js` `FACTS`, or guests drop every packet carrying it.

@@ -2,7 +2,7 @@ import { DEFAULT_HERO } from './heroes.js'
 import { abilityOf } from './ability.js'
 import { createReadySeats } from './lobby-state.js'
 import { createScriptedHero } from './scripted.js'
-import PIECES from './pieces/all-pieces.js'
+import MECHANICS from './mechanics/all-mechanics.js'
 import { createMatchStats } from './match-stats.js'
 import { STEP } from '../../core/app.js'
 import { tune, profile } from './tune.js'
@@ -17,11 +17,11 @@ import { createCasting } from './casting.js'
 import { createSnapshot } from './sim-snapshot.js'
 import { createControl } from './control.js'
 import { createHeroMaker, createRoster } from './sim-heroes.js'
-import { layPieceGround, plugPieces } from './sim-pieces.js'
+import { layMechanicGround, plugMechanics } from './sim-mechanics.js'
 import { dirOf } from './sim-kit.js'
 
-// Heroes read intents; match pieces share damage, shots and targeting. No DOM.
-// `pieces` chooses structures, minions, Ball, bots and dummies independently.
+// Heroes read intents; match mechanics share damage, shots and targeting. No DOM.
+// `mechanics` chooses structures, minions, Ball, bots and dummies independently.
 // `heroes` is [{ id, team }], each id a participant in `intents`. `present(fact)` receives plain facts. `rng()` drives the dummies.
 export function createSim({
 	scene,
@@ -32,7 +32,7 @@ export function createSim({
 	smooth = null,
 	present: emit = () => {},
 	rng = Math.random,
-	pieces = [{ id: 'dummies', ...PIECES.dummies }],
+	mechanics = [{ id: 'dummies', ...MECHANICS.dummies }],
 	lobby = false, // Combat allegiance A for heroes, B for dummies; seatTeam retains the pick.
 	layout = mapLayout(lobby ? 'lobby' : undefined),
 	spawns = null, // Participant-specific spawn overrides, copied for death/recovery.
@@ -48,9 +48,9 @@ export function createSim({
 	intercept = null,
 	footprint = null, // Lobby observer: aimed props and real, clipped cast footprints.
 }) {
-	// Pieces lay their ground before any body is made; sim-pieces.js wires the rest after the heroes.
-	const ground = layPieceGround({
-		pieces,
+	// Mechanics lay their ground before any body is made; sim-mechanics.js wires the rest after the heroes.
+	const ground = layMechanicGround({
+		mechanics,
 		scene,
 		smooth,
 		layout,
@@ -88,7 +88,7 @@ export function createSim({
 		)
 	let planPath = createPathPlanner({ radius: profile.radius, ...tune.orders }, obstacles, floor)
 	let t = 0
-	const matchStats = pieces.some((piece) => piece.stats) ? createMatchStats() : null
+	const matchStats = mechanics.some((mechanic) => mechanic.stats) ? createMatchStats() : null
 	const present = (fact) => {
 		const timed = { ...fact, tick: t }
 		matchStats?.present(timed, heroes, lane?.structures ?? [], botIds)
@@ -154,8 +154,8 @@ export function createSim({
 					t,
 				)
 		}
-	const { lane, camps, ball, dummies, flag } = plugPieces({
-		pieces,
+	const { lane, camps, ball, dummies, flag } = plugMechanics({
+		mechanics,
 		ground,
 		layout,
 		heroes,
@@ -179,9 +179,13 @@ export function createSim({
 	)
 	const botIds = new Set(botSeats.map((s) => s.id))
 	const botModules = [
-		...new Set(pieces.flatMap((piece) => [piece.lane?.botHabit ?? piece.botHabit].filter(Boolean))),
+		...new Set(
+			mechanics.flatMap((mechanic) =>
+				[mechanic.lane?.botHabit ?? mechanic.botHabit].filter(Boolean),
+			),
+		),
 	]
-	const createControllers = pieces.find((piece) => piece.controllers)?.controllers
+	const createControllers = mechanics.find((mechanic) => mechanic.controllers)?.controllers
 	let botTeam =
 		botSeats.length && createControllers ? createControllers(botSeats, seed, botModules) : null
 	const rebuildBots = () => {

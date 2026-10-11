@@ -1,6 +1,6 @@
 import { tune } from './tune.js'
 import { ABILITIES } from './ability.js'
-import manifests from './heroes/index.js'
+import manifests from './heroes/all-heroes.js'
 
 // Definitions stay plugin-local. Getters keep live tuning live; mutable state
 // belongs to each sim hero, never to this table. A basic and abilities make a kit.

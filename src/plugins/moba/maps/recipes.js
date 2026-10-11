@@ -1,7 +1,7 @@
-import pieces from '../pieces/index.js'
+import mechanics from '../mechanics/all-mechanics.js'
 
-// What maps/index.js exports beyond the map table: lists by kind and order, layouts and recipes.
-// A recipe resolves its piece ids against pieces/index.js; each piece keeps its id for views.
+// What maps/all-maps.js exports beyond the map table: lists by kind and order, layouts and recipes.
+// A recipe resolves its mechanic ids against mechanics/all-mechanics.js; each mechanic keeps its id for views.
 export function mapRegistry(maps, fallback) {
 	const pick = (id) => maps[id] ?? maps[fallback]
 	const layoutOf = (map) => ({
@@ -23,7 +23,7 @@ export function mapRegistry(maps, fallback) {
 				...map,
 				layout: layoutOf(map),
 				palette: map.palette(),
-				pieces: map.pieces.map((piece) => ({ id: piece, ...pieces[piece] })),
+				mechanics: map.mechanics.map((mechanic) => ({ id: mechanic, ...mechanics[mechanic] })),
 			}
 		},
 	}

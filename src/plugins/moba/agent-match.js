@@ -3,7 +3,7 @@ import { createIntents, neutralFrame, validIntent } from '../../core/intents.js'
 import { createSim } from './sim.js'
 import { copyData, createAgentPerception } from './agents.js'
 import { tune } from './tune.js'
-import { matchRecipe } from './maps/index.js'
+import { matchRecipe } from './maps/all-maps.js'
 import { DEFAULT_HERO, HEROES } from './heroes.js'
 
 // Sparse input tape: a neutral continuous sample goes to every seat each tick.

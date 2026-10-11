@@ -89,8 +89,8 @@ export function matchFrame(sim, hero, blend, step) {
 	}
 }
 
-export function createHud({ lobby = false, layout, pieces, onMinimap } = {}) {
-	const minimap = lobby ? null : createMinimap(ICONS, layout, pieces, onMinimap)
+export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) {
+	const minimap = lobby ? null : createMinimap(ICONS, layout, mechanics, onMinimap)
 	// Unchanged values never touch the DOM. Keyed per node, then per field.
 	const touchScreen = globalThis.matchMedia?.('(any-hover: none)').matches ?? false
 	const shown = new WeakMap()

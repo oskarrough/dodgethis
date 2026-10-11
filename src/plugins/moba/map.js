@@ -6,8 +6,8 @@ import { tune as coreTune } from '../../core/tune.js'
 import { tune } from './tune.js'
 import { glowTexture } from './isle.js'
 import { buildColliders } from './obstacles.js'
-import { DEFAULT_MAP, maps, mapLayout } from './maps/index.js'
-import mapViews from './maps/views.js'
+import { DEFAULT_MAP, maps, mapLayout } from './maps/all-maps.js'
+import mapViews from './maps/all-map-views.js'
 export { FLOOR, PILLARS, SPAWN, walkable, clampWalkable } from './obstacles.js'
 
 // Selection, loading and gameplay share this owner, not the browser's dodgeball world.
@@ -18,7 +18,7 @@ export function createMapScope(scene, RAPIER, step) {
 	let live = null
 	let built = null
 	return {
-		// `kind` (a map id) picks the terrain: its map's ground (maps/views.js), the lane, or the lobby.
+		// `kind` (a map id) picks the terrain: its map's ground (maps/all-map-views.js), the lane, or the lobby.
 		// Switching rebuilds the terrain on the same world; the previous run is already aborted.
 		start(run, create, kind = DEFAULT_MAP) {
 			if (live) throw new Error('MOBA already has a live sim')

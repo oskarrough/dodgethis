@@ -1,10 +1,10 @@
-import { lobbyLayout } from './layout.js'
+import { lobbyLayout } from './lobby-layout.js'
 
 export default {
 	kind: 'lobby',
 	order: 100,
 	layout: lobbyLayout,
-	pieces: ['dummies'],
+	mechanics: ['dummies'],
 	palette: () => ({}),
 	debugTune: null,
 	online: true,

@@ -4,8 +4,8 @@ import { tune as coreTune } from '../../core/tune.js'
 import { tune } from './tune.js'
 import { look } from './look.js'
 import { FLOOR } from './obstacles.js'
-import { matchRecipe, onlineMaps } from './maps/index.js'
-import pieceViews from './pieces/views.js'
+import { matchRecipe, onlineMaps } from './maps/all-maps.js'
+import mechanicViews from './mechanics/all-mechanic-views.js'
 import { castAbility } from './ability.js'
 import { createSim } from './sim.js'
 import { practiceRoster } from './bots.js'
@@ -107,7 +107,7 @@ export default function moba(app, map) {
 			})
 			const kind = isLobby ? 'lobby' : setup.map
 			const match = matchRecipe(kind)
-			const { layout, pieces, palette, debugTune, online } = match
+			const { layout, mechanics, palette, debugTune, online } = match
 			if (!online && app.session.shared) {
 				// Mode start must finish before its replacement can abort it. No map/sim is built.
 				queueMicrotask(() => {
@@ -181,7 +181,7 @@ export default function moba(app, map) {
 			const hud = createHud({
 				lobby: isLobby,
 				layout,
-				pieces,
+				mechanics,
 				onMinimap: (point) => cameraControls.enabled() && follow.focus(point),
 			})
 			const pips = createPips()
@@ -278,7 +278,7 @@ export default function moba(app, map) {
 						intents: run.intents,
 						heroes: seats,
 						bots:
-							pieces.some((piece) => piece.controllers) && app.session.authoritative
+							mechanics.some((mechanic) => mechanic.controllers) && app.session.authoritative
 								? seats.filter((seat) =>
 										app.session.shared ? seat.controller === 'bot' : botsOnly || seat.id !== local,
 									)
@@ -317,7 +317,7 @@ export default function moba(app, map) {
 			// Assigned boxes are reservations, not won claims; walking into one stamps the claim tick.
 			if (isLobby) for (const seat of simulation.readySeats.seats) seat.claimTick = null
 			const ballView =
-				pieces.map((piece) => pieceViews[piece.id]?.view).find(Boolean)?.(scene) ?? null
+				mechanics.map((mechanic) => mechanicViews[mechanic.id]?.view).find(Boolean)?.(scene) ?? null
 			const replica = !app.session.authoritative
 				? isLobby
 					? createLobbyReplica(simulation, scene)
@@ -331,7 +331,7 @@ export default function moba(app, map) {
 			}
 			const hero = sim.heroes.find((h) => h.id === local)
 			const onboarding =
-				pieces.map((piece) => pieceViews[piece.id]?.onboarding).find(Boolean)?.({
+				mechanics.map((mechanic) => mechanicViews[mechanic.id]?.onboarding).find(Boolean)?.({
 					scene,
 					sim,
 					hero,

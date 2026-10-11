@@ -1,5 +1,5 @@
-import { createFlag } from './flag.js'
-import { flagBots } from './bots.js'
+import { createFlag } from './flag-objective.js'
+import { flagBots } from './flag-bots.js'
 
 // Flagfall's centre flag: one ring both teams fight over on a fixed clock.
 export default {

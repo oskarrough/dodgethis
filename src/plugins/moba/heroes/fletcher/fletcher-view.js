@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+export { cards } from './fletcher-numbers.js'
 
 // Fletcher's costume: the capsule, quiver, arrows and the bow rig his poses read.
 export function dress({ costume, torso, part, own, roots, t, look, materials }) {

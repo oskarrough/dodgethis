@@ -1,5 +1,5 @@
 import { tune } from '../../tune.js'
-import { overthrowLayout } from '../overthrow/layout.js'
+import { overthrowLayout } from '../overthrow/overthrow-layout.js'
 
 export function lobbyLayout() {
 	const court = overthrowLayout()

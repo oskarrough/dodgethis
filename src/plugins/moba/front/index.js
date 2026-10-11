@@ -3,7 +3,7 @@ import { createControls } from './controls.js'
 import { tune } from './tune.js'
 import { applySkin, paintedCard, paintedEdge, paintedWash } from './skin.js'
 import { parseMatchSetup } from '../setup.js'
-import { playableMaps, mapLayout } from '../maps/index.js'
+import { playableMaps, mapLayout } from '../maps/all-maps.js'
 import './front.css'
 
 // The MOBA maps are the front door; Dodgeball is a bonus sticker under them, last in the cursor order.

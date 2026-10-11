@@ -1,7 +1,7 @@
 // Tune GUI: moba's sections come and go with the run; the values live in tune.js and survive restarts.
 // Each section maps a key to [min, max, step, label?, object?]. T is one clock step.
 import { ABILITIES } from './ability.js'
-import { maps, playableMaps } from './maps/index.js'
+import { maps, playableMaps } from './maps/all-maps.js'
 
 export const T = 'clock step'
 

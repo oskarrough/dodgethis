@@ -1,5 +1,5 @@
 import { tune } from '../../tune.js'
-import { overthrowLayout } from './layout.js'
+import { overthrowLayout } from './overthrow-layout.js'
 
 export default {
 	kind: 'lane',
@@ -8,7 +8,7 @@ export default {
 		return tune.map.late
 	},
 	layout: overthrowLayout,
-	pieces: ['structures', 'minions', 'ball', 'bots'],
+	mechanics: ['structures', 'minions', 'ball', 'bots'],
 	palette: () => ({ ...tune.overthrowTerrain.palette, light: tune.overthrowTerrain.light }),
 	debugTune: {
 		name: 'overthrow terrain (applies on restart)',

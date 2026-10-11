@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { matchRecipe } from './maps/index.js'
+import { matchRecipe } from './maps/all-maps.js'
 import { tune } from './tune.js'
 
 // A presentation-only map: the same rendered positions as the world, no input or snapshots.
@@ -8,10 +8,10 @@ import { tune } from './tune.js'
 export function createMinimap(
 	icons,
 	layout = matchRecipe().layout,
-	pieces = matchRecipe().pieces,
+	mechanics = matchRecipe().mechanics,
 	onFocus = null,
 ) {
-	const liveStructures = pieces.some((piece) => piece.structures)
+	const liveStructures = mechanics.some((mechanic) => mechanic.structures)
 	const name = layout.name
 	const bounds = layout.bounds
 	const ns = 'http://www.w3.org/2000/svg'
@@ -41,11 +41,11 @@ export function createMinimap(
 	)
 	const buildings = make('g', {}, root)
 	const heroes = make('g', {}, root)
-	// A piece may mark its objective: `minimap(sim)` returns { x, z, live, owner } or null.
-	const objectives = pieces
-		.filter((piece) => piece.minimap)
-		.map((piece) => ({
-			piece,
+	// A mechanic may mark its objective: `minimap(sim)` returns { x, z, live, owner } or null.
+	const objectives = mechanics
+		.filter((mechanic) => mechanic.minimap)
+		.map((mechanic) => ({
+			mechanic,
 			node: make('circle', { class: 'minimap-objective', r: 3 }, buildings),
 		}))
 	// The view can reach past the map; the outline stops at its edge.
@@ -109,8 +109,8 @@ export function createMinimap(
 			if (root.style.display !== (hidden ? 'none' : '')) root.style.display = hidden ? 'none' : ''
 			if (hidden) return
 			drawView(camera)
-			for (const { piece, node } of objectives) {
-				const mark = piece.minimap(sim)
+			for (const { mechanic, node } of objectives) {
+				const mark = mechanic.minimap(sim)
 				put(node, 'display', mark?.live ? '' : 'none')
 				if (!mark?.live) continue
 				put(node, 'data-team', mark.owner ?? '')

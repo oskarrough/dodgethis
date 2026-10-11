@@ -1,5 +1,5 @@
 import { tune } from './tune.js'
-import { DEFAULT_MAP, playableMaps } from './maps/index.js'
+import { DEFAULT_MAP, playableMaps } from './maps/all-maps.js'
 import { DEFAULT_HERO, HEROES, heroDefinition } from './heroes.js'
 
 // Front screens and direct entry use the same validated match setup.
