@@ -1,10 +1,11 @@
-// The sound board: plays every use in the sound table through the game's own audio, swaps files or other voices
-// into a use (src/core/sound-swap.js) so a match in another tab hears them, keeps a swap into the repo, and prints
-// each sound's numbers against the docs/sound.md rules.
+// The sound board, laid out like Finder: folders (sources and board tools) on the left, the sounds in a folder with
+// their numbers in the middle, the selected sound's swap, Keep and bus on the right. Plays every use in the sound
+// table through the game's own audio and mix, swaps files or other voices into a use (src/core/sound-swap.js) so
+// the game in another tab hears them, keeps a swap into the repo, and checks numbers against docs/sound.md.
 import * as audio from '/src/core/audio.js'
 import * as swap from '/src/core/sound-swap.js'
 import { tune } from '/src/core/tune.js'
-import { createSounds, playUse } from '/src/plugins/moba/sounds.js'
+import { createSounds, playOwn, playUse } from '/src/plugins/moba/sounds.js'
 import { uses, facts } from '/src/plugins/moba/sound-table.js'
 import { check, describe, measure } from './numbers.js'
 
@@ -16,24 +17,51 @@ function el(tag, props = {}, ...children) {
 	node.append(...children)
 	return node
 }
-const button = (text, onClick) => {
-	const b = el('button', { type: 'button', textContent: text })
+const button = (text, onClick, props = {}) => {
+	const b = el('button', { type: 'button', textContent: text, ...props })
 	b.addEventListener('click', onClick)
 	return b
 }
 
 audio.previewMusic(null) // the board stays quiet until a music row is played
+let musicStop = 0
+function previewMusic(scene, seconds = 0) {
+	clearTimeout(musicStop)
+	audio.previewMusic(scene)
+	if (seconds) musicStop = setTimeout(() => audio.previewMusic(null), seconds * 1000)
+}
 
-const play = (id) => (uses[id].music ? audio.previewMusic(uses[id].music) : playUse(audio, id))
+const play = (id) => (uses[id].music ? previewMusic(uses[id].music) : playUse(audio, id))
 // The game's own sound for a use, past any swap or kept file.
-function playBuiltin(id, a = audio) {
+function playBuiltin(id) {
 	const use = uses[id]
+	if (use.music) return previewMusic(use.music)
 	if (use.voice) swap.voiceNamed(use.voice)?.(null, 1)
-	else if (use.recipe) a.blip(use.recipe())
-	else use.play?.(a, null, 1)
+	else if (use.recipe) audio.blip(use.recipe())
+	else use.play?.(audio, null, 1)
 }
 const same = (a, b) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null)
 const local = (id) => swap.swapList().find(([key]) => key === id)?.[1]
+function playing(id) {
+	const s = swap.swapOf(id)
+	if (s?.kept) return `kept ${s.kept}`
+	if (s?.file) return `file ${s.file}`
+	if (s?.voice) return s.voice
+	return uses[id].music ? 'synth music' : `built in (${uses[id].voice ?? 'synth'})`
+}
+const busName = {
+	ui: 'menus',
+	mine: 'your hero',
+	others: 'other heroes',
+	world: 'world',
+	music: 'music',
+}
+const busOf = (id) =>
+	uses[id].bus === 'hero' ? 'your hero or other heroes' : busName[uses[id].bus]
+const factsOf = (id) =>
+	Object.entries(facts)
+		.filter(([, list]) => list.includes(id))
+		.map(([type]) => type)
 
 // Numbers for what a use plays now (swap, kept or built in), rendered offline.
 const numbers = new Map()
@@ -45,7 +73,7 @@ async function measureUse(id) {
 }
 async function measureAll(ids = Object.keys(uses).filter((id) => !uses[id].music)) {
 	for (const id of ids) await measureUse(id).catch(() => numbers.set(id, null))
-	fillNumbers()
+	draw()
 }
 const rows = () => [...numbers].map(([id, n]) => ({ id, source: uses[id].source, numbers: n }))
 // The headless check (`bun run sound:check`) reads every use's numbers and flags here.
@@ -55,42 +83,170 @@ globalThis.soundNumbers = async () => {
 	return { rows: rows(), flags: check(rows()) }
 }
 
-// One row per use: what sets it off, the sound it plays, the file's level, its numbers, and play/built in/keep.
-const cells = new Map()
-function row(id) {
-	const use = uses[id]
-	if (use.music)
-		return el(
-			'tr',
-			{},
-			el('td', { textContent: use.about }),
-			el('td', {}, el('code', { textContent: id })),
-			el('td'),
-			el('td'),
-			el('td'),
+// Folders: sources grouped like the game, then the board's own tools.
+const sources = [...new Set(Object.values(uses).map((u) => u.source))]
+const match = ['Ball', 'Structures', 'Minions', 'Combat', 'Outs', 'Movement', 'Progress']
+const screens = ['Menus', 'Splash and descent', 'Lobby', 'Music']
+const GROUPS = [
+	['Heroes', sources.filter((s) => !match.includes(s) && !screens.includes(s))],
+	['Match', match.filter((s) => sources.includes(s))],
+	['Screens and music', screens],
+	['Board', ['Rule check', 'Mix', 'Your files', 'Changes', 'Silent facts']],
+]
+const TOOLS = GROUPS.at(-1)[1]
+const where = () => {
+	const q = new URLSearchParams(location.hash.slice(1))
+	return { folder: q.get('f') ?? GROUPS[0][1][0], use: q.get('u') }
+}
+const link = (folder, use) => `#${new URLSearchParams(use ? { f: folder, u: use } : { f: folder })}`
+const idsIn = (folder) => Object.keys(uses).filter((id) => uses[id].source === folder)
+
+function drawFolders() {
+	const { folder } = where()
+	const flags = check(rows())
+	const count = (name) =>
+		name === 'Rule check'
+			? ` (${Object.keys(flags).length})`
+			: name === 'Your files'
+				? ` (${swap.fileNames().length})`
+				: TOOLS.includes(name)
+					? ''
+					: ` (${idsIn(name).length})`
+	$('folders').replaceChildren(
+		...GROUPS.map(([group, names]) =>
 			el(
-				'td',
+				'details',
+				{ open: true },
+				el('summary', { textContent: group }),
+				el(
+					'ul',
+					{},
+					...names.map((name) =>
+						el(
+							'li',
+							{},
+							el('a', {
+								href: link(name),
+								textContent: name + count(name),
+								ariaCurrent: name === folder ? 'page' : null,
+							}),
+						),
+					),
+				),
+			),
+		),
+	)
+}
+
+// The middle pane: a folder's sounds with their numbers, or a board tool.
+function drawList() {
+	const { folder, use: selected } = where()
+	const list = $('list')
+	if (TOOLS.includes(folder))
+		return list.replaceChildren(el('h2', { textContent: folder }), ...tool(folder))
+	const flags = check(rows())
+	const head = ['', 'Sound', 'When', 'Plays', 'ms', 'attack', 'tail', 'peak', 'rms', 'kHz', 'rules']
+	const cell = (n, key) => el('td', { textContent: n ? n[key] : '' })
+	list.replaceChildren(
+		el('h2', { textContent: folder }),
+		el(
+			'table',
+			{},
+			el('thead', {}, el('tr', {}, ...head.map((t) => el('th', { textContent: t })))),
+			el(
+				'tbody',
+				{},
+				...idsIn(folder).map((id) => {
+					const n = numbers.get(id)
+					const name = el('a', { href: link(folder, id) }, el('code', { textContent: id }))
+					if (id === selected) name.ariaCurrent = 'true'
+					return el(
+						'tr',
+						{},
+						el(
+							'td',
+							{},
+							button('▶', () => play(id), { ariaLabel: `Play ${id}` }),
+						),
+						el('td', {}, id === selected ? el('strong', {}, name) : name),
+						el('td', { textContent: uses[id].about }),
+						el('td', { textContent: playing(id) }),
+						cell(n, 'length'),
+						cell(n, 'attack'),
+						cell(n, 'tail'),
+						cell(n, 'peak'),
+						cell(n, 'rms'),
+						el('td', { textContent: n ? (n.centroid / 1000).toFixed(1) : '' }),
+						el('td', {
+							textContent: flags[id] ? `⚑ ${flags[id].map((f) => f.split(' ')[0]).join(', ')}` : '',
+						}),
+					)
+				}),
+			),
+		),
+		numbers.size ? '' : el('p', {}, el('small', { textContent: 'Measuring every sound…' })),
+	)
+}
+
+// The right pane: one sound's swap, level, Keep, bus, numbers and the facts that set it off. Built once per
+// selection and updated in place, so arrowing through the candidate list keeps its focus.
+let detail = null
+function drawDetails() {
+	const { use: id } = where()
+	if (!id || !uses[id]) {
+		detail = null
+		return $('details').replaceChildren(
+			el('p', { textContent: 'Pick a sound to swap or keep it.' }),
+		)
+	}
+	if (detail?.id !== id) detail = buildDetail(id)
+	updateDetail()
+}
+function buildDetail(id) {
+	const use = uses[id]
+	const parts = { id, plays: el('span'), numbers: el('p'), files: '' }
+	const rest = [
+		el('p', { textContent: use.about }),
+		el(
+			'dl',
+			{},
+			el('dt', { textContent: 'Plays now' }),
+			el('dd', {}, parts.plays),
+			el('dt', { textContent: 'Bus' }),
+			el('dd', { textContent: busOf(id) }),
+			el('dt', { textContent: 'Set off by' }),
+			el('dd', { textContent: factsOf(id).join(', ') || 'the screen itself' }),
+		),
+		parts.numbers,
+	]
+	if (use.music) {
+		$('details').replaceChildren(
+			el('h2', {}, el('code', { textContent: id })),
+			...rest,
+			el(
+				'p',
 				{},
 				button('Play', () => play(id)),
 				' ',
-				button('Stop', () => audio.previewMusic(null)),
+				button('Stop', () => previewMusic(null)),
 			),
 		)
-	const select = el('select', { ariaLabel: `Sound for ${id}` })
-	const level = el('input', {
+		return parts
+	}
+	parts.select = el('select', { ariaLabel: `Sound for ${id}` })
+	parts.level = el('input', {
 		type: 'range',
 		min: 0.05,
 		max: 1.5,
 		step: 0.05,
 		ariaLabel: `Level for ${id}`,
 	})
-	const output = el('small')
-	const keep = button('Keep', () => keepSwap(id))
-	select.addEventListener('change', async () => {
-		const [kind, name] = select.value.split(':')
+	parts.keep = button('Keep', () => keepSwap(id))
+	parts.select.addEventListener('change', async () => {
+		const [kind, name] = parts.select.value.split(':')
 		const next =
 			kind === 'file'
-				? { file: name, gain: Number(level.value) }
+				? { file: name, gain: Number(parts.level.value) }
 				: kind === 'voice'
 					? { voice: name }
 					: kind === 'builtin' && swap.kept[id]
@@ -98,34 +254,84 @@ function row(id) {
 						: null
 		await swap.setSwap(id, next)
 		play(id)
-		measureUse(id).then(fillNumbers)
+		measureUse(id).then(draw)
 	})
-	level.addEventListener('change', async () => {
+	parts.level.addEventListener('change', async () => {
 		const chosen = swap.swapOf(id)
 		if (!chosen?.file && !chosen?.kept) return
-		await swap.setSwap(id, { ...chosen, gain: Number(level.value) })
+		await swap.setSwap(id, { ...chosen, gain: Number(parts.level.value) })
 		play(id)
-		measureUse(id).then(fillNumbers)
+		measureUse(id).then(draw)
 	})
-	cells.set(id, { select, level, output, keep })
-	return el(
-		'tr',
-		{},
-		el('td', { textContent: use.about }),
-		el('td', {}, el('code', { textContent: id })),
-		el('td', {}, select),
-		el('td', {}, level),
-		el('td', {}, output),
+	$('details').replaceChildren(
+		el('h2', {}, el('code', { textContent: id })),
+		...rest,
+		el('p', {}, el('label', {}, 'Sound ', parts.select)),
+		el('p', {}, el('label', {}, 'File level ', parts.level)),
+		el('p', { textContent: 'Arrow keys through the list play each candidate.' }),
 		el(
-			'td',
+			'p',
 			{},
 			button('Play', () => play(id)),
 			' ',
 			button('Built in', () => playBuiltin(id)),
 			' ',
-			keep,
+			parts.keep,
 		),
 	)
+	return parts
+}
+function updateDetail() {
+	const { id } = detail
+	const flags = check(rows())[id]
+	detail.plays.textContent = playing(id)
+	detail.numbers.textContent = numbers.has(id)
+		? describe(numbers.get(id)) + (flags ? ` ⚑ ${flags.join('; ')}` : '')
+		: ''
+	if (!detail.select) return
+	const files = swap.fileNames()
+	const kept = swap.kept[id]
+	const mine = local(id)
+	const key = JSON.stringify([files, kept])
+	if (detail.files !== key) {
+		detail.files = key
+		const options = [
+			el('option', { value: 'builtin', textContent: `Built in: ${uses[id].voice ?? 'synth'}` }),
+		]
+		if (kept)
+			options.push(el('option', { value: 'kept', textContent: `Kept: ${kept.kept ?? kept.voice}` }))
+		if (files.length)
+			options.push(
+				el(
+					'optgroup',
+					{ label: 'Your files' },
+					...files.map((f) => el('option', { value: `file:${f}`, textContent: f })),
+				),
+			)
+		options.push(
+			el(
+				'optgroup',
+				{ label: 'Other game sounds' },
+				...voices.map((v) => el('option', { value: `voice:${v}`, textContent: v })),
+			),
+		)
+		detail.select.replaceChildren(...options)
+	}
+	if (document.activeElement !== detail.select)
+		detail.select.value =
+			mine && !same(mine, kept)
+				? mine.file
+					? `file:${mine.file}`
+					: mine.voice
+						? `voice:${mine.voice}`
+						: 'builtin'
+				: kept
+					? 'kept'
+					: 'builtin'
+	const chosen = swap.swapOf(id)
+	detail.level.value = chosen?.gain ?? 0.5
+	detail.level.disabled = !chosen?.file && !chosen?.kept
+	detail.keep.disabled = !mine || same(mine, kept) || (mine.builtin && !kept)
 }
 
 // Keep writes the swap into the repo (vite.config.js `soundKeep`); this browser mirrors it until a reload.
@@ -151,85 +357,189 @@ async function keepSwap(id) {
 	await swap.setSwap(id, now ?? { builtin: true })
 }
 
-function fillSelects() {
-	const files = swap.fileNames()
-	for (const [id, { select, level, keep }] of cells) {
-		const kept = swap.kept[id]
-		const mine = local(id)
-		const options = [
-			el('option', { value: 'builtin', textContent: `Built in: ${uses[id].voice ?? 'synth'}` }),
-		]
-		if (kept)
-			options.push(el('option', { value: 'kept', textContent: `Kept: ${kept.kept ?? kept.voice}` }))
-		if (files.length)
-			options.push(
-				el(
-					'optgroup',
-					{ label: 'Your files' },
-					...files.map((f) => el('option', { value: `file:${f}`, textContent: f })),
-				),
-			)
-		options.push(
+// Board tools, drawn in the middle pane.
+function tool(name) {
+	if (name === 'Rule check') {
+		const flags = Object.entries(check(rows()))
+		return [
+			el('p', {
+				textContent:
+					'Sounds breaking docs/sound.md: the peak lands within 25 ms, fight tails end within 400 ms, menus stay under −18 dB, and each fight source keeps one timbre family (brightness within 1.5 octaves of its middle).',
+			}),
 			el(
-				'optgroup',
-				{ label: 'Other game sounds' },
-				...voices.map((v) => el('option', { value: `voice:${v}`, textContent: v })),
+				'ul',
+				{},
+				...(flags.length
+					? flags.map(([id, list]) =>
+							el(
+								'li',
+								{},
+								el('a', { href: link(uses[id].source, id) }, el('code', { textContent: id })),
+								` ${list.join('; ')}`,
+							),
+						)
+					: [el('li', { textContent: numbers.size ? 'Every sound passes.' : 'Measuring…' })]),
 			),
-		)
-		select.replaceChildren(...options)
-		select.value =
-			mine && !same(mine, kept)
-				? mine.file
-					? `file:${mine.file}`
-					: mine.voice
-						? `voice:${mine.voice}`
-						: 'builtin'
-				: kept
-					? 'kept'
-					: 'builtin'
-		const chosen = swap.swapOf(id)
-		level.value = chosen?.gain ?? 0.5
-		level.disabled = !chosen?.file && !chosen?.kept
-		keep.disabled = !mine || same(mine, kept) || (mine.builtin && !kept)
+		]
 	}
+	if (name === 'Mix') return mixTool()
+	if (name === 'Your files') return filesTool()
+	if (name === 'Changes') return changesTool()
+	return [
+		el('p', { textContent: 'Things the game says happened that make no sound yet.' }),
+		el(
+			'ul',
+			{},
+			...Object.entries(facts)
+				.filter(([, list]) => !list.length)
+				.map(([type]) => el('li', {}, el('code', { textContent: type }))),
+		),
+	]
 }
 
-function fillNumbers() {
-	const flags = check(rows())
-	for (const [id, { output }] of cells) {
-		const n = numbers.get(id)
-		output.textContent = numbers.has(id)
-			? describe(n) + (flags[id] ? ` ⚑ ${flags[id].join('; ')}` : '')
-			: '…'
-	}
-	const flagged = Object.entries(flags)
-	$('flags').replaceChildren(
-		...(flagged.length
-			? flagged.map(([id, list]) =>
-					el('li', {}, el('code', { textContent: id }), ` ${list.join('; ')}`),
-				)
-			: [el('li', { textContent: numbers.size ? 'Every sound passes.' : 'Measuring…' })]),
+// The mix (tune.mix). Moving a level plays a sound on that bus (throttled while dragging); caps and the duck play
+// the crowded fight, the duck over music.
+const MIX = [
+	...['ui', 'mine', 'others', 'world', 'music'].map((name) => [
+		name,
+		`${busName[name]} level`,
+		0,
+		1.5,
+		0.05,
+	]),
+	...['ui', 'mine', 'others', 'world'].map((name) => [
+		`caps.${name}`,
+		`${busName[name]} cap`,
+		1,
+		16,
+		1,
+	]),
+	['capWindow', 'cap window (s)', 0.05, 0.5, 0.05],
+	['duck', 'music under a fight', 0, 1, 0.05],
+	['duckRelease', 'music comes back over (s)', 0.1, 2, 0.1],
+]
+const SAMPLE = {
+	ui: () => playUse(audio, 'ui.click'),
+	mine: () => playOwn(audio, 'basic.shot'),
+	others: () => playUse(audio, 'loose.hit', { x: 4, y: 1, z: 0 }, 0.45),
+	world: () => playUse(audio, 'ballBounce', { x: -3, y: 1, z: 2 }),
+	music: () => previewMusic('play', 4),
+}
+const mixValue = (key) => {
+	const [head, tail] = key.split('.')
+	const mine = swap.mixOf()
+	return tail ? (mine.caps?.[tail] ?? tune.mix.caps[tail]) : (mine[head] ?? tune.mix[head])
+}
+async function setMixValue(key, value) {
+	const [head, tail] = key.split('.')
+	const mine = swap.mixOf()
+	await swap.setMix(
+		tail
+			? { ...mine, caps: { ...tune.mix.caps, ...mine.caps, [tail]: value } }
+			: { ...mine, [head]: value },
 	)
+}
+function mixTool() {
+	const body = MIX.map(([key, label, min, max, step]) => {
+		const input = el('input', {
+			type: 'range',
+			min,
+			max,
+			step,
+			value: mixValue(key),
+			ariaLabel: label,
+		})
+		const shown = el('output', { textContent: mixValue(key) })
+		const hear = async () => {
+			await setMixValue(key, Number(input.value))
+			if (SAMPLE[key]) SAMPLE[key]()
+			else {
+				if (key.startsWith('duck')) previewMusic('play', 4)
+				fight()
+			}
+		}
+		let last = 0
+		input.addEventListener('input', () => {
+			shown.textContent = input.value
+			if (!SAMPLE[key] || performance.now() - last < 250) return
+			last = performance.now()
+			hear()
+		})
+		input.addEventListener('change', hear)
+		return el('tr', {}, el('th', { textContent: label }), el('td', {}, input), el('td', {}, shown))
+	})
+	return [
+		el('p', {
+			textContent:
+				'Every sound plays on one bus. Each has a level and plays at most its cap of sounds in any cap window; fight sounds duck the music. Moving a slider plays a sound on that bus; the game in another tab follows at once.',
+		}),
+		el('table', {}, el('tbody', {}, ...body)),
+		el(
+			'p',
+			{},
+			button('Reset the mix', async () => {
+				await swap.setMix(null)
+				drawn = ''
+				draw()
+			}),
+		),
+	]
 }
 
 const fileNumbers = new Map()
-async function fillLibrary() {
-	const names = swap.fileNames()
-	const items = names.map((name) => {
-		const text = el('small', {
-			textContent: fileNumbers.has(name) ? describe(fileNumbers.get(name)) : '…',
+function filesTool() {
+	const pick = (props) => {
+		const input = el('input', { type: 'file', multiple: true, ...props })
+		input.addEventListener('change', async () => {
+			await swap.addFiles(
+				[...input.files].filter(
+					(f) =>
+						f.type.startsWith('audio/') || /\.(mp3|wav|ogg|m4a|flac|aiff?|webm)$/i.test(f.name),
+				),
+			)
+			input.value = ''
 		})
-		return el(
-			'li',
+		return input
+	}
+	const folder = pick({})
+	folder.webkitdirectory = true
+	const names = swap.fileNames()
+	const items = names.map((name) =>
+		el(
+			'tr',
 			{},
-			button('Play', () => audio.sample(swap.fileUrl(name), { gain: 0.5 })),
+			el(
+				'td',
+				{},
+				button('▶', () => audio.sample(swap.fileUrl(name), { gain: 0.5 }), {
+					ariaLabel: `Play ${name}`,
+				}),
+			),
+			el('td', { textContent: name }),
+			el('td', { textContent: fileNumbers.has(name) ? describe(fileNumbers.get(name)) : '…' }),
+			el(
+				'td',
+				{},
+				button('Remove', () => swap.removeFile(name)),
+			),
+		),
+	)
+	measureFiles(names, items)
+	return [
+		el('p', {
+			textContent: 'Your sounds, kept in this browser. Pick one in any sound’s list to swap it in.',
+		}),
+		el(
+			'p',
+			{},
+			el('label', {}, 'Add files ', pick({ accept: 'audio/*' })),
 			' ',
-			button('Remove', () => swap.removeFile(name)),
-			` ${name} `,
-			text,
-		)
-	})
-	$('library').replaceChildren(...items)
+			el('label', {}, 'Add a folder ', folder),
+		),
+		el('table', {}, el('tbody', {}, ...items)),
+	]
+}
+async function measureFiles(names, items) {
 	for (const [i, name] of names.entries()) {
 		if (fileNumbers.has(name)) continue
 		try {
@@ -241,61 +551,11 @@ async function fillLibrary() {
 		} catch {
 			fileNumbers.set(name, null)
 		}
-		items[i].lastChild.textContent = describe(fileNumbers.get(name))
+		items[i].children[2].textContent = describe(fileNumbers.get(name))
 	}
 }
 
-// The mix sliders (tune.mix): bus levels, caps per window, own radius and the music duck.
-const MIX = [
-	...['ui', 'mine', 'others', 'world', 'music'].map((name) => [
-		name,
-		`${name} level`,
-		0,
-		1.5,
-		0.05,
-	]),
-	...['ui', 'mine', 'others', 'world'].map((name) => [
-		`caps.${name}`,
-		`${name} cap (sounds per window)`,
-		1,
-		16,
-		1,
-	]),
-	['capWindow', 'cap window (s)', 0.05, 0.5, 0.05],
-	['duck', 'music under a fight', 0, 1, 0.05],
-	['duckRelease', 'music comes back over (s)', 0.1, 2, 0.1],
-]
-const mixValue = (key) => {
-	const [head, tail] = key.split('.')
-	const local = swap.mixOf()
-	return tail ? (local.caps?.[tail] ?? tune.mix.caps[tail]) : (local[head] ?? tune.mix[head])
-}
-const mixInputs = new Map()
-for (const [key, label, min, max, step] of MIX) {
-	const input = el('input', { type: 'range', min, max, step, ariaLabel: label })
-	const shown = el('output')
-	input.addEventListener('input', () => (shown.textContent = input.value))
-	input.addEventListener('change', () => {
-		const [head, tail] = key.split('.')
-		const local = swap.mixOf()
-		const value = Number(input.value)
-		swap.setMix(
-			tail
-				? { ...local, caps: { ...tune.mix.caps, ...local.caps, [tail]: value } }
-				: { ...local, [head]: value },
-		)
-	})
-	mixInputs.set(key, [input, shown])
-	$('mix').append(
-		el('tr', {}, el('th', { textContent: label }), el('td', {}, input), el('td', {}, shown)),
-	)
-}
-$('mix-reset').addEventListener('click', () => swap.setMix(null))
-function fillMix() {
-	for (const [key, [input, shown]] of mixInputs) input.value = shown.textContent = mixValue(key)
-}
-
-function fillChanges() {
+function changesTool() {
 	const mixed = MIX.map(([key]) => key).filter((key) => {
 		const [head, tail] = key.split('.')
 		return mixValue(key) !== (tail ? tune.mix.caps[tail] : tune.mix[head])
@@ -314,48 +574,24 @@ function fillChanges() {
 					`${id} → ${s.file ? `file ${s.file} at ${s.gain ?? 0.5}` : (s.voice ?? 'built in')} (this browser only)`,
 			),
 	]
-	$('changes').textContent = lines.length
-		? lines.join('\n')
-		: 'No swaps: the game plays its own sounds.'
-}
-
-const bySource = Map.groupBy(Object.keys(uses), (id) => uses[id].source)
-for (const [source, ids] of bySource) {
-	const head = el(
-		'tr',
-		{},
-		...['When', 'Use', 'Sound', 'Level', 'Numbers', ''].map((t) => el('th', { textContent: t })),
-	)
-	$('sources').append(
+	return [
+		el('p', { textContent: 'Your swaps, to paste back to the sound thread.' }),
+		el('pre', {
+			textContent: lines.length ? lines.join('\n') : 'No swaps: the game plays its own sounds.',
+		}),
 		el(
-			'section',
+			'p',
 			{},
-			el('h2', { textContent: source }),
-			el('table', {}, el('thead', {}, head), el('tbody', {}, ...ids.map(row))),
+			button('Undo every swap', async () => {
+				for (const [id] of swap.swapList()) await swap.setSwap(id, null)
+				measureAll()
+			}),
 		),
-	)
+	]
 }
-$('silent').replaceChildren(
-	...Object.entries(facts)
-		.filter(([, list]) => !list.length)
-		.map(([type]) => el('li', {}, el('code', { textContent: type }))),
-)
 
-for (const input of [$('files'), $('folder')])
-	input.addEventListener('change', async () => {
-		await swap.addFiles(
-			[...input.files].filter(
-				(f) => f.type.startsWith('audio/') || /\.(mp3|wav|ogg|m4a|flac|aiff?|webm)$/i.test(f.name),
-			),
-		)
-		input.value = ''
-	})
-$('reset').addEventListener('click', async () => {
-	for (const [id] of swap.swapList()) await swap.setSwap(id, null)
-	measureAll()
-})
-
-// The crowded fight: a fixed, seeded burst through the game's mix (spatial pan and falloff, once-per-tick dedupe).
+// The crowded fight: a fixed, seeded burst through the game's mix (spatial pan and falloff, caps, once-per-tick
+// dedupe), a third of it yours.
 const FIGHT = [
 	'loose.shot',
 	'loose.hit',
@@ -380,7 +616,7 @@ const FIGHT = [
 	'nearMiss.passed',
 	'xp',
 ]
-$('fight').addEventListener('click', () => {
+function fight() {
 	let seed = 7
 	const random = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646
 	audio.setAudioListener({ x: 0, z: 0 })
@@ -389,7 +625,7 @@ $('fight').addEventListener('click', () => {
 		const id = FIGHT[Math.floor(random() * FIGHT.length)]
 		if (!uses[id]) continue
 		const tick = Math.floor(random() * 90) // 1.5 s at 60 ticks a second
-		const own = random() < 0.3 // your own sounds at full and at your hero, everyone else's quieter and around
+		const own = random() < 0.3
 		const point = own
 			? { x: 0, y: 1, z: 0 }
 			: { x: (random() - 0.5) * 24, y: 1, z: (random() - 0.5) * 16 }
@@ -404,17 +640,26 @@ $('fight').addEventListener('click', () => {
 			(tick * 1000) / 60,
 		)
 	}
-})
-
-function refresh() {
-	fillMix()
-	fillSelects()
-	fillLibrary()
-	fillChanges()
 }
-swap.onSwapChange(refresh)
-refresh()
+$('fight').addEventListener('click', fight)
+$('stop').addEventListener('click', () => previewMusic(null))
+
+// The mix pane redraws only on navigation, so a slider being dragged keeps its place.
+let drawn = ''
+function draw() {
+	const { folder } = where()
+	drawFolders()
+	if (folder !== 'Mix' || drawn !== 'Mix') drawList()
+	drawn = folder
+	drawDetails()
+}
+addEventListener('hashchange', () => {
+	drawn = ''
+	draw()
+})
+swap.onSwapChange(draw)
+draw()
 swap.loaded.then(() => {
-	refresh()
+	draw()
 	if (!location.search.includes('check')) measureAll()
 })

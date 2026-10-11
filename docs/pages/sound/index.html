@@ -5,77 +5,37 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<title>Sound board · dodgethis</title>
 		<link rel="stylesheet" href="/docs/page.css" />
+		<!-- The board's only own CSS: three Finder panes side by side, wider than a normal page. -->
+		<style>
+			.page:has(.board) {
+				max-width: none;
+			}
+			.board {
+				display: grid;
+				grid-template-columns: 15rem minmax(0, 1fr) 24rem;
+				gap: 1.5rem;
+				align-items: start;
+			}
+			.board > * {
+				max-height: 85vh;
+				overflow: auto;
+			}
+		</style>
 	</head>
 	<body class="page">
-		<main>
+		<header>
 			<h1>Sound board</h1>
 			<p>
-				Every sound the game makes, by source. Play hears what the game plays now, Built in hears
-				the game's own sound. Add your files below, then pick one in a row's list to swap it in:
-				arrow keys through the list play each candidate. A match open in another tab of this browser
-				hears a swap on its next event, from the splash and lobby to a fight. Keep writes the swap
-				into the game for everyone (it lands with the next commit).
+				Pick a folder, then a sound. Swaps reach the game open in another tab of this browser on its
+				next event; Keep puts a swap in the game for everyone.
+				<button id="fight" type="button">Play a crowded fight</button>
+				<button id="stop" type="button">Stop music</button>
 			</p>
-
-			<section>
-				<h2>Your sounds</h2>
-				<p>
-					<label>Add files <input id="files" type="file" accept="audio/*" multiple /></label>
-					<label>Add a folder <input id="folder" type="file" webkitdirectory multiple /></label>
-				</p>
-				<ul id="library"></ul>
-			</section>
-
-			<section>
-				<h2>Crowded fight</h2>
-				<p>
-					Twenty fight sounds in a second and a half, scattered around you, through the game's real
-					mix and swaps. The same fight every time, so you can compare.
-				</p>
-				<p><button id="fight" type="button">Play a crowded fight</button></p>
-			</section>
-
-			<section>
-				<h2>Mix</h2>
-				<p>
-					Every sound plays on one bus: menus, your own hero, other heroes, the world (Ball,
-					structures, minions) or music. Each bus has a level and plays at most a few sounds at once
-					(a cap per window); fight sounds duck the music. Sliders reach the game in another tab at
-					once; play the crowded fight to hear them.
-					<button id="mix-reset" type="button">Reset the mix</button>
-				</p>
-				<table>
-					<tbody id="mix"></tbody>
-				</table>
-			</section>
-
-			<section>
-				<h2>Changes</h2>
-				<p>
-					Your swaps, to paste back to the sound thread.
-					<button id="reset" type="button">Undo every swap</button>
-				</p>
-				<pre id="changes"></pre>
-			</section>
-
-			<div id="sources"></div>
-
-			<section>
-				<h2>Rule check</h2>
-				<p>
-					Sounds that break the rules in docs/sound.md: the peak lands within 25 ms, fight tails end
-					within 400 ms, menus stay under −18 dB, and each fight source keeps one timbre family (its
-					brightness within 1.5 octaves of the source's middle). The numbers are what the game plays
-					now.
-				</p>
-				<ul id="flags"></ul>
-			</section>
-
-			<section>
-				<h2>Facts with no sound</h2>
-				<p>Things the game says happened that make no sound yet.</p>
-				<ul id="silent"></ul>
-			</section>
+		</header>
+		<main class="board">
+			<nav id="folders" aria-label="Folders"></nav>
+			<section id="list"></section>
+			<aside id="details"></aside>
 		</main>
 		<script type="module" src="./board.js"></script>
 	</body>
