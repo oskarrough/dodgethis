@@ -406,6 +406,7 @@ export function createLane({
 			nextWave += ticks(waveInterval(t * STEP, layout.late ?? tune.match.late))
 		}
 		const candidates = [...minions, ...structures, ...heroes]
+		const enemies = new Map()
 		const byId = new Map(candidates.map((u) => [u.id, u]))
 		const liveTarget = (id) => {
 			const unit = byId.get(id)
@@ -461,7 +462,14 @@ export function createLane({
 					unit.returnGoal = null
 				}
 			}
-			if (!unit.returning && !unit.passive) target ??= nearest(unit, range, candidates)
+			if (!unit.returning && !unit.passive && !target) {
+				if (!enemies.has(unit.team))
+					enemies.set(
+						unit.team,
+						candidates.filter((u) => u.team !== unit.team && u.team !== 'N'),
+					)
+				target = nearest(unit, range, enemies.get(unit.team))
+			}
 			if (unit.target !== (target?.id ?? null)) {
 				unit.attack = null
 				unit.path = null

@@ -25,6 +25,7 @@ export function createAgentMatch({
 	tuneHash = replayHash(tune),
 	onLog = null,
 	recordInputs = true,
+	capturePerception = true,
 }) {
 	const intents = createIntents()
 	intents.use('pointClick')
@@ -134,7 +135,7 @@ export function createAgentMatch({
 			present(fact)
 		},
 	})
-	perception.capture(sim)
+	if (capturePerception) perception.capture(sim)
 	const tape = replay ?? { version: 1, seed, roster, tuning: structuredClone(tune), inputs }
 	return {
 		sim,
@@ -168,16 +169,16 @@ export function createAgentMatch({
 				onInputs(record)
 			}
 			intents.age(STEP)
-			perception.capture(sim)
+			if (capturePerception) perception.capture(sim)
 			return true
 		},
-		finish(reason) {
+		finish(reason, { hash = true } = {}) {
 			logResult(reason)
 			tape.result = {
 				reason,
 				ticks: sim.tick,
 				winner: sim.lane?.match.winner ?? null,
-				hash: replayHash(sim.snapshot()),
+				hash: hash ? replayHash(sim.snapshot()) : undefined,
 			}
 			return tape
 		},

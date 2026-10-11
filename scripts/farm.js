@@ -229,6 +229,7 @@ export async function runFarmMatch({
 			commit,
 			tuneHash,
 			recordInputs: false,
+			capturePerception: false,
 			onLog(row) {
 				if (summary) return stats.row(row)
 				buffer += JSON.stringify(row) + '\n'
@@ -242,7 +243,7 @@ export async function runFarmMatch({
 		while (match.sim.tick < limit && match.step(drive())) if (sample && stats) stats.tick(match.sim)
 		stats?.finish(match.sim)
 		const reason = match.sim.lane.match.winner ? 'matchOver' : 'limit'
-		const tape = match.finish(reason)
+		const tape = match.finish(reason, { hash: !summary })
 		tape.botReplay = true
 		tape.run_id = runId
 		tape.commit = commit
@@ -318,7 +319,7 @@ Comparing (all imply --summary)
   --report                  per-ability, death-cause, damage-taken, bot-state and structure-fall sections
   --count flagTaken,...     count these fact kinds per team and match
 Machine
-  --jobs N                  worker threads (default 2); a per-machine budget (FARM_CORES, default cores − 2) is
+  --jobs N                  worker threads (default cores − 2); a per-machine budget (FARM_CORES, default cores − 2) is
                             shared with other farms, which queue for it
   --out dir                 log directory (default runs/<date>)
 Saved logs
@@ -393,7 +394,7 @@ export async function farm(argv = process.argv.slice(2)) {
 	)
 	const crossOnly = values['cross-only'] || values.quick
 	const requestedMatches = Number(values.matches ?? (summary ? 4 : 20)),
-		jobs = Number(values.jobs ?? Math.min(2, coreBudget())),
+		jobs = Number(values.jobs ?? coreBudget()),
 		seed = Number(values.seed),
 		maxSeconds = Number(values['max-seconds'])
 	for (const [name, value] of [

@@ -30,13 +30,25 @@ function buildGrid({ radius, clearance, grid }, obstacles, bounds) {
 		closed: new Uint8Array(nx * nz),
 		heap: { f: [], c: [] },
 	}
-	return { radius, clearance, grid, nx, nz, point, open, obstacles, bounds, scratch }
+	return {
+		radius,
+		clearance,
+		grid,
+		nx,
+		nz,
+		point,
+		open,
+		obstacles,
+		bounds,
+		scratch,
+		routes: new Map(),
+	}
 }
 
 function route(
 	from,
 	to,
-	{ radius, clearance, grid, nx, nz, point, open, obstacles, bounds, scratch },
+	{ radius, clearance, grid, nx, nz, point, open, obstacles, bounds, scratch, routes },
 ) {
 	if (!walkable(from.x, from.z, radius, 0, obstacles, bounds)) return []
 	const inflate = radius + clearance
@@ -69,7 +81,14 @@ function route(
 	const start = nearestOpen(from, firstMargin),
 		goal = nearestOpen(to, inflate)
 	if (start < 0 || goal < 0) return []
-	const cells = astar(open, nx, nz, start, goal, scratch)
+	// Only grid-cell searches are cached; endpoint clamping and live obstacle checks still run.
+	const key = start * open.length + goal
+	let cells = routes.get(key)
+	if (cells === undefined) {
+		cells = astar(open, nx, nz, start, goal, scratch)
+		if (routes.size >= 1024) routes.delete(routes.keys().next().value)
+		routes.set(key, cells)
+	}
 	if (!cells) return []
 	const points = [from, ...cells.map(point), to]
 	// A tight start rejoins a fully clear grid cell before any shortcut is considered.
