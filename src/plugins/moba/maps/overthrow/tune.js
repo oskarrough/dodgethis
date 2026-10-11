@@ -1,8 +1,9 @@
 // Overthrow's tunables, assembled into tune.map and tune.overthrowTerrain by ../../tune.js.
 
-// Static layout and dressing: applies on mode restart.
+// Match clock and static layout; geometry applies on mode restart.
 export const overthrowMap = {
 	name: 'Overthrow',
+	late: 180, // late game from 3:00 on this map (Oskar, 2026-10-11)
 	halfX: 52,
 	halfZ: 13,
 	thickness: 1,

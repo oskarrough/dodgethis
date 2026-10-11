@@ -23,12 +23,12 @@ export const inReach = (a, b, range) => {
 }
 
 // Plain agents: lane routes and pursuit paths, no character controllers or render-time decisions.
-// Seconds between waves at match time `seconds`: `interval`, then from `match.late` it starts at
+// Seconds between waves at match time `seconds`: `interval`, then from the map's late mark it starts at
 // `lateInterval` and shortens by `lateStep` each minute down to `minInterval`.
-export function waveInterval(seconds) {
+export function waveInterval(seconds, late = tune.match.late) {
 	const w = tune.waves
-	if (seconds < tune.match.late) return w.interval
-	const minutes = Math.floor((seconds - tune.match.late) / 60)
+	if (seconds < late) return w.interval
+	const minutes = Math.floor((seconds - late) / 60)
 	return Math.max(w.minInterval, w.lateInterval - w.lateStep * minutes)
 }
 
@@ -169,7 +169,7 @@ export function createLane({
 			for (const team of ['A', 'B']) {
 				const path = team === 'A' ? lane.path : [...lane.path].reverse()
 				const forward = direction(path[0], path[1])
-				for (const [row, kind] of (t * STEP >= tune.match.late
+				for (const [row, kind] of (t * STEP >= (layout.late ?? tune.match.late)
 					? ['melee', 'ranged', 'wizard', 'brute']
 					: ['melee', 'ranged', 'wizard']
 				).entries()) {
@@ -351,7 +351,7 @@ export function createLane({
 	function step(t, dt) {
 		time = t
 		match.phase =
-			t * STEP >= tune.match.late
+			t * STEP >= (layout.late ?? tune.match.late)
 				? 'late'
 				: t * STEP >= tune.match.objective
 					? 'objective'
@@ -403,7 +403,7 @@ export function createLane({
 		}
 		if (t >= nextWave) {
 			if (wavesEnabled()) spawn(t)
-			nextWave += ticks(waveInterval(t * STEP))
+			nextWave += ticks(waveInterval(t * STEP, layout.late ?? tune.match.late))
 		}
 		const candidates = [...minions, ...structures, ...heroes]
 		const byId = new Map(candidates.map((u) => [u.id, u]))
@@ -419,7 +419,8 @@ export function createLane({
 				? {
 						...tune[unit.kind],
 						damage:
-							tune[unit.kind].damage * (t * STEP >= tune.match.late ? tune.match.lateGunDamage : 1),
+							tune[unit.kind].damage *
+							(t * STEP >= (layout.late ?? tune.match.late) ? tune.match.lateGunDamage : 1),
 					}
 				: { ...tune.minions[unit.kind], damage: tune.minions[unit.kind].damage * unit.damageScale }
 			if (tower && !stats.damage) continue // a gate has no gun

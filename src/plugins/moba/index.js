@@ -103,7 +103,6 @@ export default function moba(app, map) {
 			const kind = isLobby ? 'lobby' : setup.map
 			const match = matchRecipe(kind)
 			const { layout, pieces, palette, debugTune, online } = match
-			if (layout.late) tune.match.late = layout.late // guests build no sim; the HUD reads it too
 			if (!online && app.session.shared) {
 				// Mode start must finish before its replacement can abort it. No map/sim is built.
 				queueMicrotask(() => {
@@ -171,7 +170,9 @@ export default function moba(app, map) {
 			const skillsView = createSkillsView(scene)
 			const fog =
 				!isLobby && query.get('fog') !== '0' ? createFog(scene, layout.bounds, layout.brush) : null
-			const follow = createFollow(tune.follow, layout.bounds)
+			const cameraTune = Object.create(tune.follow)
+			cameraTune.edgePan = setup.edgePan
+			const follow = createFollow(cameraTune, layout.bounds)
 			const hud = createHud({
 				lobby: isLobby,
 				layout,
@@ -191,9 +192,9 @@ export default function moba(app, map) {
 					!menu.frozen() &&
 					!app.overlay.visible,
 				() => input.activeDevice(),
+				cameraTune,
 			)
 			const cursor = createCursor(app.renderer.domElement)
-			tune.follow.edgePan = setup.edgePan
 			const difficulty = setup.difficulty
 			// Without an explicit seed each match draws one, so bots and the enemy's random hero vary; copied links keep it.
 			if (!setup.seeded)
@@ -633,7 +634,7 @@ export default function moba(app, map) {
 
 			run.on('blur', () => app.intents.cancel(local))
 
-			addSliders(run.debug, sliderSections(tune, look, setup), app.clock.step)
+			addSliders(run.debug, sliderSections(tune, look, setup, kind), app.clock.step)
 			run.debug.tune('cast', tune.cast, (f, t) => {
 				f.add(t, 'cancelLockout', app.clock.step, 2, app.clock.step).name('cancel lockout (s)')
 				f.add(t, 'buffer', app.clock.step, 1, app.clock.step).name('press buffer (s)')
@@ -642,7 +643,7 @@ export default function moba(app, map) {
 				f.add(t, 'hoverDelay', 0, 2, 0.05).name('hover delay')
 				arrangeDebug(f.parent)
 			})
-			run.debug.tune('edge pan', tune.follow, (f, t) => {
+			run.debug.tune('edge pan', cameraTune, (f, t) => {
 				f.add(t, 'edgePan')
 					.name('enabled')
 					.onChange((value) => {

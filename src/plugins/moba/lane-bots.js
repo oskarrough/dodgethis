@@ -26,6 +26,7 @@ export const laneBots = {
 		return {
 			botPerceive(ctx) {
 				const { perceived, team, p, h, abilities, b, near } = ctx
+				const late = ctx.sim.layout?.late ?? tune.match.late
 				const guards = perceived.structures.filter((u) => !u.dead && u.team !== team)
 				// A finished lane joins the remaining prerequisite, not an invulnerable core.
 				if (ctx.route) {
@@ -75,7 +76,7 @@ export const laneBots = {
 							h.hp -
 								b.towerExposure *
 									tune[g.kind].damage *
-									(perceived.tick * STEP >= tune.match.late ? tune.match.lateGunDamage : 1) >
+									(perceived.tick * STEP >= late ? tune.match.lateGunDamage : 1) >
 								h.maxHp * b.retreatHp
 						)
 					})
@@ -102,7 +103,7 @@ export const laneBots = {
 					siege &&
 					tune[siege.kind].damage *
 						tune[siege.kind].rate *
-						(perceived.tick * STEP >= tune.match.late ? tune.match.lateGunDamage : 1)
+						(perceived.tick * STEP >= late ? tune.match.lateGunDamage : 1)
 				const divers = siege ? near(ctx.own, siege.pos, b.supportRange).length || 1 : 0
 				const dps =
 					(1 + tune.levels.growth * (h.level - 1)) *

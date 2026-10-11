@@ -4,13 +4,16 @@ import { overthrowLayout } from './layout.js'
 export default {
 	kind: 'lane',
 	order: 1,
-	late: 180, // late game (tune.match.late) from 3:00 on this map (Oskar, 2026-10-11)
+	get late() {
+		return tune.map.late
+	},
 	layout: overthrowLayout,
 	pieces: ['structures', 'minions', 'ball', 'bots'],
 	palette: () => ({ ...tune.overthrowTerrain.palette, light: tune.overthrowTerrain.light }),
 	debugTune: {
 		name: 'overthrow terrain (applies on restart)',
 		values: tune.overthrowTerrain,
+		late: tune.map,
 		add(f, s) {
 			for (const [key, min, max, step] of [
 				['margin', 0.5, 3, 0.1],

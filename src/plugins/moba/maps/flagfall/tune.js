@@ -3,6 +3,7 @@
 // Flagfall: two lanes on the shared court in the shallows. All geometry applies on restart.
 const flagfall = {
 	name: 'Flagfall',
+	late: 360,
 	scale: 1, // one multiplier for every layout metre; applies on restart
 	// Flagfall by night: Overthrow's stone isle (isle.js) under a moon. These replace
 	// overthrowTerrain's keys of the same name; the rest (cliff, spires, stone) are shared.

@@ -58,7 +58,7 @@ const sound = {
 }
 
 // [name, tune or look object, sliders] in GUI order.
-export function sliderSections(tune, look, setup) {
+export function sliderSections(tune, look, setup, mapId = setup.map) {
 	const sections = {
 		tower: structure([10, 25], 6000, 2, 300),
 		core: structure([26, 43], 10000, 3, 400),
@@ -107,7 +107,10 @@ export function sliderSections(tune, look, setup) {
 			openingX: [0, 17, 0.5],
 			fileSpacing: [0, 4, 0.1, 'files (applies on restart)'],
 		},
-		match: { late: [T, 1200, T], lateGunDamage: [0, 1, 0.01] },
+		match: {
+			late: [T, 1200, T, 'late', maps[mapId]?.debugTune?.late ?? tune.match],
+			lateGunDamage: [0, 1, 0.01],
+		},
 		waves: {
 			first: [T, 30, T, 'first wave (applies on restart)'],
 			interval: [T, 60, T, 'interval (next scheduling)'],

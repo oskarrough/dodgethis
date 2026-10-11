@@ -405,10 +405,11 @@ export function createHud({ lobby = false, layout, pieces, onMinimap } = {}) {
 					vulnerable: sim.lane.vulnerable(unit),
 					tick: sim.tick,
 					step: frame.step,
+					layout,
 				})
 			}
 			case 'clock':
-				return clockCard({ elapsed, nextWave, nextBall, ballPop })
+				return clockCard({ elapsed, nextWave, nextBall, ballPop, layout })
 			case 'ball':
 				return ballCard({ nextBall, ballPop, carrying: carryingBall })
 			case 'unit': {
@@ -453,6 +454,7 @@ export function createHud({ lobby = false, layout, pieces, onMinimap } = {}) {
 						vulnerable: sim.lane.vulnerable(unit),
 						tick: sim.tick,
 						step: frame.step,
+						layout,
 					})
 				if (unit.kind) return minionCard(unit, { localTeam })
 				return heroCard(unit, { localTeam, localId: hero?.id })
@@ -638,7 +640,7 @@ export function createHud({ lobby = false, layout, pieces, onMinimap } = {}) {
 					text(s.kills, String(kills[team]))
 				}
 				text(clockText, clock(elapsed))
-				const late = elapsed >= tune.match.late
+				const late = elapsed >= (layout?.late ?? tune.match.late)
 				const ballState = carryingBall
 					? 'carried'
 					: ballPop != null

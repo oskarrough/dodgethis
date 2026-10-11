@@ -105,11 +105,11 @@ export function heroCard(hero, { localTeam, localId, lobby = false } = {}) {
 
 export function structureCard(
 	unit,
-	{ localTeam, vulnerable = true, tick = 0, step = 1 / 60 } = {},
+	{ localTeam, vulnerable = true, tick = 0, step = 1 / 60, layout } = {},
 ) {
 	const t = tune[unit.kind]
 	// Same rule as the lane's guns: from the late mark they fire at a fraction of their damage.
-	const late = tick * step >= tune.match.late
+	const late = tick * step >= (layout?.late ?? tune.match.late)
 	const damage = t.damage * (late ? tune.match.lateGunDamage : 1)
 	const notes = []
 	if (late) notes.push(`Late game: guns at ${pct(tune.match.lateGunDamage)} of ${round(t.damage)}`)
@@ -214,7 +214,8 @@ export function killsCard(kills, { mine = true } = {}) {
 }
 
 // The clock's card carries the countdowns the top bar no longer shows.
-export function clockCard({ elapsed = 0, nextWave = 0, nextBall, ballPop = null } = {}) {
+export function clockCard({ elapsed = 0, nextWave = 0, nextBall, ballPop = null, layout } = {}) {
+	const late = layout?.late ?? tune.match.late
 	const kinds = Object.entries(tune.minions).map(([kind, m]) => `${m.count} ${kind}`)
 	const ball =
 		ballPop != null
@@ -225,12 +226,12 @@ export function clockCard({ elapsed = 0, nextWave = 0, nextBall, ballPop = null 
 	return {
 		title: 'Match time',
 		tag: clock(elapsed),
-		summary: `Late game from ${clock(tune.match.late)}.`,
+		summary: `Late game from ${clock(late)}.`,
 		rows: [
 			['Next wave', `in ${Math.max(0, Math.ceil(nextWave))} s`],
 			['Each wave', kinds.join(', ')],
 			...(ball ? [['The Ball', ball]] : []),
-			['Waves', `every ${n(waveInterval(elapsed))} s`],
+			['Waves', `every ${n(waveInterval(elapsed, late))} s`],
 			['Wave growth', `+${pct(tune.waves.growth)} every ${n(tune.waves.growthPeriod)} s`],
 			['Late Ball', `every ${n(tune.ball.lateInterval)} s`],
 			['Late guns', `${pct(tune.match.lateGunDamage)} of their damage`],

@@ -7,7 +7,16 @@ const ticks = (s) => Math.max(1, Math.round(s / STEP))
 const pos = (p) => ({ x: p.x, z: p.z })
 
 // One objective per sim. Its fixed clock is independent of pickup, spending and expiry.
-export function createBall({ heroes, targets, vulnerable, obstacles, present, damage, endCast }) {
+export function createBall({
+	heroes,
+	targets,
+	vulnerable,
+	obstacles,
+	present,
+	damage,
+	endCast,
+	layout,
+}) {
 	let ball = null
 	let serial = 0
 	let nextBall = ticks(tune.ball.first)
@@ -83,7 +92,9 @@ export function createBall({ heroes, targets, vulnerable, obstacles, present, da
 			ball.pickableAt = nextBall
 			ball.popAt = nextBall + ticks(tune.ball.life)
 			fact('ballSpawn')
-			nextBall += ticks(t >= ticks(tune.match.late) ? tune.ball.lateInterval : tune.ball.interval)
+			nextBall += ticks(
+				t >= ticks(layout?.late ?? tune.match.late) ? tune.ball.lateInterval : tune.ball.interval,
+			)
 		}
 		if (ball?.state === 'carried') {
 			const h = heroes.find((u) => u.id === ball.carrier)

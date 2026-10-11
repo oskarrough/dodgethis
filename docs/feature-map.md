@@ -106,7 +106,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Lane bots (the minions' walk and fights under guns): `lane-bots.js` `laneBots`; `maps/paths.js` `laneRoute`
 - Lane drawing (minions, towers, fort, core): `lane-view.js` `createLaneView`; `look.js` `laneView`
 - Team stamps on the ground: `stamps.js` `createStamps`
-- Match end rules (objective, late-game gun damage, winner): `lane.js` `createLane`; `tune.js` `match`
+- Match end rules (objective, late-game gun damage, winner): `lane.js` `createLane`; `tune.js` `match`; late time in `maps/<id>/tune.js` (`map.late` for Overthrow, `flagfall.late` for Flagfall), read through the current layout
 - Base healing: `lane.js` `createLane`; `tune.js` `base`
 - Lane replica for online: `lane-replica.js` `createLaneReplica`, `projectLaneSnapshot`; `network.md`
 
@@ -158,7 +158,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 ## Debug, Try Mode, proof
 
 - Debug panel and Try Mode folder: `debug.js` `createDebugLayout`, `createMatchDebug`; `setup.js` `parseTrySetup`; `src/core/debug.js` `createDebugPanel`
-- Tuning sliders: `sliders.js` `sliderSections`, `addSliders`, `debugSections`; Terrain section names come from generated `maps/index.js` `playableMaps` and each manifest's `debugTune.name`; other new debug folders go in `debugSections`
+- Tuning sliders: `sliders.js` `sliderSections`, `addSliders`, `debugSections`; Match's late slider targets the current map's `debugTune.late` (shared `match` fallback); Terrain section names come from generated `maps/index.js` `playableMaps` and each manifest's `debugTune.name`; other new debug folders go in `debugSections`
 - `window.dt` (keys, pad, screen, device, game): `src/core/proof.js` `createProofApi`; `verification.md`
 - Simulation tables and bot experiments: `agent-match.js`; `verification.md`
 
