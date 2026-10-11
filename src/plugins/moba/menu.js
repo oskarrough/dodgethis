@@ -119,7 +119,7 @@ export function createMatchMenu({
 			'header',
 			'pause-head',
 			card,
-			`<span>Dodgethis <span lang="ja">取扱説明書</span></span><span>${map}</span><span>P. 07</span>`,
+			`<span>Dodgethis <span lang="ja">取扱説明書</span></span><span>${map}</span>`,
 		).setAttribute('aria-hidden', 'true')
 		el('p', 'pause-kana', card, 'ポーズ').setAttribute('aria-hidden', 'true')
 		el(

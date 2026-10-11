@@ -341,9 +341,6 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden]))
 .moba-pause .pause-head > :nth-child(2) {
 	grid-column: span 2;
 }
-.moba-pause .pause-head > :nth-child(3) {
-	text-align: right;
-}
 /* PAUSED is a readout: ink printed on one painted wash running down the sheet, no frame. */
 .overlay .moba-pause h1 {
 	position: relative;
