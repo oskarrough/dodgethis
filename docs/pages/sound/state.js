@@ -162,7 +162,16 @@ export function deckTo(path) {
 // Where things are: sources in the order a player meets them, grouped; heroes last, a–z.
 const sources = [...new Set(Object.values(uses).map((u) => u.source))]
 const screens = ['Splash and descent', 'Lobby', 'Menus', 'Music']
-const match = ['Ball', 'Structures', 'Minions', 'Combat', 'Outs', 'Movement', 'Progress']
+const match = [
+	'Ball',
+	'Objectives',
+	'Structures',
+	'Minions',
+	'Combat',
+	'Outs',
+	'Movement',
+	'Progress',
+]
 export const GROUPS = [
 	['Screens and music', screens.filter((s) => sources.includes(s))],
 	['Match', match.filter((s) => sources.includes(s))],

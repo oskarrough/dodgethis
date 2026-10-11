@@ -307,6 +307,7 @@ export function createLobby({
 			seatReady: 'lobby.seatReady',
 			readyCancel: 'lobby.readyCancel',
 			seatEmpty: 'lobby.readyCancel',
+			seatDenied: 'lobby.seatDenied',
 		}[fact.type]
 		if (sound && readySounds.get(sound) !== fact.tick) {
 			readySounds.set(sound, fact.tick)

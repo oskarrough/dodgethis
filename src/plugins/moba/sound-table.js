@@ -61,6 +61,7 @@ export const uses = {
 	'core.shot': use('Structures', 'The core fires', 'core'),
 	'core.hit': use('Structures', 'A core shot hits', 'core'),
 	structureDown: use('Structures', 'A structure falls', 'structureDown'),
+	aggro: use('Structures', 'A tower or minion turns on you', 'ballWarn'),
 
 	'melee.hit': use('Minions', 'A melee minion hits', 'melee'),
 	'brute.hit': use('Minions', 'A brute hits', 'brute'),
@@ -78,12 +79,22 @@ export const uses = {
 	catchExpired: use(HEROES.mitts.name, 'Catch ends empty', 'catchExpired'),
 	channelCancelled: use('Combat', 'A channel is cancelled', 'channelCancelled'),
 	channelEnd: use('Combat', 'A channel completes', 'channelEnd'),
+	denied: use('Combat', "An ability you pressed isn't ready", 'ballDenied'),
+	cushion: use(HEROES.pong.name, 'Cushion softens a shot passing through', 'blocked'),
 
 	out: use('Outs', "The ref's whistle on a takedown (tweets count the streak)", 'whistle'),
 	death: use('Outs', "A hero's card slaps the ground", 'cardSlap'),
 	shove: use('Outs', 'A hero is shoved', 'shove'),
 	dunk: use('Outs', 'A hero is dunked: the plunk', 'plunk'),
 	'dunk.splash': use('Outs', 'A hero is dunked: the splash', 'splash'),
+
+	camp: use('Objectives', 'A camp appears', 'ballSpawn'),
+	flagWarn: use('Objectives', 'The flag is about to go up', 'ballWarn'),
+	flagUp: use('Objectives', 'The flag goes up', 'ballSpawn'),
+	flagTaken: use('Objectives', 'A team takes the flag', 'structureDown'),
+	flagLowered: use('Objectives', 'The flag comes down', 'ballPop'),
+
+	spawn: use('Outs', 'A hero is back after an out', 'channelEnd'),
 
 	step: use('Movement', 'Your footsteps', 'step'),
 	squeak: use('Movement', 'Your sneakers squeak on a sharp turn', 'squeak'),
@@ -155,6 +166,11 @@ export const uses = {
 	),
 	'lobby.pick': synth('Lobby', 'You pick a hero', () => tune.lobby.pick.sound),
 	'lobby.pickDenied': synth('Lobby', 'A hero pick is refused', () => tune.lobby.pick.denySound),
+	'lobby.seatDenied': synth(
+		'Lobby',
+		'A seat you step on is already taken',
+		() => tune.lobby.pick.denySound,
+	),
 	'lobby.readyWalk': synth(
 		'Lobby',
 		'You walk toward the ready pad',
@@ -209,6 +225,7 @@ const BUS = {
 	Ball: 'world',
 	Structures: 'world',
 	Minions: 'world',
+	Objectives: 'world',
 }
 for (const use of Object.values(uses)) use.bus = BUS[use.source] ?? 'hero'
 
@@ -243,7 +260,7 @@ export const facts = {
 		...ending('.shot'),
 	],
 	blocked: ['blocked'],
-	cushion: [],
+	cushion: ['cushion'],
 	hit: [
 		'basic.hit',
 		...structures.map((s) => `${s}.hit`).filter((id) => uses[id]),
@@ -253,10 +270,10 @@ export const facts = {
 	death: ['death', 'out'],
 	shove: ['shove', 'out'],
 	dunk: ['dunk', 'dunk.splash', 'out'],
-	spawn: [],
-	denied: [],
+	spawn: ['spawn'],
+	denied: ['denied'],
 	impact: ending('.impact'),
-	aggro: [],
+	aggro: ['aggro'],
 	expired: [],
 	xp: ['xp'],
 	structureDown: ['structureDown'],
@@ -265,19 +282,26 @@ export const facts = {
 	swap: ['lobby.pick'],
 	pick: ['lobby.galleryPick'],
 	seatClaim: [],
-	seatDenied: [],
+	seatDenied: ['lobby.seatDenied'],
 	seatEnter: ['lobby.seatEnter'],
 	seatEmpty: ['lobby.readyCancel'],
 	seatReady: ['lobby.seatReady'],
 	readyWalk: ['lobby.readyWalk'],
 	readyCancel: ['lobby.readyCancel'],
 	globe: ['globe'],
-	camp: [],
-	flagWarn: [],
-	flagUp: [],
-	flagTaken: [],
-	flagLowered: [],
+	camp: ['camp'],
+	flagWarn: ['flagWarn'],
+	flagUp: ['flagUp'],
+	flagTaken: ['flagTaken'],
+	flagLowered: ['flagLowered'],
 	matchOver: ['matchOver'],
+}
+
+// Facts that stay silent on purpose, and why; any other fact with no uses is waiting for a sound.
+export const silentByChoice = {
+	order: 'the move ring answers every command; a click each time would nag',
+	expired: 'shots run out all the time; the puff says it',
+	seatClaim: 'stepping onto the seat already sounds (lobby.seatEnter)',
 }
 
 // The use an ability fact sets off, or null when that ability makes no sound there.

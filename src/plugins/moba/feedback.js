@@ -268,7 +268,20 @@ export function createFeedback({
 				if (onMe && aggroPingTick !== fact.tick) {
 					aggroPingTick = fact.tick
 					view.ping('aggro', fact.point, { follow: local, size: look.laneView.aggroPing })
+					cue('aggro', { ...fact, target: local })
 				}
+				return
+			case 'cushion':
+				cue('cushion', fact, mine ? 1 : 0.5)
+				return
+			case 'camp':
+				if (fact.state === 'spawn') cue('camp', fact)
+				return
+			case 'flagWarn':
+			case 'flagUp':
+			case 'flagTaken':
+			case 'flagLowered':
+				cue(fact.type, fact)
 				return
 			case 'xp':
 				if (fact.passive || fact.team !== unitOf(local)?.team) return
@@ -478,6 +491,7 @@ export function createFeedback({
 			case 'spawn': {
 				unitOf(fact.target)?.body.squash(0.35)
 				juice.burst({ ...fact.point, y: 0.2 }, { x: 0, y: 1, z: 0 }, { count: 5, speed: 0.8 })
+				cue('spawn', fact, fact.hero === local ? 1 : 0.5)
 				return
 			}
 			case 'boardExpired':
@@ -490,7 +504,10 @@ export function createFeedback({
 				return
 			case 'denied':
 				if (fact.reason === 'cancelled') source?.body.resetAbilityPose?.()
-				if (fact.hero === local) hud.deny(fact.slot)
+				if (fact.hero === local) {
+					hud.deny(fact.slot)
+					if (fact.reason !== 'cancelled') cue('denied', fact)
+				}
 				return
 		}
 	}

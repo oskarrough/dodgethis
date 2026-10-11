@@ -23,6 +23,7 @@ import {
 	play,
 } from './state.js'
 import { tool, fight } from './tools.js'
+import { facts, silentByChoice } from '/src/plugins/moba/sound-table.js'
 import { drawInspector, actions } from './inspector.js'
 import { openPalette } from './palette.js'
 
@@ -161,7 +162,11 @@ let shownTool = null
 function drawStage(force = false) {
 	const { tool: name } = where()
 	const active = TABS.includes(name) ? name : 'Map'
-	const count = { Rules: Object.keys(flags()).length }
+	const count = {
+		Rules: Object.keys(flags()).length,
+		Silent: Object.entries(facts).filter(([type, list]) => !list.length && !silentByChoice[type])
+			.length,
+	}
 	$('tabs').replaceChildren(
 		...TABS.map((tab) => {
 			const b = el('button', {

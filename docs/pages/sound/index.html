@@ -22,9 +22,9 @@
 				--key: #f7f7f5;
 				--edge: #c9c9c4;
 				--ink: #1b1b1c;
-				--soft: #77776f;
+				--soft: #55554f;
 				--screen: #0c0c0d;
-				--dim: #8a8a86;
+				--dim: #a9a9a4;
 				--blue: #3fa9f5;
 				--green: #2bd67b;
 				--white: #f1f1ef;
@@ -282,55 +282,64 @@
 				border: 1px solid var(--edge);
 				box-shadow: 0 2px 0 var(--edge);
 			}
+			/* Sources: a calm list, like Linear's sidebar. Roomy rows, quiet headings, a soft highlight. */
 			.sources {
-				padding: 8px 0;
-				font-size: 13px;
+				padding: 10px 8px 16px;
+				font-size: 13.5px;
 			}
 			.sources h2 {
-				font-size: 10px;
-				font-weight: 700;
-				letter-spacing: 0.12em;
-				text-transform: uppercase;
+				font-size: 12px;
+				font-weight: 500;
+				letter-spacing: 0;
+				text-transform: none;
 				color: var(--soft);
-				padding: 12px 14px 4px;
+				padding: 18px 10px 6px;
+			}
+			.sources h2:first-child {
+				padding-top: 6px;
 			}
 			.sources ul {
 				list-style: none;
 				margin: 0;
 				padding: 0;
+				display: grid;
+				gap: 2px;
 			}
 			.sources a {
 				display: flex;
 				align-items: center;
-				gap: 8px;
-				margin: 1px 6px;
-				padding: 3px 8px;
-				border-radius: 6px;
-				color: inherit;
+				gap: 9px;
+				min-height: 28px;
+				padding: 0 10px;
+				border-radius: 7px;
+				color: var(--ink);
 				text-decoration: none;
 			}
 			.sources a:hover {
-				background: #fff;
+				background: #00000008;
 			}
 			.sources a[aria-current='true'] {
-				background: var(--screen);
-				color: var(--white);
+				background: #d9d9d4;
+				color: var(--ink);
+				font-weight: 600;
 			}
 			.sources .count {
 				margin-left: auto;
-				font-size: 11px;
+				font-size: 12px;
 				color: var(--soft);
 				font-variant-numeric: tabular-nums;
 			}
 			.sources .pre {
 				color: var(--soft);
+				font-weight: 400;
 			}
-			.sources a[aria-current='true'] .pre {
-				color: var(--dim);
+			.sources ul ul {
+				margin: 2px 0 6px;
 			}
 			.sources ul ul a {
-				padding-left: 22px;
-				font-size: 12px;
+				min-height: 26px;
+				padding-left: 18px;
+				font-size: 13px;
 			}
 			.dot {
 				width: 7px;

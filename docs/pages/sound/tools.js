@@ -1,5 +1,6 @@
 // The board's tools (rule check, mix, changes, silent facts) and the crowded fight.
 import { createSounds, playOwn, playUse } from '/src/plugins/moba/sounds.js'
+import { silentByChoice } from '/src/plugins/moba/sound-table.js'
 import { tune } from '/src/core/tune.js'
 import {
 	audio,
@@ -62,14 +63,25 @@ export function tool(name) {
 	}
 	if (name === 'Mix') return mixTool()
 	if (name === 'Changes') return changesTool()
+	const waiting = Object.entries(facts)
+		.filter(([type, list]) => !list.length && !silentByChoice[type])
+		.map(([type]) => type)
 	return [
 		el('p', { textContent: 'Things the game says happened that make no sound yet.' }),
 		el(
 			'ul',
 			{},
-			...Object.entries(facts)
-				.filter(([, list]) => !list.length)
-				.map(([type]) => el('li', {}, el('code', { textContent: type }))),
+			...(waiting.length
+				? waiting.map((type) => el('li', {}, el('code', { textContent: type })))
+				: [el('li', { textContent: 'None: every fact has a sound or a reason.' })]),
+		),
+		el('h3', { textContent: 'Silent on purpose' }),
+		el(
+			'ul',
+			{},
+			...Object.entries(silentByChoice).map(([type, why]) =>
+				el('li', {}, el('code', { textContent: type }), ` ${why}`),
+			),
 		),
 	]
 }
