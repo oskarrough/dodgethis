@@ -1,5 +1,16 @@
 [
 	{
+		"at": "2026-10-11T11:27:20.618Z",
+		"title": "Pause menu vibe, quieter",
+		"ask": "Is PAUSED quiet enough, and does Esc toggle fast now?",
+		"status": "To review",
+		"decision": "",
+		"media": ["review/media/2026-10-11-pause-menu-vibe-quieter/pause2.png"],
+		"links": [],
+		"thread": "thr_piszjt2sgm",
+		"page": "2026-10-11-pause-menu-vibe-quieter/"
+	},
+	{
 		"at": "2026-10-11T11:23:04.148Z",
 		"title": "Bank bounce preview",
 		"ask": "Does the bounce preview read?",
