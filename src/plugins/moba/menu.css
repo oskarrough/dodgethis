@@ -568,24 +568,6 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden]))
 .moba-pause .pause-check:active .pause-box {
 	transform: scale(0.92);
 }
-/* The world behind is the page's figure. */
-.moba-pause .pause-figure {
-	grid-row: 3;
-	grid-column: 9 / span 2;
-	align-self: end;
-	margin: 0;
-	padding: 8px 0 0;
-	font: var(--caps);
-	letter-spacing: 0.08em;
-	color: var(--ui-text);
-	border-top: 1px solid var(--rule);
-}
-.moba-pause .pause-figure span {
-	margin-right: 0.6em;
-	letter-spacing: 0.16em;
-	text-transform: uppercase;
-}
-
 @media (max-width: 700px) {
 	/* Clear of the corner buttons; the sheet takes the whole phone. */
 	.overlay .dialog-card.moba-pause {
@@ -625,8 +607,5 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden]))
 	.moba-pause .pause-facts em {
 		display: block;
 		vertical-align: 0;
-	}
-	.moba-pause .pause-figure {
-		display: none;
 	}
 }

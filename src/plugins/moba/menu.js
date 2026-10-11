@@ -85,8 +85,8 @@ export function createMatchMenu({
 			.querySelector('.overlay[data-theme="moba-pause"] .pause-check')
 			?.setAttribute('aria-checked', String(controls.quickCast))
 	}
-	// Dresses the shared overlay card as a manual page: captions, the facts of the match, and the
-	// paused world as its figure. Readouts are printed; only the overlay's buttons are framed.
+	// Dresses the shared overlay card as a manual page: captions and the facts of the match.
+	// Readouts are printed; only the overlay's buttons are framed.
 	function pausePage(card) {
 		const map = setup.map ?? 'overthrow'
 		const mine = hero.team
@@ -122,12 +122,6 @@ export function createMatchMenu({
 			`<span>Dodgethis <span lang="ja">取扱説明書</span></span><span>${map}</span>`,
 		).setAttribute('aria-hidden', 'true')
 		el('p', 'pause-kana', card, 'ポーズ').setAttribute('aria-hidden', 'true')
-		el(
-			'p',
-			'pause-figure',
-			card,
-			'<span>Fig. 1</span> The match, held where you left it.',
-		).setAttribute('aria-hidden', 'true')
 		const quick = card.querySelectorAll('.actions button')[2]
 		if (!quick) return
 		quick.classList.add('pause-check')
