@@ -18,10 +18,7 @@ A small, toy-like hero brawler that grew out of dodgeball, set in the world over
 
 ### Waiting on Oskar
 
-Agents add a line when they need a call; the orchestrator removes it once answered.
-
-- [ ] Hero pitches: [#24](https://github.com/oskarrough/dodgethis/issues/24). Art style and name: [#25](https://github.com/oskarrough/dodgethis/issues/25). The domain is dodgethis.0sk.ar until then.
-- [ ] Is Flagfall's dark water frame on the minimap too heavy?
+Open questions live in Oskar's bb inbox (`bb tasks list --project INBOX`), one task per ask; AGENTS.md step 8 says how to file one.
 
 ### Agent todo
 
