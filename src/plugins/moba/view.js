@@ -70,7 +70,27 @@ export function createView(scene, smooth) {
 	)
 	line.visible = false
 	group.add(line)
-	const lines = [line] // Reuse one strip per leg; geometry and material belong to the first.
+	const lineMaterial = line.material
+	const dotted = flat('cream')
+	dotted.uniforms.uAimRadius = { value: look.abilityView.bouncedAimRadius }
+	dotted.uniforms.uAimSpacing = { value: look.abilityView.bouncedAimSpacing }
+	// Cut world-sized dots out of each strip, so a long reflected leg doesn't stretch them.
+	dotted.vertexShader =
+		'varying vec2 vAimCoordinates;\n' +
+		dotted.vertexShader.replace(
+			'void main() {',
+			`void main() {
+				vAimCoordinates = vec2((uv.x - 0.5) * length(modelMatrix[0].xyz), uv.y * length(modelMatrix[2].xyz));`,
+		)
+	dotted.fragmentShader =
+		'uniform float uAimRadius;\nuniform float uAimSpacing;\nvarying vec2 vAimCoordinates;\n' +
+		dotted.fragmentShader.replace(
+			'void main() {',
+			`void main() {
+				vec2 dotOffset = vec2(vAimCoordinates.x, mod(vAimCoordinates.y + uAimSpacing * 0.5, uAimSpacing) - uAimSpacing * 0.5);
+				if (length(dotOffset) > uAimRadius) discard;`,
+		)
+	const lines = [line] // Reuse one strip per leg, with shared geometry and materials.
 	const tip = new THREE.Mesh(
 		own(new THREE.CircleGeometry(0.35, 3).rotateX(-Math.PI / 2).rotateY(Math.PI / 2)),
 		flat('cream'),
@@ -86,7 +106,7 @@ export function createView(scene, smooth) {
 	const boltGeometry = own(new THREE.CapsuleGeometry(0.12, 0.7, 4, 8).rotateX(Math.PI / 2))
 	const trailGeometry = own(new THREE.BoxGeometry(0.1, 0.06, 1).translate(0, 0, -0.5))
 	const boltMaterial = flat('ammo')
-	// Bank's celluloid ball: cream, so gold stays the Ball's and the ammo's.
+	// Ricochet's celluloid ball: cream, so gold stays the Ball's and the ammo's.
 	const celluloidGeometry = own(new THREE.SphereGeometry(0.2, 12, 8))
 	const celluloidMaterial = flat('cream')
 	const trailMaterial = flat('cream')
@@ -163,6 +183,9 @@ export function createView(scene, smooth) {
 			const dz = aim.z - hero.z
 			const yaw = Math.atan2(dx, dz) + Math.PI
 			if (lineStats.bounce) {
+				dotted.uniforms.uAimRadius.value = look.abilityView.bouncedAimRadius
+				dotted.uniforms.uAimSpacing.value = look.abilityView.bouncedAimSpacing
+				tip.scale.setScalar(look.abilityView.bouncedAimTipScale)
 				const path = bouncedLinePath(hero, yaw, lineStats, obstacles, bounds)
 				for (const [i, { from, to }] of path.entries()) {
 					if (!lines[i]) {
@@ -170,16 +193,23 @@ export function createView(scene, smooth) {
 						group.add(lines[i])
 					}
 					const leg = lines[i]
+					leg.material = dotted
 					const turn = Math.atan2(to.x - from.x, to.z - from.z) + Math.PI
 					leg.visible = true
 					leg.position.set(from.x, tune.map.markerLayers.aim, from.z)
 					leg.rotation.y = turn
-					leg.scale.set(lineStats.radius * 2, 1, Math.hypot(to.x - from.x, to.z - from.z))
+					leg.scale.set(
+						look.abilityView.bouncedAimRadius * 2,
+						1,
+						Math.hypot(to.x - from.x, to.z - from.z),
+					)
 					tip.position.set(to.x, tune.map.markerLayers.aimTip, to.z)
 					tip.rotation.y = turn
 				}
 				tip.visible = path.length > 0
 			} else {
+				line.material = lineMaterial
+				tip.scale.setScalar(1)
 				const length = lineReach(hero, yaw, lineStats, obstacles, bounds)
 				const end = projectMap(
 					hero,

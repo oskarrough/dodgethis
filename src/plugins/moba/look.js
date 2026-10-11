@@ -213,6 +213,9 @@ export const look = {
 		megaphoneY: 0.25,
 	},
 	abilityView: {
+		bouncedAimRadius: 0.06,
+		bouncedAimSpacing: 0.3,
+		bouncedAimTipScale: 0.5,
 		tellY: 0.087, // above the map's print layers, under the cursor markers
 		fillLift: 0.001,
 		castLife: 0.15,
