@@ -110,12 +110,16 @@ export async function setMix(values) {
 	await write('swaps', '#mix', values)
 	await changed()
 }
+// Files keep their folder path (a folder pick's webkitRelativePath), so a whole folder can go at once.
 export async function addFiles(list) {
-	for (const file of list) await write('files', file.name, file)
+	for (const file of list) await write('files', file.webkitRelativePath || file.name, file)
 	await changed()
 }
-export async function removeFile(name) {
-	await write('files', name, null)
-	for (const [id, swap] of swaps) if (swap.file === name) await write('swaps', id, null)
+export async function removeFiles(names) {
+	for (const name of names) {
+		await write('files', name, null)
+		for (const [id, swap] of swaps) if (swap.file === name) await write('swaps', id, null)
+	}
 	await changed()
 }
+export const removeFile = (name) => removeFiles([name])

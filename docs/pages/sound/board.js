@@ -524,6 +524,9 @@ function filesTool() {
 			),
 		),
 	)
+	const folderOf = (name) =>
+		name.includes('/') ? name.slice(0, name.lastIndexOf('/')) : 'loose files'
+	const folders = Map.groupBy(names, folderOf)
 	measureFiles(names, items)
 	return [
 		el('p', {
@@ -535,6 +538,21 @@ function filesTool() {
 			el('label', {}, 'Add files ', pick({ accept: 'audio/*' })),
 			' ',
 			el('label', {}, 'Add a folder ', folder),
+		),
+		el(
+			'p',
+			{},
+			button(
+				`Clear all ${names.length}`,
+				() => confirm(`Remove all ${names.length} files?`) && swap.removeFiles(names),
+			),
+		),
+		...[...folders].map(([folder, inFolder]) =>
+			el(
+				'p',
+				{},
+				button(`Remove ${folder} (${inFolder.length})`, () => swap.removeFiles(inFolder)),
+			),
 		),
 		el('table', {}, el('tbody', {}, ...items)),
 	]
