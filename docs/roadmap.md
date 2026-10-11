@@ -27,6 +27,7 @@ Agents add a line when they need a call; the orchestrator removes it once answer
 
 - [ ] Check whether restarts stutter while the three big textures reload.
 - [ ] Still unproven online: a hidden guest tab catching up, and play over a real network.
+- [ ] Keep a headless two-peer check (`bun run online:check`): host and guest sims, snapshots through JSON, rejected snapshots and dropped facts counted. The online-parity thread wrote a throwaway one on 2026-10-11.
 
 ## Next
 
