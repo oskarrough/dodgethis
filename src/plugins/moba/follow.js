@@ -52,8 +52,18 @@ export function createFollow(t = tune.follow, bounds = FLOOR) {
 	let fresh = true
 	let free = false
 	let freeZoom = 0
-	const eye = { x: 0, y: 0, z: 0 }
+	const eye = { x: 0, y: tune.follow.height, z: tune.follow.back }
 	const target = { x: 0, y: 0, z: 0 }
+	let warned = false
+	function invalid(inputs) {
+		const bad = Object.entries(inputs).find(([, value]) => !Number.isFinite(value))
+		if (!bad) return false
+		if (!warned) {
+			console.warn(`Match camera kept its last good view: ${bad[0]} is non-finite`, bad[1])
+			warned = true
+		}
+		return true
+	}
 
 	function goal(hero, aim) {
 		let lx = 0
@@ -77,6 +87,23 @@ export function createFollow(t = tune.follow, bounds = FLOOR) {
 		aim,
 		{ pan = null, centred = false, pad = false, aspect = 1, cameraFov = lastFov } = {},
 	) {
+		if (
+			invalid({
+				dt,
+				'hero.x': hero.x,
+				'hero.z': hero.z,
+				aspect,
+				cameraFov,
+				...(pan && { 'pan.x': pan.x, 'pan.z': pan.z }),
+				...(pad && !centred && aim && { 'aim.x': aim.x, 'aim.z': aim.z }),
+				...Object.fromEntries(
+					Object.entries(t)
+						.filter(([, value]) => typeof value === 'number')
+						.map(([key, value]) => [`follow.${key}`, value]),
+				),
+			})
+		)
+			return { eye, target, fov: lastFov }
 		if (pad) free = false
 		const panning = !centred && !pad && pan && (pan.x || pan.z)
 		const g = goal(hero, pad && !centred ? aim : null)
@@ -121,6 +148,14 @@ export function createFollow(t = tune.follow, bounds = FLOOR) {
 			bounds,
 		)
 		pendingKick = 0
+		if (
+			invalid({ 'clampView.x': bounded.x, 'clampView.z': bounded.z, 'clampView.fov': bounded.fov })
+		) {
+			at.x = target.x
+			at.z = target.z
+			vel.x = vel.z = 0
+			return { eye, target, fov: lastFov }
+		}
 		lastFov = bounded.fov
 		if (centred) freeZoom = t.fov - bounded.fov
 		if (bounded.x !== at.x) vel.x = 0
@@ -139,9 +174,11 @@ export function createFollow(t = tune.follow, bounds = FLOOR) {
 		frame,
 		goal,
 		reserveKick(amount) {
+			if (invalid({ 'kick.amount': amount })) return
 			pendingKick += Math.max(0, amount)
 		},
 		focus(point) {
+			if (invalid({ 'focus.x': point.x, 'focus.z': point.z })) return
 			freeZoom = 0
 			Object.assign(at, clampMap(point, 0, bounds))
 			vel.x = vel.z = 0

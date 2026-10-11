@@ -18,9 +18,21 @@ export function createRenderer() {
 	const aimCamera = camera.clone() // never shaken: pointer rays stay gameplay-stable
 	aimCamera.updateMatrixWorld(true)
 
+	let warned = false
+	function invalid(inputs) {
+		const bad = Object.entries(inputs).find(([, value]) => !Number.isFinite(value))
+		if (!bad) return false
+		if (!warned) {
+			console.warn(`Camera kept its last good view: ${bad[0]} is non-finite`, bad[1])
+			warned = true
+		}
+		return true
+	}
 	function resize() {
 		const w = window.innerWidth
 		const h = window.innerHeight
+		// Hidden or minimised windows must not replace a usable projection with w / 0.
+		if (invalid({ 'viewport.width': w, 'viewport.height': h }) || w <= 0 || h <= 0) return
 		style.setSize(w, h)
 		camera.aspect = w / h
 		camera.updateProjectionMatrix()
@@ -57,6 +69,18 @@ export function createRenderer() {
 	const DEFAULT_EYE = camBase.clone()
 	const DEFAULT_TARGET = new THREE.Vector3()
 	function applyFrame({ eye, target, fov = DEFAULT_FOV }) {
+		if (
+			invalid({
+				'frame.eye.x': eye.x,
+				'frame.eye.y': eye.y,
+				'frame.eye.z': eye.z,
+				'frame.target.x': target.x,
+				'frame.target.y': target.y,
+				'frame.target.z': target.z,
+				'frame.fov': fov,
+			})
+		)
+			return
 		camBase.copy(eye)
 		lookAt.copy(target)
 		aimCamera.position.copy(eye)
@@ -77,6 +101,7 @@ export function createRenderer() {
 	let fovOffset = 0
 	let fovVelocity = 0
 	function kickFov(amount) {
+		if (invalid({ 'kick.amount': amount, 'camera.fovKick': tune.camera.fovKick })) return
 		fovOffset += amount * tune.camera.fovKick
 		settled = false
 	}
