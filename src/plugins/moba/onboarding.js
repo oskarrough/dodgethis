@@ -113,7 +113,7 @@ void main() {
 				const name = goalUnit.kind === 'tower' ? 'Their tower' : 'Their core'
 				if (!edge) {
 					place(pointer, goal, camera, lift)
-					text(pointer, `Throw here ↓`)
+					text(pointer, `Click / Q to throw ↓`)
 					return
 				}
 				pointer.hidden = false

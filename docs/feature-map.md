@@ -116,6 +116,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 ## Match: the Ball
 
 - Ball (neutral objective, carried to score on structures): `ball.js` `createBall`; `mechanics/ball/` (view `ball-view.js` through `mechanics/ball/ball-view.js`); `tune.js` `ball`; `moba.md`
+- Ball throw (Q W E R Z, pad A, or left click while carrying): `ball.js` `control`; `src/core/intents.js` `pointClick`; `src/core/controls.js` `throwClick`; `onboarding.js`; `tooltip.js` `ballCard`
 - Ball drawing and trail: `ball-view.js` `createBallView`; `tune.js` `ballView`
 - Ball confetti on pop: `feedback.js` `createFeedback`; `look.js` `ballConfetti`
 - Ball bot behaviour (who fetches, who carries): `ball-bots.js`; `tune.js` `bots`

@@ -113,6 +113,7 @@ export function direct(device, ground) {
 // Q W E R hold to aim at the cursor and cast on release (like the pad); with `controls.quickCast` on they cast on key-down.
 // Releasing never casts a cancelled aim: S and Esc drop it, as do a blur, a pause and a lost pad; RMB moves without dropping it. Z casts on press.
 // A arms an attack-move: the next left click orders it (the sim picks the enemy nearest the click); Esc, S, RMB or a cast disarm.
+// While `controls.throwClick` (the mode sets this when the local hero carries the Ball), an unarmed left click is primary: a throw.
 // Pad: the left stick moves; RB RT LB LT hold to aim (`held.slotN`) and cast on release; X mounts, A attacks, B cancels a held cast.
 // `stickAim(dir, magnitude, slot)` is the mode's: it turns the right stick into a ground point (dir null when the stick rests).
 // `resend` is under one 60 Hz step, so a held RMB steers every step at 60 Hz and every second frame at 144 Hz,
@@ -187,7 +188,7 @@ export function pointClick(device, ground, options = POINT_CLICK) {
 	return function sample(stickAim = null) {
 		// Direct-only edges must not pile up for the next mode that reads them.
 		device.consumeSlot()
-		const clicked = device.consumePress() // the left click: an armed attack-move, or WASD's attack
+		const clicked = device.consumePress() // left click: attack-move if armed, a throw while carrying, or WASD's attack
 		device.consumeRelease()
 		device.consumeDash()
 		device.consumeJump()
@@ -287,9 +288,12 @@ export function pointClick(device, ground, options = POINT_CLICK) {
 			order = at
 			resendAt = now + options.resend
 		}
-		if (clicked && !onPad && prefs.attackArmed && at) {
-			prefs.attackArmed = false
-			order = { x: at.x, z: at.z, kind: 'attack-move', pick: true }
+		if (clicked && !onPad && at) {
+			if (prefs.attackArmed) {
+				prefs.attackArmed = false
+				order = { x: at.x, z: at.z, kind: 'attack-move', pick: true }
+			} else if (prefs.throwClick && preset.mouse === 'orders')
+				pressed.push({ action: 'primary', at })
 		}
 		// WASD: either button fires the basic attack at the cursor; walking stays on the keys.
 		if ((clicked || fresh) && !onPad && preset.mouse === 'attack' && at)
