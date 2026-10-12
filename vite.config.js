@@ -4,6 +4,7 @@ import { execFile, execFileSync } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { syncShowcase } from './scripts/sound-showcase.js'
 
 // Rapier (non-compat) ships its physics engine as a real .wasm file. vite-plugin-wasm
 // rewrites Rapier's `import * as wasm from './…_bg.wasm'` into a generated module that
@@ -303,8 +304,25 @@ const soundKeep = {
 	},
 }
 
+// Only this workbench gets a production entry; the rest of docs/pages stays dev-only.
+const soundShowcase = {
+	name: 'sound-showcase',
+	apply: 'build',
+	buildStart() {
+		syncShowcase()
+	},
+	transformIndexHtml: {
+		order: 'pre',
+		handler(html, context) {
+			return context.filename.endsWith('/docs/pages/sound/index.html')
+				? html.replace('src="./board.js"', 'src="./showcase.js"')
+				: html
+		},
+	},
+}
+
 export default defineConfig({
-	plugins: [wasm(), folderSlash, soundKeep],
+	plugins: [wasm(), folderSlash, soundKeep, soundShowcase],
 	// The build's id, its time: online rooms only seat guests from the same build (online/net.js `BUILD`).
 	define: { __BUILD__: String(Date.now()) },
 	server: {
@@ -322,6 +340,9 @@ export default defineConfig({
 	},
 	build: {
 		target: 'esnext',
-		rollupOptions: { treeshake: false },
+		rollupOptions: {
+			treeshake: false,
+			input: { game: 'index.html', sound: 'docs/pages/sound/index.html' },
+		},
 	},
 })

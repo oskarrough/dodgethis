@@ -5,6 +5,7 @@ import { execFileSync } from 'node:child_process'
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import { measure } from '../docs/pages/sound/numbers.js'
+import { syncShowcase } from './sound-showcase.js'
 
 export const LIBRARY = 'sounds/osk-sfx'
 const CACHE = 'sounds/numbers.json'
@@ -208,6 +209,7 @@ export async function writeShortlists(rows) {
 		for (const candidate of lists[id].slice(0, 2)) taken.get(source).add(candidate.file)
 	}
 	writeFileSync(path, JSON.stringify(lists, null, '\t'))
+	syncShowcase()
 	return lists
 }
 

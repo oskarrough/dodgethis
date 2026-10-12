@@ -1,0 +1,3106 @@
+{
+	"bank.hit": [
+		{
+			"file": "impact/plate-heavy-001.ogg",
+			"score": 5,
+			"gain": 0.35,
+			"why": "hit, P. Pong family"
+		},
+		{
+			"file": "impact/plate-medium-001.ogg",
+			"score": 5,
+			"gain": 0.5,
+			"why": "hit, P. Pong family"
+		},
+		{
+			"file": "impact/plate-light-004.ogg",
+			"score": 5,
+			"gain": 0.45,
+			"why": "hit, P. Pong family"
+		},
+		{
+			"file": "impact/tin-medium-002.ogg",
+			"score": 5,
+			"gain": 0.35,
+			"why": "hit, P. Pong family"
+		},
+		{
+			"file": "impact/tin-medium-001.ogg",
+			"score": 5,
+			"gain": 0.3,
+			"why": "hit, P. Pong family"
+		}
+	],
+	"gloveSlap.impact": [
+		{
+			"file": "impact/soft-medium-001.ogg",
+			"score": 5,
+			"gain": 0.1,
+			"why": "hit, Mitts family"
+		},
+		{
+			"file": "impact/soft-medium-004.ogg",
+			"score": 5,
+			"gain": 0.1,
+			"why": "hit, Mitts family"
+		},
+		{
+			"file": "impact/soft-heavy-001.ogg",
+			"score": 5,
+			"gain": 0.15,
+			"why": "hit, Mitts family"
+		},
+		{
+			"file": "game/player/hit/punch-heavy-004.ogg",
+			"score": 5,
+			"gain": 0.15,
+			"why": "hit, Mitts family"
+		},
+		{
+			"file": "game/player/hit/punch-heavy-003.ogg",
+			"score": 5,
+			"gain": 0.15,
+			"why": "hit, Mitts family"
+		}
+	],
+	"loose.hit": [
+		{
+			"file": "impact/wood-light-002.ogg",
+			"score": 5,
+			"gain": 0.45,
+			"why": "hit, Fletcher family"
+		},
+		{
+			"file": "impact/wood-light-001.ogg",
+			"score": 5,
+			"gain": 0.35,
+			"why": "hit, Fletcher family"
+		},
+		{
+			"file": "impact/wood-medium-003.ogg",
+			"score": 5,
+			"gain": 0.35,
+			"why": "hit, Fletcher family"
+		},
+		{
+			"file": "impact/wood-medium-001.ogg",
+			"score": 5,
+			"gain": 0.35,
+			"why": "hit, Fletcher family"
+		},
+		{
+			"file": "impact/plank-medium-005.ogg",
+			"score": 5,
+			"gain": 0.4,
+			"why": "hit, Fletcher family"
+		}
+	],
+	"rain.impact": [
+		{
+			"file": "impact/wood-light-005.ogg",
+			"score": 5,
+			"gain": 0.35,
+			"why": "hit, Fletcher family"
+		},
+		{
+			"file": "impact/wood-light-004.ogg",
+			"score": 5,
+			"gain": 0.35,
+			"why": "hit, Fletcher family"
+		},
+		{
+			"file": "impact/wood-medium-003.ogg",
+			"score": 5,
+			"gain": 0.3,
+			"why": "hit, Fletcher family"
+		},
+		{
+			"file": "impact/wood-medium-001.ogg",
+			"score": 5,
+			"gain": 0.3,
+			"why": "hit, Fletcher family"
+		},
+		{
+			"file": "impact/plank-medium-005.ogg",
+			"score": 5,
+			"gain": 0.3,
+			"why": "hit, Fletcher family"
+		}
+	],
+	"toss.hit": [
+		{
+			"file": "impact/soft-medium-002.ogg",
+			"score": 5,
+			"gain": 0.05,
+			"why": "hit, Mitts family"
+		},
+		{
+			"file": "impact/soft-medium-005.ogg",
+			"score": 5,
+			"gain": 0.05,
+			"why": "hit, Mitts family"
+		},
+		{
+			"file": "impact/soft-heavy-001.ogg",
+			"score": 5,
+			"gain": 0.1,
+			"why": "hit, Mitts family"
+		},
+		{
+			"file": "game/player/hit/punch-heavy-004.ogg",
+			"score": 5,
+			"gain": 0.05,
+			"why": "hit, Mitts family"
+		},
+		{
+			"file": "game/player/hit/punch-heavy-003.ogg",
+			"score": 5,
+			"gain": 0.05,
+			"why": "hit, Mitts family"
+		}
+	],
+	"return.hit": [
+		{
+			"file": "game/player/hit/punch-heavy-003.ogg",
+			"score": 5,
+			"gain": 0.15,
+			"why": "hit, Mitts family"
+		},
+		{
+			"file": "game/player/hit/punch-heavy-005.ogg",
+			"score": 5,
+			"gain": 0.15,
+			"why": "hit, Mitts family"
+		},
+		{
+			"file": "game/player/hit/punch-medium-002.ogg",
+			"score": 3.8,
+			"gain": 0.15,
+			"why": "hit, Mitts family"
+		},
+		{
+			"file": "game/player/hit/punch-medium-001.ogg",
+			"score": 3.7199999999999998,
+			"gain": 0.15,
+			"why": "hit, Mitts family"
+		},
+		{
+			"file": "impact/soft-medium-001.ogg",
+			"score": 3.5,
+			"gain": 0.1,
+			"why": "hit, Mitts family"
+		}
+	],
+	"basic.shot": [
+		{
+			"file": "game/player/hit/sword-001.wav",
+			"score": 5,
+			"gain": 0.45,
+			"why": "shot, Basic attack family"
+		},
+		{
+			"file": "game/player/hit/throw-002.wav",
+			"score": 5,
+			"gain": 0.4,
+			"why": "shot, Basic attack family"
+		},
+		{
+			"file": "game/player/hit/sword-002.wav",
+			"score": 5,
+			"gain": 0.45,
+			"why": "shot, Basic attack family"
+		},
+		{
+			"file": "digital/phaserup-007.ogg",
+			"score": 3,
+			"gain": 0.05,
+			"why": "shot"
+		},
+		{
+			"file": "digital/phaserup-006.ogg",
+			"score": 3,
+			"gain": 0.05,
+			"why": "shot"
+		}
+	],
+	"basic.hit": [
+		{
+			"file": "impact/generic-light-001.ogg",
+			"score": 5,
+			"gain": 0.15,
+			"why": "hit, Basic attack family"
+		},
+		{
+			"file": "impact/generic-light-003.ogg",
+			"score": 5,
+			"gain": 0.15,
+			"why": "hit, Basic attack family"
+		},
+		{
+			"file": "game/player/hit/hit-002.wav",
+			"score": 5,
+			"gain": 0.2,
+			"why": "hit, Basic attack family"
+		},
+		{
+			"file": "game/monster/monster-hit-001.wav",
+			"score": 5,
+			"gain": 0.35,
+			"why": "hit, Basic attack family"
+		},
+		{
+			"file": "game/player/hit/hit-004.wav",
+			"score": 5,
+			"gain": 0.35,
+			"why": "hit, Basic attack family"
+		}
+	],
+	"ballHit": [
+		{
+			"file": "impact/bell-heavy-004.ogg",
+			"score": 5,
+			"gain": 0.6,
+			"why": "hit, Ball family"
+		},
+		{
+			"file": "impact/glass-heavy-003.ogg",
+			"score": 5,
+			"gain": 0.5,
+			"why": "hit, Ball family"
+		},
+		{
+			"file": "impact/glass-heavy-004.ogg",
+			"score": 5,
+			"gain": 0.3,
+			"why": "hit, Ball family"
+		},
+		{
+			"file": "impact/glass-medium-005.ogg",
+			"score": 5,
+			"gain": 0.55,
+			"why": "hit, Ball family"
+		},
+		{
+			"file": "impact/bell-heavy-005.ogg",
+			"score": 5,
+			"gain": 0.45,
+			"why": "hit, Ball family"
+		}
+	],
+	"tower.hit": [
+		{
+			"file": "impact/metal-light-002.ogg",
+			"score": 5,
+			"gain": 0.2,
+			"why": "hit, Structures family"
+		},
+		{
+			"file": "impact/metal-light-005.ogg",
+			"score": 5,
+			"gain": 0.2,
+			"why": "hit, Structures family"
+		},
+		{
+			"file": "impact/bell-heavy-004.ogg",
+			"score": 5,
+			"gain": 0.35,
+			"why": "hit, Structures family"
+		},
+		{
+			"file": "impact/metal-medium-005.ogg",
+			"score": 5,
+			"gain": 0.2,
+			"why": "hit, Structures family"
+		},
+		{
+			"file": "impact/metal-medium-002.ogg",
+			"score": 5,
+			"gain": 0.2,
+			"why": "hit, Structures family"
+		}
+	],
+	"core.hit": [
+		{
+			"file": "impact/bell-heavy-004.ogg",
+			"score": 5,
+			"gain": 0.35,
+			"why": "hit, Structures family"
+		},
+		{
+			"file": "impact/metal-light-004.ogg",
+			"score": 5,
+			"gain": 0.25,
+			"why": "hit, Structures family"
+		},
+		{
+			"file": "impact/metal-light-003.ogg",
+			"score": 5,
+			"gain": 0.2,
+			"why": "hit, Structures family"
+		},
+		{
+			"file": "impact/metal-medium-005.ogg",
+			"score": 5,
+			"gain": 0.2,
+			"why": "hit, Structures family"
+		},
+		{
+			"file": "impact/metal-medium-002.ogg",
+			"score": 5,
+			"gain": 0.2,
+			"why": "hit, Structures family"
+		}
+	],
+	"melee.hit": [
+		{
+			"file": "impact/generic-light-001.ogg",
+			"score": 5,
+			"gain": 0.05,
+			"why": "hit, Minions family"
+		},
+		{
+			"file": "impact/generic-light-003.ogg",
+			"score": 5,
+			"gain": 0.05,
+			"why": "hit, Minions family"
+		},
+		{
+			"file": "impact/wood-light-002.ogg",
+			"score": 5,
+			"gain": 0.1,
+			"why": "hit, Minions family"
+		},
+		{
+			"file": "impact/wood-light-001.ogg",
+			"score": 5,
+			"gain": 0.05,
+			"why": "hit, Minions family"
+		},
+		{
+			"file": "impact/soft-medium-001.ogg",
+			"score": 5,
+			"gain": 0.05,
+			"why": "hit, Minions family"
+		}
+	],
+	"brute.hit": [
+		{
+			"file": "impact/wood-light-002.ogg",
+			"score": 5,
+			"gain": 0.1,
+			"why": "hit, Minions family"
+		},
+		{
+			"file": "impact/wood-light-001.ogg",
+			"score": 5,
+			"gain": 0.1,
+			"why": "hit, Minions family"
+		},
+		{
+			"file": "impact/generic-light-005.ogg",
+			"score": 5,
+			"gain": 0.05,
+			"why": "hit, Minions family"
+		},
+		{
+			"file": "impact/generic-light-004.ogg",
+			"score": 5,
+			"gain": 0.05,
+			"why": "hit, Minions family"
+		},
+		{
+			"file": "impact/soft-medium-001.ogg",
+			"score": 5,
+			"gain": 0.05,
+			"why": "hit, Minions family"
+		}
+	],
+	"ranged.hit": [
+		{
+			"file": "impact/wood-light-005.ogg",
+			"score": 5,
+			"gain": 0.15,
+			"why": "hit, Minions family"
+		},
+		{
+			"file": "impact/wood-light-004.ogg",
+			"score": 5,
+			"gain": 0.1,
+			"why": "hit, Minions family"
+		},
+		{
+			"file": "impact/generic-light-005.ogg",
+			"score": 5,
+			"gain": 0.1,
+			"why": "hit, Minions family"
+		},
+		{
+			"file": "impact/generic-light-004.ogg",
+			"score": 5,
+			"gain": 0.1,
+			"why": "hit, Minions family"
+		},
+		{
+			"file": "impact/soft-medium-001.ogg",
+			"score": 5,
+			"gain": 0.05,
+			"why": "hit, Minions family"
+		}
+	],
+	"wizard.hit": [
+		{
+			"file": "impact/wood-light-003.ogg",
+			"score": 5,
+			"gain": 0.1,
+			"why": "hit, Minions family"
+		},
+		{
+			"file": "impact/generic-light-005.ogg",
+			"score": 5,
+			"gain": 0.1,
+			"why": "hit, Minions family"
+		},
+		{
+			"file": "impact/generic-light-004.ogg",
+			"score": 5,
+			"gain": 0.1,
+			"why": "hit, Minions family"
+		},
+		{
+			"file": "impact/soft-medium-001.ogg",
+			"score": 5,
+			"gain": 0.05,
+			"why": "hit, Minions family"
+		},
+		{
+			"file": "impact/soft-medium-004.ogg",
+			"score": 5,
+			"gain": 0.05,
+			"why": "hit, Minions family"
+		}
+	],
+	"bank.cast": [
+		{
+			"file": "popup/woosh-003.wav",
+			"score": 3.76,
+			"gain": 0.8,
+			"why": "cast, P. Pong family"
+		},
+		{
+			"file": "rpg/knifeslice-002.ogg",
+			"score": 3,
+			"gain": 0.05,
+			"why": "cast"
+		},
+		{
+			"file": "digital/phaserup-007.ogg",
+			"score": 3,
+			"gain": 0.05,
+			"why": "cast"
+		},
+		{
+			"file": "digital/phaserup-006.ogg",
+			"score": 3,
+			"gain": 0.05,
+			"why": "cast"
+		},
+		{
+			"file": "popup/woosh-001.wav",
+			"score": 2.96,
+			"gain": 1.5,
+			"why": "cast, P. Pong family"
+		}
+	],
+	"bank.shot": [
+		{
+			"file": "digital/phaserup-007.ogg",
+			"score": 3,
+			"gain": 0.05,
+			"why": "shot"
+		},
+		{
+			"file": "game/player/hit/sword-001.wav",
+			"score": 3,
+			"gain": 0.5,
+			"why": "shot"
+		},
+		{
+			"file": "game/player/hit/throw-002.wav",
+			"score": 3,
+			"gain": 0.4,
+			"why": "shot"
+		},
+		{
+			"file": "digital/phaserup-006.ogg",
+			"score": 3,
+			"gain": 0.05,
+			"why": "shot"
+		},
+		{
+			"file": "game/player/hit/sword-002.wav",
+			"score": 3,
+			"gain": 0.45,
+			"why": "shot"
+		}
+	],
+	"catch.cast": [
+		{
+			"file": "rpg/knifeslice-002.ogg",
+			"score": 3,
+			"gain": 0.1,
+			"why": "cast"
+		},
+		{
+			"file": "digital/phaserup-007.ogg",
+			"score": 3,
+			"gain": 0.1,
+			"why": "cast"
+		},
+		{
+			"file": "digital/phaserup-006.ogg",
+			"score": 3,
+			"gain": 0.1,
+			"why": "cast"
+		},
+		{
+			"file": "misc/drop-001.ogg",
+			"score": 2,
+			"gain": 0.15,
+			"why": "Mitts family"
+		},
+		{
+			"file": "misc/drop-003.ogg",
+			"score": 2,
+			"gain": 0.1,
+			"why": "Mitts family"
+		}
+	],
+	"cushion.cast": [
+		{
+			"file": "digital/phaserup-006.ogg",
+			"score": 3,
+			"gain": 0.05,
+			"why": "cast"
+		},
+		{
+			"file": "popup/woosh-001.wav",
+			"score": 2.96,
+			"gain": 1.5,
+			"why": "cast, P. Pong family"
+		},
+		{
+			"file": "popup/woosh-003.wav",
+			"score": 2.26,
+			"gain": 0.85,
+			"why": "cast, P. Pong family"
+		},
+		{
+			"file": "tap/button-004.wav",
+			"score": 2,
+			"gain": 0.4,
+			"why": "P. Pong family"
+		},
+		{
+			"file": "tap/button-006.wav",
+			"score": 2,
+			"gain": 0.95,
+			"why": "P. Pong family"
+		}
+	],
+	"dive.cast": [
+		{
+			"file": "digital/phaserup-006.ogg",
+			"score": 3,
+			"gain": 0.05,
+			"why": "cast"
+		},
+		{
+			"file": "misc/drop-001.ogg",
+			"score": 2,
+			"gain": 0.1,
+			"why": "Mitts family"
+		},
+		{
+			"file": "misc/drop-003.ogg",
+			"score": 2,
+			"gain": 0.1,
+			"why": "Mitts family"
+		},
+		{
+			"file": "tap/click-soft.ogg",
+			"score": 2,
+			"gain": 0.7,
+			"why": "Mitts family"
+		},
+		{
+			"file": "impact/soft-medium-001.ogg",
+			"score": 2,
+			"gain": 0.05,
+			"why": "Mitts family"
+		}
+	],
+	"gloveSlap.cast": [
+		{
+			"file": "misc/drop-003.ogg",
+			"score": 2,
+			"gain": 0.05,
+			"why": "Mitts family"
+		},
+		{
+			"file": "misc/drop-002.ogg",
+			"score": 2,
+			"gain": 0.1,
+			"why": "Mitts family"
+		},
+		{
+			"file": "tap/click-soft.ogg",
+			"score": 2,
+			"gain": 0.65,
+			"why": "Mitts family"
+		},
+		{
+			"file": "impact/soft-medium-001.ogg",
+			"score": 2,
+			"gain": 0.05,
+			"why": "Mitts family"
+		},
+		{
+			"file": "impact/soft-medium-004.ogg",
+			"score": 2,
+			"gain": 0.05,
+			"why": "Mitts family"
+		}
+	],
+	"loose.cast": [
+		{
+			"file": "rpg/knifeslice-002.ogg",
+			"score": 5,
+			"gain": 0.05,
+			"why": "cast, Fletcher family"
+		},
+		{
+			"file": "digital/phaserup-007.ogg",
+			"score": 3,
+			"gain": 0.05,
+			"why": "cast"
+		},
+		{
+			"file": "digital/phaserup-006.ogg",
+			"score": 3,
+			"gain": 0.05,
+			"why": "cast"
+		},
+		{
+			"file": "impact/wood-light-002.ogg",
+			"score": 2,
+			"gain": 0.15,
+			"why": "Fletcher family"
+		},
+		{
+			"file": "impact/wood-light-001.ogg",
+			"score": 2,
+			"gain": 0.1,
+			"why": "Fletcher family"
+		}
+	],
+	"loose.shot": [
+		{
+			"file": "game/player/hit/sword-001.wav",
+			"score": 3,
+			"gain": 0.35,
+			"why": "shot"
+		},
+		{
+			"file": "game/player/hit/throw-002.wav",
+			"score": 3,
+			"gain": 0.3,
+			"why": "shot"
+		},
+		{
+			"file": "digital/phaserup-006.ogg",
+			"score": 3,
+			"gain": 0.05,
+			"why": "shot"
+		},
+		{
+			"file": "game/player/hit/sword-002.wav",
+			"score": 3,
+			"gain": 0.35,
+			"why": "shot"
+		},
+		{
+			"file": "impact/wood-light-002.ogg",
+			"score": 2,
+			"gain": 0.1,
+			"why": "Fletcher family"
+		}
+	],
+	"swap.cast": [
+		{
+			"file": "popup/woosh-003.wav",
+			"score": 2.26,
+			"gain": 0.85,
+			"why": "cast, P. Pong family"
+		},
+		{
+			"file": "tap/button-004.wav",
+			"score": 2,
+			"gain": 0.4,
+			"why": "P. Pong family"
+		},
+		{
+			"file": "tap/button-006.wav",
+			"score": 2,
+			"gain": 0.95,
+			"why": "P. Pong family"
+		},
+		{
+			"file": "tap/click-005.ogg",
+			"score": 2,
+			"gain": 0.05,
+			"why": "P. Pong family"
+		},
+		{
+			"file": "tap/click-003.ogg",
+			"score": 2,
+			"gain": 0.1,
+			"why": "P. Pong family"
+		}
+	],
+	"toss.cast": [
+		{
+			"file": "misc/drop-004.ogg",
+			"score": 2,
+			"gain": 0.1,
+			"why": "Mitts family"
+		},
+		{
+			"file": "tap/click-soft.ogg",
+			"score": 2,
+			"gain": 0.95,
+			"why": "Mitts family"
+		},
+		{
+			"file": "impact/soft-medium-002.ogg",
+			"score": 2,
+			"gain": 0.05,
+			"why": "Mitts family"
+		},
+		{
+			"file": "impact/soft-medium-005.ogg",
+			"score": 2,
+			"gain": 0.05,
+			"why": "Mitts family"
+		},
+		{
+			"file": "impact/soft-heavy-001.ogg",
+			"score": 2,
+			"gain": 0.1,
+			"why": "Mitts family"
+		}
+	],
+	"toss.shot": [
+		{
+			"file": "game/player/hit/sword-001.wav",
+			"score": 3,
+			"gain": 0.6,
+			"why": "shot"
+		},
+		{
+			"file": "game/player/hit/throw-002.wav",
+			"score": 3,
+			"gain": 0.5,
+			"why": "shot"
+		},
+		{
+			"file": "game/player/hit/sword-002.wav",
+			"score": 3,
+			"gain": 0.6,
+			"why": "shot"
+		},
+		{
+			"file": "impact/soft-medium-002.ogg",
+			"score": 2,
+			"gain": 0.05,
+			"why": "Mitts family"
+		},
+		{
+			"file": "impact/soft-medium-005.ogg",
+			"score": 2,
+			"gain": 0.05,
+			"why": "Mitts family"
+		}
+	],
+	"vault.cast": [
+		{
+			"file": "rpg/knifeslice-002.ogg",
+			"score": 3.5,
+			"gain": 0.1,
+			"why": "cast, Fletcher family"
+		},
+		{
+			"file": "digital/phaserup-006.ogg",
+			"score": 3,
+			"gain": 0.05,
+			"why": "cast"
+		},
+		{
+			"file": "impact/wood-light-003.ogg",
+			"score": 2,
+			"gain": 0.1,
+			"why": "Fletcher family"
+		},
+		{
+			"file": "misc/pluck-002.ogg",
+			"score": 2,
+			"gain": 0.1,
+			"why": "Fletcher family"
+		},
+		{
+			"file": "tap/tap-wooden.wav",
+			"score": 2,
+			"gain": 0.3,
+			"why": "Fletcher family"
+		}
+	],
+	"return.cast": [
+		{
+			"file": "impact/soft-medium-003.ogg",
+			"score": 2,
+			"gain": 0.05,
+			"why": "Mitts family"
+		},
+		{
+			"file": "impact/soft-heavy-001.ogg",
+			"score": 2,
+			"gain": 0.1,
+			"why": "Mitts family"
+		},
+		{
+			"file": "game/player/hit/punch-heavy-004.ogg",
+			"score": 2,
+			"gain": 0.1,
+			"why": "Mitts family"
+		},
+		{
+			"file": "game/player/hit/punch-heavy-003.ogg",
+			"score": 2,
+			"gain": 0.05,
+			"why": "Mitts family"
+		},
+		{
+			"file": "popup/woosh-003.wav",
+			"score": 1.76,
+			"gain": 1.05,
+			"why": "cast"
+		}
+	],
+	"return.shot": [
+		{
+			"file": "game/player/hit/sword-002.wav",
+			"score": 3,
+			"gain": 0.55,
+			"why": "shot"
+		},
+		{
+			"file": "game/player/hit/punch-heavy-004.ogg",
+			"score": 2,
+			"gain": 0.05,
+			"why": "Mitts family"
+		},
+		{
+			"file": "game/player/hit/punch-heavy-003.ogg",
+			"score": 2,
+			"gain": 0.05,
+			"why": "Mitts family"
+		},
+		{
+			"file": "game/player/hit/sword-003.wav",
+			"score": 1.96,
+			"gain": 0.45,
+			"why": "shot"
+		},
+		{
+			"file": "popup/woosh-003.wav",
+			"score": 1.76,
+			"gain": 1,
+			"why": "shot"
+		}
+	],
+	"ballWarn": [
+		{
+			"file": "misc/beep-bop.wav",
+			"score": 4,
+			"gain": 1.5,
+			"why": "name fits"
+		},
+		{
+			"file": "misc/beep-attention.wav",
+			"score": 4,
+			"gain": 1.35,
+			"why": "name fits"
+		},
+		{
+			"file": "misc/beep-metallic.wav",
+			"score": 4,
+			"gain": 1.5,
+			"why": "name fits"
+		},
+		{
+			"file": "misc/beep-shinymetal.wav",
+			"score": 4,
+			"gain": 1.5,
+			"why": "name fits"
+		},
+		{
+			"file": "misc/beep-reedy.wav",
+			"score": 4,
+			"gain": 1.45,
+			"why": "name fits"
+		}
+	],
+	"ballSpawn": [
+		{
+			"file": "impact/glass-light-003.ogg",
+			"score": 2,
+			"gain": 0.2,
+			"why": "Ball family"
+		},
+		{
+			"file": "impact/glass-light-002.ogg",
+			"score": 2,
+			"gain": 0.2,
+			"why": "Ball family"
+		},
+		{
+			"file": "misc/glass-001.ogg",
+			"score": 2,
+			"gain": 0.25,
+			"why": "Ball family"
+		},
+		{
+			"file": "misc/glass-002.ogg",
+			"score": 2,
+			"gain": 0.25,
+			"why": "Ball family"
+		},
+		{
+			"file": "impact/bell-heavy-004.ogg",
+			"score": 2,
+			"gain": 0.35,
+			"why": "Ball family"
+		}
+	],
+	"ballContested": [
+		{
+			"file": "error/error-015.ogg",
+			"score": 4,
+			"gain": 0.1,
+			"why": "name fits"
+		},
+		{
+			"file": "error/glitch-003.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "error/back-004.ogg",
+			"score": 4,
+			"gain": 0.1,
+			"why": "name fits"
+		},
+		{
+			"file": "error/error-001.ogg",
+			"score": 4,
+			"gain": 0.1,
+			"why": "name fits"
+		},
+		{
+			"file": "tap/tap-scratchy.wav",
+			"score": 4,
+			"gain": 0.75,
+			"why": "name fits"
+		}
+	],
+	"ballChannel": [
+		{
+			"file": "digital/phaserup-007.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "digital/phaserup-006.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "impact/glass-light-001.ogg",
+			"score": 2,
+			"gain": 0.1,
+			"why": "Ball family"
+		},
+		{
+			"file": "impact/glass-light-004.ogg",
+			"score": 2,
+			"gain": 0.1,
+			"why": "Ball family"
+		},
+		{
+			"file": "misc/glass-001.ogg",
+			"score": 2,
+			"gain": 0.15,
+			"why": "Ball family"
+		}
+	],
+	"ballInterrupted": [
+		{
+			"file": "open-close/close-001.ogg",
+			"score": 4,
+			"gain": 0.1,
+			"why": "name fits"
+		},
+		{
+			"file": "open-close/close-003.ogg",
+			"score": 4,
+			"gain": 0.1,
+			"why": "name fits"
+		},
+		{
+			"file": "open-close/minimize-003.ogg",
+			"score": 4,
+			"gain": 0.15,
+			"why": "name fits"
+		},
+		{
+			"file": "error/back-004.ogg",
+			"score": 4,
+			"gain": 0.1,
+			"why": "name fits"
+		},
+		{
+			"file": "error/error-001.ogg",
+			"score": 4,
+			"gain": 0.1,
+			"why": "name fits"
+		}
+	],
+	"ballDenied": [
+		{
+			"file": "error/back-004.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "error/error-001.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "error/error-009.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "error/glitch-001.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "error/glitch-002.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		}
+	],
+	"ballPickup": [
+		{
+			"file": "impact/glass-light-001.ogg",
+			"score": 6,
+			"gain": 0.2,
+			"why": "name fits, Ball family"
+		},
+		{
+			"file": "impact/glass-light-004.ogg",
+			"score": 6,
+			"gain": 0.15,
+			"why": "name fits, Ball family"
+		},
+		{
+			"file": "misc/glass-001.ogg",
+			"score": 6,
+			"gain": 0.2,
+			"why": "name fits, Ball family"
+		},
+		{
+			"file": "misc/glass-002.ogg",
+			"score": 6,
+			"gain": 0.2,
+			"why": "name fits, Ball family"
+		},
+		{
+			"file": "impact/glass-heavy-003.ogg",
+			"score": 6,
+			"gain": 0.2,
+			"why": "name fits, Ball family"
+		}
+	],
+	"ballWindup": [
+		{
+			"file": "popup/woosh-003.wav",
+			"score": 2.76,
+			"gain": 0.8,
+			"why": "name fits"
+		},
+		{
+			"file": "digital/phaserup-004.ogg",
+			"score": 2.7199999999999998,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "digital/phaserup-007.ogg",
+			"score": 2.5,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "impact/glass-light-005.ogg",
+			"score": 2,
+			"gain": 0.1,
+			"why": "Ball family"
+		},
+		{
+			"file": "misc/glass-001.ogg",
+			"score": 2,
+			"gain": 0.1,
+			"why": "Ball family"
+		}
+	],
+	"ballThrow": [
+		{
+			"file": "game/player/hit/throw-002.wav",
+			"score": 4,
+			"gain": 0.65,
+			"why": "name fits"
+		},
+		{
+			"file": "impact/glass-light-005.ogg",
+			"score": 2,
+			"gain": 0.15,
+			"why": "Ball family"
+		},
+		{
+			"file": "misc/glass-001.ogg",
+			"score": 2,
+			"gain": 0.2,
+			"why": "Ball family"
+		},
+		{
+			"file": "misc/glass-002.ogg",
+			"score": 2,
+			"gain": 0.2,
+			"why": "Ball family"
+		},
+		{
+			"file": "impact/bell-heavy-004.ogg",
+			"score": 2,
+			"gain": 0.25,
+			"why": "Ball family"
+		}
+	],
+	"ballGoal": [
+		{
+			"file": "impact/bell-heavy-005.ogg",
+			"score": 6,
+			"gain": 0.3,
+			"why": "name fits, Ball family"
+		},
+		{
+			"file": "impact/bell-heavy-004.ogg",
+			"score": 4.5,
+			"gain": 0.4,
+			"why": "name fits, Ball family"
+		},
+		{
+			"file": "misc/glass-001.ogg",
+			"score": 2,
+			"gain": 0.35,
+			"why": "Ball family"
+		},
+		{
+			"file": "misc/glass-002.ogg",
+			"score": 2,
+			"gain": 0.3,
+			"why": "Ball family"
+		},
+		{
+			"file": "impact/glass-heavy-004.ogg",
+			"score": 2,
+			"gain": 0.2,
+			"why": "Ball family"
+		}
+	],
+	"ballBounce": [
+		{
+			"file": "misc/glass-001.ogg",
+			"score": 6,
+			"gain": 0.2,
+			"why": "name fits, Ball family"
+		},
+		{
+			"file": "misc/glass-002.ogg",
+			"score": 6,
+			"gain": 0.2,
+			"why": "name fits, Ball family"
+		},
+		{
+			"file": "impact/glass-heavy-004.ogg",
+			"score": 6,
+			"gain": 0.15,
+			"why": "name fits, Ball family"
+		},
+		{
+			"file": "impact/glass-medium-005.ogg",
+			"score": 6,
+			"gain": 0.25,
+			"why": "name fits, Ball family"
+		},
+		{
+			"file": "impact/glass-heavy-001.ogg",
+			"score": 6,
+			"gain": 0.2,
+			"why": "name fits, Ball family"
+		}
+	],
+	"ballDrop": [
+		{
+			"file": "misc/glass-005.ogg",
+			"score": 6,
+			"gain": 0.15,
+			"why": "name fits, Ball family"
+		},
+		{
+			"file": "misc/glass-006.ogg",
+			"score": 6,
+			"gain": 0.15,
+			"why": "name fits, Ball family"
+		},
+		{
+			"file": "impact/glass-heavy-004.ogg",
+			"score": 6,
+			"gain": 0.1,
+			"why": "name fits, Ball family"
+		},
+		{
+			"file": "impact/glass-medium-005.ogg",
+			"score": 6,
+			"gain": 0.2,
+			"why": "name fits, Ball family"
+		},
+		{
+			"file": "impact/glass-heavy-001.ogg",
+			"score": 6,
+			"gain": 0.15,
+			"why": "name fits, Ball family"
+		}
+	],
+	"ballPop": [
+		{
+			"file": "impact/glass-heavy-004.ogg",
+			"score": 6,
+			"gain": 0.2,
+			"why": "name fits, Ball family"
+		},
+		{
+			"file": "impact/glass-medium-005.ogg",
+			"score": 6,
+			"gain": 0.4,
+			"why": "name fits, Ball family"
+		},
+		{
+			"file": "impact/glass-heavy-001.ogg",
+			"score": 6,
+			"gain": 0.3,
+			"why": "name fits, Ball family"
+		},
+		{
+			"file": "impact/glass-medium-001.ogg",
+			"score": 6,
+			"gain": 0.4,
+			"why": "name fits, Ball family"
+		},
+		{
+			"file": "impact/glass-light-003.ogg",
+			"score": 4.5,
+			"gain": 0.2,
+			"why": "name fits, Ball family"
+		}
+	],
+	"tower.shot": [
+		{
+			"file": "digital/phaserup-007.ogg",
+			"score": 3,
+			"gain": 0.15,
+			"why": "shot"
+		},
+		{
+			"file": "game/player/hit/sword-001.wav",
+			"score": 3,
+			"gain": 1.15,
+			"why": "shot"
+		},
+		{
+			"file": "game/player/hit/throw-002.wav",
+			"score": 3,
+			"gain": 0.95,
+			"why": "shot"
+		},
+		{
+			"file": "digital/phaserup-006.ogg",
+			"score": 3,
+			"gain": 0.15,
+			"why": "shot"
+		},
+		{
+			"file": "game/player/hit/sword-002.wav",
+			"score": 3,
+			"gain": 1.1,
+			"why": "shot"
+		}
+	],
+	"core.shot": [
+		{
+			"file": "game/player/hit/throw-002.wav",
+			"score": 3,
+			"gain": 0.95,
+			"why": "shot"
+		},
+		{
+			"file": "digital/phaserup-006.ogg",
+			"score": 3,
+			"gain": 0.15,
+			"why": "shot"
+		},
+		{
+			"file": "game/player/hit/sword-002.wav",
+			"score": 3,
+			"gain": 1.1,
+			"why": "shot"
+		},
+		{
+			"file": "impact/bell-heavy-004.ogg",
+			"score": 2,
+			"gain": 0.35,
+			"why": "Structures family"
+		},
+		{
+			"file": "impact/metal-light-004.ogg",
+			"score": 2,
+			"gain": 0.25,
+			"why": "Structures family"
+		}
+	],
+	"structureDown": [
+		{
+			"file": "impact/plate-heavy-001.ogg",
+			"score": 6,
+			"gain": 0.3,
+			"why": "name fits, Structures family"
+		},
+		{
+			"file": "impact/bell-heavy-005.ogg",
+			"score": 6,
+			"gain": 0.25,
+			"why": "name fits, Structures family"
+		},
+		{
+			"file": "impact/metal-heavy-001.ogg",
+			"score": 6,
+			"gain": 0.2,
+			"why": "name fits, Structures family"
+		},
+		{
+			"file": "impact/metal-heavy-004.ogg",
+			"score": 6,
+			"gain": 0.25,
+			"why": "name fits, Structures family"
+		},
+		{
+			"file": "impact/plate-heavy-004.ogg",
+			"score": 6,
+			"gain": 0.15,
+			"why": "name fits, Structures family"
+		}
+	],
+	"ranged.shot": [
+		{
+			"file": "digital/phaserup-007.ogg",
+			"score": 3,
+			"gain": 0.05,
+			"why": "shot"
+		},
+		{
+			"file": "game/player/hit/sword-001.wav",
+			"score": 3,
+			"gain": 0.4,
+			"why": "shot"
+		},
+		{
+			"file": "game/player/hit/throw-002.wav",
+			"score": 3,
+			"gain": 0.35,
+			"why": "shot"
+		},
+		{
+			"file": "digital/phaserup-006.ogg",
+			"score": 3,
+			"gain": 0.05,
+			"why": "shot"
+		},
+		{
+			"file": "game/player/hit/sword-002.wav",
+			"score": 3,
+			"gain": 0.4,
+			"why": "shot"
+		}
+	],
+	"wizard.shot": [
+		{
+			"file": "game/player/hit/throw-002.wav",
+			"score": 3,
+			"gain": 0.4,
+			"why": "shot"
+		},
+		{
+			"file": "digital/phaserup-006.ogg",
+			"score": 3,
+			"gain": 0.05,
+			"why": "shot"
+		},
+		{
+			"file": "game/player/hit/sword-002.wav",
+			"score": 3,
+			"gain": 0.45,
+			"why": "shot"
+		},
+		{
+			"file": "impact/wood-light-003.ogg",
+			"score": 2,
+			"gain": 0.1,
+			"why": "Minions family"
+		},
+		{
+			"file": "impact/generic-light-005.ogg",
+			"score": 2,
+			"gain": 0.1,
+			"why": "Minions family"
+		}
+	],
+	"blocked": [
+		{
+			"file": "impact/metal-light-002.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "impact/metal-light-005.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "impact/metal-medium-005.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "impact/metal-medium-002.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "impact/plate-heavy-001.ogg",
+			"score": 4,
+			"gain": 0.1,
+			"why": "name fits"
+		}
+	],
+	"shielded": [
+		{
+			"file": "impact/glass-light-003.ogg",
+			"score": 4,
+			"gain": 0.1,
+			"why": "name fits"
+		},
+		{
+			"file": "impact/glass-light-002.ogg",
+			"score": 4,
+			"gain": 0.1,
+			"why": "name fits"
+		},
+		{
+			"file": "misc/glass-001.ogg",
+			"score": 4,
+			"gain": 0.1,
+			"why": "name fits"
+		},
+		{
+			"file": "misc/glass-002.ogg",
+			"score": 4,
+			"gain": 0.1,
+			"why": "name fits"
+		},
+		{
+			"file": "impact/bell-heavy-004.ogg",
+			"score": 4,
+			"gain": 0.15,
+			"why": "name fits"
+		}
+	],
+	"nearMiss": [
+		{
+			"file": "tap/tick-001.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "tap/tick-002.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "popup/woosh-003.wav",
+			"score": 2.76,
+			"gain": 0.65,
+			"why": "name fits"
+		},
+		{
+			"file": "popup/woosh-001.wav",
+			"score": 1.96,
+			"gain": 1.3,
+			"why": "name fits"
+		},
+		{
+			"file": "confirm/confirm-017.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		}
+	],
+	"nearMiss.passed": [
+		{
+			"file": "popup/woosh-003.wav",
+			"score": 2.76,
+			"gain": 0.45,
+			"why": "name fits"
+		},
+		{
+			"file": "popup/woosh-001.wav",
+			"score": 1.96,
+			"gain": 0.9,
+			"why": "name fits"
+		},
+		{
+			"file": "confirm/confirm-017.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "error/error-015.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "error/glitch-003.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		}
+	],
+	"boardExpired": [
+		{
+			"file": "open-close/pop-down.ogg",
+			"score": 6,
+			"gain": 0.05,
+			"why": "name fits, P. Pong family"
+		},
+		{
+			"file": "open-close/pop-up-off.ogg",
+			"score": 6,
+			"gain": 0.05,
+			"why": "name fits, P. Pong family"
+		},
+		{
+			"file": "open-close/pop-up-on.ogg",
+			"score": 6,
+			"gain": 0.1,
+			"why": "name fits, P. Pong family"
+		},
+		{
+			"file": "error/error-015.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "error/glitch-003.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		}
+	],
+	"caught": [
+		{
+			"file": "game/player/hit/punch-heavy-002.ogg",
+			"score": 6,
+			"gain": 0.1,
+			"why": "name fits, Mitts family"
+		},
+		{
+			"file": "game/player/hit/punch-heavy-001.ogg",
+			"score": 6,
+			"gain": 0.1,
+			"why": "name fits, Mitts family"
+		},
+		{
+			"file": "game/player/hit/punch-medium-002.ogg",
+			"score": 4.8,
+			"gain": 0.1,
+			"why": "name fits, Mitts family"
+		},
+		{
+			"file": "game/player/hit/punch-medium-001.ogg",
+			"score": 4.72,
+			"gain": 0.1,
+			"why": "name fits, Mitts family"
+		},
+		{
+			"file": "tap/click-soft.ogg",
+			"score": 4.5,
+			"gain": 1.25,
+			"why": "name fits, Mitts family"
+		}
+	],
+	"catchExpired": [
+		{
+			"file": "open-close/close-001.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "open-close/close-003.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "open-close/minimize-003.ogg",
+			"score": 4,
+			"gain": 0.1,
+			"why": "name fits"
+		},
+		{
+			"file": "open-close/maximize-007.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "open-close/minimize-002.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		}
+	],
+	"channelCancelled": [
+		{
+			"file": "error/error-015.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "error/glitch-003.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "error/back-004.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "error/error-001.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "error/glitch-001.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		}
+	],
+	"channelEnd": [
+		{
+			"file": "confirm/confirm-017.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "confirm/confirm-013.wav",
+			"score": 4,
+			"gain": 0.4,
+			"why": "name fits"
+		},
+		{
+			"file": "impact/bell-heavy-004.ogg",
+			"score": 4,
+			"gain": 0.15,
+			"why": "name fits"
+		},
+		{
+			"file": "impact/bell-heavy-005.ogg",
+			"score": 4,
+			"gain": 0.1,
+			"why": "name fits"
+		},
+		{
+			"file": "digital/powerup-007.ogg",
+			"score": 1.6,
+			"gain": 0.05,
+			"why": "name fits"
+		}
+	],
+	"out": [
+		{
+			"file": "misc/beep-bop.wav",
+			"score": 4,
+			"gain": 0.75,
+			"why": "name fits"
+		},
+		{
+			"file": "misc/beep-attention.wav",
+			"score": 4,
+			"gain": 0.5,
+			"why": "name fits"
+		},
+		{
+			"file": "misc/beep-metallic.wav",
+			"score": 4,
+			"gain": 0.75,
+			"why": "name fits"
+		},
+		{
+			"file": "misc/beep-shinymetal.wav",
+			"score": 4,
+			"gain": 0.65,
+			"why": "name fits"
+		},
+		{
+			"file": "misc/beep-reedy.wav",
+			"score": 4,
+			"gain": 0.55,
+			"why": "name fits"
+		}
+	],
+	"death": [
+		{
+			"file": "misc/drop-001.ogg",
+			"score": 4,
+			"gain": 0.15,
+			"why": "name fits"
+		},
+		{
+			"file": "misc/drop-003.ogg",
+			"score": 4,
+			"gain": 0.15,
+			"why": "name fits"
+		},
+		{
+			"file": "impact/plank-medium-005.ogg",
+			"score": 4,
+			"gain": 0.2,
+			"why": "name fits"
+		},
+		{
+			"file": "impact/wood-heavy-005.ogg",
+			"score": 4,
+			"gain": 0.15,
+			"why": "name fits"
+		},
+		{
+			"file": "impact/wood-heavy-004.ogg",
+			"score": 4,
+			"gain": 0.15,
+			"why": "name fits"
+		}
+	],
+	"shove": [
+		{
+			"file": "tap/click-soft.ogg",
+			"score": 4,
+			"gain": 0.8,
+			"why": "name fits"
+		},
+		{
+			"file": "impact/soft-medium-001.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "impact/soft-medium-004.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "impact/soft-heavy-001.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "game/player/hit/punch-heavy-004.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		}
+	],
+	"dunk": [
+		{
+			"file": "misc/drop-002.ogg",
+			"score": 4,
+			"gain": 0.3,
+			"why": "name fits"
+		},
+		{
+			"file": "misc/drop-004.ogg",
+			"score": 4,
+			"gain": 0.3,
+			"why": "name fits"
+		},
+		{
+			"file": "misc/plunger-immediate.ogg",
+			"score": 4,
+			"gain": 0.55,
+			"why": "name fits"
+		},
+		{
+			"file": "misc/cork.ogg",
+			"score": 2.2800000000000002,
+			"gain": 0.6,
+			"why": "name fits"
+		},
+		{
+			"file": "confirm/confirm-017.ogg",
+			"score": 0,
+			"gain": 0.25,
+			"why": "numbers only"
+		}
+	],
+	"dunk.splash": [
+		{
+			"file": "misc/drop-001.ogg",
+			"score": 2.5,
+			"gain": 0.1,
+			"why": "name fits"
+		},
+		{
+			"file": "misc/drop-003.ogg",
+			"score": 2.5,
+			"gain": 0.1,
+			"why": "name fits"
+		},
+		{
+			"file": "confirm/confirm-017.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "error/error-015.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "error/glitch-003.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		}
+	],
+	"step": [
+		{
+			"file": "game/player/footsteps/concrete/footstep-concrete-001.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "game/player/footsteps/concrete/footstep-concrete-004.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "game/player/footsteps/grass/footstep-grass-004.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "game/player/footsteps/grass/footstep-grass-003.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "game/player/footsteps/wood/footstep-wood-004.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		}
+	],
+	"squeak": [
+		{
+			"file": "tap/tap-scratchy.wav",
+			"score": 4,
+			"gain": 0.25,
+			"why": "name fits"
+		},
+		{
+			"file": "misc/scratch-003.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "misc/scratch-001.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "misc/slide-paper.wav",
+			"score": 2.76,
+			"gain": 0.7,
+			"why": "name fits"
+		},
+		{
+			"file": "misc/slide-scissors.wav",
+			"score": 2.04,
+			"gain": 0.95,
+			"why": "name fits"
+		}
+	],
+	"xp": [
+		{
+			"file": "popup/popup-012.wav",
+			"score": 4,
+			"gain": 0.65,
+			"why": "name fits"
+		},
+		{
+			"file": "game/collectible/collectible-002.wav",
+			"score": 4,
+			"gain": 0.2,
+			"why": "name fits"
+		},
+		{
+			"file": "popup/popup-013.wav",
+			"score": 4,
+			"gain": 0.25,
+			"why": "name fits"
+		},
+		{
+			"file": "game/collectible/collectible-001.wav",
+			"score": 4,
+			"gain": 0.35,
+			"why": "name fits"
+		},
+		{
+			"file": "misc/pop.ogg",
+			"score": 4,
+			"gain": 0.15,
+			"why": "name fits"
+		}
+	],
+	"levelUp": [
+		{
+			"file": "confirm/confirm-017.ogg",
+			"score": 4,
+			"gain": 0.15,
+			"why": "name fits"
+		},
+		{
+			"file": "confirm/confirm-016.ogg",
+			"score": 4,
+			"gain": 0.15,
+			"why": "name fits"
+		},
+		{
+			"file": "game/win/win-001.wav",
+			"score": 4,
+			"gain": 1.25,
+			"why": "name fits"
+		},
+		{
+			"file": "digital/powerup-001.ogg",
+			"score": 2,
+			"gain": 0.15,
+			"why": "name fits"
+		},
+		{
+			"file": "digital/powerup-007.ogg",
+			"score": 1.6,
+			"gain": 0.15,
+			"why": "name fits"
+		}
+	],
+	"globe": [
+		{
+			"file": "popup/popup-013.wav",
+			"score": 4,
+			"gain": 0.5,
+			"why": "name fits"
+		},
+		{
+			"file": "game/collectible/collectible-001.wav",
+			"score": 4,
+			"gain": 0.7,
+			"why": "name fits"
+		},
+		{
+			"file": "misc/pop.ogg",
+			"score": 4,
+			"gain": 0.25,
+			"why": "name fits"
+		},
+		{
+			"file": "open-close/pop-down.ogg",
+			"score": 4,
+			"gain": 0.1,
+			"why": "name fits"
+		},
+		{
+			"file": "open-close/pop-up-off.ogg",
+			"score": 4,
+			"gain": 0.1,
+			"why": "name fits"
+		}
+	],
+	"matchOver": [
+		{
+			"file": "open-close/close-001.ogg",
+			"score": 4,
+			"gain": 0.2,
+			"why": "name fits"
+		},
+		{
+			"file": "open-close/close-003.ogg",
+			"score": 4,
+			"gain": 0.2,
+			"why": "name fits"
+		},
+		{
+			"file": "open-close/minimize-003.ogg",
+			"score": 4,
+			"gain": 0.35,
+			"why": "name fits"
+		},
+		{
+			"file": "open-close/maximize-007.ogg",
+			"score": 4,
+			"gain": 0.15,
+			"why": "name fits"
+		},
+		{
+			"file": "open-close/minimize-002.ogg",
+			"score": 4,
+			"gain": 0.1,
+			"why": "name fits"
+		}
+	],
+	"ui.hover": [
+		{
+			"file": "tap/hover-001.wav",
+			"score": 6,
+			"gain": 0.1,
+			"why": "name fits, Menus family"
+		},
+		{
+			"file": "tap/hover-004.wav",
+			"score": 6,
+			"gain": 0.1,
+			"why": "name fits, Menus family"
+		},
+		{
+			"file": "open-close/close-001.ogg",
+			"score": 2,
+			"gain": 0.05,
+			"why": "Menus family"
+		},
+		{
+			"file": "open-close/close-003.ogg",
+			"score": 2,
+			"gain": 0.05,
+			"why": "Menus family"
+		},
+		{
+			"file": "open-close/minimize-003.ogg",
+			"score": 2,
+			"gain": 0.05,
+			"why": "Menus family"
+		}
+	],
+	"ui.press": [
+		{
+			"file": "tap/button-004.wav",
+			"score": 6,
+			"gain": 0.45,
+			"why": "name fits, Menus family"
+		},
+		{
+			"file": "tap/button-006.wav",
+			"score": 6,
+			"gain": 1,
+			"why": "name fits, Menus family"
+		},
+		{
+			"file": "tap/click-005.ogg",
+			"score": 6,
+			"gain": 0.05,
+			"why": "name fits, Menus family"
+		},
+		{
+			"file": "tap/click-003.ogg",
+			"score": 6,
+			"gain": 0.1,
+			"why": "name fits, Menus family"
+		},
+		{
+			"file": "tap/tap-kissy.wav",
+			"score": 6,
+			"gain": 0.6,
+			"why": "name fits, Menus family"
+		}
+	],
+	"ui.confirm": [
+		{
+			"file": "tap/click-out.ogg",
+			"score": 6,
+			"gain": 0.35,
+			"why": "name fits, Menus family"
+		},
+		{
+			"file": "confirm/confirm-017.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "confirm/confirm-016.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "open-close/close-001.ogg",
+			"score": 2,
+			"gain": 0.05,
+			"why": "Menus family"
+		},
+		{
+			"file": "open-close/close-003.ogg",
+			"score": 2,
+			"gain": 0.05,
+			"why": "Menus family"
+		}
+	],
+	"ui.click": [
+		{
+			"file": "tap/click-005.ogg",
+			"score": 6,
+			"gain": 0.05,
+			"why": "name fits, Menus family"
+		},
+		{
+			"file": "tap/click-003.ogg",
+			"score": 6,
+			"gain": 0.05,
+			"why": "name fits, Menus family"
+		},
+		{
+			"file": "tap/click-in.ogg",
+			"score": 6,
+			"gain": 0.15,
+			"why": "name fits, Menus family"
+		},
+		{
+			"file": "tap/click-soft.ogg",
+			"score": 6,
+			"gain": 0.45,
+			"why": "name fits, Menus family"
+		},
+		{
+			"file": "tap/mouseclick-001.ogg",
+			"score": 6,
+			"gain": 0.1,
+			"why": "name fits, Menus family"
+		}
+	],
+	"ui.nav": [
+		{
+			"file": "tap/click-007.ogg",
+			"score": 6,
+			"gain": 0.1,
+			"why": "name fits, Menus family"
+		},
+		{
+			"file": "tap/click-011.wav",
+			"score": 6,
+			"gain": 0.05,
+			"why": "name fits, Menus family"
+		},
+		{
+			"file": "tap/tap-kissy.wav",
+			"score": 6,
+			"gain": 0.75,
+			"why": "name fits, Menus family"
+		},
+		{
+			"file": "tap/select-007.ogg",
+			"score": 6,
+			"gain": 0.1,
+			"why": "name fits, Menus family"
+		},
+		{
+			"file": "tap/tap-simple.wav",
+			"score": 6,
+			"gain": 0.4,
+			"why": "name fits, Menus family"
+		}
+	],
+	"ui.switch": [
+		{
+			"file": "switch/toggle-002.ogg",
+			"score": 6,
+			"gain": 0.05,
+			"why": "name fits, Menus family"
+		},
+		{
+			"file": "switch/toggle-004.ogg",
+			"score": 6,
+			"gain": 0.1,
+			"why": "name fits, Menus family"
+		},
+		{
+			"file": "switch/switch-003.ogg",
+			"score": 6,
+			"gain": 0.1,
+			"why": "name fits, Menus family"
+		},
+		{
+			"file": "switch/switch-011.ogg",
+			"score": 6,
+			"gain": 0.2,
+			"why": "name fits, Menus family"
+		},
+		{
+			"file": "switch/switch-on.ogg",
+			"score": 6,
+			"gain": 0.5,
+			"why": "name fits, Menus family"
+		}
+	],
+	"ui.menuOpen": [
+		{
+			"file": "open-close/maximize-007.ogg",
+			"score": 6,
+			"gain": 0.05,
+			"why": "name fits, Menus family"
+		},
+		{
+			"file": "open-close/pop-up-on.ogg",
+			"score": 6,
+			"gain": 0.05,
+			"why": "name fits, Menus family"
+		},
+		{
+			"file": "open-close/maximize-009.ogg",
+			"score": 4.8,
+			"gain": 0.05,
+			"why": "name fits, Menus family"
+		},
+		{
+			"file": "open-close/close-001.ogg",
+			"score": 2,
+			"gain": 0.05,
+			"why": "Menus family"
+		},
+		{
+			"file": "open-close/close-003.ogg",
+			"score": 2,
+			"gain": 0.05,
+			"why": "Menus family"
+		}
+	],
+	"ui.menuClose": [
+		{
+			"file": "open-close/close-001.ogg",
+			"score": 6,
+			"gain": 0.05,
+			"why": "name fits, Menus family"
+		},
+		{
+			"file": "open-close/close-003.ogg",
+			"score": 6,
+			"gain": 0.05,
+			"why": "name fits, Menus family"
+		},
+		{
+			"file": "open-close/minimize-003.ogg",
+			"score": 6,
+			"gain": 0.1,
+			"why": "name fits, Menus family"
+		},
+		{
+			"file": "open-close/minimize-002.ogg",
+			"score": 6,
+			"gain": 0.05,
+			"why": "name fits, Menus family"
+		},
+		{
+			"file": "open-close/pop-up-off.ogg",
+			"score": 6,
+			"gain": 0.05,
+			"why": "name fits, Menus family"
+		}
+	],
+	"splash.move": [
+		{
+			"file": "tap/button-004.wav",
+			"score": 6,
+			"gain": 0.15,
+			"why": "name fits, Splash and descent family"
+		},
+		{
+			"file": "tap/button-006.wav",
+			"score": 6,
+			"gain": 0.35,
+			"why": "name fits, Splash and descent family"
+		},
+		{
+			"file": "tap/click-005.ogg",
+			"score": 6,
+			"gain": 0.05,
+			"why": "name fits, Splash and descent family"
+		},
+		{
+			"file": "tap/click-003.ogg",
+			"score": 6,
+			"gain": 0.05,
+			"why": "name fits, Splash and descent family"
+		},
+		{
+			"file": "tap/tap-kissy.wav",
+			"score": 6,
+			"gain": 0.2,
+			"why": "name fits, Splash and descent family"
+		}
+	],
+	"splash.enter": [
+		{
+			"file": "confirm/confirm-017.ogg",
+			"score": 6,
+			"gain": 0.05,
+			"why": "name fits, Splash and descent family"
+		},
+		{
+			"file": "confirm/confirm-016.ogg",
+			"score": 6,
+			"gain": 0.05,
+			"why": "name fits, Splash and descent family"
+		},
+		{
+			"file": "switch/toggle-002.ogg",
+			"score": 2,
+			"gain": 0.05,
+			"why": "Splash and descent family"
+		},
+		{
+			"file": "switch/toggle-004.ogg",
+			"score": 2,
+			"gain": 0.05,
+			"why": "Splash and descent family"
+		},
+		{
+			"file": "tap/click-005.ogg",
+			"score": 2,
+			"gain": 0.05,
+			"why": "Splash and descent family"
+		}
+	],
+	"splash.deny": [
+		{
+			"file": "error/back-004.ogg",
+			"score": 6,
+			"gain": 0.05,
+			"why": "name fits, Splash and descent family"
+		},
+		{
+			"file": "error/back-003.ogg",
+			"score": 6,
+			"gain": 0.1,
+			"why": "name fits, Splash and descent family"
+		},
+		{
+			"file": "error/error-015.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "error/glitch-003.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "error/error-001.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		}
+	],
+	"splash.mode": [
+		{
+			"file": "switch/toggle-002.ogg",
+			"score": 6,
+			"gain": 0.05,
+			"why": "name fits, Splash and descent family"
+		},
+		{
+			"file": "switch/toggle-004.ogg",
+			"score": 6,
+			"gain": 0.1,
+			"why": "name fits, Splash and descent family"
+		},
+		{
+			"file": "confirm/confirm-013.wav",
+			"score": 6,
+			"gain": 0.6,
+			"why": "name fits, Splash and descent family"
+		},
+		{
+			"file": "confirm/confirm-011.wav",
+			"score": 6,
+			"gain": 0.15,
+			"why": "name fits, Splash and descent family"
+		},
+		{
+			"file": "switch/switch-003.ogg",
+			"score": 6,
+			"gain": 0.1,
+			"why": "name fits, Splash and descent family"
+		}
+	],
+	"descent.back": [
+		{
+			"file": "error/back-002.ogg",
+			"score": 6,
+			"gain": 0.05,
+			"why": "name fits, Splash and descent family"
+		},
+		{
+			"file": "error/back-001.ogg",
+			"score": 6,
+			"gain": 0.1,
+			"why": "name fits, Splash and descent family"
+		},
+		{
+			"file": "open-close/close-001.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "open-close/close-003.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "open-close/minimize-003.ogg",
+			"score": 4,
+			"gain": 0.1,
+			"why": "name fits"
+		}
+	],
+	"descent.drop": [
+		{
+			"file": "misc/slide-paper.wav",
+			"score": 4.76,
+			"gain": 0.5,
+			"why": "name fits, Splash and descent family"
+		},
+		{
+			"file": "popup/woosh-003.wav",
+			"score": 4.76,
+			"gain": 0.25,
+			"why": "name fits, Splash and descent family"
+		},
+		{
+			"file": "misc/slide-scissors.wav",
+			"score": 4.04,
+			"gain": 0.65,
+			"why": "name fits, Splash and descent family"
+		},
+		{
+			"file": "misc/drop-001.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "misc/drop-003.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		}
+	],
+	"descent.arrival": [
+		{
+			"file": "misc/drop-001.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "misc/drop-003.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "game/player/landing/landing-004.wav",
+			"score": 4,
+			"gain": 0.45,
+			"why": "name fits"
+		},
+		{
+			"file": "impact/soft-heavy-002.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "impact/soft-heavy-003.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		}
+	],
+	"lobby.start": [
+		{
+			"file": "confirm/confirm-017.ogg",
+			"score": 6,
+			"gain": 0.05,
+			"why": "name fits, Lobby family"
+		},
+		{
+			"file": "confirm/confirm-016.ogg",
+			"score": 6,
+			"gain": 0.05,
+			"why": "name fits, Lobby family"
+		},
+		{
+			"file": "error/error-015.ogg",
+			"score": 2,
+			"gain": 0.05,
+			"why": "Lobby family"
+		},
+		{
+			"file": "error/glitch-003.ogg",
+			"score": 2,
+			"gain": 0.05,
+			"why": "Lobby family"
+		},
+		{
+			"file": "misc/beep-bop.wav",
+			"score": 2,
+			"gain": 0.35,
+			"why": "Lobby family"
+		}
+	],
+	"lobby.back": [
+		{
+			"file": "error/back-004.ogg",
+			"score": 6,
+			"gain": 0.05,
+			"why": "name fits, Lobby family"
+		},
+		{
+			"file": "error/back-003.ogg",
+			"score": 6,
+			"gain": 0.05,
+			"why": "name fits, Lobby family"
+		},
+		{
+			"file": "open-close/close-001.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "open-close/close-003.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "open-close/minimize-003.ogg",
+			"score": 4,
+			"gain": 0.1,
+			"why": "name fits"
+		}
+	],
+	"lobby.inspectOpen": [
+		{
+			"file": "open-close/maximize-007.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "open-close/maximize-009.ogg",
+			"score": 2.8,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "rpg/bookflip-003.ogg",
+			"score": 2.6799999999999997,
+			"gain": 0.2,
+			"why": "name fits"
+		},
+		{
+			"file": "rpg/bookflip-002.ogg",
+			"score": 2.48,
+			"gain": 0.3,
+			"why": "name fits"
+		},
+		{
+			"file": "error/error-015.ogg",
+			"score": 2,
+			"gain": 0.05,
+			"why": "Lobby family"
+		}
+	],
+	"lobby.inspectClose": [
+		{
+			"file": "open-close/minimize-003.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "open-close/minimize-002.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "error/error-015.ogg",
+			"score": 2,
+			"gain": 0.05,
+			"why": "Lobby family"
+		},
+		{
+			"file": "error/glitch-003.ogg",
+			"score": 2,
+			"gain": 0.05,
+			"why": "Lobby family"
+		},
+		{
+			"file": "misc/beep-bop.wav",
+			"score": 2,
+			"gain": 0.35,
+			"why": "Lobby family"
+		}
+	],
+	"lobby.pick": [
+		{
+			"file": "tap/select-007.ogg",
+			"score": 6,
+			"gain": 0.05,
+			"why": "name fits, Lobby family"
+		},
+		{
+			"file": "confirm/confirm-013.wav",
+			"score": 6,
+			"gain": 0.3,
+			"why": "name fits, Lobby family"
+		},
+		{
+			"file": "confirm/confirm-011.wav",
+			"score": 6,
+			"gain": 0.1,
+			"why": "name fits, Lobby family"
+		},
+		{
+			"file": "tap/select-008.ogg",
+			"score": 6,
+			"gain": 0.1,
+			"why": "name fits, Lobby family"
+		},
+		{
+			"file": "error/error-015.ogg",
+			"score": 2,
+			"gain": 0.05,
+			"why": "Lobby family"
+		}
+	],
+	"lobby.pickDenied": [
+		{
+			"file": "error/error-015.ogg",
+			"score": 6,
+			"gain": 0.05,
+			"why": "name fits, Lobby family"
+		},
+		{
+			"file": "error/glitch-003.ogg",
+			"score": 6,
+			"gain": 0.05,
+			"why": "name fits, Lobby family"
+		},
+		{
+			"file": "error/error-001.ogg",
+			"score": 6,
+			"gain": 0.1,
+			"why": "name fits, Lobby family"
+		},
+		{
+			"file": "error/glitch-001.ogg",
+			"score": 6,
+			"gain": 0.05,
+			"why": "name fits, Lobby family"
+		},
+		{
+			"file": "misc/beep-rejected.wav",
+			"score": 6,
+			"gain": 1.15,
+			"why": "name fits, Lobby family"
+		}
+	],
+	"lobby.readyWalk": [
+		{
+			"file": "tap/button-004.wav",
+			"score": 6,
+			"gain": 0.25,
+			"why": "name fits, Lobby family"
+		},
+		{
+			"file": "tap/button-006.wav",
+			"score": 6,
+			"gain": 0.6,
+			"why": "name fits, Lobby family"
+		},
+		{
+			"file": "tap/click-005.ogg",
+			"score": 6,
+			"gain": 0.05,
+			"why": "name fits, Lobby family"
+		},
+		{
+			"file": "tap/click-003.ogg",
+			"score": 6,
+			"gain": 0.05,
+			"why": "name fits, Lobby family"
+		},
+		{
+			"file": "tap/tap-kissy.wav",
+			"score": 6,
+			"gain": 0.35,
+			"why": "name fits, Lobby family"
+		}
+	],
+	"lobby.seatEnter": [
+		{
+			"file": "switch/toggle-002.ogg",
+			"score": 6,
+			"gain": 0.05,
+			"why": "name fits, Lobby family"
+		},
+		{
+			"file": "switch/toggle-004.ogg",
+			"score": 6,
+			"gain": 0.05,
+			"why": "name fits, Lobby family"
+		},
+		{
+			"file": "confirm/confirm-011.wav",
+			"score": 6,
+			"gain": 0.05,
+			"why": "name fits, Lobby family"
+		},
+		{
+			"file": "confirm/confirm-015.ogg",
+			"score": 6,
+			"gain": 0.05,
+			"why": "name fits, Lobby family"
+		},
+		{
+			"file": "switch/switch-003.ogg",
+			"score": 6,
+			"gain": 0.05,
+			"why": "name fits, Lobby family"
+		}
+	],
+	"lobby.seatReady": [
+		{
+			"file": "confirm/confirm-011.wav",
+			"score": 6,
+			"gain": 0.1,
+			"why": "name fits, Lobby family"
+		},
+		{
+			"file": "confirm/confirm-015.ogg",
+			"score": 6,
+			"gain": 0.05,
+			"why": "name fits, Lobby family"
+		},
+		{
+			"file": "game/win/win-001.wav",
+			"score": 4,
+			"gain": 0.5,
+			"why": "name fits"
+		},
+		{
+			"file": "misc/beep-bop.wav",
+			"score": 2,
+			"gain": 0.7,
+			"why": "Lobby family"
+		},
+		{
+			"file": "misc/beep-attention.wav",
+			"score": 2,
+			"gain": 0.45,
+			"why": "Lobby family"
+		}
+	],
+	"lobby.readyCancel": [
+		{
+			"file": "error/back-002.ogg",
+			"score": 6,
+			"gain": 0.05,
+			"why": "name fits, Lobby family"
+		},
+		{
+			"file": "error/back-001.ogg",
+			"score": 6,
+			"gain": 0.1,
+			"why": "name fits, Lobby family"
+		},
+		{
+			"file": "open-close/close-001.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "open-close/close-003.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "open-close/minimize-001.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		}
+	],
+	"lobby.galleryShot": [
+		{
+			"file": "digital/laser-005.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "game/player/hit/throw-002.wav",
+			"score": 4,
+			"gain": 0.3,
+			"why": "name fits"
+		},
+		{
+			"file": "misc/beep-bop.wav",
+			"score": 2,
+			"gain": 0.6,
+			"why": "Lobby family"
+		},
+		{
+			"file": "misc/beep-attention.wav",
+			"score": 2,
+			"gain": 0.4,
+			"why": "Lobby family"
+		},
+		{
+			"file": "misc/drop-001.ogg",
+			"score": 2,
+			"gain": 0.05,
+			"why": "Lobby family"
+		}
+	],
+	"lobby.galleryPick": [
+		{
+			"file": "confirm/confirm-005.wav",
+			"score": 6,
+			"gain": 0.15,
+			"why": "name fits, Lobby family"
+		},
+		{
+			"file": "confirm/confirm-014.wav",
+			"score": 6,
+			"gain": 0.2,
+			"why": "name fits, Lobby family"
+		},
+		{
+			"file": "game/collectible/collectible-002.wav",
+			"score": 4,
+			"gain": 0.25,
+			"why": "name fits"
+		},
+		{
+			"file": "game/collectible/collectible-001.wav",
+			"score": 4,
+			"gain": 0.45,
+			"why": "name fits"
+		},
+		{
+			"file": "misc/beep-bop.wav",
+			"score": 2,
+			"gain": 0.9,
+			"why": "Lobby family"
+		}
+	],
+	"lobby.magnetClack": [
+		{
+			"file": "tap/click-005.ogg",
+			"score": 6,
+			"gain": 0.05,
+			"why": "name fits, Lobby family"
+		},
+		{
+			"file": "tap/click-003.ogg",
+			"score": 6,
+			"gain": 0.1,
+			"why": "name fits, Lobby family"
+		},
+		{
+			"file": "misc/beep-metallic.wav",
+			"score": 6,
+			"gain": 0.8,
+			"why": "name fits, Lobby family"
+		},
+		{
+			"file": "misc/beep-shinymetal.wav",
+			"score": 6,
+			"gain": 0.7,
+			"why": "name fits, Lobby family"
+		},
+		{
+			"file": "tap/tap-metallic.wav",
+			"score": 6,
+			"gain": 0.65,
+			"why": "name fits, Lobby family"
+		}
+	],
+	"lobby.magnetThud": [
+		{
+			"file": "misc/drop-001.ogg",
+			"score": 6,
+			"gain": 0.05,
+			"why": "name fits, Lobby family"
+		},
+		{
+			"file": "misc/drop-003.ogg",
+			"score": 6,
+			"gain": 0.05,
+			"why": "name fits, Lobby family"
+		},
+		{
+			"file": "impact/plate-heavy-001.ogg",
+			"score": 4,
+			"gain": 0.1,
+			"why": "name fits"
+		},
+		{
+			"file": "impact/plate-light-002.ogg",
+			"score": 4,
+			"gain": 0.15,
+			"why": "name fits"
+		},
+		{
+			"file": "impact/plate-medium-001.ogg",
+			"score": 4,
+			"gain": 0.1,
+			"why": "name fits"
+		}
+	],
+	"lobby.magnetLeap": [
+		{
+			"file": "popup/woosh-003.wav",
+			"score": 4.76,
+			"gain": 0.45,
+			"why": "name fits, Lobby family"
+		},
+		{
+			"file": "popup/woosh-001.wav",
+			"score": 3.96,
+			"gain": 0.95,
+			"why": "name fits, Lobby family"
+		},
+		{
+			"file": "game/player/jump/jump-004.wav",
+			"score": 2.96,
+			"gain": 0.4,
+			"why": "name fits"
+		},
+		{
+			"file": "game/player/jump/jump-003.wav",
+			"score": 2.6799999999999997,
+			"gain": 0.65,
+			"why": "name fits"
+		},
+		{
+			"file": "misc/beep-bop.wav",
+			"score": 2,
+			"gain": 0.45,
+			"why": "Lobby family"
+		}
+	]
+}

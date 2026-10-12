@@ -4,11 +4,15 @@
 // Keep copies the file to public/sfx/kept/ and writes the swap into sfx/kept.json, the layer under local swaps.
 import kept from './sfx/kept.json'
 
+// The deployed board is a showcase of committed picks, not this browser's workbench.
+const readOnly =
+	import.meta.env?.PROD && globalThis.location?.pathname.replace(/\/$/, '') === '/docs/pages/sound'
 const DB = 'dodgethis-sound'
 const swaps = new Map() // use id → swap
 const listeners = new Set()
 let mix = {} // the board's mix sliders, over tune.mix
-const channel = globalThis.window && globalThis.BroadcastChannel ? new BroadcastChannel(DB) : null
+const channel =
+	!readOnly && globalThis.window && globalThis.BroadcastChannel ? new BroadcastChannel(DB) : null
 
 function request(r) {
 	return new Promise((resolve, reject) => {
@@ -19,7 +23,7 @@ function request(r) {
 
 let db = null
 function open() {
-	if (!globalThis.indexedDB) return Promise.resolve(null)
+	if (readOnly || !globalThis.indexedDB) return Promise.resolve(null)
 	db ??= new Promise((resolve) => {
 		const r = indexedDB.open(DB, 1)
 		r.onupgradeneeded = () => {
@@ -82,9 +86,9 @@ export function swapOf(id) {
 }
 export const swapList = () => [...swaps]
 export const keptUrl = (name) => `/sfx/kept/${encodeURIComponent(name)}`
-// { library } swaps play a file from Oskar's library (sounds/osk-sfx/), which only the dev server serves.
+// The showcase ships only shortlisted files; the workbench can play the entire dev library.
 export const libraryUrl = (path) =>
-	`/sounds/osk-sfx/${path.split('/').map(encodeURIComponent).join('/')}`
+	`${readOnly ? '/sfx/showcase/library' : '/sounds/osk-sfx'}/${path.split('/').map(encodeURIComponent).join('/')}`
 // The URL a file swap plays, or null for a voice swap. { shuffle: [swap…] } plays one of its swaps at random
 // (audio.js `swapped`); its URL here is the first one's.
 export const swapUrl = (swap) =>
