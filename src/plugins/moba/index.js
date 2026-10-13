@@ -446,19 +446,18 @@ export default function moba(app, map) {
 					setup,
 					returnToLobby,
 				})
-			const controls = isLobby
-				? { paused: false }
-				: createMatchDebug({
-						app,
-						run,
-						sim,
-						local,
-						menu,
-						setup,
-						botsOnly,
-						ready: options.ready,
-						clearCamera: cameraControls.clear,
-					})
+			const controls = createMatchDebug({
+				app,
+				run,
+				sim,
+				local,
+				menu,
+				setup,
+				botsOnly,
+				isLobby,
+				ready: options.ready,
+				clearCamera: cameraControls.clear,
+			})
 			run.clock.scale(feedback.beat)
 			run.intents.suspend(() => coreTune.physics.paused)
 			run.input.stickAim((dir, magnitude, slot) =>

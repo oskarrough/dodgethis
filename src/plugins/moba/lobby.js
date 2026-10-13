@@ -792,6 +792,9 @@ export function createLobby({
 		},
 		frozen: () => numbers.open && app.session.actions.includes('pause'),
 		presentationFrozen: () => numbers.open && app.session.actions.includes('pause'),
+		resume() {
+			if (numbers.open) numbers.toggle()
+		},
 		result() {},
 		touchMode: () => touch,
 		inspectAim(dir, magnitude) {

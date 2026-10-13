@@ -72,6 +72,7 @@ export function createMatchDebug({
 	menu,
 	setup,
 	botsOnly,
+	isLobby = false,
 	ready = () => true,
 	clearCamera,
 }) {
@@ -105,7 +106,12 @@ export function createMatchDebug({
 		enemyHero: controls.enemyHero,
 		allyBot: controls.allyBot,
 		enemyBot: controls.enemyBot,
-		tryRoster: roster(),
+		// Lobby humans and ready seats are not a custom Try Mode match roster.
+		...(isLobby
+			? initial.tryRoster === undefined
+				? {}
+				: { tryRoster: initial.tryRoster }
+			: { tryRoster: roster() }),
 	})
 	const remember = () => {
 		setup.tryMode = state()
@@ -116,7 +122,7 @@ export function createMatchDebug({
 		remember()
 	}
 	const spawn = (allied) => {
-		if (!allowed()) return false
+		if (isLobby || !allowed()) return false
 		const side = allied ? 'ally' : 'enemy'
 		const team = allied ? hero().team : hero().team === 'A' ? 'B' : 'A'
 		const spawned = sim.spawnHero(
@@ -132,7 +138,7 @@ export function createMatchDebug({
 		return !!spawned
 	}
 	const clear = (allied) => {
-		if (!allowed()) return false
+		if (isLobby || !allowed()) return false
 		const team = allied ? hero().team : hero().team === 'A' ? 'B' : 'A'
 		sim.clearHeroes(team, local)
 		remember()
@@ -222,7 +228,7 @@ export function createMatchDebug({
 			return true
 		},
 		resetMatch() {
-			if (!canPause() || !app.session.actions.includes('restart')) return false
+			if (isLobby || !canPause() || !app.session.actions.includes('restart')) return false
 			remember()
 			app.intents.cancel(local)
 			clearCamera()
@@ -252,7 +258,7 @@ export function createMatchDebug({
 			waves: initial.waves,
 			botsEnabled: initial.botsEnabled,
 		})
-		if (initial.tryRoster) {
+		if (!isLobby && initial.tryRoster) {
 			for (const team of ['A', 'B']) sim.clearHeroes(team, local)
 			for (const seat of initial.tryRoster)
 				sim.spawnHero(
@@ -284,34 +290,38 @@ export function createMatchDebug({
 			groups.push(child)
 			return child
 		}
-		const match = group('Match')
+		const match = group(isLobby ? 'Lobby' : 'Match')
 		match.add(values, 'paused').name('pause / resume').listen()
 		match.add(values, 'step').name('step one tick')
 		match
 			.add(values, 'speed', tune.testing.speedMin, tune.testing.speedMax, tune.testing.speedStep)
 			.name('speed ×')
 			.listen()
-		match.add(values, 'waves').name('minion waves').listen()
-		match.add(values, 'botsEnabled').name('bots active').listen()
-		match.add(values, 'resetMatch').name('reset match')
+		if (!isLobby) {
+			match.add(values, 'waves').name('minion waves').listen()
+			match.add(values, 'botsEnabled').name('bots active').listen()
+			match.add(values, 'resetMatch').name('reset match')
+		}
 		const player = group('Your hero')
 		player.add(values, 'noCooldowns').name('no cooldowns').listen()
 		player.add(values, 'godMode').name('god mode').listen()
 		player.add(values, 'level', tune.hero.level, tune.levels.cap, 1).name('team level').listen()
 		player.add(values, 'respawn').name('respawn now')
 		player.add(values, 'resetCooldowns').name('reset cooldowns')
-		const choices = Object.fromEntries(
-			listedHeroes({ ...setup, debug: true }).map((h) => [h.name, h.id]),
-		)
-		for (const [name, side, spawnKey, clearKey] of [
-			['Allied heroes', 'ally', 'spawnAlly', 'clearAllies'],
-			['Enemy heroes', 'enemy', 'spawnEnemy', 'clearEnemies'],
-		]) {
-			const team = group(name)
-			team.add(values, `${side}Hero`, choices).name('hero').onChange(remember)
-			team.add(values, `${side}Bot`).name('spawn as bot').onChange(remember)
-			team.add(values, spawnKey).name('spawn hero')
-			team.add(values, clearKey).name('clear heroes')
+		if (!isLobby) {
+			const choices = Object.fromEntries(
+				listedHeroes({ ...setup, debug: true }).map((h) => [h.name, h.id]),
+			)
+			for (const [name, side, spawnKey, clearKey] of [
+				['Allied heroes', 'ally', 'spawnAlly', 'clearAllies'],
+				['Enemy heroes', 'enemy', 'spawnEnemy', 'clearEnemies'],
+			]) {
+				const team = group(name)
+				team.add(values, `${side}Hero`, choices).name('hero').onChange(remember)
+				team.add(values, `${side}Bot`).name('spawn as bot').onChange(remember)
+				team.add(values, spawnKey).name('spawn hero')
+				team.add(values, clearKey).name('clear heroes')
+			}
 		}
 		folder.add(values, 'copyLink').name('copy Try Mode link')
 		folder.add(values, 'linkStatus').name('clipboard').disable().listen()
