@@ -33,7 +33,11 @@ export function setQuickCast(on) {
 
 // Step to the next preset, wrapping, and remember it.
 export function cyclePreset() {
-	controls.preset = PRESET_IDS[(PRESET_IDS.indexOf(controls.preset) + 1) % PRESET_IDS.length]
+	return setPreset(PRESET_IDS[(PRESET_IDS.indexOf(controls.preset) + 1) % PRESET_IDS.length])
+}
+
+export function setPreset(id) {
+	controls.preset = PRESET_IDS.includes(id) ? id : 'moba'
 	controls.attackArmed = false
 	write(PRESET_KEY, controls.preset)
 	return controls.preset

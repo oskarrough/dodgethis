@@ -222,3 +222,59 @@
 		font-size: 1.3em;
 	}
 }
+/* Bottom right: the control preset on a scrap of the splash's paper (lobby-controls.js), and above
+   it the one-time WASD offer, lifted and tilted like a note pinned on. Pad and touch don't use it. */
+.lobby-controls {
+	position: absolute;
+	right: 16px;
+	bottom: 16px;
+	z-index: 3;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: 10px;
+}
+.front-lobby:is([data-device='gamepad'], [data-device='touch']) .lobby-controls {
+	display: none;
+}
+.front-lobby .lobby-controls button {
+	margin: 0;
+	padding: 4px 10px;
+	border: 12px solid transparent;
+	border-image: url('/splash/paper.webp') 64 fill / 12px / 0 stretch;
+	background: none;
+	color: var(--ui-text);
+	font: 400 clamp(13px, 1.1vw, 18px) / 1 var(--ui-font);
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	white-space: nowrap;
+	cursor: pointer;
+	filter: drop-shadow(2px 4px 3px color-mix(in srgb, var(--ui-text) 18%, transparent));
+	transition: transform 0.12s cubic-bezier(0.2, 1.9, 0.45, 1);
+}
+.front-lobby .lobby-controls button:hover,
+.front-lobby .lobby-controls button:focus-visible {
+	outline: none;
+	transform: translateY(-2px) rotate(-1deg);
+}
+.front-lobby .lobby-controls button:active {
+	transform: translate(1px, 2px) scale(0.96);
+	transition-duration: 0.06s;
+}
+.lobby-controls .lobby-controls-offer {
+	rotate: -3deg;
+	background: none;
+	color: var(--ui-text);
+}
+.lobby-controls .lobby-controls-offer[hidden] {
+	display: none;
+}
+.lobby-controls-offer kbd {
+	margin-left: 0.5em;
+	padding: 0.1em 0.35em 0;
+	border: 2px solid var(--ui-text);
+	border-radius: 0.55em;
+	background: var(--ui-cream);
+	font: inherit;
+	font-size: 0.8em;
+}

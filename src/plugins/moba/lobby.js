@@ -14,6 +14,7 @@ import { bowlExtent, createWeatherBowl } from './lobby-bowl.js'
 import { HEROES, listedHeroes } from './heroes.js'
 import { createHeroStrip, createLobbyHeroes } from './lobby-heroes.js'
 import { createNumbers } from './front/numbers.js'
+import { createLobbyControls } from './lobby-controls.js'
 import { playUse } from './sounds.js'
 import './lobby.css'
 
@@ -39,6 +40,7 @@ export function createLobby({
 	el.setAttribute('aria-label', 'Try your hero in the lobby')
 	el.innerHTML = '<div class="lobby-pick-stamp" aria-live="polite"></div>'
 	const { back: backButton, online: onlineEntry } = createCornerNav(el, { label: 'Back to splash' })
+	const lobbyControls = createLobbyControls(el, { onChange: () => app.intents.cancel(hero.id) })
 	el.prepend(backdrop.el, canvas)
 	canvas.classList.add('front-canvas')
 	canvas.inert = false
@@ -586,6 +588,7 @@ export function createLobby({
 			}
 			if (event.code !== 'Backquote') touch = mouse = false
 			if (numbers.key(event)) return
+			if (!ending && lobbyControls.key(event)) return
 			if (
 				ending ||
 				event.repeat ||
@@ -730,6 +733,7 @@ export function createLobby({
 		() => {
 			stopSlides()
 			numbers.dispose()
+			lobbyControls.dispose()
 			strip.dispose()
 			lobbyHeroes.dispose()
 			props.dispose()
