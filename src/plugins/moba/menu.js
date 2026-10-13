@@ -1,5 +1,6 @@
 import { tune } from './tune.js'
-import { controls, setQuickCast } from '../../core/controls.js'
+import { controls, cyclePreset, setQuickCast } from '../../core/controls.js'
+import { PRESETS } from '../../core/intents.js'
 import { hex } from '../../core/style.js'
 import { createCornerNav } from '../../core/corner-nav.js'
 import { createRecap } from './recap.js'
@@ -66,6 +67,7 @@ export function createMatchMenu({
 		resetInput()
 		app.audio.setMusicScene(paused ? 'paused' : 'play')
 		if (!paused) return app.overlay.hide()
+		presetAction.label = presetLabel()
 		app.overlay.show({
 			title: 'PAUSED',
 			theme: 'moba-pause',
@@ -74,8 +76,9 @@ export function createMatchMenu({
 			actions: [
 				{ label: 'Resume', onSelect: toggle },
 				{ label: 'Leave game', onSelect: quit },
-				// A setting, not an action: the last cursor stop, drawn as a checkbox under the two.
+				// Settings, not actions: the last cursor stops, drawn small under the two.
 				{ label: 'Quick cast', onSelect: toggleQuickCast },
+				presetAction,
 			],
 		})
 		const card = document.querySelector('.overlay[data-theme="moba-pause"] .dialog-card')
@@ -87,6 +90,16 @@ export function createMatchMenu({
 		document
 			.querySelector('.overlay[data-theme="moba-pause"] .pause-check')
 			?.setAttribute('aria-checked', String(controls.quickCast))
+	}
+	const presetLabel = () => `Controls: ${PRESETS[controls.preset]?.name ?? PRESETS.moba.name}`
+	// Cycles MOBA → WASD → keyboard only in place, dropping any held aim from the old bindings.
+	const presetAction = { label: presetLabel(), onSelect: nextPreset }
+	function nextPreset() {
+		cyclePreset()
+		app.intents.cancel(hero.id)
+		presetAction.label = presetLabel()
+		const label = document.querySelector('.overlay[data-theme="moba-pause"] .pause-preset .label')
+		if (label) label.textContent = presetAction.label
 	}
 	// The front end's paper for anything that stops play: the map's wash, day or night, and the
 	// two team inks (menu.css).
@@ -137,7 +150,8 @@ export function createMatchMenu({
 				fact('Hero', `${heroId[0].toUpperCase()}${heroId.slice(1)} <em>Lv ${level}</em>`, '勇者'),
 		)
 		facts.setAttribute('aria-label', 'Match so far')
-		const quick = card.querySelectorAll('.actions button')[2]
+		const [, , quick, preset] = card.querySelectorAll('.actions button')
+		preset?.classList.add('pause-check', 'pause-preset')
 		if (!quick) return
 		quick.classList.add('pause-check')
 		quick.setAttribute('role', 'checkbox')

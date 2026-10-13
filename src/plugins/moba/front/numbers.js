@@ -1,6 +1,8 @@
 import { tune } from '../tune.js'
 import { heroCard, traitCard, abilityCard, cardHtml } from '../tooltip.js'
 import HERO_VIEWS from '../heroes/all-hero-views.js'
+import { controls } from '../../../core/controls.js'
+import { presetKeys } from '../../../core/intents.js'
 
 // A read-only, run-owned sheet. The caller owns the clock/input hold and closing-edge consumption.
 export function createNumbers(hero, onChange) {
@@ -65,7 +67,7 @@ export function createNumbers(hero, onChange) {
 							key:
 								device === 'touch'
 									? undefined
-									: (device === 'gamepad' ? ['RB', 'RT', 'LB', 'LT'] : ['Q', 'W', 'E', 'R'])[
+									: (device === 'gamepad' ? ['RB', 'RT', 'LB', 'LT'] : presetKeys(controls.preset))[
 											Number(slot.slice(4)) - 1
 										],
 						}),
