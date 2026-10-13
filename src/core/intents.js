@@ -119,7 +119,7 @@ export function direct(device, ground) {
 // which keeps a guest well inside online's 120 messages a second.
 export const POINT_CLICK = { deadzone: 0.18, curve: 1.5, resend: 13 }
 // Keyboard and mouse presets (the pause menu picks one; the pad ignores them). `aims` hold to aim, `taps` act on press,
-// `walk` puts movement on WASD, `mouse` says what the buttons do, and `facing` aims like the pad's resting stick.
+// `walk` puts movement on WASD (`arrows` adds the arrow keys), `mouse` says what the buttons do, and `facing` aims like the pad's resting stick.
 export const PRESETS = Object.freeze({
 	moba: {
 		name: 'MOBA',
@@ -134,14 +134,16 @@ export const PRESETS = Object.freeze({
 		aims: { Digit1: 'slot1', Digit2: 'slot2', Digit3: 'slot3', Digit4: 'slot4' },
 		taps: { Digit5: 'slot5' },
 		walk: true,
+		arrows: false,
 		mouse: 'attack',
 		facing: false,
 	},
 	keyboard: {
 		name: 'Keyboard only',
-		aims: { KeyJ: 'slot1', KeyK: 'slot2', KeyL: 'slot3', KeyU: 'slot4' },
-		taps: { KeyM: 'slot5', Space: 'primary' },
+		aims: { Digit1: 'slot1', Digit2: 'slot2', Digit3: 'slot3', Digit4: 'slot4' },
+		taps: { Digit5: 'slot5', Space: 'primary' },
 		walk: true,
+		arrows: true, // its camera follows like the pad's, so the arrows are free to walk
 		mouse: null,
 		facing: true,
 	},
@@ -202,8 +204,12 @@ export function pointClick(device, ground, options = POINT_CLICK) {
 		const preset = presetOf(options.preset ?? prefs.preset)
 		if (preset.mouse !== 'orders') prefs.attackArmed = false
 		const held = (code) => !!device.keyHeld?.(code)
+		const key = (wasd, arrow) => held(wasd) || (preset.arrows && held(arrow))
 		const walk = preset.walk
-			? { x: held('KeyD') - held('KeyA'), z: held('KeyS') - held('KeyW') }
+			? {
+					x: key('KeyD', 'ArrowRight') - key('KeyA', 'ArrowLeft'),
+					z: key('KeyS', 'ArrowDown') - key('KeyW', 'ArrowUp'),
+				}
 			: { x: 0, z: 0 }
 		// Keyboard only: aim along the walk like a pushed stick, or at rest like a resting one.
 		const facingAim = (slot) => {
