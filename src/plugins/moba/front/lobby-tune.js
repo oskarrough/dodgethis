@@ -32,8 +32,9 @@ export const lobby = {
 		sound: { freq: 620, slideTo: 980, dur: 0.14, gain: 0.08, type: 'triangle' },
 		denySound: { freq: 120, slideTo: 70, dur: 0.18, gain: 0.1, type: 'square' },
 	},
-	// The hero strip leans on the saucer's left lip, each card `overlap` of its width inside the lip.
-	strip: { overlap: 0.3 },
+	// The hero strip leans on the saucer's left lip, each card `overlap` of its width inside the lip;
+	// it only reseats when the lip moves more than `settle` px, so camera breathing can't jiggle it.
+	strip: { overlap: 0.3, settle: 6 },
 	// Spindrift from your hero card to your plate (lobby-dust.js): blown sand painted on the glaze
 	// along a curve leaving `fromCard` of the card's width in from its right edge, bowed `bow` m
 	// and swaying `swing` m, `width` m either side of its middle and pinched at both ends. The sand

@@ -82,7 +82,11 @@ export function createHeroStrip({ el, heroes, current, pick, openNumbers }) {
 			// between two places every frame.
 			const middle = strip.offsetLeft + button.offsetLeft - seats[i] + button.offsetWidth / 2
 			const to = lipAt(box.top + box.height / 2) + button.offsetWidth * (overlap - 0.5)
-			seats[i] = Math.max(0, to - middle)
+			// The camera breathes; following every sub-pixel of it made the cards jiggle, so only a
+			// real move (a resize, a new framing) reseats them.
+			const next = Math.round(Math.max(0, to - middle))
+			if (Math.abs(next - seats[i]) < tune.lobby.strip.settle) continue
+			seats[i] = next
 			button.style.setProperty('--seat', `${seats[i]}px`)
 		}
 	}
