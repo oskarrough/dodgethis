@@ -46,6 +46,7 @@ export const lobby = {
 		band: 0.11,
 		corner: 0.22,
 		tint: 0.18,
+		saturation: 0.6, // team glaze keeps this share of its saturation, so holograms read on it
 		well: '#fbf6ea',
 		fillY: 0.05, // holograms and labels stand on the plate here
 		label: 'Ready', // printed beside your plate until you stand in it
@@ -60,6 +61,9 @@ export const lobby = {
 			swayRate: 0.35,
 			opacity: 0.85,
 			lines: 14,
+			lift: 0.55, // fill pulled toward cream, off its plate's team colour
+			core: 0.75, // face-on opacity; the rim goes to full
+			outline: 1, // ink silhouette
 			face: 0.75, // eyes wear the picked difficulty's mood, sized to the head
 			faceGap: 0.03,
 		},

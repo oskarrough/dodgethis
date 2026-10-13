@@ -159,8 +159,12 @@ export function createLobbyProps(
 		owned.push(m)
 		return { m, order }
 	}
-	const tone = (role) =>
-		new THREE.Color(PALETTE[role]).lerp(new THREE.Color(PALETTE.cream), tune.lobby.ready.tint)
+	const tone = (role) => {
+		const c = new THREE.Color(PALETTE[role])
+		if (role.startsWith('team'))
+			c.offsetHSL(0, -c.getHSL({}).s * (1 - tune.lobby.ready.saturation), 0)
+		return c.lerp(new THREE.Color(PALETTE.cream), tune.lobby.ready.tint)
+	}
 	const groove = glaze(PALETTE.ink, -1.9),
 		well = glaze(tune.lobby.ready.well, -1.7)
 	const picked = glaze(tone('ammo'), -1.6)
@@ -202,7 +206,13 @@ export function createLobbyProps(
 	const holo = tune.lobby.ready.hologram
 	const holoMaterials = Object.fromEntries(
 		['A', 'B'].map((team) => {
-			const m = hologramMaterial(team, { opacity: holo.opacity, lines: holo.lines })
+			const m = hologramMaterial(team, {
+				opacity: holo.opacity,
+				lines: holo.lines,
+				lift: holo.lift,
+				core: holo.core,
+				outline: holo.outline,
+			})
 			owned.push(m)
 			return [team, m]
 		}),

@@ -170,7 +170,11 @@ export function createLobbyFlow(scene, readySeats, local) {
 	const lipOf = glaze({ color: PALETTE.ink }, -1.9)
 	const bedOf = glaze({ vertexColors: true }, -1.75)
 	const fillOf = glaze({ vertexColors: true }, -1.65)
-	const tone = (role) => new THREE.Color(PALETTE[role]).lerp(new THREE.Color(PALETTE.cream), r.tint)
+	const tone = (role) => {
+		const c = new THREE.Color(PALETTE[role])
+		if (role.startsWith('team')) c.offsetHSL(0, -c.getHSL({}).s * (1 - r.saturation), 0)
+		return c.lerp(new THREE.Color(PALETTE.cream), r.tint)
+	}
 	const bed = new THREE.Color(g.bed),
 		shadow = bed.clone().lerp(new THREE.Color(PALETTE.ink), g.shadow),
 		cream = new THREE.Color(PALETTE.cream)
