@@ -71,11 +71,12 @@ export const lobby = {
 	},
 	// What the plates are for (#30), all live: bots walk onto their plates as you arrive (`walk`, from
 	// `from` of the way out from the middle), your plate ripples until you stand in it, and a groove runs
-	// from each plate into a trunk up the aisle (`groove.z` deep) and on under the bowl (`into` of its
-	// radius). `style` is the default for `?flow=`: run (the glaze runs along the grooves), rise (it
-	// rises up out of their floors), off. A branch fills from `lead` of its plate's glaze, drains in `drain` s.
+	// from each plate into a trunk up the aisle (`groove.z` deep), turns `into` the bowl's radius out and
+	// dives under it. A branch fills from `lead` of its plate's glaze and drains in `drain` s. The last
+	// plate to glaze drives the glaze on under the bowl and round inside it (`pool.width` wide). Where
+	// branches join, their glazes run side by side for about `mix.reach` m, then marble together in
+	// streaks `mix.spacing` m apart.
 	flow: {
-		style: 'run',
 		walk: { delay: 0.3, stagger: 0.2, time: 0.7, from: 0.2, hops: 3, hop: 0.12 },
 		ripple: { period: 1.4, grow: 0.35, opacity: 0.55 },
 		groove: {
@@ -93,6 +94,8 @@ export const lobby = {
 			drain: 0.5,
 			taper: 0.1,
 			front: 0.3,
+			mix: { reach: 1.2, side: 1.6, swirl: 0.85, spacing: 0.9, speed: 0.5, twist: 2.2, sharp: 3 },
+			pool: { width: 0.24 },
 			glint: { spacing: 1.2, speed: 0.5, amount: 0.3 },
 		},
 	},

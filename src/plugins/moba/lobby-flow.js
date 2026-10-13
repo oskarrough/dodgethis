@@ -5,15 +5,9 @@ import { tune } from './tune.js'
 
 // What the plates are for, shown rather than said: bots walk onto their plates as you arrive, your
 // own plate ripples until you stand in it, and a groove inlaid in the glaze runs from every plate into
-// a trunk that carries on to the weather bowl. Each branch fills as its plate glazes; the trunk fills
-// by the share of glazed plates, so it reaches the bowl only once everyone is in.
-// `?flow=` picks how the glaze fills the grooves: run (along them, toward the bowl), rise (up from the
-// groove's floor, all along at once), off (the lobby without any of it). Read at load, before the
-// splash rewrites the address, so it holds through the splash and back from a match.
-const askedFlow = new URLSearchParams(globalThis.location?.search).get('flow')
-export function lobbyFlowStyle() {
-	return ['run', 'rise', 'off'].includes(askedFlow) ? askedFlow : tune.lobby.flow.style
-}
+// a trunk that dives under the weather bowl. Each branch fills as its plate glazes, running toward the
+// bowl; the trunk fills by the share of glazed plates, so it reaches the bowl only once everyone is in,
+// and then the glaze runs round inside the bowl. Team glazes marble together where they join.
 
 // A rounded rectangle laid flat, centred on its group.
 function plateShape(width, depth, corner) {
@@ -68,6 +62,30 @@ function groovePath(points, corner, step) {
 	return { at, normals, along, length }
 }
 
+// Half a circle of radius `radius` round [x, z], from angle `from` the way `turn` (±1) goes, sampled
+// every `step` m; its normals point out from the middle.
+function ringPath([x, z], radius, from, turn, step) {
+	const n = Math.max(2, Math.ceil((Math.PI * radius) / step))
+	const at = [],
+		normals = [],
+		along = []
+	for (let i = 0; i <= n; i++) {
+		const a = from + (turn * Math.PI * i) / n
+		normals.push(new THREE.Vector2(Math.cos(a), Math.sin(a)))
+		at.push(new THREE.Vector2(x + Math.cos(a) * radius, z + Math.sin(a) * radius))
+		along.push((Math.PI * radius * i) / n)
+	}
+	return { at, normals, along, length: Math.PI * radius }
+}
+
+// The index of the sample on `path` nearest [x, z].
+function nearest(path, [x, z]) {
+	let best = 0
+	for (let i = 1; i < path.at.length; i++)
+		if (path.at[i].distanceTo({ x, y: z }) < path.at[best].distanceTo({ x, y: z })) best = i
+	return best
+}
+
 // The groove's cross-section, edge to edge: the lips, then where the shadow under the lit lip ends.
 const ACROSS = [-1, -0.45, 0.45, 1]
 
@@ -113,12 +131,12 @@ function paintRibbon(geometry, path, colorAt) {
 	geometry.attributes.color.needsUpdate = true
 }
 
-export function createLobbyFlow(scene, readySeats, local, style = lobbyFlowStyle()) {
+export function createLobbyFlow(scene, readySeats, local) {
 	const f = tune.lobby.flow,
 		g = f.groove,
+		m = g.mix,
 		r = tune.lobby.ready,
 		b = tune.lobby.bowl
-	const on = style !== 'off'
 	const root = new THREE.Group()
 	root.name = 'lobby-flow'
 	scene.add(root)
@@ -174,25 +192,39 @@ export function createLobbyFlow(scene, readySeats, local, style = lobbyFlowStyle
 		return { path, half: half - g.margin, fill, color, level: 0 }
 	}
 	// Each plate's branch leaves its well's inner side for the trunk halfway between the columns; the
-	// trunk runs up the aisle, past the plates' far end, and on under the bowl.
+	// trunk runs up the aisle, past the plates' far end, and dives under the bowl to its middle.
 	const xs = readySeats.seats.map((s) => s.x),
 		zs = readySeats.seats.map((s) => s.z)
 	const aisle = (Math.min(...xs) + Math.max(...xs)) / 2
 	const well = r.width / 2 - r.borderWidth - r.band - g.margin
-	const branches = readySeats.seats.map((seat) => {
-		const side = Math.sign(aisle - seat.x)
-		const from = [seat.x + side * well, seat.z]
-		return { seat, ...groove([from, [aisle, seat.z]], g.width, tone(`team${seat.team}`)) }
-	})
+	const turn = [b.x - b.radius * g.into, g.z]
 	const trunk = groove(
-		[
-			[aisle, Math.max(...zs)],
-			[aisle, g.z],
-			[b.x - b.radius * g.into, g.z],
-		],
+		[[aisle, Math.max(...zs)], [aisle, g.z], turn, [b.x, b.z]],
 		g.trunk,
 		tone('bowl'),
 	)
+	const branches = readySeats.seats.map((seat) => {
+		const side = Math.sign(aisle - seat.x)
+		const from = [seat.x + side * well, seat.z]
+		const lane = groove([from, [aisle, seat.z]], g.width, tone(`team${seat.team}`))
+		// Where it joins the trunk, and on which side of the trunk's flow it pours in.
+		const i = nearest(trunk.path, [aisle, seat.z])
+		const n = trunk.path.normals[i]
+		return { seat, ...lane, join: trunk.path.along[i], side: Math.sign(n.x * -side) }
+	})
+	// Inside the bowl the glaze comes up through its floor and runs both ways round the cloud bed,
+	// meeting at the back. Drawn after the bowl so its wall and the miniature still cover it.
+	const pools = [-1, 1].map((way) => {
+		const wall = b.radius * 0.86 - b.wall - g.lip
+		const from = Math.atan2(turn[1] - b.z, turn[0] - b.x)
+		const path = ringPath([b.x, b.z], wall - g.pool.width / 2, from, way, g.step)
+		const lip = glaze({ color: PALETTE.ink }, 1)(ribbon(path))
+		const fill = glaze({ vertexColors: true }, 1.1)(ribbon(path))
+		for (const mesh of [lip, fill]) mesh.position.y += b.height * 0.58 + 0.01
+		return { path, half: g.pool.width / 2, fill, lip, level: 0 }
+	})
+	// How far along the trunk its turn toward the bowl is, just outside the bowl's rim.
+	const rim = trunk.path.along[nearest(trunk.path, turn)]
 	const yours = tone('ammo')
 	// Your plate ripples out from under its rim until you stand in it.
 	const ripple = forward(
@@ -213,7 +245,6 @@ export function createLobbyFlow(scene, readySeats, local, style = lobbyFlowStyle
 	ripple.position.y = tune.map.printLayers.lobby
 	ripple.renderOrder = -2
 	ripple.visible = false
-	root.visible = on
 	// Bots walk on: each from where it last stood (the saucer's middle when new), one after another.
 	const arrivals = new Map() // bot id → { seat, from, at }
 	let start = null,
@@ -231,34 +262,51 @@ export function createLobbyFlow(scene, readySeats, local, style = lobbyFlowStyle
 		return entry
 	}
 	function walkOf(seat, time) {
-		if (!on || !seat.occupant?.bot) return null
+		if (!seat.occupant?.bot) return null
 		const a = arrive(seat, time)
 		const k = Math.max(0, Math.min(1, (time - a.at) / f.walk.time))
 		return { a, k }
 	}
-	// The glaze in a groove: run fills it from its start toward the bowl, a rounded front leading; rise
-	// fills it everywhere at once, a trickle down the middle that widens to the lips.
-	function pour(lane, time, color) {
+	// The trunk's glaze `s` m along it, `across` its width (-1 to 1): the branches that joined upstream,
+	// each running down its own side at first, then marbled with the others in streaks that drift
+	// toward the bowl. Weights are sharpened so the streaks stay apart instead of averaging to mud.
+	const tint = new THREE.Color()
+	function mix(out, s, across, time) {
+		out.setRGB(0, 0, 0)
+		const upstream = branches.some((lane) => lane.level > 0 && lane.join <= s)
+		let total = 0
+		for (const [k, lane] of branches.entries()) {
+			if (lane.level <= 0 || (upstream && lane.join > s)) continue
+			const near = Math.exp(-Math.max(0, s - lane.join) / m.reach)
+			const side = Math.max(0, 1 + near * m.side * across * lane.side)
+			const wave = (s / (m.spacing * (1 + 0.13 * k)) - time * m.speed) * 2 * Math.PI
+			const swirl = Math.max(0, 1 + m.swirl * Math.sin(wave + across * m.twist + k * 2.4))
+			const w = lane.level * (side * swirl) ** m.sharp + 1e-4
+			out.add(tint.copy(lane.tint).multiplyScalar(w))
+			total += w
+		}
+		return total > 0 ? out.multiplyScalar(1 / total) : out.copy(trunk.color)
+	}
+	// The glaze runs along a groove from its start, a paler rounded front leading; glints drift on it.
+	function pour(lane, time, colorAt) {
 		const { path, fill, level } = lane
 		fill.visible = level > 0
+		if (lane.lip) lane.lip.visible = fill.visible
 		if (!fill.visible) return
 		const front = level * path.length
-		shapeRibbon(fill.geometry, path, (s) =>
-			style === 'rise'
-				? lane.half * level
-				: lane.half * Math.sqrt(Math.max(0, Math.min(1, (front - s) / g.taper))),
-		)
-		// Glints drift along it toward the bowl, and the running front is paler, like wet glaze.
-		paintRibbon(fill.geometry, path, (out, s) => {
+		const width = (s) => lane.half * Math.sqrt(Math.max(0, Math.min(1, (front - s) / g.taper)))
+		shapeRibbon(fill.geometry, path, width)
+		if (lane.lip) shapeRibbon(lane.lip.geometry, path, (s) => (width(s) > 0 ? width(s) + g.lip : 0))
+		paintRibbon(fill.geometry, path, (out, s, i, c) => {
 			const glint =
 				(0.5 + 0.5 * Math.sin((s / g.glint.spacing - time * g.glint.speed) * 2 * Math.PI)) ** 8
-			const wet = style === 'run' && level < 1 ? Math.max(0, 1 - (front - s) / g.front) : 0
-			out.copy(color).lerp(cream, Math.max(glint * g.glint.amount, wet * 0.6))
+			const wet = level < 1 ? Math.max(0, 1 - (front - s) / g.front) : 0
+			colorAt(out, s, c)
+			out.lerp(cream, Math.max(glint * g.glint.amount, wet * 0.6))
 		})
 	}
 	let now = 0
 	return {
-		style,
 		// Where a bot's hologram stands on its way to its plate, relative to the plate; null once on it.
 		offset(seat) {
 			const w = walkOf(seat, now)
@@ -281,7 +329,6 @@ export function createLobbyFlow(scene, readySeats, local, style = lobbyFlowStyle
 			const dt = Math.max(0, time - now)
 			now = time
 			start ??= time
-			if (!on) return
 			const mine = readySeats.seatOf(local)
 			ripple.visible = !!mine && progressOf(mine) === 0
 			if (ripple.visible) {
@@ -299,10 +346,24 @@ export function createLobbyFlow(scene, readySeats, local, style = lobbyFlowStyle
 				const p = progressOf(lane.seat)
 				settle(lane, Math.max(0, (p - g.lead) / (1 - g.lead)))
 				total += lane.level
-				pour(lane, time, lane.seat === mine ? yours : lane.color)
+				lane.tint = lane.seat === mine ? yours : lane.color
+				pour(lane, time, (out) => out.copy(lane.tint))
 			}
-			settle(trunk, total / branches.length)
-			pour(trunk, time, trunk.color)
+			// The shared glaze stops at the bowl's rim until the last plate glazes, which drives it on under
+			// the bowl and round inside it, so it only reaches the map once everyone is in.
+			const share = total / branches.length,
+				waiting = 1 - 1 / branches.length
+			const front =
+				share <= waiting
+					? (share / waiting) * rim
+					: rim +
+						((share - waiting) / (1 - waiting)) * (trunk.path.length + pools[0].path.length - rim)
+			settle(trunk, Math.min(1, front / trunk.path.length))
+			pour(trunk, time, (out, s, c) => mix(out, s, ACROSS[c], time))
+			for (const pool of pools) {
+				settle(pool, Math.max(0, Math.min(1, (front - trunk.path.length) / pool.path.length)))
+				pour(pool, time, (out, s, c) => mix(out, trunk.path.length + s, ACROSS[c], time))
+			}
 		},
 		dispose() {
 			root.removeFromParent()

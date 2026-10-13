@@ -4,7 +4,7 @@
 // `route(url)` is main.js's boot routing, rerun when Back or Forward lands on another screen.
 
 // Dev and look switches outlive every screen; match switches only outlive lobby and match.
-const KEEP = ['debug', 'skin', 'flow']
+const KEEP = ['debug', 'skin']
 const KEEP_IN_MATCH = ['seed', 'edgePan', 'bots-only']
 // A dodgeball debug scenario (dodgeball/scenario.js) reads these on reload.
 const KEEP_IN_DODGEBALL = [
