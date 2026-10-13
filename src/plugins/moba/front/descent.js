@@ -269,6 +269,7 @@ export function startLoading(
 		let padBack = !!app.input.pad()?.buttons[1]
 		// Every other key goes nowhere until landing; releases still reach input.
 		function key(event) {
+			if (event.ctrlKey || event.metaKey || event.altKey) return
 			if (event.code === 'Backquote' || event.target?.closest?.('.lil-gui')) return
 			event.preventDefault()
 			event.stopImmediatePropagation()

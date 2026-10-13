@@ -37,6 +37,14 @@ let dashQueued = false
 let padDashQueued = false
 
 window.addEventListener('keydown', (e) => {
+	// Browser shortcuts and typing must not queue actions or become held movement.
+	if (
+		e.ctrlKey ||
+		e.metaKey ||
+		e.altKey ||
+		e.target?.closest?.('input, textarea, select, [contenteditable]')
+	)
+		return
 	device = 'keyboard'
 	if (e.code === 'Space') {
 		if (!e.repeat) jumpQueued = true
@@ -45,11 +53,9 @@ window.addEventListener('keydown', (e) => {
 	if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
 		if (!e.repeat) dashQueued = true
 	}
-	// Ctrl/Cmd/Alt chords belong to the browser (Ctrl+1 switches tabs), never to the game.
-	const typing = !!e.target?.closest?.('input, textarea') || e.ctrlKey || e.metaKey || e.altKey
 	const digit = /^Digit([1-5])$/.exec(e.code)
-	if (digit && !e.repeat && !typing) slotQueued = `slot${digit[1]}`
-	if (!e.repeat && !typing && keyEdges.length < 16) keyEdges.push(e.code)
+	if (digit && !e.repeat) slotQueued = `slot${digit[1]}`
+	if (!e.repeat && keyEdges.length < 16) keyEdges.push(e.code)
 	keys.add(e.code)
 })
 // Every key-up, in order, so a hold-to-aim scheme never misses a release. Blur clears them (and the held set) instead.

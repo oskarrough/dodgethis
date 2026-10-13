@@ -27,7 +27,7 @@ export function createCameraControls(
 			if (e.code === 'Space') centred = false
 			return
 		}
-		if (e.defaultPrevented || !active()) return
+		if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || !active()) return
 		if (e.target?.closest?.('input, textarea, select, [contenteditable]')) return
 		e.preventDefault()
 		if (e.code === 'Space') {

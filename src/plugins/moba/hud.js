@@ -150,6 +150,7 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 	const top = el('div', 'moba-score moba-top')
 	top.setAttribute('role', 'group')
 	top.setAttribute('aria-label', 'Match status')
+	el('span', 'moba-objective', top).textContent = 'Destroy the enemy core to win'
 	const summary = el('span', 'moba-sr', top)
 	const sides = {}
 	const side = (which) => {
@@ -240,7 +241,6 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 	let alt = false
 	const onAlt = (e) => {
 		if (e.key !== 'Alt') return
-		if (e.type === 'keydown') e.preventDefault() // keeps Firefox's menu bar shut
 		alt = e.type === 'keydown'
 	}
 	const onBlur = () => (alt = false)
@@ -264,6 +264,7 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 		while (!available(inspect.index))
 	}
 	const onKey = (e) => {
+		if (e.ctrlKey || e.metaKey || e.altKey) return
 		if (e.type !== 'keydown' || e.target?.closest?.('input, textarea, select, [contenteditable]'))
 			return
 		if (e.code === KEY_INSPECT && !e.repeat) {

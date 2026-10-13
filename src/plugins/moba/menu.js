@@ -242,6 +242,7 @@ export function createMatchMenu({
 	window.addEventListener(
 		'keydown',
 		(event) => {
+			if (event.ctrlKey || event.metaKey || event.altKey) return
 			if (event.code !== 'Tab' || event.defaultPrevented || app.overlay.visible) return
 			if (event.target?.closest?.('input, textarea, select, [contenteditable]')) return
 			event.preventDefault()

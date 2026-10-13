@@ -581,6 +581,7 @@ export function createLobby({
 		'keydown',
 		(event) => {
 			if (event.target?.closest?.('dialog')) return
+			if (event.ctrlKey || event.metaKey || event.altKey) return
 			heldKeys.add(event.code)
 			// Lobby arrows select options before the shared movement input sees them.
 			if (event.code.startsWith('Arrow')) {

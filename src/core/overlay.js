@@ -164,6 +164,7 @@ export function createOverlay(selector = '.overlay') {
 	}
 
 	window.addEventListener('keydown', (e) => {
+		if (e.ctrlKey || e.metaKey || e.altKey) return
 		if (el.hidden || !actions.length) return
 		if (e.code === 'Tab') {
 			const focusable = buttons
