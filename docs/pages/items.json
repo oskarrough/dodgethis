@@ -1,17 +1,17 @@
 [
 	{
-		"at": "2026-10-13T07:50:08.609Z",
+		"at": "2026-10-13T08:18:08.255Z",
 		"title": "Lobby: plates flow to the map (#30)",
-		"ask": "Which flow reads best: motes (a stream of team sparks) or thread (a line that draws itself as the plate fills)? Play each from the links on the page. Bots walk onto their plates as you arrive in both.",
+		"ask": "Grooves inlaid in the glaze run from each plate into a trunk that carries on under the bowl; the trunk reaches the bowl only once everyone is in. Which fill reads best: run (the glaze runs along the grooves) or rise (it rises out of their floors)? Play each: /?flow=run, /?flow=rise, /?flow=off.",
 		"status": "To review",
 		"decision": "",
 		"media": [
-			"review/media/2026-10-13-lobby-plates-flow-to-the-map-30-/motes.png",
-			"review/media/2026-10-13-lobby-plates-flow-to-the-map-30-/thread.png",
-			"review/media/2026-10-13-lobby-plates-flow-to-the-map-30-/motes-arrive.png"
+			"review/media/2026-10-13-lobby-plates-flow-to-the-map-30-/run.png",
+			"review/media/2026-10-13-lobby-plates-flow-to-the-map-30-/rise-bots.png",
+			"review/media/2026-10-13-lobby-plates-flow-to-the-map-30-/run-fill.webm"
 		],
 		"links": [],
-		"thread": "thr_6hfvuvr5v2",
+		"thread": "thr_ts8be2djym",
 		"page": "2026-10-13-lobby-plates-flow-to-the-map-30-/"
 	},
 	{

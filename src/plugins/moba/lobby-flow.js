@@ -4,12 +4,15 @@ import { FORWARD_LAYER } from '../../core/stylepass.js'
 import { tune } from './tune.js'
 
 // What the plates are for, shown rather than said: bots walk onto their plates as you arrive, your
-// own plate ripples until you stand in it, and every glazed plate sends its light to the weather bowl.
-// `?flow=` picks the look (motes, thread, off); off is the lobby without any of it. Read at load,
-// before the splash rewrites the address, so it holds through the splash and back from a match.
+// own plate ripples until you stand in it, and a groove inlaid in the glaze runs from every plate into
+// a trunk that carries on to the weather bowl. Each branch fills as its plate glazes; the trunk fills
+// by the share of glazed plates, so it reaches the bowl only once everyone is in.
+// `?flow=` picks how the glaze fills the grooves: run (along them, toward the bowl), rise (up from the
+// groove's floor, all along at once), off (the lobby without any of it). Read at load, before the
+// splash rewrites the address, so it holds through the splash and back from a match.
 const askedFlow = new URLSearchParams(globalThis.location?.search).get('flow')
 export function lobbyFlowStyle() {
-	return ['motes', 'thread', 'off'].includes(askedFlow) ? askedFlow : tune.lobby.flow.style
+	return ['run', 'rise', 'off'].includes(askedFlow) ? askedFlow : tune.lobby.flow.style
 }
 
 // A rounded rectangle laid flat, centred on its group.
@@ -30,51 +33,89 @@ function plateShape(width, depth, corner) {
 	return new THREE.ShapeGeometry(s, 6).rotateX(-Math.PI / 2)
 }
 
-const moteShader = {
-	vertexShader: `
-		attribute float aAlpha;
-		uniform float uSize;
-		varying float vAlpha;
-		void main() {
-			vAlpha = aAlpha;
-			vec4 view = modelViewMatrix * vec4(position, 1.0);
-			gl_PointSize = uSize / -view.z;
-			gl_Position = projectionMatrix * view;
-		}`,
-	fragmentShader: `
-		uniform vec3 uColor;
-		varying float vAlpha;
-		void main() {
-			// Solid team sparks with a pale heart: the saucer is cream, so light alone would vanish.
-			float d = length(gl_PointCoord - 0.5) * 2.0;
-			float heart = smoothstep(0.55, 0.0, d);
-			gl_FragColor = vec4(mix(uColor * 0.9, vec3(1.0), heart * 0.6), smoothstep(1.0, 0.75, d) * vAlpha);
-		}`,
+// A groove's centreline through `points` ([x, z]), its corners rounded off `corner` m either side,
+// sampled every `step` m: positions, unit normals (to the left of travel) and distance along.
+function groovePath(points, corner, step) {
+	const v = points.map(([x, z]) => new THREE.Vector2(x, z))
+	const path = new THREE.CurvePath()
+	let from = v[0]
+	for (let i = 1; i < v.length; i++) {
+		const to = v[i]
+		if (i === v.length - 1) {
+			path.add(new THREE.LineCurve(from, to))
+			break
+		}
+		const next = v[i + 1]
+		const r = Math.min(corner, to.distanceTo(from) / 2, to.distanceTo(next) / 2)
+		const into = to.clone().sub(from).setLength(r),
+			out = next.clone().sub(to).setLength(r)
+		const a = to.clone().sub(into),
+			b = to.clone().add(out)
+		path.add(new THREE.LineCurve(from, a))
+		path.add(new THREE.QuadraticBezierCurve(a, to, b))
+		from = b
+	}
+	const length = path.getLength()
+	const at = path.getSpacedPoints(Math.max(2, Math.ceil(length / step)))
+	const normals = at.map((p, i) => {
+		const t = at[Math.min(i + 1, at.length - 1)]
+			.clone()
+			.sub(at[Math.max(i - 1, 0)])
+			.normalize()
+		return new THREE.Vector2(-t.y, t.x)
+	})
+	const along = at.map((_, i) => (i / (at.length - 1)) * length)
+	return { at, normals, along, length }
 }
 
-const threadShader = {
-	vertexShader: `
-		varying float vAlong;
-		void main() {
-			vAlong = uv.x;
-			gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-		}`,
-	fragmentShader: `
-		uniform vec3 uColor;
-		uniform float uReveal;
-		uniform float uTime;
-		uniform float uPulses;
-		varying float vAlong;
-		void main() {
-			if (vAlong > uReveal) discard;
-			float pulse = pow(0.5 + 0.5 * sin((vAlong * uPulses - uTime) * 6.2832), 6.0);
-			float tip = smoothstep(uReveal - 0.04, uReveal, vAlong);
-			gl_FragColor = vec4(mix(uColor, vec3(1.0), max(pulse * 0.6, tip)), 0.45 + 0.55 * max(pulse, tip));
-		}`,
+// The groove's cross-section, edge to edge: the lips, then where the shadow under the lit lip ends.
+const ACROSS = [-1, -0.45, 0.45, 1]
+
+// A flat ribbon along a groove path, four vertices across; positions and colours are rewritten live.
+function ribbon(path) {
+	const n = path.at.length
+	const geometry = new THREE.BufferGeometry()
+	geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * 12), 3))
+	geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(n * 12), 3))
+	const index = []
+	for (let i = 0; i < n - 1; i++)
+		for (let c = 0; c < 3; c++) {
+			const a = i * 4 + c,
+				b = a + 4
+			index.push(a, b, a + 1, a + 1, b, b + 1)
+		}
+	geometry.setIndex(index)
+	return geometry
+}
+
+function shapeRibbon(geometry, path, halfWidth) {
+	const p = geometry.attributes.position.array
+	for (let i = 0; i < path.at.length; i++) {
+		const w = halfWidth(path.along[i], i)
+		for (let c = 0; c < 4; c++) {
+			const k = (i * 4 + c) * 3
+			p[k] = path.at[i].x + path.normals[i].x * ACROSS[c] * w
+			p[k + 1] = 0
+			p[k + 2] = path.at[i].y + path.normals[i].y * ACROSS[c] * w
+		}
+	}
+	geometry.attributes.position.needsUpdate = true
+}
+
+function paintRibbon(geometry, path, colorAt) {
+	const p = geometry.attributes.color.array
+	const color = new THREE.Color()
+	for (let i = 0; i < path.at.length; i++)
+		for (let c = 0; c < 4; c++) {
+			colorAt(color, path.along[i], i, c)
+			color.toArray(p, (i * 4 + c) * 3)
+		}
+	geometry.attributes.color.needsUpdate = true
 }
 
 export function createLobbyFlow(scene, readySeats, local, style = lobbyFlowStyle()) {
 	const f = tune.lobby.flow,
+		g = f.groove,
 		r = tune.lobby.ready,
 		b = tune.lobby.bowl
 	const on = style !== 'off'
@@ -89,55 +130,70 @@ export function createLobbyFlow(scene, readySeats, local, style = lobbyFlowStyle
 		root.add(object)
 		return object
 	}
-	const color = (team) => new THREE.Color(PALETTE[team === 'A' ? 'teamA' : 'teamB'])
-	// Each plate's arc: up off the plate, over the saucer, down into the bowl's mouth.
-	const mouth = new THREE.Vector3(b.x, b.height + f.mouth, b.z)
-	const lanes = readySeats.seats.map((seat) => {
-		const from = new THREE.Vector3(seat.x, r.fillY, seat.z)
-		const mid = from.clone().lerp(mouth, 0.5)
-		mid.y += f.arc + from.distanceTo(mouth) * f.arcPerMetre
-		const curve = new THREE.QuadraticBezierCurve3(from, mid, mouth)
-		const lane = { seat, curve, startedAt: null }
-		if (style === 'motes') {
-			const positions = new Float32Array(f.motes.count * 3)
-			const alphas = new Float32Array(f.motes.count)
-			const geometry = own(new THREE.BufferGeometry())
-			geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
-			geometry.setAttribute('aAlpha', new THREE.BufferAttribute(alphas, 1))
-			const material = own(
-				new THREE.ShaderMaterial({
-					...moteShader,
-					uniforms: {
-						uColor: { value: color(seat.team) },
-						uSize: { value: 0 },
-					},
-					transparent: true,
-					depthWrite: false,
-				}),
-			)
-			lane.motes = forward(new THREE.Points(geometry, material))
-			lane.positions = positions
-			lane.alphas = alphas
-		}
-		if (style === 'thread') {
-			const material = own(
-				new THREE.ShaderMaterial({
-					...threadShader,
-					uniforms: {
-						uColor: { value: color(seat.team) },
-						uReveal: { value: 0 },
-						uTime: { value: 0 },
-						uPulses: { value: f.thread.pulses },
-					},
-					transparent: true,
-					depthWrite: false,
-				}),
-			)
-			const geometry = own(new THREE.TubeGeometry(curve, 64, f.thread.radius, 6))
-			lane.thread = forward(new THREE.Mesh(geometry, material))
-		}
-		return lane
+	// Grooves are glaze like the plates: forward meshes laid on the saucer in paint order, lips first,
+	// then every bed over every lip so the joins read as one channel, then the glaze running in them.
+	const glaze = (options, order) => (geometry) => {
+		const material = own(
+			new THREE.MeshBasicMaterial({
+				depthWrite: false,
+				side: THREE.DoubleSide,
+				polygonOffset: true,
+				polygonOffsetFactor: -2,
+				polygonOffsetUnits: -8,
+				...options,
+			}),
+		)
+		const mesh = forward(new THREE.Mesh(own(geometry), material))
+		mesh.position.y = tune.map.printLayers.lobby
+		mesh.renderOrder = order
+		return mesh
+	}
+	const lipOf = glaze({ color: PALETTE.ink }, -1.9)
+	const bedOf = glaze({ vertexColors: true }, -1.75)
+	const fillOf = glaze({ vertexColors: true }, -1.65)
+	const tone = (role) => new THREE.Color(PALETTE[role]).lerp(new THREE.Color(PALETTE.cream), r.tint)
+	const bed = new THREE.Color(g.bed),
+		shadow = bed.clone().lerp(new THREE.Color(PALETTE.ink), g.shadow),
+		cream = new THREE.Color(PALETTE.cream)
+	// Light falls from the screen's top left, so the lip on that side shades the bed under it.
+	const light = new THREE.Vector2(-1, -1).normalize()
+	function groove(points, width, color) {
+		const path = groovePath(points, g.corner, g.step)
+		const half = width / 2
+		const lip = lipOf(ribbon(path)),
+			floor = bedOf(ribbon(path)),
+			fill = fillOf(ribbon(path))
+		shapeRibbon(lip.geometry, path, () => half + g.lip)
+		shapeRibbon(floor.geometry, path, () => half)
+		paintRibbon(floor.geometry, path, (out, s, i, c) => {
+			const side = ACROSS[c] < 0 ? -1 : 1
+			const lit = c === 0 || c === 3 ? path.normals[i].dot(light) * side : 0
+			out.copy(bed).lerp(shadow, Math.max(0, lit))
+		})
+		fill.visible = false
+		return { path, half: half - g.margin, fill, color, level: 0 }
+	}
+	// Each plate's branch leaves its well's inner side for the trunk halfway between the columns; the
+	// trunk runs up the aisle, past the plates' far end, and on under the bowl.
+	const xs = readySeats.seats.map((s) => s.x),
+		zs = readySeats.seats.map((s) => s.z)
+	const aisle = (Math.min(...xs) + Math.max(...xs)) / 2
+	const well = r.width / 2 - r.borderWidth - r.band - g.margin
+	const branches = readySeats.seats.map((seat) => {
+		const side = Math.sign(aisle - seat.x)
+		const from = [seat.x + side * well, seat.z]
+		return { seat, ...groove([from, [aisle, seat.z]], g.width, tone(`team${seat.team}`)) }
 	})
+	const trunk = groove(
+		[
+			[aisle, Math.max(...zs)],
+			[aisle, g.z],
+			[b.x - b.radius * g.into, g.z],
+		],
+		g.trunk,
+		tone('bowl'),
+	)
+	const yours = tone('ammo')
 	// Your plate ripples out from under its rim until you stand in it.
 	const ripple = forward(
 		new THREE.Mesh(
@@ -157,6 +213,7 @@ export function createLobbyFlow(scene, readySeats, local, style = lobbyFlowStyle
 	ripple.position.y = tune.map.printLayers.lobby
 	ripple.renderOrder = -2
 	ripple.visible = false
+	root.visible = on
 	// Bots walk on: each from where it last stood (the saucer's middle when new), one after another.
 	const arrivals = new Map() // bot id → { seat, from, at }
 	let start = null,
@@ -178,6 +235,26 @@ export function createLobbyFlow(scene, readySeats, local, style = lobbyFlowStyle
 		const a = arrive(seat, time)
 		const k = Math.max(0, Math.min(1, (time - a.at) / f.walk.time))
 		return { a, k }
+	}
+	// The glaze in a groove: run fills it from its start toward the bowl, a rounded front leading; rise
+	// fills it everywhere at once, a trickle down the middle that widens to the lips.
+	function pour(lane, time, color) {
+		const { path, fill, level } = lane
+		fill.visible = level > 0
+		if (!fill.visible) return
+		const front = level * path.length
+		shapeRibbon(fill.geometry, path, (s) =>
+			style === 'rise'
+				? lane.half * level
+				: lane.half * Math.sqrt(Math.max(0, Math.min(1, (front - s) / g.taper))),
+		)
+		// Glints drift along it toward the bowl, and the running front is paler, like wet glaze.
+		paintRibbon(fill.geometry, path, (out, s) => {
+			const glint =
+				(0.5 + 0.5 * Math.sin((s / g.glint.spacing - time * g.glint.speed) * 2 * Math.PI)) ** 8
+			const wet = style === 'run' && level < 1 ? Math.max(0, 1 - (front - s) / g.front) : 0
+			out.copy(color).lerp(cream, Math.max(glint * g.glint.amount, wet * 0.6))
+		})
 	}
 	let now = 0
 	return {
@@ -201,6 +278,7 @@ export function createLobbyFlow(scene, readySeats, local, style = lobbyFlowStyle
 			return Math.max(0, Math.min(1, (now - w.a.at - f.walk.time) / r.fillTime))
 		},
 		update(time, progressOf) {
+			const dt = Math.max(0, time - now)
 			now = time
 			start ??= time
 			if (!on) return
@@ -213,38 +291,18 @@ export function createLobbyFlow(scene, readySeats, local, style = lobbyFlowStyle
 				ripple.scale.set(1 + k * f.ripple.grow, 1, 1 + (k * f.ripple.grow * r.width) / r.depth)
 				ripple.material.opacity = f.ripple.opacity * (1 - k) ** 2
 			}
-			for (const lane of lanes) {
-				const progress = progressOf(lane.seat)
-				if (progress <= 0) lane.startedAt = null
-				else lane.startedAt ??= time
-				if (lane.thread) {
-					lane.thread.visible = progress > 0
-					lane.thread.material.uniforms.uReveal.value = progress
-					lane.thread.material.uniforms.uTime.value = time * f.thread.speed
-				}
-				if (lane.motes) {
-					const m = f.motes
-					lane.motes.visible = lane.startedAt !== null
-					if (!lane.motes.visible) continue
-					lane.motes.material.uniforms.uSize.value = m.size * innerHeight * devicePixelRatio
-					const flown = (time - lane.startedAt) / m.flight
-					for (let i = 0; i < m.count; i++) {
-						// Mote i leaves i/count of a flight after the first, and loops for as long as the plate glows.
-						const u = flown - i / m.count
-						const t = ((u % 1) + 1) % 1
-						const live = u >= 0 && i < Math.ceil(m.count * progress)
-						const p = lane.curve.getPoint(t)
-						const sway = Math.sin(t * Math.PI) * m.sway
-						lane.positions[i * 3] = p.x + Math.sin(i * 2.4 + time * 3) * sway
-						lane.positions[i * 3 + 1] = p.y + Math.cos(i * 1.7 + time * 2.6) * sway
-						lane.positions[i * 3 + 2] = p.z + Math.sin(i * 3.1 + time * 2.2) * sway
-						// Fade in off the plate and out into the bowl.
-						lane.alphas[i] = live ? Math.min(1, t * 8, (1 - t) * 6) : 0
-					}
-					lane.motes.geometry.attributes.position.needsUpdate = true
-					lane.motes.geometry.attributes.aAlpha.needsUpdate = true
-				}
+			// A branch fills once its plate's glaze is `lead` of the way in; stepping off drains it.
+			const settle = (lane, target) =>
+				(lane.level = target >= lane.level ? target : Math.max(target, lane.level - dt / g.drain))
+			let total = 0
+			for (const lane of branches) {
+				const p = progressOf(lane.seat)
+				settle(lane, Math.max(0, (p - g.lead) / (1 - g.lead)))
+				total += lane.level
+				pour(lane, time, lane.seat === mine ? yours : lane.color)
 			}
+			settle(trunk, total / branches.length)
+			pour(trunk, time, trunk.color)
 		},
 		dispose() {
 			root.removeFromParent()
