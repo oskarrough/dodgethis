@@ -187,7 +187,7 @@ export function pointClick(device, ground, options = POINT_CLICK) {
 	return function sample(stickAim = null) {
 		// Direct-only edges must not pile up for the next mode that reads them.
 		device.consumeSlot()
-		const clicked = device.consumePress() // the left click: only an armed attack-move reads it
+		const clicked = device.consumePress() // the left click: an armed attack-move, or WASD's attack
 		device.consumeRelease()
 		device.consumeDash()
 		device.consumeJump()
@@ -291,7 +291,8 @@ export function pointClick(device, ground, options = POINT_CLICK) {
 			prefs.attackArmed = false
 			order = { x: at.x, z: at.z, kind: 'attack-move', pick: true }
 		}
-		if (clicked && !onPad && preset.mouse === 'attack' && at)
+		// WASD: either button fires the basic attack at the cursor; walking stays on the keys.
+		if ((clicked || fresh) && !onPad && preset.mouse === 'attack' && at)
 			pressed.push({ action: 'primary', at })
 		const move = { x: (stick?.x ?? 0) + walk.x, z: (stick?.z ?? 0) + walk.z }
 		const length = Math.hypot(move.x, move.z)

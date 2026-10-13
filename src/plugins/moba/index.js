@@ -537,7 +537,7 @@ export default function moba(app, map) {
 				cursor.update({
 					enemy: !!target,
 					aiming,
-					armed: playerControls.attackArmed || playerControls.preset === 'wasd', // a left click attacks
+					armed: playerControls.attackArmed || playerControls.preset === 'wasd', // either click attacks
 					pad: stickAimed(),
 					paused: frozen,
 				})
