@@ -140,6 +140,7 @@ export function createFeedback({
 			abilityOf(fact.ability, source) ??
 			(fact.ability ? null : (source?.definition ?? heroDefinition()).abilities[fact.slot])
 		const effects = ability?.effects ?? {}
+		const punch = tune[effects.punch]?.feedback
 		switch (fact.type) {
 			case 'ballContested':
 				log.record(fact)
@@ -247,6 +248,7 @@ export function createFeedback({
 				if (look.juice[effects.projectile])
 					juice.burst(fact.point, { ...fact.direction, y: 0 }, look.juice[effects.projectile])
 				unitOf(fact.hero)?.body.kick(0.18)
+				if (mine && punch) camera.kick(punch.shotKick)
 				cue(
 					['tower', 'core', 'ranged', 'wizard'].includes(fact.slot)
 						? `${fact.slot}.shot`
@@ -363,6 +365,10 @@ export function createFeedback({
 						fact,
 					)
 				if (mine) view.damage?.(fact)
+				if (mine && punch && fact.damage > 0 && sim.heroes.includes(unit)) {
+					camera.kick(punch.hitKick)
+					stop = Math.max(stop, punch.hitstop)
+				}
 				if (mine && fact.crit) camera.shake(look.juice.shakeTaken)
 				if (onMe) {
 					camera.shake(look.juice.shakeTaken)

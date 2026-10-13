@@ -29,7 +29,13 @@ export function abilityOf(id, unit = null) {
 		return {
 			id,
 			kind: 'shot',
-			effects: { cast: 'returnNock', projectile: 'returnShot', hit: 'returnHit', pose: 'draw' },
+			effects: {
+				cast: 'returnNock',
+				projectile: 'returnShot',
+				hit: 'returnHit',
+				pose: unit?.definition?.returnPose ?? 'draw',
+				punch: unit?.definition?.returnPose === 'toss' ? 'toss' : null,
+			},
 		}
 	return (
 		[unit?.definition?.basic, ...Object.values(unit?.definition?.abilities ?? {})].find(

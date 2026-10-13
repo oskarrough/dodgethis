@@ -1,1 +1,13 @@
-export default { damage: 120, castPoint: 0.35, range: 7, speed: 20, radius: 0.35, cooldown: 5 }
+export default {
+	damage: 180, // 45 dps; a caught Loose still pays more and bypasses this cooldown.
+	castPoint: 0.3, // Keep the enemy's tell; shorten the glove draw, not the return's 0.5 s warning.
+	range: 9,
+	speed: 22,
+	radius: 0.35,
+	cooldown: 4,
+	feedback: {
+		shotKick: 0.35,
+		hitKick: 0.65,
+		hitstop: 0.025, // Hero contact only; presentation slowdown, ignored in shared sessions.
+	},
+}

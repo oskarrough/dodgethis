@@ -5,5 +5,5 @@ export default {
 	prone: 0.4,
 	radius: 2,
 	angle: 360,
-	cooldown: 12,
+	cooldown: 8, // Longer recovery than Vault, paid back by an all-around catch; prone remains the risk.
 }

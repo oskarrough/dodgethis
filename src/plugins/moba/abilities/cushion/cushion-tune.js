@@ -1,5 +1,5 @@
 export default {
-	castPoint: 0.15,
+	castPoint: 0.3, // The blocking wall needs the same readable placement tell as other enemy casts.
 	range: 8,
 	length: 3,
 	radius: 1.5, // the held circle: half the wall

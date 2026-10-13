@@ -12,10 +12,13 @@ export default {
 	aimAssist: true,
 	tell: 'line',
 	held: 'line',
-	effects: { cast: 'tossWindup', projectile: 'toss', hit: 'tossHit', pose: 'toss' },
+	effects: { cast: 'tossWindup', projectile: 'toss', hit: 'tossHit', pose: 'toss', punch: 'toss' },
 	card: {
 		summary: () =>
 			'Line skillshot. With a caught shot in your pocket, Toss sends that back instead.',
-		notes: () => [`Pocketed shots last ${Number(tune.catching.pocketLife.toFixed(2))} s`],
+		notes: () => [
+			`Pocketed shots last ${Number(tune.catching.pocketLife.toFixed(2))} s`,
+			`Returns keep the caught shot's damage and bypass Toss's cooldown, with a ${tune.catching.returnTell}s tell`,
+		],
 	},
 }

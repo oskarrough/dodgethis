@@ -18,7 +18,7 @@ export default {
 	traits: {
 		onHit({ source, shot, target, ticks }) {
 			if (shot.traitProcs !== false && shot.ability === 'loose' && target.hero && !source.dead)
-				source.cd[1] = Math.max(0, source.cd[1] - ticks(tune.momentum.reduction))
+				source.cd[2] = Math.max(0, source.cd[2] - ticks(tune.momentum.reduction))
 		},
 	},
 }
