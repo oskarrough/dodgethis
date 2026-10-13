@@ -218,6 +218,16 @@ function ellipseNormal(s, t) {
 	return new THREE.Vector3(x / d, 0, z / d)
 }
 
+// The lip's outer edge, `n` points round: what the hero strip leans against.
+export function saucerRim(n = 48, s = tune.lobby.floor) {
+	return Array.from({ length: n }, (_, i) => {
+		const t = (i / n) * Math.PI * 2
+		const e = ellipsePoint(s, t),
+			out = ellipseNormal(s, t).multiplyScalar(s.rim.width)
+		return new THREE.Vector3(e.x + out.x, s.rim.height, e.z + out.z)
+	})
+}
+
 // The glaze's walkable ellipse, laid flat; the rim's lip starts at its edge.
 export function saucerShape(s = tune.lobby.floor) {
 	const shape = new THREE.Shape()

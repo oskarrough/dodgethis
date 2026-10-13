@@ -6,15 +6,18 @@ import { paintedCard } from './front/skin.js'
 import { tune as frontTune } from './front/tune.js'
 import './lobby-heroes.css'
 
-// The lobby's hero strip: one painted card per hero, stacked down the left edge, apart from
-// the HUD so it reads as a menu rather than part of your hero. Yours slides out on a wash
+// The lobby's hero strip: one painted card per hero, stacked down the left edge and leaning on
+// the saucer's lip, apart from the HUD so it reads as a menu rather than part of your hero. A
+// caption over it names your pick like the bowl names the next map. Yours slides out on a wash
 // bleed; clicking it opens the numbers sheet.
 export function createHeroStrip({ el, heroes, current, pick, openNumbers }) {
 	const strip = document.createElement('nav')
 	strip.className = 'lobby-hero-strip'
 	strip.setAttribute('aria-label', 'Pick a hero')
-	strip.innerHTML = '<kbd class="lobby-hero-strip-key"></kbd>'
+	strip.innerHTML = `<kbd class="lobby-hero-strip-key"></kbd><div class="lobby-label lobby-bowl-label lobby-hero-caption" data-picked="true"><small>${tune.lobby.strip.caption}</small><b></b></div>`
 	const key = strip.firstChild
+	const caption = strip.children[1]
+	const point = new THREE.Vector3()
 	// Heroes show up here once they're playable; there are no "soon" cards.
 	const tiles = heroes.map((definition, i) => {
 		const button = document.createElement('button')
@@ -37,6 +40,7 @@ export function createHeroStrip({ el, heroes, current, pick, openNumbers }) {
 	function sync(heroId) {
 		const changed = heroId !== current
 		current = heroId
+		caption.lastChild.textContent = heroId
 		for (const button of tiles) {
 			const mine = button.dataset.hero === heroId
 			button.setAttribute('aria-pressed', String(mine))
@@ -54,9 +58,41 @@ export function createHeroStrip({ el, heroes, current, pick, openNumbers }) {
 
 	sync(current)
 
+	// Each card's middle sits `overlap` of a card inside the lip where the lip crosses its row, so the
+	// strip follows the saucer's curve. Layout boxes stay put: the camera fits the saucer beside them.
+	function seat(camera, rim) {
+		const lip = rim.map((p) => {
+			point.copy(p).project(camera)
+			return { x: ((point.x + 1) * innerWidth) / 2, y: ((1 - point.y) * innerHeight) / 2 }
+		})
+		// Where the lip's left side crosses a row; above or below the saucer, its leftmost point.
+		const lipAt = (y) => {
+			let x = Math.min(...lip.map((p) => p.x))
+			for (const [i, a] of lip.entries()) {
+				const b = lip[(i + 1) % lip.length]
+				if (a.y === b.y || (a.y - y) * (b.y - y) > 0) continue
+				const cross = a.x + ((y - a.y) / (b.y - a.y)) * (b.x - a.x)
+				if (cross < innerWidth / 2) x = cross
+			}
+			return x
+		}
+		const overlap = tune.lobby.strip.overlap
+		for (const button of tiles) {
+			const box = button.getBoundingClientRect()
+			const middle = strip.offsetLeft + button.offsetLeft + button.offsetWidth / 2
+			const to = lipAt(box.top + box.height / 2) + button.offsetWidth * (overlap - 0.5)
+			button.style.setProperty('--seat', `${Math.max(0, to - middle)}px`)
+		}
+		// The caption starts inside the lip, on the glaze, in line with the cards' inner edges.
+		const box = caption.getBoundingClientRect()
+		const edge = lipAt(box.top + box.height / 2) + tiles[0].offsetWidth * overlap
+		caption.style.setProperty('--seat', `${Math.max(0, edge - strip.offsetLeft)}px`)
+	}
+
 	return {
 		el: strip,
 		sync,
+		seat,
 		setDevice(device) {
 			key.textContent = device === 'gamepad' ? '✛↑' : ''
 			strip.dataset.device = device

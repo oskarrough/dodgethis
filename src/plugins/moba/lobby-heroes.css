@@ -13,6 +13,12 @@
 	font: 400 calc(var(--tile) * 0.2) / 1 var(--ui-font);
 	color: var(--ui-text);
 }
+/* Over the cards, in the bowl label's type and rule (lobby.css), riding with the top card. */
+.lobby-label.lobby-bowl-label.lobby-hero-caption {
+	top: auto;
+	bottom: calc(100% + 1.4em);
+	left: var(--seat, 0px);
+}
 /* One key badge for the whole strip, stuck on its top-left corner. */
 .moba-front .lobby-hero-strip-key {
 	position: absolute;
@@ -44,6 +50,8 @@
 	border: 0;
 	background: transparent;
 	color: var(--ui-text);
+	position: relative;
+	left: var(--seat, 0px);
 	rotate: var(--tilt);
 	transition:
 		transform var(--skin-snap) cubic-bezier(0.3, 1.8, 0.5, 1),

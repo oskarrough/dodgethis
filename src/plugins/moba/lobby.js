@@ -9,7 +9,7 @@ import { createBackdrop, easeShot } from './front/backdrop.js'
 import { startLoading } from './front/descent.js'
 import { applySkin } from './front/skin.js'
 import { createLobbyProps } from './lobby-props.js'
-import { createLobbyFloor, saucerExtent } from './lobby-floor.js'
+import { createLobbyFloor, saucerExtent, saucerRim } from './lobby-floor.js'
 import { bowlExtent, createWeatherBowl } from './lobby-bowl.js'
 import { HEROES, listedHeroes } from './heroes.js'
 import { createHeroStrip, createLobbyHeroes } from './lobby-heroes.js'
@@ -125,6 +125,7 @@ export function createLobby({
 	// The whole saucer, its cradles and the bowl, fitted into the frame beside the hero strip and
 	// above the HUD at the lane's pitch. Nothing follows: every walkable spot is always in view.
 	const extent = [...saucerExtent(), ...bowlExtent()]
+	const rim = saucerRim()
 	const fitter = new THREE.PerspectiveCamera()
 	const fit = { key: '', x: 0, z: 0, distance: 30 }
 	const point = new THREE.Vector3()
@@ -937,6 +938,7 @@ export function createLobby({
 		update(alpha) {
 			props.update(sim.tick + alpha, app.camera.view, app.clock.step)
 			bowl.update((sim.tick + alpha) * app.clock.step, app.camera.view)
+			strip.seat(app.camera.view, rim)
 			// A state change must sync the local pick even if its swap cue expired in a hidden tab.
 			if (setup.heroId !== hero.heroId) {
 				syncPick()

@@ -32,6 +32,8 @@ export const lobby = {
 		sound: { freq: 620, slideTo: 980, dur: 0.14, gain: 0.08, type: 'triangle' },
 		denySound: { freq: 120, slideTo: 70, dur: 0.18, gain: 0.1, type: 'square' },
 	},
+	// The hero strip leans on the saucer's left lip, each card `overlap` of its width inside the lip.
+	strip: { caption: 'Choose your hero', overlap: 0.3 },
 	ready: {
 		// Authored ground prints and cardboard apply on restart; fill/activation timing is live.
 		x: 2.65,
