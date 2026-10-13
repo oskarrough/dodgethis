@@ -25,9 +25,9 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Back and Play online, the top-left row in both modes' lobbies: `src/core/corner-nav.js` `createCornerNav`; `index.html` `.corner-nav`; used by `lobby.js` `createLobby` and `src/plugins/dodgeball/index.js`
 - Seats, roster, ready state (1 s fill; stepping out cancels): `lobby-state.js` `createReadySeats`; `lobby-heroes.js` `createLobbyHeroes`; `tune.js` `lobby.ready`
 - Ready plates inlaid in the saucer's glaze, the Ready label beside yours, the glaze fill: `lobby-props.js` `createLobbyProps`, `plate`; `tune.js` `lobby.ready`; `lobby.js` `createLobby`
-- Lobby floor, the glazed saucer in its magnetic cradles: `lobby-floor.js` `createLobbyFloor`, `saucerShape`; its elliptical collider: `obstacles.js` `buildColliders` (`island.round`); `maps/lobby/lobby-layout.js` `lobbyLayout`; `maps/lobby/lobby-view.js` glaze; `tune.js` `lobby.floor`
+- Lobby floor, the glazed saucer in its magnetic cradles, with a solid round cushion rim for bodies, shots and held Ricochet previews: `lobby-floor.js` `createLobbyFloor`, `saucerShape`; `maps/lobby/lobby-layout.js` `lobbyLayout`, `lobbyRimCover` (overlapping circular cover); `obstacles.js` `buildColliders` (`island.round` floor and cover), `sweepObstacles`; `maps/lobby/lobby-view.js` glaze; `tune.js` `lobby.floor`
 - Plates flow to the map: bots walk onto their plates on arrival, your plate ripples until you stand in it, grooves inlaid in the glaze run from each plate into a trunk under the weather bowl and fill as plates glaze, team glazes marbling where they join, then round inside the bowl, the last plate to glaze closing the ring: `lobby-flow.js` `createLobbyFlow`, `groovePath`, `ringPath`; hooked in `lobby-props.js` `createLobbyProps`; `tune.js` `lobby.flow`
-- Weather bowl, the next map turning in miniature under a sky cap, with its label: `lobby-bowl.js` `createWeatherBowl`; `tune.js` `lobby.bowl`
+- Weather bowl, the next map turning in miniature under a sky cap, with its label and round shot/body collider: `lobby-bowl.js` `createWeatherBowl`; `maps/lobby/lobby-layout.js` `lobbyLayout` (`lobby-bowl` cover); `tune.js` `lobby.bowl`
 - Hero stands and the hero strip (pick a hero; shots already out finish after a swap), leaning on the saucer's left lip, with spice motes drifting off the cards to the plates: `lobby-heroes.js` `heroStands`, `createHeroStrip` (`seat`); `lobby-floor.js` `saucerRim`; `lobby-dust.js` `createLobbyDust`; `tune.js` `lobby.pick`, `lobby.strip`, `lobby.dust`
 - Hero numbers panel (stats, level slider): `front/numbers.js` `createNumbers`; `front/stats.js` `heroStats`, `numberLines`; `tune.js` `lobby.inspect`
 - Difficulty gallery, three standees you shoot to pick: `lobby-props.js` `createDifficultyGallery`; `tune.js` `lobby.gallery`
@@ -36,7 +36,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Lobby practice dummies (players can't hit each other): `dummy-view.js` `dressDummy`; mechanic `mechanics/dummies/` (dressed through `mechanics/dummies/dummies-view.js`); `tune.js` `dummies`, `lobby.practice`; `look.js` `dummyView`
 - Lobby camera (fits the whole saucer) and intro swoop: `lobby.js` `createLobby` (`fitSaucer`); `lobby-floor.js` `saucerExtent`; `lobby-bowl.js` `bowlExtent`; `tune.js` `lobby.camera`, `lobby.intro`
 - Lobby HUD (tooltips on heroes): `lobby.js`; `hud.js` `createHud({ lobby: true })`; `tune.js` `lobby.hud`
-- Fall off the floor and respawn: `lobby.js`; `tune.js` `lobby.fall`, `lobby.respawn`
+- Lobby fall recovery (the solid rim prevents ordinary walk-offs): `lobby.js`; `tune.js` `lobby.fall`, `lobby.respawn`
 - Lobby sim replica for online: `lobby-replica.js` `createLobbyReplica`, `createUnitReplica`; `network.md`
 - Online "someone joined" notice: `tune.js` `lobby.onlineNotice`; `lobby.js`
 

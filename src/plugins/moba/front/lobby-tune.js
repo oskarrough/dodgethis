@@ -223,7 +223,7 @@ export const lobby = {
 	],
 	// The lobby floor: a huge glazed saucer in magnetic cradles, floating in the splash sky. Geometry, glaze and
 	// colours apply on restart. The walkable glaze is an ellipse holding the walking bounds with over 1 m to spare
-	// at their corners; the lip and its collider run `rim.width` further out.
+	// at their corners; the lip runs `rim.width` further out, with a solid cushion along the glaze's edge.
 	floor: {
 		halfX: 11,
 		halfZ: 9.8,
