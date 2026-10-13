@@ -468,10 +468,12 @@ export default function moba(app, map) {
 			)
 
 			const onPad = () => input.activeDevice() === 'gamepad'
+			// Keyboard only aims like the pad, so it frames, hovers and draws like the pad too.
+			const stickAimed = () => onPad() || playerControls.preset === 'keyboard'
 			if (!isLobby)
 				run.camera.frame((dt) => {
 					const frame = app.intents.get(local)
-					const pad = onPad() && !sim.lane?.match.winner
+					const pad = stickAimed() && !sim.lane?.match.winner
 					const aim = pad && Object.keys(frame.held).length ? frame.aim : null
 					return follow.frame(
 						dt,
@@ -527,14 +529,16 @@ export default function moba(app, map) {
 				for (const h of [...sim.heroes, ...sim.dummies])
 					if (!h.dead) h.body.poseAbility?.(h.cast, blend, h, sim.tick)
 				const target =
-					!sim.ball?.carrying(hero) && !onPad() && frame.aim ? sim.pick(hero.team, frame.aim) : null
+					!sim.ball?.carrying(hero) && !stickAimed() && frame.aim
+						? sim.pick(hero.team, frame.aim)
+						: null
 				const hovered = target && locate(target.id)
 				const aiming = ['slot1', 'slot2', 'slot3', 'slot4'].some((s) => frame.held[s])
 				cursor.update({
 					enemy: !!target,
 					aiming,
-					armed: playerControls.attackArmed,
-					pad: onPad(),
+					armed: playerControls.attackArmed || playerControls.preset === 'wasd', // a left click attacks
+					pad: stickAimed(),
 					paused: frozen,
 				})
 				ballView?.update(
@@ -558,7 +562,7 @@ export default function moba(app, map) {
 					hero: p,
 					aim: hero.cast && lineAbility?.tell === 'line' ? hero.cast.target : frame.aim,
 					lineStats: lineAbility?.stats,
-					target: aiming && !onPad() ? frame.aim : null,
+					target: aiming && !stickAimed() ? frame.aim : null,
 					obstacles: sim.obstacles,
 					bounds: sim.bounds,
 					held:

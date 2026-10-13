@@ -109,7 +109,7 @@ export function direct(device, ground) {
 	}
 }
 
-// The `pointClick` scheme. Mouse: RMB orders at the cursor (again every `resend` ms while held), S stops.
+// The `pointClick` scheme, as the MOBA preset binds it (PRESETS has the WASD and keyboard-only variants; the pad never changes). Mouse: RMB orders at the cursor (again every `resend` ms while held), S stops.
 // Q W E R hold to aim at the cursor and cast on release (like the pad); with `controls.quickCast` on they cast on key-down.
 // Releasing never casts a cancelled aim: S and Esc drop it, as do a blur, a pause and a lost pad; RMB moves without dropping it. Z casts on press.
 // A arms an attack-move: the next left click orders it (the sim picks the enemy nearest the click); Esc, S, RMB or a cast disarm.
@@ -118,8 +118,44 @@ export function direct(device, ground) {
 // `resend` is under one 60 Hz step, so a held RMB steers every step at 60 Hz and every second frame at 144 Hz,
 // which keeps a guest well inside online's 120 messages a second.
 export const POINT_CLICK = { deadzone: 0.18, curve: 1.5, resend: 13 }
-const AIM_KEYS = { KeyQ: 'slot1', KeyW: 'slot2', KeyE: 'slot3', KeyR: 'slot4' }
-const KEYS = { ...AIM_KEYS, KeyZ: 'slot5', KeyS: 'stop' }
+// Keyboard and mouse presets (the pause menu picks one; the pad ignores them). `aims` hold to aim, `taps` act on press,
+// `walk` puts movement on WASD (`arrows` adds the arrow keys), `mouse` says what the buttons do, and `facing` aims like the pad's resting stick.
+export const PRESETS = Object.freeze({
+	moba: {
+		name: 'MOBA',
+		aims: { KeyQ: 'slot1', KeyW: 'slot2', KeyE: 'slot3', KeyR: 'slot4' },
+		taps: { KeyZ: 'slot5', KeyS: 'stop' },
+		walk: false,
+		mouse: 'orders',
+		facing: false,
+	},
+	wasd: {
+		name: 'WASD',
+		aims: { Digit1: 'slot1', Digit2: 'slot2', Digit3: 'slot3', Digit4: 'slot4' },
+		taps: { Digit5: 'slot5' },
+		walk: true,
+		arrows: false,
+		mouse: 'attack',
+		facing: false,
+	},
+	keyboard: {
+		name: 'Keyboard only',
+		aims: { Digit1: 'slot1', Digit2: 'slot2', Digit3: 'slot3', Digit4: 'slot4' },
+		taps: { KeyZ: 'slot5', Space: 'primary' },
+		walk: true,
+		arrows: true, // its camera follows like the pad's, so the arrows are free to walk
+		mouse: null,
+		facing: true,
+	},
+})
+const presetOf = (id) => PRESETS[id] ?? PRESETS.moba
+// The keyboard labels for slots 1–4 under a preset, for hotkey hints.
+export const presetKeys = (id) => {
+	const aims = Object.entries(presetOf(id).aims)
+	return ['slot1', 'slot2', 'slot3', 'slot4'].map((slot) =>
+		aims.find(([, s]) => s === slot)[0].replace(/^(Key|Digit)/, ''),
+	)
+}
 const PAD_AIMS = [
 	[5, 'slot1'],
 	[7, 'slot2'],
@@ -165,6 +201,24 @@ export function pointClick(device, ground, options = POINT_CLICK) {
 			: null
 		const cursor = ground()
 		const at = cursor && { x: cursor.x, z: cursor.z }
+		const preset = presetOf(options.preset ?? prefs.preset)
+		if (preset.mouse !== 'orders') prefs.attackArmed = false
+		const held = (code) => !!device.keyHeld?.(code)
+		const key = (wasd, arrow) => held(wasd) || (preset.arrows && held(arrow))
+		const walk = preset.walk
+			? {
+					x: key('KeyD', 'ArrowRight') - key('KeyA', 'ArrowLeft'),
+					z: key('KeyS', 'ArrowDown') - key('KeyW', 'ArrowUp'),
+				}
+			: { x: 0, z: 0 }
+		// Keyboard only: aim along the walk like a pushed stick, or at rest like a resting one.
+		const facingAim = (slot) => {
+			if (!stickAim) return at
+			const len = Math.hypot(walk.x, walk.z)
+			const point = stickAim(len ? { x: walk.x / len, z: walk.z / len } : null, len ? 1 : 0, slot)
+			return point ? { x: point.x, z: point.z } : null
+		}
+		const keyAt = (slot) => (preset.facing ? facingAim(slot) : at)
 
 		const pressed = []
 		if (!pad) aiming.clear() // a lost pad or a blur drops held aims without casting (keyboard aims check keyHeld below)
@@ -192,6 +246,7 @@ export function pointClick(device, ground, options = POINT_CLICK) {
 			if (up(i) && aiming.delete(action)) pressed.push({ action, at: aim })
 		for (const [i, action] of PAD_TAPS) if (down(i)) pressed.push({ action, at: aim })
 		const quick = options.quickCast ?? prefs.quickCast
+		const taps = { ...preset.aims, ...preset.taps }
 		const dropAims = () => {
 			const had = keyAims.size > 0 || prefs.attackArmed
 			keyAims.clear()
@@ -201,17 +256,17 @@ export function pointClick(device, ground, options = POINT_CLICK) {
 		for (const code of device.consumeKeys()) {
 			if (code === 'Escape') {
 				if (dropAims()) pressed.push({ action: 'cancel', at: null })
-			} else if (code === 'KeyA') {
+			} else if (code === 'KeyA' && preset.mouse === 'orders') {
 				prefs.attackArmed = true
-			} else if (AIM_KEYS[code] && !quick) {
+			} else if (preset.aims[code] && !quick) {
 				prefs.attackArmed = false
 				keyAims.delete(code) // re-adding moves it last: the newest held aim is the one shown
-				keyAims.set(code, AIM_KEYS[code])
-			} else if (KEYS[code]) {
-				const stop = KEYS[code] === 'stop'
+				keyAims.set(code, preset.aims[code])
+			} else if (taps[code]) {
+				const stop = taps[code] === 'stop'
 				if (stop) dropAims()
 				else prefs.attackArmed = false
-				pressed.push({ action: KEYS[code], at: stop ? null : at })
+				pressed.push({ action: taps[code], at: stop ? null : keyAt(taps[code]) })
 			}
 		}
 		// A release casts at the cursor now; a hold that lost its key without a release (blur, pause) is dropped without casting.
@@ -219,7 +274,7 @@ export function pointClick(device, ground, options = POINT_CLICK) {
 		for (const [code, action] of keyAims) {
 			if (ups.includes(code)) {
 				keyAims.delete(code)
-				pressed.push({ action, at })
+				pressed.push({ action, at: keyAt(action) })
 			} else if (!(device.keyHeld?.(code) ?? true)) keyAims.delete(code)
 		}
 		previous = buttons.slice()
@@ -228,7 +283,7 @@ export function pointClick(device, ground, options = POINT_CLICK) {
 		const now = device.now()
 		const fresh = device.consumeOrder()
 		if (fresh) prefs.attackArmed = false // a right click moves and disarms attack-move; held aims survive it
-		if (fresh || (device.orderDown() && now >= resendAt)) {
+		if (preset.mouse === 'orders' && (fresh || (device.orderDown() && now >= resendAt))) {
 			order = at
 			resendAt = now + options.resend
 		}
@@ -236,8 +291,17 @@ export function pointClick(device, ground, options = POINT_CLICK) {
 			prefs.attackArmed = false
 			order = { x: at.x, z: at.z, kind: 'attack-move', pick: true }
 		}
+		if (clicked && !onPad && preset.mouse === 'attack' && at)
+			pressed.push({ action: 'primary', at })
+		const move = { x: (stick?.x ?? 0) + walk.x, z: (stick?.z ?? 0) + walk.z }
+		const length = Math.hypot(move.x, move.z)
+		if (length > 1) {
+			move.x /= length
+			move.z /= length
+		}
+		if (!onPad && preset.facing) aim = facingAim([...keyAims.values()].at(-1) ?? null)
 		return {
-			move: stick ? { x: stick.x, z: stick.z } : { x: 0, z: 0 },
+			move,
 			order,
 			aim,
 			held: Object.fromEntries([...aiming, ...keyAims.values()].map((a) => [a, true])),

@@ -52,6 +52,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Follow camera, one fixed lens on every map, and edge reserve: `follow.js` `createFollow`, `stepCamera`, `clampView`, `viewFootprint`; `tune.js` `follow` (`fov`, `rimShow` clamps how far it pans past the rims). Non-finite follow/focus/kick inputs keep the last good view and warn once; core `render.js` also rejects non-finite frames/kicks and zero-sized resizes.
 - Camera controls (lock, pan, zoom): `camera-controls.js` `createCameraControls`; `tune.js` `follow`
 - Right-click move and attack-move orders: `orders.js` `issue`, `steer`, `move`, `attackAhead`; `src/core/intents.js` `pointClick`, `createIntents`; `tune.js` `orders`
+- Control presets (MOBA, WASD, keyboard only; the pause menu cycles them, the pad ignores them) and their hotkey labels: `src/core/intents.js` `PRESETS`, `presetKeys`, `pointClick`; `src/core/controls.js` `cyclePreset`; `menu.js` `nextPreset`
 - Pad stick aim: `targeting.js` `stickAim`; `src/core/intents.js` `stickVector`; `tune.js` `stickAim`
 - Keyboard and gamepad reading (held presses across a screen change are ignored until released): `src/core/input.js` `moveVector`, `pollGamepad`, `consumeKeys`, `rumble`; `src/core/intents.js` `readIntent`
 - Cursor (move and attack icons): `cursor.js` `createCursor`; `cursors/move.svg`, `cursors/attack.svg`

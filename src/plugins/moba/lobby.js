@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { PALETTE, hex } from '../../core/style.js'
 import { createCornerNav } from '../../core/corner-nav.js'
+import { controls } from '../../core/controls.js'
 import { tune } from './tune.js'
 import { DEFAULT_MAP, onlineMaps } from './maps/all-maps.js'
 import { tune as frontTune } from './front/tune.js'
@@ -613,7 +614,8 @@ export function createLobby({
 				cycleDifficulty(event.code === 'ArrowLeft' ? -1 : 1)
 				return
 			}
-			const digit = /^Digit([1-5])$/.exec(event.code)
+			// The MOBA preset's lobby shortcut; the other presets bind their own cast keys.
+			const digit = controls.preset === 'moba' && /^Digit([1-5])$/.exec(event.code)
 			if (digit) {
 				event.preventDefault()
 				run.intents.press(hero.id, `slot${digit[1]}`, app.intents.get(hero.id).aim)
