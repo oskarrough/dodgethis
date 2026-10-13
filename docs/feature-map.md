@@ -26,6 +26,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Seats, roster, ready state (1 s fill; stepping out cancels): `lobby-state.js` `createReadySeats`; `lobby-heroes.js` `createLobbyHeroes`; `tune.js` `lobby.ready`
 - Ready plates inlaid in the saucer's glaze, the Ready label beside yours, the glaze fill: `lobby-props.js` `createLobbyProps`, `plate`; `tune.js` `lobby.ready`; `lobby.js` `createLobby`
 - Lobby floor, the glazed saucer in its magnetic cradles: `lobby-floor.js` `createLobbyFloor`, `saucerShape`; its elliptical collider: `obstacles.js` `buildColliders` (`island.round`); `maps/lobby/lobby-layout.js` `lobbyLayout`; `maps/lobby/lobby-view.js` glaze; `tune.js` `lobby.floor`
+- Plates flow to the map: bots walk onto their plates on arrival, your plate ripples until you stand in it, glazed plates stream to the weather bowl (`?flow=motes|thread|off`): `lobby-flow.js` `createLobbyFlow`, `lobbyFlowStyle`; hooked in `lobby-props.js` `createLobbyProps`; `tune.js` `lobby.flow`
 - Weather bowl, the next map turning in miniature under a sky cap, with its label: `lobby-bowl.js` `createWeatherBowl`; `tune.js` `lobby.bowl`
 - Hero stands and the hero strip (pick a hero; shots already out finish after a swap): `lobby-heroes.js` `heroStands`, `createHeroStrip`; `tune.js` `lobby.pick`
 - Hero numbers panel (stats, level slider): `front/numbers.js` `createNumbers`; `front/stats.js` `heroStats`, `numberLines`; `tune.js` `lobby.inspect`
@@ -52,6 +53,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Follow camera, one fixed lens on every map, and edge reserve: `follow.js` `createFollow`, `stepCamera`, `clampView`, `viewFootprint`; `tune.js` `follow` (`fov`, `rimShow` clamps how far it pans past the rims). Non-finite follow/focus/kick inputs keep the last good view and warn once; core `render.js` also rejects non-finite frames/kicks and zero-sized resizes.
 - Camera controls (lock, pan, zoom): `camera-controls.js` `createCameraControls`; `tune.js` `follow`
 - Right-click move and attack-move orders: `orders.js` `issue`, `steer`, `move`, `attackAhead`; `src/core/intents.js` `pointClick`, `createIntents`; `tune.js` `orders`
+- Control presets (MOBA, WASD, keyboard only; the pause menu cycles them, the pad ignores them) and their hotkey labels: `src/core/intents.js` `PRESETS`, `presetKeys`, `pointClick`; `src/core/controls.js` `cyclePreset`; `menu.js` `nextPreset`
 - Pad stick aim: `targeting.js` `stickAim`; `src/core/intents.js` `stickVector`; `tune.js` `stickAim`
 - Keyboard and gamepad reading (held presses across a screen change are ignored until released): `src/core/input.js` `moveVector`, `pollGamepad`, `consumeKeys`, `rumble`; `src/core/intents.js` `readIntent`
 - Cursor (move and attack icons): `cursor.js` `createCursor`; `cursors/move.svg`, `cursors/attack.svg`

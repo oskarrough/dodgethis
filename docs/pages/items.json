@@ -1,5 +1,20 @@
 [
 	{
+		"at": "2026-10-13T07:50:08.609Z",
+		"title": "Lobby: plates flow to the map (#30)",
+		"ask": "Which flow reads best: motes (a stream of team sparks) or thread (a line that draws itself as the plate fills)? Play each from the links on the page. Bots walk onto their plates as you arrive in both.",
+		"status": "To review",
+		"decision": "",
+		"media": [
+			"review/media/2026-10-13-lobby-plates-flow-to-the-map-30-/motes.png",
+			"review/media/2026-10-13-lobby-plates-flow-to-the-map-30-/thread.png",
+			"review/media/2026-10-13-lobby-plates-flow-to-the-map-30-/motes-arrive.png"
+		],
+		"links": [],
+		"thread": "thr_6hfvuvr5v2",
+		"page": "2026-10-13-lobby-plates-flow-to-the-map-30-/"
+	},
+	{
 		"at": "2026-10-11T13:59:48.474Z",
 		"title": "Sound board walkthrough",
 		"ask": "Agree with the worst friction?",

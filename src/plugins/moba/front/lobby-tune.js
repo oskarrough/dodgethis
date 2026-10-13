@@ -69,6 +69,20 @@ export const lobby = {
 		fullSound: { freq: 880, slideTo: 1320, dur: 0.18, gain: 0.08, type: 'sine' },
 		cancelSound: { freq: 330, slideTo: 220, dur: 0.1, gain: 0.07, type: 'triangle' },
 	},
+	// What the plates are for (#30), all live: bots walk onto their plates as you arrive (`walk`, from
+	// `from` of the way out from the middle), your plate ripples until you stand in it, and each glazed
+	// plate sends its light up an arc into the weather bowl's mouth. `style` is the default for `?flow=`:
+	// motes (a stream of team sparks), thread (a line that draws itself as the plate fills), off.
+	flow: {
+		style: 'motes',
+		arc: 1.2,
+		arcPerMetre: 0.15,
+		mouth: 0.2,
+		walk: { delay: 0.3, stagger: 0.2, time: 0.7, from: 0.2, hops: 3, hop: 0.12 },
+		ripple: { period: 1.4, grow: 0.35, opacity: 0.55 },
+		motes: { count: 36, flight: 1.8, size: 0.2, sway: 0.1 },
+		thread: { radius: 0.035, pulses: 3, speed: 0.8 },
+	},
 	gallery: {
 		// Authored props apply on restart; aim/contact tests and settling are live.
 		x: 0,

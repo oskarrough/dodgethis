@@ -8,6 +8,7 @@ import { listedHeroes } from './heroes.js'
 import { tune } from './tune.js'
 import { closest } from './skillshot.js'
 import { createFaceKit, createMagnets } from './lobby-magnets.js'
+import { createLobbyFlow } from './lobby-flow.js'
 
 // A rounded rectangle laid flat, centred on its group.
 function plate(width, depth, corner) {
@@ -177,6 +178,7 @@ export function createLobbyProps(
 		return m
 	}
 	const faces = createFaceKit()
+	const flow = createLobbyFlow(scene, readySeats, local)
 	const magnets = createMagnets(root, gallery, faces, audio)
 	const galleryProps = magnets.props.map((p) => {
 		const label = document.createElement('div')
@@ -352,19 +354,29 @@ export function createLobbyProps(
 		update(tick, camera, step) {
 			syncSeats()
 			const time = tick * step
+			const progress = (seat) => flow.progress(seat, readySeats.progress(seat, tick, step))
+			flow.update(time, progress)
 			for (const m of Object.values(holoMaterials)) m.uniforms.uTime.value = time
 			for (const p of seatProps) {
 				for (const [i, h] of p.holograms.entries()) {
 					if (!h.body.mesh.visible) continue
+					const walk = flow.offset(p.seat)
+					h.body.mesh.visible = !walk?.hidden
 					const phase = time + p.seat.x + p.seat.z + i
+					h.body.mesh.position.x = walk?.x ?? 0
+					h.body.mesh.position.z = walk?.z ?? 0
 					h.body.mesh.position.y =
-						h.baseY + r.fillY + holo.float + Math.sin(phase * holo.bobRate) * holo.bob
+						h.baseY +
+						r.fillY +
+						holo.float +
+						Math.sin(phase * holo.bobRate) * holo.bob +
+						(walk?.y ?? 0)
 					h.body.mesh.rotation.y = Math.PI + Math.sin(phase * holo.swayRate) * holo.sway
 				}
 				// The glaze runs in from the middle of the well to its rim.
-				const progress = readySeats.progress(p.seat, tick, step)
-				p.fill.visible = progress > 0
-				p.fill.scale.set(progress, 1, progress)
+				const fill = progress(p.seat)
+				p.fill.visible = fill > 0
+				p.fill.scale.set(fill, 1, fill)
 			}
 			const mine = readySeats.seatOf(local)
 			readyLabel.hidden =
@@ -394,6 +406,7 @@ export function createLobbyProps(
 			readyLabel.remove()
 			magnets.dispose()
 			faces.dispose()
+			flow.dispose()
 			for (const p of seatProps)
 				for (const h of p.holograms) {
 					p.face.removeFromParent()
