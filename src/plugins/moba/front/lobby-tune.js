@@ -34,33 +34,34 @@ export const lobby = {
 	},
 	// The hero strip leans on the saucer's left lip, each card `overlap` of its width inside the lip.
 	strip: { overlap: 0.3 },
-	// Spice on a wind ribbon from your hero card to your plate (lobby-dust.js). The ribbon leaves
-	// `fromCard` of the card's width in from its right edge, bows `bow` m off the straight line and
-	// rises `arc` m; it is `width` m across midway and pinches at both ends. `grains` ride it in a
-	// loose flock in `travel` s, sped by gust pulses (`gust`: how many along the ribbon, how often,
-	// how strong) and swung `swing` m by a shared wave. Streaks stretch `streak` s of their speed;
-	// `glow` of them carry a halo. `haze` puffs ride its middle. Once you stand on your plate,
-	// `settled` of the flow keeps going.
+	// Spindrift from your hero card to your plate (lobby-dust.js): blown sand painted on the glaze
+	// along a curve leaving `fromCard` of the card's width in from its right edge, bowed `bow` m
+	// and swaying `swing` m, `width` m either side of its middle and pinched at both ends. The sand
+	// runs at `speed` m/s; gust waves `gust` m apart pass along it every `pulse` s. A few `grains`
+	// hop off it. Once you stand on your plate, `settled` of it stays.
 	dust: {
-		grains: 110,
-		travel: 7,
 		fromCard: 0.2,
-		lift: 0.35,
-		land: 0.05,
-		bow: 2.2,
-		arc: 0.8,
-		width: 0.9,
-		swing: 0.45,
-		gust: { count: 2.2, rate: 0.18, strength: 1.6 },
-		streak: 0.3,
-		grain: { width: [0.06, 0.15], length: 0.12 },
-		alpha: 0.9,
-		colors: ['#b86a2c', '#9c4a26', '#c98a3a', '#ddaa62'],
-		glow: { share: 0.12, color: '#f0a24a', size: 5, alpha: 0.16 },
-		haze: { count: 16, color: '#d49a5e', length: 3.2, width: 2, alpha: 0.08, speed: 0.6 },
-		settled: 0.2,
-		fadeIn: 0.08,
-		fadeOut: 0.15,
+		segments: 96,
+		bow: 2.4,
+		swing: 0.3,
+		width: 1.3,
+		speed: 1.1,
+		gust: 4,
+		pulse: 3.5,
+		alpha: 1,
+		pale: '#e6c088',
+		rust: '#9c4a22',
+		settled: 0.3,
+		grains: {
+			count: 36,
+			life: [1.2, 2.4],
+			hop: 0.45,
+			width: 0.03,
+			length: 0.12,
+			streak: 0.3,
+			alpha: 0.5,
+			color: '#a95a28',
+		},
 		remeasure: 0.5,
 	},
 	ready: {
