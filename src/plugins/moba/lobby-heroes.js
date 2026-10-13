@@ -7,7 +7,7 @@ import { tune as frontTune } from './front/tune.js'
 import './lobby-heroes.css'
 
 // The lobby's hero strip: one painted card per hero, stacked down the left edge and leaning on
-// the saucer's lip (with "choose your hero" beside it, `lobby-caption.js`), apart from the
+// the saucer's lip (spice drifts off it to the plates, `lobby-dust.js`), apart from the
 // HUD so it reads as a menu rather than part of your hero. Yours slides out on a wash bleed;
 // clicking it opens the numbers sheet.
 export function createHeroStrip({ el, heroes, current, pick, openNumbers }) {

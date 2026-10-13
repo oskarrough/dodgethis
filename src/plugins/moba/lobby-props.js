@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { createBody } from '../../core/body.js'
 import { PALETTE } from '../../core/style.js'
 import { hologramMaterial } from './hologram.js'
-import { createCaption } from './lobby-caption.js'
+import { createLobbyDust } from './lobby-dust.js'
 import { FORWARD_LAYER } from '../../core/stylepass.js'
 import { dressHero } from './hero-view.js'
 import { listedHeroes } from './heroes.js'
@@ -184,7 +184,7 @@ export function createLobbyProps(
 	}
 	const faces = createFaceKit()
 	const flow = createLobbyFlow(scene, readySeats, local)
-	const caption = createCaption(root)
+	const dust = createLobbyDust(root, el, readySeats, local)
 	const magnets = createMagnets(root, gallery, faces, audio)
 	const galleryProps = magnets.props.map((p) => {
 		const label = document.createElement('div')
@@ -368,6 +368,7 @@ export function createLobbyProps(
 			const time = tick * step
 			const progress = (seat) => flow.progress(seat, readySeats.progress(seat, tick, step))
 			flow.update(time, progress)
+			dust.update(time, camera)
 			for (const m of Object.values(holoMaterials)) m.uniforms.uTime.value = time
 			for (const p of seatProps) {
 				for (const [i, h] of p.holograms.entries()) {
@@ -426,7 +427,7 @@ export function createLobbyProps(
 					h.undress()
 					h.body.dispose()
 				}
-			caption.dispose()
+			dust.dispose()
 			for (const item of owned) item.dispose()
 		},
 	}

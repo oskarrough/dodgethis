@@ -33,22 +33,32 @@ export const lobby = {
 		denySound: { freq: 120, slideTo: 70, dur: 0.18, gain: 0.1, type: 'square' },
 	},
 	// The hero strip leans on the saucer's left lip, each card `overlap` of its width inside the lip.
-	// Beside it, "choose your hero" in one of five takes (`style`, or `?caption=`; lobby-caption.js),
-	// its rows from `z` down by `step`, `inset` in from the lip.
-	strip: {
-		overlap: 0.3,
-		caption: {
-			style: 'stamp',
-			lines: ['Choose', 'your', 'hero'],
-			z: -0.7,
-			step: 1,
-			inset: 1.4,
-			stamp: { ink: '#2f62a8', width: 2.6, turn: 0.1, fade: 0.45, specks: 260 },
-			brush: { ink: '#26445f', width: 2.8, turn: 0.04, washes: 7, alpha: 0.22, blur: 3, jitter: 7 },
-			tag: { paper: '#e2c896', width: 2.2, height: 2.1, stick: 0.035, lean: 0.55, tilt: 0.06 },
-			emboss: { width: 2.8, lift: 0.07, blur: 2.5, shadow: 0.4, light: '#ffffff' },
-			wordless: { z: 0.4, stride: 0.6, gap: 0.16, size: 0.32, alpha: 0.8 },
-		},
+	strip: { overlap: 0.3 },
+	// Spice motes on a slow wind from the hero cards to the plates (lobby-dust.js): `count` motes and
+	// `haze.count` faint puffs, each flight `life` seconds, `mine` of them from your card to your plate.
+	// They leave `fromCard` of a card's width in from its right edge, `lift` m up, bow `bow` m across
+	// the wind and rise `arc` m, swaying `sway` m at `gust` rad/s; `settled` of the flow keeps going
+	// once you're on your plate.
+	dust: {
+		count: 140,
+		size: 0.32,
+		alpha: 0.85,
+		haze: { count: 14, size: 3.2, alpha: 0.07 },
+		colors: ['#d9833a', '#c4622f', '#e8b062', '#f3d9a4'],
+		life: [6, 9.5],
+		mine: 0.7,
+		settled: 0.25,
+		fromCard: 0.15,
+		spread: 0.5,
+		lift: 0.5,
+		bow: 1.4,
+		arc: 0.9,
+		sway: 0.35,
+		gust: 0.7,
+		land: 0.04,
+		fadeIn: 0.12,
+		fadeOut: 0.22,
+		remeasure: 0.5,
 	},
 	ready: {
 		// Authored ground prints and cardboard apply on restart; fill/activation timing is live.
