@@ -34,30 +34,33 @@ export const lobby = {
 	},
 	// The hero strip leans on the saucer's left lip, each card `overlap` of its width inside the lip.
 	strip: { overlap: 0.3 },
-	// Spice motes on a slow wind from the hero cards to the plates (lobby-dust.js): `count` motes and
-	// `haze.count` faint puffs, each flight `life` seconds, `mine` of them from your card to your plate.
-	// They leave `fromCard` of a card's width in from its right edge, `lift` m up, bow `bow` m across
-	// the wind and rise `arc` m, swaying `sway` m at `gust` rad/s; `settled` of the flow keeps going
-	// once you're on your plate.
+	// Spice on a wind ribbon from your hero card to your plate (lobby-dust.js). The ribbon leaves
+	// `fromCard` of the card's width in from its right edge, bows `bow` m off the straight line and
+	// rises `arc` m; it is `width` m across midway and pinches at both ends. `grains` ride it in a
+	// loose flock in `travel` s, sped by gust pulses (`gust`: how many along the ribbon, how often,
+	// how strong) and swung `swing` m by a shared wave. Streaks stretch `streak` s of their speed;
+	// `glow` of them carry a halo. `haze` puffs ride its middle. Once you stand on your plate,
+	// `settled` of the flow keeps going.
 	dust: {
-		count: 140,
-		size: 0.32,
-		alpha: 0.85,
-		haze: { count: 14, size: 3.2, alpha: 0.07 },
-		colors: ['#d9833a', '#c4622f', '#e8b062', '#f3d9a4'],
-		life: [6, 9.5],
-		mine: 0.7,
-		settled: 0.25,
-		fromCard: 0.15,
-		spread: 0.5,
-		lift: 0.5,
-		bow: 1.4,
-		arc: 0.9,
-		sway: 0.35,
-		gust: 0.7,
-		land: 0.04,
-		fadeIn: 0.12,
-		fadeOut: 0.22,
+		grains: 110,
+		travel: 7,
+		fromCard: 0.2,
+		lift: 0.35,
+		land: 0.05,
+		bow: 2.2,
+		arc: 0.8,
+		width: 0.9,
+		swing: 0.45,
+		gust: { count: 2.2, rate: 0.18, strength: 1.6 },
+		streak: 0.3,
+		grain: { width: [0.06, 0.15], length: 0.12 },
+		alpha: 0.9,
+		colors: ['#b86a2c', '#9c4a26', '#c98a3a', '#ddaa62'],
+		glow: { share: 0.12, color: '#f0a24a', size: 5, alpha: 0.16 },
+		haze: { count: 16, color: '#d49a5e', length: 3.2, width: 2, alpha: 0.08, speed: 0.6 },
+		settled: 0.2,
+		fadeIn: 0.08,
+		fadeOut: 0.15,
 		remeasure: 0.5,
 	},
 	ready: {
