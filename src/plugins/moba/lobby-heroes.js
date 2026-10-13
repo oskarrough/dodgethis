@@ -18,6 +18,7 @@ export function createHeroStrip({ el, heroes, current, pick, openNumbers }) {
 	const key = strip.firstChild
 	const caption = strip.children[1]
 	const point = new THREE.Vector3()
+	const seats = heroes.map(() => 0)
 	// Heroes show up here once they're playable; there are no "soon" cards.
 	const tiles = heroes.map((definition, i) => {
 		const button = document.createElement('button')
@@ -77,11 +78,14 @@ export function createHeroStrip({ el, heroes, current, pick, openNumbers }) {
 			return x
 		}
 		const overlap = tune.lobby.strip.overlap
-		for (const button of tiles) {
+		for (const [i, button] of tiles.entries()) {
 			const box = button.getBoundingClientRect()
-			const middle = strip.offsetLeft + button.offsetLeft + button.offsetWidth / 2
+			// offsetLeft already includes last frame's shift; measuring from it made the cards flip
+			// between two places every frame.
+			const middle = strip.offsetLeft + button.offsetLeft - seats[i] + button.offsetWidth / 2
 			const to = lipAt(box.top + box.height / 2) + button.offsetWidth * (overlap - 0.5)
-			button.style.setProperty('--seat', `${Math.max(0, to - middle)}px`)
+			seats[i] = Math.max(0, to - middle)
+			button.style.setProperty('--seat', `${seats[i]}px`)
 		}
 		// The caption starts inside the lip, on the glaze, in line with the cards' inner edges.
 		const box = caption.getBoundingClientRect()
