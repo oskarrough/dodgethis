@@ -141,7 +141,7 @@ export const PRESETS = Object.freeze({
 	keyboard: {
 		name: 'Keyboard only',
 		aims: { Digit1: 'slot1', Digit2: 'slot2', Digit3: 'slot3', Digit4: 'slot4' },
-		taps: { Digit5: 'slot5', Space: 'primary' },
+		taps: { KeyZ: 'slot5', Space: 'primary' },
 		walk: true,
 		arrows: true, // its camera follows like the pad's, so the arrows are free to walk
 		mouse: null,
