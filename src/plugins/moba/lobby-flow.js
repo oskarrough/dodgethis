@@ -6,8 +6,9 @@ import { tune } from './tune.js'
 // What the plates are for, shown rather than said: bots walk onto their plates as you arrive, your
 // own plate ripples until you stand in it, and a groove inlaid in the glaze runs from every plate into
 // a trunk that dives under the weather bowl. Each branch fills as its plate glazes, running toward the
-// bowl; the trunk fills by the share of glazed plates, so it reaches the bowl only once everyone is in,
-// and then the glaze runs round inside the bowl. Team glazes marble together where they join.
+// bowl; the trunk and the ring inside the bowl fill by the share of glazed plates, so the bowl is
+// nearly fed before you step on and your plate closes the ring. Team glazes marble together where
+// they join.
 
 // A rounded rectangle laid flat, centred on its group.
 function plateShape(width, depth, corner) {
@@ -223,8 +224,9 @@ export function createLobbyFlow(scene, readySeats, local) {
 		for (const mesh of [lip, fill]) mesh.position.y += b.height * 0.58 + 0.01
 		return { path, half: g.pool.width / 2, fill, lip, level: 0 }
 	})
-	// How far along the trunk its turn toward the bowl is, just outside the bowl's rim.
-	const rim = trunk.path.along[nearest(trunk.path, turn)]
+	// How far the glaze runs, trunk then ring, before the last plate: all but the ring's last arc.
+	const course = trunk.path.length + pools[0].path.length
+	const held = course - g.pool.last * pools[0].path.length
 	const yours = tone('ammo')
 	// Your plate ripples out from under its rim until you stand in it.
 	const ripple = forward(
@@ -349,15 +351,14 @@ export function createLobbyFlow(scene, readySeats, local) {
 				lane.tint = lane.seat === mine ? yours : lane.color
 				pour(lane, time, (out) => out.copy(lane.tint))
 			}
-			// The shared glaze stops at the bowl's rim until the last plate glazes, which drives it on under
-			// the bowl and round inside it, so it only reaches the map once everyone is in.
+			// The shared glaze runs up the trunk and round inside the bowl as plates glaze, stopping short of
+			// closing the ring; the last plate to glaze closes it.
 			const share = total / branches.length,
 				waiting = 1 - 1 / branches.length
 			const front =
 				share <= waiting
-					? (share / waiting) * rim
-					: rim +
-						((share - waiting) / (1 - waiting)) * (trunk.path.length + pools[0].path.length - rim)
+					? (share / waiting) * held
+					: held + ((share - waiting) / (1 - waiting)) * (course - held)
 			settle(trunk, Math.min(1, front / trunk.path.length))
 			pour(trunk, time, (out, s, c) => mix(out, s, ACROSS[c], time))
 			for (const pool of pools) {

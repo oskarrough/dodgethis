@@ -2,10 +2,13 @@
 	{
 		"at": "2026-10-13T08:35:52.709Z",
 		"title": "Lobby: plates flow to the map (#30)",
-		"ask": "Run is the only look now. The trunk curls in under the weather bowl, and the last plate to glaze drives the glaze round inside the bowl, around the clouds. Where branches join, team glazes run side by side, then marble into drifting streaks instead of a purple block. Does the bowl read as fed, and do the streaks read as liquid? Play it: step onto your plate last.",
+		"ask": "Run is the only look. The trunk and the ring inside the weather bowl now fill as the bots glaze their plates, so before you step on the bowl is fed all but its last arc, and your plate closes it. Team glazes still marble into streaks where branches join. Does the bowl read as fed before you step on? Play it: step onto your plate last.",
 		"status": "To review",
 		"decision": "",
-		"media": ["review/media/2026-10-13-lobby-plates-flow-to-the-map-30-/junction-and-bowl.png"],
+		"media": [
+			"review/media/2026-10-13-lobby-plates-flow-to-the-map-30-/bowl-bots-in.png",
+			"review/media/2026-10-13-lobby-plates-flow-to-the-map-30-/junction-and-bowl.png"
+		],
 		"links": ["/"],
 		"thread": "thr_hcrr25efxq",
 		"page": "2026-10-13-lobby-plates-flow-to-the-map-30-/"
