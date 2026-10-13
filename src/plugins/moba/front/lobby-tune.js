@@ -33,7 +33,19 @@ export const lobby = {
 		denySound: { freq: 120, slideTo: 70, dur: 0.18, gain: 0.1, type: 'square' },
 	},
 	// The hero strip leans on the saucer's left lip, each card `overlap` of its width inside the lip.
-	strip: { caption: 'Choose your hero', overlap: 0.3 },
+	// Beside it the glaze has `lines` cut in, `size` tall, from `z` down by `step`, `inset` in from the
+	// lip, with a `lip` wide ink edge (lobby-engrave.js).
+	strip: {
+		overlap: 0.3,
+		engrave: {
+			lines: ['Choose', 'your', 'hero'],
+			z: -0.7,
+			step: 1,
+			size: 0.95,
+			inset: 1.5,
+			lip: 0.05,
+		},
+	},
 	ready: {
 		// Authored ground prints and cardboard apply on restart; fill/activation timing is live.
 		x: 2.65,

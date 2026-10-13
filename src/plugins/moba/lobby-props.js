@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import { createBody } from '../../core/body.js'
 import { PALETTE } from '../../core/style.js'
 import { hologramMaterial } from './hologram.js'
+import { engraveSaucer } from './lobby-engrave.js'
 import { FORWARD_LAYER } from '../../core/stylepass.js'
 import { dressHero } from './hero-view.js'
 import { listedHeroes } from './heroes.js'
@@ -183,6 +184,7 @@ export function createLobbyProps(
 	}
 	const faces = createFaceKit()
 	const flow = createLobbyFlow(scene, readySeats, local)
+	const engraving = engraveSaucer(root)
 	const magnets = createMagnets(root, gallery, faces, audio)
 	const galleryProps = magnets.props.map((p) => {
 		const label = document.createElement('div')
@@ -424,6 +426,7 @@ export function createLobbyProps(
 					h.undress()
 					h.body.dispose()
 				}
+			engraving.dispose()
 			for (const item of owned) item.dispose()
 		},
 	}
