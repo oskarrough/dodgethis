@@ -1,5 +1,19 @@
 [
 	{
+		"at": "2026-10-13T10:12:04.233Z",
+		"title": "Choose your hero, cut into the platter",
+		"ask": "Does the engraving read as part of the platter, beside the cards? Wide window, then narrow.",
+		"status": "To review",
+		"decision": "",
+		"media": [
+			"review/media/2026-10-13-choose-your-hero-cut-into-the-platter/engrave-wide-crop.png",
+			"review/media/2026-10-13-choose-your-hero-cut-into-the-platter/engrave-narrow-crop.png"
+		],
+		"links": [],
+		"thread": "thr_pag3q8z9mf",
+		"page": "2026-10-13-choose-your-hero-cut-into-the-platter/"
+	},
+	{
 		"at": "2026-10-13T10:00:43.844Z",
 		"title": "Hero strip leans on the platter, with a caption",
 		"ask": "Does 'Choose your hero' over your pick read as a choice, and do the cards now feel part of the lobby? Before is today; after is the default lobby camera.",
