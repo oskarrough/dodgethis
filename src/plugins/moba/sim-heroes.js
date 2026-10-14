@@ -153,6 +153,7 @@ export function createRoster(ctx) {
 		endCast(hero, 'swap')
 		endStance(hero, 'swap')
 		cancelChannel(hero, 'swap')
+		ctx.clearStatuses(hero, 'swap')
 		hero.body.cancelDash()
 		hero.body.dispose()
 		hero.heroId = heroId
@@ -164,7 +165,6 @@ export function createRoster(ctx) {
 		hero.maxHp = definition.base.hp * (1 + tune.levels.growth * (hero.level - 1))
 		hero.hp = hero.maxHp * fraction
 		hero.abilityState = freshAbilityState(definition)
-		hero.statuses = []
 		hero.attack = null
 		hero.attackTick = 0
 		hero.order = null

@@ -64,7 +64,7 @@ export function createCombat(ctx) {
 		unit.dead = false
 		if (unit.post) unit.maxHp = tune.dummies.hp
 		unit.hp = unit.dunked ? Math.min(unit.maxHp, unit.dunked.hp) : unit.maxHp
-		unit.statuses = []
+		ctx.clearStatuses(unit, 'respawn')
 		unit.dunked = null
 		unit.displacement = null
 		unit.shove = null
@@ -261,9 +261,6 @@ export function createCombat(ctx) {
 			lethal,
 			damage,
 			...(shot.ambient && { ambient: true }),
-			...(unit.statuses?.length && {
-				statusLabels: Object.fromEntries(unit.statuses.map((status) => [status.label, true])),
-			}),
 			...(shot.crit && { crit: true }),
 			hp: unit.hp,
 			maxHp: unit.maxHp,
@@ -273,7 +270,7 @@ export function createCombat(ctx) {
 			return
 		}
 		unit.dead = true
-		unit.statuses = []
+		ctx.clearStatuses(unit, 'death')
 		if (unit.displacement) unit.displacement = null
 		if (!unit.kind) ball?.hurt(unit)
 		unit.corpse = unit.body
@@ -298,7 +295,7 @@ export function createCombat(ctx) {
 
 	// Out of play until `seconds` pass: a death or a dunk. The caller has retired the body.
 	function bench(unit, seconds, shot) {
-		unit.statuses = []
+		ctx.clearStatuses(unit, 'bench')
 		unit.respawnTick = ctx.t + ticks(seconds)
 		endCast(unit, 'death')
 		endStance(unit, 'death')

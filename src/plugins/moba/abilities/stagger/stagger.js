@@ -9,8 +9,8 @@ export default {
 			tags: ['pending'],
 			bar: 'pending',
 			data: () => ({ source: null, left: 0, ended: null }),
-			onDamageTaken({ hero, status, shot, damage, tick }) {
-				if (shot.periodic || hero.stance?.ability !== 'stagger' || hero.stance.until <= tick)
+			onDamageTaken({ hero, status, ability: stanceAbility, shot, damage, tick }) {
+				if (shot.periodic || hero.stance?.ability !== stanceAbility.id || hero.stance.until <= tick)
 					return damage
 				status.amount += damage
 				const { owner, team, ability, slot, dx, dz } = shot
@@ -53,8 +53,7 @@ export default {
 	},
 	onStart({ hero, sim }) {
 		// A second stance can bank into a still-paying pool, exactly as before.
-		sim.apply(hero, 'stagger.bank', { source: hero.id })
-		const bank = hero.statuses.find((status) => status.key === 'stagger.bank')
+		const bank = sim.apply(hero, 'stagger.bank', { source: hero.id })
 		bank.amount ??= 0
 	},
 	onEnd({ hero, tick, ticks, ability, reason }) {

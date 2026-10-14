@@ -4,6 +4,7 @@ import { STEP } from '../../core/app.js'
 import { HEROES, heroDefinition } from './heroes.js'
 import { dressHero } from './hero-view.js'
 import { tune } from './tune.js'
+import { unpackStatuses } from './statuses.js'
 
 const finite = Number.isFinite
 const point = (p) => p && finite(p.x) && finite(p.z)
@@ -254,6 +255,7 @@ export function createUnitReplica(
 			unit.body = body
 		}
 		for (const key of fields) if (Object.hasOwn(a, key)) unit[key] = structuredClone(a[key])
+		unit.statuses = unpackStatuses(unit.statuses)
 		unit.displacement = a.displacement ? structuredClone(a.displacement) : null
 		const continuous = b && a.dead === b.dead && a.heroId === b.heroId && a.seatTeam === b.seatTeam
 		if (a.pos && !unit.body.retired) {

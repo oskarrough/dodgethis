@@ -2,10 +2,41 @@ import { abilityOf } from './ability.js'
 import { STEP } from '../../core/app.js'
 import { ticks } from './sim-kit.js'
 
-// Only records live on units. Behaviour and display vocabulary live in the declaring folder.
+const definitions = new Map()
+
+// Custom hero declarations may override the same key; cache once per declaration owner.
 export function statusDefinition(status, unit = null) {
-	const [ability, key] = status.key.split('.')
-	return abilityOf(ability, unit)?.statuses?.[key] ?? null
+	let entry = definitions.get(status.key)
+	if (!entry) {
+		const [ability, key] = status.key.split('.')
+		entry = { ability, key, owners: new Map() }
+		definitions.set(status.key, entry)
+	}
+	const owner = unit?.definition ?? null
+	if (!entry.owners.has(owner))
+		entry.owners.set(owner, abilityOf(entry.ability, unit)?.statuses?.[entry.key] ?? null)
+	return entry.owners.get(owner)
+}
+
+// Guests only display statuses; simulation ids, sources and hook clocks stay on the host.
+export function packStatuses(statuses) {
+	if (!statuses?.length) return null
+	return statuses.map(({ key, until, amount, mag, data }) => [
+		key,
+		until,
+		amount ?? null,
+		...(mag !== undefined || data !== undefined
+			? [{ ...(mag !== undefined && { mag }), ...(data !== undefined && { data }) }]
+			: []),
+	])
+}
+
+export function unpackStatuses(statuses) {
+	return (statuses ?? []).map((status) => {
+		if (!Array.isArray(status)) return status
+		const [key, until, amount, display] = status
+		return { key, until, ...(amount !== null && { amount }), ...display }
+	})
 }
 
 export function statusBar(unit, bar) {
@@ -14,7 +45,7 @@ export function statusBar(unit, bar) {
 	)
 	return {
 		amount: entries.reduce((sum, status) => sum + (status.amount ?? 0), 0),
-		label: entries[0]?.label ?? '',
+		label: entries.length ? statusDefinition(entries[0], unit).label : '',
 	}
 }
 
@@ -23,7 +54,8 @@ const resolve = (value, context) => (typeof value === 'function' ? value(context
 
 // Slice 1 deliberately replaces the previous slow across ALL sources: it must not reappear
 // when the newest expires. Strongest-slow-wins is a separate rule change.
-export function moveSpeed(unit, tick = 0) {
+export function moveSpeed(unit, tick) {
+	if (tick === undefined) throw new Error('MOBA moveSpeed needs the current tick')
 	let factor = 1
 	for (const status of unit.statuses ?? []) {
 		if (!active(status, tick) || statusDefinition(status, unit)?.moveSpeed === undefined) continue
@@ -52,12 +84,16 @@ export function createStatuses(ctx) {
 	}
 	function remove(unit, id, reason = 'removed') {
 		const status = unit.statuses?.find((entry) => entry.id === id)
-		if (!status) return false
+		if (!status || status.removed) return false
+		status.removed = true
 		unit.statuses.splice(unit.statuses.indexOf(status), 1)
 		const definition = statusDefinition(status, unit)
 		const hook = reason === 'expired' ? definition?.onExpire : definition?.onRemove
 		hook?.(context(unit, status, { reason }))
 		return true
+	}
+	function clearStatuses(unit, reason) {
+		for (const status of (unit.statuses ?? []).slice()) remove(unit, status.id, reason)
 	}
 	function cleanse(unit, tag) {
 		for (const status of (unit.statuses ?? []).slice()) {
@@ -121,7 +157,7 @@ export function createStatuses(ctx) {
 	}
 	function expireStatuses(unit) {
 		for (const status of (unit.statuses ?? []).slice()) {
-			if (!unit.statuses.includes(status)) continue
+			if (status.removed) continue
 			if (!active(status, ctx.t)) remove(unit, status.id, 'expired')
 			else if (statusDefinition(status, unit)?.absorb && status.amount <= 0)
 				remove(unit, status.id, 'spent')
@@ -130,7 +166,7 @@ export function createStatuses(ctx) {
 	function stepStatuses(unit) {
 		if (unit.dead) return
 		for (const status of (unit.statuses ?? []).slice()) {
-			if (!unit.statuses.includes(status) || !active(status, ctx.t)) continue
+			if (status.removed || !active(status, ctx.t)) continue
 			const periodic = statusDefinition(status, unit)?.periodic
 			if (!periodic || ctx.t < status.next) continue
 			// Absolute ticks, never array length or the number of statuses that happened to survive.
@@ -142,7 +178,7 @@ export function createStatuses(ctx) {
 	function onDamageTaken(unit, damage, shot) {
 		let remaining = damage
 		for (const status of (unit.statuses ?? []).slice()) {
-			if (!unit.statuses.includes(status) || !active(status, ctx.t)) continue
+			if (status.removed || !active(status, ctx.t)) continue
 			const hook = statusDefinition(status, unit)?.onDamageTaken
 			if (hook) remaining = hook(context(unit, status, { damage: remaining, shot })) ?? remaining
 		}
@@ -151,7 +187,7 @@ export function createStatuses(ctx) {
 	function absorb(unit, damage) {
 		let remaining = damage
 		for (const status of (unit.statuses ?? []).slice()) {
-			if (!unit.statuses.includes(status) || !statusDefinition(status, unit)?.absorb) continue
+			if (status.removed || !statusDefinition(status, unit)?.absorb) continue
 			if (!active(status, ctx.t) || status.amount <= 0) {
 				remove(unit, status.id, active(status, ctx.t) ? 'spent' : 'expired')
 				continue
@@ -162,5 +198,14 @@ export function createStatuses(ctx) {
 		}
 		return remaining
 	}
-	return { apply, remove, cleanse, expireStatuses, stepStatuses, onDamageTaken, absorb }
+	return {
+		apply,
+		remove,
+		clearStatuses,
+		cleanse,
+		expireStatuses,
+		stepStatuses,
+		onDamageTaken,
+		absorb,
+	}
 }

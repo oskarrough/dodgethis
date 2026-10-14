@@ -15,7 +15,7 @@ export function brewBot(ctx) {
 		memory.tick = now
 	}
 	memory.hp = h.hp
-	const stagger = h.statuses.find((status) => status.label === 'Stagger')
+	const stagger = h.statuses.find((status) => status.key === 'stagger.bank')
 	if (h.channel?.ability === 'swig' || h.cast || h.body.dashing) return frame
 	if (!ctx.skillsLocked && !h.stance && memory.burst >= h.maxHp * b.burstHp && cast('slot2', p)) {
 		memory.burst = 0

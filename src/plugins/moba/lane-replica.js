@@ -1,6 +1,7 @@
 import { createUnitReplica } from './lobby-replica.js'
 import { tune } from './tune.js'
 import { HEROES, freshAbilityState } from './heroes.js'
+import { packStatuses, unpackStatuses } from './statuses.js'
 
 // Fixed columns avoid repeating entity field names. Packets are full states, never deltas;
 // the replica expands these rows before its ordinary population and health validation.
@@ -137,10 +138,12 @@ export function projectLaneSnapshot(state) {
 		)
 	}
 	const copy = round(state)
+	copy.dummies = copy.dummies.map((unit) => ({ ...unit, statuses: packStatuses(unit.statuses) }))
 	for (const [key, fields] of Object.entries(columns))
 		copy[key] = copy[key].map((unit) => {
 			const row = fields.map((field) => {
 				const value = unit[field] ?? null
+				if (field === 'statuses') return packStatuses(value)
 				if (key === 'heroes') {
 					if (Object.hasOwn(heroDefaults, field) && value === heroDefaults[field]) return null
 					if (['cd', 'cancelUntil'].includes(field) && value.every((v) => v === 0)) return null
@@ -149,7 +152,6 @@ export function projectLaneSnapshot(state) {
 						JSON.stringify(value) === JSON.stringify(freshAbilityState(HEROES[unit.heroId]))
 					)
 						return null
-					if (field === 'statuses' && value.length === 0) return null
 				}
 				if (coordinateFields[key]?.includes(field) && value) return [value.x, value.z]
 				if (key === 'minions' && field === 'id' && value.startsWith('minion-'))
@@ -376,7 +378,10 @@ export function createLaneReplica(simulation, scene) {
 	function pose(unit, a, b, blend, changed) {
 		const body = unit.body
 		const wasDead = unit.dead
-		if (changed) Object.assign(unit, structuredClone(a))
+		if (changed) {
+			Object.assign(unit, structuredClone(a))
+			unit.statuses = unpackStatuses(unit.statuses)
+		}
 		if (a.pos) {
 			const p = b?.pos ?? a.pos
 			body.position.x = lerp(a.pos.x, p.x, blend)
@@ -483,7 +488,6 @@ export function createLaneReplica(simulation, scene) {
 					if (key === 'heroes') {
 						for (const [field, value] of Object.entries(heroDefaults))
 							if (unit[field] === null) unit[field] = value
-						if (unit.statuses === null) unit.statuses = []
 						if (unit.abilityState === null)
 							unit.abilityState = freshAbilityState(HEROES[unit.heroId])
 						for (const field of ['cd', 'cancelUntil'])
