@@ -1,0 +1,1057 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>One folder per ability · dodgethis</title>
+		<link rel="stylesheet" href="/docs/page.css" />
+	</head>
+	<body class="page">
+		<main>
+			<h1>One folder per ability</h1>
+			<p><small>To review · 2026-10-14 · thr_hdjrg7983t · design only, nothing built</small></p>
+			<p>
+				<b
+					>Hook, Brew and Coach touched 13, 12 and 18 shared engine files. Most of that is one
+					missing word: a timed thing that sits on a unit. Give units a list of statuses, let
+					folders declare them, and 21 of 40 loved abilities from WoW, LoL, Dota, HotS and
+					Diablo/PoE land as a folder after slice 1 (12 today), 36 after all five slices.</b
+				>
+			</p>
+			<p>
+				Reply by number. Line numbers are the working copy on 2026-10-14; the leak map reads
+				checkpoint <code>pxlwtzqs</code>.
+			</p>
+
+			<h2>1. Today's vocabulary, as built</h2>
+			<p>
+				An ability is a manifest object plus live numbers from its tune file:
+				<code>defineAbility</code> spreads the manifest and adds a <code>stats</code> getter on
+				<code>tune[id]</code> (<code>src/plugins/moba/ability.js:8</code>). A hero folder names a
+				basic and up to four slots, which <code>heroFromManifest</code> resolves to ability objects
+				(<code>heroes.js:12</code>, slots at <code>heroes.js:7</code>). Per-hero and per-ability
+				bookkeeping lives in <code>abilityState</code>, built from every owner's
+				<code>state()</code> (<code>heroes.js:101</code>).
+			</p>
+			<ol>
+				<li>
+					<b>Kinds.</b> Release branches on <code>ability.kind</code>:
+					<code>stance</code> (<code>casting.js:173</code>),
+					<code>channel</code> (<code>casting.js:184</code>),
+					<code>instant</code> (<code>casting.js:197</code>),
+					<code>dash</code> (<code>casting.js:199</code>),
+					<code>zone</code> (<code>casting.js:207</code>), and everything else falls through to a
+					<code>shot</code> (<code>casting.js:222</code>). Basics add
+					<code>melee</code> (<code>combat.js:127</code>) and
+					<code>homing</code> (<code>abilities/tennisBall/tennisBall.js:5</code>). Bots find their
+					tools by kind too: first <code>shot</code>, <code>zone</code>, <code>dash</code>, catching
+					<code>stance</code> (<code>fight-bots.js:57-63</code>).
+				</li>
+				<li>
+					<b>Ability hooks.</b> <code>onStart</code>, <code>onTick</code>, <code>onRelease</code>,
+					<code>onEnd</code>, <code>onCancel</code> (<code>casting.js:295-369</code>);
+					<code>watch</code> every tick for every slotted ability (<code>sim.js:309</code>);
+					<code>onDashEnd</code> (<code>sim.js:347</code>); <code>onHit</code> twice, once before
+					damage where returning <code>true</code> swallows the hit (<code>combat.js:191</code>) and
+					once after a non-lethal hit (<code>combat.js:277</code>);
+					<code>ready</code> (<code>casting.js:64</code>),
+					<code>targetUnit</code> (<code>casting.js:112</code>),
+					<code>projectileStats</code> (<code>casting.js:232</code>), <code>deferDamage</code> for a
+					<code>defersDamage</code> stance (<code>combat.js:231</code>), <code>blinkTo</code> for
+					bots (<code>fight-bots.js:60</code>).
+				</li>
+				<li>
+					<b>Hero hooks.</b> <code>traits.onTick</code> (<code>sim.js:307</code>),
+					<code>onHit</code>, <code>onDeath</code>, <code>onCatch</code>, and
+					<code>traits.damageFactor</code> (<code>combat.js:226</code>); <code>bot</code> and
+					<code>botDead</code> (<code>bots.js:237</code>, <code>bots.js:258</code>);
+					<code>outOfPlay</code> for Coach's cutout (<code>sim.js:171</code>,
+					<code>hud.js:80</code>, <code>index.js:473-589</code>); <code>trait()</code> for the card.
+				</li>
+				<li>
+					<b>Primitives a folder can call.</b> <code>sim.hit</code>, <code>sim.displace</code>,
+					<code>sim.enemiesOf</code> (exported at <code>sim.js:388-390</code>);
+					<code>launchShot</code>, <code>openCatch</code>, <code>throwCaught</code>,
+					<code>swapHero</code>; the <code>zones</code>, <code>boards</code> and
+					<code>cutouts</code> lists. And, in practice, direct writes to unit fields: Red light sets
+					<code>freezeUntil</code> (<code>abilities/redLight/redLight.js:20</code>), Tag out
+					cleanses by zeroing <code>stunUntil</code> and <code>slow</code>
+					(<code>abilities/tagOut/tagOut.js:58-59</code>), Swig pushes into
+					<code>hero.shields</code> (<code>abilities/swig/swig.js:20</code>).
+				</li>
+				<li>
+					<b>Manifest fields the engine reads.</b> Identity and look: <code>name</code>,
+					<code>icon</code>, <code>card.summary/notes</code>, <code>effects</code> (cue names for
+					cast, projectile, hit, impact, pose), <code>tell</code> (line, cone, ring, selfCircle,
+					tether), <code>held</code> (line, cone, circle, selfCircle, arrow),
+					<code>projectileShape</code> (<code>view.js:118</code>). Behaviour flags:
+					<code>pierce</code>, <code>heal</code>, <code>heroOnly</code>, <code>catchable</code>,
+					<code>aimAssist</code>, <code>returnsPocket</code>, <code>catchesShots</code>,
+					<code>placesCover</code>, <code>root</code>, <code>cancelOnMove</code>,
+					<code>cancelOnCast</code>, <code>defersDamage</code>. Bot hints: <code>botCone</code>,
+					<code>botRadial</code> (<code>fight-bots.js:315-320</code>). Stats from tune:
+					<code>cooldown</code>, <code>castPoint</code>, <code>range</code>, <code>radius</code>,
+					<code>speed</code>, <code>damage</code>, <code>duration</code>, <code>slow</code>,
+					<code>bounce</code>, <code>healAmount</code>, <code>delay</code>, <code>time</code>,
+					<code>speedFactor</code>, <code>angle</code>, <code>sound</code>.
+				</li>
+				<li>
+					<b>Unit states, each its own field.</b> <code>stunUntil</code>, <code>freezeUntil</code>,
+					<code>proneUntil</code>, <code>slow</code> (one slot, <code>{ until, factor }</code>),
+					<code>shields</code> (a list), <code>displacement</code>, <code>shove</code>,
+					<code>stance</code>, <code>catchWindow</code>. Each is reset by hand on respawn
+					(<code>combat.js:61-81</code>), on bench (<code>combat.js:307-318</code>) and on hero swap
+					(<code>sim-heroes.js:166-181</code>), copied by hand into the snapshot
+					(<code>sim-snapshot.js:92-119</code>) and both replicas
+					(<code>lane-replica.js:19-34</code>, <code>lane-replica.js:84-91</code>), and checked by
+					hand wherever it gates something (<code>casting.js:360</code>,
+					<code>control.js:114</code>, <code>orders.js:163</code>, <code>projectiles.js:328</code>,
+					<code>projectiles.js:393</code>). Engine files reading each: <code>stunUntil</code> 11,
+					<code>freezeUntil</code> 10, <code>proneUntil</code> 9, <code>slow</code> 7,
+					<code>displacement</code> 7, <code>shields</code> 6.
+				</li>
+				<li>
+					<b>Rules baked in, not chosen.</b> The newest slow overwrites the old one, even a weaker
+					one (<code>combat.js:248</code>, zones at <code>projectiles.js:62</code>). Speed-ups don't
+					exist: <code>slowFactor</code> clamps to at most 1 (<code>ability.js:67</code>). A zone's
+					landing is Rain's landing: damage and slow in a radius, no hook
+					(<code>projectiles.js:44-70</code>). Damage reduction exists only per hero
+					(<code>traits.damageFactor</code>), so Tag out's reduction had to live in Coach's hero
+					file (<code>heroes/coach/coach.js:25</code>).
+				</li>
+			</ol>
+
+			<h2>2. The leak map</h2>
+			<p>
+				Every shared file the checkpoint touched, why the engine had to learn about that hero, and
+				the slice that removes the reason. Generated lists (<code>all-*.js</code>) and docs don't
+				count; a folder alone is supposed to regenerate those.
+			</p>
+			<table>
+				<thead>
+					<tr>
+						<th>Shared file</th>
+						<th>Hook</th>
+						<th>Brew</th>
+						<th>Coach</th>
+						<th>Fixed by</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td><code>casting.js</code></td>
+						<td>
+							a displaced unit's channel must cancel; drag rides the shot via new
+							<code>projectileStats</code>
+						</td>
+						<td>shields expire each tick; Swig needs <code>cancelOnCast</code></td>
+						<td>
+							Tag out needs <code>targetUnit</code>; Pass needs <code>healAmount</code>,
+							<code>heroOnly</code> on the shot
+						</td>
+						<td>1 (shields), 2 (disables); the hooks stay as vocabulary</td>
+					</tr>
+					<tr>
+						<td><code>combat.js</code></td>
+						<td>clear displacement on respawn, death, bench; <code>onHit</code> after damage</td>
+						<td>
+							shields absorb; Stagger defers damage; <code>deferred</code> repayments skip shove,
+							crit, multipliers; three shield resets
+						</td>
+						<td>
+							<code>onHit</code> before damage so a heal can swallow the hit;
+							<code>damageFactor</code> for Tag out; <code>noHelp</code> for the cutout
+						</td>
+						<td>1, 2</td>
+					</tr>
+					<tr>
+						<td><code>control.js</code></td>
+						<td>displaced heroes and dummies skip control</td>
+						<td></td>
+						<td></td>
+						<td>2</td>
+					</tr>
+					<tr>
+						<td><code>displacement.js</code></td>
+						<td>new module</td>
+						<td></td>
+						<td></td>
+						<td>2 (becomes a motion status)</td>
+					</tr>
+					<tr>
+						<td><code>lane.js</code></td>
+						<td>displaced minions skip their step</td>
+						<td></td>
+						<td></td>
+						<td>2</td>
+					</tr>
+					<tr>
+						<td><code>lane-replica.js</code></td>
+						<td><code>displacement</code> field</td>
+						<td><code>shields</code>, <code>dashAbility</code> fields</td>
+						<td></td>
+						<td>1, 2 (one <code>statuses</code> field)</td>
+					</tr>
+					<tr>
+						<td><code>lobby-replica.js</code></td>
+						<td><code>displacement</code></td>
+						<td><code>shields</code>, <code>dashAbility</code></td>
+						<td></td>
+						<td>1, 2</td>
+					</tr>
+					<tr>
+						<td><code>sim-heroes.js</code></td>
+						<td>reset displacement on swap</td>
+						<td>reset shields on swap</td>
+						<td></td>
+						<td>1, 2</td>
+					</tr>
+					<tr>
+						<td><code>sim-snapshot.js</code></td>
+						<td>displacement on heroes, minions, dummies</td>
+						<td>shields, <code>dashAbility</code></td>
+						<td></td>
+						<td>1, 2</td>
+					</tr>
+					<tr>
+						<td><code>sim.js</code></td>
+						<td>
+							wire <code>createDisplacement</code>; export <code>hit</code>, <code>displace</code>,
+							<code>enemiesOf</code>
+						</td>
+						<td></td>
+						<td>thread <code>outOfPlay</code> into targeting</td>
+						<td>2, 5</td>
+					</tr>
+					<tr>
+						<td><code>targeting.js</code></td>
+						<td></td>
+						<td></td>
+						<td>cutout aims from the touchline with its own abilities</td>
+						<td>5 (a player controlling a summon)</td>
+					</tr>
+					<tr>
+						<td><code>projectiles.js</code></td>
+						<td></td>
+						<td></td>
+						<td>heal shots target allies; shots skip their owner</td>
+						<td>4 (<code>targets</code> metadata)</td>
+					</tr>
+					<tr>
+						<td><code>skillshot.js</code></td>
+						<td></td>
+						<td></td>
+						<td>hero-only shots stop at towers</td>
+						<td>4</td>
+					</tr>
+					<tr>
+						<td><code>fight-bots.js</code></td>
+						<td><code>botCone</code>, <code>botRadial</code> loop</td>
+						<td></td>
+						<td>heal and hero-only shots pick allies</td>
+						<td>4</td>
+					</tr>
+					<tr>
+						<td><code>bots.js</code></td>
+						<td></td>
+						<td><code>bot</code> hook</td>
+						<td><code>bot</code>, <code>botDead</code> hooks</td>
+						<td>4 (metadata covers the common case; the hook stays as an escape hatch)</td>
+					</tr>
+					<tr>
+						<td><code>feedback.js</code></td>
+						<td></td>
+						<td>silence <code>ambient</code> repayment hits</td>
+						<td><code>heal</code>, <code>tagOut</code>, <code>freeze</code> cases</td>
+						<td>1 (periodic ticks), 3 (one contact fact)</td>
+					</tr>
+					<tr>
+						<td><code>index.js</code></td>
+						<td></td>
+						<td></td>
+						<td>
+							register three fact types; <code>outOfPlay</code> in four places; freeze stops poses;
+							pass cutouts to the view
+						</td>
+						<td>2, 3, 5</td>
+					</tr>
+					<tr>
+						<td><code>hud.js</code></td>
+						<td></td>
+						<td>shield and Stagger text</td>
+						<td>cutout cooldowns; Out, not gone icon</td>
+						<td>1, 5</td>
+					</tr>
+					<tr>
+						<td><code>health-bars.js</code> + <code>.css</code></td>
+						<td></td>
+						<td>
+							shield sliver and Stagger pool, reading <code>abilityState.stagger</code> by name
+						</td>
+						<td></td>
+						<td>1 (statuses declare a bar)</td>
+					</tr>
+					<tr>
+						<td><code>skills-view.js</code></td>
+						<td>cone enemy tell</td>
+						<td></td>
+						<td>
+							hero-view <code>extras</code>, <code>selfCircle</code>, hidden
+							<code>tether</code> tell
+						</td>
+						<td>vocabulary (fine once)</td>
+					</tr>
+					<tr>
+						<td><code>look.js</code></td>
+						<td>sounds and juice</td>
+						<td>sounds</td>
+						<td>Skip→Coach rename</td>
+						<td>
+							3 (sounds and juice in the folder tune; Coach already uses <code>stats.sound</code>)
+						</td>
+					</tr>
+					<tr>
+						<td><code>sound-table.js</code></td>
+						<td></td>
+						<td></td>
+						<td><code>stats.sound</code> path; cues for three fact types</td>
+						<td>3</td>
+					</tr>
+					<tr>
+						<td><code>view.js</code></td>
+						<td></td>
+						<td></td>
+						<td><code>projectileShape: 'ball'</code></td>
+						<td>vocabulary</td>
+					</tr>
+					<tr>
+						<td><code>scripts/bench/report.js</code></td>
+						<td></td>
+						<td></td>
+						<td>count heal, tagOut, freeze as hits</td>
+						<td>3</td>
+					</tr>
+					<tr>
+						<td><code>hero-view.js</code>, <code>tests/moba-setup.test.js</code></td>
+						<td></td>
+						<td></td>
+						<td>Skip→Coach rename</td>
+						<td>noise</td>
+					</tr>
+				</tbody>
+			</table>
+			<p>
+				My count: Hook 13, Brew 12, Coach 18 (15 without the rename). The reported 12, 13 and 16
+				count slightly differently (whether the CSS file, the bench script and the rename count);
+				the shape is the same. Hook's leak is one primitive, displacement, threaded through ten
+				files. Brew's is two states, shields and deferred damage, threaded through nine. Coach's is
+				presentation and a dead player who still plays.
+			</p>
+			<p>
+				<b>Target metric: shared files touched per new ability.</b> Zero when the ability speaks the
+				existing vocabulary. One when it adds a word (the module that learns it), never the
+				snapshot, replicas, resets or HUD. Today a new timed state costs 7 to 11 engine files before
+				any gameplay.
+			</p>
+			<p>
+				<b>One bug the map turned up.</b> <code>combat.js:191</code> and
+				<code>combat.js:277</code> both call the same <code>onHit</code>. Throw has no return value,
+				so its drag runs twice per non-lethal hit, the first time before damage is even dealt
+				(<code>abilities/throw/throw.js:19</code>). The thread fixing these heroes should split the
+				hook into <code>beforeHit</code> and <code>onHit</code>.
+			</p>
+
+			<h2>3. The corpus</h2>
+			<p>
+				Forty abilities, picked for the moments in
+				<a href="/docs/compelling-abilities.md">compelling-abilities.md</a>: the catch then payoff
+				(13), saves (12), moving the fight (6), brave escapes (4), summons (3, plus the lantern and
+				Wind Wall, which are built as summons), fantasies (2). Each one is decomposed in its own
+				game's data model where one is public, then scored. Today means a folder alone, with correct
+				behaviour (survives the caster's death, shows on the target, cleanses).
+			</p>
+			<table>
+				<thead>
+					<tr>
+						<th>#</th>
+						<th>Ability</th>
+						<th>Moment</th>
+						<th>In its own data model</th>
+						<th>Today</th>
+						<th>After slice 1</th>
+						<th>After all</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>1</td>
+						<td>Power Word: Shield (WoW)</td>
+						<td>save</td>
+						<td><code>SPELL_AURA_SCHOOL_ABSORB</code></td>
+						<td>yes</td>
+						<td>yes</td>
+						<td>yes</td>
+					</tr>
+					<tr>
+						<td>2</td>
+						<td>Divine Shield (WoW)</td>
+						<td>escape</td>
+						<td><code>SPELL_AURA_SCHOOL_IMMUNITY</code></td>
+						<td>no</td>
+						<td>no</td>
+						<td>yes (untargetable)</td>
+					</tr>
+					<tr>
+						<td>3</td>
+						<td>Charge (WoW)</td>
+						<td>catch</td>
+						<td><code>SPELL_EFFECT_CHARGE</code> + <code>MOD_STUN</code></td>
+						<td>yes (dash, stun in <code>onDashEnd</code>)</td>
+						<td>yes</td>
+						<td>yes</td>
+					</tr>
+					<tr>
+						<td>4</td>
+						<td>Frost Nova (WoW)</td>
+						<td>catch</td>
+						<td><code>SPELL_AURA_MOD_ROOT</code></td>
+						<td>no</td>
+						<td>no</td>
+						<td>yes (rooted)</td>
+					</tr>
+					<tr>
+						<td>5</td>
+						<td>Polymorph (WoW)</td>
+						<td>catch</td>
+						<td><code>MOD_CONFUSE</code> + <code>TRANSFORM</code>, breaks on damage</td>
+						<td>no</td>
+						<td>no</td>
+						<td>yes</td>
+					</tr>
+					<tr>
+						<td>6</td>
+						<td>Leap of Faith (WoW)</td>
+						<td>save, moving</td>
+						<td><code>SPELL_EFFECT_PULL_TOWARDS</code></td>
+						<td>yes (<code>sim.displace</code> an ally)</td>
+						<td>yes</td>
+						<td>yes</td>
+					</tr>
+					<tr>
+						<td>7</td>
+						<td>Pain Suppression (WoW)</td>
+						<td>save</td>
+						<td><code>SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN</code></td>
+						<td>no (hero-level only)</td>
+						<td>yes</td>
+						<td>yes</td>
+					</tr>
+					<tr>
+						<td>8</td>
+						<td>Summon Water Elemental (WoW)</td>
+						<td>summon</td>
+						<td><code>SPELL_EFFECT_SUMMON</code></td>
+						<td>no</td>
+						<td>no</td>
+						<td>yes</td>
+					</tr>
+					<tr>
+						<td>9</td>
+						<td>Renew / Corruption (WoW)</td>
+						<td>save</td>
+						<td><code>SPELL_AURA_PERIODIC_HEAL</code> / <code>_DAMAGE</code></td>
+						<td>no (only Stagger's caster-side hack, which dies with the caster)</td>
+						<td>yes</td>
+						<td>yes</td>
+					</tr>
+					<tr>
+						<td>10</td>
+						<td>Rocket Grab (LoL)</td>
+						<td>catch</td>
+						<td>no public schema; projectile + pull</td>
+						<td>yes (Throw)</td>
+						<td>yes</td>
+						<td>yes</td>
+					</tr>
+					<tr>
+						<td>11</td>
+						<td>Dark Passage, Thresh's lantern (LoL)</td>
+						<td>save, moving</td>
+						<td>summoned object an ally clicks</td>
+						<td>no</td>
+						<td>no</td>
+						<td>yes</td>
+					</tr>
+					<tr>
+						<td>12</td>
+						<td>Monsoon (LoL)</td>
+						<td>save</td>
+						<td>knockback + channelled heal</td>
+						<td>yes</td>
+						<td>yes</td>
+						<td>yes</td>
+					</tr>
+					<tr>
+						<td>13</td>
+						<td>Zhonya's Hourglass (LoL)</td>
+						<td>escape</td>
+						<td>stasis: untargetable and stopped</td>
+						<td>no</td>
+						<td>no</td>
+						<td>yes</td>
+					</tr>
+					<tr>
+						<td>14</td>
+						<td>Flash (LoL)</td>
+						<td>escape</td>
+						<td>blink</td>
+						<td>yes (<code>body.place</code>)</td>
+						<td>yes</td>
+						<td>yes</td>
+					</tr>
+					<tr>
+						<td>15</td>
+						<td>Light Binding (LoL)</td>
+						<td>catch</td>
+						<td>skillshot, root, pierces one</td>
+						<td>no</td>
+						<td>no</td>
+						<td>yes</td>
+					</tr>
+					<tr>
+						<td>16</td>
+						<td>Wind Wall (LoL)</td>
+						<td>save</td>
+						<td>object that eats projectiles</td>
+						<td>no (Pong's boards bounce, they don't eat)</td>
+						<td>no</td>
+						<td>yes</td>
+					</tr>
+					<tr>
+						<td>17</td>
+						<td>Black Shield (LoL)</td>
+						<td>save</td>
+						<td>magic absorb + crowd-control immunity</td>
+						<td>no</td>
+						<td>no</td>
+						<td>no (we won't build CC immunity)</td>
+					</tr>
+					<tr>
+						<td>18</td>
+						<td>Meat Hook (Dota)</td>
+						<td>catch</td>
+						<td><code>DOTA_ABILITY_BEHAVIOR_POINT</code> + motion</td>
+						<td>yes (Throw)</td>
+						<td>yes</td>
+						<td>yes</td>
+					</tr>
+					<tr>
+						<td>19</td>
+						<td>Shallow Grave (Dota)</td>
+						<td>save</td>
+						<td><code>MODIFIER_PROPERTY_MIN_HEALTH</code></td>
+						<td>no</td>
+						<td>yes (<code>onDamageTaken</code>)</td>
+						<td>yes</td>
+					</tr>
+					<tr>
+						<td>20</td>
+						<td>False Promise (Dota)</td>
+						<td>save</td>
+						<td>modifier banking damage and heals</td>
+						<td>no (Stagger works only on Brew herself)</td>
+						<td>yes</td>
+						<td>yes</td>
+					</tr>
+					<tr>
+						<td>21</td>
+						<td>Nether Swap (Dota)</td>
+						<td>moving</td>
+						<td><code>DOTA_UNIT_TARGET_TEAM_BOTH</code></td>
+						<td>yes (Tag out's <code>targetUnit</code>)</td>
+						<td>yes</td>
+						<td>yes</td>
+					</tr>
+					<tr>
+						<td>22</td>
+						<td>Black Hole (Dota)</td>
+						<td>catch, fantasy</td>
+						<td><code>CHANNELLED</code> + <code>MODIFIER_STATE_STUNNED</code></td>
+						<td>yes (channel, displace and stun per tick)</td>
+						<td>yes</td>
+						<td>yes</td>
+					</tr>
+					<tr>
+						<td>23</td>
+						<td>Chronosphere (Dota)</td>
+						<td>catch</td>
+						<td>thinker + <code>MODIFIER_STATE_FROZEN</code> aura</td>
+						<td>no</td>
+						<td>no</td>
+						<td>yes (bodiless summon)</td>
+					</tr>
+					<tr>
+						<td>24</td>
+						<td>Relocate (Dota)</td>
+						<td>moving</td>
+						<td>teleport, return on expiry</td>
+						<td>no</td>
+						<td>yes (<code>onExpire</code>)</td>
+						<td>yes</td>
+					</tr>
+					<tr>
+						<td>25</td>
+						<td>Snowball (Dota)</td>
+						<td>moving</td>
+						<td>allies ride inside</td>
+						<td>no</td>
+						<td>no</td>
+						<td>no (carried units)</td>
+					</tr>
+					<tr>
+						<td>26</td>
+						<td>Borrowed Time (Dota)</td>
+						<td>save</td>
+						<td><code>OnTakeDamage</code> → heal</td>
+						<td>no</td>
+						<td>yes</td>
+						<td>yes</td>
+					</tr>
+					<tr>
+						<td>27</td>
+						<td>Medivac Dropship (HotS)</td>
+						<td>moving</td>
+						<td><code>CAbilTransport</code></td>
+						<td>no</td>
+						<td>no</td>
+						<td>no (carried units)</td>
+					</tr>
+					<tr>
+						<td>28</td>
+						<td>Void Prison (HotS)</td>
+						<td>fantasy</td>
+						<td><code>CBehaviorBuff</code>, time-stop flags, area</td>
+						<td>no</td>
+						<td>no</td>
+						<td>yes</td>
+					</tr>
+					<tr>
+						<td>29</td>
+						<td>Gorge (HotS)</td>
+						<td>catch</td>
+						<td>enemy carried inside the caster</td>
+						<td>no</td>
+						<td>no</td>
+						<td>no (carried units)</td>
+					</tr>
+					<tr>
+						<td>30</td>
+						<td>Phase Shift (HotS)</td>
+						<td>moving, save</td>
+						<td><code>CEffectTeleport</code> to an ally</td>
+						<td>yes</td>
+						<td>yes</td>
+						<td>yes</td>
+					</tr>
+					<tr>
+						<td>31</td>
+						<td>Mosh Pit (HotS)</td>
+						<td>catch</td>
+						<td>channel + stun behavior</td>
+						<td>yes</td>
+						<td>yes</td>
+						<td>yes</td>
+					</tr>
+					<tr>
+						<td>32</td>
+						<td>Eternal Devotion (HotS)</td>
+						<td>fantasy</td>
+						<td>death → spirit form</td>
+						<td>yes (Coach paid for <code>outOfPlay</code>)</td>
+						<td>yes</td>
+						<td>yes</td>
+					</tr>
+					<tr>
+						<td>33</td>
+						<td>Twilight Dream (HotS)</td>
+						<td>catch</td>
+						<td>silence behavior</td>
+						<td>no</td>
+						<td>no</td>
+						<td>yes (silenced)</td>
+					</tr>
+					<tr>
+						<td>34</td>
+						<td>Graviton Surge (HotS)</td>
+						<td>catch then payoff</td>
+						<td><code>CEffectCreatePersistent</code> → pull</td>
+						<td>no (zone landing is Rain's)</td>
+						<td>no</td>
+						<td>yes (zone <code>onLand</code>)</td>
+					</tr>
+					<tr>
+						<td>35</td>
+						<td>Raise Spectre (PoE)</td>
+						<td>summon</td>
+						<td>Minion tag</td>
+						<td>no</td>
+						<td>no</td>
+						<td>yes</td>
+					</tr>
+					<tr>
+						<td>36</td>
+						<td>Molten Shell (PoE)</td>
+						<td>save</td>
+						<td>Guard tag: absorb, bursts when spent</td>
+						<td>no</td>
+						<td>yes</td>
+						<td>yes</td>
+					</tr>
+					<tr>
+						<td>37</td>
+						<td>Vulnerability (PoE)</td>
+						<td>catch payoff</td>
+						<td>Curse tag: more damage taken</td>
+						<td>no</td>
+						<td>yes</td>
+						<td>yes</td>
+					</tr>
+					<tr>
+						<td>38</td>
+						<td>Ancestral Warchief (PoE)</td>
+						<td>summon</td>
+						<td>Totem tag</td>
+						<td>no</td>
+						<td>no</td>
+						<td>yes</td>
+					</tr>
+					<tr>
+						<td>39</td>
+						<td>Smoke Screen (Diablo III)</td>
+						<td>escape</td>
+						<td>brief untargetable</td>
+						<td>no</td>
+						<td>no</td>
+						<td>yes</td>
+					</tr>
+					<tr>
+						<td>40</td>
+						<td>Haste (PoE)</td>
+						<td>moving</td>
+						<td>Aura tag: allies move faster</td>
+						<td>no (speed clamps at 1)</td>
+						<td>yes</td>
+						<td>yes</td>
+					</tr>
+				</tbody>
+			</table>
+			<p>
+				<b>Score: 12 of 40 today, 21 after slice 1, 36 after all five slices.</b> The four left need
+				carried units (Snowball, Dropship, Gorge) or crowd-control immunity (Black Shield). Every
+				"yes" today is a dash, a drag, a blink, a channel or a direct write to
+				<code>stunUntil</code>; every save but the plain shield is a "no". The cheapest thing that
+				moves the most saves is the status list.
+			</p>
+			<p>
+				What the five data models agree on: an ability is activation and targeting; what it does is
+				a list of small effects (damage, heal, apply, remove, move, summon, search an area); and the
+				lasting part is one thing on the target with a duration, tags, stacks and modifiers. WoW
+				calls it an aura, Dota a modifier, HotS a behavior, GAS a gameplay effect with granted tags.
+				We have the first two layers and are missing the third.
+			</p>
+
+			<h2>4. The proposal, smallest first</h2>
+			<ol>
+				<li>
+					<b>Statuses on units (slice 1, then 2).</b> Every unit gets <code>statuses</code>: a plain
+					list. A folder declares its statuses next to its hooks and applies them with
+					<code>sim.apply(unit, 'tangle.slow', { source })</code>. The engine knows a short list of
+					things a status can carry, and asks the list, never the ability:
+					<ul>
+						<li>
+							Modifiers: <code>moveSpeed</code> (below 1 slows, above 1 hastes),
+							<code>damageTaken</code>, <code>damageDealt</code>.
+						</li>
+						<li><code>absorb</code>: an amount that eats damage before HP (today's shields).</li>
+						<li><code>periodic</code>: damage or heal every N seconds, sourced to the applier.</li>
+						<li>
+							Hooks: <code>onApply</code>, <code>onExpire</code>, <code>onRemove</code>,
+							<code>onDamageTaken</code> (return what's left; Stagger, Shallow Grave, Borrowed
+							Time).
+						</li>
+						<li>
+							States, from slice 2: <code>stunned</code>, <code>rooted</code>,
+							<code>silenced</code>, <code>untargetable</code>, plus pose tags
+							<code>frozen</code> and <code>prone</code>. Displacement becomes a status with a
+							<code>motion</code> (from, to, ticks).
+						</li>
+						<li>
+							Bookkeeping: <code>tags</code> (debuff, slow, shield…),
+							<code>stack</code> (<code>replace</code>, <code>refresh</code>,
+							<code>independent</code>, <code>stacks</code> with a max), <code>bar</code> (shield or
+							pending, for the health bar), <code>icon</code>.
+						</li>
+					</ul>
+					<pre><code>// abilities/tangle/tangle.js
+statuses: {
+	slow: { tags: ['debuff', 'slow'], stack: 'replace',
+		moveSpeed: ({ stats }) =&gt; 1 - stats.slow, duration: ({ stats }) =&gt; stats.duration },
+},
+// in onRelease: sim.hit({ ...shot, applies: ['tangle.slow'] }, target)
+
+// abilities/swig/swig.js
+statuses: { shield: { tags: ['shield'], stack: 'independent', absorb: true, bar: 'shield' } },
+// in onTick: sim.apply(hero, 'swig.shield', { amount: stats.shieldPerSecond * dt, duration: stats.shieldLife })</code></pre>
+					The name is <code>statuses</code> because <code>effects</code> already means cue names
+					(<code>ability.js:32</code>).
+				</li>
+				<li>
+					<b>Interaction rules.</b>
+					<ul>
+						<li>
+							Stuns land in full: no diminishing returns, no immunity window. A second stun takes
+							the later end time; durations never sum.
+						</li>
+						<li>
+							Stunned blocks moving, casting, attacking and channels. Rooted blocks moving and
+							dashes, not casting. Silenced blocks slots, not moving or the basic. Frozen and prone
+							are stuns with their own pose.
+						</li>
+						<li>
+							One motion at a time; the newest replaces the old, as today. A motion stops control
+							and cancels casts, channels and dashes, as <code>displace</code> does now.
+						</li>
+						<li>
+							Slows: the strongest applies, each source keeps its own entry. Hastes multiply with
+							each other and with the slow. Slice 1 keeps today's "newest wins" so it can prove
+							nothing changed; the switch to "strongest wins" is its own commit with its own
+							simulate delta.
+						</li>
+						<li>
+							Absorbs drain in the order they were applied (today's order), after deferral and
+							before HP. Periodic damage is absorbed too (Stagger's card promises this).
+						</li>
+						<li>
+							Cleanse removes statuses tagged <code>debuff</code> from enemies, motion included,
+							which matches Tag out today. A status can opt out with <code>pure: true</code>.
+						</li>
+						<li>
+							Untargetable: new shots pass through, area searches and target picks skip you, homing
+							shots in flight fizzle. Statuses already on you keep ticking.
+						</li>
+						<li>
+							Death and respawn clear every status, one line in the engine instead of six resets.
+						</li>
+					</ul>
+				</li>
+				<li>
+					<b>Replication and snapshot.</b> One field per unit, plain JSON, ticks not seconds:
+					<pre><code>statuses: [
+	{ key: 'swig.shield',  src: 'A2', from: 1803, until: 1983, amount: 24.5 },
+	{ key: 'tangle.slow',  src: 'B1', from: 1790, until: 1910, mag: 0.6 },
+	{ key: 'stagger.bank', src: 'A2', from: 1700, until: 1880, data: { payments: [ … ] } },
+]</code></pre>
+					Behaviour stays in the folder, looked up by <code>key</code>, so a client needs only the
+					list to draw icons, timers, shield slivers and the Stagger pool. Snapshot, both replicas
+					and every reset learn <code>statuses</code> once and never again. Shots carry
+					<code>applies: ['tangle.slow']</code> instead of <code>slow: { factor, duration }</code>,
+					so a caught shot in Pocket keeps its status by key.
+				</li>
+				<li>
+					<b>Events folders can listen to (slice 3).</b> Manifests get
+					<code>on: { hit, death, catch, contact }</code>, called with the fact the sim already
+					presents. Support contacts (Pass's heal, Tag out, Red light) present one generic
+					<code>contact</code> fact; <code>feedback.js</code>, <code>sound-table.js</code> and the
+					bench report key off the ability's cue names instead of new fact types. A zone gets
+					<code>onLand</code>. Sounds and juice live in the folder's tune, as Coach's
+					<code>stats.sound</code> already does. <code>onHit</code> splits into
+					<code>beforeHit</code> and <code>onHit</code>.
+				</li>
+				<li>
+					<b>Bots and cards read the folder (slice 4).</b> One block replaces the kind-finds and
+					<code>botCone</code>/<code>botRadial</code>:
+					<pre><code>bot: { use: 'engage', shape: 'cone', min: 1 }    // Tangle
+bot: { use: 'peel', shape: 'radial', min: 2 }    // Around the world
+bot: { use: 'save', target: 'ally', below: 0.4 } // Pass</code></pre>
+					<code>use</code> defaults from the statuses (a stun or root on enemies is engage, an
+					absorb or heal on allies is save, a dash without damage is escape), so most folders write
+					nothing. <code>targets: 'enemy' | 'ally' | 'any'</code> and
+					<code>heroesOnly</code> replace the <code>heal</code>/<code>heroOnly</code> branches in
+					projectiles, skillshot and fight-bots. Cards add one generated sentence per status ("Slows
+					40% for 2 s", "Shields 120 for 3 s", "Stuns 1.2 s") under the folder's own summary,
+					replacing the <code>KIND</code> table (<code>tooltip.js:35</code>). The hero
+					<code>bot</code> hook stays for kits like Brew's that want their own brain.
+				</li>
+				<li>
+					<b>Summons (slice 5).</b> <code>sim.summon(owner, key, at)</code>: a unit with an owner, a
+					lifetime, statuses, an optional body and a <code>think</code> hook, in one replicated
+					list. Bodiless summons are persistent areas (Chronosphere, Graviton, Void Prison, a
+					lingering Rain). Coach's cutout and Pong's boards port onto it, and
+					<code>outOfPlay</code> becomes "this player controls that summon", which is the one
+					concept <code>targeting.js</code>, <code>hud.js</code> and <code>index.js</code> learn.
+				</li>
+				<li>
+					<b>What we deliberately won't support.</b> Crowd-control immunity and diminishing returns
+					(Oskar's rule: a stun is a stun). Damage schools and resistances (one damage type).
+					Attributes beyond HP, speed and damage, so no armour or crit chance as stats. Talents
+					(settled in <code>docs/extending.md</code>). Carried units: vehicles, riding, swallowing.
+					Stealth, which needs per-viewer replication on top of fog. Mana or any second resource.
+					Mind control and team changes.
+				</li>
+			</ol>
+
+			<h2>5. Migration, in slices</h2>
+			<p>
+				Every slice ports, never changes behaviour. The proof is the same for each:
+				<code>tests/characterization.test.js</code> snapshots identical,
+				<code>tests/boundaries.test.js</code> green, the moba tests near the change green, and
+				<code
+					>bun run simulate --base &lt;previous&gt; --lineup &lt;touched heroes&gt; --report</code
+				>
+				with every delta exactly zero (same seeds and same behaviour give the same tables, not just
+				overlapping intervals). Rule changes, like strongest-slow-wins, come after as their own
+				commit with their own delta.
+			</p>
+			<ol>
+				<li>
+					<b>Statuses core.</b> New module <code>statuses.js</code> with absorb,
+					<code>moveSpeed</code>, <code>damageTaken</code>, periodic, the hooks, tags, stacking and
+					cleanse. Port Brew's shields and Stagger, every slow (shots, zones, Tangle, Pass) and Tag
+					out's slow cleanse. Lineup <code>brew,hook,coach</code> plus
+					<code>fletcher,mitts,pong</code>, since Rain and Loose slow too.
+				</li>
+				<li>
+					<b>Disables and motion.</b> <code>stunUntil</code>, <code>freezeUntil</code>,
+					<code>proneUntil</code> and <code>displacement</code> become statuses; add rooted,
+					silenced, untargetable. Port Red light, Tag out's cleanse and damage reduction, Dive, the
+					Ball's stun, Throw and Around the world. This is where Hook's ten displacement files go.
+				</li>
+				<li>
+					<b>Listen.</b> <code>on</code> handlers, the <code>contact</code> fact, zone
+					<code>onLand</code>, folder sounds and juice, <code>beforeHit</code>. Coach's fact
+					plumbing leaves <code>index.js</code>, <code>feedback.js</code>,
+					<code>sound-table.js</code> and the bench report. Extra proof: the sound board lists the
+					same uses.
+				</li>
+				<li>
+					<b>Read the folder.</b> Bot and target metadata, generated card sentences. Proof needs
+					bots to choose identically, so keep the old decision order and only change where it reads
+					from.
+				</li>
+				<li>
+					<b>Summons.</b> Port Coach's cutout and Pong's boards. Proof adds one replay of a Coach
+					death, played back to the same fingerprint.
+				</li>
+			</ol>
+			<p><b>Shared files per hero, projected from the diff.</b></p>
+			<table>
+				<thead>
+					<tr>
+						<th>Hero</th>
+						<th>As built</th>
+						<th>After slice 1</th>
+						<th>After slice 2</th>
+						<th>After all</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td>Hook</td>
+						<td>13</td>
+						<td>13 (his slow already rode <code>shot.slow</code>; it was never a leak)</td>
+						<td>6</td>
+						<td>
+							4, all vocabulary: <code>projectileStats</code>, <code>onHit</code>, sim exports, the
+							cone tell
+						</td>
+					</tr>
+					<tr>
+						<td>Brew</td>
+						<td>12</td>
+						<td>
+							6: <code>cancelOnCast</code>, <code>dashAbility</code> in three state files, the bot
+							hook, sounds
+						</td>
+						<td>6</td>
+						<td>3, all vocabulary</td>
+					</tr>
+					<tr>
+						<td>Coach</td>
+						<td>18</td>
+						<td>18</td>
+						<td>17</td>
+						<td>
+							about 4: <code>targetUnit</code>, <code>beforeHit</code>, ball projectiles, view
+							extras
+						</td>
+					</tr>
+					<tr>
+						<td>Total</td>
+						<td>43</td>
+						<td>37</td>
+						<td>29</td>
+						<td>about 11, and 0 for the next ability inside the vocabulary</td>
+					</tr>
+				</tbody>
+			</table>
+			<p>
+				Slice 1 is the foundation, not the big drop. It halves Brew and leaves Hook alone, because
+				Hook's leak was displacement. Slice 2 is where the count falls; slice 3 is Coach's.
+			</p>
+
+			<h2>6. For Oskar</h2>
+			<ol>
+				<li>
+					Slows: strongest wins (my pick, Dota-ish and readable), or keep newest wins as today?
+				</li>
+				<li>
+					Carried units (Snowball, Dropship, Gorge) stay out. They're loved, and they're the most
+					expensive thing on this list. Agree?
+				</li>
+				<li>
+					No crowd-control immunity follows from your stun rule, so Black Shield and Juggernaut's
+					spin can't exist. Agree?
+				</li>
+			</ol>
+
+			<h2>Sources</h2>
+			<ul>
+				<li>
+					Dota 2 modifier states and functions, ability behaviours:
+					<a href="https://developer.valvesoftware.com/wiki/Dota_2_Workshop_Tools/Scripting/API"
+						>Valve Developer Community, Dota 2 scripting API</a
+					>
+				</li>
+				<li>
+					WoW aura and spell effect types:
+					<a
+						href="https://github.com/TrinityCore/TrinityCore/blob/master/src/server/game/Spells/Auras/SpellAuraDefines.h"
+						>TrinityCore SpellAuraDefines.h</a
+					>
+					and <code>SharedDefines.h</code> in the same repository
+				</li>
+				<li>
+					SC2/HotS catalogs (Abil, Effect, Behavior, Validator):
+					<a href="https://s2editor-guides.readthedocs.io/Classic_Tutorials/03_Data_module/1/"
+						>StarCraft II Editor data module tutorials</a
+					>
+				</li>
+				<li>
+					Unreal GAS (abilities, gameplay effects, attributes, tags, cues):
+					<a href="https://github.com/tranek/GASDocumentation">tranek/GASDocumentation</a>
+				</li>
+				<li>
+					PoE skill and support tags:
+					<a href="https://www.poewiki.net/wiki/Gem_tag">poewiki, Gem tag</a>
+				</li>
+			</ul>
+			<p>
+				<small
+					>The Dota state names were checked against Valve's page and the WoW aura header was
+					located this session; the HotS class names, PoE tags and LoL decompositions are from
+					memory of the editors and games, not re-read.</small
+				>
+			</p>
+		</main>
+	</body>
+</html>

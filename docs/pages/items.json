@@ -1,5 +1,16 @@
 [
 	{
+		"at": "2026-10-14T12:00:00.000Z",
+		"title": "Ability system",
+		"ask": "Audit of the ability system and a five-slice plan so a new hero lands as one folder. Read for direction; slow stacking is decided (strongest wins).",
+		"status": "To review",
+		"decision": "",
+		"page": "ability-system/",
+		"media": [],
+		"links": [],
+		"thread": "thr_hdjrg7983t"
+	},
+	{
 		"at": "2026-10-14T08:48:33.563Z",
 		"title": "Lobby feel: the swap flip and a calmer layout (#5)",
 		"ask": "Does the flip read as a cutout turning on a pin? The clip runs three swaps slowed to 1.2 s, then two at the real 0.25 s. The stills are the lobby from a fresh / at 390, 1440 and 2560×1080: at 390 the difficulty words no longer run together, health bars shrink and the controls label clears the ability bar; at wide screens 'Next map' no longer spills over the rim.",
