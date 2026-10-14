@@ -5,6 +5,8 @@ import { HEROES, heroDefinition } from './heroes.js'
 import { dressHero } from './hero-view.js'
 import { tune } from './tune.js'
 import { unpackStatuses } from './statuses.js'
+import { abilityOf } from './ability.js'
+import { summonBody } from './summons.js'
 
 const finite = Number.isFinite
 const point = (p) => p && finite(p.x) && finite(p.z)
@@ -192,6 +194,41 @@ export function createUnitReplica(
 				occupants.add(occupant.id)
 			}
 		}
+		if (!Array.isArray(state.summons ?? []) || (state.summons?.length ?? 0) > tune.proof.trace)
+			return false
+		const summonIds = new Set()
+		for (const unit of state.summons ?? []) {
+			const owner = sim.heroes.find((h) => h.id === unit.owner)
+			const declaration = abilityOf(unit.key)?.summon
+			if (
+				!owner ||
+				unit.team !== owner.team ||
+				!declaration ||
+				typeof unit.id !== 'string' ||
+				!/^summon-\d+$/.test(unit.id) ||
+				summonIds.has(unit.id) ||
+				unit.kind !== 'summon' ||
+				unit.dead !== false ||
+				!point(unit.pos) ||
+				!finite(unit.radius) ||
+				unit.radius < 0 ||
+				!Number.isSafeInteger(unit.from) ||
+				unit.from < 0 ||
+				unit.from > state.t ||
+				!Number.isSafeInteger(unit.until) ||
+				unit.until <= state.t ||
+				!(
+					(unit.hp === null && unit.maxHp === null) ||
+					(finite(unit.hp) && finite(unit.maxHp) && unit.hp > 0 && unit.hp <= unit.maxHp)
+				) ||
+				!Array.isArray(unit.statuses ?? []) ||
+				!unit.data ||
+				typeof unit.data !== 'object' ||
+				(declaration.validData && !declaration.validData(unit.data))
+			)
+				return false
+			summonIds.add(unit.id)
+		}
 		for (const key of ['projectiles', 'zones', 'boards', 'cutouts']) {
 			if (!Array.isArray(state[key]) || state[key].length > tune.proof.trace) return false
 			const seen = new Set()
@@ -231,7 +268,8 @@ export function createUnitReplica(
 		const reason = validateState(copy)
 		if (reason) return reject(reason)
 		// Index once per packet, never scan populations per pose at render rate.
-		for (const key of ['heroes', 'dummies', 'projectiles', 'zones'])
+		copy.summons ??= []
+		for (const key of ['heroes', 'dummies', 'projectiles', 'zones', 'summons'])
 			copy[key] = new Map(copy[key].map((entity) => [entity.id, entity]))
 		buffer.push(nowSeconds, copy)
 		lastAcceptedTick = copy.t
@@ -319,6 +357,19 @@ export function createUnitReplica(
 					...a,
 					left: b ? lerp(a.left, b.left, blend) : Math.max(0, a.left - (tick - before.t)),
 				}
+			}),
+		)
+		sim.summons.splice(
+			0,
+			sim.summons.length,
+			...[...before.summons.values()].map((a) => {
+				const b = after.summons.get(a.id)
+				const pos =
+					b && a.data.phase === b.data.phase
+						? { x: lerp(a.pos.x, b.pos.x, blend), z: lerp(a.pos.z, b.pos.z, blend) }
+						: a.pos
+				const { radius, ...unit } = structuredClone(a)
+				return { ...unit, statuses: unpackStatuses(a.statuses), body: summonBody(pos, radius) }
 			}),
 		)
 		for (const key of ['boards', 'cutouts']) sim[key].splice(0, sim[key].length, ...before[key])

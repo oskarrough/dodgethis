@@ -61,6 +61,7 @@ export function createCasting(ctx) {
 				present({ type: 'denied', hero: h.id, slot, reason: 'no-ability' })
 				return
 			}
+			if (ability.onRecast?.(traitContext(h, { ability, slot, target: latest.at })) === true) return
 			// An ability with `ready` (Swap needs a live Bank) is denied while it has nothing to act on.
 			if (ability.ready && !ability.ready(traitContext(h, { ability }))) {
 				present({ type: 'denied', hero: h.id, slot, reason: 'unready' })

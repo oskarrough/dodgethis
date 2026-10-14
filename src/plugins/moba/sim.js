@@ -17,6 +17,7 @@ import { createDisplacement } from './displacement.js'
 import { createOrders } from './orders.js'
 import { createCasting } from './casting.js'
 import { createSnapshot } from './sim-snapshot.js'
+import { createSummons } from './summons.js'
 import { createControl } from './control.js'
 import { createHeroMaker, createRoster } from './sim-heroes.js'
 import { layMechanicGround, plugMechanics } from './sim-mechanics.js'
@@ -168,7 +169,9 @@ export function createSim({
 		systems: () => ctx,
 	})
 
+	const summons = []
 	const { enemiesOf, find, pick, nearestToClick, stickAim } = createTargeting({
+		summons,
 		outOfPlay: (hero) => hero.definition.outOfPlay?.({ hero, sim: api }),
 		heroes,
 		dummies,
@@ -210,6 +213,7 @@ export function createSim({
 			return planPath
 		},
 		shotIds: 0,
+		summons,
 		lobby,
 		layout,
 		floor,
@@ -249,6 +253,7 @@ export function createSim({
 	}
 	for (const create of [
 		createStatuses,
+		createSummons,
 		createProjectiles,
 		createCombat,
 		createOrders,
@@ -291,7 +296,10 @@ export function createSim({
 	} = ctx
 
 	function step(dt = STEP) {
-		if (lane?.match.winner) return
+		if (lane?.match.winner) {
+			ctx.removeSummons()
+			return
+		}
 		if (driveBots && training.botsEnabled) botTeam?.step(api, intents)
 		for (const brain of brains) brain({ heroes, lane, ball, tick: t }, intents)
 		t++
@@ -304,7 +312,10 @@ export function createSim({
 			ctx.stepStatuses(unit)
 		}
 		lane?.step(t, dt)
-		if (lane?.match.winner) return
+		if (lane?.match.winner) {
+			ctx.removeSummons()
+			return
+		}
 		const dashEnds = []
 		const dashFrom = footprint ? new Map(heroes.map((h) => [h.id, { ...h.body.position }])) : null
 		for (const h of heroes) {
@@ -357,7 +368,10 @@ export function createSim({
 		}
 		stepZones()
 		stepShots(dt)
+		if (lane?.match.winner) ctx.removeSummons()
+		else ctx.stepSummons(dt)
 		if (!lane?.match.winner) ball?.finish(dt, resolveInterception)
+		if (lane?.match.winner) ctx.removeSummons()
 		if (readySeats) {
 			readySeats.step(t, STEP, heroes)
 			for (const h of heroes) h.seatTeam = readySeats.seatOf(h.id)?.team ?? h.seatTeam
@@ -365,6 +379,7 @@ export function createSim({
 		if (training.noCooldowns) heroes.find((h) => h.id === training.local)?.cd.fill(0)
 	}
 	function dispose() {
+		ctx.removeSummons()
 		ground.dispose()
 		for (const h of heroes) {
 			h.corpse?.dispose()
@@ -381,6 +396,8 @@ export function createSim({
 	}
 
 	const api = {
+		summons,
+		summon: ctx.summon,
 		heroes,
 		dummies,
 		shots,

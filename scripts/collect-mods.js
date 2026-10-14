@@ -84,6 +84,7 @@ export function collectModFiles() {
 		'maps/all-maps.js': maps(),
 		'all-tunes.js': tunes(),
 		'heroes/all-hero-views.js': views('heroes'),
+		'abilities/all-ability-views.js': views('abilities'),
 		'maps/all-map-views.js': views('maps'),
 		'mechanics/all-mechanic-views.js': views('mechanics'),
 	}

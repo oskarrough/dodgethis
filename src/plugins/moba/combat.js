@@ -271,6 +271,10 @@ export function createCombat(ctx) {
 		if (!unit.kind) ball?.hurt(unit)
 		unit.corpse = unit.body
 		unit.body.retire()
+		if (unit.kind === 'summon') {
+			present({ type: 'death', source: shot.owner, target: unit.id, point: at, direction })
+			return
+		}
 		if (unit.kind) {
 			unit.attack = null
 			lane.reward(unit, shot.team ?? (unit.team === 'A' ? 'B' : 'A'), ctx.t, shot.owner)
@@ -292,6 +296,7 @@ export function createCombat(ctx) {
 	// Out of play until `seconds` pass: a death or a dunk. The caller has retired the body.
 	function bench(unit, seconds, shot) {
 		ctx.clearStatuses(unit, 'bench')
+		ctx.removeSummons(unit.id)
 		unit.respawnTick = ctx.t + ticks(seconds)
 		endCast(unit, 'death')
 		endStance(unit, 'death')

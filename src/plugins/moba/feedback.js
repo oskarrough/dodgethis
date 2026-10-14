@@ -335,6 +335,7 @@ export function createFeedback({
 				cue('blocked', fact)
 				return
 			case 'contact': {
+				if (fact.ambient) return
 				if (fact.projectile != null) view.unbolt(fact.projectile)
 				const burst =
 					ability?.stats?.juice?.contact?.[fact.part] ?? ability?.stats?.juice?.[fact.part]

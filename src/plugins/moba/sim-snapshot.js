@@ -138,6 +138,7 @@ export function createSnapshot(ctx) {
 			})),
 			boards: structuredClone(boards),
 			cutouts: structuredClone(cutouts),
+			summons: ctx.snapshotSummons(wire),
 			zones: zones.map((z) => ({
 				...structuredClone(z),
 				pos: { x: q(z.x), z: q(z.z) },

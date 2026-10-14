@@ -5,6 +5,7 @@ import * as fletcher_view from './fletcher/fletcher-view.js'
 import * as hook_view from './hook/hook-view.js'
 import * as mitts_view from './mitts/mitts-view.js'
 import * as pong_view from './pong/pong-view.js'
+import * as wata_view from './wata/wata-view.js'
 
 export default {
 	brew: brew_view,
@@ -13,4 +14,5 @@ export default {
 	hook: hook_view,
 	mitts: mitts_view,
 	pong: pong_view,
+	wata: wata_view,
 }

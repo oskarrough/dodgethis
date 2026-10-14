@@ -5,6 +5,7 @@ import heroes_fletcher from './fletcher/fletcher.js'
 import heroes_hook from './hook/hook.js'
 import heroes_mitts from './mitts/mitts.js'
 import heroes_pong from './pong/pong.js'
+import heroes_wata from './wata/wata.js'
 
 export default {
 	brew: heroes_brew,
@@ -13,4 +14,5 @@ export default {
 	hook: heroes_hook,
 	mitts: heroes_mitts,
 	pong: heroes_pong,
+	wata: heroes_wata,
 }

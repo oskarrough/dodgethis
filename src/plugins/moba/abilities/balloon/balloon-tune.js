@@ -1,0 +1,26 @@
+export default {
+	range: 9,
+	castPoint: 0,
+	flight: 0.6,
+	minFlight: 0.3,
+	radius: 2,
+	healAmount: 160,
+	damage: 80,
+	slow: 0.2,
+	duration: 2,
+	puddle: 4,
+	cooldown: 5,
+	bot: { deficit: 0.5 },
+	view: { ballRadius: 0.25, height: 2.8, ground: 0.1, ringWidth: 0.05, rippleSize: 0.55 },
+	sound: {
+		cast: { freq: 280, slideTo: 740, type: 'sine', dur: 0.2, gain: 0.11 },
+		impact: { freq: 520, slideTo: 100, type: 'triangle', dur: 0.16, gain: 0.17 },
+		hit: { freq: 460, slideTo: 780, type: 'sine', dur: 0.12, gain: 0.09 },
+	},
+	juice: {
+		cast: { count: 4, speed: 0.9, life: 0.2, size: 0.09 },
+		impact: { count: 20, speed: 3, life: 0.4, size: 0.12 },
+		contact: { hit: { count: 6, speed: 1, life: 0.3, size: 0.09 } },
+		hit: { count: 6, speed: 1.8, life: 0.25, size: 0.08 },
+	},
+}

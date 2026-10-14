@@ -3,9 +3,20 @@ import { clampMap } from './obstacles.js'
 import { TAU, dirOf } from './sim-kit.js'
 
 // Read-only queries over the sim's live units: what a click, an attack-move or the pad's stick lands on.
-export function createTargeting({ heroes, dummies, lane, ball, field, outOfPlay = () => null }) {
+export function createTargeting({
+	heroes,
+	dummies,
+	lane,
+	ball,
+	field,
+	summons = [],
+	outOfPlay = () => null,
+}) {
 	// Everyone who can be shot, targeted or picked, as plain circles.
 	const units = () => [
+		...summons
+			.filter((u) => !u.dead && u.hp !== null)
+			.map((u) => ({ id: u.id, team: u.team, unit: u, hero: false })),
 		...heroes.filter((h) => !h.dead).map((h) => ({ id: h.id, team: h.team, unit: h, hero: true })),
 		...dummies.filter((d) => !d.dead).map((d) => ({ id: d.id, team: d.team, unit: d, hero: true })),
 		...(lane
@@ -26,7 +37,8 @@ export function createTargeting({ heroes, dummies, lane, ball, field, outOfPlay 
 	const find = (id) =>
 		heroes.find((h) => h.id === id && !h.dead) ??
 		dummies.find((d) => d.id === id && !d.dead) ??
-		lane?.find(id)
+		lane?.find(id) ??
+		summons.find((u) => u.id === id && !u.dead && u.hp !== null)
 
 	// The enemy an order point lands on: the unit's silhouette on the ground, its axis projected along the view, so a click on a torso counts.
 	function pick(team, p) {

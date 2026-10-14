@@ -23,7 +23,7 @@ export function stepUnitDisplacement(unit, tick, dt) {
 
 export function createDisplacement(ctx) {
 	function displace(unit, point, duration) {
-		if (!unit || unit.dead || unit.structure) return false
+		if (!unit || unit.dead || unit.structure || unit.kind === 'summon') return false
 		if (![point?.x, point?.z, duration].every(Number.isFinite) || duration <= 0) return false
 		const from = { x: unit.body.position.x, z: unit.body.position.z }
 		const end = clampMap(point, unit.body.radius, ctx.walkingBounds ?? ctx.field)

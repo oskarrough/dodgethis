@@ -37,6 +37,8 @@ Everything else in the folder is yours. `bun run collect-mods` writes the `all-*
 
 An ability's `bot` selects `shoot`, `zone`, `dash`, `blink`, `cover`, `catch`, `cone` or `radial`, opts out with `false`, or adds `{ priority, act(ctx, slot) }` (higher priority first) to the default tool set inferred from its kind and capabilities.
 
+An ability may declare `summon: { hp(stats), radius(stats), lifetime(stats), state(), validData(data), think(ctx) }` and call `sim.summon(owner, abilityId, at)`. The returned unit has owner/team, HP (or null for a bodiless area), statuses, `body.position`, `from`, `until` and folder-owned `data`. It is replicated, nonblocking and stationary, runs its own tick, and clears on owner death/removal/swap or match end. Its ability view exports `extras(scene)` with `update({ summons, tick, alpha, ... })` and `dispose()`. No summon tick runs on guests. `onRecast(ctx)` may return true to consume a press before cooldown gates, without changing the original cooldown.
+
 A mechanic is something a map switches on: structures, minions, the Ball, bots, camps, the flag, practice dummies. Casting, catching, bounce and damage are the engine every ability runs through; an ability is a data head and a code body in that path, never its own projectile loop.
 
 ## Find where anything lives

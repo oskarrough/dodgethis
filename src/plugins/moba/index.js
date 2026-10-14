@@ -517,7 +517,7 @@ export default function moba(app, map) {
 
 			const locate = (id) => {
 				const unit = sim.find(id)
-				return unit?.body.mesh.position ?? null
+				return unit?.body.mesh?.position ?? unit?.body.position ?? null
 			}
 			run.system('present', ({ dt, gameDt, alpha }) => {
 				menu.result(controls.paused ? 0 : dt, replica ? 0 : alpha)
@@ -603,6 +603,7 @@ export default function moba(app, map) {
 					obstacles: sim.obstacles,
 					boards: sim.boards,
 					cutouts: sim.cutouts,
+					summons: sim.summons,
 					zones: sim.zones,
 					casters: [...sim.heroes, ...sim.dummies].filter(
 						(unit) => unit.team !== hero.team && !unseen(unit),

@@ -6,6 +6,7 @@ import { look } from './look.js'
 import { abilityOf, castAbility } from './ability.js'
 import { heroDefinition } from './heroes.js'
 import HERO_VIEWS from './heroes/all-hero-views.js'
+import ABILITY_VIEWS from './abilities/all-ability-views.js'
 import { stepShot } from './skillshot.js'
 import { clampMap, projectMap, OBSTACLES, FLOOR, sweepObstacles, mapExit } from './obstacles.js'
 
@@ -59,7 +60,7 @@ const GROUND = tune.map.printLayers.seams + 0.005
 export function createSkillsView(scene) {
 	const group = new THREE.Group()
 	scene.add(group)
-	const extras = Object.values(HERO_VIEWS).flatMap((view) =>
+	const extras = [...Object.values(HERO_VIEWS), ...Object.values(ABILITY_VIEWS)].flatMap((view) =>
 		view.extras ? [view.extras(scene)] : [],
 	)
 	const ring = new THREE.RingGeometry(0.94, 1, 48).rotateX(-Math.PI / 2)
@@ -212,6 +213,7 @@ export function createSkillsView(scene) {
 			held,
 			zones = [],
 			cutouts = [],
+			summons = [],
 			unit = null,
 			lobby = false,
 			casters = [],
@@ -222,7 +224,8 @@ export function createSkillsView(scene) {
 			tick = 0,
 		},
 	) {
-		for (const view of extras) view.update({ cutouts, units, bounds, obstacles, tick, alpha })
+		for (const view of extras)
+			view.update({ cutouts, summons, units, bounds, obstacles, tick, alpha })
 		if (unit?.swapFact && unit.swapFact !== lastSwap) {
 			lastSwap = unit.swapFact
 			// Cancelled local poses leave no kit cue; released zones keep their own tells below.
