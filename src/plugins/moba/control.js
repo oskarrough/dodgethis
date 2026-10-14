@@ -110,7 +110,7 @@ export function createControl(ctx) {
 			if (swapAim.blocked.size) frame.aim = null
 			else h.swapAim = null
 		}
-		if (blocked(h, 'act', ctx.t)) {
+		if (blocked(h, 'move', ctx.t) && blocked(h, 'cast', ctx.t)) {
 			cancelChannel(h, 'disabled')
 			h.body.cancelDash()
 			if (blocked(h, 'catch', ctx.t)) {

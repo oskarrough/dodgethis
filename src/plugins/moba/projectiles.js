@@ -326,7 +326,7 @@ export function createProjectiles(ctx) {
 			hero.cast ||
 			hero.channel ||
 			hero.body.dashing ||
-			blocked(hero, 'act', ctx.t)
+			blocked(hero, 'cast', ctx.t)
 		)
 			return false
 		const length = Math.hypot(direction.x, direction.z)
@@ -391,10 +391,10 @@ export function createProjectiles(ctx) {
 			if (
 				hero.dead ||
 				shot.passed?.includes(hero.id) ||
-				blocked(hero, 'catch', ctx.t) ||
 				hero.team === shot.team ||
 				!window ||
 				window.until <= ctx.t ||
+				blocked(hero, 'catch', ctx.t) ||
 				(window.mode === 'bag' && hero.abilityState.bag.length >= window.limit) ||
 				(context.kind === 'ball'
 					? !window.acceptBall

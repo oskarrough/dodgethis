@@ -354,7 +354,12 @@ export function createCasting(ctx) {
 			)
 		)
 			return cancelChannel(hero, 'input')
-		if (hero.statuses?.some((status) => status.motion) || blocked(hero, 'act', ctx.t))
+		if (
+			hero.statuses?.some(
+				(status) => status.key === 'core.motion' && (status.until === null || status.until > ctx.t),
+			) ||
+			blocked(hero, 'cast', ctx.t)
+		)
 			return cancelChannel(hero, 'disabled')
 		const ability = abilityOf(channel.ability, hero)
 		ability?.onTick?.(traitContext(hero, { ...channel, ability, dt }))

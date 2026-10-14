@@ -1,7 +1,7 @@
 import { createUnitReplica } from './lobby-replica.js'
 import { tune } from './tune.js'
 import { HEROES, freshAbilityState } from './heroes.js'
-import { packStatuses, unpackStatuses } from './statuses.js'
+import { unpackStatuses } from './statuses.js'
 
 // Fixed columns avoid repeating entity field names. Packets are full states, never deltas;
 // the replica expands these rows before its ordinary population and health validation.
@@ -115,7 +115,7 @@ const hostFields = new Set([
 	'damageScale',
 ])
 
-// Full sim snapshots remain useful for traces; only the online contract asks for this projection.
+// Wire snapshots already pack statuses; this projection packs the remaining lane fields.
 export function projectLaneSnapshot(state) {
 	const round = (value) => {
 		if (typeof value === 'number' && !Number.isInteger(value))
@@ -129,12 +129,10 @@ export function projectLaneSnapshot(state) {
 		)
 	}
 	const copy = round(state)
-	copy.dummies = copy.dummies.map((unit) => ({ ...unit, statuses: packStatuses(unit.statuses) }))
 	for (const [key, fields] of Object.entries(columns))
 		copy[key] = copy[key].map((unit) => {
 			const row = fields.map((field) => {
 				const value = unit[field] ?? null
-				if (field === 'statuses') return packStatuses(value)
 				if (key === 'heroes') {
 					if (Object.hasOwn(heroDefaults, field) && value === heroDefaults[field]) return null
 					if (['cd', 'cancelUntil'].includes(field) && value.every((v) => v === 0)) return null

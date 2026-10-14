@@ -213,7 +213,7 @@ export function createCombat(ctx) {
 			abilityOf(unit.stance?.ability, unit)?.catchesShots &&
 			unit.stance.until > ctx.t &&
 			unit.catchWindow?.until > ctx.t &&
-			!blocked(unit, 'act', ctx.t)
+			!blocked(unit, 'shield', ctx.t)
 		let incoming = shot.unmodified
 			? rawDamage
 			: rawDamage *

@@ -3,9 +3,9 @@ import { STEP } from '../../core/app.js'
 import { ticks } from './sim-kit.js'
 
 const stateGates = {
-	stunned: ['act', 'catch', 'ballPickup'],
-	frozen: ['act', 'catch', 'still'],
-	prone: ['act'],
+	stunned: ['move', 'cast', 'shield', 'catch', 'ballPickup'],
+	frozen: ['move', 'cast', 'shield', 'catch', 'still'],
+	prone: ['move', 'cast', 'shield'],
 }
 
 const coreStatuses = {
@@ -17,7 +17,7 @@ const coreStatuses = {
 	},
 	'core.motion': {
 		label: 'Motion',
-		tags: ['motion'],
+		tags: ['debuff', 'motion'],
 		stack: 'replace',
 		onExpire({ unit, plan }) {
 			if (!unit.dead && unit.order?.goal) unit.order.path = plan(unit, unit.order.goal)
@@ -27,19 +27,25 @@ const coreStatuses = {
 
 const definitions = new Map()
 
-// Custom hero declarations may override the same key; cache once per declaration owner.
-export function statusDefinition(status, unit = null) {
-	if (Object.hasOwn(coreStatuses, status.key)) return coreStatuses[status.key]
-	let entry = definitions.get(status.key)
-	if (!entry) {
+// Status identity resolves globally, never through the victim's kit; guests have no source.
+export function statusDefinition(status) {
+	let definition = definitions.get(status.key)
+	if (definition === undefined) {
 		const [ability, key] = status.key.split('.')
-		entry = { ability, key, owners: new Map() }
-		definitions.set(status.key, entry)
+		const declaration = Object.hasOwn(coreStatuses, status.key)
+			? coreStatuses[status.key]
+			: abilityOf(ability)?.statuses?.[key]
+		definition = declaration
+			? {
+					...declaration,
+					blockedVerbs: new Set(
+						(declaration.states ?? []).flatMap((state) => stateGates[state] ?? []),
+					),
+				}
+			: null
+		definitions.set(status.key, definition)
 	}
-	const owner = unit?.definition ?? null
-	if (!entry.owners.has(owner))
-		entry.owners.set(owner, abilityOf(entry.ability, unit)?.statuses?.[entry.key] ?? null)
-	return entry.owners.get(owner)
+	return definition
 }
 
 // Guests only display statuses; simulation ids, sources and hook clocks stay on the host.
@@ -50,7 +56,12 @@ export function packStatuses(statuses) {
 		until,
 		amount ?? null,
 		...(mag !== undefined || data !== undefined
-			? [{ ...(mag !== undefined && { mag }), ...(data !== undefined && { data }) }]
+			? [
+					{
+						...(mag !== undefined && { mag }),
+						...(data !== undefined && { data: structuredClone(data) }),
+					},
+				]
 			: []),
 	])
 }
@@ -64,12 +75,10 @@ export function unpackStatuses(statuses) {
 }
 
 export function statusBar(unit, bar) {
-	const entries = (unit?.statuses ?? []).filter(
-		(status) => statusDefinition(status, unit)?.bar === bar,
-	)
+	const entries = (unit?.statuses ?? []).filter((status) => statusDefinition(status)?.bar === bar)
 	return {
 		amount: entries.reduce((sum, status) => sum + (status.amount ?? 0), 0),
-		label: entries.length ? statusDefinition(entries[0], unit).label : '',
+		label: entries.length ? statusDefinition(entries[0]).label : '',
 	}
 }
 
@@ -79,18 +88,16 @@ const resolve = (value, context) => (typeof value === 'function' ? value(context
 // The declarations name states; only this table gives them meaning.
 export function blocked(unit, verb, tick) {
 	if (tick === undefined) throw new Error('MOBA blocked needs the current tick')
-	return (unit?.statuses ?? []).some(
-		(status) =>
-			active(status, tick) &&
-			statusDefinition(status, unit)?.states?.some((state) => stateGates[state]?.includes(verb)),
-	)
+	for (const status of unit?.statuses ?? [])
+		if (active(status, tick) && statusDefinition(status)?.blockedVerbs.has(verb)) return true
+	return false
 }
 
 // Expiry prunes host records; guests compare this deadline against their presentation tick.
 export function stateUntil(unit, state) {
 	let until = 0
 	for (const status of unit?.statuses ?? [])
-		if (statusDefinition(status, unit)?.states?.includes(state))
+		if (statusDefinition(status)?.states?.includes(state))
 			until = Math.max(until, status.until ?? Infinity)
 	return until
 }
@@ -102,7 +109,7 @@ export function moveSpeed(unit, tick) {
 	let slow = 1
 	for (const status of unit.statuses ?? []) {
 		if (!active(status, tick)) continue
-		const definition = statusDefinition(status, unit)
+		const definition = statusDefinition(status)
 		if (definition?.moveSpeed === undefined) continue
 		const magnitude = Number.isFinite(status.mag) ? Math.max(0, status.mag) : 1
 		if (definition.tags?.includes('slow')) slow = Math.min(slow, magnitude)
@@ -115,7 +122,7 @@ export function createStatuses(ctx) {
 	let nextId = 0
 	const context = (unit, status, extra = {}) => {
 		const [id] = status.key.split('.')
-		const ability = abilityOf(id, unit)
+		const ability = abilityOf(id)
 		return {
 			unit,
 			hero: unit,
@@ -134,7 +141,7 @@ export function createStatuses(ctx) {
 		if (!status || status.removed) return false
 		status.removed = true
 		unit.statuses.splice(unit.statuses.indexOf(status), 1)
-		const definition = statusDefinition(status, unit)
+		const definition = statusDefinition(status)
 		const hook = reason === 'expired' ? definition?.onExpire : definition?.onRemove
 		hook?.(context(unit, status, { reason }))
 		return true
@@ -144,14 +151,14 @@ export function createStatuses(ctx) {
 	}
 	function cleanse(unit, tag) {
 		for (const status of (unit.statuses ?? []).slice()) {
-			const definition = statusDefinition(status, unit)
+			const definition = statusDefinition(status)
 			if (!definition?.pure && definition?.tags?.includes(tag)) remove(unit, status.id, 'cleansed')
 		}
 	}
 	function apply(unit, key, options = {}) {
 		unit.statuses ??= []
 		const seed = { key }
-		const definition = statusDefinition(seed, unit)
+		const definition = statusDefinition(seed)
 		if (!definition?.label) throw new Error(`MOBA status needs a declaration and label: ${key}`)
 		const source = options.source?.id ?? options.source ?? null
 		const info = context(unit, seed, { source })
@@ -174,8 +181,7 @@ export function createStatuses(ctx) {
 			for (const status of unit.statuses.slice())
 				if (
 					same.includes(status) ||
-					(definition.replaceTag &&
-						statusDefinition(status, unit)?.tags?.includes(definition.replaceTag))
+					(definition.replaceTag && statusDefinition(status)?.tags?.includes(definition.replaceTag))
 				)
 					remove(unit, status.id, 'replaced')
 		}
@@ -206,7 +212,7 @@ export function createStatuses(ctx) {
 		for (const status of (unit.statuses ?? []).slice()) {
 			if (status.removed) continue
 			if (!active(status, ctx.t)) remove(unit, status.id, 'expired')
-			else if (statusDefinition(status, unit)?.absorb && status.amount <= 0)
+			else if (statusDefinition(status)?.absorb && status.amount <= 0)
 				remove(unit, status.id, 'spent')
 		}
 	}
@@ -214,7 +220,7 @@ export function createStatuses(ctx) {
 		if (unit.dead) return
 		for (const status of (unit.statuses ?? []).slice()) {
 			if (status.removed || !active(status, ctx.t)) continue
-			const periodic = statusDefinition(status, unit)?.periodic
+			const periodic = statusDefinition(status)?.periodic
 			if (!periodic || ctx.t < status.next) continue
 			// Absolute ticks, never array length or the number of statuses that happened to survive.
 			const info = context(unit, status)
@@ -226,7 +232,7 @@ export function createStatuses(ctx) {
 		let factor = 1
 		for (const status of unit.statuses ?? []) {
 			if (!active(status, ctx.t)) continue
-			const modifier = statusDefinition(status, unit)?.damageTaken
+			const modifier = statusDefinition(status)?.damageTaken
 			if (modifier !== undefined) factor *= resolve(modifier, context(unit, status, { shot }))
 		}
 		return factor
@@ -235,7 +241,7 @@ export function createStatuses(ctx) {
 		let remaining = damage
 		for (const status of (unit.statuses ?? []).slice()) {
 			if (status.removed || !active(status, ctx.t)) continue
-			const hook = statusDefinition(status, unit)?.onDamageTaken
+			const hook = statusDefinition(status)?.onDamageTaken
 			if (hook) remaining = hook(context(unit, status, { damage: remaining, shot })) ?? remaining
 		}
 		return remaining
@@ -243,7 +249,7 @@ export function createStatuses(ctx) {
 	function absorb(unit, damage) {
 		let remaining = damage
 		for (const status of (unit.statuses ?? []).slice()) {
-			if (status.removed || !statusDefinition(status, unit)?.absorb) continue
+			if (status.removed || !statusDefinition(status)?.absorb) continue
 			if (!active(status, ctx.t) || status.amount <= 0) {
 				remove(unit, status.id, active(status, ctx.t) ? 'spent' : 'expired')
 				continue

@@ -58,14 +58,14 @@ export function createSnapshot(ctx) {
 							returning: !!u.returning,
 							aggroOrigin: u.aggroOrigin ? { x: q(u.aggroOrigin.x), z: q(u.aggroOrigin.z) } : null,
 							returnGoal: u.returnGoal ? { x: q(u.returnGoal.x), z: q(u.returnGoal.z) } : null,
-							statuses: structuredClone(u.statuses ?? []),
+							statuses: wire ? packStatuses(u.statuses) : structuredClone(u.statuses ?? []),
 						})),
 						structures: lane.structures.map((u) => ({
 							id: u.id,
 							team: u.team,
 							kind: u.kind,
 							vulnerable: lane.vulnerable(u),
-							statuses: structuredClone(u.statuses ?? []),
+							statuses: wire ? packStatuses(u.statuses) : structuredClone(u.statuses ?? []),
 							silentUntil: u.silentUntil,
 							hp: u.hp,
 							maxHp: u.maxHp,
@@ -92,7 +92,7 @@ export function createSnapshot(ctx) {
 				heroId: h.heroId,
 				abilityState: structuredClone(h.abilityState),
 				dashAbility: h.dashAbility ?? null,
-				statuses: structuredClone(h.statuses ?? []),
+				statuses: wire ? packStatuses(h.statuses) : structuredClone(h.statuses ?? []),
 				hp: h.hp,
 				maxHp: h.maxHp,
 				level: h.level,
@@ -132,7 +132,7 @@ export function createSnapshot(ctx) {
 					target: { x: q(d.cast.target.x), z: q(d.cast.target.z) },
 				},
 				castTick: d.castTick,
-				statuses: structuredClone(d.statuses ?? []),
+				statuses: wire ? packStatuses(d.statuses) : structuredClone(d.statuses ?? []),
 				dead: d.dead,
 				respawnTick: d.respawnTick,
 			})),
@@ -157,8 +157,6 @@ export function createSnapshot(ctx) {
 		}
 		if (!wire) return state
 		if (lane) return projectLaneSnapshot(state)
-		for (const unit of [...state.heroes, ...state.dummies])
-			unit.statuses = packStatuses(unit.statuses)
 		return state
 	}
 

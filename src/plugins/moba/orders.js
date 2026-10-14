@@ -161,7 +161,7 @@ export function createOrders(ctx) {
 			(h.channel && abilityOf(h.channel.ability, h)?.root === true) ||
 			h.attack ||
 			h.ballThrow ||
-			blocked(h, 'act', ctx.t)
+			blocked(h, 'move', ctx.t)
 		)
 			return body.update({ x: 0, z: 0 }, dt, 0) // rooted for the cast point, stopped dead
 		const stick = Math.hypot(frame.move.x, frame.move.z)

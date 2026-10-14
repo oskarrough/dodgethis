@@ -222,7 +222,7 @@ export function createBall({
 					})
 					damage(shot, u, u.structure ? u.maxHp * tune.ball.structureDamage : tune.ball.damage)
 					// The landed hit reads the stance before this impact's stun disables it.
-					if (!u.structure) apply(u, 'core.stun', { duration: tune.ball.stun })
+					if (!u.structure && !u.dead) apply(u, 'core.stun', { duration: tune.ball.stun })
 					if (u.structure) {
 						fact('ballPop', { reason: 'spent' })
 						ball = null
