@@ -3,8 +3,7 @@ export default {
 		slow: {
 			label: 'Slow',
 			tags: ['debuff', 'slow'],
-			stack: 'replace',
-			replaceTag: 'slow',
+			stack: 'independent',
 			enabled: ({ stats }) => Boolean(stats.slow),
 			moveSpeed: ({ stats }) => Math.max(0, Math.min(1, 1 - stats.slow)),
 			duration: ({ stats }) => stats.duration,

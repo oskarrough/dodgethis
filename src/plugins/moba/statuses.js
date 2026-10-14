@@ -52,17 +52,20 @@ export function statusBar(unit, bar) {
 const active = (status, tick) => status.until === null || status.until > tick
 const resolve = (value, context) => (typeof value === 'function' ? value(context) : value)
 
-// Slice 1 deliberately replaces the previous slow across ALL sources: it must not reappear
-// when the newest expires. Strongest-slow-wins is a separate rule change.
+// Slows keep their own clocks; only the strongest active slow affects movement.
 export function moveSpeed(unit, tick) {
 	if (tick === undefined) throw new Error('MOBA moveSpeed needs the current tick')
 	let factor = 1
+	let slow = 1
 	for (const status of unit.statuses ?? []) {
-		if (!active(status, tick) || statusDefinition(status, unit)?.moveSpeed === undefined) continue
-		factor = Number.isFinite(status.mag) ? Math.max(0, status.mag) : 1
-		if (statusDefinition(status, unit)?.tags?.includes('slow')) factor = Math.min(1, factor)
+		if (!active(status, tick)) continue
+		const definition = statusDefinition(status, unit)
+		if (definition?.moveSpeed === undefined) continue
+		const magnitude = Number.isFinite(status.mag) ? Math.max(0, status.mag) : 1
+		if (definition.tags?.includes('slow')) slow = Math.min(slow, magnitude)
+		else factor = magnitude
 	}
-	return factor
+	return factor * slow
 }
 
 export function createStatuses(ctx) {

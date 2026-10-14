@@ -794,7 +794,7 @@
 					</ul>
 					<pre><code>// abilities/tangle/tangle.js
 statuses: {
-	slow: { tags: ['debuff', 'slow'], stack: 'replace',
+	slow: { tags: ['debuff', 'slow'], stack: 'independent',
 		moveSpeed: ({ stats }) =&gt; 1 - stats.slow, duration: ({ stats }) =&gt; stats.duration },
 },
 // in onRelease: sim.hit({ ...shot, applies: ['tangle.slow'] }, target)
@@ -822,10 +822,10 @@ statuses: { shield: { tags: ['shield'], stack: 'independent', absorb: true, bar:
 							and cancels casts, channels and dashes, as <code>displace</code> does now.
 						</li>
 						<li>
-							Slows: the strongest applies, each source keeps its own entry. Hastes multiply with
-							each other and with the slow. Slice 1 keeps today's "newest wins" so it can prove
-							nothing changed; the switch to "strongest wins" is its own commit with its own
-							simulate delta.
+							Slows: the strongest active slow wins (the lowest movement factor); they do not
+							multiply. Each application keeps its own expiry, even from the same source. A weaker
+							slow takes over if it outlasts the stronger one. A slow cleanse removes them all.
+							Hastes multiply with each other and with the slow.
 						</li>
 						<li>
 							Absorbs drain in the order they were applied (today's order), after deferral and
@@ -1002,7 +1002,8 @@ bot: { use: 'save', target: 'ally', below: 0.4 } // Pass</code></pre>
 			<h2>6. For Oskar</h2>
 			<ol>
 				<li>
-					Slows: strongest wins (my pick, Dota-ish and readable), or keep newest wins as today?
+					Slows: decided. Strongest wins; each application keeps its expiry, and a cleanse removes
+					them all.
 				</li>
 				<li>
 					Carried units (Snowball, Dropship, Gorge) stay out. They're loved, and they're the most
