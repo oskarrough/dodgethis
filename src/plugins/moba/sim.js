@@ -12,6 +12,7 @@ import { createPathPlanner } from './path.js'
 import { createTargeting } from './targeting.js'
 import { createProjectiles } from './projectiles.js'
 import { createCombat } from './combat.js'
+import { createStatuses } from './statuses.js'
 import { createDisplacement } from './displacement.js'
 import { createOrders } from './orders.js'
 import { createCasting } from './casting.js'
@@ -247,6 +248,7 @@ export function createSim({
 		nearestToClick,
 	}
 	for (const create of [
+		createStatuses,
 		createProjectiles,
 		createCombat,
 		createOrders,
@@ -297,6 +299,10 @@ export function createSim({
 		ball?.begin(t)
 		camps?.step(t)
 		flag?.step(t)
+		for (const unit of [...dummies, ...(lane?.minions ?? []), ...(lane?.structures ?? [])]) {
+			ctx.expireStatuses(unit)
+			ctx.stepStatuses(unit)
+		}
 		lane?.step(t, dt)
 		if (lane?.match.winner) return
 		const dashEnds = []
@@ -305,6 +311,7 @@ export function createSim({
 			const dashing = h.body.dashing
 			stepHeroState(h, dt)
 			h.definition.traits.onTick?.(traitContext(h, { dt }))
+			ctx.stepStatuses(h)
 			for (const ability of Object.values(h.definition.abilities))
 				ability?.watch?.(traitContext(h, { ability, dt }))
 			control(h, dt)
@@ -386,6 +393,9 @@ export function createSim({
 		throwCaught,
 		launchShot,
 		hit: ctx.hit,
+		apply: ctx.apply,
+		remove: ctx.remove,
+		cleanse: ctx.cleanse,
 		displace: ctx.displace,
 		enemiesOf,
 		lane,

@@ -19,7 +19,7 @@ const columns = {
 		'cd',
 		'cancelUntil',
 		'abilityState',
-		'shields',
+		'statuses',
 		'dashAbility',
 		'respawnTick',
 		'stunUntil',
@@ -28,7 +28,6 @@ const columns = {
 		'attackTick',
 		'order',
 		'cast',
-		'slow',
 		'freezeUntil',
 		'proneUntil',
 		'stance',
@@ -37,6 +36,7 @@ const columns = {
 		'displacement',
 	],
 	minions: [
+		'statuses',
 		'id',
 		'kind',
 		'team',
@@ -51,6 +51,7 @@ const columns = {
 		'attack',
 	],
 	structures: [
+		'statuses',
 		'id',
 		'team',
 		'kind',
@@ -148,7 +149,7 @@ export function projectLaneSnapshot(state) {
 						JSON.stringify(value) === JSON.stringify(freshAbilityState(HEROES[unit.heroId]))
 					)
 						return null
-					if (field === 'slow' && value.until === 0 && value.factor === 1) return null
+					if (field === 'statuses' && value.length === 0) return null
 				}
 				if (coordinateFields[key]?.includes(field) && value) return [value.x, value.z]
 				if (key === 'minions' && field === 'id' && value.startsWith('minion-'))
@@ -482,7 +483,7 @@ export function createLaneReplica(simulation, scene) {
 					if (key === 'heroes') {
 						for (const [field, value] of Object.entries(heroDefaults))
 							if (unit[field] === null) unit[field] = value
-						if (unit.slow === null) unit.slow = { until: 0, factor: 1 }
+						if (unit.statuses === null) unit.statuses = []
 						if (unit.abilityState === null)
 							unit.abilityState = freshAbilityState(HEROES[unit.heroId])
 						for (const field of ['cd', 'cancelUntil'])

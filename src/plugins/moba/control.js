@@ -1,5 +1,6 @@
 import { tune, profile } from './tune.js'
-import { abilityOf, castAbility, slowFactor } from './ability.js'
+import { abilityOf, castAbility } from './ability.js'
+import { moveSpeed } from './statuses.js'
 import { SLOTS, ticks, yawOf, dirOf } from './sim-kit.js'
 import { stepUnitDisplacement } from './displacement.js'
 
@@ -196,9 +197,7 @@ export function createControl(ctx) {
 		else h.buffered = null
 		if (h.cast?.left === 0) release(h)
 		h.body.speedMul =
-			slowFactor(h, ctx.t) *
-			(h.stance?.factor ?? 1) *
-			(ball?.carrying(h) ? tune.ball.carrySpeed : 1)
+			moveSpeed(h, ctx.t) * (h.stance?.factor ?? 1) * (ball?.carrying(h) ? tune.ball.carrySpeed : 1)
 		move(h, frame, dt)
 	}
 
@@ -259,7 +258,7 @@ export function createControl(ctx) {
 			const { flipMin, flipMax } = tune.dummies
 			d.flipIn = flipMin + rng() * Math.max(0, flipMax - flipMin)
 		}
-		d.body.speedMul = (tune.dummies.speed / profile.speed) * slowFactor(d, ctx.t)
+		d.body.speedMul = (tune.dummies.speed / profile.speed) * moveSpeed(d, ctx.t)
 		d.body.update({ x: d.dir, z: 0 }, dt)
 		// Dummies watch the nearest hero, like players would.
 		const h = heroes[0]

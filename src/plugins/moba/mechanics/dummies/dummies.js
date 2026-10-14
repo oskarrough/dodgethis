@@ -22,6 +22,6 @@ export default {
 			dead: false,
 			corpse: null,
 			respawnTick: null,
-			slow: { until: 0, factor: 1 },
+			statuses: [],
 		})),
 }

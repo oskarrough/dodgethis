@@ -15,7 +15,7 @@ export function brewBot(ctx) {
 		memory.tick = now
 	}
 	memory.hp = h.hp
-	const stagger = h.abilityState.stagger
+	const stagger = h.statuses.find((status) => status.label === 'Stagger')
 	if (h.channel?.ability === 'swig' || h.cast || h.body.dashing) return frame
 	if (!ctx.skillsLocked && !h.stance && memory.burst >= h.maxHp * b.burstHp && cast('slot2', p)) {
 		memory.burst = 0
@@ -39,9 +39,9 @@ export function brewBot(ctx) {
 		!h.stance &&
 		!inTowerRange &&
 		((memory.burst >= h.maxHp * b.burstHp && underThreat) ||
-			(stagger.pool > 0 &&
-				stagger.ended != null &&
-				now - stagger.ended <= b.afterStagger / STEP)) &&
+			(stagger?.amount > 0 &&
+				stagger.data.ended != null &&
+				now - stagger.data.ended <= b.afterStagger / STEP)) &&
 		cast('slot3', p)
 	) {
 		memory.burst = 0

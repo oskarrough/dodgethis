@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { statusBar } from './statuses.js'
 import { structureName } from './gates.js'
 import './hud.css'
 import { heroDefinition } from './heroes.js'
@@ -726,15 +727,17 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 			text(traitText, heroicTrait?.chip ?? '')
 			flag(portrait, 'dead', respawn != null)
 			text(respawnNode, respawn != null ? String(Math.ceil(respawn)) : '')
-			const shieldHp = (hero?.shields ?? []).reduce((sum, shield) => sum + shield.amount, 0)
-			const staggerHp = hero?.abilityState?.stagger?.pool ?? 0
+			const shield = statusBar(hero, 'shield')
+			const pending = statusBar(hero, 'pending')
+			const shieldHp = shield.amount
+			const staggerHp = pending.amount
 			prop(health, '--f', String(respawn != null ? 0 : ring(hp, maxHp)))
 			prop(health, '--tick', `${((tune.hud.hpTick / Math.max(1, maxHp)) * 100).toFixed(3)}%`)
 			text(
 				healthText,
 				respawn != null
 					? `Respawn in ${Math.ceil(respawn)} s`
-					: `${Math.min(Math.ceil(hp), Math.round(maxHp))} / ${Math.round(maxHp)}${shieldHp > 0 ? ` + ${Math.ceil(shieldHp)} shield` : ''}${staggerHp > 0 ? ` · ${Math.ceil(staggerHp)} stagger` : ''}`,
+					: `${Math.min(Math.ceil(hp), Math.round(maxHp))} / ${Math.round(maxHp)}${shieldHp > 0 ? ` + ${Math.ceil(shieldHp)} ${shield.label.toLowerCase()}` : ''}${staggerHp > 0 ? ` · ${Math.ceil(staggerHp)} ${pending.label.toLowerCase()}` : ''}`,
 			)
 			if (teams) {
 				const progress = levelProgress(teams[localTeam].xp)

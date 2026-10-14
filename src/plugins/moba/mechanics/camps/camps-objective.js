@@ -43,7 +43,7 @@ export function createCamps({ layout, lane, heroes, makeBody, present, obstacles
 		aggroUntil: 0,
 		attackTick: t,
 		attack: null,
-		slow: { until: 0, factor: 1 },
+		statuses: [],
 	})
 	function fill(camp, t) {
 		camp.guards = c.guards.map(({ kind, hp, damage }, i) => {

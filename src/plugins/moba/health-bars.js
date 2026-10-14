@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { statusBar } from './statuses.js'
 import { structureName } from './gates.js'
 import './health-bars.css'
 import { tune } from './tune.js'
@@ -80,10 +81,14 @@ export function createHealthBars() {
 				bar.element.style.setProperty('--font', `${t.font}px`)
 				bar.element.style.setProperty('--tick-spacing', `${(tickHp / unit.maxHp) * 100}%`)
 				bar.fill.style.width = `${Math.max(0, Math.min(1, unit.hp / unit.maxHp)) * 100}%`
-				const shieldHp = (unit.shields ?? []).reduce((sum, shield) => sum + shield.amount, 0)
+				const shield = statusBar(unit, 'shield')
+				const shieldHp = shield.amount
+				bar.shield.title = shield.label
 				bar.shield.style.width = `${Math.min(1, shieldHp / unit.maxHp) * 100}%`
 				bar.shield.hidden = shieldHp <= 0
-				const pool = unit.abilityState?.stagger?.pool ?? 0
+				const pending = statusBar(unit, 'pending')
+				const pool = pending.amount
+				bar.pool.title = pending.label
 				bar.pool.style.width = `${Math.min(1, pool / unit.maxHp) * 100}%`
 				bar.pool.hidden = pool <= 0
 				const text = unit.structure

@@ -97,7 +97,7 @@ export function createWaves(shared) {
 							aggroUntil: 0,
 							attackTick: t,
 							attack: null,
-							slow: { until: 0, factor: 1 },
+							statuses: [],
 						}
 						const safe = clampWalkable(
 							unit.body.position,

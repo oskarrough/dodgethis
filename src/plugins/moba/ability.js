@@ -60,11 +60,3 @@ export function castAbility(unit) {
 		}
 	return abilityOf(unit.cast?.ability, unit) ?? unit.definition?.abilities[unit.cast?.slot] ?? null
 }
-
-export function slowFactor(unit, tick) {
-	return tick < (unit.slow?.until ?? 0)
-		? Number.isFinite(unit.slow.factor)
-			? Math.max(0, Math.min(1, unit.slow.factor))
-			: 1
-		: 1
-}

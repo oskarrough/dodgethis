@@ -79,7 +79,7 @@ export function createHeroMaker({ scene, world, RAPIER, smooth, lobby, floor, wa
 			attackTick: 0,
 			order: null,
 			cast: null,
-			slow: { until: 0, factor: 1 },
+			statuses: [],
 			freezeUntil: 0,
 			proneUntil: 0,
 			stance: null,
@@ -164,7 +164,7 @@ export function createRoster(ctx) {
 		hero.maxHp = definition.base.hp * (1 + tune.levels.growth * (hero.level - 1))
 		hero.hp = hero.maxHp * fraction
 		hero.abilityState = freshAbilityState(definition)
-		hero.shields = []
+		hero.statuses = []
 		hero.attack = null
 		hero.attackTick = 0
 		hero.order = null
@@ -175,7 +175,6 @@ export function createRoster(ctx) {
 		hero.dashAbility = null
 		hero.displacement = null
 		hero.ballThrow = null
-		hero.slow = { until: 0, factor: 1 }
 		hero.freezeUntil = 0
 		hero.proneUntil = 0
 		hero.stunUntil = 0

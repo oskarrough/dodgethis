@@ -64,12 +64,11 @@ export function createCombat(ctx) {
 		unit.dead = false
 		if (unit.post) unit.maxHp = tune.dummies.hp
 		unit.hp = unit.dunked ? Math.min(unit.maxHp, unit.dunked.hp) : unit.maxHp
-		unit.shields = []
+		unit.statuses = []
 		unit.dunked = null
 		unit.displacement = null
 		unit.shove = null
 		unit.respawnTick = null
-		unit.slow = { until: 0, factor: 1 }
 		unit.freezeUntil = 0
 		unit.proneUntil = 0
 		endCast(unit, 'respawn')
@@ -188,7 +187,6 @@ export function createCombat(ctx) {
 		const hitSource = heroes.find((h) => h.id === shot.owner)
 		if (
 			hitSource &&
-			!shot.deferred &&
 			shot.traitProcs !== false &&
 			abilityOf(shot.ability, hitSource)?.onHit?.(
 				traitContext(hitSource, { shot, target, point }),
@@ -219,7 +217,7 @@ export function createCombat(ctx) {
 			unit.stance.until > ctx.t &&
 			unit.catchWindow?.until > ctx.t &&
 			ctx.t >= Math.max(unit.stunUntil, unit.freezeUntil, unit.proneUntil)
-		let incoming = shot.deferred
+		let incoming = shot.unmodified
 			? rawDamage
 			: rawDamage *
 				(catchShield
@@ -229,25 +227,17 @@ export function createCombat(ctx) {
 				(unit.structure && (shot.isAbility || shot.slot.startsWith('slot'))
 					? tune.waves.abilityStructure
 					: 1)
-		const stance = abilityOf(unit.stance?.ability, unit)
-		if (!shot.deferred && stance?.defersDamage && unit.stance.until > ctx.t) {
-			stance.deferDamage?.({ ...traitContext(unit), shot, damage: incoming })
-			incoming = 0
-		}
-		unit.shields = (unit.shields ?? []).filter(
-			(shield) => shield.until > ctx.t && shield.amount > 0,
-		)
-		for (const shield of unit.shields) {
-			const absorbed = Math.min(shield.amount, incoming)
-			shield.amount -= absorbed
-			incoming -= absorbed
-		}
+		incoming = ctx.onDamageTaken(unit, incoming, shot)
+		incoming = ctx.absorb(unit, incoming)
 		const damage = Math.min(unit.hp, Math.max(0, incoming))
 		if (!shot.noHelp) lane?.help(find(shot.owner), unit, ctx.t)
-		if (source && !shot.deferred && shot.slot === 'primary' && source.definition.basic.critEvery)
+		if (source && !shot.periodic && shot.slot === 'primary' && source.definition.basic.critEvery)
 			source.basicStreak = shot.crit ? 0 : (source.basicStreak ?? 0) + 1
-		if (shot.slow)
-			unit.slow = { until: ctx.t + ticks(shot.slow.duration), factor: shot.slow.factor }
+		for (const status of shot.applies ?? [])
+			ctx.apply(unit, typeof status === 'string' ? status : status.key, {
+				...(typeof status === 'object' ? status : {}),
+				source: shot.owner,
+			})
 		unit.hp = Math.max(0, unit.hp - damage)
 		const lethal = unit.hp === 0
 		if (!unit.kind && damage > 0) ball?.hurt(unit)
@@ -270,16 +260,20 @@ export function createCombat(ctx) {
 			direction,
 			lethal,
 			damage,
-			...(shot.deferred && { ambient: true }),
+			...(shot.ambient && { ambient: true }),
+			...(unit.statuses?.length && {
+				statusLabels: Object.fromEntries(unit.statuses.map((status) => [status.label, true])),
+			}),
 			...(shot.crit && { crit: true }),
 			hp: unit.hp,
 			maxHp: unit.maxHp,
 		})
 		if (!lethal) {
-			if (target.hero && !unit.post && !shot.deferred) shove(unit, shot)
+			if (target.hero && !unit.post && !shot.periodic) shove(unit, shot)
 			return
 		}
 		unit.dead = true
+		unit.statuses = []
 		if (unit.displacement) unit.displacement = null
 		if (!unit.kind) ball?.hurt(unit)
 		unit.corpse = unit.body
@@ -304,7 +298,7 @@ export function createCombat(ctx) {
 
 	// Out of play until `seconds` pass: a death or a dunk. The caller has retired the body.
 	function bench(unit, seconds, shot) {
-		unit.shields = []
+		unit.statuses = []
 		unit.respawnTick = ctx.t + ticks(seconds)
 		endCast(unit, 'death')
 		endStance(unit, 'death')

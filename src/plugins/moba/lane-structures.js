@@ -7,6 +7,7 @@ export function createStructures({ layout, makeBody, enabled }) {
 		team,
 		kind,
 		structure: true,
+		statuses: [],
 		lane,
 		after,
 		hp: tune[kind].hp,

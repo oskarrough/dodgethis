@@ -9,7 +9,7 @@ Discoverable names. Agents find code by plain-text search, so every identifier i
 - No bare-role filenames (`utils.js`, `helpers.js`, `types.js`). In a registered folder (`heroes/<id>/`, `abilities/<id>/`, `mechanics/<id>/`, `maps/<id>/`), the three conventional filenames are `<id>.js`, `<id>-tune.js`, `<id>-view.js`. Every helper filename also carries the id; its role is the author's.
 - Keep strings whole: fact names, bot goals, tune keys, `--ui-*` tokens and error messages are never built from templates. An error message starts with a unique literal so a log line greps back to its throw site.
 - One definition site per symbol: move, don't copy, and rename in the same commit as the behaviour change.
-- A new fact type gets an entry in `index.js` `FACTS`, or guests drop every packet carrying it.
+- A new fact type gets an entry in `index.js` `FACTS`, or guests drop every packet carrying it. Facts carry plain objects, not arrays (`validFact` rejects arrays); use keyed objects for collections.
 
 A surgical edit outside your owned files (a setter, an export, a hook) is fine without asking; name it in the report.
 

@@ -2,6 +2,16 @@ import { tune } from '../../tune.js'
 import { segmentClear } from '../../obstacles.js'
 
 export default {
+	statuses: {
+		slow: {
+			label: 'Slow',
+			tags: ['debuff', 'slow'],
+			stack: 'replace',
+			replaceTag: 'slow',
+			moveSpeed: ({ stats }) => Math.max(0, Math.min(1, 1 - stats.slow)),
+			duration: ({ stats }) => stats.duration,
+		},
+	},
 	name: 'Tangle',
 	kind: 'instant',
 	tell: 'cone',
@@ -47,7 +57,7 @@ export default {
 					dx: dir.x,
 					dz: dir.z,
 					damage: stats.damage * (1 + tune.levels.growth * (hero.level - 1)),
-					slow: { factor: 1 - stats.slow, duration: stats.duration },
+					applies: [{ key: 'tangle.slow', mag: 1 - stats.slow, duration: stats.duration }],
 				},
 				target,
 				target,

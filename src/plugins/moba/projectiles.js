@@ -45,7 +45,8 @@ export function createProjectiles(ctx) {
 		for (let i = zones.length - 1; i >= 0; i--) {
 			const zone = zones[i]
 			if (--zone.left > 0) continue
-			const skill = abilityOf(zone.ability ?? 'rain').stats
+			const ability = abilityOf(zone.ability ?? 'rain')
+			const skill = ability.stats
 			touch(zone, { kind: 'zone', point: { x: zone.x, z: zone.z }, radius: skill.radius })
 			const targets = enemiesOf(zone.team).filter(
 				(e) => Math.hypot(e.x - zone.x, e.z - zone.z) <= skill.radius + e.radius,
@@ -58,8 +59,7 @@ export function createProjectiles(ctx) {
 				point: { x: zone.x, y: 0.05, z: zone.z },
 			})
 			for (const e of targets) {
-				if (skill.slow)
-					e.unit.slow = { until: ctx.t + ticks(skill.duration), factor: 1 - skill.slow }
+				for (const key of ability.applies ?? []) ctx.apply(e.unit, key, { source: zone.owner })
 				hit(
 					{
 						owner: zone.owner,

@@ -56,7 +56,7 @@ export default {
 		hero.body.place(to.x, to.y, to.z)
 		ally.body.place(from.x, from.y, from.z)
 		ally.stunUntil = 0
-		ally.slow = { until: 0, factor: 1 }
+		sim.cleanse(ally, 'slow')
 		hero.abilityState.tagOut.until = tick + ticks(ability.stats.duration)
 		present({
 			type: 'tagOut',

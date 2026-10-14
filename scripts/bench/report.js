@@ -39,6 +39,7 @@ export function matchReport(roster, { STEP, towerRange, count = [] }) {
 			]),
 		),
 		firstTower: null,
+		statusLabels: {},
 		abilities: {},
 		deathsBy: {},
 		taken: {},
@@ -62,6 +63,8 @@ export function matchReport(roster, { STEP, towerRange, count = [] }) {
 	return {
 		report: counters,
 		row(row) {
+			for (const label of Object.keys(row.fact?.statusLabels ?? {}))
+				counters.statusLabels[label] = true
 			if (row.kind in counters.counts) add(counters.counts[row.kind], row.team ?? '-', 1)
 			if (row.kind === 'hit' && row.target && !firstHit.has(row.target))
 				firstHit.set(row.target, row.tick * STEP)
@@ -207,6 +210,7 @@ function zone(lanes, heroUnit) {
 export function emptyTotals() {
 	return {
 		matches: 0,
+		statusLabels: {},
 		decided: 0,
 		heroes: {},
 		abilities: {},
@@ -229,6 +233,7 @@ const sumInto = (into, from) => {
 }
 
 export function mergeReport(totals, report, winner) {
+	Object.assign(totals.statusLabels, report.statusLabels ?? {})
 	totals.matches++
 	if (winner) totals.decided++
 	const count = { A: {}, B: {} }
@@ -524,6 +529,8 @@ export function reportSections(sides) {
 		[...new Set(all.flatMap((totals) => Object.values(pick(totals)).flatMap(Object.keys)))].sort()
 	const seats = (totals, id) => totals.heroes[id]?.seats || totals.matches
 	const output = [two ? `\nReport (${sides[0].label} → ${sides[1].label})` : '\nReport']
+	const statusLabels = keys((totals) => totals.statusLabels ?? {})
+	if (statusLabels.length) output.push(`Statuses: ${statusLabels.join(', ')}`)
 
 	output.push(
 		'\nPer ability, per match',

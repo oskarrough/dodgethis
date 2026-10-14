@@ -230,7 +230,6 @@ export function createCasting(ctx) {
 			catchable: ability.catchable,
 			isAbility: true,
 			...ability.projectileStats?.(context),
-			slow: skill.slow ? { factor: 1 - skill.slow, duration: skill.duration } : null,
 			speed: skill.speed,
 			radius: skill.radius,
 			range: skill.range,
@@ -322,8 +321,7 @@ export function createCasting(ctx) {
 
 	function stepHeroState(hero, dt) {
 		const frame = intents.get(hero.id)
-		if (hero.shields)
-			hero.shields = hero.shields.filter((shield) => shield.until > ctx.t && shield.amount > 0)
+		ctx.expireStatuses(hero)
 		if (hero.stance) {
 			const stance = hero.stance
 			const ability = abilityOf(stance.ability, hero)

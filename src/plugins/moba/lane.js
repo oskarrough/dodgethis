@@ -1,5 +1,5 @@
 import { STEP } from '../../core/app.js'
-import { slowFactor } from './ability.js'
+import { moveSpeed } from './statuses.js'
 import { stepUnitDisplacement } from './displacement.js'
 import { tune } from './tune.js'
 import { clampWalkable } from './obstacles.js'
@@ -323,7 +323,7 @@ export function createLane({
 			const dx = waypoint.x - p.x,
 				dz = waypoint.z - p.z,
 				length = Math.hypot(dx, dz)
-			const speed = stats.speed * slowFactor(unit, t)
+			const speed = stats.speed * moveSpeed(unit, t)
 			const travel = Math.min(length, speed * dt)
 			if (length > 0) {
 				let next = { x: p.x + (dx / length) * travel, z: p.z + (dz / length) * travel }
