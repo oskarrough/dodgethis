@@ -158,7 +158,7 @@ export function ballCard({ nextBall = 0, ballPop = null, carrying = false } = {}
 		title: 'The Ball',
 		tag: carrying ? 'yours' : `${Math.max(0, Math.ceil(ballPop ?? nextBall))} s`,
 		summary: carrying
-			? `You carry it. Throw toward your aim.`
+			? `You carry it. Click / Q to throw toward your aim.`
 			: ballPop != null
 				? `Live at mid. Pops in ${Math.ceil(ballPop)} s.`
 				: `Spawns at mid in ${Math.max(0, Math.ceil(nextBall))} s. Stand still ${n(b.channel)} s to pick up.`,

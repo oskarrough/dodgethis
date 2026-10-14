@@ -465,6 +465,16 @@ export default function moba(app, map) {
 					? lobby.inspectAim(dir, magnitude)
 					: sim.stickAim(local, dir, magnitude, slot),
 			)
+			run.system('input', () => {
+				playerControls.throwClick = !!sim.ball?.carrying(hero)
+			})
+			run.signal.addEventListener(
+				'abort',
+				() => {
+					playerControls.throwClick = false
+				},
+				{ once: true },
+			)
 
 			const onPad = () => input.activeDevice() === 'gamepad'
 			// Keyboard only aims like the pad, so it frames, hovers and draws like the pad too.

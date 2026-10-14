@@ -20,10 +20,12 @@ const write = (key, value) => {
 // quickCast: Q W E R cast on key-down. Off (default): hold to aim, release to cast.
 // preset: which keyboard and mouse bindings are live, an `intents.js` PRESETS id. The pad ignores it.
 // attackArmed: A was pressed and the next left click is an attack-move; the mode reads it for the cursor.
+// throwClick: the local hero is carrying the Ball, so an unarmed left click is a throw (the mode sets this each input frame).
 export const controls = {
 	quickCast: read(KEY) === 'on',
 	preset: PRESET_IDS.includes(read(PRESET_KEY)) ? read(PRESET_KEY) : 'moba',
 	attackArmed: false,
+	throwClick: false,
 }
 
 export function setQuickCast(on) {

@@ -189,7 +189,12 @@ function clicker() {
 		pad: () => d.padState,
 		padState: null,
 		consumeSlot: () => null,
-		consumePress: () => false,
+		click: false,
+		consumePress() {
+			const click = d.click
+			d.click = false
+			return click
+		},
 		consumeRelease: () => false,
 		consumeDash: () => false,
 		consumeJump: () => false,
@@ -227,6 +232,38 @@ test('pointClick: RMB orders at the cursor and again every resend ms while held;
 	expect(intents.get('p').order).toEqual({ x: 1, z: 1 })
 	intents.age(STEP)
 	expect(intents.get('p').order).toBeNull()
+})
+
+test('pointClick: an unarmed left click throws while carrying; A-click stays an attack-move', () => {
+	const d = clicker()
+	const prefs = { attackArmed: false, throwClick: false, quickCast: true }
+	const poll = pointClick(d, () => ({ x: 4, y: 0, z: -2 }), { ...POINT_CLICK, controls: prefs })
+	d.click = true
+	let f = poll()
+	expect(f.pressed).toEqual([])
+	expect(f.order).toBeNull()
+
+	prefs.throwClick = true
+	d.click = true
+	f = poll()
+	expect(f.pressed).toEqual([{ action: 'primary', at: { x: 4, z: -2 } }])
+	expect(f.order).toBeNull()
+
+	prefs.attackArmed = true
+	d.click = true
+	f = poll()
+	expect(f.pressed).toEqual([])
+	expect(f.order).toEqual({ x: 4, z: -2, kind: 'attack-move', pick: true })
+	expect(prefs.attackArmed).toBe(false)
+	expect(prefs.throwClick).toBe(true)
+
+	// WASD already fires primary on either click; carrying must not queue a second throw.
+	prefs.preset = 'wasd'
+	prefs.attackArmed = false
+	d.click = true
+	f = poll()
+	expect(f.pressed).toEqual([{ action: 'primary', at: { x: 4, z: -2 } }])
+	expect(f.order).toBeNull()
 })
 
 test('pointClick on a pad: a curved left stick, hold to aim with the mode’s stickAim, fire on release, B cancels', () => {
