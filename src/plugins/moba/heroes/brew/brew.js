@@ -3,7 +3,7 @@ import { brewBot } from './brew-bot.js'
 export default {
 	name: 'Brew',
 	order: 5,
-	color: 'gold',
+	color: 'ammo',
 	silhouette: 'hexagon',
 	basic: 'palmStrike',
 	kit: { slot1: 'flyingKick', slot2: 'stagger', slot3: 'swig' },

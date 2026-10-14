@@ -64,8 +64,12 @@ export function createHeroStrip({ el, heroes, current, pick, openNumbers }) {
 			point.copy(p).project(camera)
 			return { x: ((point.x + 1) * innerWidth) / 2, y: ((1 - point.y) * innerHeight) / 2 }
 		})
-		// Where the lip's left side crosses a row; above or below the saucer, its leftmost point.
-		const lipAt = (y) => {
+		// Where the lip's left side crosses a row. A row above or below the saucer is read at the
+		// lip's top or bottom instead, `inset` px in, so the card stays on the lip, not in the air.
+		const top = Math.min(...lip.map((p) => p.y))
+		const bottom = Math.max(...lip.map((p) => p.y))
+		const lipAt = (row, inset) => {
+			const y = Math.min(Math.max(row, top + inset), bottom - inset)
 			let x = Math.min(...lip.map((p) => p.x))
 			for (const [i, a] of lip.entries()) {
 				const b = lip[(i + 1) % lip.length]
@@ -81,7 +85,8 @@ export function createHeroStrip({ el, heroes, current, pick, openNumbers }) {
 			// offsetLeft already includes last frame's shift; measuring from it made the cards flip
 			// between two places every frame.
 			const middle = strip.offsetLeft + button.offsetLeft - seats[i] + button.offsetWidth / 2
-			const to = lipAt(box.top + box.height / 2) + button.offsetWidth * (overlap - 0.5)
+			const to =
+				lipAt(box.top + box.height / 2, box.height * 0.4) + button.offsetWidth * (overlap - 0.5)
 			// The camera breathes; following every sub-pixel of it made the cards jiggle, so only a
 			// real move (a resize, a new framing) reseats them.
 			const next = Math.round(Math.max(0, to - middle))
