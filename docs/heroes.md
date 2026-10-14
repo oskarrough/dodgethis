@@ -122,3 +122,17 @@ Wins by being hit. Dives in, soaks the burst, drinks it off and kicks his way ou
 **The moment:** Fletcher, Mitts and their tower all on you at 600. You Stagger, kneel and Swig: the burst trickles into your shield. They've spent everything; you kick a minion out of the fight on 900.
 
 **Counter-play:** burst him outside Stagger, or stop the drink: he's rooted, so Throw, Tangle's slow after it, Red light or any stun breaks it, and a stun is a stun. Wait out Stagger before committing. Tune so the drink beats a burst and loses to pressure: two heroes on him for 6 s still win.
+
+## Wata, the water support
+
+The refactor's test (2026-10-14): the first hero built on statuses, folder bots and summons, counted by how many shared engine files she touches. Heals by splashing, slows by soaking, and plants a sprinkler that keeps working while she moves on. 1500 HP, 5.0 m/s. Basic: a water flick, 5 m range, 65 damage, 1/s, homing. Silhouette placeholder: a squat round jug with a spout, until Oskar draws her.
+
+| Key | Name      | Numbers                                                                                                                                                                                                                                   |
+| --- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Q   | Balloon   | Lob to a point within 9 m over 0.6 s, its landing ring shown to enemies. 2 m splash: allies heal 160, enemies take 80 and are soaked (20% slow, 2 s). Press again to pop it early, mid-air, where it is. Leaves a 4 s puddle. Cooldown 5. |
+| W   | Sprinkler | Plant within 6 m (cast point 0.3). A 300 HP summon for 5 s: its jet sweeps a 4 m circle once a second, healing allies 50 and soaking enemies it passes. Enemies can break it; it blocks nothing. Cooldown 14.                             |
+| E   | Slide     | Instant 5 m belly slide toward the aim over 0.3 s. On a puddle it doesn't stop until the puddle ends, up to 10 m. Cooldown 8.                                                                                                             |
+
+**The moment:** your Brew is drinking under three enemies. You plant the sprinkler on him, lob a balloon at his feet and slide out along the puddle; the chasers wade through soak and he walks out on full shield.
+
+**Counter-play:** break the sprinkler first, since 300 HP is two basics and a shot. Fight away from puddles: the slide and the soak both live on them. The balloon's ring shows where it lands, so step off it, but watch for the early pop.
