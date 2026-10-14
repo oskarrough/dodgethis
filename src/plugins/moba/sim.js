@@ -12,6 +12,7 @@ import { createPathPlanner } from './path.js'
 import { createTargeting } from './targeting.js'
 import { createProjectiles } from './projectiles.js'
 import { createCombat } from './combat.js'
+import { createDisplacement } from './displacement.js'
 import { createOrders } from './orders.js'
 import { createCasting } from './casting.js'
 import { createSnapshot } from './sim-snapshot.js'
@@ -167,6 +168,7 @@ export function createSim({
 	})
 
 	const { enemiesOf, find, pick, nearestToClick, stickAim } = createTargeting({
+		outOfPlay: (hero) => hero.definition.outOfPlay?.({ hero, sim: api }),
 		heroes,
 		dummies,
 		lane,
@@ -249,6 +251,7 @@ export function createSim({
 		createCombat,
 		createOrders,
 		createCasting,
+		createDisplacement,
 		createSnapshot,
 		createControl,
 		createRoster,
@@ -382,6 +385,9 @@ export function createSim({
 		swapHero,
 		throwCaught,
 		launchShot,
+		hit: ctx.hit,
+		displace: ctx.displace,
+		enemiesOf,
 		lane,
 		laneView,
 		camps,

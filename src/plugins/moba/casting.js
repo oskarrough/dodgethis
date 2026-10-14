@@ -108,10 +108,17 @@ export function createCasting(ctx) {
 		const skill = ability.stats
 		cancelChannel(h, 'cast')
 		const reach = Math.min(len, skill.range ?? 0)
-		const target = clampMap({ x: p.x + dir.x * reach, z: p.z + dir.z * reach }, 0, field)
+		let target = clampMap({ x: p.x + dir.x * reach, z: p.z + dir.z * reach }, 0, field)
+		const targetUnit = ability.targetUnit?.(traitContext(h, { ability, target: at ?? target }))
+		if (ability.targetUnit && !targetUnit) {
+			present({ type: 'denied', hero: h.id, slot, reason: 'unready' })
+			return
+		}
+		if (targetUnit) target = { x: targetUnit.body.position.x, z: targetUnit.body.position.z }
 		h.cast = {
 			ability: ability.id,
 			slot,
+			targetId: targetUnit?.id ?? null,
 			cooldownBefore: h.cd[i],
 			startedTick: ctx.t,
 			dir,
@@ -144,7 +151,7 @@ export function createCasting(ctx) {
 
 	function release(h) {
 		const castFootprint = footprints.get(h.cast)
-		const { slot, dir, target, shot: frozen } = h.cast
+		const { slot, dir, target, targetId, shot: frozen } = h.cast
 		const ability = castAbility(h) ?? heroDefinition().abilities[slot]
 		const skill = ability.stats
 		h.cast = null
@@ -162,7 +169,7 @@ export function createCasting(ctx) {
 			if (castFootprint) footprints.set(shot, castFootprint)
 			return
 		}
-		const context = traitContext(h, { ability, dir, target, slot })
+		const context = traitContext(h, { ability, dir, target, targetId, slot })
 		if (ability.kind === 'stance') {
 			h.stance = {
 				ability: ability.id,
@@ -217,9 +224,12 @@ export function createCasting(ctx) {
 			slot,
 			pierce: ability.pierce,
 			heal: ability.heal,
+			healAmount: skill.healAmount,
+			heroOnly: ability.heroOnly,
 			bounce: skill.bounce ?? false,
 			catchable: ability.catchable,
 			isAbility: true,
+			...ability.projectileStats?.(context),
 			slow: skill.slow ? { factor: 1 - skill.slow, duration: skill.duration } : null,
 			speed: skill.speed,
 			radius: skill.radius,
@@ -312,6 +322,8 @@ export function createCasting(ctx) {
 
 	function stepHeroState(hero, dt) {
 		const frame = intents.get(hero.id)
+		if (hero.shields)
+			hero.shields = hero.shields.filter((shield) => shield.until > ctx.t && shield.amount > 0)
 		if (hero.stance) {
 			const stance = hero.stance
 			const ability = abilityOf(stance.ability, hero)
@@ -335,10 +347,20 @@ export function createCasting(ctx) {
 		if (
 			(abilityOf(channel.ability, hero)?.cancelOnMove &&
 				(frame.order || Math.hypot(frame.move.x, frame.move.z) > 0.01)) ||
-			frame.pressed.some((e) => ['stop', 'cancel'].includes(e.action))
+			frame.pressed.some(
+				(e) =>
+					['stop', 'cancel'].includes(e.action) ||
+					(abilityOf(channel.ability, hero)?.cancelOnCast &&
+						(SLOTS.includes(e.action) || e.action === 'primary')),
+			)
 		)
 			return cancelChannel(hero, 'input')
-		if (ctx.t < hero.stunUntil || ctx.t < hero.freezeUntil || ctx.t < hero.proneUntil)
+		if (
+			hero.displacement ||
+			ctx.t < hero.stunUntil ||
+			ctx.t < hero.freezeUntil ||
+			ctx.t < hero.proneUntil
+		)
 			return cancelChannel(hero, 'disabled')
 		const ability = abilityOf(channel.ability, hero)
 		ability?.onTick?.(traitContext(hero, { ...channel, ability, dt }))

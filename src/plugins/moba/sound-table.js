@@ -29,11 +29,17 @@ for (const id of [...Object.keys(ABILITIES), 'return']) {
 	const effects = abilityOf(id).effects ?? {}
 	for (const [part, key] of Object.entries(parts))
 		if (effects[key])
-			abilityUses[`${id}.${part}`] = use(
-				owners[id] ?? 'Unowned abilities',
-				`${id === 'return' ? 'Catch return' : (ABILITIES[id]?.name ?? id)}: ${partAbout[part]}`,
-				effects[key],
-			)
+			abilityUses[`${id}.${part}`] = abilityOf(id).stats?.sound?.[part]
+				? synth(
+						owners[id] ?? 'Unowned abilities',
+						`${ABILITIES[id]?.name ?? id}: ${partAbout[part]}`,
+						() => abilityOf(id).stats.sound[part],
+					)
+				: use(
+						owners[id] ?? 'Unowned abilities',
+						`${id === 'return' ? 'Catch return' : (ABILITIES[id]?.name ?? id)}: ${partAbout[part]}`,
+						effects[key],
+					)
 }
 
 export const uses = {
@@ -272,6 +278,9 @@ export const facts = {
 		...structures.map((s) => `${s}.hit`).filter((id) => uses[id]),
 		...ending('.hit'),
 	],
+	heal: ending('.hit'),
+	tagOut: ending('.impact'),
+	freeze: ending('.impact'),
 	nearMiss: ['nearMiss', 'nearMiss.passed'],
 	death: ['death', 'out'],
 	shove: ['shove', 'out'],

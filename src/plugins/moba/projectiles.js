@@ -114,8 +114,20 @@ export function createProjectiles(ctx) {
 				shot.dx = (target.x - shot.x) / length
 				shot.dz = (target.z - shot.z) / length
 			} else
-				targets = (shotTargets.get(shot.team) ?? []).filter(
-					(unit) => !unit.unit.dead && (!shot.heroOnly || unit.hero),
+				targets = (
+					shot.heal
+						? heroes.map((unit) => ({
+								id: unit.id,
+								unit,
+								hero: true,
+								team: unit.team,
+								x: unit.body.position.x,
+								z: unit.body.position.z,
+								radius: unit.body.radius,
+							}))
+						: (shotTargets.get(shot.team) ?? [])
+				).filter(
+					(unit) => unit.id !== shot.owner && !unit.unit.dead && (!shot.heroOnly || unit.hero),
 				)
 			if (
 				interceptShot(shot, stepDt, resolveInterception, {

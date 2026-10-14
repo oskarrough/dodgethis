@@ -10,7 +10,7 @@ import HERO_VIEWS from './heroes/all-hero-views.js'
 // its poses need: the bow posed here, or parts its own animate() poses. Without one, the box.
 function dressBox({ torso, part, own, t, materials }) {
 	const { ink, team: teamMaterial } = materials
-	torso.geometry = own(new THREE.BoxGeometry(t.skipWidth, t.skipHeight, t.skipDepth))
+	torso.geometry = own(new THREE.BoxGeometry(t.coachWidth, t.coachHeight, t.coachDepth))
 	part(
 		new THREE.CylinderGeometry(
 			t.megaphoneRadius,

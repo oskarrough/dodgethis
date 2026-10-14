@@ -16,6 +16,8 @@ const fields = [
 	'joinOrder',
 	'readyWalk',
 	'abilityState',
+	'shields',
+	'dashAbility',
 	'hp',
 	'maxHp',
 	'level',
@@ -253,6 +255,7 @@ export function createUnitReplica(
 			unit.body = body
 		}
 		for (const key of fields) if (Object.hasOwn(a, key)) unit[key] = structuredClone(a[key])
+		unit.displacement = a.displacement ? structuredClone(a.displacement) : null
 		const continuous = b && a.dead === b.dead && a.heroId === b.heroId && a.seatTeam === b.seatTeam
 		if (a.pos && !unit.body.retired) {
 			const p = continuous && b.pos ? b.pos : a.pos

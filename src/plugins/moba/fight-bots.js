@@ -1,7 +1,7 @@
 import { STEP } from '../../core/app.js'
 import { neutralFrame } from '../../core/intents.js'
 import { tune } from './tune.js'
-import { clampWalkable, sweepHit, sweepObstacles } from './obstacles.js'
+import { clampWalkable, sweepHit, sweepObstacles, segmentClear } from './obstacles.js'
 
 const ticks = (s) => Math.max(1, Math.round(s / STEP))
 const distance = (a, b) => Math.hypot(a.x - b.x, a.z - b.z)
@@ -168,7 +168,13 @@ export function createFightBot(
 				shotAbility?.returnsPocket && h.abilityState?.pocket
 					? h.abilityState.pocket.shot
 					: shotAbility?.stats
-			if (!loose || distance(p, target.pos) > loose.range || target.dashing) return false
+			if (
+				!loose ||
+				distance(p, target.pos) > loose.range ||
+				target.dashing ||
+				(shotAbility?.heroOnly && target.kind)
+			)
+				return false
 			const lead = interceptTime(p, target, loose.speed) * (1 + normal() * k.leadError)
 			const dx = target.pos.x + target.vel.x * lead - p.x,
 				dz = target.pos.z + target.vel.z * lead - p.z,
@@ -177,7 +183,11 @@ export function createFightBot(
 				x: p.x + dx * Math.cos(angle) - dz * Math.sin(angle),
 				z: p.z + dx * Math.sin(angle) + dz * Math.cos(angle),
 			}
-			const candidates = [...enemies, ...ctx.blockers]
+			const candidates = [
+				...enemies,
+				...(shotAbility?.heal ? own.filter((u) => u.id !== h.id) : []),
+				...ctx.blockers,
+			].filter((u) => !shotAbility?.heroOnly || !u.kind)
 			const first = candidates
 				.map((u) => ({
 					u,
@@ -300,6 +310,20 @@ export function createFightBot(
 		} = ctx
 
 		const { target, attackReach, targetDistance, attackSpot, canFocus } = ctx
+		// Close-range cones follow a drag; radial peel waits for a crowd, even while retreating.
+		for (const [slot, ability] of ctx.abilities) {
+			if (ability.botRadial) {
+				const victims = near(enemies, p, ability.stats.radius)
+				if (victims.length >= ability.stats.botEnemies && safe(p, victims) && cast(slot, p))
+					return frame
+			}
+			if (ability.botCone) {
+				const victim = near(enemies, p, ability.stats.range)
+					.filter((u) => canFocus(u) && segmentClear(p, u.pos, 0, sim.obstacles, sim.bounds))
+					.sort((a, c) => distance(p, a.pos) - distance(p, c.pos) || a.id.localeCompare(c.id))[0]
+				if (victim && safe(p, [victim]) && cast(slot, victim.pos)) return frame
+			}
+		}
 		// Swap (trade places with your own Ricochet shot): out when hurt, in on a low target.
 		const mark = swapAbility?.blinkTo({ hero: h, sim, tick: now })
 		if (mark) {

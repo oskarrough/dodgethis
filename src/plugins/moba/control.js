@@ -1,6 +1,7 @@
 import { tune, profile } from './tune.js'
 import { abilityOf, castAbility, slowFactor } from './ability.js'
 import { SLOTS, ticks, yawOf, dirOf } from './sim-kit.js'
+import { stepUnitDisplacement } from './displacement.js'
 
 // One tick of one unit: a hero turns its intents frame into orders, casts and movement; a dummy strafes and shoots.
 export function createControl(ctx) {
@@ -43,6 +44,9 @@ export function createControl(ctx) {
 			return
 		}
 		if (lobby && h.body.position.y < -tune.lobby.fall.depth) dropIn(h)
+		const displaced = !!h.displacement
+		if (stepUnitDisplacement(h, ctx.t, dt)) return
+		if (displaced && h.order?.goal) h.order.path = plan(h, h.order.goal)
 		if (h.shove) {
 			// The slide is committed; orders and presses wait for it rather than being swallowed.
 			if (ctx.t < h.shove.until) return h.body.update({ x: 0, z: 0 }, dt, 0)
@@ -203,6 +207,7 @@ export function createControl(ctx) {
 			if (ctx.t >= d.respawnTick) respawn(d)
 			return
 		}
+		if (stepUnitDisplacement(d, ctx.t, dt)) return
 		const target = enemiesOf(d.team).sort(
 			(a, b) =>
 				Math.hypot(a.x - d.body.position.x, a.z - d.body.position.z) -

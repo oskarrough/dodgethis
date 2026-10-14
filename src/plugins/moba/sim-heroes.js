@@ -164,6 +164,7 @@ export function createRoster(ctx) {
 		hero.maxHp = definition.base.hp * (1 + tune.levels.growth * (hero.level - 1))
 		hero.hp = hero.maxHp * fraction
 		hero.abilityState = freshAbilityState(definition)
+		hero.shields = []
 		hero.attack = null
 		hero.attackTick = 0
 		hero.order = null
@@ -172,6 +173,7 @@ export function createRoster(ctx) {
 		hero.channel = null
 		hero.catchWindow = null
 		hero.dashAbility = null
+		hero.displacement = null
 		hero.ballThrow = null
 		hero.slow = { until: 0, factor: 1 }
 		hero.freezeUntil = 0

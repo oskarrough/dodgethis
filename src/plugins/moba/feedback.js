@@ -333,6 +333,20 @@ export function createFeedback({
 				)
 				cue('blocked', fact)
 				return
+			case 'heal':
+				view.unbolt(fact.projectile)
+				juice.burst(fact.point, { x: 0, y: 1, z: 0 }, ability.stats.feedback)
+				cue(abilityUse(ability, 'hit'), fact)
+				return
+			case 'tagOut':
+				view.ping('move', fact.from)
+				view.ping('move', fact.point)
+				cue(abilityUse(ability, 'impact'), fact)
+				return
+			case 'freeze':
+				juice.burst(fact.point, { x: 0, y: 1, z: 0 }, ability.stats.feedback)
+				cue(abilityUse(ability, 'impact'), fact)
+				return
 			case 'impact':
 				juice.burst(
 					fact.point,
@@ -343,6 +357,7 @@ export function createFeedback({
 				if (mine && fact.hit && effects.impact === 'rain') camera.shake(look.juice.shakeRain)
 				return
 			case 'hit': {
+				if (fact.ambient) return
 				view.unbolt(fact.projectile)
 				const unit = unitOf(fact.target)
 				if (unit) {

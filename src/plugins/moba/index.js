@@ -57,6 +57,9 @@ const FACTS = [
 	'blocked',
 	'cushion',
 	'hit',
+	'heal',
+	'tagOut',
+	'freeze',
 	'nearMiss',
 	'death',
 	'shove',
@@ -466,7 +469,8 @@ export default function moba(app, map) {
 					: sim.stickAim(local, dir, magnitude, slot),
 			)
 			run.system('input', () => {
-				playerControls.throwClick = !!sim.ball?.carrying(hero)
+				playerControls.throwClick =
+					!!sim.ball?.carrying(hero) || !!hero.definition.outOfPlay?.({ hero, sim })
 			})
 			run.signal.addEventListener(
 				'abort',
@@ -486,7 +490,8 @@ export default function moba(app, map) {
 					const aim = pad && Object.keys(frame.held).length ? frame.aim : null
 					return follow.frame(
 						dt,
-						hero.body.mesh.position,
+						hero.definition.outOfPlay?.({ hero, sim, alpha: 0 })?.position ??
+							hero.body.mesh.position,
 						aim,
 						menu.cameraControls({
 							...cameraControls.read(),
@@ -524,7 +529,8 @@ export default function moba(app, map) {
 				const step = presentationFrozen ? 0 : sim.lane?.match.winner ? dt : gameDt
 				map.update(step)
 				const frame = app.intents.get(local)
-				const p = hero.body.mesh.position
+				const outOfPlay = hero.definition.outOfPlay?.({ hero, sim, alpha: blend })
+				const p = outOfPlay?.position ?? hero.body.mesh.position
 				audio.setAudioListener(p)
 				if (
 					!hero.dead &&
@@ -536,7 +542,8 @@ export default function moba(app, map) {
 					if (!d.dead && sim.tick >= (d.freezeUntil ?? 0))
 						d.body.animate(step, d.cast || d.attack || d.ballThrow ? 1 : 0)
 				for (const h of [...sim.heroes, ...sim.dummies])
-					if (!h.dead) h.body.poseAbility?.(h.cast, blend, h, sim.tick)
+					if (!h.dead && sim.tick >= (h.freezeUntil ?? 0))
+						h.body.poseAbility?.(h.cast, blend, h, sim.tick)
 				const target =
 					!sim.ball?.carrying(hero) && !stickAimed() && frame.aim
 						? sim.pick(hero.team, frame.aim)
@@ -561,21 +568,25 @@ export default function moba(app, map) {
 				sim.laneView?.update(sim.lane, sim.heroes, blend, locate, step, hero.team)
 				fog?.update(sim, hero.team, options.ready?.() ?? true)
 				const unseen = (unit) => fog && !fog.seen.has(unit.id)
-				const lineAbility = hero.cast
-					? castAbility(hero)
-					: Object.entries(hero.definition.abilities).find(
-							([slot, ability]) => frame.held[slot] && ability?.held === 'line',
-						)?.[1]
+				const lineAbility = outOfPlay
+					? outOfPlay.cast || frame.held.slot1
+						? outOfPlay.abilities.slot1
+						: null
+					: hero.cast
+						? castAbility(hero)
+						: Object.entries(hero.definition.abilities).find(
+								([slot, ability]) => frame.held[slot] && ability?.held === 'line',
+							)?.[1]
 				const gone = view.update(step, {
 					live: new Set(sim.shots.map((s) => s.id)),
-					hero: p,
+					hero: outOfPlay?.aimOrigin ?? p,
 					aim: hero.cast && lineAbility?.tell === 'line' ? hero.cast.target : frame.aim,
 					lineStats: lineAbility?.stats,
 					target: aiming && !stickAimed() ? frame.aim : null,
 					obstacles: sim.obstacles,
 					bounds: sim.bounds,
 					held:
-						!hero.dead &&
+						(!hero.dead || !!outOfPlay) &&
 						!sim.ball?.carrying(hero) &&
 						!!lineAbility &&
 						(lineAbility.held === 'line' || lineAbility.tell === 'line'),
@@ -593,6 +604,7 @@ export default function moba(app, map) {
 					bounds: sim.bounds,
 					obstacles: sim.obstacles,
 					boards: sim.boards,
+					cutouts: sim.cutouts,
 					zones: sim.zones,
 					casters: [...sim.heroes, ...sim.dummies].filter(
 						(unit) => unit.team !== hero.team && !unseen(unit),

@@ -69,6 +69,12 @@ export function matchReport(roster, { STEP, towerRange, count = [] }) {
 				counters.falls.push({ id: row.target, at: row.tick * STEP, hit: firstHit.get(row.target) })
 			const seat = seats.has(row.seat) ? row.seat : null
 			if (row.kind === 'cast' && seat) ability(seat, row.ability_id).casts++
+			// Support contacts count as hits too, but never as damage.
+			if (['heal', 'tagOut', 'freeze'].includes(row.kind) && seat) {
+				const outcome = ability(seat, row.ability_id)
+				outcome.hits++
+				if (seats.has(row.target)) outcome.heroHits++
+			}
 			if (row.kind === 'hit' && seat) {
 				const abilityStats = ability(seat, row.ability_id),
 					seatStats = counters.seats[seat]

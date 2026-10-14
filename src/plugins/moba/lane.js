@@ -1,5 +1,6 @@
 import { STEP } from '../../core/app.js'
 import { slowFactor } from './ability.js'
+import { stepUnitDisplacement } from './displacement.js'
 import { tune } from './tune.js'
 import { clampWalkable } from './obstacles.js'
 import { createPathPlanner } from './path.js'
@@ -183,6 +184,7 @@ export function createLane({
 		for (const unit of [...structures, ...minions]) {
 			if (match.winner) break
 			if (unit.dead) continue
+			if (stepUnitDisplacement(unit, t, dt)) continue
 			const tower = unit.structure
 			const stats = tower
 				? {

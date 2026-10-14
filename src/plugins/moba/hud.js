@@ -53,6 +53,9 @@ export const ICONS = {
 	pocket: svg(
 		'<path class="cream" d="M10 14 L38 14 L36 38 Q24 44 12 38 Z"/><circle class="gold" cx="24" cy="24" r="6"/>',
 	),
+	outThrow: svg(
+		'<path class="tone" d="M10 6 H38 V42 H10 Z"/><circle class="cream" cx="24" cy="24" r="8"/>',
+	),
 	// Default faces, by silhouette
 	circle: svg('<circle class="tone" cx="24" cy="24" r="15"/>'),
 	square: svg('<rect class="tone" x="10" y="10" width="28" height="28" rx="5"/>'),
@@ -74,11 +77,14 @@ const ballPopIn = (ball, tick, blend, step) =>
 // The HUD's view of a running match for the local hero, `blend` ticks past the last step.
 export function matchFrame(sim, hero, blend, step) {
 	const until = (tick) => (tick - sim.tick - blend) * step
+	const outOfPlay = hero.definition.outOfPlay?.({ hero, sim, alpha: blend })
 	return {
+		...(outOfPlay && { definition: { ...hero.definition, abilities: outOfPlay.abilities } }),
 		hero,
 		sim,
 		step,
-		cooldowns: hero.cd.slice(0, 3).map((cd) => Math.max(0, cd - blend) * step),
+		cooldowns:
+			outOfPlay?.cooldowns ?? hero.cd.slice(0, 3).map((cd) => Math.max(0, cd - blend) * step),
 		elapsed: sim.tick * step,
 		teams: sim.lane?.teams,
 		carryingBall: sim.ball?.carrying(hero) ?? false,
@@ -697,7 +703,7 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 			data(root, 'team', localTeam)
 			data(unitFrame, 'team', localTeam)
 			data(top, 'local', localTeam)
-			const definition = hero?.definition ?? heroDefinition()
+			const definition = frame.definition ?? hero?.definition ?? heroDefinition()
 			const heroId = hero?.heroId ?? definition.id
 			text(heroName, definition.name ?? heroId.replace(/^./, (c) => c.toUpperCase()))
 			put(
@@ -720,13 +726,15 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 			text(traitText, heroicTrait?.chip ?? '')
 			flag(portrait, 'dead', respawn != null)
 			text(respawnNode, respawn != null ? String(Math.ceil(respawn)) : '')
+			const shieldHp = (hero?.shields ?? []).reduce((sum, shield) => sum + shield.amount, 0)
+			const staggerHp = hero?.abilityState?.stagger?.pool ?? 0
 			prop(health, '--f', String(respawn != null ? 0 : ring(hp, maxHp)))
 			prop(health, '--tick', `${((tune.hud.hpTick / Math.max(1, maxHp)) * 100).toFixed(3)}%`)
 			text(
 				healthText,
 				respawn != null
 					? `Respawn in ${Math.ceil(respawn)} s`
-					: `${Math.min(Math.ceil(hp), Math.round(maxHp))} / ${Math.round(maxHp)}`,
+					: `${Math.min(Math.ceil(hp), Math.round(maxHp))} / ${Math.round(maxHp)}${shieldHp > 0 ? ` + ${Math.ceil(shieldHp)} shield` : ''}${staggerHp > 0 ? ` · ${Math.ceil(staggerHp)} stagger` : ''}`,
 			)
 			if (teams) {
 				const progress = levelProgress(teams[localTeam].xp)

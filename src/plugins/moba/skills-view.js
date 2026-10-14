@@ -5,6 +5,7 @@ import { tune } from './tune.js'
 import { look } from './look.js'
 import { abilityOf, castAbility } from './ability.js'
 import { heroDefinition } from './heroes.js'
+import HERO_VIEWS from './heroes/all-hero-views.js'
 import { stepShot } from './skillshot.js'
 import { clampMap, projectMap, OBSTACLES, FLOOR, sweepObstacles, mapExit } from './obstacles.js'
 
@@ -58,6 +59,9 @@ const GROUND = tune.map.printLayers.seams + 0.005
 export function createSkillsView(scene) {
 	const group = new THREE.Group()
 	scene.add(group)
+	const extras = Object.values(HERO_VIEWS).flatMap((view) =>
+		view.extras ? [view.extras(scene)] : [],
+	)
 	const ring = new THREE.RingGeometry(0.94, 1, 48).rotateX(-Math.PI / 2)
 	const disc = new THREE.CircleGeometry(1, 48).rotateX(-Math.PI / 2)
 	const arrow = new THREE.Shape()
@@ -207,6 +211,7 @@ export function createSkillsView(scene) {
 			aim,
 			held,
 			zones = [],
+			cutouts = [],
 			unit = null,
 			lobby = false,
 			casters = [],
@@ -217,6 +222,7 @@ export function createSkillsView(scene) {
 			tick = 0,
 		},
 	) {
+		for (const view of extras) view.update({ cutouts, units, bounds, obstacles, tick, alpha })
 		if (unit?.swapFact && unit.swapFact !== lastSwap) {
 			lastSwap = unit.swapFact
 			// Cancelled local poses leave no kit cue; released zones keep their own tells below.
@@ -230,7 +236,7 @@ export function createSkillsView(scene) {
 		}
 		const definition = unit?.definition ?? heroDefinition()
 		const holding = Object.entries(definition.abilities).filter(([slot, a]) => held[slot] && a)
-		const circle = holding.find(([, a]) => a.held === 'circle')?.[1]
+		const circle = holding.find(([, a]) => ['circle', 'selfCircle'].includes(a.held))?.[1]
 		const dash = holding.find(([, a]) => a.held === 'arrow')?.[1]
 		const cone = holding.find(([, a]) => a.held === 'cone')?.[1]
 		if (cone && !heldCone) heldCone = mesh(coneGeometry, ink)
@@ -357,12 +363,19 @@ export function createSkillsView(scene) {
 			)
 			.filter(
 				(u) =>
-					!u.dead && u.cast && (castAbility(u) ?? heroDefinition().abilities[u.cast.slot])?.tell,
+					!u.dead &&
+					u.cast &&
+					(castAbility(u) ?? heroDefinition().abilities[u.cast.slot])?.tell &&
+					(castAbility(u) ?? heroDefinition().abilities[u.cast.slot])?.tell !== 'tether',
 			)
 		const castingIds = new Set(casting.map((u) => u.id))
 		for (const [id, tell] of enemyTells)
 			if (!castingIds.has(id)) {
 				group.remove(tell.root)
+				if (tell.kind === 'cone') {
+					tell.edge.geometry.dispose()
+					tell.fill.geometry.dispose()
+				}
 				enemyTells.delete(id)
 			}
 		for (const caster of casting) {
@@ -371,14 +384,34 @@ export function createSkillsView(scene) {
 			let tell = enemyTells.get(caster.id)
 			if (tell && tell.kind !== ability.tell) {
 				group.remove(tell.root)
+				if (tell.kind === 'cone') {
+					tell.edge.geometry.dispose()
+					tell.fill.geometry.dispose()
+				}
 				enemyTells.delete(caster.id)
 				tell = null
 			}
 			if (!tell) {
 				const root = new THREE.Group()
 				root.name = 'moba-enemy-tell'
-				const edge = mesh(ability.tell === 'line' ? lineGeometry : ring, enemy, root)
-				const fill = mesh(ability.tell === 'line' ? lineGeometry : disc, cream, root)
+				const edge = mesh(
+					ability.tell === 'cone'
+						? coneGeometry.clone()
+						: ability.tell === 'line'
+							? lineGeometry
+							: ring,
+					enemy,
+					root,
+				)
+				const fill = mesh(
+					ability.tell === 'cone'
+						? coneGeometry.clone()
+						: ability.tell === 'line'
+							? lineGeometry
+							: disc,
+					cream,
+					root,
+				)
 				fill.position.y = look.abilityView.fillLift
 				group.add(root)
 				enemyTells.set(caster.id, (tell = { root, edge, fill, kind: ability.tell }))
@@ -397,6 +430,10 @@ export function createSkillsView(scene) {
 				tell.edge.scale.set(stats.radius * 2, 1, length)
 				tell.fill.scale.set(stats.radius, 1, length * progress)
 			} else {
+				if (ability.tell === 'cone') {
+					arc(tell.edge.geometry, (stats.angle * Math.PI) / 180)
+					arc(tell.fill.geometry, (stats.angle * Math.PI) / 180, 1, 0, 1)
+				}
 				tell.edge.scale.setScalar(stats.radius)
 				tell.fill.scale.setScalar(stats.radius * progress)
 			}
@@ -473,6 +510,12 @@ export function createSkillsView(scene) {
 		rain,
 		dispose() {
 			scene.remove(group)
+			for (const view of extras) view.dispose()
+			for (const tell of enemyTells.values())
+				if (tell.kind === 'cone') {
+					tell.edge.geometry.dispose()
+					tell.fill.geometry.dispose()
+				}
 			for (const tell of catchTells.values()) {
 				tell.edge.geometry.dispose()
 				tell.timer.geometry.dispose()

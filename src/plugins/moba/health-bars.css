@@ -39,6 +39,22 @@
 	height: 100%;
 	background: var(--tone);
 }
+.moba-health-shield {
+	position: absolute;
+	top: 0;
+	right: 0;
+	height: 100%;
+	background: var(--ui-cream);
+}
+.moba-health-pool {
+	height: calc(var(--height) / 2);
+	margin-top: var(--border);
+	background: var(--ui-cream);
+}
+.moba-health-shield[hidden],
+.moba-health-pool[hidden] {
+	display: none;
+}
 .moba-health-ticks {
 	position: absolute;
 	inset: 0;

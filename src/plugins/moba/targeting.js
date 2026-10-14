@@ -3,7 +3,7 @@ import { clampMap } from './obstacles.js'
 import { TAU, dirOf } from './sim-kit.js'
 
 // Read-only queries over the sim's live units: what a click, an attack-move or the pad's stick lands on.
-export function createTargeting({ heroes, dummies, lane, ball, field }) {
+export function createTargeting({ heroes, dummies, lane, ball, field, outOfPlay = () => null }) {
 	// Everyone who can be shot, targeted or picked, as plain circles.
 	const units = () => [
 		...heroes.filter((h) => !h.dead).map((h) => ({ id: h.id, team: h.team, unit: h, hero: true })),
@@ -71,8 +71,9 @@ export function createTargeting({ heroes, dummies, lane, ball, field }) {
 	function stickAim(id, dir, magnitude, slot) {
 		const h = heroes.find((x) => x.id === id)
 		if (!h) return null
-		const p = h.body.position
-		const ability = h.definition.abilities[slot ?? 'slot1']
+		const cutout = outOfPlay(h)
+		const p = cutout?.aimOrigin ?? h.body.position
+		const ability = (cutout?.abilities ?? h.definition.abilities)[slot ?? 'slot1']
 		const range = ball?.carrying(h)
 			? tune.ball.range
 			: (ability?.stats.range ?? h.definition.basic?.range ?? 0)

@@ -47,10 +47,14 @@ export function createHealthBars() {
 					fill.className = 'moba-health-fill'
 					const ticks = document.createElement('div')
 					ticks.className = 'moba-health-ticks'
-					track.append(fill, ticks)
-					element.append(label, track)
+					const shield = document.createElement('div')
+					shield.className = 'moba-health-shield'
+					const pool = document.createElement('div')
+					pool.className = 'moba-health-pool'
+					track.append(fill, shield, ticks)
+					element.append(label, track, pool)
 					root.append(element)
-					bars.set(unit.id, (bar = { element, label, fill }))
+					bars.set(unit.id, (bar = { element, label, fill, shield, pool }))
 				}
 				if (unit.dead || unit.hp <= 0 || !(unit.maxHp > 0)) {
 					bar.element.hidden = true
@@ -76,6 +80,12 @@ export function createHealthBars() {
 				bar.element.style.setProperty('--font', `${t.font}px`)
 				bar.element.style.setProperty('--tick-spacing', `${(tickHp / unit.maxHp) * 100}%`)
 				bar.fill.style.width = `${Math.max(0, Math.min(1, unit.hp / unit.maxHp)) * 100}%`
+				const shieldHp = (unit.shields ?? []).reduce((sum, shield) => sum + shield.amount, 0)
+				bar.shield.style.width = `${Math.min(1, shieldHp / unit.maxHp) * 100}%`
+				bar.shield.hidden = shieldHp <= 0
+				const pool = unit.abilityState?.stagger?.pool ?? 0
+				bar.pool.style.width = `${Math.min(1, pool / unit.maxHp) * 100}%`
+				bar.pool.hidden = pool <= 0
 				const text = unit.structure
 					? `${unit.team === localTeam ? 'Your' : 'Enemy'} ${structureName(unit.kind)}`
 					: names.has(unit.id)

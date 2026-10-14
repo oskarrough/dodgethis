@@ -234,7 +234,7 @@ export function createBot(
 			if (!h || h.dead) {
 				combat.reset()
 				dodge.reset()
-				return neutralFrame()
+				return h?.definition.botDead?.({ h, sim, perceived, interceptTime }) ?? neutralFrame()
 			}
 			if (sim.tick < nextThink) return neutralFrame()
 			nextThink = sim.tick + tune.bots.thinkTicks
@@ -255,7 +255,7 @@ export function createBot(
 			ctx.preferredTargets = contributions.flatMap((c) => c.preferredTargets ?? [])
 			combat.assess(ctx)
 			const threats = dodge.read(ctx, habits)
-			if (!dodge.avoid(ctx, threats)) goal(ctx)
+			if (!h.definition.bot?.(ctx) && !dodge.avoid(ctx, threats)) goal(ctx)
 			return ctx.frame
 		},
 	}

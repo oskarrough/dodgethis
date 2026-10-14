@@ -73,7 +73,9 @@ export function stepShot(shot, dt, targets, nearMiss, obstacles = OBSTACLES, bou
 	const from = { x: ax, z: az },
 		to = { x: bx, z: bz }
 	// Homing attacks check sight before windup; once released, cover cannot dodge them.
-	const cover = shot.target ? null : obstacles.filter((o) => !['tower', 'core'].includes(o.kind))
+	const cover = shot.target
+		? null
+		: obstacles.filter((o) => shot.heroOnly || !['tower', 'core'].includes(o.kind))
 	const obstacle = cover && sweepObstacles(from, to, shot.radius, cover)
 	const edge = mapExit(from, to, shot.radius, bounds)
 	const blocked = obstacle === null ? edge : edge === null ? obstacle : Math.min(obstacle, edge)

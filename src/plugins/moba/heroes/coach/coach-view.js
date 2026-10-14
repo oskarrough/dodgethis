@@ -1,0 +1,168 @@
+import * as THREE from 'three'
+import { makeStyleMaterial } from '../../../../core/stylepass.js'
+import { tune } from '../../tune.js'
+import { look } from '../../look.js'
+import { sweepObstacles, mapExit } from '../../obstacles.js'
+import { coachThrowOrigin } from './coach-cutout.js'
+
+// The original flat bar and megaphone, with a separate raised hand for the save.
+export function dress({ torso, part, own, discY, t, materials }) {
+	torso.geometry = own(new THREE.BoxGeometry(t.coachWidth, t.coachHeight, t.coachDepth))
+	const cone = part(
+		new THREE.CylinderGeometry(
+			t.megaphoneRadius,
+			t.arrowRadius,
+			t.megaphoneLength,
+			t.segments,
+		).rotateX(-Math.PI / 2),
+		materials.team,
+		0,
+		t.megaphoneY,
+		t.megaphoneZ,
+	)
+	part(
+		new THREE.CircleGeometry(t.megaphoneMouth, t.segments),
+		materials.ink,
+		0,
+		t.megaphoneY,
+		t.megaphoneZ - t.megaphoneLength / 2 - t.discBorder / 4,
+	).rotation.y = Math.PI
+	const hand = part(
+		new THREE.SphereGeometry(t.fingerRadius, t.segments, 6),
+		materials.cream,
+		t.coachWidth / 2,
+		discY + t.coachHeight * 0.6,
+		0,
+	)
+	return { cone, hand }
+}
+export function animate(unit, rig, { pose, progress, costume }) {
+	const t = look.silhouettes
+	rig.hand.position.y = -t.coachHeight / 2 + t.coachHeight * 0.6
+	rig.cone.rotation.x = 0
+	rig.hand.position.z = 0
+	if (pose === 'coachTag') rig.hand.position.y += t.coachHeight * progress
+	else if (pose === 'coachRed') {
+		costume.rotation.y = Math.PI
+		rig.cone.rotation.x = (-progress * Math.PI) / 3
+	} else if (pose === 'coachPass') {
+		costume.rotation.z = (-progress * Math.PI) / 8
+		rig.hand.position.z = -progress * t.megaphoneLength
+	} else if (pose === 'coachBasic') costume.rotation.x = (progress * Math.PI) / 12
+	else rig.hand.position.z = 0
+}
+
+// Extra bodies belong to the hero folder; the view runner just forwards the sim lists.
+export function extras(scene) {
+	const group = new THREE.Group()
+	group.name = 'coach-cutouts-and-tethers'
+	scene.add(group)
+	const t = look.silhouettes
+	const grey = makeStyleMaterial('scenery', { flat: true })
+	const ink = makeStyleMaterial('ink', { flat: true })
+	const red = makeStyleMaterial('teamB', { flat: true })
+	const cream = makeStyleMaterial('cream', { flat: true })
+	const body = new THREE.BoxGeometry(t.coachWidth, t.coachHeight, t.coachDepth)
+	const cone = new THREE.CylinderGeometry(
+		t.megaphoneRadius,
+		t.arrowRadius,
+		t.megaphoneLength,
+		t.segments,
+	).rotateX(-Math.PI / 2)
+	const line = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2).translate(0, 0, -0.5)
+	const cutouts = new Map(),
+		tethers = new Map()
+	function strip(parent, material, from, to, width) {
+		const m = new THREE.Mesh(line, material)
+		m.position.set(from.x, tune.map.markerLayers.aim, from.z)
+		m.rotation.y = Math.atan2(to.x - from.x, to.z - from.z) + Math.PI
+		m.scale.set(width, 1, Math.hypot(to.x - from.x, to.z - from.z))
+		parent.add(m)
+	}
+	return {
+		update({ cutouts: live = [], units = [], bounds, obstacles = [], alpha = 0 }) {
+			const ids = new Set(live.map((c) => c.id))
+			for (const [id, r] of cutouts)
+				if (!ids.has(id)) {
+					group.remove(r, r.userData.tell)
+					cutouts.delete(id)
+				}
+			for (const c of live) {
+				let root = cutouts.get(c.id)
+				if (!root) {
+					root = new THREE.Group()
+					const bar = new THREE.Mesh(body, grey)
+					bar.position.y = t.coachHeight / 2
+					root.add(bar)
+					const megaphone = new THREE.Mesh(cone, ink)
+					megaphone.position.set(0, t.coachHeight / 2, t.megaphoneZ)
+					root.add(megaphone)
+					root.userData.tell = new THREE.Group()
+					group.add(root.userData.tell, root)
+					cutouts.set(c.id, root)
+				}
+				root.position.set((c.prevX ?? c.x) + (c.x - (c.prevX ?? c.x)) * alpha, 0, c.z)
+				root.rotation.y = c.cast?.yaw ?? (c.flank < 0 ? Math.PI : 0)
+				const tell = root.userData.tell
+				tell.clear()
+				if (c.cast) {
+					const from = coachThrowOrigin({ ...c, x: root.position.x }, bounds)
+					const end = {
+						x: from.x + c.cast.dir.x * tune.outThrow.range,
+						z: from.z + c.cast.dir.z * tune.outThrow.range,
+					}
+					const length =
+						tune.outThrow.range *
+						Math.min(
+							sweepObstacles(from, end, tune.outThrow.radius, obstacles) ?? 1,
+							mapExit(from, end, tune.outThrow.radius, bounds) ?? 1,
+						)
+					const to = { x: from.x + c.cast.dir.x * length, z: from.z + c.cast.dir.z * length }
+					strip(tell, red, from, to, tune.outThrow.radius * 2)
+					const progress = 1 - (c.cast.left - alpha) / Math.max(1, c.cast.total)
+					strip(
+						tell,
+						cream,
+						from,
+						{ x: from.x + (to.x - from.x) * progress, z: from.z + (to.z - from.z) * progress },
+						tune.outThrow.radius,
+					)
+				}
+			}
+			for (const r of tethers.values()) group.remove(r)
+			tethers.clear()
+			for (const u of units) {
+				if (u.dead || u.cast?.ability !== 'tagOut') continue
+				const ally = units.find((a) => a.id === u.cast.targetId)
+				if (!ally || ally.dead) continue
+				const from = u.body.mesh.position,
+					to = ally.body.mesh.position
+				const length = Math.hypot(to.x - from.x, to.z - from.z),
+					spacing = tune.tagOut.view.dashSpacing
+				const tether = new THREE.Group()
+				for (let along = 0; along < length; along += spacing) {
+					const end = Math.min(length, along + spacing * tune.tagOut.view.dashFill)
+					strip(
+						tether,
+						red,
+						{
+							x: from.x + ((to.x - from.x) * along) / length,
+							z: from.z + ((to.z - from.z) * along) / length,
+						},
+						{
+							x: from.x + ((to.x - from.x) * end) / length,
+							z: from.z + ((to.z - from.z) * end) / length,
+						},
+						tune.tagOut.radius * 2,
+					)
+				}
+				group.add(tether)
+				tethers.set(u.id, tether)
+			}
+		},
+		dispose() {
+			scene.remove(group)
+			for (const owned of [grey, ink, red, cream, body, cone, line]) owned.dispose()
+		},
+	}
+}

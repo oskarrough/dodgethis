@@ -1,0 +1,87 @@
+import { neutralFrame } from '../../../../core/intents.js'
+import { tune } from '../../tune.js'
+import { segmentClear } from '../../obstacles.js'
+import { sweepHit } from '../../skillshot.js'
+import { coachThrowOrigin } from './coach-cutout.js'
+
+const distance = (a, b) => Math.hypot(a.x - b.x, a.z - b.z)
+function coachClearLine(from, to, target, heroes, radius, sim) {
+	if (!segmentClear(from, to, radius, sim.obstacles, sim.bounds)) return false
+	const contact = sweepHit(
+		from.x,
+		from.z,
+		to.x,
+		to.z,
+		target.pos.x,
+		target.pos.z,
+		target.radius + radius,
+	)
+	return heroes.every((u) => {
+		if (u.id === target.id || u.dead || distance(from, u.pos) < u.radius) return true
+		const at = sweepHit(from.x, from.z, to.x, to.z, u.pos.x, u.pos.z, u.radius + radius)
+		return at == null || (contact != null && at >= contact)
+	})
+}
+export function coachBotAct(ctx) {
+	const { h, p, own, enemies, cast, frame, sim } = ctx
+	if (ctx.skillsLocked || ctx.castBusy || h.cast || h.body.dashing) return null
+	const b = tune.heroes.coach.bots
+	const ally = own
+		.filter(
+			(u) =>
+				u.id !== h.id &&
+				u.hp / u.maxHp < b.saveHp &&
+				distance(p, u.pos) <= tune.tagOut.range &&
+				enemies.some((e) => distance(e.pos, u.pos) <= b.dangerRange),
+		)
+		.sort((a, c) => a.hp / a.maxHp - c.hp / c.maxHp || a.id.localeCompare(c.id))[0]
+	if (ally && cast('slot2', ally.pos)) return frame
+	if (
+		enemies.filter(
+			(u) =>
+				distance(p, u.pos) <= tune.redLight.radius &&
+				Math.hypot(u.vel.x, u.vel.z) > tune.redLight.movingSpeed,
+		).length >= b.redEnemies &&
+		cast('slot3', p)
+	)
+		return frame
+	const hurt = own
+		.filter(
+			(u) =>
+				u.id !== h.id &&
+				u.hp < u.maxHp &&
+				distance(p, u.pos) <= tune.pass.range &&
+				coachClearLine(p, u.pos, u, [...own, ...enemies], tune.pass.radius, sim),
+		)
+		.sort((a, c) => c.maxHp - c.hp - (a.maxHp - a.hp) || a.id.localeCompare(c.id))[0]
+	if (hurt && cast('slot1', hurt.pos)) return frame
+	return null
+}
+export function coachBotDead({ h, sim, perceived, interceptTime }) {
+	const frame = neutralFrame(),
+		c = sim.cutouts.find((u) => u.owner === h.id)
+	if (!c) return frame
+	const enemies = perceived.heroes.filter((u) => !u.dead && u.team !== h.team)
+	const origin = coachThrowOrigin(c, sim.bounds)
+	const target = enemies.sort(
+		(a, b) => distance(origin, a.pos) - distance(origin, b.pos) || a.id.localeCompare(b.id),
+	)[0]
+	if (!target || c.cast) return frame
+	const dx = target.pos.x - c.x
+	frame.move.x = Math.abs(dx) > tune.outThrow.radius ? Math.sign(dx) : 0
+	const lead = tune.outThrow.castPoint + interceptTime(origin, target, tune.outThrow.speed)
+	const aim = {
+		x: target.pos.x + target.vel.x * lead,
+		z: target.pos.z + target.vel.z * lead,
+	}
+	if (
+		distance(origin, aim) <= tune.outThrow.range &&
+		coachClearLine(origin, aim, target, enemies, tune.outThrow.radius, sim) &&
+		sim.tick >= c.cooldownUntil
+	) {
+		frame.move.x = 0
+		frame.aim = aim
+		frame.pressed = [{ action: 'slot1', at: aim }]
+	}
+	return frame
+}

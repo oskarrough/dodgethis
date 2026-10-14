@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import { makeStyleMaterial } from '../../core/stylepass.js'
 import { tune } from './tune.js'
 import { look } from './look.js'
+import { abilityOf } from './ability.js'
 import { lineReach, bouncedLinePath } from './skills-view.js'
 import { projectMap } from './obstacles.js'
 import { createHealthBars } from './health-bars.js'
@@ -114,9 +115,10 @@ export function createView(scene, smooth) {
 	const UP = new THREE.Vector3(0, 1, 0)
 	function bolt(shot, from) {
 		const mesh = new THREE.Group()
+		const spherical = shot.ability === 'bank' || abilityOf(shot.ability)?.projectileShape === 'ball'
 		const body = new THREE.Mesh(
-			shot.ability === 'bank' ? celluloidGeometry : boltGeometry,
-			shot.ability === 'bank'
+			spherical ? celluloidGeometry : boltGeometry,
+			spherical
 				? celluloidMaterial
 				: shot.slot === 'primary' || ['tower', 'ranged', 'wizard'].includes(shot.slot)
 					? barColors[shot.team]
