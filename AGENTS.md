@@ -41,7 +41,7 @@
 - Modes: `/` opens the splash. `?mode=moba&play&bots=easy&hero=fletcher&seed=2&debug` jumps straight into a match with the debug panel.
 - Where is X: `bun run where <word>` prints feature-map entries and source locations; use a quoted phrase or entry symbol to narrow it, `--all` for every hit. Whoever adds or moves a feature updates its line there. `tune.js` holds match rules and assembles each map's, the lobby's and each hero's tune file (`maps/<id>/<id>-tune.js`, `front/lobby-tune.js`, `abilities/<id>/<id>-tune.js`, `heroes/<id>/<id>-tune.js`); edit the block where it lives, and read the landmark, not the file.
 - To see a file's symbols without reading it: `ast-grep outline <file>`. For structural search (callers of a function, every `tune.x.y` use) use `ast-grep run -p '<pattern>' -l js src` instead of regex grep. Never `cat` a doc or any file over ~150 lines: `ast-grep outline` (or `grep -n` for docs) first, then `sed -n` only the range you need. Every token you read is re-read on every later call.
-- Docs: `docs/roadmap.md` (the big picture), `docs/world.md` (setting), `docs/moba.md` (design), `docs/ideas.md` (creative pitches), `docs/network.md`, `docs/verify.md`, `docs/sound.md` (music and sound effects).
+- Docs: `docs/roadmap.md` (the big picture), `docs/world.md` (setting), `docs/moba.md` (design), `docs/ideas.md` (creative pitches), `docs/compelling-abilities.md` (what makes an ability fun, and how to tune one without breaking the game), `docs/network.md`, `docs/verify.md`, `docs/sound.md` (music and sound effects).
 
 ## Orchestration
 
