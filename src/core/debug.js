@@ -63,31 +63,40 @@ export function createCombatLog(selector = '.combat', max = 12) {
 	return { push }
 }
 
-// The panel behind app.debug: each tune section with a `build(folder)` becomes a folder, each cheat a button in "cheats".
+// The panel behind app.debug. A tune path is a folder path that mirrors the tune object, so
+// `bots/easy` is tune.bots.easy; `engine/…` holds src/core's own and stays last. Cheats are buttons in "cheats".
 export function createDebugPanel() {
 	const gui = new GUI({ title: 'dodgethis / debug' })
 	const folders = new Map()
-	function folder(name) {
-		if (!folders.has(name)) folders.set(name, gui.addFolder(name).close())
-		return folders.get(name)
+	function folder(path) {
+		if (folders.has(path)) return folders.get(path)
+		const cut = path.lastIndexOf('/')
+		const parent = cut < 0 ? gui : folder(path.slice(0, cut))
+		const f = parent.addFolder(path.slice(cut + 1)).close()
+		folders.set(path, f)
+		if (parent === gui && path !== 'engine' && folders.has('engine'))
+			gui.$children.append(folders.get('engine').domElement)
+		return f
 	}
-	// Remove only what this registration added; drop the folder once it is empty.
-	function adding(name, add) {
-		const f = folder(name)
-		const before = new Set(f.controllers)
+	// Remove only what this registration added, then drop folders left empty.
+	function adding(path, add) {
+		const f = folder(path)
+		const before = new Set(f.children)
 		add(f)
-		const added = f.controllers.filter((c) => !before.has(c))
+		const added = f.children.filter((c) => !before.has(c))
 		return () => {
 			for (const c of added) c.destroy()
-			if (!f.controllers.length && !f.folders.length) {
-				f.destroy()
-				folders.delete(name)
+			for (let p = path; p; p = p.slice(0, Math.max(0, p.lastIndexOf('/')))) {
+				const empty = folders.get(p)
+				if (!empty || empty.children.length) break
+				empty.destroy()
+				folders.delete(p)
 			}
 		}
 	}
 	gui.close()
 	return {
-		tune: (name, object, build) => build && adding(name, (f) => build(f, object)),
+		tune: (path, object, build) => build && adding(path, (f) => build(f, object)),
 		cheat: (label, fn) => adding('cheats', (f) => f.add({ run: fn }, 'run').name(label)),
 		show: () => gui.show(),
 		hide: () => gui.hide(),

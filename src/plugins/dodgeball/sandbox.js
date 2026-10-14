@@ -77,21 +77,23 @@ export function createSandbox(app, { flow, blocked, updateHud }) {
 	}
 
 	// GUI cheats read the current round on every call, surviving scene rebuilds.
-	for (const [label, fn] of [
-		['Start 20v20', () => start(PRESETS['20v20'])],
-		[
-			'Step one tick (paused)',
-			() => {
-				coreTune.physics.paused = true
-				step()
-			},
-		],
-		['+ enemy ( = )', () => flow()?.round?.addUnit('B')],
-		['- enemy ( - )', () => flow()?.round?.removeUnit('B')],
-		['+ ally ( ] )', () => flow()?.round?.addUnit('A')],
-		['- ally ( [ )', () => flow()?.round?.removeUnit('A')],
-	])
-		app.debug.cheat(label, () => !blocked() && fn())
+	const addCheats = (debug) => {
+		for (const [label, fn] of [
+			['Start 20v20', () => start(PRESETS['20v20'])],
+			[
+				'Step one tick (paused)',
+				() => {
+					coreTune.physics.paused = true
+					step()
+				},
+			],
+			['+ enemy ( = )', () => flow()?.round?.addUnit('B')],
+			['- enemy ( - )', () => flow()?.round?.removeUnit('B')],
+			['+ ally ( ] )', () => flow()?.round?.addUnit('A')],
+			['- ally ( [ )', () => flow()?.round?.removeUnit('A')],
+		])
+			debug.cheat(label, () => !blocked() && fn())
+	}
 
 	app.debug.expose({
 		get round() {
@@ -115,5 +117,5 @@ export function createSandbox(app, { flow, blocked, updateHud }) {
 		restart: () => !blocked() && flow()?.restartRound(),
 	})
 
-	return { start, snapshot, step }
+	return { start, snapshot, step, addCheats }
 }

@@ -23,7 +23,7 @@ import { createFeedback } from './feedback.js'
 import { createStamps } from './stamps.js'
 import { createMatchMenu } from './menu.js'
 import { parseMatchSetup } from './setup.js'
-import { createDebugLayout, createMatchDebug } from './debug.js'
+import { createMatchDebug } from './debug.js'
 import { createFog } from './fog.js'
 import { addSliders, sliderSections } from './sliders.js'
 import { createLobby } from './lobby.js'
@@ -363,7 +363,6 @@ export default function moba(app, map) {
 			})
 			app.clock.reset()
 
-			const arrangeDebug = createDebugLayout(run, isLobby)
 			if (debugTune) run.debug.tune(debugTune.name, debugTune.values, debugTune.add)
 			const lobby = isLobby
 				? createLobby({ app, run, sim, hero, setup, options, gallery, onPresent })
@@ -667,23 +666,21 @@ export default function moba(app, map) {
 
 			run.on('blur', () => app.intents.cancel(local))
 
-			addSliders(run.debug, sliderSections(tune, look, setup, kind), app.clock.step)
+			addSliders(run.debug, sliderSections(tune, look, setup, kind, cameraTune), app.clock.step, {
+				follow: (f) =>
+					f
+						.add(cameraTune, 'edgePan')
+						.name('edge pan')
+						.onChange((value) => {
+							setup.edgePan = value
+						}),
+			})
 			run.debug.tune('cast', tune.cast, (f, t) => {
 				f.add(t, 'cancelLockout', app.clock.step, 2, app.clock.step).name('cancel lockout (s)')
 				f.add(t, 'buffer', app.clock.step, 1, app.clock.step).name('press buffer (s)')
 			})
 			run.debug.tune('hud', tune.hud, (f, t) => {
 				f.add(t, 'hoverDelay', 0, 2, 0.05).name('hover delay')
-				arrangeDebug(f.parent)
-			})
-			run.debug.tune('edge pan', cameraTune, (f, t) => {
-				f.add(t, 'edgePan')
-					.name('enabled')
-					.onChange((value) => {
-						setup.edgePan = value
-					})
-				f.add(t, 'edgeBand', 8, 128, 1).name('band (px)')
-				f.add(t, 'edgeSpeed', 0, 1, 0.01).name('speed × pan')
 			})
 			if (!isLobby)
 				run.debug.expose({

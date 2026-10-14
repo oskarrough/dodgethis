@@ -11,7 +11,7 @@ export default {
 	mechanics: ['structures', 'minions', 'ball', 'bots'],
 	palette: () => ({ ...tune.overthrowTerrain.palette, light: tune.overthrowTerrain.light }),
 	debugTune: {
-		name: 'overthrow terrain (applies on restart)',
+		name: 'overthrowTerrain',
 		values: tune.overthrowTerrain,
 		late: tune.map,
 		add(f, s) {

@@ -1,7 +1,7 @@
 // Tune GUI: moba's sections come and go with the run; the values live in tune.js and survive restarts.
 // Each section maps a key to [min, max, step, label?, object?]. T is one clock step.
 import { ABILITIES } from './ability.js'
-import { maps, playableMaps } from './maps/all-maps.js'
+import { maps } from './maps/all-maps.js'
 
 export const T = 'clock step'
 
@@ -57,8 +57,8 @@ const sound = {
 	gain: [0, 1, 0.01],
 }
 
-// [name, tune or look object, sliders] in GUI order.
-export function sliderSections(tune, look, setup, mapId = setup.map) {
+// [path, tune or look object, sliders] in GUI order; `bots/easy` is tune.bots.easy. `camera` is the run's follow tune.
+export function sliderSections(tune, look, setup, mapId = setup.map, camera = tune.follow) {
 	const sections = {
 		tower: structure([10, 25], 6000, 2, 300),
 		core: structure([26, 43], 10000, 3, 400),
@@ -75,7 +75,7 @@ export function sliderSections(tune, look, setup, mapId = setup.map) {
 			takedown: [0, 1000, 1],
 			victimLevel: [0, 100, 1],
 		},
-		Ball: {
+		ball: {
 			...each(['carrySpeed', 'structureDamage'], () => [0, 1, 0.01]),
 			first: [30, 600, T, 'first (applies on restart)'],
 			...each(['interval', 'lateInterval'], (key) => [30, 600, T, `${key} (next scheduling)`]),
@@ -91,9 +91,6 @@ export function sliderSections(tune, look, setup, mapId = setup.map) {
 		},
 		globes: { heal: [0, 1, 0.01], life: [T, 60, T, 'life (next drop)'], pickup: [0.1, 3, 0.1] },
 		base: { x: [43, 48, 1], heal: [0, 1, 0.01] },
-		'bots easy': bots('easy'),
-		'bots normal': bots('normal'),
-		'bots hard': bots('hard'),
 		bots: {
 			seed: [0, tune.testing.seedMax, 1, 'seed (applies on restart)', setup],
 			thinkTicks: [1, 60, 1],
@@ -107,6 +104,9 @@ export function sliderSections(tune, look, setup, mapId = setup.map) {
 			openingX: [0, 17, 0.5],
 			fileSpacing: [0, 4, 0.1, 'files (applies on restart)'],
 		},
+		'bots/easy': bots('easy'),
+		'bots/normal': bots('normal'),
+		'bots/hard': bots('hard'),
 		match: {
 			late: [T, 1200, T, 'late', maps[mapId]?.debugTune?.late ?? tune.match],
 			lateGunDamage: [0, 1, 0.01],
@@ -121,10 +121,10 @@ export function sliderSections(tune, look, setup, mapId = setup.map) {
 			leash: [1, 12, 0.25],
 			soak: [1, 20, 0.5],
 		},
-		melee: minion,
-		ranged: minion,
-		wizard: minion,
-		brute: minion,
+		'minions/melee': minion,
+		'minions/ranged': minion,
+		'minions/wizard': minion,
+		'minions/brute': minion,
 		hero: {
 			hp: [200, 3000, 100, 'HP (applies on restart)'],
 			speed: [1, 12, 0.1],
@@ -197,6 +197,8 @@ export function sliderSections(tune, look, setup, mapId = setup.map) {
 			response: [0.02, 0.6, 0.01, 'pad response (s)'],
 			lookAhead: [0, 0.6, 0.01, 'pad look ahead ×'],
 			lookCap: [0, 8, 0.25, 'pad look cap (m)'],
+			edgeBand: [8, 128, 1, 'edge pan band (px)', camera],
+			edgeSpeed: [0, 1, 0.01, 'edge pan speed × pan', camera],
 		},
 		dummies: {
 			speed: [0, 8, 0.25],
@@ -208,7 +210,7 @@ export function sliderSections(tune, look, setup, mapId = setup.map) {
 			castEvery: [1, 10, 0.25, 'cast interval'],
 			respawn: [0.2, 10, 0.1, 'respawn (s)'],
 		},
-		...Object.fromEntries(Object.keys(look.sounds).map((name) => [`sound ${name}`, sound])),
+		...Object.fromEntries(Object.keys(look.sounds).map((name) => [`sounds/${name}`, sound])),
 		out: {
 			width: [1, 8, 0.1, 'stamp width (m)'],
 			slam: [T, 0.5, T, 'slam (s)'],
@@ -269,55 +271,20 @@ export function sliderSections(tune, look, setup, mapId = setup.map) {
 		},
 	}
 	for (const id of Object.keys(ABILITIES)) sections[id] ??= numbers(tune[id])
-	const object = (name) =>
-		name === 'Ball'
-			? tune.ball
-			: name.startsWith('bots ')
-				? tune.bots[name.slice(5)]
-				: name.startsWith('sound ')
-					? look.sounds[name.slice(6)]
-					: (tune.minions[name] ?? tune[name] ?? look[name])
-	return Object.entries(sections).map(([name, sliders]) => [name, object(name), sliders])
+	const dig = (root, path) => path.split('/').reduce((o, key) => o?.[key], root)
+	const object = (path) => dig(tune, path) ?? dig(look, path)
+	return Object.entries(sections).map(([path, sliders]) => [path, object(path), sliders])
 }
 
-// Presentation paths only: registrations and their live tune objects stay unchanged.
-export const debugSections = {
-	'Heroes / abilities': {
-		Hero: ['hero', 'levels', 'respawn', 'momentum', 'dummies'],
-		// A getter: heroes.js registers its inline abilities after this module loads.
-		get Abilities() {
-			return ['attack', 'cast', 'projectile', ...Object.keys(ABILITIES), 'kit']
-		},
-	},
-	'Match / lane': {
-		Match: ['match', 'Ball', 'globes'],
-		Structures: ['tower', 'core', 'base'],
-		Waves: ['waves', 'melee', 'ranged', 'wizard', 'brute'],
-	},
-	'Bots / difficulty': {
-		Bots: ['bots'],
-		Difficulty: ['bots easy', 'bots normal', 'bots hard'],
-	},
-	Presentation: {
-		Feedback: ['hud', 'out', 'card', 'juice', 'damageNumbers'],
-		Terrain: playableMaps.flatMap((id) => (maps[id].debugTune ? [maps[id].debugTune.name] : [])),
-		Audio: ['squeak'],
-	},
-	'Camera / input': {
-		Camera: ['follow', 'edge pan', 'lobby camera'],
-		Input: ['stickAim', 'orders', 'pointClick'],
-	},
-	'Front / lobby': { Front: ['front', 'lobby floor (applies on restart)'] },
-	Engine: { Diagnostics: ['physics', 'output', 'debug'] },
-}
-
-export function addSliders(debug, sections, step) {
+// One folder per section; T resolves to the run's clock step. `more[path](folder, object)` adds non-slider controls.
+export function addSliders(debug, sections, step, more = {}) {
 	const at = (v) => (v === T ? step : v)
-	for (const [name, object, sliders] of sections)
-		debug.tune(name, object, (f) => {
+	for (const [path, object, sliders] of sections)
+		debug.tune(path, object, (f) => {
 			for (const [key, [min, max, by, label, target = object]] of Object.entries(sliders)) {
 				const slider = f.add(target, key, at(min), at(max), at(by))
 				if (label) slider.name(label)
 			}
+			more[path]?.(f, object)
 		})
 }

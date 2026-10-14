@@ -255,62 +255,65 @@ export default function dodgeball(app, { lobbyExit = null } = {}) {
 		})
 	}
 
-	app.debug.tune('shortcuts', {}, (f) => {
-		for (const [key, action] of [
-			['`', 'toggle debug'],
-			['G / H', 'godmode / infinite ammo'],
-			['= / −', 'add / remove enemy'],
-			['] / [', 'add / remove ally'],
-			['R', 'restart round'],
-			['1 / 2', 'bow / bowl'],
-			['Esc', 'pause / back'],
-		])
-			f.add({ key }, 'key').name(action).disable()
-	})
-	app.debug.tune('player', tune.player, (f, t) => {
-		f.add(t, 'speed', 1, 20, 0.5)
-		f.add(t, 'accel', 1, 40, 0.5).name('accel')
-		f.add(t, 'friction', 0, 30, 0.5).name('friction')
-		f.add(t, 'stopFriction', 0, 40, 0.5).name('stop friction')
-		f.add(t, 'stopSpeed', 0.1, 10, 0.1).name('stop speed')
-		f.add(t, 'airAccel', 0, 20, 0.5).name('air accel')
-		f.add(t, 'airSpeedMul', 1, 2, 0.05).name('air speed ×')
-		f.add(t, 'dashMul', 1, 5, 0.1).name('dash ×')
-		f.add(t, 'dashTime', 0.05, 0.4, 0.01).name('dash time (s)')
-		f.add(t, 'dashCooldown', 0.1, 2, 0.05).name('dash cooldown (s)')
-	})
-	app.debug.tune('arrow', tune.arrow, (f, t) => {
-		f.add(t, 'maxSpeed', 10, 60, 0.5).name('max speed')
-		f.add(t, 'launchAngle', 0, 60, 1).name('launch angle')
-		f.add(t, 'linearDamping', 0, 2, 0.01).onChange(() => {
-			if (flow?.round) for (const a of flow.round.arrows) a.applyDamping()
+	// Dodgeball's folders come and go with its run.
+	function addDebugFolders(debug) {
+		debug.tune('shortcuts', {}, (f) => {
+			for (const [key, action] of [
+				['`', 'toggle debug'],
+				['G / H', 'godmode / infinite ammo'],
+				['= / −', 'add / remove enemy'],
+				['] / [', 'add / remove ally'],
+				['R', 'restart round'],
+				['1 / 2', 'bow / bowl'],
+				['Esc', 'pause / back'],
+			])
+				f.add({ key }, 'key').name(action).disable()
 		})
-	})
-	app.debug.tune('weapons', tune.weapons, (f, t) => {
-		f.add(t, 'chargeTime', 0.3, 2, 0.05).name('charge time (s)')
-		f.add(t, 'chargeMin', 8, 30, 0.5).name('charge min spd')
-		f.add(t, 'chargeMax', 12, 50, 0.5).name('charge max spd')
-		f.add(t, 'perfectWindow', 0.02, 0.3, 0.01).name('perfect window')
-		f.add(t, 'perfectMult', 1, 2.5, 0.05).name('perfect ×')
-		f.add(t, 'bowlSpeed', 6, 30, 0.5).name('bowl speed')
-		f.add(t, 'bowlRadius', 0.15, 1, 0.05).name('bowl radius')
-		f.add(t, 'bowlDensity', 1, 10, 0.5).name('bowl density')
-		f.add(t, 'bowlStop', 0.5, 8, 0.25).name('bowl stop spd')
-	})
-	app.debug.tune('ai', tune.ai, (f, t) => {
-		f.add(t, 'enabled')
-		f.add(t, 'reaction', 0, 2, 0.05).name('reaction (s)')
-		f.add(t, 'jitter', 0, 0.6, 0.01).name('aim jitter (rad)')
-		f.add(t, 'standoff', 2, 18, 0.5).name('standoff (m)')
-	})
-	app.debug.tune('fx', tune.fx, (f, t) => {
-		f.add(t, 'trails')
-		f.add(t, 'deathTime', 0.25, 3, 0.05).name('death length ×')
-	})
-	app.debug.tune('cheats', tune.cheats, (f, t) => {
-		f.add(t, 'godmode').name('godmode (G)').listen()
-		f.add(t, 'infiniteAmmo').name('infinite ammo (H)').listen()
-	})
+		debug.tune('player', tune.player, (f, t) => {
+			f.add(t, 'speed', 1, 20, 0.5)
+			f.add(t, 'accel', 1, 40, 0.5).name('accel')
+			f.add(t, 'friction', 0, 30, 0.5).name('friction')
+			f.add(t, 'stopFriction', 0, 40, 0.5).name('stop friction')
+			f.add(t, 'stopSpeed', 0.1, 10, 0.1).name('stop speed')
+			f.add(t, 'airAccel', 0, 20, 0.5).name('air accel')
+			f.add(t, 'airSpeedMul', 1, 2, 0.05).name('air speed ×')
+			f.add(t, 'dashMul', 1, 5, 0.1).name('dash ×')
+			f.add(t, 'dashTime', 0.05, 0.4, 0.01).name('dash time (s)')
+			f.add(t, 'dashCooldown', 0.1, 2, 0.05).name('dash cooldown (s)')
+		})
+		debug.tune('arrow', tune.arrow, (f, t) => {
+			f.add(t, 'maxSpeed', 10, 60, 0.5).name('max speed')
+			f.add(t, 'launchAngle', 0, 60, 1).name('launch angle')
+			f.add(t, 'linearDamping', 0, 2, 0.01).onChange(() => {
+				if (flow?.round) for (const a of flow.round.arrows) a.applyDamping()
+			})
+		})
+		debug.tune('weapons', tune.weapons, (f, t) => {
+			f.add(t, 'chargeTime', 0.3, 2, 0.05).name('charge time (s)')
+			f.add(t, 'chargeMin', 8, 30, 0.5).name('charge min spd')
+			f.add(t, 'chargeMax', 12, 50, 0.5).name('charge max spd')
+			f.add(t, 'perfectWindow', 0.02, 0.3, 0.01).name('perfect window')
+			f.add(t, 'perfectMult', 1, 2.5, 0.05).name('perfect ×')
+			f.add(t, 'bowlSpeed', 6, 30, 0.5).name('bowl speed')
+			f.add(t, 'bowlRadius', 0.15, 1, 0.05).name('bowl radius')
+			f.add(t, 'bowlDensity', 1, 10, 0.5).name('bowl density')
+			f.add(t, 'bowlStop', 0.5, 8, 0.25).name('bowl stop spd')
+		})
+		debug.tune('ai', tune.ai, (f, t) => {
+			f.add(t, 'enabled')
+			f.add(t, 'reaction', 0, 2, 0.05).name('reaction (s)')
+			f.add(t, 'jitter', 0, 0.6, 0.01).name('aim jitter (rad)')
+			f.add(t, 'standoff', 2, 18, 0.5).name('standoff (m)')
+		})
+		debug.tune('fx', tune.fx, (f, t) => {
+			f.add(t, 'trails')
+			f.add(t, 'deathTime', 0.25, 3, 0.05).name('death length ×')
+		})
+		debug.tune('cheats', tune.cheats, (f, t) => {
+			f.add(t, 'godmode').name('godmode (G)').listen()
+			f.add(t, 'infiniteAmmo').name('infinite ammo (H)').listen()
+		})
+	}
 	const sandbox = createSandbox(app, {
 		flow: () => flow,
 		blocked: () => !may('cheat'),
@@ -386,6 +389,8 @@ export default function dodgeball(app, { lobbyExit = null } = {}) {
 				},
 				onMenu: () => app.emit('menu'),
 			})
+			addDebugFolders(run.debug)
+			sandbox.addCheats(run.debug)
 
 			run.debug.expose({
 				get screen() {

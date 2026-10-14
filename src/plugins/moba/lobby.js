@@ -693,12 +693,12 @@ export function createLobby({
 	// Screen changes drop pending casts/orders. The device reset requires a fresh press;
 	// inherited navigation keys and the initial pad buttons also have their own release guard.
 	app.intents.cancel(hero.id)
-	run.debug.tune('lobby camera', tune.lobby.camera, (f, c) => {
+	run.debug.tune('lobby/camera', tune.lobby.camera, (f, c) => {
 		f.add(c, 'fov', 20, 90, 1)
 		f.add(c, 'margin', 0, 80, 1)
 		f.add(c, 'top', 0, 160, 1)
 	})
-	run.debug.tune('lobby floor (applies on restart)', tune.lobby.floor, (f, c) => {
+	run.debug.tune('lobby/floor', tune.lobby.floor, (f, c) => {
 		// Never smaller than today's ellipse, which keeps the walking bounds' corners over 1 m on the glaze.
 		f.add(c, 'halfX', 11, 20, 0.1)
 		f.add(c, 'halfZ', 9.8, 20, 0.1)

@@ -41,7 +41,7 @@ export function mobaFront(app, map) {
 		loading.add(values.loading, 'creep', 0, 0.3, 0.01).name('creep while looking')
 		for (const key of ['line', 'pastel'])
 			loading.add(values.loading, key, key === 'line' ? 0.1 : 0, 1, 0.01)
-		const shots = folder.addFolder('backdrop shots (next move)')
+		const shots = folder.addFolder('shot')
 		shots.add(values.shot, 'ease', 1, 5, 0.1).name('ease power')
 		for (const name of ['splash', 'lobby', 'apex']) {
 			shots.add(values.shot[name], 'lift', -800, 800, 10).name(name + ' lift')
@@ -84,7 +84,7 @@ export function mobaFront(app, map) {
 			folder.add(sound, 'dur', app.clock.step, 2, app.clock.step).name(name + ' duration (s)')
 			folder.add(sound, 'gain', 0, 1, 0.01).name(name + ' gain')
 		}
-		const tile = folder.addFolder('menu tiles')
+		const tile = folder.addFolder('tile')
 		for (const [key, min, max, step] of [
 			['snap', app.clock.step, 0.5, 0.01],
 			['press', app.clock.step, 0.3, 0.01],

@@ -12,7 +12,7 @@ export default {
 	mechanics: ['structures', 'minions', 'camps', 'flag', 'bots'],
 	palette: () => ({ ...tune.flagfall.palette, light: tune.flagfall.light }),
 	debugTune: {
-		name: 'flagfall (applies on restart)',
+		name: 'flagfall',
 		values: tune.flagfall,
 		late: tune.flagfall,
 		add(f, s) {
