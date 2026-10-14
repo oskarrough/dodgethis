@@ -67,9 +67,9 @@ His own Q indicator draws the full bounce path, so aiming at a wall is learnable
 
 **Counter-play:** fight him in the open road, where there's nothing to bank off. Every bank path is printed for its cast point, so step off the line. Shoot around Cushion's ends; its posts block walking too. Mitts catches his balls, frozen at the damage they'd banked. Swap's destination follows the shot: force Q into nearby cover to shorten his escape.
 
-## Skip, the captain
+## Coach, the captain
 
-Support. Keeps her team in the game by healing, swapping and calling people back, and makes enemies stand still. She shouts through a megaphone. 1450 HP, 5.0 m/s. Basic: a tennis ball, 5 m range, 70 damage, 1/s, homing.
+Coach is a placeholder name (was Skip; Oskar names her). Support. Keeps her team in the game by healing, swapping and calling people back, and makes enemies stand still. She shouts through a megaphone. 1450 HP, 5.0 m/s. Basic: a tennis ball, 5 m range, 70 damage, 1/s, homing.
 
 | Key   | Name          | Numbers                                                                                                                                                                                                                                                                              |
 | ----- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -86,3 +86,35 @@ Support. Keeps her team in the game by healing, swapping and calling people back
 **Counter-play:** stop. Red light is beaten by standing still, not by leaving: from the centre, 5 m is out of reach in 0.5 s, and a Vault ends long before the resolve. Body-block Pass, since it stops at the first hero. Burst the ally during Tag out's tether, because Skip lands where they stood. Stun the Back in! channel.
 
 **Online:** Red light asks a guest to let go of the stick, and 0.5 s leaves 0.29 s at worst. Tag out is a teleport with no displacement state; the guest's 2 m snap covers it.
+
+## The six
+
+A 3v3 with six unique heroes (Oskar, 2026-10-14). Fletcher, Mitts and P. Pong are built; Hook, Brew and Coach join them, picked against [compelling-abilities.md](compelling-abilities.md): Hook starts fights (the catch, then the payoff), Brew wins by being hit (the brave escape), Coach saves allies (the save). Kits are Q, W, E and a trait; R waits for M5. Every number is a starting value. Silhouettes are placeholders until Oskar draws them: Hook a crescent with a yo-yo on a string, Brew a wide hexagonal drum with a jug on his back.
+
+## Hook, the initiator
+
+Starts fights. Nothing else built can drag someone out of position; Hook's whole kit is getting a target into his team's reach and keeping them there. Stitches with a yo-yo. 1900 HP, 5.2 m/s. Basic: a yo-yo flick, 3.5 m range, 90 damage, 1/s.
+
+| Key | Name             | Numbers                                                                                                                                                                                                                              |
+| --- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Q   | Throw            | Line skillshot. Cast point 0.4 with the line shown, range 10, 18 m/s, radius 0.4. It stops at the first unit, hero or minion, deals 80 and drags it to 1.5 m in front of Hook over 0.35 s. Structures and cover stop it. Cooldown 9. |
+| W   | Tangle           | Cast point 0.3 with the cone shown: a 3.5 m, 90° cone for 110 damage and a 40% slow for 1.5 s. The payoff after Throw. Cooldown 6.                                                                                                   |
+| E   | Around the world | Cast point 0.3 with the ring shown, then a 2.5 m loop: every enemy hero inside takes 60 and is knocked 2.5 m straight out from Hook. Peel for when the fight he started comes back at him. Cooldown 10.                              |
+
+**The moment:** their Fletcher looses from behind his Mitts. The yo-yo threads the gap, Fletcher lands at your feet, Tangle, and your Pong banks the kill.
+
+**Counter-play:** keep a minion or a teammate on the line; the yo-yo takes the first body. 0.4 s with the line shown is the longest tell in the game, so sidestep it. Mitts catches the yo-yo like any straight hero shot: the 80 comes back at Hook, the drag doesn't.
+
+## Brew, the bruiser
+
+Wins by being hit. Dives in, soaks the burst, drinks it off and kicks his way out. Chen with a sports drink. 1800 HP, 5.2 m/s. Basic: a palm strike, 3 m range, 85 damage, 1/s.
+
+| Key | Name        | Numbers                                                                                                                                                                                                                          |
+| --- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Q   | Flying kick | Cast point 0.3 with the line shown, then a dash up to 6 m along the aim that stops at the first unit, friend or foe: 100 damage to an enemy, nothing to an ally. Kick a minion to get in or out. Cooldown 7.                     |
+| W   | Stagger     | Instant stance, 3 s: damage he takes doesn't land; it fills a pool that pays out evenly over the 3 s after the stance ends. Shields soak the payout as it lands. The pool shows as a draining bar under his health. Cooldown 14. |
+| E   | Swig        | Channel up to 2 s, rooted: 150 shield per second, each shield lasting 4 s. Moving, casting, a stun or a pull ends it. Cooldown 10 from the channel's end.                                                                        |
+
+**The moment:** Fletcher, Mitts and their tower all on you at 600. You Stagger, kneel and Swig: the burst trickles into your shield. They've spent everything; you kick a minion out of the fight on 900.
+
+**Counter-play:** burst him outside Stagger, or stop the drink: he's rooted, so Throw, Tangle's slow after it, Red light or any stun breaks it, and a stun is a stun. Wait out Stagger before committing. Tune so the drink beats a burst and loses to pressure: two heroes on him for 6 s still win.
