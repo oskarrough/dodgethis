@@ -11,6 +11,7 @@ import { applySkin } from './front/skin.js'
 import { createLobbyProps } from './lobby-props.js'
 import { createLobbyFloor, saucerExtent, saucerRim } from './lobby-floor.js'
 import { bowlExtent, createWeatherBowl } from './lobby-bowl.js'
+import { createFlips, createJolts } from './lobby-feel.js'
 import { HEROES, listedHeroes } from './heroes.js'
 import { createHeroStrip, createLobbyHeroes } from './lobby-heroes.js'
 import { createNumbers } from './front/numbers.js'
@@ -219,8 +220,8 @@ export function createLobby({
 		local: hero.id,
 		heroes: heroChoices,
 	})
-	const flips = new Map()
-	const renderedPicks = new Map(sim.heroes.map((h) => [h.id, h.heroId]))
+	const flips = createFlips()
+	const jolts = createJolts({ bowl, props })
 	props.syncSeats()
 	const stamp = el.querySelector('.lobby-pick-stamp')
 	const strip = createHeroStrip({
@@ -298,7 +299,8 @@ export function createLobby({
 			props.syncSeats()
 			setup.picks[hero.id].team = readySeats.seatOf(hero.id)?.team ?? setup.picks[hero.id].team
 		}
-		if (fact.type === 'swap') flips.set(fact.hero, fact.tick)
+		if (fact.type === 'swap') flips.start(fact.hero, fact.tick * app.clock.step)
+		jolts.fact(fact)
 		if (fact.type === 'pick') {
 			if (!app.session.authoritative) gallery.select(fact.difficulty, fact.tick, app.clock.step)
 			setup.difficulty = fact.difficulty
@@ -333,6 +335,7 @@ export function createLobby({
 		if (pickSoundTick !== fact.tick) {
 			pickSoundTick = fact.tick
 			playUse(app.audio, 'lobby.pick')
+			playUse(app.audio, 'lobby.flip')
 		}
 	})
 	function slam(text, heroId = '') {
@@ -741,6 +744,7 @@ export function createLobby({
 			props.dispose()
 			floor.dispose()
 			bowl.dispose()
+			flips.dispose()
 			canvas.classList.remove('front-canvas')
 			if (leaving) canvas.style.opacity = ''
 			parent.insertBefore(canvas, next)
@@ -949,19 +953,10 @@ export function createLobby({
 				slam(`${hero.heroId}!`, hero.heroId)
 			}
 			setup.picks[hero.id].team = hero.seatTeam
-			const f = tune.lobby.pick
-			for (const human of sim.heroes) {
-				if (renderedPicks.get(human.id) !== human.heroId) {
-					renderedPicks.set(human.id, human.heroId)
-					if (!flips.has(human.id)) flips.set(human.id, sim.tick)
-				}
-				human.body.setTeam?.(human.seatTeam)
-				const k =
-					((sim.tick + alpha - (flips.get(human.id) ?? -Infinity)) * app.clock.step) / f.flipTime
-				const turn =
-					k >= 0 && k < 1 ? 1 - (1 - k) ** 3 + Math.sin(k * Math.PI) * f.flipOvershoot : 1
-				human.body.mesh.scale.x = f.flipEdge + (1 - f.flipEdge) * turn
-			}
+			for (const human of sim.heroes) human.body.setTeam?.(human.seatTeam)
+			const time = (sim.tick + alpha) * app.clock.step
+			flips.update(sim.heroes, time, app.camera.view)
+			jolts.update(time, sim.heroes, sim.shots ?? [])
 			lobbyHeroes.update(app.camera.view)
 		},
 		hudFrame(alpha) {

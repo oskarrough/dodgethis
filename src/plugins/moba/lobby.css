@@ -234,6 +234,21 @@
 	align-items: flex-end;
 	gap: 10px;
 }
+/* On a narrow screen the ability bar fills the bottom edge: the preset label sits above it. And the
+   saucer is small, so health bars shrink with it rather than cover the heroes. */
+@media (max-width: 600px) {
+	.lobby-controls {
+		bottom: 96px;
+	}
+	/* Scale the parts, not the bar: its transform carries its screen position. */
+	body:has(.front-lobby) .moba-unit-health > * {
+		scale: 0.6;
+		transform-origin: 50% 100%;
+	}
+	body:has(.front-lobby) .moba-health-label {
+		translate: 0 calc(var(--height) * 0.4);
+	}
+}
 .front-lobby:is([data-device='gamepad'], [data-device='touch']) .lobby-controls {
 	display: none;
 }

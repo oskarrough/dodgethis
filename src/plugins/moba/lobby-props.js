@@ -10,6 +10,7 @@ import { tune } from './tune.js'
 import { closest } from './skillshot.js'
 import { createFaceKit, createMagnets } from './lobby-magnets.js'
 import { createLobbyFlow } from './lobby-flow.js'
+import { playUse } from './sounds.js'
 
 // A rounded rectangle laid flat, centred on its group.
 function plate(width, depth, corner) {
@@ -337,6 +338,7 @@ export function createLobbyProps(
 				() => ({ type: 'bot', heroId: h.id, seat: p.seat.id }),
 				() => h.body.mesh.visible,
 			)
+	let wasFilling = false
 	const point = new THREE.Vector3()
 	// Left/top, not a transform: the labels' tilt and scale turn about their own centre,
 	// and would swing a transform's screen offset with them.
@@ -368,6 +370,10 @@ export function createLobbyProps(
 			const time = tick * step
 			const progress = (seat) => flow.progress(seat, readySeats.progress(seat, tick, step))
 			flow.update(time, progress)
+			// Your groove starting to fill gets a sound; bots' grooves fill quietly.
+			const filling = flow.level(readySeats.seatOf(local)) > 0
+			if (filling && !wasFilling) playUse(audio, 'lobby.grooveFill')
+			wasFilling = filling
 			dust.update(time, camera)
 			for (const m of Object.values(holoMaterials)) m.uniforms.uTime.value = time
 			for (const p of seatProps) {
@@ -412,6 +418,15 @@ export function createLobbyProps(
 				p.label.hidden = point.z < -1 || point.z > 1
 				place(p.label)
 			}
+			// On a narrow screen the three words would run together: only the picked one stays.
+			const crowded = galleryProps.some((p, i) => {
+				const next = galleryProps[i + 1]?.label
+				if (!next) return false
+				const gap = Math.abs(parseFloat(next.style.left) - parseFloat(p.label.style.left))
+				return gap < (p.label.offsetWidth + next.offsetWidth) / 2 + r.labelSpace
+			})
+			for (const p of galleryProps)
+				p.label.style.visibility = crowded && p.label.dataset.picked !== 'true' ? 'hidden' : ''
 		},
 		dispose() {
 			root.removeFromParent()

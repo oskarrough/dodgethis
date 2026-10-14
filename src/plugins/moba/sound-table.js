@@ -165,6 +165,12 @@ export const uses = {
 		() => tune.lobby.inspect.closeSound,
 	),
 	'lobby.pick': synth('Lobby', 'You pick a hero', () => tune.lobby.pick.sound),
+	'lobby.flip': use('Lobby', 'Your hero turns edge-on and comes round as the new one', 'whoosh'),
+	'lobby.grooveFill': synth(
+		'Lobby',
+		'Your plate glazes and its groove starts to fill',
+		() => tune.lobby.ready.grooveSound,
+	),
 	'lobby.pickDenied': synth('Lobby', 'A hero pick is refused', () => tune.lobby.pick.denySound),
 	'lobby.seatDenied': synth(
 		'Lobby',
@@ -279,7 +285,7 @@ export const facts = {
 	structureDown: ['structureDown'],
 	shielded: ['shielded'],
 	levelUp: ['levelUp'],
-	swap: ['lobby.pick'],
+	swap: ['lobby.pick', 'lobby.flip'],
 	pick: ['lobby.galleryPick'],
 	seatClaim: [],
 	seatDenied: ['lobby.seatDenied'],

@@ -97,7 +97,8 @@ export function dressHero(body, heroId = DEFAULT_HERO, team = 'A') {
 		0,
 		body.mesh,
 	)
-	part(
+	footDisc.name = 'foot-disc'
+	const footRing = part(
 		new THREE.RingGeometry(body.radius - t.discBorder, body.radius, t.segments).rotateX(
 			-Math.PI / 2,
 		),
@@ -107,6 +108,7 @@ export function dressHero(body, heroId = DEFAULT_HERO, team = 'A') {
 		0,
 		body.mesh,
 	)
+	footRing.name = 'foot-ring' // the lobby flip keeps both at full width (lobby-feel.js)
 	const { dress = dressBox, animate = null } = HERO_VIEWS[heroId] ?? {}
 	const dressed =
 		dress({

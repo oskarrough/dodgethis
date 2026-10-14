@@ -331,6 +331,10 @@ export function createLobbyFlow(scene, readySeats, local) {
 			if (!w) return progress
 			return Math.max(0, Math.min(1, (now - w.a.at - f.walk.time) / r.fillTime))
 		},
+		// How full a plate's groove is, 0 to 1.
+		level(seat) {
+			return branches.find((lane) => lane.seat === seat)?.level ?? 0
+		},
 		update(time, progressOf) {
 			const dt = Math.max(0, time - now)
 			now = time

@@ -18,7 +18,8 @@ export const lobby = {
 	// HUD and the screen edges, and `top` px under the screen's top for the corner buttons; live.
 	// height/back keep the lane's 58° pitch.
 	camera: { height: 11, back: 6.875, fov: 40, margin: 16, top: 64, passes: 12 },
-	// Picking from the hero row: the new body comes round edge-on, like a cutout turned on a pin.
+	// Picking from the hero row: the old body turns edge-on to the camera in the first `flipOut` of
+	// `flipTime` s, then the new one comes round like a cutout on a pin, its foot disc down a beat first.
 	pick: {
 		// Authored points that pick intents name heroes by; nothing stands there.
 		x: 5.2,
@@ -27,10 +28,27 @@ export const lobby = {
 		radius: 0.7,
 		nameHeight: 1.9,
 		flipTime: 0.25,
+		flipOut: 0.4,
 		flipEdge: 0.06,
 		flipOvershoot: 0.12,
 		sound: { freq: 620, slideTo: 980, dur: 0.14, gain: 0.08, type: 'triangle' },
 		denySound: { freq: 120, slideTo: 70, dur: 0.18, gain: 0.1, type: 'square' },
+	},
+	// Props on the saucer (weather bowl, bot holograms) on a damped spring (lobby-feel.js): a hero
+	// arriving faster than `minSpeed` m/s within `contact` m kicks its squash by `bump` (all of it at
+	// `fullSpeed`) and its lean by `bumpRock` of that; a shot within `reach` m kicks its rock by `hit` and
+	// its squash by `hitSquash` of that. Kicks are spring velocities. `stiffness` and `damping` set the wobble: lower damping, more overshoot.
+	jolt: {
+		stiffness: 220,
+		damping: 13,
+		contact: 0.05,
+		minSpeed: 0.5,
+		fullSpeed: 5,
+		bump: 3.5,
+		bumpRock: 0.25,
+		reach: 0.3,
+		hit: 3,
+		hitSquash: 0.4,
 	},
 	// The hero strip leans on the saucer's left lip, each card `overlap` of its width inside the lip;
 	// it only reseats when the lip moves more than `settle` px, so camera breathing can't jiggle it.
@@ -84,6 +102,7 @@ export const lobby = {
 		fillY: 0.05, // holograms and labels stand on the plate here
 		label: 'Ready', // printed beside your plate until you stand in it
 		labelGap: 0.12,
+		labelSpace: 8, // px between difficulty words before the unpicked ones step aside
 		badge: { keyboard: '', mouse: '', gamepad: 'Start', touch: '' }, // one word on keyboard; pads still learn Start
 		// A bot's hero floats over its seat as a hologram.
 		hologram: {
@@ -105,6 +124,8 @@ export const lobby = {
 		enterSound: { freq: 680, slideTo: 760, dur: 0.12, gain: 0.05, type: 'triangle' },
 		fullSound: { freq: 880, slideTo: 1320, dur: 0.18, gain: 0.08, type: 'sine' },
 		cancelSound: { freq: 330, slideTo: 220, dur: 0.1, gain: 0.07, type: 'triangle' },
+		// Your groove starts filling: rising, like a bottle under a tap.
+		grooveSound: { freq: 240, slideTo: 480, dur: 0.3, gain: 0.05, type: 'sine' },
 	},
 	// What the plates are for (#30), all live: bots walk onto their plates as you arrive (`walk`, from
 	// `from` of the way out from the middle), your plate ripples until you stand in it, and a groove runs
@@ -287,7 +308,7 @@ export const lobby = {
 		bob: 0.025,
 		bobRate: 0.8,
 		// Printed on the saucer under the bowl, flush-left from `from` of its radius left of centre.
-		label: { caption: 'Next map', name: '{map}', from: 0.6 },
+		label: { caption: 'Next map', name: '{map}', from: 1 },
 		colors: { glaze: '#f4eddc', inside: '#e6dcc6', foot: '#8d82a8' },
 		maps: {
 			overthrow: {
