@@ -1,5 +1,5 @@
 import { STEP } from '../../core/app.js'
-import { moveSpeed } from './statuses.js'
+import { blocked, moveSpeed } from './statuses.js'
 import { stepUnitDisplacement } from './displacement.js'
 import { tune } from './tune.js'
 import { clampWalkable } from './obstacles.js'
@@ -186,6 +186,10 @@ export function createLane({
 			if (unit.dead) continue
 			if (stepUnitDisplacement(unit, t, dt)) continue
 			const tower = unit.structure
+			if (!tower && blocked(unit, 'move', t) && blocked(unit, 'cast', t)) {
+				unit.attack = null
+				continue
+			}
 			const stats = tower
 				? {
 						...tune[unit.kind],

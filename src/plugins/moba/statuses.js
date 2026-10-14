@@ -4,7 +4,7 @@ import { ticks } from './sim-kit.js'
 
 const stateGates = {
 	stunned: ['move', 'cast', 'shield', 'catch', 'ballPickup'],
-	frozen: ['move', 'cast', 'shield', 'catch', 'still'],
+	frozen: ['move', 'cast', 'shield', 'catch', 'ballPickup', 'still'],
 	prone: ['move', 'cast', 'shield'],
 }
 

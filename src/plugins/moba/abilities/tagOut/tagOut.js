@@ -63,6 +63,7 @@ export default {
 		hero.body.place(to.x, to.y, to.z)
 		ally.body.place(from.x, from.y, from.z)
 		sim.cleanse(ally, 'stun')
+		sim.cleanse(ally, 'freeze')
 		sim.cleanse(ally, 'slow')
 		sim.apply(hero, 'tagOut.guard')
 		present({

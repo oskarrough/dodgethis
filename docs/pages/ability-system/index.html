@@ -927,10 +927,10 @@ bot: { use: 'save', target: 'ally', below: 0.4 } // Pass</code></pre>
 					table, and Tag out's damage reduction becomes a <code>damageTaken</code> status, which
 					retires the hero-level <code>traits.damageFactor</code>. Port Red light, Tag out, Dive,
 					the Ball's stun, Throw and Around the world. No new states yet: rooted, silenced and
-					untargetable wait for a folder that uses them, so this slice can prove zero deltas. The
-					port keeps today's quirks (a frozen hero can still pick up the Ball; Tag out clears a stun
-					but not a freeze); fixing them is a later commit with its own delta. This is where Hook's
-					ten displacement files go.
+					untargetable wait for a folder that uses them, so this slice can prove zero deltas. Freeze
+					blocks Ball pickup, like stun. Tag out clears stun, freeze, slow and motion, but leaves
+					Dive's prone cost. Minions stop moving and attacking during the Ball's stun. This is where
+					Hook's ten displacement files go.
 				</li>
 				<li>
 					<b>Listen.</b> <code>on</code> handlers, the <code>contact</code> fact, zone
