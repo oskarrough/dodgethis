@@ -1,5 +1,21 @@
 [
 	{
+		"at": "2026-10-14T08:48:33.563Z",
+		"title": "Lobby feel: the swap flip and a calmer layout (#5)",
+		"ask": "Does the flip read as a cutout turning on a pin? The clip runs three swaps slowed to 1.2 s, then two at the real 0.25 s. The stills are the lobby from a fresh / at 390, 1440 and 2560×1080: at 390 the difficulty words no longer run together, health bars shrink and the controls label clears the ability bar; at wide screens 'Next map' no longer spills over the rim.",
+		"status": "To review",
+		"decision": "",
+		"media": [
+			"review/media/2026-10-14-lobby-feel-the-swap-flip-and-a-calmer-la/swap-flip.webm",
+			"review/media/2026-10-14-lobby-feel-the-swap-flip-and-a-calmer-la/lobby-390.png",
+			"review/media/2026-10-14-lobby-feel-the-swap-flip-and-a-calmer-la/lobby-1440.png",
+			"review/media/2026-10-14-lobby-feel-the-swap-flip-and-a-calmer-la/lobby-2560x1080.png"
+		],
+		"links": [],
+		"thread": "thr_rrr3ahmeiy",
+		"page": "2026-10-14-lobby-feel-the-swap-flip-and-a-calmer-la/"
+	},
+	{
 		"at": "2026-10-13T12:23:51.897Z",
 		"title": "Choose your hero: five takes",
 		"ask": "Which one: 1 stamp, 2 brush, 3 tag, 4 emboss, 5 wordless footprints? Play any with /?caption=stamp, brush, tag, emboss or wordless.",
