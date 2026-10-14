@@ -363,7 +363,7 @@ export default function moba(app, map) {
 			})
 			app.clock.reset()
 
-			if (debugTune) run.debug.tune(debugTune.name, debugTune.values, debugTune.add)
+			if (debugTune) run.debug.tune(`lane/${debugTune.name}`, debugTune.values, debugTune.add)
 			const lobby = isLobby
 				? createLobby({ app, run, sim, hero, setup, options, gallery, onPresent })
 				: null
@@ -674,13 +674,6 @@ export default function moba(app, map) {
 						.onChange((value) => {
 							setup.edgePan = value
 						}),
-			})
-			run.debug.tune('cast', tune.cast, (f, t) => {
-				f.add(t, 'cancelLockout', app.clock.step, 2, app.clock.step).name('cancel lockout (s)')
-				f.add(t, 'buffer', app.clock.step, 1, app.clock.step).name('press buffer (s)')
-			})
-			run.debug.tune('hud', tune.hud, (f, t) => {
-				f.add(t, 'hoverDelay', 0, 2, 0.05).name('hover delay')
 			})
 			if (!isLobby)
 				run.debug.expose({

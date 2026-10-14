@@ -146,6 +146,11 @@ export function sliderSections(tune, look, setup, mapId = setup.map, camera = tu
 		respawn: { base: [T, 20, T], perLevel: [T, 5, T] },
 		momentum: { reduction: [0, 4, 0.25, 'Vault recharge (s)'] },
 		catch: { damageReduction: [0, 1, 0.01, 'landed damage reduction'] },
+		cast: {
+			cancelLockout: [T, 2, T, 'cancel lockout (s)'],
+			buffer: [T, 1, T, 'press buffer (s)'],
+		},
+		hud: { hoverDelay: [0, 2, 0.05, 'hover delay'] },
 		orders: {
 			pick: [0, 2, 0.05, 'attack pick (m)'],
 			attackMovePick: [0, 8, 0.25, 'attack-move pick (m)'],
@@ -276,11 +281,28 @@ export function sliderSections(tune, look, setup, mapId = setup.map, camera = tu
 	return Object.entries(sections).map(([path, sliders]) => [path, object(path), sliders])
 }
 
-// One folder per section; T resolves to the run's clock step. `more[path](folder, object)` adds non-slider controls.
+// Top-level groups for sections that aren't already nested in tune. Abilities group as they do on disk.
+const groups = {
+	hero: ['levels', 'respawn', 'momentum', 'attack', 'cast', 'projectile'],
+	controls: ['follow', 'stickAim', 'orders'],
+	lane: ['match', 'tower', 'core', 'base', 'ball', 'globes', 'waves', 'dummies'],
+	feel: ['hud', 'out', 'card', 'squeak', 'damageNumbers', 'juice'],
+}
+
+// Where a tune section sits in the panel: `loose` is abilities/loose, `levels` is hero/levels, `bots/easy` stays.
+export function debugPath(path) {
+	if (ABILITIES[path]) return `abilities/${path}`
+	const group = Object.keys(groups).find((name) => groups[name].includes(path))
+	return group ? `${group}/${path}` : path
+}
+
+// One folder per section, sorted by panel path; T resolves to the run's clock step. `more[path](folder, object)` adds non-slider controls.
 export function addSliders(debug, sections, step, more = {}) {
 	const at = (v) => (v === T ? step : v)
-	for (const [path, object, sliders] of sections)
-		debug.tune(path, object, (f) => {
+	const placed = sections.map(([path, ...rest]) => [debugPath(path), path, ...rest])
+	placed.sort(([a], [b]) => (a < b ? -1 : 1))
+	for (const [where, path, object, sliders] of placed)
+		debug.tune(where, object, (f) => {
 			for (const [key, [min, max, by, label, target = object]] of Object.entries(sliders)) {
 				const slider = f.add(target, key, at(min), at(max), at(by))
 				if (label) slider.name(label)

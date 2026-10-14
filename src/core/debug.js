@@ -84,6 +84,7 @@ export function createDebugPanel() {
 		const before = new Set(f.children)
 		add(f)
 		const added = f.children.filter((c) => !before.has(c))
+		refilter()
 		return () => {
 			for (const c of added) c.destroy()
 			for (let p = path; p; p = p.slice(0, Math.max(0, p.lastIndexOf('/')))) {
@@ -94,6 +95,7 @@ export function createDebugPanel() {
 			}
 		}
 	}
+	const refilter = addFilter(gui)
 	gui.close()
 	return {
 		tune: (path, object, build) => build && adding(path, (f) => build(f, object)),
@@ -104,4 +106,59 @@ export function createDebugPanel() {
 			gui.domElement.inert = inert
 		},
 	}
+}
+
+// Typing narrows the panel to folders and controls whose names match, opening folders on the way.
+// Clearing it shows everything again and closes what the filter opened.
+function addFilter(gui) {
+	const input = document.createElement('input')
+	input.type = 'search'
+	input.placeholder = 'filter…'
+	input.className = 'debug-filter'
+	input.style.cssText =
+		'display:block;box-sizing:border-box;width:calc(100% - 8px);margin:4px;padding:4px 6px;border:0;border-radius:2px;font:inherit;background:var(--widget-color);color:var(--text-color)'
+	gui.$title.after(input)
+	gui.onOpenClose((changed) => {
+		if (changed === gui) input.style.display = gui._closed ? 'none' : 'block'
+	})
+	const opened = new Set()
+	function visit(folder, query, inherited) {
+		let any = false
+		for (const c of folder.controllers) {
+			const show = inherited || c._name.toLowerCase().includes(query)
+			c.show(show)
+			any ||= show
+		}
+		for (const f of folder.folders) {
+			const named = inherited || f._title.toLowerCase().includes(query)
+			const inside = visit(f, query, named)
+			f.show(named || inside)
+			if (query && inside && f._closed) {
+				f.open()
+				opened.add(f)
+			}
+			any ||= named || inside
+		}
+		return any
+	}
+	let shown = ''
+	function refilter() {
+		const query = input.value.trim().toLowerCase()
+		if (!query && !shown) return
+		if (!query) {
+			for (const f of opened) f.close()
+			opened.clear()
+		}
+		shown = query
+		visit(gui, query, !query)
+	}
+	input.addEventListener('input', refilter)
+	// Keep typing out of the game; Backquote still toggles the panel and Escape leaves the box.
+	input.addEventListener('keydown', (event) => {
+		if (event.code === 'Backquote') return
+		if (event.code === 'Escape') input.blur()
+		event.stopPropagation()
+	})
+	input.addEventListener('keyup', (event) => event.stopPropagation())
+	return refilter
 }

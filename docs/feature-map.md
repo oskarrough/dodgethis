@@ -174,7 +174,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 ## Debug, Try Mode, proof
 
 - Debug panel and Try Mode folder (lobby and match; match-only actions hidden in lobby): `debug.js` `createMatchDebug`; `setup.js` `parseTrySetup`; `src/core/debug.js` `createDebugPanel`
-- Tuning sliders: `sliders.js` `sliderSections` (folder paths are tune paths), `addSliders`; Match's late slider targets the current map's `debugTune.late` (shared `match` fallback); each map manifest's `debugTune.name` is its tune key
+- Tuning sliders: `sliders.js` `sliderSections` (named by tune key), `debugPath` (groups), `addSliders`; the panel's filter box is in `src/core/debug.js`; Match's late slider targets the current map's `debugTune.late` (shared `match` fallback); each map manifest's `debugTune.name` is its tune key
 - `window.dt` (keys, pad, screen, device, game): `src/core/proof.js` `createProofApi`; `verify.md`
 - Simulation tables and bot experiments: `agent-match.js`; `scripts/farm.js`; report tables `scripts/bench/report.js`; `verify.md` Check and headless tools (read that section before writing a probe)
 - Feature lookup for builders: `scripts/where.js`; `bun run where <word>` prints feature-map entries and source hits, `--all` removes output limits
