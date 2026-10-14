@@ -6,7 +6,7 @@ export default {
 	tell: 'ring',
 	held: 'circle',
 	botRadial: true,
-	effects: { cast: 'aroundWindup', impact: 'aroundHit', pose: 'aroundTheWorld' },
+	effects: { cast: true, impact: true, pose: 'aroundTheWorld' },
 	icon: '<svg viewBox="0 0 48 48" aria-hidden="true"><circle class="ink-line" cx="24" cy="24" r="16"/><circle class="gold" cx="40" cy="24" r="7"/></svg>',
 	card: {
 		summary: () =>

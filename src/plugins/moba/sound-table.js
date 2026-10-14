@@ -12,7 +12,8 @@ import { tune as frontTune } from './front/tune.js'
 const use = (source, about, voice) => ({ source, about, voice })
 const synth = (source, about, recipe) => ({ source, about, recipe })
 
-// Ability uses come from each ability's `effects`: cast, shot (its projectile), hit and impact.
+// Ability uses come from each ability's `effects`: cast, projectile (shot), hit and impact.
+// Folder recipes mark those parts true; older abilities name a shared voice.
 const parts = { cast: 'cast', shot: 'projectile', hit: 'hit', impact: 'impact' }
 const partAbout = {
 	cast: 'cast starts',
@@ -278,9 +279,7 @@ export const facts = {
 		...structures.map((s) => `${s}.hit`).filter((id) => uses[id]),
 		...ending('.hit'),
 	],
-	heal: ending('.hit'),
-	tagOut: ending('.impact'),
-	freeze: ending('.impact'),
+	contact: [...ending('.hit'), ...ending('.impact')],
 	nearMiss: ['nearMiss', 'nearMiss.passed'],
 	death: ['death', 'out'],
 	shove: ['shove', 'out'],

@@ -219,7 +219,8 @@ export function createFeedback({
 				})
 				return
 			}
-			case 'cast':
+			case 'cast': {
+				const burst = ability?.stats?.juice?.cast ?? look.juice[effects.effect]
 				source?.body.squash(
 					fact.slot === 'primary' && !effects.pose
 						? look.juice.attackSquash
@@ -235,9 +236,9 @@ export function createFeedback({
 					juice.burst(fact.point, { ...fact.direction, y: 0 }, { count: 8, streak: true })
 				} else if (effects.effect === 'rain') {
 					if (mine) skillsView?.rain(fact.target, ability.stats)
-				} else if (look.juice[effects.effect])
-					juice.burst(fact.point, { ...fact.direction, y: 0 }, look.juice[effects.effect])
+				} else if (burst) juice.burst(fact.point, { ...fact.direction, y: 0 }, burst)
 				return
+			}
 			case 'projectile': {
 				source?.body.releaseAbilityPose?.(
 					fact.ability === 'return' ? (source.definition?.returnPose ?? 'draw') : effects.pose,
@@ -245,8 +246,8 @@ export function createFeedback({
 				)
 				const shot = sim.shots.find((s) => s.id === fact.id)
 				if (shot) view.bolt(shot, fact.point)
-				if (look.juice[effects.projectile])
-					juice.burst(fact.point, { ...fact.direction, y: 0 }, look.juice[effects.projectile])
+				const burst = ability?.stats?.juice?.shot ?? look.juice[effects.projectile]
+				if (burst) juice.burst(fact.point, { ...fact.direction, y: 0 }, burst)
 				unitOf(fact.hero)?.body.kick(0.18)
 				if (mine && punch) camera.kick(punch.shotKick)
 				cue(
@@ -333,25 +334,24 @@ export function createFeedback({
 				)
 				cue('blocked', fact)
 				return
-			case 'heal':
-				view.unbolt(fact.projectile)
-				juice.burst(fact.point, { x: 0, y: 1, z: 0 }, ability.stats.feedback)
-				cue(abilityUse(ability, 'hit'), fact)
+			case 'contact': {
+				if (fact.projectile != null) view.unbolt(fact.projectile)
+				const burst =
+					ability?.stats?.juice?.contact?.[fact.part] ?? ability?.stats?.juice?.[fact.part]
+				if (burst) juice.burst(fact.point, { x: 0, y: 1, z: 0 }, burst)
+				if (fact.from) {
+					view.ping('move', fact.from)
+					view.ping('move', fact.point)
+				}
+				cue(abilityUse(ability, fact.part), fact)
 				return
-			case 'tagOut':
-				view.ping('move', fact.from)
-				view.ping('move', fact.point)
-				cue(abilityUse(ability, 'impact'), fact)
-				return
-			case 'freeze':
-				juice.burst(fact.point, { x: 0, y: 1, z: 0 }, ability.stats.feedback)
-				cue(abilityUse(ability, 'impact'), fact)
-				return
+			}
 			case 'impact':
 				juice.burst(
 					fact.point,
 					{ x: 0, y: 1, z: 0 },
-					look.juice[effects.impact] ?? { count: 20, speed: 3, life: 0.35, size: 0.1 },
+					ability?.stats?.juice?.impact ??
+						look.juice[effects.impact] ?? { count: 20, speed: 3, life: 0.35, size: 0.1 },
 				)
 				cue(abilityUse(ability, 'impact'), fact) // once per tick, including multi-target impacts
 				if (mine && fact.hit && effects.impact === 'rain') camera.shake(look.juice.shakeRain)
@@ -368,7 +368,8 @@ export function createFeedback({
 				juice.burst(
 					fact.point,
 					fact.direction,
-					look.juice[effects.hit] ?? { count: 6, speed: 1.4, life: 0.3, size: 0.07 },
+					ability?.stats?.juice?.hit ??
+						look.juice[effects.hit] ?? { count: 6, speed: 1.4, life: 0.3, size: 0.07 },
 				)
 				if (fact.slot !== 'ball' && !effects.impact)
 					cue(

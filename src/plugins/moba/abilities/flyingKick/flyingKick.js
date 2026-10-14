@@ -5,7 +5,7 @@ export default {
 	kind: 'dash',
 	tell: 'line',
 	held: 'line',
-	effects: { cast: 'flyingKickWindup', hit: 'flyingKickHit', pose: 'flyingKick' },
+	effects: { cast: true, hit: true, pose: 'flyingKick' },
 	card: { summary: () => 'Dash into the first body. Hurt enemies; stop harmlessly at allies.' },
 	watch({ hero, sim, ability }) {
 		if (hero.dead || hero.dashAbility !== ability.id || !hero.body.dashing) return

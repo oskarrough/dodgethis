@@ -35,7 +35,8 @@ export default {
 		const heal = Math.min(ally.maxHp - ally.hp, shot.healAmount ?? tune.pass.healAmount)
 		ally.hp += heal
 		present({
-			type: 'heal',
+			type: 'contact',
+			part: 'hit',
 			source: hero.id,
 			target: ally.id,
 			ability: shot.ability,

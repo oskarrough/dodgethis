@@ -2,7 +2,7 @@ import { STEP } from '../../../../core/app.js'
 
 export default {
 	kind: 'stance',
-	effects: { cast: 'staggerStart', pose: 'stagger' },
+	effects: { cast: true, pose: 'stagger' },
 	statuses: {
 		bank: {
 			label: 'Stagger',

@@ -15,7 +15,6 @@ import {
 	summarySections,
 	undecided,
 } from './bench/report.js'
-import { matchReport } from './bench/report.js'
 import { checkoutRevision, defaultBase } from './bench/revision.js'
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url))
@@ -53,8 +52,9 @@ export function gameModules(root = ROOT) {
 					'src/plugins/moba/agent-match.js',
 					'src/plugins/moba/maps/all-maps.js',
 					'src/plugins/moba/bots.js',
+					'scripts/bench/report.js',
 				].map(at),
-			).then(([app, core, moba, agents, obstacles, match, maps, bots]) => ({
+			).then(([app, core, moba, agents, obstacles, match, maps, bots, report]) => ({
 				STEP: app.STEP,
 				coreTune: core.tune,
 				tune: moba.tune,
@@ -63,6 +63,7 @@ export function gameModules(root = ROOT) {
 				createAgentMatch: match.createAgentMatch,
 				matchRecipe: maps.matchRecipe,
 				createBots: bots.createBots,
+				matchReport: report.matchReport,
 				baseline: new Map(),
 			})),
 		)
@@ -193,7 +194,7 @@ export async function runFarmMatch({
 	const { STEP, coreTune, buildColliders, createAgentMatch } = mods
 	// A summary keeps only counters: no log, no tape, nothing on disk. `sample` adds per-tick bot states.
 	const stats = summary
-		? matchReport(roster, { STEP, towerRange: mods.tune.tower.range, count })
+		? mods.matchReport(roster, { STEP, towerRange: mods.tune.tower.range, count })
 		: null
 	if (!summary) await mkdir(directory, { recursive: true })
 	const filename = join(directory ?? '', `${matchId}.jsonl`)

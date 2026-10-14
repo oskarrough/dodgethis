@@ -147,8 +147,8 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 ## Match: view, feedback, sound
 
 - Match scene root: `view.js` `createView`; `index.js`
-- Feedback (facts turn into sound, popups, shake, hit flash): `feedback.js` `createFeedback`; `index.js` `validFact`; `look.js` `juice`, `out`, `squeak`
-- Sounds: `sound-table.js` `uses`, `facts` (every use and fact, one line each); `sounds.js` `createSounds`, `play`; `look.js` `sounds`; `src/core/audio.js`, `src/core/music.js`
+- Feedback (facts turn into sound, popups, shake, hit flash): `feedback.js` `createFeedback`; `index.js` `validFact`; folder `<id>-tune.js` `juice.{cast,shot,hit,impact}` overrides legacy `look.js` `juice`; `out`, `squeak` stay shared. Support `contact` facts carry `part` and optional `projectile`/`from`; `juice.contact[part]` overrides `juice[part]` when support and damage need different particles (Pass's healing puff). Only declared folder juice bursts (Tag out has none). Hook's particles and Coach's support particles live in their ability tune files.
+- Sounds: `sound-table.js` `uses`, `facts` (ability uses discovered from manifest `effects` parts); folder `<id>-tune.js` `sound.{cast,shot,hit,impact}` (Hook, Brew, Coach); `sounds.js` `createSounds`, `playUse`, `play` (same gain and bus for folder recipes and legacy voices); `look.js` `sounds` (older heroes and shared cues); `src/core/audio.js`, `src/core/music.js`
 - Sound board, swaps and kept sounds (audition, swap files into a running game, keep them): `docs/pages/sound/board.js`; `src/core/sound-swap.js` `setSwap`, `swapOf`; `src/core/audio.js` `swapped`, `ui`; `vite.config.js` `soundKeep`; `src/core/sfx/kept.json`
 - Mix bus (bus levels, caps, music duck): `src/core/audio.js` `onBus`; `src/core/tune.js` `mix`; `sound-table.js` `BUS`; `sounds.js` `playOwn`
 - Sound library and shortlists (`bun run sound:sync` mirrors Dropbox, measures and rebuilds every shortlist): `scripts/sound-library.js` `libraryNumbers`, `writeShortlists`, `decode`; `scripts/sound-check.js` (`--files`, `--shortlist`); `src/core/sound-swap.js` `libraryUrl`, `swapUrl`

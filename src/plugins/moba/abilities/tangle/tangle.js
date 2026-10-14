@@ -16,7 +16,7 @@ export default {
 	tell: 'cone',
 	held: 'cone',
 	botCone: true,
-	effects: { cast: 'tangleWindup', impact: 'tangleHit', pose: 'tangle' },
+	effects: { cast: true, impact: true, pose: 'tangle' },
 	icon: '<svg viewBox="0 0 48 48" aria-hidden="true"><path class="tone" d="M24 40 L5 10 A30 30 0 0 1 43 10 Z"/><path class="ink-line" d="M12 18 Q36 32 24 12 Q10 32 36 22"/></svg>',
 	card: {
 		summary: () =>

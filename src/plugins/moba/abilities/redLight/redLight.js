@@ -31,7 +31,8 @@ export default {
 			enemy.body.cancelDash()
 			enemy.dashAbility = null
 			present({
-				type: 'freeze',
+				type: 'contact',
+				part: 'impact',
 				source: hero.id,
 				target: enemy.id,
 				ability: ability.id,

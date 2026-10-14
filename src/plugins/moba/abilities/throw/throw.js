@@ -7,7 +7,7 @@ export default {
 	tell: 'line',
 	held: 'line',
 	aimAssist: true,
-	effects: { cast: 'throwWindup', projectile: 'throwYoYo', hit: 'throwHit', pose: 'throwYoYo' },
+	effects: { cast: true, projectile: true, hit: true, pose: 'throwYoYo' },
 	icon: '<svg viewBox="0 0 48 48" aria-hidden="true"><path class="ink-line" d="M6 38 L35 12"/><circle class="gold" cx="35" cy="12" r="9"/></svg>',
 	card: {
 		summary: () =>

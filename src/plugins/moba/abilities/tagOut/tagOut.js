@@ -67,7 +67,8 @@ export default {
 		sim.cleanse(ally, 'slow')
 		sim.apply(hero, 'tagOut.guard')
 		present({
-			type: 'tagOut',
+			type: 'contact',
+			part: 'impact',
 			source: hero.id,
 			target: ally.id,
 			ability: ability.id,

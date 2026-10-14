@@ -860,14 +860,15 @@ statuses: { shield: { tags: ['shield'], stack: 'independent', absorb: true, bar:
 					so a caught shot in Pocket keeps its status by key.
 				</li>
 				<li>
-					<b>Events folders can listen to (slice 3).</b> Manifests get
-					<code>on: { hit, death, catch, contact }</code>, called with the fact the sim already
-					presents. Support contacts (Pass's heal, Tag out, Red light) present one generic
-					<code>contact</code> fact; <code>feedback.js</code>, <code>sound-table.js</code> and the
-					bench report key off the ability's cue names instead of new fact types. A zone gets
-					<code>onLand</code>. Sounds and juice live in the folder's tune, as Coach's
-					<code>stats.sound</code> already does. <code>onHit</code> splits into
-					<code>beforeHit</code> and <code>onHit</code>.
+					<b>One contact fact, and the folder's own sounds and juice (slice 3).</b> Support contacts
+					(Pass's heal, Tag out, Red light) present one generic <code>contact</code> fact with a
+					<code>part</code>, so <code>index.js</code>, <code>feedback.js</code>,
+					<code>sound-table.js</code> and the bench report learn it once instead of a fact type per
+					ability. Sounds and particles live in the ability's tune file (<code>stats.sound</code>,
+					<code>stats.juice</code>), as Coach's sounds already do. Listeners (<code>on</code>), a
+					zone <code>onLand</code> and <code>beforeHit</code> wait for a folder that needs them: the
+					zone landing is already generic (damage plus the folder's <code>applies</code>), and
+					ability <code>onHit</code> now runs once, before damage.
 				</li>
 				<li>
 					<b>Bots and cards read the folder (slice 4).</b> One block replaces the kind-finds and
@@ -922,22 +923,23 @@ bot: { use: 'save', target: 'ally', below: 0.4 } // Pass</code></pre>
 					run on it. Strongest slow wins, as its own commit after the port.
 				</li>
 				<li>
-					<b>Disables and motion.</b> <code>stunUntil</code>, <code>freezeUntil</code>,
-					<code>proneUntil</code> and <code>displacement</code> become statuses behind one gate
-					table, and Tag out's damage reduction becomes a <code>damageTaken</code> status, which
-					retires the hero-level <code>traits.damageFactor</code>. Port Red light, Tag out, Dive,
-					the Ball's stun, Throw and Around the world. No new states yet: rooted, silenced and
-					untargetable wait for a folder that uses them, so this slice can prove zero deltas. Freeze
-					blocks Ball pickup, like stun. Tag out clears stun, freeze, slow and motion, but leaves
-					Dive's prone cost. Minions stop moving and attacking during the Ball's stun. This is where
-					Hook's ten displacement files go.
+					<b>Disables and motion.</b> Landed (main at <code>tuxmwmlynqvn</code>).
+					<code>stunUntil</code>, <code>freezeUntil</code>, <code>proneUntil</code> and
+					<code>displacement</code> become statuses behind one gate table, and Tag out's damage
+					reduction becomes a <code>damageTaken</code> status, which retires the hero-level
+					<code>traits.damageFactor</code>. Port Red light, Tag out, Dive, the Ball's stun, Throw
+					and Around the world. No new states yet: rooted, silenced and untargetable wait for a
+					folder that uses them, so this slice can prove zero deltas. Freeze blocks Ball pickup,
+					like stun. Tag out clears stun, freeze, slow and motion, but leaves Dive's prone cost.
+					Minions stop moving and attacking during the Ball's stun. This is where Hook's ten
+					displacement files go.
 				</li>
 				<li>
-					<b>Listen.</b> <code>on</code> handlers, the <code>contact</code> fact, zone
-					<code>onLand</code>, folder sounds and juice, <code>beforeHit</code>. Coach's fact
-					plumbing leaves <code>index.js</code>, <code>feedback.js</code>,
-					<code>sound-table.js</code> and the bench report. Extra proof: the sound board lists the
-					same uses.
+					<b>Contacts and folder presentation.</b> <code>heal</code>, <code>tagOut</code> and
+					<code>freeze</code> facts become one <code>contact</code>; Hook's and Brew's sounds and
+					particles move from <code>look.js</code> into their tune files, Pass's and Red light's
+					<code>feedback</code> into <code>juice</code>. Proof adds a headless dump of the sound
+					board's uses, identical except for the fact rename.
 				</li>
 				<li>
 					<b>Read the folder.</b> Bot and target metadata, generated card sentences. Proof needs

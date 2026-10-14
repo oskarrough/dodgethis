@@ -15,7 +15,7 @@ export default {
 	},
 	cancelOnMove: true,
 	cancelOnCast: true,
-	effects: { cast: 'swigStart', pose: 'swig' },
+	effects: { cast: true, pose: 'swig' },
 	card: {
 		summary: () =>
 			'Root and drink, gaining shield. Orders, casts and disables interrupt the drink.',
