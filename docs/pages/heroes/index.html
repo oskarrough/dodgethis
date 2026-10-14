@@ -249,13 +249,16 @@
 	</head>
 	<body class="page">
 		<main>
-			<h1>Eight hero pitches</h1>
+			<h1>Seven hero pitches and a heroic for P. Pong</h1>
 			<p class="lede">
 				Each kit takes one verb Fletcher (poke and kite) and Mitts (catch and return) don't own. All
 				keep the house rules: anything that touches an enemy shows its hitbox for a cast point of at
 				least 0.3 s, and every dodgeable shot leaves at least 0.45 s to dodge. The test: a
 				first-timer wins something by pressing Q at someone, and a good player gets something the
-				first-timer can't even see.
+				first-timer can't even see. Polished on 2026-10-14 against
+				<a href="/docs/compelling-abilities.md"
+					>compelling-abilities.md</a
+				>: every kit now names its answer, the one way an opponent beats it.
 			</p>
 			<span class="note">Names are placeholders, named by mechanic until the setting settles.</span>
 			<span class="note howto">Reply by code: "H3.W too strong", "cut H6.R", "H1 ✓".</span>
@@ -281,7 +284,7 @@
 
 			<div id="heroes"></div>
 
-			<h2>Build next: Hook, then Parry</h2>
+			<h2>Build next: Hook, Parry, then Pong’s heroic</h2>
 			<div class="rec">
 				<div class="sticker">
 					<div class="step">1st</div>
@@ -304,8 +307,11 @@
 				</div>
 				<div class="sticker">
 					<div class="step">3rd</div>
-					<h3><a href="#H2">H2 Bank</a></h3>
-					<p>Half its board already exists in the sim.</p>
+					<h3><a href="#H2">H2 Four walls</a></h3>
+					<p>
+						Pong is the one built hero without an R, and this is four Cushions and an unlimited
+						Ricochet: almost nothing new.
+					</p>
 				</div>
 			</div>
 
@@ -318,13 +324,13 @@
 						Back in! are support by numbers: nothing in them gets better with practice.
 					</li>
 					<li>
-						<span class="code">C2</span><b>Carom's Kiss:</b> a homing basic that bounces for free
-						damage.
+						<span class="code">C2</span><b>Pong's Kiss bounce:</b> a homing basic that bounces for
+						free damage.
 					</li>
 					<li>
-						<span class="code">C3</span><b>Carom's Trick Shot:</b> a 40 m path printed for everyone
-						to step off. The skill lives in the guide line, not the player. Bank keeps Bank, Kick
-						off and Backboard.
+						<span class="code">C3</span><b>Pong's Trick Shot:</b> a 40 m path printed for everyone
+						to step off. The skill lives in the guide line, not the player. Four walls (H2.R) takes
+						its slot; Bank's Kick off and Backboard are cut, since Pong shipped Cushion and Swap.
 					</li>
 					<li>
 						<span class="code">C4</span><b>Mitts' 25% damage reduction during Catch.</b> It pays you
@@ -361,6 +367,11 @@
 					<li>
 						<span class="code">I4</span>Whistle's Foul (H7.Q) locks a slot mid-windup. Mitts' return
 						tell is 0.5 s, so she's the favourite target. Fine?
+					</li>
+					<li>
+						<span class="code">I5</span>Foul, Red light, Belly bounce, Shove's wall stun and Red
+						card can chain into a cutscene for whoever they land on. My pick: a hero who comes out
+						of a stun, freeze or pop can't be locked again for 1 s. Pushes and slows still land.
 					</li>
 				</ul>
 			</div>
@@ -623,11 +634,13 @@
 					ceiling:
 						'Steering the return by moving, so one throw covers two lines; strings across chokepoints; zipping after a miss to reposition; hooking the Ball carrier mid-pickup.',
 					floorText: 'Aim at someone, press Q, and they come to you.',
+					answer:
+						'Keep a minion between you. The yo-yo takes the first body it touches, and a minion dragged to Hook is a wasted 0.4 s.',
 					abilities: [
 						{
 							slot: 'Q',
 							name: 'Throw',
-							text: '0.4 s windup, a yo-yo flies 10 m straight, then reels back to wherever you are now. Any hero it touches, out or back, is dragged to you.',
+							text: '0.4 s windup, a yo-yo flies 10 m straight, then reels back to wherever you are now. It stops on the first unit it touches, out or back, and drags it to you.',
 							time: [
 								[0, 0.4, 'tell', 'windup'],
 								[0.4, 1.1, 'travel', 'out and back (speed open)'],
@@ -686,7 +699,7 @@
 						{
 							slot: 'R',
 							name: 'Walk the dog',
-							text: 'The yo-yo rolls 25 m along the ground over 2 s, steered by your aim; the first hero it touches comes all the way back with it.',
+							text: 'The yo-yo rolls 25 m along the ground over 2 s, steered by your aim, rattling so the whole lane hears it; the first hero it touches comes all the way back with it. A dash or a hop clears it.',
 							time: [
 								[0, 2, 'active', 'rolls 2 s'],
 								[2, 1.2, 'travel', 'carries back'],
@@ -709,75 +722,25 @@
 				},
 				{
 					id: 'H2',
-					name: 'Bank',
-					role: 'trick-shot burst',
+					name: 'P. Pong’s heroic',
+					role: 'trick-shot burst, built',
 					floor: 3,
 					ceil: 5,
 					verb: 'ricochet',
 					counters: 'Anyone hiding behind pillars and cover',
 					status: 'Build 3rd',
 					moment:
-						'You box the enemy Mitts and her carry, and one ball rattles round the room six times before it finds them both.',
+						'You box the enemy Mitts and her carry, and one ball rattles round the room six times before it finds the carry.',
 					ceiling:
-						'Angles off pillars that nobody reads as a threat; the board as shield and cushion in the same second; Kick off chains in the lobby.',
-					floorText: 'The aim line shows the bounce, so aiming at a wall is learnable in one game.',
+						'Boxing two heroes at once; Swapping into the box behind your own Ricochet; dropping it on a wall so only three sides need posts.',
+					floorText: 'Throw the box over anyone and press Q. The walls do the aiming.',
+					answer:
+						'Shoot your way out. One hit breaks a board, so a boxed team with a skillshot is never boxed for long, and Mitts catches whatever rattles in.',
 					abilities: [
-						{
-							slot: 'Q',
-							name: 'Bank',
-							text: 'A straight shot that cushions off walls, pillars and your board up to twice, +50% damage per cushion. Your own aim line draws the whole path.',
-							time: [[0, 0.35, 'tell', 'cast (Carom’s)']],
-							draw(d) {
-								d.wall(1, 2.6, 31, 2.6)
-								d.pillar(12, 9.5, 0.9)
-								d.band([L(3, 10), L(7.5, 3.2), L(11.3, 8.8), L(18, 4.5)], 0.35)
-								d.me(3, 10)
-								d.foe(18.5, 4.3)
-								d.text(7.5, 4.6, '×1.5', { anchor: 'middle' })
-								d.text(11.5, 11.8, '×2', { anchor: 'middle' })
-								d.text(20, 5, 'up to 2 cushions', { size: 9 })
-								d.ref('loose')
-							},
-						},
-						{
-							slot: 'W',
-							name: 'Kick off',
-							text: 'A 4 m dash that reflects off walls and keeps going; each reflection takes 1.5 s off the cooldown. Wall-jumps.',
-							time: [[0, 0.2, 'active', 'dash']],
-							draw(d) {
-								d.wall(12, 2, 12, 15)
-								d.me(8.5, 11.5, { fade: true })
-								d.arrow([L(8.5, 11.5), L(11.5, 9.2), L(9.6, 7.6)], { color: C.blue, width: 3 })
-								d.me(9.4, 7.4)
-								d.text(13.2, 9.6, 'bounce: −1.5 s cooldown', { size: 9 })
-								d.text(4, 6, '4 m total', { size: 9 })
-								d.ref('vault')
-							},
-						},
-						{
-							slot: 'E',
-							name: 'Backboard',
-							text: 'A 3 m board for 4 s; your shots cushion off it, everyone else’s stop on it.',
-							time: [
-								[0, 0.3, 'tell', 'cast'],
-								[0.3, 4, 'active', 'board 4 s'],
-							],
-							draw(d) {
-								d.rect(11.6, 6.5, 0.6, 3, 'board')
-								d.me(4, 10)
-								d.arrow([L(4.5, 9.6), L(11.5, 7.2), L(5.5, 3.5)], { color: C.blue })
-								d.foe(5, 3)
-								d.foe(22, 8)
-								d.arrow([L(21, 8), L(13, 8)], { color: C.red, head: false })
-								d.x(12.6, 8)
-								d.text(13.6, 11.2, '3 m · yours bounce, theirs stop', { size: 9 })
-								d.ref('toss')
-							},
-						},
 						{
 							slot: 'R',
 							name: 'Four walls',
-							text: '0.5 s tell, then a 7 m square of boards for 3.5 s, solid to enemies; inside it, Bank cushions without limit until it hits.',
+							text: '0.5 s tell, then a 7 m square of Cushion posts for 3.5 s, solid to bodies; inside it, Ricochet cushions without limit until it hits. Any shot breaks the board it hits.',
 							time: [
 								[0, 0.5, 'tell', 'tell'],
 								[0.5, 3.5, 'active', 'boxed 3.5 s'],
@@ -812,6 +775,8 @@
 						'The 0.1 s sweet spot; returning a shot into someone other than its thrower; baiting a throw by stepping out of range. It’s Melee’s powershield on one button.',
 					floorText:
 						'Q hits whatever’s in front of you, and parries happen by accident and feel enormous.',
+					answer:
+						'Don’t feed it. Hold your skillshot until the swing is spent, or throw from the side: the arc only covers his front.',
 					flag: 'It breaks the 0.5 s return tell on purpose. The windup is the tell, and the 20° cap keeps returns near their incoming line; measure it against the dodge deadline before tuning anything else.',
 					abilities: [
 						{
@@ -916,6 +881,8 @@
 						'Routing for speed before the fight starts; carve angles; hopping a shot without losing a metre per second.',
 					floorText:
 						'Run in a straight line and press Q on someone. Click-to-move works, since straight paths glide.',
+					answer:
+						'Make him turn. Cover and minion clumps bleed his glide, and a slow Skater checks for 80.',
 					abilities: [
 						{
 							slot: 'T',
@@ -999,7 +966,7 @@
 						{
 							slot: 'R',
 							name: 'Breakaway',
-							text: '3 s at top speed, passing through units; each Check that lands refunds Check and Hop.',
+							text: '3 s at top speed, passing through units; the first Check that lands refunds Check and Hop.',
 							time: [[0, 3, 'active', 'top speed, through units']],
 							draw(d) {
 								d.arrow([L(2, 11), L(10, 8), L(18, 9.5), L(26, 7)], {
@@ -1037,6 +1004,8 @@
 					ceiling:
 						'Geometry, meaning which wall, which hero, which angle; juggle timing; a Pratfall that eats the one Loose aimed at your carry.',
 					floorText: 'Walk at them and shove. 2100 HP forgives everything else.',
+					answer:
+						'Stay off walls and out of your teammates’ shoulders. A shove into open ground is only a push.',
 					abilities: [
 						{
 							slot: 'Q',
@@ -1065,7 +1034,7 @@
 						{
 							slot: 'W',
 							name: 'Belly bounce',
-							text: 'Hop 4 m; heroes under the landing pop up for 0.6 s and can’t act. Landing on a popped hero pops it again, three times at most.',
+							text: 'Hop 4 m; heroes under the landing pop up for 0.6 s and can’t act. Land on a popped hero and you bounce on 4 m again, three hops at most; each hero pops once.',
 							time: [
 								[0, 0.4, 'travel', 'hop'],
 								[0.4, 0.6, 'lock', 'pop 0.6'],
@@ -1141,6 +1110,8 @@
 					ceiling:
 						'Leading allies who are moving fast; early pops; puddle chains as your own roads; hose angles that pin people on walls.',
 					floorText: 'Throw it at your friend. Heals are aimed, but the splash is generous.',
+					answer:
+						'Fight off the puddles. Slide and the soak both live on them, and the balloon is slow enough to walk out from under.',
 					abilities: [
 						{
 							slot: 'Q',
@@ -1235,6 +1206,8 @@
 					ceiling:
 						'A 0.3 s Foul can’t react to a 0.3 s cast, so it’s all reads: channels, the 0.75 s Ball pickup, Mitts’ 0.5 s return tell, the cast you know is coming. It’s WoW’s kick.',
 					floorText: 'Foul still does damage, and Red light just works on people who run.',
+					answer:
+						'Cast short and early near it. Foul only bites a windup it reaches, and Red light loses to standing still.',
 					abilities: [
 						{
 							slot: 'Q',
@@ -1296,10 +1269,10 @@
 						{
 							slot: 'R',
 							name: 'Red card',
-							text: 'A 0.5 s line tell; the hero it hits is sent to the touchline for 4 s, harmless and untargetable, then walks back on.',
+							text: 'A 0.5 s line tell; the first hero it hits, friend or foe, is sent to the touchline for 3 s, harmless and untargetable, then walks back on. An enemy is out of the fight; an ally is out of danger.',
 							time: [
 								[0, 0.5, 'tell', 'tell'],
-								[0.5, 4, 'lock', 'off for 4 s'],
+								[0.5, 3, 'lock', 'off for 3 s'],
 							],
 							draw(d) {
 								d.touchline(1.6)
@@ -1328,6 +1301,8 @@
 					ceiling:
 						'Cooking that shrinks the dodge window to its legal minimum; bounce and roll prediction; rocket-jump routes; kicking the Ball away from a pickup.',
 					floorText: 'Hold, aim, let go. Bombs go off whether you’re clever or not.',
+					answer:
+						'Read the fuse on the ground and walk. Kegs roll for everyone: shoot one back and he eats it.',
 					abilities: [
 						{
 							slot: 'T',
@@ -1532,6 +1507,7 @@
 							<dt>Moment</dt><dd>${h.moment}</dd>
 							<dt>Ceiling</dt><dd>${h.ceiling}</dd>
 							<dt>Floor</dt><dd>${h.floorText}</dd>
+							<dt>Answer</dt><dd>${h.answer}</dd>
 						</dl>
 						${h.flag ? `<p class="flag"><b>${h.id} flag.</b> ${h.flag}</p>` : ''}
 						<div class="abilities">${abs}</div>
