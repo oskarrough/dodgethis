@@ -1,7 +1,17 @@
 import { defineConfig } from 'vite'
 import wasm from 'vite-plugin-wasm'
 import { execFile, execFileSync } from 'node:child_process'
-import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
+import {
+	copyFileSync,
+	cpSync,
+	existsSync,
+	mkdirSync,
+	readFileSync,
+	readdirSync,
+	rmSync,
+	statSync,
+	writeFileSync,
+} from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { syncShowcase } from './scripts/sound-showcase.js'
@@ -304,7 +314,7 @@ const soundKeep = {
 	},
 }
 
-// Only this workbench gets a production entry; the rest of docs/pages stays dev-only.
+// Production sound board is read-only: swap the live board for the committed showcase.
 const soundShowcase = {
 	name: 'sound-showcase',
 	apply: 'build',
@@ -321,8 +331,23 @@ const soundShowcase = {
 	},
 }
 
+// Sibling files Vite leaves behind (items.json, <a href> images, classic viewer.js)
+// and /docs/page.css so that path still works next to the hashed stylesheet.
+const docsPages = {
+	name: 'docs-pages',
+	apply: 'build',
+	closeBundle() {
+		mkdirSync(join('dist', 'docs'), { recursive: true })
+		copyFileSync('docs/page.css', join('dist', 'docs', 'page.css'))
+		cpSync('docs/pages', join('dist', 'docs', 'pages'), {
+			recursive: true,
+			filter: (src) => statSync(src).isDirectory() || !src.endsWith('.html'),
+		})
+	},
+}
+
 export default defineConfig({
-	plugins: [wasm(), folderSlash, soundKeep, soundShowcase],
+	plugins: [wasm(), folderSlash, soundKeep, soundShowcase, docsPages],
 	// The build's id, its time: online rooms only seat guests from the same build (online/net.js `BUILD`).
 	define: { __BUILD__: String(Date.now()) },
 	server: {
@@ -342,7 +367,13 @@ export default defineConfig({
 		target: 'esnext',
 		rollupOptions: {
 			treeshake: false,
-			input: { game: 'index.html', sound: 'docs/pages/sound/index.html' },
+			// Every docs/pages/**/*.html, so a new page ships without editing this list.
+			input: [
+				'index.html',
+				...readdirSync('docs/pages', { recursive: true })
+					.filter((name) => String(name).endsWith('.html'))
+					.map((name) => join('docs/pages', name)),
+			],
 		},
 	},
 })
