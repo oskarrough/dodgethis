@@ -26,13 +26,19 @@ export function coachBotAct(ctx) {
 	const { h, p, own, enemies, cast, frame, sim } = ctx
 	if (ctx.skillsLocked || ctx.castBusy || h.cast || h.body.dashing) return null
 	const b = tune.heroes.coach.bots
+	const danger = (at) => enemies.filter((e) => distance(e.pos, at) <= b.dangerRange).length
 	const ally = own
 		.filter(
 			(u) =>
 				u.id !== h.id &&
 				u.hp / u.maxHp < b.saveHp &&
 				distance(p, u.pos) <= tune.tagOut.range &&
-				enemies.some((e) => distance(e.pos, u.pos) <= b.dangerRange),
+				danger(u.pos) > danger(p) &&
+				h.hp / h.maxHp >= b.saveHp &&
+				ctx.safe(
+					u.pos,
+					enemies.filter((e) => distance(e.pos, u.pos) <= b.dangerRange),
+				),
 		)
 		.sort((a, c) => a.hp / a.maxHp - c.hp / c.maxHp || a.id.localeCompare(c.id))[0]
 	if (ally && cast('slot2', ally.pos)) return frame
@@ -50,11 +56,21 @@ export function coachBotAct(ctx) {
 			(u) =>
 				u.id !== h.id &&
 				u.maxHp - u.hp >= tune.pass.healAmount * b.passDeficit &&
-				distance(p, u.pos) <= tune.pass.range &&
-				coachClearLine(p, u.pos, u, [...own, ...enemies], tune.pass.radius, sim),
+				distance(p, u.pos) <= tune.pass.range,
 		)
-		.sort((a, c) => c.maxHp - c.hp - (a.maxHp - a.hp) || a.id.localeCompare(c.id))[0]
-	if (hurt && cast('slot1', hurt.pos)) return frame
+		.sort((a, c) => a.hp / a.maxHp - c.hp / c.maxHp || a.id.localeCompare(c.id))
+	for (const ally of hurt) {
+		const lead = tune.pass.castPoint + distance(p, ally.pos) / tune.pass.speed
+		const aim = { x: ally.pos.x + ally.vel.x * lead, z: ally.pos.z + ally.vel.z * lead }
+		if (
+			distance(p, aim) <= tune.pass.range &&
+			coachClearLine(p, aim, { ...ally, pos: aim }, [...own, ...enemies], tune.pass.radius, sim) &&
+			cast('slot1', aim)
+		)
+			return frame
+	}
+	// Keep Pass for an injured ally rather than spending it on poke behind a blocked heal.
+	if (hurt.length) ctx.shoot = () => false
 	return null
 }
 export function coachBotDead({ h, sim, perceived, interceptTime }) {
