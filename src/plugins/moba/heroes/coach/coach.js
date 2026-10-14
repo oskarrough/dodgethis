@@ -1,6 +1,6 @@
 import { tune } from '../../tune.js'
 import { coachCutoutDeath, coachCutoutTick, coachCutoutFrame } from './coach-cutout.js'
-import { coachBotAct, coachBotDead } from './coach-bots.js'
+import { coachBotDead } from './coach-bots.js'
 
 export default {
 	name: 'Coach',
@@ -16,7 +16,6 @@ export default {
 		chip: `${tune.outThrow.deathRefund}s`,
 		summary: `While dead, walk the touchline and throw. Each hero hit takes ${tune.outThrow.deathRefund} s off your death timer.`,
 	}),
-	bot: coachBotAct,
 	botDead: coachBotDead,
 	outOfPlay: coachCutoutFrame,
 	traits: {

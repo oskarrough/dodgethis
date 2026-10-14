@@ -3,6 +3,7 @@ import { neutralFrame } from '../../core/intents.js'
 import { tune } from './tune.js'
 import { copyData } from './agents.js'
 import { createFightBot } from './fight-bots.js'
+import { abilityTactics } from './ability-bots.js'
 import { createDodgeBot } from './dodge-bots.js'
 import { laneRoute } from './maps/paths.js'
 
@@ -255,7 +256,7 @@ export function createBot(
 			ctx.preferredTargets = contributions.flatMap((c) => c.preferredTargets ?? [])
 			combat.assess(ctx)
 			const threats = dodge.read(ctx, habits)
-			if (!h.definition.bot?.(ctx) && !dodge.avoid(ctx, threats)) goal(ctx)
+			if (!h.definition.bot?.(ctx) && !abilityTactics(ctx) && !dodge.avoid(ctx, threats)) goal(ctx)
 			return ctx.frame
 		},
 	}

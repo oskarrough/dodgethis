@@ -871,19 +871,20 @@ statuses: { shield: { tags: ['shield'], stack: 'independent', absorb: true, bar:
 					ability <code>onHit</code> now runs once, before damage.
 				</li>
 				<li>
-					<b>Bots and cards read the folder (slice 4).</b> One block replaces the kind-finds and
-					<code>botCone</code>/<code>botRadial</code>:
-					<pre><code>bot: { use: 'engage', shape: 'cone', min: 1 }    // Tangle
-bot: { use: 'peel', shape: 'radial', min: 2 }    // Around the world
-bot: { use: 'save', target: 'ally', below: 0.4 } // Pass</code></pre>
-					<code>use</code> defaults from the statuses (a stun or root on enemies is engage, an
-					absorb or heal on allies is save, a dash without damage is escape), so most folders write
-					nothing. <code>targets: 'enemy' | 'ally' | 'any'</code> and
-					<code>heroesOnly</code> replace the <code>heal</code>/<code>heroOnly</code> branches in
-					projectiles, skillshot and fight-bots. Cards add one generated sentence per status ("Slows
-					40% for 2 s", "Shields 120 for 3 s", "Stuns 1.2 s") under the folder's own summary,
-					replacing the <code>KIND</code> table (<code>tooltip.js:35</code>). The hero
-					<code>bot</code> hook stays for kits like Brew's that want their own brain.
+					<b>Bots read the folder (slice 4).</b> An ability's <code>bot</code> is a built-in tactic
+					name, <code>false</code>, or its own <code>{ priority, act(ctx, slot) }</code>:
+					<pre><code>bot: 'cone'                               // Tangle (was botCone)
+bot: 'radial'                             // Around the world (was botRadial)
+bot: false                                // Flying kick: Brew's own bot owns it
+bot: { priority: 30, act(ctx, slot) { … } } // Tag out: save a losing ally</code></pre>
+					Without <code>bot</code>, the defaults reproduce today's kind-finds (shot, zone, dash,
+					blink, cover, catch), so most folders write nothing. Coach's three tactics move from her
+					hero hook into Pass, Tag out and Red light, so any kit that slots them gets a bot that
+					uses them. The hero <code>bot</code> hook stays for kits like Brew's, whose abilities
+					share one brain. Dropped on the evidence: generated card sentences (no hero ever touched
+					<code>tooltip.js</code>; a folder's own summary costs nothing) and
+					<code>targets</code> metadata (<code>heal</code> and <code>heroOnly</code> already make
+					ally or hero-only shots with no shared file).
 				</li>
 				<li>
 					<b>Summons (slice 5).</b> <code>sim.summon(owner, key, at)</code>: a unit with an owner, a
@@ -935,16 +936,18 @@ bot: { use: 'save', target: 'ally', below: 0.4 } // Pass</code></pre>
 					displacement files go.
 				</li>
 				<li>
-					<b>Contacts and folder presentation.</b> <code>heal</code>, <code>tagOut</code> and
-					<code>freeze</code> facts become one <code>contact</code>; Hook's and Brew's sounds and
-					particles move from <code>look.js</code> into their tune files, Pass's and Red light's
+					<b>Contacts and folder presentation.</b> Landed (main at <code>rplrxmrnoppx</code>).
+					<code>heal</code>, <code>tagOut</code> and <code>freeze</code> facts become one
+					<code>contact</code>; Hook's and Brew's sounds and particles move from
+					<code>look.js</code> into their tune files, Pass's and Red light's
 					<code>feedback</code> into <code>juice</code>. Proof adds a headless dump of the sound
 					board's uses, identical except for the fact rename.
 				</li>
 				<li>
-					<b>Read the folder.</b> Bot and target metadata, generated card sentences. Proof needs
-					bots to choose identically, so keep the old decision order and only change where it reads
-					from.
+					<b>Bots read the folder.</b> Built-in tactics and folder tactics replace the kind-finds,
+					<code>botCone</code>/<code>botRadial</code>, Brew's dash opt-out and Coach's hero hook.
+					Proof: zero deltas, brain-state shares included; the trap is the bots' shared random
+					stream, so code moves but calls never reorder.
 				</li>
 				<li>
 					<b>Summons.</b> Port Coach's cutout and Pong's boards. Proof adds one replay of a Coach

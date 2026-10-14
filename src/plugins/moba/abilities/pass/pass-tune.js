@@ -8,6 +8,7 @@ export default {
 	slow: 0.25,
 	duration: 1,
 	cooldown: 3,
+	bot: { deficit: 0.6 },
 	juice: { contact: { hit: { count: 5, speed: 0.8, life: 0.5, size: 0.1 } } },
 	sound: {
 		cast: { freq: 400, slideTo: 640, type: 'sine', dur: 0.12, gain: 0.1 },

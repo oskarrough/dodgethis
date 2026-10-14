@@ -1,6 +1,7 @@
 import { STEP } from '../../core/app.js'
 import { neutralFrame } from '../../core/intents.js'
 import { tune } from './tune.js'
+import { botTactics } from './ability-bots.js'
 import { clampWalkable, sweepHit, sweepObstacles, segmentClear } from './obstacles.js'
 
 const ticks = (s) => Math.max(1, Math.round(s / STEP))
@@ -54,13 +55,16 @@ export function createFightBot(
 			p = position(h),
 			now = sim.tick
 		const abilities = Object.entries(h.definition.abilities).filter(([, a]) => a)
-		const [shotSlot, shotAbility] = abilities.find(([, a]) => a.kind === 'shot') ?? []
-		const [zoneSlot, zoneAbility] = abilities.find(([, a]) => a.kind === 'zone') ?? []
-		const [dashSlot, dashAbility] = abilities.find(([, a]) => a.kind === 'dash') ?? []
-		const [swapSlot, swapAbility] = abilities.find(([, a]) => a.blinkTo) ?? []
-		const [coverSlot, coverAbility] = abilities.find(([, a]) => a.placesCover) ?? []
+		const tactics = new Map(abilities.map(([slot, ability]) => [slot, botTactics(ability)]))
+		const [shotSlot, shotAbility] = abilities.find(([slot]) => tactics.get(slot).has('shoot')) ?? []
+		const [zoneSlot, zoneAbility] = abilities.find(([slot]) => tactics.get(slot).has('zone')) ?? []
+		const [dashSlot, dashAbility = null] =
+			abilities.find(([slot]) => tactics.get(slot).has('dash')) ?? []
+		const [swapSlot, swapAbility] = abilities.find(([slot]) => tactics.get(slot).has('blink')) ?? []
+		const [coverSlot, coverAbility] =
+			abilities.find(([slot]) => tactics.get(slot).has('cover')) ?? []
 		const melee = h.definition.basic?.kind === 'melee'
-		const catchAbility = abilities.find(([, a]) => a.kind === 'stance' && a.catchesShots)
+		const catchAbility = abilities.find(([slot]) => tactics.get(slot).has('catch'))
 		const own = perceived.heroes.filter((u) => !u.dead && u.team === team)
 		const enemies = perceived.heroes.filter((u) => !u.dead && u.team !== team)
 		const near = (units, at, range) => units.filter((u) => distance(u.pos, at) <= range)
@@ -99,6 +103,7 @@ export function createFightBot(
 			b,
 			k,
 			abilities,
+			tactics,
 			shotSlot,
 			shotAbility,
 			zoneSlot,
@@ -311,19 +316,20 @@ export function createFightBot(
 
 		const { target, attackReach, targetDistance, attackSpot, canFocus } = ctx
 		// Close-range cones follow a drag; radial peel waits for a crowd, even while retreating.
-		for (const [slot, ability] of ctx.abilities) {
-			if (ability.botRadial) {
-				const victims = near(enemies, p, ability.stats.radius)
-				if (victims.length >= ability.stats.botEnemies && safe(p, victims) && cast(slot, p))
-					return frame
+		for (const [slot, ability] of ctx.abilities)
+			for (const tactic of ctx.tactics.get(slot)) {
+				if (tactic === 'radial') {
+					const victims = near(enemies, p, ability.stats.radius)
+					if (victims.length >= ability.stats.botEnemies && safe(p, victims) && cast(slot, p))
+						return frame
+				}
+				if (tactic === 'cone') {
+					const victim = near(enemies, p, ability.stats.range)
+						.filter((u) => canFocus(u) && segmentClear(p, u.pos, 0, sim.obstacles, sim.bounds))
+						.sort((a, c) => distance(p, a.pos) - distance(p, c.pos) || a.id.localeCompare(c.id))[0]
+					if (victim && safe(p, [victim]) && cast(slot, victim.pos)) return frame
+				}
 			}
-			if (ability.botCone) {
-				const victim = near(enemies, p, ability.stats.range)
-					.filter((u) => canFocus(u) && segmentClear(p, u.pos, 0, sim.obstacles, sim.bounds))
-					.sort((a, c) => distance(p, a.pos) - distance(p, c.pos) || a.id.localeCompare(c.id))[0]
-				if (victim && safe(p, [victim]) && cast(slot, victim.pos)) return frame
-			}
-		}
 		// Swap (trade places with your own Ricochet shot): out when hurt, in on a low target.
 		const mark = swapAbility?.blinkTo({ hero: h, sim, tick: now })
 		if (mark) {

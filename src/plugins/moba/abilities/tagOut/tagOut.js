@@ -4,6 +4,30 @@ export default {
 	icon: '<svg viewBox="0 0 48 48" aria-hidden="true"><path class="tone" d="M6 16 H32 V9 L43 20 L32 31 V24 H6 Z"/><path class="cream" d="M42 34 H16 V27 L5 38 L16 47 V42 H42 Z"/></svg>',
 	name: 'Tag out',
 	kind: 'instant',
+	bot: {
+		priority: 30,
+		act(ctx, slot) {
+			const { h, p, own, enemies, cast, frame } = ctx
+			const b = tune.tagOut.bot
+			const danger = (at) => enemies.filter((e) => distance(e.pos, at) <= b.dangerRange).length
+			const ally = own
+				.filter(
+					(u) =>
+						u.id !== h.id &&
+						u.hp / u.maxHp < b.saveHp &&
+						distance(p, u.pos) <= tune.tagOut.range &&
+						danger(u.pos) > danger(p) &&
+						h.hp / h.maxHp >= b.saveHp &&
+						ctx.safe(
+							u.pos,
+							enemies.filter((e) => distance(e.pos, u.pos) <= b.dangerRange),
+						),
+				)
+				.sort((a, c) => a.hp / a.maxHp - c.hp / c.maxHp || a.id.localeCompare(c.id))[0]
+			if (ally && cast(slot, ally.pos)) return frame
+			return null
+		},
+	},
 	tell: 'tether',
 	held: 'circle',
 	effects: { cast: 'tagOutWindup', impact: 'tagOutSwap', pose: 'coachTag' },

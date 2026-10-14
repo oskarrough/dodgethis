@@ -5,8 +5,6 @@ const distance = (a, b) => Math.hypot(a.x - b.x, a.z - b.z)
 // Only Brew's own HP is live; targets and threats come from the delayed public view.
 export function brewBot(ctx) {
 	const { h, p, now, frame, enemies, perceived, cast, safe } = ctx
-	// The generic chase dash ignores first-body contact; Brew owns every kick.
-	ctx.dashAbility = null
 	const b = tune.heroes.brew.bot
 	const memory = (h.brewBot ??= { hp: h.hp, tick: now, burst: 0 })
 	if (now - memory.tick > b.burstWindow / STEP) memory.burst = 0

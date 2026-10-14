@@ -35,6 +35,8 @@ A hero, ability, map or mechanic is a folder under `src/plugins/moba/{heroes,abi
 
 Everything else in the folder is yours. `bun run collect-mods` writes the `all-*.js` lists the game imports and runs before `dev` and `check`, so adding a folder is enough. Ids are unique; a duplicate fails to load.
 
+An ability's `bot` selects `shoot`, `zone`, `dash`, `blink`, `cover`, `catch`, `cone` or `radial`, opts out with `false`, or adds `{ priority, act(ctx, slot) }` (higher priority first) to the default tool set inferred from its kind and capabilities.
+
 A mechanic is something a map switches on: structures, minions, the Ball, bots, camps, the flag, practice dummies. Casting, catching, bounce and damage are the engine every ability runs through; an ability is a data head and a code body in that path, never its own projectile loop.
 
 ## Find where anything lives
