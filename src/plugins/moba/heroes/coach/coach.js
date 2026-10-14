@@ -22,11 +22,6 @@ export default {
 	traits: {
 		onDeath: coachCutoutDeath,
 		onTick: coachCutoutTick,
-		damageFactor({ hero, tick }) {
-			return !hero.dead && tick < (hero.abilityState.tagOut?.until ?? 0)
-				? 1 - tune.tagOut.damageReduction
-				: 1
-		},
 		onHit({ hero, shot, target, tick, ticks }) {
 			if (hero.dead && shot.ability === 'outThrow' && target.hero)
 				hero.respawnTick = Math.max(tick, hero.respawnTick - ticks(tune.outThrow.deathRefund))

@@ -7,6 +7,7 @@ import { FLOOR } from './obstacles.js'
 import { matchRecipe, onlineMaps } from './maps/all-maps.js'
 import mechanicViews from './mechanics/all-mechanic-views.js'
 import { castAbility } from './ability.js'
+import { blocked } from './statuses.js'
 import { createSim } from './sim.js'
 import { practiceRoster } from './bots.js'
 import { createFollow, stepCamera } from './follow.js'
@@ -534,15 +535,15 @@ export default function moba(app, map) {
 				audio.setAudioListener(p)
 				if (
 					!hero.dead &&
-					sim.tick >= hero.freezeUntil &&
+					!blocked(hero, 'still', sim.tick) &&
 					hero.body.animate(step, hero.cast || hero.attack || hero.ballThrow ? 1 : 0)
 				)
 					sfx.playOwn('step', p)
 				for (const d of [...sim.heroes.filter((h) => h.id !== local), ...sim.dummies])
-					if (!d.dead && sim.tick >= (d.freezeUntil ?? 0))
+					if (!d.dead && !blocked(d, 'still', sim.tick))
 						d.body.animate(step, d.cast || d.attack || d.ballThrow ? 1 : 0)
 				for (const h of [...sim.heroes, ...sim.dummies])
-					if (!h.dead && sim.tick >= (h.freezeUntil ?? 0))
+					if (!h.dead && !blocked(h, 'still', sim.tick))
 						h.body.poseAbility?.(h.cast, blend, h, sim.tick)
 				const target =
 					!sim.ball?.carrying(hero) && !stickAimed() && frame.aim

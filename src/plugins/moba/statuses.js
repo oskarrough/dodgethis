@@ -2,10 +2,34 @@ import { abilityOf } from './ability.js'
 import { STEP } from '../../core/app.js'
 import { ticks } from './sim-kit.js'
 
+const stateGates = {
+	stunned: ['act', 'catch', 'ballPickup'],
+	frozen: ['act', 'catch', 'still'],
+	prone: ['act'],
+}
+
+const coreStatuses = {
+	'core.stun': {
+		label: 'Stun',
+		tags: ['debuff', 'stun'],
+		states: ['stunned'],
+		stack: 'independent',
+	},
+	'core.motion': {
+		label: 'Motion',
+		tags: ['motion'],
+		stack: 'replace',
+		onExpire({ unit, plan }) {
+			if (!unit.dead && unit.order?.goal) unit.order.path = plan(unit, unit.order.goal)
+		},
+	},
+}
+
 const definitions = new Map()
 
 // Custom hero declarations may override the same key; cache once per declaration owner.
 export function statusDefinition(status, unit = null) {
+	if (Object.hasOwn(coreStatuses, status.key)) return coreStatuses[status.key]
 	let entry = definitions.get(status.key)
 	if (!entry) {
 		const [ability, key] = status.key.split('.')
@@ -52,6 +76,25 @@ export function statusBar(unit, bar) {
 const active = (status, tick) => status.until === null || status.until > tick
 const resolve = (value, context) => (typeof value === 'function' ? value(context) : value)
 
+// The declarations name states; only this table gives them meaning.
+export function blocked(unit, verb, tick) {
+	if (tick === undefined) throw new Error('MOBA blocked needs the current tick')
+	return (unit?.statuses ?? []).some(
+		(status) =>
+			active(status, tick) &&
+			statusDefinition(status, unit)?.states?.some((state) => stateGates[state]?.includes(verb)),
+	)
+}
+
+// Expiry prunes host records; guests compare this deadline against their presentation tick.
+export function stateUntil(unit, state) {
+	let until = 0
+	for (const status of unit?.statuses ?? [])
+		if (statusDefinition(status, unit)?.states?.includes(state))
+			until = Math.max(until, status.until ?? Infinity)
+	return until
+}
+
 // Slows keep their own clocks; only the strongest active slow affects movement.
 export function moveSpeed(unit, tick) {
 	if (tick === undefined) throw new Error('MOBA moveSpeed needs the current tick')
@@ -80,6 +123,7 @@ export function createStatuses(ctx) {
 			ability,
 			stats: ability?.stats,
 			sim: ctx.api,
+			plan: ctx.plan,
 			tick: ctx.t,
 			ticks,
 			...extra,
@@ -178,6 +222,15 @@ export function createStatuses(ctx) {
 			periodic.onTick?.(info)
 		}
 	}
+	function damageTaken(unit, shot) {
+		let factor = 1
+		for (const status of unit.statuses ?? []) {
+			if (!active(status, ctx.t)) continue
+			const modifier = statusDefinition(status, unit)?.damageTaken
+			if (modifier !== undefined) factor *= resolve(modifier, context(unit, status, { shot }))
+		}
+		return factor
+	}
 	function onDamageTaken(unit, damage, shot) {
 		let remaining = damage
 		for (const status of (unit.statuses ?? []).slice()) {
@@ -208,6 +261,7 @@ export function createStatuses(ctx) {
 		cleanse,
 		expireStatuses,
 		stepStatuses,
+		damageTaken,
 		onDamageTaken,
 		absorb,
 	}

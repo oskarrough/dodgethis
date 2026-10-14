@@ -1,4 +1,5 @@
 import { tune } from './tune.js'
+import { blocked } from './statuses.js'
 import { castAbility, abilityOf } from './ability.js'
 import { segmentClear } from './obstacles.js'
 import { pursue } from './path.js'
@@ -160,9 +161,7 @@ export function createOrders(ctx) {
 			(h.channel && abilityOf(h.channel.ability, h)?.root === true) ||
 			h.attack ||
 			h.ballThrow ||
-			ctx.t < h.stunUntil ||
-			ctx.t < h.freezeUntil ||
-			ctx.t < h.proneUntil
+			blocked(h, 'act', ctx.t)
 		)
 			return body.update({ x: 0, z: 0 }, dt, 0) // rooted for the cast point, stopped dead
 		const stick = Math.hypot(frame.move.x, frame.move.z)

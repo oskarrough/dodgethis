@@ -1,6 +1,6 @@
 import { tune, profile } from './tune.js'
 import { abilityOf, castAbility } from './ability.js'
-import { moveSpeed } from './statuses.js'
+import { blocked, moveSpeed } from './statuses.js'
 import { SLOTS, ticks, yawOf, dirOf } from './sim-kit.js'
 import { stepUnitDisplacement } from './displacement.js'
 
@@ -45,9 +45,7 @@ export function createControl(ctx) {
 			return
 		}
 		if (lobby && h.body.position.y < -tune.lobby.fall.depth) dropIn(h)
-		const displaced = !!h.displacement
 		if (stepUnitDisplacement(h, ctx.t, dt)) return
-		if (displaced && h.order?.goal) h.order.path = plan(h, h.order.goal)
 		if (h.shove) {
 			// The slide is committed; orders and presses wait for it rather than being swallowed.
 			if (ctx.t < h.shove.until) return h.body.update({ x: 0, z: 0 }, dt, 0)
@@ -112,10 +110,10 @@ export function createControl(ctx) {
 			if (swapAim.blocked.size) frame.aim = null
 			else h.swapAim = null
 		}
-		if (ctx.t < h.stunUntil || ctx.t < h.freezeUntil || ctx.t < h.proneUntil) {
+		if (blocked(h, 'act', ctx.t)) {
 			cancelChannel(h, 'disabled')
 			h.body.cancelDash()
-			if (ctx.t < h.stunUntil || ctx.t < h.freezeUntil) {
+			if (blocked(h, 'catch', ctx.t)) {
 				h.catchWindow = null
 				h.abilityState.bag = []
 			}

@@ -1,5 +1,6 @@
 import { tune } from './tune.js'
 import { STEP } from '../../core/app.js'
+import { blocked } from './statuses.js'
 import { heroDefinition } from './heroes.js'
 import { abilityOf, castAbility } from './ability.js'
 import { clampMap, segmentClear } from './obstacles.js'
@@ -353,12 +354,7 @@ export function createCasting(ctx) {
 			)
 		)
 			return cancelChannel(hero, 'input')
-		if (
-			hero.displacement ||
-			ctx.t < hero.stunUntil ||
-			ctx.t < hero.freezeUntil ||
-			ctx.t < hero.proneUntil
-		)
+		if (hero.statuses?.some((status) => status.motion) || blocked(hero, 'act', ctx.t))
 			return cancelChannel(hero, 'disabled')
 		const ability = abilityOf(channel.ability, hero)
 		ability?.onTick?.(traitContext(hero, { ...channel, ability, dt }))

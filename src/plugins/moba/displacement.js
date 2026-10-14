@@ -4,12 +4,9 @@ import { clampMap, sweepObstacles } from './obstacles.js'
 
 // Move either a physics hero or a plain lane body without snapping render interpolation.
 export function stepUnitDisplacement(unit, tick, dt) {
-	const state = unit.displacement
-	if (!state) return false
-	if (unit.dead || tick > state.until) {
-		unit.displacement = null
-		return false
-	}
+	const status = unit.statuses?.find((entry) => entry.motion && entry.until > tick)
+	const state = status?.motion
+	if (!state || unit.dead) return false
 	const fraction = Math.min(1, (tick - state.started) / (state.until - state.started))
 	const point = {
 		x: state.from.x + (state.to.x - state.from.x) * fraction,
@@ -51,12 +48,11 @@ export function createDisplacement(ctx) {
 		unit.ballThrow = null
 		unit.shove = null
 		unit.path = null
-		unit.displacement = {
-			from,
-			to,
-			started: ctx.t,
-			until: ctx.t + Math.max(1, ticks(Math.max(STEP, duration))),
-		}
+		const until = ctx.t + Math.max(1, ticks(Math.max(STEP, duration)))
+		const status = ctx.apply(unit, 'core.motion')
+		status.motion = { from, to, started: ctx.t, until }
+		// Motion includes its endpoint tick; ordinary statuses expire at that tick.
+		status.until = until + 1
 		return true
 	}
 	return { displace }

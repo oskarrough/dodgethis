@@ -1,4 +1,5 @@
 import { tune } from './tune.js'
+import { blocked } from './statuses.js'
 import { abilityOf } from './ability.js'
 import { STEP } from '../../core/app.js'
 import { clampMap, sweepHit, sweepObstacles } from './obstacles.js'
@@ -325,7 +326,7 @@ export function createProjectiles(ctx) {
 			hero.cast ||
 			hero.channel ||
 			hero.body.dashing ||
-			ctx.t < Math.max(hero.stunUntil, hero.freezeUntil, hero.proneUntil)
+			blocked(hero, 'act', ctx.t)
 		)
 			return false
 		const length = Math.hypot(direction.x, direction.z)
@@ -390,8 +391,7 @@ export function createProjectiles(ctx) {
 			if (
 				hero.dead ||
 				shot.passed?.includes(hero.id) ||
-				ctx.t < hero.stunUntil ||
-				ctx.t < hero.freezeUntil ||
+				blocked(hero, 'catch', ctx.t) ||
 				hero.team === shot.team ||
 				!window ||
 				window.until <= ctx.t ||

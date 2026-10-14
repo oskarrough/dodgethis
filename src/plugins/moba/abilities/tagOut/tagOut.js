@@ -7,7 +7,14 @@ export default {
 	tell: 'tether',
 	held: 'circle',
 	effects: { cast: 'tagOutWindup', impact: 'tagOutSwap', pose: 'coachTag' },
-	state: () => ({ until: 0 }),
+	statuses: {
+		guard: {
+			label: 'Tag out',
+			tags: ['buff'],
+			duration: ({ stats }) => stats.duration,
+			damageTaken: () => 1 - tune.tagOut.damageReduction,
+		},
+	},
 	targetUnit({ hero, sim, target, ability }) {
 		return (
 			sim.heroes
@@ -34,7 +41,7 @@ export default {
 				distance(hero.body.position, u.body.position) <= tune.tagOut.range,
 		)
 	},
-	onRelease({ hero, sim, ability, targetId, tick, ticks, present }) {
+	onRelease({ hero, sim, ability, targetId, present }) {
 		const ally = sim.heroes.find((u) => u.id === targetId)
 		if (
 			!ally ||
@@ -50,14 +57,14 @@ export default {
 			u.body.cancelDash()
 			u.dashAbility = null
 			u.shove = null
-			u.displacement = null
+			sim.cleanse(u, 'motion')
 			u.order = null
 		}
 		hero.body.place(to.x, to.y, to.z)
 		ally.body.place(from.x, from.y, from.z)
-		ally.stunUntil = 0
+		sim.cleanse(ally, 'stun')
 		sim.cleanse(ally, 'slow')
-		hero.abilityState.tagOut.until = tick + ticks(ability.stats.duration)
+		sim.apply(hero, 'tagOut.guard')
 		present({
 			type: 'tagOut',
 			source: hero.id,

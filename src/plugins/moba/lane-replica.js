@@ -23,18 +23,14 @@ const columns = {
 		'statuses',
 		'dashAbility',
 		'respawnTick',
-		'stunUntil',
 		'ballThrow',
 		'attack',
 		'attackTick',
 		'order',
 		'cast',
-		'freezeUntil',
-		'proneUntil',
 		'stance',
 		'channel',
 		'catchWindow',
-		'displacement',
 	],
 	minions: [
 		'statuses',
@@ -46,7 +42,6 @@ const columns = {
 		'dead',
 		'pos',
 		'yaw',
-		'displacement',
 		'target',
 		'attackTick',
 		'attack',
@@ -83,18 +78,14 @@ const columns = {
 }
 const heroDefaults = {
 	respawnTick: null,
-	stunUntil: 0,
 	ballThrow: null,
 	attack: null,
 	attackTick: 0,
 	order: null,
 	cast: null,
-	freezeUntil: 0,
-	proneUntil: 0,
 	stance: null,
 	channel: null,
 	catchWindow: null,
-	displacement: null,
 }
 const coordinateFields = { heroes: ['pos', 'vel'], minions: ['pos'], projectiles: ['pos', 'dir'] }
 const recapColumns = [

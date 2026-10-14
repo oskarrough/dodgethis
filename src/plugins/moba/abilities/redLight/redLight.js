@@ -1,4 +1,5 @@
 import { tune } from '../../tune.js'
+import { stateUntil } from '../../statuses.js'
 export default {
 	icon: '<svg viewBox="0 0 48 48" aria-hidden="true"><circle class="tone" cx="24" cy="24" r="18"/><path class="cream" d="M17 12 H31 V36 H17 Z"/></svg>',
 	name: 'Red light',
@@ -6,7 +7,16 @@ export default {
 	tell: 'selfCircle',
 	held: 'selfCircle',
 	effects: { cast: 'redLightWindup', impact: 'redLightFreeze', pose: 'coachRed' },
-	onRelease({ hero, sim, ability, tick, ticks, present }) {
+	statuses: {
+		freeze: {
+			label: 'Freeze',
+			tags: ['debuff', 'freeze'],
+			states: ['frozen'],
+			stack: 'independent',
+			duration: ({ stats }) => stats.duration,
+		},
+	},
+	onRelease({ hero, sim, ability, present }) {
 		const p = hero.body.position,
 			stats = ability.stats
 		for (const enemy of sim.heroes) {
@@ -17,7 +27,7 @@ export default {
 				Math.hypot(enemy.body.velocity.x, enemy.body.velocity.z) <= stats.movingSpeed
 			)
 				continue
-			enemy.freezeUntil = Math.max(enemy.freezeUntil, tick + ticks(stats.duration))
+			sim.apply(enemy, 'redLight.freeze', { source: hero, duration: stats.duration })
 			enemy.body.cancelDash()
 			enemy.dashAbility = null
 			present({
@@ -25,7 +35,7 @@ export default {
 				source: hero.id,
 				target: enemy.id,
 				ability: ability.id,
-				until: enemy.freezeUntil,
+				until: stateUntil(enemy, 'frozen'),
 				point: { ...enemy.body.position },
 			})
 		}

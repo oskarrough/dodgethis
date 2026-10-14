@@ -80,12 +80,9 @@ export function createHeroMaker({ scene, world, RAPIER, smooth, lobby, floor, wa
 			order: null,
 			cast: null,
 			statuses: [],
-			freezeUntil: 0,
-			proneUntil: 0,
 			stance: null,
 			channel: null,
 			catchWindow: null,
-			stunUntil: 0,
 			ballThrow: null,
 			cd: SLOTS.map(() => 0),
 			cancelUntil: SLOTS.map(() => 0),
@@ -173,11 +170,7 @@ export function createRoster(ctx) {
 		hero.channel = null
 		hero.catchWindow = null
 		hero.dashAbility = null
-		hero.displacement = null
 		hero.ballThrow = null
-		hero.freezeUntil = 0
-		hero.proneUntil = 0
-		hero.stunUntil = 0
 		hero.cd.fill(0)
 		hero.cancelUntil.fill(0)
 		hero.judged = new WeakSet()

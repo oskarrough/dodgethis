@@ -1,4 +1,5 @@
 import { projectLaneSnapshot } from './lane-replica.js'
+import { packStatuses } from './statuses.js'
 
 const q = (v) => Math.round(v * 1000) / 1000 || 0
 
@@ -58,7 +59,6 @@ export function createSnapshot(ctx) {
 							aggroOrigin: u.aggroOrigin ? { x: q(u.aggroOrigin.x), z: q(u.aggroOrigin.z) } : null,
 							returnGoal: u.returnGoal ? { x: q(u.returnGoal.x), z: q(u.returnGoal.z) } : null,
 							statuses: structuredClone(u.statuses ?? []),
-							...(u.displacement && { displacement: structuredClone(u.displacement) }),
 						})),
 						structures: lane.structures.map((u) => ({
 							id: u.id,
@@ -98,7 +98,6 @@ export function createSnapshot(ctx) {
 				level: h.level,
 				dead: h.dead,
 				respawnTick: h.respawnTick,
-				stunUntil: h.stunUntil,
 				ballThrow: h.ballThrow && structuredClone(h.ballThrow),
 				attack: h.attack && { ...h.attack },
 				attackTick: h.attackTick,
@@ -112,11 +111,8 @@ export function createSnapshot(ctx) {
 					...(h.order.resume ? { resume: { ...h.order.resume } } : {}),
 				},
 				cast: h.cast && { ...structuredClone(h.cast), yaw: q(h.cast.yaw) },
-				...(h.displacement && { displacement: structuredClone(h.displacement) }),
 				cd: h.cd.slice(),
 				cancelUntil: h.cancelUntil.slice(),
-				freezeUntil: h.freezeUntil,
-				proneUntil: h.proneUntil,
 				stance: h.stance && { ...h.stance },
 				channel: h.channel && structuredClone(h.channel),
 				catchWindow: h.catchWindow && { ...h.catchWindow },
@@ -136,7 +132,6 @@ export function createSnapshot(ctx) {
 					target: { x: q(d.cast.target.x), z: q(d.cast.target.z) },
 				},
 				castTick: d.castTick,
-				...(d.displacement && { displacement: structuredClone(d.displacement) }),
 				statuses: structuredClone(d.statuses ?? []),
 				dead: d.dead,
 				respawnTick: d.respawnTick,
@@ -160,7 +155,11 @@ export function createSnapshot(ctx) {
 				travelled: q(s.travelled),
 			})),
 		}
-		return wire && lane ? projectLaneSnapshot(state) : state
+		if (!wire) return state
+		if (lane) return projectLaneSnapshot(state)
+		for (const unit of [...state.heroes, ...state.dummies])
+			unit.statuses = packStatuses(unit.statuses)
+		return state
 	}
 
 	return { snapshot }

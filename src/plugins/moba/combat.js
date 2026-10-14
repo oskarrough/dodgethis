@@ -1,4 +1,5 @@
 import { tune } from './tune.js'
+import { blocked } from './statuses.js'
 import { STEP } from '../../core/app.js'
 import { freshAbilityState } from './heroes.js'
 import { abilityOf } from './ability.js'
@@ -66,18 +67,14 @@ export function createCombat(ctx) {
 		unit.hp = unit.dunked ? Math.min(unit.maxHp, unit.dunked.hp) : unit.maxHp
 		ctx.clearStatuses(unit, 'respawn')
 		unit.dunked = null
-		unit.displacement = null
 		unit.shove = null
 		unit.respawnTick = null
-		unit.freezeUntil = 0
-		unit.proneUntil = 0
 		endCast(unit, 'respawn')
 		endStance(unit, 'respawn')
 		cancelChannel(unit, 'respawn')
 		unit.catchWindow = null
 		for (let i = cutouts.length - 1; i >= 0; i--)
 			if (cutouts[i].owner === unit.id) cutouts.splice(i, 1)
-		unit.stunUntil = 0
 		unit.ballThrow = null
 		if (unit.post) unit.castTick = ctx.t + ticks(tune.dummies.castEvery)
 		present({ type: 'spawn', target: unit.id, point: { x: spawn.x, y: 0, z: spawn.z } })
@@ -216,14 +213,14 @@ export function createCombat(ctx) {
 			abilityOf(unit.stance?.ability, unit)?.catchesShots &&
 			unit.stance.until > ctx.t &&
 			unit.catchWindow?.until > ctx.t &&
-			ctx.t >= Math.max(unit.stunUntil, unit.freezeUntil, unit.proneUntil)
+			!blocked(unit, 'act', ctx.t)
 		let incoming = shot.unmodified
 			? rawDamage
 			: rawDamage *
 				(catchShield
 					? 1 - (abilityOf(unit.catchWindow.ability, unit)?.stats.damageReduction ?? 0)
 					: 1) *
-				(unit.definition?.traits.damageFactor?.(traitContext(unit, { shot })) ?? 1) *
+				ctx.damageTaken(unit, shot) *
 				(unit.structure && (shot.isAbility || shot.slot.startsWith('slot'))
 					? tune.waves.abilityStructure
 					: 1)
@@ -271,7 +268,6 @@ export function createCombat(ctx) {
 		}
 		unit.dead = true
 		ctx.clearStatuses(unit, 'death')
-		if (unit.displacement) unit.displacement = null
 		if (!unit.kind) ball?.hurt(unit)
 		unit.corpse = unit.body
 		unit.body.retire()
@@ -301,12 +297,9 @@ export function createCombat(ctx) {
 		endStance(unit, 'death')
 		cancelChannel(unit, 'death')
 		unit.shove = null
-		unit.displacement = null
 		if (unit.post) return
 		unit.abilityState = freshAbilityState(unit.definition)
 		unit.catchWindow = null
-		unit.freezeUntil = 0
-		unit.proneUntil = 0
 		unit.definition.traits.onDeath?.(traitContext(unit, { shot }))
 		unit.order = null
 		unit.attack = null

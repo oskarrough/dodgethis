@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import { styleId } from '../../../../core/stylepass.js'
 import { STEP } from '../../../../core/app.js'
 import { tune } from '../../tune.js'
+import { stateUntil } from '../../statuses.js'
 
 // Mitts's pocket ring and glove poses, in metres and radians.
 const view = {
@@ -143,7 +144,7 @@ export function animate(
 	} else if (unit?.body?.dashing && unit.dashAbility === 'dive') {
 		costume.rotation.x = -view.diveLean
 		glove.position.z = -view.tossPull
-	} else if (time < (unit?.proneUntil ?? 0)) {
+	} else if (time < stateUntil(unit, 'prone')) {
 		costume.rotation.x = -view.proneTurn
 	} else if (unit?.attack) {
 		const attack = unit.attack

@@ -3,6 +3,7 @@ import { neutralFrame, validIntent } from '../../core/intents.js'
 import { tune } from './tune.js'
 import { DEFAULT_HERO } from './heroes.js'
 import { abilityOf } from './ability.js'
+import { stateUntil } from './statuses.js'
 
 const ticks = (s) => Math.max(1, Math.round(s / STEP))
 const n = (v) => String(Math.round(v * tune.agents.precision) / tune.agents.precision || 0)
@@ -102,7 +103,7 @@ export function observation(sim, id, perceived, reasons = ['decision']) {
 			.map((cd) => n(cd * STEP))
 			.join(
 				'/',
-			)}s ${h.dead ? `dead respawn=${left(h.respawnTick)}s` : `order=${order}`}${h.cast ? ` cast=${h.cast.ability}:${n(h.cast.left * STEP)}s` : ''}${h.body.dashing ? ` dash=${n(h.body.dashTime)}s` : ''}${sim.ball?.carrying(h) ? ` carrying=ball-${sim.ball.state.id}` : ''}${h.stunUntil > sim.tick ? ` stun=${left(h.stunUntil)}s` : ''}`,
+			)}s ${h.dead ? `dead respawn=${left(h.respawnTick)}s` : `order=${order}`}${h.cast ? ` cast=${h.cast.ability}:${n(h.cast.left * STEP)}s` : ''}${h.body.dashing ? ` dash=${n(h.body.dashTime)}s` : ''}${sim.ball?.carrying(h) ? ` carrying=ball-${sim.ball.state.id}` : ''}${stateUntil(h, 'stunned') > sim.tick ? ` stun=${left(stateUntil(h, 'stunned'))}s` : ''}`,
 		`ball ${ball}`,
 	]
 	const threats = []

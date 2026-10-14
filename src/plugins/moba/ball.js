@@ -1,5 +1,6 @@
 import { STEP } from '../../core/app.js'
 import { tune } from './tune.js'
+import { blocked } from './statuses.js'
 import { interceptShot, stepShot } from './skillshot.js'
 import { clampWalkable } from './obstacles.js'
 
@@ -14,6 +15,7 @@ export function createBall({
 	obstacles,
 	present,
 	damage,
+	apply,
 	endCast,
 	layout,
 }) {
@@ -220,7 +222,7 @@ export function createBall({
 					})
 					damage(shot, u, u.structure ? u.maxHp * tune.ball.structureDamage : tune.ball.damage)
 					// The landed hit reads the stance before this impact's stun disables it.
-					if (!u.structure) u.stunUntil = now + ticks(tune.ball.stun)
+					if (!u.structure) apply(u, 'core.stun', { duration: tune.ball.stun })
 					if (u.structure) {
 						fact('ballPop', { reason: 'spent' })
 						ball = null
@@ -238,7 +240,7 @@ export function createBall({
 		}
 		const eligible = (h) =>
 			!h.dead &&
-			now >= (h.stunUntil ?? 0) &&
+			!blocked(h, 'ballPickup', now) &&
 			!h.cast &&
 			!h.attack &&
 			!h.body.dashing &&

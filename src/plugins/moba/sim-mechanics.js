@@ -127,6 +127,7 @@ export function plugMechanics({
 			present,
 			view: mechanicViews[mechanic.id] ?? {},
 			endCast: (...args) => systems().endCast(...args),
+			apply: (...args) => systems().apply(...args),
 			damage(shot, unit, damage) {
 				systems().hit(
 					{ ...shot, id: -1, owner: shot.owner, slot: 'ball', damage },

@@ -24,14 +24,11 @@ const fields = [
 	'level',
 	'dead',
 	'respawnTick',
-	'stunUntil',
 	'attack',
 	'attackTick',
 	'order',
 	'cast',
 	'cancelUntil',
-	'freezeUntil',
-	'proneUntil',
 	'stance',
 	'channel',
 	'catchWindow',
@@ -256,7 +253,6 @@ export function createUnitReplica(
 		}
 		for (const key of fields) if (Object.hasOwn(a, key)) unit[key] = structuredClone(a[key])
 		unit.statuses = unpackStatuses(unit.statuses)
-		unit.displacement = a.displacement ? structuredClone(a.displacement) : null
 		const continuous = b && a.dead === b.dead && a.heroId === b.heroId && a.seatTeam === b.seatTeam
 		if (a.pos && !unit.body.retired) {
 			const p = continuous && b.pos ? b.pos : a.pos
