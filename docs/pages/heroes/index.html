@@ -249,7 +249,7 @@
 	</head>
 	<body class="page">
 		<main>
-			<h1>Seven hero pitches and a heroic for P. Pong</h1>
+			<h1>Eight hero pitches and a heroic for P. Pong</h1>
 			<p class="lede">
 				Each kit takes one verb Fletcher (poke and kite) and Mitts (catch and return) don't own. All
 				keep the house rules: anything that touches an enemy shows its hitbox for a cast point of at
@@ -1394,6 +1394,121 @@
 								d.text(15, 14.2, 'r 3.5 m · 450', { anchor: 'middle', size: 9 })
 								d.text(3, 6, 'kick rolls it', { size: 9 })
 								d.ref('rain')
+							},
+						},
+					],
+				},
+				{
+					id: 'H9',
+					name: 'Brew',
+					role: 'bruiser · 1800 HP',
+					floor: 2,
+					ceil: 5,
+					verb: 'drink and stagger',
+					counters: 'Poke and slow attrition: Fletcher, towers',
+					status: 'Later',
+					moment:
+						'Fletcher, Mitts and their tower all on you at 300 HP. You stagger, kneel and drink; their burst arrives as a trickle into your shield. They’ve spent everything, and you kick a minion out of the fight on 900.',
+					ceiling:
+						'Staggering before the burst, not after; drinking between waves behind a pillar; reading the stagger meter to know when a sip outruns it; kicking off minions to leave a fight the same way you came in.',
+					floorText: 'Hurt? Drink. Press Q on someone.',
+					answer:
+						'Burst him outside Stagger, or stop the drink. He’s rooted while he drinks, so Hook, Shove and Foul all break it, and a stun is a stun.',
+					flag: 'Tune so the drink beats a burst and loses to pressure: two heroes on him for 6 s should still win. If he outlasts that, cut shield per second before cutting the jug.',
+					abilities: [
+						{
+							slot: 'T',
+							name: 'Swig',
+							text: 'Hold to drink from the jug, rooted: 150 shield per second, up to 2 s, shields last 4 s. Moving, casting or a stun stops it. The jug refills over 10 s; sips are fine.',
+							time: [
+								[0, 2, 'active', 'drinking, rooted'],
+								[2, 2, 'active', 'shield holds'],
+							],
+							draw(d) {
+								d.me(8, 9)
+								d.circle(8, 9, 1.6)
+								d.text(8, 5.6, '+150 shield / s', { anchor: 'middle', size: 9 })
+								d.text(8, 13.4, 'rooted, up to 2 s', { anchor: 'middle', size: 9 })
+								d.foe(22, 9)
+								d.arrow([L(21, 9), L(10.2, 9)], { color: C.red, dash: '3 3' })
+								d.text(16, 7.6, 'Hook breaks it', { anchor: 'middle', size: 9, color: C.red })
+							},
+						},
+						{
+							slot: 'Q',
+							name: 'Flying kick',
+							text: '0.3 s windup with the line shown, then a 6 m dash to the first unit on it, friend or foe, for 100 to an enemy. Kicking a minion is the getaway.',
+							time: [
+								[0, 0.3, 'tell', 'windup'],
+								[0.3, 0.25, 'travel', 'kick'],
+							],
+							draw(d) {
+								d.band([L(3, 6), L(15, 6)], 0.7)
+								d.me(3, 6)
+								d.foe(15, 6)
+								d.star(15, 4.6, 0.8)
+								d.text(9, 4.4, '6 m', { anchor: 'middle', size: 9 })
+								d.me(3, 12, { fade: true })
+								d.arrow([L(3.8, 12), L(14.2, 12)], { color: C.blue, width: 3 })
+								d.minion(15, 12)
+								d.text(9, 14.6, 'off a minion: out of the fight', { anchor: 'middle', size: 9 })
+								d.ref('vault')
+							},
+						},
+						{
+							slot: 'W',
+							name: 'Stagger',
+							text: 'Instant, 3 s: damage you take lands as a trickle over the next 3 s instead of on impact. Shields soak the trickle, so Stagger then Swig is the whole hero.',
+							time: [
+								[0, 3, 'active', 'damage delayed'],
+								[3, 3, 'travel', 'trickle lands'],
+							],
+							draw(d) {
+								d.me(6, 9)
+								d.foe(24, 9)
+								d.arrow([L(23, 9), L(7.2, 9)], { color: C.red, width: 2.5 })
+								d.text(15, 7.4, '400 burst', { anchor: 'middle', size: 9, color: C.red })
+								d.rect(2, 12.4, 8, 1, 'body')
+								d.text(6, 15.4, 'pays out over 3 s', { anchor: 'middle', size: 9 })
+							},
+						},
+						{
+							slot: 'E',
+							name: 'Spit take',
+							text: '0.3 s windup, a 4 m cone of sports drink for 90 and a 30% slow for 1.5 s. Costs a sip from the jug.',
+							time: [
+								[0, 0.3, 'tell', 'windup'],
+								[0.3, 1.5, 'active', 'slow 1.5 s'],
+							],
+							draw(d) {
+								d.cone(6, 9, 4, 0, 70)
+								d.me(6, 9)
+								d.foe(9, 8.2)
+								d.foe(9.2, 10.4)
+								d.text(6, 14.6, '4 m cone, 90 + slow', { anchor: 'middle', size: 9 })
+								d.ref('rain')
+							},
+						},
+						{
+							slot: 'R',
+							name: 'Rolling cooler',
+							text: '0.4 s tell, then climb into the cooler and roll 4 s, steered by your aim, unstoppable. Each hero you hit takes 60 and is bumped 2 m. You climb out with a full jug.',
+							time: [
+								[0, 0.4, 'tell', 'tell'],
+								[0.4, 4, 'active', 'rolling, unstoppable'],
+							],
+							draw(d) {
+								d.arrow([L(2, 12), L(9, 6), L(17, 10), L(25, 5)], {
+									color: C.blue,
+									curve: true,
+									width: 4,
+								})
+								d.me(2, 12)
+								d.foe(9.6, 5.2)
+								d.arrow([L(10, 5), L(11, 2.6)], { color: C.red, width: 2 })
+								d.foe(17.6, 10.8)
+								d.arrow([L(18, 11.2), L(19, 13.6)], { color: C.red, width: 2 })
+								d.text(14, 15.4, '4 s, 60 and a 2 m bump per hero', { anchor: 'middle', size: 9 })
 							},
 						},
 					],
