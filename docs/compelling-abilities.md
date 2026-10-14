@@ -28,7 +28,7 @@ Every one of these is a verb the other players can see. That's the lesson: excit
 
 The threads' wishlists are also a list of what breaks a game:
 
-- **Chained control is no game.** Bone Prison plus Entomb plus Frost Nova reads great on paper and plays as a cutscene for the victim. One disable at a time per target, or each one telegraphed and dodgeable on its own.
+- **Chained control is earned, not forbidden.** A stun is a stun: no immunity window, no get-out-of-jail card (Oskar, 2026-10-14). What keeps Bone Prison plus Entomb plus Frost Nova from being a cutscene is that each one is telegraphed and dodgeable on its own, so landing the chain is the skill and dodging the first link is the answer.
 - **Mobility chains break the map.** "Map-wide kidnapping" (Gorge, then Blink, Dash, Jump) is the threads' funniest build and the one no one should ever face. A hero gets one burst of movement per fight; anything that relocates an enemy is slow, short or loud.
 - **Saves need a cost.** A save without a cooldown, cast point or a counter becomes the meta. Make it short, or interruptible, or make it spend something (the Ball, Pocket, position).
 - **No cooldowns is a sandbox.** The "free picks, no cooldowns" wish is a party mode, not a balance target. Build it as a toggle if it's ever wanted; don't tune toward it.
