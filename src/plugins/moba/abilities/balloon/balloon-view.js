@@ -45,7 +45,17 @@ export function extras(scene) {
 				const stats = tune.balloon,
 					v = stats.view
 				const flight = unit.data.phase === 'flight'
-				const at = flight ? unit.data.target : unit.body.position
+				const { start, target, popAt } = unit.data
+				const popFraction =
+					popAt == null
+						? 1
+						: Math.max(0, Math.min(1, (popAt - unit.from) / Math.max(1, ticks(stats.flight))))
+				const at = flight
+					? {
+							x: start.x + (target.x - start.x) * popFraction,
+							z: start.z + (target.z - start.z) * popFraction,
+						}
+					: unit.body.position
 				rig.edge.position.set(at.x, v.ground, at.z)
 				rig.edge.scale.setScalar(stats.radius)
 				rig.ripple.visible = !flight
@@ -57,11 +67,10 @@ export function extras(scene) {
 						0,
 						Math.min(1, (tick + alpha - unit.from) / Math.max(1, ticks(stats.flight))),
 					)
-					const start = unit.data.start
 					rig.orb.position.set(
-						start.x + (at.x - start.x) * fraction,
+						start.x + (target.x - start.x) * fraction,
 						v.ground + v.height * 4 * fraction * (1 - fraction),
-						start.z + (at.z - start.z) * fraction,
+						start.z + (target.z - start.z) * fraction,
 					)
 					rig.orb.scale.setScalar(v.ballRadius)
 				}

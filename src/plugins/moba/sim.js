@@ -157,6 +157,7 @@ export function createSim({
 					t,
 				)
 		}
+	const summons = []
 	const { lane, camps, ball, dummies, flag } = plugMechanics({
 		mechanics,
 		ground,
@@ -164,12 +165,12 @@ export function createSim({
 		heroes,
 		posts,
 		training,
+		summons,
 		present,
 		bodyAt,
 		systems: () => ctx,
 	})
 
-	const summons = []
 	const { enemiesOf, find, pick, nearestToClick, stickAim } = createTargeting({
 		summons,
 		outOfPlay: (hero) => hero.definition.outOfPlay?.({ hero, sim: api }),

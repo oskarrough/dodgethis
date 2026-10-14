@@ -39,6 +39,7 @@ export function matchReport(roster, { STEP, towerRange, count = [] }) {
 			]),
 		),
 		firstTower: null,
+		summonsDestroyed: {},
 		statusLabels: {},
 		abilities: {},
 		deathsBy: {},
@@ -114,6 +115,12 @@ export function matchReport(roster, { STEP, towerRange, count = [] }) {
 				counters.firstTower === null
 			)
 				counters.firstTower = row.tick * STEP
+			if (row.kind === 'death' && row.fact?.summon)
+				add(
+					(counters.summonsDestroyed[row.fact.summon] ??= {}),
+					killerKind(row.fact.source, seats),
+					1,
+				)
 			if (row.kind === 'death' && seats.has(row.target)) {
 				counters.seats[row.target].deaths++
 				if (counters.seats[row.target].idle) return
@@ -210,6 +217,7 @@ function zone(lanes, heroUnit) {
 export function emptyTotals() {
 	return {
 		matches: 0,
+		summonsDestroyed: {},
 		statusLabels: {},
 		decided: 0,
 		heroes: {},
@@ -281,6 +289,7 @@ export function mergeReport(totals, report, winner) {
 	for (const key of ['abilities', 'deathsBy', 'taken', 'states', 'siege', 'lanes', 'lost'])
 		sumInto(totals[key], report[key])
 	sumInto(totals.counts, report.counts)
+	sumInto(totals.summonsDestroyed, report.summonsDestroyed ?? {})
 	for (const { kind, at, hit } of report.falls) {
 		const fallStats = (totals.falls[kind] ??= { at: [], took: [] })
 		fallStats.at.push(at)
@@ -549,6 +558,27 @@ export function reportSections(sides) {
 			}),
 		),
 	)
+
+	const summonKillers = inner((totals) => totals.summonsDestroyed ?? {})
+	if (summonKillers.length)
+		output.push(
+			'\nSummons destroyed per match, by killer',
+			table(
+				['summon', 'total', ...summonKillers],
+				keys((totals) => totals.summonsDestroyed ?? {}).map((id) => [
+					id,
+					val(
+						(totals) =>
+							Object.values(totals.summonsDestroyed?.[id] ?? {}).reduce((a, b) => a + b, 0) /
+							totals.matches,
+						2,
+					),
+					...summonKillers.map((kind) =>
+						val((totals) => (totals.summonsDestroyed?.[id]?.[kind] ?? 0) / totals.matches, 2),
+					),
+				]),
+			),
+		)
 
 	const kinds = inner((totals) => totals.deathsBy)
 	output.push(

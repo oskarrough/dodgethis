@@ -1,6 +1,7 @@
 export default {
 	hp: 1500,
 	speed: 5,
+	bot: { saveHp: 0.6 },
 	view: {
 		width: 0.75,
 		height: 0.7,

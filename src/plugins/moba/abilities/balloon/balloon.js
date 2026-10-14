@@ -43,14 +43,15 @@ export default {
 		Object.assign(unit.data, { start: { ...hero.body.position }, target: { ...target }, slot })
 	},
 	// The casting engine dispatches recasts before cooldown/busy gates, without resetting the clock.
-	onRecast({ hero, sim, tick, ticks, present, ability }) {
+	onRecast({ hero, sim, tick, ticks, ability }) {
 		const unit = sim.summons.find(
 			(u) => u.owner === hero.id && u.key === ability.id && u.data.phase === 'flight',
 		)
 		if (!unit) return false
-		unit.data.popAt = Math.max(tick, unit.from + ticks(ability.stats.minFlight))
-		if (tick >= unit.data.popAt)
-			balloonPop({ unit, owner: hero, sim, tick, ticks, present, stats: ability.stats })
+		unit.data.popAt = Math.max(
+			tick + ticks(ability.stats.popTell),
+			unit.from + ticks(ability.stats.minFlight),
+		)
 		return true
 	},
 	bot: {
@@ -68,7 +69,10 @@ export default {
 			const enemy = enemies
 				.filter((u) => distance(p, u.pos) <= stats.range)
 				.sort((a, b) => distance(p, a.pos) - distance(p, b.pos) || a.id.localeCompare(b.id))[0]
-			if (enemy) {
+			const savingHeal = own.some(
+				(u) => distance(p, u.pos) <= stats.range && u.hp / u.maxHp < stats.bot.healReserveHp,
+			)
+			if (enemy && (!savingHeal || enemy.hp / enemy.maxHp <= stats.bot.finishHp)) {
 				const aim = {
 					x: enemy.pos.x + enemy.vel.x * stats.flight,
 					z: enemy.pos.z + enemy.vel.z * stats.flight,

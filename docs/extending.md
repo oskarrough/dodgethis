@@ -43,7 +43,7 @@ Copy `heroes/wata/` and `abilities/balloon/`; Wata was built this way and touche
 2. **Ability:** `abilities/<id>/<id>.js` declares a `kind` (`shot`, `zone`, `dash`, `melee`, `stance`, `channel`, `instant`), its `tell` and `card`, and code in hooks: `onStart`, `onTick`, `onRelease`, `onRecast`, `onHit`, `onEnd`, `onCancel`, `onDashEnd`. Numbers, `sound` and `juice` live in `<id>-tune.js`.
 3. **Effects:** declare `statuses` (slow, stun, freeze, shield, damage over time; tags, stacks, cleanse) and apply them with `sim.apply(unit, '<ability>.<status>', …)`. The strongest slow wins; a stun always lands in full.
 4. **Bots:** `bot` names a built-in tactic (`shoot`, `zone`, `dash`, `blink`, `cover`, `catch`, `cone`, `radial`), opts out with `false`, or brings `{ priority, act(ctx, slot) }`. Leave it out and the bot infers one from the kind.
-5. **Summons:** declare `summon: { hp, radius, lifetime, think }` and call `sim.summon(owner, '<ability>', at)`: an owned, replicated unit that clears when its owner dies.
+5. **Summons:** declare `summon: { hp, radius, lifetime, think }` and call `sim.summon(owner, '<ability>', at)`: an owned, replicated unit that outlives its owner's death and clears on hero swap, removal or match end.
 6. **Check:** `bun run collect-mods` (runs before `dev` and `check`), then `bun run simulate --report --lineup <id>,fletcher,mitts` to see every ability cast and land.
 
 A mechanic is something a map switches on: structures, minions, the Ball, bots, camps, the flag, practice dummies. Casting, catching, bounce and damage are the engine every ability runs through; an ability is a data head and a code body in that path, never its own projectile loop.

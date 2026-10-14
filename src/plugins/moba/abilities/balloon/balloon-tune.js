@@ -3,6 +3,7 @@ export default {
 	castPoint: 0,
 	flight: 0.6,
 	minFlight: 0.3,
+	popTell: 0.15,
 	radius: 2,
 	healAmount: 160,
 	damage: 80,
@@ -10,7 +11,7 @@ export default {
 	duration: 2,
 	puddle: 4,
 	cooldown: 5,
-	bot: { deficit: 0.5 },
+	bot: { deficit: 0.5, healReserveHp: 0.7, finishHp: 0.3 },
 	view: { ballRadius: 0.25, height: 2.8, ground: 0.1, ringWidth: 0.05, rippleSize: 0.55 },
 	sound: {
 		cast: { freq: 280, slideTo: 740, type: 'sine', dur: 0.2, gain: 0.11 },

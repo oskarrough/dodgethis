@@ -1,10 +1,19 @@
 import { tune } from '../../tune.js'
 import { STEP } from '../../../../core/app.js'
+import { sweepObstacles, mapExit } from '../../obstacles.js'
 
 // Extend only through the connected puddles intersecting the normal stopping point.
 export function slideReach(hero, sim, dir) {
 	const stats = tune.slide
 	const p = hero.body.position
+	const end = { x: p.x + dir.x * stats.maxRange, z: p.z + dir.z * stats.maxRange }
+	const radius = Math.max(0, hero.body.radius - tune.collision.epsilon)
+	const limit =
+		stats.maxRange *
+		Math.min(
+			sweepObstacles(p, end, radius, sim.obstacles) ?? 1,
+			mapExit(p, end, hero.body.radius, sim.bounds) ?? 1,
+		)
 	const spans = sim.summons
 		.filter((u) => u.key === 'balloon' && u.data.phase === 'puddle' && u.until > sim.tick)
 		.flatMap((u) => {
@@ -18,9 +27,9 @@ export function slideReach(hero, sim, dir) {
 			return [{ start: along - half, end: along + half }]
 		})
 		.sort((a, b) => a.start - b.start)
-	let reach = stats.range
+	let reach = Math.min(stats.range, limit)
 	for (const span of spans)
-		if (span.start <= reach && span.end > reach) reach = Math.min(stats.maxRange, span.end)
+		if (span.start <= reach && span.end > reach) reach = Math.min(limit, span.end)
 	return reach
 }
 export default {
@@ -39,7 +48,7 @@ export default {
 	bot: {
 		priority: 35,
 		act(ctx, slot) {
-			const { h, p, own, enemies, cast, frame } = ctx
+			const { h, p, enemies, cast, frame } = ctx
 			const stats = tune.slide
 			const close = enemies.filter(
 				(e) => Math.hypot(e.pos.x - p.x, e.pos.z - p.z) <= stats.bot.danger,
@@ -58,16 +67,6 @@ export default {
 				)
 					return frame
 			}
-			const ally = own
-				.filter(
-					(u) =>
-						u.id !== h.id &&
-						u.hp / u.maxHp < stats.bot.saveHp &&
-						Math.hypot(u.pos.x - p.x, u.pos.z - p.z) > tune.sprinkler.range &&
-						Math.hypot(u.pos.x - p.x, u.pos.z - p.z) <= tune.sprinkler.range + stats.range,
-				)
-				.sort((a, b) => a.hp / a.maxHp - b.hp / b.maxHp || a.id.localeCompare(b.id))[0]
-			if (ally && ctx.safe(ally.pos, enemies) && cast(slot, ally.pos)) return frame
 			return null
 		},
 	},

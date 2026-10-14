@@ -128,7 +128,11 @@ export function createProjectiles(ctx) {
 							}))
 						: (shotTargets.get(shot.team) ?? [])
 				).filter(
-					(unit) => unit.id !== shot.owner && !unit.unit.dead && (!shot.heroOnly || unit.hero),
+					(unit) =>
+						unit.id !== shot.owner &&
+						!unit.unit.dead &&
+						unit.unit.kind !== 'summon' &&
+						(!shot.heroOnly || unit.hero),
 				)
 			if (
 				interceptShot(shot, stepDt, resolveInterception, {

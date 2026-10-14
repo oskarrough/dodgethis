@@ -30,6 +30,7 @@ export function createLane({
 	layout,
 	structures: withStructures = true,
 	heroes,
+	summons = [],
 	present,
 	damage,
 	projectile,
@@ -123,7 +124,8 @@ export function createLane({
 	const find = (id) =>
 		minions.find((u) => u.id === id && !u.dead) ??
 		structures.find((u) => u.id === id && !u.dead) ??
-		heroes.find((u) => u.id === id && !u.dead)
+		heroes.find((u) => u.id === id && !u.dead) ??
+		summons.find((u) => u.id === id && !u.dead && u.hp != null)
 	function nearest(unit, range, candidates) {
 		let best = null,
 			bestRank = Infinity,
@@ -174,7 +176,12 @@ export function createLane({
 		}
 	}
 	function units(t, dt) {
-		const candidates = [...minions, ...structures, ...heroes]
+		const candidates = [
+			...minions,
+			...summons.filter((u) => u.hp != null),
+			...structures,
+			...heroes,
+		]
 		const enemies = new Map()
 		const byId = new Map(candidates.map((u) => [u.id, u]))
 		const liveTarget = (id) => {

@@ -351,6 +351,23 @@ export function createFightBot(
 			)
 				return frame
 		}
+		if (!target && h.definition.basic) {
+			const summon = (ctx.perceived.summons ?? [])
+				.filter(
+					(u) =>
+						!u.dead &&
+						u.hp > 0 &&
+						u.team !== h.team &&
+						distance(p, u.pos) <= h.definition.basic.range + u.radius &&
+						segmentClear(p, u.pos, 0, sim.obstacles, sim.bounds),
+				)
+				.sort((a, c) => distance(p, a.pos) - distance(p, c.pos) || a.id.localeCompare(c.id))[0]
+			if (summon && safe(p, [])) {
+				state = 'fight'
+				attack(summon)
+				return frame
+			}
+		}
 		if (target && advantage >= -k.aggression) {
 			state = 'fight'
 			holdUntil = now + ticks(b.hold)

@@ -603,7 +603,7 @@ export default function moba(app, map) {
 					obstacles: sim.obstacles,
 					boards: sim.boards,
 					cutouts: sim.cutouts,
-					summons: sim.summons,
+					summons: sim.summons.filter((u) => u.team === hero.team || !unseen(u)),
 					zones: sim.zones,
 					casters: [...sim.heroes, ...sim.dummies].filter(
 						(unit) => unit.team !== hero.team && !unseen(unit),

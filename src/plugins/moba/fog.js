@@ -57,7 +57,7 @@ export function createFog(scene, bounds, brush = []) {
 	const show = (unit, team) => {
 		const visible = unit.team === team || sees(at(unit))
 		if (visible) seen.add(unit.id)
-		unit.body.mesh.visible = visible
+		if (unit.body.mesh) unit.body.mesh.visible = visible
 	}
 
 	return {
@@ -77,6 +77,7 @@ export function createFog(scene, bounds, brush = []) {
 			for (const unit of sim.heroes) show(unit, team)
 			for (const unit of sim.dummies) show(unit, team)
 			for (const unit of lane?.minions ?? []) if (!unit.dead) show(unit, team)
+			for (const unit of sim.summons ?? []) if (!unit.dead) show(unit, team)
 
 			// Redraw and reupload the dim only when a circle moved, appeared or vanished.
 			const n = viewers.length * 3

@@ -45,14 +45,16 @@ export function createSummons(ctx) {
 	}
 	function stepSummons(dt) {
 		for (const unit of summons.slice()) {
+			const i = summons.indexOf(unit)
+			if (i < 0) continue
 			if (ctx.lane?.match.winner) {
 				removeSummons()
 				return
 			}
 			const owner = ctx.heroes.find((h) => h.id === unit.owner)
-			if (!owner || owner.dead || unit.dead || ctx.t >= unit.until) {
+			if (!owner || unit.dead || ctx.t >= unit.until) {
 				ctx.clearStatuses(unit, 'expired')
-				summons.splice(summons.indexOf(unit), 1)
+				summons.splice(i, 1)
 				continue
 			}
 			ctx.expireStatuses(unit)

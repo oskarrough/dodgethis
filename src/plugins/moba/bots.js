@@ -95,6 +95,7 @@ function view(sim, births, modules) {
 		tick: sim.tick,
 		lanes: copyData(sim.lanes ?? []),
 		heroes: sim.heroes.map(unit),
+		summons: (sim.summons ?? []).map(unit),
 		shots: sim.shots
 			.filter((s) => !s.target)
 			.map((s) => {
