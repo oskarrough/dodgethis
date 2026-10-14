@@ -106,7 +106,7 @@ export function extras(scene) {
 				const tell = root.userData.tell
 				tell.clear()
 				if (c.cast) {
-					const from = coachThrowOrigin({ ...c, x: root.position.x }, bounds)
+					const from = coachThrowOrigin({ ...c, x: root.position.x }, bounds, obstacles)
 					const end = {
 						x: from.x + c.cast.dir.x * tune.outThrow.range,
 						z: from.z + c.cast.dir.z * tune.outThrow.range,

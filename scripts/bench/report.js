@@ -78,14 +78,14 @@ export function matchReport(roster, { STEP, towerRange, count = [] }) {
 			if (row.kind === 'hit' && seat) {
 				const abilityStats = ability(seat, row.ability_id),
 					seatStats = counters.seats[seat]
-				abilityStats.hits++
+				if (!row.fact?.ambient) abilityStats.hits++
 				abilityStats.damage += row.effective_damage
 				seatStats.damage += row.effective_damage
 				if (seats.has(row.target)) {
-					abilityStats.heroHits++
+					if (!row.fact?.ambient) abilityStats.heroHits++
 					seatStats.heroDamage += row.effective_damage
 				}
-				if (structure(row.target)) seatStats.structureHits++
+				if (structure(row.target) && !row.fact?.ambient) seatStats.structureHits++
 			}
 			if (
 				row.kind === 'hit' &&

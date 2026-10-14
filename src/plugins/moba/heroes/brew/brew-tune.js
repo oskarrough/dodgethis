@@ -3,7 +3,6 @@ export default {
 	speed: 5.2,
 	bot: {
 		safeRange: 6,
-		hurtHp: 0.9,
 		burstHp: 0.06,
 		burstWindow: 0.75,
 		afterStagger: 1,

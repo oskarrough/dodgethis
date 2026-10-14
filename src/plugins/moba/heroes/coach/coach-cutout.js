@@ -20,11 +20,18 @@ export function coachCutoutDeath({ hero, sim }) {
 	})
 }
 
-export function coachThrowOrigin(cutout, bounds) {
-	return {
-		x: cutout.x,
-		z: cutout.flank * (bounds.halfZ - tune.outThrow.radius - tune.heroes.coach.cutout.inset),
+export function coachThrowOrigin(cutout, bounds, obstacles) {
+	const clearance = tune.outThrow.radius + tune.heroes.coach.cutout.inset
+	let inland = bounds.halfZ - clearance
+	for (const wall of obstacles) {
+		if (
+			wall.kind === 'wall' &&
+			cutout.flank * wall.z > 0 &&
+			Math.abs(cutout.x - wall.x) <= wall.halfX + tune.outThrow.radius
+		)
+			inland = Math.min(inland, cutout.flank * wall.z - wall.halfZ - clearance)
 	}
+	return { x: cutout.x, z: cutout.flank * inland }
 }
 
 export function coachCutoutFrame({ hero, sim, tick = sim.tick, alpha = 0 }) {
@@ -37,6 +44,7 @@ export function coachCutoutFrame({ hero, sim, tick = sim.tick, alpha = 0 }) {
 		aimOrigin: coachThrowOrigin(
 			{ ...c, x: (c.prevX ?? c.x) + (c.x - (c.prevX ?? c.x)) * alpha },
 			sim.bounds,
+			sim.obstacles,
 		),
 		cast: c.cast,
 		cooldowns: [Math.max(0, c.cooldownUntil - tick - alpha) * STEP, 0, 0],
@@ -81,7 +89,7 @@ export function coachCutoutTick({ hero, sim, tick, ticks, dt, intents, present }
 			present({ type: 'denied', hero: hero.id, slot: 'slot1', reason: 'cooldown' })
 			continue
 		}
-		const origin = coachThrowOrigin(c, sim.bounds),
+		const origin = coachThrowOrigin(c, sim.bounds, sim.obstacles),
 			at = edge.at ?? frame.aim
 		const dx = at ? at.x - origin.x : dirOf(hero.yaw).x
 		const dz = at ? at.z - origin.z : dirOf(hero.yaw).z
@@ -122,7 +130,7 @@ export function coachCutoutTick({ hero, sim, tick, ticks, dt, intents, present }
 				noHelp: true,
 				isAbility: true,
 			},
-			coachThrowOrigin(c, sim.bounds),
+			coachThrowOrigin(c, sim.bounds, sim.obstacles),
 		)
 		c.cast = null
 	}

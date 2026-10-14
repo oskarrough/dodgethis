@@ -188,6 +188,8 @@ export function createCombat(ctx) {
 		const hitSource = heroes.find((h) => h.id === shot.owner)
 		if (
 			hitSource &&
+			!shot.deferred &&
+			shot.traitProcs !== false &&
 			abilityOf(shot.ability, hitSource)?.onHit?.(
 				traitContext(hitSource, { shot, target, point }),
 			) === true
@@ -273,8 +275,6 @@ export function createCombat(ctx) {
 			hp: unit.hp,
 			maxHp: unit.maxHp,
 		})
-		if (!lethal && source && shot.traitProcs !== false)
-			abilityOf(shot.ability, source)?.onHit?.({ ...traitContext(source), target, shot })
 		if (!lethal) {
 			if (target.hero && !unit.post && !shot.deferred) shove(unit, shot)
 			return

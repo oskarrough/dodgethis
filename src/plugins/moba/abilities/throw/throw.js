@@ -18,7 +18,7 @@ export default {
 	},
 	onHit({ hero, sim, target, shot }) {
 		const unit = target.unit
-		if (!shot.drag || unit.dead || unit.structure) return
+		if (hero.dead || !shot.drag || unit.dead || unit.structure) return
 		const p = hero.body.position
 		sim.displace(
 			unit,

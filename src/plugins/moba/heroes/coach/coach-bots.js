@@ -49,7 +49,7 @@ export function coachBotAct(ctx) {
 		.filter(
 			(u) =>
 				u.id !== h.id &&
-				u.hp < u.maxHp &&
+				u.maxHp - u.hp >= tune.pass.healAmount * b.passDeficit &&
 				distance(p, u.pos) <= tune.pass.range &&
 				coachClearLine(p, u.pos, u, [...own, ...enemies], tune.pass.radius, sim),
 		)
@@ -62,26 +62,42 @@ export function coachBotDead({ h, sim, perceived, interceptTime }) {
 		c = sim.cutouts.find((u) => u.owner === h.id)
 	if (!c) return frame
 	const enemies = perceived.heroes.filter((u) => !u.dead && u.team !== h.team)
-	const origin = coachThrowOrigin(c, sim.bounds)
+	const origin = coachThrowOrigin(c, sim.bounds, sim.obstacles)
 	const target = enemies.sort(
 		(a, b) => distance(origin, a.pos) - distance(origin, b.pos) || a.id.localeCompare(b.id),
 	)[0]
 	if (!target || c.cast) return frame
-	const dx = target.pos.x - c.x
-	frame.move.x = Math.abs(dx) > tune.outThrow.radius ? Math.sign(dx) : 0
-	const lead = tune.outThrow.castPoint + interceptTime(origin, target, tune.outThrow.speed)
-	const aim = {
-		x: target.pos.x + target.vel.x * lead,
-		z: target.pos.z + target.vel.z * lead,
+	const shotAt = (x) => {
+		const from = coachThrowOrigin({ ...c, x }, sim.bounds, sim.obstacles)
+		const lead = tune.outThrow.castPoint + interceptTime(from, target, tune.outThrow.speed)
+		const aim = {
+			x: target.pos.x + target.vel.x * lead,
+			z: target.pos.z + target.vel.z * lead,
+		}
+		return distance(from, aim) <= tune.outThrow.range &&
+			coachClearLine(from, aim, target, enemies, tune.outThrow.radius, sim)
+			? aim
+			: null
 	}
-	if (
-		distance(origin, aim) <= tune.outThrow.range &&
-		coachClearLine(origin, aim, target, enemies, tune.outThrow.radius, sim) &&
-		sim.tick >= c.cooldownUntil
-	) {
-		frame.move.x = 0
-		frame.aim = aim
-		frame.pressed = [{ action: 'slot1', at: aim }]
+	const aim = shotAt(c.x)
+	if (aim) {
+		frame.order = { x: c.x, z: c.z }
+		if (sim.tick >= c.cooldownUntil) {
+			frame.aim = aim
+			frame.pressed = [{ action: 'slot1', at: aim }]
+		}
+		return frame
 	}
+	// Keep a valid destination; only search again when the target blocks it.
+	if (c.goalX != null && shotAt(c.goalX)) return frame
+	const edge = sim.bounds.halfX - tune.outThrow.radius
+	const clamp = (x) => Math.max(-edge, Math.min(edge, x))
+	const candidates = [clamp(target.pos.x), -edge, edge]
+	const step = Math.max(tune.outThrow.radius, tune.heroes.coach.cutout.searchStep)
+	for (let offset = step; offset < edge * 2; offset += step)
+		candidates.push(clamp(c.x - offset), clamp(c.x + offset))
+	candidates.sort((a, b) => Math.abs(a - c.x) - Math.abs(b - c.x) || a - b)
+	const x = candidates.find((candidate) => shotAt(candidate)) ?? clamp(target.pos.x)
+	frame.order = { x, z: c.z }
 	return frame
 }
