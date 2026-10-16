@@ -11,12 +11,14 @@ export function dress({ torso, part, own, discY, materials }) {
 		discY + v.jugY,
 		v.jugZ,
 	)
+	// The neck rides on the jug so it tips with it.
 	part(
 		new THREE.CylinderGeometry(v.neckRadius, v.neckRadius, v.neckHeight, 6),
 		materials.ink,
 		0,
-		discY + v.neckY,
-		v.jugZ,
+		v.neckY - v.jugY,
+		0,
+		jug,
 	)
 	const palm = part(
 		new THREE.SphereGeometry(v.palmRadius, 6, 4),
@@ -25,16 +27,21 @@ export function dress({ torso, part, own, discY, materials }) {
 		discY + v.palmY,
 		v.palmZ,
 	)
-	return { jug, palm }
+	return { jug, palm, jugY: discY + v.jugY, swig: 0, last: null }
 }
 export function animate(unit, rig, { costume, pose, progress, time, alpha }) {
 	const v = tune.heroes.brew.view
-	rig.jug.rotation.x = 0
+	// Ease the drink in and out instead of snapping between poses.
+	const drinking = unit?.channel?.ability === 'swig'
+	const step = rig.last === null ? 0 : Math.max(0, time - rig.last)
+	rig.last = time
+	rig.swig += ((drinking ? 1 : 0) - rig.swig) * Math.min(1, step / v.swigEase)
+	const s = rig.swig * rig.swig * (3 - 2 * rig.swig)
+	rig.jug.rotation.x = v.drinkTilt * s
+	rig.jug.position.y = rig.jugY + v.drinkLift * s
 	rig.palm.position.z = v.palmZ
-	if (unit?.channel?.ability === 'swig') {
-		costume.rotation.x = -v.staggerLean
-		rig.jug.rotation.x = v.drinkTilt
-	} else if (pose === 'flyingKick' || unit?.dashAbility === 'flyingKick')
+	if (drinking || s > 0.01) costume.rotation.x = -v.drinkLean * s
+	else if (pose === 'flyingKick' || unit?.dashAbility === 'flyingKick')
 		costume.rotation.x = -v.kickLean * (pose ? progress : 1)
 	else if (unit?.stance?.ability === 'stagger') costume.rotation.z = Math.sin(time) * v.staggerLean
 	else if (unit?.attack)
