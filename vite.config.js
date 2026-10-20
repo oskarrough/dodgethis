@@ -346,8 +346,19 @@ const docsPages = {
 	},
 }
 
+// drune.html is a self-contained toy next to the game (plain ES modules, no imports), so it ships
+// verbatim: copying it beats teaching the bundler about a page that has no build step.
+const drune = {
+	name: 'drune',
+	apply: 'build',
+	closeBundle() {
+		copyFileSync('drune.html', join('dist', 'drune.html'))
+		cpSync('drune', join('dist', 'drune'), { recursive: true })
+	},
+}
+
 export default defineConfig({
-	plugins: [wasm(), folderSlash, soundKeep, soundShowcase, docsPages],
+	plugins: [wasm(), folderSlash, soundKeep, soundShowcase, docsPages, drune],
 	// The build's id, its time: online rooms only seat guests from the same build (online/net.js `BUILD`).
 	define: { __BUILD__: String(Date.now()) },
 	server: {
