@@ -282,7 +282,11 @@ for (const button of document.querySelectorAll('[data-act]'))
 		actions[button.dataset.act]()
 		event.currentTarget.blur()
 	})
-canvas.addEventListener('click', () => canvas.requestPointerLock?.())
+// The first click grabs the mouse; once it's grabbed, a click tears a portal open or shut, like O.
+canvas.addEventListener('click', () => {
+	if (document.pointerLockElement === canvas) toggle()
+	else canvas.requestPointerLock?.()
+})
 addEventListener('mousemove', (event) => {
 	if (document.pointerLockElement !== canvas) return
 	state.yaw -= event.movementX * 0.0022
