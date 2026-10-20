@@ -4,17 +4,31 @@
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<title>Portal test</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Barriecito&family=Darumadrop+One&family=Ranchers&display=swap"
+			rel="stylesheet"
+		/>
+		<!-- The match HUD's own sheet: top pill, objective sticker, ability tiles and key caps. -->
+		<link rel="stylesheet" href="/src/plugins/moba/hud.css" />
 		<style>
+			/* The game's UI variables, as index.html sets them. */
+			:root {
+				--ui-font: 'Darumadrop One', 'Ranchers', 'Barriecito', system-ui, sans-serif;
+				--ui-cream: #fffdf4;
+				--ui-text: #26445f;
+				--ui-gold: #ff9f1c;
+				--ui-blue: #1677ff;
+				--fs-base: 20px;
+			}
 			html,
 			body {
 				margin: 0;
 				height: 100%;
 				overflow: hidden;
 				background: #f6dcd3;
-				font:
-					14px/1.4 system-ui,
-					sans-serif;
-				color: #26445f;
+				font-family: var(--ui-font);
 			}
 			canvas {
 				display: block;
@@ -22,55 +36,54 @@
 				height: 100vh;
 				cursor: crosshair;
 			}
-			.hud {
-				position: fixed;
-				left: 16px;
-				bottom: 16px;
-				padding: 10px 14px;
-				border-radius: 10px;
-				background: rgb(255 250 244 / 0.82);
-				max-width: 360px;
-				user-select: none;
-			}
-			.hud h1 {
-				margin: 0 0 4px;
-				font-size: 15px;
-			}
-			.hud p {
-				margin: 0 0 8px;
-			}
-			.hud button {
-				font: inherit;
-				margin-right: 6px;
-				padding: 4px 10px;
-				border: 1px solid #26445f;
-				border-radius: 6px;
-				background: #fffcf7;
-				color: inherit;
-				cursor: pointer;
+			.moba-hud {
+				pointer-events: auto;
 			}
 			.where {
-				position: fixed;
-				top: 16px;
-				left: 16px;
-				padding: 4px 10px;
-				border-radius: 6px;
-				background: rgb(255 250 244 / 0.82);
+				line-height: 1;
 			}
 		</style>
 	</head>
 	<body>
 		<canvas></canvas>
-		<div class="where"></div>
-		<div class="hud">
-			<h1>Portal test</h1>
-			<p>
-				Click to look around (Esc lets go). WASD walks and strafes, the arrows turn, Shift runs. O or a click tears a portal open in front of
-				you or closes it, Space walks you through, R starts over.
-			</p>
-			<button data-act="open">Open (O)</button>
-			<button data-act="step">Step through (Space)</button>
-			<button data-act="reset">Reset (R)</button>
+		<div class="moba-score moba-top" role="status">
+			<span class="where"></span>
+			<span class="moba-objective">Click to look · WASD walks · arrows turn · Shift runs</span>
+		</div>
+		<div class="moba-hud" style="--tone: #ff6fcf">
+			<div class="moba-bar">
+				<div class="moba-slots">
+					<button
+						type="button"
+						class="moba-slot"
+						data-act="open"
+						title="Tear a portal open in front of you, or close it (O, or click once the mouse is grabbed)"
+					>
+						<span class="icon"
+							><svg viewBox="0 0 48 48" aria-hidden="true">
+								<path class="tone" d="M24 5 Q35 24 24 43 Q13 24 24 5 Z" />
+								<path class="ink-line" d="M24 12 Q29 24 24 36 Q19 24 24 12 Z" /></svg
+						></span>
+						<span class="key">O</span>
+					</button>
+					<button type="button" class="moba-slot" data-act="step" title="Walk through (Space)">
+						<span class="icon"
+							><svg viewBox="0 0 48 48" aria-hidden="true">
+								<path class="tone" d="M30 6 Q40 24 30 42 Q20 24 30 6 Z" />
+								<path class="ink-line" d="M6 24 L26 24 M19 16 L27 24 L19 32" /></svg
+						></span>
+						<span class="key">Space</span>
+					</button>
+					<button type="button" class="moba-slot" data-act="reset" title="Start over (R)">
+						<span class="icon"
+							><svg viewBox="0 0 48 48" aria-hidden="true">
+								<path class="ink-line" d="M37 18 A15 15 0 1 0 38 30" />
+								<path class="tone" d="M31 9 L41 19 L29 22 Z" /></svg
+						></span>
+						<span class="key">R</span>
+					</button>
+				</div>
+			</div>
 		</div>
 		<script type="module" src="./portal.js"></script>
 	</body>
