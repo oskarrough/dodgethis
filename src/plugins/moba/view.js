@@ -7,6 +7,7 @@ import { lineReach, bouncedLinePath } from './skills-view.js'
 import { projectMap } from './obstacles.js'
 import { createHealthBars } from './health-bars.js'
 import { createDamageNumbers } from './damage-numbers.js'
+import { createEffects } from './effects.js'
 
 // Moba's own scene dressing: click pings, the hover ring, the held-aim indicator and the skillshot meshes. Local presentation only.
 export function createView(scene, smooth) {
@@ -103,6 +104,7 @@ export function createView(scene, smooth) {
 	const barColors = { A: flat('teamA'), B: flat('teamB') }
 
 	const numbers = createDamageNumbers(group)
+	const effects = createEffects(group)
 
 	const boltGeometry = own(new THREE.CapsuleGeometry(0.12, 0.7, 4, 8).rotateX(Math.PI / 2))
 	const trailGeometry = own(new THREE.BoxGeometry(0.1, 0.06, 1).translate(0, 0, -0.5))
@@ -158,6 +160,7 @@ export function createView(scene, smooth) {
 		{ live, hero, aim, held, hovered, target, locate, lineStats = tune.loose, obstacles, bounds },
 	) {
 		numbers.update(dt)
+		effects.update(dt)
 		for (const p of pings) {
 			if (p.life <= 0) continue
 			p.life -= dt
@@ -248,6 +251,7 @@ export function createView(scene, smooth) {
 	function reset() {
 		health.reset()
 		numbers.reset()
+		effects.reset()
 		for (const id of bolts.keys()) unbolt(id)
 		for (const p of pings) {
 			p.life = 0
@@ -260,6 +264,7 @@ export function createView(scene, smooth) {
 	function dispose() {
 		reset()
 		health.dispose()
+		effects.dispose()
 		scene.remove(group)
 		for (const x of owned) x.dispose()
 	}
@@ -267,6 +272,7 @@ export function createView(scene, smooth) {
 	return {
 		ping,
 		pop: numbers.pop,
+		effects,
 		damage: numbers.hit,
 		heal: numbers.heal,
 		xp: numbers.xp,

@@ -27,7 +27,7 @@ const maps = playableMaps
 		// A map with an illustration shows it; a new map shows its chalk plan until it gets one.
 		const picture = art
 			? `<img alt="" decoding="async" srcset="${tune.tile.artWidths.map((w) => `${art}-${w}.webp ${w}w`).join(', ')}" sizes="(max-width: 700px) 45vw, 27vw" src="${art}-${tune.tile.artWidths[0]}.webp">`
-			: `<svg viewBox="${`${-halfX - padding} ${-halfZ - padding} ${(halfX + padding) * 2} ${(halfZ + padding) * 2}`}" aria-hidden="true"><g fill="none" stroke-width="${tune.tile.outlineWidth}">${rect(halfX, halfZ)}${plan}</g></svg>`
+			: `<svg viewBox="${`${-halfX - padding} ${-halfZ - padding} ${(halfX + padding) * 2} ${(halfZ + padding) * 2}`}" aria-hidden="true"><g fill="none" stroke-width="${tune.tile.outlineWidth}">${layout.bounds.radius ? `<circle r="${layout.bounds.radius}"/>` : rect(halfX, halfZ)}${plan}</g></svg>`
 		return { mode: 'moba', map: id, name, picture }
 	})
 
@@ -247,7 +247,13 @@ export function mobaFront(app, map) {
 				const mode = buttons[index].dataset.mode
 				leaving = true
 				if (mode === 'moba') {
+					const previousMap = setup.map
 					setup.map = buttons[index].dataset.map
+					if (setup.map !== previousMap) {
+						// Rosters belong to a map: don't carry four party picks into a 3v3.
+						delete setup.picks
+						setup.heroId = mapManifests[setup.map].suggestedHero ?? setup.heroId
+					}
 					playUse(app.audio, 'splash.enter')
 					transferred = true
 					dropTiles()

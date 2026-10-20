@@ -7,7 +7,7 @@ const number = (value) => value.toLocaleString(undefined, { maximumFractionDigit
 const percent = (value) => `${number(value * 100)}%`
 const seconds = (value) => `${value.toFixed(1)} s`
 
-export function view() {
+export function view(_scene, { returnToLobby = () => {} } = {}) {
 	let facts = null
 	let root = null
 	if (typeof document !== 'undefined') {
@@ -52,6 +52,10 @@ export function view() {
 		title.textContent = `${report.result === 'killed' ? 'Killed' : 'Wiped'} · ${seconds(report.duration)}`
 		el('p', '', header).textContent =
 			`${report.boss.name}: ${number(report.boss.hp)} / ${number(report.boss.maxHp)} HP left · Fight report`
+		const back = el('button', '', header)
+		back.type = 'button'
+		back.textContent = 'Return to party lobby'
+		back.onclick = () => returnToLobby()
 		const party = section(root, 'Party')
 		table(
 			party,
@@ -138,6 +142,7 @@ export function view() {
 			'Stays open after the reset. Walk back in to start the next pull and close this report.',
 		)
 		root.hidden = false
+		back.focus({ preventScroll: true })
 	}
 	return {
 		present(fact) {

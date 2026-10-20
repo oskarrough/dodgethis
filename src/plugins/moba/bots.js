@@ -43,7 +43,7 @@ export function practiceRoster(
 			...party.map((heroId, i) => ({
 				id: `bot-A-${i + 1}`,
 				team: 'A',
-				heroId,
+				heroId: picks[`bot-A-${i + 1}`]?.heroId ?? heroId,
 				difficulty: 'normal',
 			})),
 		]

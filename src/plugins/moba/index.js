@@ -4,7 +4,7 @@ import { tune as coreTune } from '../../core/tune.js'
 import { tune } from './tune.js'
 import { look } from './look.js'
 import { FLOOR } from './obstacles.js'
-import { matchRecipe, onlineMaps } from './maps/all-maps.js'
+import { matchRecipe, onlineMaps, maps } from './maps/all-maps.js'
 import mechanicViews from './mechanics/all-mechanic-views.js'
 import { castAbility } from './ability.js'
 import { blocked } from './statuses.js'
@@ -124,10 +124,11 @@ export default function moba(app, map) {
 				...(options.setup ?? options),
 				shared: app.session.shared,
 			})
+			const party = maps[setup.map].party
 			const kind = isLobby ? 'lobby' : setup.map
 			const match = matchRecipe(kind)
 			const { layout, mechanics, palette, debugTune, online } = match
-			if (!online && app.session.shared) {
+			if ((!online || !onlineMaps.includes(setup.map)) && app.session.shared) {
 				// Mode start must finish before its replacement can abort it. No map/sim is built.
 				queueMicrotask(() => {
 					if (!run.signal.aborted)
@@ -332,10 +333,11 @@ export default function moba(app, map) {
 										...roster.find((human) => human.id === seat.id),
 										heroId: seat.heroId,
 									}))
-								: practiceRoster(local, difficulty, setup.picks, setup.seed),
+								: practiceRoster(local, difficulty, setup.picks, setup.seed, [local], party),
+							readyParty: party,
 							spawns: lobbySpawns,
 							respawn: tune.lobby.respawn,
-							footprint: gallery.contact,
+							footprint: party ? null : gallery.contact,
 						}),
 						seed: setup.seed,
 					}),
@@ -344,7 +346,9 @@ export default function moba(app, map) {
 			// Assigned boxes are reservations, not won claims; walking into one stamps the claim tick.
 			if (isLobby) for (const seat of simulation.readySeats.seats) seat.claimTick = null
 			const ballView =
-				mechanics.map((mechanic) => mechanicViews[mechanic.id]?.view).find(Boolean)?.(scene) ?? null
+				mechanics.map((mechanic) => mechanicViews[mechanic.id]?.view).find(Boolean)?.(scene, {
+					returnToLobby,
+				}) ?? null
 			const replica = !app.session.authoritative
 				? isLobby
 					? createLobbyReplica(simulation, scene)
@@ -438,7 +442,7 @@ export default function moba(app, map) {
 				}
 			}
 			function returnToLobby(next = lobbyReturn()) {
-				if (!app.session.shared) return false
+				if (!app.session.shared && !party) return false
 				if (returnQueued) return true
 				returnQueued = true
 				const session = app.session
@@ -447,8 +451,11 @@ export default function moba(app, map) {
 					if (run.signal.aborted) return
 					app.modes.start('moba-lobby', {
 						session,
-						roster: next.roster,
-						options: { setup: { ...next.setup, edgePan: setup.edgePan }, sharedLobby: next },
+						...(app.session.shared ? { roster: next.roster } : {}),
+						options: {
+							setup: { ...next.setup, edgePan: setup.edgePan },
+							...(app.session.shared ? { sharedLobby: next } : {}),
+						},
 					})
 				})
 				return true

@@ -7,6 +7,7 @@ import { look } from './look.js'
 import { flagfallLayoutTune } from './maps/flagfall/flagfall-layout.js'
 import { abilityUse } from './sound-table.js'
 import { createGameLog } from './game-log.js'
+import { createImpacts } from './effects.js'
 
 // Moba's fact switch (docs/feature-map.md, "Match: view, feedback, sound"): each fact becomes juice-kit verbs, sfx, rumble, pings and HUD.
 // `local` is this machine's participant id; facts about anyone else get the quieter version.
@@ -70,6 +71,7 @@ export function createFeedback({
 
 	// Calls in words go to the game log; the feed shows the log through its filter.
 	const log = createGameLog({ sim, local, unitOf })
+	const impact = createImpacts({ effects: view.effects, juice, camera, pop: view.pop })
 	log.listen((entry) => hud.feed?.(entry.text))
 
 	// Streaks count per team. No feed line for the hero who is out; the recap says so.
@@ -382,6 +384,11 @@ export function createFeedback({
 						fact,
 					)
 				if (mine) view.damage?.(fact)
+				impact(fact, ability?.stats?.impact, {
+					unit,
+					listener: unitOf(local)?.body.position,
+					tick: fact.tick ?? sim.tick,
+				})
 				if (mine && punch && fact.damage > 0 && sim.heroes.includes(unit)) {
 					camera.kick(punch.hitKick)
 					stop = Math.max(stop, punch.hitstop)

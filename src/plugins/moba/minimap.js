@@ -189,6 +189,10 @@ function drawLayout(layout, liveStructures, scale, height, parent, make) {
 		})
 	}
 	// The floating footprint keeps the lane's real proportions, with no enclosing disc.
+	if (bounds.radius) {
+		make('circle', { class: 'minimap-floor', cx: X(0), cy: Y(0), r: bounds.radius * scale }, parent)
+		return
+	}
 	box('minimap-floor', 0, 0, bounds.halfX, bounds.halfZ, { rx: 1 })
 	if (s?.lane) {
 		for (const flank of [-1, 1])

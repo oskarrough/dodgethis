@@ -5,7 +5,7 @@ export default {
 	layout: dungeonLayout,
 	mechanics: ['boss', 'bots'],
 	party: ['brew', 'mitts', 'fletcher'],
-	splash: false,
+	suggestedHero: 'mender',
 	online: false,
 	palette: () => ({}),
 	debugTune: null,

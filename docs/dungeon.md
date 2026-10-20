@@ -2,7 +2,7 @@
 
 The smallest proof of a WoW-style pull in the MOBA plugin: you play a mender, three bots fight a boss, and after every pull a fight report says why it went the way it did. Design borrowed from Balance Mender (`docs/combat.md` there), not code. The test: does keeping that party alive still feel good after ten minutes?
 
-A new map value, `?mode=moba&play&map=dungeon&hero=mender`, not a new mode: a map already gets heroes, casting, statuses, facts, bots, camera and HUD for free, and the contract lets a map pick its own mechanics. Names (Mender, Warden, Mend, Ward, Slam) are placeholders until Oskar names them.
+Dungeon is an offline map on the splash, not a new mode. Its party lobby suggests Mender for you and defaults the three allies to Brew, Mitts and Fletcher. Walk up to an ally's plate or select its label, then use the hero strip; left/right (also on pad) changes the selected seat. Ready takes the party through the descent into the room. A map already gets heroes, casting, statuses, facts, bots, camera and HUD for free, and the contract lets a map pick its own mechanics. Names (Mender, Warden, Mend, Ward, Slam) are placeholders until Oskar names them.
 
 ## A pull
 
@@ -10,7 +10,7 @@ A new map value, `?mode=moba&play&map=dungeon&hero=mender`, not a new mode: a ma
 2. Someone walks within 8 m or hits it: the pull starts. Brew grabs it and holds it, because his damage counts triple for threat.
 3. The Warden swings at whoever tops its threat table. Every 16 s it winds up Slam for 2.5 s: a ring on the ground around its target. When it lands, the target takes the big hit no matter what, and anyone else still inside the ring takes splash and a bruise that ticks.
 4. You Mend whoever is hurting (a 1.2 s cast that locks you in place) and Ward the target before Slam lands. Over-healing wastes your time; healing too much pulls the Warden onto you.
-5. The pull ends when the Warden dies or the whole party is dead. The report opens; three seconds later the room resets (everyone back at the entrance, full health, boss full). Walk back in to pull again. The report stays open until the next pull starts.
+5. The pull ends when the Warden dies or the whole party is dead. The report opens; three seconds later the room resets (everyone back at the entrance, full health, boss full). Walk back in to pull again. The report stays open until the next pull starts. Return to party lobby on the report keeps your lineup; the pause menu also has a Party lobby action.
 
 There is no mana (the mode cut it), so overheal costs time, not a resource: every overhealed Mend is 1.2 s you weren't healing someone else.
 

@@ -4,6 +4,7 @@ import { look } from '../../look.js'
 import { tune } from '../../tune.js'
 import { SLOTS } from '../../sim-kit.js'
 import { menderTargetUnit } from '../../abilities/mend/mend-target.js'
+import { createEffects, glowMaterial, link, linkGeometry, shellMaterial } from '../../effects.js'
 
 // Coach's bar and megaphone, without the touchline cutout.
 export function dress({ torso, part, own, discY, t, materials }) {
@@ -54,43 +55,16 @@ export function animate(unit, rig, { pose, progress, costume }) {
 const easeOut = (x) => 1 - (1 - x) ** 3
 const ARCS = 48
 
-// A soft edge glow for Ward's bubble: faint face-on, bright at the rim.
-const bubbleVert = `
-varying vec3 vNormal;
-varying vec3 vView;
-void main() {
-	vec4 world = modelViewMatrix * vec4(position, 1.0);
-	vNormal = normalize(normalMatrix * normal);
-	vView = normalize(-world.xyz);
-	gl_Position = projectionMatrix * world;
-}`
-const bubbleFrag = `
-uniform vec3 uColor;
-uniform float uOpacity;
-varying vec3 vNormal;
-varying vec3 vView;
-void main() {
-	float rim = pow(1.0 - abs(dot(vNormal, vView)), 2.0);
-	gl_FragColor = vec4(uColor, uOpacity * (0.15 + 0.85 * rim));
-}`
-
 // Who Mend or Ward would hit now, Mend's beam and filling ring, its landing, and Ward's bubble.
 export function extras(scene) {
 	const group = new THREE.Group()
 	scene.add(group)
+	const effects = createEffects(group)
 	const owned = []
 	const own = (o) => {
 		owned.push(o)
 		return o
 	}
-	const glow = (color) =>
-		own(
-			new THREE.MeshBasicMaterial({
-				color,
-				transparent: true,
-				depthWrite: false,
-			}),
-		)
 	const add = (geometry, material) => {
 		const mesh = new THREE.Mesh(geometry, material)
 		mesh.layers.set(FORWARD_LAYER)
@@ -100,10 +74,10 @@ export function extras(scene) {
 	}
 	const mv = tune.mend.view
 	const wv = tune.ward.view
+	const glow = () => own(glowMaterial(mv.color))
 	const ring = own(new THREE.RingGeometry(1 - mv.preview.width, 1, 48).rotateX(-Math.PI / 2))
-	const bar = own(new THREE.BoxGeometry(1, 1, 1).translate(0, 0, 0.5))
+	const bar = own(linkGeometry())
 	const ball = own(new THREE.SphereGeometry(1, 16, 10))
-	const column = own(new THREE.CylinderGeometry(1, 1, 1, 24, 1, true).translate(0, 0.5, 0))
 	const sphere = own(new THREE.SphereGeometry(1, 32, 20))
 	const arcs = [] // quantised filling rings, built on first use
 	const arc = (k) => {
@@ -120,67 +94,19 @@ export function extras(scene) {
 		))
 	}
 
-	const preview = add(ring, glow(mv.color))
-	const previewLine = add(bar, glow(mv.color))
-	const pool = (make) => {
-		const items = []
-		let used = 0
-		return {
-			next() {
-				return (items[used++] ??= make())
-			},
-			reset() {
-				for (const item of items) for (const mesh of Object.values(item)) mesh.visible = false
-				used = 0
-			},
-		}
-	}
-	const casts = pool(() => ({
-		beam: add(bar, glow(mv.color)),
-		bead: add(ball, glow(mv.color)),
-		fill: add(arc(1), glow(mv.color)),
-		base: add(ring, glow(mv.color)),
-	}))
-	const bubbles = new Map() // status unit id → { mesh, material, amount, max, age, flash }
-	const bursts = [] // { meshes, age, life, kind }
+	const preview = add(ring, glow())
+	const previewLine = add(bar, glow())
+	const rigs = []
+	let used = 0
+	const nextRig = () =>
+		(rigs[used++] ??= {
+			beam: add(bar, glow()),
+			bead: add(ball, glow()),
+			fill: add(arc(1), glow()),
+			base: add(ring, glow()),
+		})
+	const bubbles = new Map() // unit id → { mesh, material, amount, max, age, flash, at }
 	const seen = new Map() // caster id → { targetId, progress }
-
-	function link(mesh, from, to, y, width) {
-		const dx = to.x - from.x,
-			dz = to.z - from.z
-		mesh.position.set(from.x, y, from.z)
-		mesh.rotation.set(0, Math.atan2(dx, dz), 0)
-		mesh.scale.set(width, width, Math.hypot(dx, dz))
-		mesh.visible = true
-	}
-
-	function land(at) {
-		const flat = add(ring, glow(mv.color))
-		const beam = add(column, glow(mv.color))
-		bursts.push({ meshes: [flat, beam], at: { x: at.x, z: at.z }, age: 0, kind: 'land' })
-	}
-
-	function pop(at, scale) {
-		const material = own(
-			new THREE.ShaderMaterial({
-				uniforms: { uColor: { value: new THREE.Color(wv.color) }, uOpacity: { value: 1 } },
-				vertexShader: bubbleVert,
-				fragmentShader: bubbleFrag,
-				transparent: true,
-				depthWrite: false,
-			}),
-		)
-		const mesh = add(sphere, material)
-		bursts.push({ meshes: [mesh], at: { x: at.x, z: at.z }, scale, age: 0, kind: 'pop' })
-	}
-
-	function drop(burst) {
-		for (const mesh of burst.meshes) {
-			group.remove(mesh)
-			mesh.material.dispose()
-			owned.splice(owned.indexOf(mesh.material), 1)
-		}
-	}
 
 	function shield(unit, tick) {
 		return unit.statuses?.find(
@@ -196,6 +122,7 @@ export function extras(scene) {
 		update({ units = [], unit, aim, tick, alpha, dt = 0 }) {
 			const at = (u) => u.body.mesh?.position ?? u.body.position
 			const time = performance.now() / 1000
+			effects.update(dt)
 
 			// Aim preview: your Mender always shows whom the next Mend or Ward would pick.
 			preview.visible = previewLine.visible = false
@@ -224,7 +151,8 @@ export function extras(scene) {
 			}
 
 			// Mend's cast: a beam that thickens, a bead that travels to the target, a ring that fills under them.
-			casts.reset()
+			for (const rig of rigs) for (const mesh of Object.values(rig)) mesh.visible = false
+			used = 0
 			const casting = new Set()
 			for (const u of units) {
 				if (u.dead || u.cast?.ability !== 'mend') continue
@@ -235,7 +163,7 @@ export function extras(scene) {
 				seen.set(u.id, { targetId: ally.id, progress: k })
 				const from = at(u),
 					to = at(ally)
-				const rig = casts.next()
+				const rig = nextRig()
 				link(rig.beam, from, to, mv.height, mv.beam.width + mv.beam.grow * k)
 				rig.beam.material.opacity = mv.beam.opacity + mv.beam.glow * k
 				const along = easeOut(k)
@@ -245,7 +173,6 @@ export function extras(scene) {
 					from.z + (to.z - from.z) * along,
 				)
 				rig.bead.scale.setScalar(mv.beam.bead * (0.6 + 0.6 * k))
-				rig.bead.material.opacity = 1
 				rig.bead.visible = true
 				rig.fill.geometry = arc(k)
 				rig.fill.position.set(to.x, mv.ground + 0.002, to.z)
@@ -261,7 +188,9 @@ export function extras(scene) {
 				if (casting.has(id)) continue
 				seen.delete(id)
 				const ally = units.find((a) => a.id === last.targetId)
-				if (last.progress >= 0.85 && ally && !ally.dead) land(at(ally))
+				if (last.progress < 0.85 || !ally || ally.dead) continue
+				effects.ring(at(ally), { color: mv.color, ...mv.land.ring })
+				effects.column(at(ally), { color: mv.color, ...mv.land.column })
 			}
 
 			// Ward: a bubble while the shield holds, a flash when it soaks a hit, a pop when it goes.
@@ -272,18 +201,7 @@ export function extras(scene) {
 				shielded.add(u.id)
 				let b = bubbles.get(u.id)
 				if (!b) {
-					const material = own(
-						new THREE.ShaderMaterial({
-							uniforms: {
-								uColor: { value: new THREE.Color(wv.color) },
-								uOpacity: { value: wv.opacity },
-							},
-							vertexShader: bubbleVert,
-							fragmentShader: bubbleFrag,
-							transparent: true,
-							depthWrite: false,
-						}),
-					)
+					const material = shellMaterial(wv.color, wv.opacity)
 					b = { mesh: add(sphere, material), material, age: 0, flash: 0 }
 					b.amount = b.max = status.amount
 					bubbles.set(u.id, b)
@@ -306,47 +224,24 @@ export function extras(scene) {
 			for (const [id, b] of bubbles) {
 				if (shielded.has(id)) continue
 				bubbles.delete(id)
-				if (b.at) pop(b.at, wv.radius)
+				if (b.at)
+					effects.shell(b.at, {
+						color: wv.color,
+						from: wv.radius,
+						to: wv.radius * wv.pop.to,
+						life: wv.pop.life,
+						y: wv.height,
+					})
 				group.remove(b.mesh)
 				b.material.dispose()
-				owned.splice(owned.indexOf(b.material), 1)
-			}
-
-			for (let i = bursts.length - 1; i >= 0; i--) {
-				const burst = bursts[i]
-				burst.age += dt
-				if (burst.kind === 'land') {
-					const k = Math.min(1, burst.age / mv.land.life)
-					const [flat, beam] = burst.meshes
-					flat.position.set(burst.at.x, mv.ground, burst.at.z)
-					flat.scale.setScalar(mv.land.from + (mv.land.to - mv.land.from) * easeOut(k))
-					flat.material.opacity = 1 - k
-					flat.visible = true
-					beam.position.set(burst.at.x, 0, burst.at.z)
-					beam.scale.set(
-						0.55 * (1 - 0.6 * k),
-						mv.land.column * (0.4 + 0.6 * easeOut(k)),
-						0.55 * (1 - 0.6 * k),
-					)
-					beam.material.opacity = 0.7 * (1 - k) ** 2
-					beam.visible = true
-					if (k >= 1) drop(bursts.splice(i, 1)[0])
-				} else {
-					const k = Math.min(1, burst.age / wv.pop.life)
-					const [mesh] = burst.meshes
-					mesh.position.set(burst.at.x, wv.height, burst.at.z)
-					mesh.scale.setScalar(burst.scale * (1 + (wv.pop.to - 1) * easeOut(k)))
-					mesh.material.uniforms.uOpacity.value = 1.4 * (1 - k) ** 2
-					mesh.visible = true
-					if (k >= 1) drop(bursts.splice(i, 1)[0])
-				}
 			}
 		},
 		dispose() {
 			scene.remove(group)
+			effects.dispose()
 			for (const o of owned) o.dispose()
+			for (const b of bubbles.values()) b.material.dispose()
 			bubbles.clear()
-			bursts.length = 0
 			seen.clear()
 		},
 	}

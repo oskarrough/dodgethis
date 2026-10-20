@@ -22,6 +22,9 @@ export default {
 		preview: { radius: 1.1, width: 0.12, pulse: 6, opacity: 0.85, line: 0.45 },
 		beam: { width: 0.07, grow: 0.12, opacity: 0.5, glow: 0.5, bead: 0.22 },
 		fill: { radius: 1.25, width: 0.18 },
-		land: { life: 0.45, from: 0.6, to: 2.2, column: 2.4 },
+		land: {
+			ring: { from: 0.6, to: 2.2, life: 0.45, width: 0.12 },
+			column: { radius: 0.55, height: 2.4, life: 0.45 },
+		},
 	},
 }

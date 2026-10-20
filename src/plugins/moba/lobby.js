@@ -3,7 +3,7 @@ import { PALETTE, hex } from '../../core/style.js'
 import { createCornerNav } from '../../core/corner-nav.js'
 import { controls } from '../../core/controls.js'
 import { tune } from './tune.js'
-import { DEFAULT_MAP, onlineMaps } from './maps/all-maps.js'
+import { DEFAULT_MAP, onlineMaps, maps } from './maps/all-maps.js'
 import { tune as frontTune } from './front/tune.js'
 import { createBackdrop, easeShot } from './front/backdrop.js'
 import { startLoading } from './front/descent.js'
@@ -15,6 +15,7 @@ import { createFlips, createJolts } from './lobby-feel.js'
 import { HEROES, listedHeroes } from './heroes.js'
 import { createHeroStrip, createLobbyHeroes } from './lobby-heroes.js'
 import { createNumbers } from './front/numbers.js'
+import { createLobbyParty } from './lobby-party.js'
 import { createLobbyControls } from './lobby-controls.js'
 import { playUse } from './sounds.js'
 import './lobby.css'
@@ -30,6 +31,7 @@ export function createLobby({
 	gallery,
 	onPresent = (listener) => run.on('present', listener),
 }) {
+	const isParty = !!maps[setup.map].party
 	const backdrop = options.backdrop ?? createBackdrop()
 	const el = options.el ?? document.createElement('main')
 	const canvas = app.renderer.domElement
@@ -41,6 +43,7 @@ export function createLobby({
 	el.setAttribute('aria-label', 'Try your hero in the lobby')
 	el.innerHTML = '<div class="lobby-pick-stamp" aria-live="polite"></div>'
 	const { back: backButton, online: onlineEntry } = createCornerNav(el, { label: 'Back to splash' })
+	onlineEntry.hidden = onlineEntry.disabled = !onlineMaps.includes(setup.map)
 	const lobbyControls = createLobbyControls(el, { onChange: () => app.intents.cancel(hero.id) })
 	el.prepend(backdrop.el, canvas)
 	canvas.classList.add('front-canvas')
@@ -201,7 +204,7 @@ export function createLobby({
 	const heroChoices = listedHeroes({
 		...setup,
 		shared: !!app.session.shared,
-		debug: new URLSearchParams(globalThis.location?.search).has('debug'),
+		debug: isParty || new URLSearchParams(globalThis.location?.search).has('debug'),
 	})
 	const props = createLobbyProps(
 		app.scene,
@@ -211,6 +214,7 @@ export function createLobby({
 		hero.id,
 		app.audio,
 		heroChoices,
+		{ party: isParty },
 	)
 	const floor = createLobbyFloor(app.scene, app.renderer)
 	const bowl = createWeatherBowl(app.scene, el, setup.map, app.renderer)
@@ -224,13 +228,17 @@ export function createLobby({
 	const jolts = createJolts({ bowl, props })
 	props.syncSeats()
 	const stamp = el.querySelector('.lobby-pick-stamp')
+	let partyLobby = null
 	const strip = createHeroStrip({
 		el,
 		heroes: heroChoices,
 		current: hero.heroId,
 		pick: (id) => pickHero(id),
-		openNumbers: () => numbers.toggle(),
+		openNumbers: () => {
+			if (!partyLobby?.editingAlly()) numbers.toggle()
+		},
 	})
+	if (isParty) partyLobby = createLobbyParty({ el, readySeats, hero, setup, strip, cancelReady })
 	if (intro.t < intro.time) {
 		const { stagger, land } = frontTune.chrome
 		edges.forEach(([selector, x, y, early = 0], i) =>
@@ -278,7 +286,8 @@ export function createLobby({
 	const syncPick = () => {
 		setup.heroId = hero.heroId
 		setup.picks[hero.id] = { ...setup.picks[hero.id], heroId: hero.heroId, team: hero.seatTeam }
-		strip.sync(hero.heroId)
+		if (partyLobby) partyLobby.sync()
+		else strip.sync(hero.heroId)
 	}
 	syncPick()
 	function finishGalleryShot() {
@@ -349,7 +358,12 @@ export function createLobby({
 		stamp.classList.add('slam')
 	}
 	function pickHero(id) {
-		if (ending || numbers.open || id === hero.heroId) return
+		if (ending || numbers.open) return
+		if (partyLobby?.pick(id, sim.tick)) {
+			playUse(app.audio, 'lobby.pick')
+			return
+		}
+		if (id === hero.heroId) return
 		const stand = lobbyHeroes.stands.find((s) => s.id === id)
 		if (stand) {
 			run.intents.press(hero.id, 'pick', { x: stand.x, z: stand.z })
@@ -360,7 +374,9 @@ export function createLobby({
 		playUse(app.audio, 'lobby.pickDenied')
 	}
 	function cycleHero(delta = 1) {
-		const index = heroChoices.findIndex((definition) => definition.id === hero.heroId)
+		const index = heroChoices.findIndex(
+			(definition) => definition.id === (partyLobby?.currentHero() ?? hero.heroId),
+		)
 		pickHero(heroChoices[(index + delta + heroChoices.length) % heroChoices.length].id)
 	}
 
@@ -368,6 +384,7 @@ export function createLobby({
 	// under the cursor sits up to a card's height behind its foot, so a foot radius missed most clicks.
 	const cardPoint = new THREE.Vector3()
 	function cardAt(order) {
+		if (isParty) return null
 		const camera = app.camera.view
 		cardPoint.set(order.x, 0, order.z).project(camera)
 		const cx = cardPoint.x,
@@ -403,11 +420,13 @@ export function createLobby({
 	const cardBox = new THREE.Box3()
 
 	function cycleDifficulty(delta = 1) {
+		if (partyLobby) return partyLobby.cycle(delta)
 		const i = gallery.standees.findIndex((s) => s.id === gallery.difficulty)
 		shootAt(gallery.standees[(i + delta + gallery.standees.length) % gallery.standees.length])
 	}
 	// G and a right-click on a card share one route: walk to the firing mark, then shoot that card.
 	function shootAt(stand) {
+		if (isParty) return
 		if (!app.session.authoritative || hero.dead || galleryShot) {
 			if (!app.session.authoritative) {
 				slam('Host only')
@@ -660,6 +679,7 @@ export function createLobby({
 		const start = down(9)
 		const cycle = down(12)
 		const difficulty = down(13)
+		if (partyLobby && (down(14) || down(15))) partyLobby.cycle(down(14) ? -1 : 1)
 		const box = readySeats.seatOf(hero.id)
 		const readyA =
 			down(0) &&
@@ -958,6 +978,7 @@ export function createLobby({
 			flips.update(sim.heroes, time, app.camera.view)
 			jolts.update(time, sim.heroes, sim.shots ?? [])
 			lobbyHeroes.update(app.camera.view)
+			partyLobby?.update(app.camera.view, device)
 		},
 		hudFrame(alpha) {
 			const step = app.clock.step

@@ -4,21 +4,24 @@ import { practiceRoster } from './bots.js'
 
 // Seat ids name boxes; participant ids name their occupants. Host claims resolve
 // by tick, then join order, then id; starting reservations have no claim tick.
-export function createReadySeats({ present }) {
+export function createReadySeats({ present, party = null }) {
 	const v = tune.lobby.ready
-	const seats = ['A', 'B'].flatMap((team) =>
-		Array.from({ length: tune.lobby.capacity / ['A', 'B'].length }, (_, index) => ({
-			id: `${team}:${index}`,
-			team,
-			x: (team === 'A' ? -1 : 1) * v.x,
-			z: v.z + (index - 1) * v.spacing,
-			occupant: null,
-			claimTick: null,
-			inside: false,
-			enteredAt: null,
-			full: false,
-			blocked: false,
-		})),
+	const seats = (party ? ['A'] : ['A', 'B']).flatMap((team) =>
+		Array.from(
+			{ length: party ? party.length + 1 : tune.lobby.capacity / ['A', 'B'].length },
+			(_, index) => ({
+				id: `${team}:${index}`,
+				team,
+				x: (party ? (index < 2 ? -1 : 1) : team === 'A' ? -1 : 1) * v.x,
+				z: v.z + (party ? (index % 2) * 2 - 1 : index - 1) * v.spacing,
+				occupant: null,
+				claimTick: null,
+				inside: false,
+				enteredAt: null,
+				full: false,
+				blocked: false,
+			}),
+		),
 	)
 	let humans = []
 	const enteredSeats = new Map()
@@ -138,6 +141,8 @@ export function createReadySeats({ present }) {
 				const entered = seats.find((s) => contains(s, hero.body.position))
 				const previous = enteredSeats.get(hero.id)
 				enteredSeats.set(hero.id, entered?.id)
+				// Party plates edit allies; they never change your allegiance or displace an ally.
+				if (party && entered?.occupant?.bot) continue
 				if (entered && (previous !== entered.id || !entered.occupant)) {
 					if (entered.occupant?.id === hero.id && entered.claimTick === null)
 						entered.claimTick = tick

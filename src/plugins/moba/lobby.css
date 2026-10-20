@@ -293,3 +293,55 @@
 	font: inherit;
 	font-size: 0.8em;
 }
+
+.lobby-party-heading,
+.dungeon-goal {
+	position: fixed;
+	top: 12px;
+	left: 50%;
+	translate: -50% 0;
+	z-index: 2;
+	width: min(540px, calc(100vw - 180px));
+	padding: 8px 14px;
+	border: 2px solid var(--ui-text);
+	border-radius: 12px;
+	background: var(--ui-cream);
+	color: var(--ui-text);
+	text-align: center;
+	font: 400 clamp(12px, 1.3vw, 17px) / 1.25 var(--ui-font);
+	pointer-events: none;
+}
+.lobby-party-heading p {
+	margin: 4px 0 0;
+}
+.lobby-party-seat,
+.moba-fight-report button {
+	padding: 6px 10px;
+	border: 2px solid var(--ui-text);
+	border-radius: 8px;
+	background: var(--ui-cream);
+	color: var(--ui-text);
+	font: inherit;
+	cursor: pointer;
+	pointer-events: auto;
+}
+.lobby-party-seat {
+	z-index: 3;
+	translate: -50% -100%;
+	font: 400 clamp(12px, 1.2vw, 17px) / 1.2 var(--ui-font);
+}
+.lobby-party-seat[aria-pressed='true'],
+.moba-fight-report button:hover {
+	background: var(--ui-gold);
+}
+.lobby-party-seat:focus-visible,
+.moba-fight-report button:focus-visible {
+	outline: 3px solid var(--ui-text);
+	outline-offset: 3px;
+}
+.dungeon-goal {
+	margin: 0;
+}
+.front-lobby:has(.lobby-party-heading) .lobby-hero-strip {
+	--tile: clamp(44px, min(7vw, 9vh), 90px);
+}

@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>drune laps</title>
+		<link rel="icon" href="./drune/favicon-p7aht665.png" />
+		<style>
+			html,
+			body {
+				margin: 0;
+				height: 100%;
+				overflow: hidden;
+				user-select: none;
+				-webkit-user-select: none;
+			}
+			canvas {
+				display: block;
+				touch-action: none;
+			}
+		</style>
+		<script>
+			// Keep the copy quiet: no analytics, no error reports to drune's servers.
+			const realFetch = window.fetch
+			window.fetch = (url, ...rest) =>
+				/umami|\/api\/error/.test(String(url))
+					? Promise.resolve(new Response('{}'))
+					: realFetch(url, ...rest)
+		</script>
+		<script type="module" src="./drune/engine.js"></script>
+		<script type="module" src="./drune/gates.js"></script>
+	</head>
+	<body></body>
+</html>

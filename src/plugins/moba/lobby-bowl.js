@@ -65,7 +65,14 @@ function miniature(layout, look) {
 	const margin = look.margin
 	const slab = look.slab
 	add(
-		new THREE.BoxGeometry(b.halfX * 2 + margin * 2, slab, b.halfZ * 2 + margin * 2),
+		b.radius
+			? new THREE.CylinderGeometry(
+					b.radius + margin,
+					b.radius + margin,
+					slab,
+					tune.dungeon.segments,
+				)
+			: new THREE.BoxGeometry(b.halfX * 2 + margin * 2, slab, b.halfZ * 2 + margin * 2),
 		(_, n) => (n.y > 0.5 ? court : stone),
 		0,
 		-slab / 2,

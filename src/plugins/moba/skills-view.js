@@ -437,7 +437,10 @@ export function createSkillsView(scene) {
 					arc(tell.edge.geometry, (stats.angle * Math.PI) / 180)
 					arc(tell.fill.geometry, (stats.angle * Math.PI) / 180, 1, 0, 1)
 				}
-				tell.edge.scale.setScalar(stats.radius)
+				// A `tension` windup (Slam) throbs faster and harder as it fills.
+				const throb =
+					(stats.tension ?? 0) * progress * Math.max(0, Math.sin(progress ** 2 * Math.PI * 14))
+				tell.edge.scale.setScalar(stats.radius * (1 + 0.06 * throb))
 				tell.fill.scale.setScalar(stats.radius * progress)
 			}
 		}

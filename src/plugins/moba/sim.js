@@ -45,6 +45,7 @@ export function createSim({
 	posts = layout.dummyPosts,
 	respawn: respawnSeconds = null, // Hero recovery override, in seconds; dummies keep their timer.
 	readyRoster = [], // Full lobby seats; humans are the hero participants, the rest are cardboard bots.
+	readyParty = null, // Cooperative lobby: one human and the map's allied seats.
 	scripted = [],
 	bots = [],
 	seed = tune.bots.seed,
@@ -141,7 +142,7 @@ export function createSim({
 		)
 	})
 	for (const h of heroes) h.body.face(dirOf(h.yaw))
-	const readySeats = lobby ? createReadySeats({ present }) : null
+	const readySeats = lobby ? createReadySeats({ present, party: readyParty }) : null
 	if (readySeats)
 		for (const [joinOrder, participant] of (readyRoster.length ? readyRoster : seats).entries()) {
 			const box = readySeats.seats.find((s) => s.team === participant.team && !s.occupant)
