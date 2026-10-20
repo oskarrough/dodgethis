@@ -193,7 +193,9 @@ export default function moba(app, map) {
 					? createBaseView(scene, layout)
 					: null
 			const fog =
-				!isLobby && query.get('fog') !== '0' ? createFog(scene, layout.bounds, layout.brush) : null
+				!isLobby && query.get('fog') !== '0'
+					? createFog(scene, layout.bounds, layout.brush, palette)
+					: null
 			const cameraTune = Object.create(tune.follow)
 			cameraTune.edgePan = setup.edgePan
 			const follow = createFollow(cameraTune, layout.bounds)

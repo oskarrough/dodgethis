@@ -1,5 +1,20 @@
 [
 	{
+		"at": "2026-10-20T15:55:36.412Z",
+		"title": "Fog of war look",
+		"ask": "Does the new fog read better?",
+		"status": "To review",
+		"decision": "",
+		"media": [
+			"review/media/2026-10-20-fog-of-war-look/fog-overthrow-before.png",
+			"review/media/2026-10-20-fog-of-war-look/fog-overthrow-after.png",
+			"review/media/2026-10-20-fog-of-war-look/fog-flagfall-after.png"
+		],
+		"links": [],
+		"thread": "thr_67w7ifvtfs",
+		"page": "2026-10-20-fog-of-war-look/"
+	},
+	{
 		"at": "2026-10-20T12:04:59.091Z",
 		"title": "Portal test",
 		"ask": "Walk through a particle portal from the lobby saucer to Overthrow. Does it feel magic enough for a screen transition or an ability?",

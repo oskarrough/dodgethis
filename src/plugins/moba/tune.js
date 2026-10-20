@@ -270,13 +270,18 @@ export const tune = {
 		warn: 5, // timers pulse in their last seconds
 	},
 	match: { objective: 180, late: 360, lateGunDamage: 0.05 }, // late fallback for maps without their own mark
-	// Fog of war (on unless ?fog=0): sight radii (m) per viewer, and the dim laid over unseen ground (rgb, alpha, px per m).
+	// Fog of war (on unless ?fog=0): sight radii (m) per viewer, and the haze over unseen ground,
+	// tinted from the map's shade toward its sky (fog.js).
 	fog: {
 		sight: { hero: 10, minion: 7, structure: 10 },
 		brush: 3, // m: a unit in brush shows only to a viewer this close
-		color: '20, 18, 30',
-		dim: 0.6,
-		resolution: 2,
+		dim: 0.68, // haze opacity
+		sky: 0.2, // share of the sky colour in the haze; the rest is the map's shade
+		cloud: 0.3, // the haze thins and lightens in slow drifting patches
+		edge: 1.5, // m: sight thins into haze across this rim, centred on the sight radius
+		drift: 0.6, // m the rim wanders
+		reveal: 6, // per second: ground fades in and out as sight sweeps
+		resolution: 1, // mask px per m; the soft rim needs no more
 		height: 0.08,
 		margin: 14, // m of dim past the floor's edge, wider than the camera's rim view
 	},
