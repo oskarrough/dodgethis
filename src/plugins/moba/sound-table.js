@@ -276,6 +276,8 @@ export const facts = {
 	recallCancelled: ['recallCancelled'],
 	recallEnd: ['recallEnd'],
 	order: [],
+	pull: [],
+	threat: [],
 	cast: ending('.cast'),
 	projectile: [
 		'basic.shot',

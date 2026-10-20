@@ -35,7 +35,18 @@ export function practiceRoster(
 	picks = {},
 	seed = tune.bots.seed,
 	humans = [local],
+	party = null,
 ) {
+	if (party)
+		return [
+			{ id: local, team: 'A', heroId: picks[local]?.heroId ?? DEFAULT_HERO },
+			...party.map((heroId, i) => ({
+				id: `bot-A-${i + 1}`,
+				team: 'A',
+				heroId,
+				difficulty: 'normal',
+			})),
+		]
 	const localTeam = picks[local]?.team ?? 'A'
 	const humanTeams = new Set(humans.map((id) => picks[id]?.team ?? localTeam))
 	const random = botRandom(seed, 'practice-roster')

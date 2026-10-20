@@ -3,6 +3,7 @@ import * as brew_view from './brew/brew-view.js'
 import * as coach_view from './coach/coach-view.js'
 import * as fletcher_view from './fletcher/fletcher-view.js'
 import * as hook_view from './hook/hook-view.js'
+import * as mender_view from './mender/mender-view.js'
 import * as mitts_view from './mitts/mitts-view.js'
 import * as pong_view from './pong/pong-view.js'
 import * as wata_view from './wata/wata-view.js'
@@ -12,6 +13,7 @@ export default {
 	coach: coach_view,
 	fletcher: fletcher_view,
 	hook: hook_view,
+	mender: mender_view,
 	mitts: mitts_view,
 	pong: pong_view,
 	wata: wata_view,

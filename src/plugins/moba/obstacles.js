@@ -13,6 +13,11 @@ export const BOXES = defaults.boxes
 export const OBSTACLES = defaults.obstacles
 
 export function clampMap(p, margin = 0, bounds = FLOOR) {
+	if (bounds.radius !== undefined) {
+		const distance = Math.hypot(p.x, p.z)
+		const scale = Math.min(1, Math.max(0, bounds.radius - margin) / (distance || 1))
+		return { x: p.x * scale, z: p.z * scale }
+	}
 	return {
 		x: Math.max(-bounds.halfX + margin, Math.min(bounds.halfX - margin, p.x)),
 		z: Math.max(-bounds.halfZ + margin, Math.min(bounds.halfZ - margin, p.z)),
@@ -41,6 +46,7 @@ export function projectMap(a, b, bounds = FLOOR) {
 
 export function walkable(x, z, radius = 0, clearance = 0, obstacles = OBSTACLES, bounds = FLOOR) {
 	const r = radius + clearance
+	if (bounds.radius !== undefined && Math.hypot(x, z) > bounds.radius - r) return false
 	if (Math.abs(x) > bounds.halfX - r || Math.abs(z) > bounds.halfZ - r) return false
 	return obstacles.every((o) =>
 		o.r !== undefined

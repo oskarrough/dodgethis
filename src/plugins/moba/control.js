@@ -206,6 +206,7 @@ export function createControl(ctx) {
 	}
 
 	function strafe(d, dt) {
+		if (d.boss) return
 		if (d.dead) {
 			if (ctx.t >= d.respawnTick) respawn(d)
 			return

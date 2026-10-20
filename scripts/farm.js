@@ -103,7 +103,21 @@ export function farmRoster(heroes, difficulty, index, crossOnly = false, seed = 
 
 // Seats for one match on one checkout: its agentRoster places them, the lineups say who plays.
 // Idle seats stand still like a practice player who walked away; practice allies play normal.
-function matchRoster(mods, lineups, { difficulty, idle = [], practice = false, player = null }) {
+function matchRoster(
+	mods,
+	lineups,
+	{ difficulty, idle = [], practice = false, player = null, map = null },
+) {
+	const party = mods.matchRecipe(map ?? undefined).party
+	if (party)
+		return [lineups[0][0], ...party].map((heroId, i) => ({
+			id: `A${i + 1}`,
+			team: 'A',
+			heroId,
+			difficulty,
+			controller:
+				player?.id === `A${i + 1}` ? 'agent' : idle.includes(`A${i + 1}`) ? 'idle' : 'bot',
+		}))
 	const seats = player ? [player.id] : []
 	return mods.agentRoster({ seats, idle, difficulty }).map((seat) => ({
 		...seat,
@@ -245,7 +259,7 @@ export async function runFarmMatch({
 		const limit = Math.ceil(maxSeconds / STEP)
 		while (match.sim.tick < limit && match.step(drive())) if (sample && stats) stats.tick(match.sim)
 		stats?.finish(match.sim)
-		const reason = match.sim.lane.match.winner ? 'matchOver' : 'limit'
+		const reason = match.sim.lane?.match.winner ? 'matchOver' : 'limit'
 		const tape = match.finish(reason, { hash: !summary })
 		tape.botReplay = true
 		tape.run_id = runId

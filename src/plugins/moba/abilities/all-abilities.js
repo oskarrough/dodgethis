@@ -8,22 +8,26 @@ import abilities_dive from './dive/dive.js'
 import abilities_flyingKick from './flyingKick/flyingKick.js'
 import abilities_gloveSlap from './gloveSlap/gloveSlap.js'
 import abilities_loose from './loose/loose.js'
+import abilities_mend from './mend/mend.js'
 import abilities_outThrow from './outThrow/outThrow.js'
 import abilities_palmStrike from './palmStrike/palmStrike.js'
 import abilities_pass from './pass/pass.js'
 import abilities_rain from './rain/rain.js'
 import abilities_redLight from './redLight/redLight.js'
+import abilities_slam from './slam/slam.js'
 import abilities_slide from './slide/slide.js'
 import abilities_sprinkler from './sprinkler/sprinkler.js'
 import abilities_stagger from './stagger/stagger.js'
 import abilities_swap from './swap/swap.js'
 import abilities_swig from './swig/swig.js'
+import abilities_swing from './swing/swing.js'
 import abilities_tagOut from './tagOut/tagOut.js'
 import abilities_tangle from './tangle/tangle.js'
 import abilities_tennisBall from './tennisBall/tennisBall.js'
 import abilities_throw from './throw/throw.js'
 import abilities_toss from './toss/toss.js'
 import abilities_vault from './vault/vault.js'
+import abilities_ward from './ward/ward.js'
 import abilities_waterFlick from './waterFlick/waterFlick.js'
 import abilities_yoYoFlick from './yoYoFlick/yoYoFlick.js'
 
@@ -37,22 +41,26 @@ export default {
 	flyingKick: abilities_flyingKick,
 	gloveSlap: abilities_gloveSlap,
 	loose: abilities_loose,
+	mend: abilities_mend,
 	outThrow: abilities_outThrow,
 	palmStrike: abilities_palmStrike,
 	pass: abilities_pass,
 	rain: abilities_rain,
 	redLight: abilities_redLight,
+	slam: abilities_slam,
 	slide: abilities_slide,
 	sprinkler: abilities_sprinkler,
 	stagger: abilities_stagger,
 	swap: abilities_swap,
 	swig: abilities_swig,
+	swing: abilities_swing,
 	tagOut: abilities_tagOut,
 	tangle: abilities_tangle,
 	tennisBall: abilities_tennisBall,
 	throw: abilities_throw,
 	toss: abilities_toss,
 	vault: abilities_vault,
+	ward: abilities_ward,
 	waterFlick: abilities_waterFlick,
 	yoYoFlick: abilities_yoYoFlick,
 }

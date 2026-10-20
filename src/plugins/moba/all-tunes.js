@@ -8,30 +8,36 @@ import abilities_dive from './abilities/dive/dive-tune.js'
 import abilities_flyingKick from './abilities/flyingKick/flyingKick-tune.js'
 import abilities_gloveSlap from './abilities/gloveSlap/gloveSlap-tune.js'
 import abilities_loose from './abilities/loose/loose-tune.js'
+import abilities_mend from './abilities/mend/mend-tune.js'
 import abilities_outThrow from './abilities/outThrow/outThrow-tune.js'
 import abilities_palmStrike from './abilities/palmStrike/palmStrike-tune.js'
 import abilities_pass from './abilities/pass/pass-tune.js'
 import abilities_rain from './abilities/rain/rain-tune.js'
 import abilities_redLight from './abilities/redLight/redLight-tune.js'
+import abilities_slam from './abilities/slam/slam-tune.js'
 import abilities_slide from './abilities/slide/slide-tune.js'
 import abilities_sprinkler from './abilities/sprinkler/sprinkler-tune.js'
 import abilities_stagger from './abilities/stagger/stagger-tune.js'
 import abilities_swap from './abilities/swap/swap-tune.js'
 import abilities_swig from './abilities/swig/swig-tune.js'
+import abilities_swing from './abilities/swing/swing-tune.js'
 import abilities_tagOut from './abilities/tagOut/tagOut-tune.js'
 import abilities_tangle from './abilities/tangle/tangle-tune.js'
 import abilities_tennisBall from './abilities/tennisBall/tennisBall-tune.js'
 import abilities_throw from './abilities/throw/throw-tune.js'
 import abilities_toss from './abilities/toss/toss-tune.js'
 import abilities_vault from './abilities/vault/vault-tune.js'
+import abilities_ward from './abilities/ward/ward-tune.js'
 import abilities_waterFlick from './abilities/waterFlick/waterFlick-tune.js'
 import abilities_yoYoFlick from './abilities/yoYoFlick/yoYoFlick-tune.js'
 import heroes_brew from './heroes/brew/brew-tune.js'
 import heroes_coach from './heroes/coach/coach-tune.js'
 import heroes_hook from './heroes/hook/hook-tune.js'
+import heroes_mender from './heroes/mender/mender-tune.js'
 import heroes_mitts from './heroes/mitts/mitts-tune.js'
 import heroes_pong from './heroes/pong/pong-tune.js'
 import heroes_wata from './heroes/wata/wata-tune.js'
+import maps_dungeon from './maps/dungeon/dungeon-tune.js'
 import maps_flagfall from './maps/flagfall/flagfall-tune.js'
 import maps_overthrow from './maps/overthrow/overthrow-tune.js'
 
@@ -45,22 +51,26 @@ export const abilities = {
 	flyingKick: abilities_flyingKick,
 	gloveSlap: abilities_gloveSlap,
 	loose: abilities_loose,
+	mend: abilities_mend,
 	outThrow: abilities_outThrow,
 	palmStrike: abilities_palmStrike,
 	pass: abilities_pass,
 	rain: abilities_rain,
 	redLight: abilities_redLight,
+	slam: abilities_slam,
 	slide: abilities_slide,
 	sprinkler: abilities_sprinkler,
 	stagger: abilities_stagger,
 	swap: abilities_swap,
 	swig: abilities_swig,
+	swing: abilities_swing,
 	tagOut: abilities_tagOut,
 	tangle: abilities_tangle,
 	tennisBall: abilities_tennisBall,
 	throw: abilities_throw,
 	toss: abilities_toss,
 	vault: abilities_vault,
+	ward: abilities_ward,
 	waterFlick: abilities_waterFlick,
 	yoYoFlick: abilities_yoYoFlick,
 }
@@ -68,11 +78,13 @@ export const heroes = {
 	brew: heroes_brew,
 	coach: heroes_coach,
 	hook: heroes_hook,
+	mender: heroes_mender,
 	mitts: heroes_mitts,
 	pong: heroes_pong,
 	wata: heroes_wata,
 }
 export const maps = {
+	dungeon: maps_dungeon,
 	flagfall: maps_flagfall,
 	overthrow: maps_overthrow,
 }

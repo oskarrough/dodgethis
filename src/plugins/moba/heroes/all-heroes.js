@@ -3,6 +3,7 @@ import heroes_brew from './brew/brew.js'
 import heroes_coach from './coach/coach.js'
 import heroes_fletcher from './fletcher/fletcher.js'
 import heroes_hook from './hook/hook.js'
+import heroes_mender from './mender/mender.js'
 import heroes_mitts from './mitts/mitts.js'
 import heroes_pong from './pong/pong.js'
 import heroes_wata from './wata/wata.js'
@@ -12,6 +13,7 @@ export default {
 	coach: heroes_coach,
 	fletcher: heroes_fletcher,
 	hook: heroes_hook,
+	mender: heroes_mender,
 	mitts: heroes_mitts,
 	pong: heroes_pong,
 	wata: heroes_wata,

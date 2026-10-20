@@ -4,7 +4,7 @@ import { tune } from './tune.js'
 import { playUse } from '../sounds.js'
 import { applySkin, paintedCard, paintedEdge, paintedWash } from './skin.js'
 import { parseMatchSetup } from '../setup.js'
-import { playableMaps, mapLayout } from '../maps/all-maps.js'
+import { playableMaps, mapLayout, maps as mapManifests } from '../maps/all-maps.js'
 import './front.css'
 
 // The MOBA maps are the front door; Dodgeball is a bonus sticker under them, last in the cursor order.
@@ -14,20 +14,22 @@ const bonus = {
 	glyph:
 		'<circle cx="32" cy="32" r="22" class="front-glyph-fill"/><path d="M12 25 Q34 27 41 53 M25 10 Q24 33 11 41 M41 11 Q38 34 53 41"/>',
 }
-const maps = playableMaps.map((id) => {
-	const layout = mapLayout(id)
-	const { halfX, halfZ } = layout.bounds
-	const padding = tune.tile.outlinePadding
-	const rect = (x, z) => `<rect x="${-x}" y="${-z}" width="${x * 2}" height="${z * 2}"/>`
-	const plan = layout.preview ?? ''
-	const name = layout.name
-	const art = tune.tile.art[id]
-	// A map with an illustration shows it; a new map shows its chalk plan until it gets one.
-	const picture = art
-		? `<img alt="" decoding="async" srcset="${tune.tile.artWidths.map((w) => `${art}-${w}.webp ${w}w`).join(', ')}" sizes="(max-width: 700px) 45vw, 27vw" src="${art}-${tune.tile.artWidths[0]}.webp">`
-		: `<svg viewBox="${`${-halfX - padding} ${-halfZ - padding} ${(halfX + padding) * 2} ${(halfZ + padding) * 2}`}" aria-hidden="true"><g fill="none" stroke-width="${tune.tile.outlineWidth}">${rect(halfX, halfZ)}${plan}</g></svg>`
-	return { mode: 'moba', map: id, name, picture }
-})
+const maps = playableMaps
+	.filter((id) => mapManifests[id].splash !== false)
+	.map((id) => {
+		const layout = mapLayout(id)
+		const { halfX, halfZ } = layout.bounds
+		const padding = tune.tile.outlinePadding
+		const rect = (x, z) => `<rect x="${-x}" y="${-z}" width="${x * 2}" height="${z * 2}"/>`
+		const plan = layout.preview ?? ''
+		const name = layout.name
+		const art = tune.tile.art[id]
+		// A map with an illustration shows it; a new map shows its chalk plan until it gets one.
+		const picture = art
+			? `<img alt="" decoding="async" srcset="${tune.tile.artWidths.map((w) => `${art}-${w}.webp ${w}w`).join(', ')}" sizes="(max-width: 700px) 45vw, 27vw" src="${art}-${tune.tile.artWidths[0]}.webp">`
+			: `<svg viewBox="${`${-halfX - padding} ${-halfZ - padding} ${(halfX + padding) * 2} ${(halfZ + padding) * 2}`}" aria-hidden="true"><g fill="none" stroke-width="${tune.tile.outlineWidth}">${rect(halfX, halfZ)}${plan}</g></svg>`
+		return { mode: 'moba', map: id, name, picture }
+	})
 
 // The splash is the only menu before the playable lobby.
 export function mobaFront(app, map) {

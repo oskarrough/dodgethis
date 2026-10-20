@@ -1,5 +1,16 @@
 [
 	{
+		"at": "2026-10-20T16:20:28.012Z",
+		"title": "Mender: Mend and Ward",
+		"ask": "Direct-play proof with bots and waves disabled; positioned two allies, injured Mitts, aimed at him and used Q then W. Mend held HP at 1500 during its 90-tick (1.5 s) cast, then healed 300 to 1800. Ward applied 500 shield for 480 ticks (8 s) to Mitts only. Judge whether the shield bar is clear.",
+		"status": "To review",
+		"decision": "",
+		"media": ["review/media/2026-10-20-mender-mend-and-ward/mender-mend-ward.png"],
+		"links": ["http://office-linux.heron-mermaid.ts.net:5173/?mode=moba&play&hero=mender&debug"],
+		"thread": "thr_xuf4ywcr66",
+		"page": "2026-10-20-mender-mend-and-ward/"
+	},
+	{
 		"at": "2026-10-20T15:55:36.412Z",
 		"title": "Fog of war look",
 		"ask": "Does the new fog read better?",

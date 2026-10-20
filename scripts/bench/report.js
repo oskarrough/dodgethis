@@ -130,7 +130,7 @@ export function matchReport(roster, { STEP, towerRange, count = [] }) {
 		},
 		// Fallen structures by kind; a laser gate reads as one.
 		finish(sim) {
-			const kinds = new Map(sim.lane.structures.map((item) => [item.id, item.kind]))
+			const kinds = new Map((sim.lane?.structures ?? []).map((item) => [item.id, item.kind]))
 			for (const fall of counters.falls) {
 				const kind = kinds.get(fall.id) ?? fall.id.split('-')[0]
 				fall.kind = kind === 'laser' ? 'laser gate' : kind
@@ -155,7 +155,7 @@ export function matchReport(roster, { STEP, towerRange, count = [] }) {
 				if (!heroUnit || heroUnit.dead) continue
 				const kit = hero(brain.id) ?? heroUnit.definition?.id
 				add((counters.states[kit] ??= {}), brain.state ?? '?', STEP)
-				const tower = lane.structures.find(
+				const tower = lane?.structures.find(
 					(candidate) =>
 						!candidate.dead &&
 						candidate.team !== heroUnit.team &&

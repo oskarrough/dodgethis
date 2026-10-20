@@ -67,6 +67,8 @@ const FACTS = [
 	'cushion',
 	'hit',
 	'heal',
+	'pull',
+	'threat',
 	'absorb',
 	'status',
 	'contact',
@@ -257,7 +259,7 @@ export default function moba(app, map) {
 							]
 						: roster.length
 							? roster
-							: practiceRoster(local, difficulty, setup.picks, setup.seed)
+							: practiceRoster(local, difficulty, setup.picks, setup.seed, [local], match.party)
 			if (app.session.shared)
 				for (const seat of seats)
 					if (!HEROES[seat.heroId]?.listed) {

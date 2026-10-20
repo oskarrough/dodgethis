@@ -114,12 +114,13 @@ export function plugMechanics({
 		lane && campsMechanic
 			? campsMechanic({ layout, lane, heroes, makeBody: laneView.makeBody, present, obstacles })
 			: null
-	const populations = { ball: null, dummies: [], flag: null }
+	const populations = { ball: null, dummies: [], flag: null, boss: null }
 	for (const mechanic of mechanics) {
 		if (!mechanic.create) continue
 		populations[mechanic.population] = mechanic.create({
 			heroes,
 			posts,
+			systems,
 			lane,
 			layout,
 			makeBody: bodyAt,
@@ -139,5 +140,6 @@ export function plugMechanics({
 			},
 		})
 	}
+	if (populations.boss) populations.dummies.push(populations.boss.unit)
 	return { lane, camps, ...populations }
 }
