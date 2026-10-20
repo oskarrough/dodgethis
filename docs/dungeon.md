@@ -9,21 +9,21 @@ A new map value, `?mode=moba&play&map=dungeon&hero=mender`, not a new mode: a ma
 1. The party (you plus Brew, Mitts, Fletcher bots) stands at the entrance of a round room. The Warden waits in the middle.
 2. Someone walks within 8 m or hits it: the pull starts. Brew grabs it and holds it, because his damage counts triple for threat.
 3. The Warden swings at whoever tops its threat table. Every 16 s it winds up Slam for 2.5 s: a ring on the ground around its target. When it lands, the target takes the big hit no matter what, and anyone else still inside the ring takes splash and a bruise that ticks.
-4. You Mend whoever is hurting (a 1.5 s cast that locks you in place) and Ward the target before Slam lands. Over-healing wastes your time; healing too much pulls the Warden onto you.
+4. You Mend whoever is hurting (a 1.2 s cast that locks you in place) and Ward the target before Slam lands. Over-healing wastes your time; healing too much pulls the Warden onto you.
 5. The pull ends when the Warden dies or the whole party is dead. The report opens; three seconds later the room resets (everyone back at the entrance, full health, boss full). Walk back in to pull again. The report stays open until the next pull starts.
 
-There is no mana (the mode cut it), so overheal costs time, not a resource: every overhealed Mend is 1.5 s you weren't healing someone else.
+There is no mana (the mode cut it), so overheal costs time, not a resource: every overhealed Mend is 1.2 s you weren't healing someone else.
 
 ## Numbers (first guesses, tune after one play)
 
 - Mender (`heroes/mender/`): 1400 hp, speed 5, basic `tennisBall` (reused). Slot1 Mend, slot2 Ward. No slot3.
-- Mend (`abilities/mend/`): `kind: 'instant'`, picks the living ally nearest the aim point within 10 m (copy Tag out's `targetUnit`), `castPoint: 1.5`, `cooldown: 0`, heals 300, `critChance: 0.1`, `critMultiplier: 1.5`. Max 200 hps.
+- Mend (`abilities/mend/`): `kind: 'instant'`, picks the living ally nearest the aim point within 10 m (copy Tag out's `targetUnit`), `castPoint: 1.2`, `cooldown: 0`, heals 300, `critChance: 0.1`, `critMultiplier: 1.5`. Max 250 hps.
 - Ward (`abilities/ward/`): same targeting, `castPoint: 0`, `cooldown: 12`, applies `ward.shield` (`absorb: true`, `bar: 'shield'`, copy `swig.shield`) of 500 for 8 s.
 - Warden (`mechanics/boss/`, tune in `maps/dungeon/dungeon-tune.js` under `boss`): 24000 hp, radius 1.2, walks straight at its target at 3.5 m/s (the room has no obstacles, so no pathing), aggro 8 m.
 - Swing (`abilities/swing/`): 150 to the threat target every 1.5 s, reach 2.5 m, 0.4 s tell. About 100 dps on the tank.
 - Slam (`abilities/slam/`): first 10 s into the pull, then every 16 s. Windup 2.5 s: the Warden stops moving and swinging, and the ring's centre locks on the target's position at windup start. On land: 700 to the target (wherever it stands), 350 plus `slam.bruise` (periodic, 50 per second for 6 s, `tags: ['debuff']`, refresh) to every other party hero inside 4 m of the centre.
 - Threat (`dungeon-tune.js` `threat`): damage to the boss adds `damage × multiplier[heroId] ?? 1` (`multiplier: { brew: 3 }`); effective healing (overheal excluded) adds `heal: 0.5 ×` to the boss while engaged; absorbs add nothing. The boss switches only when a challenger beats its current target by `switch: 1.1`.
-- Sanity: Brew (1800 hp) takes about 160 dps averaged with Slam; Mend covers 200 hps if you cast nonstop, so Ward plus a good pre-Slam top-up is what keeps him up. Party damage around 330 dps makes a pull about 75 s, four or five Slams.
+- Sanity: Brew (1800 hp) takes about 160 dps averaged with Slam; Mend covers 250 hps if you cast nonstop, so Ward plus a good pre-Slam top-up is what keeps him up. Party damage around 330 dps makes a pull about 75 s, four or five Slams.
 
 ## Effects: statuses are the one system
 

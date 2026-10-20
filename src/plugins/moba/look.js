@@ -168,8 +168,16 @@ export const look = {
 		overshoot: 2.2,
 		spread: 0.5,
 		crit: { life: 1.15, punch: 1.8, tilt: 0.14 },
-		sizing: { min: 0.65, max: 1.15, growth: 0.17, crit: 1.25, xp: 0.5 },
-		colors: { damage: '#ff9a2e', crit: '#c77dff', xp: '#ffd76a', outline: '#000' },
+		sizing: { min: 0.65, max: 1.15, growth: 0.17, crit: 1.25, xp: 0.5, overheal: 0.45 },
+		colors: {
+			damage: '#ff9a2e',
+			crit: '#c77dff',
+			xp: '#ffd76a',
+			heal: '#5cf07a',
+			healCrit: '#b6ff5c',
+			overheal: '#5cf07a80',
+			outline: '#000',
+		},
 	},
 	// Silhouettes and costume geometry apply on restart. The collision disc stays 0.45 m.
 	silhouettes: {

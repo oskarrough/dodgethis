@@ -71,6 +71,27 @@ export function createDamageNumbers(parent) {
 		})
 	}
 
+	// Heals rise green from the target; crits pop bigger, and a heal that all overflowed shows faintly in brackets.
+	function heal(fact, point) {
+		const t = look.damageNumbers
+		if (!t.enabled || !point) return
+		if (fact.amount >= 0.5) {
+			const size = Math.min(
+				t.sizing.max,
+				t.sizing.min + Math.log10(1 + fact.amount) * t.sizing.growth,
+			)
+			pop(`+${Math.round(fact.amount)}`, point, {
+				color: fact.crit ? t.colors.healCrit : t.colors.heal,
+				scale: size * (fact.crit ? t.sizing.crit : 1),
+				crit: fact.crit,
+			})
+		} else if (fact.overheal >= 0.5)
+			pop(`(${Math.round(fact.overheal)})`, point, {
+				color: t.colors.overheal,
+				scale: t.sizing.overheal,
+			})
+	}
+
 	function xp(amount, point) {
 		pop(`+${amount} XP`, point, {
 			color: look.damageNumbers.colors.xp,
@@ -114,5 +135,5 @@ export function createDamageNumbers(parent) {
 		labels.length = 0
 	}
 
-	return { pop, hit, xp, update, reset }
+	return { pop, hit, heal, xp, update, reset }
 }

@@ -268,6 +268,7 @@ export function createView(scene, smooth) {
 		ping,
 		pop: numbers.pop,
 		damage: numbers.hit,
+		heal: numbers.heal,
 		xp: numbers.xp,
 		bolt,
 		unbolt,

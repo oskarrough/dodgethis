@@ -397,6 +397,9 @@ export function createFeedback({
 				}
 				return
 			}
+			case 'heal':
+				if (mine || onMe) view.heal?.(fact, unitOf(fact.target)?.body.position)
+				return
 			case 'nearMiss':
 				// The close cue plays for both players; the shooter also gets a cream streak along the pass.
 				if (mine) {

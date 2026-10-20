@@ -98,6 +98,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Dungeon (`?map=dungeon`, hidden from the splash): round room, the Warden with threat, Swing, Slam and its bruise, pulls, room reset and party bots: `maps/dungeon/`, `mechanics/boss/` (`boss-pull.js`), `abilities/swing/`, `abilities/slam/`; `docs/dungeon.md`
 - Mender hero, a healer: `heroes/mender/`; Mend (targeted cast heal through `sim.heal`): `abilities/mend/`; Ward (shield): `abilities/ward/`; `docs/dungeon.md`
 - After-pull fight report in the dungeon (result, party table, mender spells, deaths, threat, wasted casts): `mechanics/boss/boss-report.js` `reduceFight`; `mechanics/boss/boss-view.js`; `hud.css` `.moba-fight-report`; `docs/dungeon.md`
+- Mender's aim preview, Mend beam and landing, Ward bubble: `heroes/mender/mender-view.js` `extras`; green heal numbers: `damage-numbers.js` `heal`
 - Skillshot shapes and sweeps: `skillshot.js` `stepShot`, `closest`; `obstacles.js` `sweepHit`, `sweepObstacles`; `skills-view.js` `lineReach`, `bouncedLinePath` (held Ricochet preview traces the sim's `stepShot`); `view.js` thin dotted Ricochet path (`look.js` `abilityView.bouncedAimRadius`, `bouncedAimSpacing`)
 - Ability telegraphs for enemies (ground line tell): `skills-view.js` `createSkillsView`; `look.js` `abilityView`; `heroes.md`
 - Fletcher, ranged poke. Q Loose (arrow shot), W Rain (zone), E Vault (dash): `abilities/{loose,vault,rain}/`, `heroes/fletcher/`; `heroes.md`

@@ -1,5 +1,5 @@
 export default {
-	castPoint: 1.5,
+	castPoint: 1.2,
 	cooldown: 0,
 	range: 10,
 	radius: 0.7,
@@ -12,6 +12,16 @@ export default {
 	},
 	juice: {
 		cast: { count: 5, speed: 0.6, life: 0.4, size: 0.08 },
-		impact: { count: 12, speed: 1.2, life: 0.45, size: 0.1 },
+		impact: { count: 18, speed: 1.8, life: 0.5, size: 0.12 },
+	},
+	// Mender's aim preview, cast beam and landing (heroes/mender/mender-view.js).
+	view: {
+		color: '#1fae4a',
+		ground: 0.04,
+		height: 1.1,
+		preview: { radius: 1.1, width: 0.12, pulse: 6, opacity: 0.85, line: 0.45 },
+		beam: { width: 0.07, grow: 0.12, opacity: 0.5, glow: 0.5, bead: 0.22 },
+		fill: { radius: 1.25, width: 0.18 },
+		land: { life: 0.45, from: 0.6, to: 2.2, column: 2.4 },
 	},
 }
