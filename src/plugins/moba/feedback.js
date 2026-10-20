@@ -397,6 +397,9 @@ export function createFeedback({
 				}
 				return
 			}
+			case 'castCancelled':
+				hud.castCancelled?.(fact)
+				return
 			case 'heal':
 				if (mine || onMe) view.heal?.(fact, unitOf(fact.target)?.body.position)
 				return

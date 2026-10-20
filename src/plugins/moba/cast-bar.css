@@ -1,0 +1,70 @@
+/* Cast bars (cast-bar.js): the player's above the skill bar, the boss's under the top bar. */
+.moba-castbar {
+	--cast-color: var(--ui-gold);
+	position: relative;
+	box-sizing: border-box;
+	width: 280px;
+	height: 26px;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 0 10px;
+	overflow: hidden;
+	font: var(--fs-base) / 1 var(--ui-font);
+	color: var(--ui-text);
+	background: var(--ui-cream);
+	border: 2px solid var(--ui-text);
+	border-radius: 13px;
+	box-shadow: 0 3px 10px rgba(38, 68, 95, 0.22);
+	pointer-events: none;
+}
+.moba-castbar[hidden] {
+	display: none;
+}
+.moba-castbar-fill {
+	position: absolute;
+	inset: 0;
+	background: var(--cast-color);
+	transform-origin: left;
+	opacity: 0.75;
+}
+.moba-castbar > :not(.moba-castbar-fill) {
+	position: relative;
+	white-space: nowrap;
+}
+.moba-castbar-target {
+	flex: 1;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.moba-castbar-left {
+	font-variant-numeric: tabular-nums;
+}
+.moba-castbar.done .moba-castbar-fill {
+	animation: moba-castbar-flash 0.45s ease-out forwards;
+}
+.moba-castbar.interrupted .moba-castbar-fill {
+	background: #e0473f;
+	transform: scaleX(1) !important;
+}
+.moba-castbar.interrupted .moba-castbar-left {
+	font-weight: bold;
+}
+@keyframes moba-castbar-flash {
+	0% {
+		opacity: 1;
+		filter: brightness(1.6);
+	}
+	100% {
+		opacity: 0;
+	}
+}
+.moba-castbar-boss {
+	--cast-color: #e0473f;
+	position: fixed;
+	top: 72px;
+	left: 50%;
+	transform: translateX(-50%);
+	z-index: 4;
+	width: 340px;
+}

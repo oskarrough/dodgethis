@@ -6,6 +6,7 @@ import { heroDefinition } from './heroes.js'
 import { tune } from './tune.js'
 import { createMinimap } from './minimap.js'
 import { el } from '../../core/dom.js'
+import { createCastBar } from './cast-bar.js'
 import {
 	abilityCard,
 	ballCard,
@@ -88,6 +89,7 @@ export function matchFrame(sim, hero, blend, step) {
 		hero,
 		sim,
 		step,
+		blend,
 		cooldowns:
 			outOfPlay?.cooldowns ?? hero.cd.slice(0, 3).map((cd) => Math.max(0, cd - blend) * step),
 		elapsed: sim.tick * step,
@@ -183,6 +185,8 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 
 	const root = el('div', 'moba-hud')
 	const bar = el('div', 'moba-bar', root)
+	const castBar = createCastBar(root)
+	root.prepend(castBar.node)
 	const unitFrame = el('div', 'moba-hud moba-unit')
 	const portrait = el('div', 'moba-portrait', unitFrame)
 	const avatar = el('div', 'moba-avatar', portrait)
@@ -227,6 +231,7 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 	feed.setAttribute('aria-live', 'polite')
 	// The lobby is for walking and picking; the hero frame only earns its corner in a match.
 	document.body.append(top, root, ...(lobby ? [] : [unitFrame]), feed)
+	const bossBar = createCastBar(document.body, { kind: 'boss', min: 0 })
 	const tip = createTooltip(document.body)
 	// World units get their own card and a slim nameplate, so a slot card never fights a unit card.
 	const worldTip = createTooltip(document.body, 'moba-tip-world')
@@ -621,8 +626,20 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 		get kills() {
 			return { ...kills }
 		},
+		// The cast bars read the cancel as a fact, since the cast is already gone by the next frame.
+		castCancelled(fact) {
+			castBar.cancelled(fact)
+			bossBar.cancelled(fact)
+		},
 		update(dt, frame) {
 			minimap?.update(frame)
+			const casting = {
+				units: frame.sim?.heroes ?? [],
+				step: frame.step ?? 1 / 60,
+				blend: frame.blend,
+			}
+			castBar.update(dt, { ...casting, unit: frame.hero })
+			bossBar.update(dt, { ...casting, unit: frame.sim?.boss?.unit })
 			const {
 				cooldowns,
 				device = 'keyboard',
@@ -855,6 +872,7 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 			plate.remove()
 			top.remove()
 			root.remove()
+			bossBar.node.remove()
 			unitFrame.remove()
 			lens?.remove()
 			feed.remove()
