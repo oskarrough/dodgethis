@@ -275,7 +275,7 @@ export const tune = {
 	fog: {
 		sight: { hero: 10, minion: 7, structure: 10 },
 		brush: 3, // m: a unit in brush shows only to a viewer this close
-		dim: 0.68, // haze opacity
+		dim: 0.72, // haze opacity
 		sky: 0.2, // share of the sky colour in the haze; the rest is the map's shade
 		cloud: 0.3, // the haze thins and lightens in slow drifting patches
 		edge: 1.5, // m: sight thins into haze across this rim, centred on the sight radius
