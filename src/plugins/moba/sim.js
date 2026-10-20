@@ -95,6 +95,15 @@ export function createSim({
 	const matchStats = mechanics.some((mechanic) => mechanic.stats) ? createMatchStats() : null
 	const present = (fact) => {
 		const timed = { ...fact, tick: t }
+		// Basic attacks and pocket returns also emit cast facts outside casting.js.
+		if (timed.type === 'cast' && timed.lock === undefined) {
+			const caster =
+				heroes.find((unit) => unit.id === timed.hero) ??
+				dummies.find((unit) => unit.id === timed.hero)
+			const action = caster?.cast ?? caster?.attack
+			timed.lock = (action?.total ?? action?.left ?? 0) * STEP
+			timed.targetId = action?.targetId ?? caster?.attack?.target ?? null
+		}
 		matchStats?.present(timed, heroes, lane?.structures ?? [], botIds)
 		emit(timed)
 	}
@@ -414,6 +423,7 @@ export function createSim({
 		throwCaught,
 		launchShot,
 		hit: ctx.hit,
+		heal: ctx.heal,
 		apply: ctx.apply,
 		remove: ctx.remove,
 		cleanse: ctx.cleanse,

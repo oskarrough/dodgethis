@@ -167,6 +167,33 @@ export function createCombat(ctx) {
 		})
 	}
 
+	function heal(
+		source,
+		target,
+		amount,
+		ability,
+		{ critChance = 0, critMultiplier = 1, periodic = false } = {},
+	) {
+		if (!target || target.dead || target.hp <= 0) return 0
+		const crit = critChance > 0 && rng() < critChance
+		const total = Math.max(0, amount) * (crit ? critMultiplier : 1)
+		const landed = Math.min(Math.max(0, target.maxHp - target.hp), total)
+		target.hp += landed
+		present({
+			type: 'heal',
+			source: source?.id ?? source ?? null,
+			target: target.id,
+			ability,
+			amount: landed,
+			overheal: total - landed,
+			crit,
+			periodic,
+			hp: target.hp,
+			maxHp: target.maxHp,
+		})
+		return landed
+	}
+
 	function hit(shot, target, point) {
 		const unit = target.unit
 		if (unit.dead) return
@@ -229,7 +256,9 @@ export function createCombat(ctx) {
 					? tune.waves.abilityStructure
 					: 1)
 		incoming = ctx.onDamageTaken(unit, incoming, shot)
+		const beforeAbsorb = incoming
 		incoming = ctx.absorb(unit, incoming)
+		const absorbed = beforeAbsorb - incoming
 		const damage = Math.min(unit.hp, Math.max(0, incoming))
 		if (!shot.noHelp) lane?.help(find(shot.owner), unit, ctx.t)
 		if (source && !shot.periodic && shot.slot === 'primary' && source.definition.basic.critEvery)
@@ -262,6 +291,9 @@ export function createCombat(ctx) {
 			direction,
 			lethal,
 			damage,
+			absorbed,
+			periodic: !!shot.periodic,
+			...(shot.status && { status: shot.status }),
 			...(shot.ambient && { ambient: true }),
 			...(shot.crit && { crit: true }),
 			hp: unit.hp,
@@ -386,5 +418,5 @@ export function createCombat(ctx) {
 		})
 	}
 
-	return { dropIn, respawn, basicAttack, hit, bench, shove, dunk }
+	return { dropIn, respawn, basicAttack, hit, heal, bench, shove, dunk }
 }

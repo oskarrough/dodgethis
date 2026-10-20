@@ -121,6 +121,21 @@ export function moveSpeed(unit, tick) {
 
 export function createStatuses(ctx) {
 	let nextId = 0
+	const { present } = ctx
+	function presentStatus(unit, status, state, extra = {}) {
+		present({
+			type: 'status',
+			state,
+			target: unit.id,
+			source: status.src,
+			key: status.key,
+			label: status.label,
+			status: status.id,
+			amount: status.amount ?? 0,
+			until: status.until,
+			...extra,
+		})
+	}
 	const context = (unit, status, extra = {}) => {
 		const [id] = status.key.split('.')
 		const ability = abilityOf(id)
@@ -143,6 +158,10 @@ export function createStatuses(ctx) {
 		status.removed = true
 		unit.statuses.splice(unit.statuses.indexOf(status), 1)
 		const definition = statusDefinition(status)
+		presentStatus(unit, status, 'off', {
+			reason,
+			wasted: definition?.absorb ? Math.max(0, status.amount ?? 0) : 0,
+		})
 		const hook = reason === 'expired' ? definition?.onExpire : definition?.onRemove
 		hook?.(context(unit, status, { reason }))
 		return true
@@ -185,6 +204,7 @@ export function createStatuses(ctx) {
 			status.until = until
 			if (options.amount !== undefined) status.amount = options.amount
 			if (mag !== undefined) status.mag = mag
+			presentStatus(unit, status, 'refresh')
 			return status
 		}
 		if (stack === 'replace') {
@@ -215,6 +235,7 @@ export function createStatuses(ctx) {
 			}),
 		}
 		unit.statuses.push(status)
+		presentStatus(unit, status, 'on')
 		definition.onApply?.(context(unit, status))
 		return status
 	}
@@ -264,9 +285,18 @@ export function createStatuses(ctx) {
 				remove(unit, status.id, active(status, ctx.t) ? 'spent' : 'expired')
 				continue
 			}
-			const absorbed = Math.min(status.amount, remaining)
+			const absorbed = Math.max(0, Math.min(status.amount, remaining))
 			status.amount -= absorbed
 			remaining -= absorbed
+			if (absorbed > 0)
+				present({
+					type: 'absorb',
+					source: status.src,
+					target: unit.id,
+					key: status.key,
+					status: status.id,
+					amount: absorbed,
+				})
 		}
 		return remaining
 	}

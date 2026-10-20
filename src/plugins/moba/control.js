@@ -148,6 +148,12 @@ export function createControl(ctx) {
 			}
 			ability?.onCancel?.(traitContext(h, { ...cast, ability, reason: 'input' }))
 			present({
+				type: 'castCancelled',
+				hero: h.id,
+				ability: cast.ability,
+				slot: cast.slot,
+			})
+			present({
 				type: 'denied',
 				hero: h.id,
 				ability: cast.ability,
@@ -225,6 +231,7 @@ export function createControl(ctx) {
 			d.cast = {
 				ability: 'loose',
 				slot: 'slot1',
+				targetId: target.id,
 				dir: { x: dx / length, z: dz / length },
 				target: { x: target.x, z: target.z },
 				yaw: yawOf(dx, dz),
