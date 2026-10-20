@@ -54,7 +54,7 @@ export default {
 					continue
 				unit.data.touched[target.unit.id] = tick
 				if (target.unit.team === owner.team)
-					balloonHeal(owner, target.unit, stats.healAmount, 'sprinkler', present, true)
+					balloonHeal(owner, target.unit, stats.healAmount, 'sprinkler', sim, present, true)
 				else balloonSoak(sim, owner, target.unit)
 			}
 		},

@@ -60,7 +60,16 @@ export function coachCutoutTick({ hero, sim, tick, ticks, dt, intents, present }
 	const cancel = frame.pressed.some((e) => e.action === 'stop' || e.action === 'cancel')
 	const moved = Math.abs(frame.move.x) > 0 || (frame.order && frame.order.x !== c.goalX)
 	if (cancel || moved) {
-		if (c.cast) c.cooldownUntil = Math.max(tick + ticks(tune.cast.cancelLockout), tick)
+		if (c.cast) {
+			c.cooldownUntil = Math.max(tick + ticks(tune.cast.cancelLockout), tick)
+			present({
+				type: 'castCancelled',
+				hero: hero.id,
+				ability: c.cast.ability,
+				slot: c.cast.slot,
+				reason: cancel ? 'input' : 'move',
+			})
+		}
 		c.cast = null
 		if (cancel) c.goalX = null
 	}
@@ -110,6 +119,8 @@ export function coachCutoutTick({ hero, sim, tick, ticks, dt, intents, present }
 			hero: hero.id,
 			ability: 'outThrow',
 			slot: 'slot1',
+			lock: c.cast.total * STEP,
+			targetId: null,
 			point: { ...origin, y: 0 },
 			direction: dir,
 		})

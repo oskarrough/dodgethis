@@ -1,5 +1,5 @@
 import { STEP } from '../../core/app.js'
-import { ticks } from './sim-kit.js'
+import { ticks, cancelAttack } from './sim-kit.js'
 import { clampMap, sweepObstacles } from './obstacles.js'
 
 // Move either a physics hero or a plain lane body without snapping render interpolation.
@@ -44,7 +44,7 @@ export function createDisplacement(ctx) {
 		ctx.endCast(unit, 'displaced')
 		ctx.cancelChannel(unit, 'displaced')
 		if (!unit.kind) ctx.ball?.hurt(unit)
-		unit.attack = null
+		cancelAttack(unit, ctx.present, 'displaced')
 		unit.ballThrow = null
 		unit.shove = null
 		unit.path = null

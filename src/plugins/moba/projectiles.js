@@ -4,7 +4,7 @@ import { abilityOf } from './ability.js'
 import { STEP } from '../../core/app.js'
 import { clampMap, sweepHit, sweepObstacles } from './obstacles.js'
 import { interceptShot, stepShot } from './skillshot.js'
-import { SLOTS, ticks, yawOf, dirOf } from './sim-kit.js'
+import { SLOTS, ticks, yawOf, dirOf, cancelAttack } from './sim-kit.js'
 
 // Everything in flight or standing in the way of it: shots, delayed zones, boards and cutouts, and the catch windows that intercept them.
 export function createProjectiles(ctx) {
@@ -339,7 +339,7 @@ export function createProjectiles(ctx) {
 		const pocket = hero.abilityState.pocket
 		const shot = pocket.shot
 		hero.abilityState.pocket = null
-		hero.attack = null
+		cancelAttack(hero, present, 'return')
 		const total = ticks(tune.catching.returnTell)
 		hero.cast = {
 			ability: 'return',
@@ -367,6 +367,8 @@ export function createProjectiles(ctx) {
 			hero: hero.id,
 			ability: 'return',
 			slot,
+			lock: total * STEP,
+			targetId: null,
 			point: { ...hero.body.position },
 			direction: dir,
 			target: { ...hero.cast.target },

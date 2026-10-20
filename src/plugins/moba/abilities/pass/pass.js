@@ -65,11 +65,10 @@ export default {
 		const { slow, duration } = ability.stats
 		return { applies: slow ? [{ key: 'pass.slow', mag: 1 - slow, duration }] : [] }
 	},
-	onHit({ hero, target, shot, present }) {
+	onHit({ hero, target, shot, sim, present }) {
 		if (target.unit.team !== hero.team) return false
 		const ally = target.unit
-		const heal = Math.min(ally.maxHp - ally.hp, shot.healAmount ?? tune.pass.healAmount)
-		ally.hp += heal
+		const heal = sim.heal(hero, ally, shot.healAmount ?? tune.pass.healAmount, shot.ability)
 		present({
 			type: 'contact',
 			part: 'hit',

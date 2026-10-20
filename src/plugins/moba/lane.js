@@ -8,6 +8,7 @@ import { createStructures, vulnerability } from './lane-structures.js'
 import { createWaves, route } from './lane-waves.js'
 import { createRewards } from './lane-rewards.js'
 import { healInBase } from './base.js'
+import { cancelAttack } from './sim-kit.js'
 
 export { waveInterval } from './lane-waves.js'
 
@@ -164,7 +165,7 @@ export function createLane({
 			guard.returning = false
 			guard.returnGoal = null
 			guard.path = null
-			guard.attack = null
+			cancelAttack(guard, present, 'retarget')
 			present({
 				type: 'aggro',
 				source: guard.id,
@@ -192,7 +193,7 @@ export function createLane({
 			if (stepUnitDisplacement(unit, t, dt)) continue
 			const tower = unit.structure
 			if (!tower && blocked(unit, 'move', t) && blocked(unit, 'cast', t)) {
-				unit.attack = null
+				cancelAttack(unit, present, 'disabled')
 				continue
 			}
 			const stats = tower
@@ -250,18 +251,19 @@ export function createLane({
 				target = nearest(unit, range, enemies.get(unit.team))
 			}
 			if (unit.target !== (target?.id ?? null)) {
-				unit.attack = null
+				cancelAttack(unit, present, 'retarget')
 				unit.path = null
 				if (target && !tower && !old) unit.aggroOrigin = { x: p.x, z: p.z }
 			}
 			unit.target = target?.id ?? null
 			if (!tower && !target && !unit.returning) unit.aggroOrigin = null
 			if (tower && t < unit.silentUntil) {
-				unit.attack = null
+				cancelAttack(unit, present, 'silenced')
 				continue
 			}
 			if (unit.attack) {
-				if (!target || !inReach(unit, target, stats.range)) unit.attack = null
+				if (!target || !inReach(unit, target, stats.range))
+					cancelAttack(unit, present, 'target-lost')
 				else if (--unit.attack.left <= 0) {
 					unit.attack = null
 					unit.attackTick = t + Math.max(1, ticks(1 / stats.rate) - ticks(stats.tell))
@@ -289,6 +291,8 @@ export function createLane({
 						type: 'cast',
 						hero: unit.id,
 						slot: unit.kind,
+						lock: unit.attack.total * STEP,
+						targetId: target.id,
 						point: { ...unit.body.position },
 						target: { ...target.body.position },
 					})

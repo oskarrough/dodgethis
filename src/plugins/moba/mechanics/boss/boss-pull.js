@@ -116,7 +116,7 @@ export function createBossPull({ heroes, layout, makeBody, present, systems, vie
 	function end(result, t) {
 		state.phase = 'ended'
 		state.resetTick = t + ticks(tune.boss.reset)
-		unit.cast = null
+		systems().endCast(unit, result)
 		if (!unit.dead) unit.body.update({ x: 0, z: 0 }, STEP, 0)
 		present({ type: 'pull', team: 'A', state: 'end', result, bossHp: unit.hp, threat: values() })
 	}
@@ -258,14 +258,7 @@ export function createBossPull({ heroes, layout, makeBody, present, systems, vie
 		unit.yaw = yawOf(dir.x, dir.z)
 		unit.body.face(dir)
 		if (blocked(unit, 'cast', t) || blocked(unit, 'move', t)) {
-			if (unit.cast)
-				present({
-					type: 'castCancelled',
-					hero: unit.id,
-					ability: unit.cast.ability,
-					slot: unit.cast.slot,
-				})
-			unit.cast = null
+			systems().endCast(unit, 'disabled')
 			unit.body.update({ x: 0, z: 0 }, dt, 0)
 			return
 		}

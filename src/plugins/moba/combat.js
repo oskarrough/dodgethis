@@ -4,7 +4,7 @@ import { STEP } from '../../core/app.js'
 import { freshAbilityState } from './heroes.js'
 import { abilityOf } from './ability.js'
 import { segmentClear } from './obstacles.js'
-import { SLOTS, ticks, dirOf } from './sim-kit.js'
+import { SLOTS, ticks, dirOf, cancelAttack } from './sim-kit.js'
 import { inOwnBase } from './base.js'
 
 // Damage, death and coming back: basic attacks, hits, benching, Flagfall's shove and dunk, respawn and the lobby's drop-in.
@@ -37,6 +37,14 @@ export function createCombat(ctx) {
 	const cancelChannel = (...args) => ctx.cancelChannel(...args)
 	const endCast = (...args) => ctx.endCast(...args)
 	const endStance = (...args) => ctx.endStance(...args)
+	// A separate seeded stream: heal crits never consume the movement/dummy RNG.
+	let healSeed = ctx.seed >>> 0
+	function healRoll() {
+		let roll = (healSeed = (healSeed + 0x6d2b79f5) >>> 0)
+		roll = Math.imul(roll ^ (roll >>> 15), roll | 1)
+		roll ^= roll + Math.imul(roll ^ (roll >>> 7), roll | 61)
+		return ((roll ^ (roll >>> 14)) >>> 0) / 4294967296
+	}
 
 	// Fell off the lobby floor: come back down from the sky over a random free spot.
 	function dropIn(h) {
@@ -71,11 +79,22 @@ export function createCombat(ctx) {
 		unit.shove = null
 		unit.respawnTick = null
 		endCast(unit, 'respawn')
+		cancelAttack(unit, present, 'respawn')
 		endStance(unit, 'respawn')
 		cancelChannel(unit, 'respawn')
 		unit.catchWindow = null
 		for (let i = cutouts.length - 1; i >= 0; i--)
-			if (cutouts[i].owner === unit.id) cutouts.splice(i, 1)
+			if (cutouts[i].owner === unit.id) {
+				if (cutouts[i].cast)
+					present({
+						type: 'castCancelled',
+						hero: unit.id,
+						ability: cutouts[i].cast.ability,
+						slot: cutouts[i].cast.slot,
+						reason: 'respawn',
+					})
+				cutouts.splice(i, 1)
+			}
 		unit.ballThrow = null
 		if (unit.post) unit.castTick = ctx.t + ticks(tune.dummies.castEvery)
 		present({ type: 'spawn', target: unit.id, point: { x: spawn.x, y: 0, z: spawn.z } })
@@ -90,7 +109,7 @@ export function createCombat(ctx) {
 		}
 		const target = find(attack.target)
 		if (!target && !attack.point) {
-			h.attack = null
+			cancelAttack(h, present, 'target-lost')
 			return
 		}
 		const p = h.body.position,
@@ -174,8 +193,8 @@ export function createCombat(ctx) {
 		ability,
 		{ critChance = 0, critMultiplier = 1, periodic = false } = {},
 	) {
-		if (!target || target.dead || target.hp <= 0) return 0
-		const crit = critChance > 0 && rng() < critChance
+		if (!Number.isFinite(amount) || !target || target.dead || target.hp <= 0) return 0
+		const crit = critChance > 0 && healRoll() < critChance
 		const total = Math.max(0, amount) * (crit ? critMultiplier : 1)
 		const landed = Math.min(Math.max(0, target.maxHp - target.hp), total)
 		target.hp += landed
@@ -322,7 +341,7 @@ export function createCombat(ctx) {
 			return
 		}
 		if (unit.kind) {
-			unit.attack = null
+			cancelAttack(unit, present, 'death')
 			lane.reward(unit, shot.team ?? (unit.team === 'A' ? 'B' : 'A'), ctx.t, shot.owner)
 			present({ type: 'death', source: shot.owner, target: unit.id, point: at, direction })
 			return
@@ -354,7 +373,7 @@ export function createCombat(ctx) {
 		unit.catchWindow = null
 		unit.definition.traits.onDeath?.(traitContext(unit, { shot }))
 		unit.order = null
-		unit.attack = null
+		cancelAttack(unit, present, 'death')
 		intents.cancel(unit.id)
 	}
 

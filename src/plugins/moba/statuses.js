@@ -201,10 +201,12 @@ export function createStatuses(ctx) {
 		)
 		if (stack === 'refresh' && same.length) {
 			const status = same[0]
+			const wasted =
+				definition.absorb && options.amount !== undefined ? Math.max(0, status.amount ?? 0) : 0
 			status.until = until
 			if (options.amount !== undefined) status.amount = options.amount
 			if (mag !== undefined) status.mag = mag
-			presentStatus(unit, status, 'refresh')
+			presentStatus(unit, status, 'refresh', { wasted })
 			return status
 		}
 		if (stack === 'replace') {

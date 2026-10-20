@@ -1,8 +1,7 @@
 // All support contacts use the same public fact as Pass; puddle ticks stay quiet.
-export function balloonHeal(owner, unit, amount, ability, present, ambient = false) {
-	const heal = Math.max(0, Math.min(unit.maxHp - unit.hp, amount))
+export function balloonHeal(owner, unit, amount, ability, sim, present, ambient = false) {
+	const heal = sim.heal(owner, unit, amount, ability, { periodic: ambient })
 	if (!heal) return
-	unit.hp += heal
 	present({
 		type: 'contact',
 		part: 'hit',
@@ -30,7 +29,7 @@ export function balloonPop({ unit, owner, sim, tick, ticks, stats, present }) {
 			Math.hypot(ally.body.position.x - p.x, ally.body.position.z - p.z) <=
 			stats.radius + ally.body.radius
 		)
-			balloonHeal(owner, ally, stats.healAmount, 'balloon', present)
+			balloonHeal(owner, ally, stats.healAmount, 'balloon', sim, present)
 	for (const target of sim.enemiesOf(owner.team)) {
 		if (Math.hypot(target.x - p.x, target.z - p.z) > stats.radius + target.radius) continue
 		sim.hit(

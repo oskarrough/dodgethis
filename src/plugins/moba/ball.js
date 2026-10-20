@@ -3,6 +3,7 @@ import { tune } from './tune.js'
 import { blocked } from './statuses.js'
 import { interceptShot, stepShot } from './skillshot.js'
 import { clampWalkable } from './obstacles.js'
+import { cancelAttack } from './sim-kit.js'
 
 const ticks = (s) => Math.max(1, Math.round(s / STEP))
 const pos = (p) => ({ x: p.x, z: p.z })
@@ -112,7 +113,7 @@ export function createBall({
 		if (previous) previous.ballThrow = null
 		h.ballThrow = null
 		endCast(h, 'ball')
-		h.attack = null
+		cancelAttack(h, present, 'ball')
 		h.order = null
 		h.body.cancelDash?.()
 		ball.state = 'carried'
@@ -128,7 +129,7 @@ export function createBall({
 	function control(h, frame, intents, facing) {
 		if (!carrying(h)) return false
 		endCast(h, 'ball')
-		h.attack = null
+		cancelAttack(h, present, 'ball')
 		const edges = frame.pressed.filter((e) => e.action === 'primary' || e.action.startsWith('slot'))
 		if (h.ballThrow && frame.pressed.some((e) => ['stop', 'cancel'].includes(e.action))) {
 			h.ballThrow = null
@@ -209,10 +210,10 @@ export function createBall({
 				} else {
 					if (u.structure) {
 						u.silentUntil = now + ticks(tune.ball.silence)
-						u.attack = null
+						cancelAttack(u, present, 'ball')
 					} else {
 						endCast(u, 'ball')
-						u.attack = null
+						cancelAttack(u, present, 'ball')
 						u.ballThrow = null
 					}
 					fact('ballHit', {

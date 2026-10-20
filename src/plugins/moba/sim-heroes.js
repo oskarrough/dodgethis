@@ -4,7 +4,7 @@ import { createBody } from '../../core/body.js'
 import { styleId } from '../../core/stylepass.js'
 import { tune, profile } from './tune.js'
 import { clampWalkable, clampMap } from './obstacles.js'
-import { SLOTS, dirOf } from './sim-kit.js'
+import { SLOTS, dirOf, cancelAttack } from './sim-kit.js'
 
 // A hero's body (dressed, clamped to the walking bounds) and its fresh state.
 export function createHeroMaker({ scene, world, RAPIER, smooth, lobby, floor, walkingBounds }) {
@@ -150,6 +150,7 @@ export function createRoster(ctx) {
 		const scale = speed ? Math.min(1, definition.base.speed / speed) : 1
 		const fraction = hero.hp / hero.maxHp
 		endCast(hero, 'swap')
+		cancelAttack(hero, present, 'swap')
 		endStance(hero, 'swap')
 		cancelChannel(hero, 'swap')
 		ctx.clearStatuses(hero, 'swap')
@@ -206,6 +207,7 @@ export function createRoster(ctx) {
 		ctx.removeSummons(id)
 		ball?.hurt(hero)
 		endCast(hero, 'clear')
+		cancelAttack(hero, present, 'clear')
 		endStance(hero, 'clear')
 		cancelChannel(hero, 'clear')
 		intents.cancel(id)

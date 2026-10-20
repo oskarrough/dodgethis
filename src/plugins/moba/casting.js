@@ -314,6 +314,13 @@ export function createCasting(ctx) {
 		const cast = hero.cast
 		const ability = castAbility(hero)
 		hero.cast = null
+		present({
+			type: 'castCancelled',
+			hero: hero.id,
+			ability: cast.ability,
+			slot: cast.slot,
+			reason,
+		})
 		ability?.onCancel?.(traitContext(hero, { ...cast, ability, reason }))
 	}
 

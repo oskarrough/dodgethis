@@ -29,7 +29,7 @@ There is no mana (the mode cut it), so overheal costs time, not a resource: ever
 
 `statuses.js` already is Balance Mender's aura system in small: refresh, replace and capped stacks per source, tick-based `periodic` hooks, `absorb` drained oldest first, live `damageTaken` modifiers, tags and cleanse. Ward's shield, Slam's bruise and any later buff are status declarations in their ability folder; nothing new to build, only to log. Two gaps get filled: every apply, refresh and removal becomes a fact, and an absorb shield that falls off unspent reports what it left (`wasted`, Balance Mender's overheal for shields).
 
-Crits: Balance Mender has none yet (its docs list crit as a later slice; sweet-spot heals only look like crits). Dodgethis already has deterministic basic crits (`critEvery`) and `hit.crit`. Heals get a seeded roll (`critChance`, the sim's `rng`, so replays agree) inside the heal door, logged on the `heal` fact.
+Crits: Balance Mender has none yet (its docs list crit as a later slice; sweet-spot heals only look like crits). Dodgethis already has deterministic basic crits (`critEvery`) and `hit.crit`. Heals get a roll on their own seeded stream (`critChance`; isolated from the sim's `rng` so no existing draw moves and replays agree) inside the heal door, logged on the `heal` fact.
 
 ## Facts
 

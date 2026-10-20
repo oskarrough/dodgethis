@@ -1,3 +1,4 @@
+import { STEP } from '../../core/app.js'
 import { tune } from './tune.js'
 import { blocked } from './statuses.js'
 import { castAbility, abilityOf } from './ability.js'
@@ -238,6 +239,8 @@ export function createOrders(ctx) {
 							hero: h.id,
 							...(h.definition.basic.id && { ability: h.definition.basic.id }),
 							slot: 'primary',
+							lock: h.attack.left * STEP,
+							targetId: target.id,
 							point: { x: p.x, y: p.y, z: p.z },
 							direction: dirOf(h.yaw),
 							target: { x: tp.x, z: tp.z },

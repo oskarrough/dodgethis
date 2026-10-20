@@ -1,7 +1,8 @@
+import { STEP } from '../../core/app.js'
 import { tune, profile } from './tune.js'
-import { abilityOf, castAbility } from './ability.js'
+import { abilityOf } from './ability.js'
 import { blocked, moveSpeed } from './statuses.js'
-import { SLOTS, ticks, yawOf, dirOf } from './sim-kit.js'
+import { SLOTS, ticks, yawOf, dirOf, cancelAttack } from './sim-kit.js'
 import { stepUnitDisplacement } from './displacement.js'
 
 // One tick of one unit: a hero turns its intents frame into orders, casts and movement; a dummy strafes and shoots.
@@ -26,7 +27,6 @@ export function createControl(ctx) {
 		casts,
 		release,
 		aimBasic,
-		traitContext,
 		cancelChannel,
 	} = ctx
 
@@ -130,9 +130,7 @@ export function createControl(ctx) {
 			return
 		}
 		if (h.cast && frame.pressed.some((e) => ['stop', 'cancel'].includes(e.action))) {
-			const cast = h.cast,
-				ability = castAbility(h)
-			h.cast = null
+			const cast = h.cast
 			const slotIndex = SLOTS.indexOf(cast.slot)
 			if (slotIndex >= 0) {
 				const lockout = Math.max(1, ticks(tune.cast.cancelLockout))
@@ -146,13 +144,7 @@ export function createControl(ctx) {
 				if (cast.pocket.until > ctx.t) h.abilityState.pocket = cast.pocket
 				else present({ type: 'catchExpired', hero: h.id, point: { ...h.body.position } })
 			}
-			ability?.onCancel?.(traitContext(h, { ...cast, ability, reason: 'input' }))
-			present({
-				type: 'castCancelled',
-				hero: h.id,
-				ability: cast.ability,
-				slot: cast.slot,
-			})
+			ctx.endCast(h, 'input')
 			present({
 				type: 'denied',
 				hero: h.id,
@@ -173,7 +165,7 @@ export function createControl(ctx) {
 			Math.hypot(frame.move.x, frame.move.z) > 0.01 ||
 			frame.pressed.some((e) => e.action === 'stop')
 		)
-			h.attack = null
+			cancelAttack(h, present, 'input')
 		if (
 			h.attack?.phase === 'backswing' &&
 			(frame.order || frame.pressed.some((e) => e.action === 'primary'))
@@ -196,7 +188,8 @@ export function createControl(ctx) {
 		}
 		if (frame.order) issue(h, frame.order)
 		if (Math.hypot(frame.move.x, frame.move.z) > 0.01) h.order = null
-		if (frame.order && ['move', 'attack-move'].includes(h.order?.kind)) h.attack = null
+		if (frame.order && ['move', 'attack-move'].includes(h.order?.kind))
+			cancelAttack(h, present, 'order')
 		if (!heldBall) casts(h, frame)
 		else h.buffered = null
 		if (h.cast?.left === 0) release(h)
@@ -245,6 +238,8 @@ export function createControl(ctx) {
 				hero: d.id,
 				ability: 'loose',
 				slot: 'slot1',
+				lock: d.cast.total * STEP,
+				targetId: d.cast.targetId,
 				point: { x: p.x, y: p.y, z: p.z },
 				direction: { ...d.cast.dir },
 				target: { ...d.cast.target },
