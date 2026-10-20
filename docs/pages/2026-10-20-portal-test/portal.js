@@ -221,13 +221,16 @@ function tick(dt) {
 			state.walk = null
 		}
 	} else if (!state.walk) {
+		// WASD strafes; the left and right arrows turn instead.
+		if (keys.has('ArrowLeft')) state.yaw += 2.4 * dt
+		if (keys.has('ArrowRight')) state.yaw -= 2.4 * dt
 		const f = forward(),
 			r = new THREE.Vector3(-f.z, 0, f.x)
 		const move = new THREE.Vector3()
 		if (keys.has('KeyW') || keys.has('ArrowUp')) move.add(f)
 		if (keys.has('KeyS') || keys.has('ArrowDown')) move.sub(f)
-		if (keys.has('KeyD') || keys.has('ArrowRight')) move.add(r)
-		if (keys.has('KeyA') || keys.has('ArrowLeft')) move.sub(r)
+		if (keys.has('KeyD')) move.add(r)
+		if (keys.has('KeyA')) move.sub(r)
 		const run = keys.has('ShiftLeft') || keys.has('ShiftRight')
 		if (move.lengthSq() > 0) state.pos.addScaledVector(move.normalize(), (run ? 7 : 3.2) * dt)
 	}
