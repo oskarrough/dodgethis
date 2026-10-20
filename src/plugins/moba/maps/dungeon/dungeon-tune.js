@@ -1,7 +1,7 @@
 export default {
 	dungeon: { radius: 14, entrance: -11, spawnSpacing: 1.5, segments: 96 },
 	boss: {
-		hp: 24000,
+		hp: 15000,
 		radius: 1.2,
 		speed: 3.5,
 		aggro: 8,
