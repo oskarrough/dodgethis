@@ -14,6 +14,7 @@ A small, toy-like hero brawler that grew out of dodgeball, set in the world over
 
 - Find the game's look and name: rebrand gallery, Oskar's own directions, floating arenas keep recurring.
 - Flagfall: Dunk (knock heroes into the sea) and lanes that meet.
+- Dungeon ([dungeon.md](dungeon.md)): play the Mender against the Warden with a bot party, read the fight report after each pull. Proved fun (Oskar, 2026-10-20: "visual impact made all the difference"); next, more impact on the Warden's hits.
 - Make the agent harness faster: feature map, [verify.md](verify.md), ast-grep.
 
 ### Waiting on Oskar
