@@ -1,0 +1,357 @@
+/* The desk: a dark plate of instruments, each tinted and shaped by the kind of value it holds. */
+.desk {
+	position: fixed;
+	left: 16px;
+	top: 16px;
+	z-index: 1000;
+	width: 344px;
+	max-height: calc(100vh - 32px);
+	overflow: auto;
+	padding: 0 10px 10px;
+	border-radius: 14px;
+	background: linear-gradient(#26262b, #1b1b1f);
+	box-shadow:
+		0 1px 0 #ffffff14 inset,
+		0 12px 40px #0009;
+	color: #e9e6df;
+	font: 12px/1.2 var(--ui-font, system-ui);
+	user-select: none;
+}
+.desk[hidden] {
+	display: none;
+}
+.desk-head {
+	position: sticky;
+	top: 0;
+	z-index: 1;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 4px;
+	margin: 0 -10px 4px;
+	padding: 8px 10px;
+	background: #1d1d21f2;
+	cursor: grab;
+}
+.desk-head b {
+	margin-right: 4px;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	opacity: 0.6;
+}
+.desk-chips {
+	display: flex;
+	flex: 1;
+	flex-wrap: wrap;
+	gap: 4px;
+}
+.desk-head button {
+	padding: 3px 8px;
+	border: 0;
+	border-radius: 999px;
+	background: #ffffff14;
+	color: inherit;
+	font: inherit;
+	cursor: pointer;
+}
+.desk-head button:hover {
+	background: #ffffff2a;
+}
+.desk-chip::after {
+	content: ' ✕';
+	font-family: system-ui;
+	font-size: 9px;
+	opacity: 0.5;
+}
+.desk h3 {
+	margin: 10px 2px 6px;
+	font-size: 10px;
+	font-weight: normal;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	opacity: 0.45;
+}
+.desk-grid {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	grid-auto-rows: 78px;
+	grid-auto-flow: row dense;
+	gap: 6px;
+}
+.desk-note:empty {
+	display: none;
+}
+.desk-note {
+	margin: 8px 2px 0;
+	opacity: 0.6;
+}
+
+/* One module: face on top, name and readout below. --k is the kind's colour. */
+.desk-mod {
+	--k: #d8d4ca;
+	position: relative;
+	display: grid;
+	grid-template-rows: 1fr auto auto;
+	min-width: 0;
+	padding: 6px;
+	border-radius: 9px;
+	background: #2e2e34;
+	box-shadow:
+		0 1px 0 #ffffff12 inset,
+		0 -2px 0 #0004 inset;
+}
+.desk-mod.is-changed::before {
+	content: '';
+	position: absolute;
+	top: 6px;
+	right: 6px;
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	background: var(--k);
+	box-shadow: 0 0 6px var(--k);
+}
+.desk-mod label {
+	overflow: hidden;
+	font-size: 10px;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	opacity: 0.6;
+}
+.desk-mod output {
+	font-size: 13px;
+	font-variant-numeric: tabular-nums;
+	color: var(--k);
+	cursor: text;
+}
+.desk-face {
+	position: relative;
+	display: grid;
+	place-items: center;
+	min-height: 0;
+	cursor: ns-resize;
+	touch-action: none;
+}
+.desk-face svg {
+	width: 100%;
+	height: 100%;
+	overflow: visible;
+}
+.desk svg .track {
+	fill: none;
+	stroke: #ffffff1c;
+	stroke-width: 2;
+}
+.desk svg .lit {
+	fill: none;
+	stroke: var(--k);
+	stroke-width: 4;
+	stroke-linecap: round;
+}
+.desk svg .needle {
+	stroke: var(--k);
+	stroke-width: 3;
+	stroke-linecap: round;
+}
+
+.desk-mod[data-kind='clock'] {
+	--k: #f2b54a;
+	grid-column: span 4;
+}
+.desk-mod[data-kind='clock'] .desk-face {
+	cursor: ew-resize;
+}
+.desk-mod[data-kind='gauge'] {
+	--k: #ef6a50;
+	grid-column: span 2;
+	grid-row: span 2;
+}
+.desk-mod[data-kind='mast'] {
+	--k: #7fd18b;
+	grid-row: span 2;
+}
+.desk-mod[data-kind='fan'] {
+	--k: #5fc8e0;
+	grid-column: span 2;
+}
+.desk-mod[data-kind='ring'] {
+	--k: #b08cf0;
+	grid-column: span 2;
+	grid-row: span 2;
+}
+.desk-mod[data-kind='meter'] {
+	--k: #c8e05a;
+	grid-row: span 2;
+}
+.desk-mod[data-kind='tone'] {
+	--k: #f08cc0;
+	grid-column: span 2;
+}
+.desk-mod[data-kind='counter'] {
+	grid-column: span 2;
+}
+
+/* Clock: the bar is the duration; the head runs across it in real time and loops. */
+.clock-track {
+	position: relative;
+	width: 100%;
+	height: 22px;
+	border-radius: 4px;
+	background:
+		repeating-linear-gradient(90deg, #ffffff22 0 1px, transparent 1px calc(var(--tick) * 100%)),
+		#0003;
+}
+.clock-fill {
+	position: absolute;
+	inset: 0 auto 0 0;
+	border-radius: 4px;
+	background: color-mix(in srgb, var(--k) 30%, transparent);
+	box-shadow: -2px 0 0 var(--k) inset;
+}
+.clock-head {
+	position: absolute;
+	top: -3px;
+	bottom: -3px;
+	width: 3px;
+	margin-left: -1px;
+	border-radius: 2px;
+	background: var(--k);
+	box-shadow: 0 0 8px var(--k);
+}
+
+.desk svg .tick {
+	stroke: #ffffff40;
+	stroke-width: 1.5;
+}
+.desk svg .hub {
+	fill: #18181b;
+	stroke: var(--k);
+	stroke-width: 2;
+}
+
+/* Mast: a pole that grows from the ground with a peg on top. */
+.mast {
+	position: relative;
+	width: 34px;
+	height: 100%;
+	border-bottom: 2px solid #ffffff40;
+	background: repeating-linear-gradient(0deg, #ffffff1a 0 1px, transparent 1px 10%);
+}
+.mast-pole {
+	position: absolute;
+	bottom: 0;
+	left: 50%;
+	width: 4px;
+	margin-left: -2px;
+	background: color-mix(in srgb, var(--k) 50%, transparent);
+}
+.mast-peg {
+	position: absolute;
+	left: 3px;
+	right: 3px;
+	height: 8px;
+	margin-bottom: -4px;
+	border-radius: 2px;
+	background: var(--k);
+}
+
+.desk svg .wedge {
+	fill: color-mix(in srgb, var(--k) 30%, transparent);
+	stroke: var(--k);
+	stroke-width: 2;
+	stroke-linejoin: round;
+}
+.desk svg .disc {
+	fill: color-mix(in srgb, var(--k) 25%, transparent);
+	stroke: var(--k);
+	stroke-width: 2;
+}
+
+/* Meter: a column of lamps. */
+.meter {
+	display: grid;
+	gap: 3px;
+	width: 26px;
+	height: 100%;
+}
+.meter i {
+	border-radius: 2px;
+	background: #ffffff12;
+}
+.meter i.on {
+	background: var(--k);
+	box-shadow: 0 0 4px color-mix(in srgb, var(--k) 60%, transparent);
+}
+
+.desk svg .wave {
+	fill: none;
+	stroke: var(--k);
+	stroke-width: 2.5;
+}
+
+/* Counter: big digits with nudges either side. */
+.desk-mod[data-kind='counter'] .desk-face {
+	grid-template-columns: auto 1fr auto;
+	gap: 4px;
+	width: 100%;
+}
+.desk-mod[data-kind='counter'] button {
+	width: 26px;
+	height: 26px;
+	border: 0;
+	border-radius: 50%;
+	background: #ffffff14;
+	color: inherit;
+	font: inherit;
+	font-size: 16px;
+	cursor: pointer;
+}
+.counter-num {
+	font-size: 24px;
+	font-variant-numeric: tabular-nums;
+	text-align: center;
+}
+.desk-mod[data-kind='counter'] output {
+	display: none;
+}
+
+/* Switch: a chunky toggle. */
+.desk-mod[data-kind='switch'] {
+	--k: #f0904a;
+}
+.desk-mod[data-kind='switch'] .desk-face {
+	cursor: pointer;
+}
+.switch {
+	position: relative;
+	width: 44px;
+	height: 24px;
+	border-radius: 12px;
+	background: #0005;
+	transition: background 0.15s;
+}
+.switch i {
+	position: absolute;
+	top: 3px;
+	left: 3px;
+	width: 18px;
+	height: 18px;
+	border-radius: 50%;
+	background: #8a877f;
+	transition:
+		transform 0.15s,
+		background 0.15s;
+}
+.switch.on {
+	background: color-mix(in srgb, var(--k) 35%, transparent);
+}
+.switch.on i {
+	transform: translateX(20px);
+	background: var(--k);
+}
+
+.desk svg .cap {
+	fill: #3a3a41;
+	stroke: #0006;
+	stroke-width: 2;
+}

@@ -1,4 +1,5 @@
 import GUI from 'lil-gui'
+import { createDesk } from './desk.js'
 import { tune } from './tune.js'
 
 // Leveled console logging + a ring buffer you can dump or surface in the HUD.
@@ -85,8 +86,10 @@ export function createDebugPanel() {
 		add(f)
 		const added = f.children.filter((c) => !before.has(c))
 		refilter()
+		desk.refresh()
 		return () => {
 			for (const c of added) c.destroy()
+			desk.refresh()
 			for (let p = path; p; p = p.slice(0, Math.max(0, p.lastIndexOf('/')))) {
 				const empty = folders.get(p)
 				if (!empty || empty.children.length) break
@@ -95,7 +98,8 @@ export function createDebugPanel() {
 			}
 		}
 	}
-	const refilter = addFilter(gui)
+	const desk = createDesk(gui)
+	const refilter = addFilter(gui, desk.pin)
 	gui.close()
 	return {
 		tune: (path, object, build) => build && adding(path, (f) => build(f, object)),
@@ -109,11 +113,11 @@ export function createDebugPanel() {
 }
 
 // Typing narrows the panel to folders and controls whose names match, opening folders on the way.
-// Clearing it shows everything again and closes what the filter opened.
-function addFilter(gui) {
+// Clearing it shows everything again and closes what the filter opened; Enter pins the matches to the desk.
+function addFilter(gui, pin) {
 	const input = document.createElement('input')
 	input.type = 'search'
-	input.placeholder = 'filter…'
+	input.placeholder = 'filter… (Enter pins to the desk)'
 	input.className = 'debug-filter'
 	input.style.cssText =
 		'display:block;box-sizing:border-box;width:calc(100% - 8px);margin:4px;padding:4px 6px;border:0;border-radius:2px;font:inherit;background:var(--widget-color);color:var(--text-color)'
@@ -157,6 +161,7 @@ function addFilter(gui) {
 	input.addEventListener('keydown', (event) => {
 		if (event.code === 'Backquote') return
 		if (event.code === 'Escape') input.blur()
+		if (event.code === 'Enter') pin(input.value.trim())
 		event.stopPropagation()
 	})
 	input.addEventListener('keyup', (event) => event.stopPropagation())
