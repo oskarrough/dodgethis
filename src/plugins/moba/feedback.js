@@ -526,6 +526,8 @@ export function createFeedback({
 				cue(fact.type, fact, mine ? 1 : 0.45)
 				return
 			case 'recallStart':
+			case 'recallOpen':
+			case 'recallEnter':
 			case 'recallCancelled':
 				cue(fact.type, fact, mine ? 1 : 0.45)
 				return

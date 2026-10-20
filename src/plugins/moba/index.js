@@ -42,6 +42,8 @@ const FACTS = [
 	'channelCancelled',
 	'channelEnd',
 	'recallStart',
+	'recallOpen',
+	'recallEnter',
 	'recallCancelled',
 	'recallEnd',
 	'ballContested',
@@ -517,7 +519,6 @@ export default function moba(app, map) {
 				lobby?.afterStep()
 			})
 			onPresent(feedback.present)
-			if (recallView) onPresent(recallView.present)
 			if (ballView) onPresent(ballView.present)
 			const ballFacts = []
 			run.on('present', (fact) => {

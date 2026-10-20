@@ -316,6 +316,8 @@ export const look = {
 		channelCancelled: { freq: 210, slideTo: 100, type: 'triangle', dur: 0.12, gain: 0.1 },
 		channelEnd: { freq: 520, slideTo: 700, type: 'triangle', dur: 0.12, gain: 0.12 },
 		recallStart: { freq: 260, slideTo: 880, type: 'sine', dur: 0.7, gain: 0.09 },
+		recallOpen: { freq: 660, slideTo: 990, type: 'sine', dur: 0.35, gain: 0.08 },
+		recallEnter: { freq: 520, slideTo: 1400, type: 'sine', dur: 0.25, gain: 0.11 },
 		recallCancelled: { freq: 620, slideTo: 130, type: 'sine', dur: 0.28, gain: 0.1 },
 		recallEnd: { freq: 880, slideTo: 1760, type: 'triangle', dur: 0.32, gain: 0.12 },
 		ballContested: { freq: 650, slideTo: 350, type: 'triangle', dur: 0.25, gain: 0.16 },

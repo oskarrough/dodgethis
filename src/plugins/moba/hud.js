@@ -815,13 +815,25 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 			)
 			const recallCd = Math.max(0, ((hero?.recallReady ?? 0) - (sim?.tick ?? 0)) * STEP)
 			const tear = hero?.recall
-			const recallFraction = tear
-				? 1 - tear.left / Math.max(1, tear.total)
-				: ring(recallCd, tune.recall.cooldown)
+			// Opening fills the sweep; open shows the seconds left to walk in; the cooldown follows the close.
+			const recallFraction =
+				tear?.phase === 'opening'
+					? 1 - tear.left / Math.max(1, tear.total)
+					: tear
+						? 1
+						: ring(recallCd, tune.recall.cooldown)
 			prop(recall, '--cd', `${recallFraction}turn`)
 			flag(recall, 'recalling', !!tear)
-			flag(recall, 'cooling', recallCd > 0)
-			text(recallLeft, recallCd > 0 && !tear ? String(Math.ceil(recallCd)) : '')
+			flag(recall, 'open', tear?.phase === 'open')
+			flag(recall, 'cooling', recallCd > 0 && !tear)
+			text(
+				recallLeft,
+				tear?.phase === 'open'
+					? String(Math.ceil(tear.left * STEP))
+					: recallCd > 0 && !tear
+						? String(Math.ceil(recallCd))
+						: '',
+			)
 
 			updateTip(dt, {
 				...frame,

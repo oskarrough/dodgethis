@@ -138,13 +138,23 @@ export const tune = {
 	// from any health to full in fullHealSeconds. base-view.js prints it: a team-tinted wash (`fill`
 	// opacity) with an `edge`-metre line (`line` opacity) at `printY`, between the road and lobby prints.
 	base: { x: 44, fullHealSeconds: 4, edge: 0.2, fill: 0.1, line: 0.45, printY: 0.04 },
-	// B: stand still for `channel` seconds while a tear shows home, then step through to your spawn.
-	// Moving, casting, a hit or a disable collapses it; `cooldown` starts when you land.
-	// `tear` is the view's (recall-view.js): metres beside the hero, half-height, timings in seconds.
+	// B: stand still for `channel` seconds while a tear rips open `ahead` metres in front of you, showing home.
+	// Then it stays `open` seconds: walk into it (a step crossing its `width`-wide mouth) and you slip
+	// `slip` metres in over `slipTime`, then a tear at your spawn spits you out `spit` metres over `spitTime`.
+	// Moving cancels only while it opens; a hit, a cast or a disable collapses it any time before you're in.
+	// `cooldown` starts when an opened tear closes, used or not; one broken while opening costs none.
+	// `tear` is the view's (recall-view.js): half-height, lean back toward the camera (radians), timings.
 	recall: {
 		channel: 3,
+		open: 4,
 		cooldown: 6,
-		tear: { offset: 1.5, radius: 1.25, openTime: 0.9, closeTime: 0.45, sparks: 900, landing: 0.3 },
+		ahead: 1.6,
+		width: 0.85,
+		slip: 1.3,
+		slipTime: 0.3,
+		spit: 1.6,
+		spitTime: 0.35,
+		tear: { radius: 1.25, lean: 0.45, closeTime: 0.45, sparks: 900, linger: 0.25 },
 	},
 	bots: {
 		// Logic experiments: bot code may read `tune.bots.exp.<flag>` (truthy or a number) to switch a

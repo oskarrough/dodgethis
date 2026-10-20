@@ -119,7 +119,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Team stamps on the ground: `stamps.js` `createStamps`
 - Match end rules (objective, late-game gun damage, winner): `lane.js` `createLane` (phase, gun damage), `lane-structures.js` `structureDown` (winner); `tune.js` `match`; late time in `maps/<id>/<id>-tune.js` (`map.late` for Overthrow, `flagfall.late` for Flagfall), read through the current layout
 - Base zone (your own end of the map: untouchable, heal to full in `fullHealSeconds`) and its ground print: `base.js` `inOwnBase`, `healInBase` (from `lane.js` `createLane` `step`); hits shielded in `combat.js` `hit`, enemy statuses refused in `statuses.js` `apply`; `base-view.js` `createBaseView`; `tune.js` `base`
-- Recall (B, pad d-pad down; channel, cancel, land at spawn) and its tear showing home: `recall.js` `createRecall` (`stepRecall`, `cancelRecall`); `recall-view.js` `createRecallView` over `src/core/portal.js`, drawn with `app.renderStyled`; HUD chip `hud.js` `.moba-recall`; `tune.js` `recall`
+- Recall (B, pad d-pad down): a tear rips open in front of you, stays open a few seconds, and takes you home only if you walk in (sim crossing test, spit out at spawn): `recall.js` `createRecall` (`stepRecall`, `cancelRecall`, `crossing`); entry and spawn tears `recall-view.js` `createRecallView` over `src/core/portal.js`, drawn with `app.renderStyled`; HUD chip `hud.js` `.moba-recall`; `tune.js` `recall`
 - Lane replica for online: `lane-replica.js` `createLaneReplica`, `projectLaneSnapshot`; `network.md`
 
 ## Match: the Ball

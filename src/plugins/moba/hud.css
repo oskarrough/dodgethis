@@ -609,6 +609,16 @@
 .moba-recall.recalling .sweep {
 	background: conic-gradient(rgba(232, 92, 170, 0.55) var(--cd, 0turn), transparent 0);
 }
+.moba-recall.open {
+	animation: moba-recall-open 0.8s ease-in-out infinite alternate;
+}
+@keyframes moba-recall-open {
+	to {
+		box-shadow:
+			3px 4px 0 var(--ink),
+			0 0 0 3px rgba(95, 240, 255, 0.8);
+	}
+}
 .moba-slot.denied {
 	background: var(--ui-red);
 	transform: scale(1.08);

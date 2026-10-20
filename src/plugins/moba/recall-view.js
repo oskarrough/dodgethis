@@ -3,89 +3,112 @@ import { createPortal } from '../../core/portal.js'
 import { FORWARD_LAYER } from '../../core/stylepass.js'
 import { tune } from './tune.js'
 
-// The recall tear (recall.js): while a hero recalls, a tear opens beside them, turned square to the camera
-// (the follow camera looks steeply down, so an upright tear would read as a sliver), and shows their own
-// base live: the styled scene from the camera carried through to their core (or spawn), at the same angle.
-// It collapses when the recall lands or breaks; landing flashes a small rim-only tear at the spawn.
+// The recall tears (recall.js). The entry tear stands where the sim put its mouth, rips open over the
+// channel and shows the hero's base live: the styled scene from the camera carried through to their core.
+// Its plane keeps the sim's mouth line on the ground but leans back toward the camera, which looks
+// steeply down. Walking in, the hole hides whatever is behind its plane and the hero shrinks into it; at
+// spawn a second tear, showing where they left, spits them back out.
 export function createRecallView(app, layout) {
-	const tears = new Map() // hero id → portal while a recall is open or its tear is still collapsing
-	const landings = [] // { portal, left }
+	const entries = new Map() // hero id → { portal, at } while opening, open or slipping through, then collapsing
+	const exits = new Map() // hero id → { portal, left }
+	const squeezed = new Set() // heroes whose root mesh this view has scaled
 	const toCamera = new THREE.Vector3()
-	const side = new THREE.Vector3()
+	const facing = new THREE.Vector3()
 	const at = new THREE.Vector3()
-	const home = new THREE.Vector3()
+	const far = new THREE.Vector3()
 
-	function makePortal(far) {
+	function makePortal(openTime) {
 		const t = tune.recall.tear
 		const portal = createPortal(app.renderer, {
-			...(far &&
-				app.renderStyled && { draw: (target, camera) => app.renderStyled(target, camera) }),
+			...(app.renderStyled && { draw: (target, camera) => app.renderStyled(target, camera) }),
 			layer: FORWARD_LAYER,
 			radius: t.radius,
 			floor: t.radius,
-			openTime: t.openTime,
+			openTime,
 			closeTime: t.closeTime,
 			sparks: t.sparks,
 		})
 		app.scene.add(portal.object)
 		return portal
 	}
-
-	// Facts: a landing opens the rim at the spawn and lets it go again.
-	function present(fact) {
-		if (fact.type !== 'recallEnd' || !fact.point) return
-		const portal = makePortal(false)
-		portal.place(at.set(fact.point.x, tune.recall.tear.radius, fact.point.z), toCamera)
-		portal.open()
-		landings.push({ portal, left: tune.recall.tear.landing })
+	// The mouth's normal, flipped to the camera's side and leaned back toward it.
+	function lean(dir) {
+		const lean = tune.recall.tear.lean
+		const s = dir.x * toCamera.x + dir.z * toCamera.z >= 0 ? 1 : -1
+		return facing.set(dir.x * s * Math.cos(lean), Math.sin(lean), dir.z * s * Math.cos(lean))
 	}
+	const centre = (p) => at.set(p.x, tune.recall.tear.radius, p.z)
 
 	// `heroes` are the ones this client may see (fog already applied).
 	function update(dt, { heroes, camera }) {
 		camera.getWorldDirection(toCamera).negate()
-		side.set(toCamera.z, 0, -toCamera.x)
-		if (side.lengthSq() < 1e-6) side.set(1, 0, 0)
-		side.normalize()
-		const recalling = new Set()
+		toCamera.y = 0
+		if (toCamera.lengthSq() < 1e-6) toCamera.set(0, 0, 1)
+		toCamera.normalize()
+		const entering = new Set()
 		for (const h of heroes) {
-			if (!h.recall || h.dead) continue
-			recalling.add(h.id)
-			let portal = tears.get(h.id)
-			if (!portal) tears.set(h.id, (portal = makePortal(true)))
-			const p = h.body.mesh?.position ?? h.body.position
-			const t = tune.recall.tear
-			portal.place(at.set(p.x, t.radius, p.z).addScaledVector(side, t.offset), toCamera)
-			const spawn = layout.spawns?.[h.team]
-			const core = layout.structures?.find((s) => s.kind === 'core' && s.team === h.team)
-			const look = core ?? spawn
-			if (look) portal.exit(home.set(look.x, t.radius, look.z), toCamera)
-			if (!portal.isOpen) portal.open()
-		}
-		for (const [id, portal] of tears) {
-			if (!recalling.has(id) && portal.isOpen) portal.collapse()
-			portal.update(dt, camera)
-			if (portal.phase === 'closed') {
-				portal.dispose()
-				tears.delete(id)
+			const r = !h.dead && h.recall
+			if (r && r.phase !== 'out') {
+				entering.add(h.id)
+				let entry = entries.get(h.id)
+				if (!entry) entries.set(h.id, (entry = { portal: makePortal(tune.recall.channel) }))
+				entry.at = { ...r.at }
+				entry.portal.place(centre(r.at), lean(r.dir))
+				const core = layout.structures?.find((s) => s.kind === 'core' && s.team === h.team)
+				const home = core ?? layout.spawns?.[h.team]
+				if (home) entry.portal.exit(far.set(home.x, tune.recall.tear.radius, home.z), facing)
+				if (!entry.portal.isOpen) entry.portal.open()
+			}
+			if (r?.phase === 'out' && !exits.has(h.id)) {
+				const portal = makePortal(tune.recall.spitTime / 3)
+				portal.place(centre(r.at), lean(r.dir))
+				const from = entries.get(h.id)?.at
+				if (from) portal.exit(far.set(from.x, tune.recall.tear.radius, from.z), facing)
+				portal.open()
+				exits.set(h.id, { portal, left: tune.recall.spitTime + tune.recall.tear.linger })
+			}
+			// Slipping in shrinks the hero into the mouth; the spawn tear grows them back out.
+			const k =
+				r && (r.phase === 'through' || r.phase === 'out') ? 1 - r.left / Math.max(1, r.total) : null
+			if (k !== null) {
+				const s = r.phase === 'through' ? Math.max(0.05, 1 - k * k) : 0.3 + 0.7 * k
+				h.body.mesh?.scale.setScalar(s)
+				squeezed.add(h)
+			} else if (squeezed.has(h)) {
+				h.body.mesh?.scale.setScalar(1)
+				squeezed.delete(h)
 			}
 		}
-		for (let i = landings.length - 1; i >= 0; i--) {
-			const landing = landings[i]
-			if ((landing.left -= dt) <= 0 && landing.portal.isOpen) landing.portal.collapse()
-			landing.portal.update(dt, camera, { far: false })
-			if (landing.portal.phase === 'closed') {
-				landing.portal.dispose()
-				landings.splice(i, 1)
+		for (const h of squeezed)
+			if (!heroes.includes(h)) {
+				h.body.mesh?.scale.setScalar(1)
+				squeezed.delete(h)
+			}
+		for (const [id, entry] of entries) {
+			if (!entering.has(id) && entry.portal.isOpen) entry.portal.collapse()
+			entry.portal.update(dt, camera)
+			if (entry.portal.phase === 'closed' && !entering.has(id)) {
+				entry.portal.dispose()
+				entries.delete(id)
+			}
+		}
+		for (const [id, exit] of exits) {
+			if ((exit.left -= dt) <= 0 && exit.portal.isOpen) exit.portal.collapse()
+			exit.portal.update(dt, camera)
+			if (exit.portal.phase === 'closed' && exit.left <= 0) {
+				exit.portal.dispose()
+				exits.delete(id)
 			}
 		}
 	}
 
 	function dispose() {
-		for (const portal of tears.values()) portal.dispose()
-		for (const landing of landings) landing.portal.dispose()
-		tears.clear()
-		landings.length = 0
+		for (const h of squeezed) h.body.mesh?.scale.setScalar(1)
+		for (const { portal } of [...entries.values(), ...exits.values()]) portal.dispose()
+		entries.clear()
+		exits.clear()
+		squeezed.clear()
 	}
 
-	return { present, update, dispose }
+	return { update, dispose }
 }
