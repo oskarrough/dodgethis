@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Portal test</title>
+		<style>
+			html,
+			body {
+				margin: 0;
+				height: 100%;
+				overflow: hidden;
+				background: #f6dcd3;
+				font:
+					14px/1.4 system-ui,
+					sans-serif;
+				color: #26445f;
+			}
+			canvas {
+				display: block;
+				width: 100vw;
+				height: 100vh;
+				cursor: crosshair;
+			}
+			.hud {
+				position: fixed;
+				left: 16px;
+				bottom: 16px;
+				padding: 10px 14px;
+				border-radius: 10px;
+				background: rgb(255 250 244 / 0.82);
+				max-width: 360px;
+				user-select: none;
+			}
+			.hud h1 {
+				margin: 0 0 4px;
+				font-size: 15px;
+			}
+			.hud p {
+				margin: 0 0 8px;
+			}
+			.hud button {
+				font: inherit;
+				margin-right: 6px;
+				padding: 4px 10px;
+				border: 1px solid #26445f;
+				border-radius: 6px;
+				background: #fffcf7;
+				color: inherit;
+				cursor: pointer;
+			}
+			.where {
+				position: fixed;
+				top: 16px;
+				left: 16px;
+				padding: 4px 10px;
+				border-radius: 6px;
+				background: rgb(255 250 244 / 0.82);
+			}
+		</style>
+	</head>
+	<body>
+		<canvas></canvas>
+		<div class="where"></div>
+		<div class="hud">
+			<h1>Portal test</h1>
+			<p>
+				Click to look around (Esc lets go). WASD walks, Shift runs. O tears a portal open in front of
+				you or closes it, Space walks you through, R starts over.
+			</p>
+			<button data-act="open">Open (O)</button>
+			<button data-act="step">Step through (Space)</button>
+			<button data-act="reset">Reset (R)</button>
+		</div>
+		<script type="module" src="./portal.js"></script>
+	</body>
+</html>

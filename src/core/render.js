@@ -150,6 +150,10 @@ export function createRenderer() {
 	function render() {
 		style.render(scene, camera)
 	}
+	// The styled scene from another camera into a render target, left linear (portal.js `draw`).
+	function renderStyled(target, from) {
+		style.render(scene, from, target)
+	}
 
 	function dispose() {
 		window.removeEventListener('resize', resize)
@@ -165,6 +169,7 @@ export function createRenderer() {
 		kickFov,
 		updateCamera,
 		render,
+		renderStyled,
 		frame,
 		dispose,
 		setPalette: style.setPalette,

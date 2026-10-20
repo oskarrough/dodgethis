@@ -24,6 +24,7 @@ import {
 } from './tooltip.js'
 import { controls } from '../../core/controls.js'
 import { presetKeys } from '../../core/intents.js'
+import { STEP } from '../../core/app.js'
 
 // The match HUD: top bar, portrait, ability slots and tooltips, including world units.
 // Every DOM write goes through `put`, which skips unchanged values.
@@ -63,6 +64,9 @@ export const ICONS = {
 	triangle: svg('<path class="tone" d="M24 8 L42 40 L6 40 Z"/>'),
 	bar: svg('<rect class="tone" x="8" y="18" width="32" height="14" rx="5"/>'),
 	empty: svg('<path class="ink-line" d="M16 24 L32 24" opacity="0.4"/>'),
+	recall: svg(
+		'<path class="tone" d="M24 5 Q35 24 24 43 Q13 24 24 5 Z"/><path class="ink-line" d="M24 12 Q29 24 24 36 Q19 24 24 12 Z"/>',
+	),
 }
 
 // Countdown ring fraction for a timer that resets to `total`, quantised so the ring only rewrites when it moves.
@@ -209,6 +213,14 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 		const left = el('span', 'left', slot)
 		return { action, slot, icon, key, left, deniedFor: 0, fraction: -1 }
 	})
+	// Recall (B): a smaller chip after the kit. Its sweep is the cooldown, or the tear's progress while recalling.
+	const recall = el('div', 'moba-slot moba-recall', slotRow)
+	recall.setAttribute('aria-label', 'Recall')
+	el('span', 'icon', recall).innerHTML = ICONS.recall
+	el('span', 'sweep', recall)
+	const recallKey = el('span', 'key', recall)
+	const recallLeft = el('span', 'left', recall)
+	let recallDenied = 0
 	// The feed: a drum mid-right printed with the game log's calls. A new line turns the drum, so the newest sits
 	// sharp at the front and older ones roll up and away; each line keeps its own clock.
 	const feed = el('div', 'moba-feed')
@@ -593,6 +605,11 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 		},
 		// A press on cooldown outside the buffer: the icon flashes for 60 ms.
 		deny(action) {
+			if (action === 'recall') {
+				recallDenied = 0.06
+				recall.classList.add('denied')
+				return
+			}
 			const s = slots[SLOTS.indexOf(action)]
 			if (!s) return
 			s.deniedFor = 0.06
@@ -786,6 +803,25 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 					cooldown > 0 ? (cooldown > 1 ? String(Math.ceil(cooldown)) : cooldown.toFixed(1)) : '',
 				)
 			}
+
+			put(recall, 'hidden', !teams || frame.lobby, (hidden) => (recall.hidden = hidden))
+			if (recallDenied > 0 && (recallDenied -= dt) <= 0) recall.classList.remove('denied')
+			text(recallKey, device === 'gamepad' ? '▼' : 'B')
+			put(
+				recallKey,
+				'touch',
+				device === 'touch',
+				(v) => (recallKey.style.display = v ? 'none' : ''),
+			)
+			const recallCd = Math.max(0, ((hero?.recallReady ?? 0) - (sim?.tick ?? 0)) * STEP)
+			const tear = hero?.recall
+			const recallFraction = tear
+				? 1 - tear.left / Math.max(1, tear.total)
+				: ring(recallCd, tune.recall.cooldown)
+			prop(recall, '--cd', `${recallFraction}turn`)
+			flag(recall, 'recalling', !!tear)
+			flag(recall, 'cooling', recallCd > 0)
+			text(recallLeft, recallCd > 0 && !tear ? String(Math.ceil(recallCd)) : '')
 
 			updateTip(dt, {
 				...frame,

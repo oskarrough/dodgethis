@@ -115,6 +115,8 @@ export function createSnapshot(ctx) {
 				cancelUntil: h.cancelUntil.slice(),
 				stance: h.stance && { ...h.stance },
 				channel: h.channel && structuredClone(h.channel),
+				recall: h.recall && structuredClone(h.recall),
+				recallReady: h.recallReady,
 				catchWindow: h.catchWindow && { ...h.catchWindow },
 			})),
 			dummies: dummies.map((d) => ({

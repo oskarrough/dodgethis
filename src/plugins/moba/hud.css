@@ -589,6 +589,26 @@
 	background: var(--gold);
 	border: 2px solid var(--ink);
 }
+.moba-recall {
+	width: 44px;
+	height: 44px;
+	align-self: flex-end;
+	border-radius: 12px;
+	transform: rotate(3deg);
+}
+.moba-recall[hidden] {
+	display: none;
+}
+.moba-recall .icon svg {
+	width: 30px;
+	height: 30px;
+}
+.moba-recall .left {
+	font-size: 20px;
+}
+.moba-recall.recalling .sweep {
+	background: conic-gradient(rgba(232, 92, 170, 0.55) var(--cd, 0turn), transparent 0);
+}
 .moba-slot.denied {
 	background: var(--ui-red);
 	transform: scale(1.08);

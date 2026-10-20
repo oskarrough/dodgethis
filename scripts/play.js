@@ -29,7 +29,7 @@ Only own death, new aimed enemy tell, Ball spawn or one hit >${tune.agents.inter
 Coordinates x,y are metres (y is ground z); map ±${tune.map.halfX}, ±${tune.map.halfZ}.
 Bearings are from live self to stale unit, measured from +x: 0=+x, 90=+y degrees.
 Self is live; world lags ${tune.bots.normal.reaction}s. stale is position age, not inactivity.
-Heal ${tune.base.heal * 100}% max HP/s at x<=-${tune.base.x} (A) or x>=${tune.base.x} (B), any y.
+Untouchable and heal to full in ${tune.base.fullHealSeconds}s at x<=-${tune.base.x} (A) or x>=${tune.base.x} (B), any y.
 No fog: all heroes/structures; minions within ${tune.agents.nearby}m; omitted rows counted.
 {"action":"move","x":0,"y":0}          move only, even onto an enemy
 {"action":"attack-move","x":0,"y":0}   move, engage enemies in basic range, resume

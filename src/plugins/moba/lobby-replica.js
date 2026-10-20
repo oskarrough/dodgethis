@@ -33,6 +33,8 @@ const fields = [
 	'cancelUntil',
 	'stance',
 	'channel',
+	'recall',
+	'recallReady',
 	'catchWindow',
 	'castTick',
 	'ballThrow',
@@ -312,7 +314,7 @@ export function createUnitReplica(
 				unit[key] = a[key].map((v, i) =>
 					continuous && b[key][i] <= v ? lerp(v, b[key][i], blend) : v,
 				)
-		for (const key of ['cast', 'attack', 'channel']) {
+		for (const key of ['cast', 'attack', 'channel', 'recall']) {
 			if (!a[key]) continue
 			unit[key].left =
 				continuous && sameAction(a[key], b[key])

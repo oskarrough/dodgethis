@@ -134,7 +134,18 @@ export const tune = {
 		throwSquash: -0.22,
 		pickupSquash: 0.16,
 	},
-	base: { x: 44, heal: 0.1 },
+	// Behind x (towards your end of the map) is your base: your own team takes no hits there and heals
+	// from any health to full in fullHealSeconds. base-view.js prints it: a team-tinted wash (`fill`
+	// opacity) with an `edge`-metre line (`line` opacity) at `printY`, between the road and lobby prints.
+	base: { x: 44, fullHealSeconds: 4, edge: 0.2, fill: 0.1, line: 0.45, printY: 0.04 },
+	// B: stand still for `channel` seconds while a tear shows home, then step through to your spawn.
+	// Moving, casting, a hit or a disable collapses it; `cooldown` starts when you land.
+	// `tear` is the view's (recall-view.js): metres beside the hero, half-height, timings in seconds.
+	recall: {
+		channel: 3,
+		cooldown: 6,
+		tear: { offset: 1.5, radius: 1.25, openTime: 0.9, closeTime: 0.45, sparks: 900, landing: 0.3 },
+	},
 	bots: {
 		// Logic experiments: bot code may read `tune.bots.exp.<flag>` (truthy or a number) to switch a
 		// behaviour variant; `bun run simulate --set bots.exp.<flag>=0,1` sweeps it. Empty on main: land the

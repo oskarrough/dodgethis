@@ -7,6 +7,7 @@ import { createPathPlanner } from './path.js'
 import { createStructures, vulnerability } from './lane-structures.js'
 import { createWaves, route } from './lane-waves.js'
 import { createRewards } from './lane-rewards.js'
+import { healInBase } from './base.js'
 
 export { waveInterval } from './lane-waves.js'
 
@@ -83,10 +84,7 @@ export function createLane({
 					? 'objective'
 					: 'early'
 		passiveXp(t)
-		for (const h of heroes) {
-			if (!h.dead && (h.team === 'A' ? -1 : 1) * (h.body.position.x - layout.bases[h.team].x) >= 0)
-				h.hp = Math.min(h.maxHp, h.hp + h.maxHp * tune.base.heal * dt)
-		}
+		healInBase(layout, heroes, dt)
 		stepGlobes(t)
 		waves.step(t)
 		units(t, dt)

@@ -15,6 +15,8 @@ import { createCameraControls } from './camera-controls.js'
 import { createCursor } from './cursor.js'
 import { createView } from './view.js'
 import { createSkillsView } from './skills-view.js'
+import { createRecallView } from './recall-view.js'
+import { createBaseView } from './base-view.js'
 import { createHud, matchFrame } from './hud.js'
 import { createPips } from './pips.js'
 import { createSounds } from './sounds.js'
@@ -39,6 +41,9 @@ const FACTS = [
 	'catchExpired',
 	'channelCancelled',
 	'channelEnd',
+	'recallStart',
+	'recallCancelled',
+	'recallEnd',
 	'ballContested',
 	'ballWarn',
 	'ballSpawn',
@@ -180,6 +185,11 @@ export default function moba(app, map) {
 				!app.session.authoritative ? (object, read) => replica.smooth(object, read) : run.smooth,
 			)
 			const skillsView = createSkillsView(scene)
+			const recallView = isLobby ? null : createRecallView(app, layout)
+			const baseView =
+				!isLobby && layout.bases && mechanics.some((m) => m.lane)
+					? createBaseView(scene, layout)
+					: null
 			const fog =
 				!isLobby && query.get('fog') !== '0' ? createFog(scene, layout.bounds, layout.brush) : null
 			const cameraTune = Object.create(tune.follow)
@@ -507,6 +517,7 @@ export default function moba(app, map) {
 				lobby?.afterStep()
 			})
 			onPresent(feedback.present)
+			if (recallView) onPresent(recallView.present)
 			if (ballView) onPresent(ballView.present)
 			const ballFacts = []
 			run.on('present', (fact) => {
@@ -614,6 +625,10 @@ export default function moba(app, map) {
 				juice.update(step)
 				stamps.update(step)
 				feedback.stride(hero)
+				recallView?.update(step, {
+					heroes: sim.heroes.filter((h) => h.team === hero.team || !unseen(h)),
+					camera: app.camera.view,
+				})
 				shadows.update((cast) => {
 					for (const d of [...sim.heroes, ...sim.dummies]) {
 						if (d.dead || unseen(d)) continue
@@ -725,6 +740,8 @@ export default function moba(app, map) {
 				ballView?.dispose()
 				view.dispose()
 				skillsView.dispose()
+				recallView?.dispose()
+				baseView?.dispose()
 				fog?.dispose()
 				hud.dispose()
 				pips.dispose()

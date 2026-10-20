@@ -315,6 +315,9 @@ export const look = {
 		catchExpired: { freq: 280, slideTo: 120, type: 'sine', dur: 0.1, gain: 0.08 },
 		channelCancelled: { freq: 210, slideTo: 100, type: 'triangle', dur: 0.12, gain: 0.1 },
 		channelEnd: { freq: 520, slideTo: 700, type: 'triangle', dur: 0.12, gain: 0.12 },
+		recallStart: { freq: 260, slideTo: 880, type: 'sine', dur: 0.7, gain: 0.09 },
+		recallCancelled: { freq: 620, slideTo: 130, type: 'sine', dur: 0.28, gain: 0.1 },
+		recallEnd: { freq: 880, slideTo: 1760, type: 'triangle', dur: 0.32, gain: 0.12 },
 		ballContested: { freq: 650, slideTo: 350, type: 'triangle', dur: 0.25, gain: 0.16 },
 		ballWarn: { freq: 1800, slideTo: 2100, type: 'sine', dur: 0.5, gain: 0.24 },
 		ballSpawn: { freq: 200, slideTo: 1000, type: 'triangle', dur: 0.35, gain: 0.25 },
@@ -406,6 +409,7 @@ export const look = {
 		catchExpired: { count: 3, speed: 0.6, life: 0.3, size: 0.06 },
 		channelCancelled: { count: 5, speed: 1.1, life: 0.25, size: 0.09 },
 		channelEnd: { count: 8, speed: 2, life: 0.35, size: 0.08 },
+		recallEnd: { count: 14, speed: 2.4, life: 0.45, size: 0.08 },
 		ballGoal: {
 			freeze: 0.09,
 			shake: 0.7,

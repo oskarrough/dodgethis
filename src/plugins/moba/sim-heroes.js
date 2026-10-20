@@ -82,6 +82,8 @@ export function createHeroMaker({ scene, world, RAPIER, smooth, lobby, floor, wa
 			statuses: [],
 			stance: null,
 			channel: null,
+			recall: null,
+			recallReady: 0,
 			catchWindow: null,
 			ballThrow: null,
 			cd: SLOTS.map(() => 0),
@@ -169,6 +171,7 @@ export function createRoster(ctx) {
 		hero.cast = null
 		hero.stance = null
 		hero.channel = null
+		hero.recall = null
 		hero.catchWindow = null
 		hero.dashAbility = null
 		hero.ballThrow = null

@@ -271,19 +271,21 @@ export function createStylePass(canvas) {
 
 	// Final blit, converting to the display's color space exactly once.
 	const blit = new THREE.ShaderMaterial({
-		uniforms: { tImage: { value: composed.texture } },
+		uniforms: { tImage: { value: composed.texture }, uEncode: { value: 1 } },
 		vertexShader: postVert,
 		fragmentShader: `
 			precision highp float;
 			varying vec2 vUv;
 			uniform sampler2D tImage;
+			uniform float uEncode;
 			void main() {
 				vec4 image = texture2D(tImage, vUv);
 				vec3 c = image.rgb;
 				// linear -> sRGB
 				vec3 lo = c * 12.92;
 				vec3 hi = 1.055 * pow(max(c, vec3(0.0031308)), vec3(1.0 / 2.4)) - 0.055;
-				gl_FragColor = vec4(mix(hi, lo, step(c, vec3(0.0031308))) * image.a, image.a);
+				vec3 shown = mix(hi, lo, step(c, vec3(0.0031308)));
+				gl_FragColor = vec4(mix(c, shown, uEncode) * image.a, image.a);
 			}`,
 		depthTest: false,
 		depthWrite: false,
@@ -314,7 +316,8 @@ export function createStylePass(canvas) {
 		post.uniforms.uBandMix.value.set(...(light.bandMix ?? [0.32, 0.18]))
 	}
 
-	function render(scene, camera) {
+	// `target` (optional) takes the styled frame still linear, for a view drawn inside the next frame (a portal's far side).
+	function render(scene, camera, target = null) {
 		renderer.info.reset()
 		camera.updateMatrixWorld()
 		camera.matrixWorldInverse.copy(camera.matrixWorld).invert()
@@ -341,8 +344,9 @@ export function createStylePass(canvas) {
 		camera.layers.set(OPAQUE_LAYER)
 
 		// 4. one conversion to display color space
-		renderer.setRenderTarget(null)
+		renderer.setRenderTarget(target)
 		renderer.clear(true, true, false)
+		blit.uniforms.uEncode.value = target ? 0 : 1
 		renderer.render(blitScene, postCam)
 	}
 

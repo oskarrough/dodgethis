@@ -90,7 +90,8 @@ export function sliderSections(tune, look, setup, mapId = setup.map, camera = tu
 			damage: [0, 1000, 10],
 		},
 		globes: { heal: [0, 1, 0.01], life: [T, 60, T, 'life (next drop)'], pickup: [0.1, 3, 0.1] },
-		base: { x: [43, 48, 1], heal: [0, 1, 0.01] },
+		base: { x: [43, 48, 1], fullHealSeconds: [T, 12, T] },
+		recall: { channel: [T, 8, T], cooldown: [0, 30, 1] },
 		bots: {
 			seed: [0, tune.testing.seedMax, 1, 'seed (applies on restart)', setup],
 			thinkTicks: [1, 60, 1],
@@ -285,7 +286,7 @@ export function sliderSections(tune, look, setup, mapId = setup.map, camera = tu
 const groups = {
 	hero: ['levels', 'respawn', 'momentum', 'attack', 'cast', 'projectile'],
 	controls: ['follow', 'stickAim', 'orders'],
-	lane: ['match', 'tower', 'core', 'base', 'ball', 'globes', 'waves', 'dummies'],
+	lane: ['match', 'tower', 'core', 'base', 'recall', 'ball', 'globes', 'waves', 'dummies'],
 	feel: ['hud', 'out', 'card', 'squeak', 'damageNumbers', 'juice'],
 }
 

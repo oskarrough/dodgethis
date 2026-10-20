@@ -30,6 +30,8 @@ const columns = {
 		'cast',
 		'stance',
 		'channel',
+		'recall',
+		'recallReady',
 		'catchWindow',
 	],
 	minions: [
@@ -85,6 +87,8 @@ const heroDefaults = {
 	cast: null,
 	stance: null,
 	channel: null,
+	recall: null,
+	recallReady: 0,
 	catchWindow: null,
 }
 const coordinateFields = { heroes: ['pos', 'vel'], minions: ['pos'], projectiles: ['pos', 'dir'] }

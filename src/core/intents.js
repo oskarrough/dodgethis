@@ -16,6 +16,7 @@ export const ACTIONS = Object.freeze([
 	'slot3',
 	'slot4',
 	'slot5',
+	'recall',
 ])
 
 // How long (seconds of simulation) an unconsumed press stays in the frame. Unlisted actions last one step.
@@ -29,6 +30,7 @@ export const SCHEMES = Object.freeze({
 			slot3: SLOT_WINDOW,
 			slot4: SLOT_WINDOW,
 			slot5: SLOT_WINDOW,
+			recall: SLOT_WINDOW,
 			primary: SLOT_WINDOW,
 		}),
 	}),
@@ -112,7 +114,7 @@ export function direct(device, ground) {
 // The `pointClick` scheme, as the MOBA preset binds it (PRESETS has the WASD and keyboard-only variants; the pad never changes). Mouse: RMB orders at the cursor (again every `resend` ms while held), S stops.
 // Q W E R hold to aim at the cursor and cast on release (like the pad); with `controls.quickCast` on they cast on key-down.
 // Releasing never casts a cancelled aim: S and Esc drop it, as do a blur, a pause and a lost pad; RMB moves without dropping it. Z casts on press.
-// A arms an attack-move: the next left click orders it (the sim picks the enemy nearest the click); Esc, S, RMB or a cast disarm.
+// B recalls home (pad d-pad down). A arms an attack-move: the next left click orders it (the sim picks the enemy nearest the click); Esc, S, RMB or a cast disarm.
 // While `controls.throwClick` (the mode sets this when the local hero carries the Ball), an unarmed left click is primary: a throw.
 // Pad: the left stick moves; RB RT LB LT hold to aim (`held.slotN`) and cast on release; X mounts, A attacks, B cancels a held cast.
 // `stickAim(dir, magnitude, slot)` is the mode's: it turns the right stick into a ground point (dir null when the stick rests).
@@ -125,7 +127,7 @@ export const PRESETS = Object.freeze({
 	moba: {
 		name: 'MOBA',
 		aims: { KeyQ: 'slot1', KeyW: 'slot2', KeyE: 'slot3', KeyR: 'slot4' },
-		taps: { KeyZ: 'slot5', KeyS: 'stop' },
+		taps: { KeyZ: 'slot5', KeyS: 'stop', KeyB: 'recall' },
 		walk: false,
 		mouse: 'orders',
 		facing: false,
@@ -133,7 +135,7 @@ export const PRESETS = Object.freeze({
 	wasd: {
 		name: 'WASD',
 		aims: { Digit1: 'slot1', Digit2: 'slot2', Digit3: 'slot3', Digit4: 'slot4' },
-		taps: { Digit5: 'slot5' },
+		taps: { Digit5: 'slot5', KeyB: 'recall' },
 		walk: true,
 		arrows: false,
 		mouse: 'attack',
@@ -142,7 +144,7 @@ export const PRESETS = Object.freeze({
 	keyboard: {
 		name: 'Keyboard only',
 		aims: { Digit1: 'slot1', Digit2: 'slot2', Digit3: 'slot3', Digit4: 'slot4' },
-		taps: { KeyZ: 'slot5', Space: 'primary' },
+		taps: { KeyZ: 'slot5', Space: 'primary', KeyB: 'recall' },
 		walk: true,
 		arrows: true, // its camera follows like the pad's, so the arrows are free to walk
 		mouse: null,
@@ -166,6 +168,7 @@ const PAD_AIMS = [
 const PAD_TAPS = [
 	[0, 'primary'],
 	[2, 'slot5'],
+	[13, 'recall'], // d-pad down: Y is the HUD's inspect
 ]
 
 // A radial deadzone, the usable range rescaled to 0–1 and bent by `curve`: fine steering near the centre, full speed at the rim.

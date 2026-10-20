@@ -86,6 +86,9 @@ export const uses = {
 	catchExpired: use(HEROES.mitts.name, 'Catch ends empty', 'catchExpired'),
 	channelCancelled: use('Combat', 'A channel is cancelled', 'channelCancelled'),
 	channelEnd: use('Combat', 'A channel completes', 'channelEnd'),
+	recallStart: use('Movement', 'A hero opens a tear home', 'recallStart'),
+	recallCancelled: use('Movement', 'A recall tear collapses', 'recallCancelled'),
+	recallEnd: use('Movement', 'A hero steps through the tear into base', 'recallEnd'),
 	denied: use('Combat', "An ability you pressed isn't ready", 'ballDenied'),
 	cushion: use(HEROES.pong.name, 'Cushion softens a shot passing through', 'blocked'),
 
@@ -265,6 +268,9 @@ export const facts = {
 	catchExpired: ['catchExpired'],
 	channelCancelled: ['channelCancelled'],
 	channelEnd: ['channelEnd'],
+	recallStart: ['recallStart'],
+	recallCancelled: ['recallCancelled'],
+	recallEnd: ['recallEnd'],
 	order: [],
 	cast: ending('.cast'),
 	projectile: [

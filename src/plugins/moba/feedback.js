@@ -525,6 +525,14 @@ export function createFeedback({
 				juice.burst(fact.point, { x: 0, y: 1, z: 0 }, look.juice[fact.type])
 				cue(fact.type, fact, mine ? 1 : 0.45)
 				return
+			case 'recallStart':
+			case 'recallCancelled':
+				cue(fact.type, fact, mine ? 1 : 0.45)
+				return
+			case 'recallEnd':
+				juice.burst(fact.point, { x: 0, y: 1, z: 0 }, look.juice.recallEnd)
+				cue(fact.type, fact, mine ? 1 : 0.45)
+				return
 			case 'denied':
 				if (fact.reason === 'cancelled') source?.body.resetAbilityPose?.()
 				if (fact.hero === local) {

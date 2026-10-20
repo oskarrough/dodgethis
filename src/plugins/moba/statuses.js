@@ -1,6 +1,7 @@
 import { abilityOf } from './ability.js'
 import { STEP } from '../../core/app.js'
 import { ticks } from './sim-kit.js'
+import { inOwnBase } from './base.js'
 
 const stateGates = {
 	stunned: ['move', 'cast', 'shield', 'catch', 'ballPickup'],
@@ -162,6 +163,15 @@ export function createStatuses(ctx) {
 		if (!definition?.label) throw new Error(`MOBA status needs a declaration and label: ${key}`)
 		const source = options.source?.id ?? options.source ?? null
 		const info = context(unit, seed, { source })
+		// Your own base keeps enemy effects off you, as combat.js `hit` keeps their hits.
+		if (
+			source != null &&
+			ctx.lane &&
+			ctx.heroes.includes(unit) &&
+			inOwnBase(ctx.layout, unit) &&
+			ctx.find(source)?.team !== unit.team
+		)
+			return null
 		if (definition.enabled && !resolve(definition.enabled, info)) return null
 		const duration = options.duration ?? resolve(definition.duration, info)
 		const until = duration == null ? null : ctx.t + ticks(duration)

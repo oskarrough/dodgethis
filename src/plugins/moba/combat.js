@@ -5,6 +5,7 @@ import { freshAbilityState } from './heroes.js'
 import { abilityOf } from './ability.js'
 import { segmentClear } from './obstacles.js'
 import { SLOTS, ticks, dirOf } from './sim-kit.js'
+import { inOwnBase } from './base.js'
 
 // Damage, death and coming back: basic attacks, hits, benching, Flagfall's shove and dunk, respawn and the lobby's drop-in.
 export function createCombat(ctx) {
@@ -169,7 +170,10 @@ export function createCombat(ctx) {
 	function hit(shot, target, point) {
 		const unit = target.unit
 		if (unit.dead) return
-		if (training.godMode && unit.id === training.local) {
+		if (
+			(training.godMode && unit.id === training.local) ||
+			(lane && heroes.includes(unit) && inOwnBase(layout, unit))
+		) {
 			present({
 				type: 'shielded',
 				source: shot.owner,
@@ -235,6 +239,7 @@ export function createCombat(ctx) {
 				...(typeof status === 'object' ? status : {}),
 				source: shot.owner,
 			})
+		if (unit.recall) ctx.cancelRecall(unit, 'hit')
 		unit.hp = Math.max(0, unit.hp - damage)
 		const lethal = unit.hp === 0
 		if (!unit.kind && damage > 0) ball?.hurt(unit)

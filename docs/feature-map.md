@@ -18,6 +18,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Match setup from the URL (`?mode=moba&play&bots=&hero=&seed=&debug`): `setup.js` `parseMatchSetup`, `wantsDirectPlay`, `matchLink`; `verify.md`
 - Address bar follows the screen (URL per screen, Back/Forward, reload lands there): `src/address.js` `followScreen`, `addressFor`; boot routing is `main.js` `route`
 - Which screen is up (splash, lobby, descent, match, paused, result): `src/core/proof.js` `createProofApi` (`dt.screen()`); `verify.md`
+- Portal, a glittering tear that shows another scene or another spot live through it (open, collapse, crossing, light spill), for transitions and recall: `src/core/portal.js` `createPortal`; playground `docs/pages/2026-10-20-portal-test/`
 
 ## Lobby
 
@@ -117,7 +118,8 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Lane drawing (minions, towers, fort, core): `lane-view.js` `createLaneView`; `look.js` `laneView`
 - Team stamps on the ground: `stamps.js` `createStamps`
 - Match end rules (objective, late-game gun damage, winner): `lane.js` `createLane` (phase, gun damage), `lane-structures.js` `structureDown` (winner); `tune.js` `match`; late time in `maps/<id>/<id>-tune.js` (`map.late` for Overthrow, `flagfall.late` for Flagfall), read through the current layout
-- Base healing: `lane.js` `createLane` `step`; `tune.js` `base`
+- Base zone (your own end of the map: untouchable, heal to full in `fullHealSeconds`) and its ground print: `base.js` `inOwnBase`, `healInBase` (from `lane.js` `createLane` `step`); hits shielded in `combat.js` `hit`, enemy statuses refused in `statuses.js` `apply`; `base-view.js` `createBaseView`; `tune.js` `base`
+- Recall (B, pad d-pad down; channel, cancel, land at spawn) and its tear showing home: `recall.js` `createRecall` (`stepRecall`, `cancelRecall`); `recall-view.js` `createRecallView` over `src/core/portal.js`, drawn with `app.renderStyled`; HUD chip `hud.js` `.moba-recall`; `tune.js` `recall`
 - Lane replica for online: `lane-replica.js` `createLaneReplica`, `projectLaneSnapshot`; `network.md`
 
 ## Match: the Ball

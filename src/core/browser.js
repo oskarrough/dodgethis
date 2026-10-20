@@ -52,6 +52,7 @@ export async function createBrowserApp() {
 		world,
 		RAPIER,
 		renderer: view.renderer,
+		renderStyled: view.renderStyled,
 		setPalette: view.setPalette,
 		setStylePreset: view.setStylePreset,
 		camera: {

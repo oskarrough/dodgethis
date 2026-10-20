@@ -19,6 +19,7 @@ import { createCasting } from './casting.js'
 import { createSnapshot } from './sim-snapshot.js'
 import { createSummons } from './summons.js'
 import { createControl } from './control.js'
+import { createRecall } from './recall.js'
 import { createHeroMaker, createRoster } from './sim-heroes.js'
 import { layMechanicGround, plugMechanics } from './sim-mechanics.js'
 import { dirOf } from './sim-kit.js'
@@ -262,6 +263,7 @@ export function createSim({
 		createDisplacement,
 		createSnapshot,
 		createControl,
+		createRecall,
 		createRoster,
 	])
 		Object.assign(ctx, create(ctx))
@@ -326,6 +328,7 @@ export function createSim({
 			ctx.stepStatuses(h)
 			for (const ability of Object.values(h.definition.abilities))
 				ability?.watch?.(traitContext(h, { ability, dt }))
+			ctx.stepRecall(h)
 			control(h, dt)
 			if (dashing && !h.body.dashing) dashEnds.push(h)
 			if (h.cast && --h.cast.left <= 0) release(h)
