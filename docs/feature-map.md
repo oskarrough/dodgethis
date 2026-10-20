@@ -101,7 +101,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Mender's aim preview, Mend beam and landing, Ward bubble: `heroes/mender/mender-view.js` `extras`; green heal numbers: `damage-numbers.js` `heal`
 - Cast bars (player above the skill bar, boss at the top): `cast-bar.js` `createCastBar`, `cast-bar.css`; `hud.js`
 - Effects kit (rings, columns, shells, impact recipes): `effects.js` `createEffects`, `createImpacts`; an ability's `impact` recipe in its tune file (Slam, Swing)
-- Dungeon on the splash and its party lobby (one to five heroes, humans and optional bots; the report and pause return to the lobby): `front/index.js`; `lobby-party.js`, `lobby-state.js`, `bots.js`; `mechanics/boss/boss-view.js`; `menu.js`
+- Dungeon on the splash and its dedicated five-row party screen (hero dropdowns, bot add/remove, guest Ready and host Start; no walking; the report and pause return here): `front/index.js`; `dungeon-lobby.js`, `dungeon-lobby.css`, `lobby-state.js`, `lobby-handoff.js`; `bots.js`; `mechanics/boss/boss-view.js`; `menu.js`
 - Skillshot shapes and sweeps: `skillshot.js` `stepShot`, `closest`; `obstacles.js` `sweepHit`, `sweepObstacles`; `skills-view.js` `lineReach`, `bouncedLinePath` (held Ricochet preview traces the sim's `stepShot`); `view.js` thin dotted Ricochet path (`look.js` `abilityView.bouncedAimRadius`, `bouncedAimSpacing`)
 - Ability telegraphs for enemies (ground line tell): `skills-view.js` `createSkillsView`; `look.js` `abilityView`; `heroes.md`
 - Fletcher, ranged poke. Q Loose (arrow shot), W Rain (zone), E Vault (dash): `abilities/{loose,vault,rain}/`, `heroes/fletcher/`; `heroes.md`

@@ -144,7 +144,6 @@ export function createLobbyProps(
 	local,
 	audio,
 	heroes = listedHeroes(),
-	{ party = false } = {},
 ) {
 	const root = new THREE.Group()
 	root.name = 'lobby-props'
@@ -187,8 +186,8 @@ export function createLobbyProps(
 	const faces = createFaceKit()
 	const flow = createLobbyFlow(scene, readySeats, local)
 	const dust = createLobbyDust(root, el, readySeats, local)
-	const magnets = party ? null : createMagnets(root, gallery, faces, audio)
-	const galleryProps = (magnets?.props ?? []).map((p) => {
+	const magnets = createMagnets(root, gallery, faces, audio)
+	const galleryProps = magnets.props.map((p) => {
 		const label = document.createElement('div')
 		label.className = 'lobby-label lobby-gallery-label'
 		label.dataset.difficulty = p.stand.id
@@ -413,7 +412,7 @@ export function createLobbyProps(
 				if (side < 0)
 					readyLabel.style.left = `${Math.max(parseFloat(readyLabel.style.left), clear + readyLabel.offsetWidth)}px`
 			}
-			magnets?.update(time, step)
+			magnets.update(time, step)
 			for (const p of galleryProps) {
 				point.set(p.stand.x, tune.lobby.gallery.labelY, p.stand.z).project(camera)
 				p.label.hidden = point.z < -1 || point.z > 1
@@ -433,7 +432,7 @@ export function createLobbyProps(
 			root.removeFromParent()
 			for (const p of galleryProps) p.label.remove()
 			readyLabel.remove()
-			magnets?.dispose()
+			magnets.dispose()
 			faces.dispose()
 			flow.dispose()
 			for (const p of seatProps)

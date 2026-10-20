@@ -24,6 +24,16 @@ export function createReadySeats({ present, party = null }) {
 		),
 	)
 	let humans = []
+	let revision = 0
+	function resetParty(tick) {
+		if (!party) return
+		revision++
+		for (const seat of seats) {
+			if (!seat.occupant || seat.occupant.bot) continue
+			if (seat.full) fact('seatEmpty', seat, tick)
+			reset(seat)
+		}
+	}
 	const enteredSeats = new Map()
 	const seatOf = (id) => seats.find((s) => s.occupant?.id === id)
 	const contains = (seat, p) =>
@@ -61,6 +71,7 @@ export function createReadySeats({ present, party = null }) {
 				current.bot = !!participant.bot
 				current.joinOrder = participant.joinOrder
 				if (changedKind) reset(seat)
+				resetParty(tick)
 				fact('seatClaim', seat, tick)
 			}
 			return true
@@ -94,12 +105,39 @@ export function createReadySeats({ present, party = null }) {
 		seat.claimTick = tick
 		seat.blocked = false
 		reset(seat)
+		resetParty(tick)
 		fact('seatClaim', seat, tick)
 		const vacant = previous ?? seats.find((s) => !s.occupant)
 		if (current?.bot && vacant) claim(vacant.id, current, tick)
 		return true
 	}
 	return {
+		party: !!party,
+		get revision() {
+			return revision
+		},
+		set revision(value) {
+			revision = value
+		},
+		// Power-of-two scaling carries every safe integer exactly inside the intent point bounds.
+		readyPoint: () => ({ x: revision / 2 ** 53, z: 0 }),
+		ready(id, tick, at) {
+			if (!party) return false
+			const seat = seatOf(id)
+			if (!seat || seat.occupant.bot) return false
+			if (at?.x !== revision / 2 ** 53 || at?.z !== 0) {
+				if (seat.full) fact('seatEmpty', seat, tick)
+				reset(seat)
+				present({ type: 'denied', hero: id, slot: 'ready', reason: 'party-changed', tick })
+				return false
+			}
+			if (seat.full) return false
+			seat.enteredAt = tick
+			seat.full = true
+			seat.blocked = false
+			fact('seatReady', seat, tick)
+			return true
+		},
 		seats,
 		seatOf,
 		contains,
@@ -114,6 +152,7 @@ export function createReadySeats({ present, party = null }) {
 			seat.claimTick = null
 			seat.blocked = false
 			reset(seat)
+			resetParty(tick)
 		},
 		cancel(id, tick) {
 			const seat = seatOf(id)
@@ -128,6 +167,8 @@ export function createReadySeats({ present, party = null }) {
 		},
 		step(tick, step, heroes) {
 			humans = heroes.map((h) => h.id)
+			// Party readiness is an explicit intent, independent of physics or position.
+			if (party) return
 			for (const hero of heroes
 				.slice()
 				.sort(
@@ -141,8 +182,6 @@ export function createReadySeats({ present, party = null }) {
 				const entered = seats.find((s) => contains(s, hero.body.position))
 				const previous = enteredSeats.get(hero.id)
 				enteredSeats.set(hero.id, entered?.id)
-				// Party plates edit allies; they never change your allegiance or displace an ally.
-				if (party && entered?.occupant && entered.occupant.id !== hero.id) continue
 				if (entered && (previous !== entered.id || !entered.occupant)) {
 					if (entered.occupant?.id === hero.id && entered.claimTick === null)
 						entered.claimTick = tick

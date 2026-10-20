@@ -87,6 +87,7 @@ export function createSnapshot(ctx) {
 				.map((o) => ({ ...o, x: q(o.x), z: q(o.z) })),
 			map: floor.id ?? layout.bounds.id ?? field.id,
 			...(readySeats && { readySeats: structuredClone(readySeats.seats) }),
+			...(readySeats?.party && { partyRevision: readySeats.revision }),
 			heroes: heroes.map((h) => ({
 				id: h.id,
 				team: h.team,

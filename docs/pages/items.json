@@ -1,5 +1,16 @@
 [
 	{
+		"at": "2026-10-20T20:51:01.405Z",
+		"title": "Dungeon party lobby",
+		"ask": "Five explicit rows, hero dropdowns and bot controls; guests ready, host starts. Is this clear and slick enough? Browser proof: two connected players edited heroes/bots and readiness reset correctly; solo launch entered Dungeon with one hero. Multiplayer launch and lobby return remain unchecked after the browser proof was interrupted.",
+		"status": "To review",
+		"decision": "",
+		"media": ["review/media/2026-10-20-dungeon-party-lobby/dungeon-party-final.png"],
+		"links": ["http://office-linux.heron-mermaid.ts.net:5173/?mode=moba&map=dungeon"],
+		"thread": "thr_6sgc9s2jhb",
+		"page": "2026-10-20-dungeon-party-lobby/"
+	},
+	{
 		"at": "2026-10-20T17:21:06.062Z",
 		"title": "Cast bars for Mend and the Warden's Slam",
 		"ask": "Do the two bars read at a glance, and is the Slam bar in the right place?",

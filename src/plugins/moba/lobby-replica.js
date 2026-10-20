@@ -168,6 +168,12 @@ export function createUnitReplica(
 			(!Array.isArray(state.readySeats) || state.readySeats.length !== sim.readySeats.seats.length)
 		)
 			return false
+		if (
+			lobby &&
+			sim.readySeats.party &&
+			(!Number.isSafeInteger(state.partyRevision) || state.partyRevision < 0)
+		)
+			return false
 		const occupants = new Set()
 		for (const [i, seat] of (lobby ? state.readySeats : []).entries()) {
 			const box = sim.readySeats.seats[i]
@@ -335,6 +341,7 @@ export function createUnitReplica(
 				poseUnit(unit, before[key].get(unit.id), after[key].get(unit.id), blend, before.t)
 		for (const [i, seat] of (lobby ? before.readySeats : []).entries())
 			Object.assign(sim.readySeats.seats[i], structuredClone(seat))
+		if (lobby && sim.readySeats.party) sim.readySeats.revision = before.partyRevision
 		const live = new Set()
 		for (const [id, a] of before.projectiles) {
 			let shot = shots.get(id)

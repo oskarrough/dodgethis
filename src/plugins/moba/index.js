@@ -29,6 +29,7 @@ import { createMatchDebug } from './debug.js'
 import { createFog } from './fog.js'
 import { addSliders, sliderSections } from './sliders.js'
 import { createLobby } from './lobby.js'
+import { createDungeonLobby } from './dungeon-lobby.js'
 import { createDifficultyGallery } from './lobby-props.js'
 import { createLobbyReplica } from './lobby-replica.js'
 import { createLaneReplica } from './lane-replica.js'
@@ -290,14 +291,15 @@ export default function moba(app, map) {
 					if (mark) used.add(mark)
 				}
 			}
-			const gallery = isLobby
-				? createDifficultyGallery({
-						local,
-						difficulty,
-						present: run.present,
-						dummies: () => sim.dummies,
-					})
-				: null
+			const gallery =
+				isLobby && !party
+					? createDifficultyGallery({
+							local,
+							difficulty,
+							present: run.present,
+							dummies: () => sim.dummies,
+						})
+					: null
 			const botsOnly = query.has('debug') && query.has('bots-only')
 			const simulation = map.start(
 				run,
@@ -413,7 +415,16 @@ export default function moba(app, map) {
 
 			if (debugTune) run.debug.tune(`lane/${debugTune.name}`, debugTune.values, debugTune.add)
 			const lobby = isLobby
-				? createLobby({ app, run, sim, hero, setup, options, gallery, onPresent })
+				? (party ? createDungeonLobby : createLobby)({
+						app,
+						run,
+						sim,
+						hero,
+						setup,
+						options,
+						gallery,
+						onPresent,
+					})
 				: null
 			const epoch = ++runs
 			let returnQueued = false
@@ -839,6 +850,7 @@ export default function moba(app, map) {
 				seatLate,
 				// Online's sticker names by participant id; heroes without one show their hero.
 				names(byId) {
+					lobby?.names?.(byId)
 					names.clear()
 					for (const [id, name] of Object.entries(byId)) if (name) names.set(id, name)
 				},

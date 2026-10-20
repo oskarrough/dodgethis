@@ -55,6 +55,17 @@ export function createControl(ctx) {
 			if (h.order?.goal) h.order.path = plan(h, h.order.goal)
 		}
 		const frame = intents.get(h.id)
+		if (readySeats?.party) {
+			const cancel = frame.pressed.some((e) => ['cancel', 'stop'].includes(e.action))
+			const ready = frame.pressed.filter((e) => e.action === 'ready').at(-1)
+			for (const edge of frame.pressed.slice()) intents.consume(h.id, edge.action)
+			if (cancel) readySeats.cancel(h.id, ctx.t)
+			else if (ready) readySeats.ready(h.id, ctx.t, ready.at)
+			h.readyWalk = false
+			h.order = null
+			h.body.cancelDash()
+			return
+		}
 		if (readySeats) {
 			const box = readySeats.seatOf(h.id)
 			const cancel = frame.pressed.some((e) => ['cancel', 'stop'].includes(e.action))
