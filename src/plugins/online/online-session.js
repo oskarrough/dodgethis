@@ -19,6 +19,7 @@ export function createOnlineSession(
 		onBackToLobby = () => false,
 		onPeerLeave = () => false,
 		modeId = () => null,
+		roomOptions = () => undefined,
 		joinData = () => undefined,
 		rosterSelections = () => [],
 		// A mode with its own walk-around lobby takes the room there at once; it seats bots itself.
@@ -207,7 +208,7 @@ export function createOnlineSession(
 		settleRoster()
 		notify()
 		if (state.matchId && previous?.matchId !== state.matchId)
-			onStart(roster(), state.matchId, state.modeId)
+			onStart(roster(), state.matchId, state.modeId, state.modeOptions)
 		if (previous?.phase === 'match' && state?.phase === 'lobby' && !state.liveLobby)
 			onAbort(state.message || 'Back to lobby; scores reset.')
 	})
@@ -351,6 +352,9 @@ export function createOnlineSession(
 			)
 				throw new Error('Both teams need at least one participant')
 			state.modeId = modeId()
+			const options = roomOptions()
+			if (options !== undefined) state.modeOptions = structuredClone(options)
+			else delete state.modeOptions
 			state.phase = 'match'
 			state.liveLobby = false
 			state.matchId = Array.from(crypto.getRandomValues(new Uint32Array(4)), (value) =>
@@ -361,7 +365,7 @@ export function createOnlineSession(
 			const startingId = state.matchId
 			publish()
 			if (state?.phase === 'match' && state.matchId === startingId)
-				onStart(participants, startingId, state.modeId)
+				onStart(participants, startingId, state.modeId, state.modeOptions)
 		},
 		setRoomPhase(lobby) {
 			if (!net.isHost || !state?.matchId) return
@@ -438,6 +442,19 @@ function validLobby(state, hostId, localId) {
 		(!Number.isSafeInteger(state.capacity) || state.capacity < 1 || state.capacity > MAX_PLAYERS)
 	)
 		return false
+	if (state.modeOptions != null) {
+		const plain = (value, depth = 0) => {
+			if (value === null || typeof value === 'boolean' || typeof value === 'string') return true
+			if (typeof value === 'number') return Number.isFinite(value)
+			if (!value || typeof value !== 'object' || depth > tune.room.optionsDepth) return false
+			return Object.values(value).every((v) => plain(v, depth + 1))
+		}
+		if (
+			!plain(state.modeOptions) ||
+			JSON.stringify(state.modeOptions).length > tune.room.optionsCap
+		)
+			return false
+	}
 	if (!Array.isArray(state.humans) || state.humans.length > (state.capacity ?? MAX_PLAYERS))
 		return false
 	try {

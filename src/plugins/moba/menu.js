@@ -52,6 +52,7 @@ export function createMatchMenu({
 	}
 	function leave() {
 		resetInput()
+		if (sim.boss && (!app.session.shared || app.session.authoritative)) return returnToLobby()
 		if (app.session.shared) {
 			if (app.session.authoritative) returnToLobby()
 			else app.emit('menu')

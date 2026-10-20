@@ -8,12 +8,12 @@ export function createReadySeats({ present, party = null }) {
 	const v = tune.lobby.ready
 	const seats = (party ? ['A'] : ['A', 'B']).flatMap((team) =>
 		Array.from(
-			{ length: party ? party.length + 1 : tune.lobby.capacity / ['A', 'B'].length },
+			{ length: party ? tune.lobby.partyCapacity : tune.lobby.capacity / ['A', 'B'].length },
 			(_, index) => ({
 				id: `${team}:${index}`,
 				team,
-				x: (party ? (index < 2 ? -1 : 1) : team === 'A' ? -1 : 1) * v.x,
-				z: v.z + (party ? (index % 2) * 2 - 1 : index - 1) * v.spacing,
+				x: (party ? (index < 3 ? -1 : 1) : team === 'A' ? -1 : 1) * v.x,
+				z: v.z + (party ? (index % 3) - 1 : index - 1) * v.spacing,
 				occupant: null,
 				claimTick: null,
 				inside: false,
@@ -142,7 +142,7 @@ export function createReadySeats({ present, party = null }) {
 				const previous = enteredSeats.get(hero.id)
 				enteredSeats.set(hero.id, entered?.id)
 				// Party plates edit allies; they never change your allegiance or displace an ally.
-				if (party && entered?.occupant?.bot) continue
+				if (party && entered?.occupant && entered.occupant.id !== hero.id) continue
 				if (entered && (previous !== entered.id || !entered.occupant)) {
 					if (entered.occupant?.id === hero.id && entered.claimTick === null)
 						entered.claimTick = tick
@@ -188,6 +188,16 @@ export function createReadySeats({ present, party = null }) {
 					: Math.max(0, Math.min(1, ((tick - seat.enteredAt) * step) / v.fillTime))
 		},
 		laneRoster(local, difficulty, seed) {
+			if (party)
+				return seats
+					.filter((s) => s.occupant)
+					.map((s) => ({
+						id: s.occupant.id,
+						heroId: s.occupant.heroId,
+						team: 'A',
+						controller: s.occupant.bot ? 'bot' : 'human',
+						...(s.occupant.bot ? { difficulty: 'normal' } : { joinOrder: s.occupant.joinOrder }),
+					}))
 			const picks = Object.fromEntries(
 				seats
 					.filter((s) => s.occupant)

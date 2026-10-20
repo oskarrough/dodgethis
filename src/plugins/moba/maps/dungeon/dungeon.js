@@ -6,7 +6,7 @@ export default {
 	mechanics: ['boss', 'bots'],
 	party: ['brew', 'mitts', 'fletcher'],
 	suggestedHero: 'mender',
-	online: false,
+	online: true,
 	palette: () => ({}),
 	debugTune: null,
 }

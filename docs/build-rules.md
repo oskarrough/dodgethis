@@ -39,6 +39,7 @@ A surgical edit outside your owned files (a setter, an export, a hook) is fine w
 - Prove "never triggers" cases with real aim points (where a player's cursor lands on a body), not exact centres.
 - Hot paths: path planning and per-tick queries must fit well inside a 16.7 ms frame, measured as a median or a work count so it doesn't flake under load.
 - On a guest, anything that only resolves in the host's sim step (shots, picks, orders to a mark) goes to the host as intent or is disabled with a deny; never leave the guest waiting on a step that never runs. Facts queued while a tab is hidden are dropped once stale, not replayed in a burst.
+- Validate a room handoff against the host's map contract, not the guest's previous solo map. Changing a party invalidates every human's ready walk and ready order, not just their plate's fill.
 - Rate limits use a token bucket, not a fixed window: a reliable channel delivers a stall's backlog at once, and that must drain, not lock the player out.
 
 ## View, UI and screens

@@ -1,12 +1,12 @@
 # Dungeon slice
 
-The smallest proof of a WoW-style pull in the MOBA plugin: you play a mender, three bots fight a boss, and after every pull a fight report says why it went the way it did. Design borrowed from Balance Mender (`docs/combat.md` there), not code. The test: does keeping that party alive still feel good after ten minutes?
+A WoW-style pull in the MOBA plugin: one to five heroes fight a boss, and after every pull a fight report says why it went the way it did. Design borrowed from Balance Mender (`docs/combat.md` there), not code. The test: does keeping that party alive still feel good after ten minutes?
 
-Dungeon is an offline map on the splash, not a new mode. Its party lobby suggests Mender for you and defaults the three allies to Brew, Mitts and Fletcher. Walk up to an ally's plate or select its label, then use the hero strip; left/right (also on pad) changes the selected seat. Ready takes the party through the descent into the room. A map already gets heroes, casting, statuses, facts, bots, camera and HUD for free, and the contract lets a map pick its own mechanics. Names (Mender, Warden, Mend, Ward, Slam) are placeholders until Oskar names them.
+Dungeon is a MOBA map on the splash, with the same online rooms as the other MOBA maps. Its party holds one to five heroes, all on the same team: go alone, invite friends, add bots, or mix them. Empty places stay empty. Its party lobby suggests Mender for you. The host can add a bot, remove the selected bot, or remove all bots for a human-only party. Select your own label or a bot's plate, then use the hero strip; left/right (also on pad) changes the selected seat. Each human chooses their own hero. Ready takes the party through the descent into the room. A map already gets heroes, casting, statuses, facts, bots, camera and HUD for free, and the contract lets a map pick its own mechanics. Names (Mender, Warden, Mend, Ward, Slam) are placeholders until Oskar names them.
 
 ## A pull
 
-1. The party (you plus Brew, Mitts, Fletcher bots) stands at the entrance of a round room. The Warden waits in the middle.
+1. Your chosen party stands at the entrance of a round room. The Warden waits in the middle.
 2. Someone walks within 8 m or hits it: the pull starts. Brew grabs it and holds it, because his damage counts triple for threat.
 3. The Warden swings at whoever tops its threat table. Every 16 s it winds up Slam for 2.5 s: a ring on the ground around its target. When it lands, the target takes the big hit no matter what, and anyone else still inside the ring takes splash and a bruise that ticks.
 4. You Mend whoever is hurting (a 1.2 s cast that locks you in place) and Ward the target before Slam lands. Over-healing wastes your time; healing too much pulls the Warden onto you.

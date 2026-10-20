@@ -311,6 +311,9 @@
 	font: 400 clamp(12px, 1.3vw, 17px) / 1.25 var(--ui-font);
 	pointer-events: none;
 }
+.lobby-party-heading button {
+	pointer-events: auto;
+}
 .lobby-party-heading p {
 	margin: 4px 0 0;
 }

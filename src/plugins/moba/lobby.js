@@ -204,6 +204,7 @@ export function createLobby({
 	const heroChoices = listedHeroes({
 		...setup,
 		shared: !!app.session.shared,
+		party: isParty,
 		debug: isParty || new URLSearchParams(globalThis.location?.search).has('debug'),
 	})
 	const props = createLobbyProps(
@@ -238,7 +239,19 @@ export function createLobby({
 			if (!partyLobby?.editingAlly()) numbers.toggle()
 		},
 	})
-	if (isParty) partyLobby = createLobbyParty({ el, readySeats, hero, setup, strip, cancelReady })
+	if (isParty)
+		partyLobby = createLobbyParty({
+			el,
+			readySeats,
+			heroes: sim.heroes,
+			intents: run.intents,
+			hero,
+			setup,
+			strip,
+			cancelReady,
+			authoritative: app.session.authoritative,
+			tick: () => sim.tick,
+		})
 	if (intro.t < intro.time) {
 		const { stagger, land } = frontTune.chrome
 		edges.forEach(([selector, x, y, early = 0], i) =>
@@ -559,7 +572,7 @@ export function createLobby({
 					return [s.occupant.id, { heroId: human?.heroId ?? s.occupant.heroId, team: s.team }]
 				}),
 		)
-		if (app.session.shared)
+		if (app.session.shared || isParty)
 			handoff = {
 				setup: {
 					...structuredClone(setup),
@@ -785,7 +798,9 @@ export function createLobby({
 			const matchSetup = next?.setup
 			if (
 				!Array.isArray(roster) ||
-				roster.length !== readySeats.seats.length ||
+				(isParty
+					? roster.length < 1 || roster.length > readySeats.seats.length
+					: roster.length !== readySeats.seats.length) ||
 				new Set(roster.map((p) => p?.id)).size !== roster.length ||
 				!roster.every(
 					(p) =>
@@ -796,11 +811,14 @@ export function createLobby({
 				) ||
 				roster.filter((p) => p.controller === 'human').length !== sim.heroes.length ||
 				!sim.heroes.every((h) => roster.some((p) => p.id === h.id && p.controller === 'human')) ||
-				!['A', 'B'].every(
-					(team) =>
-						roster.filter((p) => p.team === team).length ===
-						readySeats.seats.filter((s) => s.team === team).length,
-				) ||
+				(isParty
+					? !roster.every((p) => p.team === 'A')
+					: !['A', 'B'].every(
+							(team) =>
+								roster.filter((p) => p.team === team).length ===
+								readySeats.seats.filter((s) => s.team === team).length,
+						)) ||
+				(isParty && matchSetup?.map !== setup.map) ||
 				!onlineMaps.includes(matchSetup?.map) ||
 				!['easy', 'normal', 'hard'].includes(matchSetup.difficulty) ||
 				!Number.isSafeInteger(matchSetup.seed) ||

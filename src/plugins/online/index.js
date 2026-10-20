@@ -31,6 +31,7 @@ export default function online(app, { join = null } = {}) {
 
 	const session = createOnlineSession(net, {
 		modeId: () => app.modes.active,
+		roomOptions: () => app.modes.current?.roomOptions?.(),
 		joinData: () => ({ ...app.modes.current?.joinData?.(), name }),
 		seatKey,
 		silent: (peerId) => link?.silent(peerId) ?? true,
@@ -48,7 +49,7 @@ export default function online(app, { join = null } = {}) {
 			app.debug.panel?.setInert(!!state)
 			showNames(state)
 		},
-		onStart(roster, matchId, hostMode) {
+		onStart(roster, matchId, hostMode, options) {
 			link?.dispose()
 			link = null
 			mode = hostMode
@@ -58,6 +59,7 @@ export default function online(app, { join = null } = {}) {
 			try {
 				app.modes.start(mode, {
 					roster,
+					options,
 					session: { local: [local], authoritative: net.isHost, shared: true, actions: [] },
 				})
 			} catch (error) {

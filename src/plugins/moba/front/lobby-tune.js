@@ -3,6 +3,7 @@
 // Lobby sim options apply on creation; map/match/training defaults do not read these.
 export const lobby = {
 	capacity: 6,
+	partyCapacity: 5,
 	handoffFor: 3, // seconds of live lane simulation carrying the loading roster
 	style: { line: 0.65, pastel: 0.65 },
 	practice: { damage: 0, tell: 0.8, tellY: 0.23 },

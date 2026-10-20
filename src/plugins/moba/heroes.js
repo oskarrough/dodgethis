@@ -63,7 +63,7 @@ export const HEROES = Object.fromEntries(
 )
 
 // `playable` means "may play offline", drafts included. Online validators use `listed`, which is
-// playable and not a draft, the same on every peer whatever the URL says.
+// playable and not a draft. Cooperative parties also allow playable drafts on every peer.
 for (const definition of Object.values(HEROES))
 	Object.defineProperties(definition, {
 		playable: {
@@ -81,12 +81,14 @@ export const listed = Object.keys(HEROES).filter((id) => HEROES[id].listed)
 export const DEFAULT_HERO = listed.map((id) => HEROES[id]).sort(byOrder)[0].id
 
 // The strip, the stands, H and the debug dropdowns: listed heroes, plus a draft when
-// ?hero= names it (setup.heroId) or with setup.debug, by order. Never in a shared (online)
-// lobby: picks travel as a stand index, so a draft on one peer's strip would shift the stands.
+// ?hero= names it (setup.heroId) or with setup.debug, by order. Competitive online lobbies
+// exclude drafts; party lobbies expose the same complete strip on every peer.
 export function listedHeroes(setup = {}) {
 	return Object.values(HEROES)
 		.filter(
-			(h) => h.listed || (!setup.shared && h.playable && (setup.debug || h.id === setup.heroId)),
+			(h) =>
+				h.listed ||
+				((!setup.shared || setup.party) && h.playable && (setup.debug || h.id === setup.heroId)),
 		)
 		.sort(byOrder)
 }

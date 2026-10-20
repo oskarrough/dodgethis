@@ -7,7 +7,7 @@ const number = (value) => value.toLocaleString(undefined, { maximumFractionDigit
 const percent = (value) => `${number(value * 100)}%`
 const seconds = (value) => `${value.toFixed(1)} s`
 
-export function view(_scene, { returnToLobby = () => {} } = {}) {
+export function view(_scene, { returnToLobby = () => {}, canReturnToLobby = true } = {}) {
 	let facts = null
 	let root = null
 	if (typeof document !== 'undefined') {
@@ -54,7 +54,10 @@ export function view(_scene, { returnToLobby = () => {} } = {}) {
 			`${report.boss.name}: ${number(report.boss.hp)} / ${number(report.boss.maxHp)} HP left · Fight report`
 		const back = el('button', '', header)
 		back.type = 'button'
-		back.textContent = 'Return to party lobby'
+		back.textContent = canReturnToLobby
+			? 'Return to party lobby'
+			: 'Host can return the party to lobby'
+		back.disabled = !canReturnToLobby
 		back.onclick = () => returnToLobby()
 		const party = section(root, 'Party')
 		table(
@@ -142,7 +145,8 @@ export function view(_scene, { returnToLobby = () => {} } = {}) {
 			'Stays open after the reset. Walk back in to start the next pull and close this report.',
 		)
 		root.hidden = false
-		back.focus({ preventScroll: true })
+		const focusTarget = canReturnToLobby ? back : root
+		focusTarget.focus({ preventScroll: true })
 	}
 	return {
 		present(fact) {

@@ -39,9 +39,15 @@ export function practiceRoster(
 ) {
 	if (party)
 		return [
-			{ id: local, team: 'A', heroId: picks[local]?.heroId ?? DEFAULT_HERO },
-			...party.map((heroId, i) => ({
+			...humans.map((id) => ({
+				id,
+				team: 'A',
+				heroId: picks[id]?.heroId ?? DEFAULT_HERO,
+				controller: 'human',
+			})),
+			...party.slice(0, Math.max(0, tune.lobby.partyCapacity - humans.length)).map((heroId, i) => ({
 				id: `bot-A-${i + 1}`,
+				controller: 'bot',
 				team: 'A',
 				heroId: picks[`bot-A-${i + 1}`]?.heroId ?? heroId,
 				difficulty: 'normal',

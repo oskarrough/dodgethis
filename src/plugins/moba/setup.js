@@ -1,5 +1,5 @@
 import { tune } from './tune.js'
-import { DEFAULT_MAP, playableMaps } from './maps/all-maps.js'
+import { DEFAULT_MAP, playableMaps, maps } from './maps/all-maps.js'
 import { DEFAULT_HERO, HEROES, heroDefinition } from './heroes.js'
 
 // Front screens and direct entry use the same validated match setup.
@@ -11,9 +11,10 @@ export function parseMatchSetup(query, options = {}, warn = console.warn) {
 		return fallback
 	}
 	const seed = options.seed ?? query.get('seed')
+	const party = !!maps[options.map ?? query.get('map')]?.party
 	const playable = (id) =>
 		Object.hasOwn(HEROES, id) &&
-		(options.shared ? heroDefinition(id).listed : heroDefinition(id).playable) === true
+		(options.shared && !party ? heroDefinition(id).listed : heroDefinition(id).playable) === true
 	const picks =
 		options.picks &&
 		Object.fromEntries(

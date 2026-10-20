@@ -32,6 +32,7 @@ import { createLobby } from './lobby.js'
 import { createDifficultyGallery } from './lobby-props.js'
 import { createLobbyReplica } from './lobby-replica.js'
 import { createLaneReplica } from './lane-replica.js'
+import { createDungeonReplica } from './maps/dungeon/dungeon-replica.js'
 import { DEFAULT_HERO, HEROES } from './heroes.js'
 import { controls as playerControls } from '../../core/controls.js'
 
@@ -259,16 +260,19 @@ export default function moba(app, map) {
 								},
 							]
 						: roster.length
-							? roster
+							? party
+								? roster.map((seat) => ({ ...seat }))
+								: roster
 							: practiceRoster(local, difficulty, setup.picks, setup.seed, [local], match.party)
 			if (app.session.shared)
 				for (const seat of seats)
-					if (!HEROES[seat.heroId]?.listed) {
+					if (!(party ? HEROES[seat.heroId]?.playable : HEROES[seat.heroId]?.listed)) {
 						console.warn(
 							`MOBA: invalid online hero=${JSON.stringify(seat.heroId)}; using ${DEFAULT_HERO}`,
 						)
 						seat.heroId = DEFAULT_HERO
 					}
+			if (party) for (const seat of seats) seat.team = 'A'
 			setup.heroId = seats.find((seat) => seat.id === local).heroId
 			const lobbySpawns = {}
 			if (isLobby) {
@@ -315,25 +319,42 @@ export default function moba(app, map) {
 						present: run.present,
 						...(isLobby && {
 							lobby: true,
-							// Online seats only the humans; bots fill the free boxes so a short lobby can still ready up.
-							readyRoster: roster.length
-								? practiceRoster(
-										local,
-										difficulty,
-										Object.fromEntries(
-											roster.map((seat) => [
-												seat.id,
-												{ heroId: seat.data?.heroId ?? seat.heroId, team: seat.team },
-											]),
-										),
-										setup.seed,
-										roster.filter((seat) => seat.controller !== 'bot').map((seat) => seat.id),
-									).map((seat) => ({
-										...seat,
-										...roster.find((human) => human.id === seat.id),
-										heroId: seat.heroId,
-									}))
-								: practiceRoster(local, difficulty, setup.picks, setup.seed, [local], party),
+							// Dungeon keeps explicit empty seats; the competitive maps still fill their teams.
+							readyRoster:
+								party && roster.length
+									? [
+											...roster,
+											...(options.partyBots ?? []).slice(
+												0,
+												Math.max(0, tune.lobby.partyCapacity - roster.length),
+											),
+										].map((seat) => ({
+											...seat,
+											team: 'A',
+											heroId:
+												seat.data?.heroId ??
+												seat.heroId ??
+												setup.picks[seat.id]?.heroId ??
+												DEFAULT_HERO,
+										}))
+									: roster.length
+										? practiceRoster(
+												local,
+												difficulty,
+												Object.fromEntries(
+													roster.map((seat) => [
+														seat.id,
+														{ heroId: seat.data?.heroId ?? seat.heroId, team: seat.team },
+													]),
+												),
+												setup.seed,
+												roster.filter((seat) => seat.controller !== 'bot').map((seat) => seat.id),
+											).map((seat) => ({
+												...seat,
+												...roster.find((human) => human.id === seat.id),
+												heroId: seat.heroId,
+											}))
+										: practiceRoster(local, difficulty, setup.picks, setup.seed, [local], party),
 							readyParty: party,
 							spawns: lobbySpawns,
 							respawn: tune.lobby.respawn,
@@ -348,11 +369,14 @@ export default function moba(app, map) {
 			const ballView =
 				mechanics.map((mechanic) => mechanicViews[mechanic.id]?.view).find(Boolean)?.(scene, {
 					returnToLobby,
+					canReturnToLobby: app.session.authoritative,
 				}) ?? null
 			const replica = !app.session.authoritative
 				? isLobby
 					? createLobbyReplica(simulation, scene)
-					: createLaneReplica(simulation, scene)
+					: party
+						? createDungeonReplica(simulation, scene)
+						: createLaneReplica(simulation, scene)
 				: null
 			const sim = replica?.sim ?? simulation
 			const onPresent = replica?.onPresent ?? ((listener) => run.on('present', listener))
@@ -441,7 +465,8 @@ export default function moba(app, map) {
 					},
 				}
 			}
-			function returnToLobby(next = lobbyReturn()) {
+			function returnToLobby(next = lobbyReturn(), following = false) {
+				if (app.session.shared && !app.session.authoritative && !following) return false
 				if (!app.session.shared && !party) return false
 				if (returnQueued) return true
 				returnQueued = true
@@ -451,7 +476,7 @@ export default function moba(app, map) {
 					if (run.signal.aborted) return
 					app.modes.start('moba-lobby', {
 						session,
-						...(app.session.shared ? { roster: next.roster } : {}),
+						roster: next.roster,
 						options: {
 							setup: { ...next.setup, edgePan: setup.edgePan },
 							...(app.session.shared ? { sharedLobby: next } : {}),
@@ -534,7 +559,7 @@ export default function moba(app, map) {
 				lobby?.afterStep()
 			})
 			onPresent(feedback.present)
-			if (ballView) onPresent(ballView.present)
+			if (ballView) (replica?.onReportFact ?? onPresent)(ballView.present)
 			const ballFacts = []
 			run.on('present', (fact) => {
 				if (!fact.type.startsWith('ball')) return
@@ -817,12 +842,32 @@ export default function moba(app, map) {
 					names.clear()
 					for (const [id, name] of Object.entries(byId)) if (name) names.set(id, name)
 				},
-				capacity: tune.lobby.capacity,
+				capacity: party ? tune.lobby.partyCapacity : tune.lobby.capacity,
 				joinData: () => ({ heroId: hero.heroId }),
-				validJoinData: (data) => data?.heroId == null || HEROES[data.heroId]?.listed === true,
+				validJoinData: (data) =>
+					data?.heroId == null ||
+					(party ? HEROES[data.heroId]?.playable : HEROES[data.heroId]?.listed) === true,
 				epoch,
 				loadingHero: () => ({ x: hero.body.position.x, z: hero.body.position.z }),
 				roomLobby: isLobby,
+				roomOptions: () =>
+					party
+						? {
+								setup: {
+									map: setup.map,
+									difficulty: setup.difficulty,
+									seed: setup.seed,
+									seeded: true,
+								},
+								...(isLobby
+									? {
+											partyBots: sim.readySeats
+												.laneRoster(local, difficulty, setup.seed)
+												.filter((seat) => seat.controller === 'bot'),
+										}
+									: {}),
+							}
+						: undefined,
 				roomRoster: () =>
 					sim.heroes
 						.filter(
@@ -880,7 +925,7 @@ export default function moba(app, map) {
 					if (!lobby && next && next.id !== options.sharedLobby?.id) {
 						if (app.session.authoritative || !app.session.shared || !validPlan(next, local))
 							return false
-						return returnToLobby(structuredClone(next))
+						return returnToLobby(structuredClone(next), true)
 					}
 					if (lobby && state?.handoff) return lobby.follow(state.handoff)
 					return replica?.apply(state, nowSeconds) ?? false
@@ -904,14 +949,17 @@ function validPlan(next, local) {
 		next.id >= 0 &&
 		Array.isArray(next.roster) &&
 		next.roster.length > 0 &&
-		next.roster.length <= tune.lobby.capacity &&
+		next.roster.length <=
+			(maps[next.setup?.map]?.party ? tune.lobby.partyCapacity : tune.lobby.capacity) &&
 		new Set(next.roster.map((seat) => seat?.id)).size === next.roster.length &&
 		next.roster.some((seat) => seat.id === local && seat.controller === 'human') &&
 		next.roster.every(
 			(seat) =>
 				typeof seat?.id === 'string' &&
 				['A', 'B'].includes(seat.team) &&
-				HEROES[seat.heroId]?.listed &&
+				(maps[next.setup?.map]?.party
+					? seat.team === 'A' && HEROES[seat.heroId]?.playable
+					: HEROES[seat.heroId]?.listed) &&
 				['human', 'bot'].includes(seat.controller) &&
 				(seat.controller === 'bot' ||
 					(Number.isSafeInteger(seat.joinOrder) && seat.joinOrder >= 0)),
@@ -930,7 +978,8 @@ export function validFact(fact) {
 	const plain = (v, depth) => {
 		if (v === null || typeof v === 'string' || typeof v === 'boolean') return true
 		if (typeof v === 'number') return Number.isFinite(v)
-		if (depth > 2 || typeof v !== 'object' || Array.isArray(v)) return false
+		if (depth > (fact.type === 'pull' ? 3 : 2) || typeof v !== 'object' || Array.isArray(v))
+			return false
 		return Object.values(v).every((x) => plain(x, depth + 1))
 	}
 	return plain(fact, 0)

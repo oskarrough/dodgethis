@@ -38,6 +38,8 @@ const fields = [
 	'catchWindow',
 	'castTick',
 	'ballThrow',
+	'target',
+	'threat',
 ]
 const sameAction = (a, b) =>
 	a &&

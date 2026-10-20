@@ -11,6 +11,7 @@ export function createSnapshot(ctx) {
 		lane,
 		ball,
 		flag,
+		boss,
 		obstacles,
 		matchStats,
 		botIds,
@@ -79,6 +80,7 @@ export function createSnapshot(ctx) {
 					}
 				: {}),
 			...(flag && { flag: structuredClone(flag.state) }),
+			...(boss && { boss: structuredClone(boss.state) }),
 			// Cover an ability placed (Cushion), so a guest sees and aims around the same walls.
 			cover: obstacles
 				.filter((o) => o.kind === 'cushion')
@@ -97,7 +99,7 @@ export function createSnapshot(ctx) {
 				maxHp: h.maxHp,
 				level: h.level,
 				dead: h.dead,
-				respawnTick: h.respawnTick,
+				respawnTick: wire && !Number.isFinite(h.respawnTick) ? null : h.respawnTick,
 				ballThrow: h.ballThrow && structuredClone(h.ballThrow),
 				attack: h.attack && { ...h.attack },
 				attackTick: h.attackTick,
@@ -133,10 +135,11 @@ export function createSnapshot(ctx) {
 					yaw: q(d.cast.yaw),
 					target: { x: q(d.cast.target.x), z: q(d.cast.target.z) },
 				},
+				...(d.boss && { target: d.target, threat: { ...d.threat } }),
 				castTick: d.castTick,
 				statuses: wire ? packStatuses(d.statuses) : structuredClone(d.statuses ?? []),
 				dead: d.dead,
-				respawnTick: d.respawnTick,
+				respawnTick: wire && !Number.isFinite(d.respawnTick) ? null : d.respawnTick,
 			})),
 			boards: structuredClone(boards),
 			cutouts: structuredClone(cutouts),
