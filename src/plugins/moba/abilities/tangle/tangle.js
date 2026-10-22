@@ -2,15 +2,7 @@ import { tune } from '../../tune.js'
 import { segmentClear } from '../../obstacles.js'
 
 export default {
-	statuses: {
-		slow: {
-			label: 'Slow',
-			tags: ['debuff', 'slow'],
-			stack: 'independent',
-			moveSpeed: ({ stats }) => Math.max(0, Math.min(1, 1 - stats.slow)),
-			duration: ({ stats }) => stats.duration,
-		},
-	},
+	statusEffects: [{ effect: 'slow', magnitude: 'slow', duration: 'duration', stack: 'strongest' }],
 	name: 'Tangle',
 	kind: 'instant',
 	tell: 'cone',

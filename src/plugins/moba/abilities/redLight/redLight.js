@@ -24,15 +24,7 @@ export default {
 	tell: 'selfCircle',
 	held: 'selfCircle',
 	effects: { cast: 'redLightWindup', impact: 'redLightFreeze', pose: 'coachRed' },
-	statuses: {
-		freeze: {
-			label: 'Freeze',
-			tags: ['debuff', 'freeze'],
-			states: ['frozen'],
-			stack: 'independent',
-			duration: ({ stats }) => stats.duration,
-		},
-	},
+	statusEffects: [{ effect: 'freeze', duration: 'duration' }],
 	onRelease({ hero, sim, ability, present }) {
 		const p = hero.body.position,
 			stats = ability.stats

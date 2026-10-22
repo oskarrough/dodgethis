@@ -1,4 +1,3 @@
-import { absorbAura } from '../../aura-damage.js'
 import { tune } from '../../tune.js'
 import { menderTargetUnit, menderReleaseTarget } from '../mend/mend-target.js'
 
@@ -11,15 +10,7 @@ export default {
 	held: 'circle',
 	effects: { cast: true, impact: true, pose: 'menderWard' },
 	targetUnit: menderTargetUnit,
-	statuses: {
-		shield: {
-			label: 'Ward',
-			tags: ['buff', 'shield'],
-			on: { absorb: absorbAura },
-			bar: 'shield',
-			duration: ({ stats }) => stats.duration,
-		},
-	},
+	statusEffects: [{ effect: 'shield', amount: 'shield', duration: 'duration' }],
 	onRelease(context) {
 		const ally = menderReleaseTarget(context)
 		if (!ally) return

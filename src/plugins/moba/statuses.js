@@ -86,7 +86,12 @@ export function statusBar(unit, bar) {
 }
 
 const active = (status, tick) => status.until === null || status.until > tick
-const resolve = (value, context) => (typeof value === 'function' ? value(context) : value)
+const resolve = (value, context) =>
+	typeof value === 'function'
+		? value(context)
+		: typeof value === 'string'
+			? context.stats?.[value]
+			: value
 
 // The declarations name states; only this table gives them meaning.
 export function blocked(unit, verb, tick) {
@@ -199,6 +204,7 @@ export function createStatuses(ctx) {
 		const duration = options.duration ?? resolve(definition.duration, info)
 		const until = duration == null ? null : ctx.t + ticks(duration)
 		const mag = options.mag ?? resolve(definition.moveSpeed, info)
+		const amount = options.amount !== undefined ? options.amount : resolve(definition.amount, info)
 		const stack = definition.stack ?? (definition.maxStacks > 1 ? 'stacks' : 'refresh')
 		const same = unit.statuses.filter(
 			(status) => status.key === key && status.src === source && active(status, ctx.t),
@@ -206,9 +212,9 @@ export function createStatuses(ctx) {
 		if (stack === 'refresh' && same.length) {
 			const status = same[0]
 			const wasted =
-				definition.on?.absorb && options.amount !== undefined ? Math.max(0, status.amount ?? 0) : 0
+				definition.on?.absorb && amount !== undefined ? Math.max(0, status.amount ?? 0) : 0
 			status.until = until
-			if (options.amount !== undefined) status.amount = options.amount
+			if (amount !== undefined) status.amount = amount
 			if (mag !== undefined) status.mag = mag
 			presentStatus(unit, status, 'refresh', { wasted })
 			return status
@@ -233,7 +239,7 @@ export function createStatuses(ctx) {
 			src: source,
 			from: ctx.t,
 			until,
-			...(options.amount !== undefined && { amount: options.amount }),
+			...(amount !== undefined && { amount }),
 			...(mag !== undefined && { mag }),
 			...(definition.data && { data: definition.data(info) }),
 			...(definition.interval !== undefined && {
