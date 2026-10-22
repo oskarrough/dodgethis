@@ -13,6 +13,7 @@ import abilities_mend from './abilities/mend/mend-tune.js'
 import abilities_outThrow from './abilities/outThrow/outThrow-tune.js'
 import abilities_palmStrike from './abilities/palmStrike/palmStrike-tune.js'
 import abilities_pass from './abilities/pass/pass-tune.js'
+import abilities_pinball from './abilities/pinball/pinball-tune.js'
 import abilities_rain from './abilities/rain/rain-tune.js'
 import abilities_rallyRing from './abilities/rallyRing/rallyRing-tune.js'
 import abilities_redLight from './abilities/redLight/redLight-tune.js'
@@ -58,6 +59,7 @@ export const abilities = {
 	outThrow: abilities_outThrow,
 	palmStrike: abilities_palmStrike,
 	pass: abilities_pass,
+	pinball: abilities_pinball,
 	rain: abilities_rain,
 	rallyRing: abilities_rallyRing,
 	redLight: abilities_redLight,

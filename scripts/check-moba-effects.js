@@ -154,14 +154,26 @@ function checkActions(id, manifest, actions) {
 		}
 		const targeted = action.deliver === 'target'
 		const fields = targeted
-			? ['deliver', 'pick', 'targets', 'range', 'hit', 'consume', 'before', 'after']
+			? ['deliver', 'pick', 'targets', 'range', 'hit', 'chain', 'consume', 'before', 'after']
 			: ['deliver', 'from', 'shape', 'radius', 'targets', 'blockedBy', 'where', 'hit']
 		for (const field of Object.keys(action))
 			if (!fields.includes(field)) errors.push(`${id}: unknown ${action.deliver} field ${field}`)
 		if (targeted) {
 			if (!['nearestAim', 'event'].includes(action.pick))
 				errors.push(`${id}: unknown target pick ${action.pick}`)
-			if (action.targets !== 'ally') errors.push(`${id}: unknown target team ${action.targets}`)
+			if (!['ally', 'enemy'].includes(action.targets))
+				errors.push(`${id}: unknown target team ${action.targets}`)
+			if (action.targets === 'enemy' && action.pick !== 'nearestAim')
+				errors.push(`${id}: enemy targets need nearestAim`)
+			if (action.chain !== undefined) {
+				if (action.targets !== 'enemy') errors.push(`${id}: only enemy targets chain`)
+				for (const field of Object.keys(action.chain ?? {}))
+					if (!['range', 'repeat', 'falloff'].includes(field))
+						errors.push(`${id}: unknown chain field ${field}`)
+				checkRef(id, 'chain range', action.chain?.range, 'm')
+				checkRef(id, 'chain repeat', action.chain?.repeat, 'count')
+				checkRef(id, 'chain falloff', action.chain?.falloff, 'fraction')
+			}
 			if (action.pick === 'nearestAim') checkRef(id, 'target range', action.range, 'm')
 			else if (action.range !== undefined) errors.push(`${id}: event target cannot have a range`)
 			if (action.consume !== undefined && typeof action.consume !== 'boolean')
@@ -199,9 +211,11 @@ function checkActions(id, manifest, actions) {
 				AREA_EFFECT_REFS[record?.effect] ??
 				STATUS_EFFECT_REFS[record?.effect] ??
 				TARGET_EFFECT_REFS[record?.effect]
-			const allowed = targeted
-				? ['heal', 'shield', 'cleanse']
-				: ['damage', 'slow', 'freeze', 'knockback']
+			const allowed = !targeted
+				? ['damage', 'slow', 'freeze', 'knockback']
+				: action.targets === 'enemy'
+					? ['damage']
+					: ['heal', 'shield', 'cleanse']
 			if (!record || !allowed.includes(record.effect) || !refs) {
 				errors.push(
 					`${id}: unknown ${action.deliver} effect ${typeof input === 'string' ? input : input?.effect}`,

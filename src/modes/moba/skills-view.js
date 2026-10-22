@@ -529,6 +529,10 @@ export function createSkillsView(scene) {
 		update,
 		vault,
 		rain,
+		// Ability views that draw their own hits hear each contact fact.
+		contact(fact) {
+			for (const view of extras) view.contact?.(fact)
+		},
 		dispose() {
 			scene.remove(group)
 			for (const view of extras) view.dispose()

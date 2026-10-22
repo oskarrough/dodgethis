@@ -3,7 +3,7 @@ export default {
 		hp: 'hp',
 		radius: 'radius',
 		speed: 'speed',
-		kit: { slot1: 'bank', slot2: 'lob', slot3: 'swap' },
+		kit: { slot1: 'bank', slot2: 'lob', slot3: 'pinball' },
 	},
 	name: 'P. Pong',
 	color: 'cream',

@@ -346,6 +346,7 @@ export function createFeedback({
 					view.ping('move', fact.from)
 					view.ping('move', fact.point)
 				}
+				skillsView?.contact(fact)
 				cue(abilityUse(ability, fact.part), fact)
 				return
 			}

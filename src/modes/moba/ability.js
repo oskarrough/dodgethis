@@ -164,14 +164,16 @@ function effectStatuses(manifest) {
 	return statuses
 }
 
-// Targeted casts lock a living teammate at cast start, with stable distance/id ties.
+// Targeted casts lock a living teammate, or any enemy unit, at cast start, with stable distance/id ties.
 function pickAbilityTarget({ hero, sim, target, ability }, action) {
+	const candidates =
+		action.targets === 'enemy'
+			? sim.enemiesOf(hero.team).map((enemy) => enemy.unit)
+			: sim.heroes.filter((unit) => unit.id !== hero.id && unit.team === hero.team)
 	return (
-		sim.heroes
+		candidates
 			.filter(
 				(unit) =>
-					unit.id !== hero.id &&
-					unit.team === hero.team &&
 					!unit.dead &&
 					Math.hypot(
 						unit.body.position.x - hero.body.position.x,

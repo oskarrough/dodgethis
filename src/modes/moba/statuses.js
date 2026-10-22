@@ -252,7 +252,8 @@ export function createStatuses(ctx) {
 					dz: dir.z,
 					damage:
 						stats[damage.amount] *
-						(damage.scale === null ? 1 : 1 + tune.levels.growth * (actor.level - 1)),
+						(damage.scale === null ? 1 : 1 + tune.levels.growth * (actor.level - 1)) *
+						(source.factor ?? 1),
 					periodic: damage.periodic === true,
 					...(source.status && { id: -1, status: source.status.key }),
 					...(statuses.length &&
@@ -359,6 +360,55 @@ export function createStatuses(ctx) {
 			}
 		return { lethal, heal }
 	}
+	// A target that re-targets from its own impact, `repeat` more times: the nearest enemy
+	// not yet hit within `range` (distance, then id), each link `falloff` weaker than the last.
+	// A dead link still hands on its position, so a kill doesn't end the chain.
+	function chainFrom(actor, ability, event, { range, repeat, falloff }, first, effects) {
+		const stats = ability.stats
+		const hit = new Set([first.id])
+		let from = { ...first.body.position }
+		for (let hop = 1; hop <= stats[repeat]; hop++) {
+			const near = (target) => Math.hypot(target.x - from.x, target.z - from.z)
+			const next = ctx.api
+				.enemiesOf(actor.team)
+				.filter(
+					(target) => !hit.has(target.id) && near(target) <= stats[range] + (target.radius ?? 0),
+				)
+				.sort((a, b) => near(a) - near(b) || a.id.localeCompare(b.id))[0]
+			if (!next) return
+			hit.add(next.id)
+			const length = near(next)
+			const result = applyEffects(
+				{
+					unit: actor,
+					ability,
+					slot: event.slot,
+					dir:
+						length > 0
+							? { x: (next.x - from.x) / length, z: (next.z - from.z) / length }
+							: event.dir,
+					point: next,
+					target: next,
+					factor: (1 - stats[falloff]) ** hop,
+				},
+				next.unit,
+				effects,
+				stats,
+			)
+			event.lethal = Boolean(event.lethal || result.lethal)
+			present({
+				type: 'contact',
+				part: 'impact',
+				source: actor.id,
+				target: next.id,
+				ability: ability.id,
+				origin: from,
+				hop,
+				point: { ...next.unit.body.position },
+			})
+			from = { ...next.unit.body.position }
+		}
+	}
 	function runActions(actions, info) {
 		// Status callbacks still see their carrier as unit/hero. Only declared actions
 		// run as the original source, including its team, position and level.
@@ -447,7 +497,7 @@ export function createStatuses(ctx) {
 				if (
 					!unit ||
 					unit.dead ||
-					unit.team !== actor.team ||
+					(unit.team === actor.team) === (action.targets === 'enemy') ||
 					(action.pick === 'nearestAim' &&
 						Math.hypot(
 							unit.body.position.x - actor.body.position.x,
@@ -460,10 +510,12 @@ export function createStatuses(ctx) {
 				}
 				const context = { ...info, hero: actor, event, stats }
 				action.before?.(context)
+				const effects = action.hit.map((record) => effectRecord(ability, record))
+				const origin = { ...actor.body.position }
 				const result = applyEffects(
 					{ unit: actor, ability, slot: event.slot, dir: event.dir, shot: info.shot },
 					unit,
-					action.hit.map((record) => effectRecord(ability, record)),
+					effects,
 					stats,
 				)
 				event.lethal = Boolean(event.lethal || result.lethal)
@@ -481,8 +533,10 @@ export function createStatuses(ctx) {
 							hp: unit.hp,
 							maxHp: unit.maxHp,
 						}),
+						...(action.chain && { origin, hop: 0 }),
 						point: { ...unit.body.position },
 					})
+				if (action.chain) chainFrom(actor, ability, event, action.chain, unit, effects)
 				if (action.consume) return true
 				continue
 			}
