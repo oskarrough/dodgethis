@@ -8,7 +8,7 @@ export default {
 		radius: 'radius',
 		speed: 'speed',
 		attack: 'tennisBall',
-		kit: { slot1: 'pass', slot2: 'tagOut', slot3: 'redLight' },
+		kit: { slot1: 'pass', slot2: 'tagOut', slot3: 'rallyRing' },
 		traits: {
 			onDeath: coachCutoutDeath,
 			onTick: coachCutoutTick,

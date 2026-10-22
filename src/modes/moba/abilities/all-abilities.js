@@ -14,6 +14,7 @@ import abilities_outThrow from './outThrow/outThrow.js'
 import abilities_palmStrike from './palmStrike/palmStrike.js'
 import abilities_pass from './pass/pass.js'
 import abilities_rain from './rain/rain.js'
+import abilities_rallyRing from './rallyRing/rallyRing.js'
 import abilities_redLight from './redLight/redLight.js'
 import abilities_slam from './slam/slam.js'
 import abilities_slide from './slide/slide.js'
@@ -48,6 +49,7 @@ export default {
 	palmStrike: abilities_palmStrike,
 	pass: abilities_pass,
 	rain: abilities_rain,
+	rallyRing: abilities_rallyRing,
 	redLight: abilities_redLight,
 	slam: abilities_slam,
 	slide: abilities_slide,

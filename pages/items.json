@@ -1,5 +1,16 @@
 [
 	{
+		"at": "2026-10-22T13:17:48.775Z",
+		"title": "Rally ring: Coach chalks a ring, her side runs, theirs wades",
+		"ask": "Coach's E, replacing Red light. Allies inside run 25% faster, enemies are slowed 30%, for 5 s. Does the chalk ring read in a scrum, and is Red light worth losing for it?",
+		"status": "To review",
+		"decision": "",
+		"media": ["media/2026-10-22-rally-ring-coach-chalks-a-ring-her-side-/rally-ring.webm"],
+		"links": ["http://office-linux.heron-mermaid.ts.net:5173/?mode=moba&play&hero=coach&bots=easy"],
+		"thread": "thr_sk2rtkbpbu",
+		"page": "2026-10-22-rally-ring-coach-chalks-a-ring-her-side-/"
+	},
+	{
 		"at": "2026-10-22T12:46:46.813Z",
 		"title": "Ground fields end with the match",
 		"ask": "Headless check passed: Lob and Balloon drawings clear locally and on network peers before field expiry.",

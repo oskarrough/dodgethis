@@ -14,6 +14,7 @@ import abilities_outThrow from './abilities/outThrow/outThrow-tune.js'
 import abilities_palmStrike from './abilities/palmStrike/palmStrike-tune.js'
 import abilities_pass from './abilities/pass/pass-tune.js'
 import abilities_rain from './abilities/rain/rain-tune.js'
+import abilities_rallyRing from './abilities/rallyRing/rallyRing-tune.js'
 import abilities_redLight from './abilities/redLight/redLight-tune.js'
 import abilities_slam from './abilities/slam/slam-tune.js'
 import abilities_slide from './abilities/slide/slide-tune.js'
@@ -58,6 +59,7 @@ export const abilities = {
 	palmStrike: abilities_palmStrike,
 	pass: abilities_pass,
 	rain: abilities_rain,
+	rallyRing: abilities_rallyRing,
 	redLight: abilities_redLight,
 	slam: abilities_slam,
 	slide: abilities_slide,
