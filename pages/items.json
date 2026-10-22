@@ -1,11 +1,22 @@
 [
 	{
+		"at": "2026-10-22T08:46:38.951Z",
+		"title": "Desk: instruments for tune values",
+		"ask": "Do the instrument kinds read as what they control?",
+		"status": "To review",
+		"decision": "",
+		"media": ["media/2026-10-22-desk-instruments-for-tune-values/desk-crop.png"],
+		"links": [],
+		"thread": "thr_jzgc6jfmba",
+		"page": "2026-10-22-desk-instruments-for-tune-values/"
+	},
+	{
 		"at": "2026-10-20T20:51:01.405Z",
 		"title": "Dungeon party lobby",
 		"ask": "Five explicit rows, hero dropdowns and bot controls; guests ready, host starts. Is this clear and slick enough? Browser proof: two connected players edited heroes/bots and readiness reset correctly; solo launch entered Dungeon with one hero. Multiplayer launch and lobby return remain unchecked after the browser proof was interrupted.",
 		"status": "To review",
 		"decision": "",
-		"media": ["review/media/2026-10-20-dungeon-party-lobby/dungeon-party-final.png"],
+		"media": ["media/2026-10-20-dungeon-party-lobby/dungeon-party-final.png"],
 		"links": ["http://office-linux.heron-mermaid.ts.net:5173/?mode=moba&map=dungeon"],
 		"thread": "thr_6sgc9s2jhb",
 		"page": "2026-10-20-dungeon-party-lobby/"
@@ -16,7 +27,7 @@
 		"ask": "Do the two bars read at a glance, and is the Slam bar in the right place?",
 		"status": "To review",
 		"decision": "",
-		"media": ["review/media/2026-10-20-cast-bars-for-mend-and-the-warden-s-slam/castbars.png"],
+		"media": ["media/2026-10-20-cast-bars-for-mend-and-the-warden-s-slam/castbars.png"],
 		"links": [],
 		"thread": "thr_ay29w73d7r",
 		"page": "2026-10-20-cast-bars-for-mend-and-the-warden-s-slam/"
@@ -27,7 +38,7 @@
 		"ask": "Does the cursor ring, the green beam and the +300 make Mend read? Is 1.2 s the right cast?",
 		"status": "To review",
 		"decision": "",
-		"media": ["review/media/2026-10-20-mender-heals-you-can-see/mender-heal.webm"],
+		"media": ["media/2026-10-20-mender-heals-you-can-see/mender-heal.webm"],
 		"links": [],
 		"thread": "thr_ay29w73d7r",
 		"page": "2026-10-20-mender-heals-you-can-see/"
@@ -38,7 +49,7 @@
 		"ask": "Direct-play proof with bots and waves disabled; positioned two allies, injured Mitts, aimed at him and used Q then W. Mend held HP at 1500 during its 90-tick (1.5 s) cast, then healed 300 to 1800. Ward applied 500 shield for 480 ticks (8 s) to Mitts only. Judge whether the shield bar is clear.",
 		"status": "To review",
 		"decision": "",
-		"media": ["review/media/2026-10-20-mender-mend-and-ward/mender-mend-ward.png"],
+		"media": ["media/2026-10-20-mender-mend-and-ward/mender-mend-ward.png"],
 		"links": ["http://office-linux.heron-mermaid.ts.net:5173/?mode=moba&play&hero=mender&debug"],
 		"thread": "thr_xuf4ywcr66",
 		"page": "2026-10-20-mender-mend-and-ward/"
@@ -50,9 +61,9 @@
 		"status": "To review",
 		"decision": "",
 		"media": [
-			"review/media/2026-10-20-fog-of-war-look/fog-overthrow-before.png",
-			"review/media/2026-10-20-fog-of-war-look/fog-overthrow-after.png",
-			"review/media/2026-10-20-fog-of-war-look/fog-flagfall-after.png"
+			"media/2026-10-20-fog-of-war-look/fog-overthrow-before.png",
+			"media/2026-10-20-fog-of-war-look/fog-overthrow-after.png",
+			"media/2026-10-20-fog-of-war-look/fog-flagfall-after.png"
 		],
 		"links": [],
 		"thread": "thr_67w7ifvtfs",
@@ -87,10 +98,10 @@
 		"status": "Decided",
 		"decision": "Reviewed.",
 		"media": [
-			"review/media/2026-10-14-lobby-feel-the-swap-flip-and-a-calmer-la/swap-flip.webm",
-			"review/media/2026-10-14-lobby-feel-the-swap-flip-and-a-calmer-la/lobby-390.png",
-			"review/media/2026-10-14-lobby-feel-the-swap-flip-and-a-calmer-la/lobby-1440.png",
-			"review/media/2026-10-14-lobby-feel-the-swap-flip-and-a-calmer-la/lobby-2560x1080.png"
+			"media/2026-10-14-lobby-feel-the-swap-flip-and-a-calmer-la/swap-flip.webm",
+			"media/2026-10-14-lobby-feel-the-swap-flip-and-a-calmer-la/lobby-390.png",
+			"media/2026-10-14-lobby-feel-the-swap-flip-and-a-calmer-la/lobby-1440.png",
+			"media/2026-10-14-lobby-feel-the-swap-flip-and-a-calmer-la/lobby-2560x1080.png"
 		],
 		"links": [],
 		"thread": "thr_rrr3ahmeiy",
@@ -103,11 +114,11 @@
 		"status": "Decided",
 		"decision": "Reviewed.",
 		"media": [
-			"review/media/2026-10-13-choose-your-hero-five-takes/caption-1-stamp.png",
-			"review/media/2026-10-13-choose-your-hero-five-takes/caption-2-brush.png",
-			"review/media/2026-10-13-choose-your-hero-five-takes/caption-3-tag.png",
-			"review/media/2026-10-13-choose-your-hero-five-takes/caption-4-emboss.png",
-			"review/media/2026-10-13-choose-your-hero-five-takes/caption-5-wordless.png"
+			"media/2026-10-13-choose-your-hero-five-takes/caption-1-stamp.png",
+			"media/2026-10-13-choose-your-hero-five-takes/caption-2-brush.png",
+			"media/2026-10-13-choose-your-hero-five-takes/caption-3-tag.png",
+			"media/2026-10-13-choose-your-hero-five-takes/caption-4-emboss.png",
+			"media/2026-10-13-choose-your-hero-five-takes/caption-5-wordless.png"
 		],
 		"links": [],
 		"thread": "thr_pag3q8z9mf",
@@ -120,8 +131,8 @@
 		"status": "Decided",
 		"decision": "Reviewed.",
 		"media": [
-			"review/media/2026-10-13-choose-your-hero-cut-into-the-platter/engrave-wide-crop.png",
-			"review/media/2026-10-13-choose-your-hero-cut-into-the-platter/engrave-narrow-crop.png"
+			"media/2026-10-13-choose-your-hero-cut-into-the-platter/engrave-wide-crop.png",
+			"media/2026-10-13-choose-your-hero-cut-into-the-platter/engrave-narrow-crop.png"
 		],
 		"links": [],
 		"thread": "thr_pag3q8z9mf",
@@ -134,9 +145,9 @@
 		"status": "Decided",
 		"decision": "Reviewed.",
 		"media": [
-			"review/media/2026-10-13-hero-strip-leans-on-the-platter-with-a-c/strip-before.png",
-			"review/media/2026-10-13-hero-strip-leans-on-the-platter-with-a-c/strip-after.png",
-			"review/media/2026-10-13-hero-strip-leans-on-the-platter-with-a-c/strip-after-crop.png"
+			"media/2026-10-13-hero-strip-leans-on-the-platter-with-a-c/strip-before.png",
+			"media/2026-10-13-hero-strip-leans-on-the-platter-with-a-c/strip-after.png",
+			"media/2026-10-13-hero-strip-leans-on-the-platter-with-a-c/strip-after-crop.png"
 		],
 		"links": [],
 		"thread": "thr_pag3q8z9mf",
@@ -149,9 +160,9 @@
 		"status": "Decided",
 		"decision": "Reviewed.",
 		"media": [
-			"review/media/2026-10-13-lobby-holograms-read-on-their-plates/holograms-before.png",
-			"review/media/2026-10-13-lobby-holograms-read-on-their-plates/holograms-after-crop.png",
-			"review/media/2026-10-13-lobby-holograms-read-on-their-plates/holograms-after.png"
+			"media/2026-10-13-lobby-holograms-read-on-their-plates/holograms-before.png",
+			"media/2026-10-13-lobby-holograms-read-on-their-plates/holograms-after-crop.png",
+			"media/2026-10-13-lobby-holograms-read-on-their-plates/holograms-after.png"
 		],
 		"links": [],
 		"thread": "thr_pag3q8z9mf",
@@ -163,9 +174,7 @@
 		"ask": "Does the bottom-right Controls label and the one-time Switch to WASD? note read right in the lobby?",
 		"status": "Decided",
 		"decision": "Reviewed.",
-		"media": [
-			"review/media/2026-10-13-lobby-controls-label-and-wasd-offer/lobby-controls-offer.png"
-		],
+		"media": ["media/2026-10-13-lobby-controls-label-and-wasd-offer/lobby-controls-offer.png"],
 		"links": [],
 		"thread": "thr_27qnwfh6gs",
 		"page": "2026-10-13-lobby-controls-label-and-wasd-offer/"
@@ -177,8 +186,8 @@
 		"status": "Decided",
 		"decision": "Reviewed.",
 		"media": [
-			"review/media/2026-10-13-lobby-plates-flow-to-the-map-30-/bowl-bots-in.png",
-			"review/media/2026-10-13-lobby-plates-flow-to-the-map-30-/junction-and-bowl.png"
+			"media/2026-10-13-lobby-plates-flow-to-the-map-30-/bowl-bots-in.png",
+			"media/2026-10-13-lobby-plates-flow-to-the-map-30-/junction-and-bowl.png"
 		],
 		"links": ["/"],
 		"thread": "thr_hcrr25efxq",
@@ -190,7 +199,7 @@
 		"ask": "Agree with the worst friction?",
 		"status": "Decided",
 		"decision": "Reviewed.",
-		"media": ["review/media/2026-10-11-sound-board-walkthrough/walkthrough.png"],
+		"media": ["media/2026-10-11-sound-board-walkthrough/walkthrough.png"],
 		"links": [],
 		"thread": "thr_zg6p82q57t",
 		"page": "2026-10-11-sound-board-walkthrough/"
@@ -201,7 +210,7 @@
 		"ask": "Does generating feel quick enough?",
 		"status": "Decided",
 		"decision": "Reviewed.",
-		"media": ["review/media/2026-10-11-generate-sounds/generate-sounds.png"],
+		"media": ["media/2026-10-11-generate-sounds/generate-sounds.png"],
 		"links": [],
 		"thread": "thr_56cjyats25",
 		"page": "2026-10-11-generate-sounds/"
@@ -212,7 +221,7 @@
 		"ask": "Does scrubbing feel right?",
 		"status": "Decided",
 		"decision": "Reviewed.",
-		"media": ["review/media/2026-10-11-sound-map/sound-map.png"],
+		"media": ["media/2026-10-11-sound-map/sound-map.png"],
 		"links": [],
 		"thread": "thr_m6gtdxtin8",
 		"page": "2026-10-11-sound-map/"
@@ -224,9 +233,9 @@
 		"status": "Decided",
 		"decision": "Reviewed.",
 		"media": [
-			"review/media/2026-10-11-paper-screens/result.png",
-			"review/media/2026-10-11-paper-screens/scoreboard.png",
-			"review/media/2026-10-11-paper-screens/death.png"
+			"media/2026-10-11-paper-screens/result.png",
+			"media/2026-10-11-paper-screens/scoreboard.png",
+			"media/2026-10-11-paper-screens/death.png"
 		],
 		"links": [],
 		"thread": "thr_nq4drca5xd",
@@ -239,8 +248,8 @@
 		"status": "Decided",
 		"decision": "Reviewed.",
 		"media": [
-			"review/media/2026-10-11-feed-drum/feed-drum.webm",
-			"review/media/2026-10-11-feed-drum/portrait.png"
+			"media/2026-10-11-feed-drum/feed-drum.webm",
+			"media/2026-10-11-feed-drum/portrait.png"
 		],
 		"links": [],
 		"thread": "thr_kpipnfj4w7",
@@ -263,7 +272,7 @@
 		"ask": "Is PAUSED quiet enough, and does Esc toggle fast now?",
 		"status": "Decided",
 		"decision": "Reviewed.",
-		"media": ["review/media/2026-10-11-pause-menu-vibe-quieter/pause2.png"],
+		"media": ["media/2026-10-11-pause-menu-vibe-quieter/pause2.png"],
 		"links": [],
 		"thread": "thr_piszjt2sgm",
 		"page": "2026-10-11-pause-menu-vibe-quieter/"
@@ -274,7 +283,7 @@
 		"ask": "Does the bounce preview read?",
 		"status": "Decided",
 		"decision": "Reviewed.",
-		"media": ["review/media/2026-10-11-bank-bounce-preview/bank-bounce.png"],
+		"media": ["media/2026-10-11-bank-bounce-preview/bank-bounce.png"],
 		"links": [],
 		"thread": "thr_4xnq2c8zbt",
 		"page": "2026-10-11-bank-bounce-preview/"
@@ -286,8 +295,8 @@
 		"status": "Decided",
 		"decision": "Reviewed.",
 		"media": [
-			"review/media/2026-10-11-descent-sky/descent-overthrow.webm",
-			"review/media/2026-10-11-descent-sky/descent-flagfall.png"
+			"media/2026-10-11-descent-sky/descent-overthrow.webm",
+			"media/2026-10-11-descent-sky/descent-flagfall.png"
 		],
 		"links": [],
 		"thread": "thr_2fej2knmth",
@@ -300,8 +309,8 @@
 		"status": "Decided",
 		"decision": "Reviewed.",
 		"media": [
-			"review/media/2026-10-11-pause-menu-vibe/pause.png",
-			"review/media/2026-10-11-pause-menu-vibe/lobby.png"
+			"media/2026-10-11-pause-menu-vibe/pause.png",
+			"media/2026-10-11-pause-menu-vibe/lobby.png"
 		],
 		"links": [],
 		"thread": "thr_piszjt2sgm",
@@ -314,9 +323,9 @@
 		"status": "Decided",
 		"decision": "Reviewed.",
 		"media": [
-			"review/media/2026-10-11-hero-colours/stamp-fletcher.png",
-			"review/media/2026-10-11-hero-colours/stamp-mitts.png",
-			"review/media/2026-10-11-hero-colours/stamp-pong.png"
+			"media/2026-10-11-hero-colours/stamp-fletcher.png",
+			"media/2026-10-11-hero-colours/stamp-mitts.png",
+			"media/2026-10-11-hero-colours/stamp-pong.png"
 		],
 		"links": [],
 		"thread": "thr_4a5jfuwbi2",
@@ -328,7 +337,7 @@
 		"ask": "Pong's costume (stone head, brow, beak, team paddle, back net) and the Cushion net: keep, or what changes?",
 		"status": "Decided",
 		"decision": "Reviewed.",
-		"media": ["review/media/2026-10-11-p-pong-first-build/pong-match.png"],
+		"media": ["media/2026-10-11-p-pong-first-build/pong-match.png"],
 		"links": [],
 		"thread": "thr_zhs8vb5rkp",
 		"page": "2026-10-11-p-pong-first-build/"
@@ -355,7 +364,7 @@
 		"ask": "First take on the laser gate: two posts, a flickering team-colour beam. Keep, recolour, or rethink?",
 		"status": "Decided",
 		"decision": "Reviewed.",
-		"media": ["review/media/2026-10-10-flagfall-laser-gate/laser-gate.png"],
+		"media": ["media/2026-10-10-flagfall-laser-gate/laser-gate.png"],
 		"links": [],
 		"thread": "thr_zujatwsc6m",
 		"page": "2026-10-10-flagfall-laser-gate/"
@@ -366,7 +375,7 @@
 		"ask": "The gate is a placeholder stone drum spanning the lane. Is a drum fine for now, or should it read as a wall?",
 		"status": "Decided",
 		"decision": "Reviewed.",
-		"media": ["review/media/2026-10-10-flagfall-gates/flagfall-gate.png"],
+		"media": ["media/2026-10-10-flagfall-gates/flagfall-gate.png"],
 		"links": [],
 		"thread": "thr_88z9qrycxv",
 		"page": "2026-10-10-flagfall-gates/"
@@ -377,7 +386,7 @@
 		"ask": "Plain flag at the chalk cross: HUD line, ring with fill arc, minimap dot. Look is yours.",
 		"status": "Decided",
 		"decision": "Reviewed.",
-		"media": ["review/media/2026-10-10-flagfall-centre-flag/flag.png"],
+		"media": ["media/2026-10-10-flagfall-centre-flag/flag.png"],
 		"links": [],
 		"thread": "thr_wfq8ficigf",
 		"page": "2026-10-10-flagfall-centre-flag/"
@@ -388,7 +397,7 @@
 		"ask": "Does the fog look unchanged: same edge, same darkness?",
 		"status": "Decided",
 		"decision": "Reviewed.",
-		"media": ["review/media/2026-10-10-cheaper-fog-of-war/fog-after.png"],
+		"media": ["media/2026-10-10-cheaper-fog-of-war/fog-after.png"],
 		"links": [],
 		"thread": "thr_ut6hmdpqhz",
 		"page": "2026-10-10-cheaper-fog-of-war/"
@@ -399,7 +408,7 @@
 		"ask": "Camp guards (plain cream for now) at a jungle camp mark, 55 s in. Clear one and its mercs march the nearest lane for you. Does the camp read as neutral?",
 		"status": "Decided",
 		"decision": "Reviewed.",
-		"media": ["review/media/2026-10-10-flagfall-mercenary-camps/camp.png"],
+		"media": ["media/2026-10-10-flagfall-mercenary-camps/camp.png"],
 		"links": [],
 		"thread": "thr_bxbcth5sxc",
 		"page": "2026-10-10-flagfall-mercenary-camps/"
@@ -410,7 +419,7 @@
 		"ask": "Block gone; four jungle rooms behind a stone spine, each opening on two lane holes and the clearing, moss brush at the holes. Lantern + chalk square = camp, cross = flag, bars across the lanes = gates (all marks only). Does it feel worth walking into under fog?",
 		"status": "Decided",
 		"decision": "Reviewed.",
-		"media": ["review/media/2026-10-10-flagfall-jungle-rooms-brush-marks/jungle.png"],
+		"media": ["media/2026-10-10-flagfall-jungle-rooms-brush-marks/jungle.png"],
 		"links": [],
 		"thread": "thr_egsuf57dc2",
 		"page": "2026-10-10-flagfall-jungle-rooms-brush-marks/"
@@ -421,7 +430,7 @@
 		"ask": "First take behind ?fog: your heroes, minions and structures see 10/7/10 m; enemy units outside vanish and the ground dims. Is the dim strong enough, and should it read as darkness or as haze?",
 		"status": "Decided",
 		"decision": "Love it; 10% darker, on in every match (Oskar)",
-		"media": ["review/media/2026-10-10-fog-of-war-on-flagfall/fog-flagfall.png"],
+		"media": ["media/2026-10-10-fog-of-war-on-flagfall/fog-flagfall.png"],
 		"links": [],
 		"thread": "thr_egsuf57dc2",
 		"page": "2026-10-10-fog-of-war-on-flagfall/"
@@ -444,8 +453,8 @@
 		"status": "Decided",
 		"decision": "Reviewed.",
 		"media": [
-			"review/media/2026-10-10-flagfall-by-night-built/flagfall-night-built.webp",
-			"review/media/2026-10-10-flagfall-by-night-built/02-fight.webp"
+			"media/2026-10-10-flagfall-by-night-built/flagfall-night-built.webp",
+			"media/2026-10-10-flagfall-by-night-built/02-fight.webp"
 		],
 		"links": ["/pages/flagfall-night/"],
 		"thread": "thr_md62iqhzu8",
@@ -458,8 +467,8 @@
 		"status": "Archived",
 		"decision": "Replaced: one close lens on every map that pans past the rims (Oskar, 2026-10-10)",
 		"media": [
-			"review/media/2026-10-10-match-camera-shows-both-long-rims/overthrow-midcourt.png",
-			"review/media/2026-10-10-match-camera-shows-both-long-rims/flagfall-midcourt.png"
+			"media/2026-10-10-match-camera-shows-both-long-rims/overthrow-midcourt.png",
+			"media/2026-10-10-match-camera-shows-both-long-rims/flagfall-midcourt.png"
 		],
 		"links": [],
 		"thread": "thr_2aqw4bpva3",
@@ -472,10 +481,10 @@
 		"status": "Decided",
 		"decision": "Reviewed.",
 		"media": [
-			"review/media/2026-10-10-overthrow-by-day-built/concept-establishing.webp",
-			"review/media/2026-10-10-overthrow-by-day-built/after-establishing.png",
-			"review/media/2026-10-10-overthrow-by-day-built/concept-fight.webp",
-			"review/media/2026-10-10-overthrow-by-day-built/after-fight.png"
+			"media/2026-10-10-overthrow-by-day-built/concept-establishing.webp",
+			"media/2026-10-10-overthrow-by-day-built/after-establishing.png",
+			"media/2026-10-10-overthrow-by-day-built/concept-fight.webp",
+			"media/2026-10-10-overthrow-by-day-built/after-fight.png"
 		],
 		"links": [],
 		"thread": "thr_tfbqscj9f5",
@@ -488,9 +497,9 @@
 		"status": "Decided",
 		"decision": "Reviewed.",
 		"media": [
-			"review/media/2026-10-10-join-by-link-preview-card-reload-notice-/preview-card.png",
-			"review/media/2026-10-10-join-by-link-preview-card-reload-notice-/stale-build.png",
-			"review/media/2026-10-10-join-by-link-preview-card-reload-notice-/result-card.png"
+			"media/2026-10-10-join-by-link-preview-card-reload-notice-/preview-card.png",
+			"media/2026-10-10-join-by-link-preview-card-reload-notice-/stale-build.png",
+			"media/2026-10-10-join-by-link-preview-card-reload-notice-/result-card.png"
 		],
 		"links": [],
 		"thread": "thr_a88i8a2nsb",
@@ -533,8 +542,8 @@
 		"status": "Decided",
 		"decision": "Reviewed.",
 		"media": [
-			"review/media/2026-10-10-top-bar-pill-steady-width/pill-a-crop.png",
-			"review/media/2026-10-10-top-bar-pill-steady-width/pill-b-crop.png"
+			"media/2026-10-10-top-bar-pill-steady-width/pill-a-crop.png",
+			"media/2026-10-10-top-bar-pill-steady-width/pill-b-crop.png"
 		],
 		"links": [],
 		"thread": "thr_83etfu9ugy",
@@ -547,9 +556,9 @@
 		"status": "Decided",
 		"decision": "Style fine; whole saucer in frame. Keep improving.",
 		"media": [
-			"review/media/2026-10-10-lobby-whole-saucer-in-frame/fit-wide.png",
-			"review/media/2026-10-10-lobby-whole-saucer-in-frame/fit-desk.png",
-			"review/media/2026-10-10-lobby-whole-saucer-in-frame/fit-phone.png"
+			"media/2026-10-10-lobby-whole-saucer-in-frame/fit-wide.png",
+			"media/2026-10-10-lobby-whole-saucer-in-frame/fit-desk.png",
+			"media/2026-10-10-lobby-whole-saucer-in-frame/fit-phone.png"
 		],
 		"links": [],
 		"thread": "thr_dwbukqxwup",
@@ -561,7 +570,7 @@
 		"ask": "Manual is now the only pause page, with PAUSED running down the first column. Right weight and place?",
 		"status": "Decided",
 		"decision": "Decided: manual with vertical PAUSED.",
-		"media": ["review/media/2026-10-10-pause-manual-with-vertical-paused/vertical-1440.png"],
+		"media": ["media/2026-10-10-pause-manual-with-vertical-paused/vertical-1440.png"],
 		"links": [],
 		"thread": "thr_ra883cf55x",
 		"page": "2026-10-10-pause-manual-with-vertical-paused/"
@@ -573,8 +582,8 @@
 		"status": "Decided",
 		"decision": "Manual layout, with obi's vertical PAUSED; HUD hidden; quick cast as a checkbox.",
 		"media": [
-			"review/media/2026-10-10-pause-quick-cast-as-a-checkbox/check-obi-1440.png",
-			"review/media/2026-10-10-pause-quick-cast-as-a-checkbox/check-manual-1440.png"
+			"media/2026-10-10-pause-quick-cast-as-a-checkbox/check-obi-1440.png",
+			"media/2026-10-10-pause-quick-cast-as-a-checkbox/check-manual-1440.png"
 		],
 		"links": [],
 		"thread": "thr_ra883cf55x",
@@ -587,8 +596,8 @@
 		"status": "Decided",
 		"decision": "Good as is.",
 		"media": [
-			"review/media/2026-10-10-cloud-reveal-into-the-match/cloud-reveal.webm",
-			"review/media/2026-10-10-cloud-reveal-into-the-match/cloud-reveal-mid.png"
+			"media/2026-10-10-cloud-reveal-into-the-match/cloud-reveal.webm",
+			"media/2026-10-10-cloud-reveal-into-the-match/cloud-reveal-mid.png"
 		],
 		"links": [],
 		"thread": "thr_heema2dbjv",
@@ -601,8 +610,8 @@
 		"status": "Decided",
 		"decision": "Style fine; whole saucer in frame. Keep improving.",
 		"media": [
-			"review/media/2026-10-10-lobby-pocket-weather-pass/lobby-pocket-weather-day.png",
-			"review/media/2026-10-10-lobby-pocket-weather-pass/lobby-pocket-weather-night.png"
+			"media/2026-10-10-lobby-pocket-weather-pass/lobby-pocket-weather-day.png",
+			"media/2026-10-10-lobby-pocket-weather-pass/lobby-pocket-weather-night.png"
 		],
 		"links": [],
 		"thread": "thr_dwbukqxwup",
@@ -615,8 +624,8 @@
 		"status": "Decided",
 		"decision": "Manual layout, with obi's vertical PAUSED; HUD hidden; quick cast as a checkbox.",
 		"media": [
-			"review/media/2026-10-10-pause-screen-without-hud/paused-clean-1440.png",
-			"review/media/2026-10-10-pause-screen-without-hud/paused-clean-390.png"
+			"media/2026-10-10-pause-screen-without-hud/paused-clean-1440.png",
+			"media/2026-10-10-pause-screen-without-hud/paused-clean-390.png"
 		],
 		"links": [],
 		"thread": "thr_ra883cf55x",
@@ -629,8 +638,8 @@
 		"status": "Decided",
 		"decision": "Style fine; whole saucer in frame. Keep improving.",
 		"media": [
-			"review/media/2026-10-10-lobby-ready-on-the-saucer/ready-on-the-saucer.png",
-			"review/media/2026-10-10-lobby-ready-on-the-saucer/ready-filling.png"
+			"media/2026-10-10-lobby-ready-on-the-saucer/ready-on-the-saucer.png",
+			"media/2026-10-10-lobby-ready-on-the-saucer/ready-filling.png"
 		],
 		"links": [],
 		"thread": "thr_dwbukqxwup",
@@ -643,10 +652,10 @@
 		"status": "Decided",
 		"decision": "Manual layout, with obi's vertical PAUSED; HUD hidden; quick cast as a checkbox.",
 		"media": [
-			"review/media/2026-10-10-pause-menu-manual-or-obi/manual-1440.png",
-			"review/media/2026-10-10-pause-menu-manual-or-obi/obi-1440.png",
-			"review/media/2026-10-10-pause-menu-manual-or-obi/manual-390.png",
-			"review/media/2026-10-10-pause-menu-manual-or-obi/obi-390.png"
+			"media/2026-10-10-pause-menu-manual-or-obi/manual-1440.png",
+			"media/2026-10-10-pause-menu-manual-or-obi/obi-1440.png",
+			"media/2026-10-10-pause-menu-manual-or-obi/manual-390.png",
+			"media/2026-10-10-pause-menu-manual-or-obi/obi-390.png"
 		],
 		"links": [],
 		"thread": "thr_ra883cf55x",
@@ -659,8 +668,8 @@
 		"status": "Decided",
 		"decision": "Style fine; whole saucer in frame. Keep improving.",
 		"media": [
-			"review/media/2026-10-10-lobby-weather-bowl/weather-bowl-flagfall.png",
-			"review/media/2026-10-10-lobby-weather-bowl/bowl-turn-crop.webm"
+			"media/2026-10-10-lobby-weather-bowl/weather-bowl-flagfall.png",
+			"media/2026-10-10-lobby-weather-bowl/bowl-turn-crop.webm"
 		],
 		"links": [],
 		"thread": "thr_dwbukqxwup",
@@ -673,9 +682,9 @@
 		"status": "Decided",
 		"decision": "Style fine; fixing alignment, Ball label and pill width.",
 		"media": [
-			"review/media/2026-10-10-match-hud-swagger-pass/swag-clock-card-crop.png",
-			"review/media/2026-10-10-match-hud-swagger-pass/swag-level-crop.png",
-			"review/media/2026-10-10-match-hud-swagger-pass/swag-banner.png"
+			"media/2026-10-10-match-hud-swagger-pass/swag-clock-card-crop.png",
+			"media/2026-10-10-match-hud-swagger-pass/swag-level-crop.png",
+			"media/2026-10-10-match-hud-swagger-pass/swag-banner.png"
 		],
 		"links": [],
 		"thread": "thr_83etfu9ugy",
@@ -688,9 +697,9 @@
 		"status": "Decided",
 		"decision": "Style fine; fixing alignment, Ball label and pill width.",
 		"media": [
-			"review/media/2026-10-10-match-hud-smooth-cream-pill/pill-2.png",
-			"review/media/2026-10-10-match-hud-smooth-cream-pill/pill-ball-soon-crop.png",
-			"review/media/2026-10-10-match-hud-smooth-cream-pill/pill-clock-card.png"
+			"media/2026-10-10-match-hud-smooth-cream-pill/pill-2.png",
+			"media/2026-10-10-match-hud-smooth-cream-pill/pill-ball-soon-crop.png",
+			"media/2026-10-10-match-hud-smooth-cream-pill/pill-clock-card.png"
 		],
 		"links": [],
 		"thread": "thr_83etfu9ugy",
@@ -702,7 +711,7 @@
 		"ask": "Does the glazed saucer in its iron cradles read as one floating ceramic world, and do the seat plates read as inlaid glaze?",
 		"status": "Decided",
 		"decision": "Style fine; whole saucer in frame. Keep improving.",
-		"media": ["review/media/2026-10-10-lobby-saucer/lobby-saucer.png"],
+		"media": ["media/2026-10-10-lobby-saucer/lobby-saucer.png"],
 		"links": [],
 		"thread": "thr_dwbukqxwup",
 		"page": "2026-10-10-lobby-saucer/"
@@ -715,11 +724,11 @@
 		"decision": "Reviewed.",
 		"page": "heroes/",
 		"media": [
-			"review/media/2026-10-10-hero-pitches-as-html/heroes-full.png",
-			"review/media/2026-10-10-hero-pitches-as-html/heroes.png",
-			"review/media/2026-10-10-hero-pitches-as-html/part0.png",
-			"review/media/2026-10-10-hero-pitches-as-html/part1.png",
-			"review/media/2026-10-10-hero-pitches-as-html/part2.png"
+			"media/2026-10-10-hero-pitches-as-html/heroes-full.png",
+			"media/2026-10-10-hero-pitches-as-html/heroes.png",
+			"media/2026-10-10-hero-pitches-as-html/part0.png",
+			"media/2026-10-10-hero-pitches-as-html/part1.png",
+			"media/2026-10-10-hero-pitches-as-html/part2.png"
 		],
 		"links": [],
 		"thread": "thr_j4kk2h362t"
@@ -742,10 +751,10 @@
 		"status": "Archived",
 		"decision": "Superseded by the smooth cream pill.",
 		"media": [
-			"review/media/2026-10-10-readouts-printed-on-a-ribbon/before-match.png",
-			"review/media/2026-10-10-readouts-printed-on-a-ribbon/after-match-1440.png",
-			"review/media/2026-10-10-readouts-printed-on-a-ribbon/after-lobby-1440.png",
-			"review/media/2026-10-10-readouts-printed-on-a-ribbon/narrow.png"
+			"media/2026-10-10-readouts-printed-on-a-ribbon/before-match.png",
+			"media/2026-10-10-readouts-printed-on-a-ribbon/after-match-1440.png",
+			"media/2026-10-10-readouts-printed-on-a-ribbon/after-lobby-1440.png",
+			"media/2026-10-10-readouts-printed-on-a-ribbon/narrow.png"
 		],
 		"links": [],
 		"thread": "thr_3s3ps6wjph",
@@ -758,13 +767,13 @@
 		"status": "Archived",
 		"decision": "Superseded by the Pocket weather lobby.",
 		"media": [
-			"review/media/2026-10-10-lobby-hero-strip-and-table-proposal/lobby-1440.png",
-			"review/media/2026-10-10-lobby-hero-strip-and-table-proposal/lobby-strip-1440.png",
-			"review/media/2026-10-10-lobby-hero-strip-and-table-proposal/lobby-strip-mitts-1440.png",
-			"review/media/2026-10-10-lobby-hero-strip-and-table-proposal/lobby-strip-playable-1440.png",
-			"review/media/2026-10-10-lobby-hero-strip-and-table-proposal/lobby-table-proposal.png",
-			"review/media/2026-10-10-lobby-hero-strip-and-table-proposal/crop-strip.png",
-			"review/media/2026-10-10-lobby-hero-strip-and-table-proposal/before-lobby.png"
+			"media/2026-10-10-lobby-hero-strip-and-table-proposal/lobby-1440.png",
+			"media/2026-10-10-lobby-hero-strip-and-table-proposal/lobby-strip-1440.png",
+			"media/2026-10-10-lobby-hero-strip-and-table-proposal/lobby-strip-mitts-1440.png",
+			"media/2026-10-10-lobby-hero-strip-and-table-proposal/lobby-strip-playable-1440.png",
+			"media/2026-10-10-lobby-hero-strip-and-table-proposal/lobby-table-proposal.png",
+			"media/2026-10-10-lobby-hero-strip-and-table-proposal/crop-strip.png",
+			"media/2026-10-10-lobby-hero-strip-and-table-proposal/before-lobby.png"
 		],
 		"links": [],
 		"thread": "thr_afenmtsc4e",
@@ -777,8 +786,8 @@
 		"status": "Decided",
 		"decision": "Fine.",
 		"media": [
-			"review/media/2026-10-10-match-menu-button/menu-button-1440.png",
-			"review/media/2026-10-10-match-menu-button/menu-paused.png"
+			"media/2026-10-10-match-menu-button/menu-button-1440.png",
+			"media/2026-10-10-match-menu-button/menu-paused.png"
 		],
 		"links": [],
 		"thread": "thr_e55itbx3g3",
@@ -791,10 +800,10 @@
 		"status": "Decided",
 		"decision": "Fine.",
 		"media": [
-			"review/media/2026-10-10-shared-back-and-play-online-buttons/dodgeball-full.png",
-			"review/media/2026-10-10-shared-back-and-play-online-buttons/dodgeball-top-left.png",
-			"review/media/2026-10-10-shared-back-and-play-online-buttons/moba-full.png",
-			"review/media/2026-10-10-shared-back-and-play-online-buttons/moba-top-left.png"
+			"media/2026-10-10-shared-back-and-play-online-buttons/dodgeball-full.png",
+			"media/2026-10-10-shared-back-and-play-online-buttons/dodgeball-top-left.png",
+			"media/2026-10-10-shared-back-and-play-online-buttons/moba-full.png",
+			"media/2026-10-10-shared-back-and-play-online-buttons/moba-top-left.png"
 		],
 		"links": [],
 		"thread": "thr_v9vmze9pfi",
@@ -807,9 +816,9 @@
 		"status": "Archived",
 		"decision": "Superseded by the shared corner buttons.",
 		"media": [
-			"review/media/2026-10-10-move-play-online-button/before.png",
-			"review/media/2026-10-10-move-play-online-button/lobby-online-1440.png",
-			"review/media/2026-10-10-move-play-online-button/lobby-topleft-1440.png"
+			"media/2026-10-10-move-play-online-button/before.png",
+			"media/2026-10-10-move-play-online-button/lobby-online-1440.png",
+			"media/2026-10-10-move-play-online-button/lobby-topleft-1440.png"
 		],
 		"links": [],
 		"thread": "thr_a8kpuv5mvr",
@@ -822,8 +831,8 @@
 		"status": "Decided",
 		"decision": "Done: Tab toggles it, title removed.",
 		"media": [
-			"review/media/2026-10-10-scoreboard-and-result/result.png",
-			"review/media/2026-10-10-scoreboard-and-result/scoreboard.png"
+			"media/2026-10-10-scoreboard-and-result/result.png",
+			"media/2026-10-10-scoreboard-and-result/scoreboard.png"
 		],
 		"links": [],
 		"thread": "thr_b79iwnezdu",
@@ -836,9 +845,9 @@
 		"status": "Decided",
 		"decision": "Reviewed.",
 		"media": [
-			"review/media/2026-10-10-flagfall-explored/flagfall-post-a.png",
-			"review/media/2026-10-10-flagfall-explored/flagfall-south-lane.png",
-			"review/media/2026-10-10-flagfall-explored/flagfall-yard.png"
+			"media/2026-10-10-flagfall-explored/flagfall-post-a.png",
+			"media/2026-10-10-flagfall-explored/flagfall-south-lane.png",
+			"media/2026-10-10-flagfall-explored/flagfall-yard.png"
 		],
 		"links": [],
 		"thread": "thr_79t4z3xyig",
@@ -863,28 +872,28 @@
 		"decision": "Painted.",
 		"page": "frames/",
 		"media": [
-			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/skin-ink-1440.png",
-			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/skin-painted-1440-flagfall.png",
-			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/skin-painted-1440.png",
-			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/skin-painted-390.png",
-			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/skin-stone-1440.png",
-			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/skin-wash-1440-flagfall.png",
-			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/skin-wash-1440.png",
-			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/skin-wash-390.png",
-			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/crop-wash.png",
-			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/crop-ink.png",
-			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/crop-painted.png",
-			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/splash-390.png",
-			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/splash-1440-bonus.png",
-			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/splash-1440-flagfall.png",
-			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/splash-1440.png",
-			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/before-splash.png",
-			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/splash-motion.webm",
-			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/motion-sheet.png",
-			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/apex-1440.png",
-			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/back-1440.png",
-			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/crop-tl.png",
-			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/crop-br.png"
+			"media/2026-10-10-splash-skins-wash-ink-stone-painted/skin-ink-1440.png",
+			"media/2026-10-10-splash-skins-wash-ink-stone-painted/skin-painted-1440-flagfall.png",
+			"media/2026-10-10-splash-skins-wash-ink-stone-painted/skin-painted-1440.png",
+			"media/2026-10-10-splash-skins-wash-ink-stone-painted/skin-painted-390.png",
+			"media/2026-10-10-splash-skins-wash-ink-stone-painted/skin-stone-1440.png",
+			"media/2026-10-10-splash-skins-wash-ink-stone-painted/skin-wash-1440-flagfall.png",
+			"media/2026-10-10-splash-skins-wash-ink-stone-painted/skin-wash-1440.png",
+			"media/2026-10-10-splash-skins-wash-ink-stone-painted/skin-wash-390.png",
+			"media/2026-10-10-splash-skins-wash-ink-stone-painted/crop-wash.png",
+			"media/2026-10-10-splash-skins-wash-ink-stone-painted/crop-ink.png",
+			"media/2026-10-10-splash-skins-wash-ink-stone-painted/crop-painted.png",
+			"media/2026-10-10-splash-skins-wash-ink-stone-painted/splash-390.png",
+			"media/2026-10-10-splash-skins-wash-ink-stone-painted/splash-1440-bonus.png",
+			"media/2026-10-10-splash-skins-wash-ink-stone-painted/splash-1440-flagfall.png",
+			"media/2026-10-10-splash-skins-wash-ink-stone-painted/splash-1440.png",
+			"media/2026-10-10-splash-skins-wash-ink-stone-painted/before-splash.png",
+			"media/2026-10-10-splash-skins-wash-ink-stone-painted/splash-motion.webm",
+			"media/2026-10-10-splash-skins-wash-ink-stone-painted/motion-sheet.png",
+			"media/2026-10-10-splash-skins-wash-ink-stone-painted/apex-1440.png",
+			"media/2026-10-10-splash-skins-wash-ink-stone-painted/back-1440.png",
+			"media/2026-10-10-splash-skins-wash-ink-stone-painted/crop-tl.png",
+			"media/2026-10-10-splash-skins-wash-ink-stone-painted/crop-br.png"
 		],
 		"links": [],
 		"thread": "thr_afenmtsc4e"
@@ -908,9 +917,9 @@
 		"decision": "Day isles and night garden style; the names were rejected.",
 		"page": "vibes/",
 		"media": [
-			"review/media/2026-10-10-rebrand-concept-art/current.png",
-			"review/media/2026-10-10-rebrand-concept-art/frames.png",
-			"review/media/2026-10-10-rebrand-concept-art/gallery.png"
+			"media/2026-10-10-rebrand-concept-art/current.png",
+			"media/2026-10-10-rebrand-concept-art/frames.png",
+			"media/2026-10-10-rebrand-concept-art/gallery.png"
 		],
 		"links": [],
 		"thread": "thr_tigr5zz3kv"

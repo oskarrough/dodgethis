@@ -83,9 +83,9 @@ if (import.meta.main) {
 	}
 	const slug = slugOf(item)
 	item.page = `${slug}/`
-	mkdirSync(join(pages, 'review', 'media', slug), { recursive: true })
-	for (const file of files) copyFileSync(file, join(pages, 'review', 'media', slug, basename(file)))
-	item.media = files.map((file) => `review/media/${slug}/${basename(file)}`)
+	mkdirSync(join(pages, 'media', slug), { recursive: true })
+	for (const file of files) copyFileSync(file, join(pages, 'media', slug, basename(file)))
+	item.media = files.map((file) => `media/${slug}/${basename(file)}`)
 	const items = existsSync(itemsPath) ? JSON.parse(readFileSync(itemsPath, 'utf8')) : []
 	items.unshift(item)
 	writeFileSync(itemsPath, JSON.stringify(items, null, '\t') + '\n')

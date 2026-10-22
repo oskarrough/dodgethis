@@ -24,7 +24,7 @@
 
 ## Browser proofs
 
-- Before opening a browser or proving a change by play, read `docs/verify.md`: which proof to pick, the shared dev server, `window.dt`, evidence and cleanup. Every visual proof, clip or variant goes through `bun run review -- --title … --ask … --thread $BB_THREAD_ID <files>`; reports link http://office-linux.heron-mermaid.ts.net:5173/pages/, never thread-storage paths. `bun run review` also edits the shared `pages/items.json`: builders commit only their page folder and its `pages/review/media/<slug>/`, and leave `items.json` to the orchestrator. Oskar plays at http://office-linux.heron-mermaid.ts.net:5173, never `127.0.0.1`.
+- Before opening a browser or proving a change by play, read `docs/verify.md`: which proof to pick, the shared dev server, `window.dt`, evidence and cleanup. Every visual proof, clip or variant goes through `bun run review -- --title … --ask … --thread $BB_THREAD_ID <files>`; reports link http://office-linux.heron-mermaid.ts.net:5173/pages/, never thread-storage paths. `bun run review` also edits the shared `pages/items.json`: builders commit only their page folder and its `pages/media/<slug>/`, and leave `items.json` to the orchestrator. Oskar plays at http://office-linux.heron-mermaid.ts.net:5173, never `127.0.0.1`.
 
 - Every HTML artifact lives in `pages/<slug>/` and gets a row in `pages/index.html` (title, what, date, status To review / Decided / Archived, Oskar's decision). The orchestrator updates the row when Oskar decides.
 - HTML artifacts (pitches, look pages, review) link `/pages/page.css` with `<body class="page">` and are plain semantic HTML: no CSS or styling classes of their own. Tools (the sound board, `pages/sound/`) may style themselves (Oskar, 2026-10-11).
