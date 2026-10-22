@@ -2,12 +2,26 @@ import { segmentClear } from './obstacles.js'
 import { sweepHit } from './skillshot.js'
 
 const distance = (a, b) => Math.hypot(a.x - b.x, a.z - b.z)
+const hasEffect = (action, effect) =>
+	action.hit.some((record) => (typeof record === 'string' ? record : record.effect) === effect)
+
+function saveDelivery(ability) {
+	const release = ability.stages?.release
+	return (Array.isArray(release) ? release : release?.do)?.find(
+		(action) =>
+			action.deliver === 'target' &&
+			action.pick === 'nearestAim' &&
+			action.targets === 'ally' &&
+			(hasEffect(action, 'heal') || hasEffect(action, 'shield')),
+	)
+}
 
 // Custom acts supplement the generic tools; false opts out of all of them.
 export function botTactics(ability) {
 	if (ability.bot === false) return new Set()
 	if (typeof ability.bot === 'string') return new Set([ability.bot])
 	const tactics = new Set()
+	if (saveDelivery(ability)) tactics.add('save')
 	if (ability.kind === 'shot') tactics.add('shoot')
 	if (ability.kind === 'zone') tactics.add('zone')
 	if (ability.kind === 'dash') tactics.add('dash')
@@ -26,6 +40,25 @@ export function abilityTactics(ctx) {
 	for (const [slot, ability] of tactics) {
 		const acted = ability.bot.act(ctx, slot)
 		if (acted) return acted
+	}
+	const saves = ctx.abilities
+		.filter(([slot]) => ctx.tactics.get(slot).has('save'))
+		.map(([slot, ability]) => ({ slot, ability, delivery: saveDelivery(ability) }))
+		// A zero-cooldown heal must not starve a ready shield.
+		.sort(
+			(a, b) => Number(hasEffect(b.delivery, 'shield')) - Number(hasEffect(a.delivery, 'shield')),
+		)
+	for (const { slot, ability, delivery } of saves) {
+		const hurt = ctx.own
+			.filter(
+				(ally) =>
+					ally.id !== h.id &&
+					ally.hp > 0 &&
+					ally.hp < ally.maxHp &&
+					distance(ctx.p, ally.pos) <= ability.stats[delivery.range],
+			)
+			.sort((a, b) => a.hp / a.maxHp - b.hp / b.maxHp || a.id.localeCompare(b.id))
+		for (const ally of hurt) if (ctx.cast(slot, ally.pos)) return ctx.frame
 	}
 	return null
 }

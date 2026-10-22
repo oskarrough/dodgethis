@@ -78,6 +78,8 @@ Payloads are heal, shield and cleanse records. Heal accepts tune references for 
 
 Pass declares `stages.hit.before` as an action array: `pick: 'event'` uses the touched unit, and `consume: true` stops the hit only when the ally target matches. This runs at the old `onHit` evaluation point, before damage and slows. Its heal reads the projectile's launch-time amount, falling back to live tune; Mend and Ward read their numbers at release.
 
+Ally-targeted release declarations carrying heal or shield infer the `save` bot tactic. It uses delayed teammate health and positions, picks the lowest health fraction in range (ties by id), and tries shields before heals. `bot: false` still opts out; custom bot acts run first. Projectile saves such as Pass keep their custom lead and clear-line tactic.
+
 ## React with auras
 
 A status declares `on: { damage, tick, death, … }`; an ability can declare the same `on` map as an innate listener without adding replicated status records. `statuses.js` owns dispatch. Hooks run synchronously in the host sim; `app.present` remains output-only.
