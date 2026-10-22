@@ -4,8 +4,8 @@ import {
 	launchVelocity,
 	projectArrowFlight,
 	solveLaunch,
-} from '../src/plugins/dodgeball/arrow.js'
-import { tune } from '../src/plugins/dodgeball/tune.js'
+} from '../src/modes/dodgeball/arrow.js'
+import { tune } from '../src/modes/dodgeball/tune.js'
 import { tune as coreTune } from '../src/core/tune.js'
 
 // The ballistic solve is the contract behind the reticle: an arrow loosed at solveLaunch(dist)'s speed must (drag aside) land `dist` meters out. Verify against the closed-form flight time at the fixed launch angle.

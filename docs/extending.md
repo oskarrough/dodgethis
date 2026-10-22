@@ -1,5 +1,13 @@
 # Extending
 
+## Glossary
+
+- **core** (`src/core/`): the engine. Physics, loop, intents, camera, sound, screens. Imports nothing above it.
+- **mode** (`src/modes/<id>/`): a game you can play. `dodgeball` and `moba`. A mode owns a loop, a ground and a win condition, and imports only core.
+- **mod** (`src/modes/moba/<kind>/<id>/`): a piece dropped into a mode. A hero, ability, map or mechanic: three fixed files, found by folder. Today only moba has mods.
+- **online** (`src/online/`): networking. Not a mode and not core; it imports core and restarts whichever mode is running.
+- **plugin**: the mechanism, `function (app) { … }`. Modes and online are plugins; the word names how they attach, never a folder.
+
 ## Modes
 
 1. A plugin is `function (app) { … }`. Everything it registers through `app` is removed when `app.signal` (an `AbortController` signal) aborts; it may return a cleanup for anything else. Keyed registrations throw on duplicates.
@@ -11,7 +19,7 @@
 7. Events: `app.present(fact)` for gameplay facts (plain data; online replicates these), plus core `menu`, `blur` and `session`. There are no other events and no service registry.
 8. Core services are fields on `app`: `scene world clock input intents smooth camera audio overlay debug session modes`. `camera.frame(fn)` takes mode framing, `clock.scale(fn)` takes hitstop (ignored when shared), and `debug.tune/cheat/expose` fill the GUI and `window.game`. The shell's scoped `debug.world(world)` selects the physics world for collider drawing, `window.game.world` and the gravity slider; the latest live registration wins, then falls back on scope abort (or the returned release), ultimately to the shell's default world. `clock.stepOnce()` advances one paused authoritative solo tick, bypassing holds and clearing frame debt; its caller must reject loading and terminal states. The shell also passes `RAPIER` (modes build their bodies with `core/body.js`), `renderer`, `renderStyled(target, camera)` (the styled scene from another camera into a target, for `core/portal.js`) and `setPalette`.
 9. Online owns everything network: seats of remote intents (fed with `app.intents.feed`), the `{ matchId, epoch, seq, state, facts }` envelope at 20 Hz, dedupe and timeouts. It calls only the four members from line 5, and restarts whichever mode is running rather than naming one.
-10. `src/core/` imports nothing from `src/plugins/`, and no plugin imports another. `tests/boundaries.test.js` enforces this.
+10. Core imports only core; a mode and online import core and themselves; nothing imports sideways. `tests/boundaries.test.js` enforces this.
 
 ## Settled
 
@@ -27,7 +35,7 @@ It's an ongoing goal of the game to be extremely malleable, inspired by emacs, n
 
 ## Drop a folder in
 
-A hero, ability, map or mechanic is a folder under `src/plugins/moba/{heroes,abilities,maps,mechanics}/<id>/`. Three files have fixed names, because the game has to find them without running your code:
+A hero, ability, map or mechanic is a folder under `src/modes/moba/{heroes,abilities,maps,mechanics}/<id>/`. Three files have fixed names, because the game has to find them without running your code:
 
 - `<id>.js` is the logic. The headless simulation loads it, so it never imports drawing code.
 - `<id>-view.js` is the drawing. Only the browser loads it.
@@ -46,7 +54,7 @@ Copy `heroes/wata/` and `abilities/balloon/`; Wata was built this way and touche
 5. **Summons:** declare `summon: { hp, radius, lifetime, think }` and call `sim.summon(owner, '<ability>', at)`: an owned, replicated unit that outlives its owner's death and clears on hero swap, removal or match end.
 6. **Check:** `bun run collect-mods` (runs before `dev` and `check`), then `bun run simulate --report --lineup <id>,fletcher,mitts` to see every ability cast and land.
 
-Every new MOBA tune number needs a unit in `src/plugins/moba/units.js` (exact dotted suffixes override bare fields; blocks can declare defaults); `bun scripts/check-moba-units.js` enforces coverage.
+Every new MOBA tune number needs a unit in `src/modes/moba/units.js` (exact dotted suffixes override bare fields; blocks can declare defaults); `bun scripts/check-moba-units.js` enforces coverage.
 
 A mechanic is something a map switches on: structures, minions, the Ball, bots, camps, the flag, practice dummies. Casting, catching, bounce and damage are the engine every ability runs through; an ability is a data head and a code body in that path, never its own projectile loop.
 

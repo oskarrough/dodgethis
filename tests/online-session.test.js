@@ -1,5 +1,5 @@
 import { test, expect } from 'bun:test'
-import { createOnlineSession } from '../src/plugins/online/online-session.js'
+import { createOnlineSession } from '../src/online/online-session.js'
 
 function fixture(isHost = true, options = {}) {
 	const handlers = new Map()

@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import * as THREE from 'three'
 import RAPIER from '@dimforge/rapier3d-compat'
-import { buildCourt } from '../src/plugins/dodgeball/court.js'
-import { createRound } from '../src/plugins/dodgeball/round.js'
-import { tune } from '../src/plugins/dodgeball/tune.js'
+import { buildCourt } from '../src/modes/dodgeball/court.js'
+import { createRound } from '../src/modes/dodgeball/round.js'
+import { tune } from '../src/modes/dodgeball/tune.js'
 import { tune as coreTune } from '../src/core/tune.js'
 
 // Headless integration smoke test: boot the real game loop (Rapier world, court, a full Round with AI brains) at 60Hz with a still human; the AI must shoot and wipe team A (or someone falls in) and the round must end cleanly via onOver and dispose. Uses the -compat Rapier build — the bundler build's wasm doesn't load under bun.

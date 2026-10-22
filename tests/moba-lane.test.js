@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test'
 import { bootMoba } from './moba-harness.js'
-import { buildMap } from '../src/plugins/moba/map.js'
-import { tune } from '../src/plugins/moba/tune.js'
+import { buildMap } from '../src/modes/moba/map.js'
+import { tune } from '../src/modes/moba/tune.js'
 import {
 	BOXES,
 	FLOOR,
@@ -9,9 +9,9 @@ import {
 	walkable,
 	segmentClear,
 	sweepObstacles,
-} from '../src/plugins/moba/obstacles.js'
-import { createPathPlanner } from '../src/plugins/moba/path.js'
-import { stepShot } from '../src/plugins/moba/skillshot.js'
+} from '../src/modes/moba/obstacles.js'
+import { createPathPlanner } from '../src/modes/moba/path.js'
+import { stepShot } from '../src/modes/moba/skillshot.js'
 
 const options = { radius: tune.hero.radius, ...tune.orders }
 

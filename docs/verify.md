@@ -37,7 +37,7 @@ For a one-off, use `bun -e 'const { bootMoba } = await import("./tests/moba-harn
 
 ### Headless play
 
-Commands and actions: `bun run play:headless --help`. Protocol: [agents.js](../src/plugins/moba/agents.js).
+Commands and actions: `bun run play:headless --help`. Protocol: [agents.js](../src/modes/moba/agents.js).
 
 Use a fresh session name per match. Detached sessions stay frozen between calls; invalid JSON/actions can be retried without advancing time. With several agents, reply to each `act <seat>` before time advances.
 

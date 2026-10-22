@@ -1,4 +1,4 @@
-import { neutralFrame, readIntent } from '../../core/intents.js'
+import { neutralFrame, readIntent } from '../core/intents.js'
 import { tune } from './tune.js'
 
 export const INPUT_TIMEOUT = 0.5

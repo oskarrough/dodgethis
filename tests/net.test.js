@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, expect, test } from 'bun:test'
-import { MAX_PLAYERS, Net, PROTO } from '../src/plugins/online/net.js'
-import { tune } from '../src/plugins/online/tune.js'
+import { MAX_PLAYERS, Net, PROTO } from '../src/online/net.js'
+import { tune } from '../src/online/tune.js'
 
 class Emitter {
 	listeners = new Map()

@@ -1,14 +1,14 @@
 import { followScreen } from './address.js'
 import { createBrowserApp, reportBootError } from './core/browser.js'
-import dodgeball from './plugins/dodgeball/index.js'
-import moba from './plugins/moba/index.js'
-import { parseMatchSetup, wantsDirectPlay } from './plugins/moba/setup.js'
-import { mobaFront } from './plugins/moba/front/index.js'
-import { createMapScope } from './plugins/moba/map.js'
-import online from './plugins/online/index.js'
-import { roomCode } from './plugins/online/net.js'
+import dodgeball from './modes/dodgeball/index.js'
+import moba from './modes/moba/index.js'
+import { parseMatchSetup, wantsDirectPlay } from './modes/moba/setup.js'
+import { mobaFront } from './modes/moba/front/index.js'
+import { createMapScope } from './modes/moba/map.js'
+import online from './online/index.js'
+import { roomCode } from './online/net.js'
 
-// Composition owns the lobby's cross-plugin destination; plugins never import each other.
+// Composition owns the lobby's cross-mode destination; modes and online never import each other.
 try {
 	const app = await createBrowserApp()
 	const map = createMapScope(app.scene, app.RAPIER, app.clock.step)
@@ -34,7 +34,7 @@ try {
 		// Joining a room or loading a replay only happens at boot.
 		if (!booting && (roomCode(url.pathname) || query.has('replay'))) return location.reload()
 		if (query.get('mode') === 'moba' && query.has('replay')) {
-			const { mobaReplay, loadReplay } = await import('./plugins/moba/replay.js')
+			const { mobaReplay, loadReplay } = await import('./modes/moba/replay.js')
 			app.use(mobaReplay)
 			app.modes.start('moba-replay', { options: { replay: await loadReplay(query.get('replay')) } })
 			return

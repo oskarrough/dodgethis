@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, expect, test } from 'bun:test'
 import * as THREE from 'three'
 import RAPIER from '@dimforge/rapier3d-compat'
-import { buildCourt } from '../src/plugins/dodgeball/court.js'
-import { createRound } from '../src/plugins/dodgeball/round.js'
-import { tune } from '../src/plugins/dodgeball/tune.js'
+import { buildCourt } from '../src/modes/dodgeball/court.js'
+import { createRound } from '../src/modes/dodgeball/round.js'
+import { tune } from '../src/modes/dodgeball/tune.js'
 import { tune as coreTune } from '../src/core/tune.js'
 
 await RAPIER.init({})

@@ -1,11 +1,11 @@
 // Effect records declare local tune references; reject missing numbers and wrong dimensions.
 // Boot hero/ability registries in their normal order (ability hooks can import hero helpers).
-import { HEROES } from '../src/plugins/moba/heroes.js'
-import { heroTrait, renderCardTemplate } from '../src/plugins/moba/tooltip.js'
-import { STATUS_EFFECT_REFS } from '../src/plugins/moba/ability.js'
-import manifests from '../src/plugins/moba/abilities/all-abilities.js'
-import { tune } from '../src/plugins/moba/tune.js'
-import { resolveUnit } from '../src/plugins/moba/units.js'
+import { HEROES } from '../src/modes/moba/heroes.js'
+import { heroTrait, renderCardTemplate } from '../src/modes/moba/tooltip.js'
+import { STATUS_EFFECT_REFS } from '../src/modes/moba/ability.js'
+import manifests from '../src/modes/moba/abilities/all-abilities.js'
+import { tune } from '../src/modes/moba/tune.js'
+import { resolveUnit } from '../src/modes/moba/units.js'
 
 const errors = []
 let count = 0

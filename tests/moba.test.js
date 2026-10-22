@@ -1,10 +1,10 @@
 import { afterEach, beforeEach, expect, test } from 'bun:test'
 import { STEP, bootMoba } from './moba-harness.js'
-import { tune } from '../src/plugins/moba/tune.js'
-import { PILLARS, clampWalkable, walkable } from '../src/plugins/moba/map.js'
-import { segmentClear } from '../src/plugins/moba/obstacles.js'
-import { createPathPlanner } from '../src/plugins/moba/path.js'
-import { closest, stepShot, sweepHit } from '../src/plugins/moba/skillshot.js'
+import { tune } from '../src/modes/moba/tune.js'
+import { PILLARS, clampWalkable, walkable } from '../src/modes/moba/map.js'
+import { segmentClear } from '../src/modes/moba/obstacles.js'
+import { createPathPlanner } from '../src/modes/moba/path.js'
+import { closest, stepShot, sweepHit } from '../src/modes/moba/skillshot.js'
 
 // The feel slice's headless checks (docs/moba.md, "Controls and feel"): no overshoot on arrival, reversal time, buffer timing, order resumption, swept hits.
 let harness, facts, sim

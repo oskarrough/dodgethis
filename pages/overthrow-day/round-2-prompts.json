@@ -6,7 +6,7 @@
 	"styleReference": "../vibes/oskar/floating-pillars-ref.webp",
 	"previousRound": "prompts.json",
 	"camera": "58° downward match orientation; raised/back to include both long court rims and the front cliff. Midfield frames then pan along x to the blue tower/core.",
-	"geometryAuthority": "src/plugins/moba/maps/overthrow/overthrow-layout.js and shipped Overthrow collision geometry: preserve footprint and obstacle centres; concept art is the appearance target.",
+	"geometryAuthority": "src/modes/moba/maps/overthrow/overthrow-layout.js and shipped Overthrow collision geometry: preserve footprint and obstacle centres; concept art is the appearance target.",
 	"frames": [
 		{
 			"file": "r2-01-establishing.webp",

@@ -2,9 +2,9 @@ import * as THREE from 'three'
 import RAPIER from '@dimforge/rapier3d-compat'
 import { STEP } from '../src/core/app.js'
 import { createIntents, neutralFrame } from '../src/core/intents.js'
-import { createSim } from '../src/plugins/moba/sim.js'
-import { buildColliders } from '../src/plugins/moba/obstacles.js'
-import { maps, DEFAULT_MAP, matchRecipe } from '../src/plugins/moba/maps/all-maps.js'
+import { createSim } from '../src/modes/moba/sim.js'
+import { buildColliders } from '../src/modes/moba/obstacles.js'
+import { maps, DEFAULT_MAP, matchRecipe } from '../src/modes/moba/maps/all-maps.js'
 
 // One headless MOBA sim the way the tests use it: a Rapier world, point-click intents, and every fact kept.
 await RAPIER.init({})

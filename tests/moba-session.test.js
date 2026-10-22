@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test'
 import { mkdtemp, readFile, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
-import { readReplay } from '../src/plugins/moba/agent-match.js'
+import { readReplay } from '../src/modes/moba/agent-match.js'
 
 async function call(directory, args) {
 	const child = Bun.spawn(['bun', 'scripts/play.js', ...args], {

@@ -1,13 +1,13 @@
 import { afterEach, beforeEach, expect, test } from 'bun:test'
 import * as THREE from 'three'
 import RAPIER from '@dimforge/rapier3d-compat'
-import { createRound } from '../src/plugins/dodgeball/round.js'
-import { createReplicaRound, snapshotRound } from '../src/plugins/dodgeball/replica.js'
-import { buildCourt } from '../src/plugins/dodgeball/court.js'
-import { createFeedback } from '../src/plugins/dodgeball/feedback.js'
-import { tune } from '../src/plugins/dodgeball/tune.js'
+import { createRound } from '../src/modes/dodgeball/round.js'
+import { createReplicaRound, snapshotRound } from '../src/modes/dodgeball/replica.js'
+import { buildCourt } from '../src/modes/dodgeball/court.js'
+import { createFeedback } from '../src/modes/dodgeball/feedback.js'
+import { tune } from '../src/modes/dodgeball/tune.js'
 import { tune as coreTune } from '../src/core/tune.js'
-import { TRAIL } from '../src/plugins/dodgeball/weapons.js'
+import { TRAIL } from '../src/modes/dodgeball/weapons.js'
 
 await RAPIER.init({})
 const roster = [

@@ -15,7 +15,7 @@ A surgical edit outside your owned files (a setter, an export, a hook) is fine w
 
 - When the user's judgment is useful, report the actual local dev URL and shortest route plus one specific thing to judge. The coordinator pings them; don't leave review hidden in a long completion report.
 - A proof says how it was made: a bots-only fast-forward proves nothing about a human playing.
-- Every number lives in the plugin's tune.js, and every slider has a sane range (fractions 0–1, times at least one step). No slider value may produce NaN or reverse movement.
+- Every number lives in the mode's tune.js, and every slider has a sane range (fractions 0–1, times at least one step). No slider value may produce NaN or reverse movement.
 - Tune sliders apply live, or are labelled "applies on restart". HUD text is built from tune, never hard-coded, and written only when it changes.
 - Update the docs line your change contradicts.
 - App-wide and run-owned debug APIs share one namespace: check both registrations before renaming a key, keep duplicate protection, and prove unregister/re-entry. Scope helpers by action or mode so a lobby object cannot collide with a lobby action.
@@ -66,5 +66,5 @@ A surgical edit outside your owned files (a setter, an export, a hook) is fine w
 - A new screen or mode handles shared sessions or refuses them with a notice; a guest never sits on a frozen screen.
 - Proof screenshots use the real game camera and assert the state they claim (idle is idle, "mid-flight" waits for the flight). Start from a fresh `/` when proving the route; targeted visual fixes may use a direct setup and must say how they got there.
 - Trace interactions (pointer sweeps, reversals mid-transition), not just idle.
-- A new fact type gets an entry in `src/plugins/moba/index.js` `FACTS`, or online guests drop every packet carrying it.
+- A new fact type gets an entry in `src/modes/moba/index.js` `FACTS`, or online guests drop every packet carrying it.
 - Tunes may be prototype copies (`Object.create(tune.x)`, e.g. moba `index.js` `cameraTune`): never `{ ...t }` one, which keeps only own keys; override with `Object.assign(Object.create(t), { … })`.

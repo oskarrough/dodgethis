@@ -8,15 +8,15 @@ import * as THREE from 'three'
 import RAPIER from '@dimforge/rapier3d-compat'
 import { STEP } from '../src/core/app.js'
 import { tune as coreTune } from '../src/core/tune.js'
-import { tune } from '../src/plugins/moba/tune.js'
-import { buildColliders } from '../src/plugins/moba/obstacles.js'
+import { tune } from '../src/modes/moba/tune.js'
+import { buildColliders } from '../src/modes/moba/obstacles.js'
 import {
 	agentRoster,
 	agentAction,
 	observation,
 	createAgentDecisions,
-} from '../src/plugins/moba/agents.js'
-import { createAgentMatch } from '../src/plugins/moba/agent-match.js'
+} from '../src/modes/moba/agents.js'
+import { createAgentMatch } from '../src/modes/moba/agent-match.js'
 
 export const HELP = `bun run play:headless [start --session s] --seed N --seat A1 [--seat B2 ...]
 bun run play:headless act --session s '{"action":"wait","seconds":30}'

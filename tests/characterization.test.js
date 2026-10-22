@@ -1,12 +1,12 @@
 import { afterEach, beforeEach, expect, test } from 'bun:test'
 import * as THREE from 'three'
 import RAPIER from '@dimforge/rapier3d-compat'
-import { buildCourt } from '../src/plugins/dodgeball/court.js'
-import { createRound } from '../src/plugins/dodgeball/round.js'
+import { buildCourt } from '../src/modes/dodgeball/court.js'
+import { createRound } from '../src/modes/dodgeball/round.js'
 import { createSharedMatch, frame } from './shared-match.js'
-import { makeRng } from '../src/plugins/dodgeball/arena.js'
-import { solveLaunch } from '../src/plugins/dodgeball/arrow.js'
-import { tune } from '../src/plugins/dodgeball/tune.js'
+import { makeRng } from '../src/modes/dodgeball/arena.js'
+import { solveLaunch } from '../src/modes/dodgeball/arrow.js'
+import { tune } from '../src/modes/dodgeball/tune.js'
 import { tune as coreTune } from '../src/core/tune.js'
 
 // Characterization: record what today's game does with a fixed script and pin it as a snapshot, so the plugin refactor can prove it changed nothing. Math.random is seeded because online rounds and grounded arrows still draw from it.

@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, expect, test } from 'bun:test'
 import * as THREE from 'three'
 import RAPIER from '@dimforge/rapier3d-compat'
-import { createMatchFlow } from '../src/plugins/dodgeball/matchflow.js'
-import { buildCourt } from '../src/plugins/dodgeball/court.js'
+import { createMatchFlow } from '../src/modes/dodgeball/matchflow.js'
+import { buildCourt } from '../src/modes/dodgeball/court.js'
 import { tune } from '../src/core/tune.js'
 
 await RAPIER.init({})

@@ -3,8 +3,8 @@
 // redraws on `on('change')`.
 import * as audio from '/src/core/audio.js'
 import * as swap from '/src/core/sound-swap.js'
-import { playUse } from '/src/plugins/moba/sounds.js'
-import { uses, facts } from '/src/plugins/moba/sound-table.js'
+import { playUse } from '/src/modes/moba/sounds.js'
+import { uses, facts } from '/src/modes/moba/sound-table.js'
 import { check, measure } from './numbers.js'
 
 export { audio, swap, uses, facts, check }

@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import { ARENA, ammoPoint, makeRng, onCourt, spawnPoint } from '../src/plugins/dodgeball/arena.js'
+import { ARENA, ammoPoint, makeRng, onCourt, spawnPoint } from '../src/modes/dodgeball/arena.js'
 
 test('a seed rebuilds the same scatter; no seed does not', () => {
 	const one = Array.from({ length: 8 }, () => ammoPoint(makeRng(42)))

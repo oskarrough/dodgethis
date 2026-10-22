@@ -1,7 +1,7 @@
 import { afterEach, expect, test } from 'bun:test'
 import RAPIER from '@dimforge/rapier3d-compat'
 import { createSharedMatch, frame } from './shared-match.js'
-import { HOST_TIMEOUT, INPUT_TIMEOUT, createLink } from '../src/plugins/online/link.js'
+import { HOST_TIMEOUT, INPUT_TIMEOUT, createLink } from '../src/online/link.js'
 
 await RAPIER.init({})
 let match

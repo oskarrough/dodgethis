@@ -1,11 +1,11 @@
 import { afterEach, beforeEach, expect, test } from 'bun:test'
 import * as THREE from 'three'
 import RAPIER from '@dimforge/rapier3d-compat'
-import { buildCourt } from '../src/plugins/dodgeball/court.js'
-import { createRound } from '../src/plugins/dodgeball/round.js'
-import { createActions } from '../src/plugins/dodgeball/actions.js'
+import { buildCourt } from '../src/modes/dodgeball/court.js'
+import { createRound } from '../src/modes/dodgeball/round.js'
+import { createActions } from '../src/modes/dodgeball/actions.js'
 import { neutralFrame } from '../src/core/intents.js'
-import { tune } from '../src/plugins/dodgeball/tune.js'
+import { tune } from '../src/modes/dodgeball/tune.js'
 import { tune as coreTune } from '../src/core/tune.js'
 
 // Dodgeball's actions on a real round: the solo human's frames take the same path as every online seat.

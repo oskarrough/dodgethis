@@ -28,11 +28,11 @@ if (!existsSync(join(ROOT, 'node_modules', 'three'))) {
 const THREE = await import('three')
 const { default: RAPIER } = await import('@dimforge/rapier3d-compat')
 const { STEP } = await import('../src/core/app.js')
-const { tune } = await import('../src/plugins/moba/tune.js')
-const { HEROES, listed } = await import('../src/plugins/moba/heroes.js')
-const { agentRoster } = await import('../src/plugins/moba/agents.js')
-const { botRandom } = await import('../src/plugins/moba/bots.js')
-const { playableMaps } = await import('../src/plugins/moba/maps/all-maps.js')
+const { tune } = await import('../src/modes/moba/tune.js')
+const { HEROES, listed } = await import('../src/modes/moba/heroes.js')
+const { agentRoster } = await import('../src/modes/moba/agents.js')
+const { botRandom } = await import('../src/modes/moba/bots.js')
+const { playableMaps } = await import('../src/modes/moba/maps/all-maps.js')
 
 // The game modules of one checkout. The working copy's are the ones imported above; a --base
 // revision's come from its unpacked tree, so each side plays its own sim, bots and tune.
@@ -46,14 +46,14 @@ export function gameModules(root = ROOT) {
 				[
 					'src/core/app.js',
 					'src/core/tune.js',
-					'src/plugins/moba/tune.js',
-					'src/plugins/moba/agents.js',
-					'src/plugins/moba/obstacles.js',
-					'src/plugins/moba/agent-match.js',
-					'src/plugins/moba/maps/all-maps.js',
-					'src/plugins/moba/bots.js',
+					'src/modes/moba/tune.js',
+					'src/modes/moba/agents.js',
+					'src/modes/moba/obstacles.js',
+					'src/modes/moba/agent-match.js',
+					'src/modes/moba/maps/all-maps.js',
+					'src/modes/moba/bots.js',
 					'scripts/bench/report.js',
-					'src/plugins/moba/heroes.js',
+					'src/modes/moba/heroes.js',
 				].map(at),
 			).then(([app, core, moba, agents, obstacles, match, maps, bots, report, heroes]) => ({
 				STEP: app.STEP,

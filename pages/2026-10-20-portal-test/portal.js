@@ -1,11 +1,11 @@
 import * as THREE from 'three'
 import { FORWARD_LAYER } from '/src/core/stylepass.js'
 import { createPortal } from '/src/core/portal.js'
-import { tune } from '/src/plugins/moba/tune.js'
-import { createLobbyFloor } from '/src/plugins/moba/lobby-floor.js'
-import { createMatchTerrain } from '/src/plugins/moba/match-terrain.js'
-import { overthrowLayout } from '/src/plugins/moba/maps/overthrow/overthrow-layout.js'
-import { scenery } from '/src/plugins/moba/maps/overthrow/overthrow-scenery.js'
+import { tune } from '/src/modes/moba/tune.js'
+import { createLobbyFloor } from '/src/modes/moba/lobby-floor.js'
+import { createMatchTerrain } from '/src/modes/moba/match-terrain.js'
+import { overthrowLayout } from '/src/modes/moba/maps/overthrow/overthrow-layout.js'
+import { scenery } from '/src/modes/moba/maps/overthrow/overthrow-scenery.js'
 
 // Two worlds share one coordinate frame: the lobby saucer and Overthrow's court, isle and falls.
 // The tear itself is src/core/portal.js. Crossing: while the camera is in the hole and facing it,

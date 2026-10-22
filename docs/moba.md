@@ -39,7 +39,7 @@ The boundary can enter the view near a base: the lens never zooms in just to hid
             └─────────────────────── pause/result ▸ Modes ──────────────────┘
 ```
 
-There are three screens: splash, [lobby](#lobby) and match. The crane and descent between lobby and match are one camera move, not a screen, and take no input. Each screen gives Enter one meaning. `?mode=moba&play&hero=mitts&bots=hard` skips the front end and cuts straight into the match. `plugins/moba/front/` owns the splash, backdrop, descent and numbers sheet; `lobby.js` owns the lobby. The in-game look is [look.md](look.md).
+There are three screens: splash, [lobby](#lobby) and match. The crane and descent between lobby and match are one camera move, not a screen, and take no input. Each screen gives Enter one meaning. `?mode=moba&play&hero=mitts&bots=hard` skips the front end and cuts straight into the match. `modes/moba/front/` owns the splash, backdrop, descent and numbers sheet; `lobby.js` owns the lobby. The in-game look is [look.md](look.md).
 
 Nearer layers travel further, so a move reads as a camera, not a slide.
 
@@ -67,4 +67,4 @@ Flagfall: two lanes instead of one, the flag and the dunk. Two lanes make the 3v
 
 ## The seam: maps are data plus one objective
 
-Every number goes in the plugin's `tune.js`; map files read those values. Structure positions and prerequisite `after` chains come from the layout; kind stats come from tune. Structures and minions share one lane population. The Ball receives a target hook rather than a lane stub, and publishes its own snapshot clock even without structures.
+Every number goes in the mode's `tune.js`; map files read those values. Structure positions and prerequisite `after` chains come from the layout; kind stats come from tune. Structures and minions share one lane population. The Ball receives a target hook rather than a lane stub, and publishes its own snapshot clock even without structures.

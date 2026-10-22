@@ -12,7 +12,8 @@ import { ICONS } from './hud.js'
 import { createLobbyFloor, saucerExtent } from './lobby-floor.js'
 import { bowlExtent, createWeatherBowl } from './lobby-bowl.js'
 import { validLobbyHandoff } from './lobby-handoff.js'
-import { glowMaterial } from './effects.js'
+import { createPortal } from '../../core/portal.js'
+import { createPortalFar } from './portal-far.js'
 import { playUse } from './sounds.js'
 import './portal-lobby.css'
 
@@ -57,18 +58,49 @@ export function createPortalLobby({ app, run, sim, hero, setup, options }) {
 
 	const floor = createLobbyFloor(app.scene, app.renderer)
 	const bowl = createWeatherBowl(app.scene, el, setup.map, app.renderer)
-	const ring = new THREE.Mesh(
-		new THREE.RingGeometry(p.radius * 0.82, p.radius, 48).rotateX(-Math.PI / 2),
-		glowMaterial(p.color),
+	const far = createPortalFar(setup.map)
+	const tear = createPortal(app.renderer, {
+		draw(target, camera) {
+			camera.layers.set(FORWARD_LAYER)
+			app.renderer.setRenderTarget(target)
+			app.renderer.clear()
+			app.renderer.render(far.scene, camera)
+		},
+		layer: FORWARD_LAYER,
+		radius: p.tearRadius,
+		openTime: p.openTime,
+		sparks: p.sparks,
+	})
+	app.scene.add(tear.object)
+	const facing = new THREE.Vector3(0, Math.sin(p.lean), Math.cos(p.lean))
+	tear.place(
+		new THREE.Vector3(p.x, p.tearRadius, p.z - p.radius - p.tearRadius * Math.sin(p.lean)),
+		facing,
 	)
-	const pool = new THREE.Mesh(
-		new THREE.CircleGeometry(p.radius * 0.82, 48).rotateX(-Math.PI / 2),
-		glowMaterial(p.color, 0.18),
-	)
-	for (const mesh of [ring, pool]) {
-		mesh.layers.set(FORWARD_LAYER)
-		mesh.position.set(p.x, tune.map.printLayers.lobby + 0.02, p.z)
-		app.scene.add(mesh)
+	tear.exit(new THREE.Vector3(0, p.farHeight, 0), facing)
+	let viewTime = sim.tick * app.clock.step
+	const squeezed = new Set()
+	// Both peers read the last human's ready tick; only the host hands off to loading.
+	function readyFrom() {
+		if (!readySeats.allReady()) return null
+		let from = 0
+		for (const seat of readySeats.seats)
+			if (seat.occupant && !seat.occupant.bot) from = Math.max(from, seat.enteredAt)
+		return from
+	}
+	const slipping = (from = readyFrom()) =>
+		from !== null && (sim.tick - from) * app.clock.step >= p.countdown
+	function slip(time, from) {
+		const k =
+			from === null
+				? 0
+				: Math.min(1, Math.max(0, (time - from * app.clock.step - p.countdown) / p.slipTime))
+		for (const h of sim.heroes) {
+			if (k > 0) {
+				h.body.mesh?.scale.setScalar(Math.max(0.05, 1 - k * k))
+				squeezed.add(h)
+			} else if (squeezed.delete(h)) h.body.mesh?.scale.setScalar(1)
+		}
 	}
 
 	// The whole saucer and bowl in frame between the team columns; nothing follows.
@@ -138,7 +170,6 @@ export function createPortalLobby({ app, run, sim, hero, setup, options }) {
 	let transferred = false
 	let handoff = null
 	let loadingQueued = false
-	let countdownFrom = null // host tick when the last human stepped in
 	let lastPress = -Infinity
 	let open = null // seat id the hero popover edits; it shows only while one is open
 	let drawn = ''
@@ -217,7 +248,7 @@ export function createPortalLobby({ app, run, sim, hero, setup, options }) {
 		return !!occupant && (occupant.id === hero.id || (occupant.bot && app.session.authoritative))
 	}
 	function tapSeat(seatId) {
-		if (ending) return
+		if (ending || slipping()) return
 		const seat = readySeats.seats.find((s) => s.id === seatId)
 		if (!seat) return
 		if (!seat.occupant) {
@@ -227,7 +258,7 @@ export function createPortalLobby({ app, run, sim, hero, setup, options }) {
 		update()
 	}
 	function pickHero(seatId, heroId) {
-		if (ending) return false
+		if (ending || slipping()) return false
 		const seat = readySeats.seats.find((s) => s.id === seatId)
 		const occupant = seat?.occupant
 		const index = choices.findIndex((h) => h.id === heroId)
@@ -256,6 +287,7 @@ export function createPortalLobby({ app, run, sim, hero, setup, options }) {
 		return added
 	}
 	function removeBot(seatId) {
+		if (ending || slipping()) return
 		const seat = readySeats.seats.find((s) => s.id === seatId)
 		if (!app.session.authoritative || !seat?.occupant?.bot) return
 		delete setup.picks[seat.occupant.id]
@@ -263,7 +295,7 @@ export function createPortalLobby({ app, run, sim, hero, setup, options }) {
 		open = null
 	}
 	function back() {
-		if (ending) return
+		if (ending || slipping()) return
 		if (app.session.shared) {
 			app.emit('menu')
 			return
@@ -284,7 +316,7 @@ export function createPortalLobby({ app, run, sim, hero, setup, options }) {
 	window.addEventListener(
 		'keydown',
 		(event) => {
-			if (ending || event.repeat || document.querySelector('dialog[open]')) return
+			if (ending || slipping() || event.repeat || document.querySelector('dialog[open]')) return
 			if (event.code === 'Escape') {
 				event.preventDefault()
 				if (open) {
@@ -298,8 +330,8 @@ export function createPortalLobby({ app, run, sim, hero, setup, options }) {
 	)
 
 	// Standing in the portal is being ready; stepping out takes it back.
-	function stand() {
-		if (ending) return
+	function stand(from) {
+		if (ending || slipping(from)) return
 		const seat = readySeats.seatOf(hero.id)
 		if (!seat) return
 		const at = inside(hero)
@@ -308,30 +340,27 @@ export function createPortalLobby({ app, run, sim, hero, setup, options }) {
 		run.intents.press(hero.id, at ? 'ready' : 'cancel', at ? readySeats.readyPoint() : null)
 	}
 
-	function update() {
+	function update(countdownFrom = readyFrom()) {
 		if (run.signal.aborted) return
 		syncPick()
-		stand()
-		const t = (sim.tick * app.clock.step) % 10
+		stand(countdownFrom)
 		const go = humans().length > 0 && outside().length === 0
-		ring.scale.setScalar(1 + (go ? 0.08 : 0.03) * Math.sin(t * (go ? 14 : 4)))
-		ring.material.opacity = go ? 1 : 0.7
-		pool.material.opacity = go ? 0.45 : 0.18
 		const left =
 			countdownFrom === null
 				? null
 				: Math.max(0, p.countdown - (sim.tick - countdownFrom) * app.clock.step)
-		status.textContent = ending
-			? 'Going in…'
-			: !humans().length
-				? ''
-				: go
-					? `Going in ${Math.ceil(left ?? p.countdown)}…`
-					: inside(hero)
-						? `Waiting for ${outside()
-								.map((s) => label(s.occupant.id))
-								.join(', ')}`
-						: 'Walk into the portal to go'
+		status.textContent =
+			ending || left === 0
+				? 'Going in…'
+				: !humans().length
+					? ''
+					: go
+						? `Going in ${Math.ceil(left ?? p.countdown)}…`
+						: inside(hero)
+							? `Waiting for ${outside()
+									.map((s) => label(s.occupant.id))
+									.join(', ')}`
+							: 'Walk into the portal to go'
 		status.dataset.go = String(go)
 		const state = JSON.stringify([
 			app.session.authoritative,
@@ -429,11 +458,10 @@ export function createPortalLobby({ app, run, sim, hero, setup, options }) {
 			app.setPalette({})
 			floor.dispose()
 			bowl.dispose()
-			for (const mesh of [ring, pool]) {
-				mesh.removeFromParent()
-				mesh.geometry.dispose()
-				mesh.material.dispose()
-			}
+			tear.dispose()
+			far.dispose()
+			for (const h of squeezed) h.body.mesh?.scale.setScalar(1)
+			squeezed.clear()
 			if (!transferred) backdrop.dispose()
 		},
 		{ once: true },
@@ -464,8 +492,20 @@ export function createPortalLobby({ app, run, sim, hero, setup, options }) {
 		inspectAim: () => null,
 		prepareInput() {},
 		step() {
+			const locked = ending || slipping()
 			for (const human of sim.heroes) {
 				const frame = app.intents.get(human.id)
+				if (locked) {
+					// Strip remote frames on the host too; stop cancels casts without unreadying.
+					while (frame.pressed.length) run.intents.consume(human.id, frame.pressed[0].action)
+					frame.move.x = frame.move.z = 0
+					frame.order = frame.aim = null
+					for (const action in frame.held) delete frame.held[action]
+					frame.released.length = 0
+					human.body.cancelDash()
+					run.intents.press(human.id, 'stop')
+					continue
+				}
 				const picks = frame.pressed.filter((e) => e.action === 'pick')
 				for (const edge of picks) run.intents.consume(human.id, edge.action)
 				const at = picks.at(-1)?.at
@@ -475,21 +515,32 @@ export function createPortalLobby({ app, run, sim, hero, setup, options }) {
 		},
 		afterStep() {
 			if (ending || !app.session.authoritative) return
-			if (!readySeats.allReady()) {
-				countdownFrom = null
+			const countdownFrom = readyFrom()
+			if (
+				countdownFrom === null ||
+				loadingQueued ||
+				(sim.tick - countdownFrom) * app.clock.step < p.countdown + p.slipTime
+			)
 				return
-			}
-			countdownFrom ??= sim.tick
-			if (loadingQueued || (sim.tick - countdownFrom) * app.clock.step < p.countdown) return
 			loadingQueued = true
 			queueMicrotask(() => {
 				loadingQueued = false
 				if (!run.signal.aborted) beginLoading()
 			})
 		},
-		update() {
+		update(alpha = 0) {
+			const time = (sim.tick + alpha) * app.clock.step
+			const dt = Math.min(0.1, Math.max(0, time - viewTime))
+			viewTime = time
+			const from = readyFrom()
+			if (!ending) {
+				if (humans().length && !tear.isOpen) tear.open()
+				far.update(dt)
+				tear.update(dt, app.camera.view)
+				slip(time, from)
+			}
 			bowl.update(sim.tick * app.clock.step, app.camera.view)
-			update()
+			update(from)
 		},
 		hudFrame: () => ({
 			lobby: true,

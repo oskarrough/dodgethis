@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test'
-import { parseMatchSetup, wantsDirectPlay, matchLink } from '../src/plugins/moba/setup.js'
-import { tune } from '../src/plugins/moba/tune.js'
-import { HEROES, heroDefinition } from '../src/plugins/moba/heroes.js'
+import { parseMatchSetup, wantsDirectPlay, matchLink } from '../src/modes/moba/setup.js'
+import { tune } from '../src/modes/moba/tune.js'
+import { HEROES, heroDefinition } from '../src/modes/moba/heroes.js'
 
 const defaults = {
 	map: 'overthrow',

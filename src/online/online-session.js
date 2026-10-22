@@ -1,5 +1,5 @@
 import { createLobbyDirectory } from './lobby-directory.js'
-import { validateRoster } from '../../core/roster.js'
+import { validateRoster } from '../core/roster.js'
 import { MAX_PLAYERS, REMOVAL_MESSAGES, plainJoinData } from './net.js'
 import { validKey } from './names.js'
 import { tune } from './tune.js'

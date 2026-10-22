@@ -1,8 +1,8 @@
 // Production-only entry. Audition committed picks and the shipped shortlist without touching the workbench.
 import * as audio from '/src/core/audio.js'
 import * as swap from '/src/core/sound-swap.js'
-import { createSounds, playUse } from '/src/plugins/moba/sounds.js'
-import { uses } from '/src/plugins/moba/sound-table.js'
+import { createSounds, playUse } from '/src/modes/moba/sounds.js'
+import { uses } from '/src/modes/moba/sound-table.js'
 
 createSounds(audio)
 audio.previewMusic(null)

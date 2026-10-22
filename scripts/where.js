@@ -48,7 +48,7 @@ if (search.error || search.status > 1) {
 }
 const owners = new Set()
 for (const [, path] of (shown[0]?.text ?? '').matchAll(/`([^`]+\.js)`/g))
-	owners.add(path.startsWith('src/') ? path : `src/plugins/moba/${path}`)
+	owners.add(path.startsWith('src/') ? path : `src/modes/moba/${path}`)
 const hits = search.stdout.trim().split('\n').filter(Boolean)
 // Mapped files first, then definitions; preserve rg's order within each group.
 hits.sort(

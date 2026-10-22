@@ -24,7 +24,7 @@ import {
 	play,
 } from './state.js'
 import { tool, fight } from './tools.js'
-import { facts, silentByChoice } from '/src/plugins/moba/sound-table.js'
+import { facts, silentByChoice } from '/src/modes/moba/sound-table.js'
 import { drawInspector, actions } from './inspector.js'
 import { openPalette } from './palette.js'
 

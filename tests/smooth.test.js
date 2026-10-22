@@ -3,7 +3,7 @@ import * as THREE from 'three'
 import RAPIER from '@dimforge/rapier3d-compat'
 import { createApp, STEP } from '../src/core/app.js'
 import { createBody } from '../src/core/body.js'
-import { tune } from '../src/plugins/dodgeball/tune.js'
+import { tune } from '../src/modes/dodgeball/tune.js'
 
 await RAPIER.init({})
 

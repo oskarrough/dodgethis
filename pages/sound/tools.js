@@ -1,6 +1,6 @@
 // The board's tools (rule check, mix, changes, silent facts) and the crowded fight.
-import { createSounds, playOwn, playUse } from '/src/plugins/moba/sounds.js'
-import { silentByChoice } from '/src/plugins/moba/sound-table.js'
+import { createSounds, playOwn, playUse } from '/src/modes/moba/sounds.js'
+import { silentByChoice } from '/src/modes/moba/sound-table.js'
 import { tune } from '/src/core/tune.js'
 import {
 	audio,

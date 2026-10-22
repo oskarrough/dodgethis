@@ -1,14 +1,14 @@
 import { expect, test } from 'bun:test'
 import * as THREE from 'three'
 import RAPIER from '@dimforge/rapier3d-compat'
-import { createPlayer } from '../src/plugins/dodgeball/unit.js'
-import { tune } from '../src/plugins/dodgeball/tune.js'
+import { createPlayer } from '../src/modes/dodgeball/unit.js'
+import { tune } from '../src/modes/dodgeball/tune.js'
 import { tune as coreTune } from '../src/core/tune.js'
 
 await RAPIER.init({})
-import { ARENA } from '../src/plugins/dodgeball/arena.js'
-import { LAYOUTS } from '../src/plugins/dodgeball/obstacles.js'
-import { buildCourt } from '../src/plugins/dodgeball/court.js'
+import { ARENA } from '../src/modes/dodgeball/arena.js'
+import { LAYOUTS } from '../src/modes/dodgeball/obstacles.js'
+import { buildCourt } from '../src/modes/dodgeball/court.js'
 
 test('bleachers support falling players and block movement through a riser', () => {
 	const scene = new THREE.Scene()

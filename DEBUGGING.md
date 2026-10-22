@@ -12,7 +12,7 @@ The debug GUI also has a “Start 20v20” button under cheats.
 For a busy ammo fixture, use `?debug=crowd`. For an exact starting frame, append
 `&paused=1`. Custom sizes work with, for example,
 `?debug=1&teamA=5&teamB=12&arrows=20&seed=17&ai=0&paused=1`.
-Validation and the available presets live in [scenario.js](src/plugins/dodgeball/scenario.js).
+Validation and the available presets live in [scenario.js](src/modes/dodgeball/scenario.js).
 Invalid setup parameters are logged and leave the hub available. The URL only sets up the
 first run; returning from an online match lands in the hub.
 
@@ -47,7 +47,7 @@ game.step(60)
 
 Use `unit.eliminate()` for roster fixtures, `round.addUnit(team)` /
 `round.removeUnit(team)` for live roster editing, and `game.tune` for live knobs.
-Read [round.js](src/plugins/dodgeball/round.js) and [unit.js](src/plugins/dodgeball/unit.js) for the actions.
+Read [round.js](src/modes/dodgeball/round.js) and [unit.js](src/modes/dodgeball/unit.js) for the actions.
 Keep fixture scripts rather than cached entity references: restarting disposes the
 old round. Snapshots are inspection output, not a full Rapier save/restore format.
 Seeds repeat AI and ammo decisions with identical fixed ticks and inputs;
@@ -101,7 +101,7 @@ It runs real Rapier and AI through three fresh seeded rounds and reports the liv
 roster before and after each window. It excludes rendering and must not be reported
 as FPS. Run `bun test` and `bun run build` after gameplay changes.
 
-Spawn spacing and free-space selection live in [arena.js](src/plugins/dodgeball/arena.js).
+Spawn spacing and free-space selection live in [arena.js](src/modes/dodgeball/arena.js).
 Avoid overlapping kinematic capsules: crowded penetration queries are expensive.
 The flat court needs no character-controller stair climbing. All players retain
 Rapier collision, sliding, projectile contacts and gravity. Drop shadows use one

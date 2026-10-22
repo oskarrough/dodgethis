@@ -1,7 +1,7 @@
 // Schema lint: tune numbers stay plain data, but every path must have a declared dimension.
-import { tune } from '../src/plugins/moba/tune.js'
+import { tune } from '../src/modes/moba/tune.js'
 import { units } from '../src/core/units.js'
-import { resolveUnit, tuneUnits } from '../src/plugins/moba/units.js'
+import { resolveUnit, tuneUnits } from '../src/modes/moba/units.js'
 
 const errors = []
 for (const [key, unit] of Object.entries(tuneUnits))

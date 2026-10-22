@@ -5,7 +5,23 @@ export const lobby = {
 	capacity: 6,
 	partyCapacity: 5,
 	// The portal lobby (portal-lobby.js): stand in it to go, front and centre, clear of both team columns.
-	portal: { x: 0, z: 4.6, radius: 1.4, countdown: 2, color: '#9fe3d6' },
+	portal: {
+		x: 0, // ready area centre across the floor
+		z: 4.6, // ready area centre toward the camera
+		radius: 1.4, // standing within this distance readies a human
+		countdown: 2, // seconds everyone stays ready before slipping in
+		tearRadius: 2.6, // half-height of the open tear
+		farChalkWidth: 0.7, // keep court markings legible through the small opening
+		farWardenScale: 1.8, // the boss silhouette remains readable in the arena preview
+		farBaseInset: 10, // look between the near core and its first tower
+		farTarget: 3, // metres ahead of the exit to centre the near base or arena
+		farHeight: 5, // lifted exit reveals cover and the far edge below it
+		farScale: 0.1, // fit a match-camera footprint inside the small mouth
+		lean: 0.85, // radians the mouth leans toward the lobby camera
+		openTime: 1.5, // seconds to rip open after the first human joins
+		slipTime: 0.65, // seconds heroes shrink into the mouth before loading
+		sparks: 1200, // glitter grains around the rim
+	},
 	handoffFor: 3, // seconds of live lane simulation carrying the loading roster
 	style: { line: 0.65, pastel: 0.65 },
 	practice: { damage: 0, tell: 0.8, tellY: 0.23 },

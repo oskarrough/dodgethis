@@ -5,15 +5,15 @@ import * as THREE from 'three'
 import RAPIER from '@dimforge/rapier3d-compat'
 import { STEP } from '../src/core/app.js'
 import { validIntent } from '../src/core/intents.js'
-import { tune } from '../src/plugins/moba/tune.js'
-import { buildColliders } from '../src/plugins/moba/obstacles.js'
+import { tune } from '../src/modes/moba/tune.js'
+import { buildColliders } from '../src/modes/moba/obstacles.js'
 import {
 	agentRoster,
 	agentAction,
 	observation,
 	createAgentDecisions,
-} from '../src/plugins/moba/agents.js'
-import { createAgentMatch, readReplay, replayHash } from '../src/plugins/moba/agent-match.js'
+} from '../src/modes/moba/agents.js'
+import { createAgentMatch, readReplay, replayHash } from '../src/modes/moba/agent-match.js'
 
 await RAPIER.init({})
 

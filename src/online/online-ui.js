@@ -1,4 +1,4 @@
-import { el } from '../../core/dom.js'
+import { el } from '../core/dom.js'
 import { MAX_BOTS } from './online-session.js'
 import { MAX_PLAYERS } from './net.js'
 

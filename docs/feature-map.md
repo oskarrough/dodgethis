@@ -4,7 +4,7 @@ Every player-facing feature, grouped by screen, one line each: the feature in pl
 
 Don't read big files whole. `ast-grep outline <file>` lists a file's symbols with line numbers; `ast-grep run -p '<pattern>' -l js src` finds structure (callers, `tune.x.y` uses). Whoever adds or moves a feature updates its line here. To prove a feature in the running game, use `docs/verify.md`.
 
-Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` means `src/plugins/moba/tune.js` (key in backticks); other tune files are named in full. `tune.js` keeps the match rules and assembles the rest, so every `tune.x.y` path is unchanged but the values live elsewhere: `map` and `overthrowTerrain` in `maps/overthrow/overthrow-tune.js`, `flagfall` in `maps/flagfall/flagfall-tune.js`, `lobby` in `front/lobby-tune.js`, every ability's numbers (`loose`, `rain`, `vault`, `toss`, `catch`, `dive`, `gloveSlap`, `bank`, `cushion`, `swap`) in `abilities/<id>/<id>-tune.js`, heroes' (`heroes.mitts`, `heroes.pong`, `heroes.coach`) in `heroes/<id>/<id>-tune.js`. Docs live in `docs/`.
+Paths are under `src/modes/moba/` unless they start with `src/`. `tune.js` means `src/modes/moba/tune.js` (key in backticks); other tune files are named in full. `tune.js` keeps the match rules and assembles the rest, so every `tune.x.y` path is unchanged but the values live elsewhere: `map` and `overthrowTerrain` in `maps/overthrow/overthrow-tune.js`, `flagfall` in `maps/flagfall/flagfall-tune.js`, `lobby` in `front/lobby-tune.js`, every ability's numbers (`loose`, `rain`, `vault`, `toss`, `catch`, `dive`, `gloveSlap`, `bank`, `cushion`, `swap`) in `abilities/<id>/<id>-tune.js`, heroes' (`heroes.mitts`, `heroes.pong`, `heroes.coach`) in `heroes/<id>/<id>-tune.js`. Docs live in `docs/`.
 
 ## Shell and splash
 
@@ -23,7 +23,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 ## Lobby
 
 - Lobby screen (walk around, pick, ready, back): `lobby.js` `createLobby`; `tune.js` `lobby`; `moba.md`
-- Back and Play online, the top-left row in both modes' lobbies: `src/core/corner-nav.js` `createCornerNav`; `index.html` `.corner-nav`; used by `lobby.js` `createLobby` and `src/plugins/dodgeball/index.js`
+- Back and Play online, the top-left row in both modes' lobbies: `src/core/corner-nav.js` `createCornerNav`; `index.html` `.corner-nav`; used by `lobby.js` `createLobby` and `src/modes/dodgeball/index.js`
 - Seats, roster, ready state (1 s fill; stepping out cancels): `lobby-state.js` `createReadySeats`; `lobby-heroes.js` `createLobbyHeroes`; `tune.js` `lobby.ready`
 - Ready plates inlaid in the saucer's glaze, the Ready label beside yours, the glaze fill: `lobby-props.js` `createLobbyProps`, `plate`; `tune.js` `lobby.ready`; `lobby.js` `createLobby`
 - Lobby floor, the glazed saucer in its magnetic cradles, with a solid round cushion rim for bodies, shots and held Ricochet previews: `lobby-floor.js` `createLobbyFloor`, `saucerShape`; `maps/lobby/lobby-layout.js` `lobbyLayout`, `lobbyRimCover` (overlapping circular cover); `obstacles.js` `buildColliders` (`island.round` floor and cover), `sweepObstacles`; `maps/lobby/lobby-view.js` glaze; `tune.js` `lobby.floor`
@@ -185,7 +185,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 ## Debug, Try Mode, proof
 
 - Debug panel and Try Mode folder (lobby and match; match-only actions hidden in lobby): `debug.js` `createMatchDebug`; `setup.js` `parseTrySetup`; `src/core/debug.js` `createDebugPanel`
-- Tuning desk: `src/core/desk.js` `createDesk`, `instrument`; controller units select instruments and readout suffixes from `src/core/units.js`; `src/plugins/moba/units.js` `resolveUnit`, `unitResolver` declares tune fields and contextual/block defaults; `scripts/check-moba-units.js` enforces numeric coverage in `bun run check`; missing declarations show a `?` knob
+- Tuning desk: `src/core/desk.js` `createDesk`, `instrument`; controller units select instruments and readout suffixes from `src/core/units.js`; `src/modes/moba/units.js` `resolveUnit`, `unitResolver` declares tune fields and contextual/block defaults; `scripts/check-moba-units.js` enforces numeric coverage in `bun run check`; missing declarations show a `?` knob
 - Tuning sliders: `sliders.js` `sliderSections` (named by tune key), `debugPath` (groups), `addSliders`; the panel's filter box is in `src/core/debug.js`; Match's late slider targets the current map's `debugTune.late` (shared `match` fallback); each map manifest's `debugTune.name` is its tune key
 - `window.dt` (keys, pad, screen, device, game): `src/core/proof.js` `createProofApi`; `verify.md`
 - Simulation tables and bot experiments: `agent-match.js`; `scripts/farm.js`; report tables `scripts/bench/report.js`; `verify.md` Check and headless tools (read that section before writing a probe)
@@ -193,9 +193,9 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 
 ## Online rooms
 
-- Online plugin and room panel: `src/plugins/online/index.js` `online`; `src/plugins/online/online-ui.js` `createOnlineUi`; `network.md`
-- Room session (host, join, lobby, match): `src/plugins/online/online-session.js` `createOnlineSession`; `src/plugins/online/tune.js` `link`, `input`
-- Room list and join codes: `src/plugins/online/lobby-directory.js` `createLobbyDirectory`
+- Online plugin and room panel: `src/online/index.js` `online`; `src/online/online-ui.js` `createOnlineUi`; `network.md`
+- Room session (host, join, lobby, match): `src/online/online-session.js` `createOnlineSession`; `src/online/tune.js` `link`, `input`
+- Room list and join codes: `src/online/lobby-directory.js` `createLobbyDirectory`
 - Join by link (`/ABCDE`), Copy link: `src/main.js`; `net.js` `roomCode`; online `index.js` `joinByLink`; `online-ui.js`; `worker/index.js`
 - Late joiner takes a bot's seat, leaver hands it back: moba `index.js` `seatLate`, `openSeats`, `removeParticipant`; `sim-heroes.js` `releaseBot`, `adoptBot`; `online-session.js` `onPeerJoin`; `link.js` `SEAT_TIMEOUT`
 - Sticker names over heroes and in the room panel: `online/names.js` `playerName`; online `index.js` `showNames`; moba `index.js` `names`; `health-bars.js`
@@ -203,14 +203,14 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Stale build gets "New version, reload": `net.js` `BUILD`, `staleBuild`; `vite.config.js` `define`; `online-ui.js` `stale`; dev fake `/CODE?build=old`
 - Link previews (og tags, key art `public/og.jpg`) and the room's own preview title: `index.html`; `worker/index.js` `roomPage`
 - Result card Copy link (a line of the match plus the address bar's link, the room's when shared): moba `menu.js` `share`
-- Transport (peer link, envelopes): `src/plugins/online/net.js` `Net`, `plainJoinData`; `src/plugins/online/link.js` `createLink`
-- Online parity, snapshot and replica wiring (Cushion cover, gates, camps, flag, guest fog): `sim-snapshot.js` `snapshot` writes host state; `lane-replica.js` `projectLaneSnapshot`, `createLaneReplica` packs/applies lane state; moba `index.js` `FACTS` whitelists feedback and registers guest fog; `lobby-replica.js` handles the lobby; `src/plugins/dodgeball/replica.js` handles dodgeball; `network.md`
+- Transport (peer link, envelopes): `src/online/net.js` `Net`, `plainJoinData`; `src/online/link.js` `createLink`
+- Online parity, snapshot and replica wiring (Cushion cover, gates, camps, flag, guest fog): `sim-snapshot.js` `snapshot` writes host state; `lane-replica.js` `projectLaneSnapshot`, `createLaneReplica` packs/applies lane state; moba `index.js` `FACTS` whitelists feedback and registers guest fog; `lobby-replica.js` handles the lobby; `src/modes/dodgeball/replica.js` handles dodgeball; `network.md`
 
 ## Dodgeball (bonus mode)
 
-Plugin in `src/plugins/dodgeball/`; its snapshots are locked by `tests/characterization.test.js`. Tune keys are in `src/plugins/dodgeball/tune.js`.
+Plugin in `src/modes/dodgeball/`; its snapshots are locked by `tests/characterization.test.js`. Tune keys are in `src/modes/dodgeball/tune.js`.
 
-- Dodgeball plugin entry: `index.js` `dodgeball` (default export)
+- Dodgeball mode entry: `index.js` `dodgeball` (default export)
 - Round and match flow: `matchflow.js` `createMatchFlow`; `round.js`
 - Court and arena: `court.js` `buildCourt`; `arena.js` `bounds`, `spawnPoint`, `ammoPoint`
 - Arrows (the balls: flight, landing, throw): `arrow.js` `createArrow`, `projectArrowFlight`, `solveLaunch`, `launchVelocity`; tune `arrow`
