@@ -53,8 +53,9 @@ export function gameModules(root = ROOT) {
 					'src/plugins/moba/maps/all-maps.js',
 					'src/plugins/moba/bots.js',
 					'scripts/bench/report.js',
+					'src/plugins/moba/heroes.js',
 				].map(at),
-			).then(([app, core, moba, agents, obstacles, match, maps, bots, report]) => ({
+			).then(([app, core, moba, agents, obstacles, match, maps, bots, report, heroes]) => ({
 				STEP: app.STEP,
 				coreTune: core.tune,
 				tune: moba.tune,
@@ -64,6 +65,7 @@ export function gameModules(root = ROOT) {
 				matchRecipe: maps.matchRecipe,
 				createBots: bots.createBots,
 				matchReport: report.matchReport,
+				HEROES: heroes.HEROES,
 				baseline: new Map(),
 			})),
 		)
@@ -341,7 +343,13 @@ function firstLogDifference(base, working) {
 
 // The schema-migration probe: the same mixed rosters, seeds and provenance on both revisions.
 async function sameReplays(values, { seed, matches, maxSeconds }) {
-	if (seed + matches - 1 > 0xffffffff)
+	const seeds = values.seeds?.split(',').map((value) => (value.trim() ? Number(value) : NaN))
+	if (
+		seeds &&
+		!seeds.every((value) => Number.isSafeInteger(value) && value >= 0 && value <= 0xffffffff)
+	)
+		throw new Error('--seeds must be comma-separated uint32 seeds')
+	if (!seeds && seed + matches - 1 > 0xffffffff)
 		throw new Error('Match count exceeds the available uint32 seeds')
 	const base = checkoutRevision(ROOT, values.same)
 	const runId = `same-${crypto.randomUUID()}`
@@ -352,8 +360,10 @@ async function sameReplays(values, { seed, matches, maxSeconds }) {
 	try {
 		await RAPIER.init({})
 		const modules = await Promise.all([gameModules(base.root), gameModules()])
-		for (let index = 0; index < matches; index++) {
-			const matchSeed = seed + index
+		const coverage = modules.map(() => ({ cast: new Set(), available: new Set() }))
+		const replaySeeds = seeds ? [...new Set(seeds)] : null
+		for (let index = 0; index < (replaySeeds?.length ?? matches); index++) {
+			const matchSeed = replaySeeds?.[index] ?? seed + index
 			const roster = farmRoster(
 				['coach,fletcher,hook', 'mender,hook,coach'],
 				values.difficulty,
@@ -374,12 +384,31 @@ async function sameReplays(values, { seed, matches, maxSeconds }) {
 					runId,
 					commit: null,
 				})
-				logs.push(await readFile(result.filename))
+				const log = await readFile(result.filename)
+				logs.push(log)
+				for (const seat of roster) {
+					const hero = mods.HEROES[seat.heroId]
+					for (const ability of [hero.basic, ...Object.values(hero.abilities)])
+						if (ability?.id) coverage[side].available.add(ability.id)
+				}
+				for (const line of log.toString('utf8').trimEnd().split('\n')) {
+					const row = JSON.parse(line)
+					if (row.kind === 'cast' && row.ability_id) coverage[side].cast.add(row.ability_id)
+				}
 			}
 			const difference = firstLogDifference(...logs)
 			console.log(`seed=${matchSeed} ${difference ? `differs ${difference}` : 'identical'}`)
 			if (difference) process.exitCode = 1
 		}
+		console.log(
+			'coverage ' +
+				coverage
+					.map(({ cast, available }, side) => {
+						const uncast = [...available].filter((ability) => !cast.has(ability)).sort()
+						return `${side === 0 ? 'base' : 'working'} cast=${[...cast].sort().join(',') || 'none'} uncast=${uncast.join(',') || 'none'}`
+					})
+					.join(' | '),
+		)
 	} finally {
 		release()
 	}
@@ -405,7 +434,8 @@ Sampling
 Identical replay
   --same rev               compare full logs byte for byte; one line per seed, non-zero exit on any difference
                             mixed coach/fletcher/hook vs mender/hook/coach; defaults: seeds 2,3, 120 seconds
-                            --seed starts the seeds; --matches counts seeds (default 2); --out keeps both logs
+                            --seeds 2,3,6 gives explicit seeds; otherwise --seed starts them, --matches counts them (default 2)
+                            --out keeps both logs; coverage lists cast and uncast roster abilities for each revision
                             supports --map, --difficulty and --jobs (runs on one core); no summary or balance options
 Comparing (these imply --summary)
   --base [rev]              play the same seeds on another revision too (default: @- in jj,
@@ -451,12 +481,18 @@ export async function farm(argv = process.argv.slice(2)) {
 			player: { type: 'string' },
 			practice: { type: 'boolean' },
 			set: { type: 'string', multiple: true, default: [] },
-			seed: { type: 'string', default: String(tune.bots.seed) },
+			seed: { type: 'string' },
+			seeds: { type: 'string' },
 			'max-seconds': { type: 'string' },
 			out: { type: 'string', default: `runs/${new Date().toISOString().slice(0, 10)}` },
 		},
 	})
 	if (values.help) return console.log(HELP)
+	if (values.seeds !== undefined) {
+		if (!values.same) throw new Error('--seeds requires --same')
+		if (values.seed !== undefined || values.matches !== undefined)
+			throw new Error('--seeds cannot be combined with --seed or --matches')
+	}
 	if (values.same) {
 		for (const option of [
 			'base',
@@ -514,7 +550,7 @@ export async function farm(argv = process.argv.slice(2)) {
 	const crossOnly = values['cross-only'] || values.quick
 	const requestedMatches = Number(values.matches ?? (values.same ? 2 : summary ? 4 : 20)),
 		jobs = Number(values.jobs ?? coreBudget()),
-		seed = Number(values.seed),
+		seed = Number(values.seed ?? tune.bots.seed),
 		maxSeconds = Number(values['max-seconds'] ?? (values.same ? 120 : tune.agents.maxSeconds * 4))
 	for (const [name, value] of [
 		['matches', requestedMatches],
