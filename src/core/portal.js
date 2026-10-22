@@ -5,7 +5,7 @@ import * as THREE from 'three'
 // drawing buffer, scissored to the tear's rect on screen, its near plane bent onto the exit
 // (Lengyel's oblique clip) so nothing in front of the exit shows through. The hole samples it in
 // screen space. The rim is glitter in alternating pink and cyan bands with thin white seams.
-// Closed, it draws and renders nothing. See docs/pages/2026-10-20-portal-test/ for a consumer.
+// Closed, it draws and renders nothing. See pages/2026-10-20-portal-test/ for a consumer.
 
 const DEFAULTS = {
 	scene: null, // the far scene; may be the near scene itself

@@ -1,10 +1,10 @@
 // Oskar's sound library (sounds/osk-sfx/, gitignored, mirrored from his Dropbox): decode any file to mono samples
-// with ffmpeg, measure it with the board's numbers (docs/pages/sound/numbers.js), cached in sounds/numbers.json by
+// with ffmpeg, measure it with the board's numbers (pages/sound/numbers.js), cached in sounds/numbers.json by
 // size and mtime, and build each sound's shortlist.
 import { execFileSync } from 'node:child_process'
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
-import { measure } from '../docs/pages/sound/numbers.js'
+import { measure } from '../pages/sound/numbers.js'
 import { syncShowcase } from './sound-showcase.js'
 
 export const LIBRARY = 'sounds/osk-sfx'

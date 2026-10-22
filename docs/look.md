@@ -8,7 +8,7 @@ Magic, not school. One world of old stone floating above cloud, seen in two ligh
 
 Super Smash Bros. Melee is the feel reference: responsive controls, fast animations, fluid movement. Polish never adds input latency or lengthens a windup. League of Legends and Heroes of the Storm inform readability (HP, combat information), not rendered style. The slowly animating ring around the Ball spawn is the reference for information carried by the world rather than by labels.
 
-**Why the floating-pillars reference works** (docs/pages/vibes/oskar/floating-pillars-ref.webp; Oskar: "the contrast between back and front, the colors, the glowy feel"). Every match frame needs these five, or it goes flat:
+**Why the floating-pillars reference works** (pages/vibes/oskar/floating-pillars-ref.webp; Oskar: "the contrast between back and front, the colors, the glowy feel"). Every match frame needs these five, or it goes flat:
 
 1. Depth falloff: the court is crisp, sunlit and the most saturated thing in frame; everything behind and below dissolves into warm haze, losing contrast and saturation with distance.
 2. A drop: the court is a plateau with visible edges and cliff faces plunging into cloud. You always see where the ground ends; that edge is also where Dunk happens.

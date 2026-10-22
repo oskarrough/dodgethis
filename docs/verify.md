@@ -72,7 +72,7 @@ The prod `verify:browser` smoke checks lobby selections through ready/crane/desc
 
 ## Evidence and cleanup
 
-Save evidence to `$BB_THREAD_STORAGE/proof/`. Look at most one screenshot yourself per proof, resized to ≤800 px; send the rest straight to `bun run review -- --title … --ask … --thread $BB_THREAD_ID <files>` without reading them back. Publish every visual proof, clip or variant and report http://office-linux.heron-mermaid.ts.net:5173/docs/pages/, never a storage path. Oskar plays at http://office-linux.heron-mermaid.ts.net:5173, never `127.0.0.1` or the agent port.
+Save evidence to `$BB_THREAD_STORAGE/proof/`. Look at most one screenshot yourself per proof, resized to ≤800 px; send the rest straight to `bun run review -- --title … --ask … --thread $BB_THREAD_ID <files>` without reading them back. Publish every visual proof, clip or variant and report http://office-linux.heron-mermaid.ts.net:5173/pages/, never a storage path. Oskar plays at http://office-linux.heron-mermaid.ts.net:5173, never `127.0.0.1` or the agent port.
 
 `agent-browser set viewport <w> <h>` (no `resize`), `agent-browser mouse move 0 0`, assert the claimed state with `eval`, then `agent-browser screenshot <path>`. Use a screenshot for layout, a short clip for motion; a screenshot doesn't prove feel. Report the action, asserted state and how the proof was made.
 

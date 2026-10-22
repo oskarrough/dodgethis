@@ -1,0 +1,72 @@
+/* Shared look for every HTML artifact: <link rel="stylesheet" href="/pages/page.css"> + <body class="page">.
+   Write plain semantic HTML. Less style, fewer problems: add nothing here unless every page needs it. */
+
+.page {
+	--cream: #f6eedb;
+	--ink: #1d1a17;
+	--blue: #3a6ee0;
+	--red: #e0453a;
+	--gold: #f2b632;
+	margin: 0 auto;
+	max-width: 1100px;
+	padding: 32px 24px 64px;
+	font:
+		16px/1.5 ui-rounded,
+		'Nunito',
+		'Trebuchet MS',
+		system-ui,
+		sans-serif;
+	color: var(--ink);
+	background: var(--cream);
+}
+.page h1,
+.page h2,
+.page h3 {
+	line-height: 1.2;
+	margin: 1.6em 0 0.4em;
+}
+.page section {
+	margin: 0 0 48px;
+}
+.page img,
+.page video {
+	display: block;
+	max-width: 100%;
+	height: auto;
+}
+.page figure {
+	margin: 16px 0;
+}
+.page figcaption,
+.page .small {
+	font-size: 14px;
+	color: #666;
+}
+.page :has(> figure + figure) {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+	gap: 16px;
+}
+.page :has(> figure + figure) img {
+	width: 100%;
+	aspect-ratio: 4 / 3;
+	object-fit: contain;
+	background: #eee;
+}
+.page table {
+	border-collapse: collapse;
+	width: 100%;
+}
+.page th,
+.page td {
+	text-align: left;
+	vertical-align: top;
+	padding: 6px 10px;
+	border-bottom: 1px solid #ddd;
+}
+.page code {
+	font-size: 0.9em;
+}
+.page a {
+	color: var(--blue);
+}

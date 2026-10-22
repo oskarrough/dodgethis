@@ -1,10 +1,10 @@
 // bun run review -- --title "…" --ask "…" --thread $BB_THREAD_ID <files…> [--link url] [--at ISO]
-// Copies media, writes docs/pages/<date>-<slug>/index.html and appends a "To review" item to docs/pages/items.json.
+// Copies media, writes pages/<date>-<slug>/index.html and appends a "To review" item to pages/items.json.
 import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { basename, join } from 'node:path'
 import { parseArgs } from 'node:util'
 
-const pages = join(import.meta.dir, '..', 'docs', 'pages')
+const pages = join(import.meta.dir, '..', 'pages')
 const itemsPath = join(pages, 'items.json')
 const isVideo = (file) => /\.(webm|mp4)$/i.test(file)
 
@@ -32,7 +32,7 @@ export function writePage(item) {
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>${item.title} · dodgethis</title>
-<link rel="stylesheet" href="/docs/page.css" />
+<link rel="stylesheet" href="/pages/page.css" />
 </head>
 <body class="page">
 <main>
@@ -90,5 +90,5 @@ if (import.meta.main) {
 	items.unshift(item)
 	writeFileSync(itemsPath, JSON.stringify(items, null, '\t') + '\n')
 	writePage(item)
-	console.log(`http://office-linux.heron-mermaid.ts.net:5173/docs/pages/${item.page}`)
+	console.log(`http://office-linux.heron-mermaid.ts.net:5173/pages/${item.page}`)
 }

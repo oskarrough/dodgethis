@@ -18,7 +18,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Match setup from the URL (`?mode=moba&play&bots=&hero=&seed=&debug`): `setup.js` `parseMatchSetup`, `wantsDirectPlay`, `matchLink`; `verify.md`
 - Address bar follows the screen (URL per screen, Back/Forward, reload lands there): `src/address.js` `followScreen`, `addressFor`; boot routing is `main.js` `route`
 - Which screen is up (splash, lobby, descent, match, paused, result): `src/core/proof.js` `createProofApi` (`dt.screen()`); `verify.md`
-- Portal, a glittering tear that shows another scene or another spot live through it (open, collapse, crossing, light spill), for transitions and recall: `src/core/portal.js` `createPortal`; playground `docs/pages/2026-10-20-portal-test/`
+- Portal, a glittering tear that shows another scene or another spot live through it (open, collapse, crossing, light spill), for transitions and recall: `src/core/portal.js` `createPortal`; playground `pages/2026-10-20-portal-test/`
 
 ## Lobby
 
@@ -152,18 +152,18 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Map registry and layout recipe: `maps/all-maps.js` `mapLayout`, `matchRecipe`; `tune.js` `map`
 - Ground and walls build: `map.js` `buildMap`, `createMapScope`; `match-terrain.js` `createMatchTerrain`
 - Colliders and walkable test: `obstacles.js` `buildColliders`, `walkable`, `clampWalkable`, `segmentClear`, `clampMap`
-- Look references: `docs/pages/vibes/` (the picked directions), `docs/pages/archive/` (superseded, history only); `look.md`
-- Docs pages on the live site (`/docs/pages/…`, same paths as in dev): every `docs/pages/**/*.html` in `vite.config.js` `build.rollupOptions.input`; sibling files and `docs/page.css` copied by the `docsPages` plugin
+- Look references: `pages/vibes/` (the picked directions), `pages/archive/` (superseded, history only); `look.md`
+- Docs pages on the live site (`/pages/…`, same paths as in dev): every `pages/**/*.html` in `vite.config.js` `build.rollupOptions.input`; sibling files and `pages/page.css` copied by the `docsPages` plugin
 
 ## Match: view, feedback, sound
 
 - Match scene root: `view.js` `createView`; `index.js`
 - Feedback (facts turn into sound, popups, shake, hit flash): `feedback.js` `createFeedback`; `index.js` `validFact`; folder `<id>-tune.js` `juice.{cast,shot,hit,impact}` overrides legacy `look.js` `juice`; `out`, `squeak` stay shared. Support `contact` facts carry `part` and optional `projectile`/`from`; `juice.contact[part]` overrides `juice[part]` when support and damage need different particles (Pass's healing puff). Only declared folder juice bursts (Tag out has none). Hook's particles and Coach's support particles live in their ability tune files.
 - Sounds: `sound-table.js` `uses`, `facts` (ability uses discovered from manifest `effects` parts); folder `<id>-tune.js` `sound.{cast,shot,hit,impact}` (Hook, Brew, Coach); `sounds.js` `createSounds`, `playUse`, `play` (same gain and bus for folder recipes and legacy voices); `look.js` `sounds` (older heroes and shared cues); `src/core/audio.js`, `src/core/music.js`
-- Sound board, swaps and kept sounds (audition, swap files into a running game, keep them): `docs/pages/sound/board.js`; `src/core/sound-swap.js` `setSwap`, `swapOf`; `src/core/audio.js` `swapped`, `ui`; `vite.config.js` `soundKeep`; `src/core/sfx/kept.json`
+- Sound board, swaps and kept sounds (audition, swap files into a running game, keep them): `pages/sound/board.js`; `src/core/sound-swap.js` `setSwap`, `swapOf`; `src/core/audio.js` `swapped`, `ui`; `vite.config.js` `soundKeep`; `src/core/sfx/kept.json`
 - Mix bus (bus levels, caps, music duck): `src/core/audio.js` `onBus`; `src/core/tune.js` `mix`; `sound-table.js` `BUS`; `sounds.js` `playOwn`
 - Sound library and shortlists (`bun run sound:sync` mirrors Dropbox, measures and rebuilds every shortlist): `scripts/sound-library.js` `libraryNumbers`, `writeShortlists`, `decode`; `scripts/sound-check.js` (`--files`, `--shortlist`); `src/core/sound-swap.js` `libraryUrl`, `swapUrl`
-- Sound numbers and rule check: `docs/pages/sound/numbers.js` `measure`, `check`; `src/core/audio.js` `render`; `scripts/sound-check.js`
+- Sound numbers and rule check: `pages/sound/numbers.js` `measure`, `check`; `src/core/audio.js` `render`; `scripts/sound-check.js`
 - Screen shake, hit flash, impact: `src/core/juice.js` `createJuice`; `look.js` `juice`
 - Hero and dummy death animation: `src/core/death.js` `startDeath`
 - Style pass (inked outlines, palette): `src/core/stylepass.js`, `src/core/style.js` `PALETTE`; `look.md`

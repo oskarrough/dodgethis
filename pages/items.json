@@ -1,0 +1,940 @@
+[
+	{
+		"at": "2026-10-20T20:51:01.405Z",
+		"title": "Dungeon party lobby",
+		"ask": "Five explicit rows, hero dropdowns and bot controls; guests ready, host starts. Is this clear and slick enough? Browser proof: two connected players edited heroes/bots and readiness reset correctly; solo launch entered Dungeon with one hero. Multiplayer launch and lobby return remain unchecked after the browser proof was interrupted.",
+		"status": "To review",
+		"decision": "",
+		"media": ["review/media/2026-10-20-dungeon-party-lobby/dungeon-party-final.png"],
+		"links": ["http://office-linux.heron-mermaid.ts.net:5173/?mode=moba&map=dungeon"],
+		"thread": "thr_6sgc9s2jhb",
+		"page": "2026-10-20-dungeon-party-lobby/"
+	},
+	{
+		"at": "2026-10-20T17:21:06.062Z",
+		"title": "Cast bars for Mend and the Warden's Slam",
+		"ask": "Do the two bars read at a glance, and is the Slam bar in the right place?",
+		"status": "To review",
+		"decision": "",
+		"media": ["review/media/2026-10-20-cast-bars-for-mend-and-the-warden-s-slam/castbars.png"],
+		"links": [],
+		"thread": "thr_ay29w73d7r",
+		"page": "2026-10-20-cast-bars-for-mend-and-the-warden-s-slam/"
+	},
+	{
+		"at": "2026-10-20T17:12:36.960Z",
+		"title": "Mender heals you can see",
+		"ask": "Does the cursor ring, the green beam and the +300 make Mend read? Is 1.2 s the right cast?",
+		"status": "To review",
+		"decision": "",
+		"media": ["review/media/2026-10-20-mender-heals-you-can-see/mender-heal.webm"],
+		"links": [],
+		"thread": "thr_ay29w73d7r",
+		"page": "2026-10-20-mender-heals-you-can-see/"
+	},
+	{
+		"at": "2026-10-20T16:20:28.012Z",
+		"title": "Mender: Mend and Ward",
+		"ask": "Direct-play proof with bots and waves disabled; positioned two allies, injured Mitts, aimed at him and used Q then W. Mend held HP at 1500 during its 90-tick (1.5 s) cast, then healed 300 to 1800. Ward applied 500 shield for 480 ticks (8 s) to Mitts only. Judge whether the shield bar is clear.",
+		"status": "To review",
+		"decision": "",
+		"media": ["review/media/2026-10-20-mender-mend-and-ward/mender-mend-ward.png"],
+		"links": ["http://office-linux.heron-mermaid.ts.net:5173/?mode=moba&play&hero=mender&debug"],
+		"thread": "thr_xuf4ywcr66",
+		"page": "2026-10-20-mender-mend-and-ward/"
+	},
+	{
+		"at": "2026-10-20T15:55:36.412Z",
+		"title": "Fog of war look",
+		"ask": "Does the new fog read better?",
+		"status": "To review",
+		"decision": "",
+		"media": [
+			"review/media/2026-10-20-fog-of-war-look/fog-overthrow-before.png",
+			"review/media/2026-10-20-fog-of-war-look/fog-overthrow-after.png",
+			"review/media/2026-10-20-fog-of-war-look/fog-flagfall-after.png"
+		],
+		"links": [],
+		"thread": "thr_67w7ifvtfs",
+		"page": "2026-10-20-fog-of-war-look/"
+	},
+	{
+		"at": "2026-10-20T12:04:59.091Z",
+		"title": "Portal test",
+		"ask": "Walk through a particle portal from the lobby saucer to Overthrow. Does it feel magic enough for a screen transition or an ability?",
+		"status": "To review",
+		"decision": "",
+		"page": "2026-10-20-portal-test/",
+		"media": [],
+		"links": [],
+		"thread": "thr_9gnxnkxse3"
+	},
+	{
+		"at": "2026-10-14T12:00:00.000Z",
+		"title": "Ability system",
+		"ask": "Audit of the ability system and a five-slice plan so a new hero lands as one folder. Read for direction; slow stacking is decided (strongest wins).",
+		"status": "Decided",
+		"decision": "Reviewed.",
+		"page": "ability-system/",
+		"media": [],
+		"links": [],
+		"thread": "thr_hdjrg7983t"
+	},
+	{
+		"at": "2026-10-14T08:48:33.563Z",
+		"title": "Lobby feel: the swap flip and a calmer layout (#5)",
+		"ask": "Does the flip read as a cutout turning on a pin? The clip runs three swaps slowed to 1.2 s, then two at the real 0.25 s. The stills are the lobby from a fresh / at 390, 1440 and 2560×1080: at 390 the difficulty words no longer run together, health bars shrink and the controls label clears the ability bar; at wide screens 'Next map' no longer spills over the rim.",
+		"status": "Decided",
+		"decision": "Reviewed.",
+		"media": [
+			"review/media/2026-10-14-lobby-feel-the-swap-flip-and-a-calmer-la/swap-flip.webm",
+			"review/media/2026-10-14-lobby-feel-the-swap-flip-and-a-calmer-la/lobby-390.png",
+			"review/media/2026-10-14-lobby-feel-the-swap-flip-and-a-calmer-la/lobby-1440.png",
+			"review/media/2026-10-14-lobby-feel-the-swap-flip-and-a-calmer-la/lobby-2560x1080.png"
+		],
+		"links": [],
+		"thread": "thr_rrr3ahmeiy",
+		"page": "2026-10-14-lobby-feel-the-swap-flip-and-a-calmer-la/"
+	},
+	{
+		"at": "2026-10-13T12:23:51.897Z",
+		"title": "Choose your hero: five takes",
+		"ask": "Which one: 1 stamp, 2 brush, 3 tag, 4 emboss, 5 wordless footprints? Play any with /?caption=stamp, brush, tag, emboss or wordless.",
+		"status": "Decided",
+		"decision": "Reviewed.",
+		"media": [
+			"review/media/2026-10-13-choose-your-hero-five-takes/caption-1-stamp.png",
+			"review/media/2026-10-13-choose-your-hero-five-takes/caption-2-brush.png",
+			"review/media/2026-10-13-choose-your-hero-five-takes/caption-3-tag.png",
+			"review/media/2026-10-13-choose-your-hero-five-takes/caption-4-emboss.png",
+			"review/media/2026-10-13-choose-your-hero-five-takes/caption-5-wordless.png"
+		],
+		"links": [],
+		"thread": "thr_pag3q8z9mf",
+		"page": "2026-10-13-choose-your-hero-five-takes/"
+	},
+	{
+		"at": "2026-10-13T10:12:04.233Z",
+		"title": "Choose your hero, cut into the platter",
+		"ask": "Does the engraving read as part of the platter, beside the cards? Wide window, then narrow.",
+		"status": "Decided",
+		"decision": "Reviewed.",
+		"media": [
+			"review/media/2026-10-13-choose-your-hero-cut-into-the-platter/engrave-wide-crop.png",
+			"review/media/2026-10-13-choose-your-hero-cut-into-the-platter/engrave-narrow-crop.png"
+		],
+		"links": [],
+		"thread": "thr_pag3q8z9mf",
+		"page": "2026-10-13-choose-your-hero-cut-into-the-platter/"
+	},
+	{
+		"at": "2026-10-13T10:00:43.844Z",
+		"title": "Hero strip leans on the platter, with a caption",
+		"ask": "Does 'Choose your hero' over your pick read as a choice, and do the cards now feel part of the lobby? Before is today; after is the default lobby camera.",
+		"status": "Decided",
+		"decision": "Reviewed.",
+		"media": [
+			"review/media/2026-10-13-hero-strip-leans-on-the-platter-with-a-c/strip-before.png",
+			"review/media/2026-10-13-hero-strip-leans-on-the-platter-with-a-c/strip-after.png",
+			"review/media/2026-10-13-hero-strip-leans-on-the-platter-with-a-c/strip-after-crop.png"
+		],
+		"links": [],
+		"thread": "thr_pag3q8z9mf",
+		"page": "2026-10-13-hero-strip-leans-on-the-platter-with-a-c/"
+	},
+	{
+		"at": "2026-10-13T09:43:17.634Z",
+		"title": "Lobby holograms read on their plates",
+		"ask": "Do the holograms read on their plates now, and are the paler plates still clearly two teams? Before is Oskar's screenshot; after is the default lobby camera, cropped, then the full view.",
+		"status": "Decided",
+		"decision": "Reviewed.",
+		"media": [
+			"review/media/2026-10-13-lobby-holograms-read-on-their-plates/holograms-before.png",
+			"review/media/2026-10-13-lobby-holograms-read-on-their-plates/holograms-after-crop.png",
+			"review/media/2026-10-13-lobby-holograms-read-on-their-plates/holograms-after.png"
+		],
+		"links": [],
+		"thread": "thr_pag3q8z9mf",
+		"page": "2026-10-13-lobby-holograms-read-on-their-plates/"
+	},
+	{
+		"at": "2026-10-13T08:59:51.547Z",
+		"title": "Lobby controls label and WASD offer",
+		"ask": "Does the bottom-right Controls label and the one-time Switch to WASD? note read right in the lobby?",
+		"status": "Decided",
+		"decision": "Reviewed.",
+		"media": [
+			"review/media/2026-10-13-lobby-controls-label-and-wasd-offer/lobby-controls-offer.png"
+		],
+		"links": [],
+		"thread": "thr_27qnwfh6gs",
+		"page": "2026-10-13-lobby-controls-label-and-wasd-offer/"
+	},
+	{
+		"at": "2026-10-13T08:35:52.709Z",
+		"title": "Lobby: plates flow to the map (#30)",
+		"ask": "Run is the only look. The trunk and the ring inside the weather bowl now fill as the bots glaze their plates, so before you step on the bowl is fed all but its last arc, and your plate closes it. Team glazes still marble into streaks where branches join. Does the bowl read as fed before you step on? Play it: step onto your plate last.",
+		"status": "Decided",
+		"decision": "Reviewed.",
+		"media": [
+			"review/media/2026-10-13-lobby-plates-flow-to-the-map-30-/bowl-bots-in.png",
+			"review/media/2026-10-13-lobby-plates-flow-to-the-map-30-/junction-and-bowl.png"
+		],
+		"links": ["/"],
+		"thread": "thr_hcrr25efxq",
+		"page": "2026-10-13-lobby-plates-flow-to-the-map-30-/"
+	},
+	{
+		"at": "2026-10-11T13:59:48.474Z",
+		"title": "Sound board walkthrough",
+		"ask": "Agree with the worst friction?",
+		"status": "Decided",
+		"decision": "Reviewed.",
+		"media": ["review/media/2026-10-11-sound-board-walkthrough/walkthrough.png"],
+		"links": [],
+		"thread": "thr_zg6p82q57t",
+		"page": "2026-10-11-sound-board-walkthrough/"
+	},
+	{
+		"at": "2026-10-11T13:52:55.562Z",
+		"title": "Generate sounds",
+		"ask": "Does generating feel quick enough?",
+		"status": "Decided",
+		"decision": "Reviewed.",
+		"media": ["review/media/2026-10-11-generate-sounds/generate-sounds.png"],
+		"links": [],
+		"thread": "thr_56cjyats25",
+		"page": "2026-10-11-generate-sounds/"
+	},
+	{
+		"at": "2026-10-11T13:42:58.994Z",
+		"title": "Sound map",
+		"ask": "Does scrubbing feel right?",
+		"status": "Decided",
+		"decision": "Reviewed.",
+		"media": ["review/media/2026-10-11-sound-map/sound-map.png"],
+		"links": [],
+		"thread": "thr_m6gtdxtin8",
+		"page": "2026-10-11-sound-map/"
+	},
+	{
+		"at": "2026-10-11T12:09:25.826Z",
+		"title": "Paper screens",
+		"ask": "Do result, scoreboard and death recap belong with the pause menu?",
+		"status": "Decided",
+		"decision": "Reviewed.",
+		"media": [
+			"review/media/2026-10-11-paper-screens/result.png",
+			"review/media/2026-10-11-paper-screens/scoreboard.png",
+			"review/media/2026-10-11-paper-screens/death.png"
+		],
+		"links": [],
+		"thread": "thr_nq4drca5xd",
+		"page": "2026-10-11-paper-screens/"
+	},
+	{
+		"at": "2026-10-11T11:43:42.450Z",
+		"title": "Feed drum",
+		"ask": "Does the drum read, and is it in the right spot?",
+		"status": "Decided",
+		"decision": "Reviewed.",
+		"media": [
+			"review/media/2026-10-11-feed-drum/feed-drum.webm",
+			"review/media/2026-10-11-feed-drum/portrait.png"
+		],
+		"links": [],
+		"thread": "thr_kpipnfj4w7",
+		"page": "2026-10-11-feed-drum/"
+	},
+	{
+		"at": "2026-10-11T11:29:46.000Z",
+		"title": "Sound board",
+		"ask": "Can you hear every sound, and does swapping in your own files work for you?",
+		"status": "Decided",
+		"decision": "Reviewed.",
+		"media": [],
+		"links": [],
+		"thread": "thr_hvktytzm83",
+		"page": "sound/"
+	},
+	{
+		"at": "2026-10-11T11:27:20.618Z",
+		"title": "Pause menu vibe, quieter",
+		"ask": "Is PAUSED quiet enough, and does Esc toggle fast now?",
+		"status": "Decided",
+		"decision": "Reviewed.",
+		"media": ["review/media/2026-10-11-pause-menu-vibe-quieter/pause2.png"],
+		"links": [],
+		"thread": "thr_piszjt2sgm",
+		"page": "2026-10-11-pause-menu-vibe-quieter/"
+	},
+	{
+		"at": "2026-10-11T11:23:04.148Z",
+		"title": "Bank bounce preview",
+		"ask": "Does the bounce preview read?",
+		"status": "Decided",
+		"decision": "Reviewed.",
+		"media": ["review/media/2026-10-11-bank-bounce-preview/bank-bounce.png"],
+		"links": [],
+		"thread": "thr_4xnq2c8zbt",
+		"page": "2026-10-11-bank-bounce-preview/"
+	},
+	{
+		"at": "2026-10-11T11:21:34.760Z",
+		"title": "Descent sky",
+		"ask": "Is the descent full enough now?",
+		"status": "Decided",
+		"decision": "Reviewed.",
+		"media": [
+			"review/media/2026-10-11-descent-sky/descent-overthrow.webm",
+			"review/media/2026-10-11-descent-sky/descent-flagfall.png"
+		],
+		"links": [],
+		"thread": "thr_2fej2knmth",
+		"page": "2026-10-11-descent-sky/"
+	},
+	{
+		"at": "2026-10-11T11:19:15.805Z",
+		"title": "Pause menu vibe",
+		"ask": "Does the pause menu belong with the splash and lobby now?",
+		"status": "Decided",
+		"decision": "Reviewed.",
+		"media": [
+			"review/media/2026-10-11-pause-menu-vibe/pause.png",
+			"review/media/2026-10-11-pause-menu-vibe/lobby.png"
+		],
+		"links": [],
+		"thread": "thr_piszjt2sgm",
+		"page": "2026-10-11-pause-menu-vibe/"
+	},
+	{
+		"at": "2026-10-11T11:13:04.966Z",
+		"title": "Hero colours",
+		"ask": "Do the heroes read without team colours?",
+		"status": "Decided",
+		"decision": "Reviewed.",
+		"media": [
+			"review/media/2026-10-11-hero-colours/stamp-fletcher.png",
+			"review/media/2026-10-11-hero-colours/stamp-mitts.png",
+			"review/media/2026-10-11-hero-colours/stamp-pong.png"
+		],
+		"links": [],
+		"thread": "thr_4a5jfuwbi2",
+		"page": "2026-10-11-hero-colours/"
+	},
+	{
+		"at": "2026-10-11T00:55:36.964Z",
+		"title": "P. Pong first build",
+		"ask": "Pong's costume (stone head, brow, beak, team paddle, back net) and the Cushion net: keep, or what changes?",
+		"status": "Decided",
+		"decision": "Reviewed.",
+		"media": ["review/media/2026-10-11-p-pong-first-build/pong-match.png"],
+		"links": [],
+		"thread": "thr_zhs8vb5rkp",
+		"page": "2026-10-11-p-pong-first-build/"
+	},
+	{
+		"at": "2026-10-11T00:44:24.302Z",
+		"title": "Carom redesign",
+		"ask": "Billiards or ping pong for Carom?",
+		"status": "Decided",
+		"decision": "P. Pong, ping pong (Oskar, 2026-10-11)",
+		"media": [
+			"carom-redesign/carom-sheet.webp",
+			"carom-redesign/carom-match.webp",
+			"carom-redesign/pong-sheet.webp",
+			"carom-redesign/pong-match.webp"
+		],
+		"links": ["http://office-linux.heron-mermaid.ts.net:5173/pages/carom-redesign/"],
+		"thread": "thr_fgrufkvvdh",
+		"page": "carom-redesign/"
+	},
+	{
+		"at": "2026-10-10T22:06:44.756Z",
+		"title": "Flagfall laser gate",
+		"ask": "First take on the laser gate: two posts, a flickering team-colour beam. Keep, recolour, or rethink?",
+		"status": "Decided",
+		"decision": "Reviewed.",
+		"media": ["review/media/2026-10-10-flagfall-laser-gate/laser-gate.png"],
+		"links": [],
+		"thread": "thr_zujatwsc6m",
+		"page": "2026-10-10-flagfall-laser-gate/"
+	},
+	{
+		"at": "2026-10-10T21:49:45.075Z",
+		"title": "Flagfall gates",
+		"ask": "The gate is a placeholder stone drum spanning the lane. Is a drum fine for now, or should it read as a wall?",
+		"status": "Decided",
+		"decision": "Reviewed.",
+		"media": ["review/media/2026-10-10-flagfall-gates/flagfall-gate.png"],
+		"links": [],
+		"thread": "thr_88z9qrycxv",
+		"page": "2026-10-10-flagfall-gates/"
+	},
+	{
+		"at": "2026-10-10T21:47:15.652Z",
+		"title": "Flagfall centre flag",
+		"ask": "Plain flag at the chalk cross: HUD line, ring with fill arc, minimap dot. Look is yours.",
+		"status": "Decided",
+		"decision": "Reviewed.",
+		"media": ["review/media/2026-10-10-flagfall-centre-flag/flag.png"],
+		"links": [],
+		"thread": "thr_wfq8ficigf",
+		"page": "2026-10-10-flagfall-centre-flag/"
+	},
+	{
+		"at": "2026-10-10T21:43:54.979Z",
+		"title": "Cheaper fog of war",
+		"ask": "Does the fog look unchanged: same edge, same darkness?",
+		"status": "Decided",
+		"decision": "Reviewed.",
+		"media": ["review/media/2026-10-10-cheaper-fog-of-war/fog-after.png"],
+		"links": [],
+		"thread": "thr_ut6hmdpqhz",
+		"page": "2026-10-10-cheaper-fog-of-war/"
+	},
+	{
+		"at": "2026-10-10T21:43:49.542Z",
+		"title": "Flagfall mercenary camps",
+		"ask": "Camp guards (plain cream for now) at a jungle camp mark, 55 s in. Clear one and its mercs march the nearest lane for you. Does the camp read as neutral?",
+		"status": "Decided",
+		"decision": "Reviewed.",
+		"media": ["review/media/2026-10-10-flagfall-mercenary-camps/camp.png"],
+		"links": [],
+		"thread": "thr_bxbcth5sxc",
+		"page": "2026-10-10-flagfall-mercenary-camps/"
+	},
+	{
+		"at": "2026-10-10T20:26:33.677Z",
+		"title": "Flagfall jungle: rooms, brush, marks",
+		"ask": "Block gone; four jungle rooms behind a stone spine, each opening on two lane holes and the clearing, moss brush at the holes. Lantern + chalk square = camp, cross = flag, bars across the lanes = gates (all marks only). Does it feel worth walking into under fog?",
+		"status": "Decided",
+		"decision": "Reviewed.",
+		"media": ["review/media/2026-10-10-flagfall-jungle-rooms-brush-marks/jungle.png"],
+		"links": [],
+		"thread": "thr_egsuf57dc2",
+		"page": "2026-10-10-flagfall-jungle-rooms-brush-marks/"
+	},
+	{
+		"at": "2026-10-10T20:08:23.519Z",
+		"title": "Fog of war on Flagfall",
+		"ask": "First take behind ?fog: your heroes, minions and structures see 10/7/10 m; enemy units outside vanish and the ground dims. Is the dim strong enough, and should it read as darkness or as haze?",
+		"status": "Decided",
+		"decision": "Love it; 10% darker, on in every match (Oskar)",
+		"media": ["review/media/2026-10-10-fog-of-war-on-flagfall/fog-flagfall.png"],
+		"links": [],
+		"thread": "thr_egsuf57dc2",
+		"page": "2026-10-10-fog-of-war-on-flagfall/"
+	},
+	{
+		"at": "2026-10-10T20:00:06.411Z",
+		"title": "Three lanes or a richer Flagfall",
+		"ask": "Grow Flagfall toward your HotS map (88 × 44 m, a tight jungle of 4 m paths and brush, flags inside, gates at the forts) and park three lanes until 5v5 bots exist?",
+		"status": "Decided",
+		"decision": "Reviewed.",
+		"media": ["three-lanes/hots-reference.webp"],
+		"links": ["/pages/three-lanes/"],
+		"thread": "thr_ns72rgdbmc",
+		"page": "three-lanes/"
+	},
+	{
+		"at": "2026-10-10T15:43:45.825Z",
+		"title": "Flagfall by night, built",
+		"ask": "Does the built Flagfall read as the night concept, with a lighter court and team blue clear of the violet?",
+		"status": "Decided",
+		"decision": "Reviewed.",
+		"media": [
+			"review/media/2026-10-10-flagfall-by-night-built/flagfall-night-built.webp",
+			"review/media/2026-10-10-flagfall-by-night-built/02-fight.webp"
+		],
+		"links": ["/pages/flagfall-night/"],
+		"thread": "thr_md62iqhzu8",
+		"page": "2026-10-10-flagfall-by-night-built/"
+	},
+	{
+		"at": "2026-10-10T15:37:18.325Z",
+		"title": "Match camera shows both long rims",
+		"ask": "Mid-court at 1440×900: do both long rims show on each map, and are the heroes still big enough?",
+		"status": "Archived",
+		"decision": "Replaced: one close lens on every map that pans past the rims (Oskar, 2026-10-10)",
+		"media": [
+			"review/media/2026-10-10-match-camera-shows-both-long-rims/overthrow-midcourt.png",
+			"review/media/2026-10-10-match-camera-shows-both-long-rims/flagfall-midcourt.png"
+		],
+		"links": [],
+		"thread": "thr_2aqw4bpva3",
+		"page": "2026-10-10-match-camera-shows-both-long-rims/"
+	},
+	{
+		"at": "2026-10-10T15:29:28.817Z",
+		"title": "Overthrow by day, built",
+		"ask": "Concept left, the game right, at the shipped match camera (2560×1440, Radeon 780M). Does the isle read? And: should the match camera show both rims and the front cliff like the concept? Today its clamp keeps the view inside the court's width, so mid-court frames show only court.",
+		"status": "Decided",
+		"decision": "Reviewed.",
+		"media": [
+			"review/media/2026-10-10-overthrow-by-day-built/concept-establishing.webp",
+			"review/media/2026-10-10-overthrow-by-day-built/after-establishing.png",
+			"review/media/2026-10-10-overthrow-by-day-built/concept-fight.webp",
+			"review/media/2026-10-10-overthrow-by-day-built/after-fight.png"
+		],
+		"links": [],
+		"thread": "thr_tfbqscj9f5",
+		"page": "2026-10-10-overthrow-by-day-built/"
+	},
+	{
+		"at": "2026-10-10T15:27:11.912Z",
+		"title": "Join by link: preview card, reload notice, rematch link",
+		"ask": "Does the room link's preview card (title, line, key art) read as an invite you'd tap? Is the splash the right key art?",
+		"status": "Decided",
+		"decision": "Reviewed.",
+		"media": [
+			"review/media/2026-10-10-join-by-link-preview-card-reload-notice-/preview-card.png",
+			"review/media/2026-10-10-join-by-link-preview-card-reload-notice-/stale-build.png",
+			"review/media/2026-10-10-join-by-link-preview-card-reload-notice-/result-card.png"
+		],
+		"links": [],
+		"thread": "thr_a88i8a2nsb",
+		"page": "2026-10-10-join-by-link-preview-card-reload-notice-/"
+	},
+	{
+		"at": "2026-10-10T15:23:18.052Z",
+		"title": "Flagfall night",
+		"ask": "Is this Flagfall?",
+		"status": "Decided",
+		"decision": "Yes, built in code with the court a clear step lighter than the void and glowing flowers.",
+		"media": [
+			"flagfall-night/01-establishing.webp",
+			"flagfall-night/02-fight.webp",
+			"flagfall-night/03-dunk-gap.webp"
+		],
+		"links": [],
+		"thread": "thr_ih56q7q9w9",
+		"page": "flagfall-night/"
+	},
+	{
+		"at": "2026-10-10T14:58:39.920Z",
+		"title": "Overthrow day · round 2",
+		"ask": "Is this Overthrow?",
+		"status": "Decided",
+		"decision": "Round 2. Add warm light and violet shade across the court in the build.",
+		"media": [
+			"overthrow-day/r2-01-establishing.webp",
+			"overthrow-day/r2-02-fight.webp",
+			"overthrow-day/r2-03-tower-core.webp"
+		],
+		"links": [],
+		"thread": "thr_42fyq3tca8",
+		"page": "overthrow-day/"
+	},
+	{
+		"at": "2026-10-10T14:35:43.222Z",
+		"title": "Top bar pill: steady width",
+		"ask": "Same pill at 0:09 / 0-0 and 3:30 / 3-0: identical width (421 px), every item centred on one line, Ball icon + seconds all match, no 'Ball in'. Good?",
+		"status": "Decided",
+		"decision": "Reviewed.",
+		"media": [
+			"review/media/2026-10-10-top-bar-pill-steady-width/pill-a-crop.png",
+			"review/media/2026-10-10-top-bar-pill-steady-width/pill-b-crop.png"
+		],
+		"links": [],
+		"thread": "thr_83etfu9ugy",
+		"page": "2026-10-10-top-bar-pill-steady-width/"
+	},
+	{
+		"at": "2026-10-10T14:33:00.710Z",
+		"title": "Lobby whole saucer in frame",
+		"ask": "Does the lobby now read as one whole floating saucer in an unbroken sky at wide, desktop and phone sizes?",
+		"status": "Decided",
+		"decision": "Style fine; whole saucer in frame. Keep improving.",
+		"media": [
+			"review/media/2026-10-10-lobby-whole-saucer-in-frame/fit-wide.png",
+			"review/media/2026-10-10-lobby-whole-saucer-in-frame/fit-desk.png",
+			"review/media/2026-10-10-lobby-whole-saucer-in-frame/fit-phone.png"
+		],
+		"links": [],
+		"thread": "thr_dwbukqxwup",
+		"page": "2026-10-10-lobby-whole-saucer-in-frame/"
+	},
+	{
+		"at": "2026-10-10T14:28:59.587Z",
+		"title": "Pause: manual with vertical PAUSED",
+		"ask": "Manual is now the only pause page, with PAUSED running down the first column. Right weight and place?",
+		"status": "Decided",
+		"decision": "Decided: manual with vertical PAUSED.",
+		"media": ["review/media/2026-10-10-pause-manual-with-vertical-paused/vertical-1440.png"],
+		"links": [],
+		"thread": "thr_ra883cf55x",
+		"page": "2026-10-10-pause-manual-with-vertical-paused/"
+	},
+	{
+		"at": "2026-10-10T14:23:06.437Z",
+		"title": "Pause: Quick cast as a checkbox",
+		"ask": "Quick cast now sits under Resume and Leave game as an unnumbered checkbox (ticked and selected in obi, at rest in manual). Does it read as a setting, not an action?",
+		"status": "Decided",
+		"decision": "Manual layout, with obi's vertical PAUSED; HUD hidden; quick cast as a checkbox.",
+		"media": [
+			"review/media/2026-10-10-pause-quick-cast-as-a-checkbox/check-obi-1440.png",
+			"review/media/2026-10-10-pause-quick-cast-as-a-checkbox/check-manual-1440.png"
+		],
+		"links": [],
+		"thread": "thr_ra883cf55x",
+		"page": "2026-10-10-pause-quick-cast-as-a-checkbox/"
+	},
+	{
+		"at": "2026-10-10T12:38:58.335Z",
+		"title": "Cloud reveal into the match",
+		"ask": "Does the lobby-to-match move feel like flying through cloud? Judge the hole opening around your hero (clip ~2.7 s) and the cloud tone: peach-white for Overthrow.",
+		"status": "Decided",
+		"decision": "Good as is.",
+		"media": [
+			"review/media/2026-10-10-cloud-reveal-into-the-match/cloud-reveal.webm",
+			"review/media/2026-10-10-cloud-reveal-into-the-match/cloud-reveal-mid.png"
+		],
+		"links": [],
+		"thread": "thr_heema2dbjv",
+		"page": "2026-10-10-cloud-reveal-into-the-match/"
+	},
+	{
+		"at": "2026-10-10T11:16:41.559Z",
+		"title": "Lobby Pocket weather pass",
+		"ask": "Cute with swagger yet? Judge the painted lip band, the iron cradles and the NEXT MAP caption, by day and by night.",
+		"status": "Decided",
+		"decision": "Style fine; whole saucer in frame. Keep improving.",
+		"media": [
+			"review/media/2026-10-10-lobby-pocket-weather-pass/lobby-pocket-weather-day.png",
+			"review/media/2026-10-10-lobby-pocket-weather-pass/lobby-pocket-weather-night.png"
+		],
+		"links": [],
+		"thread": "thr_dwbukqxwup",
+		"page": "2026-10-10-lobby-pocket-weather-pass/"
+	},
+	{
+		"at": "2026-10-10T11:15:57.852Z",
+		"title": "Pause screen without HUD",
+		"ask": "Paused, only the pause page shows over the world (no corner buttons, pill or minimap); does it read clean at 1440 and 390?",
+		"status": "Decided",
+		"decision": "Manual layout, with obi's vertical PAUSED; HUD hidden; quick cast as a checkbox.",
+		"media": [
+			"review/media/2026-10-10-pause-screen-without-hud/paused-clean-1440.png",
+			"review/media/2026-10-10-pause-screen-without-hud/paused-clean-390.png"
+		],
+		"links": [],
+		"thread": "thr_ra883cf55x",
+		"page": "2026-10-10-pause-screen-without-hud/"
+	},
+	{
+		"at": "2026-10-10T11:14:31.991Z",
+		"title": "Lobby Ready on the saucer",
+		"ask": "Is it clear you walk onto your plate to ready, and does the glaze filling in from the middle feel like part of the saucer?",
+		"status": "Decided",
+		"decision": "Style fine; whole saucer in frame. Keep improving.",
+		"media": [
+			"review/media/2026-10-10-lobby-ready-on-the-saucer/ready-on-the-saucer.png",
+			"review/media/2026-10-10-lobby-ready-on-the-saucer/ready-filling.png"
+		],
+		"links": [],
+		"thread": "thr_dwbukqxwup",
+		"page": "2026-10-10-lobby-ready-on-the-saucer/"
+	},
+	{
+		"at": "2026-10-10T11:12:28.733Z",
+		"title": "Pause menu: manual or obi",
+		"ask": "Which pause page: manual (cream sheet over the left seven columns) or obi (jewel-case spine, giant clock)?",
+		"status": "Decided",
+		"decision": "Manual layout, with obi's vertical PAUSED; HUD hidden; quick cast as a checkbox.",
+		"media": [
+			"review/media/2026-10-10-pause-menu-manual-or-obi/manual-1440.png",
+			"review/media/2026-10-10-pause-menu-manual-or-obi/obi-1440.png",
+			"review/media/2026-10-10-pause-menu-manual-or-obi/manual-390.png",
+			"review/media/2026-10-10-pause-menu-manual-or-obi/obi-390.png"
+		],
+		"links": [],
+		"thread": "thr_ra883cf55x",
+		"page": "2026-10-10-pause-menu-manual-or-obi/"
+	},
+	{
+		"at": "2026-10-10T11:10:13.349Z",
+		"title": "Lobby weather bowl",
+		"ask": "Does the turning bowl read as the next map (Flagfall by night here, Overthrow by day), and is it big enough to notice?",
+		"status": "Decided",
+		"decision": "Style fine; whole saucer in frame. Keep improving.",
+		"media": [
+			"review/media/2026-10-10-lobby-weather-bowl/weather-bowl-flagfall.png",
+			"review/media/2026-10-10-lobby-weather-bowl/bowl-turn-crop.webm"
+		],
+		"links": [],
+		"thread": "thr_dwbukqxwup",
+		"page": "2026-10-10-lobby-weather-bowl/"
+	},
+	{
+		"at": "2026-10-10T11:06:46.078Z",
+		"title": "Match HUD: swagger pass",
+		"ask": "Cards drop below the pill and read like a manual spec table (small-caps captions, solid rule, big index numeral); callout banner and nameplates went smooth. Right direction?",
+		"status": "Decided",
+		"decision": "Style fine; fixing alignment, Ball label and pill width.",
+		"media": [
+			"review/media/2026-10-10-match-hud-swagger-pass/swag-clock-card-crop.png",
+			"review/media/2026-10-10-match-hud-swagger-pass/swag-level-crop.png",
+			"review/media/2026-10-10-match-hud-swagger-pass/swag-banner.png"
+		],
+		"links": [],
+		"thread": "thr_83etfu9ugy",
+		"page": "2026-10-10-match-hud-swagger-pass/"
+	},
+	{
+		"at": "2026-10-10T11:04:31.422Z",
+		"title": "Match HUD: smooth cream pill",
+		"ask": "Top bar is one slim pill (dots for heroes alive, takedowns, clock; Ball joins inside 30 s). Unit frame smooth too. Right weight?",
+		"status": "Decided",
+		"decision": "Style fine; fixing alignment, Ball label and pill width.",
+		"media": [
+			"review/media/2026-10-10-match-hud-smooth-cream-pill/pill-2.png",
+			"review/media/2026-10-10-match-hud-smooth-cream-pill/pill-ball-soon-crop.png",
+			"review/media/2026-10-10-match-hud-smooth-cream-pill/pill-clock-card.png"
+		],
+		"links": [],
+		"thread": "thr_83etfu9ugy",
+		"page": "2026-10-10-match-hud-smooth-cream-pill/"
+	},
+	{
+		"at": "2026-10-10T11:03:52.457Z",
+		"title": "Lobby saucer",
+		"ask": "Does the glazed saucer in its iron cradles read as one floating ceramic world, and do the seat plates read as inlaid glaze?",
+		"status": "Decided",
+		"decision": "Style fine; whole saucer in frame. Keep improving.",
+		"media": ["review/media/2026-10-10-lobby-saucer/lobby-saucer.png"],
+		"links": [],
+		"thread": "thr_dwbukqxwup",
+		"page": "2026-10-10-lobby-saucer/"
+	},
+	{
+		"at": "2026-10-10T10:59:00.000Z",
+		"title": "Hero pitches",
+		"ask": "Eight hero pitches for the roster (issue #24). Do the sheets show who they are?",
+		"status": "Decided",
+		"decision": "Reviewed.",
+		"page": "heroes/",
+		"media": [
+			"review/media/2026-10-10-hero-pitches-as-html/heroes-full.png",
+			"review/media/2026-10-10-hero-pitches-as-html/heroes.png",
+			"review/media/2026-10-10-hero-pitches-as-html/part0.png",
+			"review/media/2026-10-10-hero-pitches-as-html/part1.png",
+			"review/media/2026-10-10-hero-pitches-as-html/part2.png"
+		],
+		"links": [],
+		"thread": "thr_j4kk2h362t"
+	},
+	{
+		"at": "2026-10-10T10:58:00.000Z",
+		"title": "Viral plan",
+		"ask": "How the game spreads: join by link and the milestones behind it. Is this the plan?",
+		"status": "Decided",
+		"decision": "Reviewed.",
+		"page": "viral/",
+		"media": [],
+		"links": [],
+		"thread": ""
+	},
+	{
+		"at": "2026-10-10T10:51:19.622Z",
+		"title": "Readouts printed on a ribbon",
+		"ask": "Top bar and unit frame are now unframed paper with ink values; cogs lost their shadow. Do they still read as buttons?",
+		"status": "Archived",
+		"decision": "Superseded by the smooth cream pill.",
+		"media": [
+			"review/media/2026-10-10-readouts-printed-on-a-ribbon/before-match.png",
+			"review/media/2026-10-10-readouts-printed-on-a-ribbon/after-match-1440.png",
+			"review/media/2026-10-10-readouts-printed-on-a-ribbon/after-lobby-1440.png",
+			"review/media/2026-10-10-readouts-printed-on-a-ribbon/narrow.png"
+		],
+		"links": [],
+		"thread": "thr_3s3ps6wjph",
+		"page": "2026-10-10-readouts-printed-on-a-ribbon/"
+	},
+	{
+		"at": "2026-10-10T10:25:46.000Z",
+		"title": "Lobby hero strip and table proposal",
+		"ask": "Does the painted hero strip read right? Is the table proposal the lobby you want?",
+		"status": "Archived",
+		"decision": "Superseded by the Pocket weather lobby.",
+		"media": [
+			"review/media/2026-10-10-lobby-hero-strip-and-table-proposal/lobby-1440.png",
+			"review/media/2026-10-10-lobby-hero-strip-and-table-proposal/lobby-strip-1440.png",
+			"review/media/2026-10-10-lobby-hero-strip-and-table-proposal/lobby-strip-mitts-1440.png",
+			"review/media/2026-10-10-lobby-hero-strip-and-table-proposal/lobby-strip-playable-1440.png",
+			"review/media/2026-10-10-lobby-hero-strip-and-table-proposal/lobby-table-proposal.png",
+			"review/media/2026-10-10-lobby-hero-strip-and-table-proposal/crop-strip.png",
+			"review/media/2026-10-10-lobby-hero-strip-and-table-proposal/before-lobby.png"
+		],
+		"links": [],
+		"thread": "thr_afenmtsc4e",
+		"page": "2026-10-10-lobby-hero-strip-and-table-proposal/"
+	},
+	{
+		"at": "2026-10-10T09:49:17.000Z",
+		"title": "Match menu button",
+		"ask": "Is the menu button findable without being in the way?",
+		"status": "Decided",
+		"decision": "Fine.",
+		"media": [
+			"review/media/2026-10-10-match-menu-button/menu-button-1440.png",
+			"review/media/2026-10-10-match-menu-button/menu-paused.png"
+		],
+		"links": [],
+		"thread": "thr_e55itbx3g3",
+		"page": "2026-10-10-match-menu-button/"
+	},
+	{
+		"at": "2026-10-10T09:24:34.000Z",
+		"title": "Shared Back and Play online buttons",
+		"ask": "Do Back and Play online match across both modes?",
+		"status": "Decided",
+		"decision": "Fine.",
+		"media": [
+			"review/media/2026-10-10-shared-back-and-play-online-buttons/dodgeball-full.png",
+			"review/media/2026-10-10-shared-back-and-play-online-buttons/dodgeball-top-left.png",
+			"review/media/2026-10-10-shared-back-and-play-online-buttons/moba-full.png",
+			"review/media/2026-10-10-shared-back-and-play-online-buttons/moba-top-left.png"
+		],
+		"links": [],
+		"thread": "thr_v9vmze9pfi",
+		"page": "2026-10-10-shared-back-and-play-online-buttons/"
+	},
+	{
+		"at": "2026-10-10T09:15:33.000Z",
+		"title": "Move Play online button",
+		"ask": "Is Play online in the right place?",
+		"status": "Archived",
+		"decision": "Superseded by the shared corner buttons.",
+		"media": [
+			"review/media/2026-10-10-move-play-online-button/before.png",
+			"review/media/2026-10-10-move-play-online-button/lobby-online-1440.png",
+			"review/media/2026-10-10-move-play-online-button/lobby-topleft-1440.png"
+		],
+		"links": [],
+		"thread": "thr_a8kpuv5mvr",
+		"page": "2026-10-10-move-play-online-button/"
+	},
+	{
+		"at": "2026-10-10T08:46:42.000Z",
+		"title": "Scoreboard and result",
+		"ask": "Does the scoreboard read at a glance?",
+		"status": "Decided",
+		"decision": "Done: Tab toggles it, title removed.",
+		"media": [
+			"review/media/2026-10-10-scoreboard-and-result/result.png",
+			"review/media/2026-10-10-scoreboard-and-result/scoreboard.png"
+		],
+		"links": [],
+		"thread": "thr_b79iwnezdu",
+		"page": "2026-10-10-scoreboard-and-result/"
+	},
+	{
+		"at": "2026-10-10T08:38:03.000Z",
+		"title": "Flagfall, explored",
+		"ask": "Does Flagfall feel like its own night place?",
+		"status": "Decided",
+		"decision": "Reviewed.",
+		"media": [
+			"review/media/2026-10-10-flagfall-explored/flagfall-post-a.png",
+			"review/media/2026-10-10-flagfall-explored/flagfall-south-lane.png",
+			"review/media/2026-10-10-flagfall-explored/flagfall-yard.png"
+		],
+		"links": [],
+		"thread": "thr_79t4z3xyig",
+		"page": "2026-10-10-flagfall-explored/"
+	},
+	{
+		"at": "2026-10-10T11:00:00.000Z",
+		"title": "Lobby concepts",
+		"ask": "Which of the three homes for the lobby screen?",
+		"status": "Decided",
+		"decision": "Pocket weather (v2/02): a huge ceramic saucer in magnetic cradles; a turning diorama in a bowl previews the next map. Oskar, 2026-10-10.",
+		"page": "lobby/",
+		"media": [],
+		"links": [],
+		"thread": ""
+	},
+	{
+		"at": "2026-10-10T10:57:00.000Z",
+		"title": "Splash frames",
+		"ask": "Which skin is the splash? Card frame materials: ink, wash, paper; skins wash, ink, stone, painted.",
+		"status": "Decided",
+		"decision": "Painted.",
+		"page": "frames/",
+		"media": [
+			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/skin-ink-1440.png",
+			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/skin-painted-1440-flagfall.png",
+			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/skin-painted-1440.png",
+			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/skin-painted-390.png",
+			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/skin-stone-1440.png",
+			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/skin-wash-1440-flagfall.png",
+			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/skin-wash-1440.png",
+			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/skin-wash-390.png",
+			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/crop-wash.png",
+			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/crop-ink.png",
+			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/crop-painted.png",
+			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/splash-390.png",
+			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/splash-1440-bonus.png",
+			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/splash-1440-flagfall.png",
+			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/splash-1440.png",
+			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/before-splash.png",
+			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/splash-motion.webm",
+			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/motion-sheet.png",
+			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/apex-1440.png",
+			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/back-1440.png",
+			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/crop-tl.png",
+			"review/media/2026-10-10-splash-skins-wash-ink-stone-painted/crop-br.png"
+		],
+		"links": [],
+		"thread": "thr_afenmtsc4e"
+	},
+	{
+		"at": "2026-10-10T10:56:00.000Z",
+		"title": "Splash art",
+		"ask": "Which backdrop for the splash screen?",
+		"status": "Decided",
+		"decision": "Day-night plate.",
+		"page": "splash/",
+		"media": [],
+		"links": [],
+		"thread": ""
+	},
+	{
+		"at": "2026-10-10T10:55:00.000Z",
+		"title": "Rebrand gallery",
+		"ask": "Which direction feels like the brand: Sun Spell or Neon Dream?",
+		"status": "Decided",
+		"decision": "Day isles and night garden style; the names were rejected.",
+		"page": "vibes/",
+		"media": [
+			"review/media/2026-10-10-rebrand-concept-art/current.png",
+			"review/media/2026-10-10-rebrand-concept-art/frames.png",
+			"review/media/2026-10-10-rebrand-concept-art/gallery.png"
+		],
+		"links": [],
+		"thread": "thr_tigr5zz3kv"
+	},
+	{
+		"at": "2026-10-10T10:54:00.000Z",
+		"title": "Setting boards",
+		"ask": "Reference boards for the world’s setting.",
+		"status": "Archived",
+		"decision": "",
+		"page": "archive/boards/",
+		"media": [],
+		"links": [],
+		"thread": ""
+	},
+	{
+		"at": "2026-10-10T10:53:00.000Z",
+		"title": "Archive",
+		"ask": "Superseded concepts: the seven unpicked directions, schoolyard and seaside art.",
+		"status": "Archived",
+		"decision": "",
+		"page": "archive/vibes/archive.html",
+		"media": [],
+		"links": [],
+		"thread": ""
+	}
+]

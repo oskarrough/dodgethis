@@ -1,0 +1,873 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Sound board · dodgethis</title>
+		<link rel="stylesheet" href="/pages/page.css" />
+		<!-- The board is a tool, so it styles itself: a desktop app filling the window. A bar on top, the strip
+		     (every sound as a light, in the order a player meets them), then three panes: sources, the stage (the
+		     sound map or a tool) and the inspector with the deck. -->
+		<style>
+			/* Teenage Engineering for a sound board: a light grey hardware body, black screens with neon line work,
+			   chunky keys. Four colours mean the same number everywhere, like OP-1's four encoders: blue length,
+			   green attack, white level, orange brightness. */
+			html,
+			body {
+				height: 100%;
+			}
+			.page.app {
+				--body: #e3e3e0;
+				--module: #ededea;
+				--key: #f7f7f5;
+				--edge: #c9c9c4;
+				--ink: #1b1b1c;
+				--soft: #55554f;
+				--screen: #0c0c0d;
+				--dim: #a9a9a4;
+				--blue: #3fa9f5;
+				--green: #2bd67b;
+				--white: #f1f1ef;
+				--orange: #ff5a1f;
+				--red: #ff3b3b;
+				--purple: #a07bff;
+				--trying: var(--blue);
+				--kept: var(--green);
+				--builtin: #cfcfca;
+				--line: #00000014;
+				max-width: none;
+				height: 100%;
+				padding: 0;
+				display: grid;
+				grid-template-rows: auto auto minmax(0, 1fr);
+				overflow: hidden;
+				background: var(--body);
+				color: var(--ink);
+				font:
+					14px/1.45 system-ui,
+					-apple-system,
+					'Segoe UI',
+					sans-serif;
+			}
+			.app h1,
+			.app h2,
+			.app h3,
+			.app section {
+				margin: 0;
+			}
+			.label,
+			.app h3 {
+				font-size: 10px;
+				font-weight: 700;
+				letter-spacing: 0.12em;
+				text-transform: uppercase;
+				color: var(--soft);
+			}
+
+			/* Keys: raised tiles that press in. */
+			.app button {
+				font: inherit;
+				font-size: 13px;
+				color: inherit;
+				border: 1px solid var(--edge);
+				border-radius: 8px;
+				background: var(--key);
+				box-shadow:
+					0 2px 0 var(--edge),
+					0 3px 6px #0000000d;
+				padding: 6px 10px;
+				cursor: pointer;
+				transition:
+					transform 60ms,
+					box-shadow 60ms;
+			}
+			.app button:hover {
+				background: #fff;
+			}
+			.app button:active,
+			.app button.pressed {
+				transform: translateY(2px);
+				box-shadow: 0 0 0 var(--edge);
+			}
+			.app button[aria-pressed='true'] {
+				background: var(--ink);
+				color: var(--white);
+				border-color: var(--ink);
+			}
+			.app button:disabled {
+				opacity: 0.4;
+				cursor: default;
+			}
+			.app kbd {
+				display: inline-block;
+				min-width: 1.3em;
+				margin-right: 6px;
+				font:
+					700 11px/1.5 system-ui,
+					sans-serif;
+				text-align: center;
+				color: var(--soft);
+			}
+			.app select,
+			.app input[type='search'],
+			.app input[type='number'],
+			.app textarea {
+				font: inherit;
+				font-size: 13px;
+				color: inherit;
+				border: 1px solid var(--edge);
+				border-radius: 8px;
+				background: #fff;
+				padding: 5px 8px;
+				max-width: 100%;
+			}
+			.app input[type='range'] {
+				accent-color: var(--orange);
+			}
+
+			/* The bar. */
+			.bar {
+				display: flex;
+				align-items: center;
+				gap: 12px;
+				padding: 10px 16px;
+				background: var(--module);
+				border-bottom: 1px solid var(--edge);
+			}
+			.bar h1 {
+				font-size: 15px;
+				font-weight: 800;
+				letter-spacing: 0.02em;
+			}
+			.bar > * {
+				white-space: nowrap;
+				flex: none;
+			}
+			.bar .grow {
+				flex: 1;
+			}
+			.bar .grow {
+				flex: 1;
+			}
+			.app button.progress {
+				background: var(--screen);
+				border: 0;
+				box-shadow: 0 2px 0 #000;
+				color: var(--dim);
+				font-size: 12px;
+			}
+			.app button.progress:hover {
+				background: #1a1a1c;
+			}
+			.progress .next {
+				color: var(--white);
+				font-weight: 600;
+			}
+			.progress {
+				display: flex;
+				align-items: center;
+				gap: 10px;
+				font-size: 12px;
+				color: var(--soft);
+				padding: 5px 10px;
+				border-radius: 8px;
+				background: var(--screen);
+			}
+			.progress .leds {
+				display: flex;
+				gap: 2px;
+			}
+			.progress .leds i {
+				width: 4px;
+				height: 12px;
+				border-radius: 1px;
+				background: #2a2a2b;
+			}
+			.progress .leds i.on {
+				background: var(--green);
+				box-shadow: 0 0 6px #2bd67b88;
+			}
+			.progress .leds i.try {
+				background: var(--blue);
+			}
+			.progress b {
+				color: var(--white);
+				font-weight: 300;
+				font-size: 18px;
+				font-variant-numeric: tabular-nums;
+			}
+			.bar output {
+				font-size: 13px;
+				color: var(--soft);
+			}
+			.hint {
+				display: flex;
+				align-items: center;
+				gap: 5px;
+				font-size: 12px;
+				color: var(--soft);
+				padding-left: 12px;
+				border-left: 1px solid var(--edge);
+			}
+			.hint b {
+				font:
+					700 14px/1.2 system-ui,
+					sans-serif;
+				margin-left: 7px;
+				padding: 0 5px;
+				border-radius: 4px;
+				background: var(--key);
+				box-shadow: 0 1px 0 var(--edge);
+				color: var(--ink);
+				font-size: 11px;
+			}
+			.hint b.nope {
+				color: var(--red);
+			}
+			.hint b.like {
+				color: var(--green);
+			}
+			.hint b.keep-dot {
+				color: #fff;
+				background: var(--orange);
+			}
+			.legend {
+				display: flex;
+				align-items: center;
+				gap: 6px;
+				font-size: 12px;
+				color: var(--soft);
+			}
+			.legend i {
+				width: 10px;
+				height: 10px;
+				border-radius: 50%;
+				margin-left: 6px;
+				background: var(--builtin);
+			}
+			.legend i[data-status='kept'] {
+				background: var(--green);
+			}
+			.legend i[data-status='trying'] {
+				background: var(--blue);
+			}
+			#notice:not(:empty) {
+				color: var(--ink);
+				background: #fff;
+				border-radius: 8px;
+				padding: 4px 10px;
+				box-shadow: 0 2px 0 var(--edge);
+			}
+
+			/* The strip: an LED per sound. */
+			.strip {
+				display: flex;
+				flex-wrap: wrap;
+				row-gap: 8px;
+				gap: 16px;
+				padding: 10px 16px 12px;
+				overflow-x: auto;
+				background: var(--module);
+				border-bottom: 1px solid var(--edge);
+				scrollbar-width: thin;
+			}
+			.strip .source {
+				display: grid;
+				gap: 5px;
+				flex: none;
+			}
+			.strip .source > span {
+				font-size: 10px;
+				font-weight: 700;
+				letter-spacing: 0.08em;
+				text-transform: uppercase;
+				color: var(--soft);
+				white-space: nowrap;
+			}
+			.strip .group-start {
+				padding-left: 16px;
+				border-left: 1px solid var(--edge);
+			}
+			.lights {
+				display: flex;
+				gap: 4px;
+			}
+			.app .light {
+				all: unset;
+				box-sizing: border-box;
+				width: 14px;
+				height: 14px;
+				border-radius: 50%;
+				cursor: pointer;
+				background: var(--builtin);
+				box-shadow: inset 0 1px 2px #0000002a;
+				transition: transform 80ms;
+			}
+			.app .light[data-status='kept'] {
+				background: var(--green);
+				box-shadow: 0 0 6px #2bd67b99;
+			}
+			.app .light[data-status='trying'] {
+				background: var(--blue);
+				box-shadow: 0 0 6px #3fa9f599;
+			}
+			.app .light[data-status='music'] {
+				background: transparent;
+				box-shadow: inset 0 0 0 1.5px var(--edge);
+			}
+			.app .light[data-flag] {
+				outline: 1.5px solid #ff3b3baa;
+				outline-offset: 1px;
+			}
+			.app .light[data-status='kept'][data-trying] {
+				box-shadow:
+					0 0 0 2px var(--blue),
+					0 0 6px #2bd67b99;
+			}
+			.app .light[aria-current='true'] {
+				outline: 2px solid var(--ink);
+				outline-offset: 2px;
+				transform: scale(1.15);
+			}
+			.app .light:hover {
+				transform: scale(1.3);
+			}
+
+			/* Panes. */
+			.panes {
+				display: grid;
+				grid-template-columns: 14rem 25rem minmax(0, 1fr);
+				gap: 10px;
+				padding: 10px;
+				min-height: 0;
+			}
+			.panes > * {
+				min-height: 0;
+				overflow: auto;
+				border-radius: 14px;
+				background: var(--module);
+				border: 1px solid var(--edge);
+				box-shadow: 0 2px 0 var(--edge);
+			}
+			/* Sources: a calm list, like Linear's sidebar. Roomy rows, quiet headings, a soft highlight. */
+			.sources {
+				padding: 10px 8px 16px;
+				font-size: 13.5px;
+			}
+			.sources h2 {
+				font-size: 12px;
+				font-weight: 500;
+				letter-spacing: 0;
+				text-transform: none;
+				color: var(--soft);
+				padding: 18px 10px 6px;
+			}
+			.sources h2:first-child {
+				padding-top: 6px;
+			}
+			.sources ul {
+				list-style: none;
+				margin: 0;
+				padding: 0;
+				display: grid;
+				gap: 2px;
+			}
+			.sources a {
+				display: flex;
+				align-items: center;
+				gap: 9px;
+				min-height: 28px;
+				padding: 0 10px;
+				border-radius: 7px;
+				color: var(--ink);
+				text-decoration: none;
+			}
+			.sources a:hover {
+				background: #00000008;
+			}
+			.sources a[aria-current='true'] {
+				background: #d9d9d4;
+				color: var(--ink);
+				font-weight: 600;
+			}
+			.sources .count {
+				margin-left: auto;
+				font-size: 12px;
+				color: var(--soft);
+				font-variant-numeric: tabular-nums;
+			}
+			.sources .pre {
+				color: var(--soft);
+				font-weight: 400;
+			}
+			.sources ul ul {
+				margin: 2px 0 6px;
+			}
+			.sources ul ul a {
+				min-height: 26px;
+				padding-left: 18px;
+				font-size: 13px;
+			}
+			.dot {
+				width: 7px;
+				height: 7px;
+				border-radius: 50%;
+				flex: none;
+				background: var(--builtin);
+			}
+			.dot[data-status='kept'] {
+				background: var(--green);
+			}
+			.dot[data-status='trying'] {
+				background: var(--blue);
+			}
+			.dot[data-status='music'] {
+				background: transparent;
+				box-shadow: inset 0 0 0 1px currentColor;
+			}
+
+			/* The stage: the map is a screen. */
+			.stage {
+				display: grid;
+				grid-template-rows: auto minmax(0, 1fr);
+				overflow: hidden;
+			}
+			.tabs {
+				display: flex;
+				gap: 6px;
+				padding: 10px 12px;
+			}
+			.tabs button {
+				font-size: 12px;
+				padding: 4px 12px;
+			}
+			#view {
+				position: relative;
+				min-height: 0;
+				overflow: auto;
+				margin: 0 10px 10px;
+				border-radius: 10px;
+				background: var(--screen);
+				color: var(--white);
+			}
+			#map {
+				position: absolute;
+				inset: 0;
+			}
+			#map[hidden] {
+				display: none;
+			}
+			.tool {
+				padding: 16px 22px;
+				max-width: 54rem;
+				color: var(--white);
+			}
+			.tool a {
+				color: var(--blue);
+			}
+			.tool button {
+				color: var(--ink);
+			}
+			.tool th,
+			.tool td {
+				border-color: #ffffff1a;
+			}
+			.tool pre {
+				color: var(--green);
+			}
+
+			/* The inspector: screens and keys. */
+			.inspector {
+				padding: 12px;
+				display: grid;
+				gap: 10px;
+				align-content: start;
+			}
+			.screen {
+				background: var(--screen);
+				color: var(--white);
+				border-radius: 10px;
+				padding: 12px 14px;
+				display: grid;
+				gap: 8px;
+				box-shadow: inset 0 0 0 3px #1f1f21;
+			}
+			.inspector .screen {
+				cursor: pointer;
+			}
+			.inspector .screen:hover {
+				box-shadow: inset 0 0 0 3px #2c2c2f;
+			}
+			.screen.tapped {
+				animation: tap 0.25s ease-out;
+			}
+			@keyframes tap {
+				from {
+					box-shadow: inset 0 0 0 3px var(--white);
+				}
+			}
+			.screen h2 {
+				font:
+					600 17px ui-monospace,
+					'SF Mono',
+					monospace;
+				color: var(--white);
+			}
+			.screen .about {
+				margin: 0;
+				color: var(--dim);
+				font-size: 13px;
+			}
+			.screen .meta {
+				font-size: 11px;
+				color: var(--dim);
+				overflow-wrap: anywhere;
+			}
+			.screen .head {
+				display: flex;
+				justify-content: space-between;
+				align-items: baseline;
+				gap: 8px;
+			}
+			.screen .tag {
+				font-size: 10px;
+				font-weight: 700;
+				letter-spacing: 0.1em;
+				text-transform: uppercase;
+				padding: 1px 6px;
+				border: 1.5px solid currentColor;
+				border-radius: 4px;
+				white-space: nowrap;
+			}
+			.readouts {
+				display: grid;
+				grid-template-columns: repeat(4, 1fr);
+				gap: 6px;
+			}
+			.readouts > div {
+				display: grid;
+			}
+			.readouts span {
+				font-size: 9px;
+				font-weight: 700;
+				letter-spacing: 0.12em;
+			}
+			.readouts b {
+				font-weight: 200;
+				font-size: 26px;
+				line-height: 1.05;
+				color: var(--white);
+				font-variant-numeric: tabular-nums;
+			}
+			.readouts em {
+				font-style: normal;
+				font-size: 9px;
+				color: var(--dim);
+				white-space: nowrap;
+			}
+			.readouts small {
+				font-size: 10px;
+				color: var(--dim);
+				margin-left: 2px;
+			}
+			.wave {
+				display: block;
+				width: 100%;
+				height: 56px;
+			}
+			.card .wave {
+				height: 76px;
+				cursor: pointer;
+			}
+			.card .name {
+				min-height: 3.2em;
+				font-size: 17px;
+				font-weight: 600;
+				overflow-wrap: anywhere;
+			}
+			.card .name .meta {
+				font-weight: 400;
+			}
+			.card select {
+				background: #1c1c1e;
+				color: var(--white);
+				border-color: #333;
+				font-size: 12px;
+			}
+			.card {
+				touch-action: pan-y;
+				user-select: none;
+				transition: box-shadow 0.1s;
+			}
+			.card.swipe-left {
+				animation: left 0.2s ease-in;
+			}
+			.card.swipe-right {
+				animation: right 0.2s ease-in;
+			}
+			@keyframes left {
+				to {
+					transform: translateX(-40px) rotate(-4deg);
+					opacity: 0.1;
+				}
+			}
+			@keyframes right {
+				to {
+					transform: translateX(40px) rotate(4deg);
+					opacity: 0.1;
+				}
+			}
+			.row {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 6px;
+				align-items: center;
+			}
+			.row .grow {
+				flex: 1;
+			}
+			.keys {
+				display: grid;
+				grid-template-columns: repeat(5, 1fr);
+				gap: 6px;
+			}
+			.keys button {
+				display: grid;
+				justify-items: center;
+				gap: 1px;
+				padding: 7px 2px 6px;
+				font-size: 11px;
+			}
+			.keys button kbd {
+				margin: 0;
+				font-size: 15px;
+				color: var(--ink);
+			}
+			.keys .nope kbd {
+				color: var(--red);
+			}
+			.keys .like kbd {
+				color: var(--green);
+			}
+			.keys .near kbd {
+				color: var(--purple);
+			}
+			.keep-row {
+				display: flex;
+				align-items: center;
+				gap: 12px;
+			}
+			.app button.keep {
+				display: grid;
+				justify-items: center;
+				gap: 3px;
+				padding: 7px 2px 6px;
+				font-size: 11px;
+				font-weight: 600;
+			}
+			.app button.keep::before {
+				content: '';
+				width: 18px;
+				height: 18px;
+				border-radius: 50%;
+				background: var(--orange);
+				box-shadow: inset 0 -3px 0 #0000002a;
+			}
+			.app button.keep:disabled::before {
+				background: var(--builtin);
+			}
+			.keep-label {
+				display: flex;
+				gap: 8px;
+				align-items: baseline;
+				font-size: 13px;
+				justify-content: flex-end;
+				margin-top: -4px;
+			}
+			.keep-label b {
+				font-size: 15px;
+			}
+			.keep-label span {
+				color: var(--soft);
+				font-size: 12px;
+			}
+			.facts {
+				font-size: 12px;
+				color: var(--soft);
+				display: grid;
+				grid-template-columns: auto 1fr;
+				gap: 2px 10px;
+				margin: 0;
+			}
+			.facts dd {
+				margin: 0;
+				color: var(--ink);
+				overflow-wrap: anywhere;
+			}
+			.shuffle {
+				list-style: none;
+				margin: 0;
+				padding: 0;
+				font-size: 12px;
+				display: grid;
+				gap: 4px;
+			}
+			.shuffle li {
+				display: flex;
+				gap: 6px;
+				align-items: center;
+			}
+			.shuffle li span {
+				flex: 1;
+				overflow-wrap: anywhere;
+			}
+			.shuffle button {
+				padding: 2px 8px;
+			}
+			.flag {
+				color: var(--red);
+				font-size: 12px;
+				min-height: 1.45em;
+			}
+			.app details {
+				border-top: 1px solid var(--edge);
+				padding-top: 8px;
+			}
+			.app summary {
+				cursor: pointer;
+				font-size: 10px;
+				font-weight: 700;
+				letter-spacing: 0.12em;
+				text-transform: uppercase;
+				color: var(--soft);
+			}
+			.app details[open] > summary {
+				margin-bottom: 8px;
+			}
+
+			/* The palette: a screen that drops in. */
+			.palette {
+				width: min(38rem, 90vw);
+				margin-top: 12vh;
+				padding: 0;
+				border: 0;
+				border-radius: 14px;
+				background: var(--screen);
+				color: var(--white);
+				box-shadow:
+					inset 0 0 0 3px #1f1f21,
+					0 30px 80px #0006;
+			}
+			.palette::backdrop {
+				background: #e3e3e0aa;
+				backdrop-filter: blur(2px);
+			}
+			.palette input {
+				width: 100%;
+				box-sizing: border-box;
+				border: 0 !important;
+				border-bottom: 1px solid #ffffff1a !important;
+				border-radius: 0 !important;
+				padding: 16px 18px !important;
+				font-size: 18px !important;
+				outline: none;
+				color: var(--white) !important;
+				background: transparent !important;
+			}
+			.palette ol {
+				list-style: none;
+				margin: 0;
+				padding: 6px;
+				max-height: 50vh;
+				overflow: auto;
+			}
+			.palette ol:empty {
+				display: none;
+			}
+			.palette li {
+				display: flex;
+				gap: 12px;
+				align-items: baseline;
+				padding: 6px 12px;
+				border-radius: 8px;
+				cursor: pointer;
+			}
+			.palette li small {
+				margin-left: auto;
+				color: var(--dim);
+				white-space: nowrap;
+				overflow: hidden;
+				text-overflow: ellipsis;
+			}
+			.palette li[aria-selected='true'] {
+				background: var(--orange);
+				color: #000;
+			}
+			.palette li[aria-selected='true'] small {
+				color: #000a;
+			}
+			/* The map draws its own chips; they shouldn't look like keys. */
+			#map button {
+				box-shadow: none;
+				transform: none;
+			}
+			.empty {
+				color: var(--dim);
+				padding: 40px 20px;
+			}
+		</style>
+	</head>
+	<body class="page app">
+		<header class="bar">
+			<h1>Sound board</h1>
+			<button
+				class="progress"
+				id="progress"
+				type="button"
+				title="Go to the next sound nobody has picked yet"
+			></button>
+			<span class="legend"
+				><i data-status="kept"></i>picked <i data-status="trying"></i>not kept yet
+				<i></i>untouched</span
+			>
+			<span
+				class="hint"
+				title="↑↓ moves between uses (each sound the game plays), ←→ through candidates for one, X nopes a file for good, S likes it, K keeps the likes or the card"
+				><b>↑↓</b> use <b>←→</b> candidate <b class="nope">X</b> nope <b class="like">S</b> like
+				<b class="keep-dot">K</b> keep</span
+			>
+			<output id="notice"></output>
+			<span class="grow"></span>
+			<button id="find" type="button"><kbd>⌘K</kbd>Find</button>
+			<button
+				id="fight"
+				type="button"
+				title="A seeded burst of fight sounds through the game's mix"
+			>
+				Fight
+			</button>
+			<button id="stop" type="button">Stop music</button>
+			<button
+				id="resync"
+				type="button"
+				title="New sounds go in Dropbox under Rough Resources/Sounds/osk-sfx/ (any folder). Resync copies them in and rebuilds every shortlist."
+			>
+				Resync
+			</button>
+			<output id="resync-status"></output>
+		</header>
+		<nav class="strip" id="strip" aria-label="Every sound"></nav>
+		<main class="panes">
+			<nav class="sources" id="sources" aria-label="Sources"></nav>
+			<aside class="inspector" id="inspector"></aside>
+			<section class="stage">
+				<div class="tabs" id="tabs" role="tablist"></div>
+				<div id="view">
+					<div id="map"></div>
+					<div id="tool" class="tool" hidden></div>
+				</div>
+			</section>
+		</main>
+		<script type="module" src="./board.js"></script>
+	</body>
+</html>

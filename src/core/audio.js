@@ -422,7 +422,7 @@ export const sfx = {
 }
 registerVoices(sfx)
 
-// Render sounds into an OfflineAudioContext instead of the speakers, for their numbers (docs/pages/sound/numbers.js).
+// Render sounds into an OfflineAudioContext instead of the speakers, for their numbers (pages/sound/numbers.js).
 // `play` runs while the offline context stands in for the live one; `warm` lists sample URLs to decode first.
 export async function render(play, { seconds = 2, rate = 44100, warm = [] } = {}) {
 	preload()

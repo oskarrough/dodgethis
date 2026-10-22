@@ -32,7 +32,7 @@ import { syncShowcase } from './scripts/sound-showcase.js'
 // The payoff stands: the ~1.5 MB wasm is emitted as its own cacheable, streamable
 // asset instead of base64-inlined into the JS — the initial JS bundle drops from
 // ~906 kB gzip (the -compat build) to ~180 kB gzip.
-// Review pages (/docs/pages/…) are folders with an index.html; without the
+// Review pages (/pages/…) are folders with an index.html; without the
 // trailing slash Vite's SPA fallback serves the game instead.
 const folderSlash = {
 	name: 'folder-slash',
@@ -52,7 +52,7 @@ const folderSlash = {
 	},
 }
 
-// The sound board's Keep button (docs/pages/sound/): a picked file lands in public/sfx/kept/ as Ogg and its swap
+// The sound board's Keep button (pages/sound/): a picked file lands in public/sfx/kept/ as Ogg and its swap
 // in src/core/sfx/kept.json, so it ships with the next commit. No file and no voice puts the use back on its
 // built-in sound.
 const soundKeep = {
@@ -62,7 +62,7 @@ const soundKeep = {
 	handleHotUpdate({ file }) {
 		if (
 			file.endsWith('src/core/sfx/kept.json') ||
-			file.endsWith('docs/pages/sound/approved.json') ||
+			file.endsWith('pages/sound/approved.json') ||
 			file.includes('/public/sfx/kept/')
 		)
 			return []
@@ -229,12 +229,12 @@ const soundKeep = {
 			)
 		})
 		// The board's K on a sound nobody swapped: Oskar heard the built-in sound and it stays. A list of use ids in
-		// docs/pages/sound/approved.json, which only the board reads; a Keep or a new swap takes the id back out.
+		// pages/sound/approved.json, which only the board reads; a Keep or a new swap takes the id back out.
 		server.middlewares.use('/__sound/approve', (req, res) => {
 			const q = new URL(req.url, 'http://board').searchParams
 			const id = q.get('use') ?? ''
 			if (req.method !== 'POST' || !/^[\w.-]+$/.test(id)) return res.writeHead(400).end()
-			const path = join(server.config.root, 'docs/pages/sound/approved.json')
+			const path = join(server.config.root, 'pages/sound/approved.json')
 			const list = new Set(existsSync(path) ? JSON.parse(readFileSync(path, 'utf8')) : [])
 			if (q.get('off')) list.delete(id)
 			else list.add(id)
@@ -324,7 +324,7 @@ const soundShowcase = {
 	transformIndexHtml: {
 		order: 'pre',
 		handler(html, context) {
-			return context.filename.endsWith('/docs/pages/sound/index.html')
+			return context.filename.endsWith('/pages/sound/index.html')
 				? html.replace('src="./board.js"', 'src="./showcase.js"')
 				: html
 		},
@@ -332,14 +332,12 @@ const soundShowcase = {
 }
 
 // Sibling files Vite leaves behind (items.json, <a href> images, classic viewer.js)
-// and /docs/page.css so that path still works next to the hashed stylesheet.
-const docsPages = {
-	name: 'docs-pages',
+// and /pages/page.css so that path still works next to the hashed stylesheet.
+const pages = {
+	name: 'pages',
 	apply: 'build',
 	closeBundle() {
-		mkdirSync(join('dist', 'docs'), { recursive: true })
-		copyFileSync('docs/page.css', join('dist', 'docs', 'page.css'))
-		cpSync('docs/pages', join('dist', 'docs', 'pages'), {
+		cpSync('pages', join('dist', 'pages'), {
 			recursive: true,
 			filter: (src) => statSync(src).isDirectory() || !src.endsWith('.html'),
 		})
@@ -358,7 +356,7 @@ const drune = {
 }
 
 export default defineConfig({
-	plugins: [wasm(), folderSlash, soundKeep, soundShowcase, docsPages, drune],
+	plugins: [wasm(), folderSlash, soundKeep, soundShowcase, pages, drune],
 	// The build's id, its time: online rooms only seat guests from the same build (online/net.js `BUILD`).
 	define: { __BUILD__: String(Date.now()) },
 	server: {
@@ -378,12 +376,12 @@ export default defineConfig({
 		target: 'esnext',
 		rollupOptions: {
 			treeshake: false,
-			// Every docs/pages/**/*.html, so a new page ships without editing this list.
+			// Every pages/**/*.html, so a new page ships without editing this list.
 			input: [
 				'index.html',
-				...readdirSync('docs/pages', { recursive: true })
+				...readdirSync('pages', { recursive: true })
 					.filter((name) => String(name).endsWith('.html'))
-					.map((name) => join('docs/pages', name)),
+					.map((name) => join('pages', name)),
 			],
 		},
 	},

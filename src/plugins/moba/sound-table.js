@@ -5,7 +5,7 @@ import { tune } from './tune.js'
 import { tune as frontTune } from './front/tune.js'
 
 // The sound table (docs/sound.md): every use the game makes a sound for, by source. The game plays a use by id
-// (`playUse` in sounds.js), the sound board (docs/pages/sound/) auditions and swaps it, and `facts` says which uses each
+// (`playUse` in sounds.js), the sound board (pages/sound/) auditions and swaps it, and `facts` says which uses each
 // fact can set off, an empty list meaning silent. `voice` names a sound in `sounds.js` (look.sounds or core sfx).
 // `recipe` is a blip read live from a tune block, `play` a custom player and `music` a music scene.
 

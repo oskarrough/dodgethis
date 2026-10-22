@@ -1,6 +1,6 @@
 // `bun run sound:check [words…] [--all] [url]`: every sound's numbers (length, attack, tail, peak, rms, timbre
 // centroid) against the docs/sound.md rules, rendered offline in a headless browser on the sound board
-// (docs/pages/sound/numbers.js). Prints the flagged uses; words pick uses by id, --all prints every use.
+// (pages/sound/numbers.js). Prints the flagged uses; words pick uses by id, --all prints every use.
 // `--files` measures Oskar's library (sounds/osk-sfx/) instead; `--shortlist [words]` ranks library files for each
 // use the words pick (every use without words) and writes the top five to sounds/shortlists.json for the board.
 import { execFileSync } from 'node:child_process'
@@ -29,7 +29,7 @@ if (args.includes('--files')) {
 
 let result
 try {
-	browser('open', `${base}/docs/pages/sound/?check`)
+	browser('open', `${base}/pages/sound/?check`)
 	result = JSON.parse(JSON.parse(browser('eval', 'soundNumbers().then(JSON.stringify)')))
 } finally {
 	browser('close')
