@@ -132,6 +132,7 @@ export function dressHero(body, heroId = DEFAULT_HERO, team = 'A') {
 			},
 		}) ?? {}
 	const { bow = null, hand = null, bowString = null, drawArm = null } = dressed
+	if (dressed.mouth) body.mouth = dressed.mouth
 	// Move geometry, not the animated root: core's capsule centre is still physics.
 	torso.geometry.computeBoundingBox()
 	torso.geometry.translate(0, discY - torso.geometry.boundingBox.min.y, 0)
@@ -291,6 +292,7 @@ export function dressHero(body, heroId = DEFAULT_HERO, team = 'A') {
 		delete body.resetAbilityPose
 		delete body.releaseAbilityPose
 		delete body.poseAbility
+		delete body.mouth
 		body.visual.geometry = original
 		hidden.forEach(([part, visible]) => (part.visible = visible))
 	}

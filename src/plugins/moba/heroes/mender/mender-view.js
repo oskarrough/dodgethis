@@ -35,7 +35,11 @@ export function dress({ torso, part, own, discY, t, materials }) {
 		discY + t.coachHeight * 0.6,
 		0,
 	)
-	return { cone, hand }
+	// Mend's beam leaves from the megaphone's mouth and follows it as the cast tilts it.
+	const mouth = new THREE.Object3D()
+	mouth.position.z = -t.megaphoneLength / 2
+	cone.add(mouth)
+	return { cone, hand, mouth }
 }
 
 export function animate(unit, rig, { pose, progress, costume }) {
@@ -121,6 +125,7 @@ export function extras(scene) {
 	return {
 		update({ units = [], unit, aim, tick, alpha, dt = 0 }) {
 			const at = (u) => u.body.mesh?.position ?? u.body.position
+			const mouth = new THREE.Vector3()
 			const time = performance.now() / 1000
 			effects.update(dt)
 
@@ -161,15 +166,16 @@ export function extras(scene) {
 				casting.add(u.id)
 				const k = Math.max(0, Math.min(1, 1 - (u.cast.left - alpha) / Math.max(1, u.cast.total)))
 				seen.set(u.id, { targetId: ally.id, progress: k })
-				const from = at(u),
+				const from = u.body.mouth?.getWorldPosition(mouth) ?? at(u),
+					fromY = u.body.mouth ? from.y : mv.height,
 					to = at(ally)
 				const rig = nextRig()
-				link(rig.beam, from, to, mv.height, mv.beam.width + mv.beam.grow * k)
+				link(rig.beam, from, to, fromY, mv.beam.width + mv.beam.grow * k, mv.height)
 				rig.beam.material.opacity = mv.beam.opacity + mv.beam.glow * k
 				const along = easeOut(k)
 				rig.bead.position.set(
 					from.x + (to.x - from.x) * along,
-					mv.height,
+					fromY + (mv.height - fromY) * along,
 					from.z + (to.z - from.z) * along,
 				)
 				rig.bead.scale.setScalar(mv.beam.bead * (0.6 + 0.6 * k))

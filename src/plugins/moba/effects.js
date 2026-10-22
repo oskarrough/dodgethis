@@ -41,14 +41,15 @@ export function glowMaterial(color, opacity = 1) {
 	return new THREE.MeshBasicMaterial({ color, opacity, transparent: true, depthWrite: false })
 }
 
-// Stretch a unit box (`linkGeometry`) from one ground point to another at height y.
+// Stretch a unit box (`linkGeometry`) from one ground point at height y to another at height toY.
 export const linkGeometry = () => new THREE.BoxGeometry(1, 1, 1).translate(0, 0, 0.5)
-export function link(mesh, from, to, y, width) {
+export function link(mesh, from, to, y, width, toY = y) {
 	const dx = to.x - from.x,
+		dy = toY - y,
 		dz = to.z - from.z
 	mesh.position.set(from.x, y, from.z)
-	mesh.rotation.set(0, Math.atan2(dx, dz), 0)
-	mesh.scale.set(width, width, Math.hypot(dx, dz))
+	mesh.rotation.set(-Math.atan2(dy, Math.hypot(dx, dz)), Math.atan2(dx, dz), 0, 'YXZ')
+	mesh.scale.set(width, width, Math.hypot(dx, dy, dz))
 	mesh.visible = true
 }
 
