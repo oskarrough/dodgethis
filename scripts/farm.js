@@ -320,6 +320,71 @@ function playerBot(mods, sim, recipe, roster, seed, { id, lane }) {
 	}
 }
 
+// Compare the bytes, not parsed facts: ordering, missing rows and whitespace all matter.
+function firstLogDifference(base, working) {
+	if (base.equals(working)) return null
+	const rows = [base, working].map((log) => log.toString('utf8').split('\n'))
+	let row = 0
+	while (rows[0][row] === rows[1][row]) row++
+	const [before, after] = rows.map((lines) => lines[row])
+	const tick = JSON.parse(before || after || 'null')?.tick ?? 'n/a'
+	let column = 0
+	while (
+		column < Math.min(before?.length ?? 0, after?.length ?? 0) &&
+		before[column] === after[column]
+	)
+		column++
+	const excerpt = (line) =>
+		line === undefined ? '<EOF>' : JSON.stringify(line.slice(Math.max(0, column - 40), column + 80))
+	return `row=${row + 1} tick=${tick} column=${column + 1} base=${excerpt(before)} working=${excerpt(after)}`
+}
+
+// The schema-migration probe: the same mixed rosters, seeds and provenance on both revisions.
+async function sameReplays(values, { seed, matches, maxSeconds }) {
+	if (seed + matches - 1 > 0xffffffff)
+		throw new Error('Match count exceeds the available uint32 seeds')
+	const base = checkoutRevision(ROOT, values.same)
+	const runId = `same-${crypto.randomUUID()}`
+	const { release } = await reserveCores(1, {
+		label: 'Identical replays',
+		log: (line) => console.error(line),
+	})
+	try {
+		await RAPIER.init({})
+		const modules = await Promise.all([gameModules(base.root), gameModules()])
+		for (let index = 0; index < matches; index++) {
+			const matchSeed = seed + index
+			const roster = farmRoster(
+				['coach,fletcher,hook', 'mender,hook,coach'],
+				values.difficulty,
+				0,
+				true,
+				matchSeed,
+			)
+			const logs = []
+			for (const [side, mods] of modules.entries()) {
+				const result = await runFarmMatch({
+					mods,
+					roster,
+					seed: matchSeed,
+					maxSeconds,
+					map: values.map ?? 'overthrow',
+					directory: join(values.out, runId, side === 0 ? 'base' : 'working'),
+					matchId: `seed-${matchSeed}`,
+					runId,
+					commit: null,
+				})
+				logs.push(await readFile(result.filename))
+			}
+			const difference = firstLogDifference(...logs)
+			console.log(`seed=${matchSeed} ${difference ? `differs ${difference}` : 'identical'}`)
+			if (difference) process.exitCode = 1
+		}
+	} finally {
+		release()
+	}
+}
+
 const HELP = `bun run simulate [options]
 Plays headless bot matches. Default: write logs and tapes for \`bun run simulate --logs runs\`; --summary prints tables.
 
@@ -337,7 +402,12 @@ Sampling
   --set path=v[,v...]       override a tune number per variant (repeatable; flags make a grid)
                             bots.exp.<flag>=0,1 toggles a logic experiment; see docs/verify.md
   --quick                   --summary --cross-only --matches 4
-Comparing (all imply --summary)
+Identical replay
+  --same rev               compare full logs byte for byte; one line per seed, non-zero exit on any difference
+                            mixed coach/fletcher/hook vs mender/hook/coach; defaults: seeds 2,3, 120 seconds
+                            --seed starts the seeds; --matches counts seeds (default 2); --out keeps both logs
+                            supports --map, --difficulty and --jobs (runs on one core); no summary or balance options
+Comparing (these imply --summary)
   --base [rev]              play the same seeds on another revision too (default: @- in jj,
                             HEAD with a dirty git tree, else origin/main) and print deltas
   --until N                 keep adding --matches rounds until the headline intervals decide, up to N
@@ -375,17 +445,40 @@ export async function farm(argv = process.argv.slice(2)) {
 			report: { type: 'boolean' },
 			count: { type: 'string' },
 			base: { type: 'string' },
+			same: { type: 'string' },
 			until: { type: 'string' },
 			idle: { type: 'string', multiple: true, default: [] },
 			player: { type: 'string' },
 			practice: { type: 'boolean' },
 			set: { type: 'string', multiple: true, default: [] },
 			seed: { type: 'string', default: String(tune.bots.seed) },
-			'max-seconds': { type: 'string', default: String(tune.agents.maxSeconds * 4) },
+			'max-seconds': { type: 'string' },
 			out: { type: 'string', default: `runs/${new Date().toISOString().slice(0, 10)}` },
 		},
 	})
 	if (values.help) return console.log(HELP)
+	if (values.same) {
+		for (const option of [
+			'base',
+			'logs',
+			'summary',
+			'quick',
+			'report',
+			'count',
+			'until',
+			'set',
+			'heroes',
+			'lineup',
+			'cross-only',
+			'idle',
+			'player',
+			'practice',
+		]) {
+			const value = values[option]
+			if (Array.isArray(value) ? value.length : value)
+				throw new Error(`--same cannot be combined with --${option}`)
+		}
+	}
 	if (values.map && !playableMaps.includes(values.map))
 		throw new Error(`--map ${values.map}: expected ${playableMaps.join(' or ')}`)
 	if (values.logs) {
@@ -419,10 +512,10 @@ export async function farm(argv = process.argv.slice(2)) {
 		values.count
 	)
 	const crossOnly = values['cross-only'] || values.quick
-	const requestedMatches = Number(values.matches ?? (summary ? 4 : 20)),
+	const requestedMatches = Number(values.matches ?? (values.same ? 2 : summary ? 4 : 20)),
 		jobs = Number(values.jobs ?? coreBudget()),
 		seed = Number(values.seed),
-		maxSeconds = Number(values['max-seconds'])
+		maxSeconds = Number(values['max-seconds'] ?? (values.same ? 120 : tune.agents.maxSeconds * 4))
 	for (const [name, value] of [
 		['matches', requestedMatches],
 		['jobs', jobs],
@@ -435,6 +528,7 @@ export async function farm(argv = process.argv.slice(2)) {
 		throw new Error('max-seconds must be at least one step')
 	if (!['easy', 'normal', 'hard'].includes(values.difficulty))
 		throw new Error('difficulty must be easy, normal or hard')
+	if (values.same) return sameReplays(values, { seed, matches: requestedMatches, maxSeconds })
 	const idle = [
 		...new Set([
 			...(values.practice ? ['A1'] : []),
