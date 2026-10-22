@@ -23,7 +23,7 @@
 
 ## Folders: How dodgethis can be modified
 
-It's an ongoing goal of the game to be extremely malleable, inspired by emacs, neovim plugins, Claude Code mods and many others. Today that is two mechanisms, with a third we want.
+It's an ongoing goal of the game to be extremely malleable, inspired by emacs, neovim plugins, Claude Code mods and many others. Folders add features; synchronous aura hooks let them react to each other.
 
 ## Drop a folder in
 
@@ -46,12 +46,20 @@ Copy `heroes/wata/` and `abilities/balloon/`; Wata was built this way and touche
 5. **Summons:** declare `summon: { hp, radius, lifetime, think }` and call `sim.summon(owner, '<ability>', at)`: an owned, replicated unit that outlives its owner's death and clears on hero swap, removal or match end.
 6. **Check:** `bun run collect-mods` (runs before `dev` and `check`), then `bun run simulate --report --lineup <id>,fletcher,mitts` to see every ability cast and land.
 
+Every new MOBA tune number needs a unit in `src/plugins/moba/units.js` (exact dotted suffixes override bare fields; blocks can declare defaults); `bun scripts/check-moba-units.js` enforces coverage.
+
 A mechanic is something a map switches on: structures, minions, the Ball, bots, camps, the flag, practice dummies. Casting, catching, bounce and damage are the engine every ability runs through; an ability is a data head and a code body in that path, never its own projectile loop.
 
 ## Find where anything lives
 
 `docs/feature-map.md`: one line per player-facing feature, with the files and symbols behind it.
 
-## Not yet: listen to game events
+## React with auras
 
-The simulation announces everything that happens as a fact: a hit, a death, a catch, a cushion. Today only feedback (sounds, popups, shake) and the network listen. A hook would let a hero, ability or mechanic listen too, so a feature can react to another without editing it. Load order and merging (what overwrites, what accumulates, what replaces) come with that, when there is more than one author.
+A status declares `on: { damage, tick, death, … }`; an ability can declare the same `on` map as an innate listener without adding replicated status records. `statuses.js` owns dispatch. Hooks run synchronously in the host sim; `app.present` remains output-only.
+
+Damage visits attacker and victim through `amplify` (multiply `event.factor`), `damage` (change `event.damage`, or redirect part with `sim.hit`) and `absorb` (shields). `shot.unmodified` skips amplification, not banking or shields. Each phase orders statuses by application id, then unit id; innate listeners precede statuses, in unit-id then kit-slot order. A phase snapshots its listeners: new auras wait for the next dispatch, removed auras never fire again in that dispatch.
+
+`hit` notifies the attacker and `damaged` the victim after HP changes, with effective damage. `cast` announces windup starts to all living units; `death` reaches all living units and the victim before its statuses clear. Inspect `event.source` and `event.target` to distinguish your own actions from others'. Hooks receive their own `unit`, `hero`, `status` (if applied), `ability`, `stats`, `sim`, `tick`, `ticks` and the shared mutable `event`. Cast targets are units or aim points; damage and death targets are units.
+
+`tick` follows the sim's existing per-unit step order. Status `interval` sets an absolute-tick cadence; omit it to run every step. Innate ticks also run while dead so owned cover can expire. Status `apply`, `remove` and `expire` are local lifecycle hooks; removal supplies `reason` directly, and refresh retains the existing aura's order and cadence. Stagger and Cushion show the two listener forms; Ward and Swig share `aura-damage.js` `absorbAura`.

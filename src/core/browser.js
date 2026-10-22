@@ -157,28 +157,28 @@ export async function createBrowserApp() {
 	}
 
 	app.debug.tune('engine/physics', tune.physics, (f, t) => {
-		f.add(t, 'gravity', -30, 0, 0.1).onChange(
-			() => (activeWorld().gravity = { x: 0, y: t.gravity, z: 0 }),
-		)
-		f.add(t, 'timeScale', 0, 2, 0.05)
-		f.add(t, 'paused')
+		f
+			.add(t, 'gravity', -30, 0, 0.1)
+			.onChange(() => (activeWorld().gravity = { x: 0, y: t.gravity, z: 0 })).unit = 'm/s²'
+		f.add(t, 'timeScale', 0, 2, 0.05).unit = 'multiplier'
+		f.add(t, 'paused').unit = 'bool'
 	})
 	app.debug.tune('engine/camera', tune.camera)
 	app.debug.tune('engine/pointClick', POINT_CLICK, (f, t) => {
-		f.add(t, 'deadzone', 0, 0.5, 0.01).name('stick deadzone')
-		f.add(t, 'curve', 1, 3, 0.05).name('stick curve')
-		f.add(t, 'resend', 10, 300, 1).name('RMB resend (ms)')
+		f.add(t, 'deadzone', 0, 0.5, 0.01).name('stick deadzone').unit = 'fraction'
+		f.add(t, 'curve', 1, 3, 0.05).name('stick curve').unit = 'multiplier'
+		f.add(t, 'resend', 10, 300, 1).name('RMB resend (ms)').unit = 'ms'
 	})
 	app.debug.tune('engine/output', tune.output, (f, t) => {
 		f.add(t, 'sound').onChange(() => {
 			audio.setSound(t.sound)
 			renderMute()
-		})
-		f.add(t, 'volume', 0, 1, 0.05).onChange(audio.syncMusic)
-		f.add(t, 'shake')
+		}).unit = 'bool'
+		f.add(t, 'volume', 0, 1, 0.05).onChange(audio.syncMusic).unit = 'fraction'
+		f.add(t, 'shake').unit = 'bool'
 	})
 	app.debug.tune('engine/debug', tune.debug, (f, t) => {
-		f.add(t, 'showColliders').onChange(() => (debugLines.visible = t.showColliders))
+		f.add(t, 'showColliders').onChange(() => (debugLines.visible = t.showColliders)).unit = 'bool'
 		f.add(t, 'logLevel', ['debug', 'info', 'warn', 'error'])
 		f.add({ dumpLog: () => log.dump() }, 'dumpLog').name('dump log → console')
 	})

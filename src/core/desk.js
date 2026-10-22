@@ -5,40 +5,21 @@
 // duration, a speedometer for speeds, a mast for heights, a fan for angles, a ring for sizes.
 // "copy" puts the changed values on the clipboard as JSON to paste back to an agent.
 import './desk.css'
+import { units } from './units.js'
 
 const STORE = 'dt-desk'
 const MAX = 36
 
-// First match wins, so `arcHeight` is a height before it is an angle.
-const KINDS = [
-	[
-		'clock',
-		/\(s\)|time|duration|delay|cooldown|fade|tell|settle|response|life|linger|hold|windup|dur\b/,
-	],
-	['tone', /tone|hz|freq|slide|pitch \(hz\)/],
-	['mast', /height|lift|rise|jump|\by\b|targety|depth|altitude/],
-	['fan', /angle|tilt|pitch|fov|arc|cone|spread|yaw|turn|deg/],
-	['gauge', /speed|velocity|accel/],
-	['ring', /radius|range|scale|zoom|size|width|distance|reach|margin|aoe/],
-	['meter', /gain|volume|alpha|opacity|chance|jitter|dodge|aggression|mix|amount|strength/],
-]
-
 function kindOf(c) {
-	if (typeof c.getValue() === 'boolean') return 'switch'
-	if (typeof c.getValue() !== 'number') return null
-	const name = `${c._name} ${c.property}`.toLowerCase()
-	const hit = KINDS.find(([, re]) => re.test(name))
-	if (hit) return hit[0]
-	const [min, max] = range(c)
-	if (min >= 0 && max <= 1) return 'meter'
-	if ((c._step ?? 0) >= 1) return 'counter'
-	return 'knob'
+	if (!['number', 'boolean'].includes(typeof c.getValue())) return null
+	return units[c.unit]?.instrument ?? 'knob'
 }
 
 function range(c) {
 	const v = c.initialValue
-	const min = c._min ?? Math.min(0, v * 4)
-	const max = c._max ?? Math.max(1, Math.abs(v) * 4)
+	const defaults = units[c.unit]?.range
+	const min = c._min ?? Math.min(defaults?.[0] ?? 0, v)
+	const max = c._max ?? Math.max(defaults?.[1] ?? 1, v)
 	return [min, max]
 }
 
@@ -247,7 +228,7 @@ function instrument(key, c, kind, changed) {
 	el.dataset.kind = kind
 	el.title = `${key}\ndrag · shift for fine · wheel steps · double-click resets`
 	const [min, max] = range(c)
-	const step = c._step ?? (max - min) / 200
+	const step = c._step ?? units[c.unit]?.step ?? (max - min) / 200
 	const log = kind === 'tone' && min > 0
 	const toFrac = (v) =>
 		log ? Math.log(v / min) / Math.log(max / min) : (v - min) / (max - min || 1)
@@ -260,20 +241,22 @@ function instrument(key, c, kind, changed) {
 		c.setValue(typeof v === 'boolean' ? v : snap(v))
 		changed(key, c)
 	}
-	const radians = kind === 'fan' && max <= 6.3
-	const unit = { clock: ' s', tone: ' Hz', fan: radians ? ' rad' : '°' }[kind] ?? ''
+	const radians = c.unit === 'rad'
+	const unit = units[c.unit]?.suffix ?? ' ?'
 	const decimals = Math.max(0, Math.min(4, -Math.floor(Math.log10(step) + 1e-9)))
 	const show = (v) =>
-		typeof v === 'boolean' ? (v ? 'on' : 'off') : `${(+v).toFixed(decimals)}${unit}`
+		typeof v === 'boolean'
+			? `${v ? 'on' : 'off'}${units[c.unit] ? '' : ' ?'}`
+			: `${+v.toFixed(decimals)}${unit}`
 
 	el.innerHTML = `<div class="desk-face">${FACES[kind]?.(max) ?? ''}</div>
 		<label>${c._name}</label><output></output>`
 	const face = el.querySelector('.desk-face')
 	const out = el.querySelector('output')
 	const part = (s) => face.querySelector(s)
-	const draw = DRAW[kind](part, { min, max, toFrac, radians })
+	const draw = DRAW[kind](part, { min, max, toFrac, radians, seconds: c.unit === 'ms' ? 0.001 : 1 })
 
-	if (kind === 'switch') face.addEventListener('click', () => set(!c.getValue()))
+	if (typeof c.getValue() === 'boolean') face.addEventListener('click', () => set(!c.getValue()))
 	else {
 		face.addEventListener('pointerdown', (e) => {
 			if (e.target.closest('button')) return
@@ -372,12 +355,12 @@ const clamp01 = (f) => Math.min(1, Math.max(0, f))
 
 // Each draw gets the value and the frame time; only the clock and the tone move on their own.
 const DRAW = {
-	clock: (part, { max }) => {
+	clock: (part, { max, seconds }) => {
 		const fill = part('.clock-fill')
 		const head = part('.clock-head')
 		return (v, now) => {
 			fill.style.width = `${clamp01(v / max) * 100}%`
-			head.style.left = v > 0 ? `${(((now / 1000) % v) / max) * 100}%` : '0'
+			head.style.left = v > 0 ? `${(((now / (1000 * seconds)) % v) / max) * 100}%` : '0'
 		}
 	},
 	gauge: (part, { toFrac }) => {

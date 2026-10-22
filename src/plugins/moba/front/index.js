@@ -1,6 +1,7 @@
 import { createBackdrop } from './backdrop.js'
 import { createControls } from './controls.js'
 import { tune } from './tune.js'
+import { unitResolver } from '../units.js'
 import { playUse } from '../sounds.js'
 import { applySkin, paintedCard, paintedEdge, paintedWash } from './skin.js'
 import { parseMatchSetup } from '../setup.js'
@@ -116,6 +117,9 @@ export function mobaFront(app, map) {
 		tile.add(values.tile, 'drop', app.clock.step, 1, app.clock.step).name('drop out (s)')
 		tile.add(values.tile, 'pop', app.clock.step, 1, app.clock.step).name('pop in (s)')
 		tile.add(values.deny, 'shake', app.clock.step, 1, app.clock.step).name('deny shake (s)')
+		const unitAt = unitResolver({ front: values })
+		for (const controller of folder.controllersRecursive())
+			controller.unit = unitAt(controller.object, controller.property)
 	})
 
 	app.modes.define('moba-front', {

@@ -2,6 +2,8 @@
 // Each section maps a key to [min, max, step, label?, object?]. T is one clock step.
 import { ABILITIES } from './ability.js'
 import { maps } from './maps/all-maps.js'
+import { units } from '../../core/units.js'
+import { resolveUnit, unitResolver } from './units.js'
 
 export const T = 'clock step'
 
@@ -33,21 +35,15 @@ const bots = (preset) => ({
 		humanAttackers: [1, 3, 1, 'early human duelists'],
 	}),
 })
-// An ability without hand-set ranges gets one slider per number, from a quarter to four times
-// its value: a rate, speed or duration at zero would leave the hero unable to act.
-const numbers = (stats) =>
+// Undescribed slider bounds come from the declared dimension, never the number's spelling.
+const numbers = (stats, path) =>
 	Object.fromEntries(
 		Object.entries(stats ?? {})
 			.filter(([, v]) => typeof v === 'number')
 			.map(([key, v]) => {
-				if (v <= 0) return [key, [0, 1, 0.01]]
-				const whole = Number.isInteger(v) && v >= 4
-				return [
-					key,
-					whole
-						? [Math.max(1, Math.round(v / 4)), v * 4, 1]
-						: [Number((v / 4).toFixed(2)) || 0.01, v * 4, 0.01],
-				]
+				const unit = units[resolveUnit(`${path}.${key}`)]
+				const [min, max] = unit?.range ?? [0, 1]
+				return [key, [Math.min(min, v), Math.max(max, v), unit?.step ?? 0.01]]
 			}),
 	)
 const sound = {
@@ -276,10 +272,11 @@ export function sliderSections(tune, look, setup, mapId = setup.map, camera = tu
 			shakeTakedown: [0, 1, 0.05, 'shake when you die'],
 		},
 	}
-	for (const id of Object.keys(ABILITIES)) sections[id] ??= numbers(tune[id])
+	for (const id of Object.keys(ABILITIES)) sections[id] ??= numbers(tune[id], id)
 	const dig = (root, path) => path.split('/').reduce((o, key) => o?.[key], root)
 	const object = (path) => dig(tune, path) ?? dig(look, path)
-	return Object.entries(sections).map(([path, sliders]) => [path, object(path), sliders])
+	const unitAt = unitResolver({ ...look, ...tune })
+	return Object.entries(sections).map(([path, sliders]) => [path, object(path), sliders, unitAt])
 }
 
 // Top-level groups for sections that aren't already nested in tune. Abilities group as they do on disk.
@@ -302,12 +299,16 @@ export function addSliders(debug, sections, step, more = {}) {
 	const at = (v) => (v === T ? step : v)
 	const placed = sections.map(([path, ...rest]) => [debugPath(path), path, ...rest])
 	placed.sort(([a], [b]) => (a < b ? -1 : 1))
-	for (const [where, path, object, sliders] of placed)
+	for (const [where, path, object, sliders, unitAt] of placed)
 		debug.tune(where, object, (f) => {
 			for (const [key, [min, max, by, label, target = object]] of Object.entries(sliders)) {
 				const slider = f.add(target, key, at(min), at(max), at(by))
 				if (label) slider.name(label)
 			}
 			more[path]?.(f, object)
+			for (const controller of f.controllers)
+				controller.unit =
+					unitAt?.(controller.object, controller.property) ??
+					resolveUnit(`${path.replaceAll('/', '.')}.${controller.property}`)
 		})
 }
