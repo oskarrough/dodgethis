@@ -6,16 +6,19 @@
 		<title>For Oskar to decide · dodgethis</title>
 		<link rel="stylesheet" href="/pages/page.css" />
 		<style>
-			#items li {
+			#items li,
+			#archived li {
 				display: flex;
 				gap: 16px;
 				align-items: flex-start;
 				margin-bottom: 16px;
 				list-style: none;
 			}
-			#items img {
+			#items img,
+			#archived img {
 				width: 96px;
 				aspect-ratio: 16 / 10;
+				object-fit: cover;
 				flex: none;
 			}
 		</style>
@@ -24,8 +27,8 @@
 		<main>
 			<h1>For Oskar to decide</h1>
 			<p class="lede">
-				Every item has a page. To review first, then Decided; the orchestrator records Oskar's
-				answer on the item in <code>items.json</code>.
+				Every item has a page. Open ones up top; decided and archived ones fold away below. The
+				orchestrator records Oskar's answer on the item in <code>items.json</code>.
 			</p>
 			<ul id="items"></ul>
 			<details>
@@ -42,7 +45,7 @@
 						for (const i of items) {
 							const thumb = i.media.find((f) => !/\.(webm|mp4)$/i.test(f))
 							document
-								.getElementById(i.status === 'Archived' ? 'archived' : 'items')
+								.getElementById(i.status === 'To review' ? 'items' : 'archived')
 								.insertAdjacentHTML(
 									'beforeend',
 									`<li>${thumb ? `<img src="${thumb}" alt="" loading="lazy">` : ''}<div>
