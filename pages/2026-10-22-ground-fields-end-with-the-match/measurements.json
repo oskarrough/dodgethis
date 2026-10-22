@@ -1,0 +1,27 @@
+{
+  "result": "PASS",
+  "cases": [
+    {
+      "ability": "lob",
+      "end": "match over before deadline",
+      "fieldRadius": 2.2,
+      "from": 0,
+      "until": 180,
+      "endedAt": 12,
+      "localMeshes": "13 → 0",
+      "peerMeshes": "13 → 0",
+      "validFacts": true
+    },
+    {
+      "ability": "balloon",
+      "end": "match over before deadline",
+      "fieldRadius": 2,
+      "from": 36,
+      "until": 276,
+      "endedAt": 49,
+      "localMeshes": "1 → 0",
+      "peerMeshes": "1 → 0",
+      "validFacts": true
+    }
+  ]
+}

@@ -155,7 +155,7 @@ function checkActions(id, manifest, actions) {
 		const targeted = action.deliver === 'target'
 		const fields = targeted
 			? ['deliver', 'pick', 'targets', 'range', 'hit', 'consume', 'before', 'after']
-			: ['deliver', 'from', 'shape', 'targets', 'blockedBy', 'where', 'hit']
+			: ['deliver', 'from', 'shape', 'radius', 'targets', 'blockedBy', 'where', 'hit']
 		for (const field of Object.keys(action))
 			if (!fields.includes(field)) errors.push(`${id}: unknown ${action.deliver} field ${field}`)
 		if (targeted) {
@@ -180,7 +180,12 @@ function checkActions(id, manifest, actions) {
 				errors.push(`${id}: unknown area blocker ${action.blockedBy}`)
 			if (action.where !== undefined && typeof action.where !== 'function')
 				errors.push(`${id}: area where must be a function`)
-			checkRef(id, 'area reach', action.shape === 'cone' ? 'range' : 'radius', 'm')
+			checkRef(
+				id,
+				'area reach',
+				action.radius ?? (action.shape === 'cone' ? 'range' : 'radius'),
+				'm',
+			)
 			if (action.shape === 'cone') checkRef(id, 'area angle', 'angle', 'deg')
 		}
 		if (!Array.isArray(action.hit) || !action.hit.length) {
@@ -259,7 +264,7 @@ function checkActionEffect(id, manifest, record) {
 		heal: ['scale', 'periodic'],
 		shield: ['perSecond', 'stack'],
 		displace: ['to'],
-		status: ['key'],
+		status: ['key', 'source'],
 		catch: ['acceptBall', 'refresh'],
 		slow: [],
 	}[record.effect]
@@ -287,6 +292,8 @@ function checkActionEffect(id, manifest, record) {
 			errors.push(`${id}: ${field} must be a boolean`)
 	if (record.effect === 'displace' && record.to !== 'source')
 		errors.push(`${id}: unknown displacement target ${record.to}`)
+	if (record.effect === 'status' && record.source !== undefined && record.source !== null)
+		errors.push(`${id}: status source can only override attribution to null`)
 	if (record.effect === 'status' && !Object.hasOwn(manifest.statuses ?? {}, record.key))
 		errors.push(`${id}: unknown local status ${record.key}`)
 	if (record.effect === 'shield' && record.stack !== undefined && record.stack !== 'add')
@@ -347,7 +354,10 @@ function checkGround(id, manifest, action) {
 			const refs =
 				STATUS_EFFECT_REFS[record?.effect] ??
 				AREA_EFFECT_REFS[record?.effect] ??
-				TARGET_EFFECT_REFS[record?.effect]
+				TARGET_EFFECT_REFS[record?.effect] ??
+				(record?.effect === 'status' ? ACTION_EFFECT_REFS.status : undefined)
+			if (record?.effect === 'status' && !Object.hasOwn(manifest.statuses ?? {}, record.key))
+				errors.push(`${id}: unknown local ground status ${record.key}`)
 			if (!refs) {
 				errors.push(`${id}: unknown ground effect ${record?.effect}`)
 				continue
@@ -398,6 +408,7 @@ function checkGround(id, manifest, action) {
 						'periodic',
 						...(status ? ['while', 'linger', 'stack'] : []),
 						...(record.effect === 'cleanse' ? ['tags'] : []),
+						...(record.effect === 'status' ? ['key'] : []),
 						...Object.keys(refs),
 					].includes(field)
 				)

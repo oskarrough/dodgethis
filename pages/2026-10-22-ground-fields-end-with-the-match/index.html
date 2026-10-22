@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Ground fields end with the match · dodgethis</title>
+<link rel="stylesheet" href="/pages/page.css" />
+</head>
+<body class="page">
+<main>
+<h1>Ground fields end with the match</h1>
+<p><small>To review · 2026-10-22 · thr_5k5554wgkh</small></p>
+<p><b>Headless check passed: Lob and Balloon drawings clear locally and on network peers before field expiry.</b></p>
+
+<div class="media"><figure><img src="../media/2026-10-22-ground-fields-end-with-the-match/ground-proof.png" alt="ground-proof.png" loading="lazy" /><figcaption>ground-proof.png</figcaption></figure></div>
+
+<p><a href="measurements.json">Measured results</a> · <a href="check.js">Reproduce the headless check</a></p>
+<h2>Migration replay sweep</h2>
+<p>Seeds 2, 3, 6, 7 and 11 matched against <code>20abac6502e8</code> after restoring Balloon's next-tick Soak refresh and Dive's unattributed prone status (both regressed in <code>4f18ce18</code>). Only the final row's <code>tune_hash</code> provenance is excluded; no gameplay rows are filtered. Pong, Mender and Coach were excluded.</p>
+<pre>bun run simulate --same 20abac6502e8 --seeds 2,3,6,7,11 \
+  --lineup fletcher,hook,mitts --lineup brew,wata,hook</pre>
+<p><a href="replay-sweep.txt">Identical migration sweep and full ability coverage</a>. Both revisions cast all roster abilities; none were uncast.</p>
+<p>The subsequent requested body-overlap rule intentionally changes existing area abilities too: Tangle and Around the world can hit bodies whose centres lie just outside their reach. The final tree therefore differs from the old baseline at these edge hits; <a href="replay-after-overlap.txt">the final-tree sweep records those differences</a>. The matching sweep above precedes that requested gameplay change.</p>
+<p>Checks: 249 tests passed, one skipped; schema, lint and formatting checks passed. Ground rows travel in snapshots, not new facts; every fact in the headless check passed <code>validFact</code>.</p>
+<script src="../viewer.js"></script>
+</main>
+</body>
+</html>

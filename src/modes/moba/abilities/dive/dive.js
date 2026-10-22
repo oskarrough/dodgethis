@@ -29,7 +29,7 @@ export default {
 			},
 		],
 		dashEnd: [
-			{ effect: 'status', key: 'prone' },
+			{ effect: 'status', key: 'prone', source: null },
 			{ effect: 'catch', duration: 'prone', refresh: true },
 		],
 	},

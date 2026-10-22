@@ -56,5 +56,6 @@ export function balloonPop({ unit, owner, ability, sim, tick, ticks, stats, pres
 		present,
 		slot: unit.data.slot,
 		point: p,
+		carrier: unit,
 	})
 }

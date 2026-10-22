@@ -12,5 +12,5 @@ export default {
 	heal: false,
 	tell: 'circle',
 	held: 'circle',
-	effects: { impact: 'rain', effect: 'rain', pose: 'rain' },
+	effects: { impact: 'rain', effect: 'rain', pose: 'rain', shake: 'shakeRain' },
 }

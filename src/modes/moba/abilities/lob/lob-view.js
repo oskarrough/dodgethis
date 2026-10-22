@@ -2,7 +2,6 @@ import * as THREE from 'three'
 import { STEP } from '../../../../core/app.js'
 import { makeStyleMaterial } from '../../../../core/stylepass.js'
 import { tune } from '../../tune.js'
-import { ticks } from '../../sim-kit.js'
 
 // Lob draws its own zone: skills-view leaves zones of an ability with `drawsZone` alone.
 export const drawsZone = true
@@ -36,16 +35,15 @@ export function extras(scene) {
 		return m
 	}
 	const flights = new Map() // zone id → the ball in the air and its shadow
-	const patches = [] // landed balls: hot ground until the field's life runs out
+	const patches = new Map() // field id → hot ground, owned by the presented state
 	let last = -Infinity
 
-	function land(flight, tick) {
-		group.remove(flight.ball, flight.shadow, flight.mark)
+	function land(field) {
 		const p = {
-			x: flight.x,
-			z: flight.z,
-			start: tick,
-			radius: tune.lob.fieldRadius,
+			x: field.x,
+			z: field.z,
+			start: field.from,
+			radius: field.radius,
 			shock: mesh(ring, cream),
 			floor: mesh(disc, hot),
 			core: mesh(disc, gold),
@@ -56,17 +54,17 @@ export function extras(scene) {
 		p.core.position.set(p.x, GROUND + 0.002, p.z)
 		p.edge.position.set(p.x, GROUND + 0.003, p.z)
 		p.shock.position.set(p.x, GROUND + 0.004, p.z)
-		patches.push(p)
+		patches.set(field.id, p)
 	}
 	function clear() {
 		for (const f of flights.values()) group.remove(f.ball, f.shadow, f.mark)
 		flights.clear()
-		for (const p of patches) group.remove(p.shock, p.floor, p.core, p.edge, ...p.embers)
-		patches.length = 0
+		for (const p of patches.values()) group.remove(p.shock, p.floor, p.core, p.edge, ...p.embers)
+		patches.clear()
 	}
 
 	return {
-		update({ zones = [], units = [], tick, alpha }) {
+		update({ zones = [], groundFields = [], units = [], tick, alpha = 0 }) {
 			if (tick < last) clear() // a replay seek or a reset
 			last = tick
 			const live = zones.filter((z) => z.ability === 'lob')
@@ -74,7 +72,7 @@ export function extras(scene) {
 			for (const [id, f] of flights)
 				if (!ids.has(id)) {
 					flights.delete(id)
-					land(f, tick)
+					group.remove(f.ball, f.shadow, f.mark)
 				}
 			const stats = tune.lob
 			for (const z of live) {
@@ -106,16 +104,21 @@ export function extras(scene) {
 					f.ball.position.set(f.x, v.height * (1 - fall ** 2), f.z)
 				}
 			}
-			const time = (tick + alpha) * STEP
-			for (let i = patches.length - 1; i >= 0; i--) {
-				const p = patches[i]
-				const age = (tick + alpha - p.start) * STEP
-				const life = ticks(stats.fieldLife) * STEP
-				if (age >= life) {
+			const fields = groundFields.filter(
+				(field) => field.ability === 'lob' && field.until > tick + alpha,
+			)
+			const fieldIds = new Set(fields.map((field) => field.id))
+			for (const [id, p] of patches)
+				if (!fieldIds.has(id)) {
 					group.remove(p.shock, p.floor, p.core, p.edge, ...p.embers)
-					patches.splice(i, 1)
-					continue
+					patches.delete(id)
 				}
+			const time = (tick + alpha) * STEP
+			for (const field of fields) {
+				if (!patches.has(field.id)) land(field)
+				const p = patches.get(field.id)
+				const age = (tick + alpha - field.from) * STEP
+				const life = (field.until - field.from) * STEP
 				// Cools in the last fifth: the patch shrinks back to nothing.
 				const cool = Math.min(1, (life - age) / (life * 0.2))
 				const shock = Math.min(1, age / v.shockLife)

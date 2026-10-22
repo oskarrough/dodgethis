@@ -22,8 +22,19 @@ export function extras(scene) {
 	const ball = own(new THREE.SphereGeometry(1, 12, 8))
 	const live = new Map()
 	return {
-		update({ summons, tick, alpha }) {
-			const units = summons.filter((u) => u.key === 'balloon' && !u.dead)
+		update({ summons = [], groundFields = [], tick, alpha = 0 }) {
+			const units = [
+				...summons.filter((u) => u.key === 'balloon' && !u.dead && u.data.phase === 'flight'),
+				...groundFields
+					.filter((field) => field.ability === 'balloon' && field.until > tick + alpha)
+					.map((field) => ({
+						id: `field-${field.id}`,
+						team: field.team,
+						radius: field.radius,
+						data: { phase: 'puddle' },
+						body: { position: { x: field.x, z: field.z } },
+					})),
+			]
 			const ids = new Set(units.map((u) => u.id))
 			for (const [id, rig] of live)
 				if (!ids.has(id)) {
@@ -57,10 +68,10 @@ export function extras(scene) {
 						}
 					: unit.body.position
 				rig.edge.position.set(at.x, v.ground, at.z)
-				rig.edge.scale.setScalar(stats.radius)
+				rig.edge.scale.setScalar(unit.radius ?? stats.radius)
 				rig.ripple.visible = !flight
 				rig.ripple.position.set(at.x, v.ground + v.ringWidth, at.z)
-				rig.ripple.scale.setScalar(stats.radius * v.rippleSize)
+				rig.ripple.scale.setScalar((unit.radius ?? stats.radius) * v.rippleSize)
 				rig.orb.visible = flight
 				if (flight) {
 					const fraction = Math.max(

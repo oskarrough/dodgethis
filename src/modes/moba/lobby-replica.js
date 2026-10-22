@@ -239,6 +239,32 @@ export function createUnitReplica(
 				return false
 			summonIds.add(unit.id)
 		}
+		if (
+			!Array.isArray(state.groundFields ?? []) ||
+			(state.groundFields?.length ?? 0) > tune.proof.trace
+		)
+			return false
+		const fieldIds = new Set()
+		for (const field of state.groundFields ?? []) {
+			if (
+				!field ||
+				!Number.isSafeInteger(field.id) ||
+				field.id < 1 ||
+				fieldIds.has(field.id) ||
+				!abilityOf(field.ability)?.groundEffects?.length ||
+				!sim.heroes.some((hero) => hero.id === field.owner && hero.team === field.team) ||
+				!point(field) ||
+				!finite(field.radius) ||
+				field.radius < 0 ||
+				!Number.isSafeInteger(field.from) ||
+				field.from < 0 ||
+				field.from > state.t ||
+				!Number.isSafeInteger(field.until) ||
+				field.until <= state.t
+			)
+				return false
+			fieldIds.add(field.id)
+		}
 		for (const key of ['projectiles', 'zones', 'boards', 'cutouts']) {
 			if (!Array.isArray(state[key]) || state[key].length > tune.proof.trace) return false
 			const seen = new Set()
@@ -279,7 +305,8 @@ export function createUnitReplica(
 		if (reason) return reject(reason)
 		// Index once per packet, never scan populations per pose at render rate.
 		copy.summons ??= []
-		for (const key of ['heroes', 'dummies', 'projectiles', 'zones', 'summons'])
+		copy.groundFields ??= []
+		for (const key of ['heroes', 'dummies', 'projectiles', 'zones', 'summons', 'groundFields'])
 			copy[key] = new Map(copy[key].map((entity) => [entity.id, entity]))
 		buffer.push(nowSeconds, copy)
 		lastAcceptedTick = copy.t
@@ -369,6 +396,16 @@ export function createUnitReplica(
 					left: b ? lerp(a.left, b.left, blend) : Math.max(0, a.left - (tick - before.t)),
 				}
 			}),
+		)
+		sim.groundFields.splice(
+			0,
+			sim.groundFields.length,
+			...[...before.groundFields.values()]
+				.filter((field) => field.until > tick)
+				.map((field) => {
+					const next = after.groundFields.get(field.id) ?? field
+					return { ...field, x: lerp(field.x, next.x, blend), z: lerp(field.z, next.z, blend) }
+				}),
 		)
 		sim.summons.splice(
 			0,

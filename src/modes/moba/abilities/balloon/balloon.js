@@ -24,15 +24,7 @@ export default {
 				radius: 'radius',
 				lifetime: 'puddle',
 				every: 'interval',
-				enemies: [
-					{
-						effect: 'slow',
-						magnitude: 'slow',
-						while: 'inside',
-						linger: 'duration',
-						stack: 'strongest',
-					},
-				],
+				enemies: [{ effect: 'status', key: 'soak' }],
 			},
 		],
 	},

@@ -357,7 +357,7 @@ export function createFeedback({
 						look.juice[effects.impact] ?? { count: 20, speed: 3, life: 0.35, size: 0.1 },
 				)
 				cue(abilityUse(ability, 'impact'), fact) // once per tick, including multi-target impacts
-				if (mine && fact.hit && effects.impact === 'rain') camera.shake(look.juice.shakeRain)
+				if (mine && fact.hit && effects.shake) camera.shake(look.juice[effects.shake])
 				return
 			case 'hit': {
 				if (fact.ambient) return

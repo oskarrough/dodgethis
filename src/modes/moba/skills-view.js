@@ -212,6 +212,7 @@ export function createSkillsView(scene) {
 			aim,
 			held,
 			zones = [],
+			groundFields = [],
 			cutouts = [],
 			summons = [],
 			unit = null,
@@ -225,7 +226,20 @@ export function createSkillsView(scene) {
 		},
 	) {
 		for (const view of extras)
-			view.update({ cutouts, summons, units, zones, bounds, obstacles, tick, alpha, dt, unit, aim })
+			view.update({
+				cutouts,
+				summons,
+				units,
+				zones,
+				groundFields,
+				bounds,
+				obstacles,
+				tick,
+				alpha,
+				dt,
+				unit,
+				aim,
+			})
 		if (unit?.swapFact && unit.swapFact !== lastSwap) {
 			lastSwap = unit.swapFact
 			// Cancelled local poses leave no kit cue; released zones keep their own tells below.

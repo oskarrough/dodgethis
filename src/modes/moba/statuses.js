@@ -141,6 +141,7 @@ export function createStatuses(ctx) {
 	const everyTicks = new WeakMap()
 	const dashEvents = new WeakMap()
 	const ground = new Set()
+	const groundFields = [] // Plain presentation rows, shared by local views and snapshots.
 	let nextGroundId = 0
 	function rememberDashEvent(hero, event) {
 		dashEvents.set(hero, { body: hero.body, event })
@@ -171,6 +172,7 @@ export function createStatuses(ctx) {
 				target: ctx.find(info.targetId) ?? null,
 			}),
 			...info.event,
+			...(info.carrier && { carrier: info.carrier }),
 			...(info.point && { point: { ...info.point } }),
 		}
 		if (name === 'every') {
@@ -316,7 +318,9 @@ export function createStatuses(ctx) {
 							...(duration !== undefined && { duration }),
 						})
 				} else if (effect.effect === 'status') {
-					ctx.apply(unit, `${ability.id}.${effect.key}`, { source: actor })
+					ctx.apply(unit, `${ability.id}.${effect.key}`, {
+						source: effect.source === null ? null : actor,
+					})
 				} else if (effect.effect === 'catch') {
 					const duration = stats[effect.duration] + (stats[effect.linger] ?? 0)
 					if (effect.refresh) {
@@ -414,6 +418,7 @@ export function createStatuses(ctx) {
 					action,
 					actor,
 					definition: actor.definition,
+					carrier: event.carrier,
 					ability,
 					event: { ...event },
 					point: { ...(action.at === 'self' ? actor.body.position : event.point) },
@@ -421,8 +426,20 @@ export function createStatuses(ctx) {
 					next: ctx.t,
 					members: new Map(),
 				}
+				field.view = {
+					id: field.id,
+					ability: ability.id,
+					owner: actor.id,
+					team: actor.team,
+					x: field.point.x,
+					z: field.point.z,
+					radius: stats[action.radius],
+					from: ctx.t,
+					until: field.until,
+				}
 				ground.add(field)
-				stepGroundField(field)
+				groundFields.push(field.view)
+				if (!field.carrier) stepGroundField(field)
 				continue
 			}
 			if (action.deliver === 'target') {
@@ -480,7 +497,8 @@ export function createStatuses(ctx) {
 				const dx = target.x - p.x,
 					dz = target.z - p.z
 				const length = Math.hypot(dx, dz)
-				if (length > stats[action.shape === 'cone' ? 'range' : 'radius']) continue
+				const reach = stats[action.radius ?? (action.shape === 'cone' ? 'range' : 'radius')]
+				if (length > reach + (target.radius ?? 0)) continue
 				if (
 					action.shape === 'cone' &&
 					length > 0 &&
@@ -544,15 +562,25 @@ export function createStatuses(ctx) {
 			runActions,
 		)
 	}
-	function stepGroundField(field) {
+	function stepGroundField(field, forceEnd = false) {
 		const { actor, ability, action, members } = field
 		const stats = ability.stats
 		const removed = !ctx.heroes.includes(actor) || actor.definition !== field.definition
-		const ended = removed || Boolean(ctx.lane?.match.winner) || ctx.t >= field.until
+		const ended =
+			forceEnd ||
+			removed ||
+			Boolean(ctx.lane?.match.winner) ||
+			ctx.t >= field.until ||
+			(field.carrier && !ctx.summons.includes(field.carrier))
 		if (action.follow === 'source') field.point = { ...actor.body.position }
+		field.view.x = field.point.x
+		field.view.z = field.point.z
 		const inside = new Map()
 		if (!ended)
-			for (const unit of auraUnits()) {
+			for (const unit of [
+				...auraUnits().filter((unit) => unit.team === actor.team),
+				...ctx.api.enemiesOf(actor.team).map((target) => target.unit),
+			]) {
 				// Untargetable cosmetic summons are not field occupants.
 				if (unit.hp == null) continue
 				if (
@@ -573,6 +601,7 @@ export function createStatuses(ctx) {
 			}
 		if (ended) {
 			ground.delete(field)
+			groundFields.splice(groundFields.indexOf(field.view), 1)
 			return
 		}
 		const pulse = ctx.t >= field.next
@@ -584,7 +613,7 @@ export function createStatuses(ctx) {
 			if (unit.dead) continue
 			const effects = entries
 				.filter(({ record }) => pulse || (entering && record.while === 'inside'))
-				.map(({ record, key }) => ({ ...record, key }))
+				.map(({ record, key }) => ({ ...record, key: record.key ?? key }))
 			if (effects.length)
 				applyEffects(
 					{
@@ -602,9 +631,14 @@ export function createStatuses(ctx) {
 				)
 		}
 	}
-	function stepGround() {
+	function removeGround(owner = null) {
 		const fields = [...ground]
-		for (const field of fields) stepGroundField(field)
+		for (const field of fields)
+			if (owner === null || field.actor.id === owner) stepGroundField(field, true)
+	}
+	function stepGround(carrier = null) {
+		const fields = [...ground]
+		for (const field of fields) if ((field.carrier ?? null) === carrier) stepGroundField(field)
 	}
 	function presentStatus(unit, status, state, extra = {}) {
 		present({
@@ -803,6 +837,8 @@ export function createStatuses(ctx) {
 		reactAbility,
 		applyEffects,
 		stepGround,
+		removeGround,
+		groundFields,
 		rememberAbilityEvent,
 		rememberDashEvent,
 		takeDashEvent,

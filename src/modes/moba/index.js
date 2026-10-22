@@ -671,6 +671,7 @@ export default function moba(app, map) {
 					boards: sim.boards,
 					cutouts: sim.cutouts,
 					summons: sim.summons.filter((u) => u.team === hero.team || !unseen(u)),
+					groundFields: sim.groundFields,
 					zones: sim.zones,
 					casters: [...sim.heroes, ...sim.dummies].filter(
 						(unit) => unit.team !== hero.team && !unseen(unit),

@@ -1,0 +1,7 @@
+$ bun scripts/farm.js --same "20abac6502e8" --seeds "2,3,6,7,11" --lineup "fletcher,hook,mitts" --lineup "brew,wata,hook"
+seed=2 identical
+seed=3 identical
+seed=6 identical
+seed=7 identical
+seed=11 identical
+coverage base cast=aroundTheWorld,balloon,basic,catch,dive,flyingKick,gloveSlap,loose,palmStrike,rain,return,slide,sprinkler,stagger,swig,tangle,throw,toss,vault,waterFlick,yoYoFlick uncast=none | working cast=aroundTheWorld,balloon,basic,catch,dive,flyingKick,gloveSlap,loose,palmStrike,rain,return,slide,sprinkler,stagger,swig,tangle,throw,toss,vault,waterFlick,yoYoFlick uncast=none

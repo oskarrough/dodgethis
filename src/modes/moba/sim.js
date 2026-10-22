@@ -410,6 +410,7 @@ export function createSim({
 	}
 
 	const api = {
+		groundFields: ctx.groundFields,
 		summons,
 		summon: ctx.summon,
 		heroes,
