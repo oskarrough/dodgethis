@@ -33,6 +33,7 @@ A web game: two modes, dodgeball and a MOBA, on one engine.
 ## Proving
 
 - No new unit tests; keep the suite green with `bun test <file>`, oxlint, oxfmt
+- Schema migration: no per-slice replay or probe proofs; one `bun run simulate --same` sweep at the end (Oskar, 2026-10-22: "trust your code")
 - Default: make the change and trust it
 - Prove only when the brief asks or the user must judge a look or feel: one screenshot, clip or headless number, once, via `bun run review`
 - `pages/` is the pinboard (proofs, pitches, concept art, one folder each, listed in `pages/index.html`), served by the dev server; link there, never to thread storage
