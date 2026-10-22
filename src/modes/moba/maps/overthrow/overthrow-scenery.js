@@ -1,17 +1,17 @@
 import * as THREE from 'three'
 import { HAZE, NOISE } from '../../isle.js'
+import { paint } from '../../restyle.js'
 
 // Daylight waterfalls use the shared cliff's rings and resource ownership.
 export function scenery({ s, own, forward, shared, outline, outward, count, rings, points }) {
 	const c = s.colors
-	const color = (hex) => new THREE.Color(hex)
 	// --- Waterfalls: white ribbons draped down the cliff, streaks running down. ---
 	const fall = own(
 		new THREE.ShaderMaterial({
 			uniforms: {
 				...shared,
-				uWater: { value: color(c.water) },
-				uWaterShade: { value: color(c.waterShade) },
+				uWater: { value: paint(c, 'water') },
+				uWaterShade: { value: paint(c, 'waterShade') },
 				uFallSpeed: { value: s.fallSpeed },
 			},
 			vertexShader: /* glsl */ `

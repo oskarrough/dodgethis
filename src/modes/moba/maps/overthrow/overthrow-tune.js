@@ -77,7 +77,7 @@ export const overthrowTerrain = {
 		strataInk: 0.4,
 		rimInk: 0.035, // the thin ink line along the cliff top
 	},
-	haze: { top: 1.5, bottom: 30, power: 0.85, max: 0.94, near: 18, far: 120 },
+	haze: { top: 1.5, bottom: 55, power: 1.3, max: 0.84, near: 18, far: 150 },
 	// The sea of cloud below the rim: printed bands, drifting slowly; pause freezes it.
 	clouds: {
 		y: -34,
@@ -101,30 +101,30 @@ export const overthrowTerrain = {
 	],
 	fallSpeed: 7,
 	colors: {
-		tarmac: '#cacc98', // the court: butter-green
-		chalk: '#babd89', // worn stone inlays, under 10% darker than the court
-		moss: '#a3a35e',
-		mossShade: '#76784e',
-		stoneLit: '#a08c9c',
-		stone: '#857a96',
-		stoneShade: '#655b7f',
+		tarmac: '#d4cea9', // the court: pale sage stone
+		chalk: '#c3bd99', // worn stone inlays, under 10% darker than the court
+		moss: '#8f9444',
+		mossShade: '#5c6031',
+		stoneLit: '#7f7079',
+		stone: '#5a5065',
+		stoneShade: '#3b3550',
 		ink: '#26445f',
-		haze: '#f2cdbd',
-		cloudLit: '#fdeee3',
-		cloud: '#f7d9c9',
-		cloudShade: '#efc6c4',
-		cloudDeep: '#e6b9bf',
-		water: '#fbf9ff',
-		waterShade: '#c6bfe4',
+		haze: '#ebcfb8',
+		cloudLit: '#fcecdc',
+		cloud: '#efd5c0',
+		cloudShade: '#d4b5ab',
+		cloudDeep: '#9d8899',
+		water: '#f6f2f4',
+		waterShade: '#a8a1bd',
 	},
 	// One low warm sun from the upper left: lit faces warm, shade violet.
 	light: {
 		dir: [-0.7, 0.62, -0.25], // toward the sun
-		sun: 0xffe9c8, // lit band leans warm
-		shade: 0x55488a, // dark band and halftone lean violet, never black
-		bandMix: [0.36, 0.34],
-		shadow: '#7a6fae', // printed cast shadows lean the court toward this violet…
-		shadowStrength: 0.42, // …by this much
+		sun: 0xffdcb0, // lit band leans warm
+		shade: 0x403965, // dark band and halftone lean violet, never black
+		bandMix: [0.34, 0.4],
+		shadow: '#655d8c', // printed cast shadows lean the court toward this violet…
+		shadowStrength: 0.48, // …by this much
 		shadowLength: 0.6, // fraction of the true projected length
 		shadowPixelsPerMetre: 16,
 	},
@@ -149,7 +149,7 @@ export const overthrowTerrain = {
 		capHeight: 0.16,
 	},
 	// Lavender-grey stone (walls, cover), pale stone (pillars, towers), moss.
-	palette: { page: 0xf2cdbd, courtShade: 0xa99db3, scenery: 0xc6bac6, court: 0x8e9c50 },
+	palette: { page: 0xebcfb8, courtShade: 0x968a9e, scenery: 0xc4b8aa, court: 0x86904a },
 }
 
 export default { map: overthrowMap, overthrowTerrain }

@@ -3,6 +3,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'
 import { FORWARD_LAYER, makeStyleMaterial } from '../../core/stylepass.js'
 import { floorShape } from './lobby-floor.js'
 import { createIsle } from './isle.js'
+import { bind, paint } from './restyle.js'
 
 // A presentation skin, never a source of walking bounds or colliders. The torn edge sits
 // outside the entire playable rectangle even at the extremes of the restart controls.
@@ -31,7 +32,7 @@ export function createMatchTerrain(
 	}
 	const flat = (color) =>
 		own(new THREE.MeshBasicMaterial({ color, depthWrite: false, side: THREE.DoubleSide }))
-	const ground = flat(s.colors.tarmac)
+	const ground = bind(flat(s.colors.tarmac), (m) => m.color.set(s.colors.tarmac))
 	// The renderer survives map switches; closure contents aren't in Three's default
 	// program key, so never reuse Flagfall's shader for Overthrow (or vice versa).
 	ground.customProgramCacheKey = () => (s.pool ? 'night-court' : 'overthrow-court')
@@ -42,12 +43,12 @@ export function createMatchTerrain(
 		shader.uniforms.courtContrast = { value: s.patchContrast }
 		Object.assign(shader.uniforms, {
 			courtEdge: { value: new THREE.Vector2(extent.halfX, extent.halfZ) },
-			courtMoss: { value: new THREE.Color(s.colors.moss) },
+			courtMoss: { value: paint(s.colors, 'moss') },
 			courtLip: { value: new THREE.Vector2(s.cliff.lipMin, Math.min(s.cliff.lipMax, s.margin)) },
-			courtShadow: { value: new THREE.Color(s.light.shadow) },
+			courtShadow: { value: paint(s.light, 'shadow') },
 			courtShadowPrint: { value: shadowPrint },
 			courtShadowOn: { value: shadowPrint ? 1 : 0 },
-			courtShadowStrength: { value: s.light.shadowStrength },
+			courtShadowStrength: bind({}, (u) => (u.value = s.light.shadowStrength)),
 			courtPool: { value: new THREE.Vector2(s.pool?.strength ?? 0, s.pool?.spread ?? 1) },
 		})
 		shader.vertexShader =
@@ -94,7 +95,7 @@ diffuseColor.rgb *= 1.0 - courtPool.x * (1.0 - exp(-dot(poolAt, poolAt) * 1.6));
 			'uniform vec2 courtEdge, courtLip, courtPool;\nuniform vec3 courtMoss, courtShadow;\nuniform sampler2D courtShadowPrint;\nuniform float courtShadowOn, courtShadowStrength;\n' +
 			shader.fragmentShader
 	}
-	const chalk = flat(s.colors.chalk)
+	const chalk = bind(flat(s.colors.chalk), (m) => m.color.set(s.colors.chalk))
 	ground.polygonOffset = true
 	ground.polygonOffsetFactor = -1
 	ground.polygonOffsetUnits = -4

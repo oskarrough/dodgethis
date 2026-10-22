@@ -31,14 +31,6 @@ export default {
 				['mossMax', 0.3, 3, 0.05],
 			])
 				f.add(s.cliff, key, min, max, step).name(`cliff ${key}`)
-			for (const [key, min, max, step] of [
-				['bottom', 5, 60, 1],
-				['max', 0, 1, 0.01],
-				['far', 30, 300, 5],
-			])
-				f.add(s.haze, key, min, max, step).name(`haze ${key}`)
-			for (const key of Object.keys(s.colors)) f.addColor(s.colors, key)
-			for (const key of Object.keys(s.palette)) f.addColor(s.palette, key)
 		},
 	},
 	online: true,

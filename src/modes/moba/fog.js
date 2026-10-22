@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { FORWARD_LAYER } from '../../core/stylepass.js'
+import { paint } from './restyle.js'
 import { tune } from './tune.js'
 
 // The haze is three.js's fog_fragment, mix(colour, fogColour, factor), laid over the ground:
@@ -71,8 +72,8 @@ export function createFog(scene, bounds, brush = [], palette = {}) {
 		fragmentShader,
 		uniforms: {
 			uMask: { value: texture },
-			uShade: { value: color(palette.light?.shade) },
-			uSky: { value: color(palette.page) },
+			uShade: { value: palette.light ? paint(palette.light, 'shade') : color() },
+			uSky: { value: palette.page === undefined ? color() : paint(palette, 'page') },
 			uSize: { value: new THREE.Vector2(halfX * 2, halfZ * 2) },
 			uTime: { value: 0 },
 			uEdge: { value: 0 },

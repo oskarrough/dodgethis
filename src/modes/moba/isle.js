@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { FORWARD_LAYER } from '../../core/stylepass.js'
 import { floorOutline } from './lobby-floor.js'
+import { bind, paint } from './restyle.js'
 
 // Both maps share the stone isle under the court. A presentation skin in the forward layer,
 // never a source of walking bounds or colliders; everything sits outside the torn rim.
@@ -14,17 +15,18 @@ export function createIsle(parent, s, extent, sun, scenery = null) {
 	}
 	const meshes = []
 	const c = s.colors
-	const color = (hex) => new THREE.Color(hex)
 	const shared = {
 		uSun: { value: new THREE.Vector3(...sun).normalize() },
 		uTop: { value: s.groundY },
 		uIsle: { value: new THREE.Vector2(extent.halfX, extent.halfZ) },
-		uInk: { value: color(c.ink) },
-		uHaze: { value: color(c.haze) },
+		uInk: { value: paint(c, 'ink') },
+		uHaze: { value: paint(c, 'haze') },
 		uHazeShape: {
-			value: new THREE.Vector4(s.haze.top, s.haze.bottom, s.haze.power, s.haze.max),
+			value: bind(new THREE.Vector4(), (v) =>
+				v.set(s.haze.top, s.haze.bottom, s.haze.power, s.haze.max),
+			),
 		},
-		uHazeReach: { value: new THREE.Vector2(s.haze.near, s.haze.far) },
+		uHazeReach: { value: bind(new THREE.Vector2(), (v) => v.set(s.haze.near, s.haze.far)) },
 		uTime: { value: 0 },
 	}
 
@@ -32,11 +34,11 @@ export function createIsle(parent, s, extent, sun, scenery = null) {
 		new THREE.ShaderMaterial({
 			uniforms: {
 				...shared,
-				uStoneLit: { value: color(c.stoneLit) },
-				uStone: { value: color(c.stone) },
-				uStoneShade: { value: color(c.stoneShade) },
-				uMoss: { value: color(c.moss) },
-				uMossShade: { value: color(c.mossShade) },
+				uStoneLit: { value: paint(c, 'stoneLit') },
+				uStone: { value: paint(c, 'stone') },
+				uStoneShade: { value: paint(c, 'stoneShade') },
+				uMoss: { value: paint(c, 'moss') },
+				uMossShade: { value: paint(c, 'mossShade') },
 				uMossLine: { value: new THREE.Vector2(s.cliff.mossMin, s.cliff.mossMax) },
 				uStrata: { value: new THREE.Vector2(s.cliff.strata, s.cliff.strataInk) },
 			},
@@ -276,10 +278,10 @@ void main() {
 		new THREE.ShaderMaterial({
 			uniforms: {
 				...shared,
-				uCloudLit: { value: color(c.cloudLit) },
-				uCloud: { value: color(c.cloud) },
-				uCloudShade: { value: color(c.cloudShade) },
-				uCloudDeep: { value: color(c.cloudDeep) },
+				uCloudLit: { value: paint(c, 'cloudLit') },
+				uCloud: { value: paint(c, 'cloud') },
+				uCloudShade: { value: paint(c, 'cloudShade') },
+				uCloudDeep: { value: paint(c, 'cloudDeep') },
 				uCloudScale: { value: cl.scale },
 				uDrift: { value: new THREE.Vector2(...cl.drift) },
 				uSunXZ: { value: sunXZ },
@@ -324,9 +326,9 @@ void main() {
 		new THREE.ShaderMaterial({
 			uniforms: {
 				...shared,
-				uCloudLit: { value: color(c.cloudLit) },
-				uCloud: { value: color(c.cloud) },
-				uCloudShade: { value: color(c.cloudShade) },
+				uCloudLit: { value: paint(c, 'cloudLit') },
+				uCloud: { value: paint(c, 'cloud') },
+				uCloudShade: { value: paint(c, 'cloudShade') },
 				uBob: { value: cl.bob },
 			},
 			vertexShader: /* glsl */ `

@@ -27,6 +27,7 @@ import { createMatchMenu } from './menu.js'
 import { parseMatchSetup } from './setup.js'
 import { createMatchDebug } from './debug.js'
 import { createFog } from './fog.js'
+import { restyle, styleKnobs } from './restyle.js'
 import { addSliders, sliderSections } from './sliders.js'
 import { createLobby } from './lobby.js'
 import { createDungeonLobby } from './dungeon-lobby.js'
@@ -417,7 +418,24 @@ export default function moba(app, map) {
 			})
 			app.clock.reset()
 
-			if (debugTune) run.debug.tune(`lane/${debugTune.name}`, debugTune.values, debugTune.add)
+			if (debugTune) {
+				run.debug.tune(`lane/${debugTune.name}`, debugTune.values, debugTune.add)
+				const repaint = () => {
+					Object.assign(palette, maps[kind].palette())
+					restyle()
+					app.setPalette(palette)
+				}
+				for (const [section, add] of Object.entries(styleKnobs))
+					if (debugTune.values[section])
+						run.debug.tune(
+							`style/${debugTune.name}/${section}`,
+							debugTune.values[section],
+							(f, o) => {
+								add(f, o)
+								for (const c of f.controllers) c.onChange(repaint)
+							},
+						)
+			}
 			const lobby = isLobby
 				? (portalLobby ? createPortalLobby : party ? createDungeonLobby : createLobby)({
 						app,
