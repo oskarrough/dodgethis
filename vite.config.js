@@ -68,6 +68,9 @@ const soundKeep = {
 			return []
 	},
 	configureServer(server) {
+		const sameOrigin = (req) =>
+			!req.headers.origin ||
+			(URL.canParse(req.headers.origin) && new URL(req.headers.origin).host === req.headers.host)
 		// Every audio file in Oskar's library (sounds/osk-sfx/) right now, with its folder path, so files dropped in
 		// show up on the board's next load without re-measuring.
 		server.middlewares.use('/__sound/library', (req, res) => {
@@ -91,10 +94,7 @@ const soundKeep = {
 			if (req.method !== 'POST') return reply(405, { error: 'Use POST to generate sounds.' })
 			if (!req.headers['content-type']?.startsWith('application/json'))
 				return reply(415, { error: 'Send application/json.' })
-			if (
-				req.headers.origin &&
-				(!URL.canParse(req.headers.origin) || new URL(req.headers.origin).host !== req.headers.host)
-			)
+			if (!sameOrigin(req))
 				return reply(403, { error: 'Generate from the sound board on this server.' })
 			let input
 			try {
@@ -217,6 +217,7 @@ const soundKeep = {
 		})
 		// The board's Resync button: `bun run sound:sync` mirrors the library from Dropbox and rebuilds shortlists.
 		server.middlewares.use('/__sound/sync', (req, res) => {
+			if (!sameOrigin(req)) return res.writeHead(403).end()
 			if (req.method !== 'POST') return res.writeHead(400).end()
 			execFile(
 				'bun',
@@ -231,6 +232,7 @@ const soundKeep = {
 		// The board's K on a sound nobody swapped: Oskar heard the built-in sound and it stays. A list of use ids in
 		// pages/sound/approved.json, which only the board reads; a Keep or a new swap takes the id back out.
 		server.middlewares.use('/__sound/approve', (req, res) => {
+			if (!sameOrigin(req)) return res.writeHead(403).end()
 			const q = new URL(req.url, 'http://board').searchParams
 			const id = q.get('use') ?? ''
 			if (req.method !== 'POST' || !/^[\w.-]+$/.test(id)) return res.writeHead(400).end()
@@ -245,6 +247,7 @@ const soundKeep = {
 		// Keeps run one at a time, each reading kept.json afresh, so two quick Keeps can't undo each other.
 		let keeping = Promise.resolve()
 		server.middlewares.use('/__sound/keep', async (req, res) => {
+			if (!sameOrigin(req)) return res.writeHead(403).end()
 			const q = new URL(req.url, 'http://board').searchParams
 			const id = q.get('use') ?? ''
 			if (req.method !== 'POST' || !/^[\w.-]+$/.test(id)) return res.writeHead(400).end()
