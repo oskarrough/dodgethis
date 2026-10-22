@@ -1,8 +1,9 @@
 # Reproduce a match and measure performance
 
-Start `bun run dev`, then press the backtick key to toggle the debug panel,
-diagnostics, and browser-console API. The panel's **shortcuts** folder lists the
-live controls. A bare `?debug` opens diagnostics without starting a match.
+Start `bun run dev`, then press the backtick key to toggle the debug desk,
+diagnostics, and browser-console API. "all values" in the desk opens the panel,
+whose **shortcuts** folder lists the live controls. A bare `?debug` opens
+diagnostics without starting a match.
 
 To launch a fixture directly, open the URL Vite prints with
 `?debug=20v20&seed=42&godmode=1`. This creates one human plus 19 allies against
