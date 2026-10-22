@@ -153,7 +153,7 @@ Paths are under `src/plugins/moba/` unless they start with `src/`. `tune.js` mea
 - Ground and walls build: `map.js` `buildMap`, `createMapScope`; `match-terrain.js` `createMatchTerrain`
 - Colliders and walkable test: `obstacles.js` `buildColliders`, `walkable`, `clampWalkable`, `segmentClear`, `clampMap`
 - Look references: `pages/vibes/` (the picked directions), `pages/archive/` (superseded, history only); `look.md`
-- Docs pages on the live site (`/pages/…`, same paths as in dev): every `pages/**/*.html` in `vite.config.js` `build.rollupOptions.input`; sibling files and `pages/page.css` copied by the `docsPages` plugin
+- Docs pages on the live site (`/pages/…`, same paths as in dev): every `pages/**/*.html` in `vite.config.js` `build.rollupOptions.input`; sibling files and `pages/page.css` copied by the `pages` plugin
 
 ## Match: view, feedback, sound
 
