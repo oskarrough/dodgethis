@@ -82,23 +82,22 @@ export function runHookStages(hook, context, runActions, fallback) {
 	hook?.after?.(context)
 }
 
-// Give each declared field payload its own status definition, even when two fields
-// in one ability use the same effect with different numbers.
+// Ground definitions name the effect; each instance carries its field id and resolved numbers.
 function groundEffects(manifest) {
 	const entries = []
-	let next = 0
 	function visit(value) {
 		if (!value || typeof value !== 'object') return
 		if (value.deliver === 'ground') {
-			const id = next++
 			for (const side of ['allies', 'enemies'])
-				for (const [index, input] of (value[side] ?? []).entries())
+				for (const input of value[side] ?? []) {
+					const record = effectRecord(manifest, input)
 					entries.push({
 						action: value,
 						side,
-						record: effectRecord(manifest, input),
-						key: `ground${id}${side}${index}`,
+						record,
+						key: `ground${record.effect[0].toUpperCase()}${record.effect.slice(1)}`,
 					})
+				}
 		}
 		for (const child of Object.values(value)) visit(child)
 	}
