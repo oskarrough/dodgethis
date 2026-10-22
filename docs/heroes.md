@@ -117,7 +117,7 @@ Wins by being hit. Dives in, soaks the burst, drinks it off and kicks his way ou
 | --- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Q   | Flying kick | Cast point 0.3 with the line shown, then a dash up to 6 m along the aim that stops at the first unit, friend or foe: 100 damage to an enemy, nothing to an ally. Kick a minion to get in or out. Cooldown 7.                     |
 | W   | Stagger     | Instant stance, 3 s: damage he takes doesn't land; it fills a pool that pays out evenly over the 3 s after the stance ends. Shields soak the payout as it lands. The pool shows as a draining bar under his health. Cooldown 14. |
-| E   | Swig        | Channel up to 2 s, rooted: 150 shield per second, each shield lasting 4 s. Moving, casting, a stun or a pull ends it. Cooldown 10 from the channel's end.                                                                        |
+| E   | Swig        | Channel up to 2 s, rooted: 150 shield per second into one shield refreshed to 4 s. Moving, casting, a stun or a pull ends it. Cooldown 10 from the channel's end.                                                                |
 
 **The moment:** Fletcher, Mitts and their tower all on you at 600. You Stagger, kneel and Swig: the burst trickles into your shield. They've spent everything; you kick a minion out of the fight on 900.
 
