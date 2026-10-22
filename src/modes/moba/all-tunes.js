@@ -7,6 +7,7 @@ import abilities_cushion from './abilities/cushion/cushion-tune.js'
 import abilities_dive from './abilities/dive/dive-tune.js'
 import abilities_flyingKick from './abilities/flyingKick/flyingKick-tune.js'
 import abilities_gloveSlap from './abilities/gloveSlap/gloveSlap-tune.js'
+import abilities_lob from './abilities/lob/lob-tune.js'
 import abilities_loose from './abilities/loose/loose-tune.js'
 import abilities_mend from './abilities/mend/mend-tune.js'
 import abilities_outThrow from './abilities/outThrow/outThrow-tune.js'
@@ -50,6 +51,7 @@ export const abilities = {
 	dive: abilities_dive,
 	flyingKick: abilities_flyingKick,
 	gloveSlap: abilities_gloveSlap,
+	lob: abilities_lob,
 	loose: abilities_loose,
 	mend: abilities_mend,
 	outThrow: abilities_outThrow,

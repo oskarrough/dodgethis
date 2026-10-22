@@ -1,0 +1,35 @@
+export default {
+	damage: 150,
+	castPoint: 0.25, // the racket's swing up is the enemy's first tell; the shadow is the second
+	range: 8,
+	radius: 2.2,
+	delay: 0.9, // enough to read the shadow and step off it; at 1.1 easy bots walked out every time
+	fieldRadius: 2.2, // the hot patch is the mark itself
+	fieldLife: 3,
+	interval: 0.5,
+	burnDamage: 18,
+	fieldSlow: 0.25,
+	cooldown: 9,
+	sound: {
+		cast: { freq: 620, slideTo: 1240, type: 'triangle', dur: 0.12, gain: 0.14 },
+		impact: { freq: 1100, slideTo: 260, type: 'triangle', dur: 0.34, gain: 0.26 },
+	},
+	juice: {
+		impact: { count: 30, speed: 4, life: 0.5, size: 0.13 },
+	},
+	view: {
+		height: 11, // how far up the ball goes before it turns
+		ballRadius: 0.28,
+		up: 0.3, // share of the delay spent rising out of Pong's hand
+		shadowFrom: 0.15, // the shadow's first size, against the mark
+		ringWidth: 0.06,
+		ground: 0.015,
+		shockGrow: 0.6,
+		shockLife: 0.35,
+		embers: 9,
+		emberSize: 0.16,
+		emberRise: 1.1,
+		emberLife: 0.8,
+		pulse: 7,
+	},
+}

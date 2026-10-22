@@ -7,6 +7,7 @@ import abilities_cushion from './cushion/cushion.js'
 import abilities_dive from './dive/dive.js'
 import abilities_flyingKick from './flyingKick/flyingKick.js'
 import abilities_gloveSlap from './gloveSlap/gloveSlap.js'
+import abilities_lob from './lob/lob.js'
 import abilities_loose from './loose/loose.js'
 import abilities_mend from './mend/mend.js'
 import abilities_outThrow from './outThrow/outThrow.js'
@@ -40,6 +41,7 @@ export default {
 	dive: abilities_dive,
 	flyingKick: abilities_flyingKick,
 	gloveSlap: abilities_gloveSlap,
+	lob: abilities_lob,
 	loose: abilities_loose,
 	mend: abilities_mend,
 	outThrow: abilities_outThrow,
