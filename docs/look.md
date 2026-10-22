@@ -46,7 +46,13 @@ Oskar's inspiration screenshots come from other games, so they stay out of this 
 
 ## Concept art
 
-Generated frames (GPT Sol through a Codex thread; other providers can't make images) explore a look before a builder spends a pass on it. They are targets, never imported assets; only scenery may ship: a background plate under the court and quiet seamless ground, water and cover tiles. The recipe:
+Generated frames (GPT Sol through a Codex thread; other providers can't make images) explore a look before a builder spends a pass on it. They are targets, never imported assets; only scenery may ship: a background plate under the court and quiet seamless ground, water and cover tiles.
+
+Every prompt pastes this style block whole; briefs never paraphrase it, and never ask for "cute", "fun" or "toy-like", which drags the model to Hearthstone:
+
+> Moebius ink line and big empty sky, Warhammer heft and wear, 90s Japanese PlayStation swagger: cute with an edge, never plush. Heroes are stylised low-poly primitives as built in the game, read from above by silhouette and one prop, each with a hard angle (horn, beak, blade, hooked claw), small eyes under a brow, worn hide, stone, cloth or enamel; no big glossy eyes, blush, rosy cheeks, chibi faces or mobile-card-game rendering. One navy ink, never black. Muted peach, sage, pale stone and violet; saturated colour only on team red and blue and Ball gold. Big shapes, little noise, one warm light, haze falling off with depth.
+
+The recipe:
 
 - Image 1 is a real screenshot at the match camera; ask for the same angle and an unchanged HUD.
 - Name what to take from each reference, and use the nouns from [world.md](world.md) (stone isles, the sea of cloud, waterfalls, the night garden, keeps, the moon), or the model copies the references' ornament wholesale.

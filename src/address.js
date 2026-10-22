@@ -5,7 +5,7 @@
 
 // Dev and look switches outlive every screen; match switches only outlive lobby and match.
 const KEEP = ['debug', 'skin']
-const KEEP_IN_MATCH = ['seed', 'edgePan', 'bots-only']
+const KEEP_IN_MATCH = ['seed', 'edgePan', 'bots-only', 'lobby']
 // A dodgeball debug scenario (dodgeball/scenario.js) reads these on reload.
 const KEEP_IN_DODGEBALL = [
 	'teamA',

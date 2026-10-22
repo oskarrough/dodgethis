@@ -1,5 +1,22 @@
 [
 	{
+		"at": "2026-10-22T09:52:00.000Z",
+		"title": "One lobby, five ways",
+		"ask": "Five painted ideas for one party lobby after the home screen: base, draft, booths, campfire, menu over floor. Which one do we try?",
+		"status": "Decided",
+		"decision": "Built as the portal lobby: teams in side columns, a hero popover per seat, walk into the portal to go.",
+		"media": [
+			"2026-10-22-one-lobby-five-ways/01-base.webp",
+			"2026-10-22-one-lobby-five-ways/02-draft.webp",
+			"2026-10-22-one-lobby-five-ways/03-booths.webp",
+			"2026-10-22-one-lobby-five-ways/04-campfire.webp",
+			"2026-10-22-one-lobby-five-ways/05-menu-over-floor.webp"
+		],
+		"links": [],
+		"thread": "",
+		"page": "2026-10-22-one-lobby-five-ways/"
+	},
+	{
 		"at": "2026-10-22T08:46:38.951Z",
 		"title": "Desk: instruments for tune values",
 		"ask": "Do the instrument kinds read as what they control?",

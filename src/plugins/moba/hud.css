@@ -1,7 +1,8 @@
 /* Match HUD. Frame means press: ability tiles wear 3 px ink and a hard offset shadow; readouts (top bar, unit frame) are smooth cream with a thin line and a soft shadow. */
 .moba-top,
 .moba-hud,
-.moba-tip {
+.moba-tip,
+.portal-picker {
 	--ink: var(--ui-text);
 	--cream: var(--ui-cream);
 	--gold: var(--ui-gold);
@@ -21,7 +22,8 @@
 }
 .moba-top svg .tone,
 .moba-hud svg .tone,
-.lobby-heroes svg .tone {
+.lobby-heroes svg .tone,
+.portal-picker svg .tone {
 	fill: var(--tone, var(--ui-blue));
 	stroke: var(--ink);
 	stroke-width: 3;
@@ -29,14 +31,16 @@
 }
 .moba-top svg .cream,
 .moba-hud svg .cream,
-.lobby-heroes svg .cream {
+.lobby-heroes svg .cream,
+.portal-picker svg .cream {
 	fill: var(--cream);
 	stroke: var(--ink);
 	stroke-width: 3;
 }
 .moba-top svg .gold,
 .moba-hud svg .gold,
-.lobby-heroes svg .gold {
+.lobby-heroes svg .gold,
+.portal-picker svg .gold {
 	fill: var(--gold);
 	stroke: var(--ink);
 	stroke-width: 3;
@@ -50,7 +54,8 @@
 }
 .moba-top svg .ink-line,
 .moba-hud svg .ink-line,
-.lobby-heroes svg .ink-line {
+.lobby-heroes svg .ink-line,
+.portal-picker svg .ink-line {
 	fill: none;
 	stroke: var(--ink);
 	stroke-width: 4;

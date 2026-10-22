@@ -30,6 +30,7 @@ import { createFog } from './fog.js'
 import { addSliders, sliderSections } from './sliders.js'
 import { createLobby } from './lobby.js'
 import { createDungeonLobby } from './dungeon-lobby.js'
+import { createPortalLobby } from './portal-lobby.js'
 import { createDifficultyGallery } from './lobby-props.js'
 import { createLobbyReplica } from './lobby-replica.js'
 import { createLaneReplica } from './lane-replica.js'
@@ -127,6 +128,7 @@ export default function moba(app, map) {
 				shared: app.session.shared,
 			})
 			const party = maps[setup.map].party
+			const portalLobby = query.get('lobby') !== 'old' // `?lobby=old` keeps the saucer and party table for now
 			const kind = isLobby ? 'lobby' : setup.map
 			const match = matchRecipe(kind)
 			const { layout, mechanics, palette, debugTune, online } = match
@@ -358,6 +360,7 @@ export default function moba(app, map) {
 											}))
 										: practiceRoster(local, difficulty, setup.picks, setup.seed, [local], party),
 							readyParty: party,
+							readyPortal: portalLobby,
 							spawns: lobbySpawns,
 							respawn: tune.lobby.respawn,
 							footprint: party ? null : gallery.contact,
@@ -415,7 +418,7 @@ export default function moba(app, map) {
 
 			if (debugTune) run.debug.tune(`lane/${debugTune.name}`, debugTune.values, debugTune.add)
 			const lobby = isLobby
-				? (party ? createDungeonLobby : createLobby)({
+				? (portalLobby ? createPortalLobby : party ? createDungeonLobby : createLobby)({
 						app,
 						run,
 						sim,

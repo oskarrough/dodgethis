@@ -1,0 +1,166 @@
+/* The world shows through: your team down the left edge, the enemies down the right, the picker
+   along the top, one status line. Cards and icons are the hero strip's (lobby-heroes.css). */
+.portal-lobby .front-canvas {
+	pointer-events: auto;
+}
+.moba-front .lobby-hero-strip.portal-team {
+	--tile: clamp(52px, min(7vw, 11.5vh), 96px);
+	left: max(28px, 3.2vw);
+	gap: 14px;
+}
+.moba-front .lobby-hero-strip.portal-team[data-team='B'] {
+	right: max(28px, 3.2vw);
+	left: auto;
+	align-items: flex-end;
+}
+/* The hero popover: a readout (hud.css, cream, thin line, soft shadow) holding spell-bar buttons,
+   3-6 a row with the screen, beside the seat it edits with a notch pointing at it. */
+.portal-picker {
+	--cols: 3;
+	--tone: var(--cream); /* just the heroes: no team colour, like on the seat cards */
+	position: absolute;
+	z-index: 5;
+	display: grid;
+	grid-template-columns: repeat(var(--cols), auto);
+	gap: 10px;
+	padding: 12px;
+	background: var(--cream);
+	border: 1.5px solid var(--ink);
+	border-radius: 18px;
+	box-shadow: 0 3px 10px rgba(38, 68, 95, 0.22);
+}
+@media (min-width: 900px) {
+	.portal-picker {
+		--cols: 4;
+	}
+}
+@media (min-width: 1500px) {
+	.portal-picker {
+		--cols: 5;
+	}
+}
+.portal-picker[hidden] {
+	display: none;
+}
+.portal-picker::before {
+	content: '';
+	position: absolute;
+	top: calc(var(--notch, 50%) - 8px);
+	left: -9px;
+	width: 14px;
+	height: 14px;
+	background: var(--cream);
+	border: 1.5px solid var(--ink);
+	border-width: 0 0 1.5px 1.5px;
+	rotate: 45deg;
+}
+.portal-picker[data-side='right']::before {
+	right: -9px;
+	left: auto;
+	rotate: -135deg;
+}
+.portal-picker .moba-slot {
+	border: 3px solid var(--ink); /* front.css strips borders off every .moba-front button */
+	width: clamp(48px, 4.4vw, 62px);
+	height: auto;
+	aspect-ratio: 1 / 1.15;
+	grid-template-rows: 1fr auto;
+	padding: 4px 2px 3px;
+	rotate: 0deg;
+}
+.portal-picker .moba-slot .icon svg {
+	width: 70%;
+	height: auto;
+	margin: auto;
+}
+.portal-picker .moba-slot small {
+	font: 400 11px / 1 var(--ui-font);
+	text-transform: capitalize;
+}
+.portal-picker .moba-slot[data-remove] {
+	grid-column: 1 / -1;
+	grid-template-rows: none;
+	grid-auto-flow: column;
+	justify-content: center;
+	gap: 6px;
+	width: auto;
+	aspect-ratio: auto;
+	padding: 6px 10px;
+}
+.portal-picker [data-remove] .icon {
+	font: 400 20px / 1 var(--ui-font);
+}
+.portal-picker [data-remove] small {
+	font-size: 14px;
+}
+.portal-picker .moba-slot[hidden] {
+	display: none;
+}
+/* The hero you're on is pressed in, the way a held key looks. */
+.portal-picker .moba-slot[aria-pressed='true'] {
+	transform: translate(3px, 4px);
+	box-shadow: 0 0 0 var(--ink);
+	background: #9fe3d6;
+}
+.portal-seat {
+	position: relative;
+}
+.portal-seat[data-kind='empty'] .lobby-hero-strip-face {
+	font: 400 calc(var(--tile) * 0.42) / 1 var(--ui-font);
+}
+/* Bots are holograms on the floor, so their cards wear the same cold blue. */
+.portal-seat[data-kind='bot'] .skin-card {
+	filter: hue-rotate(170deg) saturate(0.5) brightness(1.05);
+}
+.portal-seat:has(.skin-card[aria-pressed='true']) {
+	transform: translateX(10px) rotate(-4deg) scale(1.06);
+}
+.portal-team[data-team='B'] .portal-seat:has(.skin-card[aria-pressed='true']) {
+	transform: translateX(-10px) rotate(4deg) scale(1.06);
+}
+/* Who sits there: a rubber stamp on the card's bottom-right corner. Ink, a thin ruled
+   frame and no shadow, so it reads as printed on, never as a button. */
+.portal-tag {
+	position: absolute;
+	right: -10px;
+	bottom: -7px;
+	z-index: 2;
+	margin: 0;
+	padding: 0.15em 0.4em 0.05em;
+	border: 1.5px solid currentColor;
+	border-radius: 4px;
+	background: color-mix(in srgb, var(--ui-cream) 92%, transparent);
+	color: var(--ui-text);
+	font: 400 12px / 1.1 var(--ui-font);
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	rotate: -7deg;
+	pointer-events: none;
+}
+.portal-tag:empty {
+	display: none;
+}
+.portal-tag[data-who='bot'] {
+	color: color-mix(in srgb, var(--ui-text) 65%, var(--ui-cream));
+}
+.portal-seat[data-ready='true'] .portal-tag::after {
+	content: ' · in';
+}
+.portal-status {
+	position: absolute;
+	bottom: 24px;
+	left: 50%;
+	translate: -50% 0;
+	margin: 0;
+	padding: 8px 16px;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--ui-cream) 85%, transparent);
+	color: var(--ui-text);
+	font: 600 18px / 1.2 var(--ui-font);
+}
+.portal-status:empty {
+	display: none;
+}
+.portal-status[data-go='true'] {
+	background: #9fe3d6;
+}

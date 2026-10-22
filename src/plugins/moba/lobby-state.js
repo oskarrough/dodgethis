@@ -4,7 +4,8 @@ import { practiceRoster } from './bots.js'
 
 // Seat ids name boxes; participant ids name their occupants. Host claims resolve
 // by tick, then join order, then id; starting reservations have no claim tick.
-export function createReadySeats({ present, party = null }) {
+// `portal` (the trial portal lobby) keeps both teams but readies like a party: by intent, not by box.
+export function createReadySeats({ present, party = null, portal = false }) {
 	const v = tune.lobby.ready
 	const seats = (party ? ['A'] : ['A', 'B']).flatMap((team) =>
 		Array.from(
@@ -26,7 +27,7 @@ export function createReadySeats({ present, party = null }) {
 	let humans = []
 	let revision = 0
 	function resetParty(tick) {
-		if (!party) return
+		if (!party && !portal) return
 		revision++
 		for (const seat of seats) {
 			if (!seat.occupant || seat.occupant.bot) continue
@@ -113,6 +114,7 @@ export function createReadySeats({ present, party = null }) {
 	}
 	return {
 		party: !!party,
+		portal,
 		get revision() {
 			return revision
 		},
@@ -122,7 +124,7 @@ export function createReadySeats({ present, party = null }) {
 		// Power-of-two scaling carries every safe integer exactly inside the intent point bounds.
 		readyPoint: () => ({ x: revision / 2 ** 53, z: 0 }),
 		ready(id, tick, at) {
-			if (!party) return false
+			if (!party && !portal) return false
 			const seat = seatOf(id)
 			if (!seat || seat.occupant.bot) return false
 			if (at?.x !== revision / 2 ** 53 || at?.z !== 0) {
@@ -168,7 +170,7 @@ export function createReadySeats({ present, party = null }) {
 		step(tick, step, heroes) {
 			humans = heroes.map((h) => h.id)
 			// Party readiness is an explicit intent, independent of physics or position.
-			if (party) return
+			if (party || portal) return
 			for (const hero of heroes
 				.slice()
 				.sort(
@@ -245,6 +247,24 @@ export function createReadySeats({ present, party = null }) {
 			const humans = seats.filter((s) => s.occupant && !s.occupant.bot).map((s) => s.occupant.id)
 			const roster = practiceRoster(local, difficulty, picks, seed, humans)
 			const used = new Set()
+			// The portal lobby sends exactly the seats you filled; an empty seat is nobody.
+			if (portal)
+				return seats
+					.filter((box) => box.occupant)
+					.map((box) => {
+						const o = box.occupant
+						const participant =
+							roster.find((p) => p.id === o.id) ??
+							roster.find((p) => p.team === box.team && !used.has(p.id) && !humans.includes(p.id))
+						used.add(participant.id)
+						return {
+							...participant,
+							heroId: o.heroId,
+							team: box.team,
+							...(!o.bot && { joinOrder: o.joinOrder }),
+							controller: o.bot ? 'bot' : 'human',
+						}
+					})
 			return seats.map((box) => {
 				const participant = box.occupant
 					? roster.find((p) => p.id === box.occupant.id)
