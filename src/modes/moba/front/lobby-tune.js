@@ -16,6 +16,9 @@ export const lobby = {
 		width: 0.6, // walking through its plane within this share of tearRadius either side readies a human
 		reach: 3, // metres past the plane that still count as in
 		sink: 0.8, // metres past the plane over which a hero shrinks away
+		// The tear's build-up: `hum` while someone waits inside, rising to full over the countdown,
+		// easing toward it at `ease` per second.
+		charge: { hum: 0.25, ease: 6 },
 		countdown: 2, // seconds everyone stays ready before slipping in
 		tearRadius: 2.6, // half-height of the open tear
 		farChalkWidth: 0.7, // keep court markings legible through the small opening

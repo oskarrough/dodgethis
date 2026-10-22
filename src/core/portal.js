@@ -276,6 +276,7 @@ export function createPortal(renderer, options = {}) {
 	let tween = null // { from, to, start, duration, fresh }
 	let popStart = -1
 	let flare = 0
+	let charge = 0 // 0-1 set by the owner: a held build-up, brighter and shivering as it fills
 
 	function open() {
 		if (phase === 'opening' || phase === 'open') return
@@ -284,6 +285,11 @@ export function createPortal(renderer, options = {}) {
 		popStart = -1
 		flare = Math.max(flare, fresh ? 0.6 : 0.3)
 		tween = { from: openness, to: 1, start: time, duration: o.openTime * (1 - openness), fresh }
+	}
+
+	// A beat of light, e.g. when someone steps in.
+	function flash(amount = 1) {
+		flare = Math.max(flare, amount)
 	}
 
 	function collapse() {
@@ -329,8 +335,8 @@ export function createPortal(renderer, options = {}) {
 		}
 		uniforms.uTime.value = time
 		uniforms.uOpen.value = openness
-		uniforms.uFlare.value = flare
-		uniforms.uQuiver.value = phase === 'collapsing' ? 1 - openness * 0.5 : 0
+		uniforms.uFlare.value = Math.max(flare, charge * 1.2)
+		uniforms.uQuiver.value = phase === 'collapsing' ? 1 - openness * 0.5 : charge * charge * 0.8
 		uniforms.uPop.value = pop
 	}
 
@@ -542,6 +548,13 @@ export function createPortal(renderer, options = {}) {
 		exit,
 		open,
 		collapse,
+		flash,
+		get charge() {
+			return charge
+		},
+		set charge(value) {
+			charge = Math.min(1, Math.max(0, value))
+		},
 		update,
 		crossed,
 		covers,

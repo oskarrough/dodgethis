@@ -78,6 +78,7 @@ export function createPortalLobby({ app, run, sim, hero, setup, options }) {
 	tear.exit(new THREE.Vector3(0, p.farHeight, 0), facing)
 	let viewTime = sim.tick * app.clock.step
 	const squeezed = new Set()
+	const entered = new Set() // heroes in the tear last frame, so each step in flashes it once
 	// Both peers read the last human's ready tick; only the host hands off to loading.
 	function readyFrom() {
 		if (!readySeats.allReady()) return null
@@ -101,6 +102,25 @@ export function createPortalLobby({ app, run, sim, hero, setup, options }) {
 		depth(h) > 0 &&
 		Math.abs(h.body.position.x - mouth.x) < p.tearRadius * p.width &&
 		depth(h) <= p.reach + 0.01
+	// The tear answers: a flash as each hero steps in, a low hum while it waits for the rest, then a
+	// build-up that fills over the countdown.
+	function charge(time, from, dt) {
+		for (const h of sim.heroes) {
+			if (!inside(h)) entered.delete(h)
+			else if (!entered.has(h)) {
+				entered.add(h)
+				tear.flash()
+			}
+		}
+		const target =
+			from !== null
+				? p.charge.hum +
+					(1 - p.charge.hum) * Math.min(1, (time - from * app.clock.step) / p.countdown)
+				: entered.size
+					? p.charge.hum
+					: 0
+		tear.charge += (target - tear.charge) * Math.min(1, dt * p.charge.ease)
+	}
 	// Walking in shrinks a hero away over `p.sink` m; after the countdown everyone left slips in too.
 	function slip(time, from) {
 		const k =
@@ -555,6 +575,7 @@ export function createPortalLobby({ app, run, sim, hero, setup, options }) {
 			if (!ending) {
 				if (humans().length && !tear.isOpen) tear.open()
 				far.update(dt)
+				charge(time, from, dt)
 				tear.update(dt, app.camera.view)
 				slip(time, from)
 			}

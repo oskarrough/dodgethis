@@ -107,6 +107,8 @@ export const tuneUnits = {
 	'lobby.portal.width': 'fraction',
 	'lobby.portal.reach': 'm',
 	'lobby.portal.sink': 'm',
+	'lobby.portal.charge.hum': 'fraction',
+	'lobby.portal.charge.ease': '1/s',
 	'lobby.portal.tearRadius': 'm',
 	'lobby.portal.farChalkWidth': 'm',
 	'lobby.portal.farWardenScale': 'multiplier',

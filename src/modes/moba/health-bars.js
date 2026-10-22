@@ -57,7 +57,8 @@ export function createHealthBars() {
 					root.append(element)
 					bars.set(unit.id, (bar = { element, label, fill, shield, pool }))
 				}
-				if (unit.dead || unit.hp <= 0 || !(unit.maxHp > 0)) {
+				// Shrunk away (into a recall or lobby tear) hides the bar with the body.
+				if (unit.dead || unit.hp <= 0 || !(unit.maxHp > 0) || unit.body?.mesh?.scale.x < 0.5) {
 					bar.element.hidden = true
 					continue
 				}
