@@ -337,3 +337,40 @@ test('the kernel hands the device the newest live stickAim, scoped to its regist
 	app.frame(0)
 	expect(contexts).toHaveLength(2)
 })
+
+test('pointClick: every preset binds a stop key that aborts unconditionally, dropping held aims', () => {
+	const d = clicker()
+	const prefs = { preset: 'moba', attackArmed: false, throwClick: false, quickCast: false }
+	const poll = pointClick(d, () => ({ x: 4, y: 0, z: -2 }), { ...POINT_CLICK, controls: prefs })
+
+	// MOBA stops on KeyS.
+	prefs.preset = 'moba'
+	d.keys.push('KeyS')
+	expect(poll().pressed).toEqual([{ action: 'stop', at: null }])
+
+	// WASD and keyboard-only stop on KeyX (KeyS is walk-backward under both, so it is free to bind).
+	for (const id of ['wasd', 'keyboard']) {
+		prefs.preset = id
+		d.keys.push('KeyX')
+		expect(poll().pressed).toEqual([{ action: 'stop', at: null }])
+	}
+
+	// Under WASD, KeyS is no stop key: without keyHeld it is a no-op edge.
+	prefs.preset = 'wasd'
+	d.keys.push('KeyS')
+	expect(poll().pressed).toEqual([])
+
+	// Stop drops a held aim so a faked cast does not fire on release.
+	prefs.preset = 'wasd'
+	d.keys.push('Digit1')
+	poll() // hold to aim, quickCast off
+	d.keys.push('KeyX')
+	const f = poll()
+	expect(f.pressed).toEqual([{ action: 'stop', at: null }])
+	expect(f.held).toEqual({}) // the aim was dropped, not kept for a release cast
+
+	// Escape with nothing held is still a dead key — the stop tap closes the gap.
+	prefs.preset = 'wasd'
+	d.keys.push('Escape')
+	expect(poll().pressed).toEqual([])
+})
