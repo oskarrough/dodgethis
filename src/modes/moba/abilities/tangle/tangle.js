@@ -1,6 +1,3 @@
-import { tune } from '../../tune.js'
-import { segmentClear } from '../../obstacles.js'
-
 export default {
 	statusEffects: [{ effect: 'slow', magnitude: 'slow', duration: 'duration', stack: 'strongest' }],
 	name: 'Tangle',
@@ -13,54 +10,16 @@ export default {
 	card: {
 		summary: `A {angle} cone deals {damage:damage} and slows by {slow} for {duration}. Follow Throw with this.`,
 	},
-	onRelease({ hero, sim, ability, dir, slot, present }) {
-		const stats = ability.stats
-		const p = hero.body.position
-		let hit = false
-		for (const target of sim.enemiesOf(hero.team)) {
-			const dx = target.x - p.x,
-				dz = target.z - p.z
-			const length = Math.hypot(dx, dz)
-			if (
-				target.unit.dead ||
-				length > stats.range ||
-				(length > 0 && (dx * dir.x + dz * dir.z) / length < Math.cos((stats.angle * Math.PI) / 360))
-			)
-				continue
-			if (
-				!segmentClear(
-					p,
-					target,
-					0,
-					sim.obstacles.filter((o) => o.id !== target.id),
-					sim.bounds,
-				)
-			)
-				continue
-			sim.hit(
-				{
-					owner: hero.id,
-					team: hero.team,
-					ability: ability.id,
-					slot,
-					isAbility: true,
-					dx: dir.x,
-					dz: dir.z,
-					damage: stats.damage * (1 + tune.levels.growth * (hero.level - 1)),
-					applies: [{ key: 'tangle.slow', mag: 1 - stats.slow, duration: stats.duration }],
-				},
-				target,
-				target,
-			)
-			hit = true
-		}
-		present({
-			type: 'impact',
-			hero: hero.id,
-			ability: ability.id,
-			hit,
-			point: { ...p },
-			direction: { ...dir, y: 0 },
-		})
+	on: {
+		release: [
+			{
+				deliver: 'area',
+				from: 'self',
+				shape: 'cone',
+				targets: 'enemies',
+				blockedBy: 'cover',
+				hit: ['damage', 'slow'],
+			},
+		],
 	},
 }

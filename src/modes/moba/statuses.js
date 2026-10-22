@@ -1,4 +1,6 @@
-import { abilityOf } from './ability.js'
+import { abilityOf, areaEffectRecord, runHookStages } from './ability.js'
+import { tune } from './tune.js'
+import { segmentClear } from './obstacles.js'
 import { STEP } from '../../core/app.js'
 import { ticks } from './sim-kit.js'
 import { inOwnBase } from './base.js'
@@ -129,6 +131,166 @@ export function moveSpeed(unit, tick) {
 export function createStatuses(ctx) {
 	let nextId = 0
 	const { present } = ctx
+	const abilityEvents = new WeakMap()
+	const legacyEvents = { release: 'onRelease', land: 'onLand', dashEnd: 'onDashEnd', end: 'onEnd' }
+	function rememberAbilityEvent(state, event) {
+		abilityEvents.set(state, event)
+	}
+	function reactAbility(name, info, state = null, fallback) {
+		const { ability } = info
+		if (!ability) return
+		const saved = state && abilityEvents.get(state)
+		const hero = info.hero ?? saved?.source
+		const event = {
+			...(saved ?? {
+				source: hero,
+				ability,
+				slot: info.slot ?? null,
+				point: { ...(info.point ?? info.target ?? hero.body.position) },
+				dir: info.dir ?? { x: Math.sin(hero.yaw), z: Math.cos(hero.yaw) },
+				target: ctx.find(info.targetId) ?? null,
+			}),
+			...info.event,
+		}
+		const consumed = runHookStages(
+			ability.on?.[name],
+			{ ...info, hero, unit: hero, stats: ability.stats, event },
+			runActions,
+			ability[legacyEvents[name]] ?? fallback,
+		)
+		if (consumed === true) event.consumed = true
+		return event
+	}
+	function runActions(actions, info) {
+		for (const action of actions) {
+			if (action.deliver !== 'area') throw new Error(`MOBA unknown delivery: ${action.deliver}`)
+			const { hero, ability } = info
+			const event = info.event ?? {
+				source: hero,
+				ability,
+				slot: null,
+				point: hero.body.position,
+				dir: { x: Math.sin(hero.yaw), z: Math.cos(hero.yaw) },
+				target: info.unit ?? null,
+			}
+			const stats = ability.stats
+			const p = action.from === 'self' ? hero.body.position : event.point
+			const dir = event.dir ?? { x: Math.sin(hero.yaw), z: Math.cos(hero.yaw) }
+			const effects = action.hit.map((record) => areaEffectRecord(ability, record))
+			// enemiesOf snapshots coordinates in targeting population order. Red light's
+			// heroes population deliberately reads each body's live coordinates instead.
+			const targets =
+				action.population === 'heroes'
+					? ctx.heroes.map((unit) => ({ id: unit.id, team: unit.team, unit, hero: true }))
+					: ctx.api.enemiesOf(hero.team)
+			let hit = false
+			for (const entry of targets) {
+				const unit = entry.unit
+				if (unit.dead || unit.team === hero.team || (action.targets === 'enemyHero' && !entry.hero))
+					continue
+				const target = action.population === 'heroes' ? unit.body.position : entry
+				const dx = target.x - p.x,
+					dz = target.z - p.z
+				const length = Math.hypot(dx, dz)
+				if (length > stats[action.shape === 'cone' ? 'range' : 'radius']) continue
+				if (
+					action.shape === 'cone' &&
+					length > 0 &&
+					(dx * dir.x + dz * dir.z) / length < Math.cos((stats.angle * Math.PI) / 360)
+				)
+					continue
+				if (action.where && !action.where({ ...info, target: unit })) continue
+				if (
+					action.blockedBy === 'cover' &&
+					!segmentClear(
+						p,
+						target,
+						0,
+						ctx.api.obstacles.filter((obstacle) => obstacle.id !== entry.id),
+						ctx.api.bounds,
+					)
+				)
+					continue
+				const direction =
+					action.shape === 'circle' && length > 0 ? { x: dx / length, z: dz / length } : dir
+				const damage = effects.find((effect) => effect.effect === 'damage')
+				if (damage) {
+					const applies = effects
+						.filter((effect) => ['slow', 'freeze'].includes(effect.effect))
+						.map((effect) => ({
+							key: `${ability.id}.${effect.effect}`,
+							duration: stats[effect.duration],
+							...(effect.effect === 'slow' && { mag: 1 - stats[effect.magnitude] }),
+						}))
+					ctx.api.hit(
+						{
+							owner: hero.id,
+							team: hero.team,
+							ability: ability.id,
+							slot: event.slot,
+							isAbility: true,
+							dx: direction.x,
+							dz: direction.z,
+							damage:
+								stats[damage.amount] *
+								(damage.scale === null ? 1 : 1 + tune.levels.growth * (hero.level - 1)),
+							...(applies.length && { applies }),
+						},
+						entry,
+						target,
+					)
+					event.lethal = Boolean(event.lethal || unit.dead || unit.hp <= 0)
+				}
+				for (const effect of effects) {
+					// A hit resolves its statuses before damage. Don't add effects to its corpse.
+					if (unit.dead || unit.hp <= 0) break
+					if (effect.effect === 'freeze') {
+						if (!damage)
+							ctx.apply(unit, `${ability.id}.freeze`, {
+								source: hero,
+								duration: stats[effect.duration],
+							})
+						unit.body.cancelDash()
+						unit.dashAbility = null
+						present({
+							type: 'contact',
+							part: 'impact',
+							source: hero.id,
+							target: unit.id,
+							ability: ability.id,
+							until: stateUntil(unit, 'frozen'),
+							point: { ...unit.body.position },
+						})
+					} else if (effect.effect === 'knockback') {
+						ctx.api.displace(
+							unit,
+							{
+								x: target.x + direction.x * stats[effect.distance],
+								z: target.z + direction.z * stats[effect.distance],
+							},
+							stats[effect.duration],
+						)
+					} else if (effect.effect === 'slow' && !damage) {
+						ctx.apply(unit, `${ability.id}.slow`, {
+							source: hero,
+							mag: 1 - stats[effect.magnitude],
+							duration: stats[effect.duration],
+						})
+					}
+				}
+				hit = true
+			}
+			if (effects.some((effect) => effect.effect === 'damage'))
+				present({
+					type: 'impact',
+					hero: hero.id,
+					ability: ability.id,
+					hit,
+					point: { ...p },
+					direction: { ...dir, y: 0 },
+				})
+		}
+	}
 	function presentStatus(unit, status, state, extra = {}) {
 		present({
 			type: 'status',
@@ -172,7 +334,7 @@ export function createStatuses(ctx) {
 			wasted: definition?.on?.absorb ? Math.max(0, status.amount ?? 0) : 0,
 		})
 		const hook = reason === 'expired' ? definition?.on?.expire : definition?.on?.remove
-		hook?.(context(unit, status, { reason }))
+		runHookStages(hook, context(unit, status, { reason }), runActions)
 		return true
 	}
 	function clearStatuses(unit, reason) {
@@ -248,7 +410,7 @@ export function createStatuses(ctx) {
 		}
 		unit.statuses.push(status)
 		presentStatus(unit, status, 'on')
-		definition.on?.apply?.(context(unit, status))
+		runHookStages(definition.on?.apply, context(unit, status), runActions)
 		return status
 	}
 	function expireStatuses(unit) {
@@ -299,7 +461,10 @@ export function createStatuses(ctx) {
 				if (ctx.t < status.next) continue
 				status.next += ticks(resolve(definition.interval, info) ?? STEP)
 			}
-			hook({ ...info, event })
+			if (runHookStages(hook, { ...info, event }, runActions) === true) {
+				event.consumed = true
+				break
+			}
 		}
 		return event
 	}
@@ -317,6 +482,8 @@ export function createStatuses(ctx) {
 	}
 	return {
 		apply,
+		reactAbility,
+		rememberAbilityEvent,
 		remove,
 		clearStatuses,
 		cleanse,

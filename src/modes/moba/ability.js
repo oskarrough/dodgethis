@@ -9,6 +9,36 @@ export const STATUS_EFFECT_REFS = {
 	freeze: { duration: 's' },
 }
 
+export const AREA_EFFECT_REFS = {
+	damage: { amount: 'hp' },
+	knockback: { distance: 'm', duration: 's' },
+}
+export function areaEffectRecord(ability, record) {
+	if (typeof record !== 'string') return record
+	return (
+		ability.statusEffects?.find((effect) => effect.effect === record) ??
+		{
+			damage: { effect: 'damage', amount: 'damage' },
+			knockback: { effect: 'knockback', distance: 'knockback', duration: 'time' },
+		}[record]
+	)
+}
+
+// Functions retain the old replacement semantics; arrays are declared actions.
+// A consumed event never reaches its actions or after hook.
+export function runHookStages(hook, context, runActions, fallback) {
+	if (typeof hook === 'function') {
+		hook(context)
+		return
+	}
+	if (Array.isArray(hook)) return runActions(hook, context)
+	if (hook?.before?.(context) === true) return true
+	if (hook?.replace) hook.replace(context)
+	else if (hook?.do) runActions(hook.do, context)
+	else if (fallback) fallback(context)
+	hook?.after?.(context)
+}
+
 function effectStatuses(manifest) {
 	const statuses = { ...manifest.statuses }
 	for (const record of manifest.statusEffects ?? []) {

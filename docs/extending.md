@@ -62,6 +62,12 @@ A mechanic is something a map switches on: structures, minions, the Ball, bots, 
 
 `docs/feature-map.md`: one line per player-facing feature, with the files and symbols behind it.
 
+## Declare an area ability
+
+Use `on: { release: [{ deliver: 'area', from: 'self', shape: 'cone', targets: 'enemies', blockedBy: 'cover', hit: ['damage', 'slow'] }] }` (Tangle). Circles read `radius`; cones read `range` and `angle`. Damage reads `damage` with level growth at each target's release-time evaluation; `slow` and `freeze` use the matching `statusEffects` record. Knockback reads `knockback` and `time` (Around the world). Explicit payload records can bind other local tune keys; damage's `scale: null` disables growth.
+
+Areas retain targeting population order and coordinate snapshots; `targets: 'enemyHero'` includes practice dummies. Red light uses `population: 'heroes'` for its original live hero-only traversal and `where: ({ target, stats }) => Math.hypot(target.body.velocity.x, target.body.velocity.z) > stats.movingSpeed`. `where` receives a bare unit. `from: 'at'` centres an area on the event's aim point. Statuses resolve before damage; further effects on a lethal target are dropped. Damage areas emit the collective impact; freeze emits contact feedback.
+
 ## React with auras
 
 A status declares `on: { damage, tick, death, … }`; an ability can declare the same `on` map as an innate listener without adding replicated status records. `statuses.js` owns dispatch. Hooks run synchronously in the host sim; `app.present` remains output-only.
@@ -69,5 +75,9 @@ A status declares `on: { damage, tick, death, … }`; an ability can declare the
 Damage visits attacker and victim through `amplify` (multiply `event.factor`), `damage` (change `event.damage`, or redirect part with `sim.hit`) and `absorb` (shields). `shot.unmodified` skips amplification, not banking or shields. Each phase orders statuses by application id, then unit id; innate listeners precede statuses, in unit-id then kit-slot order. A phase snapshots its listeners: new auras wait for the next dispatch, removed auras never fire again in that dispatch.
 
 `hit` notifies the attacker and `damaged` the victim after HP changes, with effective damage. `cast` announces windup starts to all living units; `death` reaches all living units and the victim before its statuses clear. Inspect `event.source` and `event.target` to distinguish your own actions from others'. Hooks receive their own `unit`, `hero`, `status` (if applied), `ability`, `stats`, `sim`, `tick`, `ticks` and the shared mutable `event`. Cast events have `{ source, ability, slot, point, dir, target }`: `point` is the aim point, and `target` is the targeted unit or `null` for ground aim and caught returns. Damage and death targets are units.
+
+An event accepts an action array, a replacement function, or `{ before, do: [actions], replace, after }`. `before` returning `true` consumes it (no actions or `after`); `replace` overrides `do`, and `after` runs once after resolution. Legacy lifecycle hooks remain replacement fallbacks; combat's legacy `onHit` remains a consuming before-hook. Damage-phase consumption stops the hit. Existing aura functions retain their order and mutable event. A `before` on an aura stops the remaining listeners when it consumes the event.
+
+`release`, `land`, `dashEnd` and `end` are local to the acting ability, with the cast event shape above: `event.target` stays a bare unit or null, `event.point` stays the aim point, and damage actions expose `event.lethal` to `after`. Legacy hooks retain their old top-level arguments. Lifecycle context is sim-local, not replicated state.
 
 `tick` follows the sim's existing per-unit step order. Status `interval` sets an absolute-tick cadence; omit it to run every step. Innate ticks also run while dead so owned cover can expire. Status `apply`, `remove` and `expire` are local lifecycle hooks; removal supplies `reason` directly, and refresh retains the existing aura's order and cadence. Stagger and Cushion show the two listener forms; Ward and Swig share `aura-damage.js` `absorbAura`. Declaring `on.absorb` also opts a status into shield spent cleanup and waste accounting; no separate flag is needed.

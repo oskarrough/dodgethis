@@ -181,7 +181,15 @@ export function createCasting(ctx) {
 			if (castFootprint) footprints.set(shot, castFootprint)
 			return
 		}
-		const context = traitContext(h, { ability, dir, target, targetId, slot })
+		const event = {
+			source: h,
+			ability,
+			slot,
+			point: { ...target },
+			dir,
+			target: ctx.find(targetId) ?? null,
+		}
+		const context = traitContext(h, { ability, dir, target, targetId, slot, event })
 		if (ability.kind === 'stance') {
 			h.stance = {
 				ability: ability.id,
@@ -189,6 +197,7 @@ export function createCasting(ctx) {
 				dir: { ...dir },
 				factor: skill.speedFactor ?? 1,
 			}
+			ctx.rememberAbilityEvent(h.stance, event)
 			ability.onStart?.(context)
 			if (castFootprint && h.catchWindow) footprints.set(h.catchWindow, castFootprint)
 			return
@@ -202,22 +211,24 @@ export function createCasting(ctx) {
 				left: ticks(skill.duration),
 				total: ticks(skill.duration),
 			}
+			ctx.rememberAbilityEvent(h.channel, event)
 			ability.onStart?.(context)
 			return
 		}
-		ability.onRelease?.(context)
+		if (ctx.reactAbility('release', context).consumed) return
 		if (ability.kind === 'instant') return
 		if (castFootprint && h.catchWindow) footprints.set(h.catchWindow, castFootprint)
 		if (ability.kind === 'dash') {
 			// Whole fixed steps avoid overshooting the advertised distance on the final dash tick.
 			const time = Math.max(1, Math.ceil(skill.time / STEP)) * STEP - 1e-9
 			h.dashAbility = ability.id
+			ctx.rememberAbilityEvent(h.body, event)
 			h.body.dash(dir, { distance: skill.range, time })
 			if (castFootprint) footprints.set(h.body, castFootprint)
 			return
 		}
 		if (ability.kind === 'zone') {
-			zones.push({
+			const zone = {
 				id: ++ctx.shotIds,
 				owner: h.id,
 				team: h.team,
@@ -227,8 +238,10 @@ export function createCasting(ctx) {
 				total: ticks(skill.delay),
 				ability: ability.id,
 				slot,
-			})
-			if (castFootprint) footprints.set(zones.at(-1), castFootprint)
+			}
+			zones.push(zone)
+			ctx.rememberAbilityEvent(zone, event)
+			if (castFootprint) footprints.set(zone, castFootprint)
 			return
 		}
 		const shot = launchShot(h, dir, {
@@ -345,7 +358,7 @@ export function createCasting(ctx) {
 		const stance = hero.stance
 		const ability = abilityOf(stance.ability, hero)
 		hero.stance = null
-		ability?.onEnd?.(traitContext(hero, { stance, ability, reason }))
+		ctx.reactAbility('end', traitContext(hero, { stance, ability, reason }), stance)
 	}
 
 	function stepHeroState(hero, dt) {
@@ -357,7 +370,7 @@ export function createCasting(ctx) {
 			const cancelled = lobby && frame.pressed.some((e) => e.action === 'cancel')
 			if (stance.until <= ctx.t || cancelled) {
 				hero.stance = null
-				ability?.onEnd?.(traitContext(hero, { stance, ability }))
+				ctx.reactAbility('end', traitContext(hero, { stance, ability }), stance)
 				if (cancelled && hero.catchWindow) {
 					hero.catchWindow = null
 					present({ type: 'catchExpired', hero: hero.id, point: { ...hero.body.position } })
@@ -393,7 +406,7 @@ export function createCasting(ctx) {
 		ability?.onTick?.(traitContext(hero, { ...channel, ability, dt }))
 		if (--channel.left > 0) return
 		hero.channel = null
-		ability?.onRelease?.(traitContext(hero, { ...channel, ability }))
+		ctx.reactAbility('release', traitContext(hero, { ...channel, ability }), channel)
 		present({
 			type: 'channelEnd',
 			hero: hero.id,

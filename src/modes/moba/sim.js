@@ -374,7 +374,7 @@ export function createSim({
 		for (const d of dummies) if (!d.dead) d.body.sync()
 		for (const h of dashEnds) {
 			const ability = abilityOf(h.dashAbility, h)
-			ability?.onDashEnd?.(traitContext(h, { ability }))
+			ctx.reactAbility('dashEnd', traitContext(h, { ability }), h.body)
 			h.dashAbility = null
 			if (h.order?.goal) h.order.path = plan(h, h.order.goal)
 		}

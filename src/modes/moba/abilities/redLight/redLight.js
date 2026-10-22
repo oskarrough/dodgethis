@@ -1,5 +1,4 @@
 import { tune } from '../../tune.js'
-import { stateUntil } from '../../statuses.js'
 const distance = (a, b) => Math.hypot(a.x - b.x, a.z - b.z)
 export default {
 	icon: '<svg viewBox="0 0 48 48" aria-hidden="true"><circle class="tone" cx="24" cy="24" r="18"/><path class="cream" d="M17 12 H31 V36 H17 Z"/></svg>',
@@ -25,30 +24,19 @@ export default {
 	held: 'selfCircle',
 	effects: { cast: 'redLightWindup', impact: 'redLightFreeze', pose: 'coachRed' },
 	statusEffects: [{ effect: 'freeze', duration: 'duration' }],
-	onRelease({ hero, sim, ability, present }) {
-		const p = hero.body.position,
-			stats = ability.stats
-		for (const enemy of sim.heroes) {
-			if (
-				enemy.dead ||
-				enemy.team === hero.team ||
-				Math.hypot(enemy.body.position.x - p.x, enemy.body.position.z - p.z) > stats.radius ||
-				Math.hypot(enemy.body.velocity.x, enemy.body.velocity.z) <= stats.movingSpeed
-			)
-				continue
-			sim.apply(enemy, 'redLight.freeze', { source: hero, duration: stats.duration })
-			enemy.body.cancelDash()
-			enemy.dashAbility = null
-			present({
-				type: 'contact',
-				part: 'impact',
-				source: hero.id,
-				target: enemy.id,
-				ability: ability.id,
-				until: stateUntil(enemy, 'frozen'),
-				point: { ...enemy.body.position },
-			})
-		}
+	on: {
+		release: [
+			{
+				deliver: 'area',
+				from: 'self',
+				shape: 'circle',
+				targets: 'enemyHero',
+				population: 'heroes',
+				where: ({ target, stats }) =>
+					Math.hypot(target.body.velocity.x, target.body.velocity.z) > stats.movingSpeed,
+				hit: ['freeze'],
+			},
+		],
 	},
 	card: {
 		summary: `Freeze enemy heroes moving faster than {movingSpeed} within {radius} for {duration}. Standing still is safe.`,

@@ -284,10 +284,13 @@ export function createCombat(ctx) {
 				(unit.structure && (shot.isAbility || shot.slot.startsWith('slot'))
 					? tune.waves.abilityStructure
 					: 1)
+		if (event.consumed) return
 		event.damage = incoming
 		ctx.reactAuras('damage', participants, event)
+		if (event.consumed) return
 		const beforeAbsorb = event.damage
 		incoming = ctx.reactAuras('absorb', participants, event).damage
+		if (event.consumed) return
 		const absorbed = beforeAbsorb - incoming
 		const damage = Math.min(unit.hp, Math.max(0, incoming))
 		if (!shot.noHelp) lane?.help(find(shot.owner), unit, ctx.t)
