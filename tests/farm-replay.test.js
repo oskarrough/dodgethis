@@ -4,9 +4,9 @@ import { tmpdir } from 'node:os'
 import * as THREE from 'three'
 import RAPIER from '@dimforge/rapier3d-compat'
 import { STEP } from '../src/core/app.js'
-import { agentRoster } from '../src/plugins/moba/agents.js'
-import { buildColliders } from '../src/plugins/moba/obstacles.js'
-import { createAgentMatch, readReplay, replayHash } from '../src/plugins/moba/agent-match.js'
+import { agentRoster } from '../src/modes/moba/agents.js'
+import { buildColliders } from '../src/modes/moba/obstacles.js'
+import { createAgentMatch, readReplay, replayHash } from '../src/modes/moba/agent-match.js'
 import { runFarmMatch } from '../scripts/farm.js'
 
 await RAPIER.init({})
