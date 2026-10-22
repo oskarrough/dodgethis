@@ -1,80 +1,43 @@
-# Agent notes
+# Dodgethis
 
-- Use jujutsu version control when `jj` is available
-- Keep learnings in the repo (docs, this file), never in a harness's private memory; the user works across many harnesses.
-- Don't use `jj restore`; parallel agents may be working in this checkout. Orientation: `jj log -n 3 --no-graph -T 'change_id.short() ++ " " ++ description.first_line() ++ "\n"'` and `jj diff --stat`; review with `jj diff <owned-path>`, never an unbounded log or whole-repo patch.
-- Commit only if your brief says so (parallel builds leave it to the orchestrator), and then only your own files, always with a message: `jj commit <paths> -m "…"`, and no Co-Authored-By or other agent trailers. Run `bunx oxfmt <paths>` first, docs included; `bun run check` fails on unformatted markdown. Then `jj bookmark set main -r @-`. `jj commit <path>` takes every hunk in that file, other threads' edits included, so commit a shared file only when `jj diff <path>` shows nothing but your hunks; otherwise leave it to the orchestrator and list your hooks in the report. Leave other threads' changes in the working copy; never create an empty-described commit. When parallel threads have tangled the same files, the orchestrator may commit unrelated features together rather than hand-split hunks; name each feature in the message. Never `jj squash`, `split`, `abandon` or rebase commits you didn't make; add a new commit instead.
-- Tokens are the scarce resource (Oskar keeps hitting session limits). Proof budget: one screenshot, clip or headless number per change, taken once; never repeat a passing proof, never run simulate sweeps or the full check unless the brief asks. If a proof turns fiddly, stop and report the gap. For small visual or timing tweaks Oskar asked for himself, skip the proof: he tests them.
-- Don't write new unit tests yet; prove changes by playing them. Keep the existing suite green.
-- A red check in files you don't own isn't yours (another thread's half-done edit; don't `git archive` main to prove it): name them in your report and leave them alone. Iterate with `bun test <file>`; finish with `bunx oxlint <your files>`, `bunx oxfmt <your files>` and the test files near your change. In a shared checkout the orchestrator runs the full `bun run check` at the checkpoint, so don't loop on it: other threads' half-done edits make it red.
-- The machine is shared: browser sessions and full checks starve each other (load past 12 turns timing tests into random failures). Open a browser only when the change is visual or someone asked, and close it when done.
-- Commit freely. The orchestrator pushes `main` whenever a checkpoint is committed and green; no need to ask (Oskar, 2026-10-14). Every push deploys and costs CI, so push checkpoints, not every builder commit.
-- The game ignores reduced-motion settings: every animation always plays. Never add `prefers-reduced-motion` paths (Oskar, 2026-10-10).
-- Deploys happen automatically when `main` moves on GitHub (Cloudflare Workers build). Never run `wrangler deploy` by hand. `bun run build` runs `bun run check` first, so a lint or test failure blocks the deploy. MOBA work goes on `main` in this checkout: no PRs, branches or worktrees, autobot included; Oskar tests locally (Oskar, 2026-10-13).
+A web game: two modes, dodgeball and a MOBA, on one engine.
 
-## Git worktrees
+- `src/core/` engine, `src/plugins/` modes; core never imports plugins
+- Mods are drop-in folders in the moba plugin: `heroes/`, `abilities/`, `maps/`, `mechanics/`, each `<id>/` with `<id>.js` logic, `<id>-view.js` drawing, `<id>-tune.js` numbers (`docs/extending.md`)
+- `docs/moba.md` design, `docs/roadmap.md` plan, `docs/verify.md` proving, `docs/build-rules.md` builder rules
 
-- A bb thread may land in a plain git worktree: no `node_modules`, no jj. Run `bun install` first (a second or two), then use git; the jj lines above don't apply.
-- To land: commit only your own files with a user-facing message, `git fetch origin && git rebase origin/main`, rerun the tests near your change, then `git push origin HEAD:main`. If the push is refused because main moved, fetch, rebase and push again. Never force-push.
+## Navigating
 
-## Balance and bot experiments
+- Screens: `/` home (splash) → lobby → match, plus paused and result; `dt.screen()` says which
+- `?mode=moba|dodgeball`, `&play` skips the lobby, `&map=overthrow|flagfall`, `&hero=fletcher`
+- `&bots=easy|normal|hard`, `&seed=2`, `&debug` for the panel, `&bots-only`, `&fog=0`, `&replay=<tape>`
+- `/CODE` joins an online room
 
-- `bun run simulate --summary` runs bot simulations: headless bot matches, compact tables, no logs. `--base` replays the same seeds on another revision and prints deltas with approximate 95% intervals and a verdict; `--report` adds per-ability, death-cause and bot-state sections; `--set bots.exp.<flag>=0,1` toggles a logic variant. Read the headless tools section of `docs/verify.md` before building your own harness, git archive or env-var hack.
-- Full logs (`bun run simulate` without `--summary`) feed `bun run simulate --logs runs`, DuckDB over saved match logs, for questions the simulation tables don't answer.
+## Scripts
 
-## Browser proofs
+- `bun run dev:agent` shared dev server, never stop it
+- `bun run check` lint, format, tests
+- `bun run simulate --summary` headless bot matches; `play:headless` drives one
+- `bun run review` pins a proof to `pages/`
+- `bun run where <word>` finds a feature
+- `bun run collect-mods` after adding or removing a mod folder
+- Read big files with `ast-grep outline` or `grep -n`, never cat; tokens are the budget
 
-- Before opening a browser or proving a change by play, read `docs/verify.md`: which proof to pick, the shared dev server, `window.dt`, evidence and cleanup. Every visual proof, clip or variant goes through `bun run review -- --title … --ask … --thread $BB_THREAD_ID <files>`; reports link http://office-linux.heron-mermaid.ts.net:5173/pages/, never thread-storage paths. `bun run review` also edits the shared `pages/items.json`: builders commit only their page folder and its `pages/media/<slug>/`, and leave `items.json` to the orchestrator. Shrink proof media before it lands: webp stills at most 1440 px wide (`magick in.png -resize '1440x>' -quality 82 out.webp`), clips VP9 at most 1440 (`ffmpeg -i in.webm -vf scale='min(1440,iw)':-2 -c:v libvpx-vp9 -crf 33 -b:v 0 -an out.webm`). These ship with the site and live in git, so a proof is a few hundred kB. Oskar plays at http://office-linux.heron-mermaid.ts.net:5173, never `127.0.0.1`.
+## Shared checkout
 
-- Every HTML artifact lives in `pages/<slug>/` and gets a row in `pages/index.html` (title, what, date, status To review / Decided / Archived, Oskar's decision). The orchestrator updates the row when Oskar decides.
-- HTML artifacts (pitches, look pages, review) link `/pages/page.css` with `<body class="page">` and are plain semantic HTML: no CSS or styling classes of their own. Tools (the sound board, `pages/sound/`) may style themselves (Oskar, 2026-10-11).
+- Others work here at the same time: touch only your files
+- No `jj restore`, worktrees or PRs
+- Commit your own files with a user-facing message
+- Every push to `main` deploys: push checkpoints, never `wrangler deploy`
 
-## Vocabulary
+## Proving
 
-- Screens, in both modes: `splash` (home), `lobby` (walk around, pick, ready up), `match`, `paused`, `result`. `dt.screen()` reports them. The crane and descent are a transition, not a screen. Say screen, never scene: `scene` is the Three.js scene.
-- Maps are values of `setup.map` (`?map=`), chosen on the splash and played on the match screen: `overthrow` and `flagfall`. Each brings its own ground and rules. Don't use the old names Slab, Sandlot or plaza.
+- No new unit tests; keep the suite green with `bun test <file>`, oxlint, oxfmt
+- Default: make the change and trust it
+- Prove only when the brief asks or the user must judge a look or feel: one screenshot, clip or headless number, once, via `bun run review`
+- `pages/` is the pinboard (proofs, pitches, concept art, one folder each, listed in `pages/index.html`), served by the dev server; link there, never to thread storage
 
-## Layout
+## Coordinating
 
-- `src/core/` is the engine; `src/plugins/{dodgeball,online,moba}/` are plugins. The contract is the 10 numbered contract lines under Modes in `docs/extending.md`. Core never imports plugins, and plugins never import each other; `tests/boundaries.test.js` enforces this.
-- `tests/characterization.test.js` locks dodgeball's behaviour. Its snapshots must stay identical unless a change is deliberate and explained.
-- Modes: `/` opens the splash. `?mode=moba&play&bots=easy&hero=fletcher&seed=2&debug` jumps straight into a match with the debug panel.
-- Where is X: `bun run where <word>` prints feature-map entries and source locations; use a quoted phrase or entry symbol to narrow it, `--all` for every hit. Whoever adds or moves a feature updates its line there. `tune.js` holds match rules and assembles each map's, the lobby's and each hero's tune file (`maps/<id>/<id>-tune.js`, `front/lobby-tune.js`, `abilities/<id>/<id>-tune.js`, `heroes/<id>/<id>-tune.js`); edit the block where it lives, and read the landmark, not the file.
-- To see a file's symbols without reading it: `ast-grep outline <file>`. For structural search (callers of a function, every `tune.x.y` use) use `ast-grep run -p '<pattern>' -l js src` instead of regex grep. Never `cat` a doc or any file over ~150 lines: `ast-grep outline` (or `grep -n` for docs) first, then `sed -n` only the range you need. Every token you read is re-read on every later call.
-- Docs: `docs/roadmap.md` (the big picture), `docs/world.md` (setting), `docs/moba.md` (design), `docs/ideas.md` (creative pitches), `docs/compelling-abilities.md` (what makes an ability fun, and how to tune one without breaking the game), `docs/network.md`, `docs/verify.md`, `docs/sound.md` (music and sound effects).
-
-## Orchestration
-
-- Briefs live in each thread's storage (`$BB_THREAD_STORAGE/<slug>.md`), there is no queue folder.
-- Build rules every builder follows: `docs/build-rules.md`.
-- A builder's question for Oskar (a name, a taste call, files only he has) goes to the coordinator in its report, which files it in Oskar's bb inbox (Report, step 8); never block on him mid-build.
-- The coordinating thread owns instructions, briefs, review and roadmap updates; builder BB threads implement game code in this shared checkout. No worktrees.
-
-How the coordinating thread drives dodgethis work through bb threads: brief, spawn, verify, review, report.
-
-1. **Next.** Current priority is `roadmap.md` (2026-10-08 feedback): lobby clarity, then small HUD/feel batches, with Mitts gameplay experiments separate. Briefs are written to the coordinating thread's storage (`$BB_THREAD_STORAGE/<slug>.md`), never to the repo; there is no queue folder. One outcome per thread. The coordinator owns instructions, briefs, reviews and roadmap updates; builder threads implement game code.
-2. **Brief.** Spend tokens like money: at most three builders at once, no balance or simulate sweeps unless Oskar asks, and split any brief that needs more than ~40 tool calls (context is re-read on every call, so long threads cost quadratically), and the evidence line names one proof, not a matrix.
-   **Brief, the four points.** Four things, as few lines as they take (Oskar, 2026-10-10): the goal; a checkable finish condition ("done means…"); the evidence to show (a screenshot or clip through `bun run review`, a headless number, before and after); constraints (files or threads to leave alone, commit locally or not, no new unit tests). Example: "Fix the duplicate notification after retry. Reproduce it first. Done means retrying produces exactly one notification and normal delivery still works. Show the failing and passing evidence. Commit locally." Point at docs (feature map, look doc, a page) instead of restating them; never paste rule sections. Name both the engine file and its folder wrapper (e.g. `ball.js` and `mechanics/ball/`), and the greps that find every consumer; guessed paths cost the most calls. A design doc that steers a multi-step build drifts: re-read it before each brief. Review briefs say: `grep -n` the target doc and read only the headings of earlier findings. Save it to `$BB_THREAD_STORAGE/<slug>.md`. When a review finds a new class of bug, add a line to `docs/build-rules.md`.
-3. **Route.** Concept art and generated images: Codex (`--provider codex --model gpt-6.1-sol`, built-in image generator), every prompt carrying the style block from `docs/look.md` (Concept art), saved as webp under `pages/<slug>/` with a static `index.html` gallery Oskar opens through the dev server. Opus (claude-code) for design and feel (how a shot, hit or move feels to play). GPT 6.1 (pi) for building and general work. Sonnet for research and smoke tests.
-   `bb thread spawn --project proj_dhp5r3qujz --environment <checkout> --parent-self --provider claude-code --model claude-opus-5-5 --reasoning-level high --title "<title>" --prompt-file <brief>`
-   For Sonnet: `--model claude-sonnet-5-5 --reasoning-level medium`. For GPT: `--provider pi --model openai-codex/gpt-6.1-sol --reasoning-level high` (without the flag pi runs medium) (if it's missing, run `pi update --all` and upgrade codex). Never leave the provider on its default (pi/GLM).
-4. **Parallel.** `<checkout>` is the path in `bb status` for this host: `/home/osk/sites/dodgethis` on the WSL box (12 cores, go wide), `/home/oskar/sites/dodgethis` on hetzner (2 cores: one builder plus one short review). Parallel writers share the checkout, with no worktrees: each brief lists the files it owns and says "do not commit"; the orchestrator mashes one checkpoint commit when they land. Builds that would share a file run in sequence, and so do builds where one deletes or changes an API another calls: split by dependency, not only by file. Writers may improve what they touch and fix the spec in a line when it's wrong.
-5. **Verify.** Builders run targeted existing checks, lint and format once (AGENTS.md has the rest); the coordinator inspects the owned diff and runs `bun run check` once at a settled code checkpoint. Run slow whole-match checks when sim/state/timing changed, with other writers and expensive checks idle; never create a verification worktree. Docs-only changes need formatting, not game tests. Browser proofs follow `docs/verify.md`; a full route smoke belongs to a navigation/transition checkpoint, not every builder. Frozen builds and extra smoke agents are reserved for integration uncertainty, not routine UI fixes.
-6. **Review.** Review sim, network and state logic, where bugs hide from play. For UI and feel, Oskar playing is the review; don't queue a fix round he hasn't asked for. Spread work over owners: one builder holding every file of a feature serialises it, so split by file before the first slice. An adversarial review by the reverse model: GPT reviews Opus designs, Opus reviews GPT builds. Brief it to find what's wrong, not to summarise, and feed its findings to the author.
-7. **Failures.** "Provider rate limit" on claude-code means the Claude session cap: wait for the reset time in the log, then retry, or reroute the work to GPT. "Interrupted" is often the host daemon dropping, not Oskar: read `bb thread log <id> | tail`, and if it says the daemon disconnected, `bb thread retry <id>`. If Oskar stopped it, leave it. A completion notice with no text: read the report from `bb thread log`.
-8. **Report.** Oskar owns the look: visual art, style, names and branding (2026-10-10). Everything else (mechanics, feel, bots, balance, UX fixes, the harness) the orchestrator decides and builds, then shows him the result. A question for Oskar that can wait goes to his bb inbox as one task (`bb tasks create --project INBOX --title "<the ask>"`, then `bb tasks update <key> --status todo`, `bb tasks attach <key>`, `bb tasks comment <key> --body "<context, options, your pick>"`; `done` once answered); ask in chat only when he's live and the work stops on it. Update `roadmap.md` as feedback goals are implemented and judged; update docs/roadmap.md when a big-picture line moves. Then three lines to Oskar: what changed, whether it checks out, what's next. Ping him at a meaningful visual/feel checkpoint with http://office-linux.heron-mermaid.ts.net:5173 (never a 127.0.0.1 URL); every visual proof or variant goes through `bun run review` and reports link http://office-linux.heron-mermaid.ts.net:5173/pages/, not thread-storage paths and the shortest route, a screenshot for layout or a short clip for motion, plus one concrete judgment. A screenshot alone does not prove feel. Pitches and designs for Oskar's feedback (heroes, maps, settings) are HTML pages under `pages/<slug>/`, served by his dev URL, with numbered items he can reply to, styled only by `<link rel="stylesheet" href="/pages/page.css">` and `<body class="page">` (plain semantic HTML, no CSS of your own); never a markdown file in thread storage. Never invent a URL or deploy by hand. Ask only when a call is his, one question at a time: talk to Oskar in one or two chatty lines and steer the conversation, never a menu of open threads (Oskar, 2026-10-10). Then go back to step 1.
-
-When a checkpoint changes navigation, objectives or match flow, do one relevant new-player smoke. Don't automatically add a browser reviewer or creative thread after each small batch. For UI and feel, make Oskar's judgment easy and adjust the next brief from his feedback.
-
-Rules: prototyping, so no git ceremony. Commit only at explicitly authorized checkpoints, mashed together ("Add lanes, fix cursor, and tune W") and never with an empty message, and one thread finishes entangled work rather than two splitting it. Short docs; if a doc keeps growing, the design is too big. A thread that produces a file dump was briefed wrong.
-
-The harness is the orchestrator's job too: when this doc, the rules or a brief misled a thread or Oskar, fix the file in the same turn.
-
-Every HTML artifact lives in `pages/<slug>/` and is an item in `pages/items.json` (`bun run review` adds proofs); when Oskar decides, the orchestrator records it by setting the item's `status` and `decision`.
-
-### Review brief template
-
-Model: reverse of the author (GPT reviews Opus, Opus reviews GPT). After: the thing under review lands.
-Adversarial review of <WHAT> in dodgethis `?mode=moba`. Context: `docs/moba.md`, `docs/extending.md`, the diff since the last checkpoint.
-Review the named commits at the checkpoint tip (`jj show <rev>` for scope; run and read code at the tip, since one feature can span several commits) or the doc. Never use the live working copy (other threads are writing in it) unless the brief names files to read there because no checkpoint exists yet. Find what's wrong; don't summarise. Bugs, feel regressions (judder, input lag, unreadable telegraphs), numbers that don't add up, boundary violations, dodgeball changes (characterization snapshots must be identical), tricky logic nobody proved by play (no new unit tests, per Oskar).
-Don't edit files. At most 8 findings, most severe first, one or two lines each with a concrete fix.
+- The coordinator briefs (goal, done means, one proof, owned files), reviews with the reverse model, owns `pages/items.json` and this file
+- The user owns the look; questions that can wait go to the inbox
