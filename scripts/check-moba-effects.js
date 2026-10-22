@@ -158,17 +158,14 @@ function checkActions(id, manifest, actions) {
 		}
 		const targeted = action.deliver === 'target'
 		const fields = targeted
-			? ['deliver', 'pick', 'targets', 'range', 'hit', 'chain', 'consume', 'before', 'after']
+			? ['deliver', 'pick', 'targets', 'range', 'hit', 'chain', 'before', 'after']
 			: ['deliver', 'from', 'shape', 'radius', 'targets', 'blockedBy', 'where', 'hit']
 		for (const field of Object.keys(action))
 			if (!fields.includes(field)) errors.push(`${id}: unknown ${action.deliver} field ${field}`)
 		if (targeted) {
-			if (!['nearestAim', 'event'].includes(action.pick))
-				errors.push(`${id}: unknown target pick ${action.pick}`)
+			if (action.pick !== 'nearestAim') errors.push(`${id}: unknown target pick ${action.pick}`)
 			if (!['ally', 'enemy'].includes(action.targets))
 				errors.push(`${id}: unknown target team ${action.targets}`)
-			if (action.targets === 'enemy' && action.pick !== 'nearestAim')
-				errors.push(`${id}: enemy targets need nearestAim`)
 			if (action.chain !== undefined) {
 				if (action.targets !== 'enemy') errors.push(`${id}: only enemy targets chain`)
 				for (const field of Object.keys(action.chain ?? {}))
@@ -178,10 +175,7 @@ function checkActions(id, manifest, actions) {
 				checkRef(id, 'chain repeat', action.chain?.repeat, 'count')
 				checkRef(id, 'chain falloff', action.chain?.falloff, 'fraction')
 			}
-			if (action.pick === 'nearestAim') checkRef(id, 'target range', action.range, 'm')
-			else if (action.range !== undefined) errors.push(`${id}: event target cannot have a range`)
-			if (action.consume !== undefined && typeof action.consume !== 'boolean')
-				errors.push(`${id}: target consume must be a boolean`)
+			checkRef(id, 'target range', action.range, 'm')
 			for (const hook of ['before', 'after'])
 				if (action[hook] !== undefined && typeof action[hook] !== 'function')
 					errors.push(`${id}: target ${hook} must be a function`)
@@ -328,23 +322,11 @@ function checkActionEffect(id, manifest, record) {
 		errors.push(`${id}: heal crit chance and multiplier must be declared together`)
 }
 function checkGround(id, manifest, action) {
-	const fields = [
-		'deliver',
-		'at',
-		'radius',
-		'lifetime',
-		'every',
-		'allies',
-		'enemies',
-		'follow',
-		'on',
-	]
+	const fields = ['deliver', 'at', 'radius', 'lifetime', 'every', 'allies', 'enemies']
 	for (const field of Object.keys(action))
 		if (!fields.includes(field)) errors.push(`${id}: unknown ground field ${field}`)
-	if (action.at !== undefined && !['aim', 'self', 'at'].includes(action.at))
+	if (action.at !== undefined && !['aim', 'at'].includes(action.at))
 		errors.push(`${id}: unknown ground origin ${action.at}`)
-	if (action.follow !== undefined && action.follow !== 'source')
-		errors.push(`${id}: unknown ground follow ${action.follow}`)
 	for (const [field, unit] of Object.entries({ radius: 'm', lifetime: 's', every: 's' })) {
 		checkRef(id, `ground ${field}`, action[field], unit)
 		if (tune[id]?.[action[field]] < 0 || (field !== 'radius' && tune[id]?.[action[field]] === 0))
@@ -387,11 +369,9 @@ function checkGround(id, manifest, action) {
 				errors.push(`${id}: ground linger requires while: inside`)
 			if (
 				record.stack !== undefined &&
-				(!status || !['strongest', 'independent', 'refresh', 'replace'].includes(record.stack))
+				(!status || !['independent', 'refresh', 'replace'].includes(record.stack))
 			)
 				errors.push(`${id}: unknown ground stack ${record.stack}`)
-			if (record.stack === 'strongest' && !['slow', 'haste'].includes(record.effect))
-				errors.push(`${id}: strongest requires a movement effect`)
 			for (const [field, unit] of Object.entries(refs)) {
 				if (
 					(field === 'duration' && record.while === 'inside') ||
@@ -437,7 +417,6 @@ function checkGround(id, manifest, action) {
 				errors.push(`${id}: unsupported ground effect scaling`)
 		}
 	}
-	checkHooks(id, manifest, action.on, ['enter', 'exit'])
 }
 function checkHooks(id, manifest, on, events = AURA_EVENTS) {
 	try {

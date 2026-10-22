@@ -300,7 +300,7 @@ export function createStatuses(ctx) {
 					carrier: event.carrier,
 					ability,
 					event: { ...event },
-					point: { ...(action.at === 'self' ? actor.body.position : event.point) },
+					point: { ...event.point },
 					until: ctx.t + ticks(stats[action.lifetime]),
 					next: ctx.t,
 					members: new Map(),
@@ -327,14 +327,12 @@ export function createStatuses(ctx) {
 					!unit ||
 					unit.dead ||
 					(unit.team === actor.team) === (action.targets === 'enemy') ||
-					(action.pick === 'nearestAim' &&
-						Math.hypot(
-							unit.body.position.x - actor.body.position.x,
-							unit.body.position.z - actor.body.position.z,
-						) > stats[action.range])
+					Math.hypot(
+						unit.body.position.x - actor.body.position.x,
+						unit.body.position.z - actor.body.position.z,
+					) > stats[action.range]
 				) {
-					if (action.pick === 'nearestAim')
-						present({ type: 'denied', hero: actor.id, slot: event.slot, reason: 'targetLost' })
+					present({ type: 'denied', hero: actor.id, slot: event.slot, reason: 'targetLost' })
 					continue
 				}
 				const context = { ...info, hero: actor, event, stats }
@@ -351,21 +349,14 @@ export function createStatuses(ctx) {
 				else
 					present({
 						type: 'contact',
-						part: info.shot ? 'hit' : 'impact',
+						part: 'impact',
 						source: actor.id,
 						target: unit.id,
 						ability: ability.id,
-						...(info.shot && {
-							projectile: info.shot.id,
-							heal: result.heal,
-							hp: unit.hp,
-							maxHp: unit.maxHp,
-						}),
 						...(action.chain && { origin, hop: 0 }),
 						point: { ...unit.body.position },
 					})
 				if (action.chain) chainFrom(actor, ability, event, action.chain, unit, effects)
-				if (action.consume) return true
 				continue
 			}
 			if (action.deliver !== 'area') throw new Error(`MOBA unknown delivery: ${action.deliver}`)
@@ -420,28 +411,15 @@ export function createStatuses(ctx) {
 				})
 		}
 	}
-	function groundCrossing(field, name, unit, entries) {
-		if (name === 'exit')
-			for (const { record, key } of entries)
-				if (record.while === 'inside')
-					for (const status of unit.statuses ?? [])
-						if (status.field === field.id && status.key === `${field.ability.id}.${key}`) {
-							status.until = ctx.t + ticks(field.ability.stats[record.linger])
-							if (status.until <= ctx.t) remove(unit, status.id, 'expired')
-							else presentStatus(unit, status, 'refresh')
-						}
-		if (!ctx.heroes.includes(field.actor) || field.actor.definition !== field.definition) return
-		const event = { ...field.event, source: field.actor, target: unit, point: { ...field.point } }
-		runHookStages(
-			field.action.on?.[name],
-			{
-				...ctx.traitContext(field.actor),
-				ability: field.ability,
-				stats: field.ability.stats,
-				event,
-			},
-			runActions,
-		)
+	function leaveGround(field, unit, entries) {
+		for (const { record, key } of entries)
+			if (record.while === 'inside')
+				for (const status of unit.statuses ?? [])
+					if (status.field === field.id && status.key === `${field.ability.id}.${key}`) {
+						status.until = ctx.t + ticks(field.ability.stats[record.linger])
+						if (status.until <= ctx.t) remove(unit, status.id, 'expired')
+						else presentStatus(unit, status, 'refresh')
+					}
 	}
 	function stepGroundField(field, forceEnd = false) {
 		const { actor, ability, action, members } = field
@@ -453,9 +431,6 @@ export function createStatuses(ctx) {
 			Boolean(ctx.lane?.match.winner) ||
 			ctx.t >= field.until ||
 			(field.carrier && !ctx.summons.includes(field.carrier))
-		if (action.follow === 'source') field.point = { ...actor.body.position }
-		field.view.x = field.point.x
-		field.view.z = field.point.z
 		const inside = new Map()
 		if (!ended)
 			for (const unit of [
@@ -478,7 +453,7 @@ export function createStatuses(ctx) {
 		for (const [unit, entries] of members)
 			if (!inside.has(unit)) {
 				members.delete(unit)
-				groundCrossing(field, 'exit', unit, entries)
+				leaveGround(field, unit, entries)
 			}
 		if (ended) {
 			ground.delete(field)
@@ -490,7 +465,6 @@ export function createStatuses(ctx) {
 		for (const [unit, entries] of inside) {
 			const entering = !members.has(unit)
 			members.set(unit, entries)
-			if (entering) groundCrossing(field, 'enter', unit, entries)
 			if (unit.dead) continue
 			const effects = entries
 				.filter(({ record }) => pulse || (entering && record.while === 'inside'))

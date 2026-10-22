@@ -45,7 +45,6 @@ export default {
 						magnitude: 'haste',
 						while: 'inside',
 						linger: 'linger',
-						stack: 'strongest',
 					},
 				],
 				enemies: [
@@ -54,7 +53,6 @@ export default {
 						magnitude: 'slow',
 						while: 'inside',
 						linger: 'linger',
-						stack: 'strongest',
 					},
 				],
 			},

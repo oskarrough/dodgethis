@@ -201,8 +201,6 @@ export function defineAbility(id, manifest) {
 	if (manifest.cooldownFrom !== undefined && !['cast', 'end'].includes(manifest.cooldownFrom))
 		throw new Error(`MOBA unknown cooldown origin: ${id}`)
 	validateHookMap(id, manifest.stages, ABILITY_STAGES)
-	for (const action of new Set(groundEffects(manifest).map((entry) => entry.action)))
-		validateHookMap(`${id}.ground`, action.on, ['enter', 'exit'])
 	for (const [key, status] of Object.entries(manifest.statuses ?? {}))
 		validateHookMap(`${id}.${key}`, status.on, [...AURA_EVENTS, 'apply', 'remove', 'expire'])
 	for (const record of manifest.statusEffects ?? [])
