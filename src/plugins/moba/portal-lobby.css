@@ -5,10 +5,11 @@
 }
 .moba-front .lobby-hero-strip.portal-team {
 	--tile: clamp(52px, min(7vw, 11.5vh), 96px);
-	gap: 12px;
+	left: max(28px, 3.2vw);
+	gap: 14px;
 }
 .moba-front .lobby-hero-strip.portal-team[data-team='B'] {
-	right: max(14px, 1.6vw);
+	right: max(28px, 3.2vw);
 	left: auto;
 	align-items: flex-end;
 }
@@ -111,35 +112,36 @@
 .portal-seat[data-kind='bot'] .skin-card {
 	filter: hue-rotate(170deg) saturate(0.5) brightness(1.05);
 }
-.portal-seat .skin-card[aria-pressed='true'] {
+.portal-seat:has(.skin-card[aria-pressed='true']) {
 	transform: translateX(10px) rotate(-4deg) scale(1.06);
 }
-.portal-team[data-team='B'] .portal-seat .skin-card[aria-pressed='true'] {
+.portal-team[data-team='B'] .portal-seat:has(.skin-card[aria-pressed='true']) {
 	transform: translateX(-10px) rotate(4deg) scale(1.06);
 }
-/* Who sits there: a caption under the card, lettered like the bowl's "Next map". Not a control. */
+/* Who sits there: a rubber stamp on the card's bottom-right corner. Ink, a thin ruled
+   frame and no shadow, so it reads as printed on, never as a button. */
 .portal-tag {
-	position: relative;
+	position: absolute;
+	right: -10px;
+	bottom: -7px;
 	z-index: 2;
-	display: block;
-	margin-top: 1px;
+	margin: 0;
+	padding: 0.15em 0.4em 0.05em;
+	border: 1.5px solid currentColor;
+	border-radius: 4px;
+	background: color-mix(in srgb, var(--ui-cream) 92%, transparent);
 	color: var(--ui-text);
-	font: 400 13px / 1.1 var(--ui-font);
-	letter-spacing: 0.14em;
-	/* A cream halo, not a box, so it reads over any sky. */
-	text-shadow:
-		0 0 3px var(--ui-cream),
-		0 0 6px var(--ui-cream),
-		0 0 10px var(--ui-cream);
-	text-align: center;
+	font: 400 12px / 1.1 var(--ui-font);
+	letter-spacing: 0.12em;
 	text-transform: uppercase;
+	rotate: -7deg;
 	pointer-events: none;
 }
 .portal-tag:empty {
-	visibility: hidden;
+	display: none;
 }
 .portal-tag[data-who='bot'] {
-	opacity: 0.75;
+	color: color-mix(in srgb, var(--ui-text) 65%, var(--ui-cream));
 }
 .portal-seat[data-ready='true'] .portal-tag::after {
 	content: ' · in';
