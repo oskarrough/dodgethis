@@ -329,6 +329,7 @@ export function createSim({
 		const dashEnds = []
 		const dashFrom = footprint ? new Map(heroes.map((h) => [h.id, { ...h.body.position }])) : null
 		for (const h of heroes) {
+			if (!h.body.dashing || !h.dashAbility || h.dead) ctx.takeDashEvent(h)
 			const dashing = h.body.dashing
 			stepHeroState(h, dt)
 			h.definition.traits.onTick?.(traitContext(h, { dt }))
@@ -374,7 +375,8 @@ export function createSim({
 		for (const d of dummies) if (!d.dead) d.body.sync()
 		for (const h of dashEnds) {
 			const ability = abilityOf(h.dashAbility, h)
-			ctx.reactAbility('dashEnd', traitContext(h, { ability }), h.body)
+			const event = ctx.takeDashEvent(h)
+			ctx.reactAbility('dashEnd', traitContext(h, { ability, ...(event && { event }) }))
 			h.dashAbility = null
 			if (h.order?.goal) h.order.path = plan(h, h.order.goal)
 		}

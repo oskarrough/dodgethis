@@ -49,38 +49,46 @@ export function createProjectiles(ctx) {
 			const ability = abilityOf(zone.ability ?? 'rain')
 			const skill = ability.stats
 			touch(zone, { kind: 'zone', point: { x: zone.x, z: zone.z }, radius: skill.radius })
-			ctx.reactAbility('land', traitContext(ctx.find(zone.owner), { ability }), zone, () => {
-				const targets = enemiesOf(zone.team).filter(
-					(e) => Math.hypot(e.x - zone.x, e.z - zone.z) <= skill.radius + e.radius,
-				)
-				present({
-					type: 'impact',
-					hero: zone.owner,
-					ability: zone.ability ?? 'rain',
-					hit: targets.length > 0,
-					point: { x: zone.x, y: 0.05, z: zone.z },
-				})
-				for (const e of targets) {
-					for (const key of ability.applies ?? []) ctx.apply(e.unit, key, { source: zone.owner })
-					hit(
-						{
-							owner: zone.owner,
-							team: zone.team,
-							id: zone.id,
-							slot: zone.slot ?? 'slot3',
-							ability: zone.ability,
-							dx: 0,
-							dz: 0,
-							from: { x: zone.x, z: zone.z },
-						},
-						e,
-						{
-							x: e.x,
-							z: e.z,
-						},
+			ctx.reactAbility(
+				'land',
+				traitContext(heroes.find((hero) => hero.id === zone.owner) ?? ctx.find(zone.owner), {
+					ability,
+					point: { x: zone.x, z: zone.z },
+				}),
+				zone,
+				() => {
+					const targets = enemiesOf(zone.team).filter(
+						(e) => Math.hypot(e.x - zone.x, e.z - zone.z) <= skill.radius + e.radius,
 					)
-				}
-			})
+					present({
+						type: 'impact',
+						hero: zone.owner,
+						ability: zone.ability ?? 'rain',
+						hit: targets.length > 0,
+						point: { x: zone.x, y: 0.05, z: zone.z },
+					})
+					for (const e of targets) {
+						for (const key of ability.applies ?? []) ctx.apply(e.unit, key, { source: zone.owner })
+						hit(
+							{
+								owner: zone.owner,
+								team: zone.team,
+								id: zone.id,
+								slot: zone.slot ?? 'slot3',
+								ability: zone.ability,
+								dx: 0,
+								dz: 0,
+								from: { x: zone.x, z: zone.z },
+							},
+							e,
+							{
+								x: e.x,
+								z: e.z,
+							},
+						)
+					}
+				},
+			)
 			zones.splice(i, 1)
 		}
 	}

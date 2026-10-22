@@ -4,8 +4,6 @@ export default {
 			effect: 'slow',
 			magnitude: 'slow',
 			duration: 'duration',
-			stack: 'strongest',
-			enabled: 'slow',
 		},
 	],
 	kind: 'zone',

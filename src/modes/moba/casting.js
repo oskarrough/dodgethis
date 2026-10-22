@@ -216,14 +216,15 @@ export function createCasting(ctx) {
 			return
 		}
 		if (ctx.reactAbility('release', context).consumed) return
+		// Custom instant hooks (Slide) can start a dash too.
+		if (h.body.dashing && h.dashAbility === ability.id) ctx.rememberDashEvent(h, event)
 		if (ability.kind === 'instant') return
 		if (castFootprint && h.catchWindow) footprints.set(h.catchWindow, castFootprint)
 		if (ability.kind === 'dash') {
 			// Whole fixed steps avoid overshooting the advertised distance on the final dash tick.
 			const time = Math.max(1, Math.ceil(skill.time / STEP)) * STEP - 1e-9
 			h.dashAbility = ability.id
-			ctx.rememberAbilityEvent(h.body, event)
-			h.body.dash(dir, { distance: skill.range, time })
+			if (h.body.dash(dir, { distance: skill.range, time })) ctx.rememberDashEvent(h, event)
 			if (castFootprint) footprints.set(h.body, castFootprint)
 			return
 		}

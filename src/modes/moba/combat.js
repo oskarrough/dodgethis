@@ -274,6 +274,21 @@ export function createCombat(ctx) {
 			absorbed: 0,
 		}
 		const participants = [event.source, unit]
+		const consumedHit = (phase) => {
+			present({
+				type: 'blocked',
+				reason: 'hook',
+				phase,
+				source: shot.owner ?? null,
+				target: unit.id,
+				projectile: shot.id ?? null,
+				ability: shot.ability ?? ability?.id ?? null,
+				slot: shot.slot ?? null,
+				point: at,
+				direction,
+			})
+			return { consumed: true }
+		}
 		let incoming = shot.unmodified
 			? rawDamage
 			: rawDamage *
@@ -284,13 +299,13 @@ export function createCombat(ctx) {
 				(unit.structure && (shot.isAbility || shot.slot.startsWith('slot'))
 					? tune.waves.abilityStructure
 					: 1)
-		if (event.consumed) return
+		if (event.consumed) return consumedHit('amplify')
 		event.damage = incoming
 		ctx.reactAuras('damage', participants, event)
-		if (event.consumed) return
+		if (event.consumed) return consumedHit('damage')
 		const beforeAbsorb = event.damage
 		incoming = ctx.reactAuras('absorb', participants, event).damage
-		if (event.consumed) return
+		if (event.consumed) return consumedHit('absorb')
 		const absorbed = beforeAbsorb - incoming
 		const damage = Math.min(unit.hp, Math.max(0, incoming))
 		if (!shot.noHelp) lane?.help(find(shot.owner), unit, ctx.t)

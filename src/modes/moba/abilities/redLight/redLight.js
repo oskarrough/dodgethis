@@ -24,14 +24,13 @@ export default {
 	held: 'selfCircle',
 	effects: { cast: 'redLightWindup', impact: 'redLightFreeze', pose: 'coachRed' },
 	statusEffects: [{ effect: 'freeze', duration: 'duration' }],
-	on: {
+	stages: {
 		release: [
 			{
 				deliver: 'area',
 				from: 'self',
 				shape: 'circle',
 				targets: 'enemyHero',
-				population: 'heroes',
 				where: ({ target, stats }) =>
 					Math.hypot(target.body.velocity.x, target.body.velocity.z) > stats.movingSpeed,
 				hit: ['freeze'],

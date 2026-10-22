@@ -2,7 +2,7 @@ import { tune } from '../../tune.js'
 import { botClearLine } from '../../ability-bots.js'
 const distance = (a, b) => Math.hypot(a.x - b.x, a.z - b.z)
 export default {
-	statusEffects: [{ effect: 'slow', magnitude: 'slow', duration: 'duration', stack: 'strongest' }],
+	statusEffects: [{ effect: 'slow', magnitude: 'slow', duration: 'duration' }],
 	projectileShape: 'ball',
 	icon: '<svg viewBox="0 0 48 48" aria-hidden="true"><circle class="cream" cx="24" cy="24" r="14"/><path class="ink-line" d="M12 14 Q24 24 12 34 M36 14 Q24 24 36 34"/></svg>',
 	name: 'Pass',

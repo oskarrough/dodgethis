@@ -4,7 +4,7 @@ import { absorbAura } from './aura-damage.js'
 
 // Effect parameters are local tune keys, not snapshots; statuses read them when applied.
 export const STATUS_EFFECT_REFS = {
-	slow: { magnitude: 'fraction', duration: 's', enabled: 'fraction' },
+	slow: { magnitude: 'fraction', duration: 's' },
 	shield: { amount: 'hp', duration: 's' },
 	freeze: { duration: 's' },
 }
@@ -22,6 +22,28 @@ export function areaEffectRecord(ability, record) {
 			knockback: { effect: 'knockback', distance: 'knockback', duration: 'time' },
 		}[record]
 	)
+}
+
+export const AURA_EVENTS = [
+	'cast',
+	'tick',
+	'amplify',
+	'damage',
+	'absorb',
+	'hit',
+	'damaged',
+	'death',
+]
+export const ABILITY_STAGES = ['release', 'land', 'dashEnd', 'end']
+export const CANCELLABLE_EVENTS = ['amplify', 'damage', 'absorb', 'release', 'land']
+export function validateHookMap(id, hooks, events, { actions = true } = {}) {
+	for (const [name, hook] of Object.entries(hooks ?? {})) {
+		if (!events.includes(name)) throw new Error(`MOBA unknown hook event: ${id}.${name}`)
+		if (hook?.before !== undefined && !CANCELLABLE_EVENTS.includes(name))
+			throw new Error(`MOBA event is not cancellable: ${id}.${name}`)
+		if (!actions && (Array.isArray(hook) || hook?.do !== undefined))
+			throw new Error(`MOBA status actions need an owning ability: ${id}.${name}`)
+	}
 }
 
 // Functions retain the old replacement semantics; arrays are declared actions.
@@ -50,7 +72,6 @@ function effectStatuses(manifest) {
 					tags: ['debuff', 'slow'],
 					// Strongest wins across independent clocks, including different sources.
 					stack: 'independent',
-					...(record.enabled && { enabled: ({ stats }) => Boolean(stats[record.enabled]) }),
 					moveSpeed: ({ stats }) => Math.max(0, Math.min(1, 1 - stats[record.magnitude])),
 					duration,
 				}
@@ -87,6 +108,18 @@ const RESERVED = ['pocket', 'bag', 'return']
 // An ability is its manifest plus its id and live numbers, `stats`, read from tune[id].
 export function defineAbility(id, manifest) {
 	if (RESERVED.includes(id)) throw new Error(`MOBA ability id is reserved: ${id}`)
+	validateHookMap(id, manifest.on, AURA_EVENTS)
+	validateHookMap(id, manifest.stages, ABILITY_STAGES)
+	for (const [key, status] of Object.entries(manifest.statuses ?? {}))
+		validateHookMap(`${id}.${key}`, status.on, [...AURA_EVENTS, 'apply', 'remove', 'expire'])
+	for (const record of manifest.statusEffects ?? [])
+		for (const field of Object.keys(record))
+			if (
+				!['effect', 'scale', ...Object.keys(STATUS_EFFECT_REFS[record.effect] ?? {})].includes(
+					field,
+				)
+			)
+				throw new Error(`MOBA unknown status effect field: ${id}.${field}`)
 	return {
 		id,
 		...manifest,

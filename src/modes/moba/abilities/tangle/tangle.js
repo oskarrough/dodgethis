@@ -1,5 +1,5 @@
 export default {
-	statusEffects: [{ effect: 'slow', magnitude: 'slow', duration: 'duration', stack: 'strongest' }],
+	statusEffects: [{ effect: 'slow', magnitude: 'slow', duration: 'duration' }],
 	name: 'Tangle',
 	kind: 'instant',
 	tell: 'cone',
@@ -10,7 +10,7 @@ export default {
 	card: {
 		summary: `A {angle} cone deals {damage:damage} and slows by {slow} for {duration}. Follow Throw with this.`,
 	},
-	on: {
+	stages: {
 		release: [
 			{
 				deliver: 'area',

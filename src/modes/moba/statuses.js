@@ -1,4 +1,10 @@
-import { abilityOf, areaEffectRecord, runHookStages } from './ability.js'
+import {
+	abilityOf,
+	areaEffectRecord,
+	runHookStages,
+	validateHookMap,
+	AURA_EVENTS,
+} from './ability.js'
 import { tune } from './tune.js'
 import { segmentClear } from './obstacles.js'
 import { STEP } from '../../core/app.js'
@@ -129,9 +135,24 @@ export function moveSpeed(unit, tick) {
 }
 
 export function createStatuses(ctx) {
+	for (const [key, definition] of Object.entries(coreStatuses))
+		validateHookMap(key, definition.on, [...AURA_EVENTS, 'apply', 'remove', 'expire'], {
+			actions: false,
+		})
 	let nextId = 0
 	const { present } = ctx
 	const abilityEvents = new WeakMap()
+	const dashEvents = new WeakMap()
+	function rememberDashEvent(hero, event) {
+		dashEvents.set(hero, { body: hero.body, event })
+	}
+	function takeDashEvent(hero) {
+		const dash = dashEvents.get(hero)
+		dashEvents.delete(hero)
+		return dash?.body === hero.body && dash.event.ability.id === hero.dashAbility
+			? dash.event
+			: null
+	}
 	const legacyEvents = { release: 'onRelease', land: 'onLand', dashEnd: 'onDashEnd', end: 'onEnd' }
 	function rememberAbilityEvent(state, event) {
 		abilityEvents.set(state, event)
@@ -151,9 +172,10 @@ export function createStatuses(ctx) {
 				target: ctx.find(info.targetId) ?? null,
 			}),
 			...info.event,
+			...(info.point && { point: { ...info.point } }),
 		}
 		const consumed = runHookStages(
-			ability.on?.[name],
+			ability.stages?.[name],
 			{ ...info, hero, unit: hero, stats: ability.stats, event },
 			runActions,
 			ability[legacyEvents[name]] ?? fallback,
@@ -161,34 +183,99 @@ export function createStatuses(ctx) {
 		if (consumed === true) event.consumed = true
 		return event
 	}
+	// Source is attribution/geometry: { unit, ability, slot, dir, point, target? }.
+	// Keeping this independent of cast events lets fields use exactly the same hit resolution.
+	function applyEffects(source, unit, effects, stats) {
+		const { unit: actor, ability, slot, dir, point } = source
+		if (unit.dead || unit.hp <= 0) return { lethal: true }
+		const damage = effects.find((effect) => effect.effect === 'damage')
+		const statuses = effects.filter((effect) => ['slow', 'freeze'].includes(effect.effect))
+		if (damage) {
+			const result = ctx.hit(
+				{
+					owner: actor.id,
+					team: actor.team,
+					ability: ability.id,
+					slot,
+					isAbility: true,
+					dx: dir.x,
+					dz: dir.z,
+					damage:
+						stats[damage.amount] *
+						(damage.scale === null ? 1 : 1 + tune.levels.growth * (actor.level - 1)),
+					...(statuses.length && {
+						applies: statuses.map((effect) => `${ability.id}.${effect.effect}`),
+					}),
+				},
+				source.target ?? { id: unit.id, unit, hero: !unit.kind },
+				point ?? unit.body.position,
+			)
+			if (result?.consumed) return { lethal: false, consumed: true }
+		} else {
+			for (const effect of statuses)
+				ctx.apply(unit, `${ability.id}.${effect.effect}`, { source: actor })
+		}
+		const lethal = unit.dead || unit.hp <= 0
+		if (!lethal)
+			for (const effect of effects) {
+				if (effect.effect === 'freeze') {
+					unit.body.cancelDash()
+					unit.dashAbility = null
+					takeDashEvent(unit)
+					present({
+						type: 'contact',
+						part: 'impact',
+						source: actor.id,
+						target: unit.id,
+						ability: ability.id,
+						until: stateUntil(unit, 'frozen'),
+						point: { ...unit.body.position },
+					})
+				} else if (effect.effect === 'knockback') {
+					const at = point ?? unit.body.position
+					ctx.displace(
+						unit,
+						{ x: at.x + dir.x * stats[effect.distance], z: at.z + dir.z * stats[effect.distance] },
+						stats[effect.duration],
+					)
+				}
+			}
+		return { lethal }
+	}
 	function runActions(actions, info) {
+		// Status callbacks still see their carrier as unit/hero. Only declared actions
+		// run as the original source, including its team, position and level.
+		const actor = info.status
+			? (ctx.find(info.status.src) ??
+				[
+					...ctx.heroes,
+					...ctx.dummies,
+					...ctx.summons,
+					...(ctx.lane?.minions ?? []),
+					...(ctx.lane?.structures ?? []),
+				].find((unit) => unit.id === info.status.src))
+			: info.hero
+		if (!info.ability) throw new Error('MOBA status actions need an owning ability')
+		if (!actor) return // A removed source must never turn its victim into the caster.
+		const ability = info.ability
+		const event = info.event ?? {
+			source: actor,
+			ability,
+			slot: null,
+			point: actor.body.position,
+			dir: { x: Math.sin(actor.yaw), z: Math.cos(actor.yaw) },
+			target: info.unit ?? null,
+		}
 		for (const action of actions) {
 			if (action.deliver !== 'area') throw new Error(`MOBA unknown delivery: ${action.deliver}`)
-			const { hero, ability } = info
-			const event = info.event ?? {
-				source: hero,
-				ability,
-				slot: null,
-				point: hero.body.position,
-				dir: { x: Math.sin(hero.yaw), z: Math.cos(hero.yaw) },
-				target: info.unit ?? null,
-			}
 			const stats = ability.stats
-			const p = action.from === 'self' ? hero.body.position : event.point
-			const dir = event.dir ?? { x: Math.sin(hero.yaw), z: Math.cos(hero.yaw) }
+			const p = action.from === 'self' ? actor.body.position : event.point
+			const dir = event.dir ?? { x: Math.sin(actor.yaw), z: Math.cos(actor.yaw) }
 			const effects = action.hit.map((record) => areaEffectRecord(ability, record))
-			// enemiesOf snapshots coordinates in targeting population order. Red light's
-			// heroes population deliberately reads each body's live coordinates instead.
-			const targets =
-				action.population === 'heroes'
-					? ctx.heroes.map((unit) => ({ id: unit.id, team: unit.team, unit, hero: true }))
-					: ctx.api.enemiesOf(hero.team)
 			let hit = false
-			for (const entry of targets) {
-				const unit = entry.unit
-				if (unit.dead || unit.team === hero.team || (action.targets === 'enemyHero' && !entry.hero))
-					continue
-				const target = action.population === 'heroes' ? unit.body.position : entry
+			for (const target of ctx.api.enemiesOf(actor.team)) {
+				const unit = target.unit
+				if (unit.dead || (action.targets === 'enemyHero' && !target.hero)) continue
 				const dx = target.x - p.x,
 					dz = target.z - p.z
 				const length = Math.hypot(dx, dz)
@@ -199,91 +286,33 @@ export function createStatuses(ctx) {
 					(dx * dir.x + dz * dir.z) / length < Math.cos((stats.angle * Math.PI) / 360)
 				)
 					continue
-				if (action.where && !action.where({ ...info, target: unit })) continue
+				if (action.where && !action.where({ target: unit, stats })) continue
 				if (
 					action.blockedBy === 'cover' &&
 					!segmentClear(
 						p,
 						target,
 						0,
-						ctx.api.obstacles.filter((obstacle) => obstacle.id !== entry.id),
+						ctx.api.obstacles.filter((obstacle) => obstacle.id !== target.id),
 						ctx.api.bounds,
 					)
 				)
 					continue
 				const direction =
 					action.shape === 'circle' && length > 0 ? { x: dx / length, z: dz / length } : dir
-				const damage = effects.find((effect) => effect.effect === 'damage')
-				if (damage) {
-					const applies = effects
-						.filter((effect) => ['slow', 'freeze'].includes(effect.effect))
-						.map((effect) => ({
-							key: `${ability.id}.${effect.effect}`,
-							duration: stats[effect.duration],
-							...(effect.effect === 'slow' && { mag: 1 - stats[effect.magnitude] }),
-						}))
-					ctx.api.hit(
-						{
-							owner: hero.id,
-							team: hero.team,
-							ability: ability.id,
-							slot: event.slot,
-							isAbility: true,
-							dx: direction.x,
-							dz: direction.z,
-							damage:
-								stats[damage.amount] *
-								(damage.scale === null ? 1 : 1 + tune.levels.growth * (hero.level - 1)),
-							...(applies.length && { applies }),
-						},
-						entry,
-						target,
-					)
-					event.lethal = Boolean(event.lethal || unit.dead || unit.hp <= 0)
-				}
-				for (const effect of effects) {
-					// A hit resolves its statuses before damage. Don't add effects to its corpse.
-					if (unit.dead || unit.hp <= 0) break
-					if (effect.effect === 'freeze') {
-						if (!damage)
-							ctx.apply(unit, `${ability.id}.freeze`, {
-								source: hero,
-								duration: stats[effect.duration],
-							})
-						unit.body.cancelDash()
-						unit.dashAbility = null
-						present({
-							type: 'contact',
-							part: 'impact',
-							source: hero.id,
-							target: unit.id,
-							ability: ability.id,
-							until: stateUntil(unit, 'frozen'),
-							point: { ...unit.body.position },
-						})
-					} else if (effect.effect === 'knockback') {
-						ctx.api.displace(
-							unit,
-							{
-								x: target.x + direction.x * stats[effect.distance],
-								z: target.z + direction.z * stats[effect.distance],
-							},
-							stats[effect.duration],
-						)
-					} else if (effect.effect === 'slow' && !damage) {
-						ctx.apply(unit, `${ability.id}.slow`, {
-							source: hero,
-							mag: 1 - stats[effect.magnitude],
-							duration: stats[effect.duration],
-						})
-					}
-				}
+				const result = applyEffects(
+					{ unit: actor, ability, slot: event.slot, dir: direction, point: target, target },
+					unit,
+					effects,
+					stats,
+				)
+				event.lethal = Boolean(event.lethal || result.lethal)
 				hit = true
 			}
 			if (effects.some((effect) => effect.effect === 'damage'))
 				present({
 					type: 'impact',
-					hero: hero.id,
+					hero: actor.id,
 					ability: ability.id,
 					hit,
 					point: { ...p },
@@ -362,10 +391,10 @@ export function createStatuses(ctx) {
 			ctx.find(source)?.team !== unit.team
 		)
 			return null
-		if (definition.enabled && !resolve(definition.enabled, info)) return null
 		const duration = options.duration ?? resolve(definition.duration, info)
 		const until = duration == null ? null : ctx.t + ticks(duration)
 		const mag = options.mag ?? resolve(definition.moveSpeed, info)
+		if (definition.tags?.includes('slow') && mag >= 1) return null
 		const amount = options.amount !== undefined ? options.amount : resolve(definition.amount, info)
 		const stack = definition.stack ?? (definition.maxStacks > 1 ? 'stacks' : 'refresh')
 		const same = unit.statuses.filter(
@@ -483,7 +512,10 @@ export function createStatuses(ctx) {
 	return {
 		apply,
 		reactAbility,
+		applyEffects,
 		rememberAbilityEvent,
+		rememberDashEvent,
+		takeDashEvent,
 		remove,
 		clearStatuses,
 		cleanse,

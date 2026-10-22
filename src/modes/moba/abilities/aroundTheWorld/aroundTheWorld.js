@@ -9,7 +9,7 @@ export default {
 	card: {
 		summary: `Loop around Hook: enemy heroes within {radius} take {damage:damage} and are knocked {knockback} outward.`,
 	},
-	on: {
+	stages: {
 		release: [
 			{
 				deliver: 'area',
