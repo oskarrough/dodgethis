@@ -6,12 +6,10 @@ import {
 	effectRecord,
 } from './ability.js'
 import { tune } from './tune.js'
-import { STEP } from '../../core/app.js'
-import { ticks } from './sim-kit.js'
 import { stateUntil } from './statuses.js'
 
 // Resolve once at delivery; projectiles retain these numbers throughout their flight.
-export function resolveEffects(ability, records, level, dt = STEP, factor = 1) {
+export function resolveEffects(ability, records, level, factor = 1) {
 	const stats = ability.stats
 	return records.map((input) => {
 		const record = effectRecord(ability, input)
@@ -25,7 +23,6 @@ export function resolveEffects(ability, records, level, dt = STEP, factor = 1) {
 		if (['damage', 'heal'].includes(effect.effect))
 			effect.amount =
 				effect.amount * (record.scale === null ? 1 : 1 + tune.levels.growth * (level - 1)) * factor
-		if (record.perSecond) effect.amount *= dt
 		return effect
 	})
 }
@@ -64,7 +61,7 @@ export function createAbilityEffects(ctx) {
 		const { unit: actor, ability, slot, dir, point } = source
 		if (unit.dead || unit.hp <= 0) return { lethal: true }
 		const damage = effects.find((effect) => effect.effect === 'damage')
-		const statuses = effects.filter((effect) => ['slow', 'freeze', 'haste'].includes(effect.effect))
+		const statuses = effects.filter((effect) => STATUS_EFFECT_REFS[effect.effect])
 		if (damage) {
 			const result = ctx.hit(
 				{
@@ -93,49 +90,28 @@ export function createAbilityEffects(ctx) {
 		const lethal = unit.dead || unit.hp <= 0
 		if (!lethal)
 			for (const effect of effects) {
-				if (effect.effect === 'freeze') freezeImpact(source, unit)
+				if (effect.effect === 'freeze' && !damage) freezeImpact(source, unit)
 				else if (effect.effect === 'heal') {
 					heal = ctx.heal(actor, unit, effect.amount, ability.id, {
 						critChance: effect.critChance,
 						critMultiplier: effect.critMultiplier,
 						periodic: effect.periodic === true,
 					})
-				} else if (effect.effect === 'shield') {
-					const shield =
-						effect.stack === 'add' &&
-						unit.statuses?.find(
-							(status) =>
-								status.key === `${ability.id}.shield` &&
-								status.src === actor.id &&
-								(status.until === null || status.until > ctx.t),
-						)
-					if (shield) {
-						shield.amount += effect.amount
-						shield.until = ctx.t + ticks(effect.duration)
-					} else
-						ctx.apply(unit, `${ability.id}.shield`, {
-							source: actor,
-							amount: effect.amount,
-							...(effect.duration !== undefined && { duration: effect.duration }),
-						})
 				} else if (effect.effect === 'status') {
 					ctx.apply(unit, `${ability.id}.${effect.key}`, {
-						source: effect.source === null ? null : actor,
+						source: actor,
 					})
 				} else if (effect.effect === 'catch') {
 					const duration = effect.duration + (effect.linger ?? 0)
-					if (effect.refresh) {
-						if (unit.catchWindow) unit.catchWindow.until = ctx.t + ticks(duration)
-					} else
-						ctx.openCatch(unit, {
-							ability: ability.id,
-							dir,
-							duration,
-							radius: effect.radius,
-							angle: effect.angle,
-							acceptBall: effect.acceptBall,
-							...(effect.resetCooldown && { resetSlot: slot, resetCooldown: effect.resetCooldown }),
-						})
+					ctx.openCatch(unit, {
+						ability: ability.id,
+						dir,
+						duration,
+						radius: effect.radius,
+						angle: effect.angle,
+						acceptBall: effect.acceptBall,
+						...(effect.resetCooldown && { resetSlot: slot, resetCooldown: effect.resetCooldown }),
+					})
 				} else if (effect.effect === 'displace' || effect.effect === 'knockback') {
 					if (effect.effect === 'displace' && (actor.dead || unit.structure)) continue
 					const at = effect.to === 'source' ? actor.body.position : (point ?? unit.body.position)

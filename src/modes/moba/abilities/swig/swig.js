@@ -17,16 +17,18 @@ export default {
 	card: {
 		summary: 'Root and drink, gaining shield. Orders, casts and disables interrupt the drink.',
 	},
-	on: {
-		every: 'step',
-		do: [
-			{
-				effect: 'shield',
-				amount: 'shieldPerSecond',
-				perSecond: true,
-				duration: 'shieldLife',
-				stack: 'add',
-			},
-		],
+	onTick({ hero, sim, ability, dt, tick, ticks }) {
+		const stats = ability.stats
+		const amount = stats.shieldPerSecond * dt
+		const shield = hero.statuses.find(
+			(status) =>
+				status.key === 'swig.shield' &&
+				status.src === hero.id &&
+				(status.until === null || status.until > tick),
+		)
+		if (shield) {
+			shield.amount += amount
+			shield.until = tick + ticks(stats.shieldLife)
+		} else sim.apply(hero, 'swig.shield', { source: hero, amount, duration: stats.shieldLife })
 	},
 }

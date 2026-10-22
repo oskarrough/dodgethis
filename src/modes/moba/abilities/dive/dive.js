@@ -28,9 +28,9 @@ export default {
 				acceptBall: false,
 			},
 		],
-		dashEnd: [
-			{ effect: 'status', key: 'prone', source: null },
-			{ effect: 'catch', duration: 'prone', refresh: true },
-		],
+		dashEnd({ hero, sim, ability, tick, ticks }) {
+			sim.apply(hero, 'dive.prone')
+			if (hero.catchWindow) hero.catchWindow.until = tick + ticks(ability.stats.prone)
+		},
 	},
 }

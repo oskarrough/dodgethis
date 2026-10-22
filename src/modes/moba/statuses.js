@@ -224,7 +224,7 @@ export function createStatuses(ctx) {
 					point: next,
 				},
 				next.unit,
-				resolveEffects(ability, effects, actor.level, STEP, (1 - stats[falloff]) ** hop),
+				resolveEffects(ability, effects, actor.level, (1 - stats[falloff]) ** hop),
 			)
 			event.lethal = Boolean(event.lethal || result.lethal)
 			present({
@@ -282,7 +282,7 @@ export function createStatuses(ctx) {
 						hit: info.status ? { id: -1, status: info.status.key } : {},
 					},
 					unit,
-					resolveEffects(ability, [action], actor.level, info.dt ?? event.dt),
+					resolveEffects(ability, [action], actor.level),
 				)
 				event.lethal = Boolean(event.lethal || result.lethal)
 				continue

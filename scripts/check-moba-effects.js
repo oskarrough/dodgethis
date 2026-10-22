@@ -282,10 +282,10 @@ function checkActionEffect(id, manifest, record) {
 	const fields = {
 		damage: ['scale', 'periodic'],
 		heal: ['scale', 'periodic'],
-		shield: ['perSecond', 'stack'],
+		shield: [],
 		displace: ['to'],
-		status: ['key', 'source'],
-		catch: ['acceptBall', 'refresh'],
+		status: ['key'],
+		catch: ['acceptBall'],
 		slow: [],
 		haste: [],
 		freeze: [],
@@ -296,30 +296,20 @@ function checkActionEffect(id, manifest, record) {
 	for (const [field, unit] of Object.entries(refs)) {
 		if (
 			record[field] === undefined &&
-			(['critChance', 'critMultiplier', 'linger', 'resetCooldown'].includes(field) ||
-				(record.effect === 'catch' && record.refresh && ['radius', 'angle'].includes(field)))
+			['critChance', 'critMultiplier', 'linger', 'resetCooldown'].includes(field)
 		)
 			continue
-		checkRef(
-			id,
-			field,
-			record[field],
-			record.effect === 'shield' && field === 'amount' && record.perSecond ? 'hp/s' : unit,
-		)
+		checkRef(id, field, record[field], unit)
 	}
 	if (record.scale !== undefined && record.scale !== null)
 		errors.push(`${id}: unsupported action effect scaling`)
-	for (const field of ['periodic', 'perSecond', 'refresh', 'acceptBall'])
+	for (const field of ['periodic', 'acceptBall'])
 		if (record[field] !== undefined && typeof record[field] !== 'boolean')
 			errors.push(`${id}: ${field} must be a boolean`)
 	if (record.effect === 'displace' && record.to !== 'source')
 		errors.push(`${id}: unknown displacement target ${record.to}`)
-	if (record.effect === 'status' && record.source !== undefined && record.source !== null)
-		errors.push(`${id}: status source can only override attribution to null`)
 	if (record.effect === 'status' && !Object.hasOwn(manifest.statuses ?? {}, record.key))
 		errors.push(`${id}: unknown local status ${record.key}`)
-	if (record.effect === 'shield' && record.stack !== undefined && record.stack !== 'add')
-		errors.push(`${id}: unknown shield stack ${record.stack}`)
 	if (
 		['slow', 'haste', 'freeze'].includes(record.effect) &&
 		!manifest.statusEffects?.some((effect) => effect.effect === record.effect)
