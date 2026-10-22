@@ -1,5 +1,38 @@
 [
 	{
+		"at": "2026-10-22T11:47:11.345Z",
+		"title": "Ability cards from live templates",
+		"ask": "Direct match setup with Coach. Hovered Pass, pinned a copy of that tooltip for comparison, then hovered Red light. The desk changed Red light radius from 5 m to 4 m; the open sentence and Radius row both followed. Existing wording remains, with consistent units. No gameplay hooks changed.",
+		"status": "To review",
+		"decision": "",
+		"media": ["media/2026-10-22-ability-cards-from-live-templates/ability-templates.webp"],
+		"links": [],
+		"thread": "thr_ikhu29ci7k",
+		"page": "2026-10-22-ability-cards-from-live-templates/"
+	},
+	{
+		"at": "2026-10-22T11:23:07.435Z",
+		"title": "Declared tune units on the desk",
+		"ask": "Cooldowns are clocks, radii are rings, damage is counted in hp, and none of the ability controls has a ? unit. Readouts come from the declarations, not their names.",
+		"status": "To review",
+		"decision": "",
+		"media": ["media/2026-10-22-declared-tune-units-on-the-desk/declared-units.webp"],
+		"links": [],
+		"thread": "thr_qkq8q3q2gx",
+		"page": "2026-10-22-declared-tune-units-on-the-desk/"
+	},
+	{
+		"at": "2026-10-22T12:00:00.000Z",
+		"title": "Declare it once: ability, hero and unit schemas",
+		"ask": "Abilities as declared shapes (area, target, shot, timing, status, aura, unit) with a verb payload; cards, statuses, bots, checks and a kit sheet inferred. 22 of 31 abilities become pure data. Two questions at the end: card voice, and JavaScript or strict JSON.",
+		"status": "To review",
+		"decision": "",
+		"media": [],
+		"links": [],
+		"thread": "thr_8md4mzyrwu",
+		"page": "schema-design/"
+	},
+	{
 		"at": "2026-10-22T09:52:00.000Z",
 		"title": "One lobby, five ways",
 		"ask": "Five painted ideas for one party lobby after the home screen: base, draft, booths, campfire, menu over floor. Which one do we try?",

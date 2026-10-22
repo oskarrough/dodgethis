@@ -103,6 +103,7 @@ export const tuneUnits = {
 	'fog.sight': 'm',
 	'lobby.bounds': 'm',
 	'lobby.fall': 'm',
+	'lobby.portal.countdown': 's',
 	'lobby.bowl.maps': 'm',
 	'lobby.fence.runs': 'multiplier',
 	'lobby.fence.bollards': 'multiplier',
