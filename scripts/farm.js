@@ -322,10 +322,14 @@ function playerBot(mods, sim, recipe, roster, seed, { id, lane }) {
 	}
 }
 
-// Compare the bytes, not parsed facts: ordering, missing rows and whitespace all matter.
+// Only tune provenance differs by construction across schema revisions. All gameplay
+// bytes still count: ordering, missing rows and whitespace must remain identical.
 function firstLogDifference(base, working) {
-	if (base.equals(working)) return null
-	const rows = [base, working].map((log) => log.toString('utf8').split('\n'))
+	const logs = [base, working].map((log) =>
+		log.toString('utf8').replace(/"tune_hash":"[a-f0-9]{64}"/g, '"tune_hash":null'),
+	)
+	if (logs[0] === logs[1]) return null
+	const rows = logs.map((log) => log.split('\n'))
 	let row = 0
 	while (rows[0][row] === rows[1][row]) row++
 	const [before, after] = rows.map((lines) => lines[row])
@@ -351,6 +355,15 @@ async function sameReplays(values, { seed, matches, maxSeconds }) {
 		throw new Error('--seeds must be comma-separated uint32 seeds')
 	if (!seeds && seed + matches - 1 > 0xffffffff)
 		throw new Error('Match count exceeds the available uint32 seeds')
+	const lineups = values.lineup.length
+		? values.lineup
+		: ['coach,fletcher,hook', 'mender,hook,coach']
+	if (lineups.length !== 2) throw new Error('--same needs two --lineup teams')
+	for (const lineup of lineups) {
+		const heroes = lineup.split(',')
+		if (heroes.length !== 3 || heroes.some((hero) => !HEROES[hero]?.playable))
+			throw new Error('--same --lineup needs three playable heroes')
+	}
 	const base = checkoutRevision(ROOT, values.same)
 	const runId = `same-${crypto.randomUUID()}`
 	const { release } = await reserveCores(1, {
@@ -364,13 +377,7 @@ async function sameReplays(values, { seed, matches, maxSeconds }) {
 		const replaySeeds = seeds ? [...new Set(seeds)] : null
 		for (let index = 0; index < (replaySeeds?.length ?? matches); index++) {
 			const matchSeed = replaySeeds?.[index] ?? seed + index
-			const roster = farmRoster(
-				['coach,fletcher,hook', 'mender,hook,coach'],
-				values.difficulty,
-				0,
-				true,
-				matchSeed,
-			)
+			const roster = farmRoster(lineups, values.difficulty, 0, true, matchSeed)
 			const logs = []
 			for (const [side, mods] of modules.entries()) {
 				const result = await runFarmMatch({
@@ -432,11 +439,11 @@ Sampling
                             bots.exp.<flag>=0,1 toggles a logic experiment; see docs/verify.md
   --quick                   --summary --cross-only --matches 4
 Identical replay
-  --same rev               compare full logs byte for byte; one line per seed, non-zero exit on any difference
+  --same rev               compare logs byte for byte except tune_hash provenance; non-zero exit on any difference
                             mixed coach/fletcher/hook vs mender/hook/coach; defaults: seeds 2,3, 120 seconds
                             --seeds 2,3,6 gives explicit seeds; otherwise --seed starts them, --matches counts them (default 2)
                             --out keeps both logs; coverage lists cast and uncast roster abilities for each revision
-                            supports --map, --difficulty and --jobs (runs on one core); no summary or balance options
+                            supports two --lineup teams, --map, --difficulty and --jobs (runs on one core); no summary or balance options
 Comparing (these imply --summary)
   --base [rev]              play the same seeds on another revision too (default: @- in jj,
                             HEAD with a dirty git tree, else origin/main) and print deltas
@@ -504,7 +511,6 @@ export async function farm(argv = process.argv.slice(2)) {
 			'until',
 			'set',
 			'heroes',
-			'lineup',
 			'cross-only',
 			'idle',
 			'player',
