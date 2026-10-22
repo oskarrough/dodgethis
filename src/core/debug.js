@@ -104,8 +104,9 @@ export function createDebugPanel() {
 	return {
 		tune: (path, object, build) => build && adding(path, (f) => build(f, object)),
 		cheat: (label, fn) => adding('cheats', (f) => f.add({ run: fn }, 'run').name(label)),
-		show: () => gui.show(),
-		hide: () => gui.hide(),
+		// Backquote opens the desk; the full panel only shows when the desk's "all values" asks for it.
+		show: () => desk.show(true),
+		hide: () => desk.show(false),
 		setInert(inert) {
 			gui.domElement.inert = inert
 		},

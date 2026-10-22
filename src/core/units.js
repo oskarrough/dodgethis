@@ -27,5 +27,5 @@ export const units = {
 	'xp/s': { instrument: 'gauge', suffix: ' xp/s', range: [0, 100] },
 	'hp/s': { instrument: 'gauge', suffix: ' hp/s', range: [0, 1000] },
 	bytes: { instrument: 'counter', suffix: ' B', range: [0, 10000], step: 1 },
-	color: { instrument: 'knob', suffix: ' RGB', range: [0, 0xffffff], step: 1 },
+	color: { instrument: 'swatch', suffix: '', range: [0, 0xffffff], step: 1 },
 }

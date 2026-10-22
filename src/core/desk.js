@@ -1,9 +1,8 @@
-// The desk: a small floating board of instruments for the tune values you're working on.
-// It reads the debug panel's controllers, so anything registered there can be pinned here:
-// press Enter in the panel's filter, or open the page with ?knobs=arrow,fletcher.
-// Each value gets an instrument shaped like what it controls: a playhead that runs for a
-// duration, a speedometer for speeds, a mast for heights, a fan for angles, a ring for sizes.
-// "copy" puts the changed values on the clipboard as JSON to paste back to an agent.
+// The desk: the game's debug surface. Backquote opens it; it lists what this screen can tune
+// (folders to open, values to find, actions to run) and pins values as instruments shaped like
+// what they control: a clock for a duration, a speedometer for a speed, a ring for a radius.
+// ?knobs=lob,fog pins from the address. "copy" puts changed values on the clipboard as JSON to
+// paste back to an agent; "all values" opens the old lil-gui panel, which still registers them.
 import './desk.css'
 import { units } from './units.js'
 
@@ -11,6 +10,7 @@ const STORE = 'dt-desk'
 const MAX = 36
 
 function kindOf(c) {
+	if (c.unit === 'color') return 'swatch'
 	if (!['number', 'boolean'].includes(typeof c.getValue())) return null
 	return units[c.unit]?.instrument ?? 'knob'
 }
@@ -47,13 +47,30 @@ export function createDesk(gui) {
 	const root = document.createElement('section')
 	root.className = 'desk'
 	root.hidden = true
-	root.innerHTML = `<header class="desk-head"><b>desk</b><span class="desk-chips"></span>
+	root.innerHTML = `<header class="desk-head"><b>debug</b><span class="desk-chips"></span>
 		<button data-act="copy" title="copy changed values as JSON">copy</button>
-		<button data-act="reset" title="put every value back">reset</button>
-		<button data-act="close" title="unpin everything">close</button></header>
-		<div class="desk-board"></div><p class="desk-note"></p>`
+		<button data-act="reset" title="put every changed value back">reset</button>
+		<button data-act="panel" title="the old panel with every value as a slider">all values</button>
+		<input class="desk-find" type="search" placeholder="find a value: lob, speed, fog…" /></header>
+		<nav class="desk-index"></nav><div class="desk-board"></div><p class="desk-note"></p>`
 	document.body.append(root)
 	const chips = root.querySelector('.desk-chips')
+	const find = root.querySelector('.desk-find')
+	const index = root.querySelector('.desk-index')
+	find.addEventListener('input', () => renderIndex())
+	find.addEventListener('focus', () => renderIndex())
+	find.addEventListener('keydown', (e) => {
+		if (e.key === 'Escape') {
+			find.value = ''
+			find.blur()
+			browse = null
+			renderIndex()
+		}
+		if (e.key !== 'Enter') return
+		pin(find.value.trim())
+		find.value = ''
+		find.blur()
+	})
 	const board = root.querySelector('.desk-board')
 	const note = root.querySelector('.desk-note')
 	if (state.at) Object.assign(root.style, { left: `${state.at[0]}px`, top: `${state.at[1]}px` })
@@ -61,6 +78,8 @@ export function createDesk(gui) {
 		root.addEventListener(type, (e) => e.stopPropagation())
 
 	let modules = []
+	let shown = true
+	let browse = null // the folder the index has drilled into, or null at the top
 	let shownKeys = ''
 	const restored = new Set()
 
@@ -79,9 +98,128 @@ export function createDesk(gui) {
 		return found
 	}
 
+	// The index answers "what can I tune here?": with nothing typed it lists this screen's folders
+	// (click to open one, or pin it whole) and its actions; typing lists matching folders and values.
+	function renderIndex() {
+		const query = find.value.trim().toLowerCase()
+		const open =
+			query || browse !== null || document.activeElement === find || !state.queries.length
+		index.hidden = !open
+		if (!open) return
+		const controllers = gui.controllersRecursive()
+		const folders = new Map()
+		for (const c of controllers) {
+			if (!kindOf(c)) continue
+			const parts = pathOf(c).split('/').slice(0, -1)
+			for (let i = 1; i <= parts.length; i++) {
+				const path = parts.slice(0, i).join('/')
+				folders.set(path, (folders.get(path) ?? 0) + 1)
+			}
+		}
+		const items = []
+		const crumb = document.createElement('p')
+		crumb.className = 'desk-crumb'
+		if (query) {
+			crumb.textContent = 'Click to pin, or Enter to pin everything matching.'
+			// A whole word beats the start of a word beats anywhere inside one: "lob" finds Lob before globes.
+			const score = (text) => {
+				const words = text.toLowerCase().split(/[^a-z0-9]+/)
+				if (words.includes(query)) return 0
+				if (words.some((w) => w.startsWith(query))) return 1
+				return text.toLowerCase().includes(query) ? 2 : 3
+			}
+			const hits = []
+			for (const [path, n] of folders) {
+				const rank = score(path)
+				if (rank < 3) hits.push([rank, 0, chip(path, `${path} · ${n}`, () => pin(path))])
+			}
+			for (const c of controllers) {
+				const key = pathOf(c)
+				const kind = kindOf(c)
+				const rank = kind ? Math.min(score(c._name), score(key) + 1) : 3
+				if (rank < 3)
+					hits.push([
+						rank,
+						1,
+						chip(key, c._name, () => pin(key), kind, key.split('/').slice(0, -1).join(' / ')),
+					])
+			}
+			hits.sort((a, b) => a[0] - b[0] || a[1] - b[1])
+			items.push(...hits.slice(0, 24).map((h) => h[2]))
+			if (!items.length) crumb.textContent = 'Nothing on this screen matches.'
+		} else {
+			const depth = browse === null ? 0 : browse.split('/').length
+			const here = [...folders].filter(
+				([path]) =>
+					path.split('/').length === depth + 1 &&
+					(browse === null || path.startsWith(`${browse}/`)),
+			)
+			if (browse === null) crumb.textContent = 'On this screen. Click a folder to look inside.'
+			else {
+				crumb.innerHTML = '<button class="desk-back">‹ back</button> '
+				crumb.firstChild.onclick = () => {
+					browse = browse.includes('/') ? browse.slice(0, browse.lastIndexOf('/')) : null
+					renderIndex()
+				}
+				const all = document.createElement('button')
+				all.className = 'desk-pinall'
+				all.textContent = `pin all of ${browse} (${folders.get(browse)})`
+				all.onclick = () => pin(browse)
+				crumb.append(all)
+			}
+			for (const [path, n] of here) {
+				const deeper = [...folders.keys()].some((p) => p.startsWith(`${path}/`))
+				const name = path.split('/').at(-1)
+				items.push(
+					chip(path, `${name} · ${n}`, () => {
+						if (deeper) {
+							browse = path
+							renderIndex()
+						} else pin(path)
+					}),
+				)
+			}
+			// Leaves in a folder that also has subfolders are pinned one by one.
+			if (browse !== null)
+				for (const c of controllers) {
+					const key = pathOf(c)
+					const kind = kindOf(c)
+					if (kind && key.slice(0, key.lastIndexOf('/')) === browse)
+						items.push(chip(key, c._name, () => pin(key), kind))
+				}
+			const actions = controllers.filter((c) => typeof c.getValue() === 'function')
+			if (browse === null && actions.length) {
+				const h = document.createElement('p')
+				h.className = 'desk-crumb'
+				h.textContent = 'Actions'
+				items.push(h)
+				for (const c of actions) {
+					const folder = pathOf(c).split('/').slice(0, -1).join(' / ')
+					const b = chip(pathOf(c), c._name, () => c.getValue().call(c.object), null, folder)
+					b.classList.add('desk-action')
+					items.push(b)
+				}
+			}
+		}
+		index.replaceChildren(crumb, ...items)
+	}
+
+	function chip(key, label, onclick, kind, where) {
+		const b = document.createElement('button')
+		b.className = 'desk-pick'
+		b.title = key
+		if (kind) b.dataset.kind = kind
+		b.textContent = label
+		if (where) b.append(Object.assign(document.createElement('small'), { textContent: where }))
+		b.onclick = onclick
+		return b
+	}
+
 	function rebuild() {
 		const found = matches()
-		root.hidden = !state.queries.length
+		root.hidden = !shown
+		gui.show(shown && !!state.panel)
+		renderIndex()
 		chips.replaceChildren(
 			...state.queries.map((q) => {
 				const chip = document.createElement('button')
@@ -116,7 +254,9 @@ export function createDesk(gui) {
 				? `${found.length - MAX} more match; narrow the pin.`
 				: found.length
 					? ''
-					: 'Nothing registered matches yet. Values appear when their screen loads.'
+					: state.queries.length
+						? 'Nothing registered matches yet. Values appear when their screen loads.'
+						: ''
 	}
 
 	function changed(key, c) {
@@ -128,6 +268,8 @@ export function createDesk(gui) {
 	function pin(query) {
 		if (!query || state.queries.includes(query)) return
 		state.queries.push(query)
+		browse = null
+		find.value = ''
 		save()
 		rebuild()
 	}
@@ -152,8 +294,8 @@ export function createDesk(gui) {
 			state.values = {}
 			save()
 		}
-		if (act === 'close') {
-			state.queries = []
+		if (act === 'panel') {
+			state.panel = !state.panel
 			save()
 			rebuild()
 		}
@@ -174,6 +316,11 @@ export function createDesk(gui) {
 	let pending = false
 	return {
 		pin,
+		// Backquote hides the desk along with the panel; pins and values stay.
+		show(on) {
+			shown = on
+			rebuild()
+		},
 		// Registrations come in bursts as a screen loads: rebuild once per frame.
 		refresh() {
 			if (pending) return
@@ -193,7 +340,7 @@ export function createDesk(gui) {
 function dragHeader(root, done) {
 	const head = root.querySelector('.desk-head')
 	head.addEventListener('pointerdown', (e) => {
-		if (e.target.closest('button')) return
+		if (e.target.closest('button, input')) return
 		const box = root.getBoundingClientRect()
 		const dx = e.clientX - box.left
 		const dy = e.clientY - box.top
@@ -223,6 +370,7 @@ const polar = (cx, cy, r, deg) => [
 // One instrument: a face you drag (up or right for more, Shift for fine), a label, and a readout
 // you can click to type into. Double-click puts the value back.
 function instrument(key, c, kind, changed) {
+	if (kind === 'swatch') return swatch(key, c, changed)
 	const el = document.createElement('div')
 	el.className = 'desk-mod'
 	el.dataset.kind = kind
@@ -313,6 +461,107 @@ function instrument(key, c, kind, changed) {
 			el.classList.toggle('is-changed', v !== c.initialValue)
 		},
 	}
+}
+
+// A colour: click for the picker, drag across for hue and up for lightness (Shift for fine).
+// Values keep the controller's own format, a 0xrrggbb number or a '#rrggbb' string.
+function swatch(key, c, changed) {
+	const el = document.createElement('div')
+	el.className = 'desk-mod'
+	el.dataset.kind = 'swatch'
+	el.title = `${key}\nclick picks · drag across for hue, up for lightness · shift for fine · double-click resets`
+	el.innerHTML = `<div class="desk-face"><i class="swatch"></i><input type="color" tabindex="-1"></div>
+		<label></label><output></output>`
+	el.querySelector('label').textContent = c._name
+	const face = el.querySelector('.desk-face')
+	const chip = el.querySelector('.swatch')
+	const picker = el.querySelector('input')
+	const out = el.querySelector('output')
+	const hexOf = (v) => c._format.toHexString(v)
+	const set = (hex) => {
+		c.setValue(c._format.fromHexString(hex))
+		changed(key, c)
+	}
+	picker.addEventListener('input', () => set(picker.value))
+	face.addEventListener('pointerdown', (e) => {
+		face.setPointerCapture(e.pointerId)
+		const [h, s, l] = toHsl(hexOf(c.getValue()))
+		let hue = h,
+			light = l,
+			moved = false
+		let last = [e.clientX, e.clientY]
+		const move = (m) => {
+			const fine = m.shiftKey ? 0.1 : 1
+			const dx = m.clientX - last[0],
+				dy = m.clientY - last[1]
+			last = [m.clientX, m.clientY]
+			moved ||= Math.abs(m.clientX - e.clientX) + Math.abs(m.clientY - e.clientY) > 3
+			if (!moved) return
+			hue = (hue + (dx / 360) * fine + 1) % 1
+			light = clamp01(light - (dy / 300) * fine)
+			set(fromHsl(hue, s, light))
+		}
+		face.addEventListener('pointermove', move)
+		face.addEventListener(
+			'pointerup',
+			() => {
+				face.removeEventListener('pointermove', move)
+				if (!moved) picker.click()
+			},
+			{ once: true },
+		)
+	})
+	el.addEventListener('dblclick', () => {
+		c.reset()
+		changed(key, c)
+	})
+	out.addEventListener('click', () => {
+		const typed = prompt(`${key}`, hexOf(c.getValue()))
+		if (typed && /^#?[0-9a-f]{6}$/i.test(typed.trim())) set(`#${typed.trim().replace('#', '')}`)
+	})
+
+	let seen
+	return {
+		key,
+		el,
+		draw() {
+			const v = c.getValue()
+			if (v === seen) return
+			seen = v
+			const hex = hexOf(v)
+			chip.style.background = hex
+			picker.value = hex
+			out.textContent = hex
+			el.classList.toggle('is-changed', v !== c.initialValue)
+		},
+	}
+}
+
+function toHsl(hex) {
+	const n = parseInt(hex.slice(1), 16)
+	const [r, g, b] = [n >> 16, (n >> 8) & 255, n & 255].map((x) => x / 255)
+	const max = Math.max(r, g, b),
+		min = Math.min(r, g, b),
+		l = (max + min) / 2,
+		d = max - min
+	if (!d) return [0, 0, l]
+	const s = d / (1 - Math.abs(2 * l - 1))
+	const h =
+		max === r ? (g - b) / d + (g < b ? 6 : 0) : max === g ? (b - r) / d + 2 : (r - g) / d + 4
+	return [h / 6, s, l]
+}
+
+function fromHsl(h, s, l) {
+	const k = (n) => (n + h * 12) % 12
+	const a = s * Math.min(l, 1 - l)
+	const f = (n) => l - a * Math.max(-1, Math.min(k(n) - 3, 9 - k(n), 1))
+	return `#${[f(0), f(8), f(4)]
+		.map((x) =>
+			Math.round(x * 255)
+				.toString(16)
+				.padStart(2, '0'),
+		)
+		.join('')}`
 }
 
 const ARC = (r, a0, a1, cx = 50, cy = 54) => {

@@ -187,7 +187,8 @@ export async function createBrowserApp() {
 	const hud = document.querySelector('.hud')
 	const combatEl = document.querySelector('.combat')
 	const proof = createProofApi(app, input)
-	let diagnostics = new URLSearchParams(location.search).has('debug')
+	const query = new URLSearchParams(location.search)
+	let diagnostics = query.has('debug') || query.has('knobs')
 	function setDiagnostics(enabled) {
 		diagnostics = enabled
 		hud.hidden = !enabled
