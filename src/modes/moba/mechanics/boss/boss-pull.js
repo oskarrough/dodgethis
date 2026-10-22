@@ -116,6 +116,7 @@ export function createBossPull({ heroes, layout, makeBody, present, systems, vie
 		state.phase = 'reset'
 		ctx.shots.length = 0
 		ctx.zones.length = 0
+		ctx.removeGround()
 		ctx.removeSummons()
 		for (const h of [...heroes, unit]) {
 			ctx.endCast(h, 'reset')

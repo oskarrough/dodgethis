@@ -38,7 +38,6 @@ export function createSummons(ctx) {
 		return unit
 	}
 	function removeSummons(owner = null) {
-		ctx.removeGround(owner)
 		for (let i = summons.length - 1; i >= 0; i--)
 			if (owner === null || summons[i].owner === owner) {
 				ctx.clearStatuses(summons[i], 'removed')
@@ -57,12 +56,10 @@ export function createSummons(ctx) {
 			if (!owner || unit.dead || ctx.t >= unit.until) {
 				ctx.clearStatuses(unit, 'expired')
 				summons.splice(i, 1)
-				ctx.stepGround(unit)
 				continue
 			}
 			ctx.expireStatuses(unit)
 			ctx.stepStatuses(unit)
-			ctx.stepGround(unit)
 			const ability = abilityOf(unit.key)
 			ability.summon.brain?.({
 				unit,

@@ -154,6 +154,7 @@ export function createRoster(ctx) {
 		endStance(hero, 'swap')
 		cancelChannel(hero, 'swap')
 		ctx.clearStatuses(hero, 'swap')
+		ctx.removeGround(hero.id)
 		ctx.removeSummons(hero.id)
 		hero.body.cancelDash()
 		hero.body.dispose()
@@ -204,6 +205,7 @@ export function createRoster(ctx) {
 		const index = heroes.findIndex((hero) => hero.id === id)
 		if (index < 0) return false
 		const hero = heroes[index]
+		ctx.removeGround(id)
 		ctx.removeSummons(id)
 		ball?.hurt(hero)
 		endCast(hero, 'clear')

@@ -13,6 +13,7 @@ import { createTargeting } from './targeting.js'
 import { createProjectiles } from './projectiles.js'
 import { createCombat } from './combat.js'
 import { createStatuses } from './statuses.js'
+import { createGroundFields } from './ground-fields.js'
 import { createDisplacement } from './displacement.js'
 import { createOrders } from './orders.js'
 import { createCasting } from './casting.js'
@@ -261,6 +262,7 @@ export function createSim({
 	}
 	for (const create of [
 		createStatuses,
+		createGroundFields,
 		createSummons,
 		createProjectiles,
 		createCombat,
@@ -306,6 +308,7 @@ export function createSim({
 
 	function step(dt = STEP) {
 		if (lane?.match.winner) {
+			ctx.removeGround()
 			ctx.removeSummons()
 			return
 		}
@@ -323,6 +326,7 @@ export function createSim({
 		}
 		lane?.step(t, dt)
 		if (lane?.match.winner) {
+			ctx.removeGround()
 			ctx.removeSummons()
 			return
 		}
@@ -384,8 +388,12 @@ export function createSim({
 		stepShots(dt)
 		if (lane?.match.winner) ctx.removeSummons()
 		else ctx.stepSummons(dt)
+		ctx.stepGround()
 		if (!lane?.match.winner) ball?.finish(dt, resolveInterception)
-		if (lane?.match.winner) ctx.removeSummons()
+		if (lane?.match.winner) {
+			ctx.removeGround()
+			ctx.removeSummons()
+		}
 		if (readySeats) {
 			readySeats.step(t, STEP, heroes)
 			for (const h of heroes) h.seatTeam = readySeats.seatOf(h.id)?.team ?? h.seatTeam
@@ -393,6 +401,7 @@ export function createSim({
 		if (training.noCooldowns) heroes.find((h) => h.id === training.local)?.cd.fill(0)
 	}
 	function dispose() {
+		ctx.removeGround()
 		ctx.removeSummons()
 		ground.dispose()
 		for (const h of heroes) {

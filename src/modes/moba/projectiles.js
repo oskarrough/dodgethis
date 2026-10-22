@@ -44,7 +44,6 @@ export function createProjectiles(ctx) {
 	}
 
 	function stepZones() {
-		ctx.stepGround()
 		for (let i = zones.length - 1; i >= 0; i--) {
 			const zone = zones[i]
 			if (--zone.left > 0) continue
