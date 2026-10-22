@@ -1,5 +1,5 @@
 import { tune } from './tune.js'
-import { blocked } from './statuses.js'
+import { blocked, statusDefinition } from './statuses.js'
 import { STEP } from '../../core/app.js'
 import { freshAbilityState } from './heroes.js'
 import { abilityOf } from './ability.js'
@@ -250,6 +250,32 @@ export function createCombat(ctx) {
 			})?.consumed
 		)
 			return
+		const payloadAbility = abilityOf(shot.ability, hitSource)
+		const effectSource = hitSource && {
+			unit: hitSource,
+			ability: payloadAbility,
+			slot: shot.slot,
+			dir: direction,
+			point,
+		}
+		if (effectSource && shot.allyEffects && unit.team === shot.team) {
+			const result = ctx.applyEffects(effectSource, unit, shot.allyEffects)
+			present({
+				type: 'contact',
+				part: 'hit',
+				source: shot.owner,
+				target: unit.id,
+				ability: shot.ability,
+				projectile: shot.id,
+				heal: result.heal,
+				hp: unit.hp,
+				maxHp: unit.maxHp,
+				point: { ...unit.body.position },
+			})
+			return
+		}
+		if (effectSource && shot.hitEffects?.length)
+			ctx.applyEffects(effectSource, unit, shot.hitEffects)
 		const at = { x: point.x, y: tune.projectile.height, z: point.z }
 		if (unit.structure && !lane.vulnerable(unit)) {
 			present({
@@ -361,6 +387,15 @@ export function createCombat(ctx) {
 			maxHp: unit.maxHp,
 		})
 		if (!lethal) {
+			if (
+				effectSource &&
+				(shot.applies ?? []).some((status) =>
+					statusDefinition(typeof status === 'string' ? { key: status } : status)?.states?.includes(
+						'frozen',
+					),
+				)
+			)
+				ctx.freezeImpact(effectSource, unit)
 			if (target.hero && !unit.post && !shot.periodic) shove(unit, shot)
 			return
 		}

@@ -131,7 +131,11 @@ function checkActions(id, manifest, actions) {
 				for (const input of action[key]) {
 					const record = effectRecord(manifest, input)
 					if (
-						!(key === 'allies' ? ['heal'] : ['damage', 'slow', 'displace']).includes(record?.effect)
+						!(
+							key === 'allies'
+								? ['heal']
+								: ['damage', ...Object.keys(STATUS_EFFECT_REFS), 'displace']
+						).includes(record?.effect)
 					) {
 						errors.push(`${id}: unsupported shot ${key} effect ${record?.effect}`)
 						continue
@@ -268,7 +272,9 @@ function checkActionEffect(id, manifest, record) {
 		STATUS_EFFECT_REFS[record.effect]
 	if (
 		!refs ||
-		!['damage', 'heal', 'shield', 'slow', 'displace', 'status', 'catch'].includes(record.effect)
+		!['damage', 'heal', ...Object.keys(STATUS_EFFECT_REFS), 'displace', 'status', 'catch'].includes(
+			record.effect,
+		)
 	) {
 		errors.push(`${id}: unknown action effect ${record.effect}`)
 		return
@@ -281,6 +287,8 @@ function checkActionEffect(id, manifest, record) {
 		status: ['key', 'source'],
 		catch: ['acceptBall', 'refresh'],
 		slow: [],
+		haste: [],
+		freeze: [],
 	}[record.effect]
 	for (const field of Object.keys(record))
 		if (!['effect', ...Object.keys(refs), ...fields].includes(field))
@@ -313,10 +321,10 @@ function checkActionEffect(id, manifest, record) {
 	if (record.effect === 'shield' && record.stack !== undefined && record.stack !== 'add')
 		errors.push(`${id}: unknown shield stack ${record.stack}`)
 	if (
-		record.effect === 'slow' &&
-		!manifest.statusEffects?.some((effect) => effect.effect === 'slow')
+		['slow', 'haste', 'freeze'].includes(record.effect) &&
+		!manifest.statusEffects?.some((effect) => effect.effect === record.effect)
 	)
-		errors.push(`${id}: shot slow needs a matching status effect`)
+		errors.push(`${id}: shot ${record.effect} needs a matching status effect`)
 	if (
 		record.effect === 'shield' &&
 		!manifest.statuses?.shield &&

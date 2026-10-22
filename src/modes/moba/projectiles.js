@@ -1,6 +1,7 @@
 import { tune } from './tune.js'
 import { blocked } from './statuses.js'
-import { abilityOf, effectRecord } from './ability.js'
+import { abilityOf, STATUS_EFFECT_REFS } from './ability.js'
+import { resolveEffects, statusPayload } from './ability-effects.js'
 import { STEP } from '../../core/app.js'
 import { clampMap, sweepHit, sweepObstacles } from './obstacles.js'
 import { interceptShot, stepShot } from './skillshot.js'
@@ -333,19 +334,13 @@ export function createProjectiles(ctx) {
 	// Payload numbers freeze alongside damage, before any flight or mid-air level-up.
 	function launchAbilityShot(hero, ability, dir, slot, action) {
 		const stats = ability.stats
+		const casterLevel = hero.level ?? tune.hero.level
 		const payload = Object.fromEntries(
 			['hit', 'allies', 'enemies']
 				.filter((key) => action[key])
-				.map((key) => [key, action[key].map((input) => effectRecord(ability, input))]),
+				.map((key) => [key, resolveEffects(ability, action[key], casterLevel)]),
 		)
-		const effects = Object.values(payload).flat()
-		const effectStats = Object.fromEntries(
-			effects.flatMap((effect) =>
-				Object.values(effect)
-					.filter((ref) => typeof ref === 'string' && Number.isFinite(stats[ref]))
-					.map((ref) => [ref, stats[ref]]),
-			),
-		)
+		const effects = payload.enemies ?? payload.hit ?? []
 		const damage = effects.find((effect) => effect.effect === 'damage')
 		return launchShot(hero, dir, {
 			ability: ability.id,
@@ -359,24 +354,15 @@ export function createProjectiles(ctx) {
 			speed: stats.speed,
 			radius: stats.radius,
 			range: stats.range,
-			damage:
-				ctx.lobby && hero.sparring
-					? tune.lobby.practice.damage
-					: damage
-						? stats[damage.amount] *
-							(damage.scale === null
-								? 1
-								: 1 + tune.levels.growth * ((hero.level ?? tune.hero.level) - 1))
-						: 0,
-			payload,
-			effectStats,
-			applies: (payload.enemies ?? payload.hit ?? [])
-				.filter((effect) => effect.effect === 'slow' && stats[effect.magnitude])
-				.map((effect) => ({
-					key: `${ability.id}.slow`,
-					mag: 1 - stats[effect.magnitude],
-					duration: stats[effect.duration],
-				})),
+			damage: ctx.lobby && hero.sparring ? tune.lobby.practice.damage : (damage?.amount ?? 0),
+			casterLevel,
+			allyEffects: payload.allies,
+			hitEffects: effects.filter(
+				(effect) => effect.effect !== 'damage' && !STATUS_EFFECT_REFS[effect.effect],
+			),
+			applies: effects
+				.filter((effect) => STATUS_EFFECT_REFS[effect.effect])
+				.map((effect) => statusPayload(ability, effect)),
 		})
 	}
 
