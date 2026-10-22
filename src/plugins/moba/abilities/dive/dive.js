@@ -15,7 +15,7 @@ export default {
 	held: 'arrow',
 	effects: { cast: 'dive', effect: 'dive', pose: 'dive' },
 	card: {
-		summary: () => 'Dive toward your aim, catching shots all around on the way, then lie prone.',
+		summary: 'Dive toward your aim, catching shots all around on the way, then lie prone.',
 	},
 	onRelease({ hero, sim, ability }) {
 		sim.openCatch(hero, {

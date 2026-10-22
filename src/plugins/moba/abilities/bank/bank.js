@@ -1,5 +1,3 @@
-import { tune } from '../../tune.js'
-
 // Q: a line skillshot, first hit. It banks off cover and map edges (bounce is in the tune).
 export default {
 	name: 'Ricochet',
@@ -13,9 +11,7 @@ export default {
 	held: 'line',
 	effects: { cast: 'nock', projectile: 'loose', hit: 'looseHit', pose: 'draw' },
 	card: {
-		summary: () => 'A shot that bounces off cover and walls, hitting harder with every cushion.',
-		notes: () => [
-			`Up to ${tune.bank.bounce.max} cushions, +${tune.bank.bounce.damagePerCushion} damage each`,
-		],
+		summary: 'A shot that bounces off cover and walls, hitting harder with every cushion.',
+		notes: [`Up to {bank.bounce.max} cushions, +{bank.bounce.damagePerCushion:damage} each`],
 	},
 }

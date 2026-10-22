@@ -13,8 +13,8 @@ export default {
 	trait: () => ({
 		name: 'Out, not gone',
 		icon: 'outThrow',
-		chip: `${tune.outThrow.deathRefund}s`,
-		summary: `While dead, walk the touchline and throw. Each hero hit takes ${tune.outThrow.deathRefund} s off your death timer.`,
+		chip: `{outThrow.deathRefund}`,
+		summary: `While dead, walk the touchline and throw. Each hero hit takes {outThrow.deathRefund} off your death timer.`,
 	}),
 	botDead: coachBotDead,
 	outOfPlay: coachCutoutFrame,

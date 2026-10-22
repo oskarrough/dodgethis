@@ -14,6 +14,7 @@
 		"test:slow": "SLOW=1 bun test",
 		"profile:dodgeball": "bun scripts/bench.js",
 		"simulate": "bun scripts/farm.js",
+		"kit": "bun run collect-mods && bun scripts/kit.js",
 		"review": "bun scripts/review.js",
 		"sound:check": "bun scripts/sound-check.js",
 		"sound:sync": "bun scripts/sound-library.js",

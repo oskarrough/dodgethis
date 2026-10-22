@@ -1,7 +1,5 @@
 import { tune } from '../../tune.js'
 
-const n = (v) => Number(v.toFixed(2))
-
 export default {
 	kit: { slot1: 'loose', slot2: 'rain', slot3: 'vault' },
 	name: 'Fletcher',
@@ -12,8 +10,8 @@ export default {
 	trait: () => ({
 		name: 'Momentum',
 		icon: 'momentum',
-		chip: `−${n(tune.momentum.reduction)}s`,
-		summary: `Loose hitting a hero cuts Vault's cooldown by ${n(tune.momentum.reduction)} s.`,
+		chip: `−{momentum.reduction}`,
+		summary: `Loose hitting a hero cuts Vault's cooldown by {momentum.reduction}.`,
 	}),
 	traits: {
 		onHit({ source, shot, target, ticks }) {

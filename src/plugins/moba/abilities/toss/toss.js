@@ -1,5 +1,3 @@
-import { tune } from '../../tune.js'
-
 // Q: a line skillshot; with a caught shot in the pocket, casting throws that back instead.
 export default {
 	kind: 'shot',
@@ -14,11 +12,10 @@ export default {
 	held: 'line',
 	effects: { cast: 'tossWindup', projectile: 'toss', hit: 'tossHit', pose: 'toss', punch: 'toss' },
 	card: {
-		summary: () =>
-			'Line skillshot. With a caught shot in your pocket, Toss sends that back instead.',
-		notes: () => [
-			`Pocketed shots last ${Number(tune.catching.pocketLife.toFixed(2))} s`,
-			`Returns keep the caught shot's damage and bypass Toss's cooldown, with a ${tune.catching.returnTell}s tell`,
+		summary: 'Line skillshot. With a caught shot in your pocket, Toss sends that back instead.',
+		notes: [
+			`Pocketed shots last {catching.pocketLife}`,
+			`Returns keep the caught shot's damage and bypass Toss's cooldown, with a {catching.returnTell} tell`,
 		],
 	},
 }

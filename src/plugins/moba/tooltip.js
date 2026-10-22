@@ -2,6 +2,8 @@ import { tune } from './tune.js'
 import { structureName } from './gates.js'
 import { waveInterval } from './lane.js'
 import { HEROES } from './heroes.js'
+import { units } from '../../core/units.js'
+import { resolveUnit } from './units.js'
 
 // A cream sticker card for the stat nerds. Builders are pure: they read live state and `tune`
 // on every call, so an open card follows a `&debug` edit or a level-up. The card element only
@@ -14,23 +16,63 @@ const growthAt = (level) => 1 + tune.levels.growth * (Math.max(1, level ?? 1) - 
 const title = (id) => id[0].toUpperCase() + id.slice(1)
 const side = (team, localTeam) => (team === localTeam ? 'Your' : 'Enemy')
 
+// Local tokens ({radius}) read tune[scope]; dotted tokens ({catching.pocketLife}) read
+// from tune's root. No cached values: hovering cards and the kit sheet share this resolver.
+// hp has two prose spellings so existing sentences can keep "damage" and "HP".
+export function formatCardValue(path, value, format) {
+	const unit = resolveUnit(path)
+	if (!Number.isFinite(value) || !Object.hasOwn(units, unit ?? ''))
+		throw new Error(`MOBA card reference: tune.${path} needs a finite number and a declared unit`)
+	if (format !== undefined) {
+		if (unit !== 'hp' || !['damage', 'HP'].includes(format))
+			throw new Error(`MOBA card format: ${path}:${format} is not a supported unit spelling`)
+		return `${n(value)} ${format}`
+	}
+	if (unit === 'fraction') return pct(value)
+	if (unit === 'multiplier') return `×${n(value)}`
+	return `${n(value)}${units[unit].suffix}`
+}
+
+export function renderCardTemplate(template, scope = '') {
+	if (typeof template !== 'string')
+		throw new Error(`MOBA card template: ${scope} must declare text, not ${typeof template}`)
+	return template.replace(/\{([^{}]*)\}|[{}]/g, (match, token) => {
+		if (!token || !/^[A-Za-z]\w*(?:\.\w+)*(?::(?:damage|HP))?$/.test(token))
+			throw new Error(`MOBA card token: ${scope} has invalid token ${match}`)
+		const [ref, format] = token.split(':')
+		const path = ref.includes('.') || !scope ? ref : `${scope}.${ref}`
+		const value = path
+			.split('.')
+			.reduce(
+				(object, key) => (object && Object.hasOwn(object, key) ? object[key] : undefined),
+				tune,
+			)
+		return formatCardValue(path, value, format)
+	})
+}
+
 // Ability stats in reading order. Keys not listed (flight height, near-miss) are presentation and stay out.
 const ABILITY_ROWS = [
-	['damage', 'Damage', (v, level) => `${round(v * growthAt(level))}`],
-	['range', 'Range', (v) => `${n(v)} m`],
-	['radius', 'Radius', (v) => `${n(v)} m`],
-	['angle', 'Cone', (v) => (v >= 360 ? 'all around' : `${n(v)}°`)],
-	['speed', 'Speed', (v) => `${n(v)} m/s`],
-	['time', 'Travel time', (v) => `${n(v)} s`],
-	['delay', 'Lands after', (v) => `${n(v)} s`],
-	['castPoint', 'Cast time', (v) => (v > 0 ? `${n(v)} s` : 'instant')],
-	['slow', 'Slow', (v, _, s) => `${pct(v)} for ${n(s.duration)} s`],
-	['duration', 'Window', (v, _, s) => (s.slow === undefined ? `${n(v)} s` : null)],
+	['damage', 'Damage', (v, level, s, f) => f(round(v * growthAt(level)))],
+	['range', 'Range'],
+	['radius', 'Radius'],
+	['angle', 'Cone', (v, _, s, f) => (v >= 360 ? 'all around' : f(v))],
+	['speed', 'Speed'],
+	['time', 'Travel time'],
+	['delay', 'Lands after'],
+	['castPoint', 'Cast time', (v, _, s, f) => (v > 0 ? f(v) : 'instant')],
+	[
+		'slow',
+		'Slow',
+		(v, _, s, f, abilityId) =>
+			`${f(v)} for ${formatCardValue(`${abilityId}.duration`, s.duration)}`,
+	],
+	['duration', 'Window', (v, _, s, f) => (s.slow === undefined ? f(v) : null)],
 	['speedFactor', 'Move speed', (v) => `${pct(v)} while open`],
-	['damageReduction', 'Damage reduction', (v) => `${pct(v)} while Catch is active`],
-	['prone', 'Prone after', (v) => `${n(v)} s`],
-	['cooldown', 'Cooldown', (v) => `${n(v)} s`],
-	['resetCooldown', 'After a catch', (v) => `cooldown drops to ${n(v)} s`],
+	['damageReduction', 'Damage reduction', (v, _, s, f) => `${f(v)} while Catch is active`],
+	['prone', 'Prone after'],
+	['cooldown', 'Cooldown'],
+	['resetCooldown', 'After a catch', (v, _, s, f) => `cooldown drops to ${f(v)}`],
 ]
 const KIND = {
 	shot: 'Line skillshot, stops on the first unit hit.',
@@ -41,7 +83,13 @@ const KIND = {
 }
 export function heroTrait(heroId) {
 	const definition = Object.hasOwn(HEROES, heroId) ? HEROES[heroId] : null
-	return definition?.trait?.() ?? null
+	const trait = definition?.trait?.()
+	if (!trait) return null
+	return {
+		...trait,
+		summary: renderCardTemplate(trait.summary, `heroes.${heroId}`),
+		...(trait.chip !== undefined && { chip: renderCardTemplate(trait.chip, `heroes.${heroId}`) }),
+	}
 }
 export function traitCard(heroId) {
 	const trait = heroTrait(heroId)
@@ -54,23 +102,29 @@ export function abilityCard(ability, { level = 1, key = '' } = {}) {
 		return { title: 'Empty slot', tag: key, summary: 'Not built yet.', rows: [], notes: [] }
 	const s = ability.stats
 	const rows = ABILITY_ROWS.filter(([k]) => s[k] !== undefined)
-		.map(([k, label, f]) => [label, f(s[k], level, s)])
+		.map(([k, label, f]) => {
+			const format = (value) => formatCardValue(`${ability.id}.${k}`, value)
+			return [label, f ? f(s[k], level, s, format, ability.id) : format(s[k])]
+		})
 		.filter(([, value]) => value !== null)
 	if (s.damage) {
 		rows.push([
 			'vs structures',
-			`${round(s.damage * growthAt(level) * tune.waves.abilityStructure)}`,
+			formatCardValue(
+				`${ability.id}.damage`,
+				round(s.damage * growthAt(level) * tune.waves.abilityStructure),
+			),
 		])
 		rows.push(['Sustained DPS', n((s.damage * growthAt(level)) / s.cooldown)])
 	}
 	const notes = []
 	if (s.damage && level < tune.levels.cap)
 		notes.push(`+${n(s.damage * tune.levels.growth)} damage per level`)
-	notes.push(...(ability.card?.notes?.() ?? []))
+	notes.push(...(ability.card?.notes ?? []).map((note) => renderCardTemplate(note, ability.id)))
 	return {
 		title: abilityName(ability),
 		tag: key,
-		summary: ability.card?.summary?.() ?? KIND[ability.kind] ?? '',
+		summary: renderCardTemplate(ability.card?.summary ?? KIND[ability.kind] ?? '', ability.id),
 		rows,
 		notes,
 	}

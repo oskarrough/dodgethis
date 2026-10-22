@@ -1,4 +1,3 @@
-import { tune } from '../../tune.js'
 import { menderTargetUnit, menderReleaseTarget } from '../mend/mend-target.js'
 
 export default {
@@ -29,7 +28,6 @@ export default {
 		})
 	},
 	card: {
-		summary: () =>
-			`Shield the ally nearest your aim within ${tune.ward.range} m for ${tune.ward.shield} damage for ${tune.ward.duration} s.`,
+		summary: `Shield the ally nearest your aim within {range} for {shield:damage} for {duration}.`,
 	},
 }

@@ -1,5 +1,4 @@
 import { clampWalkable } from '../../obstacles.js'
-import { tune } from '../../tune.js'
 
 const PARTNER = 'bank'
 
@@ -43,7 +42,7 @@ export default {
 		hero.abilityState.swap.mark = null
 	},
 	card: {
-		summary: () => 'Trade places with your Ricochet shot, wherever it has bounced to.',
-		notes: () => [`Only while Ricochet flies, or ${tune.swap.linger}s after it stops`],
+		summary: 'Trade places with your Ricochet shot, wherever it has bounced to.',
+		notes: [`Only while Ricochet flies, or {linger} after it stops`],
 	},
 }

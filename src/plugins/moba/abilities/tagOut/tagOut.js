@@ -105,7 +105,6 @@ export default {
 		})
 	},
 	card: {
-		summary: () =>
-			`Swap with the ally nearest your aim within ${tune.tagOut.range} m. Cleanse them; take ${tune.tagOut.damageReduction * 100}% less damage for ${tune.tagOut.duration} s.`,
+		summary: `Swap with the ally nearest your aim within {range}. Cleanse them; take {damageReduction} less damage for {duration}.`,
 	},
 }

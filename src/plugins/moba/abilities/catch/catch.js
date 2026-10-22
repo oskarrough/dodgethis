@@ -1,5 +1,3 @@
-import { tune } from '../../tune.js'
-
 // W: a stance that opens a catch window in a cone; catching itself is engine code.
 export default {
 	kind: 'stance',
@@ -9,8 +7,7 @@ export default {
 	held: 'cone',
 	effects: { cast: 'catch', effect: 'catch', pose: 'catch' },
 	card: {
-		summary: () =>
-			`Catch the first skillshot or Ball entering your cone for no damage. Until caught or disabled, take ${Math.round(tune.catch.damageReduction * 100)}% less damage from hits that still land while Catch is active.`,
+		summary: `Catch the first skillshot or Ball entering your cone for no damage. Until caught or disabled, take {damageReduction} less damage from hits that still land while Catch is active.`,
 	},
 	// The catch window's fan, for any catcher (skills-view.js); Dive's window sits at diveY.
 	look: {

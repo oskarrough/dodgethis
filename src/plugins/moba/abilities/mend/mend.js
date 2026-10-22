@@ -1,4 +1,3 @@
-import { tune } from '../../tune.js'
 import { menderTargetUnit, menderReleaseTarget } from './mend-target.js'
 
 export default {
@@ -27,7 +26,6 @@ export default {
 		})
 	},
 	card: {
-		summary: () =>
-			`Cast for ${tune.mend.castPoint} s to heal the ally nearest your aim within ${tune.mend.range} m for ${tune.mend.healAmount}. ${tune.mend.critChance * 100}% chance to heal ×${tune.mend.critMultiplier}.`,
+		summary: `Cast for {castPoint} to heal the ally nearest your aim within {range} for {healAmount}. {critChance} chance to heal {critMultiplier}.`,
 	},
 }

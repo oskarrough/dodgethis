@@ -1,5 +1,3 @@
-import { tune } from '../../tune.js'
-
 // W: a short wall across your aim at the cursor. Ricochet banks off it; shots and bodies treat it as cover.
 export default {
 	kind: 'instant',
@@ -42,8 +40,8 @@ export default {
 		}
 	},
 	card: {
-		summary: () =>
+		summary:
 			'Place a short wall at the cursor. Ricochet bounces off it; it blocks shots and bodies.',
-		notes: () => [`${tune.cushion.length}m wide, lasts ${tune.cushion.duration}s`],
+		notes: [`{length} wide, lasts {duration}`],
 	},
 }

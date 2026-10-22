@@ -83,7 +83,6 @@ export default {
 		},
 	},
 	card: {
-		summary: () =>
-			`Lob for ${tune.balloon.flight} s: heal ${tune.balloon.healAmount}, deal ${tune.balloon.damage} and soak. Press again to pop early. A ${tune.balloon.puddle} s puddle keeps soaking.`,
+		summary: `Lob for {flight}: heal {healAmount}, deal {damage} and soak. Press again to pop early. A {puddle} puddle keeps soaking.`,
 	},
 }

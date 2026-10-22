@@ -92,7 +92,6 @@ export default {
 		},
 	},
 	card: {
-		summary: () =>
-			`Plant a ${tune.sprinkler.hp} HP sprinkler for ${tune.sprinkler.duration} s. Its ${tune.sprinkler.radius} m jet sweeps each second: heal ${tune.sprinkler.healAmount}, soak enemies. It blocks nothing.`,
+		summary: `Plant a {hp:HP} sprinkler for {duration}. Its {radius} jet sweeps each {sweep}: heal {healAmount}, soak enemies. It blocks nothing.`,
 	},
 }

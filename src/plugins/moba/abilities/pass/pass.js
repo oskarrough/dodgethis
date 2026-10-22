@@ -50,8 +50,7 @@ export default {
 	held: 'line',
 	effects: { cast: 'passWindup', projectile: 'passBall', hit: 'passHit', pose: 'coachPass' },
 	card: {
-		summary: () =>
-			`First hero hit: heal an ally for ${tune.pass.healAmount}, or deal ${tune.pass.damage} and slow an enemy.`,
+		summary: `First hero hit: heal an ally for {healAmount}, or deal {damage} and slow an enemy.`,
 	},
 	projectileStats({ ability }) {
 		const { slow, duration } = ability.stats

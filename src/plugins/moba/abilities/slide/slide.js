@@ -71,7 +71,6 @@ export default {
 		},
 	},
 	card: {
-		summary: () =>
-			`Belly slide ${tune.slide.range} m in ${tune.slide.time} s. A puddle at the stopping point carries you to its edge, up to ${tune.slide.maxRange} m.`,
+		summary: `Belly slide {range} in {time}. A puddle at the stopping point carries you to its edge, up to {maxRange}.`,
 	},
 }

@@ -51,7 +51,6 @@ export default {
 		}
 	},
 	card: {
-		summary: () =>
-			`Freeze enemy heroes moving faster than ${tune.redLight.movingSpeed} m/s within ${tune.redLight.radius} m for ${tune.redLight.duration} s. Standing still is safe.`,
+		summary: `Freeze enemy heroes moving faster than {movingSpeed} within {radius} for {duration}. Standing still is safe.`,
 	},
 }

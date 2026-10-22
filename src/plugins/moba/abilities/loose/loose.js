@@ -1,5 +1,3 @@
-import { tune } from '../../tune.js'
-
 // Q: a line skillshot, first hit.
 export default {
 	kind: 'shot',
@@ -13,8 +11,6 @@ export default {
 	held: 'line',
 	effects: { cast: 'nock', projectile: 'loose', hit: 'looseHit', pose: 'draw' },
 	card: {
-		notes: () => [
-			`Momentum: hero hits cut Vault's cooldown by ${Number(tune.momentum.reduction.toFixed(2))} s`,
-		],
+		notes: [`Momentum: hero hits cut Vault's cooldown by {momentum.reduction}`],
 	},
 }

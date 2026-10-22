@@ -1,7 +1,3 @@
-import { tune } from '../../tune.js'
-
-const n = (v) => Number(v.toFixed(2))
-
 export default {
 	kit: { slot1: 'toss', slot2: 'catch', slot3: 'dive' },
 	basic: 'gloveSlap',
@@ -14,8 +10,8 @@ export default {
 	trait: () => ({
 		name: 'Pocket',
 		icon: 'pocket',
-		chip: `${n(tune.catching.pocketLife)}s`,
-		summary: `Hold a caught shot for ${n(tune.catching.pocketLife)} s, then send it back with Toss.`,
+		chip: `{catching.pocketLife}`,
+		summary: `Hold a caught shot for {catching.pocketLife}, then send it back with Toss.`,
 	}),
 	traits: {
 		onDeath({ hero }) {

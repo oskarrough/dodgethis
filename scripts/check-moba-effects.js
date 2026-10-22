@@ -1,6 +1,7 @@
 // Effect records declare local tune references; reject missing numbers and wrong dimensions.
 // Boot hero/ability registries in their normal order (ability hooks can import hero helpers).
-import '../src/plugins/moba/heroes.js'
+import { HEROES } from '../src/plugins/moba/heroes.js'
+import { heroTrait, renderCardTemplate } from '../src/plugins/moba/tooltip.js'
 import { STATUS_EFFECT_REFS } from '../src/plugins/moba/ability.js'
 import manifests from '../src/plugins/moba/abilities/all-abilities.js'
 import { tune } from '../src/plugins/moba/tune.js'
@@ -19,6 +20,18 @@ function checkRef(id, field, ref, unit) {
 		errors.push(`${id} ${field}: tune.${path} needs ${unit}, got ${resolveUnit(path) ?? 'no unit'}`)
 }
 for (const [id, manifest] of Object.entries(manifests)) {
+	if (manifest.card) {
+		const { summary = '', notes = [] } = manifest.card
+		try {
+			if (!Array.isArray(notes)) throw new Error('card notes must be an array of templates')
+			for (const template of [summary, ...notes]) {
+				renderCardTemplate(template, id)
+				count++
+			}
+		} catch (error) {
+			errors.push(`${id} card: ${error.message}`)
+		}
+	}
 	const keys = new Set(Object.keys(manifest.statuses ?? {}))
 	for (const record of manifest.statusEffects ?? []) {
 		const refs = STATUS_EFFECT_REFS[record?.effect]
@@ -55,7 +68,14 @@ for (const [id, manifest] of Object.entries(manifests)) {
 		}))
 			if (typeof status[field] === 'string') checkRef(id, `${key}.${field}`, status[field], unit)
 }
+for (const id of Object.keys(HEROES)) {
+	try {
+		if (heroTrait(id)) count++
+	} catch (error) {
+		errors.push(`${id} trait: ${error.message}`)
+	}
+}
 if (errors.length) {
 	console.error(`MOBA effect schema: ${errors.length} invalid declarations:\n${errors.join('\n')}`)
 	process.exitCode = 1
-} else console.log(`MOBA effect schema: ${count} tune references checked.`)
+} else console.log(`MOBA effect schema: ${count} tune references and card templates checked.`)

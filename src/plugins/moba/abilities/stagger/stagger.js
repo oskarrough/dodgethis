@@ -49,7 +49,7 @@ export default {
 		},
 	},
 	card: {
-		summary: () =>
+		summary:
 			'Bank incoming damage, then repay it evenly after the stance ends. Shields absorb repayments.',
 	},
 	onStart({ hero, sim }) {
