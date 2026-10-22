@@ -4,6 +4,8 @@
 export const lobby = {
 	capacity: 6,
 	partyCapacity: 5,
+	// The portal lobby (portal-lobby.js): stand in it to go, front and centre, clear of both team columns.
+	portal: { x: 0, z: 4.6, radius: 1.4, countdown: 2, color: '#9fe3d6' },
 	handoffFor: 3, // seconds of live lane simulation carrying the loading roster
 	style: { line: 0.65, pastel: 0.65 },
 	practice: { damage: 0, tell: 0.8, tellY: 0.23 },
