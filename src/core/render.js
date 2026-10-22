@@ -29,8 +29,12 @@ export function createRenderer() {
 		return true
 	}
 	function resize() {
-		const w = window.innerWidth
-		const h = window.innerHeight
+		// Size the drawing buffer from the canvas's CSS box, not window.innerWidth/Height.
+		// On mobile, the CSS box (100vh = the LARGE viewport) diverges from innerHeight (the
+		// visible viewport) while the URL bar is shown, so a window-sized buffer is stretched
+		// to fill the CSS box. clientWidth/Height is the real box, whatever sized it (vw/dvh/fullscreen).
+		const w = canvas.clientWidth
+		const h = canvas.clientHeight
 		// Hidden or minimised windows must not replace a usable projection with w / 0.
 		if (invalid({ 'viewport.width': w, 'viewport.height': h }) || w <= 0 || h <= 0) return
 		style.setSize(w, h)
@@ -40,6 +44,10 @@ export function createRenderer() {
 		aimCamera.updateProjectionMatrix()
 	}
 	window.addEventListener('resize', resize)
+	// A dvh change (the URL bar retracting) resizes the CSS box without a window resize event;
+	// observing the element keeps the drawing buffer locked to its box.
+	const resizeObserver = new ResizeObserver(resize)
+	resizeObserver.observe(canvas)
 	resize()
 
 	let shake = 0
@@ -157,6 +165,7 @@ export function createRenderer() {
 
 	function dispose() {
 		window.removeEventListener('resize', resize)
+		resizeObserver.disconnect()
 		style.dispose()
 	}
 
