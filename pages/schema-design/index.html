@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Declare it once · dodgethis</title>
+		<link rel="stylesheet" href="/pages/page.css" />
+	</head>
+	<body class="page">
+		<main>
+			<h1>Declare it once</h1>
+			<p><small>To review · 2026-10-22 · design only, nothing built</small></p>
+			<p>
+				<b
+					>Half the work is done already. Since the
+					<a href="/pages/ability-system/">ability-system</a> slices, an ability is a data head
+					(kind, statuses, tell, effects) and a code body (hooks). 12 of the 31 abilities have no
+					body at all. Many of the other 19 hand-write the same three loops: hit everyone in an
+					area, pick the ally nearest the aim, declare a slow. Name those loops, and 22 are pure
+					data, Red light needs a one-line filter, and 8 keep code: the odd ones worth keeping.</b
+				>
+			</p>
+			<p>
+				Reply by number. Builds on the units layer that thread thr_qkq8q3q2gx is adding (every tune
+				number gets a unit: s, m, fraction, hp…). Line counts are the working copy on 2026-10-22.
+			</p>
+
+			<h2>1. The shapes</h2>
+			<p>
+				Two halves. <b>Delivery</b> is today's <code>kind</code>, plus two new ones:
+				<code>area</code> and <code>target</code>. <b>Payload</b> is new: a <code>hit</code> list of
+				verbs, applied to every unit the delivery touches. Each verb reads stats by their usual tune
+				names, so the declaration carries no numbers:
+			</p>
+			<table>
+				<tr>
+					<th>Verb</th>
+					<th>Reads from tune</th>
+					<th>Today, hand-written in</th>
+				</tr>
+				<tr>
+					<td><code>damage</code></td>
+					<td>damage (level growth by the engine)</td>
+					<td>Tangle, Around the world</td>
+				</tr>
+				<tr>
+					<td><code>heal</code></td>
+					<td>healAmount, critChance, critMultiplier</td>
+					<td>Mend, Pass</td>
+				</tr>
+				<tr>
+					<td><code>shield</code></td>
+					<td>shield, duration</td>
+					<td>Ward, Swig</td>
+				</tr>
+				<tr>
+					<td><code>slow</code></td>
+					<td>slow, duration</td>
+					<td>Pass, Rain, Tangle (three identical status blocks)</td>
+				</tr>
+				<tr>
+					<td><code>freeze</code></td>
+					<td>duration</td>
+					<td>Red light</td>
+				</tr>
+				<tr>
+					<td><code>knockback</code>, <code>pull</code></td>
+					<td>knockback, time / dragDistance, dragTime</td>
+					<td>Around the world, Throw</td>
+				</tr>
+				<tr>
+					<td><code>cleanse</code></td>
+					<td>a list of tags</td>
+					<td>Tag out</td>
+				</tr>
+			</table>
+			<p>
+				A different key is <code>{ slow: 'soakSlow' }</code>. A folder's own status is named by key:
+				<code>hit: ['bruise']</code>. Status fields take a stat name too:
+				<code>duration: 'duration'</code> instead of <code>({ stats }) =&gt; stats.duration</code>.
+			</p>
+			<ol>
+				<li>
+					<p>
+						<b>Area</b>: a burst from you or your aim, a circle or a cone. Tangle, 75 lines today: a
+						slow status block, then a 45-line <code>onRelease</code> that loops enemies, checks the
+						cone and cover, scales damage by level, calls <code>sim.hit</code>, and presents the
+						impact. After, 12:
+					</p>
+					<pre><code>export default {
+	name: 'Tangle',
+	kind: 'area', from: 'self', shape: 'cone',   // range, angle from tune
+	targets: 'enemies', blockedBy: 'cover',
+	hit: ['damage', 'slow'],
+	tell: 'cone', held: 'cone',
+	effects: { cast: true, impact: true, pose: 'tangle' },
+	card: 'A {angle} cone deals {damage} and slows by {slow} for {duration}. Follow Throw with this.',
+}</code></pre>
+					<p>
+						Around the world is the same with <code>shape: 'circle'</code>,
+						<code>targets: 'enemyHeroes'</code>, <code>hit: ['damage', 'knockback']</code>: 56 lines
+						to 10.
+					</p>
+				</li>
+				<li>
+					<p>
+						<b>Target</b>: one unit near your aim, within range. Ward, 43 lines today: a shield
+						status, Mender's shared target picker, an <code>onRelease</code> that applies it and
+						presents a contact. After:
+					</p>
+					<pre><code>export default {
+	name: 'Ward',
+	kind: 'target', targets: 'ally', pick: 'nearestAim',
+	hit: ['shield'],
+	tell: 'circle', held: 'circle',
+	effects: { cast: true, impact: true, pose: 'menderWard' },
+	card: 'Shield the ally nearest your aim within {range} for {shield} for {duration}.',
+}</code></pre>
+					<p>
+						Mend is <code>hit: ['heal']</code>. Tag out is <code>hit: ['cleanse']</code> plus its
+						swap, which stays a hook.
+					</p>
+				</li>
+				<li>
+					<p>
+						<b>Shot</b> (exists): gains <code>hit</code>. Throw's <code>projectileStats</code> and
+						10-line <code>onHit</code> become <code>hit: ['damage', 'pull']</code>. Pass splits by
+						side: <code>hit: { allies: ['heal'], enemies: ['damage', 'slow'] }</code>, and its
+						20-line <code>onHit</code> and slow block go.
+					</p>
+				</li>
+				<li>
+					<p>
+						<b>Timing</b>: <code>tick</code> runs each tick of a channel or stance,
+						<code>end</code> after a dash or stance ends. Swig today sets <code>hero.cd[2]</code> by
+						hand every tick, so moved to another slot it would start the wrong cooldown. After:
+					</p>
+					<pre><code>export default {
+	kind: 'channel', root: true, cancelOnMove: true, cancelOnCast: true,
+	tick: [{ shield: 'shieldPerSecond', grow: true, life: 'shieldLife' }],
+	cooldownFrom: 'end',
+	effects: { cast: true, pose: 'swig' },
+	card: 'Root and drink, gaining shield. Orders, casts and disables interrupt the drink.',
+}</code></pre>
+					<p>
+						Dive becomes <code>kind: 'dash'</code>, <code>catch: { until: 'prone' }</code>,
+						<code>end: ['prone']</code>; Catch declares the same <code>catch</code> and loses its
+						<code>onStart</code>.
+					</p>
+				</li>
+				<li>
+					<p>
+						<b>Status</b> (exists): gains <code>dot</code>. Slam's bruise hand-builds a 10-field
+						<code>sim.hit</code> every second. After:
+						<code
+							>bruise: { label: 'Bruise', tags: ['debuff'], stack: 'refresh', dot: 'bruiseDamage',
+							every: 'bruiseEvery', duration: 'bruiseDuration' }</code
+						>.
+					</p>
+				</li>
+				<li>
+					<p>
+						<b>Aura</b>: a payload applied every tick to units inside a radius around a hero or
+						summon, refreshed while they stay. Nothing calls itself an aura yet, but Balloon's
+						puddle is one, written as a loop in <code>think</code>. After:
+						<code
+							>aura: { phase: 'puddle', radius: 'radius', targets: 'enemies', hit: ['soak'] }</code
+						>. The flight and pop stay code.
+					</p>
+				</li>
+				<li>
+					<p>
+						<b>Unit</b>: minions, towers, forts and summons share one shape:
+						<code>{ hp, radius, speed, attack: { damage, rate, range, tell }, xp, brain }</code>.
+						The tune already holds them flat (<code>tune.tower</code>,
+						<code>tune.minions.ranged</code>); what changes is that the shape gets a name.
+						Sprinkler's summon goes from
+						<code
+							>hp: (stats) =&gt; stats.hp, radius: (stats) =&gt; stats.bodyRadius, lifetime: (stats)
+							=&gt; stats.duration</code
+						>
+						to <code>hp: 'hp', radius: 'bodyRadius', lifetime: 'duration'</code>, with
+						<code>think</code> as its brain.
+					</p>
+				</li>
+				<li>
+					<p>
+						<b>Hero</b> (exists): <code>{ name, basic, kit, silhouette, icon }</code> is already a
+						declaration. Only the trait card moves to a template. Mitts's
+						<code
+							>trait: () =&gt; ({ … summary: `Hold a caught shot for ${n(tune.catching.pocketLife)}
+							s…` })</code
+						>
+						becomes
+						<code
+							>trait: { name: 'Pocket', summary: 'Hold a caught shot for {catching.pocketLife}, then
+							send it back with Toss.' }</code
+						>.
+					</p>
+				</li>
+			</ol>
+
+			<h2>2. What gets inferred</h2>
+			<ol start="9">
+				<li>
+					<b>Statuses.</b> The seven hand-declared slow, shield and freeze blocks (Pass, Rain,
+					Tangle, Ward, Red light, Swig, Balloon's soak) come from the verbs, under today's keys
+					(<code>tangle.slow</code>, <code>ward.shield</code>).
+				</li>
+				<li>
+					<b>Sim.</b> The engine owns the area and target loops, damage growth, impact and contact
+					facts, and slot ids. That kills the hard-coded <code>slot: 'slot2'</code> in Tag out,
+					Swig's <code>cd[2]</code> and the growth formula copied into two folders.
+				</li>
+				<li>
+					<b>Cards.</b> <code>{damage}</code> in a template prints the live number with its unit
+					("110", "1.5 s", "40%"), so a card can't drift from the tune. Rows come from the verbs
+					(slow: "40% for 1.5 s"), replacing the fixed row table in <code>tooltip.js</code>.
+				</li>
+				<li>
+					<b>Bots.</b> Tactics come from shape and payload: an enemy circle is <code>radial</code>,
+					a cone is <code>cone</code>, an ally target with heal or shield gets a new
+					<code>save</code> tactic. Four folders hand-write "hurt ally within range, lowest HP
+					first" (Pass, Balloon, Sprinkler, Tag out), and Mender's Mend and Ward are
+					<code>bot: false</code>, so Mender bots never heal.
+				</li>
+				<li>
+					<b>Desk.</b> Sliders group by verb ("Slow: 40%, 1.5 s") with instruments from the units
+					layer. A tune key that no verb, template or hook reads gets flagged as dead.
+				</li>
+				<li>
+					<b>Check.</b> <code>bun run check</code> validates every declaration: a verb's stat keys
+					exist, template tokens resolve, each kind has its required keys (an area needs radius, or
+					range and angle), unknown fields fail. A typo is a red check instead of a silent NaN.
+				</li>
+				<li>
+					<b>Kit sheet.</b> <code>bun run kit</code> prints one line per ability: "Tangle · Hook W ·
+					cone 90° 3.5 m · 110 dmg · slow 40% 1.5 s · cd 6 s". Balance talk and agents read 31 lines
+					instead of 31 folders.
+				</li>
+			</ol>
+
+			<h2>3. Where it stops</h2>
+			<ol start="16">
+				<li>
+					<b>Hooks stay.</b> Every hook (<code>onStart</code>, <code>onRelease</code>,
+					<code>onHit</code>, <code>watch</code>…) still runs, after the declared payload. A
+					<code>where(target)</code> filter covers the one-line oddity: Red light only freezes
+					targets moving faster than <code>movingSpeed</code>. Status functions are still accepted
+					when a stat name can't say it.
+				</li>
+				<li>
+					<b>Rule of three.</b> A verb joins the vocabulary when a third ability needs it. Until
+					then it's a hook. If a slice wants more than two new verbs, stop and rethink: a schema
+					that grows a flag per ability is a worse JavaScript.
+				</li>
+				<li>
+					<b>Code on purpose</b>, eight folders: Flying kick's first-body dash, Slide's puddle
+					reach, Swap's blink to the ricochet, Cushion's wall, Stagger's damage bank, Tag out's
+					position swap, Balloon's flight and pop, Sprinkler's sweeping jet. Plus the engines they
+					lean on (ricochet bounces, catch and pocket) and hero trait hooks (Fletcher's momentum,
+					Mitts's death reset).
+				</li>
+			</ol>
+
+			<h2>4. Migration, in slices</h2>
+			<p>
+				Each slice fits ~40 tool calls and has one proof: the same seeds give byte-identical match
+				logs against the base revision. A diff is a bug, not balance.
+			</p>
+			<ol start="19">
+				<li>
+					<b>Area and the first verbs</b> (damage, slow, freeze, knockback, generated statuses):
+					Tangle, Around the world, Red light. Pays off soonest: the most copied loop, about 130
+					lines out, and every later slice reuses the verbs.
+				</li>
+				<li>
+					<b>Cards, check and kit sheet</b>: templates through the units layer, trait cards, the
+					declaration check, <code>bun run kit</code>. View and tooling only, no sim risk. Waits for
+					the units thread to land.
+				</li>
+				<li>
+					<b>Target</b>: Mend, Ward, Tag out; heal, shield, cleanse. Then the inferred
+					<code>save</code> tactic as its own commit, judged by <code>simulate --base</code>,
+					because that one is meant to change behaviour.
+				</li>
+				<li>
+					<b>Shots and timing</b>: Throw (pull), Pass (split by side), Dive and Catch
+					(<code>catch</code>), Swig (<code>tick</code>, <code>cooldownFrom</code>), Slam's bruise
+					(<code>dot</code>).
+				</li>
+				<li>
+					<b>Units and auras</b>: one shape for minions, towers, forts and summons; their cards read
+					it; Balloon's puddle becomes the first aura.
+				</li>
+			</ol>
+
+			<h2>5. Risks</h2>
+			<ol start="24">
+				<li>
+					<b>Determinism.</b> Engine loops iterate in id order, as the hand-written ones mostly do,
+					and keep today's float expressions exactly (damage growth is
+					<code>damage * (1 + growth * (level - 1))</code>; reordering it changes rounding). Verbs
+					read stats at hit time, never cached at load, or desk sliders stop working mid-match.
+				</li>
+				<li>
+					<b>Network and replay.</b> Generated status keys equal today's, and facts keep their
+					shapes (<code>impact</code>, <code>contact</code>), so peers and saved logs read the same.
+					Peers already run one build, and <code>validFact</code> still checks every fact.
+				</li>
+				<li>
+					<b>Dodgeball.</b> Everything lives in <code>src/plugins/moba/</code>. The characterization
+					snapshots must stay identical; run them once per slice.
+				</li>
+				<li>
+					<b>Plugin boundaries.</b> The vocabulary is moba's (next to <code>ability.js</code>); core
+					gets only the units layer. Mechanics like the boss's Slam use the same verbs through moba.
+					<code>tests/boundaries.test.js</code> holds the line.
+				</li>
+			</ol>
+
+			<h2>6. For Oskar</h2>
+			<ol start="28">
+				<li>
+					<b>Card voice.</b> Templates keep your sentences with live numbers ("…moving faster than
+					{movingSpeed}… Standing still is safe."), or cards write themselves from the verbs
+					("Freezes moving enemy heroes within 4 m for 1 s")? My pick: templates. The flavour line
+					is the good part.
+				</li>
+				<li>
+					<b>How data?</b> Declarations stay JavaScript (stat names where they can, functions
+					allowed), or become strict JSON so an ability could one day come from an in-game editor or
+					a shared mod, with every hook in a named file beside it? My pick: JavaScript now, shaped
+					so it's JSON-clean apart from the hooks, and decide when someone wants to share one.
+				</li>
+			</ol>
+		</main>
+	</body>
+</html>
