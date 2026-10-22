@@ -9,10 +9,10 @@ export const tune = {
 		fitMargin: 1.18,
 		minAspect: 0.1,
 		farMargin: 100,
-		duration: 1.9,
+		duration: 1.5,
 		// After shader readiness and the reveal you look at the lane for `preview` s while the
 		// camera creeps `creep` of the way into the descent, then dives for `duration` s.
-		preview: 2.2,
+		preview: 0.9,
 		creep: 0.06,
 		reveal: 0.45,
 		height: 22,
