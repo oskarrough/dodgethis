@@ -362,6 +362,14 @@ export function createProjectiles(ctx) {
 			total,
 		}
 		trace(hero, hero.cast, aim ?? hero.cast.target, 'return')
+		ctx.reactAuras('cast', ctx.auraUnits(), {
+			source: hero,
+			ability: abilityOf('return', hero),
+			slot,
+			point: { ...hero.cast.target },
+			dir,
+			target: null,
+		})
 		present({
 			type: 'cast',
 			hero: hero.id,

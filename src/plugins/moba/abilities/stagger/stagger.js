@@ -9,17 +9,18 @@ export default {
 			tags: ['pending'],
 			bar: 'pending',
 			data: () => ({ source: null, left: 0, ended: null }),
-			onDamageTaken({ hero, status, ability: stanceAbility, shot, damage, tick }) {
-				if (shot.periodic || hero.stance?.ability !== stanceAbility.id || hero.stance.until <= tick)
-					return damage
-				status.amount += damage
-				const { owner, team, ability, slot, dx, dz } = shot
-				status.data.source = { owner, team, ability, slot, dx, dz }
-				return 0
-			},
-			periodic: {
-				interval: STEP,
-				onTick({ hero, status, sim, tick }) {
+			interval: STEP,
+			on: {
+				damage({ hero, status, ability: stanceAbility, event, tick }) {
+					const { shot, target, damage } = event
+					if (target !== hero || shot.periodic) return
+					if (hero.stance?.ability !== stanceAbility.id || hero.stance.until <= tick) return
+					status.amount += damage
+					const { owner, team, ability, slot, dx, dz } = shot
+					status.data.source = { owner, team, ability, slot, dx, dz }
+					event.damage = 0
+				},
+				tick({ hero, status, sim, tick }) {
 					const state = status.data
 					if (state.left <= 0 || tick === state.ended) return
 					const damage = status.amount / state.left

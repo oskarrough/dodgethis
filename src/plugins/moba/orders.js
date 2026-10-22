@@ -234,6 +234,14 @@ export function createOrders(ctx) {
 						if (h.definition.basic.id) h.attack.total = h.attack.left
 						h.yaw = yawOf(tp.x - p.x, tp.z - p.z)
 						trace(h, h.attack, tp, h.definition.basic.id)
+						ctx.reactAuras('cast', ctx.auraUnits(), {
+							source: h,
+							ability: h.definition.basic,
+							slot: 'primary',
+							point: { x: tp.x, z: tp.z },
+							dir: dirOf(h.yaw),
+							target,
+						})
 						present({
 							type: 'cast',
 							hero: h.id,

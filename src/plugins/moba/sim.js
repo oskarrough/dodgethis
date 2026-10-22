@@ -330,6 +330,7 @@ export function createSim({
 			stepHeroState(h, dt)
 			h.definition.traits.onTick?.(traitContext(h, { dt }))
 			ctx.stepStatuses(h)
+			ctx.reactAuras('tick', [h], { dt }, { statuses: false })
 			for (const ability of Object.values(h.definition.abilities))
 				ability?.watch?.(traitContext(h, { ability, dt }))
 			ctx.stepRecall(h)

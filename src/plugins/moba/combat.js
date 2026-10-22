@@ -216,7 +216,7 @@ export function createCombat(ctx) {
 
 	function hit(shot, target, point) {
 		const unit = target.unit
-		if (unit.dead) return
+		if (unit.dead || unit.hp <= 0) return
 		if (
 			(training.godMode && unit.id === training.local) ||
 			(lane && heroes.includes(unit) && inOwnBase(layout, unit))
@@ -265,19 +265,29 @@ export function createCombat(ctx) {
 			unit.stance.until > ctx.t &&
 			unit.catchWindow?.until > ctx.t &&
 			!blocked(unit, 'shield', ctx.t)
+		const event = {
+			source: find(shot.owner),
+			target: unit,
+			shot,
+			point: at,
+			factor: 1,
+			absorbed: 0,
+		}
+		const participants = [event.source, unit]
 		let incoming = shot.unmodified
 			? rawDamage
 			: rawDamage *
 				(catchShield
 					? 1 - (abilityOf(unit.catchWindow.ability, unit)?.stats.damageReduction ?? 0)
 					: 1) *
-				ctx.damageTaken(unit, shot) *
+				ctx.reactAuras('amplify', participants, event).factor *
 				(unit.structure && (shot.isAbility || shot.slot.startsWith('slot'))
 					? tune.waves.abilityStructure
 					: 1)
-		incoming = ctx.onDamageTaken(unit, incoming, shot)
-		const beforeAbsorb = incoming
-		incoming = ctx.absorb(unit, incoming)
+		event.damage = incoming
+		ctx.reactAuras('damage', participants, event)
+		const beforeAbsorb = event.damage
+		incoming = ctx.reactAuras('absorb', participants, event).damage
 		const absorbed = beforeAbsorb - incoming
 		const damage = Math.min(unit.hp, Math.max(0, incoming))
 		if (!shot.noHelp) lane?.help(find(shot.owner), unit, ctx.t)
@@ -301,6 +311,9 @@ export function createCombat(ctx) {
 				ticks,
 				shot: { ...shot, ability: shot.ability ?? source.definition.abilities[shot.slot]?.id },
 			})
+		Object.assign(event, { damage, absorbed, lethal })
+		ctx.reactAuras('hit', [event.source], event)
+		ctx.reactAuras('damaged', [unit], event)
 		present({
 			type: 'hit',
 			source: shot.owner,
@@ -325,6 +338,7 @@ export function createCombat(ctx) {
 			return
 		}
 		unit.dead = true
+		ctx.reactAuras('death', [...ctx.auraUnits(), unit], event)
 		ctx.clearStatuses(unit, 'death')
 		if (!unit.kind) ball?.hurt(unit)
 		unit.corpse = unit.body

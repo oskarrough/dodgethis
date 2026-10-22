@@ -29,6 +29,7 @@ A surgical edit outside your owned files (a setter, an export, a hook) is fine w
 - Holding RMB re-sends orders every 100 ms; nothing but stop or cancel may break a windup.
 - Every outcome emits a fact with its own feedback: blocked shots, repeated orders and denied casts included. Nothing vanishes silently.
 - Damage facts carry effective damage (HP actually removed), not attempted damage.
+- A sim hook's event fields keep the same types at every dispatch site: aim points and target units have separate fields.
 - Ties are explicit: contested pickups and simultaneous events never fall to list order.
 - Path and replan work happens once per event, not every tick.
 - No sim state in module globals; two sims alive at once must not see each other.

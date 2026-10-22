@@ -36,7 +36,11 @@ export default {
 			label: 'Tag out',
 			tags: ['buff'],
 			duration: ({ stats }) => stats.duration,
-			damageTaken: () => 1 - tune.tagOut.damageReduction,
+			on: {
+				amplify({ unit, event }) {
+					if (unit === event.target) event.factor *= 1 - tune.tagOut.damageReduction
+				},
+			},
 		},
 	},
 	targetUnit({ hero, sim, target, ability }) {

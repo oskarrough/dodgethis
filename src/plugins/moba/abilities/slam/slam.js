@@ -9,9 +9,9 @@ export default {
 			label: 'Bruise',
 			tags: ['debuff'],
 			stack: 'refresh',
-			periodic: {
-				interval: ({ stats }) => stats.bruiseEvery,
-				onTick({ unit, status, stats, sim }) {
+			interval: ({ stats }) => stats.bruiseEvery,
+			on: {
+				tick({ unit, status, stats, sim }) {
 					sim.hit(
 						{
 							id: -1,

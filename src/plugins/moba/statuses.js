@@ -20,8 +20,10 @@ const coreStatuses = {
 		label: 'Motion',
 		tags: ['debuff', 'motion'],
 		stack: 'replace',
-		onExpire({ unit, plan }) {
-			if (!unit.dead && unit.order?.goal) unit.order.path = plan(unit, unit.order.goal)
+		on: {
+			expire({ unit, plan }) {
+				if (!unit.dead && unit.order?.goal) unit.order.path = plan(unit, unit.order.goal)
+			},
 		},
 	},
 }
@@ -149,6 +151,8 @@ export function createStatuses(ctx) {
 			plan: ctx.plan,
 			tick: ctx.t,
 			ticks,
+			present,
+			remove,
 			...extra,
 		}
 	}
@@ -160,9 +164,9 @@ export function createStatuses(ctx) {
 		const definition = statusDefinition(status)
 		presentStatus(unit, status, 'off', {
 			reason,
-			wasted: definition?.absorb ? Math.max(0, status.amount ?? 0) : 0,
+			wasted: definition?.on?.absorb ? Math.max(0, status.amount ?? 0) : 0,
 		})
-		const hook = reason === 'expired' ? definition?.onExpire : definition?.onRemove
+		const hook = reason === 'expired' ? definition?.on?.expire : definition?.on?.remove
 		hook?.(context(unit, status, { reason }))
 		return true
 	}
@@ -202,7 +206,7 @@ export function createStatuses(ctx) {
 		if (stack === 'refresh' && same.length) {
 			const status = same[0]
 			const wasted =
-				definition.absorb && options.amount !== undefined ? Math.max(0, status.amount ?? 0) : 0
+				definition.on?.absorb && options.amount !== undefined ? Math.max(0, status.amount ?? 0) : 0
 			status.until = until
 			if (options.amount !== undefined) status.amount = options.amount
 			if (mag !== undefined) status.mag = mag
@@ -232,75 +236,78 @@ export function createStatuses(ctx) {
 			...(options.amount !== undefined && { amount: options.amount }),
 			...(mag !== undefined && { mag }),
 			...(definition.data && { data: definition.data(info) }),
-			...(definition.periodic && {
-				next: ctx.t + ticks(resolve(definition.periodic.interval, info) ?? STEP),
+			...(definition.interval !== undefined && {
+				next: ctx.t + ticks(resolve(definition.interval, info) ?? STEP),
 			}),
 		}
 		unit.statuses.push(status)
 		presentStatus(unit, status, 'on')
-		definition.onApply?.(context(unit, status))
+		definition.on?.apply?.(context(unit, status))
 		return status
 	}
 	function expireStatuses(unit) {
 		for (const status of (unit.statuses ?? []).slice()) {
 			if (status.removed) continue
 			if (!active(status, ctx.t)) remove(unit, status.id, 'expired')
-			else if (statusDefinition(status)?.absorb && status.amount <= 0)
+			else if (statusDefinition(status)?.on?.absorb && status.amount <= 0)
 				remove(unit, status.id, 'spent')
 		}
 	}
-	function stepStatuses(unit) {
-		if (unit.dead) return
-		for (const status of (unit.statuses ?? []).slice()) {
-			if (status.removed || !active(status, ctx.t)) continue
-			const periodic = statusDefinition(status)?.periodic
-			if (!periodic || ctx.t < status.next) continue
-			// Absolute ticks, never array length or the number of statuses that happened to survive.
-			const info = context(unit, status)
-			status.next += ticks(resolve(periodic.interval, info) ?? STEP)
-			periodic.onTick?.(info)
+	// No subscriptions in module globals or in replicated state. Freeze the listener list:
+	// additions wait for the next dispatch; removals take effect before the next callback.
+	function reactAuras(name, units, event, { statuses = true, abilities = true } = {}) {
+		const listeners = []
+		for (const unit of new Set(units.filter(Boolean))) {
+			if (statuses)
+				for (const status of unit.statuses ?? []) {
+					const definition = statusDefinition(status)
+					const hook = definition?.on?.[name]
+					if (hook) listeners.push({ unit, status, definition, hook, order: status.id })
+				}
+			if (abilities)
+				for (const ability of Object.values(unit.definition?.abilities ?? {})) {
+					const hook = ability?.on?.[name]
+					if (hook) listeners.push({ unit, ability, hook, order: 0 })
+				}
 		}
-	}
-	function damageTaken(unit, shot) {
-		let factor = 1
-		for (const status of unit.statuses ?? []) {
-			if (!active(status, ctx.t)) continue
-			const modifier = statusDefinition(status)?.damageTaken
-			if (modifier !== undefined) factor *= resolve(modifier, context(unit, status, { shot }))
-		}
-		return factor
-	}
-	function onDamageTaken(unit, damage, shot) {
-		let remaining = damage
-		for (const status of (unit.statuses ?? []).slice()) {
-			if (status.removed || !active(status, ctx.t)) continue
-			const hook = statusDefinition(status)?.onDamageTaken
-			if (hook) remaining = hook(context(unit, status, { damage: remaining, shot })) ?? remaining
-		}
-		return remaining
-	}
-	function absorb(unit, damage) {
-		let remaining = damage
-		for (const status of (unit.statuses ?? []).slice()) {
-			if (status.removed || !statusDefinition(status)?.absorb) continue
-			if (!active(status, ctx.t) || status.amount <= 0) {
-				remove(unit, status.id, active(status, ctx.t) ? 'spent' : 'expired')
+		listeners.sort(
+			(a, b) =>
+				a.order - b.order ||
+				(String(a.unit.id) < String(b.unit.id)
+					? -1
+					: String(a.unit.id) > String(b.unit.id)
+						? 1
+						: 0),
+		)
+		for (const { unit, status, definition, ability, hook } of listeners) {
+			if (status?.removed) continue
+			if (unit.dead && name !== 'tick' && !(name === 'death' && unit === event.target)) continue
+			if (ability && !Object.values(unit.definition?.abilities ?? {}).includes(ability)) continue
+			// Absorb hooks also dispose expired shield records, preserving their off facts.
+			if (status && !active(status, ctx.t) && !(name === 'absorb' && definition.on?.absorb))
 				continue
+			const info = status
+				? context(unit, status)
+				: { ...ctx.traitContext(unit), unit, ability, stats: ability.stats }
+			if (name === 'tick' && status && definition.interval !== undefined) {
+				if (ctx.t < status.next) continue
+				status.next += ticks(resolve(definition.interval, info) ?? STEP)
 			}
-			const absorbed = Math.max(0, Math.min(status.amount, remaining))
-			status.amount -= absorbed
-			remaining -= absorbed
-			if (absorbed > 0)
-				present({
-					type: 'absorb',
-					source: status.src,
-					target: unit.id,
-					key: status.key,
-					status: status.id,
-					amount: absorbed,
-				})
+			hook({ ...info, event })
 		}
-		return remaining
+		return event
+	}
+	function auraUnits() {
+		return [
+			...ctx.heroes,
+			...ctx.dummies,
+			...(ctx.lane?.minions ?? []),
+			...(ctx.lane?.structures ?? []),
+			...ctx.summons,
+		].filter((unit) => !unit.dead)
+	}
+	function stepStatuses(unit) {
+		if (!unit.dead) reactAuras('tick', [unit], { dt: STEP }, { abilities: false })
 	}
 	return {
 		apply,
@@ -309,8 +316,7 @@ export function createStatuses(ctx) {
 		cleanse,
 		expireStatuses,
 		stepStatuses,
-		damageTaken,
-		onDamageTaken,
-		absorb,
+		reactAuras,
+		auraUnits,
 	}
 }

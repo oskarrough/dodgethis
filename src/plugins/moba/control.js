@@ -244,6 +244,14 @@ export function createControl(ctx) {
 				total: ticks(lobby ? tune.lobby.practice.tell : tune.dummies.tell),
 			}
 			d.castTick = ctx.t + ticks(tune.dummies.castEvery)
+			ctx.reactAuras('cast', ctx.auraUnits(), {
+				source: d,
+				ability: abilityOf('loose'),
+				slot: 'slot1',
+				point: { ...d.cast.target },
+				dir: d.cast.dir,
+				target: target.unit,
+			})
 			present({
 				type: 'cast',
 				hero: d.id,

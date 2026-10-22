@@ -140,6 +140,14 @@ export function createCasting(ctx) {
 		trace(h, h.cast, at ?? target, ability.id)
 		h.yaw = h.cast.yaw
 		h.cd[i] = ticks(skill.cooldown)
+		ctx.reactAuras('cast', ctx.auraUnits(), {
+			source: h,
+			ability,
+			slot,
+			point: { ...target },
+			dir,
+			target: targetUnit ?? null,
+		})
 		present({
 			type: 'cast',
 			hero: h.id,
@@ -274,6 +282,14 @@ export function createCasting(ctx) {
 		}
 		h.yaw = yawOf(at.x - p.x, at.z - p.z)
 		trace(h, h.attack, at, basic.id)
+		ctx.reactAuras('cast', ctx.auraUnits(), {
+			source: h,
+			ability: basic,
+			slot: 'primary',
+			point: { ...at },
+			dir: dirOf(h.yaw),
+			target: null,
+		})
 		present({
 			type: 'cast',
 			hero: h.id,

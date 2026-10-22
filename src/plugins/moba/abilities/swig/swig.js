@@ -1,3 +1,4 @@
+import { absorbAura } from '../../aura-damage.js'
 import { cancelAttack } from '../../sim-kit.js'
 
 const endSwig = ({ hero, ability, ticks, slot }) => {
@@ -10,7 +11,7 @@ export default {
 		shield: {
 			label: 'Shield',
 			tags: ['shield'],
-			absorb: true,
+			on: { absorb: absorbAura },
 			bar: 'shield',
 		},
 	},

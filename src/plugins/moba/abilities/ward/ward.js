@@ -1,3 +1,4 @@
+import { absorbAura } from '../../aura-damage.js'
 import { tune } from '../../tune.js'
 import { menderTargetUnit, menderReleaseTarget } from '../mend/mend-target.js'
 
@@ -14,7 +15,7 @@ export default {
 		shield: {
 			label: 'Ward',
 			tags: ['buff', 'shield'],
-			absorb: true,
+			on: { absorb: absorbAura },
 			bar: 'shield',
 			duration: ({ stats }) => stats.duration,
 		},

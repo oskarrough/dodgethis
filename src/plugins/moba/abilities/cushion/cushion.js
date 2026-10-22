@@ -8,9 +8,11 @@ export default {
 	tell: 'circle',
 	held: 'circle',
 	effects: { cast: 'vault' },
-	watch({ hero, sim, tick }) {
-		for (const o of sim.obstacles.filter((o) => o.kind === 'cushion' && o.owner === hero.id))
-			if (o.until <= tick) sim.removeCover(o)
+	on: {
+		tick({ hero, sim, tick }) {
+			for (const o of sim.obstacles.filter((o) => o.kind === 'cushion' && o.owner === hero.id))
+				if (o.until <= tick) sim.removeCover(o)
+		},
 	},
 	onRelease({ hero, sim, tick, ticks, ability, dir, target }) {
 		const { length, post, duration } = ability.stats
