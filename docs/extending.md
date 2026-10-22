@@ -76,9 +76,27 @@ Use `stages: { release: [{ deliver: 'target', pick: 'nearestAim', targets: 'ally
 
 Payloads are heal, shield and cleanse records. Heal accepts tune references for amount and optional crit chance/multiplier; `scale: null` disables level growth, as Mend and Pass require. Shield uses its matching `statusEffects` record. Cleanse lists status tags in order; `'cleanse'` expands to stun, freeze, slow. Target effects emit contact feedback; a custom `after` owns that feedback instead.
 
-Pass declares `stages.hit.before` as an action array: `pick: 'event'` uses the touched unit, and `consume: true` stops the hit only when the ally target matches. This runs at the old `onHit` evaluation point, before damage and slows. Its heal reads the projectile's launch-time amount, falling back to live tune; Mend and Ward read their numbers at release.
+`pick: 'event'` uses the touched unit; `consume: true` stops the hit only when the ally target matches. Mend and Ward read their numbers at release; projectile payloads snapshot at launch.
+
+## Declare a shot or catch
+
+Throw declares `stages.release: [{ deliver: 'shot', targets: 'enemies', hit: ['damage', { effect: 'displace', to: 'source', distance: 'dragDistance', duration: 'dragTime' }] }]`. Shots use the existing swept collision order and launch-time damage scaling. Payload tune numbers also freeze at launch: Throw's distance/time and Pass's heal/slow cannot change in flight. Pull resolves at the existing pre-damage hit hook, using the caster's current position and the shot's current direction; dead casters and structures cannot be pulled. Caught returns retain only the ordinary shot numbers, never its payload.
+
+Pass uses `targets: 'heroes'` with separate `allies: [{ effect: 'heal', amount: 'healAmount', scale: null }]` and `enemies: ['damage', 'slow']`. The ally branch consumes the hit before damage/statuses; collision still picks the first hero on either side.
+
+Catch windows are self effects: `{ effect: 'catch', duration: 'duration', radius: 'radius', angle: 'angle', acceptBall: true, resetCooldown: 'resetCooldown' }`. An optional `linger` adds another seconds reference to the initial duration. `refresh: true` changes only an existing window's expiry; it never reopens a spent catch. Dive uses that at `dashEnd`, beside `{ effect: 'status', key: 'prone' }`. Stance `release` runs when the stance opens.
 
 Ally-targeted release declarations carrying heal or shield infer the `save` bot tactic. It uses delayed teammate health and positions, picks the lowest health fraction in range (ties by id), and tries shields before heals. `bot: false` still opts out; custom bot acts run first. Projectile saves such as Pass keep their custom lead and clear-line tactic.
+
+## Declare a ground field
+
+Use `stages: { land: [{ deliver: 'ground', radius: 'radius', lifetime: 'puddle', every: 'interval', enemies: [{ effect: 'slow', magnitude: 'slow', while: 'inside', linger: 'duration', stack: 'strongest' }] }] }` (Balloon). `radius` names metres; `lifetime`, `every` and `linger` name seconds. `allies` and `enemies` have separate effect arrays; inline status effects need no `statusEffects` entry. Haste uses a fractional `magnitude` just like slow. Slows and hastes each keep the strongest active magnitude, not a sum.
+
+The default origin is `event.point`: aim on release, impact on `land`. `at: 'aim'` or `'at'` makes that explicit; `at: 'self'` starts at the caster. `follow: 'source'` follows its owner. Fields outlive caster death but clear on owner removal or hero swap. Circles include the occupant's body radius and affect living targetable units, including the caster and allies.
+
+Membership is checked each step. `on: { enter: [actions], exit: [actions] }` (or hook functions/stages) fires once per crossing with the original source, crossed unit as `event.target`, and field centre as `event.point`. Effects pulse immediately, then every declared interval. `while: 'inside'` statuses also apply on entry, refresh by field identity, and linger for exactly `linger` after exit or field expiry. Separate fields keep separate clocks; each status owns its overlap rule (`strongest`, `independent`, `refresh`, `replace`). Damage/heal can declare `periodic: true`; every payload goes through `applyEffects` with the field's source, never its occupant.
+
+For an unshipped declaration, `bun scripts/check-moba-effects.js /absolute/scratch.js` accepts a default export `{ id, manifest, tune, units }`, where `units` maps local tune keys to dimensions. It loads and checks that declaration alongside the shipped ones without collecting a mod.
 
 ## React with auras
 
@@ -92,6 +110,10 @@ An event accepts an action array, a replacement function, or `{ before, do: [act
 
 Ability-local `stages: { release, land, dashEnd, end, hit }` are separate from the aura-only `on` map. Their event has the cast shape above: `event.target` stays a bare unit or null; `event.point` is the aim point except on `land`, where it is the zone position. Damage actions expose `event.lethal` to `after`. Legacy hooks retain their old top-level arguments. Each dash keeps its own event (including custom instant dashes), cleared on completion or cancellation; lifecycle context is sim-local, not replicated state.
 
-Declared actions in a status hook resolve their actor from `status.src`, not the carrier: position, team, level and credit belong to that source. A removed source skips its actions; core statuses without an owning ability reject action arrays. Area delivery uses `applyEffects(source, unit, effects, stats)`; `source` is `{ unit, ability, slot, dir, point, target? }` attribution/geometry, so a future ground field can share the same status-before-damage and lethal-hit rules.
+Declared actions in a status hook resolve their actor from `status.src`, not the carrier: position, team, level and credit belong to that source. A removed source skips its actions; core statuses without an owning ability reject action arrays. Area delivery uses `applyEffects(source, unit, effects, stats)`; `source` is `{ unit, ability, slot, dir, point, target? }` attribution/geometry, so ground fields share the same status-before-damage and lethal-hit rules.
 
-`tick` follows the sim's existing per-unit step order. Status `interval` sets an absolute-tick cadence; omit it to run every step. Innate ticks also run while dead so owned cover can expire. Status `apply`, `remove` and `expire` are local lifecycle hooks; removal supplies `reason` directly, and refresh retains the existing aura's order and cadence. Stagger and Cushion show the two listener forms; Ward and Swig share `aura-damage.js` `absorbAura`. Declaring `on.absorb` also opts a status into shield spent cleanup and waste accounting; no separate flag is needed.
+`on: { every: 'bruiseEvery', do: [{ effect: 'damage', amount: 'bruiseDamage', scale: null, periodic: true }] }` declares Slam's periodic damage. Status cadence starts one interval after application, keeps its clock on refresh, and reads damage at each tick. Direct effects in a status act on its carrier; direct ability effects act on the caster. Warden statuses retain the Warden as source even though it is outside the hero population.
+
+Channels use the same map while active; `every: 'step'` means each fixed step. Swig adds `{ effect: 'shield', amount: 'shieldPerSecond', perSecond: true, duration: 'shieldLife', stack: 'add' }`: rate times the current step, added to its existing shield while refreshing expiry. Rooted channels clear movement orders on start. `cooldownFrom: 'end'` holds the actual casting slot's cooldown until completion or any interruption, then lets it count down; no ability writes a numbered slot.
+
+`tick` follows the sim's existing per-unit step order. Legacy status `interval` sets an absolute-tick cadence; omit it to run every step. Innate ticks also run while dead so owned cover can expire. Status `apply`, `remove` and `expire` are local lifecycle hooks; removal supplies `reason` directly, and refresh retains the existing aura's order and cadence. Stagger and Cushion show the two listener forms; Ward and Swig share `aura-damage.js` `absorbAura`. Declaring `on.absorb` also opts a status into shield spent cleanup and waste accounting; no separate flag is needed.

@@ -22,16 +22,16 @@ export default {
 		catchFillY: 0.125,
 		diveY: 0.14,
 	},
-	onStart({ hero, sim, ability, slot, dir }) {
-		sim.openCatch(hero, {
-			ability: ability.id,
-			dir,
-			duration: ability.stats.duration,
-			radius: ability.stats.radius,
-			angle: ability.stats.angle,
-			acceptBall: true,
-			resetSlot: slot,
-			resetCooldown: ability.stats.resetCooldown,
-		})
+	stages: {
+		release: [
+			{
+				effect: 'catch',
+				duration: 'duration',
+				radius: 'radius',
+				angle: 'angle',
+				acceptBall: true,
+				resetCooldown: 'resetCooldown',
+			},
+		],
 	},
 }

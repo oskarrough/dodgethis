@@ -9,26 +9,9 @@ export default {
 			label: 'Bruise',
 			tags: ['debuff'],
 			stack: 'refresh',
-			interval: ({ stats }) => stats.bruiseEvery,
 			on: {
-				tick({ unit, status, stats, sim }) {
-					sim.hit(
-						{
-							id: -1,
-							owner: status.src,
-							team: 'B',
-							slot: 'slot2',
-							ability: 'slam',
-							damage: stats.bruiseDamage,
-							dx: 0,
-							dz: 0,
-							periodic: true,
-							status: status.key,
-						},
-						{ id: unit.id, unit, hero: true },
-						unit.body.position,
-					)
-				},
+				every: 'bruiseEvery',
+				do: [{ effect: 'damage', amount: 'bruiseDamage', scale: null, periodic: true }],
 			},
 		},
 	},

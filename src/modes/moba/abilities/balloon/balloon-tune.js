@@ -10,6 +10,7 @@ export default {
 	slow: 0.2,
 	duration: 2,
 	puddle: 4,
+	interval: 1 / 60,
 	cooldown: 5,
 	bot: { deficit: 0.5, healReserveHp: 0.7, finishHp: 0.3 },
 	view: { ballRadius: 0.25, height: 2.8, ground: 0.1, ringWidth: 0.05, rippleSize: 0.55 },

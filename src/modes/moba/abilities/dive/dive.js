@@ -7,7 +7,7 @@ export default {
 			label: 'Prone',
 			states: ['prone'],
 			stack: 'replace',
-			duration: ({ stats }) => stats.prone,
+			duration: 'prone',
 		},
 	},
 	catchesShots: true,
@@ -17,17 +17,20 @@ export default {
 	card: {
 		summary: 'Dive toward your aim, catching shots all around on the way, then lie prone.',
 	},
-	onRelease({ hero, sim, ability }) {
-		sim.openCatch(hero, {
-			ability: ability.id,
-			duration: ability.stats.time + ability.stats.prone,
-			radius: ability.stats.radius,
-			angle: ability.stats.angle,
-			acceptBall: false,
-		})
-	},
-	onDashEnd({ hero, sim }) {
-		const status = sim.apply(hero, 'dive.prone')
-		if (hero.catchWindow) hero.catchWindow.until = status.until
+	stages: {
+		release: [
+			{
+				effect: 'catch',
+				duration: 'time',
+				linger: 'prone',
+				radius: 'radius',
+				angle: 'angle',
+				acceptBall: false,
+			},
+		],
+		dashEnd: [
+			{ effect: 'status', key: 'prone' },
+			{ effect: 'catch', duration: 'prone', refresh: true },
+		],
 	},
 }

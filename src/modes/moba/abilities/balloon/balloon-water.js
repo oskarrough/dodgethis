@@ -18,7 +18,7 @@ export function balloonHeal(owner, unit, amount, ability, sim, present, ambient 
 export function balloonSoak(sim, owner, unit) {
 	sim.apply(unit, 'balloon.soak', { source: owner.id })
 }
-export function balloonPop({ unit, owner, sim, tick, ticks, stats, present }) {
+export function balloonPop({ unit, owner, ability, sim, tick, ticks, stats, present }) {
 	if (unit.data.phase !== 'flight') return
 	unit.data.phase = 'puddle'
 	unit.until = tick + ticks(stats.puddle)
@@ -47,4 +47,14 @@ export function balloonPop({ unit, owner, sim, tick, ticks, stats, present }) {
 			p,
 		)
 	}
+	sim.reactAbility('land', {
+		hero: owner,
+		ability,
+		sim,
+		tick,
+		ticks,
+		present,
+		slot: unit.data.slot,
+		point: p,
+	})
 }

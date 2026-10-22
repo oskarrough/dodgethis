@@ -117,15 +117,17 @@ export function moveSpeed(unit, tick) {
 	if (tick === undefined) throw new Error('MOBA moveSpeed needs the current tick')
 	let factor = 1
 	let slow = 1
+	let haste = 1
 	for (const status of unit.statuses ?? []) {
 		if (!active(status, tick)) continue
 		const definition = statusDefinition(status)
 		if (definition?.moveSpeed === undefined) continue
 		const magnitude = Number.isFinite(status.mag) ? Math.max(0, status.mag) : 1
 		if (definition.tags?.includes('slow')) slow = Math.min(slow, magnitude)
+		else if (definition.tags?.includes('haste')) haste = Math.max(haste, magnitude)
 		else factor = magnitude
 	}
-	return factor * slow
+	return factor * haste * slow
 }
 
 export function createStatuses(ctx) {
@@ -136,7 +138,10 @@ export function createStatuses(ctx) {
 	let nextId = 0
 	const { present } = ctx
 	const abilityEvents = new WeakMap()
+	const everyTicks = new WeakMap()
 	const dashEvents = new WeakMap()
+	const ground = new Set()
+	let nextGroundId = 0
 	function rememberDashEvent(hero, event) {
 		dashEvents.set(hero, { body: hero.body, event })
 	}
@@ -168,6 +173,41 @@ export function createStatuses(ctx) {
 			...info.event,
 			...(info.point && { point: { ...info.point } }),
 		}
+		if (name === 'every') {
+			if (!ability.on?.every || ctx.t < (everyTicks.get(state) ?? ctx.t)) return event
+			const interval = ability.on.every === 'step' ? 1 : ticks(ability.stats[ability.on.every])
+			everyTicks.set(state, ctx.t + Math.max(1, interval))
+			runActions(ability.on.do, { ...info, hero, unit: hero, event })
+			return event
+		}
+		// Shot side effects run at combat's existing pre-damage hook, not a new hit loop.
+		if (name === 'hit' && info.shot?.payload) {
+			const shot = info.shot
+			const ally = event.target.team === hero.team
+			const effects = shot.payload[ally ? 'allies' : 'enemies'] ?? shot.payload.hit ?? []
+			const result = applyEffects(
+				{ unit: hero, ability, slot: shot.slot, dir: event.dir, point: event.point, shot },
+				event.target,
+				effects.filter((effect) => !['damage', 'slow'].includes(effect.effect)),
+				shot.effectStats,
+			)
+			if (ally) {
+				present({
+					type: 'contact',
+					part: 'hit',
+					source: hero.id,
+					target: event.target.id,
+					ability: ability.id,
+					projectile: shot.id,
+					heal: result.heal,
+					hp: event.target.hp,
+					maxHp: event.target.maxHp,
+					point: { ...event.target.body.position },
+				})
+				event.consumed = true
+				return event
+			}
+		}
 		const consumed = runHookStages(
 			ability.stages?.[name] ??
 				(name === 'hit' && ability.onHit ? { before: ability.onHit } : null),
@@ -184,7 +224,20 @@ export function createStatuses(ctx) {
 		const { unit: actor, ability, slot, dir, point, shot } = source
 		if (unit.dead || unit.hp <= 0) return { lethal: true }
 		const damage = effects.find((effect) => effect.effect === 'damage')
-		const statuses = effects.filter((effect) => ['slow', 'freeze'].includes(effect.effect))
+		const statuses = effects.filter((effect) =>
+			['slow', 'freeze', 'haste', ...(source.field ? ['shield'] : [])].includes(effect.effect),
+		)
+		const applyStatus = (effect) =>
+			ctx.apply(unit, `${ability.id}.${effect.key ?? effect.effect}`, {
+				source: actor,
+				...(source.field && { field: source.field }),
+				...(effect.while === 'inside' && {
+					duration: (source.nextPulse - ctx.t + ticks(stats[effect.linger]) + 1) * STEP,
+				}),
+			})
+		// Field membership owns its clocks; ordinary hit statuses retain combat's
+		// existing application point. Both paths always credit the original actor.
+		if (source.field) for (const effect of statuses) applyStatus(effect)
 		if (damage) {
 			const result = ctx.hit(
 				{
@@ -198,17 +251,19 @@ export function createStatuses(ctx) {
 					damage:
 						stats[damage.amount] *
 						(damage.scale === null ? 1 : 1 + tune.levels.growth * (actor.level - 1)),
-					...(statuses.length && {
-						applies: statuses.map((effect) => `${ability.id}.${effect.effect}`),
-					}),
+					periodic: damage.periodic === true,
+					...(source.status && { id: -1, status: source.status.key }),
+					...(statuses.length &&
+						!source.field && {
+							applies: statuses.map((effect) => `${ability.id}.${effect.effect}`),
+						}),
 				},
 				source.target ?? { id: unit.id, unit, hero: !unit.kind },
 				point ?? unit.body.position,
 			)
 			if (result?.consumed) return { lethal: false, consumed: true }
-		} else {
-			for (const effect of statuses)
-				ctx.apply(unit, `${ability.id}.${effect.effect}`, { source: actor })
+		} else if (!source.field) {
+			for (const effect of statuses) applyStatus(effect)
 		}
 		let heal = 0
 		const lethal = unit.dead || unit.hp <= 0
@@ -237,10 +292,56 @@ export function createStatuses(ctx) {
 						{
 							critChance: stats[effect.critChance],
 							critMultiplier: stats[effect.critMultiplier],
+							periodic: effect.periodic === true,
 						},
 					)
-				} else if (effect.effect === 'shield') {
-					ctx.apply(unit, `${ability.id}.shield`, { source: actor, amount: stats[effect.amount] })
+				} else if (effect.effect === 'shield' && !source.field) {
+					const amount = stats[effect.amount] * (effect.perSecond ? (source.dt ?? STEP) : 1)
+					const duration = stats[effect.duration]
+					const shield =
+						effect.stack === 'add' &&
+						unit.statuses?.find(
+							(status) =>
+								status.key === `${ability.id}.shield` &&
+								status.src === actor.id &&
+								active(status, ctx.t),
+						)
+					if (shield) {
+						shield.amount += amount
+						shield.until = ctx.t + ticks(duration)
+					} else
+						ctx.apply(unit, `${ability.id}.shield`, {
+							source: actor,
+							amount,
+							...(duration !== undefined && { duration }),
+						})
+				} else if (effect.effect === 'status') {
+					ctx.apply(unit, `${ability.id}.${effect.key}`, { source: actor })
+				} else if (effect.effect === 'catch') {
+					const duration = stats[effect.duration] + (stats[effect.linger] ?? 0)
+					if (effect.refresh) {
+						if (unit.catchWindow) unit.catchWindow.until = ctx.t + ticks(duration)
+					} else
+						ctx.openCatch(unit, {
+							ability: ability.id,
+							dir,
+							duration,
+							radius: stats[effect.radius],
+							angle: stats[effect.angle],
+							acceptBall: effect.acceptBall,
+							...(effect.resetCooldown && {
+								resetSlot: slot,
+								resetCooldown: stats[effect.resetCooldown],
+							}),
+						})
+				} else if (effect.effect === 'displace') {
+					if (actor.dead || unit.structure) continue
+					const at = effect.to === 'source' ? actor.body.position : (point ?? unit.body.position)
+					ctx.displace(
+						unit,
+						{ x: at.x + dir.x * stats[effect.distance], z: at.z + dir.z * stats[effect.distance] },
+						stats[effect.duration],
+					)
 				} else if (effect.effect === 'cleanse') {
 					for (const tag of effect.tags) cleanse(unit, tag)
 				} else if (effect.effect === 'knockback') {
@@ -260,6 +361,7 @@ export function createStatuses(ctx) {
 		const actor = info.status
 			? (ctx.find(info.status.src) ??
 				[
+					...(ctx.boss ? [ctx.boss.unit] : []),
 					...ctx.heroes,
 					...ctx.dummies,
 					...ctx.summons,
@@ -270,16 +372,59 @@ export function createStatuses(ctx) {
 		if (!info.ability) throw new Error('MOBA status actions need an owning ability')
 		if (!actor) return // A removed source must never turn its victim into the caster.
 		const ability = info.ability
-		const event = info.event ?? {
-			source: actor,
-			ability,
-			slot: null,
-			point: actor.body.position,
-			dir: { x: Math.sin(actor.yaw), z: Math.cos(actor.yaw) },
-			target: info.unit ?? null,
-		}
+		// Bare tick notifications must not share inferred geometry between listeners.
+		const event = info.event?.dir && info.event?.point ? info.event : { ...info.event }
+		event.source ??= actor
+		event.ability ??= ability
+		event.slot ??=
+			Object.entries(actor.definition?.abilities ?? {}).find(
+				([, entry]) => entry.id === ability.id,
+			)?.[0] ?? null
+		event.point ??= (info.status ? info.unit : actor).body.position
+		event.dir ??= info.status ? { x: 0, z: 0 } : { x: Math.sin(actor.yaw), z: Math.cos(actor.yaw) }
+		if (!Object.hasOwn(event, 'target')) event.target = info.unit ?? null
 		for (const action of actions) {
 			const stats = ability.stats
+			if (action.effect) {
+				const unit = info.status ? info.unit : actor
+				const result = applyEffects(
+					{
+						unit: actor,
+						ability,
+						slot: event.slot,
+						dir: event.dir,
+						point: event.point,
+						status: info.status,
+						dt: info.dt ?? event.dt,
+					},
+					unit,
+					[effectRecord(ability, action)],
+					stats,
+				)
+				event.lethal = Boolean(event.lethal || result.lethal)
+				continue
+			}
+			if (action.deliver === 'shot') {
+				event.shot = ctx.launchAbilityShot(actor, ability, event.dir, event.slot, action)
+				continue
+			}
+			if (action.deliver === 'ground') {
+				const field = {
+					id: ++nextGroundId,
+					action,
+					actor,
+					definition: actor.definition,
+					ability,
+					event: { ...event },
+					point: { ...(action.at === 'self' ? actor.body.position : event.point) },
+					until: ctx.t + ticks(stats[action.lifetime]),
+					next: ctx.t,
+					members: new Map(),
+				}
+				ground.add(field)
+				stepGroundField(field)
+				continue
+			}
 			if (action.deliver === 'target') {
 				const unit = event.target
 				if (
@@ -376,6 +521,91 @@ export function createStatuses(ctx) {
 				})
 		}
 	}
+	function groundCrossing(field, name, unit, entries) {
+		if (name === 'exit')
+			for (const { record, key } of entries)
+				if (record.while === 'inside')
+					for (const status of unit.statuses ?? [])
+						if (status.field === field.id && status.key === `${field.ability.id}.${key}`) {
+							status.until = ctx.t + ticks(field.ability.stats[record.linger])
+							if (status.until <= ctx.t) remove(unit, status.id, 'expired')
+							else presentStatus(unit, status, 'refresh')
+						}
+		if (!ctx.heroes.includes(field.actor) || field.actor.definition !== field.definition) return
+		const event = { ...field.event, source: field.actor, target: unit, point: { ...field.point } }
+		runHookStages(
+			field.action.on?.[name],
+			{
+				...ctx.traitContext(field.actor),
+				ability: field.ability,
+				stats: field.ability.stats,
+				event,
+			},
+			runActions,
+		)
+	}
+	function stepGroundField(field) {
+		const { actor, ability, action, members } = field
+		const stats = ability.stats
+		const removed = !ctx.heroes.includes(actor) || actor.definition !== field.definition
+		const ended = removed || Boolean(ctx.lane?.match.winner) || ctx.t >= field.until
+		if (action.follow === 'source') field.point = { ...actor.body.position }
+		const inside = new Map()
+		if (!ended)
+			for (const unit of auraUnits()) {
+				// Untargetable cosmetic summons are not field occupants.
+				if (unit.hp == null) continue
+				if (
+					Math.hypot(unit.body.position.x - field.point.x, unit.body.position.z - field.point.z) >
+					stats[action.radius] + (unit.body.radius ?? 0)
+				)
+					continue
+				const side = unit.team === actor.team ? 'allies' : 'enemies'
+				inside.set(
+					unit,
+					ability.groundEffects.filter((entry) => entry.action === action && entry.side === side),
+				)
+			}
+		for (const [unit, entries] of members)
+			if (!inside.has(unit)) {
+				members.delete(unit)
+				groundCrossing(field, 'exit', unit, entries)
+			}
+		if (ended) {
+			ground.delete(field)
+			return
+		}
+		const pulse = ctx.t >= field.next
+		if (pulse) field.next = ctx.t + Math.max(1, ticks(stats[action.every]))
+		for (const [unit, entries] of inside) {
+			const entering = !members.has(unit)
+			members.set(unit, entries)
+			if (entering) groundCrossing(field, 'enter', unit, entries)
+			if (unit.dead) continue
+			const effects = entries
+				.filter(({ record }) => pulse || (entering && record.while === 'inside'))
+				.map(({ record, key }) => ({ ...record, key }))
+			if (effects.length)
+				applyEffects(
+					{
+						unit: actor,
+						ability,
+						slot: field.event.slot,
+						dir: field.event.dir ?? { x: 0, z: 0 },
+						point: { ...unit.body.position },
+						field: field.id,
+						nextPulse: field.next,
+					},
+					unit,
+					effects,
+					stats,
+				)
+		}
+	}
+	function stepGround() {
+		const fields = [...ground]
+		for (const field of fields) stepGroundField(field)
+	}
 	function presentStatus(unit, status, state, extra = {}) {
 		present({
 			type: 'status',
@@ -456,8 +686,10 @@ export function createStatuses(ctx) {
 		const same = unit.statuses.filter(
 			(status) => status.key === key && status.src === source && active(status, ctx.t),
 		)
-		if (stack === 'refresh' && same.length) {
-			const status = same[0]
+		const refresh =
+			options.field === undefined ? same : same.filter((status) => status.field === options.field)
+		if ((stack === 'refresh' || options.field !== undefined) && refresh.length) {
+			const status = refresh[0]
 			const wasted =
 				definition.on?.absorb && amount !== undefined ? Math.max(0, status.amount ?? 0) : 0
 			status.until = until
@@ -484,6 +716,7 @@ export function createStatuses(ctx) {
 			key,
 			label: definition.label,
 			src: source,
+			...(options.field !== undefined && { field: options.field }),
 			from: ctx.t,
 			until,
 			...(amount !== undefined && { amount }),
@@ -569,6 +802,7 @@ export function createStatuses(ctx) {
 		apply,
 		reactAbility,
 		applyEffects,
+		stepGround,
 		rememberAbilityEvent,
 		rememberDashEvent,
 		takeDashEvent,

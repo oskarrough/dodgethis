@@ -1,6 +1,6 @@
 import { tune } from './tune.js'
 import { blocked } from './statuses.js'
-import { abilityOf } from './ability.js'
+import { abilityOf, effectRecord } from './ability.js'
 import { STEP } from '../../core/app.js'
 import { clampMap, sweepHit, sweepObstacles } from './obstacles.js'
 import { interceptShot, stepShot } from './skillshot.js'
@@ -43,6 +43,7 @@ export function createProjectiles(ctx) {
 	}
 
 	function stepZones() {
+		ctx.stepGround()
 		for (let i = zones.length - 1; i >= 0; i--) {
 			const zone = zones[i]
 			if (--zone.left > 0) continue
@@ -329,6 +330,56 @@ export function createProjectiles(ctx) {
 		return shot
 	}
 
+	// Payload numbers freeze alongside damage, before any flight or mid-air level-up.
+	function launchAbilityShot(hero, ability, dir, slot, action) {
+		const stats = ability.stats
+		const payload = Object.fromEntries(
+			['hit', 'allies', 'enemies']
+				.filter((key) => action[key])
+				.map((key) => [key, action[key].map((input) => effectRecord(ability, input))]),
+		)
+		const effects = Object.values(payload).flat()
+		const effectStats = Object.fromEntries(
+			effects.flatMap((effect) =>
+				Object.values(effect)
+					.filter((ref) => typeof ref === 'string' && Number.isFinite(stats[ref]))
+					.map((ref) => [ref, stats[ref]]),
+			),
+		)
+		const damage = effects.find((effect) => effect.effect === 'damage')
+		return launchShot(hero, dir, {
+			ability: ability.id,
+			slot,
+			pierce: ability.pierce,
+			heal: action.targets === 'heroes',
+			heroOnly: action.targets === 'heroes' || ability.heroOnly,
+			bounce: stats.bounce ?? false,
+			catchable: ability.catchable,
+			isAbility: true,
+			speed: stats.speed,
+			radius: stats.radius,
+			range: stats.range,
+			damage:
+				ctx.lobby && hero.sparring
+					? tune.lobby.practice.damage
+					: damage
+						? stats[damage.amount] *
+							(damage.scale === null
+								? 1
+								: 1 + tune.levels.growth * ((hero.level ?? tune.hero.level) - 1))
+						: 0,
+			payload,
+			effectStats,
+			applies: (payload.enemies ?? payload.hit ?? [])
+				.filter((effect) => effect.effect === 'slow' && stats[effect.magnitude])
+				.map((effect) => ({
+					key: `${ability.id}.slow`,
+					mag: 1 - stats[effect.magnitude],
+					duration: stats[effect.duration],
+				})),
+		})
+	}
+
 	function throwCaught(id, direction, slot = 'slot1', aim = null) {
 		const hero = typeof id === 'string' ? heroes.find((h) => h.id === id) : id
 		const slotIndex = SLOTS.indexOf(slot)
@@ -542,6 +593,7 @@ export function createProjectiles(ctx) {
 		towerShot,
 		openCatch,
 		launchShot,
+		launchAbilityShot,
 		throwCaught,
 		resolveInterception,
 	}

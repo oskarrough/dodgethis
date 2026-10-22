@@ -5,6 +5,7 @@ import { absorbAura } from './aura-damage.js'
 // Effect parameters are local tune keys, not snapshots; statuses read them when applied.
 export const STATUS_EFFECT_REFS = {
 	slow: { magnitude: 'fraction', duration: 's' },
+	haste: { magnitude: 'fraction', duration: 's' },
 	shield: { amount: 'hp', duration: 's' },
 	freeze: { duration: 's' },
 }
@@ -16,6 +17,11 @@ export const AREA_EFFECT_REFS = {
 export const TARGET_EFFECT_REFS = {
 	heal: { amount: 'hp', critChance: 'fraction', critMultiplier: 'multiplier' },
 	cleanse: {},
+}
+export const ACTION_EFFECT_REFS = {
+	displace: { distance: 'm', duration: 's' },
+	status: {},
+	catch: { duration: 's', linger: 's', radius: 'm', angle: 'deg', resetCooldown: 's' },
 }
 export function effectRecord(ability, record) {
 	if (typeof record !== 'string') return record
@@ -43,7 +49,12 @@ export const AURA_EVENTS = [
 export const ABILITY_STAGES = ['release', 'land', 'dashEnd', 'end', 'hit']
 export const CANCELLABLE_EVENTS = ['amplify', 'damage', 'absorb', 'release', 'land', 'hit']
 export function validateHookMap(id, hooks, events, { actions = true } = {}) {
+	if (hooks?.every !== undefined) {
+		if (!actions || !Array.isArray(hooks.do) || typeof hooks.every !== 'string')
+			throw new Error(`MOBA every needs a cadence and actions: ${id}`)
+	}
 	for (const [name, hook] of Object.entries(hooks ?? {})) {
+		if (hooks.every !== undefined && ['every', 'do'].includes(name)) continue
 		if (!events.includes(name)) throw new Error(`MOBA unknown hook event: ${id}.${name}`)
 		if (hook?.before !== undefined && !CANCELLABLE_EVENTS.includes(name))
 			throw new Error(`MOBA event is not cancellable: ${id}.${name}`)
@@ -71,23 +82,63 @@ export function runHookStages(hook, context, runActions, fallback) {
 	hook?.after?.(context)
 }
 
+// Give each declared field payload its own status definition, even when two fields
+// in one ability use the same effect with different numbers.
+function groundEffects(manifest) {
+	const entries = []
+	let next = 0
+	function visit(value) {
+		if (!value || typeof value !== 'object') return
+		if (value.deliver === 'ground') {
+			const id = next++
+			for (const side of ['allies', 'enemies'])
+				for (const [index, input] of (value[side] ?? []).entries())
+					entries.push({
+						action: value,
+						side,
+						record: effectRecord(manifest, input),
+						key: `ground${id}${side}${index}`,
+					})
+		}
+		for (const child of Object.values(value)) visit(child)
+	}
+	visit(manifest)
+	return entries
+}
+
 function effectStatuses(manifest) {
-	const statuses = { ...manifest.statuses }
-	for (const record of manifest.statusEffects ?? []) {
-		const duration = record.duration
+	const statuses = Object.fromEntries(
+		Object.entries(manifest.statuses ?? {}).map(([key, status]) => {
+			if (status.on?.every === undefined) return [key, status]
+			const { every, do: actions, ...on } = status.on
+			return [
+				key,
+				{ ...status, interval: every === 'step' ? undefined : every, on: { ...on, tick: actions } },
+			]
+		}),
+	)
+	for (const { record, key } of [
+		...(manifest.statusEffects ?? []).map((record) => ({ record, key: record.effect })),
+		...groundEffects(manifest).filter(({ record }) => STATUS_EFFECT_REFS[record?.effect]),
+	]) {
+		const duration = record.duration ?? record.linger
 		switch (record.effect) {
+			case 'haste':
 			case 'slow':
-				statuses.slow = {
-					label: 'Slow',
-					tags: ['debuff', 'slow'],
+				statuses[key] = {
+					label: record.effect === 'slow' ? 'Slow' : 'Haste',
+					tags: record.effect === 'slow' ? ['debuff', 'slow'] : ['buff', 'haste'],
 					// Strongest wins across independent clocks, including different sources.
 					stack: 'independent',
-					moveSpeed: ({ stats }) => Math.max(0, Math.min(1, 1 - stats[record.magnitude])),
+					moveSpeed: ({ stats }) =>
+						record.effect === 'slow'
+							? Math.max(0, Math.min(1, 1 - stats[record.magnitude]))
+							: 1 + Math.max(0, stats[record.magnitude]),
 					duration,
 				}
 				break
 			case 'shield':
-				statuses.shield = {
+				statuses[key] = {
 					label: manifest.name ?? 'Shield',
 					tags: ['buff', 'shield'],
 					on: { absorb: absorbAura },
@@ -97,7 +148,7 @@ function effectStatuses(manifest) {
 				}
 				break
 			case 'freeze':
-				statuses.freeze = {
+				statuses[key] = {
 					label: 'Freeze',
 					tags: ['debuff', 'freeze'],
 					states: ['frozen'],
@@ -108,6 +159,7 @@ function effectStatuses(manifest) {
 			default:
 				throw new Error(`MOBA unknown status effect: ${record.effect}`)
 		}
+		if (record.stack) statuses[key].stack = record.stack
 	}
 	return statuses
 }
@@ -142,7 +194,13 @@ const RESERVED = ['pocket', 'bag', 'return']
 export function defineAbility(id, manifest) {
 	if (RESERVED.includes(id)) throw new Error(`MOBA ability id is reserved: ${id}`)
 	validateHookMap(id, manifest.on, AURA_EVENTS)
+	if (manifest.on?.every !== undefined && manifest.kind !== 'channel')
+		throw new Error(`MOBA ability every needs a channel: ${id}`)
+	if (manifest.cooldownFrom !== undefined && !['cast', 'end'].includes(manifest.cooldownFrom))
+		throw new Error(`MOBA unknown cooldown origin: ${id}`)
 	validateHookMap(id, manifest.stages, ABILITY_STAGES)
+	for (const action of new Set(groundEffects(manifest).map((entry) => entry.action)))
+		validateHookMap(`${id}.ground`, action.on, ['enter', 'exit'])
 	for (const [key, status] of Object.entries(manifest.statuses ?? {}))
 		validateHookMap(`${id}.${key}`, status.on, [...AURA_EVENTS, 'apply', 'remove', 'expire'])
 	for (const record of manifest.statusEffects ?? [])
@@ -157,11 +215,19 @@ export function defineAbility(id, manifest) {
 	const target = (Array.isArray(release) ? release : release?.do)?.find(
 		(action) => action.deliver === 'target' && action.pick === 'nearestAim',
 	)
+	const shot = (Array.isArray(release) ? release : release?.do)?.find(
+		(action) => action.deliver === 'shot',
+	)
 	return {
 		id,
 		...manifest,
+		...(shot && {
+			heal: shot.targets === 'heroes',
+			heroOnly: shot.targets === 'heroes' || manifest.heroOnly,
+		}),
 		...(target && { targetUnit: (context) => pickAbilityTarget(context, target) }),
-		...(manifest.statusEffects && { statuses: effectStatuses(manifest) }),
+		statuses: effectStatuses(manifest),
+		groundEffects: groundEffects(manifest),
 		get stats() {
 			return tune[id]
 		},

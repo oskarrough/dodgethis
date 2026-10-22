@@ -427,6 +427,7 @@ export function createSim({
 		heal: ctx.heal,
 		apply: ctx.apply,
 		remove: ctx.remove,
+		reactAbility: ctx.reactAbility,
 		cleanse: ctx.cleanse,
 		displace: ctx.displace,
 		enemiesOf,

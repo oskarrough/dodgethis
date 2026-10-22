@@ -10,17 +10,16 @@ export default {
 	card: {
 		summary: `The first body takes {damage:damage} and is dragged to {dragDistance} in front of Hook. Cover and structures stop the yo-yo; caught returns carry no drag.`,
 	},
-	projectileStats({ ability }) {
-		return { drag: { distance: ability.stats.dragDistance, duration: ability.stats.dragTime } }
-	},
-	onHit({ hero, sim, target, shot }) {
-		const unit = target.unit
-		if (hero.dead || !shot.drag || unit.dead || unit.structure) return
-		const p = hero.body.position
-		sim.displace(
-			unit,
-			{ x: p.x + shot.dx * shot.drag.distance, z: p.z + shot.dz * shot.drag.distance },
-			shot.drag.duration,
-		)
+	stages: {
+		release: [
+			{
+				deliver: 'shot',
+				targets: 'enemies',
+				hit: [
+					'damage',
+					{ effect: 'displace', to: 'source', distance: 'dragDistance', duration: 'dragTime' },
+				],
+			},
+		],
 	},
 }

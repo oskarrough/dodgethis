@@ -1,5 +1,5 @@
 import { tune } from '../../tune.js'
-import { balloonPop, balloonSoak } from './balloon-water.js'
+import { balloonPop } from './balloon-water.js'
 const distance = (a, b) => Math.hypot(a.x - b.x, a.z - b.z)
 
 export default {
@@ -17,6 +17,25 @@ export default {
 			duration: ({ stats }) => stats.duration,
 		},
 	},
+	stages: {
+		land: [
+			{
+				deliver: 'ground',
+				radius: 'radius',
+				lifetime: 'puddle',
+				every: 'interval',
+				enemies: [
+					{
+						effect: 'slow',
+						magnitude: 'slow',
+						while: 'inside',
+						linger: 'duration',
+						stack: 'strongest',
+					},
+				],
+			},
+		],
+	},
 	summon: {
 		lifetime: (stats) => stats.flight + stats.puddle,
 		state: () => ({ phase: 'flight' }),
@@ -24,17 +43,13 @@ export default {
 			['flight', 'puddle'].includes(data.phase) &&
 			[data.start, data.target].every((p) => p && Number.isFinite(p.x) && Number.isFinite(p.z)),
 		brain(ctx) {
-			const { unit, owner, sim, tick, ticks, stats } = ctx
+			const { unit, tick, ticks, stats } = ctx
 			if (unit.data.phase === 'flight') {
 				const fraction = Math.min(1, (tick - unit.from) / Math.max(1, ticks(stats.flight)))
 				const { start, target } = unit.data
 				unit.body.position.x = start.x + (target.x - start.x) * fraction
 				unit.body.position.z = start.z + (target.z - start.z) * fraction
 				if (fraction >= 1 || (unit.data.popAt != null && tick >= unit.data.popAt)) balloonPop(ctx)
-			} else {
-				for (const target of sim.enemiesOf(owner.team))
-					if (distance(target, unit.body.position) <= stats.radius + target.radius)
-						balloonSoak(sim, owner, target.unit)
 			}
 		},
 	},

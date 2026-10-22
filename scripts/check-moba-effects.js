@@ -1,5 +1,7 @@
 // Effect records declare local tune references; reject missing numbers and wrong dimensions.
 // Boot hero/ability registries in their normal order (ability hooks can import hero helpers).
+import { resolve } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { HEROES, WARDEN_UNIT } from '../src/modes/moba/heroes.js'
 import { MINION_DEFINITIONS } from '../src/modes/moba/lane-waves.js'
 import { STRUCTURE_DEFINITIONS } from '../src/modes/moba/lane-structures.js'
@@ -7,9 +9,11 @@ import { UNIT_REFS, UNIT_ATTACK_REFS } from '../src/modes/moba/unit-definition.j
 import { heroTrait, renderCardTemplate } from '../src/modes/moba/tooltip.js'
 import {
 	ABILITIES,
+	defineAbility,
 	STATUS_EFFECT_REFS,
 	AREA_EFFECT_REFS,
 	TARGET_EFFECT_REFS,
+	ACTION_EFFECT_REFS,
 	effectRecord,
 	validateHookMap,
 	AURA_EVENTS,
@@ -17,7 +21,19 @@ import {
 } from '../src/modes/moba/ability.js'
 import manifests from '../src/modes/moba/abilities/all-abilities.js'
 import { tune } from '../src/modes/moba/tune.js'
-import { resolveUnit } from '../src/modes/moba/units.js'
+import { resolveUnit, tuneUnits } from '../src/modes/moba/units.js'
+
+// Optional scratch module: default { id, manifest, tune, units }. Never registers a mod.
+const declarations = { ...manifests }
+if (process.argv[2]) {
+	const scratch = (await import(pathToFileURL(resolve(process.argv[2])).href)).default
+	const { id, manifest, tune: stats, units } = scratch
+	if (!id || Object.hasOwn(tune, id)) throw new Error('Scratch ability needs an unused id')
+	tune[id] = stats
+	for (const [key, unit] of Object.entries(units ?? {})) tuneUnits[`${id}.${key}`] = unit
+	ABILITIES[id] = defineAbility(id, manifest)
+	declarations[id] = manifest
+}
 
 const errors = []
 let count = 0
@@ -87,8 +103,53 @@ function checkActions(id, manifest, actions) {
 		return
 	}
 	for (const action of actions) {
-		if (!action || !['area', 'target'].includes(action.deliver)) {
+		if (action?.effect) {
+			checkActionEffect(id, manifest, action)
+			continue
+		}
+		if (action?.deliver === 'shot') {
+			for (const field of Object.keys(action))
+				if (!['deliver', 'targets', 'hit', 'allies', 'enemies'].includes(field))
+					errors.push(`${id}: unknown shot field ${field}`)
+			if (!['enemies', 'heroes'].includes(action.targets))
+				errors.push(`${id}: unknown shot targets ${action.targets}`)
+			for (const [field, unit] of Object.entries({ speed: 'm/s', radius: 'm', range: 'm' }))
+				checkRef(id, `shot ${field}`, field, unit)
+			if (action.hit && (action.allies || action.enemies))
+				errors.push(`${id}: shot cannot mix hit and side payloads`)
+			if (action.targets !== 'heroes' && action.allies)
+				errors.push(`${id}: shot allies require hero targets`)
+			if (!action.hit && !action.allies && !action.enemies)
+				errors.push(`${id}: shot needs a payload`)
+			for (const key of ['hit', 'allies', 'enemies']) {
+				if (action[key] === undefined) continue
+				if (!Array.isArray(action[key]) || !action[key].length) {
+					errors.push(`${id}: shot ${key} must be a nonempty effect array`)
+					continue
+				}
+				const seen = new Set()
+				for (const input of action[key]) {
+					const record = effectRecord(manifest, input)
+					if (
+						!(key === 'allies' ? ['heal'] : ['damage', 'slow', 'displace']).includes(record?.effect)
+					) {
+						errors.push(`${id}: unsupported shot ${key} effect ${record?.effect}`)
+						continue
+					}
+					if (seen.has(record.effect))
+						errors.push(`${id}: duplicate shot ${key} effect ${record.effect}`)
+					seen.add(record.effect)
+					checkActionEffect(id, manifest, record)
+				}
+			}
+			continue
+		}
+		if (!action || !['area', 'target', 'ground'].includes(action.deliver)) {
 			errors.push(`${id}: unknown delivery ${action?.deliver}`)
+			continue
+		}
+		if (action.deliver === 'ground') {
+			checkGround(id, manifest, action)
 			continue
 		}
 		const targeted = action.deliver === 'target'
@@ -180,13 +241,196 @@ function checkActions(id, manifest, actions) {
 		}
 	}
 }
+function checkActionEffect(id, manifest, record) {
+	const refs =
+		ACTION_EFFECT_REFS[record.effect] ??
+		AREA_EFFECT_REFS[record.effect] ??
+		TARGET_EFFECT_REFS[record.effect] ??
+		STATUS_EFFECT_REFS[record.effect]
+	if (
+		!refs ||
+		!['damage', 'heal', 'shield', 'slow', 'displace', 'status', 'catch'].includes(record.effect)
+	) {
+		errors.push(`${id}: unknown action effect ${record.effect}`)
+		return
+	}
+	const fields = {
+		damage: ['scale', 'periodic'],
+		heal: ['scale', 'periodic'],
+		shield: ['perSecond', 'stack'],
+		displace: ['to'],
+		status: ['key'],
+		catch: ['acceptBall', 'refresh'],
+		slow: [],
+	}[record.effect]
+	for (const field of Object.keys(record))
+		if (!['effect', ...Object.keys(refs), ...fields].includes(field))
+			errors.push(`${id}: unknown ${record.effect} field ${field}`)
+	for (const [field, unit] of Object.entries(refs)) {
+		if (
+			record[field] === undefined &&
+			(['critChance', 'critMultiplier', 'linger', 'resetCooldown'].includes(field) ||
+				(record.effect === 'catch' && record.refresh && ['radius', 'angle'].includes(field)))
+		)
+			continue
+		checkRef(
+			id,
+			field,
+			record[field],
+			record.effect === 'shield' && field === 'amount' && record.perSecond ? 'hp/s' : unit,
+		)
+	}
+	if (record.scale !== undefined && record.scale !== null)
+		errors.push(`${id}: unsupported action effect scaling`)
+	for (const field of ['periodic', 'perSecond', 'refresh', 'acceptBall'])
+		if (record[field] !== undefined && typeof record[field] !== 'boolean')
+			errors.push(`${id}: ${field} must be a boolean`)
+	if (record.effect === 'displace' && record.to !== 'source')
+		errors.push(`${id}: unknown displacement target ${record.to}`)
+	if (record.effect === 'status' && !Object.hasOwn(manifest.statuses ?? {}, record.key))
+		errors.push(`${id}: unknown local status ${record.key}`)
+	if (record.effect === 'shield' && record.stack !== undefined && record.stack !== 'add')
+		errors.push(`${id}: unknown shield stack ${record.stack}`)
+	if (
+		record.effect === 'slow' &&
+		!manifest.statusEffects?.some((effect) => effect.effect === 'slow')
+	)
+		errors.push(`${id}: shot slow needs a matching status effect`)
+	if (
+		record.effect === 'shield' &&
+		!manifest.statuses?.shield &&
+		!manifest.statusEffects?.some((effect) => effect.effect === 'shield')
+	)
+		errors.push(`${id}: shield needs a matching status definition`)
+	if (
+		record.effect === 'heal' &&
+		(record.critChance === undefined) !== (record.critMultiplier === undefined)
+	)
+		errors.push(`${id}: heal crit chance and multiplier must be declared together`)
+}
+function checkGround(id, manifest, action) {
+	const fields = [
+		'deliver',
+		'at',
+		'radius',
+		'lifetime',
+		'every',
+		'allies',
+		'enemies',
+		'follow',
+		'on',
+	]
+	for (const field of Object.keys(action))
+		if (!fields.includes(field)) errors.push(`${id}: unknown ground field ${field}`)
+	if (action.at !== undefined && !['aim', 'self', 'at'].includes(action.at))
+		errors.push(`${id}: unknown ground origin ${action.at}`)
+	if (action.follow !== undefined && action.follow !== 'source')
+		errors.push(`${id}: unknown ground follow ${action.follow}`)
+	for (const [field, unit] of Object.entries({ radius: 'm', lifetime: 's', every: 's' })) {
+		checkRef(id, `ground ${field}`, action[field], unit)
+		if (tune[id]?.[action[field]] < 0 || (field !== 'radius' && tune[id]?.[action[field]] === 0))
+			errors.push(
+				`${id}: ground ${field} must be ${field === 'radius' ? 'nonnegative' : 'positive'}`,
+			)
+	}
+	if (action.allies === undefined && action.enemies === undefined)
+		errors.push(`${id}: ground needs allies or enemies`)
+	for (const side of ['allies', 'enemies']) {
+		if (action[side] === undefined) continue
+		if (!Array.isArray(action[side]) || !action[side].length) {
+			errors.push(`${id}: ground ${side} must be a nonempty effect array`)
+			continue
+		}
+		const seen = new Set()
+		for (const input of action[side]) {
+			const record = effectRecord(manifest, input)
+			const refs =
+				STATUS_EFFECT_REFS[record?.effect] ??
+				AREA_EFFECT_REFS[record?.effect] ??
+				TARGET_EFFECT_REFS[record?.effect]
+			if (!refs) {
+				errors.push(`${id}: unknown ground effect ${record?.effect}`)
+				continue
+			}
+			if (seen.has(record.effect))
+				errors.push(`${id}: duplicate ground ${side} effect ${record.effect}`)
+			seen.add(record.effect)
+			const status = Object.hasOwn(STATUS_EFFECT_REFS, record.effect)
+			if (record.while !== undefined && (record.while !== 'inside' || !status))
+				errors.push(`${id}: ground while requires an inside status effect`)
+			if (record.while === 'inside') {
+				checkRef(id, 'ground linger', record.linger, 's')
+				if (tune[id]?.[record.linger] < 0) errors.push(`${id}: ground linger must be nonnegative`)
+			} else if (record.linger !== undefined)
+				errors.push(`${id}: ground linger requires while: inside`)
+			if (
+				record.stack !== undefined &&
+				(!status || !['strongest', 'independent', 'refresh', 'replace'].includes(record.stack))
+			)
+				errors.push(`${id}: unknown ground stack ${record.stack}`)
+			if (record.stack === 'strongest' && !['slow', 'haste'].includes(record.effect))
+				errors.push(`${id}: strongest requires a movement effect`)
+			for (const [field, unit] of Object.entries(refs)) {
+				if (
+					(field === 'duration' && record.while === 'inside') ||
+					(['critChance', 'critMultiplier'].includes(field) && record[field] === undefined)
+				)
+					continue
+				checkRef(id, `ground ${field}`, record[field], unit)
+			}
+			if (
+				record.effect === 'heal' &&
+				(record.critChance === undefined) !== (record.critMultiplier === undefined)
+			)
+				errors.push(`${id}: heal crit chance and multiplier must be declared together`)
+			if (
+				record.effect === 'cleanse' &&
+				(!Array.isArray(record.tags) ||
+					!record.tags.length ||
+					record.tags.some((tag) => typeof tag !== 'string' || !tag))
+			)
+				errors.push(`${id}: cleanse needs nonempty status tags`)
+			for (const field of Object.keys(record))
+				if (
+					![
+						'effect',
+						'scale',
+						'periodic',
+						...(status ? ['while', 'linger', 'stack'] : []),
+						...(record.effect === 'cleanse' ? ['tags'] : []),
+						...Object.keys(refs),
+					].includes(field)
+				)
+					errors.push(`${id}: unknown ground ${record.effect} field ${field}`)
+			if (
+				record.periodic !== undefined &&
+				(!['damage', 'heal'].includes(record.effect) || typeof record.periodic !== 'boolean')
+			)
+				errors.push(`${id}: periodic requires a damage or heal boolean`)
+			if (
+				record.scale !== undefined &&
+				(record.scale !== null || !['damage', 'heal'].includes(record.effect))
+			)
+				errors.push(`${id}: unsupported ground effect scaling`)
+		}
+	}
+	checkHooks(id, manifest, action.on, ['enter', 'exit'])
+}
 function checkHooks(id, manifest, on, events = AURA_EVENTS) {
 	try {
 		validateHookMap(id, on, events)
 	} catch (error) {
 		errors.push(error.message)
 	}
+	if (on?.every !== undefined) {
+		if (on.every !== 'step') {
+			checkRef(id, 'every', on.every, 's')
+			if (!(tune[id]?.[on.every] > 0)) errors.push(`${id}: every must be positive`)
+		}
+		checkActions(id, manifest, on.do)
+	}
 	for (const [event, hook] of Object.entries(on ?? {})) {
+		if (on.every !== undefined && ['every', 'do'].includes(event)) continue
 		if (typeof hook === 'function') continue
 		if (Array.isArray(hook)) checkActions(id, manifest, hook)
 		else if (hook && typeof hook === 'object') {
@@ -199,7 +443,7 @@ function checkHooks(id, manifest, on, events = AURA_EVENTS) {
 		} else errors.push(`${id}: invalid hook for ${event}`)
 	}
 }
-for (const [id, manifest] of Object.entries(manifests)) {
+for (const [id, manifest] of Object.entries(declarations)) {
 	if (manifest.summon) checkUnit(id, manifest.summon)
 	checkHooks(id, manifest, manifest.on)
 	checkHooks(id, manifest, manifest.stages, ABILITY_STAGES)

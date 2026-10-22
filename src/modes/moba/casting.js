@@ -4,7 +4,7 @@ import { blocked } from './statuses.js'
 import { heroDefinition } from './heroes.js'
 import { abilityOf, castAbility } from './ability.js'
 import { clampMap, segmentClear } from './obstacles.js'
-import { SLOTS, ticks, yawOf, dirOf } from './sim-kit.js'
+import { SLOTS, ticks, yawOf, dirOf, cancelAttack } from './sim-kit.js'
 
 // From a key press to an ability: the cast buffer and windup, release by ability kind, aimed basics, and the stances and channels that follow.
 export function createCasting(ctx) {
@@ -198,7 +198,7 @@ export function createCasting(ctx) {
 				factor: skill.speedFactor ?? 1,
 			}
 			ctx.rememberAbilityEvent(h.stance, event)
-			ability.onStart?.(context)
+			ctx.reactAbility('release', context, h.stance, ability.onStart)
 			if (castFootprint && h.catchWindow) footprints.set(h.catchWindow, castFootprint)
 			return
 		}
@@ -212,10 +212,19 @@ export function createCasting(ctx) {
 				total: ticks(skill.duration),
 			}
 			ctx.rememberAbilityEvent(h.channel, event)
+			if (ability.root) {
+				h.order = null
+				cancelAttack(h, present, ability.id)
+			}
 			ability.onStart?.(context)
 			return
 		}
-		if (ctx.reactAbility('release', context).consumed) return
+		const released = ctx.reactAbility('release', context)
+		if (released.consumed) return
+		if (released.shot) {
+			if (castFootprint) footprints.set(released.shot, castFootprint)
+			return
+		}
 		// Custom instant hooks (Slide) can start a dash too.
 		if (h.body.dashing && h.dashAbility === ability.id) ctx.rememberDashEvent(h, event)
 		if (ability.kind === 'instant') return
@@ -327,6 +336,8 @@ export function createCasting(ctx) {
 		const channel = hero.channel
 		hero.channel = null
 		const ability = abilityOf(channel.ability, hero)
+		if (ability?.cooldownFrom === 'end')
+			hero.cd[SLOTS.indexOf(channel.slot)] = ticks(ability.stats.cooldown)
 		ability?.onCancel?.(traitContext(hero, { ...channel, ability, reason }))
 		present({
 			type: 'channelCancelled',
@@ -404,7 +415,10 @@ export function createCasting(ctx) {
 		)
 			return cancelChannel(hero, 'disabled')
 		const ability = abilityOf(channel.ability, hero)
+		ctx.reactAbility('every', traitContext(hero, { ...channel, ability, dt }), channel)
 		ability?.onTick?.(traitContext(hero, { ...channel, ability, dt }))
+		if (ability?.cooldownFrom === 'end')
+			hero.cd[SLOTS.indexOf(channel.slot)] = ticks(ability.stats.cooldown)
 		if (--channel.left > 0) return
 		hero.channel = null
 		ctx.reactAbility('release', traitContext(hero, { ...channel, ability }), channel)

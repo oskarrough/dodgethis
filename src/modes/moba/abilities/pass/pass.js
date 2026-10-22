@@ -41,7 +41,6 @@ export default {
 			return null
 		},
 	},
-	heal: true,
 	heroOnly: true,
 	pierce: false,
 	catchable: true,
@@ -52,21 +51,14 @@ export default {
 	card: {
 		summary: `First hero hit: heal an ally for {healAmount}, or deal {damage} and slow an enemy.`,
 	},
-	projectileStats({ ability }) {
-		const { slow, duration } = ability.stats
-		return { applies: slow ? [{ key: 'pass.slow', mag: 1 - slow, duration }] : [] }
-	},
 	stages: {
-		hit: {
-			before: [
-				{
-					deliver: 'target',
-					pick: 'event',
-					targets: 'ally',
-					hit: [{ effect: 'heal', amount: 'healAmount', scale: null }],
-					consume: true,
-				},
-			],
-		},
+		release: [
+			{
+				deliver: 'shot',
+				targets: 'heroes',
+				allies: [{ effect: 'heal', amount: 'healAmount', scale: null }],
+				enemies: ['damage', 'slow'],
+			},
+		],
 	},
 }
