@@ -4,6 +4,7 @@ export default {
 	range: 10,
 	radius: 0.7,
 	healAmount: 300,
+	bot: { deficit: 1 },
 	critChance: 0.1,
 	critMultiplier: 1.5,
 	sound: {

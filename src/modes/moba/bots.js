@@ -3,7 +3,8 @@ import { neutralFrame } from '../../core/intents.js'
 import { tune } from './tune.js'
 import { copyData } from './agents.js'
 import { createFightBot } from './fight-bots.js'
-import { abilityTactics } from './ability-bots.js'
+import { abilityTactics, saveTactics } from './ability-bots.js'
+import { statusDefinition } from './statuses.js'
 import { createDodgeBot } from './dodge-bots.js'
 import { laneRoute } from './maps/paths.js'
 
@@ -100,6 +101,12 @@ function view(sim, births, modules) {
 		dead: u.dead,
 		hp: u.hp,
 		maxHp: u.maxHp,
+		shielded: (u.statuses ?? []).some(
+			(status) =>
+				(status.until === null || status.until > sim.tick) &&
+				status.amount > 0 &&
+				statusDefinition(status)?.bar === 'shield',
+		),
 		level: u.level ?? 1,
 		pos: position(u),
 		radius: u.body.radius,
@@ -274,7 +281,13 @@ export function createBot(
 			ctx.preferredTargets = contributions.flatMap((c) => c.preferredTargets ?? [])
 			combat.assess(ctx)
 			const threats = dodge.read(ctx, habits)
-			if (!h.definition.bot?.(ctx) && !abilityTactics(ctx) && !dodge.avoid(ctx, threats)) goal(ctx)
+			if (
+				!h.definition.bot?.(ctx) &&
+				!abilityTactics(ctx) &&
+				!dodge.avoid(ctx, threats) &&
+				!saveTactics(ctx)
+			)
+				goal(ctx)
 			return ctx.frame
 		},
 	}

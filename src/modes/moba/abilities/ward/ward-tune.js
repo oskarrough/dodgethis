@@ -5,6 +5,7 @@ export default {
 	radius: 0.8,
 	shield: 500,
 	duration: 8,
+	bot: { saveHp: 0.35, dangerRange: 5 },
 	sound: {
 		cast: { freq: 220, slideTo: 440, type: 'triangle', dur: 0.12, gain: 0.1 },
 		impact: { freq: 880, slideTo: 660, type: 'triangle', dur: 0.3, gain: 0.12 },

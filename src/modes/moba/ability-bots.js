@@ -41,6 +41,12 @@ export function abilityTactics(ctx) {
 		const acted = ability.bot.act(ctx, slot)
 		if (acted) return acted
 	}
+	return null
+}
+
+export function saveTactics(ctx) {
+	const { h } = ctx
+	if (ctx.skillsLocked || ctx.castBusy || h.cast || h.body.dashing) return null
 	const saves = ctx.abilities
 		.filter(([slot]) => ctx.tactics.get(slot).has('save'))
 		.map(([slot, ability]) => ({ slot, ability, delivery: saveDelivery(ability) }))
@@ -49,13 +55,19 @@ export function abilityTactics(ctx) {
 			(a, b) => Number(hasEffect(b.delivery, 'shield')) - Number(hasEffect(a.delivery, 'shield')),
 		)
 	for (const { slot, ability, delivery } of saves) {
+		const stats = ability.stats
+		const shield = hasEffect(delivery, 'shield')
 		const hurt = ctx.own
 			.filter(
 				(ally) =>
 					ally.id !== h.id &&
 					ally.hp > 0 &&
-					ally.hp < ally.maxHp &&
-					distance(ctx.p, ally.pos) <= ability.stats[delivery.range],
+					distance(ctx.p, ally.pos) <= stats[delivery.range] &&
+					(shield
+						? !ally.shielded &&
+							ally.hp / ally.maxHp < stats.bot.saveHp &&
+							ctx.enemies.some((enemy) => distance(enemy.pos, ally.pos) <= stats.bot.dangerRange)
+						: ally.maxHp - ally.hp >= stats.healAmount * stats.bot.deficit),
 			)
 			.sort((a, b) => a.hp / a.maxHp - b.hp / b.maxHp || a.id.localeCompare(b.id))
 		for (const ally of hurt) if (ctx.cast(slot, ally.pos)) return ctx.frame
