@@ -236,9 +236,18 @@ export function createCombat(ctx) {
 		if (
 			hitSource &&
 			shot.traitProcs !== false &&
-			abilityOf(shot.ability, hitSource)?.onHit?.(
-				traitContext(hitSource, { shot, target, point }),
-			) === true
+			ctx.reactAbility('hit', {
+				...traitContext(hitSource, { shot, target, point }),
+				ability: abilityOf(shot.ability, hitSource),
+				event: {
+					source: hitSource,
+					target: unit,
+					point,
+					dir: direction,
+					slot: shot.slot,
+					shot,
+				},
+			})?.consumed
 		)
 			return
 		const at = { x: point.x, y: tune.projectile.height, z: point.z }

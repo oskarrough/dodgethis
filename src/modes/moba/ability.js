@@ -13,13 +13,19 @@ export const AREA_EFFECT_REFS = {
 	damage: { amount: 'hp' },
 	knockback: { distance: 'm', duration: 's' },
 }
-export function areaEffectRecord(ability, record) {
+export const TARGET_EFFECT_REFS = {
+	heal: { amount: 'hp', critChance: 'fraction', critMultiplier: 'multiplier' },
+	cleanse: {},
+}
+export function effectRecord(ability, record) {
 	if (typeof record !== 'string') return record
 	return (
 		ability.statusEffects?.find((effect) => effect.effect === record) ??
 		{
 			damage: { effect: 'damage', amount: 'damage' },
 			knockback: { effect: 'knockback', distance: 'knockback', duration: 'time' },
+			heal: { effect: 'heal', amount: 'healAmount' },
+			cleanse: { effect: 'cleanse', tags: ['stun', 'freeze', 'slow'] },
 		}[record]
 	)
 }
@@ -34,14 +40,14 @@ export const AURA_EVENTS = [
 	'damaged',
 	'death',
 ]
-export const ABILITY_STAGES = ['release', 'land', 'dashEnd', 'end']
-export const CANCELLABLE_EVENTS = ['amplify', 'damage', 'absorb', 'release', 'land']
+export const ABILITY_STAGES = ['release', 'land', 'dashEnd', 'end', 'hit']
+export const CANCELLABLE_EVENTS = ['amplify', 'damage', 'absorb', 'release', 'land', 'hit']
 export function validateHookMap(id, hooks, events, { actions = true } = {}) {
 	for (const [name, hook] of Object.entries(hooks ?? {})) {
 		if (!events.includes(name)) throw new Error(`MOBA unknown hook event: ${id}.${name}`)
 		if (hook?.before !== undefined && !CANCELLABLE_EVENTS.includes(name))
 			throw new Error(`MOBA event is not cancellable: ${id}.${name}`)
-		if (!actions && (Array.isArray(hook) || hook?.do !== undefined))
+		if (!actions && (Array.isArray(hook) || hook?.do !== undefined || Array.isArray(hook?.before)))
 			throw new Error(`MOBA status actions need an owning ability: ${id}.${name}`)
 	}
 }
@@ -54,7 +60,11 @@ export function runHookStages(hook, context, runActions, fallback) {
 		return
 	}
 	if (Array.isArray(hook)) return runActions(hook, context)
-	if (hook?.before?.(context) === true) return true
+	if (
+		(Array.isArray(hook?.before) ? runActions(hook.before, context) : hook?.before?.(context)) ===
+		true
+	)
+		return true
 	if (hook?.replace) hook.replace(context)
 	else if (hook?.do) runActions(hook.do, context)
 	else if (fallback) fallback(context)
@@ -102,6 +112,29 @@ function effectStatuses(manifest) {
 	return statuses
 }
 
+// Targeted casts lock a living teammate at cast start, with stable distance/id ties.
+function pickAbilityTarget({ hero, sim, target, ability }, action) {
+	return (
+		sim.heroes
+			.filter(
+				(unit) =>
+					unit.id !== hero.id &&
+					unit.team === hero.team &&
+					!unit.dead &&
+					Math.hypot(
+						unit.body.position.x - hero.body.position.x,
+						unit.body.position.z - hero.body.position.z,
+					) <= ability.stats[action.range],
+			)
+			.sort(
+				(a, b) =>
+					Math.hypot(a.body.position.x - target.x, a.body.position.z - target.z) -
+						Math.hypot(b.body.position.x - target.x, b.body.position.z - target.z) ||
+					a.id.localeCompare(b.id),
+			)[0] ?? null
+	)
+}
+
 // Engine state keys in abilityState, and the caught-shot pseudo-ability; no ability takes them.
 const RESERVED = ['pocket', 'bag', 'return']
 
@@ -120,9 +153,14 @@ export function defineAbility(id, manifest) {
 				)
 			)
 				throw new Error(`MOBA unknown status effect field: ${id}.${field}`)
+	const release = manifest.stages?.release
+	const target = (Array.isArray(release) ? release : release?.do)?.find(
+		(action) => action.deliver === 'target' && action.pick === 'nearestAim',
+	)
 	return {
 		id,
 		...manifest,
+		...(target && { targetUnit: (context) => pickAbilityTarget(context, target) }),
 		...(manifest.statusEffects && { statuses: effectStatuses(manifest) }),
 		get stats() {
 			return tune[id]

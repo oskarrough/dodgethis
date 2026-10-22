@@ -56,22 +56,17 @@ export default {
 		const { slow, duration } = ability.stats
 		return { applies: slow ? [{ key: 'pass.slow', mag: 1 - slow, duration }] : [] }
 	},
-	onHit({ hero, target, shot, sim, present }) {
-		if (target.unit.team !== hero.team) return false
-		const ally = target.unit
-		const heal = sim.heal(hero, ally, shot.healAmount ?? tune.pass.healAmount, shot.ability)
-		present({
-			type: 'contact',
-			part: 'hit',
-			source: hero.id,
-			target: ally.id,
-			ability: shot.ability,
-			projectile: shot.id,
-			heal,
-			hp: ally.hp,
-			maxHp: ally.maxHp,
-			point: { ...ally.body.position },
-		})
-		return true
+	stages: {
+		hit: {
+			before: [
+				{
+					deliver: 'target',
+					pick: 'event',
+					targets: 'ally',
+					hit: [{ effect: 'heal', amount: 'healAmount', scale: null }],
+					consume: true,
+				},
+			],
+		},
 	},
 }

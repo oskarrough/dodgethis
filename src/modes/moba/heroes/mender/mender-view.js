@@ -3,7 +3,6 @@ import { FORWARD_LAYER } from '../../../../core/stylepass.js'
 import { look } from '../../look.js'
 import { tune } from '../../tune.js'
 import { SLOTS } from '../../sim-kit.js'
-import { menderTargetUnit } from '../../abilities/mend/mend-target.js'
 import { createEffects, glowMaterial, link, linkGeometry, shellMaterial } from '../../effects.js'
 
 // Coach's bar and megaphone, without the touchline cutout.
@@ -137,7 +136,7 @@ export function extras(scene) {
 					(a?.id === 'mend' || a?.id === 'ward') && !(unit.cd?.[SLOTS.indexOf(slot)] > 0),
 			)?.[1]
 			if (spell && aim && !unit.dead && !unit.cast) {
-				const target = menderTargetUnit({
+				const target = spell.targetUnit({
 					hero: unit,
 					sim: { heroes: units },
 					target: aim,

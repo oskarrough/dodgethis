@@ -43,23 +43,6 @@ export default {
 			},
 		},
 	},
-	targetUnit({ hero, sim, target, ability }) {
-		return (
-			sim.heroes
-				.filter(
-					(u) =>
-						u.id !== hero.id &&
-						u.team === hero.team &&
-						!u.dead &&
-						distance(hero.body.position, u.body.position) <= ability.stats.range,
-				)
-				.sort(
-					(a, b) =>
-						distance(a.body.position, target) - distance(b.body.position, target) ||
-						a.id.localeCompare(b.id),
-				)[0] ?? null
-		)
-	},
 	ready({ hero, sim }) {
 		return sim.heroes.some(
 			(u) =>
@@ -69,40 +52,43 @@ export default {
 				distance(hero.body.position, u.body.position) <= tune.tagOut.range,
 		)
 	},
-	onRelease({ hero, sim, ability, targetId, present }) {
-		const ally = sim.heroes.find((u) => u.id === targetId)
-		if (
-			!ally ||
-			ally.dead ||
-			distance(hero.body.position, ally.body.position) > ability.stats.range
-		) {
-			present({ type: 'denied', hero: hero.id, slot: 'slot2', reason: 'targetLost' })
-			return
-		}
-		const from = { ...hero.body.position },
-			to = { ...ally.body.position }
-		for (const u of [hero, ally]) {
-			u.body.cancelDash()
-			u.dashAbility = null
-			u.shove = null
-			sim.cleanse(u, 'motion')
-			u.order = null
-		}
-		hero.body.place(to.x, to.y, to.z)
-		ally.body.place(from.x, from.y, from.z)
-		sim.cleanse(ally, 'stun')
-		sim.cleanse(ally, 'freeze')
-		sim.cleanse(ally, 'slow')
-		sim.apply(hero, 'tagOut.guard')
-		present({
-			type: 'contact',
-			part: 'impact',
-			source: hero.id,
-			target: ally.id,
-			ability: ability.id,
-			point: { ...to },
-			from,
-		})
+	stages: {
+		release: [
+			{
+				deliver: 'target',
+				pick: 'nearestAim',
+				targets: 'ally',
+				range: 'range',
+				hit: ['cleanse'],
+				// The position swap stays code, before the ally's cleanse and our guard.
+				before({ hero, sim, event }) {
+					const ally = event.target
+					event.from = { ...hero.body.position }
+					event.to = { ...ally.body.position }
+					for (const unit of [hero, ally]) {
+						unit.body.cancelDash()
+						unit.dashAbility = null
+						unit.shove = null
+						sim.cleanse(unit, 'motion')
+						unit.order = null
+					}
+					hero.body.place(event.to.x, event.to.y, event.to.z)
+					ally.body.place(event.from.x, event.from.y, event.from.z)
+				},
+				after({ hero, sim, ability, event, present }) {
+					sim.apply(hero, 'tagOut.guard')
+					present({
+						type: 'contact',
+						part: 'impact',
+						source: hero.id,
+						target: event.target.id,
+						ability: ability.id,
+						point: { ...event.to },
+						from: event.from,
+					})
+				},
+			},
+		],
 	},
 	card: {
 		summary: `Swap with the ally nearest your aim within {range}. Cleanse them; take {damageReduction} less damage for {duration}.`,

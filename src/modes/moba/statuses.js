@@ -1,10 +1,4 @@
-import {
-	abilityOf,
-	areaEffectRecord,
-	runHookStages,
-	validateHookMap,
-	AURA_EVENTS,
-} from './ability.js'
+import { abilityOf, effectRecord, runHookStages, validateHookMap, AURA_EVENTS } from './ability.js'
 import { tune } from './tune.js'
 import { segmentClear } from './obstacles.js'
 import { STEP } from '../../core/app.js'
@@ -175,7 +169,8 @@ export function createStatuses(ctx) {
 			...(info.point && { point: { ...info.point } }),
 		}
 		const consumed = runHookStages(
-			ability.stages?.[name],
+			ability.stages?.[name] ??
+				(name === 'hit' && ability.onHit ? { before: ability.onHit } : null),
 			{ ...info, hero, unit: hero, stats: ability.stats, event },
 			runActions,
 			ability[legacyEvents[name]] ?? fallback,
@@ -186,7 +181,7 @@ export function createStatuses(ctx) {
 	// Source is attribution/geometry: { unit, ability, slot, dir, point, target? }.
 	// Keeping this independent of cast events lets fields use exactly the same hit resolution.
 	function applyEffects(source, unit, effects, stats) {
-		const { unit: actor, ability, slot, dir, point } = source
+		const { unit: actor, ability, slot, dir, point, shot } = source
 		if (unit.dead || unit.hp <= 0) return { lethal: true }
 		const damage = effects.find((effect) => effect.effect === 'damage')
 		const statuses = effects.filter((effect) => ['slow', 'freeze'].includes(effect.effect))
@@ -215,6 +210,7 @@ export function createStatuses(ctx) {
 			for (const effect of statuses)
 				ctx.apply(unit, `${ability.id}.${effect.effect}`, { source: actor })
 		}
+		let heal = 0
 		const lethal = unit.dead || unit.hp <= 0
 		if (!lethal)
 			for (const effect of effects) {
@@ -231,6 +227,22 @@ export function createStatuses(ctx) {
 						until: stateUntil(unit, 'frozen'),
 						point: { ...unit.body.position },
 					})
+				} else if (effect.effect === 'heal') {
+					heal = ctx.heal(
+						actor,
+						unit,
+						(shot?.[effect.amount] ?? stats[effect.amount]) *
+							(effect.scale === null ? 1 : 1 + tune.levels.growth * (actor.level - 1)),
+						ability.id,
+						{
+							critChance: stats[effect.critChance],
+							critMultiplier: stats[effect.critMultiplier],
+						},
+					)
+				} else if (effect.effect === 'shield') {
+					ctx.apply(unit, `${ability.id}.shield`, { source: actor, amount: stats[effect.amount] })
+				} else if (effect.effect === 'cleanse') {
+					for (const tag of effect.tags) cleanse(unit, tag)
 				} else if (effect.effect === 'knockback') {
 					const at = point ?? unit.body.position
 					ctx.displace(
@@ -240,7 +252,7 @@ export function createStatuses(ctx) {
 					)
 				}
 			}
-		return { lethal }
+		return { lethal, heal }
 	}
 	function runActions(actions, info) {
 		// Status callbacks still see their carrier as unit/hero. Only declared actions
@@ -267,11 +279,55 @@ export function createStatuses(ctx) {
 			target: info.unit ?? null,
 		}
 		for (const action of actions) {
-			if (action.deliver !== 'area') throw new Error(`MOBA unknown delivery: ${action.deliver}`)
 			const stats = ability.stats
+			if (action.deliver === 'target') {
+				const unit = event.target
+				if (
+					!unit ||
+					unit.dead ||
+					unit.team !== actor.team ||
+					(action.pick === 'nearestAim' &&
+						Math.hypot(
+							unit.body.position.x - actor.body.position.x,
+							unit.body.position.z - actor.body.position.z,
+						) > stats[action.range])
+				) {
+					if (action.pick === 'nearestAim')
+						present({ type: 'denied', hero: actor.id, slot: event.slot, reason: 'targetLost' })
+					continue
+				}
+				const context = { ...info, hero: actor, event, stats }
+				action.before?.(context)
+				const result = applyEffects(
+					{ unit: actor, ability, slot: event.slot, dir: event.dir, shot: info.shot },
+					unit,
+					action.hit.map((record) => effectRecord(ability, record)),
+					stats,
+				)
+				event.lethal = Boolean(event.lethal || result.lethal)
+				if (action.after) action.after(context)
+				else
+					present({
+						type: 'contact',
+						part: info.shot ? 'hit' : 'impact',
+						source: actor.id,
+						target: unit.id,
+						ability: ability.id,
+						...(info.shot && {
+							projectile: info.shot.id,
+							heal: result.heal,
+							hp: unit.hp,
+							maxHp: unit.maxHp,
+						}),
+						point: { ...unit.body.position },
+					})
+				if (action.consume) return true
+				continue
+			}
+			if (action.deliver !== 'area') throw new Error(`MOBA unknown delivery: ${action.deliver}`)
 			const p = action.from === 'self' ? actor.body.position : event.point
 			const dir = event.dir ?? { x: Math.sin(actor.yaw), z: Math.cos(actor.yaw) }
-			const effects = action.hit.map((record) => areaEffectRecord(ability, record))
+			const effects = action.hit.map((record) => effectRecord(ability, record))
 			let hit = false
 			for (const target of ctx.api.enemiesOf(actor.team)) {
 				const unit = target.unit

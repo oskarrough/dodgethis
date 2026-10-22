@@ -9,7 +9,8 @@ import {
 	ABILITIES,
 	STATUS_EFFECT_REFS,
 	AREA_EFFECT_REFS,
-	areaEffectRecord,
+	TARGET_EFFECT_REFS,
+	effectRecord,
 	validateHookMap,
 	AURA_EVENTS,
 	ABILITY_STAGES,
@@ -86,54 +87,96 @@ function checkActions(id, manifest, actions) {
 		return
 	}
 	for (const action of actions) {
-		if (!action || action.deliver !== 'area') {
+		if (!action || !['area', 'target'].includes(action.deliver)) {
 			errors.push(`${id}: unknown delivery ${action?.deliver}`)
 			continue
 		}
+		const targeted = action.deliver === 'target'
+		const fields = targeted
+			? ['deliver', 'pick', 'targets', 'range', 'hit', 'consume', 'before', 'after']
+			: ['deliver', 'from', 'shape', 'targets', 'blockedBy', 'where', 'hit']
 		for (const field of Object.keys(action))
-			if (!['deliver', 'from', 'shape', 'targets', 'blockedBy', 'where', 'hit'].includes(field))
-				errors.push(`${id}: unknown area field ${field}`)
-		if (!['self', 'at'].includes(action.from))
-			errors.push(`${id}: unknown area origin ${action.from}`)
-		if (!['circle', 'cone'].includes(action.shape))
-			errors.push(`${id}: unknown area shape ${action.shape}`)
-		if (!['enemies', 'enemyHero'].includes(action.targets))
-			errors.push(`${id}: unknown area targets ${action.targets}`)
-		if (action.blockedBy !== undefined && action.blockedBy !== 'cover')
-			errors.push(`${id}: unknown area blocker ${action.blockedBy}`)
-		if (action.where !== undefined && typeof action.where !== 'function')
-			errors.push(`${id}: area where must be a function`)
-		checkRef(id, 'area reach', action.shape === 'cone' ? 'range' : 'radius', 'm')
-		if (action.shape === 'cone') checkRef(id, 'area angle', 'angle', 'deg')
+			if (!fields.includes(field)) errors.push(`${id}: unknown ${action.deliver} field ${field}`)
+		if (targeted) {
+			if (!['nearestAim', 'event'].includes(action.pick))
+				errors.push(`${id}: unknown target pick ${action.pick}`)
+			if (action.targets !== 'ally') errors.push(`${id}: unknown target team ${action.targets}`)
+			if (action.pick === 'nearestAim') checkRef(id, 'target range', action.range, 'm')
+			else if (action.range !== undefined) errors.push(`${id}: event target cannot have a range`)
+			if (action.consume !== undefined && typeof action.consume !== 'boolean')
+				errors.push(`${id}: target consume must be a boolean`)
+			for (const hook of ['before', 'after'])
+				if (action[hook] !== undefined && typeof action[hook] !== 'function')
+					errors.push(`${id}: target ${hook} must be a function`)
+		} else {
+			if (!['self', 'at'].includes(action.from))
+				errors.push(`${id}: unknown area origin ${action.from}`)
+			if (!['circle', 'cone'].includes(action.shape))
+				errors.push(`${id}: unknown area shape ${action.shape}`)
+			if (!['enemies', 'enemyHero'].includes(action.targets))
+				errors.push(`${id}: unknown area targets ${action.targets}`)
+			if (action.blockedBy !== undefined && action.blockedBy !== 'cover')
+				errors.push(`${id}: unknown area blocker ${action.blockedBy}`)
+			if (action.where !== undefined && typeof action.where !== 'function')
+				errors.push(`${id}: area where must be a function`)
+			checkRef(id, 'area reach', action.shape === 'cone' ? 'range' : 'radius', 'm')
+			if (action.shape === 'cone') checkRef(id, 'area angle', 'angle', 'deg')
+		}
 		if (!Array.isArray(action.hit) || !action.hit.length) {
-			errors.push(`${id}: area hit must be a nonempty effect array`)
+			errors.push(`${id}: ${action.deliver} hit must be a nonempty effect array`)
 			continue
 		}
 		const seen = new Set()
 		for (const input of action.hit) {
-			const record = areaEffectRecord(manifest, input)
-			const refs = AREA_EFFECT_REFS[record?.effect] ?? STATUS_EFFECT_REFS[record?.effect]
-			if (!record || !['damage', 'slow', 'freeze', 'knockback'].includes(record.effect) || !refs) {
+			const record = effectRecord(manifest, input)
+			const refs =
+				AREA_EFFECT_REFS[record?.effect] ??
+				STATUS_EFFECT_REFS[record?.effect] ??
+				TARGET_EFFECT_REFS[record?.effect]
+			const allowed = targeted
+				? ['heal', 'shield', 'cleanse']
+				: ['damage', 'slow', 'freeze', 'knockback']
+			if (!record || !allowed.includes(record.effect) || !refs) {
 				errors.push(
-					`${id}: unknown area effect ${typeof input === 'string' ? input : input?.effect}`,
+					`${id}: unknown ${action.deliver} effect ${typeof input === 'string' ? input : input?.effect}`,
 				)
 				continue
 			}
-			if (seen.has(record.effect)) errors.push(`${id}: duplicate area effect ${record.effect}`)
+			if (seen.has(record.effect))
+				errors.push(`${id}: duplicate ${action.deliver} effect ${record.effect}`)
 			seen.add(record.effect)
 			if (
-				['slow', 'freeze'].includes(record.effect) &&
+				['slow', 'freeze', 'shield'].includes(record.effect) &&
 				!manifest.statusEffects?.some((effect) => effect.effect === record.effect)
 			)
 				errors.push(`${id}: area ${record.effect} needs a matching status effect`)
-			for (const [field, unit] of Object.entries(refs)) checkRef(id, field, record[field], unit)
+			for (const [field, unit] of Object.entries(refs)) {
+				if (['critChance', 'critMultiplier'].includes(field) && record[field] === undefined)
+					continue
+				checkRef(id, field, record[field], unit)
+			}
+			if (
+				record.effect === 'heal' &&
+				(record.critChance === undefined) !== (record.critMultiplier === undefined)
+			)
+				errors.push(`${id}: heal crit chance and multiplier must be declared together`)
+			if (
+				record.effect === 'cleanse' &&
+				(!Array.isArray(record.tags) ||
+					!record.tags.length ||
+					record.tags.some((tag) => typeof tag !== 'string' || !tag))
+			)
+				errors.push(`${id}: cleanse needs nonempty status tags`)
 			for (const field of Object.keys(record))
-				if (!['effect', 'scale'].includes(field) && !Object.hasOwn(refs, field))
+				if (
+					!['effect', 'scale', ...(record.effect === 'cleanse' ? ['tags'] : [])].includes(field) &&
+					!Object.hasOwn(refs, field)
+				)
 					errors.push(`${id}: unknown ${record.effect} field ${field}`)
 			if (record.scale !== undefined && record.scale !== null)
 				errors.push(`${id}: unsupported area effect scaling`)
-			if (record.scale === null && record.effect !== 'damage')
-				errors.push(`${id}: only area damage supports scaling`)
+			if (record.scale === null && !['damage', 'heal'].includes(record.effect))
+				errors.push(`${id}: only damage and heal support scaling`)
 		}
 	}
 }
@@ -148,7 +191,8 @@ function checkHooks(id, manifest, on, events = AURA_EVENTS) {
 		if (Array.isArray(hook)) checkActions(id, manifest, hook)
 		else if (hook && typeof hook === 'object') {
 			for (const [stage, value] of Object.entries(hook)) {
-				if (stage === 'do') checkActions(id, manifest, value)
+				if (stage === 'do' || (stage === 'before' && Array.isArray(value)))
+					checkActions(id, manifest, value)
 				else if (!['before', 'replace', 'after'].includes(stage) || typeof value !== 'function')
 					errors.push(`${id}: invalid hook stage ${stage}`)
 			}
