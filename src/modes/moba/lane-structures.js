@@ -1,4 +1,23 @@
 import { tune } from './tune.js'
+import { unitFromDeclaration } from './unit-definition.js'
+
+export const STRUCTURE_DEFINITIONS = Object.fromEntries(
+	['tower', 'fort', 'gatehouse', 'laser', 'core'].map((kind) => [
+		kind,
+		unitFromDeclaration(
+			kind,
+			{
+				hp: 'hp',
+				radius: 'radius',
+				// Stationary: tune[kind].speed belongs to the projectile, not this body.
+				speed: () => 0,
+				attack: { damage: 'damage', rate: 'rate', range: 'range', tell: 'tell' },
+				brain: 'lane',
+			},
+			() => tune[kind],
+		),
+	]),
+)
 
 // Forts, guns, gates and cores: built from the layout, shielded until their `after` list falls.
 export function createStructures({ layout, makeBody, enabled }) {
@@ -10,8 +29,8 @@ export function createStructures({ layout, makeBody, enabled }) {
 		statuses: [],
 		lane,
 		after,
-		hp: tune[kind].hp,
-		maxHp: tune[kind].hp,
+		hp: STRUCTURE_DEFINITIONS[kind].base.hp,
+		maxHp: STRUCTURE_DEFINITIONS[kind].base.hp,
 		dead: false,
 		body: makeBody(x, z, team, kind),
 		target: null,

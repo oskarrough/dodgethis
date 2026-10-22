@@ -1,6 +1,25 @@
 import { STEP } from '../../core/app.js'
 import { tune } from './tune.js'
+import { look } from './look.js'
+import { unitFromDeclaration } from './unit-definition.js'
 import { clampWalkable } from './obstacles.js'
+
+export const MINION_DEFINITIONS = Object.fromEntries(
+	['brute', 'melee', 'ranged', 'wizard'].map((kind) => [
+		kind,
+		unitFromDeclaration(
+			kind,
+			{
+				hp: 'hp',
+				radius: () => (kind === 'brute' ? look.laneView.bruteRadius : tune.waves.radius),
+				speed: 'speed',
+				attack: { damage: 'damage', rate: 'rate', range: 'range', tell: 'tell' },
+				brain: 'lane',
+			},
+			() => tune.minions[kind],
+		),
+	]),
+)
 
 const ticks = (s) => Math.max(1, Math.round(s / STEP))
 // A lane's normal is authored A→B, so files keep their side on the reverse march.
@@ -62,7 +81,7 @@ export function createWaves(shared) {
 					? ['melee', 'ranged', 'wizard', 'brute']
 					: ['melee', 'ranged', 'wizard']
 				).entries()) {
-					const stats = tune.minions[kind]
+					const stats = MINION_DEFINITIONS[kind].base
 					const count =
 						stats.count +
 						(kind === tune.waves.reinforcement ? (reinforcements[`${team}-${lane.id}`] ?? 0) : 0)

@@ -23,7 +23,7 @@ export default {
 		validData: (data) =>
 			['flight', 'puddle'].includes(data.phase) &&
 			[data.start, data.target].every((p) => p && Number.isFinite(p.x) && Number.isFinite(p.z)),
-		think(ctx) {
+		brain(ctx) {
 			const { unit, owner, sim, tick, ticks, stats } = ctx
 			if (unit.data.phase === 'flight') {
 				const fraction = Math.min(1, (tick - unit.from) / Math.max(1, ticks(stats.flight)))

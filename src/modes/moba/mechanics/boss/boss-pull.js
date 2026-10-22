@@ -1,23 +1,14 @@
 import { STEP } from '../../../../core/app.js'
 import { tune } from '../../tune.js'
-import { heroDefinition, freshAbilityState } from '../../heroes.js'
-import { abilityOf, ABILITIES } from '../../ability.js'
+import { wardenDefinition, freshAbilityState } from '../../heroes.js'
+import { abilityOf } from '../../ability.js'
 import { blocked, moveSpeed } from '../../statuses.js'
 import { ticks, yawOf } from '../../sim-kit.js'
 
 const distance = (a, b) => Math.hypot(a.x - b.x, a.z - b.z)
 
 export function createBossPull({ heroes, layout, makeBody, present, systems, view }) {
-	const definition = {
-		id: 'brew',
-		name: 'Warden',
-		traits: {},
-		get base() {
-			return Object.assign(Object.create(heroDefinition('brew').base), tune.boss)
-		},
-		basic: ABILITIES.swing,
-		abilities: { slot1: ABILITIES.swing, slot2: ABILITIES.slam },
-	}
+	const definition = wardenDefinition()
 	const spawn = { ...layout.spawns.boss }
 	const unit = {
 		id: 'warden',
@@ -28,8 +19,8 @@ export function createBossPull({ heroes, layout, makeBody, present, systems, vie
 		spawn,
 		dress: view.dress,
 		body: makeBody(spawn.x, spawn.z, 'B', definition, view.dress),
-		hp: tune.boss.hp,
-		maxHp: tune.boss.hp,
+		hp: definition.base.hp,
+		maxHp: definition.base.hp,
 		yaw: 0,
 		dead: false,
 		corpse: null,
@@ -138,7 +129,7 @@ export function createBossPull({ heroes, layout, makeBody, present, systems, vie
 			h.recall = null
 			h.cd.fill(0)
 			h.yaw = 0
-			if (h === unit) h.maxHp = tune.boss.hp
+			if (h === unit) h.maxHp = definition.base.hp
 			h.hp = h.maxHp
 			ctx.intents.cancel(h.id)
 			ctx.respawn(h)

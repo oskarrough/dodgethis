@@ -1,5 +1,6 @@
 import { tune } from './tune.js'
 import { ABILITIES } from './ability.js'
+import { unitFromDeclaration } from './unit-definition.js'
 import manifests from './heroes/all-heroes.js'
 
 // Definitions stay plugin-local. Getters keep live tuning live; mutable state
@@ -7,18 +8,8 @@ import manifests from './heroes/all-heroes.js'
 const SLOTS = ['slot1', 'slot2', 'slot3', 'slot4']
 const titleCase = (id) => id[0].toUpperCase() + id.slice(1)
 
-// A folder's manifest becomes the definition shape every reader knows: kit ids resolve to
-// ability objects in abilities.slot1–slot4; base and basic stay getters on live tune.
-export function heroFromManifest(id, { kit = {}, basic = null, ...manifest }) {
-	const resolve = (abilityId) => {
-		if (abilityId == null) return null
-		if (!Object.hasOwn(ABILITIES, abilityId))
-			throw new Error(`MOBA hero ${id}: unknown ability ${abilityId}`)
-		return ABILITIES[abilityId]
-	}
-	const basicAbility = resolve(basic)
-	for (const slot of Object.keys(kit))
-		if (!SLOTS.includes(slot)) throw new Error(`MOBA hero ${id}: unknown kit slot ${slot}`)
+// A hero is a unit plus selection and presentation. The engine-facing getters stay live.
+export function heroFromManifest(id, { unit, ...manifest }) {
 	const baseValue = (key) => tune.heroes[id]?.[key] ?? tune.hero[key]
 	const baseKeys = () => [
 		...new Set([...Object.keys(tune.hero), ...Object.keys(tune.heroes[id] ?? {})]),
@@ -35,26 +26,33 @@ export function heroFromManifest(id, { kit = {}, basic = null, ...manifest }) {
 					: undefined,
 		},
 	)
-	return {
-		silhouette: 'circle',
-		traits: {},
-		...manifest,
+	const definition = unitFromDeclaration(
 		id,
-		name: manifest.name ?? titleCase(id),
-		order: manifest.order ?? 100,
-		draft: manifest.draft ?? false,
-		// Live: a hero without its own tune shares tune.hero itself; one with its own tune
-		// reads through a view that falls back to tune.hero key by key.
-		get base() {
-			return tune.heroes[id] ? view : tune.hero
-		},
-		get basic() {
-			return basicAbility
-				? { ...basicAbility, ...tune[basicAbility.id] }
-				: { ...tune.attack, range: tune.orders.attackRange }
-		},
-		abilities: Object.fromEntries(SLOTS.map((slot) => [slot, resolve(kit[slot])])),
-	}
+		unit,
+		() => (tune.heroes[id] ? view : tune.hero),
+		ABILITIES,
+	)
+	definition.abilities = Object.fromEntries(
+		SLOTS.map((slot) => [slot, definition.abilities[slot] ?? null]),
+	)
+	const basicAbility = definition.basic
+	return Object.defineProperties(
+		definition,
+		Object.getOwnPropertyDescriptors({
+			silhouette: 'circle',
+			...manifest,
+			id,
+			name: manifest.name ?? titleCase(id),
+			order: manifest.order ?? 100,
+			draft: manifest.draft ?? false,
+			bot: unit.brain,
+			get basic() {
+				return basicAbility
+					? { ...basicAbility, ...tune[basicAbility.id] }
+					: { ...tune.attack, range: tune.orders.attackRange }
+			},
+		}),
+	)
 }
 
 // Registry order is by id; seeded random seats index into it, so a new id can shift them.
@@ -96,6 +94,26 @@ export function listedHeroes(setup = {}) {
 export function heroDefinition(id = DEFAULT_HERO) {
 	const definition = HEROES[id]
 	if (!definition) throw new Error(`Unknown MOBA hero: ${id}`)
+	return definition
+}
+
+// The body still uses Brew's movement defaults and identity; only the unit is declared.
+export const WARDEN_UNIT = {
+	hp: 'hp',
+	radius: 'radius',
+	speed: 'speed',
+	attack: 'swing',
+	kit: { slot1: 'swing', slot2: 'slam' },
+	brain: 'boss',
+}
+export function wardenDefinition() {
+	const definition = unitFromDeclaration(
+		'brew',
+		WARDEN_UNIT,
+		() => Object.assign(Object.create(heroDefinition('brew').base), tune.boss),
+		ABILITIES,
+	)
+	definition.name = 'Warden'
 	return definition
 }
 

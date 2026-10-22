@@ -1,6 +1,17 @@
 export default {
-	kit: { slot1: 'toss', slot2: 'catch', slot3: 'dive' },
-	basic: 'gloveSlap',
+	unit: {
+		hp: 'hp',
+		radius: 'radius',
+		speed: 'speed',
+		attack: 'gloveSlap',
+		kit: { slot1: 'toss', slot2: 'catch', slot3: 'dive' },
+		traits: {
+			onDeath({ hero }) {
+				hero.body.cancelDash()
+				hero.dashAbility = null
+			},
+		},
+	},
 	name: 'Mitts',
 	order: 2,
 	color: 'terracotta',
@@ -13,10 +24,4 @@ export default {
 		chip: `{catching.pocketLife}`,
 		summary: `Hold a caught shot for {catching.pocketLife}, then send it back with Toss.`,
 	}),
-	traits: {
-		onDeath({ hero }) {
-			hero.body.cancelDash()
-			hero.dashAbility = null
-		},
-	},
 }

@@ -47,12 +47,14 @@ Everything else in the folder is yours. `bun run collect-mods` writes the `all-*
 
 Copy `heroes/wata/` and `abilities/balloon/`; Wata was built this way and touched one shared engine file.
 
-1. **Hero:** `heroes/<id>/<id>.js` names it and lists its kit: `{ name, basic, kit: { slot1, slot2, slot3 }, silhouette, icon }`. HP, speed and costume sizes go in `<id>-tune.js`; the costume in `<id>-view.js`.
+1. **Hero:** `heroes/<id>/<id>.js` declares `{ unit: { hp: 'hp', radius: 'radius', speed: 'speed', attack, kit: { slot1, slot2, slot3 }, traits, brain }, name, silhouette, icon }`. `attack` names a basic ability; omit it for the default ranged attack. `brain` is an optional hero bot function. Selection and presentation stay outside `unit`. HP, speed and costume sizes go in `<id>-tune.js`; the costume in `<id>-view.js`.
 2. **Ability:** `abilities/<id>/<id>.js` declares a `kind` (`shot`, `zone`, `dash`, `melee`, `stance`, `channel`, `instant`), its `tell` and `card`, and code in hooks: `onStart`, `onTick`, `onRelease`, `onRecast`, `onHit`, `onEnd`, `onCancel`, `onDashEnd`. Numbers, `sound` and `juice` live in `<id>-tune.js`.
 3. **Effects:** declare `statuses` (slow, stun, freeze, shield, damage over time; tags, stacks, cleanse) and apply them with `sim.apply(unit, '<ability>.<status>', …)`. The strongest slow wins; a stun always lands in full.
 4. **Bots:** `bot` names a built-in tactic (`shoot`, `zone`, `dash`, `blink`, `cover`, `catch`, `cone`, `radial`), opts out with `false`, or brings `{ priority, act(ctx, slot) }`. Leave it out and the bot infers one from the kind.
-5. **Summons:** declare `summon: { hp, radius, lifetime, think }` and call `sim.summon(owner, '<ability>', at)`: an owned, replicated unit that outlives its owner's death and clears on hero swap, removal or match end.
+5. **Summons:** declare `summon: { hp: 'hp', radius: 'bodyRadius', lifetime: 'duration', brain }` and call `sim.summon(owner, '<ability>', at)`: an owned, replicated unit that outlives its owner's death and clears on hero swap, removal or match end. Computed values may remain functions of stats (Balloon's lifetime is flight plus puddle); `state` and `validData` keep custom state local.
 6. **Check:** `bun run collect-mods` (runs before `dev` and `check`), then `bun run simulate --report --lineup <id>,fletcher,mitts` to see every ability cast and land.
+
+`unit-definition.js` resolves this MOBA-local shape for heroes, the Warden (`heroes.js` `WARDEN_UNIT`), minions (`lane-waves.js`) and structures (`lane-structures.js`). Numeric fields name local tune keys; `attack` may instead map damage/rate/range/tell to tune keys. `brain: 'lane'` and `'boss'` identify the existing controllers, not a new dispatcher. Spawn order, live getters and each controller's evaluation points stay unchanged. `bun scripts/check-moba-effects.js` checks unit references and rejects unknown fields; computed fields stay code. Dodgeball keeps its own definitions.
 
 Every new MOBA tune number needs a unit in `src/modes/moba/units.js` (exact dotted suffixes override bare fields; blocks can declare defaults); `bun scripts/check-moba-units.js` enforces coverage.
 

@@ -1,4 +1,5 @@
 import { abilityOf } from './ability.js'
+import { unitTuneValue } from './unit-definition.js'
 import { ticks } from './sim-kit.js'
 import { packStatuses } from './statuses.js'
 
@@ -15,8 +16,8 @@ export function createSummons(ctx) {
 		const declaration = ability?.summon
 		if (!declaration) throw new Error(`MOBA summon needs an ability declaration: ${key}`)
 		const stats = ability.stats
-		const hp = declaration.hp?.(stats) ?? null
-		const radius = declaration.radius?.(stats) ?? 0
+		const hp = unitTuneValue(declaration, 'hp', stats) ?? null
+		const radius = unitTuneValue(declaration, 'radius', stats) ?? 0
 		const position = hp === null ? at : ctx.walkGoal(at, radius)
 		const unit = {
 			id: `summon-${++nextId}`,
@@ -30,7 +31,7 @@ export function createSummons(ctx) {
 			statuses: [],
 			body: summonBody(position, radius),
 			from: ctx.t,
-			until: ctx.t + ticks(declaration.lifetime(stats)),
+			until: ctx.t + ticks(unitTuneValue(declaration, 'lifetime', stats)),
 			data: declaration.state?.() ?? {},
 		}
 		summons.push(unit)
@@ -60,7 +61,7 @@ export function createSummons(ctx) {
 			ctx.expireStatuses(unit)
 			ctx.stepStatuses(unit)
 			const ability = abilityOf(unit.key)
-			ability.summon.think?.({
+			ability.summon.brain?.({
 				unit,
 				owner,
 				ability,

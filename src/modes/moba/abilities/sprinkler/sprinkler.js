@@ -10,15 +10,15 @@ export default {
 	icon: '<svg viewBox="0 0 48 48"><path class="tone" d="M18 42 V18 H30 V42 Z"/><path class="ink-line" d="M5 15 Q24 0 43 15 M10 22 Q24 10 38 22"/></svg>',
 	effects: { cast: true, impact: true, hit: true, pose: 'sprinkler' },
 	summon: {
-		hp: (stats) => stats.hp,
-		radius: (stats) => stats.bodyRadius,
-		lifetime: (stats) => stats.duration,
+		hp: 'hp',
+		radius: 'bodyRadius',
+		lifetime: 'duration',
 		state: () => ({ touched: {} }),
 		validData: (data) =>
 			data.touched &&
 			typeof data.touched === 'object' &&
 			Object.values(data.touched).every(Number.isFinite),
-		think({ unit, owner, sim, tick, ticks, stats, present }) {
+		brain({ unit, owner, sim, tick, ticks, stats, present }) {
 			const elapsed = tick - unit.from
 			const period = Math.max(1, ticks(stats.sweep))
 			const angle = ((elapsed % period) / period) * Math.PI * 2

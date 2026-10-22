@@ -1,7 +1,18 @@
 import { tune } from '../../tune.js'
 
 export default {
-	kit: { slot1: 'loose', slot2: 'rain', slot3: 'vault' },
+	unit: {
+		hp: 'hp',
+		radius: 'radius',
+		speed: 'speed',
+		kit: { slot1: 'loose', slot2: 'rain', slot3: 'vault' },
+		traits: {
+			onHit({ source, shot, target, ticks }) {
+				if (shot.traitProcs !== false && shot.ability === 'loose' && target.hero && !source.dead)
+					source.cd[2] = Math.max(0, source.cd[2] - ticks(tune.momentum.reduction))
+			},
+		},
+	},
 	name: 'Fletcher',
 	order: 1,
 	color: 'seaTeal',
@@ -13,10 +24,4 @@ export default {
 		chip: `−{momentum.reduction}`,
 		summary: `Loose hitting a hero cuts Vault's cooldown by {momentum.reduction}.`,
 	}),
-	traits: {
-		onHit({ source, shot, target, ticks }) {
-			if (shot.traitProcs !== false && shot.ability === 'loose' && target.hero && !source.dead)
-				source.cd[2] = Math.max(0, source.cd[2] - ticks(tune.momentum.reduction))
-		},
-	},
 }
