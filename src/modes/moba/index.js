@@ -361,6 +361,7 @@ export default function moba(app, map) {
 										: practiceRoster(local, difficulty, setup.picks, setup.seed, [local], party),
 							readyParty: party,
 							readyPortal: portalLobby,
+							...(portalLobby && isLobby && { posts: tune.lobby.portal.dummies }),
 							spawns: lobbySpawns,
 							respawn: tune.lobby.respawn,
 							footprint: party ? null : gallery.contact,

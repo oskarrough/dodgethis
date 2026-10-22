@@ -73,10 +73,8 @@ export function createPortalLobby({ app, run, sim, hero, setup, options }) {
 	})
 	app.scene.add(tear.object)
 	const facing = new THREE.Vector3(0, Math.sin(p.lean), Math.cos(p.lean))
-	tear.place(
-		new THREE.Vector3(p.x, p.tearRadius, p.z - p.radius - p.tearRadius * Math.sin(p.lean)),
-		facing,
-	)
+	const mouth = new THREE.Vector3(p.x, p.tearRadius, p.z)
+	tear.place(mouth, facing)
 	tear.exit(new THREE.Vector3(0, p.farHeight, 0), facing)
 	let viewTime = sim.tick * app.clock.step
 	const squeezed = new Set()
@@ -90,14 +88,30 @@ export function createPortalLobby({ app, run, sim, hero, setup, options }) {
 	}
 	const slipping = (from = readyFrom()) =>
 		from !== null && (sim.tick - from) * app.clock.step >= p.countdown
+	// How far a hero's middle has passed through the mouth's plane, in metres; under 0 is in front.
+	const depth = (h) =>
+		-(
+			(h.body.position.x - mouth.x) * facing.x +
+			(0.5 - mouth.y) * facing.y +
+			(h.body.position.z - mouth.z) * facing.z
+		)
+	// In the tear: through its plane, between its sides and not out past its back.
+	const inside = (h) =>
+		!!h &&
+		depth(h) > 0 &&
+		Math.abs(h.body.position.x - mouth.x) < p.tearRadius * p.width &&
+		depth(h) <= p.reach + 0.01
+	// Walking in shrinks a hero away over `p.sink` m; after the countdown everyone left slips in too.
 	function slip(time, from) {
 		const k =
 			from === null
 				? 0
 				: Math.min(1, Math.max(0, (time - from * app.clock.step - p.countdown) / p.slipTime))
 		for (const h of sim.heroes) {
-			if (k > 0) {
-				h.body.mesh?.scale.setScalar(Math.max(0.05, 1 - k * k))
+			const sunk = inside(h) ? Math.min(1, depth(h) / p.sink) : 0
+			const gone = Math.max(k, sunk)
+			if (gone > 0) {
+				h.body.mesh?.scale.setScalar(Math.max(0.05, 1 - gone * gone))
 				squeezed.add(h)
 			} else if (squeezed.delete(h)) h.body.mesh?.scale.setScalar(1)
 		}
@@ -178,8 +192,6 @@ export function createPortalLobby({ app, run, sim, hero, setup, options }) {
 	const picker = el.querySelector('.portal-picker')
 	const status = el.querySelector('.portal-status')
 	const label = (id) => names.get(id) ?? (id === hero.id ? 'You' : 'Player')
-	const inside = (h) =>
-		!!h && Math.hypot(h.body.position.x - p.x, h.body.position.z - p.z) < p.radius
 	const humans = () => readySeats.seats.filter((s) => s.occupant && !s.occupant.bot)
 	const outside = () => humans().filter((s) => !s.full)
 	const icon = (id) => {
@@ -515,6 +527,13 @@ export function createPortalLobby({ app, run, sim, hero, setup, options }) {
 		},
 		afterStep() {
 			if (ending || !app.session.authoritative) return
+			// The tear has a back wall: a hero who walks in stays in, `reach` m past its face.
+			for (const h of sim.heroes) {
+				const past = depth(h) - p.reach
+				if (past > 0 && Math.abs(h.body.position.x - mouth.x) < p.tearRadius * p.width) {
+					h.body.position.z += past / facing.z
+				}
+			}
 			const countdownFrom = readyFrom()
 			if (
 				countdownFrom === null ||

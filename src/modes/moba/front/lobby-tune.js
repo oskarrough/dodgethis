@@ -4,11 +4,18 @@
 export const lobby = {
 	capacity: 6,
 	partyCapacity: 5,
-	// The portal lobby (portal-lobby.js): stand in it to go, front and centre, clear of both team columns.
+	// The portal lobby (portal-lobby.js): walk into the tear to go; it stands top centre, clear of both team columns.
 	portal: {
-		x: 0, // ready area centre across the floor
-		z: 4.6, // ready area centre toward the camera
-		radius: 1.4, // standing within this distance readies a human
+		x: 0, // the tear's centre across the floor
+		z: -4.6, // the tear's centre: far side, so you walk up from the spawn marks into its face
+		// The training dummies move to the near side, out of the tear's way.
+		dummies: [
+			{ x: -1.5, z: 3.8 },
+			{ x: 1.5, z: 3.8 },
+		],
+		width: 0.6, // walking through its plane within this share of tearRadius either side readies a human
+		reach: 3, // metres past the plane that still count as in
+		sink: 0.8, // metres past the plane over which a hero shrinks away
 		countdown: 2, // seconds everyone stays ready before slipping in
 		tearRadius: 2.6, // half-height of the open tear
 		farChalkWidth: 0.7, // keep court markings legible through the small opening
