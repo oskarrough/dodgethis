@@ -236,6 +236,7 @@ export async function runFarmMatch({
 		unbuild = recipe
 			? buildColliders(world, RAPIER, obstacles, bounds, settings?.scale ?? 1)
 			: buildColliders(world, RAPIER)
+		const allBot = roster.every((seat) => seat.controller === 'bot')
 		match = createAgentMatch({
 			recipe,
 			scene: new THREE.Scene(),
@@ -247,7 +248,7 @@ export async function runFarmMatch({
 			runId,
 			commit,
 			tuneHash,
-			recordInputs: false,
+			recordInputs: !allBot,
 			capturePerception: false,
 			onLog(row) {
 				if (summary) return stats.row(row)
@@ -263,7 +264,7 @@ export async function runFarmMatch({
 		stats?.finish(match.sim)
 		const reason = match.sim.lane?.match.winner ? 'matchOver' : 'limit'
 		const tape = match.finish(reason, { hash: !summary })
-		tape.botReplay = true
+		if (allBot) tape.botReplay = true
 		tape.run_id = runId
 		tape.commit = commit
 		tape.tune_hash = tuneHash
