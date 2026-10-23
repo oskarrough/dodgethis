@@ -323,21 +323,22 @@ export function createDesk(gui) {
 			}
 			const hero = new URLSearchParams(location.search).get('hero')
 			const { url, omittedJson, json } = shareIssue({ changes, values: state.values, hero })
-			await navigator.clipboard?.writeText(json).catch(() => {})
+			if (omittedJson) await navigator.clipboard?.writeText(json).catch(() => {})
 			console.info('[desk]', url)
-			const opened = window.open(url, '_blank', 'noopener,noreferrer')
-			if (!opened) {
-				await navigator.clipboard?.writeText(url).catch(() => {})
-				e.target.textContent = 'link copied'
-				note.textContent = omittedJson
-					? 'Pop-up blocked, so the issue link is on the clipboard. Paste the JSON from copy into the issue.'
-					: 'Pop-up blocked, so the issue link is on the clipboard.'
-			} else {
-				e.target.textContent = omittedJson ? 'paste the JSON' : 'opened'
-				note.textContent = omittedJson
-					? "GitHub's link was too long, so paste the JSON you just copied into the issue."
-					: ''
-			}
+			// An <a> click (not window.open) keeps this a user gesture; noopener would make open() look blocked.
+			const a = Object.assign(document.createElement('a'), {
+				href: url,
+				target: '_blank',
+				rel: 'noopener noreferrer',
+				hidden: true,
+			})
+			document.body.append(a)
+			a.click()
+			a.remove()
+			e.target.textContent = omittedJson ? 'paste the JSON' : 'opened'
+			note.textContent = omittedJson
+				? "GitHub's link was too long, so paste the JSON you just copied into the issue."
+				: ''
 			setTimeout(() => (e.target.textContent = 'share'), 2000)
 		}
 		if (act === 'reset') {
