@@ -1,14 +1,16 @@
 ---
 name: Tuning idea
-about: A number you changed in the desk that felt better as the default
+about: A desk tweak to consider as a default
 title: 'Tuning idea: '
 labels: ['tuning']
 ---
 
-**Why did this feel better?**
+## Changed values
 
-What were you playing, and what did you change? The desk's **Share** button fills the rest in.
+## Desk JSON
 
-**Changed values**
+<!-- Paste JSON from the desk Copy button. -->
 
-<!-- Paste desk JSON here if Share asked you to, or if you used Copy. -->
+## Why
+
+_What felt better, and in which situation?_

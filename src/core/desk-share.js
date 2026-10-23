@@ -67,23 +67,16 @@ export function issueBody({ changes, json, includeJson, limit = Infinity }) {
 	const lines = listed.map(changeLine)
 	if (more > 0) lines.push(`- …and ${more} more (in the JSON)`)
 	const parts = [
-		'I changed these in the desk (press ` while playing) and they felt better than the defaults:',
+		'## Changed values',
 		'',
-		...(lines.length ? lines : ['- (see the JSON)']),
+		...(lines.length ? lines : ['- (see Desk JSON)']),
+		'',
+		'## Desk JSON',
 		'',
 	]
 	if (includeJson) parts.push('```json', json, '```', '')
-	else
-		parts.push(
-			"The list was too long for GitHub's link, so paste the JSON from the desk's **copy** button here.",
-			'',
-		)
-	parts.push(
-		'Why this felt better (what you were doing, what changed):',
-		'',
-		'',
-		'This uses the Tuning idea template and the `tuning` label.',
-	)
+	else parts.push('<!-- Paste JSON from the desk Copy button. -->', '')
+	parts.push('## Why', '', '_What felt better, and in which situation?_')
 	return parts.join('\n')
 }
 
