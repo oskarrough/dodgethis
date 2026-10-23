@@ -2,6 +2,7 @@
 name = "dodgethis"
 main = "worker/index.js"
 compatibility_date = "2026-06-13"
+preview_urls = true
 
 [[routes]]
 pattern = "dodgethis.0sk.ar"
@@ -20,3 +21,7 @@ class_name = "LobbyDirectory"
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["LobbyDirectory"]
+
+[[previews.durable_objects.bindings]]
+name = "LOBBIES"
+class_name = "LobbyDirectory"
