@@ -29,6 +29,12 @@
 - Lobby: dodgeball owns its difficulty portals. A fresh visit opens the splash in `moba/front/`, where the MOBA maps are the default and Dodgeball is a bonus pick; there's no in-game mode switch. `?mode=dodgeball` opens the hub, `?mode=moba` opens MOBA difficulty, and adding `&play` starts the match directly.
 - Oskar's calls: one input path for solo and online humans; `shared` as the single social flag; each mode owns its replica; movement feel is a per-mode tune value; no talents in the MVP; pad casts hold to aim and release to fire.
 
+## Tune it live
+
+Press `` ` `` (Backquote, the key above Tab) while playing to open the **desk**. It is the same numbers the tune files hold, as instruments you can try in a match — not only a debug panel. Browse this screen's folders, search (try `lob` or `speed`), pin what you care about, and click a readout to type. Tweaks live in this browser until you reset them; they are not the shipped defaults.
+
+When a change feels better, **Share** opens a GitHub issue (Tuning idea template, `tuning` label) with old → new values and the JSON. **Copy** puts that JSON on the clipboard. A maintainer or agent can then write it into the matching `<id>-tune.js`.
+
 ## Folders: How dodgethis can be modified
 
 It's an ongoing goal of the game to be extremely malleable, inspired by emacs, neovim plugins, Claude Code mods and many others. Folders add features; synchronous aura hooks let them react to each other.
