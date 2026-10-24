@@ -1,34 +1,62 @@
 # World
 
-What the MOBA is about, under the mechanics, worked out against [heroes.md](heroes.md), [look.md](look.md) and [moba.md](moba.md). Nothing here changes a number. **Settled** means it reads straight off what's built or Oskar's direction (2026-10-10); **Oskar** marks a choice that's his. The schoolyard setting (Lost Property, the Yard, sandcastles) is retired.
+Read this before you draw, write, compose or name anything. It sets the mood; [look.md](look.md) holds the art rules, [sound.md](sound.md) the audio rules, and the Voice section of [AGENTS.md](../AGENTS.md#voice) says how we write. Where this page and those disagree, they win.
+
+The name and the setting are still open in issue #25, and the game is called Dodgethis until Oskar says otherwise. What follows is the current direction. **Settled** means it is built or Oskar has said so; **Open** means nobody should treat it as decided, least of all in a commit.
 
 ## The setting
 
-- **The place.** Old stone floats above a sea of cloud: isles carved by someone long gone, grassed over, cracked, still held up by a magic nobody tends. Waterfalls pour off their edges and never land. A big moon hangs low by day and night. Settled. Oskar: the name (issue #25).
-- **Two lights.** Overthrow is the day isle: warm sky, white water, moss on the stone. Flagfall is the same world at night, when the gardens on the lower isles wake and glow. The maps are named for their games. Settled.
-- **The Ball** falls out of the sky every few minutes, a shard of something bright; you see its shadow first. It lands hot and hits harder than anything made here, until it cools after 45 s. Settled.
-- **Keeps** are the cores: faceted crystals on stone plinths, worth more than either team. Towers are standing stones that guard them. Minions are small, nameless things of the isles that follow the nearest keep and walk at whatever it points at. Settled.
-- **Teams are picked on the day.** Red and blue are banners and sashes, not allegiances, so mirror matches need no excuse. Settled.
-- **Tone.** Charm with weight: the creatures can be small and funny, but they are weathered, a bit dangerous and made of hide, bark, stone and bone, never plush. Settled.
+High over a sea of cloud hang the mesas: flat-topped towers of red and violet stone, cut loose from whatever ground once held them and kept aloft by an old magic that nobody tends and nobody quite trusts. Their tops are courtyards. Someone laid them with terracotta flags long ago, built stairs that go nowhere and arches that open onto sky, and then left. Moebius would know the light, a huge pale sun over an empty desert of air, and Escher would know the stairs.
 
-## The four
+People come up to fight on these courts the way a village gathers for a wrestling match: for the sport of it, with no war behind it. The lobby is a terrero, the sand ring of Canarian wrestling, here paved in sun-bleached terracotta and ringed by oxide-red stands and a basalt wall, under a pastel sky that goes from apricot at the horizon to violet overhead, with other mesas drifting in the distance. A stone portal stands at one side. When enough heroes walk into it, its mouth fills with light and carries them down to the court below.
 
-Written for the retired lost-property setting: the kits and voices stand, the origins get recast for the isles.
+The courts have names. Overthrow is the day isle, pale stone with moss on its lip and white water pouring off its edges into cloud. Flagfall is the same world at night, when the gardens on the lower rims wake and their orchid bells glow. Red and blue are banners and sashes picked on the day, not nations, so a mirror match needs no excuse.
 
-- **Fletcher** (Long Grass): a quiver that went over after its arrows, one summer at a time. Restless, cheerful, never where you left him. "Thirty-seven arrows went over that fence. I've found three." "Seen one? Green fletching. Answers to nothing."
-- **Mitts** (Cupboard): the catcher's mitt that missed the one ball that went over, and went after it. She hasn't dropped anything since. "I dropped one once. Once." On a return: "Ta. Have it back."
-- **P. Pong** (Cupboard): a squash racket from a basement court, raised in a room with four walls and no sky. Brilliant by a pillar, nervous in the open road. "Walls are just friends who stand still." "Too much sky. Nothing to argue with."
-- **Skip** (Window): a life-size cutout of a captain from a sports-shop window, nine years a picture of someone who plays. Out, not gone, is what a cutout is for. "I pick the last one first." On Back in!: "Nobody sits out on my team."
+Every few minutes the Ball falls out of the sky, a shard of something bright. You see its shadow first, which is fair warning, and it lands hot and hits harder than anything made up here until it cools. The keeps are faceted crystals on stepped plinths, guarded by stone towers, and the minions are small nameless things of the mesas that follow the nearest keep and walk at whatever it points at.
 
-## The next six
+Deep inside one mesa lies the Hollow Mesa, a dungeon of seven rooms for a party of three: the Gate of Hands, the Bell Choir, the Kiln Gallery, the Twin Potters, the Mirror, the Ferry, and at the bottom the Sundial, which has kept time over the Mesa longer than anyone has kept count ([deck](https://claude.ai/artifact/GRXdewN9rWPFrdpSKuD8H7)). Every door is either sun or shade, and the choice follows you down.
 
-The roster caps at ten. Ranked by build order: what the four lack first, and cheapest to build on what exists.
+## What is settled and what is open
 
-1. **Yo-yo** (no quarter, hook): the only thing here that always comes back, so nobody trusts it. Hooks a hero and returns to the throw point with them.
-2. **Mascot** (Window, tank): an empty foam suit with a giant foam finger; nobody has seen inside, including Mascot. Shoves, and gets cheered louder the more it's hit.
-3. **Kite** (Long Grass, mage): snapped its string and kept the tail; flies over hedges and ties a hero to the spot.
-4. **Ref** (Cupboard, support): a whistle on a lanyard, picked for a side and visibly unhappy about it. Blows for fouls: silences whoever just cast.
-5. **Taw** (Drain, bruiser): the shooter marble, old money. Draws a ring, and whatever he knocks out of it he keeps for a moment: a shield, a pocketed shot, the Ball.
-6. **Shuttle** (Long Grass, assassin): a garden shuttlecock that always lands nose-first; dives on an arc, and landing on a hero resets the dive.
+| Settled                                                                               | Open                                                                              |
+| ------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| Floating stone over cloud; Moebius line and sky; Escher stairs and arches             | The game's name, and whether the world gets one (#25)                             |
+| The terracotta terrero lobby, pastel apricot-to-violet sky, distant mesas, the portal | Whether the green isles of Overthrow drift toward the desert mesas                |
+| Overthrow by day, Flagfall by night; teams are sashes, not sides                      | Hero names and origins: Coach, Hook, Brew, Mender and Wata are placeholders (#24) |
+| Cream paper cards with a thin navy ink line; one navy ink, never black                | The Hollow Mesa's room names, which are all placeholders                          |
+| Vallotton woodcuts for the splash map cards, cut from each map's real layout          | Who the heroes are, and why they come up to fight                                 |
+| Type: display Darumadrop One, Comico, Apfel Grotezk; text Sniglet, Josefin Sans       | Music beyond the synthesised scenes; Oskar is working on audio himself            |
+| No text where the world can show it: the portal fills with light instead of counting  |                                                                                   |
+| Charm with weight: cute proportions, worn materials, never plush                      |                                                                                   |
 
-Yo-yo and Mascot come next because nobody in the four can start a fight: Mitts holds a line, Pong finishes, Skip saves. A hook is the purest dodge test there is, one straight shot with a long tell, and Mascot is the body a 5v5 needs to stand behind. Both reuse the straight shot, the dash and the swap. Taw touches Pocket, shields and the Ball at once, and Shuttle doubles Pong's job with reset maths on top, so they go last. Oskar: the order.
+## The feeling
+
+It should feel like a Saturday afternoon on a rooftop that happens to be a mile up: warm, a little dangerous, nobody in a hurry until the Ball drops. The charm is real but it has calluses. Creatures are small and funny and made of hide, bark, stone, bone and enamel, worn at the edges, with small eyes under a brow and at least one hard angle. If a frame would pass as a plush-toy advert, it has gone too cute; if it would pass as a grimdark box cover, it has gone too far the other way. The play itself feels like Melee: instant, snappy, never waiting on an animation.
+
+The world shows rather than tells. A countdown is a portal filling with light, a waiting hero is a glowing seat, a spawn is a slow ring on the floor. Words are for when nothing else will do, and then they are set like a 1990s Japanese game manual on a Swiss grid, flush left, with big index numerals.
+
+## Keywords
+
+**Place:** floating mesas, sea of cloud, desert of air, terracotta flags, hand-cut stone, sun-bleached courtyard, stairs to nowhere, arches onto sky, basalt wall, oxide-red stands, terrero, lucha canaria, waterfalls that never land, night garden, orchid bells, stone lantern, standing stones, faceted crystal keeps, stepped plinths, portal of light, the Ball's shadow, the Sundial, kiln, bell choir, ferry, mirror.
+
+**Light and colour:** one low warm sun, huge pale sun, apricot horizon, violet zenith, peach haze, lilac shade, sage moss, pale stone, cream paper, navy ink, rust, aubergine night, cool lilac moon; saturated colour only for team red, team blue and Ball gold.
+
+**Line and form:** ligne claire, thin navy line, thick ink on what fights, flat printed ground, big shapes and little noise, chipped bevels, horizontal strata, lean and wear, woodcut gouges, deckled paper, watercolour wash, halftone, felled-statue deaths.
+
+**Feeling:** cute with swagger, charm with weight, sport not war, a village wrestling match, carefree anticipation, dry humour, old magic nobody tends, cartridge-label confidence.
+
+## References
+
+Moebius (Arzach, The Airtight Garage, his desert courtyards); M. C. Escher (Relativity, Ascending and Descending); Félix Vallotton's woodcuts; Hergé and ligne claire; Warhammer for heft and wear; lucha canaria and its terreros; Super Smash Bros. Melee for feel; N64 and PlayStation-era Japan, Kirby's Dream Land; The Designers Republic and WipEout for the grid; the Warcraft II manual for the voice; Azymuth and Yellow Magic Orchestra for the sound. Our own images live in [pages/vibes/](../pages/vibes/index.html) with their prompts, and superseded ones in [pages/archive/](../pages/archive/README.md).
+
+## Prompting images
+
+Paste the style block from [look.md](look.md#concept-art) whole, follow its recipe, then add the nouns for the scene from Keywords above. For the front end (splash, lobby, cards) add: "ligne claire, thin navy line, pastels mixed toward cream, apricot horizon to violet sky, floating red mesas in haze, terracotta courtyard". For a map card add: "Vallotton woodcut, a handful of flat colours, ink masses, gouged sky".
+
+Avoid: plush, felt, glossy eyes, blush, chibi faces, mobile-card-game rendering, Hearthstone, black outlines, rainbow or neon palettes, gold outside the Ball, schoolyard or seaside props, sci-fi technology, photoreal surfaces, busy texture on the floor, and the words "cute", "fun" and "toy-like", which drag the model straight to Hearthstone.
+
+## Prompting music and sound
+
+Start from the menu prompt in [sound.md](sound.md#splash-and-lobby-prompt) and keep its scene tempos (lobby about 112, match 120, clutch 138). Keywords: Azymuth jazz-funk warmth and Yellow Magic Orchestra machine, Fender Rhodes with 9ths and 11ths, singing fretless-style bass, light samba kit with shaker and cuíca, glassy Minimoog portamento, square-wave arpeggios, vocoder pads, gentle tape saturation, wide stereo, sunset over floating mesas, stretching before a match, seamless loop, no vocals. Effects take one material family per source (Fletcher string and wood, Mitts leather and thump, stone and iron for structures, bright glass and a low bloom for the Ball, quiet wood and paper for menus), land on the frame and keep fight tails under 400 ms.
+
+Avoid: kazoo, cartoon boings, plush squeaks, beeps in menus, orchestral fantasy bombast, dread or horror drones, EDM drops, vocals, and anything that sits over the effects in a fight.
