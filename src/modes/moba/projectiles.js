@@ -128,7 +128,7 @@ export function createProjectiles(ctx) {
 			} else
 				targets = (
 					shot.heal
-						? heroes.map((unit) => ({
+						? [...heroes, ...dummies].map((unit) => ({
 								id: unit.id,
 								unit,
 								hero: true,
