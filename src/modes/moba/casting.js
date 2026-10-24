@@ -232,8 +232,10 @@ export function createCasting(ctx) {
 		if (ability.kind === 'dash') {
 			// Whole fixed steps avoid overshooting the advertised distance on the final dash tick.
 			const time = Math.max(1, Math.ceil(skill.time / STEP)) * STEP - 1e-9
-			h.dashAbility = ability.id
-			if (h.body.dash(dir, { distance: skill.range, time })) ctx.rememberDashEvent(h, event)
+			if (h.body.dash(dir, { distance: skill.range, time })) {
+				h.dashAbility = ability.id
+				ctx.rememberDashEvent(h, event)
+			}
 			if (castFootprint) footprints.set(h.body, castFootprint)
 			return
 		}
