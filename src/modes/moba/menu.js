@@ -194,7 +194,12 @@ export function createMatchMenu({
 			accent: hex(sim.lane?.match.winner === 'A' ? 'teamA' : 'teamB'),
 			pointerGuard: true,
 			spaceConfirm: false,
-			subtitle: sim.lane?.match.winner === hero.team ? 'Enemy core destroyed' : 'Your core fell',
+			// A dungeon is won by its last boss, not a core.
+			subtitle: sim.dungeon
+				? `${sim.dungeon.encounters.find((e) => e.last)?.name ?? 'The last boss'} has fallen`
+				: sim.lane?.match.winner === hero.team
+					? 'Enemy core destroyed'
+					: 'Your core fell',
 			actions: app.session.shared
 				? [
 						{
