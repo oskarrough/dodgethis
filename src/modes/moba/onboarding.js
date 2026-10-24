@@ -3,6 +3,8 @@ import { el } from '../../core/dom.js'
 import { hex } from '../../core/style.js'
 import { makeStyleMaterial } from '../../core/stylepass.js'
 import { STEP } from '../../core/app.js'
+import { controls } from '../../core/controls.js'
+import { throwHint } from '../../core/intents.js'
 import { clampMap } from './obstacles.js'
 import { edgePip } from './pips.js'
 import { look } from './look.js'
@@ -81,7 +83,7 @@ void main() {
 		node.style.transform = 'translate(-50%,-100%)'
 	}
 	return {
-		update({ camera, alpha, ballPosition, frozen = false }) {
+		update({ camera, alpha, ballPosition, frozen = false, device }) {
 			const tick = sim.tick + alpha
 			const p = hero.body.mesh.position
 			// Respawns jump to base. Never count the jump as walking, or restart the lesson.
@@ -113,7 +115,7 @@ void main() {
 				const name = goalUnit.kind === 'tower' ? 'Their tower' : 'Their core'
 				if (!edge) {
 					place(pointer, goal, camera, lift)
-					text(pointer, `Click / Q to throw ↓`)
+					text(pointer, `${throwHint(controls.preset, device)} ↓`)
 					return
 				}
 				pointer.hidden = false

@@ -711,16 +711,15 @@ export default function moba(app, map) {
 						cast(q.x, q.y - d.body.radius - d.body.halfHeight, q.z, 0.5)
 					}
 				})
+				const device =
+					lobby?.touchMode() && input.activeDevice() !== 'gamepad' ? 'touch' : input.activeDevice()
 				hud.update(dt, {
 					...(lobby ? lobby.hudFrame(blend) : matchFrame(sim, hero, blend, app.clock.step)),
 					seen: fog?.seen,
 					aim: frame.aim,
 					camera: app.camera.view,
 					pad: input.pad(),
-					device:
-						lobby?.touchMode() && input.activeDevice() !== 'gamepad'
-							? 'touch'
-							: input.activeDevice(),
+					device,
 				})
 				stepCamera(app.camera, presentationFrozen ? 0 : dt)
 				lobby?.update(blend)
@@ -752,6 +751,7 @@ export default function moba(app, map) {
 					alpha: blend,
 					ballPosition: ballView?.markerPosition,
 					frozen,
+					device,
 				})
 			})
 

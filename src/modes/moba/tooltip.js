@@ -3,6 +3,8 @@ import { structureName } from './gates.js'
 import { waveInterval } from './lane.js'
 import { HEROES } from './heroes.js'
 import { units } from '../../core/units.js'
+import { controls } from '../../core/controls.js'
+import { throwHint } from '../../core/intents.js'
 import { resolveUnit } from './units.js'
 
 // A cream sticker card for the stat nerds. Builders are pure: they read live state and `tune`
@@ -206,13 +208,13 @@ export function minionCard(unit, { localTeam } = {}) {
 	}
 }
 
-export function ballCard({ nextBall = 0, ballPop = null, carrying = false } = {}) {
+export function ballCard({ nextBall = 0, ballPop = null, carrying = false, device } = {}) {
 	const b = tune.ball
 	return {
 		title: 'The Ball',
 		tag: carrying ? 'yours' : `${Math.max(0, Math.ceil(ballPop ?? nextBall))} s`,
 		summary: carrying
-			? `You carry it. Click / Q to throw toward your aim.`
+			? `You carry it. ${throwHint(controls.preset, device)} toward your aim.`
 			: ballPop != null
 				? `Live at mid. Pops in ${Math.ceil(ballPop)} s.`
 				: `Spawns at mid in ${Math.max(0, Math.ceil(nextBall))} s. Stand still ${n(b.channel)} s to pick up.`,
