@@ -29,8 +29,6 @@ import { createMatchDebug } from './debug.js'
 import { createFog } from './fog.js'
 import { restyle, styleKnobs } from './restyle.js'
 import { addSliders, sliderSections } from './sliders.js'
-import { createLobby } from './lobby.js'
-import { createDungeonLobby } from './dungeon-lobby.js'
 import { createPortalLobby } from './portal-lobby.js'
 import { createDifficultyGallery } from './lobby-props.js'
 import { createLobbyReplica } from './lobby-replica.js'
@@ -129,7 +127,6 @@ export default function moba(app, map) {
 				shared: app.session.shared,
 			})
 			const party = maps[setup.map].party
-			const portalLobby = query.get('lobby') !== 'old' // `?lobby=old` keeps the saucer and party table for now
 			const kind = isLobby ? 'lobby' : setup.map
 			const match = matchRecipe(kind)
 			const { layout, mechanics, palette, debugTune, online } = match
@@ -361,8 +358,8 @@ export default function moba(app, map) {
 											}))
 										: practiceRoster(local, difficulty, setup.picks, setup.seed, [local], party),
 							readyParty: party,
-							readyPortal: portalLobby,
-							...(portalLobby && isLobby && { posts: tune.lobby.portal.dummies }),
+							readyPortal: true,
+							...(isLobby && { posts: tune.lobby.portal.dummies }),
 							spawns: lobbySpawns,
 							respawn: tune.lobby.respawn,
 							footprint: party ? null : gallery.contact,
@@ -437,7 +434,7 @@ export default function moba(app, map) {
 						)
 			}
 			const lobby = isLobby
-				? (portalLobby ? createPortalLobby : party ? createDungeonLobby : createLobby)({
+				? createPortalLobby({
 						app,
 						run,
 						sim,

@@ -17,7 +17,7 @@ import { createPortalFar } from './portal-far.js'
 import { playUse } from './sounds.js'
 import './portal-lobby.css'
 
-// The lobby (`?lobby=old` for the saucer): the teams are strips of seats, the floor is for playing, and
+// The lobby: the teams are strips of seats, the floor is for playing, and
 // everyone standing in the portal for `tune.lobby.portal.countdown` s goes in. Seats are the hero
 // strip's painted cards, the hero popover holds spell-bar buttons, open while you edit a seat (tap yours or a bot's).
 export function createPortalLobby({ app, run, sim, hero, setup, options }) {
