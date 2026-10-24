@@ -3,7 +3,7 @@ import { makeStyleMaterial } from '../../../../core/stylepass.js'
 import { tune } from '../../tune.js'
 
 // The hands as rings on the sand that fill grey while held and burn blue while lit, the door's
-// posts until it opens, the Potsherds' pots, and each shard: a red ring where it will land and the
+// posts until it opens, the Tiestos' pots, and each shard: a red ring where it will land and the
 // shard itself on its arc. Plain shapes; the look is Oskar's to give.
 export function view(scene) {
 	const g = () => tune.encounters.manos
@@ -51,7 +51,7 @@ export function view(scene) {
 			post.position.set(spot.x + g().door.x, g().door.height / 2, spot.z + z)
 			return post
 		})
-		for (const pot of fight.potsherds)
+		for (const pot of fight.tiestos)
 			mesh(
 				new THREE.CylinderGeometry(v().potTop, v().pot, v().potHeight, v().segments),
 				clay,
@@ -82,7 +82,7 @@ export function view(scene) {
 				live.add(shard.id)
 				let drawn = built.shards.get(shard.id)
 				if (!drawn) {
-					const from = fight.potsherds.find((p) => p.id === shard.from)
+					const from = fight.tiestos.find((p) => p.id === shard.from)
 					drawn = {
 						from,
 						warn: flat(new THREE.Mesh(built.warnGeometry, clay), shard.x, shard.z),

@@ -4,13 +4,13 @@ import { distance } from '../../../../core/spatial.js'
 
 const ticks = (s) => Math.max(1, Math.round(s / STEP))
 
-// The fight's state: each hand's `fill` (0..1) and `litUntil` tick, the Potsherds' next throw and
+// The fight's state: each hand's `fill` (0..1) and `litUntil` tick, the Tiestos' next throw and
 // the shards in the air. Won the tick all three hands are lit; then the door's posts come away.
 export function createManos({ heroes, spot, systems, removeObstacle }) {
 	const g = () => tune.encounters.manos
 	const at = (offset) => ({ x: spot.x + offset.x, z: spot.z + offset.z })
 	const hands = g().hands.map((offset, i) => ({ id: i, ...at(offset), fill: 0, litUntil: -1 }))
-	const potsherds = g().potsherds.map((offset, i) => ({ id: `potsherd-${i + 1}`, ...at(offset) }))
+	const tiestos = g().tiestos.map((offset, i) => ({ id: `tiesto-${i + 1}`, ...at(offset) }))
 	const state = { phase: 'idle', open: false, nextThrow: 0, shards: [] }
 	let serial = 0
 	const lit = (hand, t) => t < hand.litUntil
@@ -27,7 +27,7 @@ export function createManos({ heroes, spot, systems, removeObstacle }) {
 	function throwShards(t) {
 		if (t < state.nextThrow) return
 		state.nextThrow = t + ticks(g().every)
-		for (const pot of potsherds) {
+		for (const pot of tiestos) {
 			const target = living()
 				.filter((h) => distance(h.body.position, pot) <= g().reach)
 				.sort(
@@ -89,7 +89,7 @@ export function createManos({ heroes, spot, systems, removeObstacle }) {
 		spot,
 		state,
 		hands,
-		potsherds,
+		tiestos,
 		units: [],
 		step,
 		won: () => state.open,

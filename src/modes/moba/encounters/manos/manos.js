@@ -3,7 +3,7 @@ import { createManos } from './manos-fight.js'
 import { handsBotGoal, handsBotThreats } from './manos-bots.js'
 
 // Manos, the mesa gate. Three great clay hands rise from the sand, and the gate opens only while all
-// three are lit at once. The first light wakes the Potsherds in the walls, who lob shards at
+// three are lit at once. The first light wakes the Tiestos in the walls, who lob shards at
 // anyone who stands still. Three heroes may hold a hand each; a lone hero must run the circuit.
 export default {
 	name: 'Manos',
