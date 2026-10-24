@@ -1,5 +1,7 @@
 import * as THREE from 'three'
-import { makeStyleMaterial, styleId } from '../../core/stylepass.js'
+import { FORWARD_LAYER, makeStyleMaterial, styleId } from '../../core/stylepass.js'
+import { PALETTE } from '../../core/style.js'
+import { glowMaterial } from './effects.js'
 import { look } from './look.js'
 import { STEP } from '../../core/app.js'
 import { castAbility } from './ability.js'
@@ -61,7 +63,9 @@ export function dressHero(body, heroId = DEFAULT_HERO, team = 'A') {
 	const yours = makeStyleMaterial('yours', { flat: true })
 	const fins = makeStyleMaterial(teamRole, { side: THREE.DoubleSide })
 	const ink = makeStyleMaterial('ink', { flat: true })
-	const foot = makeStyleMaterial(teamRole, { flat: true })
+	// The foot disc is a translucent wash with a thin team rim, drawn over the ground, never a solid plate.
+	const foot = glowMaterial(PALETTE[teamRole], t.discOpacity)
+	const rim = glowMaterial(PALETTE[teamRole], t.rimOpacity)
 	const gloveMaterial = makeStyleMaterial('cream')
 	const pocketMaterial = makeStyleMaterial('ammo', { flat: true })
 	const geometries = []
@@ -100,7 +104,11 @@ export function dressHero(body, heroId = DEFAULT_HERO, team = 'A') {
 	// The ground marks are sized once the costume is on (see below); costumes may parent to the disc.
 	const footDisc = part(new THREE.BufferGeometry(), foot, 0, discY, 0, body.mesh)
 	footDisc.name = 'foot-disc'
-	const footRing = part(new THREE.BufferGeometry(), ink, 0, discY + t.discBorder / 4, 0, body.mesh)
+	const footRing = part(new THREE.BufferGeometry(), rim, 0, discY + t.discBorder / 4, 0, body.mesh)
+	for (const mark of [footDisc, footRing]) {
+		mark.layers.set(FORWARD_LAYER)
+		mark.renderOrder = 1
+	}
 	footRing.name = 'foot-ring' // the lobby flip keeps both at full width (lobby-feel.js)
 	// Yours: cream outside the disc's ink rim, edged in ink, so an allied copy of your hero never reads as you.
 	const yoursRing = part(new THREE.BufferGeometry(), ink, 0, discY, 0, body.mesh)
@@ -308,6 +316,7 @@ export function dressHero(body, heroId = DEFAULT_HERO, team = 'A') {
 			fins,
 			ink,
 			foot,
+			rim,
 			gloveMaterial,
 			pocketMaterial,
 		])

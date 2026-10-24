@@ -221,6 +221,8 @@ export const look = {
 		megaphoneY: 0.25,
 		// The team foot disc reaches past the body by this much, so the accent reads from the match camera.
 		discReach: 0.16,
+		discOpacity: 0.22, // the disc's team wash over the ground
+		rimOpacity: 0.85, // and its thin team rim
 		// Your own hero only: a cream ring outside the disc's ink rim, then a thin ink edge.
 		yoursGap: 0.02,
 		yoursWidth: 0.12,
