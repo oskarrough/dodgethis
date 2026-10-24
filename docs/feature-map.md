@@ -128,7 +128,6 @@ Paths are under `src/modes/moba/` unless they start with `src/`. `tune.js` means
 
 - Dungeon (`?map=dungeon`, also on the splash): round room, the Warden with threat, Swing, Slam and its bruise, pulls, room reset and party bots: `maps/dungeon/`, `mechanics/boss/` (`boss-pull.js`), `abilities/swing/`, `abilities/slam/`; `docs/dungeon.md`
 - After-pull fight report in the dungeon (result, party table, mender spells, deaths, threat, wasted casts): `mechanics/boss/boss-report.js` `reduceFight`; `mechanics/boss/boss-view.js`; `hud.css` `.moba-fight-report`; `docs/dungeon.md`
-- Mender's aim preview, Mend beam and landing, Ward bubble: `heroes/mender/mender-view.js` `extras`; green heal numbers: `damage-numbers.js` `heal`
 - Cast bars (player above the skill bar, boss at the top): `cast-bar.js` `createCastBar`, `cast-bar.css`; `hud.js`
 - Dungeon on the splash, using the portal lobby for its party: `front/index.js`; `lobby-state.js`, `lobby-handoff.js`; `bots.js`; `mechanics/boss/boss-view.js`; `menu.js`
 
