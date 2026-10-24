@@ -6,12 +6,14 @@ import { castShadows, createMatchTerrain } from '../../match-terrain.js'
 // The tile room's ground: Overthrow's isle, with six floor swatches printed over its court.
 // Every swatch is one shader with a different pattern; all share the contact darkening at
 // the foot of cover, the baked sun shadow and the drifting cloud shadows.
-const STYLES = { print: 0, slabs: 1, flags: 2, bricks: 3, sand: 4, dial: 5 }
+const STYLES = { print: 0, slabs: 1, flags: 2, bricks: 3, sand: 4, dial: 5, mapped: 6, raw: 7 }
 
 const floorChunk = /* glsl */ `
 uniform int floorStyle;
+uniform sampler2D floorImage;
+uniform float floorImageOn;
 uniform vec3 floorBase, floorJoint, floorAccent;
-uniform float floorSize, floorVary, floorBorder, floorTime;
+uniform float floorSize, floorVary, floorBorder, floorTime, floorJointWidth;
 uniform vec2 floorCentre, floorHalf, floorExtent;
 uniform sampler2D floorShadowPrint, floorContactPrint;
 uniform float floorShadowOn, floorShadowStrength, floorContactStrength;
@@ -46,7 +48,7 @@ vec2 fGrid(vec2 p, vec2 size, float stagger, float chip) {
 	// Chipped corners: a few corners lose a bite.
 	float bite = chip * fHash(cell + 3.7);
 	float corner = length(d) - bite;
-	float joint = max(fJoint(edge, 0.05), fJoint(corner, 0.06));
+	float joint = max(fJoint(edge, floorJointWidth), fJoint(corner, floorJointWidth * 1.2));
 	return vec2(joint, fHash(cell));
 }
 
@@ -65,11 +67,24 @@ vec2 fFlags(vec2 p, float size) {
 			else if (d < d2) d2 = d;
 		}
 	float gap = (sqrt(d2) - sqrt(d1)) * size;
-	return vec2(fJoint(gap, 0.07), fHash(id));
+	return vec2(fJoint(gap, floorJointWidth * 1.4), fHash(id));
 }
 
 vec3 fFloor(vec2 p) {
 	vec3 col = floorBase;
+	if (floorStyle >= 6) {
+		// A painted tile, repeating every floorSize metres. Until one is dropped, a checker says so.
+		if (floorImageOn < 0.5) {
+			vec2 c = floor(p / floorSize);
+			return mix(floorBase, floorJoint, mod(c.x + c.y, 2.0) * 0.5);
+		}
+		vec3 tex = texture2D(floorImage, p / floorSize).rgb;
+		if (floorStyle == 7) return tex;
+		// Mapped: keep only the painting's light and dark, squeezed onto two palette colours.
+		float lum = dot(tex, vec3(0.2126, 0.7152, 0.0722));
+		float spread = clamp((lum - 0.25) / 0.5, 0.0, 1.0);
+		return mix(floorJoint, floorBase, mix(0.75, spread, floorVary * 6.0));
+	}
 	if (floorStyle == 0) {
 		// Today: one flat colour with broad, barely-visible patches.
 		col *= 1.0 - floorVary * fNoise(p / floorSize);
@@ -161,6 +176,35 @@ export function ground(scope) {
 	const shadowPrint = castShadows({ layout, s: terrain, extent, casts, own })
 	const contactPrint = contact(layout, extent, s.contact.reach, own)
 	const time = { value: 0 }
+	// The painted swatches share one tile: tiles/tile.png if the repo has one, or whatever image
+	// is dropped onto the game, so a tile fresh from the image model is judged in seconds.
+	const image = { value: null }
+	const imageOn = { value: 0 }
+	const useTexture = (texture) => {
+		texture.wrapS = texture.wrapT = THREE.RepeatWrapping
+		texture.colorSpace = THREE.SRGBColorSpace
+		texture.anisotropy = 4
+		image.value?.dispose()
+		image.value = texture
+		imageOn.value = 1
+	}
+	const loader = new THREE.TextureLoader()
+	if (typeof document !== 'undefined') loader.load(s.tile, useTexture, undefined, () => {})
+	const over = (event) => event.preventDefault()
+	const drop = (event) => {
+		const file = [...(event.dataTransfer?.files ?? [])].find((f) => f.type.startsWith('image/'))
+		if (!file) return
+		event.preventDefault()
+		const url = URL.createObjectURL(file)
+		loader.load(url, (texture) => {
+			useTexture(texture)
+			URL.revokeObjectURL(url)
+		})
+	}
+	if (typeof window !== 'undefined') {
+		window.addEventListener('dragover', over)
+		window.addEventListener('drop', drop)
+	}
 	for (const w of s.swatches) {
 		const material = own(new THREE.MeshBasicMaterial({ color: '#ffffff', depthWrite: false }))
 		material.customProgramCacheKey = () => 'tileroom-floor'
@@ -173,6 +217,7 @@ export function ground(scope) {
 				floorSize: { value: w.size },
 				floorVary: { value: w.vary },
 				floorBorder: { value: s.border },
+				floorJointWidth: { value: w.joints ?? s.joints },
 				floorTime: time,
 				floorCentre: { value: new THREE.Vector2(w.x, w.z) },
 				floorHalf: { value: new THREE.Vector2(s.swatchHalfX, s.swatchHalfZ) },
@@ -183,6 +228,8 @@ export function ground(scope) {
 				floorShadowColour: { value: new THREE.Color(terrain.light.shadow) },
 				floorContactPrint: { value: contactPrint },
 				floorContactStrength: { value: contactPrint ? s.contact.strength : 0 },
+				floorImage: image,
+				floorImageOn: imageOn,
 				floorClouds: {
 					value: new THREE.Vector3(s.clouds.scale, s.clouds.speed, s.clouds.strength),
 				},
@@ -211,11 +258,18 @@ export function ground(scope) {
 		group.add(sheet)
 		const tag = label(w.name, s.label.height, own)
 		if (tag) {
-			tag.position.set(w.x, terrain.groundY + 0.008, w.z + Math.sign(w.z) * s.label.z)
+			tag.position.set(w.x, terrain.groundY + 0.008, w.z - s.swatchHalfZ - s.label.z)
 			group.add(tag)
 		}
 	}
-	const dispose = () => unterrain?.()
+	const dispose = () => {
+		if (typeof window !== 'undefined') {
+			window.removeEventListener('dragover', over)
+			window.removeEventListener('drop', drop)
+		}
+		image.value?.dispose()
+		unterrain?.()
+	}
 	dispose.update = (dt) => {
 		time.value += dt
 		unterrain?.update?.(dt)

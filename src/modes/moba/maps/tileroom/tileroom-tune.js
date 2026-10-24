@@ -1,15 +1,17 @@
 export default {
-	// The tile room (tileroom-layout.js, tileroom-view.js): six floor swatches in two rows on
+	// The tile room (tileroom-layout.js, tileroom-view.js): eight floor swatches in three rows on
 	// Overthrow's isle, the hero spawning in the middle. All of it applies on restart.
 	tileroom: {
 		halfX: 29,
-		halfZ: 19,
+		halfZ: 22,
 		swatchHalfX: 8,
-		swatchHalfZ: 7.5,
+		swatchHalfZ: 6,
+		tile: '/tiles/tile.png', // the painted swatches' tile; an image dropped on the game replaces it
 		border: 0.18, // a worn kerb of darker stone around each swatch
+		joints: 0.05, // the width of the joint between stones, unless a swatch sets its own
 		wall: { x: 2.5, z: -4.2, halfX: 3, halfZ: 0.6 },
 		pillar: { x: -4.5, z: 1.5, r: 0.8 },
-		label: { z: 8.7, height: 1.1 }, // outside each swatch, toward the rim
+		label: { z: 0.9, height: 1.1 }, // just beyond each swatch's far edge
 		// Shared by every swatch: soft contact darkening at the foot of cover, the baked sun
 		// shadow, and slow cloud shadows drifting over the floor.
 		contact: { reach: 1.2, strength: 0.32 },
@@ -20,7 +22,7 @@ export default {
 				style: 'print',
 				name: '1 Today: flat print',
 				x: -18,
-				z: -8.5,
+				z: -14,
 				base: '#e9dcc4',
 				joint: '#d8c8ad',
 				accent: '#d8c8ad',
@@ -31,7 +33,8 @@ export default {
 				style: 'slabs',
 				name: '2 Square slabs',
 				x: 0,
-				z: -8.5,
+				z: -14,
+				joints: 0.02, // Oskar: borders too thick at 0.05
 				base: '#ecdfc8',
 				joint: '#cdbb9c',
 				accent: '#e2d2b4',
@@ -42,7 +45,8 @@ export default {
 				style: 'flags',
 				name: '3 Terracotta flagstones',
 				x: 18,
-				z: -8.5,
+				z: -14,
+				joints: 0.035,
 				base: '#dca37e',
 				joint: '#b97d5c',
 				accent: '#e5b493',
@@ -53,7 +57,7 @@ export default {
 				style: 'bricks',
 				name: '4 Laid pavers',
 				x: -18,
-				z: 8.5,
+				z: 0,
 				base: '#d9b9a3',
 				joint: '#b8937c',
 				accent: '#e4c8b4',
@@ -64,7 +68,7 @@ export default {
 				style: 'sand',
 				name: '5 Drifted sand',
 				x: 0,
-				z: 8.5,
+				z: 0,
 				base: '#efd9b4',
 				joint: '#d9bd93',
 				accent: '#f7e8cc',
@@ -75,12 +79,34 @@ export default {
 				style: 'dial',
 				name: '6 Arena inlay: sundial',
 				x: 18,
-				z: 8.5,
+				z: 0,
 				base: '#ebe0cb',
 				joint: '#c9b799',
 				accent: '#b8805e',
 				size: 1.6,
 				vary: 0.05,
+			},
+			{
+				style: 'mapped',
+				name: '7 Painted tile, on our palette',
+				x: -9,
+				z: 14,
+				base: '#e8d6b8',
+				joint: '#b98e6c',
+				accent: '#b98e6c',
+				size: 6,
+				vary: 0.1,
+			},
+			{
+				style: 'raw',
+				name: '8 Painted tile, its own colours',
+				x: 9,
+				z: 14,
+				base: '#e8d6b8',
+				joint: '#b98e6c',
+				accent: '#b98e6c',
+				size: 6,
+				vary: 0.1,
 			},
 		],
 	},

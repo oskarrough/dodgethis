@@ -5,7 +5,7 @@ description: Make concept art, scenery plates, ground tiles or character sheets 
 
 # Art
 
-Every image starts from the world, not from a blank prompt. `docs/world.md` holds the setting, names, keywords and the avoid list; `docs/look.md` holds the style block and the recipe. Read both before you write a word of prompt, and never paraphrase the style block.
+Every image starts from the world, not from a blank prompt. `docs/world.md` holds the setting, names, keywords, the avoid list and the Reference shelf (Oskar's pinned pictures, each with the lesson to take from it); `docs/look.md` holds the style block and the recipe. Read both before you write a word of prompt, and never paraphrase the style block. Pick the two or three shelf pictures that fit the job, attach them when you can reach `lore/refs/` in the project files, and quote their lines in the brief either way.
 
 ## Make the prompt
 
