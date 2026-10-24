@@ -11,6 +11,10 @@ export function createMatchStats() {
 				deaths: 0,
 				heroDamage: 0,
 				structureDamage: 0,
+				// Every blow on an enemy and every point healed, whatever it landed on: a dungeon's
+				// bosses and packs are not heroes or structures, so only these count them.
+				damage: 0,
+				healing: 0,
 				xp: 0,
 				recent: [],
 				death: null,
@@ -26,6 +30,8 @@ export function createMatchStats() {
 			const source = rows[fact.source]
 			const target = rows[fact.target]
 			if (fact.type === 'hit') {
+				if (source && fact.target !== fact.source && target?.team !== source.team)
+					source.damage += fact.damage
 				if (source && target) source.heroDamage += fact.damage
 				else if (source && structures.some((s) => s.id === fact.target))
 					source.structureDamage += fact.damage
@@ -37,6 +43,8 @@ export function createMatchStats() {
 					})
 					target.recent.length = Math.min(target.recent.length, tune.hud.recapSources)
 				}
+			} else if (fact.type === 'heal') {
+				if (source) source.healing += fact.amount
 			} else if (fact.type === 'death' && target) {
 				target.deaths++
 				if (source && source.team !== target.team) source.kills++

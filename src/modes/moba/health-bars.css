@@ -20,7 +20,9 @@
 .moba-unit-health[data-team='A'] {
 	--tone: var(--team-a);
 }
-.moba-unit-health[data-team='B'] {
+.moba-unit-health[data-team='B'],
+/* Neutrals (a dungeon's packs, camps) are enemies to whoever looks at them. */
+.moba-unit-health[data-team='N'] {
 	--tone: var(--team-b);
 }
 .moba-health-track {

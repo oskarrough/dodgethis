@@ -100,6 +100,8 @@ const recapColumns = [
 	'deaths',
 	'heroDamage',
 	'structureDamage',
+	'damage',
+	'healing',
 	'xp',
 	'recent',
 	'death',
@@ -353,7 +355,7 @@ export function createLaneReplica(simulation, scene) {
 				!team(row.team) ||
 				!HEROES[row.heroId]?.playable ||
 				typeof row.bot !== 'boolean' ||
-				!['kills', 'deaths', 'heroDamage', 'structureDamage', 'xp'].every(
+				!['kills', 'deaths', 'heroDamage', 'structureDamage', 'damage', 'healing', 'xp'].every(
 					(key) => finite(row[key]) && row[key] >= 0,
 				) ||
 				!tick(row.kills) ||

@@ -6,12 +6,23 @@ import { abilityOf } from './ability.js'
 const titleCase = (word) => word[0].toUpperCase() + word.slice(1)
 // An ability id without a display name, as words: gloveSlap → Glove slap.
 const spaced = (id) => titleCase(id.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase())
-const stats = ['kills', 'deaths', 'heroDamage', 'structureDamage', 'xp']
+// The versus table, and a dungeon's: there every enemy is a boss or a pack, so the party is
+// counted by what it dealt and healed, and the other team is empty.
+const versus = {
+	labels: ['Hero', 'Kills', 'Deaths', 'Hero damage', 'Siege damage', 'XP'],
+	stats: ['kills', 'deaths', 'heroDamage', 'structureDamage', 'xp'],
+}
+const party = {
+	labels: ['Hero', 'Damage', 'Healing', 'Deaths', 'XP'],
+	stats: ['damage', 'healing', 'deaths', 'xp'],
+}
 // Whole numbers: a decimal of damage is precision nobody can use.
 const number = (value) => Math.round(value).toLocaleString()
 
 // One run's facts, not a second combat simulation. Only the local death gets a card.
 export function createRecap({ sim, hero, canvas, paper = (node) => node }) {
+	const { labels, stats } = sim.dungeon ? party : versus
+	const teams = sim.dungeon ? [hero.team] : [hero.team, hero.team === 'A' ? 'B' : 'A']
 	const structures = new Map((sim.lane?.structures ?? []).map((unit) => [unit.id, unit.kind]))
 	let shownDeath = null
 	let root, heading, hits, help
@@ -86,13 +97,13 @@ export function createRecap({ sim, hero, canvas, paper = (node) => node }) {
 		const wrap = el('div', 'moba-results', parent)
 		const table = el('table', '', wrap)
 		const header = el('tr', '', el('thead', '', table))
-		for (const label of ['Hero', 'Kills', 'Deaths', 'Hero damage', 'Siege damage', 'XP']) {
+		for (const label of labels) {
 			const cell = el('th', '', header)
 			cell.scope = 'col'
 			cell.textContent = label
 		}
 		const body = el('tbody', '', table)
-		for (const team of [hero.team, hero.team === 'A' ? 'B' : 'A']) {
+		for (const team of teams) {
 			const teamRow = el('tr', 'moba-result-team', body)
 			const teamCell = el('th', '', teamRow)
 			teamCell.colSpan = header.children.length
@@ -105,7 +116,7 @@ export function createRecap({ sim, hero, canvas, paper = (node) => node }) {
 				name.scope = 'row'
 				// The hero is the name; only your own row says so.
 				name.textContent = `${heroName(row)}${id === hero.id ? ' (you)' : ''}`
-				for (const stat of stats) el('td', '', line).textContent = number(row[stat])
+				for (const stat of stats) el('td', '', line).textContent = number(row[stat] ?? 0)
 			}
 		}
 		return wrap
@@ -142,8 +153,9 @@ export function createRecap({ sim, hero, canvas, paper = (node) => node }) {
 			card.style.setProperty(`--tile-${key}`, `${value}${unit}`)
 		}
 		const wrap = buildTable()
-		el('p', 'moba-result-note', wrap).textContent =
-			'XP: minion soak shared between nearby heroes; takedowns and siege credited to the killer. Passive and minion-earned team XP excluded.'
+		if (!sim.dungeon)
+			el('p', 'moba-result-note', wrap).textContent =
+				'XP: minion soak shared between nearby heroes; takedowns and siege credited to the killer. Passive and minion-earned team XP excluded.'
 		card.querySelector('.actions').before(wrap)
 	}
 	return {
