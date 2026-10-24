@@ -284,10 +284,11 @@ export function createApp(services = {}) {
 					if (remove) onAbort(signal, remove)
 					return remove
 				},
-				// A named tune section: shown in game.tune and, given `build(folder)`, as a GUI folder.
-				tune(name, object, build) {
+				// A named tune section: shown in game.tune and on the desk, every value of it. `options` adds
+				// notes, units and an onChange (src/core/registry.js); a `build(folder)` adds old GUI sliders.
+				tune(name, object, build, options) {
 					claimProperties(tunables, { [name]: object }, signal, 'Tune section')
-					const remove = panel?.tune(name, object, build)
+					const remove = panel?.tune(name, object, build, options)
 					if (remove) onAbort(signal, remove)
 				},
 				cheat(label, fn) {

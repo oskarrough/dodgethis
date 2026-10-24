@@ -3,7 +3,8 @@
 // values as instruments shaped like what they control: a clock for a duration, a speedometer for
 // a speed, a ring for a radius. ?knobs=lob,fog pins from the address. "copy" puts changed values
 // on the clipboard as JSON; "share" opens a GitHub issue so a maintainer can make them the default.
-// "all values" opens the old lil-gui panel, which still registers them.
+// Values come from the registry (every tune value) and from the old lil-gui panel ("all values"), which
+// still registers hand-made sliders while they move into notes.
 import './desk.css'
 import { folderOf, shareIssue } from './desk-share.js'
 import { units } from './units.js'
@@ -19,16 +20,10 @@ function kindOf(c) {
 
 function range(c) {
 	const v = typeof c.initialValue === 'number' ? c.initialValue : 0
-	const defaults = units[c.unit]?.range
-	const min = Math.min(c._min ?? defaults?.[0] ?? 0, defaults?.[0] ?? v, v)
-	const max = Math.max(c._max ?? defaults?.[1] ?? 1, defaults?.[1] ?? v, v)
+	const defaults = units[c.unit]?.range ?? c.guess
+	const min = Math.min(c.min ?? defaults?.[0] ?? 0, defaults?.[0] ?? v, v)
+	const max = Math.max(c.max ?? defaults?.[1] ?? 1, defaults?.[1] ?? v, v)
 	return [min, max]
-}
-
-function pathOf(c) {
-	const parts = [c.property]
-	for (let g = c.parent; g?.parent; g = g.parent) parts.unshift(g._title)
-	return parts.join('/')
 }
 
 function read() {
@@ -39,7 +34,8 @@ function read() {
 	}
 }
 
-export function createDesk(gui) {
+// `source.entries()` lists every value and action on this screen; `source.showPanel(on)` shows the old panel.
+export function createDesk(source) {
 	const state = read()
 	const fromUrl = new URLSearchParams(location.search).get('knobs')
 	if (fromUrl)
@@ -90,13 +86,13 @@ export function createDesk(gui) {
 	function matches() {
 		const qs = state.queries.map((q) => q.toLowerCase())
 		const found = []
-		for (const c of gui.controllersRecursive()) {
-			const key = pathOf(c)
+		for (const c of source.entries()) {
+			const key = c.path
 			if (!restored.has(key) && key in state.values) {
 				restored.add(key)
 				if (c.getValue() !== state.values[key]) c.setValue(state.values[key])
 			}
-			const hay = `${key} ${c._name}`.toLowerCase()
+			const hay = `${key} ${c.label}`.toLowerCase()
 			if (qs.some((q) => hay.includes(q)) && kindOf(c)) found.push({ key, c })
 		}
 		return found
@@ -110,11 +106,11 @@ export function createDesk(gui) {
 			query || browse !== null || document.activeElement === find || !state.queries.length
 		index.hidden = !open
 		if (!open) return
-		const controllers = gui.controllersRecursive()
+		const controllers = source.entries()
 		const folders = new Map()
 		for (const c of controllers) {
 			if (!kindOf(c)) continue
-			const parts = pathOf(c).split('/').slice(0, -1)
+			const parts = c.path.split('/').slice(0, -1)
 			for (let i = 1; i <= parts.length; i++) {
 				const path = parts.slice(0, i).join('/')
 				folders.set(path, (folders.get(path) ?? 0) + 1)
@@ -138,14 +134,14 @@ export function createDesk(gui) {
 				if (rank < 3) hits.push([rank, 0, chip(path, `${path} · ${n}`, () => pin(path))])
 			}
 			for (const c of controllers) {
-				const key = pathOf(c)
+				const key = c.path
 				const kind = kindOf(c)
-				const rank = kind ? Math.min(score(c._name), score(key) + 1) : 3
+				const rank = kind ? Math.min(score(c.label), score(key) + 1) : 3
 				if (rank < 3)
 					hits.push([
 						rank,
 						1,
-						chip(key, c._name, () => pin(key), kind, key.split('/').slice(0, -1).join(' / ')),
+						chip(key, c.label, () => pin(key), kind, key.split('/').slice(0, -1).join(' / ')),
 					])
 			}
 			hits.sort((a, b) => a[0] - b[0] || a[1] - b[1])
@@ -186,20 +182,20 @@ export function createDesk(gui) {
 			// Leaves in a folder that also has subfolders are pinned one by one.
 			if (browse !== null)
 				for (const c of controllers) {
-					const key = pathOf(c)
+					const key = c.path
 					const kind = kindOf(c)
 					if (kind && key.slice(0, key.lastIndexOf('/')) === browse)
-						items.push(chip(key, c._name, () => pin(key), kind))
+						items.push(chip(key, c.label, () => pin(key), kind))
 				}
-			const actions = controllers.filter((c) => typeof c.getValue() === 'function')
+			const actions = controllers.filter((c) => c.run)
 			if (browse === null && actions.length) {
 				const h = document.createElement('p')
 				h.className = 'desk-crumb'
 				h.textContent = 'Actions'
 				items.push(h)
 				for (const c of actions) {
-					const folder = pathOf(c).split('/').slice(0, -1).join(' / ')
-					const b = chip(pathOf(c), c._name, () => c.getValue().call(c.object), null, folder)
+					const folder = c.path.split('/').slice(0, -1).join(' / ')
+					const b = chip(c.path, c.label, () => c.run(), null, folder)
 					b.classList.add('desk-action')
 					items.push(b)
 				}
@@ -222,7 +218,7 @@ export function createDesk(gui) {
 	function rebuild() {
 		const found = matches()
 		root.hidden = !shown
-		gui.show(shown && !!state.panel)
+		source.showPanel(shown && !!state.panel)
 		renderIndex()
 		chips.replaceChildren(
 			...state.queries.map((q) => {
@@ -286,8 +282,8 @@ export function createDesk(gui) {
 
 	function collectChanges() {
 		const found = new Map()
-		for (const c of gui.controllersRecursive()) {
-			const key = pathOf(c)
+		for (const c of source.entries()) {
+			const key = c.path
 			if (!(key in state.values)) continue
 			const to = c.getValue()
 			if (to === c.initialValue) continue
@@ -343,7 +339,7 @@ export function createDesk(gui) {
 			setTimeout(() => (e.target.textContent = 'share'), 2000)
 		}
 		if (act === 'reset') {
-			for (const c of gui.controllersRecursive()) if (pathOf(c) in state.values) c.reset()
+			for (const c of source.entries()) if (c.path in state.values) c.reset()
 			state.values = {}
 			save()
 		}
@@ -420,6 +416,12 @@ const polar = (cx, cy, r, deg) => [
 	cy - r * Math.sin((deg * Math.PI) / 180),
 ]
 
+// The tooltip's first lines: where the value lives, its note, and when a change shows.
+const about = (key, c) =>
+	[key, c.hint, c.when && `applies ${c.when === 'restart' ? 'on restart' : `on ${c.when}`}`]
+		.filter(Boolean)
+		.join('\n') + '\n'
+
 // One instrument: a face you drag (up or right for more, Shift for fine), a label, and a readout
 // you can click to type into (counters too: click the big number). Double-click puts the value back.
 function instrument(key, c, kind, changed) {
@@ -427,11 +429,9 @@ function instrument(key, c, kind, changed) {
 	const el = document.createElement('div')
 	el.className = 'desk-mod'
 	el.dataset.kind = kind
-	el.title = `${key}\ndrag · shift for fine · wheel steps · click the number to type · double-click resets`
+	el.title = `${about(key, c)}drag · shift for fine · wheel steps · click the number to type · double-click resets`
 	const [min, max] = range(c)
-	if (typeof c._min === 'number') c._min = min
-	if (typeof c._max === 'number') c._max = max
-	const stepCandidates = [c._step, units[c.unit]?.step, c.unit === 's' ? 0.05 : null].filter(
+	const stepCandidates = [c.step, units[c.unit]?.step, c.unit === 's' ? 0.05 : null].filter(
 		(s) => s > 0,
 	)
 	const step = stepCandidates.length ? Math.min(...stepCandidates) : (max - min) / 200
@@ -456,7 +456,7 @@ function instrument(key, c, kind, changed) {
 			: `${+v.toFixed(decimals)}${unit}`
 
 	el.innerHTML = `<div class="desk-face">${FACES[kind]?.(max) ?? ''}</div>
-		<label>${c._name}</label><output></output>`
+		<label>${c.label}</label><output></output>`
 	const face = el.querySelector('.desk-face')
 	const out = el.querySelector('output')
 	const part = (s) => face.querySelector(s)
@@ -536,17 +536,17 @@ function swatch(key, c, changed) {
 	const el = document.createElement('div')
 	el.className = 'desk-mod'
 	el.dataset.kind = 'swatch'
-	el.title = `${key}\nclick picks · drag across for hue, up for lightness · shift for fine · double-click resets`
+	el.title = `${about(key, c)}click picks · drag across for hue, up for lightness · shift for fine · double-click resets`
 	el.innerHTML = `<div class="desk-face"><i class="swatch"></i><input type="color" tabindex="-1"></div>
 		<label></label><output></output>`
-	el.querySelector('label').textContent = c._name
+	el.querySelector('label').textContent = c.label
 	const face = el.querySelector('.desk-face')
 	const chip = el.querySelector('.swatch')
 	const picker = el.querySelector('input')
 	const out = el.querySelector('output')
-	const hexOf = (v) => c._format.toHexString(v)
+	const hexOf = (v) => c.format.toHexString(v)
 	const set = (hex) => {
-		c.setValue(c._format.fromHexString(hex))
+		c.setValue(c.format.fromHexString(hex))
 		changed(key, c)
 	}
 	picker.addEventListener('input', () => set(picker.value))

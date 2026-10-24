@@ -299,8 +299,10 @@ export function addSliders(debug, sections, step, more = {}) {
 	const at = (v) => (v === T ? step : v)
 	const placed = sections.map(([path, ...rest]) => [debugPath(path), path, ...rest])
 	placed.sort(([a], [b]) => (a < b ? -1 : 1))
-	for (const [where, path, object, sliders, unitAt] of placed)
-		debug.tune(where, object, (f) => {
+	for (const [where, path, object, sliders, unitAt] of placed) {
+		const units = (o, key, dotted) =>
+			unitAt?.(o, key) ?? resolveUnit(`${path.replaceAll('/', '.')}.${dotted}`)
+		const build = (f) => {
 			for (const [key, [min, max, by, label, target = object]] of Object.entries(sliders)) {
 				const slider = f.add(target, key, at(min), at(max), at(by))
 				if (label) slider.name(label)
@@ -310,5 +312,7 @@ export function addSliders(debug, sections, step, more = {}) {
 				controller.unit =
 					unitAt?.(controller.object, controller.property) ??
 					resolveUnit(`${path.replaceAll('/', '.')}.${controller.property}`)
-		})
+		}
+		debug.tune(where, object, build, { units })
+	}
 }

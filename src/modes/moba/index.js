@@ -29,6 +29,7 @@ import { createMatchDebug } from './debug.js'
 import { createFog } from './fog.js'
 import { restyle, styleKnobs } from './restyle.js'
 import { addSliders, sliderSections } from './sliders.js'
+import { resolveUnit } from './units.js'
 import { createPortalLobby } from './portal-lobby.js'
 import { createDifficultyGallery } from './lobby-props.js'
 import { createLobbyReplica } from './lobby-replica.js'
@@ -416,7 +417,9 @@ export default function moba(app, map) {
 			app.clock.reset()
 
 			if (debugTune) {
-				run.debug.tune(`lane/${debugTune.name}`, debugTune.values, debugTune.add)
+				run.debug.tune(`lane/${debugTune.name}`, debugTune.values, debugTune.add, {
+					units: (o, key, dotted) => resolveUnit(`${debugTune.name}.${dotted}`),
+				})
 				const repaint = () => {
 					Object.assign(palette, maps[kind].palette())
 					restyle()
@@ -430,6 +433,10 @@ export default function moba(app, map) {
 							(f, o) => {
 								add(f, o)
 								for (const c of f.controllers) c.onChange(repaint)
+							},
+							{
+								onChange: repaint,
+								units: (o, key, dotted) => resolveUnit(`${debugTune.name}.${section}.${dotted}`),
 							},
 						)
 			}

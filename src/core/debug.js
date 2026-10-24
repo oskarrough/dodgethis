@@ -1,5 +1,6 @@
 import GUI from 'lil-gui'
 import { createDesk } from './desk.js'
+import { createRegistry } from './registry.js'
 import { tune } from './tune.js'
 
 // Leveled console logging + a ring buffer you can dump or surface in the HUD.
@@ -64,8 +65,32 @@ export function createCombatLog(selector = '.combat', max = 12) {
 	return { push }
 }
 
+// A lil-gui controller seen as a registry entry, so the desk handles both alike.
+function fromController(c) {
+	const parts = [c.property]
+	for (let g = c.parent; g?.parent; g = g.parent) parts.unshift(g._title)
+	const action = typeof c.getValue() === 'function'
+	return {
+		path: parts.join('/'),
+		object: c.object,
+		property: c.property,
+		label: c._name,
+		unit: c.unit,
+		initialValue: c.initialValue,
+		min: c._min,
+		max: c._max,
+		step: c._step,
+		format: c._format,
+		getValue: () => c.getValue(),
+		setValue: (v) => c.setValue(v),
+		reset: () => c.reset(),
+		run: action ? () => c.getValue().call(c.object) : undefined,
+	}
+}
+
 // The panel behind app.debug. A tune path is a folder path that mirrors the tune object, so
 // `bots/easy` is tune.bots.easy; `engine/…` holds src/core's own and stays last. Cheats are buttons in "cheats".
+// Every value in a section reaches the desk through the registry; a hand-made slider for the same value wins.
 export function createDebugPanel() {
 	const gui = new GUI({ title: 'dodgethis / debug' })
 	const folders = new Map()
@@ -98,11 +123,35 @@ export function createDebugPanel() {
 			}
 		}
 	}
-	const desk = createDesk(gui)
+	const registry = createRegistry()
+	const desk = createDesk({
+		entries() {
+			const controllers = gui.controllersRecursive().map(fromController)
+			const handled = new Map()
+			for (const c of controllers) {
+				if (!handled.has(c.object)) handled.set(c.object, new Set())
+				handled.get(c.object).add(c.property)
+			}
+			const found = registry.entries().filter((e) => !handled.get(e.object)?.has(e.property))
+			return [...controllers, ...found]
+		},
+		showPanel: (on) => gui.show(on),
+	})
 	const refilter = addFilter(gui, desk.pin)
 	gui.close()
 	return {
-		tune: (path, object, build) => build && adding(path, (f) => build(f, object)),
+		// `options` (or a third argument that isn't a builder): { notes, featured, units, onChange }, see registry.js.
+		tune(path, object, build, options) {
+			if (build && typeof build !== 'function') [build, options] = [null, build]
+			const unregister = registry.add(path, object, options)
+			desk.refresh()
+			const remove = build && adding(path, (f) => build(f, object))
+			return () => {
+				unregister()
+				remove?.()
+				desk.refresh()
+			}
+		},
 		cheat: (label, fn) => adding('cheats', (f) => f.add({ run: fn }, 'run').name(label)),
 		// Backquote opens the desk (live numbers, not only a debug panel); "all values" shows the old GUI.
 		show: () => desk.show(true),
