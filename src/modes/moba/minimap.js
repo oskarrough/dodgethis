@@ -128,12 +128,12 @@ export function createMinimap(
 				markers.delete(id)
 			}
 			for (const unit of units) {
-				const building = unit.kind === 'tower' || unit.kind === 'core'
+				const building = unit.structure
 				let marker = markers.get(unit.id)
 				if (!marker) {
 					marker = make('g', { 'data-unit': unit.id }, building ? buildings : heroes)
 					if (building) {
-						marker.innerHTML = icons[unit.kind]
+						marker.innerHTML = icons[unit.kind] ?? icons.tower
 						const icon = marker.firstChild
 						for (const [key, value] of Object.entries({ x: -5, y: -5, width: 10, height: 10 }))
 							icon.setAttribute(key, value)
