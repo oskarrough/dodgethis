@@ -16,7 +16,6 @@ export function createBall({
 	obstacles,
 	present,
 	damage,
-	apply,
 	endCast,
 	layout,
 }) {
@@ -221,9 +220,15 @@ export function createBall({
 						target: u.id,
 						kind: u.structure ? 'structure' : 'hero',
 					})
-					damage(shot, u, u.structure ? u.maxHp * tune.ball.structureDamage : tune.ball.damage)
-					// The landed hit reads the stance before this impact's stun disables it.
-					if (!u.structure && !u.dead) apply(u, 'core.stun', { duration: tune.ball.stun })
+					// Stun rides the landed hit (source set, stance still read first) so a shielded
+					// base or god-mode target never takes it.
+					damage(
+						u.structure
+							? shot
+							: { ...shot, applies: [{ key: 'core.stun', duration: tune.ball.stun }] },
+						u,
+						u.structure ? u.maxHp * tune.ball.structureDamage : tune.ball.damage,
+					)
 					if (u.structure) {
 						fact('ballPop', { reason: 'spent' })
 						ball = null
