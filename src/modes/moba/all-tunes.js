@@ -48,9 +48,7 @@ import encounters_carillon from './encounters/carillon/carillon-tune.js'
 import encounters_espejo from './encounters/espejo/espejo-tune.js'
 import encounters_fornax from './encounters/fornax/fornax-tune.js'
 import encounters_gnomon from './encounters/gnomon/gnomon-tune.js'
-import encounters_manos, {
-	units as encounters_manos_units,
-} from './encounters/manos/manos-tune.js'
+import encounters_manos, { units as encounters_manos_units } from './encounters/manos/manos-tune.js'
 import encounters_tinajaBotijo, {
 	units as encounters_tinajaBotijo_units,
 } from './encounters/tinajaBotijo/tinajaBotijo-tune.js'

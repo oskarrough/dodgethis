@@ -68,7 +68,7 @@ function tunes() {
 			imports.push(
 				!own
 					? `import ${binding} ${from}`
-					: one.length <= 100
+					: one.trimEnd().length <= 100
 						? one
 						: `import ${binding}, {\n\tunits as ${binding}_units,\n} ${from}`,
 			)
