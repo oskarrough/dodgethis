@@ -91,8 +91,8 @@ export function extras(scene) {
 				mv.fill.radius,
 				48,
 				1,
-				Math.PI / 2,
-				(-i / ARCS) * Math.PI * 2,
+				Math.PI / 2 - (i / ARCS) * Math.PI * 2,
+				(i / ARCS) * Math.PI * 2,
 			).rotateX(-Math.PI / 2),
 		))
 	}
