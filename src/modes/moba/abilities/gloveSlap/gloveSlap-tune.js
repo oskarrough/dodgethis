@@ -7,4 +7,9 @@ export default {
 	radius: 0.35,
 	critEvery: 3,
 	critMultiplier: 1.5,
+	impact: {
+		smear: { radius: 1, width: 0.42, sweep: 1.8, life: 0.16 },
+		skid: 0.3,
+		hold: 0.05,
+	},
 }

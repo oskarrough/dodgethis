@@ -6,6 +6,12 @@ export default {
 	radius: 0.35,
 	cooldown: 4,
 	bounce: { max: 2, damagePerCushion: 40 },
+	impact: {
+		flare: { size: 2, streak: 4, life: 0.24, color: '#fff1c9' },
+		ripples: { count: 2, from: 0.5, to: 1.5, life: 0.3, gap: 0.06, width: 0.08 },
+		skid: 0.35,
+		hold: 0.05,
+	},
 }
 
 // The dimension of each number above that its name alone does not settle (src/modes/moba/units.js).

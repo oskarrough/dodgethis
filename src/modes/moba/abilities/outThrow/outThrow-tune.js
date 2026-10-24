@@ -6,6 +6,10 @@ export default {
 	damage: 60,
 	cooldown: 3,
 	deathRefund: 2,
+	impact: {
+		skid: 0.22,
+		hold: 0.03,
+	},
 	sound: {
 		cast: { freq: 250, slideTo: 440, type: 'triangle', dur: 0.15, gain: 0.08 },
 		shot: { freq: 420, slideTo: 180, type: 'triangle', dur: 0.12, gain: 0.1 },

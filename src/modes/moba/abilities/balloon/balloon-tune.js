@@ -14,6 +14,14 @@ export default {
 	cooldown: 5,
 	bot: { deficit: 0.5, healReserveHp: 0.7, finishHp: 0.3 },
 	view: { ballRadius: 0.25, height: 2.8, ground: 0.1, ringWidth: 0.05, rippleSize: 0.55 },
+	// A water balloon: a splash of rings and no glow to speak of.
+	impact: {
+		splash: 0.7,
+		flare: { size: 1, streak: 0, life: 0.18, color: '#e8fbff' },
+		ripples: { count: 3, from: 0.5, to: 1.8, life: 0.4, gap: 0.07, width: 0.07 },
+		skid: 0.2,
+		hold: 0,
+	},
 	sound: {
 		cast: { freq: 280, slideTo: 740, type: 'sine', dur: 0.2, gain: 0.11 },
 		impact: { freq: 520, slideTo: 100, type: 'triangle', dur: 0.16, gain: 0.17 },

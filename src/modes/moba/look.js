@@ -499,5 +499,10 @@ export const look = {
 			hold: 0.045,
 			nudge: { amount: 0.25, range: 10 },
 		},
+		// A heal landing: a soft pale-green bloom and one ring, never a skid or a pause.
+		heal: {
+			flare: { size: 1.6, streak: 0, life: 0.34, color: '#d8ffe4', y: 1.1 },
+			ripples: { count: 1, from: 0.4, to: 1.2, life: 0.4, width: 0.06, color: '#e6ffe9' },
+		},
 	},
 }

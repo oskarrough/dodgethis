@@ -430,6 +430,19 @@ export function createFeedback({
 				return
 			case 'heal':
 				if (mine || onMe) view.heal?.(fact, unitOf(fact.target)?.body.position)
+				// Only a heal that mended something blooms; heals carry no point, so it blooms on the healed.
+				if (fact.amount > 0 && unitOf(fact.target))
+					impact(
+						{ ...fact, point: unitOf(fact.target).body.position },
+						ability?.stats?.healImpact ?? look.juice.heal,
+						{
+							unit: unitOf(fact.target),
+							source,
+							mine,
+							listener: unitOf(local)?.body.position,
+							tick: fact.tick ?? sim.tick,
+						},
+					)
 				return
 			case 'nearMiss':
 				// The close cue plays for both players; the shooter also gets a cream streak along the pass.

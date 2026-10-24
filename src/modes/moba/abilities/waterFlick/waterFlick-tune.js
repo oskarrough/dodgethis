@@ -6,6 +6,12 @@ export default {
 	range: 5,
 	speed: 18,
 	radius: 0.2,
+	impact: {
+		flare: { size: 1, streak: 1.2, life: 0.16, color: '#e8fbff' },
+		ripples: { count: 2, from: 0.3, to: 1, life: 0.3, gap: 0.06, width: 0.06 },
+		skid: 0.15,
+		hold: 0,
+	},
 	sound: {
 		cast: { freq: 630, slideTo: 420, type: 'sine', dur: 0.09, gain: 0.09 },
 		shot: { freq: 950, slideTo: 650, type: 'sine', dur: 0.08, gain: 0.1 },

@@ -7,6 +7,10 @@ export default {
 	cooldown: 9,
 	dragDistance: 1.5,
 	dragTime: 0.35,
+	impact: {
+		skid: 0.25,
+		hold: 0.03,
+	},
 	sound: {
 		cast: { freq: 310, slideTo: 720, type: 'sine', dur: 0.3, gain: 0.12 },
 		shot: { freq: 790, slideTo: 210, type: 'sine', dur: 0.16, gain: 0.2 },
