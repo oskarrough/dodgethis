@@ -22,28 +22,17 @@ Paths are under `src/modes/moba/` unless they start with `src/`. `tune.js` means
 
 ## Lobby
 
-- Lobby screen (walk around, pick, ready, back): `lobby.js` `createLobby`; `tune.js` `lobby`; `moba.md`
-- Back and Play online, the top-left row in both modes' lobbies: `src/core/corner-nav.js` `createCornerNav`; `index.html` `.corner-nav`; used by `lobby.js` `createLobby` and `src/modes/dodgeball/index.js`
-- Seats, roster, ready state (1 s fill; stepping out cancels): `lobby-state.js` `createReadySeats`; `lobby-heroes.js` `createLobbyHeroes`; `tune.js` `lobby.ready`
-- Ready plates inlaid in the saucer's glaze, the Ready label beside yours, the glaze fill: `lobby-props.js` `createLobbyProps`, `plate`; `tune.js` `lobby.ready`; `lobby.js` `createLobby`
-- Lobby floor, the glazed saucer in its magnetic cradles, with a solid round cushion rim for bodies, shots and held Ricochet previews: `lobby-floor.js` `createLobbyFloor`, `saucerShape`; `maps/lobby/lobby-layout.js` `lobbyLayout`, `lobbyRimCover` (overlapping circular cover); `obstacles.js` `buildColliders` (`island.round` floor and cover), `sweepObstacles`; `maps/lobby/lobby-view.js` glaze; `tune.js` `lobby.floor`
-- Plates flow to the map: bots walk onto their plates on arrival, your plate ripples until you stand in it, grooves inlaid in the glaze run from each plate into a trunk under the weather bowl and fill as plates glaze, team glazes marbling where they join, then round inside the bowl, the last plate to glaze closing the ring: `lobby-flow.js` `createLobbyFlow`, `groovePath`, `ringPath`; hooked in `lobby-props.js` `createLobbyProps`; `tune.js` `lobby.flow`
-- Weather bowl (`?lobby=old` only), the next map turning in miniature under a sky cap, with its label: `lobby-bowl.js` `createWeatherBowl`; `tune.js` `lobby.bowl`. The portal lobby shows the next map only through the tear, captioned with its name: `portal-lobby.js` `placeCaption`
-- Hero stands and the hero strip (pick a hero; shots already out finish after a swap), leaning on the saucer's left lip, with spice motes drifting off the cards to the plates: `lobby-heroes.js` `heroStands`, `createHeroStrip` (`seat`); `lobby-floor.js` `saucerRim`; `lobby-dust.js` `createLobbyDust`; `tune.js` `lobby.pick`, `lobby.strip`, `lobby.dust`
-- The swap flip (your old hero turns edge-on to the camera, the new one comes round with an overshoot, its foot disc down first) and props that squash when bumped and rock when shot (weather bowl, bot holograms): `lobby-feel.js` `createFlips`, `createJolts`; foot disc names in `hero-view.js`; `tune.js` `lobby.pick` (`flip*`), `lobby.jolt`
-- Lobby sounds: swap (`lobby.pick`, `lobby.flip`), difficulty pick (`lobby.galleryPick`), your groove starting to fill (`lobby.grooveFill`, played in `lobby-props.js`), ready (`lobby.readyWalk`, `lobby.seatEnter`, `lobby.seatReady`, `lobby.readyCancel`): `sound-table.js`; `tune.js` `lobby.ready.grooveSound`
-- Portal lobby seat sounds: add and remove a bot (`lobby.botAdd`, `lobby.botRemove`), pick (`lobby.pick`), the hero popover opening and closing (`ui.menuOpen`, `ui.menuClose`), back (`lobby.back`): `portal-lobby.js`
-- Every button clicks: a click whose handler played nothing gets `ui.confirm`; `data-quiet` opts a button out: `audio.js` `clickSounds`
-- Hero numbers panel (stats, level slider): `front/numbers.js` `createNumbers`; `front/stats.js` `heroStats`, `numberLines`; `tune.js` `lobby.inspect`
+- Lobby screen, the portal lobby (walk the terracotta floor, pick a hero from the seat strips, ready by walking into the portal, back): `portal-lobby.js` `createPortalLobby`; `lobby-handoff.js` `validLobbyHandoff`; `portal-lobby.css`, `lobby.css`; `tune.js` `lobby.portal`; `moba.md`
+- The portal and its far view of the next map, captioned with the map name and the waiting or countdown status: `src/core/portal.js` `createPortal`; `portal-far.js` `createPortalFar`; `portal-lobby.js` `placeCaption`
+- Lobby floor, terracotta flagstones ringed by oxide-red terrero stands (`?ground=saucer` shows the old saucer), with a solid rim for bodies, shots and held Ricochet previews: `lobby-floor.js` `createLobbyFloor`, `saucerExtent`; `maps/lobby/lobby-layout.js` `lobbyLayout`, `lobbyRimCover`; `obstacles.js` `buildColliders`, `sweepObstacles`; `front/lobby-tune.js` `floor.style`, `grounds`
+- Seats, roster, ready state (1 s fill; stepping out cancels): `lobby-state.js` `createReadySeats`; `tune.js` `lobby.ready`
+- Back and Play online, the top-left row in both modes' lobbies: `src/core/corner-nav.js` `createCornerNav`; `index.html` `.corner-nav`; used by `portal-lobby.js` and `src/modes/dodgeball/index.js`
 - Difficulty gallery, three standees you shoot to pick: `lobby-props.js` `createDifficultyGallery`; `tune.js` `lobby.gallery`
-- Horseshoe magnets with sleepy, calm and angry faces: `lobby-magnets.js` `createMagnets`, `createFaceKit`
-- Lobby props in the scene (stands, magnets, ready marks): `lobby-props.js` `createLobbyProps`; `tune.js` `lobby.marks`
 - Lobby practice dummies (players can't hit each other): `dummy-view.js` `dressDummy`; mechanic `mechanics/dummies/` (dressed through `mechanics/dummies/dummies-view.js`); `tune.js` `dummies`, `lobby.practice`; `look.js` `dummyView`
-- Lobby camera (fits the whole saucer) and intro swoop: `lobby.js` `createLobby` (`fitSaucer`); `lobby-floor.js` `saucerExtent`; `lobby-bowl.js` `bowlExtent`; `tune.js` `lobby.camera`, `lobby.intro`
-- Lobby HUD (tooltips on heroes): `lobby.js`; `hud.js` `createHud({ lobby: true })`; `tune.js` `lobby.hud`
-- Lobby fall recovery (the solid rim prevents ordinary walk-offs): `lobby.js`; `tune.js` `lobby.fall`, `lobby.respawn`
+- Lobby sounds: seat enter, ready, cancel, pick, bot add and remove, hero popover open and close, back, difficulty pick (`lobby.*`, `ui.menuOpen`, `ui.menuClose`): `sound-table.js`; `portal-lobby.js`
+- Every button clicks: a click whose handler played nothing gets `ui.confirm`; `data-quiet` opts a button out: `audio.js` `clickSounds`
 - Lobby sim replica for online: `lobby-replica.js` `createLobbyReplica`, `createUnitReplica`; `network.md`
-- Online "someone joined" notice: `tune.js` `lobby.onlineNotice`; `lobby.js`
+- Online "someone joined" notice: `tune.js` `lobby.onlineNotice`
 
 ## Descent
 
@@ -103,7 +92,7 @@ Paths are under `src/modes/moba/` unless they start with `src/`. `tune.js` means
 - Mender's aim preview, Mend beam and landing, Ward bubble: `heroes/mender/mender-view.js` `extras`; green heal numbers: `damage-numbers.js` `heal`
 - Cast bars (player above the skill bar, boss at the top): `cast-bar.js` `createCastBar`, `cast-bar.css`; `hud.js`
 - Effects kit (rings, columns, shells, impact recipes): `effects.js` `createEffects`, `createImpacts`; an ability's `impact` recipe in its tune file (Slam, Swing)
-- Dungeon on the splash and its dedicated five-row party screen (hero dropdowns, bot add/remove, guest Ready and host Start; no walking; the report and pause return here): `front/index.js`; `dungeon-lobby.js`, `dungeon-lobby.css`, `lobby-state.js`, `lobby-handoff.js`; `bots.js`; `mechanics/boss/boss-view.js`; `menu.js`
+- Dungeon on the splash, using the portal lobby for its party: `front/index.js`; `lobby-state.js`, `lobby-handoff.js`; `bots.js`; `mechanics/boss/boss-view.js`; `menu.js`
 - Skillshot shapes and sweeps: `skillshot.js` `stepShot`, `closest`; `obstacles.js` `sweepHit`, `sweepObstacles`; `skills-view.js` `lineReach`, `bouncedLinePath` (held Ricochet preview traces the sim's `stepShot`); `view.js` thin dotted Ricochet path (`look.js` `abilityView.bouncedAimRadius`, `bouncedAimSpacing`)
 - Ability telegraphs for enemies (ground line tell): `skills-view.js` `createSkillsView`; `look.js` `abilityView`; `heroes.md`
 - Fletcher, ranged poke. Q Loose (arrow shot), W Rain (zone), E Vault (dash): `abilities/{loose,vault,rain}/`, `heroes/fletcher/`; `heroes.md`
