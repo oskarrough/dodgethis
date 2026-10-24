@@ -295,8 +295,14 @@ export function createPortalLobby({ app, run, sim, hero, setup, options }) {
 		const seat = readySeats.seats.find((s) => s.id === seatId)
 		if (!seat) return
 		if (!seat.occupant) {
-			if (addBot(seat)) open = seat.id
-		} else if (canEdit(seat)) open = open === seat.id ? null : seat.id
+			if (addBot(seat)) {
+				open = seat.id
+				playUse(app.audio, 'lobby.botAdd')
+			}
+		} else if (canEdit(seat)) {
+			open = open === seat.id ? null : seat.id
+			app.audio.ui(open ? 'menuOpen' : 'menuClose')
+		}
 		drawn = ''
 		update()
 	}
@@ -336,6 +342,7 @@ export function createPortalLobby({ app, run, sim, hero, setup, options }) {
 		delete setup.picks[seat.occupant.id]
 		readySeats.release(seat.occupant.id, sim.tick)
 		open = null
+		playUse(app.audio, 'lobby.botRemove')
 	}
 	function back() {
 		if (ending || slipping()) return
@@ -345,6 +352,7 @@ export function createPortalLobby({ app, run, sim, hero, setup, options }) {
 		}
 		syncPick()
 		transferred = true
+		playUse(app.audio, 'lobby.back')
 		app.modes.start('moba-front', { options: { setup, ...(backdrop ? { backdrop } : {}) } })
 	}
 	backButton.onclick = back
@@ -352,7 +360,10 @@ export function createPortalLobby({ app, run, sim, hero, setup, options }) {
 		const button = event.target.closest('button')
 		if (!button || !open) return
 		if (button.dataset.remove != null) removeBot(open)
-		else if (pickHero(open, button.dataset.hero)) open = null
+		else if (pickHero(open, button.dataset.hero)) {
+			open = null
+			playUse(app.audio, 'lobby.pick')
+		} else playUse(app.audio, 'lobby.pickDenied')
 		drawn = ''
 		update()
 	})
@@ -364,6 +375,7 @@ export function createPortalLobby({ app, run, sim, hero, setup, options }) {
 				event.preventDefault()
 				if (open) {
 					open = null
+					app.audio.ui('menuClose')
 					drawn = ''
 					update()
 				} else back()

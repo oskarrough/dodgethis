@@ -123,8 +123,10 @@ onSwapChange(() => {
 let bus = 'world'
 let capped = true
 const started = { ui: [], mine: [], others: [], world: [] }
+let plays = 0
 // Play on one bus: past its cap the sound is dropped; a fight sound ducks the music under it.
 export function onBus(name, play) {
+	plays++
 	if (capped && started[name]) {
 		const now = performance.now() / 1000
 		const recent = started[name].filter((at) => now - at < mix('capWindow'))
@@ -469,4 +471,19 @@ export function swapped(id, point = null, gain = 1, ...extra) {
 // Menu sounds are uses too (`ui.<name>` in the sound table), so the board can swap them.
 export function ui(name) {
 	onBus('ui', () => swapped(`ui.${name}`) || sfx[name]())
+}
+
+// Every button answers a click: one whose handler played nothing gets `ui.confirm`. `data-quiet` on a button or
+// its parent opts out, for buttons whose sound lands later (a fact on the next tick) or tools that should stay silent.
+export function clickSounds() {
+	window.addEventListener(
+		'click',
+		(event) => {
+			const button = event.target.closest?.('button')
+			if (!button || button.closest('[data-quiet], .lil-gui')) return
+			const before = plays
+			setTimeout(() => plays === before && ui('confirm'))
+		},
+		true,
+	)
 }

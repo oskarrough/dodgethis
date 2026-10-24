@@ -220,6 +220,7 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 	const xpBar = el('div', 'moba-xp moba-meter', vitals)
 	const xpText = el('span', '', xpBar)
 	const slotRow = el('div', 'moba-slots', bar)
+	slotRow.dataset.quiet = '' // a slot casts; the ability is its sound
 	const slots = SLOTS.map((action, index) => {
 		const slot = hot(el('button', 'moba-slot', slotRow), { kind: 'slot', index })
 		slot.type = 'button'

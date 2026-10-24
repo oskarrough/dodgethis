@@ -48,6 +48,7 @@ export function createDesk(gui) {
 
 	const root = document.createElement('section')
 	root.className = 'desk'
+	root.dataset.quiet = '' // a tuning tool, not the game
 	root.hidden = true
 	root.innerHTML = `<header class="desk-head"><b title="press \` to hide · change a number, then share it as a GitHub issue">desk</b><span class="desk-chips"></span>
 		<button data-act="copy" title="copy changed values as JSON, to paste into a GitHub issue">copy</button>

@@ -1,3 +1,4 @@
+import { ui } from '../core/audio.js'
 import { el } from '../core/dom.js'
 import { MAX_BOTS } from './online-session.js'
 import { MAX_PLAYERS } from './net.js'
@@ -29,9 +30,13 @@ export function createOnlineUi(session, { inMatch = () => false, signal } = {}) 
 	signal?.addEventListener('abort', () => panel.remove(), { once: true })
 	// The result card's curtain marks every other body child inert, this panel included; opening over it must lift that.
 	function open() {
-		if (!panel.open) panel.showModal()
+		if (!panel.open) {
+			panel.showModal()
+			ui('menuOpen')
+		}
 		panel.inert = false
 	}
+	panel.addEventListener('close', () => ui('menuClose'))
 	panel.addEventListener('cancel', (event) => {
 		event.preventDefault()
 		if (inMatch()) panel.close()
