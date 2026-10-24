@@ -3,10 +3,12 @@ import * as altamesa_view from './altamesa/altamesa-view.js'
 import * as flagfall_view from './flagfall/flagfall-view.js'
 import * as lobby_view from './lobby/lobby-view.js'
 import * as overthrow_view from './overthrow/overthrow-view.js'
+import * as tileroom_view from './tileroom/tileroom-view.js'
 
 export default {
 	altamesa: altamesa_view,
 	flagfall: flagfall_view,
 	lobby: lobby_view,
 	overthrow: overthrow_view,
+	tileroom: tileroom_view,
 }

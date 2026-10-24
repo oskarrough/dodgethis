@@ -174,7 +174,7 @@ export function convexHull(points) {
 	return [...half(sorted), ...half(sorted.reverse())]
 }
 
-function castShadows({ layout, s, extent, casts, own }) {
+export function castShadows({ layout, s, extent, casts, own }) {
 	// One low light (Overthrow's sun, Flagfall's moon) prints long violet shadows from cover onto the court, baked once like the
 	// contact above: the swept footprint of each box and pillar, never a shadow map.
 	let shadowPrint = null
