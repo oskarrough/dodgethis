@@ -10,7 +10,7 @@ High over a sea of cloud hang the mesas: flat-topped towers of red and violet st
 
 People come up to fight on these courts the way a village gathers for a wrestling match: for the sport of it, with no war behind it. The lobby is a terrero, the sand ring of Canarian wrestling, here paved in sun-bleached terracotta and ringed by oxide-red stands and a basalt wall, under a pastel sky that goes from apricot at the horizon to violet overhead, with other mesas drifting in the distance. A stone portal stands at one side. When enough heroes walk into it, its mouth fills with light and carries them down to the court below.
 
-The courts have names. Overthrow is the day isle, pale stone with moss on its lip and white water pouring off its edges into cloud. Flagfall is the same world at night, when the gardens on the lower rims wake and their orchid bells glow. Red and blue are banners and sashes picked on the day, not nations, so a mirror match needs no excuse.
+The desert mesa is the hub, and every court is its own island floating in the same sky, with its own country on top. Overthrow is a green isle by day, pale stone with moss on its lip and white water pouring off its edges into cloud. Flagfall is a night jungle, where the gardens on the lower rims wake and their orchid bells glow. What holds them together is the cloud sea under all of them, the one navy line and the same type. Red and blue are banners and sashes picked on the day, not nations, so a mirror match needs no excuse.
 
 Every few minutes the Ball falls out of the sky, a shard of something bright. You see its shadow first, which is fair warning, and it lands hot and hits harder than anything made up here until it cools. The keeps are faceted crystals on stepped plinths, guarded by stone towers, and the minions are small nameless things of the mesas that follow the nearest keep and walk at whatever it points at.
 
@@ -18,16 +18,16 @@ Deep inside one mesa lies the Hollow Mesa, a dungeon of seven rooms for a party 
 
 ## What is settled and what is open
 
-| Settled                                                                               | Open                                                                              |
-| ------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| Floating stone over cloud; Moebius line and sky; Escher stairs and arches             | The game's name, and whether the world gets one (#25)                             |
-| The terracotta terrero lobby, pastel apricot-to-violet sky, distant mesas, the portal | Whether the green isles of Overthrow drift toward the desert mesas                |
-| Overthrow by day, Flagfall by night; teams are sashes, not sides                      | Hero names and origins: Coach, Hook, Brew, Mender and Wata are placeholders (#24) |
-| Cream paper cards with a thin navy ink line; one navy ink, never black                | The Hollow Mesa's room names, which are all placeholders                          |
-| Vallotton woodcuts for the splash map cards, cut from each map's real layout          | Who the heroes are, and why they come up to fight                                 |
-| Type: display Darumadrop One, Comico, Apfel Grotezk; text Sniglet, Josefin Sans       | Music beyond the synthesised scenes; Oskar is working on audio himself            |
-| No text where the world can show it: the portal fills with light instead of counting  |                                                                                   |
-| Charm with weight: cute proportions, worn materials, never plush                      |                                                                                   |
+| Settled                                                                                                                                                                                               | Open                                                                              |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| Floating stone over cloud; Moebius line and sky; Escher stairs and arches; the desert mesa is the hub and each map keeps its own biome (Overthrow green isles, Flagfall night jungle) in the same sky | The game's name, and whether the world gets one (#25)                             |
+| The terracotta terrero lobby, pastel apricot-to-violet sky, distant mesas, the portal                                                                                                                 |                                                                                   |
+| Overthrow by day, Flagfall by night; teams are sashes, not sides                                                                                                                                      | Hero names and origins: Coach, Hook, Brew, Mender and Wata are placeholders (#24) |
+| Cream paper cards with a thin navy ink line; one navy ink, never black                                                                                                                                | The Hollow Mesa's room names, which are all placeholders                          |
+| Vallotton woodcuts for the splash map cards, cut from each map's real layout                                                                                                                          | Who the heroes are, and why they come up to fight                                 |
+| Type: display Darumadrop One, Comico, Apfel Grotezk; text Sniglet, Josefin Sans                                                                                                                       | Music beyond the synthesised scenes; Oskar is working on audio himself            |
+| No text where the world can show it: the portal fills with light instead of counting                                                                                                                  |                                                                                   |
+| Charm with weight: cute proportions, worn materials, never plush                                                                                                                                      |                                                                                   |
 
 ## The feeling
 
