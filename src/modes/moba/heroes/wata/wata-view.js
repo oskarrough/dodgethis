@@ -3,8 +3,9 @@ import { tune } from '../../tune.js'
 
 export function dress({ torso, part, own, discY, materials }) {
 	const v = tune.heroes.wata.view
-	torso.geometry = own(new THREE.SphereGeometry(1, 16, 10))
-	torso.scale.set(v.width, v.height, v.depth)
+	// Bake the pot's proportions into the geometry: hero-view grounds the torso and clones its geometry
+	// for the ink border, and a mesh scale would leave that border as a full-size ink ball.
+	torso.geometry = own(new THREE.SphereGeometry(1, 16, 10).scale(v.width, v.height, v.depth))
 	part(
 		new THREE.CylinderGeometry(v.neckRadius, v.neckRadius, v.neckHeight, 12),
 		materials.cream,
