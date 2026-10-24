@@ -320,6 +320,15 @@
 			.score th + th {
 				text-align: right;
 			}
+			/* A snapshot of the real desk, set in place instead of floating over the game. */
+			.desk-slot {
+				background: #8fd7ff;
+			}
+			.desk-slot .desk {
+				position: static;
+				width: auto;
+				max-height: none;
+			}
 			.score .d {
 				font-size: calc(18px * var(--k));
 			}
@@ -366,6 +375,8 @@
 					><input type="range" min="100" max="900" step="100" data-k="textW" /><output></output>
 					<label>Numbers</label
 					><select data-k="num"></select
+					><span></span> <label>Debug</label
+					><select data-k="desk"></select
 					><span></span> <label>Size</label
 					><input type="range" min="0.6" max="1.6" step="0.05" data-k="k" /><output></output>
 					<label>Tracking</label
@@ -447,6 +458,9 @@
 						</tr>
 					</table>
 				</div>
+				<div class="s desk-slot">
+					<small>Debug desk · the real one (press ` in game), 12px</small>
+				</div>
 				<pre class="css"></pre>
 			</div>
 		</template>
@@ -459,6 +473,7 @@
 				text: 'Josefin Sans',
 				textW: 400,
 				num: 'monospace',
+				desk: 'Darumadrop One', // desk.css reads --ui-font
 				k: 1,
 				track: 0,
 			}
@@ -528,6 +543,7 @@
 					...SHIPPING,
 					ui: f,
 					text: TEXTY.has(f) ? f : SHIPPING.text,
+					desk: f,
 				}))
 			const LOCAL = new Set([
 				'Josefin Sans',
@@ -576,12 +592,14 @@
 			const stack = (f) => (GENERIC.test(f) ? f : `'${f}'`) + ', system-ui, sans-serif'
 
 			let cols
+			let desk // the desk snapshot, built at the bottom
 			try {
 				cols = JSON.parse(decodeURIComponent(location.hash.slice(1)))
 			} catch {}
 			if (!Array.isArray(cols) || cols.length < 2) cols = [{ ...SHIPPING }, ...pickColumns()]
 			cols[0] = { ...SHIPPING } // the first column stays the reference
-			for (const c of cols) for (const f of [c.ui, c.text, c.num]) addFamily(f)
+			for (const c of cols) c.desk ??= c.ui
+			for (const c of cols) for (const f of [c.ui, c.text, c.num, c.desk]) addFamily(f)
 
 			const root = document.getElementById('cols')
 			const tpl = document.getElementById('col')
@@ -620,7 +638,8 @@
 					})
 					input._out = out
 				}
-				for (const f of [c.ui, c.text, c.num]) load(f)
+				for (const f of [c.ui, c.text, c.num, c.desk]) load(f)
+				if (desk) el.querySelector('.desk-slot').append(desk.cloneNode(true))
 				apply(el, c)
 				return el
 			}
@@ -629,6 +648,7 @@
 				el.style.setProperty('--ui-font', stack(c.ui))
 				el.style.setProperty('--text-font', stack(c.text))
 				el.style.setProperty('--num-font', stack(c.num))
+				el.querySelector('.desk')?.style.setProperty('--ui-font', stack(c.desk))
 				el.style.setProperty('--ui-w', c.uiW)
 				el.style.setProperty('--text-w', c.textW)
 				el.style.setProperty('--k', c.k)
@@ -641,6 +661,7 @@
 					`--ui-font: ${stack(c.ui)};`,
 					`--text-font: ${stack(c.text)};`,
 					`/* look.js damageNumbers.family */ '${c.num}'`,
+					c.desk !== c.ui ? `.desk { font-family: ${stack(c.desk)}; }` : '',
 					c.uiW !== 400 || c.track
 						? `/* display: weight ${c.uiW}, letter-spacing ${c.track}em */`
 						: '',
@@ -685,6 +706,55 @@
 				render()
 			}
 			render()
+
+			// Build the real desk once, from a stand-in panel with one value of each instrument, and
+			// copy it into every column. Needs the dev server (it imports from /src). The game keeps its
+			// desk pins in localStorage, so the stand-in desk gets a store of its own.
+			try {
+				const [{ default: GUI }, { createDesk }] = await Promise.all([
+					import('lil-gui'),
+					import('/src/core/desk.js'),
+				])
+				const { getItem, setItem } = Storage.prototype
+				let own = null
+				Storage.prototype.getItem = function (k) {
+					return k === 'dt-desk' ? own : getItem.call(this, k)
+				}
+				Storage.prototype.setItem = function (k, v) {
+					if (k === 'dt-desk') own = v
+					else setItem.call(this, k, v)
+				}
+				const gui = new GUI()
+				gui.domElement.hidden = true
+				const f = gui.addFolder('lob')
+				const t = {
+					cooldown: 6.5,
+					radius: 3.2,
+					speed: 18,
+					arc: 45,
+					slow: 0.4,
+					hp: 1250,
+					damage: 1.5,
+					pierce: true,
+				}
+				const units = ['s', 'm', 'm/s', 'deg', 'fraction', 'hp', 'multiplier', 'bool']
+				Object.keys(t).forEach((k, i) => (f.add(t, k).unit = units[i]))
+				f.addColor({ tint: '#c98462' }, 'tint').unit = 'color'
+				const live = createDesk(gui)
+				live.pin('lob')
+				live.show(true)
+				await new Promise((r) => setTimeout(r, 200))
+				const node = document.querySelector('body > .desk')
+				node.hidden = false
+				node.removeAttribute('style')
+				desk = node.cloneNode(true)
+				live.dispose()
+				gui.destroy()
+				Object.assign(Storage.prototype, { getItem, setItem })
+				render()
+			} catch (e) {
+				console.warn('type picker: no desk sample (run through the dev server)', e)
+			}
 		</script>
 	</body>
 </html>
