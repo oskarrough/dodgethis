@@ -108,6 +108,7 @@ export async function createBrowserApp() {
 		if (tune.output.sound) audio.ui('switch') // audible confirmation when unmuting
 	})
 	renderMute()
+	audio.clickSounds()
 
 	// Edge panning wants the cursor to hit the real screen edge, so offer fullscreen where it exists.
 	const fullscreenBtn = document.querySelector('.fullscreen')

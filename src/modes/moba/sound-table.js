@@ -177,6 +177,8 @@ export const uses = {
 		() => tune.lobby.inspect.closeSound,
 	),
 	'lobby.pick': synth('Lobby', 'You pick a hero', () => tune.lobby.pick.sound),
+	'lobby.botAdd': use('Lobby', 'A bot takes an empty seat', 'switch'),
+	'lobby.botRemove': use('Lobby', 'A bot leaves its seat', 'press'),
 	'lobby.flip': use('Lobby', 'Your hero turns edge-on and comes round as the new one', 'whoosh'),
 	'lobby.grooveFill': synth(
 		'Lobby',

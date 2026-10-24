@@ -25,6 +25,7 @@ export function createHeroStrip({ el, heroes, current, pick, openNumbers }) {
 		button.className = 'skin-card'
 		button.dataset.hero = definition.id
 		button.dataset.light = 'day'
+		button.dataset.quiet = '' // the pick sounds on its swap fact a tick later (lobby.pick)
 		button.style.setProperty('--wash', frontTune.skin.wash.hero)
 		button.innerHTML = `${paintedCard(i)}<span class="skin-sheet"></span><span class="skin-ring"></span><span class="skin-face"></span><span class="lobby-hero-strip-face">${definition.icon ?? ICONS[definition.id] ?? ICONS[definition.silhouette] ?? ICONS.empty}</span><span class="lobby-hero-strip-name skin-title"><span>${definition.id}</span></span>`
 		button.onclick = () => {
