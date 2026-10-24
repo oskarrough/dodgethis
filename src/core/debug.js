@@ -104,7 +104,7 @@ export function createDebugPanel() {
 	return {
 		tune: (path, object, build) => build && adding(path, (f) => build(f, object)),
 		cheat: (label, fn) => adding('cheats', (f) => f.add({ run: fn }, 'run').name(label)),
-		// Backquote opens the desk; the full panel only shows when the desk's "all values" asks for it.
+		// Backquote opens the desk (live numbers, not only a debug panel); "all values" shows the old GUI.
 		show: () => desk.show(true),
 		hide: () => desk.show(false),
 		setInert(inert) {

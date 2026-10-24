@@ -1,9 +1,11 @@
-// The desk: the game's debug surface. Backquote opens it; it lists what this screen can tune
-// (folders to open, values to find, actions to run) and pins values as instruments shaped like
-// what they control: a clock for a duration, a speedometer for a speed, a ring for a radius.
-// ?knobs=lob,fog pins from the address. "copy" puts changed values on the clipboard as JSON to
-// paste back to an agent; "all values" opens the old lil-gui panel, which still registers them.
+// The desk: live numbers you can try while playing. Backquote (` / the key above Tab) opens it;
+// it lists what this screen can tune (folders to open, values to find, actions to run) and pins
+// values as instruments shaped like what they control: a clock for a duration, a speedometer for
+// a speed, a ring for a radius. ?knobs=lob,fog pins from the address. "copy" puts changed values
+// on the clipboard as JSON; "share" opens a GitHub issue so a maintainer can make them the default.
+// "all values" opens the old lil-gui panel, which still registers them.
 import './desk.css'
+import { folderOf, shareIssue } from './desk-share.js'
 import { units } from './units.js'
 
 const STORE = 'dt-desk'
@@ -16,10 +18,10 @@ function kindOf(c) {
 }
 
 function range(c) {
-	const v = c.initialValue
+	const v = typeof c.initialValue === 'number' ? c.initialValue : 0
 	const defaults = units[c.unit]?.range
-	const min = c._min ?? Math.min(defaults?.[0] ?? 0, v)
-	const max = c._max ?? Math.max(defaults?.[1] ?? 1, v)
+	const min = Math.min(c._min ?? defaults?.[0] ?? 0, defaults?.[0] ?? v, v)
+	const max = Math.max(c._max ?? defaults?.[1] ?? 1, defaults?.[1] ?? v, v)
 	return [min, max]
 }
 
@@ -47,8 +49,9 @@ export function createDesk(gui) {
 	const root = document.createElement('section')
 	root.className = 'desk'
 	root.hidden = true
-	root.innerHTML = `<header class="desk-head"><b>debug</b><span class="desk-chips"></span>
-		<button data-act="copy" title="copy changed values as JSON">copy</button>
+	root.innerHTML = `<header class="desk-head"><b title="press \` to hide · change a number, then share it as a GitHub issue">desk</b><span class="desk-chips"></span>
+		<button data-act="copy" title="copy changed values as JSON, to paste into a GitHub issue">copy</button>
+		<button data-act="share" title="open a GitHub issue with what you changed">share</button>
 		<button data-act="reset" title="put every changed value back">reset</button>
 		<button data-act="panel" title="the old panel with every value as a slider">all values</button>
 		<input class="desk-find" type="search" placeholder="find a value: lob, speed, fog…" /></header>
@@ -280,6 +283,28 @@ export function createDesk(gui) {
 		rebuild()
 	}
 
+	function collectChanges() {
+		const found = new Map()
+		for (const c of gui.controllersRecursive()) {
+			const key = pathOf(c)
+			if (!(key in state.values)) continue
+			const to = c.getValue()
+			if (to === c.initialValue) continue
+			found.set(key, { key, property: c.property, folder: folderOf(key), from: c.initialValue, to })
+		}
+		for (const [key, to] of Object.entries(state.values)) {
+			if (found.has(key)) continue
+			found.set(key, {
+				key,
+				property: key.split('/').at(-1),
+				folder: folderOf(key),
+				from: undefined,
+				to,
+			})
+		}
+		return [...found.values()]
+	}
+
 	root.querySelector('.desk-head').addEventListener('click', async (e) => {
 		const act = e.target.dataset?.act
 		if (act === 'copy') {
@@ -288,6 +313,33 @@ export function createDesk(gui) {
 			console.info('[desk]', text)
 			e.target.textContent = Object.keys(state.values).length ? 'copied' : 'no changes'
 			setTimeout(() => (e.target.textContent = 'copy'), 1200)
+		}
+		if (act === 'share') {
+			const changes = collectChanges()
+			if (!changes.length) {
+				e.target.textContent = 'no changes'
+				setTimeout(() => (e.target.textContent = 'share'), 1200)
+				return
+			}
+			const hero = new URLSearchParams(location.search).get('hero')
+			const { url, omittedJson, json } = shareIssue({ changes, values: state.values, hero })
+			if (omittedJson) await navigator.clipboard?.writeText(json).catch(() => {})
+			console.info('[desk]', url)
+			// An <a> click (not window.open) keeps this a user gesture; noopener would make open() look blocked.
+			const a = Object.assign(document.createElement('a'), {
+				href: url,
+				target: '_blank',
+				rel: 'noopener noreferrer',
+				hidden: true,
+			})
+			document.body.append(a)
+			a.click()
+			a.remove()
+			e.target.textContent = omittedJson ? 'paste the JSON' : 'opened'
+			note.textContent = omittedJson
+				? "GitHub's link was too long, so paste the JSON you just copied into the issue."
+				: ''
+			setTimeout(() => (e.target.textContent = 'share'), 2000)
 		}
 		if (act === 'reset') {
 			for (const c of gui.controllersRecursive()) if (pathOf(c) in state.values) c.reset()
@@ -368,15 +420,20 @@ const polar = (cx, cy, r, deg) => [
 ]
 
 // One instrument: a face you drag (up or right for more, Shift for fine), a label, and a readout
-// you can click to type into. Double-click puts the value back.
+// you can click to type into (counters too: click the big number). Double-click puts the value back.
 function instrument(key, c, kind, changed) {
 	if (kind === 'swatch') return swatch(key, c, changed)
 	const el = document.createElement('div')
 	el.className = 'desk-mod'
 	el.dataset.kind = kind
-	el.title = `${key}\ndrag · shift for fine · wheel steps · double-click resets`
+	el.title = `${key}\ndrag · shift for fine · wheel steps · click the number to type · double-click resets`
 	const [min, max] = range(c)
-	const step = c._step ?? units[c.unit]?.step ?? (max - min) / 200
+	if (typeof c._min === 'number') c._min = min
+	if (typeof c._max === 'number') c._max = max
+	const stepCandidates = [c._step, units[c.unit]?.step, c.unit === 's' ? 0.05 : null].filter(
+		(s) => s > 0,
+	)
+	const step = stepCandidates.length ? Math.min(...stepCandidates) : (max - min) / 200
 	const log = kind === 'tone' && min > 0
 	const toFrac = (v) =>
 		log ? Math.log(v / min) / Math.log(max / min) : (v - min) / (max - min || 1)
@@ -404,29 +461,38 @@ function instrument(key, c, kind, changed) {
 	const part = (s) => face.querySelector(s)
 	const draw = DRAW[kind](part, { min, max, toFrac, radians, seconds: c.unit === 'ms' ? 0.001 : 1 })
 
+	const typeValue = () => {
+		if (typeof c.getValue() === 'boolean') return
+		const typed = prompt(`${key}`, c.getValue())
+		if (typed !== null && Number.isFinite(+typed)) set(+typed)
+	}
 	if (typeof c.getValue() === 'boolean') face.addEventListener('click', () => set(!c.getValue()))
 	else {
-		face.addEventListener('pointerdown', (e) => {
-			if (e.target.closest('button')) return
-			face.setPointerCapture(e.pointerId)
-			let f = toFrac(c.getValue())
-			let last = [e.clientX, e.clientY]
-			const move = (m) => {
-				f += ((m.clientX - last[0] - (m.clientY - last[1])) / 220) * (m.shiftKey ? 0.1 : 1)
-				f = Math.min(1, Math.max(0, f))
-				last = [m.clientX, m.clientY]
-				set(fromFrac(f))
-			}
-			face.addEventListener('pointermove', move)
-			face.addEventListener(
-				'pointerup',
-				() => {
-					face.removeEventListener('pointermove', move)
-					if (kind === 'tone') blip(c.getValue())
-				},
-				{ once: true },
-			)
-		})
+		if (kind !== 'counter')
+			face.addEventListener('pointerdown', (e) => {
+				if (e.target.closest('button')) return
+				face.setPointerCapture(e.pointerId)
+				let f = toFrac(c.getValue())
+				let last = [e.clientX, e.clientY]
+				const span = kind === 'clock' ? Math.max(80, face.clientWidth) : 220
+				const move = (m) => {
+					const fine = m.shiftKey ? 0.1 : 1
+					if (kind === 'clock') f += ((m.clientX - last[0]) / span) * fine
+					else f += ((m.clientX - last[0] - (m.clientY - last[1])) / span) * fine
+					f = Math.min(1, Math.max(0, f))
+					last = [m.clientX, m.clientY]
+					set(fromFrac(f))
+				}
+				face.addEventListener('pointermove', move)
+				face.addEventListener(
+					'pointerup',
+					() => {
+						face.removeEventListener('pointermove', move)
+						if (kind === 'tone') blip(c.getValue())
+					},
+					{ once: true },
+				)
+			})
 		face.addEventListener('wheel', (e) => {
 			e.preventDefault()
 			set(c.getValue() + (e.deltaY < 0 ? step : -step))
@@ -441,10 +507,10 @@ function instrument(key, c, kind, changed) {
 		c.reset()
 		changed(key, c)
 	})
-	out.addEventListener('click', () => {
-		if (typeof c.getValue() === 'boolean') return
-		const typed = prompt(`${key}`, c.getValue())
-		if (typed !== null && Number.isFinite(+typed)) set(+typed)
+	out.addEventListener('click', typeValue)
+	el.querySelector('.counter-num')?.addEventListener('click', (e) => {
+		e.stopPropagation()
+		typeValue()
 	})
 
 	let seen

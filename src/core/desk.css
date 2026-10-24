@@ -396,6 +396,7 @@
 	font-size: 24px;
 	font-variant-numeric: tabular-nums;
 	text-align: center;
+	cursor: text;
 }
 .desk-mod[data-kind='counter'] output {
 	display: none;
