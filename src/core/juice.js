@@ -3,11 +3,13 @@ import { startDeath } from './death.js'
 import { instanceStyle, makeStyleMaterial, styleId } from './stylepass.js'
 
 const PARTICLES = 64
-const MARKS = 48
+const MARKS = 96
+const PUFFS = 24
 
 // The juice kit (docs/extending.md, "Settled"): verbs a mode's fact switch calls. Nothing here knows a fact.
-// `burst` throws ink chips, `mark` prints a stroke on the floor, `flash` prints a mesh cream for a moment, `retire` plays a corpse out.
-// Chips and marks are fixed GPU pools; the oldest entry is replaced when one runs out. `deathPace()` and `hitFlash()` are read per retire.
+// `burst` throws ink chips, `mark` prints a stroke on the floor, `crack` prints a split of strokes, `puff` kicks up cel dust,
+// `flash` prints a mesh cream for a moment, `retire` plays a corpse out.
+// Chips, marks and puffs are fixed GPU pools; the oldest entry is replaced when one runs out. `deathPace()` and `hitFlash()` are read per retire.
 export function createJuice(scene, { deathPace = () => 1, hitFlash = () => 0.07 } = {}) {
 	const chips = new THREE.InstancedMesh(
 		new THREE.OctahedronGeometry(1, 0),
@@ -60,6 +62,22 @@ export function createJuice(scene, { deathPace = () => 1, hitFlash = () => 0.07 
 		return { x: 0, y: 0, z: 0, heading: 0, width: 0, length: 0, life: 0 }
 	})
 	scene.add(marks)
+	// Dust: shaded cream balls that the style pass inks like any other standing thing.
+	const puffs = new THREE.InstancedMesh(
+		new THREE.IcosahedronGeometry(1, 1),
+		makeStyleMaterial('cream'),
+		PUFFS,
+	)
+	puffs.name = 'impact-dust'
+	puffs.instanceMatrix.setUsage(THREE.DynamicDrawUsage)
+	puffs.frustumCulled = false
+	puffs.visible = false
+	const puffSlots = Array.from({ length: PUFFS }, (_, i) => {
+		puffs.setMatrixAt(i, pose.matrix)
+		return { x: 0, y: 0, z: 0, vx: 0, vz: 0, life: 0, duration: 0, size: 0 }
+	})
+	scene.add(puffs)
+	let nextPuff = 0
 	let nextMark = 0
 	let marksDirty = false
 	let next = 0
@@ -117,6 +135,59 @@ export function createJuice(scene, { deathPace = () => 1, hitFlash = () => 0.07 
 		Object.assign(m, { x, y, z, heading, width, length, life })
 		marksDirty = true
 		marks.instanceColor.needsUpdate = true
+	}
+
+	// `count` dust balls from the feet at `point`, thrown along `direction` (the way the blow pushed) and fanned out; they swell, then shrink away.
+	function puff(point, direction, { count = 5, size = 0.28, life = 0.45, speed = 1.8 } = {}) {
+		const l = Math.hypot(direction.x, direction.z) || 1
+		const dx = direction.x / l
+		const dz = direction.z / l
+		for (let i = 0; i < count; i++) {
+			const p = puffSlots[nextPuff]
+			nextPuff = (nextPuff + 1) % PUFFS
+			const fan = count > 1 ? (i / (count - 1) - 0.5) * 2.8 : 0 // ±80° about the blow
+			const c = Math.cos(fan)
+			const s = Math.sin(fan)
+			const v = speed * (0.7 + (i % 3) * 0.2)
+			// Fanned out ahead of the skid, so the dust reads as heels digging in.
+			p.vx = (c * dx - s * dz) * v
+			p.vz = (s * dx + c * dz) * v
+			// Born at the body's edge, not its middle, so the unit never hides its own dust.
+			p.x = point.x + (p.vx / v) * 0.45
+			p.y = 0.12
+			p.z = point.z + (p.vz / v) * 0.45
+			p.duration = p.life = life * (0.8 + (i % 4) * 0.1)
+			p.size = size * (0.8 + (i % 3) * 0.2)
+		}
+		puffs.visible = true
+	}
+
+	// A split in the floor: `arms` jagged ink strokes out from `point`, `reach` metres long, tapering as they go.
+	// `seed` picks the shape, so one landing always cracks the same way.
+	function crack(
+		point,
+		{ arms = 6, reach = 1.6, width = 0.14, life = 0.6, seed = 1, y = 0.03 } = {},
+	) {
+		let n = Math.abs(Math.floor(seed * 9301)) % 233280 || 1
+		const rnd = () => (n = (n * 9301 + 49297) % 233280) / 233280
+		for (let arm = 0; arm < arms; arm++) {
+			let a = (arm / arms) * Math.PI * 2 + rnd() * 0.7
+			let x = point.x + Math.sin(a) * 0.3
+			let z = point.z + Math.cos(a) * 0.3
+			let w = width
+			let left = reach * (0.6 + rnd() * 0.4)
+			while (left > 0.1) {
+				a += (rnd() - 0.5) * 1.1
+				const step = Math.min(left, 0.25 + rnd() * 0.2)
+				const nx = x + Math.sin(a) * step
+				const nz = z + Math.cos(a) * step
+				mark((x + nx) / 2, y, (z + nz) / 2, a, { width: w, length: step * 1.2, life })
+				x = nx
+				z = nz
+				w *= 0.72
+				left -= step
+			}
+		}
 	}
 
 	// Print every style material under `object` cream and flat for `seconds`, then restore it. A second flash extends the first.
@@ -201,6 +272,26 @@ export function createJuice(scene, { deathPace = () => 1, hitFlash = () => 0.07 
 		}
 		chips.visible = active
 		chips.instanceMatrix.needsUpdate = true
+		if (puffs.visible) {
+			let dusty = false
+			for (let i = 0; i < PUFFS; i++) {
+				const p = puffSlots[i]
+				p.life = Math.max(0, p.life - dt)
+				if (p.life > 0) {
+					const k = 1 - p.life / p.duration
+					const drag = 1 - k
+					p.x += p.vx * dt * drag
+					p.z += p.vz * dt * drag
+					pose.position.set(p.x, p.y + 0.25 * k, p.z)
+					pose.scale.setScalar(p.size * (k < 0.2 ? 0.5 + k * 2.5 : 1.25 * (1 - k) + 0.1))
+					dusty = true
+				} else pose.scale.setScalar(0)
+				pose.updateMatrix()
+				puffs.setMatrixAt(i, pose.matrix)
+			}
+			puffs.visible = dusty
+			puffs.instanceMatrix.needsUpdate = true
+		}
 		if (!marks.visible && !marksDirty) return
 		let marksActive = false
 		for (let i = 0; i < MARKS; i++) {
@@ -227,6 +318,9 @@ export function createJuice(scene, { deathPace = () => 1, hitFlash = () => 0.07 
 		for (const [material, f] of flashes) unflash(material, f)
 		for (const p of slots) p.life = 0
 		chips.visible = false
+		for (const p of puffSlots) p.life = 0
+		puffs.visible = false
+		nextPuff = 0
 		for (const m of markSlots) m.life = 0
 		marks.visible = false
 		marks.instanceColor.needsUpdate = true
@@ -237,7 +331,7 @@ export function createJuice(scene, { deathPace = () => 1, hitFlash = () => 0.07 
 
 	function dispose() {
 		reset()
-		for (const pool of [chips, marks]) {
+		for (const pool of [chips, marks, puffs]) {
 			scene.remove(pool)
 			pool.dispose()
 			pool.geometry.dispose()
@@ -245,5 +339,5 @@ export function createJuice(scene, { deathPace = () => 1, hitFlash = () => 0.07 
 		}
 	}
 
-	return { burst, mark, flash, retire, update, reset, dispose }
+	return { burst, mark, crack, puff, flash, retire, update, reset, dispose }
 }

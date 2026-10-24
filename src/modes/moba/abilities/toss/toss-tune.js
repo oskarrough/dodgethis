@@ -5,6 +5,11 @@ export default {
 	speed: 22,
 	radius: 0.35,
 	cooldown: 4,
+	impact: {
+		skid: 0.24,
+		hold: 0.05,
+		dust: { count: 3, size: 0.2, life: 0.35, speed: 1.4 },
+	},
 	feedback: {
 		shotKick: 0.35,
 		hitKick: 0.65,

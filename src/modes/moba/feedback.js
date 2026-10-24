@@ -71,7 +71,13 @@ export function createFeedback({
 
 	// Calls in words go to the game log; the feed shows the log through its filter.
 	const log = createGameLog({ sim, local, unitOf })
-	const impact = createImpacts({ effects: view.effects, juice, camera, pop: view.pop })
+	const impact = createImpacts({
+		effects: view.effects,
+		juice,
+		camera,
+		pop: view.pop,
+		feel: () => ({ scale: look.juice.impact, reference: tune.attack.damage }),
+	})
 	log.listen((entry) => hud.feed?.(entry.text))
 
 	// Streaks count per team. No feed line for the hero who is out; the recap says so.
@@ -385,11 +391,25 @@ export function createFeedback({
 						fact,
 					)
 				if (mine) view.damage?.(fact)
-				impact(fact, ability?.stats?.impact, {
-					unit,
-					listener: unitOf(local)?.body.position,
-					tick: fact.tick ?? sim.tick,
-				})
+				// Every blow a hero lands, and every blow on you, strikes; an ability's own recipe overrides the strike's parts.
+				const striker = sim.heroes.includes(source) || onMe
+				impact(
+					fact,
+					striker && fact.damage > 0
+						? {
+								...look.juice.strike,
+								...(mine || onMe ? null : { nudge: null }),
+								...ability?.stats?.impact,
+							}
+						: ability?.stats?.impact,
+					{
+						unit,
+						source,
+						mine,
+						listener: unitOf(local)?.body.position,
+						tick: fact.tick ?? sim.tick,
+					},
+				)
 				if (mine && punch && fact.damage > 0 && sim.heroes.includes(unit)) {
 					camera.kick(punch.hitKick)
 					stop = Math.max(stop, punch.hitstop)
@@ -461,6 +481,7 @@ export function createFeedback({
 				// Your takedown: hitstop now, then the camera kicks when the stamp lands. No shake.
 				if (mine && !onMe) {
 					stop = look.juice.hitstop
+					if (look.juice.impact > 0) camera.impactFrame?.(look.juice.takedownFrame)
 					hitmark('kill', fact.point)
 					input.rumble(0.35, 0.6, 85)
 				}

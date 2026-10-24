@@ -488,5 +488,16 @@ export const look = {
 		shakeRain: 0.12, // your rain landing on someone
 		rain: { count: 36, speed: 4.5, life: 0.45, size: 0.12 }, // the landing, not the cast
 		shakeTakedown: 0.3,
+		// The hit kit (effects.js createImpacts), all presentation. `impact` scales its light, weight and camera
+		// parts (0 is off); `strike` is what every hero's blow gets, and an ability's `impact` recipe overrides it.
+		impact: 1,
+		takedownFrame: 3, // frames of two-tone impact frame on your own takedowns; 0 is off
+		strike: {
+			flare: { size: 1.9, streak: 3.6, life: 0.24, color: '#fff1c9' },
+			ripples: { count: 2, from: 0.5, to: 1.4, life: 0.32, gap: 0.07, width: 0.08 },
+			skid: 0.3,
+			hold: 0.045,
+			nudge: { amount: 0.25, range: 10 },
+		},
 	},
 }

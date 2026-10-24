@@ -10,6 +10,10 @@ export default {
 		flash: 0.1,
 		squash: 0.35,
 		shake: { amount: 0.12, range: 8 },
+		smear: { radius: 1.6, width: 0.6, sweep: 2.4, life: 0.22, color: '#ffe9e2' },
+		skid: 0.3,
+		hold: 0.06,
+		dust: { count: 3, size: 0.22, life: 0.4, speed: 1.5 },
 	},
 	sound: {
 		cast: { freq: 160, slideTo: 85, dur: 0.18, gain: 0.18, type: 'triangle' },

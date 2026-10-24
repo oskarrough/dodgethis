@@ -77,6 +77,7 @@ uniform mat4 uInvView;
 uniform float uLine;
 uniform float uHatch;
 uniform float uAlpha;
+uniform float uImpact; // 1: standing things cream on ink; -1: the same, inverted; 0: off
 
 float hash21(vec2 p) { p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
 float vnoise(vec2 p) {
@@ -100,7 +101,7 @@ void main() {
 	float z = texture2D(tDepth, vUv).x;
 	gl_FragDepth = z;
 	bool sky = z >= 0.99999;
-	if (sky) { gl_FragColor = vec4(uSky, 1.0 - uAlpha); return; }
+	if (sky) { gl_FragColor = vec4(uImpact > 0.5 ? uInk : uImpact < -0.5 ? uCream : uSky, uImpact != 0.0 ? 1.0 : 1.0 - uAlpha); return; }
 
 	float d = linDepth(z);
 	float o = 1.2 * sc * uLine;
@@ -165,6 +166,14 @@ void main() {
 	// Ink the edge last so nothing prints over the outline; stable noise varies the weight so it reads as a pen, not a filter.
 	float ew = mix(0.78 + 0.32 * vnoise(gl_FragCoord.xy * 0.35), 1.0, uHatch);
 	col = mix(col, mix(uInk, roleColor(inkId) * 0.35, 0.25), clamp(edge * ew, 0.0, 1.0));
+	if (uImpact != 0.0) {
+		// The impact frame: two tones, split by height, so whatever stands up reads as one silhouette.
+		vec4 iclip = vec4(vUv * 2.0 - 1.0, z * 2.0 - 1.0, 1.0);
+		vec4 ipos = uInvProj * iclip; ipos /= ipos.w;
+		float up = (uInvView * vec4(ipos.xyz, 1.0)).y;
+		bool stands = up > 0.25 && edge < 0.5;
+		col = (stands == (uImpact > 0.5)) ? uCream : uInk;
+	}
 	gl_FragColor = vec4(col, 1.0);
 }`
 
@@ -256,6 +265,7 @@ export function createStylePass(canvas) {
 			uLine: { value: 1 },
 			uHatch: { value: 0 },
 			uAlpha: { value: 0 },
+			uImpact: { value: 0 },
 		},
 		vertexShader: postVert,
 		fragmentShader: postFrag,
@@ -330,7 +340,9 @@ export function createStylePass(canvas) {
 		renderer.clear(true, true, false)
 		renderer.render(scene, camera)
 
-		// 2. style the world and copy its depth into the composition target
+		// 2. style the world and copy its depth into the composition target. An impact frame's last frame inverts.
+		post.uniforms.uImpact.value = impactFrames > 1 ? 1 : impactFrames === 1 ? -1 : 0
+		if (impactFrames > 0 && !target) impactFrames--
 		post.uniforms.uNear.value = camera.near
 		post.uniforms.uFar.value = camera.far
 		post.uniforms.uInvProj.value.copy(camera.projectionMatrixInverse)
@@ -338,16 +350,24 @@ export function createStylePass(canvas) {
 		renderer.setRenderTarget(composed)
 		renderer.render(postScene, postCam)
 
-		// 3. forward effects, depth-tested against the copied opaque depth
-		camera.layers.set(FORWARD_LAYER)
-		renderer.render(scene, camera)
-		camera.layers.set(OPAQUE_LAYER)
+		// 3. forward effects, depth-tested against the copied opaque depth; an impact frame is two tones and nothing else
+		if (post.uniforms.uImpact.value === 0) {
+			camera.layers.set(FORWARD_LAYER)
+			renderer.render(scene, camera)
+			camera.layers.set(OPAQUE_LAYER)
+		}
 
 		// 4. one conversion to display color space
 		renderer.setRenderTarget(target)
 		renderer.clear(true, true, false)
 		blit.uniforms.uEncode.value = target ? 0 : 1
 		renderer.render(blitScene, postCam)
+	}
+
+	// Print the next `frames` frames two-tone (the last one inverted): the anime impact frame for the biggest blows.
+	let impactFrames = 0
+	function impactFrame(frames = 3) {
+		impactFrames = Math.max(impactFrames, Math.round(frames))
 	}
 
 	function dispose() {
@@ -367,5 +387,5 @@ export function createStylePass(canvas) {
 		post.uniforms.uAlpha.value = alpha ? 1 : 0
 	})
 
-	return { renderer, setSize, setPalette, setStylePreset, render, dispose, pixelRatio }
+	return { renderer, setSize, setPalette, setStylePreset, render, impactFrame, dispose, pixelRatio }
 }

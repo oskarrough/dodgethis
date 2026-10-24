@@ -61,6 +61,8 @@ export async function createBrowserApp() {
 			aim: view.aimCamera, // never shaken: pointer rays stay gameplay-stable
 			shake: view.addShake,
 			kick: view.kickFov,
+			nudge: view.nudge,
+			impactFrame: view.impactFrame,
 			update: view.updateCamera,
 			frame: view.frame,
 		},

@@ -130,20 +130,46 @@ export function createRenderer() {
 		return fovOffset !== 0
 	}
 
+	// --- Nudge: the whole view shoved along a world direction, on a critically damped spring, so you feel which way a blow went. ---
+	const nudgeOffset = new THREE.Vector3()
+	const nudgeVelocity = new THREE.Vector3()
+	const _target = new THREE.Vector3()
+	function nudge(direction, amount) {
+		const l = Math.hypot(direction.x, direction.z)
+		if (!tune.output.shake || !(l > 1e-6) || !(amount > 0)) return
+		nudgeVelocity.x += (direction.x / l) * amount * 14
+		nudgeVelocity.z += (direction.z / l) * amount * 14
+		settled = false
+	}
+	function stepNudge(dt) {
+		if (nudgeOffset.lengthSq() === 0 && nudgeVelocity.lengthSq() === 0) return false
+		const k = 260
+		const c = 2 * Math.sqrt(k)
+		nudgeVelocity.x += (-k * nudgeOffset.x - c * nudgeVelocity.x) * dt
+		nudgeVelocity.z += (-k * nudgeOffset.z - c * nudgeVelocity.z) * dt
+		nudgeOffset.addScaledVector(nudgeVelocity, dt)
+		if (nudgeOffset.lengthSq() < 1e-6 && nudgeVelocity.lengthSq() < 1e-4) {
+			nudgeOffset.setScalar(0)
+			nudgeVelocity.setScalar(0)
+		}
+		return true
+	}
+
 	function updateCamera(dt) {
 		if (framers.length) applyFrame(framers.at(-1)(dt))
 		if (!tune.output.shake) shake = 0
 		const fovActive = stepFov(dt)
+		const nudging = stepNudge(Math.min(dt, 0.05))
 		// Common case: no active shake — snap back to base once, then idle with no jitter or lookAt() recompute.
 		if (shake <= 0) {
 			if (!settled) {
-				camera.position.copy(camBase)
-				camera.lookAt(lookAt)
+				camera.position.copy(camBase).add(nudgeOffset)
+				camera.lookAt(_target.copy(lookAt).add(nudgeOffset))
 				if (!fovActive && camera.fov !== baseFov) {
 					camera.fov = baseFov
 					camera.updateProjectionMatrix()
 				}
-				settled = !fovActive
+				settled = !fovActive && !nudging
 			}
 			return
 		}
@@ -151,8 +177,8 @@ export function createRenderer() {
 		if (shake < 0.01) shake = 0
 		const s = shake * tune.camera.shakeAmount
 		_o.set((Math.random() * 2 - 1) * s, (Math.random() * 2 - 1) * s, (Math.random() * 2 - 1) * s)
-		camera.position.copy(camBase).add(_o)
-		camera.lookAt(lookAt)
+		camera.position.copy(camBase).add(_o).add(nudgeOffset)
+		camera.lookAt(_target.copy(lookAt).add(nudgeOffset))
 	}
 
 	function render() {
@@ -176,6 +202,8 @@ export function createRenderer() {
 		aimCamera,
 		addShake,
 		kickFov,
+		nudge,
+		impactFrame: style.impactFrame,
 		updateCamera,
 		render,
 		renderStyled,

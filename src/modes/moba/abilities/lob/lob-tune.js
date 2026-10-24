@@ -10,6 +10,13 @@ export default {
 	burnDamage: 18,
 	fieldSlow: 0.25,
 	cooldown: 9,
+	// The landing splashes light: a wide flare and rings running out over the floor like water.
+	impact: {
+		splash: 0.6,
+		flare: { size: 2.4, streak: 4, life: 0.3, color: '#fff1c9' },
+		ripples: { count: 3, from: 0.5, to: 2.2, life: 0.4, gap: 0.08, width: 0.04 },
+		skid: 0.2,
+	},
 	sound: {
 		cast: { freq: 620, slideTo: 1240, type: 'triangle', dur: 0.12, gain: 0.14 },
 		impact: { freq: 1100, slideTo: 260, type: 'triangle', dur: 0.34, gain: 0.26 },

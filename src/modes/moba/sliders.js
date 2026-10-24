@@ -270,7 +270,24 @@ export function sliderSections(tune, look, setup, mapId = setup.map, camera = tu
 			hitstop: [0, 0.3, 0.005, 'hitstop (s)'],
 			shakeTaken: [0, 1, 0.05, 'shake on you'],
 			shakeTakedown: [0, 1, 0.05, 'shake when you die'],
+			impact: [0, 2, 0.05, 'impact ×'],
+			takedownFrame: [0, 6, 1, 'takedown impact frames'],
 		},
+		'juice/strike': {
+			skid: [0, 1, 0.01, 'skid (m)'],
+			hold: [0, 0.2, 0.005, 'hit pause (s)'],
+		},
+		'juice/strike/flare': {
+			size: [0, 4, 0.05, 'glow (m)'],
+			streak: [0, 8, 0.1, 'flare (m)'],
+			life: [0.05, 0.6, 0.01, 'life (s)'],
+		},
+		'juice/strike/ripples': {
+			count: [0, 5, 1, 'rings'],
+			to: [0.2, 4, 0.05, 'reach (m)'],
+			life: [0.05, 1, 0.01, 'life (s)'],
+		},
+		'juice/strike/nudge': { amount: [0, 2, 0.05, 'camera punch (m)'] },
 	}
 	for (const id of Object.keys(ABILITIES)) sections[id] ??= numbers(tune[id], id)
 	const dig = (root, path) => path.split('/').reduce((o, key) => o?.[key], root)
@@ -287,7 +304,7 @@ const FEATURED = {
 	respawn: ['hero', { base: 'Respawn time' }],
 	ball: ['ball', { speed: 'Throw speed', carrySpeed: 'Carrier speed' }],
 	follow: ['camera', { height: 'Height', fov: 'Lens' }],
-	juice: ['feel', { hitstop: 'Hit pause', shakeTaken: 'Shake when hit' }],
+	juice: ['feel', { impact: 'Impact', hitstop: 'Hit pause', shakeTaken: 'Shake when hit' }],
 }
 const RANK = { hero: 1, ball: 2, camera: 3, feel: 4 }
 
@@ -296,7 +313,18 @@ const groups = {
 	hero: ['levels', 'respawn', 'momentum', 'attack', 'cast', 'projectile'],
 	controls: ['follow', 'stickAim', 'orders'],
 	lane: ['match', 'tower', 'core', 'base', 'recall', 'ball', 'globes', 'waves', 'dummies'],
-	feel: ['hud', 'out', 'card', 'squeak', 'damageNumbers', 'juice'],
+	feel: [
+		'hud',
+		'out',
+		'card',
+		'squeak',
+		'damageNumbers',
+		'juice',
+		'juice/strike',
+		'juice/strike/flare',
+		'juice/strike/ripples',
+		'juice/strike/nudge',
+	],
 }
 
 // Where a tune section sits in the panel: `loose` is abilities/loose, `levels` is hero/levels, `bots/easy` stays.

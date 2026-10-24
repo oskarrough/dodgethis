@@ -107,6 +107,11 @@ export function createBody(
 	const leanZ = { value: 0, velocity: 0 }
 	const recoil = { value: 0, velocity: 0 }
 	const squashSpring = { value: 0, velocity: 0 }
+	const skidX = { value: 0, velocity: 0 }
+	const skidZ = { value: 0, velocity: 0 }
+	let holdLeft = 0 // a hit pause: the drawn body stays put while the sim walks on, then catches up
+	const held = new THREE.Vector3()
+	const heldOffset = new THREE.Vector3()
 
 	const body = {
 		mesh,
@@ -167,6 +172,8 @@ export function createBody(
 		lean,
 		kick,
 		squash,
+		skid,
+		hold,
 		animate,
 		retire,
 		applyReplicaState,
@@ -335,11 +342,40 @@ export function createBody(
 	function squash(amount) {
 		squashSpring.value = amount
 	}
+	// Presentation only: knock the drawn body `amount` metres along a world `direction`; it springs home.
+	function skid(direction, amount) {
+		const l = Math.hypot(direction.x, direction.z)
+		if (!(l > 1e-6) || !(amount > 0)) return
+		skidX.value = (direction.x / l) * amount
+		skidZ.value = (direction.z / l) * amount
+		skidX.velocity = skidZ.velocity = 0
+	}
+	// Presentation only: freeze the drawn pose for `seconds` where it stands now. Overlapping holds keep the longer.
+	function hold(seconds) {
+		if (!(seconds > 0)) return
+		if (holdLeft <= 0) {
+			held.copy(mesh.position)
+			heldOffset.copy(visual.position)
+		}
+		holdLeft = Math.max(holdLeft, seconds)
+	}
 
 	// Step the mannequin from the rendered pose. `windup` (0–1) coils the body; `facing` points the recoil (defaults to the nose).
 	// Returns true on a footstep.
 	function animate(dt, windup = 0, facing = null) {
 		dt = Math.max(0, Math.min(dt, 0.1))
+		if (holdLeft > 0) {
+			holdLeft -= dt
+			// Pin the visual to where the hold began, against the root the sim keeps moving.
+			const hx = held.x - mesh.position.x
+			const hz = held.z - mesh.position.z
+			const c = Math.cos(mesh.rotation.y)
+			const s = Math.sin(mesh.rotation.y)
+			visual.position.x = c * hx - s * hz + heldOffset.x
+			visual.position.z = s * hx + c * hz + heldOffset.z
+			visualPosition.copy(mesh.position)
+			return false
+		}
 		const dx = mesh.position.x - visualPosition.x
 		const dz = mesh.position.z - visualPosition.z
 		visualPosition.copy(mesh.position)
@@ -353,14 +389,16 @@ export function createBody(
 		stepSpring(leanZ, clamp(motion.z * 0.055, -0.4, 0.4), dt)
 		stepSpring(recoil, windup * 0.12, dt)
 		stepSpring(squashSpring, 0, dt)
+		stepSpring(skidX, 0, dt)
+		stepSpring(skidZ, 0, dt)
 		const c = Math.cos(pose.rotation.y)
 		const s = Math.sin(pose.rotation.y)
 		const kickX = facing ? c * facing.x - s * facing.z : 0
 		const kickZ = facing ? s * facing.x + c * facing.z : -1
 		visual.position.set(
-			-kickX * recoil.value,
+			-kickX * recoil.value + c * skidX.value - s * skidZ.value,
 			Math.abs(Math.sin(stride)) * 0.045 * strideAmount,
-			-kickZ * recoil.value,
+			-kickZ * recoil.value + s * skidX.value + c * skidZ.value,
 		)
 		visual.rotation.set(
 			(s * leanX.value + c * leanZ.value) * 0.35,
@@ -403,6 +441,8 @@ export function createBody(
 		motion.setScalar(0)
 		strideAmount = 0
 		stepDistance = 0
+		holdLeft = 0
+		skidX.value = skidZ.value = 0
 		smooth?.snap(mesh)
 	}
 
@@ -411,6 +451,7 @@ export function createBody(
 		if (retired) return
 		sync()
 		retired = true
+		holdLeft = 0
 		leave()
 		visual.position.set(0, 0, 0)
 		visual.rotation.set(0, 0, 0)

@@ -104,6 +104,13 @@ export const tuneUnits = {
 	'lobby.bounds': 'm',
 	'lobby.fall': 'm',
 	'lobby.portal.countdown': 's',
+	// The hit kit's recipe parts (effects.js createImpacts).
+	skid: 'm',
+	'nudge.amount': 'm',
+	'ripples.from': 'm',
+	'ripples.gap': 's',
+	'crack.arms': 'count',
+	'smear.sweep': 'rad',
 	'lobby.portal.width': 'fraction',
 	'lobby.portal.reach': 'm',
 	'lobby.portal.sink': 'm',

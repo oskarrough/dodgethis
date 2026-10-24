@@ -20,6 +20,14 @@ export default {
 		squash: 0.75,
 		number: { color: '#ff5d3a', scale: 1.7 },
 		shake: { amount: 0.9, range: 22 },
+		// The ground gives: a printed crack, a ring of dust, the whole view shoved down the blow.
+		crack: { arms: 7, reach: 2.4, width: 0.18, life: 0.9 },
+		dust: { count: 8, size: 0.34, life: 0.55, speed: 2.6 },
+		flare: { size: 3, streak: 6, life: 0.34, color: '#ffe9c4' },
+		ripples: { count: 3, from: 0.8, to: 3.4, life: 0.45, gap: 0.08, width: 0.04 },
+		hold: 0.09,
+		skid: 0.4,
+		nudge: { amount: 0.9, range: 22 },
 	},
 	sound: {
 		cast: { freq: 70, slideTo: 180, dur: 0.6, gain: 0.2, type: 'sine' },

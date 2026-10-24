@@ -793,6 +793,8 @@ export default function moba(app, map) {
 						replica: replica?.stats,
 						snapshot: () => sim.snapshot(),
 						focus: (point) => follow.focus(point),
+						// Present a hand-made fact, as the sim would: proofs of feel without staging a fight.
+						present: (fact) => feedback.present({ tick: sim.tick, ...fact }),
 						// Proof uses the real app loop: intents, fixed simulation, smoothing and feedback.
 						fastForward({ ticks, target = null }) {
 							if (!app.session.authoritative) throw new Error('Only the host can fast-forward')
