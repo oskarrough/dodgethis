@@ -137,7 +137,10 @@ export function createMinimap(
 						const icon = marker.firstChild
 						for (const [key, value] of Object.entries({ x: -5, y: -5, width: 10, height: 10 }))
 							icon.setAttribute(key, value)
-						make('path', { class: 'minimap-destroyed', d: 'M-4 4 L4 -4 M-4 -4 L4 4' }, marker)
+						// The world's takedown mark: a small inked ring with an X over the faded icon.
+						const takedown = make('g', { class: 'minimap-destroyed' }, marker)
+						make('circle', { r: 3.4 }, takedown)
+						make('path', { d: 'M-1.7 -1.7 L1.7 1.7 M-1.7 1.7 L1.7 -1.7' }, takedown)
 					} else {
 						make('circle', { class: 'minimap-local', r: 4 }, marker)
 						make('circle', { class: 'tone', r: 2.3 }, marker)

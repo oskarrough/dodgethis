@@ -45,12 +45,12 @@ export const look = {
 	// Screen-space health bars: CSS pixels except lift (world metres).
 	healthBars: {
 		heroWidth: 88,
-		structureWidth: 104,
+		structureWidth: 150,
 		minorWidth: 42,
 		height: 10,
 		minorHeight: 6,
 		border: 2,
-		lift: 0.4,
+		lift: 0.15,
 		gap: 7,
 		font: 12,
 		tickMinGap: 4,

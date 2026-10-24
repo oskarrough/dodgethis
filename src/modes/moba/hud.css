@@ -97,11 +97,10 @@
 }
 .moba-minimap .minimap-floor {
 	fill: var(--ui-cream);
-	stroke: var(--ui-gold);
-	stroke-width: 0.5;
-	filter: drop-shadow(0 0 0.6px var(--ui-text))
-		drop-shadow(0 0 4px color-mix(in srgb, var(--ui-gold) 70%, transparent))
-		drop-shadow(1px 1.5px 0 var(--ui-text));
+	/* An ink edge, no gold: gold belongs to the Ball and ammo. The offset shadow says you can press it. */
+	stroke: var(--ui-text);
+	stroke-width: 0.6;
+	filter: drop-shadow(1px 1.5px 0 var(--ui-text));
 }
 .moba-minimap .minimap-water {
 	fill: var(--water);
@@ -119,9 +118,14 @@
 .moba-minimap .minimap-hedge {
 	fill: color-mix(in srgb, var(--ui-text) 50%, var(--ui-cream));
 }
-.moba-minimap .minimap-wall,
 .moba-minimap .minimap-pillar {
 	fill: var(--ui-text);
+}
+/* Walls are ground, quieter than anything that moves on them. */
+.moba-minimap .minimap-wall {
+	fill: color-mix(in srgb, var(--ui-text) 28%, var(--ui-cream));
+	stroke: color-mix(in srgb, var(--ui-text) 60%, transparent);
+	stroke-width: 0.4;
 }
 .moba-minimap .minimap-footprint {
 	fill: var(--ui-cream);
@@ -168,11 +172,16 @@
 .moba-minimap [data-dead='true'] > svg {
 	opacity: 0.35;
 }
-/* A destroyed structure is crossed out: one slash read as a stray line. */
-.moba-minimap .minimap-destroyed {
+/* A destroyed structure gets the world's takedown mark; a bare slash read as a stray line. */
+.moba-minimap .minimap-destroyed circle {
+	fill: var(--ui-cream);
+	stroke: var(--ui-text);
+	stroke-width: 1;
+}
+.moba-minimap .minimap-destroyed path {
 	fill: none;
 	stroke: var(--ui-text);
-	stroke-width: 1.6;
+	stroke-width: 1.2;
 	stroke-linecap: round;
 }
 @media (max-width: 720px) {
