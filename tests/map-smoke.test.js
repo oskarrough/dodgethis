@@ -13,8 +13,8 @@ import encounters from '../src/modes/moba/encounters/all-encounters.js'
 // dropped under a computed read) or a map whose bots stand still in the first seconds fails here, not in a playtest.
 await RAPIER.init({})
 const SECONDS = 3
-// A dungeon's road to its wings, and every wing fight built so far, must fall to one bot alone:
-// jobs latch and bosses leave a way through, so no fight needs a full party.
+// A dungeon's road to its wings, and then each wing fight built so far, must fall to one bot
+// alone: jobs latch and bosses leave a way through, so no fight needs a full party.
 const SOLO_SECONDS = 200
 // And a party of three must clear it, carrying a whole wing's boons to the last boss.
 const PARTY_SECONDS = 240
@@ -54,17 +54,27 @@ for (const id of playableMaps) {
 		}
 	}, 60000)
 
-	if (matchRecipe(id).layout.encounters?.length)
-		test(`${id}: one bot alone wins the road and every built wing fight`, () => {
+	// The wing fights one at a time: every other wing encounter sleeps, so the bot walks the road
+	// and then straight to the one under test.
+	const layout = matchRecipe(id).layout
+	const wingFights = (layout.encounters ?? []).filter(
+		(spot) => layout.wings?.includes(spot.wing) && encounters[spot.id].create,
+	)
+	for (const target of layout.encounters?.length ? [null, ...wingFights] : [])
+		test(`${id}: one bot alone wins the road${target ? ` and ${target.id}` : ''}`, () => {
 			const { run, dispose } = match(
 				id,
 				agentRoster({ seats: [] }).filter((seat) => seat.id === 'A1'),
 			)
 			try {
 				const { wings } = run.sim.layout
-				const road = run.sim.dungeon.encounters.filter(
-					(e) => !e.last && (!wings.includes(e.wing) || encounters[e.id].create),
-				)
+				const list = run.sim.dungeon.encounters
+				for (const e of list)
+					if (wings.includes(e.wing) && e.id !== target?.id) {
+						e.dormant = true
+						for (const unit of e.units) unit.dormant = true
+					}
+				const road = list.filter((e) => !e.last && !e.dormant)
 				const limit = Math.ceil(SOLO_SECONDS / STEP)
 				while (run.sim.tick < limit && !road.every((e) => e.killed) && run.step());
 				expect(road.filter((e) => !e.killed).map((e) => e.id)).toEqual([])

@@ -18,8 +18,10 @@ function dungeonObjective(ctx) {
 		attack({ ...guard, radius: tune.waves.radius })
 		return frame
 	}
+	// An encounter that only warns (no `botGoal`) is fought as its boss.
 	const encounter = perceived.encounter
-	if (encounter) return encounters[encounter.id].botGoal?.(ctx, encounter) ?? null
+	const botGoal = encounter && encounters[encounter.id].botGoal
+	if (botGoal) return botGoal(ctx, encounter)
 	const boss = perceived.boss
 	if (!boss || boss.unit.dead) {
 		setState('wait')
