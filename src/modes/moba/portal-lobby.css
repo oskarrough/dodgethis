@@ -143,11 +143,11 @@
 .portal-tag[data-who='bot'] {
 	color: color-mix(in srgb, var(--ui-text) 65%, var(--ui-cream));
 }
-.portal-seat[data-ready='true'] .portal-tag::after {
-	content: ' · in';
+/* In the tear: the card catches its glitter, so who you're waiting for is whoever doesn't glow. */
+.portal-seat[data-ready='true'] .skin-card {
+	filter: drop-shadow(0 0 5px #5ff0ff) drop-shadow(0 0 9px #ff6fcf);
 }
-/* The map's name beside the tear, which is its preview, and the one line that says what to do
-   (portal-lobby.js placeCaption). */
+/* The map's name beside the tear, which is its preview (portal-lobby.js placeCaption). */
 .portal-map {
 	position: absolute;
 	top: 0;
@@ -169,15 +169,6 @@
 	text-align: left;
 	white-space: nowrap;
 	pointer-events: none;
-}
-.portal-map small:empty {
-	display: none;
-}
-.portal-map small {
-	font:
-		400 18px / 1.2 'Josefin Sans',
-		system-ui,
-		sans-serif;
 }
 .portal-map b {
 	font: 400 clamp(26px, 2.4vw, 40px) / 1 var(--ui-font);

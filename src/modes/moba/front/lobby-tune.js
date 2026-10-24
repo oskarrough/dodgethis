@@ -18,7 +18,7 @@ export const lobby = {
 		sink: 0.8, // metres past the plane over which a hero shrinks away
 		// The tear's build-up: `hum` while someone waits inside, rising to full over the countdown,
 		// easing toward it at `ease` per second.
-		charge: { hum: 0.25, ease: 6, drain: 3 }, // `drain`: how fast the fill sinks back per second when someone steps out
+		charge: { hum: 0.25, ease: 6, drain: 3, wait: 0.4 }, // `drain`: fill sunk back per second when someone steps out; `wait`: fill share while some are still outside
 		countdown: 2, // seconds everyone stays ready before slipping in
 		tearRadius: 2.6, // half-height of the open tear
 		farChalkWidth: 0.7, // keep court markings legible through the small opening

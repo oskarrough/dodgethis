@@ -36,7 +36,7 @@ export function createPortalLobby({ app, run, sim, hero, setup, options }) {
 	applySkin(el)
 	el.innerHTML = `<div class="portal-seats"></div>
 		<nav class="portal-picker" aria-label="Pick a hero" hidden></nav>
-		<p class="portal-map"><b></b><small class="portal-status" role="status"></small></p>`
+		<p class="portal-map"><b></b></p>`
 	const { back: backButton } = createCornerNav(el, { label: 'Back to splash' })
 	// The world lobby's canvas, sky and pastel palette (lobby.js), without its saucer props.
 	el.prepend(backdrop.el, canvas)
@@ -77,7 +77,7 @@ export function createPortalLobby({ app, run, sim, hero, setup, options }) {
 	tear.place(mouth, facing)
 	tear.exit(new THREE.Vector3(0, p.farHeight, 0), facing)
 	// The tear is the map preview. One caption beside it, on the floor where the top of the screen can't
-	// clip it, names the map and says what to do: walk in, who you're waiting for, the countdown.
+	// clip it, names the map; the tear's fill and the glowing seat cards say who's in.
 	const mapCaption = el.querySelector('.portal-map')
 	mapCaption.querySelector('b').textContent = mapLayout(setup.map).name
 	const captionAt = new THREE.Vector3(p.tearRadius * 0.8, 0, p.z)
@@ -132,8 +132,14 @@ export function createPortalLobby({ app, run, sim, hero, setup, options }) {
 					? p.charge.hum
 					: 0
 		tear.charge += (target - tear.charge) * Math.min(1, dt * p.charge.ease)
-		// The countdown is the mouth filling with light to the brim; leaving drains it.
-		const level = from !== null ? Math.min(1, (time - from * app.clock.step) / p.countdown) : 0
+		// The mouth fills with light: part-way for each human already in, then to the brim over the
+		// countdown once everyone is. Leaving drains it.
+		const all = humans().length
+		const share = all ? (all - outside().length) / all : 0
+		const level =
+			from !== null
+				? Math.max(share * p.charge.wait, Math.min(1, (time - from * app.clock.step) / p.countdown))
+				: share * p.charge.wait
 		tear.fill =
 			level > tear.fill ? level : tear.fill + (level - tear.fill) * Math.min(1, dt * p.charge.drain)
 	}
@@ -226,7 +232,6 @@ export function createPortalLobby({ app, run, sim, hero, setup, options }) {
 	const names = new Map()
 	const seatsEl = el.querySelector('.portal-seats')
 	const picker = el.querySelector('.portal-picker')
-	const status = el.querySelector('.portal-status')
 	const label = (id) => names.get(id) ?? (id === hero.id ? 'You' : 'Player')
 	const humans = () => readySeats.seats.filter((s) => s.occupant && !s.occupant.bot)
 	const outside = () => humans().filter((s) => !s.full)
@@ -408,14 +413,6 @@ export function createPortalLobby({ app, run, sim, hero, setup, options }) {
 		if (run.signal.aborted) return
 		syncPick()
 		stand(countdownFrom)
-		const go = humans().length > 0 && outside().length === 0
-		// The countdown is the tear filling with light, not words; only who it waits for is said.
-		status.textContent =
-			!ending && !go && humans().length && inside(hero)
-				? `Waiting for ${outside()
-						.map((s) => label(s.occupant.id))
-						.join(', ')}`
-				: ''
 		const state = JSON.stringify([
 			app.session.authoritative,
 			app.session.shared,
