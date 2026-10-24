@@ -74,6 +74,14 @@ export const look = {
 			bannerDepth: 0.08,
 			plinth: 0.9,
 			step: 0.78,
+			stepShift: [0.22, -0.14], // the upper step sits off-centre, x and z
+			bevel: 0.14, // the rim's chamfer
+			chip: 0.16, // how deep a chipped rim notch goes
+			chipChance: 0.35,
+			jitter: 0.05, // every stone vertex wanders this far
+			cracks: 4, // ink cracks on the plinth's camera-facing faces
+			crackWidth: 0.08,
+			seed: 7, // all clients chip and crack the same stone
 			shadowY: 0.012, // between the court's inlays (0.01) and road prints (0.015)
 		},
 		rubbleRadius: 0.7,
@@ -96,10 +104,22 @@ export const look = {
 		shatterSpin: 3,
 		domeSegments: 16,
 		domeWidth: 0.045,
+		// The invulnerability dome: dashed horizontal rings on a dome over the structure, never meridians
+		// (seen edge-on from the match camera a meridian reads as a pole through the crystal).
+		domeRings: [0, 0.55, 1.05],
+		domeReach: 0.9, // past the structure's radius at the ground
+		domeLift: 0.6, // over the structure's height
+		domeDash: 0.1, // a dash's thickness; thinner and the style pass inks it grey
 		crenels: 8,
 		coreSpin: 0.4,
-		coreWidth: 0.7,
+		coreWidth: 0.64,
 		coreAspect: 1.7,
+		coreLower: 0.72, // the lower half is shorter than the upper
+		coreJitter: 0.1, // facet vertices wander this far (× width)
+		coreLean: [0.035, 0.012], // ~2° about z and a touch about x
+		coreGap: 0.6, // the crystal floats this far over the plinth
+		coreBob: 0.12,
+		coreBobSpeed: 1.1,
 		shieldLife: 0.3,
 		shieldPulse: 0.08,
 		coreCrack: 1 / 3,
@@ -107,7 +127,6 @@ export const look = {
 		minionHeight: 1.26,
 		bruteRadius: 0.45,
 		bruteHeight: 2.1,
-		bruteHelmet: 0.8,
 		brutePose: 0.6,
 		drumHeight: 0.8,
 		shaftTop: 0.45,
@@ -123,12 +142,22 @@ export const look = {
 		footWidth: 0.5,
 		footHeight: 0.12,
 		footDepth: 0.4,
-		hatRadius: 0.35,
-		hatHeight: 0.5,
-		stickRadius: 0.05,
-		stickHeight: 1.2,
-		shieldRadius: 0.32,
-		shieldDepth: 0.08,
+		// One role prop each, read from above: melee a kite shield tipped back toward the sky,
+		// ranged a tall staff with a gem past the head, wizard a dark horned hood, brute a stone helm.
+		shieldWidth: 0.5,
+		shieldHeight: 0.62,
+		shieldTilt: 0.6,
+		staffRadius: 0.045,
+		staffHeight: 1.75,
+		staffGem: 0.15,
+		staffOut: 0.16,
+		hoodRadius: 0.32,
+		hoodHeight: 0.55,
+		hornLength: 0.5,
+		hornRadius: 0.09,
+		helmRadius: 0.5,
+		helmHeight: 0.5,
+		helmBrow: 0.12,
 		aggroLife: 0.5,
 		aggroWidth: 6,
 		aggroPing: 1.3,
@@ -146,6 +175,10 @@ export const look = {
 		ringWidth: 0.06,
 		ringSegments: 64,
 		ringY: 0.09,
+		globeRing: 0.06, // the health globe's pickup ring, drawn at tune.globes.pickup
+		globeRingY: 0.03,
+		globeBob: 0.1,
+		globeBobSpeed: 2.5,
 		tetherWidth: 0.04,
 		tetherHeight: 0.04,
 		tetherY: 1.3,

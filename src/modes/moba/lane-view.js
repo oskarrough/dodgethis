@@ -38,6 +38,7 @@ export function createLaneView(scene, smooth = null, layout = null) {
 			return object
 		}
 		let crystal = null
+		let float = null
 		const cracks = []
 		let shadow = null
 		let laser = null
@@ -90,32 +91,115 @@ export function createLaneView(scene, smooth = null, layout = null) {
 			const prism = (top, bottom, height, sides, mat, y, turn = 0) =>
 				part(new THREE.CylinderGeometry(top, bottom, height, sides).rotateY(turn), mat, y)
 			if (kind === 'core') {
-				// A stepped stone plinth under the faceted team crystal.
-				prism(radius * 0.97, radius, s.plinth, s.sides, pale, base + s.plinth / 2)
-				prism(
-					radius * s.step,
-					radius * s.step,
-					s.plinth * 0.8,
-					s.sides,
+				// A stepped plinth of old, chipped stone; the upper step sits a little off-centre.
+				const rand = seeded(s.seed + (team === 'B' ? 101 : 0))
+				const wear = (geometry, height) =>
+					chisel(geometry, rand, {
+						jitter: s.jitter,
+						chip: s.chip,
+						chipChance: s.chipChance,
+						top: height - s.bevel - 1e-3,
+					})
+				const upper = s.plinth * 0.8
+				part(
+					wear(stoneCourse(radius, radius * 0.97, s.plinth, s.sides, s.bevel), s.plinth),
+					pale,
+					base,
+				)
+				const step = part(
+					wear(
+						stoneCourse(radius * s.step, radius * s.step * 0.97, upper, s.sides + 1, s.bevel),
+						upper,
+					),
 					grey,
-					base + s.plinth * 1.4,
-					Math.PI / s.sides,
+					base + s.plinth - 0.02,
 				)
-				crystal = part(
-					new THREE.OctahedronGeometry(radius * v.coreWidth).scale(1, v.coreAspect, 1),
-					teamMaterial,
-					0,
-				)
+				step.position.x = s.stepShift[0]
+				step.position.z = s.stepShift[1]
+				step.rotation.y = Math.PI / s.sides
+				// Ink cracks zigzag up the lower course's faces that turn toward the camera (+z).
+				const apothem = radius * 0.985 * Math.cos(Math.PI / s.sides)
+				for (let i = 0; i < s.cracks; i++) {
+					const face = Math.floor(rand() * 4) - 2
+					const phi = ((face + 0.5) / s.sides) * Math.PI * 2
+					let u = (rand() - 0.5) * radius * 0.25,
+						y = s.plinth * (0.05 + rand() * 0.15)
+					const legs = 3
+					for (let leg = 0; leg < legs && y < s.plinth - s.bevel; leg++) {
+						const du = (rand() - 0.5) * 0.4,
+							dv = Math.min(s.plinth - s.bevel - y, 0.18 + rand() * 0.14)
+						const crack = part(
+							new THREE.BoxGeometry(s.crackWidth, Math.hypot(du, dv), s.jitter * 3 + 0.04),
+							ink,
+							0,
+						)
+						crack.castShadow = false
+						const mu = u + du / 2,
+							mv = y + dv / 2
+						crack.position.set(
+							Math.sin(phi) * apothem + Math.cos(phi) * mu,
+							base + mv,
+							Math.cos(phi) * apothem - Math.sin(phi) * mu,
+						)
+						crack.rotation.set(0, phi, 0)
+						crack.rotateZ(Math.atan2(-du, dv))
+						u += du
+						y += dv
+					}
+				}
+				// The crystal floats over the plinth: a lean, unequal halves, every facet a little off.
+				const width = radius * v.coreWidth
+				const gem = new THREE.OctahedronGeometry(width)
+				const position = gem.getAttribute('position')
+				for (let i = 0; i < position.count; i++) {
+					const y = position.getY(i)
+					position.setY(i, y * v.coreAspect * (y < 0 ? v.coreLower : 1))
+				}
+				const lower = width * v.coreAspect * v.coreLower
+				const pivot = new THREE.Group()
+				pivot.position.y = base + s.plinth + upper + v.coreGap + lower
+				pivot.rotation.set(v.coreLean[1], 0, v.coreLean[0] * (team === 'B' ? -1 : 1))
+				visual.add(pivot)
+				crystal = part(chisel(gem, rand, { jitter: width * v.coreJitter }), teamMaterial, 0)
+				pivot.add(crystal)
+				// The crystal's own printed shadow on the plinth, under the gap.
+				const light = layout?.light ?? tune.overthrowTerrain.light
+				const print = new THREE.MeshBasicMaterial({
+					color: light.shadow,
+					transparent: true,
+					opacity: light.shadowStrength,
+					depthWrite: false,
+				})
+				const blot = new THREE.CircleGeometry(width * 0.55, s.sides).rotateX(-Math.PI / 2)
+				owned.push(print, blot)
+				const under = new THREE.Mesh(blot, print)
+				under.name = 'core-crystal-shadow'
+				under.position.set(s.stepShift[0], base + s.plinth + upper + 0.02, s.stepShift[1])
+				under.layers.set(FORWARD_LAYER)
+				under.renderOrder = -2
+				visual.add(under)
+				float = { pivot, rest: pivot.position.y, under }
 				for (const sign of [-1, 1]) {
 					const crack = part(new THREE.BoxGeometry(v.domeWidth, radius, v.domeWidth), ink, 0)
 					crack.position.z = -radius / 2
 					crack.position.x = (sign * radius) / 2
 					crack.rotation.z = (sign * Math.PI) / 4
+					pivot.add(crack)
 					cracks.push(crack)
 				}
 			} else {
 				// Drum, tapered shaft, crenellated crown, crystal tip; the banner hangs toward the camera.
-				prism(radius * 0.94, radius * 1.04, s.drum, s.sides, pale, base + s.drum / 2)
+				const rand = seeded(s.seed + Math.round(x * 7 + z * 13))
+				part(
+					chisel(stoneCourse(radius * 1.04, radius * 0.94, s.drum, s.sides, s.bevel), rand, {
+						jitter: s.jitter,
+						chip: s.chip,
+						chipChance: s.chipChance,
+						top: s.drum - s.bevel - 1e-3,
+					}),
+					pale,
+					base,
+				)
 				const shaftBottom = base + s.drum
 				prism(
 					radius * s.shaftTop,
@@ -207,47 +291,125 @@ export function createLaneView(scene, smooth = null, layout = null) {
 				0,
 			)
 			part(new THREE.BoxGeometry(v.footWidth, v.footHeight, v.footDepth), ink, -halfHeight)
-			if (kind === 'brute')
-				part(new THREE.BoxGeometry(v.bruteHelmet, v.bruteHelmet, v.bruteHelmet), cream, halfHeight)
-			else if (kind === 'wizard')
-				part(new THREE.ConeGeometry(v.hatRadius, v.hatHeight, v.flagSides), cream, halfHeight)
-			else if (kind === 'ranged') {
-				const stick = part(
-					new THREE.CylinderGeometry(v.stickRadius, v.stickRadius, v.stickHeight, v.flagSides),
-					cream,
-					0,
+			// One role prop, sized to read from the match camera; the body faces -z.
+			if (kind === 'brute') {
+				// A chipped stone helm with a crest, an ink visor slit across the front.
+				const stoneMaterial = material('scenery')
+				const helm = part(
+					chisel(
+						stoneCourse(v.helmRadius, v.helmRadius * 0.78, v.helmHeight, 6, 0.08),
+						seeded(look.laneView.stone.seed + 3),
+						{ jitter: 0.03 },
+					),
+					stoneMaterial,
+					halfHeight - v.helmHeight * 0.75,
 				)
-				stick.position.x = radius
+				helm.rotation.y = Math.PI / 6
+				const crest = part(
+					new THREE.BoxGeometry(v.helmBrow, v.helmBrow * 1.5, v.helmRadius * 1.6),
+					stoneMaterial,
+					halfHeight + v.helmHeight * 0.25 + v.helmBrow * 0.5,
+				)
+				crest.castShadow = false
+				const slit = part(
+					new THREE.BoxGeometry(v.helmRadius * 1.3, v.helmBrow * 0.6, 0.1),
+					ink,
+					halfHeight - v.helmHeight * 0.4,
+				)
+				slit.position.z = -v.helmRadius * 0.86
+			} else if (kind === 'wizard') {
+				// A dark pointed hood with two cream horns sweeping out and up.
+				part(
+					new THREE.ConeGeometry(v.hoodRadius, v.hoodHeight, 5),
+					ink,
+					halfHeight - 0.08 + v.hoodHeight / 2,
+				)
+				for (const side of [-1, 1]) {
+					const sweep = 1.0
+					const horn = part(
+						new THREE.ConeGeometry(v.hornRadius, v.hornLength, 4),
+						cream,
+						halfHeight + Math.cos(sweep) * (v.hornLength / 2),
+					)
+					horn.position.x = side * (v.hoodRadius * 0.7 + Math.sin(sweep) * (v.hornLength / 2))
+					horn.rotation.z = -side * sweep
+				}
+			} else if (kind === 'ranged') {
+				// A tall ink staff past the head, a cream gem on top: a dot off the shoulder from above.
+				const staff = new THREE.Group()
+				staff.position.set(radius + v.staffOut, -halfHeight, -0.04)
+				staff.rotation.z = -0.22
+				visual.add(staff)
+				staff.add(
+					part(
+						new THREE.CylinderGeometry(v.staffRadius, v.staffRadius, v.staffHeight, 5),
+						ink,
+						v.staffHeight / 2,
+					),
+				)
+				const gem = part(
+					new THREE.OctahedronGeometry(v.staffGem).scale(1, 1.6, 1),
+					cream,
+					v.staffHeight + v.staffGem,
+				)
+				staff.add(gem)
 			} else {
-				const shield = part(
-					new THREE.CylinderGeometry(v.shieldRadius, v.shieldRadius, v.shieldDepth, v.segments),
+				// A kite shield in front, tipped back so its face shows to the sky; ink plate behind for a rim.
+				const kite = new THREE.Shape()
+				const w = v.shieldWidth / 2,
+					h = v.shieldHeight
+				kite.moveTo(0, -h * 0.62)
+				kite.lineTo(w, h * 0.08)
+				kite.lineTo(w * 0.8, h * 0.38)
+				kite.lineTo(-w * 0.8, h * 0.38)
+				kite.lineTo(-w, h * 0.08)
+				kite.closePath()
+				const shield = new THREE.Group()
+				shield.position.set(0, -0.02, -radius - 0.06)
+				shield.rotation.set(v.shieldTilt, Math.PI, 0)
+				visual.add(shield)
+				const face = part(
+					new THREE.ExtrudeGeometry(kite, { depth: 0.05, bevelEnabled: false }),
 					cream,
 					0,
 				)
-				shield.rotation.x = Math.PI / 2
-				shield.position.z = -radius
+				face.position.z = 0.03
+				const back = part(
+					new THREE.ExtrudeGeometry(kite, { depth: 0.04, bevelEnabled: false }).scale(
+						1.18,
+						1.14,
+						1,
+					),
+					ink,
+					0,
+				)
+				shield.add(face, back)
 			}
 		}
 		let dome = null
 		if (tower) {
 			dome = new THREE.Group()
 			dome.name = 'moba-invulnerability-dome'
-			for (let i = 0; i < v.domeSegments; i++) {
+			// Dashed rings stacked into a dome from the ground up; horizontal, so none is ever seen edge-on.
+			const dashMaterial = material('cream', true)
+			const reach = radius + v.domeReach
+			const rise = halfHeight * 2 + v.domeLift
+			for (const latitude of v.domeRings) {
+				const ring = reach * Math.cos(latitude)
+				const dashes = Math.max(6, Math.round(v.domeSegments * Math.cos(latitude)))
 				const arc = new THREE.TorusGeometry(
-					halfHeight + radius,
-					v.domeWidth,
+					ring,
+					v.domeDash,
 					v.capSegments,
 					v.segments,
-					Math.PI / v.domeSegments,
-				)
+					Math.PI / dashes,
+				).rotateX(Math.PI / 2)
 				owned.push(arc)
-				for (const tilt of [0, Math.PI / 2]) {
-					const dash = new THREE.Mesh(arc, cream)
-					dash.rotation.z = (i * Math.PI * 2) / v.domeSegments
-					const axis = new THREE.Group()
-					axis.rotation.y = tilt
-					axis.add(dash)
-					dome.add(axis)
+				for (let i = 0; i < dashes; i++) {
+					const dash = new THREE.Mesh(arc, dashMaterial)
+					dash.rotation.y = (i * Math.PI * 2) / dashes
+					dash.position.y = -halfHeight + v.domeDash + rise * Math.sin(latitude)
+					dome.add(dash)
 				}
 			}
 			mesh.add(dome)
@@ -320,6 +482,7 @@ export function createLaneView(scene, smooth = null, layout = null) {
 				}
 				if (kind === 'core') {
 					crystal.visible = false
+					if (float) float.under.visible = false
 					for (const crack of cracks) crack.visible = false
 					shatter = { age: 0, pieces: [] }
 					for (let i = 0; i < v.shatterPieces; i++) {
@@ -386,6 +549,7 @@ export function createLaneView(scene, smooth = null, layout = null) {
 			pose,
 			dome,
 			crystal,
+			float,
 			laser,
 			cracks,
 			helpTether,
@@ -422,7 +586,14 @@ export function createLaneView(scene, smooth = null, layout = null) {
 			if (unit.body.laser)
 				unit.body.laser.beam.material.uniforms.uTime.value = (lane.time + alpha) * STEP
 			if (unit.body.crystal) {
-				unit.body.crystal.rotation.y = (lane.time + alpha) * STEP * v.coreSpin
+				const t = (lane.time + alpha) * STEP
+				unit.body.crystal.rotation.y = t * v.coreSpin
+				const float = unit.body.float
+				if (float) {
+					const bob = Math.sin(t * v.coreBobSpeed)
+					float.pivot.position.y = float.rest + bob * v.coreBob
+					float.under.scale.setScalar(1 - bob * 0.06)
+				}
 				for (const [i, crack] of unit.body.cracks.entries())
 					crack.visible = unit.hp <= unit.maxHp * (1 - (i + 1) * v.coreCrack)
 			}
@@ -502,29 +673,65 @@ export function createLaneView(scene, smooth = null, layout = null) {
 				mark.tether.scale.z = Math.hypot(dx, dz)
 			}
 		}
+		// Health globes a dead wizard leaves for its killers' team: a gem bobbing over its printed
+		// shadow inside a ring the size of its pickup reach. Yours in team colour, the enemy's in ink.
 		const live = new Set(lane.globes.map((g) => g.id))
 		for (const [id, globe] of globeMarks)
 			if (!live.has(id)) {
-				group.remove(globe)
-				globe.geometry.dispose()
-				globe.material.dispose()
+				disposeGlobe(globe)
 				globeMarks.delete(id)
 			}
 		for (const globe of lane.globes) {
-			let mesh = globeMarks.get(globe.id)
-			if (!mesh) {
-				mesh = new THREE.Mesh(
-					new THREE.OctahedronGeometry(tune.globes.radius),
-					makeStyleMaterial(
-						globe.team === localTeam ? (globe.team === 'A' ? 'teamA' : 'teamB') : 'ink',
-					),
+			let mark = globeMarks.get(globe.id)
+			if (!mark) {
+				const role = globe.team === localTeam ? (globe.team === 'A' ? 'teamA' : 'teamB') : 'ink'
+				const light = layout?.light ?? tune.overthrowTerrain.light
+				const shade = new THREE.MeshBasicMaterial({
+					color: light.shadow,
+					transparent: true,
+					opacity: light.shadowStrength,
+					depthWrite: false,
+				})
+				const gem = new THREE.Mesh(
+					new THREE.OctahedronGeometry(tune.globes.radius).scale(1, 1.3, 1),
+					makeStyleMaterial(role),
 				)
-				group.add(mesh)
-				globeMarks.set(globe.id, mesh)
+				const ring = new THREE.Mesh(
+					new THREE.RingGeometry(
+						tune.globes.pickup - v.globeRing,
+						tune.globes.pickup,
+						v.ringSegments,
+					).rotateX(-Math.PI / 2),
+					makeStyleMaterial(role, { flat: true }),
+				)
+				ring.position.y = v.globeRingY
+				const shadow = new THREE.Mesh(
+					new THREE.CircleGeometry(tune.globes.radius * 0.9, v.segments).rotateX(-Math.PI / 2),
+					shade,
+				)
+				shadow.position.y = v.globeRingY
+				shadow.layers.set(FORWARD_LAYER)
+				shadow.renderOrder = -2
+				const root = new THREE.Group()
+				root.name = 'moba-health-globe'
+				root.add(gem, ring, shadow)
+				group.add(root)
+				globeMarks.set(globe.id, (mark = { root, gem, shadow }))
 			}
-			mesh.position.set(globe.pos.x, tune.globes.height, globe.pos.z)
-			mesh.rotation.y = (lane.time + alpha) * STEP * tune.globes.spin
+			const t = (lane.time + alpha) * STEP
+			const bob = Math.sin(t * v.globeBobSpeed + globe.id)
+			mark.root.position.set(globe.pos.x, 0, globe.pos.z)
+			mark.gem.position.y = tune.globes.height + bob * v.globeBob
+			mark.gem.rotation.y = t * tune.globes.spin
+			mark.shadow.scale.setScalar(1 - bob * 0.15)
 		}
+	}
+	function disposeGlobe(mark) {
+		group.remove(mark.root)
+		mark.root.traverse((o) => {
+			o.geometry?.dispose()
+			o.material?.dispose()
+		})
 	}
 	return {
 		makeBody,
@@ -537,10 +744,7 @@ export function createLaneView(scene, smooth = null, layout = null) {
 		update,
 		dispose() {
 			for (const body of bodies) body.dispose()
-			for (const globe of globeMarks.values()) {
-				globe.geometry.dispose()
-				globe.material.dispose()
-			}
+			for (const globe of globeMarks.values()) disposeGlobe(globe)
 			for (const mark of marks.values()) {
 				mark.geometry.dispose()
 				mark.tetherGeometry.dispose()
@@ -549,4 +753,64 @@ export function createLaneView(scene, smooth = null, layout = null) {
 			scene.remove(group)
 		},
 	}
+}
+
+// Deterministic, so every client chips the same stone and grows the same crystal.
+function seeded(seed) {
+	let a = seed >>> 0 || 1
+	return () => {
+		a = (a + 0x6d2b79f5) >>> 0
+		let t = a
+		t = Math.imul(t ^ (t >>> 15), t | 1)
+		t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
+		return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+	}
+}
+
+// Nudge every distinct vertex (shared corners move together, so faces never tear): `jitter` sideways,
+// and from `top` up a `chipChance` of dropping by up to `chip`, which reads as a knocked-off rim.
+// Returns flat-shaded, non-indexed geometry so each facet prints as one plane.
+function chisel(geometry, rand, { jitter = 0, chip = 0, chipChance = 0, top = Infinity } = {}) {
+	const position = geometry.getAttribute('position')
+	const offsets = new Map()
+	for (let i = 0; i < position.count; i++) {
+		const x = position.getX(i),
+			y = position.getY(i),
+			z = position.getZ(i)
+		const key = `${x.toFixed(3)},${y.toFixed(3)},${z.toFixed(3)}`
+		let offset = offsets.get(key)
+		if (!offset) {
+			const r = Math.hypot(x, z)
+			if (r < 1e-3) offset = [0, (rand() - 0.5) * jitter, 0] // apexes and cap centres stay on the axis
+			else {
+				const drop = y >= top && rand() < chipChance ? chip * (0.4 + 0.6 * rand()) : 0
+				offset = [
+					(rand() - 0.5) * 2 * jitter - (x / r) * drop * 0.6, // a chip bites inward as well as down
+					(y > 0.01 ? (rand() - 0.5) * jitter : 0) - drop,
+					(rand() - 0.5) * 2 * jitter - (z / r) * drop * 0.6,
+				]
+			}
+			offsets.set(key, offset)
+		}
+		position.setXYZ(i, x + offset[0], y + offset[1], z + offset[2])
+	}
+	const flat = geometry.index ? geometry.toNonIndexed() : geometry
+	if (flat !== geometry) geometry.dispose()
+	flat.deleteAttribute('normal')
+	flat.computeVertexNormals()
+	return flat
+}
+
+// A stone course: a prism from its foot (y 0) up to a chamfered rim, `sides` flat faces.
+function stoneCourse(bottom, top, height, sides, bevel) {
+	const b = Math.min(bevel, height / 2, top / 2)
+	return new THREE.LatheGeometry(
+		[
+			new THREE.Vector2(bottom, 0),
+			new THREE.Vector2(top, height - b),
+			new THREE.Vector2(top - b, height),
+			new THREE.Vector2(0, height),
+		],
+		sides,
+	)
 }
