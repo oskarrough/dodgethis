@@ -4,10 +4,8 @@ import { PRESETS } from '../../core/intents.js'
 import { hex } from '../../core/style.js'
 import { createCornerNav } from '../../core/corner-nav.js'
 import { createRecap } from './recap.js'
-import { clock } from './tooltip.js'
 import { tune as front } from './front/tune.js'
 import { el } from '../../core/dom.js'
-import { DEFAULT_HERO } from './heroes.js'
 import './menu.css'
 
 // The map's name in the manual's Japanese running head.
@@ -129,33 +127,10 @@ export function createMatchMenu({
 		).setAttribute('aria-hidden', 'true')
 		el('p', 'page-kana', card, kana).setAttribute('aria-hidden', 'true')
 	}
-	// The pause page adds the facts of the match. Readouts are printed; only the overlay's
-	// buttons are framed.
+	// The pause page is a wash over the stopped world, not a sheet: the top bar stays up and says
+	// how the match stands, so the page holds only what you can do.
 	function pausePage(card) {
-		const mine = hero.team
-		const kills = { A: 0, B: 0 }
-		for (const row of Object.values(sim.matchStats ?? {}))
-			if (row.team) kills[row.team === 'A' ? 'B' : 'A'] += row.deaths
-		const heroId = hero.heroId ?? DEFAULT_HERO
-		const level = hero.level ?? sim.lane?.teams?.[mine].level ?? 1
-		page(card, 'moba-pause', 'ポーズ')
-		const fact = (label, value, kana) =>
-			`<div><small>${label}<span lang="ja">${kana}</span></small><b>${value}</b></div>`
-		const facts = el(
-			'div',
-			'pause-facts',
-			card,
-			fact('Time', clock(sim.tick * app.clock.step), '時間') +
-				fact(
-					sim.dungeon ? 'Bosses' : 'Takedowns',
-					sim.dungeon
-						? `${sim.dungeon.encounters.filter((e) => e.killed).length} of ${sim.dungeon.encounters.length}`
-						: `<i class="mine">${kills[mine]}</i>–<i class="theirs">${kills[mine === 'A' ? 'B' : 'A']}</i>`,
-					'撃破',
-				) +
-				fact('Hero', `${heroId[0].toUpperCase()}${heroId.slice(1)} <em>Lv ${level}</em>`, '勇者'),
-		)
-		facts.setAttribute('aria-label', 'Match so far')
+		paper(card).classList.add('moba-page', 'moba-pause')
 		const [, , quick, preset] = card.querySelectorAll('.actions button')
 		preset?.classList.add('pause-check', 'pause-preset')
 		if (!quick) return

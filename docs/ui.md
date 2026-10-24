@@ -18,7 +18,7 @@ Rules for every screen, learned by reviewing the game screen by screen with Oska
 ## Keep
 
 - Titles inked on a watercolour brush stroke (death recap, result, pause). This is the front end's signature; new pages use it.
-- Torn paper edges on sheets and cards (pause, result, Tab scoreboard, death recap). HUD chips and readouts stay smooth.
+- Torn paper edges on sheets and cards (result, Tab scoreboard, death recap). HUD chips and readouts stay smooth.
 - The small painted buttons of the result page; every page's actions use them.
 
 ## Layout

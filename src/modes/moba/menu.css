@@ -210,10 +210,16 @@ canvas.moba-dead-world {
 	backdrop-filter: none;
 }
 /* A page shows only itself over the world: the HUD, its pill, the minimap and the corner buttons
-   step out; health bars stay as part of the figure. */
-body:has(> .overlay[data-theme^='moba']:not([hidden]))
-	> :not(canvas, .overlay, .fade, .tuner, .moba-health-bars) {
+   step out; health bars stay as part of the figure. Pause keeps the HUD, which already tells the
+   match, and drops only the menu tile it would repeat. */
+body:has(> .overlay[data-theme^='moba']:not([data-theme='moba-pause'], [hidden]))
+	> :not(canvas, .overlay, .fade, .tuner, .moba-health-bars),
+body:has(> .overlay[data-theme='moba-pause']:not([hidden])) > .corner-nav {
 	visibility: hidden;
+}
+/* The top bar reads over the pause wash, not under it. */
+body:has(> .overlay[data-theme='moba-pause']:not([hidden])) > .moba-top {
+	z-index: 11;
 }
 .overlay .dialog-card.moba-page {
 	--pad: clamp(16px, 3.4vw, 56px);
@@ -377,63 +383,26 @@ body:has(> .overlay[data-theme^='moba']:not([hidden]))
 	transition-duration: var(--tile-press, 0.06s);
 }
 
-/* The pause page: title, the two actions in a row with the settings under them, the facts of
-   the match along the foot of the sheet. */
+/* The pause page: no sheet, only a wash over the whole stopped world with the column lines on
+   it, the title and the actions held in the middle of the left columns, clear of the unit frame. */
 .overlay .dialog-card.moba-pause {
-	grid-template-rows: auto auto 1fr auto;
+	--wash-pause: color-mix(in srgb, var(--ui-cream) 62%, transparent);
+	grid-template-rows: 1fr auto auto 1.4fr;
+	background: linear-gradient(
+		to right,
+		var(--wash-pause) 30%,
+		color-mix(in srgb, var(--ui-cream) 30%, transparent)
+	);
+}
+.dialog-card.moba-pause::before {
+	display: none;
+}
+.overlay .moba-pause h1 {
+	margin-top: 0;
 }
 .overlay .moba-pause .actions {
 	grid-row: 3;
-	grid-column: 1 / span var(--sheet);
-}
-.moba-pause .pause-facts {
-	grid-row: 4;
-	grid-column: 1 / span 7;
-	display: grid;
-	grid-template-columns: subgrid;
-	margin-top: clamp(16px, 2vw, 28px);
-	border-top: var(--line-thin) solid var(--rule);
-}
-.moba-pause .pause-facts > div {
-	grid-column: span 2;
-	padding: 12px 12px 0;
-	border-left: var(--line-thin) solid var(--rule);
-}
-.moba-pause .pause-facts > div:first-child {
-	padding-left: 0;
-	border-left: 0;
-}
-.moba-pause .pause-facts > div:last-child {
-	grid-column: span 3;
-}
-.moba-pause .pause-facts small {
-	display: block;
-	font: var(--caps);
-	letter-spacing: 0.16em;
-	text-transform: uppercase;
-}
-.moba-pause .pause-facts b {
-	display: block;
-	margin-top: 6px;
-	font: 400 clamp(28px, 3.2vw, 54px) / 1 var(--ui-font);
-	font-variant-numeric: tabular-nums;
-	white-space: nowrap;
-}
-.moba-pause .pause-facts i {
-	font-style: normal;
-}
-.moba-pause .pause-facts .mine {
-	color: var(--page-mine);
-}
-.moba-pause .pause-facts .theirs {
-	color: var(--page-theirs);
-}
-.moba-pause .pause-facts em {
-	font: var(--caps);
-	letter-spacing: 0.14em;
-	text-transform: uppercase;
-	font-style: normal;
-	vertical-align: 0.5em;
+	grid-column: 1 / span 6;
 }
 /* Quick cast is a setting under the actions: an unnumbered row with the box as
    the only frame (frame means press). Your cursor on it lifts the box and fills it with the wash. */
@@ -558,8 +527,7 @@ body:has(> .overlay[data-theme^='moba']:not([hidden]))
 		width: calc(100% + 80px);
 		opacity: 0.94;
 	}
-	.moba-page .page-head,
-	.moba-pause .pause-facts {
+	.moba-page .page-head {
 		grid-column: 1 / -1;
 	}
 	.moba-page .page-head > :nth-child(1) {
@@ -571,20 +539,12 @@ body:has(> .overlay[data-theme^='moba']:not([hidden]))
 	.moba-page .page-kana {
 		display: none;
 	}
+	/* The hero stands mid-screen on a phone, so the menu drops under it, above the action bar. */
+	.overlay .dialog-card.moba-pause {
+		grid-template-rows: 1fr auto auto 150px;
+	}
 	.overlay .moba-pause .actions {
 		grid-column: 1 / -1;
-	}
-	.moba-pause .pause-facts > div,
-	.moba-pause .pause-facts > div:last-child {
-		grid-column: span 2;
-		padding: 10px 8px 0;
-	}
-	.moba-pause .pause-facts small [lang='ja'] {
-		display: none;
-	}
-	.moba-pause .pause-facts em {
-		display: block;
-		vertical-align: 0;
 	}
 	.overlay .moba-page :is(h1, .sub) {
 		grid-column: 1 / -1;
