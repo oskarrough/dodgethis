@@ -46,7 +46,9 @@ import abilities_yoYoFlick from './abilities/yoYoFlick/yoYoFlick-tune.js'
 import encounters_barquero from './encounters/barquero/barquero-tune.js'
 import encounters_carillon from './encounters/carillon/carillon-tune.js'
 import encounters_espejo from './encounters/espejo/espejo-tune.js'
-import encounters_fornax from './encounters/fornax/fornax-tune.js'
+import encounters_fornax, {
+	units as encounters_fornax_units,
+} from './encounters/fornax/fornax-tune.js'
 import encounters_gnomon, {
 	units as encounters_gnomon_units,
 } from './encounters/gnomon/gnomon-tune.js'
@@ -146,6 +148,7 @@ export const units = {
 	...abilities_tagOut_units,
 	...abilities_toss_units,
 	...abilities_ward_units,
+	...encounters_fornax_units,
 	...encounters_gnomon_units,
 	...encounters_manos_units,
 	...encounters_tinajaBotijo_units,
