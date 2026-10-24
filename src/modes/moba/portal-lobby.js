@@ -284,7 +284,11 @@ export function createPortalLobby({ app, run, sim, hero, setup, options }) {
 
 	function syncPick() {
 		setup.heroId = hero.heroId
-		setup.picks[hero.id] = { ...setup.picks[hero.id], heroId: hero.heroId, team: 'A' }
+		setup.picks[hero.id] = {
+			...setup.picks[hero.id],
+			heroId: hero.heroId,
+			team: readySeats.seatOf(hero.id)?.team ?? 'A',
+		}
 	}
 	function canEdit(seat) {
 		const occupant = seat?.occupant
@@ -493,7 +497,8 @@ export function createPortalLobby({ app, run, sim, hero, setup, options }) {
 		if (ending || !app.session.authoritative || !readySeats.allReady()) return
 		syncPick()
 		const roster = readySeats.laneRoster(hero.id, setup.difficulty, setup.seed)
-		setup.picks = Object.fromEntries(roster.map((r) => [r.id, { heroId: r.heroId, team: 'A' }]))
+		// Picks keep each seat's side: back in the lobby they rebuild both teams of three.
+		setup.picks = Object.fromEntries(roster.map((r) => [r.id, { heroId: r.heroId, team: r.team }]))
 		handoff = { setup: structuredClone(setup), roster }
 		loadLane()
 	}
