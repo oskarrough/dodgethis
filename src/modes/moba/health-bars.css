@@ -81,9 +81,8 @@
 	border: 0;
 	background: none;
 	color: var(--ui-cream);
-	font-weight: bold;
-	text-shadow:
-		0 0 2px var(--ui-text),
-		0 1px 1px var(--ui-text),
-		0 0 1px var(--ui-text);
+	letter-spacing: 0.08em;
+	/* A solid ink outline under the fill, not a soft glow, so the name reads over any ground. */
+	-webkit-text-stroke: 3px var(--ui-text);
+	paint-order: stroke fill;
 }

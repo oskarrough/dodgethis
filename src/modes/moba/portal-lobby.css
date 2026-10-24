@@ -146,26 +146,8 @@
 .portal-seat[data-ready='true'] .portal-tag::after {
 	content: ' · in';
 }
-.portal-status {
-	position: absolute;
-	/* Above the spell bar (hud.css .moba-hud: 12px margin, 64px slots, key badges), never behind it. */
-	bottom: 104px;
-	left: 50%;
-	translate: -50% 0;
-	margin: 0;
-	padding: 8px 16px;
-	border-radius: 999px;
-	background: color-mix(in srgb, var(--ui-cream) 85%, transparent);
-	color: var(--ui-text);
-	font: 600 18px / 1.2 var(--ui-font);
-}
-.portal-status:empty {
-	display: none;
-}
-.portal-status[data-go='true'] {
-	background: #9fe3d6;
-}
-/* The map's name over the tear, which is its preview (portal-lobby.js placeCaption). */
+/* The map's name beside the tear, which is its preview, and the one line that says what to do
+   (portal-lobby.js placeCaption). */
 .portal-map {
 	position: absolute;
 	top: 0;
@@ -181,9 +163,13 @@
 	white-space: nowrap;
 	pointer-events: none;
 }
+.portal-map small[data-go='true'] {
+	padding: 0 4px;
+	background: #9fe3d6;
+}
 .portal-map small {
 	font:
-		400 15px / 1.2 'Josefin Sans',
+		400 18px / 1.2 'Josefin Sans',
 		system-ui,
 		sans-serif;
 }

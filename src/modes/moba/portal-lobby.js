@@ -35,8 +35,7 @@ export function createPortalLobby({ app, run, sim, hero, setup, options }) {
 	applySkin(el)
 	el.innerHTML = `<div class="portal-seats"></div>
 		<nav class="portal-picker" aria-label="Pick a hero" hidden></nav>
-		<p class="portal-status" role="status"></p>
-		<p class="portal-map"><small>Next map</small><b></b></p>`
+		<p class="portal-map"><b></b><small class="portal-status" role="status"></small></p>`
 	const { back: backButton } = createCornerNav(el, { label: 'Back to splash' })
 	// The world lobby's canvas, sky and pastel palette (lobby.js), without its saucer props.
 	el.prepend(backdrop.el, canvas)
@@ -76,8 +75,8 @@ export function createPortalLobby({ app, run, sim, hero, setup, options }) {
 	const mouth = new THREE.Vector3(p.x, p.tearRadius, p.z)
 	tear.place(mouth, facing)
 	tear.exit(new THREE.Vector3(0, p.farHeight, 0), facing)
-	// The tear is the map preview; its caption names the map, printed beside it on the floor, where the
-	// top of the screen can't clip it.
+	// The tear is the map preview. One caption beside it, on the floor where the top of the screen can't
+	// clip it, names the map and says what to do: walk in, who you're waiting for, the countdown.
 	const mapCaption = el.querySelector('.portal-map')
 	mapCaption.querySelector('b').textContent = mapLayout(setup.map).name
 	const captionAt = new THREE.Vector3(p.tearRadius * 0.8, 0, p.z)
@@ -397,14 +396,14 @@ export function createPortalLobby({ app, run, sim, hero, setup, options }) {
 			ending || left === 0
 				? 'Going in…'
 				: !humans().length
-					? ''
+					? 'Walk in to play'
 					: go
 						? `Going in ${Math.ceil(left ?? p.countdown)}…`
 						: inside(hero)
 							? `Waiting for ${outside()
 									.map((s) => label(s.occupant.id))
 									.join(', ')}`
-							: 'Walk into the portal to go'
+							: 'Walk in to play'
 		status.dataset.go = String(go)
 		const state = JSON.stringify([
 			app.session.authoritative,

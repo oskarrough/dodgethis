@@ -97,14 +97,14 @@ export function createRecap({ sim, hero, canvas, paper = (node) => node }) {
 			const teamCell = el('th', '', teamRow)
 			teamCell.colSpan = header.children.length
 			teamCell.textContent = team === hero.team ? 'Your team' : 'Enemy team'
-			let bot = 0
 			for (const [id, row] of Object.entries(sim.matchStats ?? {})) {
 				if (row.team !== team) continue
 				const line = el('tr', '', body)
 				line.dataset.local = String(id === hero.id)
 				const name = el('th', '', line)
 				name.scope = 'row'
-				name.textContent = `${heroName(row)} · ${id === hero.id ? 'You' : row.bot ? `bot ${++bot}` : 'Player'}`
+				// The hero is the name; only your own row says so.
+				name.textContent = `${heroName(row)}${id === hero.id ? ' (you)' : ''}`
 				for (const stat of stats) el('td', '', line).textContent = number(row[stat])
 			}
 		}
