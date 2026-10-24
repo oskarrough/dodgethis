@@ -120,7 +120,7 @@ export function createLaneView(scene, smooth = null, layout = null) {
 				// Ink cracks zigzag up the lower course's faces that turn toward the camera (+z).
 				const apothem = radius * 0.985 * Math.cos(Math.PI / s.sides)
 				for (let i = 0; i < s.cracks; i++) {
-					const face = Math.floor(rand() * 4) - 2
+					const face = i - Math.floor(s.cracks / 2) // one per face, either side of the front
 					const phi = ((face + 0.5) / s.sides) * Math.PI * 2
 					let u = (rand() - 0.5) * radius * 0.25,
 						y = s.plinth * (0.05 + rand() * 0.15)

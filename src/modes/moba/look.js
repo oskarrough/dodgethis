@@ -76,7 +76,7 @@ export const look = {
 			step: 0.78,
 			stepShift: [0.22, -0.14], // the upper step sits off-centre, x and z
 			bevel: 0.14, // the rim's chamfer
-			chip: 0.16, // how deep a chipped rim notch goes
+			chip: 0.2, // how deep a chipped rim notch goes
 			chipChance: 0.35,
 			jitter: 0.05, // every stone vertex wanders this far
 			cracks: 4, // ink cracks on the plinth's camera-facing faces
@@ -106,7 +106,7 @@ export const look = {
 		domeWidth: 0.045,
 		// The invulnerability dome: dashed horizontal rings on a dome over the structure, never meridians
 		// (seen edge-on from the match camera a meridian reads as a pole through the crystal).
-		domeRings: [0, 0.55, 1.05],
+		domeRings: [0, 0.45, 1.2],
 		domeReach: 0.9, // past the structure's radius at the ground
 		domeLift: 0.6, // over the structure's height
 		domeDash: 0.1, // a dash's thickness; thinner and the style pass inks it grey
@@ -115,7 +115,7 @@ export const look = {
 		coreWidth: 0.64,
 		coreAspect: 1.7,
 		coreLower: 0.72, // the lower half is shorter than the upper
-		coreJitter: 0.1, // facet vertices wander this far (× width)
+		coreJitter: 0.06, // facet vertices wander this far (× width)
 		coreLean: [0.035, 0.012], // ~2° about z and a touch about x
 		coreGap: 0.6, // the crystal floats this far over the plinth
 		coreBob: 0.12,
