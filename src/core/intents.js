@@ -152,12 +152,27 @@ export const PRESETS = Object.freeze({
 	},
 })
 const presetOf = (id) => PRESETS[id] ?? PRESETS.moba
+const codeLabel = (code) => code.replace(/^(Key|Digit)/, '')
 // The keyboard labels for slots 1–4 under a preset, for hotkey hints.
 export const presetKeys = (id) => {
 	const aims = Object.entries(presetOf(id).aims)
 	return ['slot1', 'slot2', 'slot3', 'slot4'].map((slot) =>
-		aims.find(([, s]) => s === slot)[0].replace(/^(Key|Digit)/, ''),
+		codeLabel(aims.find(([, s]) => s === slot)[0]),
 	)
+}
+// Throw prompt for the onboarding pointer and Ball card. Click when the mouse throws; otherwise the first slot plus the primary tap (Space). The pad's A is primary; touch names no key.
+export const throwHint = (id, device) => {
+	if (device === 'touch') return 'Throw'
+	if (device === 'gamepad') return 'A to throw'
+	const preset = presetOf(id)
+	const slot = presetKeys(id)[0]
+	let keys = slot
+	if (preset.mouse) keys = `Click / ${slot}`
+	else {
+		const tap = Object.entries(preset.taps).find(([, action]) => action === 'primary')
+		if (tap) keys = `${slot} / ${codeLabel(tap[0])}`
+	}
+	return `${keys} to throw`
 }
 const PAD_AIMS = [
 	[5, 'slot1'],

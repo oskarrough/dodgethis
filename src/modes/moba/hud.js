@@ -461,7 +461,7 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 			case 'clock':
 				return clockCard({ elapsed, nextWave, nextBall, ballPop, layout })
 			case 'ball':
-				return ballCard({ nextBall, ballPop, carrying: carryingBall })
+				return ballCard({ nextBall, ballPop, carrying: carryingBall, device: frame.device })
 			case 'unit': {
 				const unit = source.unit
 				if (!unit || unit.dead) return null
