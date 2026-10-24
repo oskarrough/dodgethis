@@ -33,9 +33,12 @@ export function createDungeonReplica(simulation, scene) {
 				!Array.isArray(state.cover) ||
 				!state.cover.every(
 					(o) =>
+						o?.kind === 'cushion' &&
 						typeof o.id === 'string' &&
-						o.kind === 'cushion' &&
-						['x', 'z', 'halfX', 'halfZ'].every((key) => Number.isFinite(o[key])),
+						Number.isFinite(o.x) &&
+						Number.isFinite(o.z) &&
+						Number.isFinite(o.r) &&
+						o.r > 0,
 				)
 			)
 				return 'Invalid dungeon cover'
