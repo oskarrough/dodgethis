@@ -321,7 +321,9 @@
 			.css {
 				margin: 0;
 				padding: 10px 12px;
-				font: 11px/1.4 ui-monospace, monospace;
+				font:
+					11px/1.4 ui-monospace,
+					monospace;
 				white-space: pre-wrap;
 				background: #26445f0d;
 			}
@@ -332,8 +334,8 @@
 			<h1>Type picker</h1>
 			<p>
 				Column one is what ships. Type any Google Fonts family name to load it. The link in the
-				address bar holds every column, so it can be shared as is. Drop a .woff2, .otf or .ttf anywhere on
-				the page to try a font file; it is named after the file.
+				address bar holds every column, so it can be shared as is. Drop a .woff2, .otf or .ttf
+				anywhere on the page to try a font file; it is named after the file.
 			</p>
 			<button id="add">+ Column</button>
 		</div>
@@ -349,17 +351,23 @@
 						<button data-act="del">Remove</button>
 					</div>
 					<label>Display</label><input type="text" list="families" data-k="ui" /><span></span>
-					<label>weight</label><input type="range" min="100" max="900" step="100" data-k="uiW" /><output></output>
+					<label>weight</label
+					><input type="range" min="100" max="900" step="100" data-k="uiW" /><output></output>
 					<label>Text</label><input type="text" list="families" data-k="text" /><span></span>
-					<label>weight</label><input type="range" min="100" max="900" step="100" data-k="textW" /><output></output>
+					<label>weight</label
+					><input type="range" min="100" max="900" step="100" data-k="textW" /><output></output>
 					<label>Numbers</label><input type="text" list="families" data-k="num" /><span></span>
-					<label>Size</label><input type="range" min="0.6" max="1.6" step="0.05" data-k="k" /><output></output>
-					<label>Tracking</label><input type="range" min="-0.08" max="0.2" step="0.01" data-k="track" /><output></output>
+					<label>Size</label
+					><input type="range" min="0.6" max="1.6" step="0.05" data-k="k" /><output></output>
+					<label>Tracking</label
+					><input type="range" min="-0.08" max="0.2" step="0.01" data-k="track" /><output></output>
 				</div>
 
 				<div class="s">
 					<small>Top bar · display 20px</small>
-					<div class="topbar d"><span class="blue">3</span><span>07:42</span><span class="red">1</span></div>
+					<div class="topbar d">
+						<span class="blue">3</span><span>07:42</span><span class="red">1</span>
+					</div>
 				</div>
 				<div class="s field">
 					<div class="plate d" style="--c: #1677ff">Hook<i></i></div>
@@ -381,7 +389,9 @@
 				</div>
 				<div class="s">
 					<small>Buttons · display 20px</small>
-					<div class="buttons d"><span>Play online</span><span>Ready</span><span class="quiet">Leave match</span></div>
+					<div class="buttons d">
+						<span>Play online</span><span>Ready</span><span class="quiet">Leave match</span>
+					</div>
 				</div>
 				<div class="s terra">
 					<div class="title d">Flagfall</div>
@@ -390,11 +400,41 @@
 				<div class="s">
 					<small>Scoreboard · text table, caps header</small>
 					<table class="score t">
-						<tr><th>Hero</th><th>K</th><th>D</th><th>A</th><th>Dmg</th></tr>
-						<tr><td class="d blue">Fletcher</td><td>7</td><td>2</td><td>4</td><td>11 240</td></tr>
-						<tr><td class="d blue">Coach</td><td>1</td><td>3</td><td>12</td><td>4 018</td></tr>
-						<tr><td class="d red">Brew</td><td>4</td><td>5</td><td>3</td><td>8 655</td></tr>
-						<tr><td class="d red">Mitts</td><td>2</td><td>6</td><td>1</td><td>6 102</td></tr>
+						<tr>
+							<th>Hero</th>
+							<th>K</th>
+							<th>D</th>
+							<th>A</th>
+							<th>Dmg</th>
+						</tr>
+						<tr>
+							<td class="d blue">Fletcher</td>
+							<td>7</td>
+							<td>2</td>
+							<td>4</td>
+							<td>11 240</td>
+						</tr>
+						<tr>
+							<td class="d blue">Coach</td>
+							<td>1</td>
+							<td>3</td>
+							<td>12</td>
+							<td>4 018</td>
+						</tr>
+						<tr>
+							<td class="d red">Brew</td>
+							<td>4</td>
+							<td>5</td>
+							<td>3</td>
+							<td>8 655</td>
+						</tr>
+						<tr>
+							<td class="d red">Mitts</td>
+							<td>2</td>
+							<td>6</td>
+							<td>1</td>
+							<td>6 102</td>
+						</tr>
 					</table>
 				</div>
 				<pre class="css"></pre>
@@ -415,17 +455,64 @@
 			// Oskar's picks first. Comico and Striper load from Fontshare's CDN; the self-hosted three are LOCAL.
 			const FONTSHARE = new Set(['Comico', 'Striper'])
 			const SUGGESTIONS = [
-				'Darumadrop One', 'Ranchers', 'Barriecito', 'Josefin Sans',
-				'Gluten', 'Grandstander', 'Hyperlegible Sans', 'Apfel Grotezk', 'Cooper Hewitt', 'Comico', 'Striper',
+				'Darumadrop One',
+				'Ranchers',
+				'Barriecito',
+				'Josefin Sans',
+				'Gluten',
+				'Grandstander',
+				'Hyperlegible Sans',
+				'Apfel Grotezk',
+				'Cooper Hewitt',
+				'Comico',
+				'Striper',
 				'Atkinson Hyperlegible Next',
-				'Fredoka', 'Baloo 2', 'Lilita One', 'Titan One', 'Luckiest Guy', 'Chango', 'Bowlby One',
-				'Rammetto One', 'Sniglet', 'Chewy', 'Mochiy Pop One', 'Dela Gothic One',
-				'Bungee', 'Rubik', 'Nunito', 'Outfit', 'Figtree', 'Lexend', 'Recursive', 'Space Grotesk',
-				'DM Sans', 'Atkinson Hyperlegible', 'Jost', 'Quicksand', 'Varela Round', 'M PLUS Rounded 1c',
-				'system-ui', 'ui-rounded', 'monospace', 'ui-monospace',
+				'Fredoka',
+				'Baloo 2',
+				'Lilita One',
+				'Titan One',
+				'Luckiest Guy',
+				'Chango',
+				'Bowlby One',
+				'Rammetto One',
+				'Sniglet',
+				'Chewy',
+				'Mochiy Pop One',
+				'Dela Gothic One',
+				'Bungee',
+				'Rubik',
+				'Nunito',
+				'Outfit',
+				'Figtree',
+				'Lexend',
+				'Recursive',
+				'Space Grotesk',
+				'DM Sans',
+				'Atkinson Hyperlegible',
+				'Jost',
+				'Quicksand',
+				'Varela Round',
+				'M PLUS Rounded 1c',
+				'system-ui',
+				'ui-rounded',
+				'monospace',
+				'ui-monospace',
 			]
-			const LOCAL = new Set(['Josefin Sans', 'Hyperlegible Sans', 'Apfel Grotezk', 'Cooper Hewitt', 'system-ui', 'ui-rounded', 'monospace', 'ui-monospace', 'sans-serif', 'serif'])
-			document.getElementById('families').innerHTML = SUGGESTIONS.map((f) => `<option value="${f}">`).join('')
+			const LOCAL = new Set([
+				'Josefin Sans',
+				'Hyperlegible Sans',
+				'Apfel Grotezk',
+				'Cooper Hewitt',
+				'system-ui',
+				'ui-rounded',
+				'monospace',
+				'ui-monospace',
+				'sans-serif',
+				'serif',
+			])
+			document.getElementById('families').innerHTML = SUGGESTIONS.map(
+				(f) => `<option value="${f}">`,
+			).join('')
 
 			// Google Fonts css2 refuses a weight a family lacks, so ask for the variable range first, then plain.
 			const loaded = new Map()
@@ -434,11 +521,13 @@
 				if (!family || LOCAL.has(family) || loaded.has(family)) return loaded.get(family)
 				const q = encodeURIComponent(family).replace(/%20/g, '+')
 				const slug = family.toLowerCase().replace(/ /g, '-')
-				const urls = FONTSHARE.has(family) ? [`https://api.fontshare.com/v2/css?f[]=${slug}@400&display=swap`] : [
-					`https://fonts.googleapis.com/css2?family=${q}:wght@100..900&display=swap`,
-					`https://fonts.googleapis.com/css2?family=${q}:wght@400;700&display=swap`,
-					`https://fonts.googleapis.com/css2?family=${q}&display=swap`,
-				]
+				const urls = FONTSHARE.has(family)
+					? [`https://api.fontshare.com/v2/css?f[]=${slug}@400&display=swap`]
+					: [
+							`https://fonts.googleapis.com/css2?family=${q}:wght@100..900&display=swap`,
+							`https://fonts.googleapis.com/css2?family=${q}:wght@400;700&display=swap`,
+							`https://fonts.googleapis.com/css2?family=${q}&display=swap`,
+						]
 				const p = (async () => {
 					for (const url of urls) {
 						const r = await fetch(url).catch(() => null)
@@ -461,7 +550,8 @@
 			try {
 				cols = JSON.parse(decodeURIComponent(location.hash.slice(1)))
 			} catch {}
-			if (!Array.isArray(cols) || !cols.length) cols = [{ ...SHIPPING }, { ...SHIPPING, ui: 'Lilita One', text: 'Nunito' }]
+			if (!Array.isArray(cols) || !cols.length)
+				cols = [{ ...SHIPPING }, { ...SHIPPING, ui: 'Lilita One', text: 'Nunito' }]
 			cols[0] = { ...SHIPPING } // the first column stays the reference
 
 			const root = document.getElementById('cols')
@@ -520,7 +610,9 @@
 					`--ui-font: ${stack(c.ui)};`,
 					`--text-font: ${stack(c.text)};`,
 					`/* look.js damageNumbers.family */ '${c.num}'`,
-					c.uiW !== 400 || c.track ? `/* display: weight ${c.uiW}, letter-spacing ${c.track}em */` : '',
+					c.uiW !== 400 || c.track
+						? `/* display: weight ${c.uiW}, letter-spacing ${c.track}em */`
+						: '',
 					c.textW !== 400 ? `/* text: weight ${c.textW} */` : '',
 					c.k !== 1 ? `--fs-base: ${Math.round(20 * c.k)}px; /* and tip sizes ×${c.k} */` : '',
 				]
@@ -538,7 +630,9 @@
 					const face = new FontFace(family, await file.arrayBuffer())
 					document.fonts.add(await face.load())
 					LOCAL.add(family)
-					document.getElementById('families').insertAdjacentHTML('afterbegin', `<option value="${family}">`)
+					document
+						.getElementById('families')
+						.insertAdjacentHTML('afterbegin', `<option value="${family}">`)
 					cols.push({ ...cols.at(-1), ui: family })
 				}
 				render()
@@ -551,3 +645,4 @@
 			render()
 		</script>
 	</body>
+</html>
