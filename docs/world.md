@@ -54,13 +54,11 @@ Names are characters first. A boss, a place or a hero should sound like someone 
 
 Code follows the player's name once it is settled: `encounters/gnomon/`, not `encounters/sundial/`. Until then the folder keeps its old name, so a rename is one decision and one commit.
 
-### One palette
+### Where names come from
 
-The whole world draws from one warm palette, the same on every map: Spanish and Canarian for the everyday things of clay, sun, water and stone, with Greek and Latin for old instruments and for whatever comes down from the sky. These roots read well across most of the world, and they suit a terracotta court with lucha canaria under it. Overthrow and Flagfall are courts in that same world, so their names come from the same palette as Altamesa's; a moss isle and a night garden are a change of weather, not of country.
+There is no house language. A name comes from wherever the best word for that character lives, as long as it passes the rules above: Gnomon is Greek, Carillon is French and Dutch, Salvia is Latin, and none of them is there to make a point about geography. Overthrow and Flagfall are courts in one world, not countries, so no map gets a language of its own.
 
-A word from another language is welcome when it is simply the best word for the thing, as carillon is for a choir of bells. It joins the palette for that one name. It never becomes a rule for a map.
-
-Examples already in use: Altamesa, Tinaja, Botijo, Espejo, Barquero, Manos and Tagoror from Spanish and Canarian; Gnomon and Fornax from Greek and Latin; Carillon from French and Dutch.
+The one exception is Altamesa. The dungeon has a Spanish and Canarian flavour, because it sits under the terrero and the lucha canaria, so its keepers and its lesser things lean that way: Altamesa, Tinaja, Botijo, Espejo, Barquero, Manos, Tagoror, the Tiestos and the boons. That flavour belongs to the dungeon. Heroes come from all over and should not sound as if they all grew up in the same village.
 
 Canarian words come from the islands' first people, the Guanches, and a few have survived in place names and wrestling (a _tagoror_ was the stone circle where they met in council). Use them with care and only where the meaning fits; they are heritage first.
 
