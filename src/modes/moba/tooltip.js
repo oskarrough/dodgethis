@@ -271,8 +271,8 @@ export function createTooltip(parent = document.body, id = 'moba-tip') {
 	let openWord = null
 	let shownSide = 'above'
 	const words = () => [...root.querySelectorAll('.moba-kw')]
-	// A keyword's card opens away from the card's source (above the word when the card sits above its
-	// source, so it never drops onto it), flipping to stay on screen.
+	// A keyword's card opens outside the whole card, on the side away from the card's source (above it
+	// when the card sits above its source), else to its right or left; it never covers the card.
 	function openKeyword(word) {
 		if (openWord === word) return
 		closeKeyword()
@@ -284,13 +284,21 @@ export function createTooltip(parent = document.body, id = 'moba-tip') {
 		const box = root.getBoundingClientRect()
 		const r = word.getBoundingClientRect()
 		const { w, h } = viewport()
-		const x = clampTo(r.left, MARGIN, w - card.offsetWidth - MARGIN)
-		const fitsBelow = r.bottom + 4 + card.offsetHeight <= h - MARGIN
-		const fitsAbove = r.top - 4 - card.offsetHeight >= MARGIN
-		const below = shownSide === 'above' ? !fitsAbove : fitsBelow
-		const y = below ? r.bottom + 4 : r.top - 4 - card.offsetHeight
-		card.style.left = `${Math.round(x - box.left)}px`
-		card.style.top = `${Math.round(y - box.top)}px`
+		const cw = card.offsetWidth,
+			ch = card.offsetHeight
+		const x = clampTo(r.left, MARGIN, w - cw - MARGIN)
+		const y = clampTo(r.top + r.height / 2 - ch / 2, MARGIN, h - ch - MARGIN)
+		const away = shownSide === 'below' ? 'below' : 'above'
+		const spots = {
+			above: { x, y: box.top - GAP - ch, fits: box.top - GAP - ch >= MARGIN },
+			below: { x, y: box.bottom + GAP, fits: box.bottom + GAP + ch <= h - MARGIN },
+			right: { x: box.right + GAP, y, fits: box.right + GAP + cw <= w - MARGIN },
+			left: { x: box.left - GAP - cw, y, fits: box.left - GAP - cw >= MARGIN },
+		}
+		const order = [away, 'right', 'left', away === 'above' ? 'below' : 'above']
+		const spot = spots[order.find((side) => spots[side].fits) ?? away]
+		card.style.left = `${Math.round(spot.x - box.left)}px`
+		card.style.top = `${Math.round(spot.y - box.top)}px`
 	}
 	function closeKeyword() {
 		if (!openWord) return
