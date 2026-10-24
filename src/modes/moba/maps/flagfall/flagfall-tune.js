@@ -132,7 +132,7 @@ const flagfall = {
 	gaps: [[5, 11]],
 	pillarRadius: 0.8,
 	spawns: { A: { x: -49, z: 0 }, B: { x: 49, z: 0 } },
-	structures: { towerX: 18, fortX: 32, coreX: 42 },
+	structures: { coreX: 42 },
 	waveSpawnX: 40,
 	// Lanterns: one on each camp, one on the flag. Marks for now.
 	posts: [

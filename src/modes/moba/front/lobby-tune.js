@@ -56,27 +56,14 @@ export const lobby = {
 		denySound: { freq: 120, slideTo: 70, dur: 0.18, gain: 0.1, type: 'square' },
 	},
 	ready: {
-		// Authored ground prints and cardboard apply on restart; fill/activation timing is live.
+		// The seats: authored positions apply on restart; fill timing is live.
 		x: 2.65,
 		z: 0,
 		spacing: 1.7,
 		width: 1.5,
 		depth: 1.3,
 		fillTime: 1,
-		// Plates inlaid in the glaze: an ink groove `borderWidth` wide, a band of team glaze `band` wide
-		// (team colour `tint` of the way to cream), a cream `well` the ready fill glazes over.
-		borderWidth: 0.035,
-		band: 0.11,
-		corner: 0.22,
-		tint: 0.18,
-		saturation: 0.6, // team glaze keeps this share of its saturation, so holograms read on it
-		well: '#fbf6ea',
-		fillY: 0.05, // holograms and labels stand on the plate here
-		label: 'Ready', // printed beside your plate until you stand in it
-		labelGap: 0.12,
-		labelSpace: 8, // px between difficulty words before the unpicked ones step aside
-		badge: { keyboard: '', mouse: '', gamepad: 'Start', touch: '' }, // one word on keyboard; pads still learn Start
-		promptRadius: 1.5,
+		fillY: 0.05,
 		walkSound: { freq: 440, slideTo: 560, dur: 0.1, gain: 0.06, type: 'sine' },
 		enterSound: { freq: 680, slideTo: 760, dur: 0.12, gain: 0.05, type: 'triangle' },
 		fullSound: { freq: 880, slideTo: 1320, dur: 0.18, gain: 0.08, type: 'sine' },
@@ -84,75 +71,19 @@ export const lobby = {
 		// Your groove starts filling: rising, like a bottle under a tap.
 		grooveSound: { freq: 240, slideTo: 480, dur: 0.3, gain: 0.05, type: 'sine' },
 	},
+	// The difficulty picks (lobby-props.js): authored positions apply on restart; aim and settling are live.
 	gallery: {
-		// Authored props apply on restart; aim/contact tests and settling are live.
 		x: 0,
 		z: 5.7,
 		spacing: 2.0,
 		radius: 0.4,
 		aimRadius: 2,
-		clickPad: 0.02, // right-clicks this far outside a magnet's screen box (in clip space) still pick it
-		// The invisible box that hover and right-click read; the magnet floats inside it.
-		width: 1.15,
-		height: 1.7,
-		labelY: 0.1,
 		settleTime: 0.35,
 		overshoot: 0.12,
-		ringY: 0.18,
-		ringWidth: 0.06,
-		firingMark: { x: 0, z: 4.5 },
-		shot: { speed: 20, range: 18, radius: 0.2, damage: 0 },
 		shotSound: { freq: 790, slideTo: 350, dur: 0.09, gain: 0.07, type: 'sine' },
 		pickSound: { freq: 140, slideTo: 420, dur: 0.2, gain: 0.1, type: 'sine' },
-		// Each difficulty is a floating horseshoe magnet; ball count, orbit and face say how hard.
-		// Shapes apply on restart; motion, timing and sound are live.
+		// The old magnets' sounds, still in the sound table (sound-table.js).
 		magnet: {
-			hover: 1.2, // arch centre above the floor
-			tilt: 0.35, // leans back toward the camera
-			lean: 0.45, // each ball's orbit plane tips this far off flat
-			arch: 0.38,
-			tube: 0.14,
-			leg: 0.36,
-			tip: 0.16,
-			ball: 0.13,
-			face: 0.2,
-			sag: 0.18, // an unpicked magnet droops this far and dims its pull
-			pullRate: 6,
-			slamTime: 0.14,
-			leapTime: 0.42,
-			leapHeight: 0.8,
-			stagger: 0.06,
-			stickFor: 0.8,
-			releaseTime: 0.45,
-			punch: 0.22,
-			punchTime: 0.35,
-			gravity: 16,
-			bounce: 0.45,
-			fling: 0.6, // share of orbit speed a dropped ball keeps
-			roll: 2.2, // floor friction per second
-			roam: 0.85, // dropped balls stay this close to their magnet
-			rest: 0.55, // where idle balls lie, around the magnet's foot
-			moods: {
-				easy: { balls: 1, orbit: 0.92, spin: 1.1, bob: 0.07, bobRate: 0.9, buzz: 0, crackle: 0 },
-				normal: {
-					balls: 2,
-					orbit: 0.8,
-					spin: 3.2,
-					bob: 0.04,
-					bobRate: 1.6,
-					buzz: 0,
-					crackle: 0,
-				},
-				hard: {
-					balls: 3,
-					orbit: 0.66,
-					spin: 7.5,
-					bob: 0.02,
-					bobRate: 3,
-					buzz: 0.025,
-					crackle: 0.35,
-				},
-			},
 			clackSound: { freq: 1900, slideTo: 1300, dur: 0.045, gain: 0.09, type: 'square' },
 			thudSound: { freq: 150, slideTo: 80, dur: 0.07, gain: 0.08, type: 'triangle' },
 			leapSound: { freq: 300, slideTo: 900, dur: 0.12, gain: 0.05, type: 'sine' },

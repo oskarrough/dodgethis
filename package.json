@@ -9,7 +9,7 @@
 		"dev:agent": "sh scripts/dev-agent.sh",
 		"build": "bun run check && vite build",
 		"preview": "vite preview",
-		"check": "bun run collect-mods && bun scripts/check-moba-units.js && bun scripts/check-moba-effects.js && oxlint --quiet && oxfmt --check && bun test --parallel --only-failures",
+		"check": "bun run collect-mods && bun scripts/check-moba-units.js && bun scripts/check-unread.js && bun scripts/check-moba-effects.js && oxlint --quiet && oxfmt --check && bun test --parallel --only-failures",
 		"test": "bun test",
 		"test:slow": "SLOW=1 bun test",
 		"profile:dodgeball": "bun scripts/bench.js",

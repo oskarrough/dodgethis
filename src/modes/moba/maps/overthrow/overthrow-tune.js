@@ -49,9 +49,7 @@ export const overthrowTerrain = {
 	jag: 0.8,
 	step: 3,
 	seed: 73,
-	rockDepth: 5,
 	rockFlare: 1.4,
-	rockBands: 3,
 	groundY: 0.005,
 	chalkY: 0.01,
 	patchScale: 3,
@@ -59,8 +57,6 @@ export const overthrowTerrain = {
 	chalkWidth: 0.11,
 	courtInset: 1.4,
 	chalkSegments: 96,
-	surroundSize: 600,
-	surroundDrop: 12,
 	// Overthrow by day (scenery.js): the court is the flat top of a stone isle over a sea of cloud.
 	// Metres; everything applies on restart.
 	cliff: {
