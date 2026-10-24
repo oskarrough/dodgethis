@@ -14,20 +14,21 @@ The desert mesa is the hub, and every court is its own island floating in the sa
 
 Every few minutes the Ball falls out of the sky, a shard of something bright. You see its shadow first, which is fair warning, and it lands hot and hits harder than anything made up here until it cools. The keeps are faceted crystals on stepped plinths, guarded by stone towers, and the minions are small nameless things of the mesas that follow the nearest keep and walk at whatever it points at.
 
-Deep inside one mesa lies the Hollow Mesa, a dungeon of seven rooms for a party of three: the Gate of Hands, the Bell Choir, the Kiln Gallery, the Twin Potters, the Mirror, the Ferry, and at the bottom the Sundial, which has kept time over the Mesa longer than anyone has kept count ([deck](https://claude.ai/artifact/GRXdewN9rWPFrdpSKuD8H7)). Every door is either sun or shade, and the choice follows you down.
+The tallest of them is Altamesa, and it is hollow. Mesa is Spanish for table, so the name is a high table, which is roughly what it looks like from a passing cloud. Inside it waits a dungeon for a party of three, kept by seven characters who have had a long time alone to grow strange: Manos at the gate, Tinaja and Botijo in the court, Carillon and Espejo down the sun wing, Fornax and Barquero down the shade wing, and Gnomon at the bottom, who has kept time over the mesa longer than anyone has kept count ([deck](https://claude.ai/artifact/GRXdewN9rWPFrdpSKuD8H7)). Their cast list is below.
 
 ## What is settled and what is open
 
-| Settled                                                                                                                                                                                               | Open                                                                              |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| Floating stone over cloud; Moebius line and sky; Escher stairs and arches; the desert mesa is the hub and each map keeps its own biome (Overthrow green isles, Flagfall night jungle) in the same sky | The game's name, and whether the world gets one (#25)                             |
-| The terracotta terrero lobby, pastel apricot-to-violet sky, distant mesas, the portal                                                                                                                 |                                                                                   |
-| Overthrow by day, Flagfall by night; teams are sashes, not sides                                                                                                                                      | Hero names and origins: Coach, Hook, Brew, Mender and Wata are placeholders (#24) |
-| Cream paper cards with a thin navy ink line; one navy ink, never black                                                                                                                                | The Hollow Mesa's room names, which are all placeholders                          |
-| Vallotton woodcuts for the splash map cards, cut from each map's real layout                                                                                                                          | Who the heroes are, and why they come up to fight                                 |
-| Type: display Darumadrop One, Comico, Apfel Grotezk; text Sniglet, Josefin Sans                                                                                                                       | Music beyond the synthesised scenes; Oskar is working on audio himself            |
-| No text where the world can show it: the portal fills with light instead of counting                                                                                                                  |                                                                                   |
-| Charm with weight: cute proportions, worn materials, never plush                                                                                                                                      |                                                                                   |
+| Settled                                                                                                                                                                                               | Open                                                                                    |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Floating stone over cloud; Moebius line and sky; Escher stairs and arches; the desert mesa is the hub and each map keeps its own biome (Overthrow green isles, Flagfall night jungle) in the same sky | The game's name, and whether the world gets one (#25)                                   |
+| The terracotta terrero lobby, pastel apricot-to-violet sky, distant mesas, the portal                                                                                                                 |                                                                                         |
+| Overthrow by day, Flagfall by night; teams are sashes, not sides                                                                                                                                      | Hero names and origins: Coach, Hook, Brew, Mender and Wata are placeholders (#24)       |
+| Cream paper cards with a thin navy ink line; one navy ink, never black                                                                                                                                | Manos and Tagoror (proposed here, not yet agreed); the roots for Overthrow and Flagfall |
+| Altamesa and its cast: Gnomon, Tinaja and Botijo, Fornax, Carillon, Espejo, Barquero; the naming rules below                                                                                          |                                                                                         |
+| Vallotton woodcuts for the splash map cards, cut from each map's real layout                                                                                                                          | Who the heroes are, and why they come up to fight                                       |
+| Type: display Darumadrop One, Comico, Apfel Grotezk; text Sniglet, Josefin Sans                                                                                                                       | Music beyond the synthesised scenes; Oskar is working on audio himself                  |
+| No text where the world can show it: the portal fills with light instead of counting                                                                                                                  |                                                                                         |
+| Charm with weight: cute proportions, worn materials, never plush                                                                                                                                      |                                                                                         |
 
 ## The feeling
 
@@ -35,9 +36,64 @@ It should feel like a Saturday afternoon on a rooftop that happens to be a mile 
 
 The world shows rather than tells. A countdown is a portal filling with light, a waiting hero is a glowing seat, a spawn is a slow ring on the floor. Words are for when nothing else will do, and then they are set like a 1990s Japanese game manual on a Swiss grid, flush left, with big index numerals.
 
+The humour is dry and generous, the kind that trusts you to get it. Super Mario Odyssey is the model for warmth: its desert town is Tostarena, a sun-toasted sand joke that works in half the languages on earth, and nobody stops to explain it. Smash Bros. is the model for confidence: a stage is Corneria or Onett, a proper name said once and then simply true. We never wink at the player, never write a pun that only English gets, and never let a creature be silly for its own sake. A thing is funny because of what it does: a kiln that grows hotter the longer you dawdle is funnier than a kiln called something funny.
+
+When the text gets long, count the articles. A paragraph that reads "the Gate, the Court, the Kiln, the Ferry" has turned into an inventory; give the place or the creature its name and let the sentence move.
+
+## Names
+
+Names are characters first. A boss, a place or a hero should sound like someone you could meet, and a child in Madrid, Osaka or Lagos should be able to shout it across a playground after hearing it once.
+
+- **A proper name, no article.** Altamesa, not the Hollow Mesa; Gnomon, not the Sundial. Common things that have no personality stay common nouns (the Ball, the portal, a waystone, a keep), and that is fine, but anything you fight or visit gets a name.
+- **Short and sayable.** Two or three syllables, at most four. Spelled the way it sounds in most European languages and in Japanese katakana, with no silent letters and no apostrophes.
+- **No "X of Y", no compounds of two English words.** "Gate of Hands", "Kiln Gallery" and "Shadowbane" are descriptions, not names. Descriptions belong in the sentence after the name.
+- **Rooted, not invented.** Take a real word from a language that suits the place, ideally one whose meaning is the joke or the clue (a gnomon is the pin that casts a sundial's shadow; a botijo is a clay jug you drink from by its spout). Invented fantasy syllables (Xal'thuun) are out, and so are brand-like coinages.
+- **Not childish.** Petey, Big Bertha and Mr. Pots are the wrong side of charm. The name should still sound right if the creature turns out to be very old.
+- **One initial per cast.** Within a dungeon or a map, no two characters share a first letter, so callouts in a fight never collide.
+- **Check it abroad.** Before a name ships, look up what it means in Spanish, Portuguese, French, German, Japanese and Turkish, and drop it if it is rude or silly in any of them.
+
+Code follows the player's name once it is settled: `encounters/gnomon/`, not `encounters/sundial/`. Until then the folder keeps its old name, so a rename is one decision and one commit.
+
+### Roots by region
+
+Each region draws from its own languages, so the whole game is not Spanish, and a name tells you where you are.
+
+| Region                      | Roots                                                                    | Why                                                                                               | Examples                                                                   |
+| --------------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| Altamesa and the desert hub | Spanish, Canarian, with Greek and Latin for instruments of time and fire | Terracotta, the terrero and lucha canaria; clay, sun and old stone                                | Altamesa, Tinaja, Botijo, Espejo, Barquero, Gnomon, Fornax, Tagoror        |
+| Overthrow (proposed)        | Nordic and Gaelic water and stone words                                  | A green isle of moss and falling water, cool and windy                                            | Foss (waterfall), Mosi, Carraig                                            |
+| Flagfall (proposed)         | Brazilian Portuguese and Tupi                                            | Night jungle and orchid bells, and it shares a country with Azymuth, which already plays under it | Vagalume (firefly), Jabuti, Arapuá                                         |
+| The sky and the Ball        | Greek and Latin astronomy                                                | What falls from above is older than any island                                                    | Fornax is already a constellation; keep such names for things from the sky |
+
+Canarian words come from the islands' first people, the Guanches, and a few have survived in place names and wrestling (a _tagoror_ was the stone circle where they met in council). Use them with care and only where the meaning fits; they are heritage first.
+
+### Good and bad
+
+| Instead of       | Write             | Because                                                       |
+| ---------------- | ----------------- | ------------------------------------------------------------- |
+| The Hollow Mesa  | Altamesa          | One word, a proper name, sayable in any language              |
+| The Sundial      | Gnomon            | A real word, faintly uncanny, and the clue is in it           |
+| The Twin Potters | Tinaja and Botijo | Two jars, two characters, two shapes you can read at a glance |
+| Gate of Hands    | Manos (proposed)  | Plain Spanish, said as a name; the hands are the fight        |
+| Petey            | anything else     | Too cute by half, and only English hears it as a name         |
+| Lord Sunderclaw  | anything else     | Grimdark compound, the wrong side of the line                 |
+
+## The cast of Altamesa
+
+Each line is the character in one breath, for whoever writes its fight, draws it or names its attacks. The folder names in brackets are the code as it stands today.
+
+- **Manos** (`gateOfHands`, proposed). A wall of red clay hands at the mouth of the mesa that grabs whoever stands still and holds on for ten seconds. Not cruel, only very bored, and glad of the company.
+- **Tinaja and Botijo** (`twinPotters`). Two jars who have kept the central court together for longer than either will admit. Tinaja is fat and slow and sits where she likes; Botijo is thin and quick and spits cold water from his spout. Break one and the other takes it personally.
+- **Tagoror** (proposed). Not a boss: the central court itself, a ring of standing stones where the twins hold council and both wings begin.
+- **Carillon** (`bellChoir`). A choir of hanging bells in the sun wing that rings in rounds. Each note lands where the last one pointed, so the fight is a song you learn by being hit by it.
+- **Espejo** (`mirror`). A tall silvered pane at the end of the sun wing that fights you with your own hero, a beat late. It has never had an original idea and is proud of it.
+- **Fornax** (`kilnGallery`). A great kiln in the shade wing with a door like a mouth. It is patient, it grows hotter the longer you stay, and everything it has fired is still in there with you.
+- **Barquero** (`ferry`). A ferryman who poles a stone boat across the cloud at the bottom of the shade wing. He takes a toll, he does not hurry, and he will happily push you off.
+- **Gnomon** (`sundial`). The pin of the great sundial at the bottom of the stair. Its shadow sweeps the floor, and the shadow is the attack, as the Ball's shadow is the warning. It has kept time over the mesa since before the first flagstone, and it would like you to know you are late.
+
 ## Keywords
 
-**Place:** floating mesas, sea of cloud, desert of air, terracotta flags, hand-cut stone, sun-bleached courtyard, stairs to nowhere, arches onto sky, basalt wall, oxide-red stands, terrero, lucha canaria, waterfalls that never land, night garden, orchid bells, stone lantern, standing stones, faceted crystal keeps, stepped plinths, portal of light, the Ball's shadow, the Sundial, kiln, bell choir, ferry, mirror.
+**Place:** floating mesas, sea of cloud, desert of air, terracotta flags, hand-cut stone, sun-bleached courtyard, stairs to nowhere, arches onto sky, basalt wall, oxide-red stands, terrero, lucha canaria, waterfalls that never land, night garden, orchid bells, stone lantern, standing stones, faceted crystal keeps, stepped plinths, portal of light, the Ball's shadow, Altamesa, sundial pin, kiln, bell choir, ferry, mirror, clay jars.
 
 **Light and colour:** one low warm sun, huge pale sun, apricot horizon, violet zenith, peach haze, lilac shade, sage moss, pale stone, cream paper, navy ink, rust, aubergine night, cool lilac moon; saturated colour only for team red, team blue and Ball gold.
 
