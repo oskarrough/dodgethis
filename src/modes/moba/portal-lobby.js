@@ -584,7 +584,7 @@ export function createPortalLobby({ app, run, sim, hero, setup, options }) {
 		},
 		hudFrame: () => ({
 			lobby: true,
-			inspectionDisabled: true,
+			inspectionDisabled: false,
 			inspectables: [],
 			hero,
 			sim,

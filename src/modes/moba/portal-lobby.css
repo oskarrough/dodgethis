@@ -148,7 +148,8 @@
 }
 .portal-status {
 	position: absolute;
-	bottom: 24px;
+	/* Above the spell bar (hud.css .moba-hud: 12px margin, 64px slots, key badges), never behind it. */
+	bottom: 104px;
 	left: 50%;
 	translate: -50% 0;
 	margin: 0;
