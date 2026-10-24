@@ -25,8 +25,8 @@ export const lobby = {
 		farWardenScale: 1.8, // the boss silhouette remains readable in the arena preview
 		farBaseInset: 10, // look between the near core and its first tower
 		farTarget: 3, // metres ahead of the exit to centre the near base or arena
-		farHeight: 5, // lifted exit reveals cover and the far edge below it
-		farScale: 0.1, // fit a match-camera footprint inside the small mouth
+		farHeight: 3, // low enough that the island fills the mouth rather than its hazy sky
+		farScale: 0.16, // fit a match-camera footprint inside the small mouth
 		lean: 0.85, // radians the mouth leans toward the lobby camera
 		openTime: 1.5, // seconds to rip open after the first human joins
 		slipTime: 0.65, // seconds heroes shrink into the mouth before loading
@@ -315,7 +315,7 @@ export const lobby = {
 			pole: '#efe6d2',
 		},
 		style: 'flags', // 'saucer', or one of `grounds`; `?ground=` overrides
-		// Architectural grounds share the saucer's ellipse: a painted floor ringed by a wall, and terraces
+		// Architectural grounds share the saucer's ellipse: a painted floor ringed by stands, and terraces
 		// stepping in underneath.
 		grounds: {
 			flags: {
@@ -329,17 +329,14 @@ export const lobby = {
 				terraces: 4,
 				drop: 0.32,
 				step: 0.55,
-				// The ring wall, lucha canaria style: the paving stops `inset` m inside the rim's outer edge at a
-				// basalt face `height` m tall under a `cap` m limewashed top, then `tiers` step down outside it.
+				// The stands, lucha canaria style: the paving stops `inset` m inside the rim's outer edge at a
+				// barrier, then `tiers` steps of `rise` × `tread` m climb outward to the back wall.
 				wall: {
-					inset: 0.25,
-					height: 0.75,
-					cap: 0.3,
-					tiers: [0.46, 0.24],
-					tread: 0.32,
-					course: 0.17,
-					stone: 0.5,
-					variance: 0.6,
+					inset: 0.2,
+					barrier: { height: 0.3, width: 0.22 },
+					tiers: 4,
+					rise: 0.2,
+					tread: 0.3,
 				},
 
 				colors: {
@@ -349,9 +346,9 @@ export const lobby = {
 					speck: '#3b1f1c',
 					stain: '#5e3a3a',
 					sand: '#e8c28a',
-					basalt: '#3b3342',
-					cap: '#efe4cc',
-					seat: '#6e6070',
+					shadow: '#4a1e18', // pooled at the barrier's foot
+					tread: '#c4473a',
+					riser: '#9c2f27',
 					face: '#5a4a58',
 					under: '#4e3150',
 				},

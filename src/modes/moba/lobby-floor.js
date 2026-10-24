@@ -462,6 +462,16 @@ function drawFlags(s, ground) {
 			g.restore()
 		}
 	}
+	// The barrier's shadow pooled along the paving's edge.
+	g.save()
+	g.translate(w / 2, h / 2)
+	g.scale(s.halfX * ppm, s.halfZ * ppm)
+	const foot = g.createRadialGradient(0, 0, 0, 0, 0, 1)
+	foot.addColorStop(0.9, k.shadow + '00')
+	foot.addColorStop(1, k.shadow + '99')
+	g.fillStyle = foot
+	g.fillRect(-1, -1, 2, 2)
+	g.restore()
 	grain(g, w, h, rand, k.speck, s.speckles * 3, 0.28)
 	// Stains, and sand drifted into the joints and hollows.
 	for (let i = 0; i < s.wear.patches * 1.5; i++) {
@@ -652,7 +662,7 @@ export function saucerExtent(s = tune.lobby.floor) {
 			const t = (i / 48) * Math.PI * 2
 			const e = ellipsePoint(s, t),
 				n = ellipseNormal(s, t)
-			for (const y of [a.wall.height, -s.depth])
+			for (const y of [wallSpan(s, a).top, -s.depth])
 				points.push(new THREE.Vector3(e.x + n.x * outer, y, e.z + n.z * outer))
 		}
 		return points
@@ -678,40 +688,14 @@ export function saucerExtent(s = tune.lobby.floor) {
 	return points
 }
 
-// The wall's reach past the walkable ellipse: the paving's end, and the foot of its outer tiers.
+// The stands' reach past the walkable ellipse: where the paving ends, and the stands' outer face.
 export function wallSpan(s, a) {
 	const w = a.wall
 	const inner = s.rim.width - w.inset
-	return { inner, outer: inner + w.cap + w.tread * w.tiers.length }
-}
-
-// Lay courses of stone over a baked wall: every upright face is cut into running-bond blocks
-// `stone` m long and `course` m high, each a little lighter or darker than the next.
-function masonry(geometry, s, w) {
-	const pos = geometry.attributes.position,
-		col = geometry.attributes.color,
-		nor = geometry.attributes.normal
-	const R = (s.halfX + s.halfZ) / 2
-	const hash = (x, y) => {
-		const h = Math.sin(x * 127.1 + y * 311.7) * 43758.5453
-		return h - Math.floor(h)
-	}
-	for (let t = 0; t < pos.count; t += 3) {
-		if (Math.abs(nor.getY(t)) > 0.5) continue
-		let x = 0,
-			y = 0,
-			z = 0
-		for (let k = 0; k < 3; k++) {
-			x += pos.getX(t + k) / 3
-			y += pos.getY(t + k) / 3
-			z += pos.getZ(t + k) / 3
-		}
-		const row = Math.floor(y / w.course)
-		const arc = Math.atan2(z / s.halfZ, x / s.halfX) * R
-		const block = Math.floor(arc / w.stone + (row & 1) * 0.5)
-		const f = 1 + (hash(block, row) - 0.5) * w.variance
-		for (let k = 0; k < 3; k++)
-			col.setXYZ(t + k, col.getX(t + k) * f, col.getY(t + k) * f, col.getZ(t + k) * f)
+	return {
+		inner,
+		outer: inner + w.barrier.width + w.tread * w.tiers,
+		top: w.barrier.height + w.rise * w.tiers,
 	}
 }
 
@@ -720,39 +704,26 @@ function buildArchitecture(s, a, frames, forward, group, owned) {
 	const w = a.wall
 	const vertexMaterial = () =>
 		new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide })
-	// A lucha ring's wall: a sheer basalt face round the paving, a limewashed cap, and low stone
-	// tiers stepping down outside it, where nobody sits.
-	const { inner, outer } = wallSpan(s, a)
+	// A lucha canaria terrero: a low barrier round the ring, then painted concrete tiers climbing
+	// outward to a sheer back wall, everything one coat of oxide red.
+	const { inner, outer, top: crest } = wallSpan(s, a)
+	const b = w.barrier
 	const wall = [
 		[inner, 0],
-		[inner, w.height],
-		[inner + w.cap, w.height],
+		[inner, b.height],
+		[inner + b.width, b.height],
 	]
-	let u = inner + w.cap
-	for (const h of w.tiers) {
-		wall.push([u, h], [u + w.tread, h])
-		u += w.tread
-	}
+	for (let k = 1, u = inner + b.width; k <= w.tiers; k++, u += w.tread)
+		wall.push([u, b.height + w.rise * k], [u + w.tread, b.height + w.rise * k])
 	wall.push([outer, 0])
-	const cap = new THREE.Color(c.cap),
-		seat = new THREE.Color(c.seat),
-		stone = new THREE.Color(c.basalt)
-	const wallGeo = bake(sweep(frames, wall, { closePath: true }), () => stone, {
-		flat: true,
-		light: [0.62, 0.5],
-	})
-	// Treads: the cap is limewash, the tiers worn stone.
-	const pos = wallGeo.attributes.position,
-		nor = wallGeo.attributes.normal,
-		col = wallGeo.attributes.color
-	for (let i = 0; i < pos.count; i++) {
-		if (Math.abs(nor.getY(i)) < 0.5) continue
-		const tint = pos.getY(i) > w.height - 0.01 ? cap : seat
-		const shade = 0.74 + 0.34 * Math.abs(nor.getY(i)) * 0.8
-		col.setXYZ(i, tint.r * shade, tint.g * shade, tint.b * shade)
-	}
-	masonry(wallGeo, s, w)
-	forward(wallGeo, vertexMaterial(), 'lobby-ground-wall', -1) // over the paving, which runs under its foot
+	const tread = new THREE.Color(c.tread),
+		riser = new THREE.Color(c.riser)
+	const wallGeo = bake(
+		sweep(frames, wall, { closePath: true }),
+		(_, n) => (Math.abs(n.y) > 0.5 ? tread : riser),
+		{ flat: true, light: [0.66, 0.42] },
+	)
+	forward(wallGeo, vertexMaterial(), 'lobby-ground-stands', -1) // over the paving, which runs under its foot
 	const terrace = terraceProfile(s, a, outer)
 	const top = new THREE.Color(c.face),
 		dark = new THREE.Color(c.under)
@@ -764,10 +735,10 @@ function buildArchitecture(s, a, frames, forward, group, owned) {
 	forward(terraceGeo, vertexMaterial(), 'lobby-ground-terraces', -3)
 	const lineMaterial = new THREE.LineBasicMaterial({ color: PALETTE.ink })
 	owned.push(lineMaterial)
+	// Ink on the barrier's lip and the stands' crest, like the saucer's rim.
 	for (const [lu, lv] of [
-		[inner, w.height],
-		[inner + w.cap, w.height],
-		[outer, 0],
+		[inner, b.height],
+		[outer, crest],
 	]) {
 		const points = frames.map((f) => f.o.clone().addScaledVector(f.u, lu).setY(lv))
 		const geometry = new THREE.BufferGeometry().setFromPoints(points)

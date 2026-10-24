@@ -158,14 +158,26 @@
 	gap: 2px;
 	translate: 0 -100%;
 	margin: 0;
-	color: var(--ui-text);
+	/* Cream with an ink rim, like a sign painted on the stands: it reads on terracotta and on sky. */
+	color: var(--ui-cream);
+	text-shadow:
+		0 2px 0 var(--ui-text),
+		0 -1px 0 var(--ui-text),
+		1.5px 0 0 var(--ui-text),
+		-1.5px 0 0 var(--ui-text),
+		0 3px 6px color-mix(in srgb, var(--ui-text) 50%, transparent);
 	text-align: left;
 	white-space: nowrap;
 	pointer-events: none;
 }
+.portal-map small:empty {
+	display: none;
+}
 .portal-map small[data-go='true'] {
 	padding: 0 4px;
 	background: #9fe3d6;
+	color: var(--ui-text);
+	text-shadow: none;
 }
 .portal-map small {
 	font:

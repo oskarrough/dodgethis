@@ -412,14 +412,14 @@ export function createPortalLobby({ app, run, sim, hero, setup, options }) {
 			ending || left === 0
 				? 'Going in…'
 				: !humans().length
-					? 'Walk in to play'
+					? ''
 					: go
 						? `Going in ${Math.ceil(left ?? p.countdown)}…`
 						: inside(hero)
 							? `Waiting for ${outside()
 									.map((s) => label(s.occupant.id))
 									.join(', ')}`
-							: 'Walk in to play'
+							: ''
 		status.dataset.go = String(go)
 		const state = JSON.stringify([
 			app.session.authoritative,
