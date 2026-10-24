@@ -336,7 +336,9 @@ export function createCombat(ctx) {
 				ctx.reactAuras('amplify', participants, event).factor *
 				(unit.structure && (shot.isAbility || shot.slot.startsWith('slot'))
 					? tune.waves.abilityStructure
-					: 1)
+					: 1) *
+				// A unit may carry its own share of what it takes (the Twin Potters' Kinship).
+				(unit.damageTaken ?? 1)
 		if (event.consumed) return consumedHit('amplify')
 		event.damage = incoming
 		ctx.reactAuras('damage', participants, event)

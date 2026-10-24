@@ -12,8 +12,9 @@ import { playableMaps, matchRecipe } from '../src/modes/moba/maps/all-maps.js'
 // dropped under a computed read) or a map whose bots stand still in the first seconds fails here, not in a playtest.
 await RAPIER.init({})
 const SECONDS = 3
-// A dungeon's first encounter must fall to one bot alone: its jobs latch, so no fight needs a full party.
-const SOLO_SECONDS = 60
+// A dungeon's road to its wings must fall to one bot alone: its jobs latch and its bosses leave
+// a way through, so no fight needs a full party.
+const SOLO_SECONDS = 120
 
 function nonFinite(value, path = 'layout', out = [], seen = new Set()) {
 	if (typeof value === 'number') {
@@ -51,16 +52,17 @@ for (const id of playableMaps) {
 	}, 60000)
 
 	if (matchRecipe(id).layout.encounters?.length)
-		test(`${id}: one bot alone wins the first encounter`, () => {
+		test(`${id}: one bot alone wins every encounter before the wings`, () => {
 			const { run, dispose } = match(
 				id,
 				agentRoster({ seats: [] }).filter((seat) => seat.id === 'A1'),
 			)
 			try {
-				const first = run.sim.dungeon.encounters[0]
+				const { wings } = run.sim.layout
+				const road = run.sim.dungeon.encounters.filter((e) => !e.last && !wings.includes(e.wing))
 				const limit = Math.ceil(SOLO_SECONDS / STEP)
-				while (run.sim.tick < limit && !first.killed && run.step());
-				expect(first.killed).toBe(true)
+				while (run.sim.tick < limit && !road.every((e) => e.killed) && run.step());
+				expect(road.filter((e) => !e.killed).map((e) => e.id)).toEqual([])
 			} finally {
 				dispose()
 			}

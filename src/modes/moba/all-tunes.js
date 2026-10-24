@@ -51,7 +51,9 @@ import encounters_gateOfHands, {
 import encounters_kilnGallery from './encounters/kilnGallery/kilnGallery-tune.js'
 import encounters_mirror from './encounters/mirror/mirror-tune.js'
 import encounters_sundial from './encounters/sundial/sundial-tune.js'
-import encounters_twinPotters from './encounters/twinPotters/twinPotters-tune.js'
+import encounters_twinPotters, {
+	units as encounters_twinPotters_units,
+} from './encounters/twinPotters/twinPotters-tune.js'
 import heroes_brew, { units as heroes_brew_units } from './heroes/brew/brew-tune.js'
 import heroes_coach, { units as heroes_coach_units } from './heroes/coach/coach-tune.js'
 import heroes_hook from './heroes/hook/hook-tune.js'
@@ -147,6 +149,7 @@ export const units = {
 	...abilities_toss_units,
 	...abilities_ward_units,
 	...encounters_gateOfHands_units,
+	...encounters_twinPotters_units,
 	...heroes_brew_units,
 	...heroes_coach_units,
 	...heroes_wata_units,

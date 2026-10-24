@@ -158,6 +158,7 @@ export function createBossPull({ heroes, makeBody, present, systems, view, encou
 	}
 	function strike(target, damage, ability) {
 		if (!target || target.dead) return
+		damage *= encounter?.damage ?? 1
 		const p = unit.body.position,
 			q = target.body.position
 		const d = distance(p, q) || 1
@@ -290,5 +291,5 @@ export function createBossPull({ heroes, makeBody, present, systems, view, encou
 		const stopped = unit.cast || d <= tune.swing.range
 		unit.body.update(stopped ? { x: 0, z: 0 } : dir, dt, stopped ? 0 : Infinity)
 	}
-	return { unit, state, step, addThreat, addHealingThreat }
+	return { unit, state, step, engage, reset, addThreat, addHealingThreat }
 }

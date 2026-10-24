@@ -1,7 +1,7 @@
 export default {
-	// A hero who walks within `reach` m of a waystone rises there after death; the dead of a boss
-	// fight that was won rise `rise` s after the kill.
-	waystone: { reach: 3, rise: 4 },
+	// A hero who walks within `reach` m of a waystone rises there after death, and standing there
+	// mends from nothing to full in `mend` s; the dead of a won fight rise `rise` s after it.
+	waystone: { reach: 3, rise: 4, mend: 5 },
 	// The hourglass's marks, in seconds of run time: the swift, the able and the slow.
 	hourglass: { glass: 600, clay: 900, stone: 1200 },
 	// The Warden every encounter without a fight of its own is fought as (`dungeon-warden.js`).
@@ -24,6 +24,7 @@ export default {
 export const units = {
 	hourglass: 's',
 	'waystone.rise': 's',
+	'waystone.mend': 's',
 	'threat.heal': 'multiplier',
 	'threat.multiplier': 'multiplier',
 	'threat.switch': 'multiplier',

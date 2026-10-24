@@ -26,7 +26,8 @@ function wardenStandIn(args, spot) {
 // from its encounter folder: its `create` (a Warden stand-in without one) returns `state`, `step`,
 // `won`, its `units`, and optionally threat, bot hooks and `unit`, its boss. The `last` sleeps until
 // every encounter outside the wings is won and one of `layout.wings` is cleared; winning it ends the
-// run. A wipe resets only the boss you fell to, and you rise at the last waystone you passed.
+// run. A wipe resets only the boss you fell to, and you rise at the last waystone you passed; a
+// waystone also mends whoever stands beside it while no boss fight is on.
 // `current()` is the encounter being fought, or else the next one; `bossUnit()` is its boss for the
 // HUD bar, `engaged()` says a pull is on, and `addThreat` routes damage to the unit's own encounter.
 export function createDungeon(args) {
@@ -34,8 +35,8 @@ export function createDungeon(args) {
 	const list = layout.encounters.map((spot) => {
 		const create = encounters[spot.id].create
 		const fight = create ? create({ ...args, spot }) : wardenStandIn(args, spot)
-		const entry = {
-			...fight,
+		// Onto the fight itself, so its getters (a twin fight's `unit`) stay live.
+		const entry = Object.assign(fight, {
 			id: spot.id,
 			wing: spot.wing ?? null,
 			last: !!spot.last,
@@ -43,7 +44,7 @@ export function createDungeon(args) {
 			killed: false,
 			dormant: false,
 			fighting: false,
-		}
+		})
 		sleep(entry, !!spot.last)
 		return entry
 	})
@@ -52,7 +53,7 @@ export function createDungeon(args) {
 		for (const unit of entry.units) unit.dormant = dormant
 	}
 	const run = { endedTick: null }
-	const engaged = () => list.find((e) => e.state.phase === 'engaged')
+	const engaged = () => list.find((e) => !e.killed && e.state.phase === 'engaged')
 	// Bots take the encounters in map order; the last one first once it wakes.
 	const next = () =>
 		list.find((e) => e.last && !e.dormant && !e.killed) ?? list.find((e) => !e.killed && !e.dormant)
@@ -76,18 +77,22 @@ export function createDungeon(args) {
 			...(!now && { result: entry.won() ? 'killed' : 'wiped' }),
 		})
 	}
-	function attune() {
+	// A waystone you pass becomes where you rise, and while you stand beside it out of a boss fight,
+	// it mends you.
+	function attune(dt) {
 		for (const h of heroes) {
 			if (h.dead) continue
 			const stone = layout.waystones.find(
 				(w) => distance(h.body.position, w) <= tune.waystone.reach,
 			)
-			if (stone) h.spawn = { x: stone.x, z: stone.z }
+			if (!stone) continue
+			h.spawn = { x: stone.x, z: stone.z }
+			if (!engaged()) h.hp = Math.min(h.maxHp, h.hp + (h.maxHp * dt) / tune.waystone.mend)
 		}
 	}
 	function step(t, dt) {
 		if (run.endedTick != null) return
-		attune()
+		attune(dt)
 		for (const entry of list) {
 			if (entry.killed || entry.dormant) continue
 			entry.step(t, dt)
@@ -115,7 +120,7 @@ export function createDungeon(args) {
 		bossUnit: () => current().unit ?? anyBoss?.unit,
 		step,
 		addThreat(source, damage, unit) {
-			list.find((e) => e.units.includes(unit))?.addThreat?.(source, damage)
+			list.find((e) => e.units.includes(unit))?.addThreat?.(source, damage, unit)
 		},
 		addHealingThreat(source, amount) {
 			for (const entry of list) entry.addHealingThreat?.(source, amount)
