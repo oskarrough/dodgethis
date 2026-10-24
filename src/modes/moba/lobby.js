@@ -85,6 +85,7 @@ export function createLobby({
 		['.moba-hud:not(.moba-unit)', 0, 1],
 		['.mute', 1, 1, frontTune.chrome.corner],
 		['.fullscreen', 1, 1, frontTune.chrome.corner],
+		['.controls-toggle', 1, 1, frontTune.chrome.corner],
 	]
 	let slides = []
 	function slide(node, x, y, { at = 0, time, out = false }) {

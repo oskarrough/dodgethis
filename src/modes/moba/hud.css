@@ -909,7 +909,7 @@
 		gap: 5px;
 	}
 }
-/* Inspect sits left of the fullscreen and mute tiles (index.html), the same size and spacing. */
+/* Inspect sits left of the controls, fullscreen and mute tiles (index.html), the same size and spacing. */
 .moba-inspect {
 	--corner-size: clamp(38px, 3.2vw, 52px);
 	position: fixed;
@@ -928,6 +928,9 @@
 	color: var(--ui-text);
 	cursor: pointer;
 	transition: transform 0.12s cubic-bezier(0.2, 1.9, 0.45, 1);
+}
+body:has(.controls-toggle:not([hidden])) .moba-inspect {
+	right: calc(48px + 3 * var(--corner-size));
 }
 .moba-inspect[hidden] {
 	display: none;

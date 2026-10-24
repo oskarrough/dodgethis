@@ -634,10 +634,11 @@
 				overflow: hidden;
 			}
 
-			/* Mute and fullscreen, top-right and always reachable (above the overlay): the same
-			   square tile as the corner row on the left, mute outermost, fullscreen beside it
-			   (edge panning needs the real screen edge). */
-			:is(.mute, .fullscreen) {
+			/* Mute, fullscreen and the controls preset, top-right and always reachable (above the
+			   overlay): the same square tile as the corner row on the left, mute outermost, fullscreen
+			   beside it (edge panning needs the real screen edge), then controls, which closes the gap
+			   when fullscreen is unavailable. */
+			:is(.mute, .fullscreen, .controls-toggle) {
 				--corner-size: clamp(38px, 3.2vw, 52px);
 				position: fixed;
 				top: 12px;
@@ -660,20 +661,26 @@
 			.fullscreen {
 				right: calc(24px + var(--corner-size));
 			}
-			.fullscreen[hidden] {
+			.controls-toggle {
+				right: calc(36px + 2 * var(--corner-size));
+			}
+			.fullscreen[hidden] + .controls-toggle {
+				right: calc(24px + var(--corner-size));
+			}
+			:is(.fullscreen, .controls-toggle)[hidden] {
 				display: none;
 			}
-			:is(.mute, .fullscreen):hover,
-			:is(.mute, .fullscreen):focus-visible {
+			:is(.mute, .fullscreen, .controls-toggle):hover,
+			:is(.mute, .fullscreen, .controls-toggle):focus-visible {
 				outline: none;
 				background: var(--ui-button);
 				transform: translate(-1px, -2px) rotate(4deg);
 			}
-			:is(.mute, .fullscreen):active {
+			:is(.mute, .fullscreen, .controls-toggle):active {
 				transform: translate(2px, 3px) scale(0.95);
 				transition-duration: 0.06s;
 			}
-			:is(.mute, .fullscreen) svg {
+			:is(.mute, .fullscreen, .controls-toggle) svg {
 				display: block;
 				width: 55%;
 				height: 55%;
@@ -1088,6 +1095,18 @@
 				stroke-linejoin="round"
 			>
 				<path d="M3 9V3h6M21 9V3h-6M3 15v6h6M21 15v6h-6" />
+			</svg>
+		</button>
+		<button class="controls-toggle" type="button" title="Controls" aria-label="Controls" hidden>
+			<svg
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="3"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+			>
+				<path d="" />
 			</svg>
 		</button>
 		<div class="overlay" hidden></div>

@@ -225,8 +225,8 @@
 		font-size: 1.3em;
 	}
 }
-/* Bottom right: the control preset on a scrap of the splash's paper (lobby-controls.js), and above
-   it the one-time WASD offer, lifted and tilted like a note pinned on. Pad and touch don't use it. */
+/* Bottom right: the one-time WASD offer on a scrap of the splash's paper (lobby-controls.js), lifted
+   and tilted like a note pinned on. Pad and touch don't use it. */
 .lobby-controls {
 	position: absolute;
 	right: 16px;
@@ -237,7 +237,7 @@
 	align-items: flex-end;
 	gap: 10px;
 }
-/* On a narrow screen the ability bar fills the bottom edge: the preset label sits above it. And the
+/* On a narrow screen the ability bar fills the bottom edge: the offer sits above it. And the
    saucer is small, so health bars shrink with it rather than cover the heroes. */
 @media (max-width: 600px) {
 	.lobby-controls {

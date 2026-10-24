@@ -42,5 +42,13 @@ export function setPreset(id) {
 	controls.preset = PRESET_IDS.includes(id) ? id : 'moba'
 	controls.attackArmed = false
 	write(PRESET_KEY, controls.preset)
+	for (const fn of listeners) fn(controls.preset)
 	return controls.preset
+}
+
+// Every place that shows the preset (the top-right button, the pause menu) redraws from here. Returns the unsubscribe.
+const listeners = new Set()
+export function onPreset(fn) {
+	listeners.add(fn)
+	return () => listeners.delete(fn)
 }

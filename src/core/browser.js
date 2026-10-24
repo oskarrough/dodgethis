@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import * as input from './input.js'
 import * as audio from './audio.js'
 import { createApp, STEP } from './app.js'
-import { direct, pointClick, POINT_CLICK } from './intents.js'
+import { direct, pointClick, POINT_CLICK, PRESETS } from './intents.js'
 import { createRenderer } from './render.js'
 import { createOverlay } from './overlay.js'
 import { createPerformanceMonitor } from './performance.js'
@@ -11,6 +11,7 @@ import { applyCssVariables } from './style.js'
 import { log, createCombatLog, createDebugPanel } from './debug.js'
 import { createProofApi } from './proof.js'
 import { tune } from './tune.js'
+import { controls, cyclePreset, onPreset } from './controls.js'
 
 // The browser shell: builds the DOM services, runs the requestAnimationFrame loop, and owns diagnostics, mute and the collider overlay.
 export async function createBrowserApp() {
@@ -131,6 +132,29 @@ export async function createBrowserApp() {
 	document.addEventListener('fullscreenchange', renderFullscreen)
 	renderFullscreen()
 
+	// The keyboard and mouse preset, beside fullscreen so it's reachable in every lobby and match. Its icon is
+	// the current preset: a mouse for MOBA, the WASD cluster, a keyboard. Only pointClick modes read presets.
+	const controlsBtn = document.querySelector('.controls-toggle')
+	const presetIcons = {
+		moba: 'M12 2A7 7 0 0 1 19 9v6a7 7 0 0 1-14 0V9a7 7 0 0 1 7-7zM12 6.5v3.5',
+		wasd: 'M9.5 4.5h5v5h-5zM1.5 14h5v5h-5zM9.5 14h5v5h-5zM17.5 14h5v5h-5z',
+		keyboard: 'M1.5 5h21v14h-21zM6 10h0M10 10h0M14 10h0M18 10h0M7.5 14.5h9',
+	}
+	function renderPreset() {
+		const ids = Object.keys(PRESETS)
+		const next = ids[(ids.indexOf(controls.preset) + 1) % ids.length]
+		controlsBtn.querySelector('path').setAttribute('d', presetIcons[controls.preset])
+		controlsBtn.title = `Controls: ${PRESETS[controls.preset].name}`
+		controlsBtn.setAttribute('aria-label', `${controlsBtn.title}. Switch to ${PRESETS[next].name}`)
+	}
+	controlsBtn.addEventListener('click', () => {
+		cyclePreset()
+		app.intents.cancel(app.session.local[0]) // drop held aims from the old bindings
+		controlsBtn.blur()
+	})
+	onPreset(renderPreset)
+	renderPreset()
+
 	const debugGeom = new THREE.BufferGeometry()
 	const debugLines = new THREE.LineSegments(
 		debugGeom,
@@ -249,6 +273,9 @@ export async function createBrowserApp() {
 		input.pollGamepad(dt, scheme === 'direct')
 		if (input.consumePause()) app.emit('menu')
 		app.overlay.setDevice(input.activeDevice())
+		// The pad ignores presets and touch has none.
+		controlsBtn.hidden =
+			scheme !== 'pointClick' || ['gamepad', 'touch'].includes(input.activeDevice())
 	})
 	let simulationEnd = 0
 	app.system('present', () => {

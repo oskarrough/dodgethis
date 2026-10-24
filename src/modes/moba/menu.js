@@ -1,5 +1,5 @@
 import { tune } from './tune.js'
-import { controls, cyclePreset, setQuickCast } from '../../core/controls.js'
+import { controls, cyclePreset, onPreset, setQuickCast } from '../../core/controls.js'
 import { PRESETS } from '../../core/intents.js'
 import { hex } from '../../core/style.js'
 import { createCornerNav } from '../../core/corner-nav.js'
@@ -106,10 +106,13 @@ export function createMatchMenu({
 	function nextPreset() {
 		cyclePreset()
 		app.intents.cancel(hero.id)
+	}
+	// The top-right tile cycles it too, even under the open page.
+	const offPreset = onPreset(() => {
 		presetAction.label = presetLabel()
 		const label = document.querySelector('.overlay[data-theme="moba-pause"] .pause-preset .label')
 		if (label) label.textContent = presetAction.label
-	}
+	})
 	// The front end's paper for anything that stops play: the map's wash, day or night, and the
 	// two team inks (menu.css).
 	function paper(node) {
@@ -295,6 +298,7 @@ export function createMatchMenu({
 		'abort',
 		() => {
 			recap.dispose()
+			offPreset()
 			goal?.remove()
 			corner?.el.remove()
 			app.overlay.hide()

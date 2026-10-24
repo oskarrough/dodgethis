@@ -121,7 +121,7 @@ export function direct(device, ground) {
 // `resend` is under one 60 Hz step, so a held RMB steers every step at 60 Hz and every second frame at 144 Hz,
 // which keeps a guest well inside online's 120 messages a second.
 export const POINT_CLICK = { deadzone: 0.18, curve: 1.5, resend: 13 }
-// Keyboard and mouse presets (the pause menu picks one; the pad ignores them). `aims` hold to aim, `taps` act on press,
+// Keyboard and mouse presets (the top-right tile and the pause menu pick one; the pad ignores them). `aims` hold to aim, `taps` act on press,
 // `walk` puts movement on WASD (`arrows` adds the arrow keys), `mouse` says what the buttons do, and `facing` aims like the pad's resting stick.
 export const PRESETS = Object.freeze({
 	moba: {

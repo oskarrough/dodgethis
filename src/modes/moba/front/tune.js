@@ -92,7 +92,7 @@ export const tune = {
 	dusk: { color: '#29285a', amount: 0.5 },
 	// The lobby's chrome slides `shift` px between its place and its own edge over `land` s:
 	// in one piece `stagger` s after another, out together as the lane fades; the top-right
-	// mute and fullscreen chips come `corner` s ahead of their turn.
+	// mute, fullscreen and controls chips come `corner` s ahead of their turn.
 	chrome: { shift: 72, stagger: 0.06, land: 0.3, corner: 0.2 },
 	back: { freq: 174.61, slideTo: 130.81, dur: 0.25, gain: 0.055 },
 	// Menu tiles: the response is a spring, not a fade. `drop` is the flight out under the lobby

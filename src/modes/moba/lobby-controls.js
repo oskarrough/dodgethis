@@ -1,36 +1,24 @@
 import { el } from '../../core/dom.js'
-import { controls, cyclePreset, setPreset } from '../../core/controls.js'
-import { PRESETS } from '../../core/intents.js'
+import { controls, setPreset } from '../../core/controls.js'
 
 const WALK = ['KeyW', 'KeyA', 'KeyS', 'KeyD']
 // Once a page load: a player who turned the offer down isn't asked again.
 let offered = false
 
-// The lobby's bottom-right "Controls: MOBA" label, since Esc here leaves instead of pausing. A click cycles
-// the preset, the same one the pause menu shows. WASD pressed under MOBA offers the switch once.
-// `onChange` drops held aims from the old bindings. Gamepad and touch hide it (lobby.css).
+// The lobby's one-time WASD offer, bottom right: WASD pressed under MOBA offers the switch once. The preset
+// itself lives on the top-right controls tile (core/browser.js). `onChange` drops held aims from the old
+// bindings. Gamepad and touch hide it (lobby.css).
 export function createLobbyControls(parent, { onChange }) {
 	const box = el('div', 'lobby-controls', parent)
 	const offer = el('button', 'lobby-controls-offer', box, 'Switch to WASD? <kbd>Enter</kbd>')
-	const label = el('button', 'lobby-controls-label', box)
-	offer.type = label.type = 'button'
+	offer.type = 'button'
 	offer.hidden = true
-	const show = () => {
-		label.textContent = `Controls: ${PRESETS[controls.preset]?.name ?? PRESETS.moba.name}`
-	}
 	const dismiss = () => {
 		offer.hidden = true
 	}
 	const accept = () => {
 		dismiss()
 		setPreset('wasd')
-		show()
-		onChange()
-	}
-	label.onclick = () => {
-		dismiss()
-		cyclePreset()
-		show()
 		onChange()
 	}
 	offer.onclick = accept
@@ -39,7 +27,6 @@ export function createLobbyControls(parent, { onChange }) {
 		if (!offer.hidden && !offer.contains(event.target)) dismiss()
 	}
 	window.addEventListener('pointerdown', away, true)
-	show()
 	return {
 		// Lobby keys go through here first; true means the key was the offer's.
 		key(event) {
