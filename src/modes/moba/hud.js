@@ -457,7 +457,7 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 				return t ? t.timer.card(t.reading, { device: frame.device }) : null
 			}
 			case 'objective':
-				return goal?.card() ?? objectiveCard()
+				return goal?.card(sim) ?? objectiveCard()
 			case 'unit': {
 				// Only the lobby's inspect cursor reads units: its cardboard bots and sparring dummies.
 				const unit = source.unit

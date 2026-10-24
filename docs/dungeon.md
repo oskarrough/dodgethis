@@ -18,6 +18,8 @@ Manos, the hands at the gate, is the first encounter with a fight of its own (`e
 
 Tinaja and Botijo (`encounters/tinajaBotijo/`) hold Tagoror, the central court, two jars who share one potter's wheel. Pull one and both come. While they stand within a few metres of each other an ink line binds them and each takes only half of every blow, so drag them apart. When one breaks, the other goes to the wheel: it stands still and strikes no one, a red ring fills round its fallen kin, and after ten seconds the kin rises whole. Kill the second before the wheel turns. A wipe mends them both. They hit at half a Warden's weight, so one hero alone can win, and the smoke test proves it.
 
+Each wing boss leaves a boon when it falls, and the party carries it to Gnomon: Lupa from Carillon and Tara from Barquero make Gnomon take a quarter more from every blow, while Azogue from Espejo and Bizcocho from Fornax blunt its own. The goal card in the top bar lists the boons you carry. Gnomon is still a Warden, so for now the boons are only these numbers (`encounters/gnomon/gnomon-tune.js`); its shadow comes later.
+
 Eight waystones stand along the road. Walk up to one and it attunes, so that anyone who falls rises at the last stone you passed instead of at the gate. Stand beside it while no boss fight is on and it mends you, from nothing to full in five seconds. The hourglass in the top bar counts the run against three marks, Glass, Clay and Stone, and the goal line beside it keeps Gnomon in view. Bots fight any woken pack near them and otherwise walk to the next Warden.
 
 ## A pull

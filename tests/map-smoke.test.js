@@ -15,6 +15,8 @@ const SECONDS = 3
 // A dungeon's road to its wings must fall to one bot alone: its jobs latch and its bosses leave
 // a way through, so no fight needs a full party.
 const SOLO_SECONDS = 120
+// And a party of three must clear it, carrying a whole wing's boons to the last boss.
+const PARTY_SECONDS = 240
 
 function nonFinite(value, path = 'layout', out = [], seen = new Set()) {
 	if (typeof value === 'number') {
@@ -63,6 +65,22 @@ for (const id of playableMaps) {
 				const limit = Math.ceil(SOLO_SECONDS / STEP)
 				while (run.sim.tick < limit && !road.every((e) => e.killed) && run.step());
 				expect(road.filter((e) => !e.killed).map((e) => e.id)).toEqual([])
+			} finally {
+				dispose()
+			}
+		}, 60000)
+
+	if (matchRecipe(id).layout.encounters?.some((spot) => spot.wing))
+		test(`${id}: a party of three clears it with a wing's boons`, () => {
+			const { run, dispose } = match(
+				id,
+				agentRoster({ seats: [] }).filter((seat) => seat.team === 'A'),
+			)
+			try {
+				const limit = Math.ceil(PARTY_SECONDS / STEP)
+				while (run.sim.tick < limit && !run.sim.lane.match.winner && run.step());
+				expect(run.sim.lane.match.winner).toBe('A')
+				expect(run.sim.dungeon.run.boons.length).toBeGreaterThanOrEqual(2)
 			} finally {
 				dispose()
 			}

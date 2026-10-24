@@ -74,9 +74,13 @@ export const timer = {
 // The top bar's goal line and its card.
 export const goal = {
 	line: 'Fell Gnomon atop the stair',
-	card: () => ({
-		title: 'How to win',
-		sentence:
-			'Gnomon sleeps until the court is cleared and one wing has lost all its bosses. Fell it and the mesa is yours. Fall, and you rise at the last waystone you passed, while the boss that beat you is made whole.',
-	}),
+	card: (sim) => {
+		const boons = sim?.dungeon?.run.boons ?? []
+		return {
+			title: 'How to win',
+			sentence:
+				'Gnomon sleeps until the court is cleared and one wing has lost all its bosses. Fell it and the mesa is yours. Fall, and you rise at the last waystone you passed, while the boss that beat you is made whole. Each wing boss leaves a boon that weakens Gnomon.',
+			facts: boons.length ? boons.map((boon) => [boon.name, boon.line]) : [['Boons', 'None yet']],
+		}
+	},
 }

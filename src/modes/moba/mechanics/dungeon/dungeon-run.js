@@ -27,7 +27,8 @@ function wardenStandIn(args, spot) {
 // `won`, its `units`, and optionally threat, bot hooks and `unit`, its boss. The `last` sleeps until
 // every encounter outside the wings is won and one of `layout.wings` is cleared; winning it ends the
 // run. A wipe resets only the boss you fell to, and you rise at the last waystone you passed; a
-// waystone also mends whoever stands beside it while no boss fight is on.
+// waystone also mends whoever stands beside it while no boss fight is on. An encounter with a `boon`
+// leaves it when won, and the last is told each time (`bless`).
 // `current()` is the encounter being fought, or else the next one; `bossUnit()` is its boss for the
 // HUD bar, `engaged()` says a pull is on, and `addThreat` routes damage to the unit's own encounter.
 export function createDungeon(args) {
@@ -52,7 +53,8 @@ export function createDungeon(args) {
 		entry.dormant = dormant
 		for (const unit of entry.units) unit.dormant = dormant
 	}
-	const run = { endedTick: null }
+	// `boons`: what the won encounters left for the last (`boon` in their folder), in the order won.
+	const run = { endedTick: null, boons: [] }
 	const engaged = () => list.find((e) => !e.killed && e.state.phase === 'engaged')
 	// Bots take the encounters in map order; the last one first once it wakes.
 	const next = () =>
@@ -99,6 +101,11 @@ export function createDungeon(args) {
 			announce(entry)
 			if (!entry.won()) continue
 			entry.killed = true
+			const boon = encounters[entry.id].boon
+			if (boon) {
+				run.boons.push(boon)
+				list.find((e) => e.last)?.bless?.(run.boons)
+			}
 			// The fight is won: whoever fell in it rises at their waystone.
 			for (const h of heroes) if (h.dead) h.respawnTick = t + ticks(tune.waystone.rise)
 			if (entry.last) {
