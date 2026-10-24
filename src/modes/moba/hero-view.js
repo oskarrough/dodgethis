@@ -197,9 +197,9 @@ export function dressHero(body, heroId = DEFAULT_HERO, team = 'A') {
 				: dressed.releases?.[releasePose]
 		const snap = release?.snap ?? 0,
 			recover = release?.recover ?? 0
+		// Stance lingers after Catch; a Toss return still has to snap through it.
 		const releasing =
 			!cast &&
-			!unit?.stance &&
 			!unit?.body?.dashing &&
 			!unit?.attack &&
 			releasePose &&
