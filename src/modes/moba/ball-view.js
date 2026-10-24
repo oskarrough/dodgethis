@@ -6,7 +6,7 @@ import { look } from './look.js'
 import { clampMap } from './obstacles.js'
 
 // Opaque print geometry; tick interpolation owns every fill and projectile position.
-export function createBallView(scene, rng = Math.random) {
+export function createBallView(scene, { rng = Math.random } = {}) {
 	const v = tune.ballView
 	const owned = []
 	const root = new THREE.Group()
