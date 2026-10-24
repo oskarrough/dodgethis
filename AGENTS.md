@@ -38,6 +38,15 @@ A web game: two modes, dodgeball and a MOBA, on one engine.
 - Prove only when the brief asks or the user must judge a look or feel: one screenshot, clip or headless number, once, via `bun run review`
 - `pages/` is the pinboard (proofs, pitches, concept art, one folder each, listed in `pages/index.html`), served by the dev server; link there, never to thread storage
 
+## Voice
+
+Everything we write for players or for each other (game text, tooltips, docs, presentations, briefs) should read like the Warcraft II manual and its mission briefings, not like a startup pitch deck. Picture a narrator who believes in the world and has been there: a little gravitas, some dry humour, and concrete detail about the places, the creatures and what happens to you.
+
+- Write whole sentences that flow and have some rhythm and warmth. No staccato fragments ("Fast. Fun. Co-op."), no slogans, no em-dash punchlines, no bullet lists of three-word phrases
+- Explain a mechanic the way a good manual does: what you see, what you do, and what befalls you if you don't
+- Keep headings short and nominal: a place, a foe or a rule. Never a rhetorical question
+- Leave out startup and AI vocabulary: "seamless", "unlock", "elevate", "core loop", "delightful", "game-changer", "it's not X, it's Y"
+
 ## Coordinating
 
 - The coordinator briefs (goal, done means, owned files; a proof only when Oskar must judge a look or feel), reviews with the reverse model, owns `pages/items.json` and this file. Briefs never ask for replay sweeps, probes or proof pages unless Oskar does (2026-10-22)
