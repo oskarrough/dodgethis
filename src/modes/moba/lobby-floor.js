@@ -356,6 +356,189 @@ function drawGlaze(s) {
 	return canvas
 }
 
+// Which ground the lobby stands on: the glazed saucer, or a piece of odd architecture. `?ground=`
+// overrides the tune while we choose.
+function groundStyle(s) {
+	const query =
+		typeof location === 'undefined' ? null : new URLSearchParams(location.search).get('ground')
+	return query ?? s.style ?? 'saucer'
+}
+
+// Canvas helpers shared by the architectural grounds: world metres to texture pixels, clipped to
+// the walkable ellipse.
+function groundCanvas(s, fill) {
+	const ppm = s.pixelsPerMeter
+	const w = Math.ceil(s.halfX * 2 * ppm),
+		h = Math.ceil(s.halfZ * 2 * ppm)
+	const canvas = document.createElement('canvas')
+	canvas.width = w
+	canvas.height = h
+	const g = canvas.getContext('2d')
+	g.fillStyle = fill
+	g.fillRect(0, 0, w, h)
+	return { canvas, g, w, h, ppm, px: (x) => (x + s.halfX) * ppm, pz: (z) => (z + s.halfZ) * ppm }
+}
+
+function grain(g, w, h, rand, color, count, alpha) {
+	g.fillStyle = color
+	for (let i = 0; i < count; i++) {
+		g.globalAlpha = alpha * (0.4 + rand() * 0.6)
+		const r = 0.6 + rand() * 1.4
+		g.fillRect(rand() * w, rand() * h, r, r)
+	}
+	g.globalAlpha = 1
+}
+
+// Escher's tumbling blocks: a floor of cubes that read as stairs, then as hollows, then as stairs.
+function drawBlocks(s, ground) {
+	const k = { ...ground, ...ground.colors }
+	const { canvas, g, w, h, ppm } = groundCanvas(s, k.grout)
+	const rand = rng(s.seed + 211)
+	const a = k.side * ppm
+	const dx = Math.sqrt(3) * a,
+		dy = 1.5 * a
+	const vertex = (cx, cy, i) => {
+		const t = ((-90 + 60 * i) * Math.PI) / 180
+		return [cx + Math.cos(t) * a, cy + Math.sin(t) * a]
+	}
+	const tone = (hex, jitter) => {
+		const c = new THREE.Color(hex)
+		c.offsetHSL(0, 0, (rand() - 0.5) * jitter)
+		return '#' + c.getHexString()
+	}
+	const inset = k.groutWidth * ppm
+	g.lineJoin = 'round'
+	for (let row = -1; row * dy < h + a; row++)
+		for (let col = -1; col * dx < w + dx; col++) {
+			const cx = col * dx + (row & 1 ? dx / 2 : 0),
+				cy = row * dy
+			const v = (i) => vertex(cx, cy, i)
+			const faces = [
+				[[cx, cy], v(5), v(0), v(1), k.top],
+				[[cx, cy], v(1), v(2), v(3), k.right],
+				[[cx, cy], v(3), v(4), v(5), k.left],
+			]
+			for (const [p0, p1, p2, p3, color] of faces) {
+				// Shrink each rhombus toward its middle so the grout shows between faces.
+				const mx = (p0[0] + p2[0]) / 2,
+					my = (p0[1] + p2[1]) / 2
+				const pull = (p) => {
+					const d = Math.hypot(p[0] - mx, p[1] - my)
+					return [p[0] + ((mx - p[0]) / d) * inset, p[1] + ((my - p[1]) / d) * inset]
+				}
+				g.beginPath()
+				for (const p of [p0, p1, p2, p3].map(pull)) g.lineTo(p[0], p[1])
+				g.closePath()
+				g.fillStyle = tone(color, k.jitter)
+				g.fill()
+			}
+		}
+	grain(g, w, h, rand, k.speck, s.speckles * 2, 0.35)
+	// Worn hollows where feet go, a little lighter.
+	g.fillStyle = k.wear
+	for (let i = 0; i < s.wear.patches; i++) {
+		g.globalAlpha = 0.04 + rand() * 0.05
+		g.beginPath()
+		g.ellipse(
+			rand() * w,
+			rand() * h,
+			(1 + rand() * 2) * ppm,
+			(0.7 + rand() * 1.3) * ppm,
+			rand() * 3,
+			0,
+			7,
+		)
+		g.fill()
+	}
+	g.globalAlpha = 1
+	return canvas
+}
+
+// Moebius's desert courtyard: rings of cut flagstones round an inlaid compass, sun-bleached in the
+// middle and stained toward the edge.
+function drawFlags(s, ground) {
+	const k = { ...ground, ...ground.colors }
+	const { canvas, g, w, h, ppm, px, pz } = groundCanvas(s, k.grout)
+	const rand = rng(s.seed + 307)
+	const R = Math.max(s.halfX, s.halfZ)
+	const sx = s.halfX / R,
+		sz = s.halfZ / R
+	const tone = (hex, jitter) => {
+		const c = new THREE.Color(hex)
+		c.offsetHSL((rand() - 0.5) * 0.02, (rand() - 0.5) * 0.08, (rand() - 0.5) * jitter)
+		return '#' + c.getHexString()
+	}
+	const gap = k.groutWidth
+	const at = (r, t) => [px(Math.cos(t) * r * sx), pz(Math.sin(t) * r * sz)]
+	let r0 = k.centre
+	let ring = 0
+	while (r0 < R + 1) {
+		const r1 = r0 + k.ring * (0.85 + rand() * 0.3)
+		const count = Math.max(6, Math.round((Math.PI * 2 * (r0 + r1)) / 2 / k.stone))
+		const offset = rand() * Math.PI * 2
+		const stones = []
+		let acc = 0
+		for (let i = 0; i < count; i++) stones.push((acc += 0.6 + rand() * 0.8))
+		for (let i = 0; i < count; i++) {
+			const ta = offset + ((i ? stones[i - 1] : 0) / acc) * Math.PI * 2
+			const tb = offset + (stones[i] / acc) * Math.PI * 2
+			const ga = gap / ((r0 + r1) / 2)
+			g.beginPath()
+			const steps = 6
+			for (let j = 0; j <= steps; j++)
+				g.lineTo(...at(r0 + gap, ta + ga + ((tb - ta - 2 * ga) * j) / steps))
+			for (let j = steps; j >= 0; j--)
+				g.lineTo(...at(r1 - gap, ta + ga + ((tb - ta - 2 * ga) * j) / steps))
+			g.closePath()
+			const mid = (r0 + r1) / 2 / R
+			const base = new THREE.Color(k.stoneCentre).lerp(
+				new THREE.Color(k.stoneEdge),
+				Math.min(1, mid * 1.1),
+			)
+			g.fillStyle = tone('#' + base.getHexString(), k.jitter)
+			g.fill()
+		}
+		r0 = r1
+		ring++
+	}
+	// The compass: a disc with a four-point star, worn smooth.
+	const cx = px(0),
+		cy = pz(0),
+		cr = (k.centre - gap) * ppm
+	g.fillStyle = k.inlay
+	g.beginPath()
+	g.ellipse(cx, cy, cr * sx, cr * sz, 0, 0, 7)
+	g.fill()
+	g.fillStyle = k.star
+	g.beginPath()
+	for (let i = 0; i < 8; i++) {
+		const t = (i / 8) * Math.PI * 2 - Math.PI / 2
+		const r = i % 2 ? cr * 0.28 : cr * 0.86
+		g.lineTo(cx + Math.cos(t) * r * sx, cy + Math.sin(t) * r * sz)
+	}
+	g.closePath()
+	g.fill()
+	grain(g, w, h, rand, k.speck, s.speckles * 3, 0.3)
+	// Stains and drifted sand.
+	for (let i = 0; i < s.wear.patches * 1.5; i++) {
+		g.fillStyle = rand() < 0.5 ? k.stain : k.sand
+		g.globalAlpha = 0.05 + rand() * 0.08
+		g.beginPath()
+		g.ellipse(
+			rand() * w,
+			rand() * h,
+			(0.8 + rand() * 2.4) * ppm,
+			(0.5 + rand() * 1.4) * ppm,
+			rand() * 3,
+			0,
+			7,
+		)
+		g.fill()
+	}
+	g.globalAlpha = 1
+	return canvas
+}
+
 // One sweep for rim, band and cradles: `profile` [u, v] points laid along `path` frames
 // ({ o, u, v } vectors). Indexed, so smooth unless flattened.
 function sweep(path, profile, { closePath = false, closeProfile = false } = {}) {
@@ -488,6 +671,90 @@ function cradleGeometry(s, deg) {
 	return parts
 }
 
+// A box from `min` to `max` in a frame ({ o, u, v, w } with w up), as plain geometry.
+function frameBox(f, [u0, v0, w0], [u1, v1, w1]) {
+	const g = new THREE.BoxGeometry(u1 - u0, w1 - w0, v1 - v0)
+	g.translate((u0 + u1) / 2, (w0 + w1) / 2, (v0 + v1) / 2)
+	const m = new THREE.Matrix4().makeBasis(f.u, f.w, f.v).setPosition(f.o)
+	return g.applyMatrix4(m)
+}
+
+// Stairs that leave the rim at `deg`: a flight down into the air, a landing, and a flight climbing
+// away from the ground to a doorway that opens on nothing.
+function stairGeometry(s, deg, k, colors) {
+	const t = (deg * Math.PI) / 180
+	const e = ellipsePoint(s, t)
+	const out = ellipseNormal(s, t)
+	const up = new THREE.Vector3(0, 1, 0)
+	const side = new THREE.Vector3().crossVectors(up, out).multiplyScalar(k.hand)
+	const top = s.rim.height
+	const start = new THREE.Vector3(e.x, top, e.z).addScaledVector(out, s.rim.width - 0.05)
+	const stone = new THREE.Color(colors.step),
+		under = new THREE.Color(colors.stepDark)
+	const boxes = []
+	// Down: along the rim, one tread at a time.
+	const f = { o: start, u: out, v: side, w: up }
+	for (let i = 0; i < k.down; i++)
+		boxes.push(
+			frameBox(
+				f,
+				[0, i * k.tread, -(i + 1) * k.rise - k.slab],
+				[k.width, (i + 1) * k.tread, -(i + 1) * k.rise + 0.001],
+			),
+		)
+	// Landing, then up and out, away from the ground.
+	const landV = k.down * k.tread,
+		landW = -(k.down + 1) * k.rise
+	boxes.push(frameBox(f, [0, landV, landW - k.slab], [k.width * 2, landV + k.width, landW]))
+	const g = {
+		o: f.o
+			.clone()
+			.addScaledVector(side, landV)
+			.addScaledVector(out, k.width)
+			.addScaledVector(up, landW),
+		u: side.clone(),
+		v: out.clone(),
+		w: up,
+	}
+	for (let i = 0; i < k.up; i++)
+		boxes.push(
+			frameBox(
+				g,
+				[0, i * k.tread, i * k.rise - k.slab],
+				[k.width, (i + 1) * k.tread, (i + 1) * k.rise],
+			),
+		)
+	// The doorway at the top: two jambs and a lintel, framing sky.
+	const doorV = k.up * k.tread,
+		doorW = k.up * k.rise
+	const j = k.jamb
+	boxes.push(frameBox(g, [-j, doorV, doorW], [0, doorV + j, doorW + k.door]))
+	boxes.push(frameBox(g, [k.width, doorV, doorW], [k.width + j, doorV + j, doorW + k.door]))
+	boxes.push(frameBox(g, [-j, doorV, doorW + k.door], [k.width + j, doorV + j, doorW + k.door + j]))
+	const parts = boxes.map((b) => {
+		const flat = bake(b, (_, n) => (n.y > 0.5 ? stone : under), { flat: true, light: [0.6, 0.55] })
+		flat.deleteAttribute('uv')
+		return flat
+	})
+	return parts
+}
+
+// Under an architectural ground: terraces stepping in and down, an upturned ziggurat.
+function terraceProfile(s, a) {
+	const r = s.rim,
+		pts = [[r.width, 0]]
+	let u = r.width,
+		v = 0
+	for (let i = 0; i < a.terraces; i++) {
+		v -= a.drop * (1 + i * 0.25)
+		pts.push([u, v])
+		u -= a.step * (1 + i * 0.4)
+		pts.push([u, v])
+	}
+	pts.push([-r.width * 4, v - 0.05])
+	return pts
+}
+
 // Points that bound everything the saucer shows: the lip, the foot and the cradles' outer arcs.
 // The lobby camera fits them into the frame.
 export function saucerExtent(s = tune.lobby.floor) {
@@ -502,6 +769,17 @@ export function saucerExtent(s = tune.lobby.floor) {
 			[r.width * 1.03, -s.depth],
 		])
 			points.push(new THREE.Vector3(e.x + n.x * out, y, e.z + n.z * out))
+	}
+	const a = s.grounds?.[groundStyle(s)]
+	if (a) {
+		for (const [i, deg] of a.stairs.angles.entries())
+			for (const part of stairGeometry(s, deg, { ...a.stairs, hand: i % 2 ? -1 : 1 }, a.colors)) {
+				part.computeBoundingBox()
+				const { min, max } = part.boundingBox
+				points.push(min.clone(), max.clone())
+				part.dispose()
+			}
+		return points
 	}
 	const k = s.cradle
 	for (const deg of k.angles) {
@@ -524,9 +802,69 @@ export function saucerExtent(s = tune.lobby.floor) {
 	return points
 }
 
+function buildArchitecture(s, a, frames, forward, group, owned) {
+	const r = s.rim
+	const c = a.colors
+	const vertexMaterial = () =>
+		new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide })
+	// A squared kerb: a step up from the paving, a flat coping, a sheer outer face.
+	const kerb = [
+		[0, 0],
+		[0.02, r.height],
+		[r.width * 0.98, r.height],
+		[r.width, r.height * 0.9],
+		[r.width, 0],
+	]
+	const coping = new THREE.Color(c.coping),
+		face = new THREE.Color(c.face)
+	const kerbGeo = bake(
+		sweep(frames, kerb, { closePath: true }),
+		(_, n) => (Math.abs(n.y) > 0.5 ? coping : face),
+		{ flat: true, light: [0.62, 0.5] },
+	)
+	forward(kerbGeo, vertexMaterial(), 'lobby-ground-kerb', -3)
+	const terrace = terraceProfile(s, a)
+	const top = new THREE.Color(c.face),
+		dark = new THREE.Color(c.under)
+	const terraceGeo = bake(
+		sweep(frames, terrace, { closePath: true }),
+		(_, n) => (Math.abs(n.y) > 0.5 ? dark : top),
+		{ flat: true, light: [0.6, 0.5] },
+	)
+	forward(terraceGeo, vertexMaterial(), 'lobby-ground-terraces', -3)
+	const lineMaterial = new THREE.LineBasicMaterial({ color: PALETTE.ink })
+	owned.push(lineMaterial)
+	for (const [u, v] of [
+		[r.width, r.height],
+		[r.width, 0],
+	]) {
+		const points = frames.map((f) => f.o.clone().addScaledVector(f.u, u).setY(v))
+		const geometry = new THREE.BufferGeometry().setFromPoints(points)
+		const line = new THREE.LineLoop(geometry, lineMaterial)
+		line.layers.set(FORWARD_LAYER)
+		line.frustumCulled = false
+		group.add(line)
+		owned.push(geometry)
+	}
+	const stairParts = a.stairs.angles.flatMap((deg, i) =>
+		stairGeometry(s, deg, { ...a.stairs, hand: i % 2 ? -1 : 1 }, c),
+	)
+	const stairs = mergeGeometries(stairParts)
+	for (const part of stairParts) part.dispose()
+	forward(stairs, vertexMaterial(), 'lobby-ground-stairs', -3)
+	const edges = new THREE.EdgesGeometry(stairs, 30)
+	const stairLines = new THREE.LineSegments(edges, lineMaterial)
+	stairLines.layers.set(FORWARD_LAYER)
+	stairLines.frustumCulled = false
+	group.add(stairLines)
+	owned.push(edges)
+}
+
 export function createLobbyFloor(scene, renderer) {
 	const s = tune.lobby.floor
-	const canvas = drawGlaze(s)
+	const style = groundStyle(s)
+	const a = s.grounds?.[style]
+	const canvas = !a ? drawGlaze(s) : style === 'flags' ? drawFlags(s, a) : drawBlocks(s, a)
 	const texture = new THREE.CanvasTexture(canvas)
 	texture.colorSpace = THREE.SRGBColorSpace
 	texture.anisotropy = renderer?.capabilities.getMaxAnisotropy() ?? 1
@@ -568,6 +906,17 @@ export function createLobbyFloor(scene, renderer) {
 	)
 	const frames = rimFrames(s)
 	const r = s.rim
+	if (a) {
+		buildArchitecture(s, a, frames, forward, group, owned)
+		scene.add(group)
+		return {
+			group,
+			dispose() {
+				group.removeFromParent()
+				for (const item of owned) item.dispose()
+			},
+		}
+	}
 	const rand = rng(s.seed + 303)
 	// Worn spots on the lip, where the glaze has gone and the biscuit shows.
 	const worn = frames.map(() => rand() < s.wear.lip)
