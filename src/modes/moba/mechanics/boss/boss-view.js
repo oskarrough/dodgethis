@@ -9,6 +9,7 @@ const seconds = (value) => `${value.toFixed(1)} s`
 
 export function view(_scene, { returnToLobby = () => {}, canReturnToLobby = true } = {}) {
 	let facts = null
+	let prelude = []
 	let root = null
 	if (typeof document !== 'undefined') {
 		root = el('aside', 'moba-scoreboard moba-results moba-fight-report', document.body)
@@ -151,11 +152,15 @@ export function view(_scene, { returnToLobby = () => {}, canReturnToLobby = true
 	return {
 		present(fact) {
 			if (fact.type === 'pull' && fact.state === 'start') {
-				facts = [fact]
+				facts = [...prelude, fact]
+				prelude = []
 				if (root) root.hidden = true
 				return
 			}
-			if (!facts) return
+			if (!facts) {
+				if (fact.type === 'status' || fact.type === 'absorb') prelude.push(fact)
+				return
+			}
 			facts.push(fact)
 			if (fact.type === 'pull' && fact.state === 'end') {
 				render(reduceFight(facts))
@@ -165,6 +170,7 @@ export function view(_scene, { returnToLobby = () => {}, canReturnToLobby = true
 		update() {},
 		dispose() {
 			facts = null
+			prelude = []
 			root?.remove()
 		},
 	}
