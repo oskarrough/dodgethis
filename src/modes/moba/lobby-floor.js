@@ -4,8 +4,9 @@ import { FORWARD_LAYER } from '../../core/stylepass.js'
 import { PALETTE } from '../../core/style.js'
 import { tune } from './tune.js'
 
-// The lobby's floor floats in the splash sky: a terracotta courtyard stepping down in terraces
-// underneath (`grounds.flags`), or the old glazed saucer resting in magnetic cradles. The glaze, rim and cradles are forward-pass meshes, so the deferred pass keeps no ink on
+// The lobby's floor floats in the splash sky: a terracotta ring walled like a lucha canaria arena
+// (`grounds.flags`), or the old glazed saucer resting in magnetic cradles. Both are forward-pass
+// meshes, so the deferred pass keeps no ink on
 // them and the props still stand on the glaze; the deferred ground underneath is the same ellipse
 // (see `saucerShape`), kept so the lobby keeps its depth, and nothing is drawn beyond it.
 // `floorOutline`, `floorShape` and `createFences` are Flagfall's torn shore, built from its extent.
@@ -615,10 +616,9 @@ function cradleGeometry(s, deg) {
 }
 
 // Under an architectural ground: terraces stepping in and down, an upturned ziggurat.
-function terraceProfile(s, a) {
-	const r = s.rim,
-		pts = [[r.width, 0]]
-	let u = r.width,
+function terraceProfile(s, a, start) {
+	const pts = [[start, 0]]
+	let u = start,
 		v = 0
 	for (let i = 0; i < a.terraces; i++) {
 		v -= a.drop * (1 + i * 0.25)
@@ -626,7 +626,7 @@ function terraceProfile(s, a) {
 		u -= a.step * (1 + i * 0.4)
 		pts.push([u, v])
 	}
-	pts.push([-r.width * 4, v - 0.05])
+	pts.push([-s.rim.width * 4, v - 0.05])
 	return pts
 }
 
@@ -647,6 +647,14 @@ export function saucerExtent(s = tune.lobby.floor) {
 	}
 	const a = s.grounds?.[groundStyle(s)]
 	if (a) {
+		const { outer } = wallSpan(s, a)
+		for (let i = 0; i < 48; i++) {
+			const t = (i / 48) * Math.PI * 2
+			const e = ellipsePoint(s, t),
+				n = ellipseNormal(s, t)
+			for (const y of [a.wall.height, -s.depth])
+				points.push(new THREE.Vector3(e.x + n.x * outer, y, e.z + n.z * outer))
+		}
 		return points
 	}
 	const k = s.cradle
@@ -670,29 +678,82 @@ export function saucerExtent(s = tune.lobby.floor) {
 	return points
 }
 
+// The wall's reach past the walkable ellipse: the paving's end, and the foot of its outer tiers.
+export function wallSpan(s, a) {
+	const w = a.wall
+	const inner = s.rim.width - w.inset
+	return { inner, outer: inner + w.cap + w.tread * w.tiers.length }
+}
+
+// Lay courses of stone over a baked wall: every upright face is cut into running-bond blocks
+// `stone` m long and `course` m high, each a little lighter or darker than the next.
+function masonry(geometry, s, w) {
+	const pos = geometry.attributes.position,
+		col = geometry.attributes.color,
+		nor = geometry.attributes.normal
+	const R = (s.halfX + s.halfZ) / 2
+	const hash = (x, y) => {
+		const h = Math.sin(x * 127.1 + y * 311.7) * 43758.5453
+		return h - Math.floor(h)
+	}
+	for (let t = 0; t < pos.count; t += 3) {
+		if (Math.abs(nor.getY(t)) > 0.5) continue
+		let x = 0,
+			y = 0,
+			z = 0
+		for (let k = 0; k < 3; k++) {
+			x += pos.getX(t + k) / 3
+			y += pos.getY(t + k) / 3
+			z += pos.getZ(t + k) / 3
+		}
+		const row = Math.floor(y / w.course)
+		const arc = Math.atan2(z / s.halfZ, x / s.halfX) * R
+		const block = Math.floor(arc / w.stone + (row & 1) * 0.5)
+		const f = 1 + (hash(block, row) - 0.5) * w.variance
+		for (let k = 0; k < 3; k++)
+			col.setXYZ(t + k, col.getX(t + k) * f, col.getY(t + k) * f, col.getZ(t + k) * f)
+	}
+}
+
 function buildArchitecture(s, a, frames, forward, group, owned) {
-	const r = s.rim
 	const c = a.colors
+	const w = a.wall
 	const vertexMaterial = () =>
 		new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide })
-	// The paving runs out over the rim to a thin kerb: a step up, a flat coping, a sheer outer face.
-	const inner = r.width - a.kerb.width
-	const kerb = [
+	// A lucha ring's wall: a sheer basalt face round the paving, a limewashed cap, and low stone
+	// tiers stepping down outside it, where nobody sits.
+	const { inner, outer } = wallSpan(s, a)
+	const wall = [
 		[inner, 0],
-		[inner + 0.01, a.kerb.height],
-		[r.width * 0.99, a.kerb.height],
-		[r.width, a.kerb.height * 0.8],
-		[r.width, 0],
+		[inner, w.height],
+		[inner + w.cap, w.height],
 	]
-	const coping = new THREE.Color(c.coping),
-		face = new THREE.Color(c.face)
-	const kerbGeo = bake(
-		sweep(frames, kerb, { closePath: true }),
-		(_, n) => (Math.abs(n.y) > 0.5 ? coping : face),
-		{ flat: true, light: [0.62, 0.5] },
-	)
-	forward(kerbGeo, vertexMaterial(), 'lobby-ground-kerb', -3)
-	const terrace = terraceProfile(s, a)
+	let u = inner + w.cap
+	for (const h of w.tiers) {
+		wall.push([u, h], [u + w.tread, h])
+		u += w.tread
+	}
+	wall.push([outer, 0])
+	const cap = new THREE.Color(c.cap),
+		seat = new THREE.Color(c.seat),
+		stone = new THREE.Color(c.basalt)
+	const wallGeo = bake(sweep(frames, wall, { closePath: true }), () => stone, {
+		flat: true,
+		light: [0.62, 0.5],
+	})
+	// Treads: the cap is limewash, the tiers worn stone.
+	const pos = wallGeo.attributes.position,
+		nor = wallGeo.attributes.normal,
+		col = wallGeo.attributes.color
+	for (let i = 0; i < pos.count; i++) {
+		if (Math.abs(nor.getY(i)) < 0.5) continue
+		const tint = pos.getY(i) > w.height - 0.01 ? cap : seat
+		const shade = 0.74 + 0.34 * Math.abs(nor.getY(i)) * 0.8
+		col.setXYZ(i, tint.r * shade, tint.g * shade, tint.b * shade)
+	}
+	masonry(wallGeo, s, w)
+	forward(wallGeo, vertexMaterial(), 'lobby-ground-wall', -1) // over the paving, which runs under its foot
+	const terrace = terraceProfile(s, a, outer)
 	const top = new THREE.Color(c.face),
 		dark = new THREE.Color(c.under)
 	const terraceGeo = bake(
@@ -703,11 +764,12 @@ function buildArchitecture(s, a, frames, forward, group, owned) {
 	forward(terraceGeo, vertexMaterial(), 'lobby-ground-terraces', -3)
 	const lineMaterial = new THREE.LineBasicMaterial({ color: PALETTE.ink })
 	owned.push(lineMaterial)
-	for (const [u, v] of [
-		[r.width, a.kerb.height],
-		[r.width, 0],
+	for (const [lu, lv] of [
+		[inner, w.height],
+		[inner + w.cap, w.height],
+		[outer, 0],
 	]) {
-		const points = frames.map((f) => f.o.clone().addScaledVector(f.u, u).setY(v))
+		const points = frames.map((f) => f.o.clone().addScaledVector(f.u, lu).setY(lv))
 		const geometry = new THREE.BufferGeometry().setFromPoints(points)
 		const line = new THREE.LineLoop(geometry, lineMaterial)
 		line.layers.set(FORWARD_LAYER)
@@ -720,8 +782,8 @@ function buildArchitecture(s, a, frames, forward, group, owned) {
 export function createLobbyFloor(scene, renderer) {
 	const s = tune.lobby.floor
 	const a = s.grounds?.[groundStyle(s)]
-	// Paving reaches out under the kerb, the glaze stops at the lip.
-	const reach = a ? s.rim.width - a.kerb.width + 0.02 : 0
+	// Paving runs under the ring wall's foot; the glaze stops at the lip.
+	const reach = a ? wallSpan(s, a).inner + 0.02 : 0
 	const p = { ...s, halfX: s.halfX + reach, halfZ: s.halfZ + reach }
 	const canvas = a ? drawFlags(p, a) : drawGlaze(s)
 	const texture = new THREE.CanvasTexture(canvas)

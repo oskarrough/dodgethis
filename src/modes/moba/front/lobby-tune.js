@@ -315,7 +315,7 @@ export const lobby = {
 			pole: '#efe6d2',
 		},
 		style: 'flags', // 'saucer', or one of `grounds`; `?ground=` overrides
-		// Architectural grounds share the saucer's ellipse: a painted floor out to a thin kerb, and terraces
+		// Architectural grounds share the saucer's ellipse: a painted floor ringed by a wall, and terraces
 		// stepping in underneath.
 		grounds: {
 			flags: {
@@ -329,7 +329,18 @@ export const lobby = {
 				terraces: 4,
 				drop: 0.32,
 				step: 0.55,
-				kerb: { width: 0.16, height: 0.1 }, // the paving runs to this thin lip at the rim's outer edge
+				// The ring wall, lucha canaria style: the paving stops `inset` m inside the rim's outer edge at a
+				// basalt face `height` m tall under a `cap` m limewashed top, then `tiers` step down outside it.
+				wall: {
+					inset: 0.25,
+					height: 0.75,
+					cap: 0.3,
+					tiers: [0.46, 0.24],
+					tread: 0.32,
+					course: 0.17,
+					stone: 0.5,
+					variance: 0.6,
+				},
 
 				colors: {
 					stoneCentre: '#c98a52',
@@ -338,8 +349,10 @@ export const lobby = {
 					speck: '#3b1f1c',
 					stain: '#5e3a3a',
 					sand: '#e8c28a',
-					coping: '#b8694a',
-					face: '#7d4433',
+					basalt: '#3b3342',
+					cap: '#efe4cc',
+					seat: '#6e6070',
+					face: '#5a4a58',
 					under: '#4e3150',
 				},
 			},
