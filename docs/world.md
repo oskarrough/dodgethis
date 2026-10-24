@@ -140,7 +140,7 @@ What the shelf agrees on: plain readable floors, with richness in the walls, the
 
 Paste the style block from [look.md](look.md#concept-art) whole, follow its recipe, then add the nouns for the scene from Keywords above. For the front end (splash, lobby, cards) add: "ligne claire, thin navy line, pastels mixed toward cream, apricot horizon to violet sky, floating red mesas in haze, terracotta courtyard". For a map card add: "Vallotton woodcut, a handful of flat colours, ink masses, gouged sky".
 
-Avoid: plush, felt, glossy eyes, blush, chibi faces, mobile-card-game rendering, Hearthstone, black outlines, rainbow or neon palettes, gold outside the Ball, schoolyard or seaside props, sci-fi technology, photoreal surfaces, busy texture on the floor, and the words "cute", "fun" and "toy-like", which drag the model straight to Hearthstone.
+Avoid: plush, felt, glossy eyes, blush, chibi faces, mobile-card-game rendering, Hearthstone, black outlines, rainbow or neon palettes, gold outside the Ball, schoolyard or seaside props, photographed surfaces, busy texture on the floor, and the words "cute", "fun" and "toy-like", which drag the model straight to Hearthstone.
 
 ## Prompting music and sound
 
