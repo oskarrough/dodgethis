@@ -1,9 +1,9 @@
 import { STEP } from '../../../../core/app.js'
 import { tune } from '../../tune.js'
 import { clampWalkable } from '../../obstacles.js'
+import { distance } from '../../../../core/spatial.js'
 
 const ticks = (s) => Math.max(1, Math.round(s / STEP))
-const distance = (a, b) => Math.hypot(a.x - b.x, a.z - b.z)
 
 // Mercenary camps at `layout.camps`: neutral guards (team 'N') that stand still until hit,
 // fight back within a leash, and heal when left alone. The team that lands the last kill

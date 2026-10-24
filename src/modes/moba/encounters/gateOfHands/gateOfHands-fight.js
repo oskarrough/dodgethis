@@ -1,8 +1,8 @@
 import { STEP } from '../../../../core/app.js'
 import { tune } from '../../tune.js'
+import { distance } from '../../../../core/spatial.js'
 
 const ticks = (s) => Math.max(1, Math.round(s / STEP))
-const distance = (a, b) => Math.hypot(a.x - b.x, a.z - b.z)
 
 // The fight's state: each hand's `fill` (0..1) and `litUntil` tick, the Potsherds' next throw and
 // the shards in the air. Won the tick all three hands are lit; then the door's posts come away.

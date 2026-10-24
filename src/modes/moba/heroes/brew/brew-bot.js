@@ -1,7 +1,7 @@
 import { STEP } from '../../../../core/app.js'
 import { tune } from '../../tune.js'
 import { sweepHit } from '../../obstacles.js'
-const distance = (a, b) => Math.hypot(a.x - b.x, a.z - b.z)
+import { distance } from '../../../../core/spatial.js'
 // Only Brew's own HP is live; targets and threats come from the delayed public view.
 export function brewBot(ctx) {
 	const { h, p, now, frame, enemies, perceived, cast, safe } = ctx

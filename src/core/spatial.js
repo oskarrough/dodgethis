@@ -14,3 +14,5 @@ export function nearest(items, x, z, ok) {
 	}
 	return { item, d2 }
 }
+
+export const distance = (a, b) => Math.hypot(a.x - b.x, a.z - b.z)

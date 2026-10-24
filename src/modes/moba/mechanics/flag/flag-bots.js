@@ -1,7 +1,7 @@
 import { STEP } from '../../../../core/app.js'
+import { distance } from '../../../../core/spatial.js'
 
 const ticks = (s) => Math.max(1, Math.round(s / STEP))
-const distance = (a, b) => Math.hypot(a.x - b.x, a.z - b.z)
 
 // Bots and the centre flag: the team's nearest few walk to the ring when it's up, stand in it and
 // shoot whoever contests it. Everyone else keeps their lane.

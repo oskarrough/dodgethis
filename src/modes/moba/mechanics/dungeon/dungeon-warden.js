@@ -4,8 +4,7 @@ import { wardenDefinition, freshAbilityState } from '../../heroes.js'
 import { abilityOf } from '../../ability.js'
 import { blocked, moveSpeed } from '../../statuses.js'
 import { ticks, yawOf } from '../../sim-kit.js'
-
-const distance = (a, b) => Math.hypot(a.x - b.x, a.z - b.z)
+import { distance } from '../../../../core/spatial.js'
 
 // One boss and its pull. A dungeon passes an
 // `encounter` (id, name, spawn, hp) for each boss on its map.

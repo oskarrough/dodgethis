@@ -1,5 +1,5 @@
 import { tune } from '../../tune.js'
-const distance = (a, b) => Math.hypot(a.x - b.x, a.z - b.z)
+import { distance } from '../../../../core/spatial.js'
 
 // E: Coach chalks a ring on the stone. Her side runs through it; the other side wades.
 export default {

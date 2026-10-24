@@ -1,5 +1,5 @@
 import { tune } from '../../tune.js'
-const distance = (a, b) => Math.hypot(a.x - b.x, a.z - b.z)
+import { distance } from '../../../../core/spatial.js'
 
 // E: Pong's ricochet with bodies for walls. One hard serve at the enemy nearest the aim,
 // and the ball pings on through whoever stands closest, softer each time.

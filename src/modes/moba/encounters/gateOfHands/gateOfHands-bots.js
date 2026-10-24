@@ -1,7 +1,6 @@
 import { STEP } from '../../../../core/app.js'
 import { tune } from '../../tune.js'
-
-const distance = (a, b) => Math.hypot(a.x - b.x, a.z - b.z)
+import { distance } from '../../../../core/spatial.js'
 
 // Bots share the hands out by id: with three or more alive each takes its own; fewer run to the
 // hand whose light runs out first. On the hand they stand, unless a shard is coming down there.

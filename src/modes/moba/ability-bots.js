@@ -1,7 +1,6 @@
 import { segmentClear } from './obstacles.js'
 import { sweepHit } from './skillshot.js'
-
-const distance = (a, b) => Math.hypot(a.x - b.x, a.z - b.z)
+import { distance } from '../../core/spatial.js'
 const hasEffect = (action, effect) =>
 	action.hit.some((record) => (typeof record === 'string' ? record : record.effect) === effect)
 

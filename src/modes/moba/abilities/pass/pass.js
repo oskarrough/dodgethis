@@ -1,6 +1,6 @@
 import { tune } from '../../tune.js'
 import { botClearLine } from '../../ability-bots.js'
-const distance = (a, b) => Math.hypot(a.x - b.x, a.z - b.z)
+import { distance } from '../../../../core/spatial.js'
 export default {
 	statusEffects: [{ effect: 'slow', magnitude: 'slow', duration: 'duration' }],
 	projectileShape: 'ball',

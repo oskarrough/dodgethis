@@ -1,5 +1,5 @@
 import { tune } from '../../tune.js'
-const distance = (a, b) => Math.hypot(a.x - b.x, a.z - b.z)
+import { distance } from '../../../../core/spatial.js'
 export default {
 	icon: '<svg viewBox="0 0 48 48" aria-hidden="true"><path class="tone" d="M6 16 H32 V9 L43 20 L32 31 V24 H6 Z"/><path class="cream" d="M42 34 H16 V27 L5 38 L16 47 V42 H42 Z"/></svg>',
 	name: 'Tag out',

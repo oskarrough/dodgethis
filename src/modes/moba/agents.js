@@ -4,13 +4,13 @@ import { tune } from './tune.js'
 import { DEFAULT_HERO } from './heroes.js'
 import { abilityOf } from './ability.js'
 import { stateUntil } from './statuses.js'
+import { distance } from '../../core/spatial.js'
 
 const ticks = (s) => Math.max(1, Math.round(s / STEP))
 const n = (v) => String(Math.round(v * tune.agents.precision) / tune.agents.precision || 0)
 const point = (p) => `${n(p.x)},${n(p.z)}`
 const compare = (a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)
 const position = (u) => ({ x: u.body.position.x, z: u.body.position.z })
-const distance = (a, b) => Math.hypot(a.x - b.x, a.z - b.z)
 
 // A deep copy of plain sim data (objects, arrays, numbers, strings) at a fraction of structuredClone's cost, which perception pays every tick.
 export function copyData(value) {

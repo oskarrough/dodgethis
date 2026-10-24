@@ -1,6 +1,5 @@
 import { tune } from '../../tune.js'
-
-const distance = (a, b) => Math.hypot(a.x - b.x, a.z - b.z)
+import { distance } from '../../../../core/spatial.js'
 
 // Wata alone slides into planting range; Slide itself only knows how to escape.
 export function wataBot(ctx) {

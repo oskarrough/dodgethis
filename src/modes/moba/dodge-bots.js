@@ -2,9 +2,9 @@ import { STEP } from '../../core/app.js'
 import { tune } from './tune.js'
 import { abilityOf } from './ability.js'
 import { clampWalkable, segmentClear, sweepHit, walkable } from './obstacles.js'
+import { distance } from '../../core/spatial.js'
 
 const ticks = (s) => Math.max(1, Math.round(s / STEP))
-const distance = (a, b) => Math.hypot(a.x - b.x, a.z - b.z)
 
 // A single judgement survives windup and release. Neither memory nor RNG is shared.
 export function createDodgeBot(random) {

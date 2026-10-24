@@ -2,9 +2,9 @@ import { STEP } from '../../../../core/app.js'
 import { tune } from '../../tune.js'
 import encounters from '../../encounters/all-encounters.js'
 import { createBossPull } from './dungeon-warden.js'
+import { distance } from '../../../../core/spatial.js'
 
 const ticks = (s) => Math.max(1, Math.round(s / STEP))
-const distance = (a, b) => Math.hypot(a.x - b.x, a.z - b.z)
 
 // An encounter folder without its own fight: a Warden under the encounter's name and HP.
 function wardenStandIn(args, spot) {

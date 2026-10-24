@@ -2,8 +2,7 @@ import { neutralFrame } from '../../../../core/intents.js'
 import { tune } from '../../tune.js'
 import { botClearLine } from '../../ability-bots.js'
 import { coachThrowOrigin } from './coach-cutout.js'
-
-const distance = (a, b) => Math.hypot(a.x - b.x, a.z - b.z)
+import { distance } from '../../../../core/spatial.js'
 export function coachBotDead({ h, sim, perceived, interceptTime }) {
 	const frame = neutralFrame(),
 		c = sim.cutouts.find((u) => u.owner === h.id)

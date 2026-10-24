@@ -2,8 +2,7 @@ import { STEP } from '../../core/app.js'
 import { tune } from './tune.js'
 import { walkable } from './obstacles.js'
 import { laneRoute } from './maps/paths.js'
-
-const distance = (a, b) => Math.hypot(a.x - b.x, a.z - b.z)
+import { distance } from '../../core/spatial.js'
 
 // This module owns its delayed population and all consequences of fighting under guns.
 export const laneBots = {

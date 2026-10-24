@@ -3,9 +3,9 @@ import { neutralFrame } from '../../core/intents.js'
 import { tune } from './tune.js'
 import { botTactics } from './ability-bots.js'
 import { clampWalkable, sweepHit, sweepObstacles, segmentClear } from './obstacles.js'
+import { distance } from '../../core/spatial.js'
 
 const ticks = (s) => Math.max(1, Math.round(s / STEP))
-const distance = (a, b) => Math.hypot(a.x - b.x, a.z - b.z)
 const position = (u) => ({ x: u.body.position.x, z: u.body.position.z })
 
 // Hero combat and its memory. No match population or objective is assumed.

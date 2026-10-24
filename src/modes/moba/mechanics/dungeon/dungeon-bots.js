@@ -1,8 +1,7 @@
 import { tune } from '../../tune.js'
 import encounters from '../../encounters/all-encounters.js'
 import { bossBots } from './dungeon-warden-bots.js'
-
-const distance = (a, b) => Math.hypot(a.x - b.x, a.z - b.z)
+import { distance } from '../../../../core/spatial.js'
 
 // A party of bots walks the map in its encounters' order: a pack that has woken and stands near is
 // fought first, then the encounter's own bot goal if its folder has one, else its boss. They dodge

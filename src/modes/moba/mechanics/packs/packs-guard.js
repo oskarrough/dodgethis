@@ -1,9 +1,9 @@
 import { STEP } from '../../../../core/app.js'
 import { tune } from '../../tune.js'
 import { clampWalkable } from '../../obstacles.js'
+import { distance } from '../../../../core/spatial.js'
 
 const ticks = (s) => Math.max(1, Math.round(s / STEP))
-const distance = (a, b) => Math.hypot(a.x - b.x, a.z - b.z)
 
 // The packs at `layout.packs`: each `{ x, z, guards: [kind…], patrol?: [{ x, z }…] }`. Guards are
 // neutral (team 'N') lane minions that stand at their post, or walk the patrol loop, until a hero

@@ -1,7 +1,7 @@
 import { STEP } from '../../../../core/app.js'
 import { tune } from '../../tune.js'
+import { distance } from '../../../../core/spatial.js'
 
-const distance = (a, b) => Math.hypot(a.x - b.x, a.z - b.z)
 const hash = (id) => [...id].reduce((sum, ch) => sum + ch.charCodeAt(0), 0)
 
 // A bot with a quiet lane sometimes steps into the jungle and clears the nearest camp.
