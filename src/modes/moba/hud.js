@@ -707,9 +707,31 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 					const s = sides[which]
 					const heroes = sim?.heroes?.filter((h) => h.team === team) ?? []
 					data(s.node, 'team', team)
-					while (s.dots.children.length < heroes.length) el('i', '', s.dots)
+					while (s.dots.children.length < heroes.length) {
+						const chip = el('i', '', s.dots)
+						el('span', 'moba-mate-face', chip)
+						el('b', 'moba-mate-wait', chip)
+						if (which === 'mine') el('span', 'moba-mate-hp', chip)
+					}
 					while (s.dots.children.length > heroes.length) s.dots.lastChild.remove()
-					heroes.forEach((h, i) => flag(s.dots.children[i], 'down', !!h.dead))
+					// A face per hero; your side also shows health. Enemy health stays a thing you have to look at.
+					heroes.forEach((h, i) => {
+						const chip = s.dots.children[i]
+						const [face, wait, hp] = chip.children
+						const definition = h.definition ?? {}
+						put(face, 'icon', h.heroId, (id) => {
+							face.innerHTML =
+								definition.icon ?? ICONS[id] ?? ICONS[definition.silhouette] ?? ICONS.circle
+						})
+						flag(chip, 'down', !!h.dead)
+						flag(chip, 'you', h === hero)
+						const left =
+							h.dead && Number.isFinite(h.respawnTick)
+								? Math.ceil((h.respawnTick - sim.tick) * (frame.step ?? 1 / 60))
+								: null
+						text(wait, left > 0 ? String(left) : '')
+						if (hp) prop(hp, '--f', String(h.dead ? 0 : ring(h.hp, h.maxHp)))
+					})
 					text(s.kills, String(kills[team]))
 				}
 				text(clockText, clock(elapsed))

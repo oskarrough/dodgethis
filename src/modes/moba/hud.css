@@ -253,20 +253,51 @@
 	padding: 4px 0;
 }
 .moba-dots i {
-	width: 14px;
-	height: 14px;
+	position: relative;
+	display: grid;
+	place-items: center;
+	width: 26px;
+	height: 26px;
 	box-sizing: border-box;
 	border-radius: 50%;
-	background: var(--tone);
+	background: radial-gradient(circle at 35% 30%, #fff 0 20%, #f3ecd6 60%);
 	border: 2px solid var(--ink);
-	transition:
-		background 0.2s,
-		transform 0.2s;
+	box-shadow: inset 0 0 0 2px var(--tone);
+	transition: transform 0.2s;
+}
+.moba-dots i.you {
+	border-width: 2.5px;
+}
+.moba-mate-face svg {
+	display: block;
+	width: 20px;
+	height: 20px;
+	transition: filter 0.2s;
 }
 .moba-dots i.down {
-	background: transparent;
-	border-color: rgba(38, 68, 95, 0.4);
-	transform: scale(0.8);
+	transform: scale(0.85);
+}
+.moba-dots i.down .moba-mate-face svg {
+	filter: grayscale(1) opacity(0.4);
+}
+.moba-top .moba-mate-wait {
+	position: absolute;
+	inset: 0;
+	display: grid;
+	place-items: center;
+	font-size: 13px;
+	text-box: normal;
+}
+/* Your side's health: a short bar under each face. */
+.moba-mate-hp {
+	position: absolute;
+	left: 1px;
+	right: 1px;
+	bottom: -6px;
+	height: 4px;
+	border-radius: 2px;
+	background: linear-gradient(90deg, var(--tone) calc(var(--f, 1) * 100%), var(--cream) 0);
+	box-shadow: 0 0 0 1px var(--ink);
 }
 /* Takedowns: the score, chunky ink numerals beside the dots. */
 .moba-top .moba-kills {
@@ -840,8 +871,12 @@
 		gap: 6px;
 	}
 	.moba-dots i {
-		width: 11px;
-		height: 11px;
+		width: 22px;
+		height: 22px;
+	}
+	.moba-mate-face svg {
+		width: 16px;
+		height: 16px;
 	}
 	.moba-top .moba-kills,
 	.moba-clock > b {
