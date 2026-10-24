@@ -114,7 +114,7 @@ export function wardenDefinition({ name = 'Warden', hp } = {}) {
 		() =>
 			Object.assign(
 				Object.create(heroDefinition('brew').base),
-				tune.boss,
+				tune.warden,
 				hp == null ? {} : { hp },
 			),
 		ABILITIES,

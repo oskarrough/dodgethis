@@ -1,5 +1,7 @@
 # Dungeon slice
 
+> Update 2026-10-24: the round Warden room (`maps/dungeon/`), `mechanics/boss/` and the fight report below were retired. The Warden's code now lives in `mechanics/dungeon/` (`dungeon-warden.js`, tune at `tune.warden`), and `sim.boss` became `sim.dungeon` (`encounters`, `run`). Read the sections below as history.
+
 A WoW-style pull in the moba mode: one to five heroes fight a boss, and after every pull a fight report says why it went the way it did. Design borrowed from Balance Mender (`docs/combat.md` there), not code. The test: does keeping that party alive still feel good after ten minutes?
 
 Dungeon is a MOBA map on the splash, with the same online rooms as the other MOBA maps. Its party holds one to five heroes, all on the same team: go alone, invite friends, add bots, or mix them. Empty places stay empty. Its dedicated party screen suggests Mender for you and lists all five slots. Choose your hero from your row's dropdown; the host adds or removes bots and chooses their heroes directly in each row. Each guest marks Ready, then the host starts the dungeon. Solo, Enter dungeon starts immediately. Party edits clear readiness. There are no walking controls or ready plates on this screen; the other maps keep their walk-around lobby. A map already gets heroes, casting, statuses, facts, bots, camera and HUD for free, and the contract lets a map pick its own mechanics. Names (Mender, Warden, Mend, Ward, Slam) are placeholders until Oskar names them.

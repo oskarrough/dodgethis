@@ -1,7 +1,7 @@
 import { tune } from '../../tune.js'
 import encounterViews from '../../encounters/all-encounter-views.js'
 
-export { dressBoss as dress } from '../boss/boss-dress.js'
+export { dressBoss as dress } from './dungeon-dress.js'
 
 // The run's drawing is its encounters' drawings, each from its folder's view.
 export function view(scene) {
@@ -32,7 +32,7 @@ const MARKS = [
 export const timer = {
 	icon: '<svg viewBox="0 0 48 48" aria-hidden="true"><path class="ink-line" d="M14 8 H34 M14 40 H34 M16 8 C16 20 24 20 24 24 C24 28 16 28 16 40 M32 8 C32 20 24 20 24 24 C24 28 32 28 32 40"/></svg>',
 	read(sim, _hero, blend, step) {
-		const run = sim.boss?.run
+		const run = sim.dungeon?.run
 		if (!run) return null
 		const elapsed = (run.endedTick ?? sim.tick + blend) * step
 		const mark = MARKS.find(([key]) => elapsed < tune.hourglass[key])

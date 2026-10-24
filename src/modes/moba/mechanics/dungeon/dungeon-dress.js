@@ -10,7 +10,7 @@ export function dressBoss(body) {
 	body.poseAbility = (cast, alpha, unit, tick) => {
 		pose(cast, alpha, unit, tick)
 		const progress = cast ? Math.max(0, Math.min(1, 1 - (cast.left - alpha) / cast.total)) : 0
-		const p = tune.boss.pose
+		const p = tune.warden.pose
 		if (cast?.ability === 'swing') {
 			costume.rotation.y = -p.swingTurn * progress
 			costume.rotation.z = p.swingLean * progress

@@ -1,12 +1,12 @@
 import { tune } from '../../tune.js'
 import encounters from '../../encounters/all-encounters.js'
-import { bossBots } from '../boss/boss-bots.js'
+import { bossBots } from './dungeon-warden-bots.js'
 
 const distance = (a, b) => Math.hypot(a.x - b.x, a.z - b.z)
 
 // A party of bots walks the map in its encounters' order: a pack that has woken and stands near is
 // fought first, then the encounter's own bot goal if its folder has one, else its boss. They dodge
-// the Slam as in the Warden's room, and whatever the encounter warns of.
+// the Slam of a Warden, and whatever the encounter warns of.
 function dungeonObjective(ctx) {
 	const { perceived, p, attack, shoot, setState, frame, h } = ctx
 	const guard = (perceived.packs ?? [])
@@ -35,7 +35,7 @@ function dungeonObjective(ctx) {
 
 export const dungeonBots = {
 	botView(sim, packUnit) {
-		const current = sim.boss.current()
+		const current = sim.dungeon.current()
 		return {
 			boss: current?.unit ? { phase: current.state.phase, unit: packUnit(current.unit) } : null,
 			encounter: current?.botView ? { id: current.id, ...current.botView() } : null,

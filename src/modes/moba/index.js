@@ -34,7 +34,6 @@ import { createPortalLobby } from './portal-lobby.js'
 import { createDifficultyGallery } from './lobby-props.js'
 import { createLobbyReplica } from './lobby-replica.js'
 import { createLaneReplica } from './lane-replica.js'
-import { createDungeonReplica } from './maps/dungeon/dungeon-replica.js'
 import { DEFAULT_HERO, HEROES } from './heroes.js'
 import { controls as playerControls } from '../../core/controls.js'
 
@@ -379,9 +378,7 @@ export default function moba(app, map) {
 			const replica = !app.session.authoritative
 				? isLobby
 					? createLobbyReplica(simulation, scene)
-					: party
-						? createDungeonReplica(simulation, scene)
-						: createLaneReplica(simulation, scene)
+					: createLaneReplica(simulation, scene)
 				: null
 			const sim = replica?.sim ?? simulation
 			const onPresent = replica?.onPresent ?? ((listener) => run.on('present', listener))

@@ -47,7 +47,6 @@ import heroes_mender from './heroes/mender/mender-tune.js'
 import heroes_mitts from './heroes/mitts/mitts-tune.js'
 import heroes_pong from './heroes/pong/pong-tune.js'
 import heroes_wata from './heroes/wata/wata-tune.js'
-import maps_dungeon from './maps/dungeon/dungeon-tune.js'
 import maps_flagfall from './maps/flagfall/flagfall-tune.js'
 import maps_hollowMesa from './maps/hollowMesa/hollowMesa-tune.js'
 import maps_overthrow from './maps/overthrow/overthrow-tune.js'
@@ -110,7 +109,6 @@ export const heroes = {
 	wata: heroes_wata,
 }
 export const maps = {
-	dungeon: maps_dungeon,
 	flagfall: maps_flagfall,
 	hollowMesa: maps_hollowMesa,
 	overthrow: maps_overthrow,

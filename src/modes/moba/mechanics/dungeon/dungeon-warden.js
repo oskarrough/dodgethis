@@ -7,11 +7,11 @@ import { ticks, yawOf } from '../../sim-kit.js'
 
 const distance = (a, b) => Math.hypot(a.x - b.x, a.z - b.z)
 
-// One boss and its pull. The Warden's room has one at `layout.spawns.boss`; a dungeon passes an
+// One boss and its pull. A dungeon passes an
 // `encounter` (id, name, spawn, hp) for each boss on its map.
-export function createBossPull({ heroes, layout, makeBody, present, systems, view, encounter }) {
+export function createBossPull({ heroes, makeBody, present, systems, view, encounter }) {
 	const definition = wardenDefinition(encounter)
-	const spawn = { ...(encounter?.spawn ?? layout.spawns.boss) }
+	const spawn = { ...encounter.spawn }
 	const unit = {
 		id: encounter?.id ?? 'warden',
 		heroId: 'warden',
@@ -66,7 +66,7 @@ export function createBossPull({ heroes, layout, makeBody, present, systems, vie
 		state.phase = 'engaged'
 		state.started = t
 		state.nextSwing = t
-		state.nextSlam = t + ticks(tune.boss.firstSlam)
+		state.nextSlam = t + ticks(tune.warden.firstSlam)
 		unit.threat = Object.fromEntries(heroes.map((h) => [h.id, 0]))
 		present({
 			type: 'pull',
@@ -116,7 +116,7 @@ export function createBossPull({ heroes, layout, makeBody, present, systems, vie
 	}
 	function end(result, t) {
 		state.phase = 'ended'
-		state.resetTick = t + ticks(tune.boss.reset)
+		state.resetTick = t + ticks(tune.warden.reset)
 		systems().endCast(unit, result)
 		if (!unit.dead) unit.body.update({ x: 0, z: 0 }, STEP, 0)
 		present({
@@ -240,7 +240,7 @@ export function createBossPull({ heroes, layout, makeBody, present, systems, vie
 					distance(a.body.position, unit.body.position) -
 						distance(b.body.position, unit.body.position) || a.id.localeCompare(b.id),
 			)[0]
-			if (nearest && distance(nearest.body.position, unit.body.position) <= tune.boss.aggro)
+			if (nearest && distance(nearest.body.position, unit.body.position) <= tune.warden.aggro)
 				engage(nearest, t)
 			else return
 		}
@@ -282,7 +282,7 @@ export function createBossPull({ heroes, layout, makeBody, present, systems, vie
 		}
 		if (t >= state.nextSlam) {
 			windup('slam', target)
-			state.nextSlam = t + ticks(tune.boss.slamEvery)
+			state.nextSlam = t + ticks(tune.warden.slamEvery)
 		} else if (t >= state.nextSwing && d <= tune.swing.range) {
 			windup('swing', target)
 			state.nextSwing = t + ticks(tune.swing.cooldown)

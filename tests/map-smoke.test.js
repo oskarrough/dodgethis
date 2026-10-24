@@ -57,7 +57,7 @@ for (const id of playableMaps) {
 				agentRoster({ seats: [] }).filter((seat) => seat.id === 'A1'),
 			)
 			try {
-				const first = run.sim.boss.encounters[0]
+				const first = run.sim.dungeon.encounters[0]
 				const limit = Math.ceil(SOLO_SECONDS / STEP)
 				while (run.sim.tick < limit && !first.killed && run.step());
 				expect(first.killed).toBe(true)

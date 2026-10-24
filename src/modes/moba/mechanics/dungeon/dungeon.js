@@ -5,7 +5,7 @@ import { dungeonBots } from './dungeon-bots.js'
 // A dungeon run: the map's encounters, its waystones, the stair and the run's end. An encounter
 // may bring posts of its own (a door) that stand until its fight removes them.
 export default {
-	population: 'boss',
+	population: 'dungeon',
 	create: createDungeon,
 	botHabit: dungeonBots,
 	obstacles: (layout) =>

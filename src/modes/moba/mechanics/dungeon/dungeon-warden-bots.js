@@ -16,9 +16,6 @@ function bossObjective(ctx) {
 }
 
 export const bossBots = {
-	botView(sim, packUnit) {
-		return { boss: { phase: sim.boss.state.phase, unit: packUnit(sim.boss.unit) } }
-	},
 	createBot() {
 		return {
 			botPerceive(ctx) {

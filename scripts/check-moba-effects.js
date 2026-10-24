@@ -493,7 +493,7 @@ for (const [id, manifest] of Object.entries(declarations)) {
 		}))
 			if (typeof status[field] === 'string') checkRef(id, `${key}.${field}`, status[field], unit)
 }
-checkUnit('boss', WARDEN_UNIT)
+checkUnit('warden', WARDEN_UNIT)
 for (const [id, definition] of Object.entries(MINION_DEFINITIONS))
 	checkUnit(`minions.${id}`, definition.unit)
 for (const [id, definition] of Object.entries(STRUCTURE_DEFINITIONS)) checkUnit(id, definition.unit)

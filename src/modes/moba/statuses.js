@@ -242,7 +242,6 @@ export function createStatuses(ctx) {
 		const actor = info.status
 			? (ctx.find(info.status.src) ??
 				[
-					...(ctx.boss ? [ctx.boss.unit] : []),
 					...ctx.heroes,
 					...ctx.dummies,
 					...ctx.summons,

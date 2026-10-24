@@ -126,18 +126,17 @@ Paths are under `src/modes/moba/` unless they start with `src/`. `tune.js` means
 
 ### Dungeon
 
-- Dungeon (`?map=dungeon`, also on the splash): round room, the Warden with threat, Swing, Slam and its bruise, pulls, room reset and party bots: `maps/dungeon/`, `mechanics/boss/` (`boss-pull.js`), `abilities/swing/`, `abilities/slam/`; `docs/dungeon.md`
-- After-pull fight report in the dungeon (result, party table, mender spells, deaths, threat, wasted casts): `mechanics/boss/boss-report.js` `reduceFight`; `mechanics/boss/boss-view.js`; `hud.css` `.moba-fight-report`; `docs/dungeon.md`
+- The Warden (the stand-in fight for an encounter without one of its own: threat, Swing, Slam and its bruise, pulls, reset and party bots): `mechanics/dungeon/dungeon-warden.js`, `dungeon-warden-bots.js`, `dungeon-dress.js`; tune at `tune.warden` and `tune.threat`; `abilities/swing/`, `abilities/slam/`; `docs/dungeon.md`. The old round Warden room (`?map=dungeon`) and its after-pull fight report were retired on 2026-10-24; both live in git history
 - The Hollow Mesa (`?mode=moba&map=hollowMesa`, a co-op dungeon skeleton with placeholder fights): one open plateau with walls, hedges and pillars; layout, packs, waystones and encounters from `maps/hollowMesa/` (`hollowMesa-layout.js`, `hollowMesa-tune.js`); `docs/dungeon.md`
 - Enemy packs (hand-placed, team `N`, riding the lane's minion list; they wake together, leash home, heal when calm, stay dead; optional patrol loops): `mechanics/packs/` `packs.js`, `packs-guard.js`; `docs/dungeon.md`
-- The dungeon run (several encounters at once through `sim.boss` with `encounters`, `run`, `units`, `current`; each is its folder's `create` or a Warden stand-in; a won encounter stays won, a wipe resets only its own boss, the Sundial wakes after every other encounter and one whole wing, and its death sets the winner): `mechanics/dungeon/dungeon-run.js`, `dungeon-tune.js`; `docs/dungeon.md`
-- Encounters (a mod kind, one folder per Warden: `<id>.js` name, `<id>-tune.js` numbers at `tune.encounters[id]`; passed to `boss-pull.js` as `encounter`): `encounters/<id>/`, collected into `encounters/all-encounters.js` by `scripts/collect-mods.js`; `extending.md`
+- The dungeon run (several encounters at once through `sim.dungeon` with `encounters`, `run`, `units`, `current`, `engaged`, `bossUnit`; each is its folder's `create` or a Warden stand-in; a won encounter stays won, a wipe resets only its own boss, the Sundial wakes after every other encounter and one whole wing, and its death sets the winner): `mechanics/dungeon/dungeon-run.js`, `dungeon-tune.js`; `docs/dungeon.md`
+- Encounters (a mod kind, one folder per Warden: `<id>.js` name, `<id>-tune.js` numbers at `tune.encounters[id]`; passed to `dungeon-warden.js` as `encounter`): `encounters/<id>/`, collected into `encounters/all-encounters.js` by `scripts/collect-mods.js`; `extending.md`
 - Waystones (walking within reach attunes one, and the fallen rise at the last you passed): `mechanics/dungeon/dungeon-run.js` `attune`; `tune.waystone`; drawn by `maps/hollowMesa/hollowMesa-view.js`
 - Hourglass (the Glass, Clay and Stone marks in the top bar): `mechanics/dungeon/dungeon-view.js` `timer`; `tune.hourglass`
 - Top-bar goal (a line and a card read from any mechanic view's `goal`): `mechanics/dungeon/dungeon-view.js` `goal`; `hud.js`
 - Dungeon bots (fight woken packs nearby, else go for the next boss): `mechanics/dungeon/dungeon-bots.js`
 - Cast bars (player above the skill bar, boss at the top): `cast-bar.js` `createCastBar`, `cast-bar.css`; `hud.js`
-- Dungeon on the splash, using the portal lobby for its party: `front/index.js`; `lobby-state.js`, `lobby-handoff.js`; `bots.js`; `mechanics/boss/boss-view.js`; `menu.js`
+- Dungeon on the splash, using the portal lobby for its party: `front/index.js`; `lobby-state.js`, `lobby-handoff.js`; `bots.js`; `menu.js`
 
 ## Match: lane, minions, towers
 

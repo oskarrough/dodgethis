@@ -30,16 +30,6 @@ export function createMatchMenu({
 	returnToLobby = () => false,
 }) {
 	const recap = createRecap({ sim, hero, canvas: app.renderer?.domElement, paper })
-	// The Warden's room says its goal here; a dungeon says it in the top bar.
-	const goal =
-		sim.boss && !sim.boss.encounters
-			? el(
-					'p',
-					'dungeon-goal',
-					document.body,
-					'Keep your party alive; the Warden turns on whoever hurts it most.',
-				)
-			: null
 	let paused = false
 	let resultShown = false
 	let backHeld = false
@@ -54,7 +44,7 @@ export function createMatchMenu({
 	}
 	function leave() {
 		resetInput()
-		if (sim.boss && (!app.session.shared || app.session.authoritative)) return returnToLobby()
+		if (sim.dungeon && (!app.session.shared || app.session.authoritative)) return returnToLobby()
 		if (app.session.shared) {
 			if (app.session.authoritative) returnToLobby()
 			else app.emit('menu')
@@ -86,7 +76,7 @@ export function createMatchMenu({
 			spaceConfirm: false,
 			actions: [
 				{ label: 'Resume', onSelect: toggle },
-				{ label: sim.boss ? 'Party lobby' : 'Leave game', onSelect: sim.boss ? leave : quit },
+				{ label: sim.dungeon ? 'Party lobby' : 'Leave game', onSelect: sim.dungeon ? leave : quit },
 				// Settings, not actions: the last cursor stops, drawn small under the two.
 				{ label: 'Quick cast', onSelect: toggleQuickCast },
 				presetAction,
@@ -157,9 +147,9 @@ export function createMatchMenu({
 			card,
 			fact('Time', clock(sim.tick * app.clock.step), '時間') +
 				fact(
-					sim.boss ? 'Opponent' : 'Takedowns',
-					sim.boss
-						? 'Warden'
+					sim.dungeon ? 'Bosses' : 'Takedowns',
+					sim.dungeon
+						? `${sim.dungeon.encounters.filter((e) => e.killed).length} of ${sim.dungeon.encounters.length}`
 						: `<i class="mine">${kills[mine]}</i>–<i class="theirs">${kills[mine === 'A' ? 'B' : 'A']}</i>`,
 					'撃破',
 				) +
@@ -301,7 +291,6 @@ export function createMatchMenu({
 		() => {
 			recap.dispose()
 			offPreset()
-			goal?.remove()
 			corner?.el.remove()
 			app.overlay.hide()
 		},

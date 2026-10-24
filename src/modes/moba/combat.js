@@ -201,7 +201,7 @@ export function createCombat(ctx) {
 		const total = Math.max(0, amount) * (crit ? critMultiplier : 1)
 		const landed = Math.min(Math.max(0, target.maxHp - target.hp), total)
 		target.hp += landed
-		ctx.boss?.addHealingThreat(source?.id ?? source, landed)
+		ctx.dungeon?.addHealingThreat(source?.id ?? source, landed)
 		present({
 			type: 'heal',
 			source: source?.id ?? source ?? null,
@@ -355,7 +355,7 @@ export function createCombat(ctx) {
 				source: shot.owner,
 			})
 		if (unit.recall) ctx.cancelRecall(unit, 'hit')
-		if (unit.threat) ctx.boss?.addThreat(shot.owner, damage, unit)
+		if (unit.threat) ctx.dungeon?.addThreat(shot.owner, damage, unit)
 		unit.hp = Math.max(0, unit.hp - damage)
 		const lethal = unit.hp === 0
 		if (!unit.kind && damage > 0) ball?.hurt(unit)
@@ -428,7 +428,7 @@ export function createCombat(ctx) {
 		if (lane && !unit.post) lane.reward(unit, killerTeamFromShot(shot, unit), ctx.t, shot.owner)
 		bench(
 			unit,
-			unit.boss || (ctx.boss?.state.phase === 'engaged' && heroes.includes(unit))
+			unit.boss || (ctx.dungeon?.engaged() && heroes.includes(unit))
 				? Infinity
 				: unit.post
 					? tune.dummies.respawn

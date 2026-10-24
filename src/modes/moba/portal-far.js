@@ -56,127 +56,92 @@ export function createPortalFar(map) {
 	let update = () => {}
 	let disposeTerrain = () => {}
 	const depth = new THREE.MeshBasicMaterial({ colorWrite: false })
-	if (map === 'dungeon') {
-		const floor = new THREE.Mesh(
-			new THREE.CircleGeometry(tune.dungeon.radius, tune.dungeon.segments).rotateX(-Math.PI / 2),
-			new THREE.MeshBasicMaterial({ color: '#eee3c9' }),
+	const layout = map === 'flagfall' ? flagfallLayout() : overthrowLayout()
+	const court = new THREE.Group()
+	court.position.x =
+		-layout.structures.find((s) => s.kind === 'core' && s.team === 'A').x -
+		tune.lobby.portal.farBaseInset
+	world.add(court)
+	const terrain = {
+		...tune.overthrowTerrain,
+		chalkWidth: tune.lobby.portal.farChalkWidth,
+		...(map === 'flagfall' ? { colors: tune.flagfall.colors, light: tune.flagfall.light } : {}),
+	}
+	const m = tune.map
+	const b = layout.bounds
+	const chalk = { lines: [], circles: [] }
+	const line = (width, length, x, z) => chalk.lines.push({ width, length, x, z })
+	for (const side of [-1, 1]) {
+		line(
+			(b.halfX - terrain.courtInset) * 2,
+			terrain.chalkWidth,
+			0,
+			side * (b.halfZ - terrain.courtInset),
 		)
-		floor.layers.set(FORWARD_LAYER)
-		world.add(floor)
-		const rim = new THREE.Mesh(
-			new THREE.RingGeometry(tune.dungeon.radius - 0.6, tune.dungeon.radius + 0.5, 96).rotateX(
-				-Math.PI / 2,
-			),
-			new THREE.MeshBasicMaterial({ color: '#a66e59', side: THREE.DoubleSide }),
+		line(
+			terrain.chalkWidth,
+			(b.halfZ - terrain.courtInset) * 2,
+			side * (b.halfX - terrain.courtInset),
+			0,
 		)
-		rim.position.set(0, 0.03, 0)
-		rim.layers.set(FORWARD_LAYER)
-		world.add(rim)
-		const warden = new THREE.Group()
-		warden.scale.setScalar(tune.lobby.portal.farWardenScale)
-		const coat = new THREE.MeshBasicMaterial({ color: '#493446' })
-		const skin = new THREE.MeshBasicMaterial({ color: '#c57564' })
-		const add = (geometry, material, x, y, z) => {
-			const part = new THREE.Mesh(geometry, material)
-			part.position.set(x, y, z)
-			part.layers.set(FORWARD_LAYER)
-			warden.add(part)
-		}
-		add(new THREE.CylinderGeometry(1.3, 2.2, 3.8, 8), coat, 0, 2.1, 0)
-		add(new THREE.SphereGeometry(1.1, 12, 8), skin, 0, 4.4, 0)
-		for (const side of [-1, 1]) {
-			add(new THREE.SphereGeometry(1, 10, 8), skin, side * 2.3, 2.3, 0.3)
-			add(new THREE.BoxGeometry(1.3, 0.6, 1.8), coat, side * 0.9, 0.3, 0.5)
-		}
-		world.add(warden)
-	} else {
-		const layout = map === 'flagfall' ? flagfallLayout() : overthrowLayout()
-		const court = new THREE.Group()
-		court.position.x =
-			-layout.structures.find((s) => s.kind === 'core' && s.team === 'A').x -
-			tune.lobby.portal.farBaseInset
-		world.add(court)
-		const terrain = {
-			...tune.overthrowTerrain,
-			chalkWidth: tune.lobby.portal.farChalkWidth,
-			...(map === 'flagfall' ? { colors: tune.flagfall.colors, light: tune.flagfall.light } : {}),
-		}
-		const m = tune.map
-		const b = layout.bounds
-		const chalk = { lines: [], circles: [] }
-		const line = (width, length, x, z) => chalk.lines.push({ width, length, x, z })
-		for (const side of [-1, 1]) {
-			line(
-				(b.halfX - terrain.courtInset) * 2,
-				terrain.chalkWidth,
-				0,
-				side * (b.halfZ - terrain.courtInset),
-			)
-			line(
-				terrain.chalkWidth,
-				(b.halfZ - terrain.courtInset) * 2,
-				side * (b.halfX - terrain.courtInset),
-				0,
-			)
-		}
-		line(terrain.chalkWidth, (b.halfZ - terrain.courtInset) * 2, 0, 0)
-		if (m.plazaRadius) chalk.circles.push({ radius: m.plazaRadius, x: 0, z: 0 })
-		const unterrain = createMatchTerrain(court, layout, terrain, chalk, {
-			scenery: map === 'overthrow' ? scenery : null,
-			casts: { hedge: m.hedgeHeight, wall: m.wallHeight, pillar: m.pillarHeight + m.capHeight },
-		})
-		update = unterrain.update
-		disposeTerrain = unterrain
-		// The game's deferred pass lays the court's depth; here its layer-0 twin writes depth first.
-		court.traverse((object) => {
-			if (!object.isMesh || object.layers.isEnabled(FORWARD_LAYER)) return
-			object.material = depth
-			object.layers.set(FORWARD_LAYER)
-			object.renderOrder = -50
-		})
+	}
+	line(terrain.chalkWidth, (b.halfZ - terrain.courtInset) * 2, 0, 0)
+	if (m.plazaRadius) chalk.circles.push({ radius: m.plazaRadius, x: 0, z: 0 })
+	const unterrain = createMatchTerrain(court, layout, terrain, chalk, {
+		scenery: map === 'overthrow' ? scenery : null,
+		casts: { hedge: m.hedgeHeight, wall: m.wallHeight, pillar: m.pillarHeight + m.capHeight },
+	})
+	update = unterrain.update
+	disposeTerrain = unterrain
+	// The game's deferred pass lays the court's depth; here its layer-0 twin writes depth first.
+	court.traverse((object) => {
+		if (!object.isMesh || object.layers.isEnabled(FORWARD_LAYER)) return
+		object.material = depth
+		object.layers.set(FORWARD_LAYER)
+		object.renderOrder = -50
+	})
 
-		const c = terrain.colors
-		const lambert = (color) => new THREE.MeshLambertMaterial({ color })
-		const hedge = lambert(c.moss),
-			wall = lambert(c.stone),
-			pillar = lambert(c.stoneLit),
-			teams = { A: lambert('#e5ad9c'), B: lambert('#8fb4d8') }
-		const solid = (geometry, material, x, y, z) => {
-			const mesh = new THREE.Mesh(geometry, material)
-			mesh.position.set(x, y, z)
-			mesh.layers.set(FORWARD_LAYER)
-			court.add(mesh)
-		}
-		for (const box of layout.boxes) {
-			const h = box.kind === 'hedge' ? m.hedgeHeight : m.wallHeight
-			solid(
-				new THREE.BoxGeometry(box.halfX * 2, h, box.halfZ * 2),
-				box.kind === 'hedge' ? hedge : wall,
-				box.x,
-				h / 2,
-				box.z,
-			)
-		}
-		for (const p of layout.pillars)
-			solid(
-				new THREE.CylinderGeometry(p.r, p.r * 1.1, m.pillarHeight, 9),
-				pillar,
-				p.x,
-				m.pillarHeight / 2,
-				p.z,
-			)
-		for (const s of layout.structures) {
-			const h = s.kind === 'core' ? 3.4 : 4.6
-			solid(new THREE.CylinderGeometry(1.1, 1.5, h, 8), wall, s.x, h / 2, s.z)
-			solid(new THREE.ConeGeometry(1.4, 1.2, 8), teams[s.team] ?? pillar, s.x, h + 0.6, s.z)
-		}
-		const hemi = new THREE.HemisphereLight('#fff4e8', '#7a6fae', 1.7)
-		const sun = new THREE.DirectionalLight('#ffe9c8', 1.6)
-		sun.position.set(...terrain.light.dir).multiplyScalar(10)
-		for (const light of [hemi, sun]) {
-			light.layers.set(FORWARD_LAYER)
-			scene.add(light)
-		}
+	const c = terrain.colors
+	const lambert = (color) => new THREE.MeshLambertMaterial({ color })
+	const hedge = lambert(c.moss),
+		wall = lambert(c.stone),
+		pillar = lambert(c.stoneLit),
+		teams = { A: lambert('#e5ad9c'), B: lambert('#8fb4d8') }
+	const solid = (geometry, material, x, y, z) => {
+		const mesh = new THREE.Mesh(geometry, material)
+		mesh.position.set(x, y, z)
+		mesh.layers.set(FORWARD_LAYER)
+		court.add(mesh)
+	}
+	for (const box of layout.boxes) {
+		const h = box.kind === 'hedge' ? m.hedgeHeight : m.wallHeight
+		solid(
+			new THREE.BoxGeometry(box.halfX * 2, h, box.halfZ * 2),
+			box.kind === 'hedge' ? hedge : wall,
+			box.x,
+			h / 2,
+			box.z,
+		)
+	}
+	for (const p of layout.pillars)
+		solid(
+			new THREE.CylinderGeometry(p.r, p.r * 1.1, m.pillarHeight, 9),
+			pillar,
+			p.x,
+			m.pillarHeight / 2,
+			p.z,
+		)
+	for (const s of layout.structures) {
+		const h = s.kind === 'core' ? 3.4 : 4.6
+		solid(new THREE.CylinderGeometry(1.1, 1.5, h, 8), wall, s.x, h / 2, s.z)
+		solid(new THREE.ConeGeometry(1.4, 1.2, 8), teams[s.team] ?? pillar, s.x, h + 0.6, s.z)
+	}
+	const hemi = new THREE.HemisphereLight('#fff4e8', '#7a6fae', 1.7)
+	const sun = new THREE.DirectionalLight('#ffe9c8', 1.6)
+	sun.position.set(...terrain.light.dir).multiplyScalar(10)
+	for (const light of [hemi, sun]) {
+		light.layers.set(FORWARD_LAYER)
+		scene.add(light)
 	}
 	return {
 		scene,

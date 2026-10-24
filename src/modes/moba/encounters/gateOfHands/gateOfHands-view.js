@@ -67,7 +67,7 @@ export function view(scene) {
 		},
 		present() {},
 		update(sim, blend) {
-			const fight = sim.boss?.encounters?.find((e) => e.id === 'gateOfHands')
+			const fight = sim.dungeon?.encounters?.find((e) => e.id === 'gateOfHands')
 			if (!fight) return
 			built ??= build(fight, fight.spot)
 			const t = sim.tick + blend

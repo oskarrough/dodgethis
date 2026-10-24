@@ -588,7 +588,7 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 				blend: frame.blend,
 			}
 			castBar.update(dt, { ...casting, unit: frame.hero })
-			bossBar.update(dt, { ...casting, unit: frame.sim?.boss?.unit })
+			bossBar.update(dt, { ...casting, unit: frame.sim?.dungeon?.bossUnit() })
 			const {
 				cooldowns,
 				device = 'keyboard',

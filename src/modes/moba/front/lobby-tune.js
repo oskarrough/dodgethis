@@ -22,7 +22,6 @@ export const lobby = {
 		countdown: 2, // seconds everyone stays ready before slipping in
 		tearRadius: 2.6, // half-height of the open tear
 		farChalkWidth: 0.7, // keep court markings legible through the small opening
-		farWardenScale: 1.8, // the boss silhouette remains readable in the arena preview
 		farBaseInset: 10, // look between the near core and its first tower
 		farTarget: 3, // metres ahead of the exit to centre the near base or arena
 		farHeight: 3, // low enough that the island fills the mouth rather than its hazy sky

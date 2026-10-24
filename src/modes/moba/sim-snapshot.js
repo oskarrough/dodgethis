@@ -11,7 +11,6 @@ export function createSnapshot(ctx) {
 		lane,
 		ball,
 		flag,
-		boss,
 		obstacles,
 		matchStats,
 		botIds,
@@ -80,7 +79,6 @@ export function createSnapshot(ctx) {
 					}
 				: {}),
 			...(flag && { flag: structuredClone(flag.state) }),
-			...(boss && { boss: structuredClone(boss.state) }),
 			// Cover an ability placed (Cushion), so a guest sees and aims around the same walls.
 			cover: obstacles
 				.filter((o) => o.kind === 'cushion')

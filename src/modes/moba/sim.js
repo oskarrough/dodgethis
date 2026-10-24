@@ -164,7 +164,7 @@ export function createSim({
 				)
 		}
 	const summons = []
-	const { lane, camps, packs, ball, dummies, flag, boss } = plugMechanics({
+	const { lane, camps, packs, ball, dummies, flag, dungeon } = plugMechanics({
 		mechanics,
 		ground,
 		layout,
@@ -234,7 +234,7 @@ export function createSim({
 		lane,
 		ball,
 		flag,
-		boss,
+		dungeon,
 		readySeats,
 		matchStats,
 		training,
@@ -320,7 +320,7 @@ export function createSim({
 		camps?.step(t)
 		packs?.step(t)
 		flag?.step(t)
-		boss?.step(t, dt)
+		dungeon?.step(t, dt)
 		for (const unit of [...dummies, ...(lane?.minions ?? []), ...(lane?.structures ?? [])]) {
 			ctx.expireStatuses(unit)
 			ctx.stepStatuses(unit)
@@ -449,7 +449,7 @@ export function createSim({
 		matchStats: matchStats?.rows,
 		ball,
 		flag,
-		boss,
+		dungeon,
 		obstacles,
 		addCover,
 		removeCover,

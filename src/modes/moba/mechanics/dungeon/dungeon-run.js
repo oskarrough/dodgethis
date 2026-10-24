@@ -1,7 +1,7 @@
 import { STEP } from '../../../../core/app.js'
 import { tune } from '../../tune.js'
 import encounters from '../../encounters/all-encounters.js'
-import { createBossPull } from '../boss/boss-pull.js'
+import { createBossPull } from './dungeon-warden.js'
 
 const ticks = (s) => Math.max(1, Math.round(s / STEP))
 const distance = (a, b) => Math.hypot(a.x - b.x, a.z - b.z)
@@ -25,8 +25,8 @@ function wardenStandIn(args, spot) {
 // `won`, its `units`, and optionally threat, bot hooks and `unit`, its boss. The `last` sleeps until
 // every encounter outside the wings is won and one of `layout.wings` is cleared; winning it ends the
 // run. A wipe resets only the boss you fell to, and you rise at the last waystone you passed.
-// Stands in for the single boss: `unit` and `state` are the encounter being fought, or else the
-// next one, so combat, the HUD and the menu read it unchanged.
+// `current()` is the encounter being fought, or else the next one; `bossUnit()` is its boss for the
+// HUD bar, `engaged()` says a pull is on, and `addThreat` routes damage to the unit's own encounter.
 export function createDungeon(args) {
 	const { heroes, layout, lane } = args
 	const list = layout.encounters.map((spot) => {
@@ -53,7 +53,7 @@ export function createDungeon(args) {
 	const next = () =>
 		list.find((e) => e.last && !e.dormant && !e.killed) ?? list.find((e) => !e.killed && !e.dormant)
 	const current = () => engaged() ?? next() ?? list.at(-1)
-	// A boss stands in for `unit` when the current encounter has none (the HUD and statuses read it).
+	// A boss stands in for the bar when the current encounter has none.
 	const anyBoss = list.find((e) => e.unit)
 	// The encounters outside the wings must all be won, and every one of one wing.
 	const stairOpen = () =>
@@ -92,13 +92,9 @@ export function createDungeon(args) {
 		encounters: list,
 		run,
 		units: list.flatMap((e) => e.units),
-		get unit() {
-			return current().unit ?? anyBoss.unit
-		},
-		get state() {
-			return current().state
-		},
 		current,
+		engaged: () => !!engaged(),
+		bossUnit: () => current().unit ?? anyBoss?.unit,
 		step,
 		addThreat(source, damage, unit) {
 			list.find((e) => e.units.includes(unit))?.addThreat?.(source, damage)
