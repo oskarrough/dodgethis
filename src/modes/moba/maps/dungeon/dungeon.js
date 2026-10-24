@@ -7,6 +7,8 @@ export default {
 	party: ['brew', 'mitts', 'fletcher'],
 	suggestedHero: 'mender',
 	online: true,
+	// The Hollow Mesa holds the splash's dungeon card; the Warden's room stays at ?map=dungeon.
+	splash: false,
 	palette: () => ({}),
 	// The splash woodcut's flat colours (front/woodcut.js): a cream arena on pale sky.
 	cut: () => ({

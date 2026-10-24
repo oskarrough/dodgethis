@@ -23,6 +23,8 @@ export function createBossPull({ heroes, layout, makeBody, present, systems, vie
 		body: makeBody(spawn.x, spawn.z, 'B', definition, view.dress),
 		hp: definition.base.hp,
 		maxHp: definition.base.hp,
+		// Its takedown XP on a map with a lane (a dungeon) counts it a level-one hero.
+		level: tune.hero.level,
 		yaw: 0,
 		dead: false,
 		corpse: null,
