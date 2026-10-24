@@ -182,10 +182,9 @@ export function startLoading(
 		}
 
 		const colors = Object.fromEntries(
-			Object.entries({ ...PALETTE, ...palette }).map(([role, value]) => [
-				role,
-				new THREE.Color(value),
-			]),
+			Object.entries({ ...PALETTE, ...palette })
+				.filter(([role]) => role !== 'light')
+				.map(([role, value]) => [role, new THREE.Color(value)]),
 		)
 		const cream = new THREE.Color(PALETTE.cream)
 		function draw({ phase, crane: rise, progress }) {
