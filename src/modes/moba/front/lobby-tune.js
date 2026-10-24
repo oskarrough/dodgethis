@@ -315,8 +315,8 @@ export const lobby = {
 			pole: '#efe6d2',
 		},
 		style: 'flags', // 'saucer', or one of `grounds`; `?ground=` overrides
-		// Architectural grounds share the saucer's ellipse: a painted floor, a squared kerb, terraces
-		// stepping in underneath, and stairs leaving the rim at `stairs.angles` for nowhere.
+		// Architectural grounds share the saucer's ellipse: a painted floor out to a thin kerb, and terraces
+		// stepping in underneath.
 		grounds: {
 			flags: {
 				centre: 1.3, // m, the middle ring's radius: a few wedges meeting at the centre
@@ -329,17 +329,8 @@ export const lobby = {
 				terraces: 4,
 				drop: 0.32,
 				step: 0.55,
-				stairs: {
-					angles: [215, 25, 140],
-					down: 5,
-					up: 6,
-					width: 1.1,
-					tread: 0.42,
-					rise: 0.28,
-					slab: 0.22,
-					jamb: 0.22,
-					door: 1.9,
-				},
+				kerb: { width: 0.16, height: 0.1 }, // the paving runs to this thin lip at the rim's outer edge
+
 				colors: {
 					stoneCentre: '#c98a52',
 					stoneEdge: '#9a5038',
@@ -347,11 +338,9 @@ export const lobby = {
 					speck: '#3b1f1c',
 					stain: '#5e3a3a',
 					sand: '#e8c28a',
-					coping: '#ecd9b0',
-					face: '#c6835b',
+					coping: '#b8694a',
+					face: '#7d4433',
 					under: '#4e3150',
-					step: '#ecd9b0',
-					stepDark: '#9a5a48',
 				},
 			},
 		},

@@ -4,8 +4,8 @@ import { FORWARD_LAYER } from '../../core/stylepass.js'
 import { PALETTE } from '../../core/style.js'
 import { tune } from './tune.js'
 
-// The lobby's floor floats in the splash sky: a terracotta courtyard with stairs off its rim to
-// nowhere (`grounds.flags`), or the old glazed saucer resting in magnetic cradles. The glaze, rim and cradles are forward-pass meshes, so the deferred pass keeps no ink on
+// The lobby's floor floats in the splash sky: a terracotta courtyard stepping down in terraces
+// underneath (`grounds.flags`), or the old glazed saucer resting in magnetic cradles. The glaze, rim and cradles are forward-pass meshes, so the deferred pass keeps no ink on
 // them and the props still stand on the glaze; the deferred ground underneath is the same ellipse
 // (see `saucerShape`), kept so the lobby keeps its depth, and nothing is drawn beyond it.
 // `floorOutline`, `floorShape` and `createFences` are Flagfall's torn shore, built from its extent.
@@ -614,74 +614,6 @@ function cradleGeometry(s, deg) {
 	return parts
 }
 
-// A box from `min` to `max` in a frame ({ o, u, v, w } with w up), as plain geometry.
-function frameBox(f, [u0, v0, w0], [u1, v1, w1]) {
-	const g = new THREE.BoxGeometry(u1 - u0, w1 - w0, v1 - v0)
-	g.translate((u0 + u1) / 2, (w0 + w1) / 2, (v0 + v1) / 2)
-	const m = new THREE.Matrix4().makeBasis(f.u, f.w, f.v).setPosition(f.o)
-	return g.applyMatrix4(m)
-}
-
-// Stairs that leave the rim at `deg`: a flight down into the air, a landing, and a flight climbing
-// away from the ground to a doorway that opens on nothing.
-function stairGeometry(s, deg, k, colors) {
-	const t = (deg * Math.PI) / 180
-	const e = ellipsePoint(s, t)
-	const out = ellipseNormal(s, t)
-	const up = new THREE.Vector3(0, 1, 0)
-	const side = new THREE.Vector3().crossVectors(up, out).multiplyScalar(k.hand)
-	const top = s.rim.height
-	const start = new THREE.Vector3(e.x, top, e.z).addScaledVector(out, s.rim.width - 0.05)
-	const stone = new THREE.Color(colors.step),
-		under = new THREE.Color(colors.stepDark)
-	const boxes = []
-	// Down: along the rim, one tread at a time.
-	const f = { o: start, u: out, v: side, w: up }
-	for (let i = 0; i < k.down; i++)
-		boxes.push(
-			frameBox(
-				f,
-				[0, i * k.tread, -(i + 1) * k.rise - k.slab],
-				[k.width, (i + 1) * k.tread, -(i + 1) * k.rise + 0.001],
-			),
-		)
-	// Landing, then up and out, away from the ground.
-	const landV = k.down * k.tread,
-		landW = -(k.down + 1) * k.rise
-	boxes.push(frameBox(f, [0, landV, landW - k.slab], [k.width * 2, landV + k.width, landW]))
-	const g = {
-		o: f.o
-			.clone()
-			.addScaledVector(side, landV)
-			.addScaledVector(out, k.width)
-			.addScaledVector(up, landW),
-		u: side.clone(),
-		v: out.clone(),
-		w: up,
-	}
-	for (let i = 0; i < k.up; i++)
-		boxes.push(
-			frameBox(
-				g,
-				[0, i * k.tread, i * k.rise - k.slab],
-				[k.width, (i + 1) * k.tread, (i + 1) * k.rise],
-			),
-		)
-	// The doorway at the top: two jambs and a lintel, framing sky.
-	const doorV = k.up * k.tread,
-		doorW = k.up * k.rise
-	const j = k.jamb
-	boxes.push(frameBox(g, [-j, doorV, doorW], [0, doorV + j, doorW + k.door]))
-	boxes.push(frameBox(g, [k.width, doorV, doorW], [k.width + j, doorV + j, doorW + k.door]))
-	boxes.push(frameBox(g, [-j, doorV, doorW + k.door], [k.width + j, doorV + j, doorW + k.door + j]))
-	const parts = boxes.map((b) => {
-		const flat = bake(b, (_, n) => (n.y > 0.5 ? stone : under), { flat: true, light: [0.6, 0.55] })
-		flat.deleteAttribute('uv')
-		return flat
-	})
-	return parts
-}
-
 // Under an architectural ground: terraces stepping in and down, an upturned ziggurat.
 function terraceProfile(s, a) {
 	const r = s.rim,
@@ -715,13 +647,6 @@ export function saucerExtent(s = tune.lobby.floor) {
 	}
 	const a = s.grounds?.[groundStyle(s)]
 	if (a) {
-		for (const [i, deg] of a.stairs.angles.entries())
-			for (const part of stairGeometry(s, deg, { ...a.stairs, hand: i % 2 ? -1 : 1 }, a.colors)) {
-				part.computeBoundingBox()
-				const { min, max } = part.boundingBox
-				points.push(min.clone(), max.clone())
-				part.dispose()
-			}
 		return points
 	}
 	const k = s.cradle
@@ -750,12 +675,13 @@ function buildArchitecture(s, a, frames, forward, group, owned) {
 	const c = a.colors
 	const vertexMaterial = () =>
 		new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.DoubleSide })
-	// A squared kerb: a step up from the paving, a flat coping, a sheer outer face.
+	// The paving runs out over the rim to a thin kerb: a step up, a flat coping, a sheer outer face.
+	const inner = r.width - a.kerb.width
 	const kerb = [
-		[0, 0],
-		[0.02, r.height],
-		[r.width * 0.98, r.height],
-		[r.width, r.height * 0.9],
+		[inner, 0],
+		[inner + 0.01, a.kerb.height],
+		[r.width * 0.99, a.kerb.height],
+		[r.width, a.kerb.height * 0.8],
 		[r.width, 0],
 	]
 	const coping = new THREE.Color(c.coping),
@@ -778,7 +704,7 @@ function buildArchitecture(s, a, frames, forward, group, owned) {
 	const lineMaterial = new THREE.LineBasicMaterial({ color: PALETTE.ink })
 	owned.push(lineMaterial)
 	for (const [u, v] of [
-		[r.width, r.height],
+		[r.width, a.kerb.height],
 		[r.width, 0],
 	]) {
 		const points = frames.map((f) => f.o.clone().addScaledVector(f.u, u).setY(v))
@@ -789,34 +715,25 @@ function buildArchitecture(s, a, frames, forward, group, owned) {
 		group.add(line)
 		owned.push(geometry)
 	}
-	const stairParts = a.stairs.angles.flatMap((deg, i) =>
-		stairGeometry(s, deg, { ...a.stairs, hand: i % 2 ? -1 : 1 }, c),
-	)
-	const stairs = mergeGeometries(stairParts)
-	for (const part of stairParts) part.dispose()
-	forward(stairs, vertexMaterial(), 'lobby-ground-stairs', -3)
-	const edges = new THREE.EdgesGeometry(stairs, 30)
-	const stairLines = new THREE.LineSegments(edges, lineMaterial)
-	stairLines.layers.set(FORWARD_LAYER)
-	stairLines.frustumCulled = false
-	group.add(stairLines)
-	owned.push(edges)
 }
 
 export function createLobbyFloor(scene, renderer) {
 	const s = tune.lobby.floor
 	const a = s.grounds?.[groundStyle(s)]
-	const canvas = a ? drawFlags(s, a) : drawGlaze(s)
+	// Paving reaches out under the kerb, the glaze stops at the lip.
+	const reach = a ? s.rim.width - a.kerb.width + 0.02 : 0
+	const p = { ...s, halfX: s.halfX + reach, halfZ: s.halfZ + reach }
+	const canvas = a ? drawFlags(p, a) : drawGlaze(s)
 	const texture = new THREE.CanvasTexture(canvas)
 	texture.colorSpace = THREE.SRGBColorSpace
 	texture.anisotropy = renderer?.capabilities.getMaxAnisotropy() ?? 1
 	// One non-repeating texture across the whole glaze: UVs are world position over its extent.
-	const top = saucerShape(s)
+	const top = saucerShape(p)
 	const pos = top.attributes.position,
 		uv = new Float32Array(pos.count * 2)
 	for (let i = 0; i < pos.count; i++) {
-		uv[i * 2] = (pos.getX(i) + s.halfX) / (s.halfX * 2)
-		uv[i * 2 + 1] = 1 - (pos.getZ(i) + s.halfZ) / (s.halfZ * 2)
+		uv[i * 2] = (pos.getX(i) + p.halfX) / (p.halfX * 2)
+		uv[i * 2 + 1] = 1 - (pos.getZ(i) + p.halfZ) / (p.halfZ * 2)
 	}
 	top.setAttribute('uv', new THREE.BufferAttribute(uv, 2))
 	const group = new THREE.Group()
