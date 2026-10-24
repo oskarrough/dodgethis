@@ -2,7 +2,7 @@ import { tune } from '../../tune.js'
 import { distance } from '../../../../core/spatial.js'
 
 // One bot pushes (the first by id) and stands just ahead of Tara on the road; the others fight
-// the hound nearest Tara. A bot alone pushes until a hound is on it, fights, then pushes again.
+// the bardino nearest Tara. A bot alone pushes until a bardino is on it, fights, then pushes again.
 export function barqueroBotGoal(ctx, view) {
 	const { perceived, h, p, move, attack, setState, frame } = ctx
 	const party = perceived.heroes
@@ -10,17 +10,17 @@ export function barqueroBotGoal(ctx, view) {
 		.map((u) => u.id)
 		.sort()
 	const near = (pos) =>
-		[...view.hounds].sort(
+		[...view.bardinos].sort(
 			(a, b) => distance(a.pos, pos) - distance(b.pos, pos) || a.id.localeCompare(b.id),
 		)[0]
 	const pusher = party[0] === h.id
 	const onMe = near(p)
 	const close = onMe && distance(onMe.pos, p) <= tune.encounters.barquero.ring
 	if (!pusher || (party.length === 1 && close)) {
-		const hound = party.length === 1 ? onMe : near(view.idol)
-		if (hound) {
-			setState('hounds')
-			attack({ ...hound, radius: tune.waves.radius })
+		const bardino = party.length === 1 ? onMe : near(view.idol)
+		if (bardino) {
+			setState('bardinos')
+			attack({ ...bardino, radius: tune.waves.radius })
 			return frame
 		}
 	}

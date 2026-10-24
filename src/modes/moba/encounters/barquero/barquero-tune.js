@@ -2,7 +2,7 @@ export default {
 	// Barquero (`barquero-fight.js`): Tara, a clay idol, stands at the first point of `road`
 	// (offsets from the encounter's spot) and must reach the last, where Barquero waits with his
 	// ferry. It rolls at `speed` m/s while a hero stands within `ring` m of it, and coasts on for
-	// `coast` s after the last one steps out. From the first push, every `every` s `pack` hounds
+	// `coast` s after the last one steps out. From the first push, every `every` s `pack` bardinos
 	// pour over the dunes at `dunes`, one at each in turn, up to `most` alive, and run at whoever
 	// pushes.
 	road: [
@@ -21,7 +21,7 @@ export default {
 		{ x: 6, z: -7 },
 		{ x: 2, z: 6 },
 	],
-	hound: { hp: 220, damage: 0.5 },
+	bardino: { hp: 220, damage: 0.5 },
 	// The drawing: Tara's ring and its pot, the road ahead, and Barquero's landing.
 	view: {
 		rim: 0.14,
@@ -44,5 +44,5 @@ export const units = {
 	'barquero.most': 'count',
 	'barquero.road': 'm',
 	'barquero.dunes': 'm',
-	'barquero.hound.damage': 'multiplier',
+	'barquero.bardino.damage': 'multiplier',
 }

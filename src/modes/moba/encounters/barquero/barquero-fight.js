@@ -5,15 +5,15 @@ import { distance } from '../../../../core/spatial.js'
 const ticks = (s) => Math.max(1, Math.round(s / STEP))
 
 // Bring Tara down the road to Barquero's ferry. The idol (`idol`, with `leg`, the road point it
-// rolls toward) moves while someone stands in its ring and for a moment after; hounds come in
+// rolls toward) moves while someone stands in its ring and for a moment after; bardinos come in
 // packs and run at the pusher. The fight is `idle` until the first push, then `engaged`. If the
-// whole party falls, the hounds scatter and Tara rolls home. Won when Tara reaches the ferry.
+// whole party falls, the bardinos scatter and Tara rolls home. Won when Tara reaches the ferry.
 export function createBarquero({ heroes, spot, lane, makeMinion }) {
 	const g = () => tune.encounters.barquero
 	const road = () => g().road.map((o) => ({ x: spot.x + o.x, z: spot.z + o.z }))
 	const idol = { ...road()[0], leg: 1 }
 	const state = { phase: 'idle', rollsUntil: 0, nextPack: 0, dune: 0, delivered: false }
-	const hounds = []
+	const bardinos = []
 	let made = 0
 	const living = () => heroes.filter((h) => !h.dead)
 	const pushers = () => living().filter((h) => distance(h.body.position, idol) <= g().ring)
@@ -40,11 +40,11 @@ export function createBarquero({ heroes, spot, lane, makeMinion }) {
 	function loose(t) {
 		if (t < state.nextPack) return
 		state.nextPack = t + ticks(g().every)
-		for (let i = 0; i < g().pack && hounds.filter((h) => !h.dead).length < g().most; i++) {
+		for (let i = 0; i < g().pack && bardinos.filter((h) => !h.dead).length < g().most; i++) {
 			const o = g().dunes[state.dune++ % g().dunes.length]
 			const at = { x: spot.x + o.x, z: spot.z + o.z }
-			const hound = {
-				id: `hound-${++made}`,
+			const bardino = {
+				id: `bardino-${++made}`,
 				passive: true,
 				lane: 'barquero',
 				route: [{ ...at }, { ...at }],
@@ -52,9 +52,9 @@ export function createBarquero({ heroes, spot, lane, makeMinion }) {
 				file: 0,
 				team: 'N',
 				kind: 'melee',
-				hp: g().hound.hp,
-				maxHp: g().hound.hp,
-				damageScale: g().hound.damage,
+				hp: g().bardino.hp,
+				maxHp: g().bardino.hp,
+				damageScale: g().bardino.damage,
 				dead: false,
 				body: makeMinion(at.x, at.z, 'N', 'melee'),
 				target: null,
@@ -64,36 +64,36 @@ export function createBarquero({ heroes, spot, lane, makeMinion }) {
 				attack: null,
 				statuses: [],
 			}
-			hounds.push(hound)
-			lane.minions.push(hound)
+			bardinos.push(bardino)
+			lane.minions.push(bardino)
 		}
 	}
-	// Every hound runs at the nearest pusher, or the nearest hero when no one pushes.
+	// Every bardino runs at the nearest pusher, or the nearest hero when no one pushes.
 	function hunt(t) {
 		const prey = pushers().length ? pushers() : living()
-		for (const hound of hounds) {
-			if (hound.dead) continue
-			const at = hound.body.position
+		for (const bardino of bardinos) {
+			if (bardino.dead) continue
+			const at = bardino.body.position
 			const foe = [...prey].sort(
 				(a, b) =>
 					distance(a.body.position, at) - distance(b.body.position, at) || a.id.localeCompare(b.id),
 			)[0]
 			if (!foe) continue
-			// A hound walks its route at its prey until it is near enough to bite, and never leashes.
+			// A bardino walks its route at its prey until it is near enough to bite, and never leashes.
 			const to = foe.body.position
-			hound.route = [
+			bardino.route = [
 				{ x: at.x, z: at.z },
 				{ x: to.x, z: to.z },
 			]
-			hound.routeLeg = 1
-			hound.aggroOrigin = { x: at.x, z: at.z }
-			hound.forced = foe.id
-			hound.aggroUntil = t + 2
+			bardino.routeLeg = 1
+			bardino.aggroOrigin = { x: at.x, z: at.z }
+			bardino.forced = foe.id
+			bardino.aggroUntil = t + 2
 		}
 	}
 	function scatter() {
-		for (const hound of hounds) hound.dead = true
-		hounds.length = 0
+		for (const bardino of bardinos) bardino.dead = true
+		bardinos.length = 0
 	}
 	function step(t, dt) {
 		if (state.delivered) return
@@ -127,12 +127,12 @@ export function createBarquero({ heroes, spot, lane, makeMinion }) {
 		units: [],
 		step,
 		won: () => state.delivered,
-		// What bots see: Tara and where it rolls next, and the hounds still running.
+		// What bots see: Tara and where it rolls next, and the bardinos still running.
 		botView: () => ({
 			phase: state.phase,
 			idol: { x: idol.x, z: idol.z },
 			ahead: road()[Math.min(idol.leg, road().length - 1)],
-			hounds: hounds
+			bardinos: bardinos
 				.filter((h) => !h.dead)
 				.map((h) => ({ id: h.id, pos: { x: h.body.position.x, z: h.body.position.z } })),
 		}),
