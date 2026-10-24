@@ -279,6 +279,16 @@ export function sliderSections(tune, look, setup, mapId = setup.map, camera = tu
 	return Object.entries(sections).map(([path, sliders]) => [path, object(path), sliders, unitAt])
 }
 
+// What a fresh Tuner shows in a match, in players' words, keyed by section then tune key.
+const FEATURED = {
+	hero: { speed: 'Run speed' },
+	attack: { damage: 'Attack damage', rate: 'Attack speed' },
+	respawn: { base: 'Respawn time' },
+	ball: { speed: 'Ball throw speed', carrySpeed: 'Ball carrier speed' },
+	juice: { hitstop: 'Hit pause', shakeTaken: 'Screen shake when hit' },
+	follow: { height: 'Camera height', fov: 'Camera lens' },
+}
+
 // Top-level groups for sections that aren't already nested in tune. Abilities group as they do on disk.
 const groups = {
 	hero: ['levels', 'respawn', 'momentum', 'attack', 'cast', 'projectile'],
@@ -313,6 +323,6 @@ export function addSliders(debug, sections, step, more = {}) {
 					unitAt?.(controller.object, controller.property) ??
 					resolveUnit(`${path.replaceAll('/', '.')}.${controller.property}`)
 		}
-		debug.tune(where, object, build, { units })
+		debug.tune(where, object, { units, featured: FEATURED[path] }, build)
 	}
 }

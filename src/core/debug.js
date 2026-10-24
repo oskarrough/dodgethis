@@ -79,9 +79,9 @@ export function createDebugPanel() {
 		}
 	}
 	return {
-		// `options` (or a third argument that isn't a builder): { notes, featured, units, onChange }, see registry.js.
-		tune(path, object, build, options) {
-			if (build && typeof build !== 'function') [build, options] = [null, build]
+		// `options`: { notes, featured, units, onChange }, see registry.js; `build(folder, object)` adds controls.
+		tune(path, object, options, build) {
+			if (typeof options === 'function') [options, build] = [{}, options]
 			return adding(path, object, options, build && ((f) => build(f, object)))
 		},
 		cheat: (label, fn) => adding('cheats', {}, {}, (f) => f.add({ [label]: fn }, label)),

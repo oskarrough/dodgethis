@@ -285,10 +285,11 @@ export function createApp(services = {}) {
 					return remove
 				},
 				// A named tune section: shown in game.tune and on the Tuner, every value of it. `options` adds
-				// notes, units and an onChange (src/core/registry.js); a `build(folder)` adds old GUI sliders.
-				tune(name, object, build, options) {
+				// notes, featured values, units and an onChange (src/core/registry.js); `build(folder)` adds
+				// hand-made controls. Either may be left out.
+				tune(name, object, options, build) {
 					claimProperties(tunables, { [name]: object }, signal, 'Tune section')
-					const remove = panel?.tune(name, object, build, options)
+					const remove = panel?.tune(name, object, options, build)
 					if (remove) onAbort(signal, remove)
 				},
 				cheat(label, fn) {

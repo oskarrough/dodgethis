@@ -31,96 +31,90 @@ export function mobaFront(app, map) {
 	let activeBackdrop = null
 	let activeFront = null
 	const unitAt = unitResolver({ front: tune })
-	app.debug.tune(
-		'front',
-		tune,
-		(folder, values) => {
-			const loading = folder.addFolder('loading')
-			for (const key of ['duration'])
-				loading.add(values.loading, key, app.clock.step, 3, app.clock.step)
-			loading.add(values.loading, 'preview', app.clock.step, 8, app.clock.step).name('look time')
-			loading.add(values.loading, 'creep', 0, 0.3, 0.01).name('creep while looking')
-			for (const key of ['line', 'pastel'])
-				loading.add(values.loading, key, key === 'line' ? 0.1 : 0, 1, 0.01)
-			const shots = folder.addFolder('shot')
-			shots.add(values.shot, 'ease', 1, 5, 0.1).name('ease power')
-			for (const name of ['splash', 'lobby', 'apex']) {
-				shots.add(values.shot[name], 'lift', -800, 800, 10).name(name + ' lift')
-				shots.add(values.shot[name], 'zoom', 1, 1.5, 0.01).name(name + ' zoom')
-				shots
-					.add(values.shot[name], 'time', app.clock.step, 2, app.clock.step)
-					.name(name + ' time (s)')
-			}
-			values.shot.depth.forEach((_, i) =>
-				shots.add(values.shot.depth, i, 0, 2, 0.05).name(`layer ${i + 1} depth`),
-			)
-			loading.add(values.loading, 'height', 20, 40, 1)
-			loading.add(values.loading, 'arcHeight', 40, 80, 1)
-			loading.add(values.loading, 'riseEnd', 0.1, 0.6, 0.01)
-			loading.add(values.loading, 'pitchEnd', 0.65, 0.9, 0.01)
-			loading.add(values.loading, 'uiFadeEnd', 0.1, 0.3, 0.01)
-			loading.add(values.loading, 'fitMargin', 1.1, 1.5, 0.01)
-			loading.add(values.loading, 'back', 0, 140, 1)
-			loading.add(values.loading, 'targetY', 0, 19, 1)
-			loading.add(values.loading, 'fov', 30, 90, 1)
+	app.debug.tune('front', tune, { units: unitAt }, (folder, values) => {
+		const loading = folder.addFolder('loading')
+		for (const key of ['duration'])
+			loading.add(values.loading, key, app.clock.step, 3, app.clock.step)
+		loading.add(values.loading, 'preview', app.clock.step, 8, app.clock.step).name('look time')
+		loading.add(values.loading, 'creep', 0, 0.3, 0.01).name('creep while looking')
+		for (const key of ['line', 'pastel'])
+			loading.add(values.loading, key, key === 'line' ? 0.1 : 0, 1, 0.01)
+		const shots = folder.addFolder('shot')
+		shots.add(values.shot, 'ease', 1, 5, 0.1).name('ease power')
+		for (const name of ['splash', 'lobby', 'apex']) {
+			shots.add(values.shot[name], 'lift', -800, 800, 10).name(name + ' lift')
+			shots.add(values.shot[name], 'zoom', 1, 1.5, 0.01).name(name + ' zoom')
+			shots
+				.add(values.shot[name], 'time', app.clock.step, 2, app.clock.step)
+				.name(name + ' time (s)')
+		}
+		values.shot.depth.forEach((_, i) =>
+			shots.add(values.shot.depth, i, 0, 2, 0.05).name(`layer ${i + 1} depth`),
+		)
+		loading.add(values.loading, 'height', 20, 40, 1)
+		loading.add(values.loading, 'arcHeight', 40, 80, 1)
+		loading.add(values.loading, 'riseEnd', 0.1, 0.6, 0.01)
+		loading.add(values.loading, 'pitchEnd', 0.65, 0.9, 0.01)
+		loading.add(values.loading, 'uiFadeEnd', 0.1, 0.3, 0.01)
+		loading.add(values.loading, 'fitMargin', 1.1, 1.5, 0.01)
+		loading.add(values.loading, 'back', 0, 140, 1)
+		loading.add(values.loading, 'targetY', 0, 19, 1)
+		loading.add(values.loading, 'fov', 30, 90, 1)
+		folder
+			.add(values, 'skyFade', app.clock.step, 2, app.clock.step)
+			.name('sky fade (s)')
+			.onChange(() => activeBackdrop?.retune())
+		for (const [key, min, max, step] of [
+			['depth', 0, 0.045, 0.001],
+			['response', app.clock.step, 1, app.clock.step],
+			['settle', 0.001, 1, 0.001],
+		])
 			folder
-				.add(values, 'skyFade', app.clock.step, 2, app.clock.step)
-				.name('sky fade (s)')
+				.add(values.parallax, key, min, max, step)
+				.name('parallax ' + key)
 				.onChange(() => activeBackdrop?.retune())
-			for (const [key, min, max, step] of [
-				['depth', 0, 0.045, 0.001],
-				['response', app.clock.step, 1, app.clock.step],
-				['settle', 0.001, 1, 0.001],
-			])
-				folder
-					.add(values.parallax, key, min, max, step)
-					.name('parallax ' + key)
-					.onChange(() => activeBackdrop?.retune())
-			for (const name of ['back', 'move', 'enter', 'deny']) {
-				const sound = values[name]
-				if (sound.freq !== undefined) {
-					folder.add(sound, 'freq', 20, 2400, 1).name(name + ' tone')
-					folder.add(sound, 'slideTo', 20, 2400, 1).name(name + ' slide')
-				}
-				folder.add(sound, 'dur', app.clock.step, 2, app.clock.step).name(name + ' duration (s)')
-				folder.add(sound, 'gain', 0, 1, 0.01).name(name + ' gain')
+		for (const name of ['back', 'move', 'enter', 'deny']) {
+			const sound = values[name]
+			if (sound.freq !== undefined) {
+				folder.add(sound, 'freq', 20, 2400, 1).name(name + ' tone')
+				folder.add(sound, 'slideTo', 20, 2400, 1).name(name + ' slide')
 			}
-			const tile = folder.addFolder('tile')
-			for (const [key, min, max, step] of [
-				['snap', app.clock.step, 0.5, 0.01],
-				['press', app.clock.step, 0.3, 0.01],
-				['scale', 1, 1.2, 0.01],
-				['lift', 0, 24, 1],
-				['tilt', 0, 8, 0.5],
-				['wash', 0, 0.6, 0.01],
-			])
-				tile.add(values.tile, key, min, max, step).onChange(() => activeFront?.retune())
-			for (const key of ['line', 'shadow', 'ring'])
-				tile
-					.add(values.skin, key, 0, 16, 0.5)
-					.name('skin ' + key)
-					.onChange(() => activeFront?.retune())
-			values.skin.cut.forEach((_, i) =>
-				tile
-					.add(values.skin.cut, i, 0, 40, 1)
-					.name(`skin cut ${['tl', 'tr', 'br', 'bl'][i]}`)
-					.onChange(() => activeFront?.retune()),
-			)
-			const plate = folder.addFolder('plate')
-			plate.add(values.mist, 'opacity', 0, 1, 0.01).name('mist opacity')
-			plate.add(values.mist.period, 0, 20, 400, 1).name('far mist loop (s)')
-			plate.add(values.mist.period, 1, 20, 400, 1).name('near mist loop (s)')
-			plate.add(values.dusk, 'amount', 0, 1, 0.01).name('dusk wash')
-			for (const controller of plate.controllers)
-				controller.onChange(() => activeBackdrop?.retune())
-			tile.add(values.tile, 'drop', app.clock.step, 1, app.clock.step).name('drop out (s)')
-			tile.add(values.tile, 'pop', app.clock.step, 1, app.clock.step).name('pop in (s)')
-			tile.add(values.deny, 'shake', app.clock.step, 1, app.clock.step).name('deny shake (s)')
-			for (const controller of folder.controllersRecursive())
-				controller.unit = unitAt(controller.object, controller.property)
-		},
-		{ units: unitAt },
-	)
+			folder.add(sound, 'dur', app.clock.step, 2, app.clock.step).name(name + ' duration (s)')
+			folder.add(sound, 'gain', 0, 1, 0.01).name(name + ' gain')
+		}
+		const tile = folder.addFolder('tile')
+		for (const [key, min, max, step] of [
+			['snap', app.clock.step, 0.5, 0.01],
+			['press', app.clock.step, 0.3, 0.01],
+			['scale', 1, 1.2, 0.01],
+			['lift', 0, 24, 1],
+			['tilt', 0, 8, 0.5],
+			['wash', 0, 0.6, 0.01],
+		])
+			tile.add(values.tile, key, min, max, step).onChange(() => activeFront?.retune())
+		for (const key of ['line', 'shadow', 'ring'])
+			tile
+				.add(values.skin, key, 0, 16, 0.5)
+				.name('skin ' + key)
+				.onChange(() => activeFront?.retune())
+		values.skin.cut.forEach((_, i) =>
+			tile
+				.add(values.skin.cut, i, 0, 40, 1)
+				.name(`skin cut ${['tl', 'tr', 'br', 'bl'][i]}`)
+				.onChange(() => activeFront?.retune()),
+		)
+		const plate = folder.addFolder('plate')
+		plate.add(values.mist, 'opacity', 0, 1, 0.01).name('mist opacity')
+		plate.add(values.mist.period, 0, 20, 400, 1).name('far mist loop (s)')
+		plate.add(values.mist.period, 1, 20, 400, 1).name('near mist loop (s)')
+		plate.add(values.dusk, 'amount', 0, 1, 0.01).name('dusk wash')
+		for (const controller of plate.controllers) controller.onChange(() => activeBackdrop?.retune())
+		tile.add(values.tile, 'drop', app.clock.step, 1, app.clock.step).name('drop out (s)')
+		tile.add(values.tile, 'pop', app.clock.step, 1, app.clock.step).name('pop in (s)')
+		tile.add(values.deny, 'shake', app.clock.step, 1, app.clock.step).name('deny shake (s)')
+		for (const controller of folder.controllersRecursive())
+			controller.unit = unitAt(controller.object, controller.property)
+	})
 
 	app.modes.define('moba-front', {
 		scheme: 'pointClick',

@@ -55,8 +55,8 @@ export function createTuner(source) {
 	root.innerHTML = `<header class="tuner-head"><b title="press \` to hide · change a number, then share it as a GitHub issue">Tune</b><span class="tuner-chips"></span>
 		<button data-act="copy" title="copy changed values as JSON, to paste into a GitHub issue">copy</button>
 		<button data-act="share" title="open a GitHub issue with what you changed">share</button>
-		<button data-act="reset" title="put every changed value back">reset</button>
-		<input class="tuner-find" type="search" placeholder="find a value: lob, speed, fog…" /></header>
+		<button data-act="reset" title="put every changed value back">reset all</button>
+		<input class="tuner-find" type="search" placeholder="find any value: lob, speed, fog…" /></header>
 		<nav class="tuner-index"></nav><div class="tuner-board"></div><p class="tuner-note"></p>`
 	document.body.append(root)
 	const chips = root.querySelector('.tuner-chips')
@@ -108,7 +108,10 @@ export function createTuner(source) {
 	function renderIndex() {
 		const query = find.value.trim().toLowerCase()
 		const open =
-			query || browse !== null || document.activeElement === find || !state.queries.length
+			query ||
+			browse !== null ||
+			document.activeElement === find ||
+			(!state.queries.length && !source.featured?.().length)
 		index.hidden = !open
 		if (!open) return
 		const controllers = source.entries()
@@ -220,8 +223,11 @@ export function createTuner(source) {
 		return b
 	}
 
+	// With nothing pinned the board shows the screen's featured values, in players' words.
 	function rebuild() {
-		const found = matches()
+		const pinned = matches()
+		const featured = state.queries.length ? [] : (source.featured?.() ?? [])
+		const found = pinned.length ? pinned : featured.map((c) => ({ key: c.path, c, featured: true }))
 		root.hidden = !shown
 		renderIndex()
 		chips.replaceChildren(
@@ -237,10 +243,26 @@ export function createTuner(source) {
 		const keys = found.map((f) => f.key).join('|')
 		if (keys === shownKeys) return
 		shownKeys = keys
-		modules = found.slice(0, MAX).map(({ key, c }) => instrument(key, c, kindOf(c), changed))
+		modules = found.slice(0, MAX).map(({ key, c }) => {
+			const m = instrument(key, c, kindOf(c), changed)
+			const back = Object.assign(document.createElement('button'), {
+				className: 'tuner-reset',
+				textContent: '↺',
+				title: 'back to the default',
+			})
+			back.addEventListener('click', (e) => {
+				e.stopPropagation()
+				c.reset()
+				changed(key, c)
+			})
+			m.el.append(back)
+			return m
+		})
 		const groups = new Map()
-		for (const m of modules) {
-			const folder = m.key.split('/').slice(0, -1).join(' / ') || 'engine'
+		for (const [i, m] of modules.entries()) {
+			const folder = found[i].featured
+				? 'featured · find more below'
+				: m.key.split('/').slice(0, -1).join(' / ') || 'engine'
 			if (!groups.has(folder)) groups.set(folder, [])
 			groups.get(folder).push(m.el)
 		}

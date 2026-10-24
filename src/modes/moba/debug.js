@@ -214,14 +214,15 @@ export function createMatchDebug({
 	run.clock.scale(() => speed)
 	run.intents.suspend(() => paused)
 
-	run.debug.tune('tryMode', controls, (folder, values) => {
+	const featured = { 'match.speed': 'Game speed', 'lobby.speed': 'Game speed' }
+	run.debug.tune('tryMode', controls, { featured }, (folder, values) => {
 		const match = folder.addFolder(isLobby ? 'lobby' : 'match')
 		match.add(values, 'paused').name('pause / resume').listen()
 		match.add(values, 'step').name('step one tick')
 		match
 			.add(values, 'speed', tune.testing.speedMin, tune.testing.speedMax, tune.testing.speedStep)
 			.name('speed ×')
-			.listen()
+			.listen().unit = 'multiplier'
 		if (!isLobby) {
 			match.add(values, 'waves').name('minion waves').listen()
 			match.add(values, 'botsEnabled').name('bots active').listen()

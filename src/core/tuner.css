@@ -186,16 +186,24 @@
 		0 1px 0 #ffffff12 inset,
 		0 -2px 0 #0004 inset;
 }
-.tuner-mod.is-changed::before {
-	content: '';
+/* A changed value shows a way back to its default. */
+.tuner-reset {
 	position: absolute;
-	top: 6px;
-	right: 6px;
-	width: 6px;
-	height: 6px;
+	top: 3px;
+	right: 3px;
+	display: none;
+	width: 20px;
+	height: 20px;
+	padding: 0;
+	border: 0;
 	border-radius: 50%;
 	background: var(--k);
-	box-shadow: 0 0 6px var(--k);
+	color: #1b1b1f;
+	font: 700 12px/20px var(--text-font, system-ui);
+	cursor: pointer;
+}
+.tuner-mod.is-changed .tuner-reset {
+	display: block;
 }
 .tuner-mod label {
 	overflow: hidden;

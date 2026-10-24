@@ -417,9 +417,12 @@ export default function moba(app, map) {
 			app.clock.reset()
 
 			if (debugTune) {
-				run.debug.tune(`lane/${debugTune.name}`, debugTune.values, debugTune.add, {
-					units: (o, key, dotted) => resolveUnit(`${debugTune.name}.${dotted}`),
-				})
+				run.debug.tune(
+					`lane/${debugTune.name}`,
+					debugTune.values,
+					{ units: (o, key, dotted) => resolveUnit(`${debugTune.name}.${dotted}`) },
+					debugTune.add,
+				)
 				const repaint = () => {
 					Object.assign(palette, maps[kind].palette())
 					restyle()
@@ -430,13 +433,13 @@ export default function moba(app, map) {
 						run.debug.tune(
 							`style/${debugTune.name}/${section}`,
 							debugTune.values[section],
-							(f, o) => {
-								add(f, o)
-								for (const c of f.controllers) c.onChange(repaint)
-							},
 							{
 								onChange: repaint,
 								units: (o, key, dotted) => resolveUnit(`${debugTune.name}.${section}.${dotted}`),
+							},
+							(f, o) => {
+								add(f, o)
+								for (const c of f.controllers) c.onChange(repaint)
 							},
 						)
 			}

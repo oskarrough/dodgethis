@@ -94,7 +94,7 @@ export function createRegistry() {
 	let id = 0
 	return {
 		// `options`: { notes: { 'dotted.key': { label, hint, range, step, unit, when, hidden } },
-		// units(object, key, dotted) → unit name, onChange(dotted, value), featured: ['dotted.key'] }.
+		// units(object, key, dotted) → unit name, onChange(dotted, value), featured: { 'dotted.key': label } }.
 		add(path, object, options = {}, build = null) {
 			const key = ++id
 			const folder = createTuneFolder(path)
@@ -135,12 +135,16 @@ export function createRegistry() {
 			for (const byKey of best.values()) all.push(...byKey.values())
 			return all
 		},
+		// `featured` maps a dotted key to the label players see, in the order to show them. A
+		// hand-made control for the value wins over the walk's entry, as in entries().
 		featured() {
 			const all = []
 			for (const s of sections.values())
-				for (const dotted of s.options.featured ?? []) {
-					const e = s.entries.find((x) => x.dotted === dotted)
-					if (e) all.push(e)
+				for (const [dotted, label] of Object.entries(s.options.featured ?? {})) {
+					const path = `${s.path}/${dotted.replaceAll('.', '/')}`
+					const e =
+						s.controls.find((c) => c.path === path) ?? s.entries.find((x) => x.dotted === dotted)
+					if (e) all.push({ ...e, label })
 				}
 			return all
 		},
