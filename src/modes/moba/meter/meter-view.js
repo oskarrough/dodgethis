@@ -9,7 +9,7 @@ import { createMeter, MODES, standings } from './meter.js'
 // The damage meter (docs/feature-map.md, "Match: HUD"): a small card in the bottom-left corner that
 // counts damage done, healing done, damage taken and deaths per hero. Arrows step between the current
 // fight, the fights before it (each boss encounter is one) and the whole match. Click a row to see what
-// it was made of; M shows and hides the card, and the choice is remembered.
+// it was made of; M shows and hides the card.
 const KEY = 'KeyM'
 const STORE = 'dodgethis.meter'
 const TITLES = {
@@ -20,16 +20,16 @@ const TITLES = {
 }
 const RATE = { damage: 'dps', healing: 'hps', taken: 'dtps' }
 
-const read = () => {
+const read = (key) => {
 	try {
-		return globalThis.localStorage?.getItem(STORE)
+		return globalThis.localStorage?.getItem(`${STORE}.${key}`)
 	} catch {
 		return null
 	}
 }
-const write = (value) => {
+const write = (key, value) => {
 	try {
-		globalThis.localStorage?.setItem(STORE, value)
+		globalThis.localStorage?.setItem(`${STORE}.${key}`, value)
 	} catch {
 		/* Still toggles for this match. */
 	}
@@ -49,10 +49,12 @@ export function createMeterView({ sim, local }) {
 			dispose() {},
 		}
 
-	const saved = read()
+	// Shown by default in a dungeon, hidden in PvP; each remembers the player's own choice.
+	const place = sim.dungeon ? 'dungeon' : 'pvp'
+	const saved = read(place)
 	const state = {
-		shown: saved ? saved === 'on' : true,
-		mode: MODES.includes(saved?.split(':')[1]) ? saved.split(':')[1] : 'damage',
+		shown: saved ? saved === 'on' : place === 'dungeon',
+		mode: MODES.includes(read('mode')) ? read('mode') : 'damage',
 		view: 'live', // 'live' follows the open segment; otherwise a segment or the overall
 		drill: null,
 		dirty: true,
@@ -117,13 +119,13 @@ export function createMeterView({ sim, local }) {
 	function setMode(by) {
 		state.mode = MODES[(MODES.indexOf(state.mode) + by + MODES.length) % MODES.length]
 		state.drill = null
-		write(`${state.shown ? 'on' : 'off'}:${state.mode}`)
+		write('mode', state.mode)
 		render()
 	}
 	function show(on) {
 		state.shown = on
 		root.hidden = !on
-		write(`${on ? 'on' : 'off'}:${state.mode}`)
+		write(place, on ? 'on' : 'off')
 		if (on) render()
 	}
 
