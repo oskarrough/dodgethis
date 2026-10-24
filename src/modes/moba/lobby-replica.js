@@ -10,6 +10,7 @@ import { summonBody } from './summons.js'
 
 const finite = Number.isFinite
 const point = (p) => p && finite(p.x) && finite(p.z)
+const vector = (p) => p && finite(p.x) && finite(p.y) && finite(p.z)
 const lerp = (a, b, blend) => a + (b - a) * blend
 const angle = (a, b, blend) => a + Math.atan2(Math.sin(b - a), Math.cos(b - a)) * blend
 const timers = ['cd', 'cancelUntil']
@@ -143,6 +144,10 @@ export function createUnitReplica(
 						!HEROES[pose.heroId]?.playable ||
 						(!lobby && pose.heroId !== unit.heroId) ||
 						!point(pose.vel) ||
+						typeof pose.grounded !== 'boolean' ||
+						!finite(pose.dashTime) ||
+						pose.dashTime < 0 ||
+						!vector(pose.dashDirection) ||
 						!timers.every(
 							(key) =>
 								Array.isArray(pose[key]) &&
@@ -336,7 +341,12 @@ export function createUnitReplica(
 			unit.yaw = angle(a.yaw, continuous ? b.yaw : a.yaw, blend)
 			unit.body.face({ x: -Math.sin(unit.yaw), z: -Math.cos(unit.yaw) })
 			const velocity = a.vel ?? { x: 0, z: 0 }
-			unit.body.setVelocity({ ...velocity, y: 0 })
+			unit.body.applyReplicaState({
+				velocity: { ...velocity, y: 0 },
+				grounded: a.grounded ?? true,
+				dashTime: a.dashTime ?? 0,
+				dashDirection: a.dashDirection ?? { x: 0, y: 0, z: 0 },
+			})
 		}
 		if (a.dead && !unit.body.retired) {
 			for (const part of unit.body.mesh.children)
