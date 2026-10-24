@@ -324,7 +324,7 @@
 			.desk-slot {
 				background: #8fd7ff;
 			}
-			.desk-slot .desk {
+			.desk-slot .tuner {
 				position: static;
 				width: auto;
 				max-height: none;
@@ -473,7 +473,7 @@
 				text: 'Sniglet',
 				textW: 400,
 				num: 'Sniglet',
-				desk: 'Sniglet', // desk.css reads --text-font
+				desk: 'Sniglet', // tuner.css reads --text-font
 				k: 1,
 				track: 0,
 			}
@@ -648,7 +648,7 @@
 				el.style.setProperty('--ui-font', stack(c.ui))
 				el.style.setProperty('--text-font', stack(c.text))
 				el.style.setProperty('--num-font', stack(c.num))
-				el.querySelector('.desk')?.style.setProperty('--ui-font', stack(c.desk))
+				el.querySelector('.tuner')?.style.setProperty('--ui-font', stack(c.desk))
 				el.style.setProperty('--ui-w', c.uiW)
 				el.style.setProperty('--text-w', c.textW)
 				el.style.setProperty('--k', c.k)
@@ -661,7 +661,7 @@
 					`--ui-font: ${stack(c.ui)};`,
 					`--text-font: ${stack(c.text)};`,
 					`/* look.js damageNumbers.family */ '${c.num}'`,
-					c.desk !== c.ui ? `.desk { font-family: ${stack(c.desk)}; }` : '',
+					c.desk !== c.ui ? `.tuner { font-family: ${stack(c.desk)}; }` : '',
 					c.uiW !== 400 || c.track
 						? `/* display: weight ${c.uiW}, letter-spacing ${c.track}em */`
 						: '',
@@ -711,22 +711,20 @@
 			// copy it into every column. Needs the dev server (it imports from /src). The game keeps its
 			// desk pins in localStorage, so the stand-in desk gets a store of its own.
 			try {
-				const [{ default: GUI }, { createDesk }] = await Promise.all([
-					import('lil-gui'),
-					import('/src/core/desk.js'),
+				const [{ createRegistry }, { createTuner }] = await Promise.all([
+					import('/src/core/registry.js'),
+					import('/src/core/tuner.js'),
 				])
 				const { getItem, setItem } = Storage.prototype
 				let own = null
+				const mine = (k) => k === 'dt-tuner' || k === 'dt-desk'
 				Storage.prototype.getItem = function (k) {
-					return k === 'dt-desk' ? own : getItem.call(this, k)
+					return mine(k) ? own : getItem.call(this, k)
 				}
 				Storage.prototype.setItem = function (k, v) {
-					if (k === 'dt-desk') own = v
+					if (mine(k)) own = v
 					else setItem.call(this, k, v)
 				}
-				const gui = new GUI()
-				gui.domElement.hidden = true
-				const f = gui.addFolder('lob')
 				const t = {
 					cooldown: 6.5,
 					radius: 3.2,
@@ -738,18 +736,20 @@
 					pierce: true,
 				}
 				const units = ['s', 'm', 'm/s', 'deg', 'fraction', 'hp', 'multiplier', 'bool']
-				Object.keys(t).forEach((k, i) => (f.add(t, k).unit = units[i]))
-				f.addColor({ tint: '#c98462' }, 'tint').unit = 'color'
-				const live = createDesk(gui)
+				const registry = createRegistry()
+				registry.add('lob', t, {}, (f) => {
+					Object.keys(t).forEach((k, i) => (f.add(t, k).unit = units[i]))
+					f.addColor({ tint: '#c98462' }, 'tint').unit = 'color'
+				})
+				const live = createTuner(registry)
 				live.pin('lob')
 				live.show(true)
 				await new Promise((r) => setTimeout(r, 200))
-				const node = document.querySelector('body > .desk')
+				const node = document.querySelector('body > .tuner')
 				node.hidden = false
 				node.removeAttribute('style')
 				desk = node.cloneNode(true)
 				live.dispose()
-				gui.destroy()
 				Object.assign(Storage.prototype, { getItem, setItem })
 				render()
 			} catch (e) {
