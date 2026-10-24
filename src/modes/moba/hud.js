@@ -8,7 +8,6 @@ import { el } from '../../core/dom.js'
 import { createCastBar } from './cast-bar.js'
 import {
 	abilityCard,
-	ballCard,
 	clock,
 	clockCard,
 	abilityName,
@@ -24,6 +23,7 @@ import {
 import { controls } from '../../core/controls.js'
 import { presetKeys } from '../../core/intents.js'
 import { STEP } from '../../core/app.js'
+import mechanicViews from './mechanics/all-mechanic-views.js'
 
 // The match HUD: top bar, portrait, ability slots and their tooltips. World units get no card in a
 // match; the lobby's inspect cursor still reads its props and dummies.
@@ -39,9 +39,6 @@ const PAD_RIGHT = 15
 
 const svg = (body) => `<svg viewBox="0 0 48 48" aria-hidden="true">${body}</svg>`
 export const ICONS = {
-	ball: svg(
-		'<circle class="gold" cx="24" cy="24" r="15"/><path class="ink-line" d="M10 20 Q24 28 38 20 M18 10 Q26 24 18 38"/>',
-	),
 	wave: svg(
 		'<path class="ink-line" d="M14 40 L14 8"/><path class="tone" d="M15 9 L36 14 L15 21 Z"/><circle class="cream" cx="28" cy="34" r="6"/><circle class="cream" cx="38" cy="36" r="5"/>',
 	),
@@ -82,12 +79,6 @@ export const ICONS = {
 const ring = (left, total) =>
 	total > 0 ? Math.round(Math.max(0, Math.min(1, left / total)) * 200) / 200 : 0
 
-// Seconds until a live Ball pops: at its own pop time, or sooner if the next spawn replaces it. Null while none is live.
-const ballPopIn = (ball, tick, blend, step) =>
-	ball.state && ball.state.state !== 'warning'
-		? Math.max(0, Math.min(ball.state.popAt, ball.nextBall) - tick - blend) * step
-		: null
-
 // The HUD's view of a running match for the local hero, `blend` ticks past the last step.
 export function matchFrame(sim, hero, blend, step) {
 	const until = (tick) => (tick - sim.tick - blend) * step
@@ -103,8 +94,6 @@ export function matchFrame(sim, hero, blend, step) {
 		elapsed: sim.tick * step,
 		teams: sim.lane?.teams,
 		carryingBall: sim.ball?.carrying(hero) ?? false,
-		ballPop: sim.ball ? ballPopIn(sim.ball, sim.tick, blend, step) : null,
-		nextBall: sim.ball ? until(sim.ball.nextBall) : undefined,
 		nextWave: sim.lane ? until(sim.lane.nextWave) : undefined,
 		localTeam: hero.team,
 		hp: hero.hp,
@@ -194,7 +183,7 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 		return node
 	}
 
-	// One slim pill: who's alive on each side, the takedown score, the clock and the Ball countdown.
+	// One slim pill: who's alive on each side, the takedown score, the clock and each mechanic's timer.
 	// The next wave lives in the clock's card. Every number has a reserved width, so the pill never resizes.
 	const top = el('div', 'moba-score moba-top')
 	top.setAttribute('role', 'group')
@@ -214,12 +203,15 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 	side('mine')
 	const clockNode = hot(el('div', 'moba-clock', top), { kind: 'clock' }, topBar)
 	const clockText = el('b', '', clockNode)
-	const ball = (() => {
-		const node = hot(el('div', 'moba-timer ball', clockNode), { kind: 'ball' }, topBar)
-		const face = el('i', 'moba-ring', node, ICONS.ball)
+	// A mechanic's view may bring a countdown (`timer`: icon, read, card), shown beside the clock.
+	const timers = (mechanics ?? []).flatMap(({ id }) => {
+		const timer = mechanicViews[id]?.timer
+		if (!timer) return []
+		const node = hot(el('div', `moba-timer ${id}`, clockNode), { kind: 'timer', id }, topBar)
+		const face = el('i', 'moba-ring', node, timer.icon)
 		const seconds = el('b', '', node)
-		return { node, face, seconds }
-	})()
+		return [{ id, timer, node, face, seconds, reading: null }]
+	})
 	side('theirs')
 
 	const root = el('div', 'moba-hud')
@@ -348,7 +340,7 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 		portrait,
 		trait,
 		clockNode,
-		ball.node,
+		...timers.map((t) => t.node),
 		objective,
 		...['mine', 'theirs'].flatMap((which) => [sides[which].dots, sides[which].kills]),
 	]
@@ -428,7 +420,7 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 	}
 
 	function cardFor(source, frame) {
-		const { hero, sim, teams, localTeam, elapsed, nextWave, ballPop, carryingBall } = frame
+		const { hero, sim, teams, localTeam, elapsed, nextWave } = frame
 		const enemy = localTeam === 'A' ? 'B' : 'A'
 		const team = (which) => (which === 'mine' ? localTeam : enemy)
 		switch (source.kind) {
@@ -457,8 +449,10 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 					reinforcements: sim?.lane?.reinforcements,
 					team: localTeam,
 				})
-			case 'ball':
-				return ballCard({ ballPop, carrying: carryingBall, device: frame.device })
+			case 'timer': {
+				const t = timers.find((t) => t.id === source.id)
+				return t ? t.timer.card(t.reading, { device: frame.device }) : null
+			}
 			case 'objective':
 				return objectiveCard()
 			case 'unit': {
@@ -601,8 +595,6 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 				elapsed = 0,
 				teams,
 				nextWave,
-				nextBall,
-				ballPop,
 				carryingBall,
 				localTeam = 'A',
 				hero,
@@ -672,36 +664,22 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 					text(s.kills, String(kills[team]))
 				}
 				text(clockText, clock(elapsed))
-				const late = elapsed >= (layout?.late ?? tune.match.late)
-				const ballState = carryingBall
-					? 'carried'
-					: ballPop != null
-						? 'live'
-						: nextBall === undefined
-							? 'off'
-							: 'next'
-				data(ball.node, 'state', ballState)
-				const ballLeft = ballPop ?? Math.max(0, nextBall ?? 0)
-				const ballTotal =
-					ballPop != null
-						? tune.ball.life
-						: elapsed < tune.ball.first
-							? tune.ball.first
-							: late
-								? tune.ball.lateInterval
-								: tune.ball.interval
-				text(ball.seconds, carryingBall || ballState === 'off' ? '' : `${Math.ceil(ballLeft)}`)
-				prop(ball.face, '--f', String(carryingBall ? 1 : ring(ballLeft, ballTotal)))
-				flag(
-					ball.node,
-					'warn',
-					ballState === 'live' || (ballState === 'next' && ballLeft <= tune.hud.warn),
-				)
+				for (const t of timers) {
+					t.reading =
+						sim && hero
+							? t.timer.read(sim, hero, frame.blend ?? 0, frame.step ?? STEP, layout)
+							: null
+					const r = t.reading
+					data(t.node, 'state', r?.state ?? 'off')
+					text(t.seconds, r?.seconds ?? '')
+					prop(t.face, '--f', String(!r ? 0 : r.full ? 1 : ring(r.left, r.total)))
+					flag(t.node, 'warn', !!r?.warn)
+				}
 				const alive = (t) => sim?.heroes?.filter((h) => h.team === t && !h.dead).length ?? 0
 				// One plain sentence for screen readers and scripts; only rewritten when a whole second ticks.
 				text(
 					summary,
-					`Your team ${alive(localTeam)} up, ${kills[localTeam]} kills · ${clock(elapsed)} · Enemy ${alive(enemy)} up, ${kills[enemy]} kills · wave ${Math.ceil(Math.max(0, nextWave ?? 0))}s${ballPop != null ? ` · Ball pops in ${Math.ceil(ballPop)}s` : nextBall === undefined ? '' : ` · Ball ${Math.ceil(ballLeft)}s`}`,
+					`Your team ${alive(localTeam)} up, ${kills[localTeam]} kills · ${clock(elapsed)} · Enemy ${alive(enemy)} up, ${kills[enemy]} kills · wave ${Math.ceil(Math.max(0, nextWave ?? 0))}s${timers.map((t) => (t.reading ? ` · ${t.reading.says}` : '')).join('')}`,
 				)
 			}
 			for (let i = lines.length - 1; i >= 0; i--)

@@ -145,11 +145,11 @@ Paths are under `src/modes/moba/` unless they start with `src/`. `tune.js` means
 
 ## Match: the Ball
 
-- Ball (neutral objective, carried to score on structures): `ball.js` `createBall`; `mechanics/ball/` (view `ball-view.js` through `mechanics/ball/ball-view.js`); `tune.js` `ball`; `moba.md`
-- Ball throw (Q W E R Z, pad A, or left click while carrying): `ball.js` `control`; `src/core/intents.js` `pointClick`; `src/core/controls.js` `throwClick`; `onboarding.js`; `tooltip.js` `ballCard`
-- Ball drawing and trail: `ball-view.js` `createBallView`; `tune.js` `ballView`
+- Ball (neutral objective, carried to score on structures): everything in `mechanics/ball/`: `ball-objective.js` `createBall`, `ball-tune.js` `ball`, top-bar timer and card in `ball-hud.js`, Silence keyword in `ball.js` `terms`; `moba.md`
+- Ball throw (Q W E R Z, pad A, or left click while carrying): `mechanics/ball/ball-objective.js` `control`; `src/core/intents.js` `pointClick`; `src/core/controls.js` `throwClick`; `onboarding.js`; `mechanics/ball/ball-hud.js` `timer.card`
+- Ball drawing and trail: `mechanics/ball/ball-view.js` `createBallView`; `ball-tune.js` `ballView`
 - Ball confetti on pop: `feedback.js` `createFeedback`; `look.js` `ballConfetti`
-- Ball bot behaviour (who fetches, who carries): `ball-bots.js`; `tune.js` `bots`
+- Ball bot behaviour (who fetches, who carries): `mechanics/ball/ball-bots.js`; `tune.js` `bots`
 
 ## Match: maps and props
 
@@ -185,7 +185,7 @@ Paths are under `src/modes/moba/` unless they start with `src/`. `tune.js` means
 
 - Bots: difficulty, roster, intercept maths: `bots.js` `createBots`, `createBot`, `practiceRoster`, `botRandom`, `interceptTime`; `tune.js` `bots`
 - Ability bot tools and folder tactics: `ability-bots.js` `botTactics` (default tool set, named tactic or opt-out), `abilityTactics` (guarded, descending-priority `act(ctx, slot)`), `botClearLine` (Pass and Coach's dead-player throw); `fight-bots.js` `perceive` keeps the first slot matching each tool; custom acts supplement default tools and receive their kit slot, not a fixed slot name.
-- Lane walking bot: `lane-bots.js`; fight bot (who to hit): `fight-bots.js` `createFightBot`; dodge bot: `dodge-bots.js` `createDodgeBot`; Ball bot: `ball-bots.js`
+- Lane walking bot: `lane-bots.js`; fight bot (who to hit): `fight-bots.js` `createFightBot`; dodge bot: `dodge-bots.js` `createDodgeBot`; Ball bot: `mechanics/ball/ball-bots.js`
 - Headless match for simulations: `agent-match.js` `createAgentMatch`, `replayHash`, `readReplay`; `bun run simulate`; `verify.md`
 - Agent protocol (observations and actions for LLM or scripted players): `agents.js` `agentRoster`, `observation`, `agentAction`, `createAgentDecisions`; `tune.js` `agents`, `proof`; `verify.md`
 - Match replay (record, load, play back): `replay.js` `mobaReplay`, `loadReplay`; `replay.css`; tapes record no map, so replays play on Overthrow only

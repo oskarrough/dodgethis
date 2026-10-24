@@ -1,9 +1,9 @@
-import { STEP } from '../../core/app.js'
-import { tune } from './tune.js'
-import { blocked } from './statuses.js'
-import { interceptShot, stepShot } from './skillshot.js'
-import { clampWalkable } from './obstacles.js'
-import { cancelAttack } from './sim-kit.js'
+import { STEP } from '../../../../core/app.js'
+import { tune } from '../../tune.js'
+import { blocked } from '../../statuses.js'
+import { interceptShot, stepShot } from '../../skillshot.js'
+import { clampWalkable } from '../../obstacles.js'
+import { cancelAttack } from '../../sim-kit.js'
 
 const ticks = (s) => Math.max(1, Math.round(s / STEP))
 const pos = (p) => ({ x: p.x, z: p.z })

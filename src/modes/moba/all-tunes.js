@@ -43,6 +43,7 @@ import heroes_wata from './heroes/wata/wata-tune.js'
 import maps_dungeon from './maps/dungeon/dungeon-tune.js'
 import maps_flagfall from './maps/flagfall/flagfall-tune.js'
 import maps_overthrow from './maps/overthrow/overthrow-tune.js'
+import mechanics_ball from './mechanics/ball/ball-tune.js'
 
 export const abilities = {
 	aroundTheWorld: abilities_aroundTheWorld,
@@ -93,4 +94,7 @@ export const maps = {
 	dungeon: maps_dungeon,
 	flagfall: maps_flagfall,
 	overthrow: maps_overthrow,
+}
+export const mechanics = {
+	ball: mechanics_ball,
 }

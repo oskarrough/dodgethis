@@ -64,7 +64,7 @@ Copy `heroes/wata/` and `abilities/balloon/`; Wata was built this way and touche
 
 Every new MOBA tune number needs a unit in `src/modes/moba/units.js` (exact dotted suffixes override bare fields; blocks can declare defaults); `bun scripts/check-moba-units.js` enforces coverage.
 
-A mechanic is something a map switches on: structures, minions, the Ball, bots, camps, the flag, practice dummies. Casting, catching, bounce and damage are the engine every ability runs through; an ability is a data head and a code body in that path, never its own projectile loop.
+A mechanic is something a map switches on: structures, minions, the Ball, bots, camps, the flag, practice dummies. `mechanics/ball/` is the whole example: logic, bots, drawing, numbers (`ball-tune.js`, its keys at the top of `tune`), keywords (`terms`) and a top-bar countdown (the view's `timer`: `icon`, `read`, `card`, shown by `hud.js` for any mechanic that has one). Casting, catching, bounce and damage are the engine every ability runs through; an ability is a data head and a code body in that path, never its own projectile loop.
 
 ## Find where anything lives
 

@@ -1,7 +1,5 @@
 import { tune } from './tune.js'
 import { HEROES } from './heroes.js'
-import { controls } from '../../core/controls.js'
-import { throwHint } from '../../core/intents.js'
 import {
 	fillCardTemplate,
 	formatCardValue,
@@ -102,22 +100,6 @@ export function heroCard(hero, { localTeam, localId, lobby = false } = {}) {
 		facts: lobby
 			? []
 			: [['Respawn if taken down', `${n(tune.respawn.base + tune.respawn.perLevel * level)} s`]],
-	}
-}
-
-export function ballCard({ ballPop = null, carrying = false, device } = {}) {
-	const b = tune.ball
-	return {
-		title: 'The Ball',
-		sentence: carrying
-			? `You carry it at ${pct(b.carrySpeed)} speed. ${throwHint(controls.preset, device)} toward your aim, up to ${n(b.range)} m.`
-			: ballPop != null
-				? `It's at mid until the ring runs out. Stand still beside it for ${n(b.channel)} s to pick it up.`
-				: `Spawns at mid when the ring fills. Stand still beside it for ${n(b.channel)} s to pick it up.`,
-		facts: [
-			['Hits a hero', `${round(b.damage)} damage and a [[Stun]]`],
-			['Hits a structure', `${pct(b.structureDamage)} of its max HP and a [[Silence]]`],
-		],
 	}
 }
 

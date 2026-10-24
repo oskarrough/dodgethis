@@ -54,7 +54,7 @@ function maps() {
 
 function tunes() {
 	const imports = []
-	const groups = ['abilities', 'heroes', 'maps'].map((kind) => {
+	const groups = ['abilities', 'heroes', 'maps', 'mechanics'].map((kind) => {
 		const ids = folders(kind).filter((id) => has(kind, id, `${id}-tune.js`))
 		for (const id of ids)
 			imports.push(`import ${name(`${kind}_${id}`)} from './${kind}/${id}/${id}-tune.js'\n`)

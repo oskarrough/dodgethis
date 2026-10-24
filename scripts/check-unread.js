@@ -2,13 +2,13 @@
 // whose name no code mentions. It matches names only: a key read through a computed name
 // (s.structures[`${kind}X`]) looks unread, so spell such reads out before deleting what it flags.
 import { execSync } from 'node:child_process'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { basename } from 'node:path'
 import { tune } from '../src/modes/moba/tune.js'
 
 const files = execSync('git ls-files src scripts tests index.html', { encoding: 'utf8' })
 	.split('\n')
-	.filter(Boolean)
+	.filter((f) => f && existsSync(f))
 const code = files.filter((f) => /\.(js|mjs|html)$/.test(f))
 const errors = []
 

@@ -5,7 +5,7 @@ import { buildMap } from './map.js'
 import { createAgentMatch, readReplay, replayHash } from './agent-match.js'
 import { createView } from './view.js'
 import { createSkillsView } from './skills-view.js'
-import { createBallView } from './ball-view.js'
+import mechanicViews from './mechanics/all-mechanic-views.js'
 import { createFollow, stepCamera } from './follow.js'
 import { createHud, matchFrame } from './hud.js'
 import { mapLayout } from './maps/all-maps.js'
@@ -42,7 +42,7 @@ export function mobaReplay(app) {
 			const unbuild = buildMap(scene, world, RAPIER)
 			const view = createView(scene, run.smooth)
 			const skillsView = createSkillsView(scene)
-			const ballView = createBallView(scene)
+			const ballView = mechanicViews.ball?.view(scene) ?? null
 			// Replays play Overthrow (tapes carry no map yet); its layout carries the late mark.
 			const hud = createHud({ layout: mapLayout() })
 			const juice = createJuice(scene)
@@ -112,7 +112,7 @@ export function mobaReplay(app) {
 				if (app.overlay.visible) app.overlay.handleGamepad(menuInput)
 			})
 			run.on('present', feedback.present)
-			run.on('present', ballView.present)
+			if (ballView) run.on('present', ballView.present)
 			run.system('simulate', () => match.step())
 			run.camera.frame((dt) =>
 				follow.frame(dt, hero.body.mesh.position, null, {
@@ -152,7 +152,7 @@ export function mobaReplay(app) {
 					obstacles: sim.obstacles,
 					alpha: blend,
 				})
-				ballView.update(sim, blend, local, null, app.camera.view)
+				ballView?.update(sim, blend, local, null, app.camera.view)
 				sim.laneView.update(sim.lane, sim.heroes, blend, locate, elapsed, hero.team)
 				feedback.fizzle(gone)
 				juice.update(elapsed)
@@ -208,7 +208,7 @@ export function mobaReplay(app) {
 					match.dispose()
 					view.dispose()
 					skillsView.dispose()
-					ballView.dispose()
+					ballView?.dispose()
 					hud.dispose()
 					juice.dispose()
 					stamps.dispose()

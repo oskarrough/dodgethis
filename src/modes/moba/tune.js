@@ -90,50 +90,6 @@ export const tune = {
 		victimLevel: 40,
 	},
 	globes: { heal: 0.15, life: 15, pickup: 1, radius: 0.35, height: 0.6, spin: 2 },
-	ball: {
-		first: 60,
-		interval: 150,
-		lateInterval: 30,
-		warning: 30,
-		life: 45,
-		channel: 0.75,
-		pickup: 1,
-		still: 0.15,
-		carrySpeed: 0.85,
-		range: 5,
-		speed: 14,
-		radius: 0.7,
-		structureDamage: 0.2,
-		damage: 300,
-		stun: 0.75,
-		silence: 6,
-		lock: 1,
-		tell: 0.3,
-	},
-	ballView: {
-		radius: 0.7,
-		height: 0.9,
-		carryHeight: 3.4,
-		segments: 48,
-		ringWidth: 0.35,
-		ringBorder: 0.05,
-		ringY: 0.09,
-		fillY: 0.105,
-		channelRadius: 1.3,
-		seamWidth: 0.035,
-		flightEase: 0.1,
-		teamRingRadius: 0.95,
-		teamRingWidth: 0.09,
-		shadowY: 0.12,
-		aimY: 0.135,
-		aimFillY: 0.15,
-		aimBorder: 0.05,
-		gagWidth: 2.4,
-		gagHeight: 0.22,
-		gagAngle: 0.4,
-		throwSquash: -0.22,
-		pickupSquash: 0.16,
-	},
 	// Behind x (towards your end of the map) is your base: your own team takes no hits there and heals
 	// from any health to full in fullHealSeconds. base-view.js prints it: a team-tinted wash (`fill`
 	// opacity) with an `edge`-metre line (`line` opacity) at `printY`, between the road and lobby prints.
@@ -458,8 +414,8 @@ export const tune = {
 }
 
 // The body's movement profile is the hero section; its extra keys are ignored by the body.
-// Folder tunes (all-tunes.js): an ability's at tune[id], a hero's at tune.heroes[id], a map's keys at
-// the top. An ability or hero id that is already a top-level key would shadow it, so it throws.
+// Folder tunes (all-tunes.js): an ability's at tune[id], a hero's at tune.heroes[id], a map's or
+// mechanic's keys at the top. An ability or hero id that is already a top-level key would shadow it, so it throws.
 const claim = (key, owner) => {
 	if (Object.hasOwn(tune, key)) throw new Error(`MOBA ${owner} collides with tune.${key}`)
 }
@@ -472,10 +428,14 @@ for (const [id, numbers] of Object.entries(tunes.heroes)) {
 	if (Object.hasOwn(tune.heroes, id)) throw new Error(`MOBA hero ${id} has two tunes`)
 	tune.heroes[id] = numbers
 }
-for (const [id, keys] of Object.entries(tunes.maps))
-	for (const [key, numbers] of Object.entries(keys)) {
-		claim(key, `map ${id}`)
-		tune[key] = numbers
-	}
+for (const [kind, folders] of [
+	['map', tunes.maps],
+	['mechanic', tunes.mechanics],
+])
+	for (const [id, keys] of Object.entries(folders))
+		for (const [key, numbers] of Object.entries(keys)) {
+			claim(key, `${kind} ${id}`)
+			tune[key] = numbers
+		}
 
 export const profile = tune.hero
