@@ -1,16 +1,22 @@
 import * as THREE from 'three'
 import { tune } from '../../tune.js'
+import { createMatchTerrain } from '../../match-terrain.js'
+import { createFloorPrint } from '../../floor-print.js'
 
-// Sand to the walls, and a squat stone for each waystone. Bosses and packs bring their own bodies.
-export function ground({ add, material, m }) {
+// The mesa top on its isle over the cloud, the court printed with a painted tile, and a squat
+// stone for each waystone. Bosses and packs bring their own bodies.
+export function ground(scope) {
+	const { layout, terrain, m, group, chalkLayout, add, material, owned } = scope
 	const s = tune.altamesa
-	add(
-		new THREE.PlaneGeometry(s.halfX * 2, s.halfZ * 2).rotateX(-Math.PI / 2),
-		material('cream', { flat: true }),
-		0,
-		m.printLayers.lobby,
-		0,
-	)
+	const desert = { ...terrain, colors: { ...terrain.colors, ...s.isle } }
+	const casts = { hedge: m.hedgeHeight, wall: m.wallHeight, pillar: m.pillarHeight + m.capHeight }
+	const unterrain = createMatchTerrain(group, layout, desert, chalkLayout, { casts })
+	const own = (resource) => {
+		owned.push(resource)
+		return resource
+	}
+	const floors = createFloorPrint({ layout, terrain: desert, casts, look: s.look, own })
+	group.add(floors.sheet({ ...s.floor, x: 0, z: 0 }, s.halfX, s.halfZ).mesh)
 	const stone = s.view.waystone
 	for (const w of s.waystones)
 		add(
@@ -20,4 +26,13 @@ export function ground({ add, material, m }) {
 			stone.height / 2,
 			w.z,
 		)
+	const dispose = () => {
+		floors.dispose()
+		unterrain?.()
+	}
+	dispose.update = (dt) => {
+		floors.update(dt)
+		unterrain?.update?.(dt)
+	}
+	return dispose
 }

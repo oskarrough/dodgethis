@@ -73,6 +73,40 @@ export default {
 			{ x: 0, z: 7, r: 1 },
 		],
 		view: { waystone: { top: 0.5, radius: 0.7, height: 1.4, sides: 8 } },
+		// Sandstone cover and pale pillars instead of the green garden roles.
+		palette: { courtShade: 0xd49c74, scenery: 0xcdbcae, court: 0xa59c62 },
+		// The court is printed with a painted tile (floor-print.js, public/tiles/); the isle's
+		// cliff and cloud take the desert's colours (applies on restart).
+		floor: {
+			style: 'raw',
+			image: '/tiles/flags-drawn.webp',
+			size: 5, // metres per repeat of the tile
+			base: '#d58a6c',
+			joint: '#a8604a',
+			accent: '#a8604a',
+			vary: 0.1,
+		},
+		look: {
+			contact: { reach: 1.2, strength: 0.3 },
+			shadow: 0.42,
+			clouds: { scale: 26, speed: 0.6, strength: 0.06 },
+			border: 0,
+			joints: 0.035,
+		},
+		isle: {
+			tarmac: '#c98a6d', // the margin past the tile, close to the flagstones' mean
+			chalk: '#c98a6d',
+			moss: '#a39457',
+			mossShade: '#6f6236',
+			stoneLit: '#b0705f',
+			stone: '#83505a',
+			stoneShade: '#55384f',
+			haze: '#f1d2b4',
+			cloudLit: '#fff0de',
+			cloud: '#f3d8c1',
+			cloudShade: '#dcb7a8',
+			cloudDeep: '#a98a98',
+		},
 		colors: {
 			sand: '#efd9b4',
 			stone: '#c65f3a',
@@ -85,4 +119,9 @@ export default {
 // The dimension of each number above that its name alone does not settle (src/modes/moba/units.js).
 export const units = {
 	altamesa: 'm',
+	'altamesa.look.contact.strength': 'fraction',
+	'altamesa.look.shadow': 'fraction',
+	'altamesa.look.clouds.speed': 'm/s',
+	'altamesa.look.clouds.strength': 'fraction',
+	'altamesa.floor.vary': 'fraction',
 }

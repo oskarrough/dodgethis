@@ -11,7 +11,7 @@ export default {
 	party: ['oolong', 'kappa', 'ibis'],
 	suggestedHero: 'salvia',
 	online: false,
-	palette: () => ({}),
+	palette: () => ({ ...tune.altamesa.palette }),
 	cut: () => {
 		const c = tune.altamesa.colors
 		return {

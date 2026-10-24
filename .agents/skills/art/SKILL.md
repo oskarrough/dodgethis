@@ -17,7 +17,7 @@ The script pastes the style block, the keywords and the avoid list for the kind,
 
 - `frame`: a mood frame or concept shot. Add a real screenshot at the match camera as image 1 (`--ref`), as look.md's recipe asks.
 - `plate`: a background plate for a map's surround (cloud sea, far mesas, haze). Wide, no court, no units.
-- `tile`: a quiet seamless ground, water or cover tile, seen straight down, flat light, low contrast. It is the only kind that may ship as an asset; the floor shader keeps only its light and dark and maps them onto the map's palette (see the tile room, `src/modes/moba/maps/tileroom/`).
+- `tile`: a quiet seamless ground, water or cover tile, seen straight down, flat light, low contrast. The house style is drawn, never photographed: flat colour, thin dark joints, a soft wash inside each stone (Oskar's drawn flagstones, `public/tiles/flags-drawn.webp`, are the anchor). It is the only kind that may ship as an asset; the floor shader keeps only its light and dark and maps them onto the map's palette (see the tile room, `src/modes/moba/maps/tileroom/`).
 - `inlay`: one arena's floor mark, such as Gnomon's sundial, seen straight down, for a single landmark.
 - `sheet`: a character or prop sheet: silhouette from above, one prop, material, the cast line from world.md.
 

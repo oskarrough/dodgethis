@@ -29,7 +29,7 @@ const kinds = {
 	tile: {
 		words: ['Place', 'Light and colour'],
 		frame:
-			'A seamless square ground texture seen straight down, orthographic, flat even light with no cast shadows, low contrast, big quiet shapes and little noise. It must tile without visible seams on all four edges. No objects, no perspective, no text.',
+			'A seamless square ground texture seen straight down, orthographic, drawn rather than photographed: flat colour, thin dark joints, a soft painted wash inside each stone, flat even light with no cast shadows, low contrast, big quiet shapes and little noise. It must tile without visible seams on all four edges. No objects, no perspective, no text.',
 	},
 	inlay: {
 		words: ['Place', 'Light and colour', 'Line and form'],
