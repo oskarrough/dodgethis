@@ -84,7 +84,8 @@ export function createMeter({ step, idle = 6, keep = 12 } = {}) {
 				const r = rowOf(seg, source)
 				r.damage += fact.damage
 				// A basic attack's hit names its slot, not its ability.
-				const ability = fact.ability ?? (fact.slot === 'primary' ? source.basic : fact.slot)
+				const ability =
+					fact.ability ?? (fact.slot === 'primary' ? (source.basic ?? 'attack') : fact.slot)
 				add(r.parts.damage, ability, fact.damage)
 			}
 			if (target?.hero) {
