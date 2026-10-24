@@ -74,6 +74,36 @@ export function reduceFight(facts) {
 		const row = rows.get(shield.source)
 		if (row) row.shieldWasted += amount
 	}
+	function abilityId(key) {
+		return key.split('.')[0]
+	}
+	// Replay status/absorb before pull start so a Ward (or similar) still live at
+	// engage is in `shields`. Waste and busy time stay inside the pull window.
+	for (const fact of facts.slice(0, startIndex)) {
+		if (fact.type === 'status') {
+			const key = `${fact.target}:${fact.status}`
+			if (fact.state === 'off') {
+				shields.delete(key)
+				continue
+			}
+			if (fact.amount > 0 || shields.has(key))
+				shields.set(key, {
+					source: fact.source,
+					remaining: Math.max(0, fact.amount ?? 0),
+					absorbed: 0,
+					ability: abilityId(fact.key),
+				})
+		} else if (fact.type === 'absorb') {
+			const shield = shields.get(`${fact.target}:${fact.status}`)
+			if (shield?.remaining != null) shield.remaining = Math.max(0, shield.remaining - fact.amount)
+		}
+	}
+	for (const shield of shields.values()) {
+		const giver = rows.get(shield.source)
+		if (giver) giver.shieldGiven += shield.remaining
+		const row = spell(shield.source, shield.ability)
+		if (row) row.casts++
+	}
 	for (const fact of facts.slice(startIndex + 1, endIndex + 1)) {
 		const at = time(fact.tick)
 		const source = rows.get(fact.source)
@@ -133,10 +163,17 @@ export function reduceFight(facts) {
 			if (cast?.ability === fact.ability && cast.slot === fact.slot) finishCast(fact.hero, at)
 		} else if (fact.type === 'absorb') {
 			if (source) source.absorbed += fact.amount
-			const row = spell(fact.source, fact.key.split('.')[0])
+			const row = spell(fact.source, abilityId(fact.key))
 			if (row) row.absorbed += fact.amount
-			const shield = shields.get(`${fact.target}:${fact.status}`)
-			if (shield) shield.remaining = Math.max(0, shield.remaining - fact.amount)
+			const key = `${fact.target}:${fact.status}`
+			let shield = shields.get(key)
+			if (!shield) {
+				shield = { source: fact.source, remaining: null, absorbed: 0 }
+				shields.set(key, shield)
+				if (row) row.casts++
+			}
+			shield.absorbed = (shield.absorbed ?? 0) + fact.amount
+			if (shield.remaining != null) shield.remaining = Math.max(0, shield.remaining - fact.amount)
 		} else if (fact.type === 'status') {
 			// Status facts may precede their hit on the same tick. They never change HP.
 			// The current fact contract uses positive amounts only for absorb shields.
@@ -144,8 +181,16 @@ export function reduceFight(facts) {
 			const previous = shields.get(key)
 			if (fact.state === 'off') {
 				if (previous) {
-					creditWaste(previous, fact.wasted ?? previous.remaining)
+					const wasted = fact.wasted ?? previous.remaining ?? 0
+					creditWaste(previous, wasted)
+					if (previous.remaining == null && source)
+						source.shieldGiven += (previous.absorbed ?? 0) + wasted
 					shields.delete(key)
+				} else if ((fact.wasted ?? 0) > 0) {
+					creditWaste({ source: fact.source }, fact.wasted)
+					if (source) source.shieldGiven += fact.wasted
+					const row = spell(fact.source, abilityId(fact.key))
+					if (row) row.casts++
 				}
 			} else if (fact.amount > 0 || previous) {
 				const amount = Math.max(0, fact.amount ?? 0)
@@ -171,7 +216,14 @@ export function reduceFight(facts) {
 			switches.push({ time: at, target: holder, name: name(holder), previous: fact.previous })
 		}
 	}
-	for (const shield of shields.values()) creditWaste(shield, shield.remaining)
+	for (const shield of shields.values()) {
+		if (shield.remaining == null) {
+			const giver = rows.get(shield.source)
+			if (giver) giver.shieldGiven += shield.absorbed ?? 0
+			continue
+		}
+		creditWaste(shield, shield.remaining)
+	}
 	if (rows.has(holder)) rows.get(holder).threatSeconds += duration - heldSince
 	for (const hero of party) {
 		healthUntil(hero.id, duration)
