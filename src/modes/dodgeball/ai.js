@@ -169,7 +169,7 @@ export function createBrain(unit, { reactionMul = 1, jitterMul = 1, rng = Math.r
 				const distPred = Math.hypot(pred.x - me.x, pred.z - me.z)
 				shoot = { x: aim.x * c - aim.z * s, z: aim.x * s + aim.z * c, dist: distPred }
 			}
-			return norm(move, grab, shoot, me)
+			return norm(move, grab, shoot, me, obstacles)
 		}
 
 		if (
