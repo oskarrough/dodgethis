@@ -30,6 +30,8 @@ export const PALETTE = {
 	seaTeal: 0x5f9a98,
 	terracotta: 0xc98462,
 	yours: 0xfff0b8, // warm cream: the ring under your own unit, never a team colour
+	leaf: 0x7fa86a, // overgrowth on walls (overgrowth.js): lit clumps…
+	leafDeep: 0x55805e, // …and the fronds and tufts in their shade
 }
 
 // '#rrggbb' for canvas textures, CSS and anything that wants a string.

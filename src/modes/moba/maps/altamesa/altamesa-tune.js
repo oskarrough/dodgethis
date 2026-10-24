@@ -73,8 +73,37 @@ export default {
 			{ x: 0, z: 7, r: 1 },
 		],
 		view: { waystone: { top: 0.5, radius: 0.7, height: 1.4, sides: 8 } },
+		// Painted images from public/art/altamesa/ (map-art.js): inlays on the court, a face over
+		// every wall, a plate under the isle. Empty until Oskar's paintings land (applies on restart).
+		art: {
+			inlays: [], // { image, x, z, size, turn (deg), round, opacity }
+			walls: null, // { image, size (m per repeat), strength, tint }
+			plate: null, // { image, size (m), fade, haze }
+		},
+		// Dry growth over the walls (overgrowth.js): runs of clumps along the tops, fronds down
+		// the faces, tufts at the foot. Never more than `spill` m past a wall (applies on restart).
+		overgrowth: {
+			seed: 3,
+			cover: 0.7, // odds that a run along a wall's top is grown
+			run: [2, 6], // metres per run
+			step: [0.35, 0.7], // metres between clumps in a run
+			clump: [0.4, 0.8], // clump radius in metres
+			squash: 0.62,
+			hang: 0.6, // odds that a clump drops fronds down its face
+			drop: [0.3, 0.8], // how far down the face, as a share of the wall's height
+			taper: 0.78, // each frond below is this much of the one above
+			spill: 0.25,
+			foot: [0.6, 1.6], // metres between tries for a tuft at the foot
+			tufts: 0.35, // odds that a try grows one
+		},
 		// Sandstone cover and pale pillars instead of the green garden roles.
-		palette: { courtShade: 0xc4865f, scenery: 0xcdbcae, court: 0xa59c62 },
+		palette: {
+			courtShade: 0xc4865f,
+			scenery: 0xcdbcae,
+			court: 0xa59c62,
+			leaf: 0x93a85c, // sage and olive: a dry mesa's growth, never lawn green
+			leafDeep: 0x5e7446,
+		},
 		// The court is printed with a painted tile (floor-print.js, public/tiles/); the isle's
 		// cliff and cloud take the desert's colours (applies on restart).
 		floor: {
@@ -126,4 +155,11 @@ export const units = {
 	'altamesa.look.clouds.speed': 'm/s',
 	'altamesa.look.clouds.strength': 'fraction',
 	'altamesa.floor.vary': 'fraction',
+	'altamesa.overgrowth.seed': 'count',
+	'altamesa.overgrowth.cover': 'fraction',
+	'altamesa.overgrowth.squash': 'fraction',
+	'altamesa.overgrowth.hang': 'fraction',
+	'altamesa.overgrowth.drop': 'fraction',
+	'altamesa.overgrowth.taper': 'fraction',
+	'altamesa.overgrowth.tufts': 'fraction',
 }
