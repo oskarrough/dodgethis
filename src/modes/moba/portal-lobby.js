@@ -15,6 +15,7 @@ import { validLobbyHandoff } from './lobby-handoff.js'
 import { createPortal } from '../../core/portal.js'
 import { createPortalFar } from './portal-far.js'
 import { playUse } from './sounds.js'
+import './lobby-heroes.css'
 import './lobby.css'
 import './portal-lobby.css'
 
