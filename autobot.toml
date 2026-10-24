@@ -5,4 +5,4 @@ orchestrator = "acp-cursor composer-2.5 medium"
 fix = "acp-cursor claude-opus-5 high"
 verify = "acp-cursor claude-opus-5 high"
 max_threads = 3
-lookback = "2 hours"   # schedule interval plus overlap
+lookback = "2 hours" # schedule interval plus overlap
