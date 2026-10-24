@@ -104,7 +104,11 @@
 			}
 			.app {
 				width: 100vw;
+				/* dvh tracks the visible area as mobile browser chrome shows/hides, so the box
+			   agrees with window.innerHeight and the buffer is never stretched to fill it.
+			   100vh is the legacy fallback for browsers without dynamic viewport units. */
 				height: 100vh;
+				height: 100dvh;
 				display: block;
 				background: var(--page-bg);
 			}
