@@ -80,17 +80,19 @@ export function createDungeon(args) {
 		})
 	}
 	// A waystone you pass becomes where you rise, and while you stand beside it out of a boss fight,
-	// it mends you.
+	// it mends you. Each hero rises at its own place in a file across the stone, as at the entrance:
+	// bodies risen on one point burst apart and can lodge in a wall.
 	function attune(dt) {
-		for (const h of heroes) {
-			if (h.dead) continue
+		heroes.forEach((h, index) => {
+			if (h.dead) return
 			const stone = layout.waystones.find(
 				(w) => distance(h.body.position, w) <= tune.waystone.reach,
 			)
-			if (!stone) continue
-			h.spawn = { x: stone.x, z: stone.z }
+			if (!stone) return
+			const file = (index - (heroes.length - 1) / 2) * layout.spawnSpacing
+			h.spawn = { x: stone.x, z: stone.z + file }
 			if (!engaged()) h.hp = Math.min(h.maxHp, h.hp + (h.maxHp * dt) / tune.waystone.mend)
-		}
+		})
 	}
 	function step(t, dt) {
 		if (run.endedTick != null) return

@@ -47,10 +47,12 @@ export const dungeonBots = {
 		const { botPerceive, botThreats } = bossBots.createBot()
 		return {
 			// Mid-pull there is nowhere to heal (a waystone mends only out of a fight), so a hurt
-			// bot fights on rather than drag the boss home.
+			// bot fights on rather than drag the boss home. Out of a pull, a bot that is whole never
+			// balks at a boss for its size: only a hurt one goes back to mend.
 			botPerceive: (ctx) => ({
 				...botPerceive(ctx),
-				holdGround: ctx.perceived.boss?.phase === 'engaged',
+				holdGround:
+					ctx.perceived.boss?.phase === 'engaged' || ctx.h.hp >= ctx.h.maxHp * ctx.b.recoverHp,
 			}),
 			botThreats(ctx) {
 				const encounter = ctx.perceived.encounter
