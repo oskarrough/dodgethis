@@ -4,8 +4,8 @@ import { FORWARD_LAYER } from '../../core/stylepass.js'
 import { PALETTE } from '../../core/style.js'
 import { tune } from './tune.js'
 
-// The lobby's floor is a huge glazed saucer resting in magnetic cradles, floating in the splash
-// sky. The glaze, rim and cradles are forward-pass meshes, so the deferred pass keeps no ink on
+// The lobby's floor floats in the splash sky: a terracotta courtyard with stairs off its rim to
+// nowhere (`grounds.flags`), or the old glazed saucer resting in magnetic cradles. The glaze, rim and cradles are forward-pass meshes, so the deferred pass keeps no ink on
 // them and the props still stand on the glaze; the deferred ground underneath is the same ellipse
 // (see `saucerShape`), kept so the lobby keeps its depth, and nothing is drawn beyond it.
 // `floorOutline`, `floorShape` and `createFences` are Flagfall's torn shore, built from its extent.
@@ -389,73 +389,9 @@ function grain(g, w, h, rand, color, count, alpha) {
 	g.globalAlpha = 1
 }
 
-// Escher's tumbling blocks: a floor of cubes that read as stairs, then as hollows, then as stairs.
-function drawBlocks(s, ground) {
-	const k = { ...ground, ...ground.colors }
-	const { canvas, g, w, h, ppm } = groundCanvas(s, k.grout)
-	const rand = rng(s.seed + 211)
-	const a = k.side * ppm
-	const dx = Math.sqrt(3) * a,
-		dy = 1.5 * a
-	const vertex = (cx, cy, i) => {
-		const t = ((-90 + 60 * i) * Math.PI) / 180
-		return [cx + Math.cos(t) * a, cy + Math.sin(t) * a]
-	}
-	const tone = (hex, jitter) => {
-		const c = new THREE.Color(hex)
-		c.offsetHSL(0, 0, (rand() - 0.5) * jitter)
-		return '#' + c.getHexString()
-	}
-	const inset = k.groutWidth * ppm
-	g.lineJoin = 'round'
-	for (let row = -1; row * dy < h + a; row++)
-		for (let col = -1; col * dx < w + dx; col++) {
-			const cx = col * dx + (row & 1 ? dx / 2 : 0),
-				cy = row * dy
-			const v = (i) => vertex(cx, cy, i)
-			const faces = [
-				[[cx, cy], v(5), v(0), v(1), k.top],
-				[[cx, cy], v(1), v(2), v(3), k.right],
-				[[cx, cy], v(3), v(4), v(5), k.left],
-			]
-			for (const [p0, p1, p2, p3, color] of faces) {
-				// Shrink each rhombus toward its middle so the grout shows between faces.
-				const mx = (p0[0] + p2[0]) / 2,
-					my = (p0[1] + p2[1]) / 2
-				const pull = (p) => {
-					const d = Math.hypot(p[0] - mx, p[1] - my)
-					return [p[0] + ((mx - p[0]) / d) * inset, p[1] + ((my - p[1]) / d) * inset]
-				}
-				g.beginPath()
-				for (const p of [p0, p1, p2, p3].map(pull)) g.lineTo(p[0], p[1])
-				g.closePath()
-				g.fillStyle = tone(color, k.jitter)
-				g.fill()
-			}
-		}
-	grain(g, w, h, rand, k.speck, s.speckles * 2, 0.35)
-	// Worn hollows where feet go, a little lighter.
-	g.fillStyle = k.wear
-	for (let i = 0; i < s.wear.patches; i++) {
-		g.globalAlpha = 0.04 + rand() * 0.05
-		g.beginPath()
-		g.ellipse(
-			rand() * w,
-			rand() * h,
-			(1 + rand() * 2) * ppm,
-			(0.7 + rand() * 1.3) * ppm,
-			rand() * 3,
-			0,
-			7,
-		)
-		g.fill()
-	}
-	g.globalAlpha = 1
-	return canvas
-}
-
-// Moebius's desert courtyard: rings of cut flagstones round an inlaid compass, sun-bleached in the
-// middle and stained toward the edge.
+// Moebius's desert courtyard: hand-laid terracotta flags in wavering rings, no two cut alike,
+// sun-bleached in the middle and stained toward the edge. The mortar sits a shade under the
+// stone, so the joints read as hairline shadows rather than a grid.
 function drawFlags(s, ground) {
 	const k = { ...ground, ...ground.colors }
 	const { canvas, g, w, h, ppm, px, pz } = groundCanvas(s, k.grout)
@@ -463,63 +399,70 @@ function drawFlags(s, ground) {
 	const R = Math.max(s.halfX, s.halfZ)
 	const sx = s.halfX / R,
 		sz = s.halfZ / R
-	const tone = (hex, jitter) => {
-		const c = new THREE.Color(hex)
-		c.offsetHSL((rand() - 0.5) * 0.02, (rand() - 0.5) * 0.08, (rand() - 0.5) * jitter)
-		return '#' + c.getHexString()
+	const centre = new THREE.Color(k.stoneCentre),
+		edge = new THREE.Color(k.stoneEdge),
+		c = new THREE.Color()
+	const hex = () => '#' + c.getHexString()
+	// Ring boundaries waver round the courtyard, so the rings drift like a mason's string line.
+	const bounds = [0]
+	const waves = []
+	for (let r = k.centre; r < R + 1.5; r += k.ring * (0.8 + rand() * 0.4)) {
+		bounds.push(r)
+		waves.push([rand() * 6, rand() * 6, k.waver * (0.5 + rand())])
 	}
-	const gap = k.groutWidth
+	waves.unshift([0, 0, 0])
+	const radius = (b, t) => {
+		const [p, q, amp] = waves[b]
+		return bounds[b] + amp * (Math.sin(2 * t + p) * 0.6 + Math.sin(5 * t + q) * 0.4)
+	}
 	const at = (r, t) => [px(Math.cos(t) * r * sx), pz(Math.sin(t) * r * sz)]
-	let r0 = k.centre
-	let ring = 0
-	while (r0 < R + 1) {
-		const r1 = r0 + k.ring * (0.85 + rand() * 0.3)
-		const count = Math.max(6, Math.round((Math.PI * 2 * (r0 + r1)) / 2 / k.stone))
+	const gap = k.groutWidth
+	const nudge = () => (rand() - 0.5) * k.unevenness
+	for (let b = 0; b < bounds.length - 1; b++) {
+		const mid = (bounds[b] + bounds[b + 1]) / 2
+		const count = b === 0 ? 5 : Math.max(6, Math.round((Math.PI * 2 * mid) / k.stone))
 		const offset = rand() * Math.PI * 2
-		const stones = []
+		const cuts = []
 		let acc = 0
-		for (let i = 0; i < count; i++) stones.push((acc += 0.6 + rand() * 0.8))
+		for (let i = 0; i < count; i++) cuts.push((acc += 0.55 + rand() * 0.9))
 		for (let i = 0; i < count; i++) {
-			const ta = offset + ((i ? stones[i - 1] : 0) / acc) * Math.PI * 2
-			const tb = offset + (stones[i] / acc) * Math.PI * 2
-			const ga = gap / ((r0 + r1) / 2)
+			const ta = offset + ((i ? cuts[i - 1] : 0) / acc) * Math.PI * 2
+			const tb = offset + (cuts[i] / acc) * Math.PI * 2
+			const ga = gap / Math.max(mid, 0.5)
+			// Four corners, each pushed a little off true; the inner edge of the middle ring meets at a point.
+			const corners = [
+				[ta + ga, b ? radius(b, ta) + gap : 0],
+				[tb - ga, b ? radius(b, tb) + gap : 0],
+				[tb - ga, radius(b + 1, tb) - gap],
+				[ta + ga, radius(b + 1, ta) - gap],
+			].map(([t, r]) => [t + nudge() / Math.max(r, 0.5), r + (r ? nudge() : 0)])
 			g.beginPath()
-			const steps = 6
-			for (let j = 0; j <= steps; j++)
-				g.lineTo(...at(r0 + gap, ta + ga + ((tb - ta - 2 * ga) * j) / steps))
-			for (let j = steps; j >= 0; j--)
-				g.lineTo(...at(r1 - gap, ta + ga + ((tb - ta - 2 * ga) * j) / steps))
+			const steps = 5
+			const edgeTo = ([t0, r0], [t1, r1]) => {
+				for (let j = 0; j < steps; j++) {
+					const f = j / steps
+					g.lineTo(...at(r0 + (r1 - r0) * f + (j ? nudge() * 0.25 : 0), t0 + (t1 - t0) * f))
+				}
+			}
+			for (let e = 0; e < 4; e++) edgeTo(corners[e], corners[(e + 1) % 4])
 			g.closePath()
-			const mid = (r0 + r1) / 2 / R
-			const base = new THREE.Color(k.stoneCentre).lerp(
-				new THREE.Color(k.stoneEdge),
-				Math.min(1, mid * 1.1),
-			)
-			g.fillStyle = tone('#' + base.getHexString(), k.jitter)
+			c.copy(centre).lerp(edge, Math.min(1, (mid / R) * 1.1))
+			c.offsetHSL((rand() - 0.5) * 0.025, (rand() - 0.5) * 0.08, (rand() - 0.5) * k.jitter)
+			g.fillStyle = hex()
 			g.fill()
+			// Worn edges: a soft darker margin inside each stone, a lighter bloom in its middle.
+			g.save()
+			g.clip()
+			g.globalAlpha = 0.18
+			g.lineWidth = 0.14 * ppm
+			c.offsetHSL(0, 0, -0.12)
+			g.strokeStyle = hex()
+			g.stroke()
+			g.restore()
 		}
-		r0 = r1
-		ring++
 	}
-	// The compass: a disc with a four-point star, worn smooth.
-	const cx = px(0),
-		cy = pz(0),
-		cr = (k.centre - gap) * ppm
-	g.fillStyle = k.inlay
-	g.beginPath()
-	g.ellipse(cx, cy, cr * sx, cr * sz, 0, 0, 7)
-	g.fill()
-	g.fillStyle = k.star
-	g.beginPath()
-	for (let i = 0; i < 8; i++) {
-		const t = (i / 8) * Math.PI * 2 - Math.PI / 2
-		const r = i % 2 ? cr * 0.28 : cr * 0.86
-		g.lineTo(cx + Math.cos(t) * r * sx, cy + Math.sin(t) * r * sz)
-	}
-	g.closePath()
-	g.fill()
-	grain(g, w, h, rand, k.speck, s.speckles * 3, 0.3)
-	// Stains and drifted sand.
+	grain(g, w, h, rand, k.speck, s.speckles * 3, 0.28)
+	// Stains, and sand drifted into the joints and hollows.
 	for (let i = 0; i < s.wear.patches * 1.5; i++) {
 		g.fillStyle = rand() < 0.5 ? k.stain : k.sand
 		g.globalAlpha = 0.05 + rand() * 0.08
@@ -862,9 +805,8 @@ function buildArchitecture(s, a, frames, forward, group, owned) {
 
 export function createLobbyFloor(scene, renderer) {
 	const s = tune.lobby.floor
-	const style = groundStyle(s)
-	const a = s.grounds?.[style]
-	const canvas = !a ? drawGlaze(s) : style === 'flags' ? drawFlags(s, a) : drawBlocks(s, a)
+	const a = s.grounds?.[groundStyle(s)]
+	const canvas = a ? drawFlags(s, a) : drawGlaze(s)
 	const texture = new THREE.CanvasTexture(canvas)
 	texture.colorSpace = THREE.SRGBColorSpace
 	texture.anisotropy = renderer?.capabilities.getMaxAnisotropy() ?? 1

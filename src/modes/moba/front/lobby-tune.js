@@ -271,7 +271,7 @@ export const lobby = {
 		{ x: -1.5, z: -4.3 },
 		{ x: 1.5, z: -4.3 },
 	],
-	// The lobby floor: a huge glazed saucer in magnetic cradles, floating in the splash sky. Geometry, glaze and
+	// The lobby floor, floating in the splash sky: `style` picks the courtyard or the glazed saucer in magnetic cradles. Geometry, glaze and
 	// colours apply on restart. The walkable glaze is an ellipse holding the walking bounds with over 1 m to spare
 	// at their corners; the lip runs `rim.width` further out, with a solid cushion along the glaze's edge.
 	floor: {
@@ -314,48 +314,18 @@ export const lobby = {
 			iron: '#424a66',
 			pole: '#efe6d2',
 		},
-		style: 'saucer', // 'saucer', or one of `grounds`; `?ground=` overrides while choosing
+		style: 'flags', // 'saucer', or one of `grounds`; `?ground=` overrides
 		// Architectural grounds share the saucer's ellipse: a painted floor, a squared kerb, terraces
 		// stepping in underneath, and stairs leaving the rim at `stairs.angles` for nowhere.
 		grounds: {
-			blocks: {
-				side: 0.62, // m, a cube's edge in Escher's tumbling blocks
-				groutWidth: 0.025,
-				jitter: 0.04,
-				terraces: 4,
-				drop: 0.32,
-				step: 0.55,
-				stairs: {
-					angles: [215, 25, 140],
-					down: 5,
-					up: 6,
-					width: 1.1,
-					tread: 0.42,
-					rise: 0.28,
-					slab: 0.22,
-					jamb: 0.22,
-					door: 1.9,
-				},
-				colors: {
-					top: '#6f8f8a',
-					left: '#4b6670',
-					right: '#3a4b5e',
-					grout: '#2c3346',
-					speck: '#1e2433',
-					wear: '#c9d6cf',
-					coping: '#d9cdb4',
-					face: '#8b8fa8',
-					under: '#3e3a5c',
-					step: '#d9cdb4',
-					stepDark: '#6d6a8a',
-				},
-			},
 			flags: {
-				centre: 1.6, // m, the compass's radius
-				ring: 1.15,
-				stone: 1.4,
-				groutWidth: 0.04,
-				jitter: 0.08,
+				centre: 1.3, // m, the middle ring's radius: a few wedges meeting at the centre
+				ring: 1.1,
+				stone: 1.3,
+				groutWidth: 0.018,
+				unevenness: 0.09, // m each corner and joint strays off true
+				waver: 0.18, // m the rings drift in and out
+				jitter: 0.07,
 				terraces: 4,
 				drop: 0.32,
 				step: 0.55,
@@ -373,12 +343,10 @@ export const lobby = {
 				colors: {
 					stoneCentre: '#c98a52',
 					stoneEdge: '#9a5038',
-					grout: '#5a2f2a',
+					grout: '#874632',
 					speck: '#3b1f1c',
 					stain: '#5e3a3a',
 					sand: '#e8c28a',
-					inlay: '#2f5d66',
-					star: '#e9d6a8',
 					coping: '#ecd9b0',
 					face: '#c6835b',
 					under: '#4e3150',
