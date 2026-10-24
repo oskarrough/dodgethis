@@ -176,28 +176,33 @@ export function ground(scope) {
 	const shadowPrint = castShadows({ layout, s: terrain, extent, casts, own })
 	const contactPrint = contact(layout, extent, s.contact.reach, own)
 	const time = { value: 0 }
-	// The painted swatches share one tile: tiles/tile.png if the repo has one, or whatever image
-	// is dropped onto the game, so a tile fresh from the image model is judged in seconds.
-	const image = { value: null }
-	const imageOn = { value: 0 }
-	const useTexture = (texture) => {
-		texture.wrapS = texture.wrapT = THREE.RepeatWrapping
-		texture.colorSpace = THREE.SRGBColorSpace
-		texture.anisotropy = 4
-		image.value?.dispose()
-		image.value = texture
-		imageOn.value = 1
-	}
+	// Painted swatches each load their own tile (`image`); the one marked `drop` also takes any
+	// image dropped onto the game, so a tile fresh from the image model is judged in seconds.
 	const loader = new THREE.TextureLoader()
-	if (typeof document !== 'undefined') loader.load(s.tile, useTexture, undefined, () => {})
+	const slot = (url) => {
+		const image = { value: null }
+		const on = { value: 0 }
+		const use = (texture) => {
+			texture.wrapS = texture.wrapT = THREE.RepeatWrapping
+			texture.colorSpace = THREE.SRGBColorSpace
+			texture.anisotropy = 4
+			image.value?.dispose()
+			image.value = texture
+			on.value = 1
+		}
+		if (url && typeof document !== 'undefined') loader.load(url, use, undefined, () => {})
+		return { image, on, use }
+	}
+	const slots = []
 	const over = (event) => event.preventDefault()
 	const drop = (event) => {
 		const file = [...(event.dataTransfer?.files ?? [])].find((f) => f.type.startsWith('image/'))
-		if (!file) return
+		const target = slots.find((t) => t.drop)
+		if (!file || !target) return
 		event.preventDefault()
 		const url = URL.createObjectURL(file)
 		loader.load(url, (texture) => {
-			useTexture(texture)
+			target.use(texture)
 			URL.revokeObjectURL(url)
 		})
 	}
@@ -206,6 +211,8 @@ export function ground(scope) {
 		window.addEventListener('drop', drop)
 	}
 	for (const w of s.swatches) {
+		const tile = { ...slot(w.image), drop: !!w.drop }
+		slots.push(tile)
 		const material = own(new THREE.MeshBasicMaterial({ color: '#ffffff', depthWrite: false }))
 		material.customProgramCacheKey = () => 'tileroom-floor'
 		material.onBeforeCompile = (shader) => {
@@ -228,8 +235,8 @@ export function ground(scope) {
 				floorShadowColour: { value: new THREE.Color(terrain.light.shadow) },
 				floorContactPrint: { value: contactPrint },
 				floorContactStrength: { value: contactPrint ? s.contact.strength : 0 },
-				floorImage: image,
-				floorImageOn: imageOn,
+				floorImage: tile.image,
+				floorImageOn: tile.on,
 				floorClouds: {
 					value: new THREE.Vector3(s.clouds.scale, s.clouds.speed, s.clouds.strength),
 				},
@@ -267,7 +274,7 @@ export function ground(scope) {
 			window.removeEventListener('dragover', over)
 			window.removeEventListener('drop', drop)
 		}
-		image.value?.dispose()
+		for (const t of slots) t.image.value?.dispose()
 		unterrain?.()
 	}
 	dispose.update = (dt) => {
