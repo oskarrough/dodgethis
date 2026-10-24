@@ -10,7 +10,7 @@ import { tune as frontTune } from './front/tune.js'
 import { createCornerNav } from '../../core/corner-nav.js'
 import { ICONS } from './hud.js'
 import { createLobbyFloor, saucerExtent } from './lobby-floor.js'
-import { mapLayout } from './maps/all-maps.js'
+import { mapLayout, onlineMaps } from './maps/all-maps.js'
 import { validLobbyHandoff } from './lobby-handoff.js'
 import { createPortal } from '../../core/portal.js'
 import { createPortalFar } from './portal-far.js'
@@ -38,7 +38,11 @@ export function createPortalLobby({ app, run, sim, hero, setup, options }) {
 	el.innerHTML = `<div class="portal-seats"></div>
 		<nav class="portal-picker" aria-label="Pick a hero" hidden></nav>
 		<p class="portal-map"><b></b></p>`
-	const { back: backButton } = createCornerNav(el, { label: 'Back to splash' })
+	const { back: backButton, online: onlineButton } = createCornerNav(el, {
+		label: 'Back to splash',
+	})
+	// A map that can't be played online (the Hollow Mesa, for now) offers no way there.
+	onlineButton.hidden = !onlineMaps.includes(setup.map)
 	// The world lobby's canvas, sky and pastel palette (lobby.js), without its saucer props.
 	el.prepend(backdrop.el, canvas)
 	canvas.classList.add('front-canvas')

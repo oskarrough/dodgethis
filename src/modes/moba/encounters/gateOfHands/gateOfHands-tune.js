@@ -11,7 +11,7 @@ export default {
 	],
 	radius: 1.6,
 	fill: 1.5,
-	linger: 6,
+	linger: 10,
 	// The door: posts of `radius` m across the gap in the gate wall, `x` m east of the spot.
 	door: { x: 6, radius: 1.4, posts: [-2.8, 0, 2.8], height: 3 },
 	potsherds: [
