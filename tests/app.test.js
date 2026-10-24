@@ -246,6 +246,9 @@ test('the session is solo until a mode starts under another, which only the auth
 			return contract()
 		},
 	})
+	app.modes.start('m')
+	app.modes.start('m')
+	expect(seen).toEqual(['local', 'local'])
 	const guest = { local: ['p2'], authoritative: false, shared: true, actions: [] }
 	app.modes.start('m', { session: guest })
 	expect(app.session).toEqual(guest)
@@ -257,7 +260,7 @@ test('the session is solo until a mode starts under another, which only the auth
 	app.modes.start('m')
 	app.frame(STEP)
 	expect(steps).toEqual([true])
-	expect(seen).toEqual(['p2', 'local'])
+	expect(seen).toEqual(['local', 'local', 'p2', 'local'])
 })
 
 test('remote seats are fed directly; suspension and a targeted cancel touch only the local player', () => {
