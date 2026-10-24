@@ -288,8 +288,8 @@ export function createMatchMenu({
 		const select = !!app.input.pad()?.buttons[8]
 		if (select && !selectHeld && !app.overlay.visible) board = !board
 		selectHeld = select
-		if (!ready() || !app.overlay.visible) return
 		const input = app.input.consumeMenuInput()
+		if (!ready() || !app.overlay.visible) return
 		if (pressed && paused && !sim.lane?.match.winner) toggle()
 		else app.overlay.handleGamepad(input)
 	})
