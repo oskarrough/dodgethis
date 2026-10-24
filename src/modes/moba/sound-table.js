@@ -229,7 +229,15 @@ export const uses = {
 		() => tune.lobby.gallery.magnet.leapSound,
 	),
 
-	'music.lobby': { source: 'Music', about: 'Splash and lobby', music: 'lobby' },
+	'music.theme': {
+		source: 'Music',
+		about: 'Main theme: splash and lobby (jukebox)',
+		music: 'theme',
+	},
+	'music.overthrow': { source: 'Music', about: 'Overthrow match (jukebox)', music: 'overthrow' },
+	'music.flagfall': { source: 'Music', about: 'Flagfall match (jukebox)', music: 'flagfall' },
+	'music.altamesa': { source: 'Music', about: 'Altamesa run (jukebox)', music: 'altamesa' },
+	'music.lobby': { source: 'Music', about: 'Splash and lobby (old synth)', music: 'lobby' },
 	'music.play': { source: 'Music', about: 'Match', music: 'play' },
 	'music.clutch': { source: 'Music', about: 'Late, close match', music: 'clutch' },
 	'music.victory': { source: 'Music', about: 'Victory sting', music: 'victory' },

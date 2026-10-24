@@ -142,7 +142,7 @@ export function mobaFront(app, map) {
 			run.clock.pause(() => true)
 			run.intents.suspend(() => true)
 			app.intents.cancel()
-			app.audio.setMusicScene('wind')
+			app.audio.setMusicScene('theme')
 			map.dispose()
 			const el = document.createElement('main')
 			el.className = 'moba-front'

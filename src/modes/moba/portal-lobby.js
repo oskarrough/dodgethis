@@ -48,7 +48,7 @@ export function createPortalLobby({ app, run, sim, hero, setup, options }) {
 	canvas.classList.add('front-canvas')
 	canvas.inert = false
 	document.body.append(el)
-	app.audio.setMusicScene('wind')
+	app.audio.setMusicScene('theme')
 	run.setStylePreset({ line: tune.lobby.style.line, hatch: 1, alpha: true })
 	const cream = new THREE.Color(PALETTE.cream)
 	app.setPalette(

@@ -11,7 +11,7 @@ How the game should sound, for anyone composing music, generating tracks or maki
 
 ## Music
 
-Today the game synthesises its own music in `src/core/music.js` (scenes `lobby`, `play`, `clutch`, `victory`, `defeat`, each with its own tempo). Generated tracks replace scenes one at a time; each must loop seamlessly and carry no vocals.
+Music is composed in Oskar's [jukebox](https://jukebox.0sk.ar) (`oskarrough/jukebox`, private) as plain-text `.song` files. `bun run sync-jukebox` copies its parser and synth into `src/core/jukebox/` (edit them there, not here) and the game's songs into `public/music/`; `src/core/music.js` plays them by scene (`SONGS`). The main theme `theme` plays on the splash and in the lobby, and each map names its score with `music` in its map file (`overthrow`, `flagfall`, `altamesa`), which the `play` scene becomes in a match. The old synthesised scenes (`lobby`, `play`, `clutch`, `victory`, `defeat`) still play where no song is set, as in dodgeball and the stings.
 
 | Scene                      | Feel                                            | Tempo |
 | -------------------------- | ----------------------------------------------- | ----- |

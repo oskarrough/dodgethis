@@ -4,6 +4,8 @@ import { altamesaLayout } from './altamesa-layout.js'
 // Altamesa, a co-op dungeon for a party of three (one to five may enter): roam the plateau,
 // pull its packs as you please and kill its bosses; Gnomon on the stair ends the run.
 export default {
+	// Its score in the jukebox (src/core/music.js SONGS), played instead of the match theme.
+	music: 'altamesa',
 	kind: 'garden',
 	order: 3,
 	layout: altamesaLayout,

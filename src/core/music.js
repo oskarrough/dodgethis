@@ -1,3 +1,7 @@
+import { compile } from './jukebox/score.js'
+import { createSynth } from './jukebox/synth.js'
+import { AHEAD, feed, join } from './jukebox/player.js'
+
 // A short Web Audio lookahead keeps the beat steady; a delayed tick skips missed notes.
 const PROFILES = {
 	lobby: { bpm: 88, gain: 0.032 },
@@ -6,6 +10,14 @@ const PROFILES = {
 	victory: { bpm: 118, gain: 0.045 },
 	defeat: { bpm: 88, gain: 0.032 },
 }
+// Scenes scored in Oskar's jukebox (scripts/sync-jukebox.js copies them to public/music/), by scene.
+export const SONGS = {
+	theme: 'dodgethis-theme',
+	altamesa: 'altamesa',
+	overthrow: 'overthrow',
+	flagfall: 'flagfall',
+}
+const SONG_LEVEL = 0.22 // the jukebox mixes hot; this sits it under the effects
 const ROOTS = [48, 53, 57, 55]
 const MELODY = [12, null, 16, 19, null, 16, 14, null]
 
@@ -26,6 +38,10 @@ export function createMusic(
 	let finished = false
 	const voices = new Set()
 	let wind = null
+	let jukebox = null // { synth, level }, made on the first song
+	let song = null // the playing song: { song, session, start, cue }
+	let wanted = 0 // bumps on every start and stop, so a song that loads late stays quiet
+	const loaded = new Map() // file → Promise<compiled song>
 
 	function note(midi, at, duration, level, type = 'triangle') {
 		const osc = context.createOscillator()
@@ -81,7 +97,56 @@ export function createMusic(
 		}
 	}
 
+	function load(file) {
+		let p = loaded.get(file)
+		if (!p) {
+			p = fetch(`/music/${file}.song`)
+				.then((r) => r.text())
+				.then(compile)
+				.catch((err) => {
+					loaded.delete(file)
+					throw err
+				})
+			loaded.set(file, p)
+		}
+		return p
+	}
+
+	function startSong(file) {
+		const ask = ++wanted
+		load(file)
+			.then((compiled) => {
+				if (ask !== wanted || !enabled) return
+				if (!jukebox) {
+					const level = context.createGain()
+					level.connect(destination)
+					const synth = createSynth(context, level)
+					synth.out.gain.value = 0.6
+					jukebox = { synth, level }
+				}
+				jukebox.level.gain.setValueAtTime(SONG_LEVEL * volume(), context.currentTime)
+				jukebox.synth.warm(compiled)
+				const now = context.currentTime
+				song = {
+					song: compiled,
+					session: jukebox.synth.session(compiled),
+					...join(compiled, 0, now + 0.05),
+				}
+				const tick = () => feed(song, context.currentTime + AHEAD, context.currentTime)
+				timer = startTimer(tick)
+				tick()
+			})
+			.catch(() => {
+				/* No song, no music; the game plays on. */
+			})
+	}
+
 	function stop() {
+		wanted++
+		if (song) {
+			song.session.stop(0.25)
+			song = null
+		}
 		if (wind) {
 			wind.source.stop()
 			wind.source.disconnect()
@@ -99,7 +164,8 @@ export function createMusic(
 		}
 	}
 	function start() {
-		if (!enabled || finished || timer !== null || wind) return
+		if (!enabled || finished || timer !== null || wind || song) return
+		if (SONGS[scene]) return startSong(SONGS[scene])
 		if (scene === 'wind') {
 			const buffer = context.createBuffer(1, context.sampleRate * 4, context.sampleRate)
 			const samples = buffer.getChannelData(0)
@@ -125,6 +191,7 @@ export function createMusic(
 	return {
 		refreshVolume() {
 			if (wind) wind.gain.gain.setValueAtTime(0.055 * volume(), context.currentTime)
+			if (jukebox) jukebox.level.gain.setValueAtTime(SONG_LEVEL * volume(), context.currentTime)
 		},
 		setScene(value) {
 			if (value === scene) return

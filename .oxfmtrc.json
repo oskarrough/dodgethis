@@ -1,6 +1,6 @@
 {
 	"$schema": "./node_modules/oxfmt/configuration_schema.json",
-	"ignorePatterns": ["pages/archive/**", "pages/20*/**", "drune/engine.js"],
+	"ignorePatterns": ["pages/archive/**", "pages/20*/**", "drune/engine.js", "src/core/jukebox/**"],
 	"semi": false,
 	"singleQuote": true,
 	"useTabs": true

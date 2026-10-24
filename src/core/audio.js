@@ -38,6 +38,7 @@ let master = null
 let buses = null // bus name → GainNode into master (tune.mix)
 let music = null
 let musicScene = 'lobby'
+let matchMusic = null // the map's scored scene, which 'play' becomes (maps' `music`)
 let musicEnabled = true
 let gestureReceived = false
 try {
@@ -50,7 +51,7 @@ export function syncMusic() {
 	if (!gestureReceived || !ctx) return
 	if (!music) music = createMusic(ctx, buses.music, { volume: () => tune.output.volume })
 	music.refreshVolume()
-	music.setScene(musicScene)
+	music.setScene(musicScene === 'play' && matchMusic ? matchMusic : musicScene)
 	music.setEnabled(
 		musicEnabled && tune.output.sound && ctx.state === 'running' && !globalThis.document?.hidden,
 	)
@@ -58,6 +59,10 @@ export function syncMusic() {
 
 export function setMusicScene(scene) {
 	musicScene = scene
+	syncMusic()
+}
+export function setMatchMusic(scene) {
+	matchMusic = scene ?? null
 	syncMusic()
 }
 // The sound board previews a scene (null for silence) without touching the saved music preference.

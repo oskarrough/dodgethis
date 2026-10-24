@@ -3,6 +3,8 @@ import { flagfallLayout } from './flagfall-layout.js'
 
 // Two lanes on the shared court by night; flagfall-view.js draws it (maps/all-map-views.js).
 export default {
+	// Its score in the jukebox (src/core/music.js SONGS), played instead of the match theme.
+	music: 'flagfall',
 	kind: 'garden',
 	order: 2,
 	get late() {

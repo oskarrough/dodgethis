@@ -2,6 +2,8 @@ import { tune } from '../../tune.js'
 import { overthrowLayout } from './overthrow-layout.js'
 
 export default {
+	// Its score in the jukebox (src/core/music.js SONGS), played instead of the match theme.
+	music: 'overthrow',
 	kind: 'lane',
 	order: 1,
 	get late() {

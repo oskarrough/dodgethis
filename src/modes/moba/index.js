@@ -185,8 +185,9 @@ export default function moba(app, map) {
 			if (!options.handoff && !options.sharedLobby) departed.clear()
 			app.setPalette(palette)
 			document.documentElement.style.removeProperty('--page-bg')
-			// The lobby and a descent keep the wind (the descent starts the match theme on landing): no theme blip.
-			audio.setMusicScene(isLobby || options.ready ? 'wind' : 'play')
+			// The lobby plays the main theme; a descent keeps the wind and starts the map's score on landing.
+			audio.setMatchMusic(isLobby ? null : maps[setup.map].music)
+			audio.setMusicScene(isLobby ? 'theme' : options.ready ? 'wind' : 'play')
 			const juice = createJuice(scene)
 			const stamps = createStamps(scene)
 			const ground = isLobby ? FLOOR : layout.bounds
