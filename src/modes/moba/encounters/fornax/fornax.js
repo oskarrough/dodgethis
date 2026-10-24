@@ -6,6 +6,6 @@ export default {
 	boon: {
 		id: 'bizcocho',
 		name: 'Bizcocho',
-		line: 'Clay fired once and hard. It takes the edge off Gnomon’s blows.',
+		line: 'Gnomon’s blows land softer',
 	},
 }

@@ -6,6 +6,6 @@ export default {
 	boon: {
 		id: 'lupa',
 		name: 'Lupa',
-		line: 'A cracked glass from the belfry. Through it Gnomon shows its seams and takes more from every blow.',
+		line: 'Gnomon takes more from every blow',
 	},
 }

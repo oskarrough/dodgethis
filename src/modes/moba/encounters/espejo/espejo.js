@@ -6,6 +6,6 @@ export default {
 	boon: {
 		id: 'azogue',
 		name: 'Azogue',
-		line: 'Quicksilver scraped from the back of the mirror. Gnomon’s blows slide off it.',
+		line: 'Gnomon’s blows slide off you',
 	},
 }

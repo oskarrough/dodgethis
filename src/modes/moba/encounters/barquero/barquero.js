@@ -6,6 +6,6 @@ export default {
 	boon: {
 		id: 'tara',
 		name: 'Tara',
-		line: 'A clay idol off the ferry. It casts a second shadow, and Gnomon, watching both, guards itself less.',
+		line: 'Gnomon guards itself less',
 	},
 }
