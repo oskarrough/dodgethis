@@ -57,6 +57,8 @@ Avoid: plush, felt, glossy eyes, blush, chibi faces, mobile-card-game rendering,
 
 ## Prompting music and sound
 
+Music is made in Oskar's own tool, [Jukebox](https://jukebox.0sk.ar) (the `oskarrough/jukebox` repo), so Dodgethis never builds a music tool of its own.
+
 Start from the menu prompt in [sound.md](sound.md#splash-and-lobby-prompt) and keep its scene tempos (lobby about 112, match 120, clutch 138). Keywords: Azymuth jazz-funk warmth and Yellow Magic Orchestra machine, Fender Rhodes with 9ths and 11ths, singing fretless-style bass, light samba kit with shaker and cuíca, glassy Minimoog portamento, square-wave arpeggios, vocoder pads, gentle tape saturation, wide stereo, sunset over floating mesas, stretching before a match, seamless loop, no vocals. Effects take one material family per source (Fletcher string and wood, Mitts leather and thump, stone and iron for structures, bright glass and a low bloom for the Ball, quiet wood and paper for menus), land on the frame and keep fight tails under 400 ms.
 
 Avoid: kazoo, cartoon boings, plush squeaks, beeps in menus, orchestral fantasy bombast, dread or horror drones, EDM drops, vocals, and anything that sits over the effects in a fight.
