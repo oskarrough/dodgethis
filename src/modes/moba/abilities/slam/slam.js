@@ -1,4 +1,11 @@
 export default {
+	// Keywords this folder's cards may name with [[Term]] (glossary.js).
+	terms: {
+		bruise: [
+			'Bruise',
+			'Takes {slam.bruiseDamage:damage} every {slam.bruiseEvery} for {slam.bruiseDuration}.',
+		],
+	},
 	name: 'Slam',
 	kind: 'instant',
 	tell: 'circle',

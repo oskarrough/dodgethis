@@ -1,4 +1,11 @@
 export default {
+	// Keywords this folder's cards may name with [[Term]] (glossary.js).
+	terms: {
+		pocket: [
+			'Pocket',
+			"Mitts's trait: a caught shot waits in the glove for {catching.pocketLife}, and Toss throws it back.",
+		],
+	},
 	unit: {
 		hp: 'hp',
 		radius: 'radius',

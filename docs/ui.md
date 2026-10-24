@@ -6,7 +6,7 @@ Rules for every screen, learned by reviewing the game screen by screen with Oska
 
 - **Never repeat what is already on screen.** A tooltip explains the thing you hovered; it does not echo its value. The clock's card never prints the clock.
 - **Sentence first.** A card leads with one plain sentence that carries the numbers the decision needs ("Shoots an arrow up to 11 m that hits the first unit for 230 damage"). What it leaves out comes after as a short labelled fact (Cooldown 4 s), only if it adds something.
-- **Keywords explain themselves.** A game term in a sentence (Slow, Stun, Momentum) is a keyword: ink, a little heavier, dotted underline, never a pill or a team colour. Hover, focus or tap opens its one-sentence definition, with numbers, from the one glossary (`glossary.js`); a card never redefines a term inline.
+- **Keywords explain themselves.** A game term in a sentence (Slow, Stun, Momentum) is a keyword: ink, a little heavier, dotted underline, never a pill or a team colour. Hover, focus or tap opens its one-sentence definition, with numbers, from the one glossary (`glossary.js`, plus each folder's own `terms`); a card never redefines a term inline.
 - **Cards are for the HUD.** A unit in the world shows itself; it gets no hover card and no second nameplate.
 - **One question per card.** A tooltip answers what the player wants to know right now (when is the next wave, what's in it). Tuning numbers (growth per minute, late-game multipliers) belong in the manual or nowhere.
 - **No jargon without a referent.** "Late game from 6:00" means nothing unless the game shows what changes at 6:00. Name the effect or cut the line.

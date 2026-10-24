@@ -3,6 +3,8 @@ import { balloonPop } from './balloon-water.js'
 const distance = (a, b) => Math.hypot(a.x - b.x, a.z - b.z)
 
 export default {
+	// Keywords this folder's cards may name with [[Term]] (glossary.js).
+	terms: { soak: ['Soak', 'Soaked enemies move {balloon.slow} slower for {balloon.duration}.'] },
 	name: 'Balloon',
 	kind: 'instant',
 	tell: 'circle',

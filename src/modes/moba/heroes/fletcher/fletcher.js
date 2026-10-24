@@ -1,6 +1,13 @@
 import { tune } from '../../tune.js'
 
 export default {
+	// Keywords this folder's cards may name with [[Term]] (glossary.js).
+	terms: {
+		momentum: [
+			'Momentum',
+			"Fletcher's trait: each Loose that hits a hero takes {momentum.reduction} off Vault's cooldown.",
+		],
+	},
 	unit: {
 		hp: 'hp',
 		radius: 'radius',

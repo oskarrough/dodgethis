@@ -1,6 +1,13 @@
 import { STEP } from '../../../../core/app.js'
 
 export default {
+	// Keywords this folder's cards may name with [[Term]] (glossary.js).
+	terms: {
+		stagger: [
+			'Stagger',
+			'Damage taken in the stance is banked, then repaid evenly over {stagger.payout} after it ends.',
+		],
+	},
 	kind: 'stance',
 	effects: { cast: true, pose: 'stagger' },
 	statuses: {
