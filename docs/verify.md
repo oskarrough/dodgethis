@@ -10,7 +10,7 @@ Pick the cheapest proof that answers the question.
 
 ## Check and headless tools
 
-`bun run check` from the repository root runs lint, formatting and tests in parallel, printing only failures. Iterate with `bun test <file>`; tests cover logic and contracts, not tuning, timing budgets or visuals. `bun run test:slow` adds the long agent-session proof. `bun run build` also runs the fast check. Gameplay and replica tests use real Rapier worlds; transport failure tests use fake PeerJS connections and clocks.
+`bun run check` from the repository root runs the fast checks: mod collection, unit and leftover lints, oxlint and oxfmt. Run it often. `bun run test` runs the test suite in parallel, printing only failures, including `tests/map-smoke.test.js` (every map's layout is finite and its bots move); run it before pushing. The `.githooks/pre-push` hook runs it on `git push` (`bun install` sets `core.hooksPath`); jj does not run git hooks. Iterate with `bun test <file>`; tests cover logic and contracts, not tuning, timing budgets or visuals. `bun run test:slow` adds the long agent-session proof. `bun run build` runs the fast check, not the tests. Gameplay and replica tests use real Rapier worlds; transport failure tests use fake PeerJS connections and clocks.
 
 `bun run profile:dodgeball [preset] [seed]` measures physics and AI tick time (defaults: 20v20, seed 42), not rendering or FPS.
 

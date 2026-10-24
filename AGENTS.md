@@ -16,7 +16,8 @@ A web game: two modes, dodgeball and a MOBA, on one engine.
 ## Scripts
 
 - `bun run dev:agent` shared dev server, never stop it
-- `bun run check` lint, format, tests
+- `bun run check` lint, format and leftovers, a few seconds: run it often
+- `bun run test` the unit tests and map smoke, before every push (the pre-push hook runs it under git; jj skips hooks, so run it yourself)
 - `bun run simulate --summary` headless bot matches; `play:headless` drives one
 - `bun run review` pins a proof to `pages/`
 - `bun run where <word>` finds a feature
@@ -32,7 +33,7 @@ A web game: two modes, dodgeball and a MOBA, on one engine.
 
 ## Proving
 
-- No new unit tests; keep the suite green with `bun test <file>`, oxlint, oxfmt
+- No new unit tests; keep the suite green with `bun test <file>` while iterating and `bun run test` before pushing
 - Default: make the change and trust it
 - Prove only when the brief asks or the user must judge a look or feel: one screenshot, clip or headless number, once, via `bun run review`
 - `pages/` is the pinboard (proofs, pitches, concept art, one folder each, listed in `pages/index.html`), served by the dev server; link there, never to thread storage

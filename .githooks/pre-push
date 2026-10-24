@@ -1,0 +1,3 @@
+#!/bin/sh
+# Tests stay out of `bun run check` so it stays fast; they run here instead.
+exec bun run test
