@@ -148,7 +148,7 @@ export const laneBots = {
 							(ctx.route
 								? ctx.route.progress(g.pos) <= ctx.route.progress(p)
 								: side * (g.pos.x - p.x) >= 0) &&
-							walkable(g.pos.x, g.pos.z, h.body.radius, 0, sim.obstacles),
+							walkable(g.pos.x, g.pos.z, h.body.radius, 0, sim.obstacles, sim.bounds),
 					)
 					move(globe?.pos ?? h.spawn)
 					return frame

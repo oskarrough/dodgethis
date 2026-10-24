@@ -121,8 +121,8 @@ export function createDodgeBot(random) {
 				}))
 				goal = candidates.find(
 					(at) =>
-						walkable(at.x, at.z, h.body.radius, tune.orders.clearance, sim.obstacles) &&
-						segmentClear(p, at, h.body.radius + tune.orders.clearance, sim.obstacles),
+						walkable(at.x, at.z, h.body.radius, tune.orders.clearance, sim.obstacles, sim.bounds) &&
+						segmentClear(p, at, h.body.radius + tune.orders.clearance, sim.obstacles, sim.bounds),
 				)
 			}
 			impact -= (now - perceived.tick) * STEP
