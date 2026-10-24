@@ -1,6 +1,6 @@
 // The registry includes drafts: the sheet describes everything implemented, not just the lobby strip.
 import { HEROES } from '../src/modes/moba/heroes.js'
-import { abilityName, formatCardValue, heroTrait } from '../src/modes/moba/tooltip.js'
+import { abilityName, formatCardValue, heroTrait, plainText } from '../src/modes/moba/tooltip.js'
 
 function kitNumbers(stats, scope) {
 	const numbers = []
@@ -30,5 +30,5 @@ for (const hero of heroes) {
 		)
 	}
 	const trait = heroTrait(hero.id)
-	if (trait) console.log(`${hero.name} | trait | ${trait.name} | — | ${trait.summary}`)
+	if (trait) console.log(`${hero.name} | trait | ${trait.name} | — | ${plainText(trait.summary)}`)
 }

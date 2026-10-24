@@ -1,6 +1,5 @@
 import * as THREE from 'three'
 import { statusBar } from './statuses.js'
-import { structureName } from './gates.js'
 import './hud.css'
 import { heroDefinition } from './heroes.js'
 import { tune } from './tune.js'
@@ -20,14 +19,14 @@ import {
 	traitCard,
 	levelCard,
 	levelProgress,
-	minionCard,
-	structureCard,
+	objectiveCard,
 } from './tooltip.js'
 import { controls } from '../../core/controls.js'
 import { presetKeys } from '../../core/intents.js'
 import { STEP } from '../../core/app.js'
 
-// The match HUD: top bar, portrait, ability slots and tooltips, including world units.
+// The match HUD: top bar, portrait, ability slots and their tooltips. World units get no card in a
+// match; the lobby's inspect cursor still reads its props and dummies.
 // Every DOM write goes through `put`, which skips unchanged values.
 
 const SLOTS = ['slot1', 'slot2', 'slot3']
@@ -136,18 +135,40 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 		put(node, `.${name}`, on, (v) => (v ? node.classList.add(name) : node.classList.remove(name)))
 	const data = (node, name, value) => put(node, `@${name}`, value, (v) => (node.dataset[name] = v))
 
-	// Hover, long-press and focus targets. The card itself takes no pointer events.
+	// Hover, long-press and focus targets. A hovered card takes the pointer, so its keywords can be
+	// read: leaving the source starts a short grace, and the card stays while the pointer is on it.
 	let hover = null
 	let press = null
+	// Touch: a long press pins its card until the next tap outside it, so its keywords can be tapped.
+	let pinned = null
 	const sourceOf = new Map()
-	const hot = (node, source) => {
+	// One rect around one node or several (the top bar and the objective pill under it).
+	const rectOf = (nodes) => {
+		const rects = [nodes]
+			.flat()
+			.map((node) => node.getBoundingClientRect?.())
+			.filter((r) => r && (r.width || r.height))
+		if (!rects.length) return { left: 0, top: 0, right: 0, bottom: 0 }
+		return {
+			left: Math.min(...rects.map((r) => r.left)),
+			top: Math.min(...rects.map((r) => r.top)),
+			right: Math.max(...rects.map((r) => r.right)),
+			bottom: Math.max(...rects.map((r) => r.bottom)),
+		}
+	}
+	// A card centres on its source and clears the whole readout above or below it.
+	const anchorOf = (source) => {
+		const node = rectOf(source.node)
+		const around = rectOf(source.around)
+		return { left: node.left, right: node.right, top: around.top, bottom: around.bottom }
+	}
+	// `around` is what the card must not cover: the node itself, or the whole readout it sits in.
+	const hot = (node, source, around = node) => {
 		sourceOf.set(node, source)
+		source.around = around
 		node.classList.add('hot')
 		node.setAttribute('aria-describedby', 'moba-tip')
-		const anchor = () => {
-			const r = node.getBoundingClientRect?.()
-			return r ? { x: r.left + r.width / 2, y: r.top, bottom: r.bottom } : { x: 0, y: 0 }
-		}
+		const anchor = () => anchorOf(source)
 		node.addEventListener('pointerenter', (e) => {
 			if (e.pointerType === 'mouse' && !lobby && !touchScreen) hover = { source, anchor: anchor() }
 		})
@@ -157,7 +178,7 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 		})
 		source.node = node
 		node.addEventListener('pointerleave', () => {
-			if (hover?.source === source) hover = null
+			if (hover?.source === source) hover.grace = tune.hud.tipGrace
 		})
 		node.addEventListener('pointerdown', (e) => {
 			if (e.button === 0) e.preventDefault?.() // keep focus on the game, never on a HUD button
@@ -165,7 +186,9 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 		})
 		for (const type of ['pointerup', 'pointercancel'])
 			node.addEventListener(type, () => {
-				if (press?.source === source) press = null
+				if (press?.source !== source) return
+				if (type === 'pointerup' && press.held >= tune.hud.longPress) pinned = press
+				press = null
 			})
 		node.addEventListener('contextmenu', (e) => e.preventDefault?.())
 		return node
@@ -176,20 +199,23 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 	const top = el('div', 'moba-score moba-top')
 	top.setAttribute('role', 'group')
 	top.setAttribute('aria-label', 'Match status')
-	el('span', 'moba-objective', top).textContent = 'Destroy the enemy core to win'
+	// Cards from the top bar open below the bar and the pill together.
+	const objective = el('span', 'moba-objective', top)
+	const topBar = [top, objective]
+	hot(objective, { kind: 'objective' }, topBar).textContent = 'Destroy the enemy core to win'
 	const summary = el('span', 'moba-sr', top)
 	const sides = {}
 	const side = (which) => {
 		const node = el('div', `moba-side ${which}`, top)
-		const dots = hot(el('div', 'moba-dots', node), { kind: 'level', which })
-		const kills = hot(el('b', 'moba-kills', node), { kind: 'kills', which })
+		const dots = hot(el('div', 'moba-dots', node), { kind: 'level', which }, topBar)
+		const kills = hot(el('b', 'moba-kills', node), { kind: 'kills', which }, topBar)
 		sides[which] = { node, dots, kills }
 	}
 	side('mine')
-	const clockNode = hot(el('div', 'moba-clock', top), { kind: 'clock' })
+	const clockNode = hot(el('div', 'moba-clock', top), { kind: 'clock' }, topBar)
 	const clockText = el('b', '', clockNode)
 	const ball = (() => {
-		const node = hot(el('div', 'moba-timer ball', clockNode), { kind: 'ball' })
+		const node = hot(el('div', 'moba-timer ball', clockNode), { kind: 'ball' }, topBar)
 		const face = el('i', 'moba-ring', node, ICONS.ball)
 		const seconds = el('b', '', node)
 		return { node, face, seconds }
@@ -204,14 +230,14 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 	const portrait = el('div', 'moba-portrait', unitFrame)
 	const avatar = el('div', 'moba-avatar', portrait)
 	// Only the badge opens the hero card; the whole frame sits too close to play to tip on every pass.
-	hot(el('span', 'moba-info', avatar), { kind: 'portrait' }).textContent = 'i'
+	hot(el('span', 'moba-info', avatar), { kind: 'portrait' }, unitFrame).textContent = 'i'
 	const face = el('span', '', avatar)
 	const heroLevel = el('b', 'moba-lv', avatar)
 	const respawnNode = el('b', 'moba-respawn', avatar)
 	const vitals = el('div', 'moba-vitals', portrait)
 	const nameRow = el('div', 'moba-name', vitals)
 	const heroName = el('span', '', nameRow)
-	const trait = hot(el('span', 'moba-trait', nameRow), { kind: 'trait' })
+	const trait = hot(el('span', 'moba-trait', nameRow), { kind: 'trait' }, unitFrame)
 	const traitIcon = el('span', '', trait)
 	const traitText = el('span', '', trait)
 	const health = el('div', 'moba-health moba-meter', vitals)
@@ -247,15 +273,11 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 	document.body.append(top, root, ...(lobby ? [] : [unitFrame]), feed)
 	const bossBar = createCastBar(document.body, { kind: 'boss', min: 0 })
 	const tip = createTooltip(document.body)
-	// World units get their own card and a slim nameplate, so a slot card never fights a unit card.
-	const worldTip = createTooltip(document.body, 'moba-tip-world')
-	const plate = el('div', 'moba-plate')
-	plate.hidden = true
-	plate.setAttribute('aria-hidden', 'true')
-	const plateName = el('span', '', plate)
-	const plateBar = el('i', '', plate)
-	const plateHp = el('b', '', plate)
-	document.body.append(plate)
+	// A tap outside a pinned card lets it go.
+	const onDown = (e) => {
+		if (pinned && !tip.element.contains(e.target) && e.target !== pinned.source.node) pinned = null
+	}
+	globalThis.window?.addEventListener('pointerdown', onDown, { capture: true, passive: true })
 	const lines = []
 	// A line leaving the drum fades where it is, or rolls one more step over the top when pushed off.
 	function drop(line, age) {
@@ -265,37 +287,28 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 	}
 	let lastSwap = null
 
-	// `moved` marks a real pointer move since the last frame: a unit walking under a still cursor opens nothing.
-	const pointer = { x: 0, y: 0, moved: false }
-	// Browsers also fire pointermove under a still cursor when the page relayouts, so compare coordinates.
+	// The lobby's inspect cursor picks the prop under the mouse.
+	const pointer = { x: 0, y: 0 }
 	const onMove = (e) => {
 		if (e.pointerType === 'touch') return
-		if (e.clientX === pointer.x && e.clientY === pointer.y) return
 		pointer.x = e.clientX
 		pointer.y = e.clientY
-		pointer.moved = true
 	}
 	globalThis.window?.addEventListener('pointermove', onMove, { passive: true })
-	let alt = false
-	const onAlt = (e) => {
-		if (e.key !== 'Alt') return
-		alt = e.type === 'keydown'
-	}
-	const onBlur = () => (alt = false)
-	for (const type of ['keydown', 'keyup']) globalThis.window?.addEventListener(type, onAlt)
-	globalThis.window?.addEventListener('blur', onBlur)
 
 	// Lane totals come from the host ledger; training falls back to visible death edges.
 	const kills = { A: 0, B: 0 }
 	const wasDead = new Map()
 	// One inspect cursor for keys and pad: I toggles it, or hold Y; arrows or the d-pad step through
-	// the aimed unit (your hero at rest) and then every HUD target a mouse can hover.
+	// every HUD target a mouse can hover (in the lobby, first the aimed unit). With keys, up and down
+	// open the card's keywords one by one.
 	const inspect = { by: null, index: 0, held: 0 }
 	let previousPad = []
 	let targets = []
 	const available = (i) =>
-		i === 0 ||
-		(!targets[i - 1].classList?.contains('none') && !targets[i - 1].closest?.('[hidden]'))
+		i === 0
+			? lobby
+			: !targets[i - 1].classList?.contains('none') && !targets[i - 1].closest?.('[hidden]')
 	function step(direction) {
 		const count = targets.length + 1
 		do inspect.index = (inspect.index + direction + count) % count
@@ -311,6 +324,8 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 		} else if (inspect.by === 'keys' && (e.code === 'ArrowLeft' || e.code === 'ArrowRight')) {
 			e.preventDefault() // steps the cursor instead of panning; the keyup still reaches the camera
 			step(e.code === 'ArrowRight' ? 1 : -1)
+		} else if (inspect.by === 'keys' && (e.code === 'ArrowUp' || e.code === 'ArrowDown')) {
+			if (tip.stepKeyword(e.code === 'ArrowDown' ? 1 : -1)) e.preventDefault()
 		}
 	}
 	globalThis.window?.addEventListener('keydown', onKey)
@@ -334,9 +349,9 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 		trait,
 		clockNode,
 		ball.node,
+		objective,
 		...['mine', 'theirs'].flatMap((which) => [sides[which].dots, sides[which].kills]),
 	]
-	let world = null
 	const projected = new THREE.Vector3()
 
 	function pickUnit(sim, aim, frame) {
@@ -413,8 +428,7 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 	}
 
 	function cardFor(source, frame) {
-		const { hero, sim, teams, localTeam, elapsed, nextWave, nextBall, ballPop, carryingBall } =
-			frame
+		const { hero, sim, teams, localTeam, elapsed, nextWave, ballPop, carryingBall } = frame
 		const enemy = localTeam === 'A' ? 'B' : 'A'
 		const team = (which) => (which === 'mine' ? localTeam : enemy)
 		switch (source.kind) {
@@ -431,84 +445,45 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 				return traitCard(frame.heroId)
 			case 'level':
 				return teams
-					? levelCard(teams[team(source.which)], {
-							mine: source.which === 'mine',
-							tone: team(source.which),
-						})
+					? levelCard(teams[team(source.which)], { mine: source.which === 'mine' })
 					: null
 			case 'kills':
-				return killsCard(kills[team(source.which)], { mine: source.which === 'mine' })
-			case 'structure': {
-				const unit = sim?.lane?.structures.find(
-					(s) => s.team === team(source.which) && s.kind === source.structure,
-				)
-				if (!unit) return null
-				if (unit.dead)
-					return {
-						title: `${source.which === 'mine' ? 'Your' : 'Enemy'} ${structureName(unit.kind)}`,
-						tone: unit.team,
-						summary: 'Destroyed.',
-						rows: [],
-						notes: [],
-					}
-				return structureCard(unit, {
-					localTeam,
-					vulnerable: sim.lane.vulnerable(unit),
-					tick: sim.tick,
-					step: frame.step,
-					layout,
-				})
-			}
+				return killsCard({ mine: source.which === 'mine' })
 			case 'clock':
-				return clockCard({ elapsed, nextWave, nextBall, ballPop, layout })
+				return clockCard({
+					elapsed,
+					nextWave,
+					layout,
+					reinforcements: sim?.lane?.reinforcements,
+					team: localTeam,
+				})
 			case 'ball':
-				return ballCard({ nextBall, ballPop, carrying: carryingBall, device: frame.device })
+				return ballCard({ ballPop, carrying: carryingBall, device: frame.device })
+			case 'objective':
+				return objectiveCard()
 			case 'unit': {
+				// Only the lobby's inspect cursor reads units: its cardboard bots and sparring dummies.
 				const unit = source.unit
 				if (!unit || unit.dead) return null
 				if (unit.card) {
 					const prop = unit.card()
 					const definition = heroDefinition(prop.heroId)
 					const trait = heroTrait(prop.heroId)
+					const kit = Object.values(definition.abilities).filter(Boolean).map(abilityName)
 					return {
-						title: prop.heroId[0].toUpperCase() + prop.heroId.slice(1),
-						tag: 'bot · ' + prop.seat,
-						summary: 'Ready bot in Team ' + prop.seat[0] + '. Cardboard, not a sparring target.',
-						rows: [
-							['Speed', definition.base.speed + ' m/s'],
-							['Basic', definition.basic.damage + ' · ' + definition.basic.range + ' m'],
-						],
-						notes: [
-							trait ? trait.name + ': ' + trait.summary : null,
-							...Object.values(definition.abilities)
-								.filter(Boolean)
-								.map((a) => abilityName(a)),
-						].filter(Boolean),
+						title: definition.name ?? prop.heroId,
+						tag: prop.seat,
+						sentence: `A ready bot for team ${prop.seat[0]}, in cardboard; it plays ${kit.join(', ')}.`,
+						more: trait ? [`${trait.name}: ${trait.summary}`] : [],
 					}
 				}
-				if (frame.lobby && sim.dummies.includes(unit)) {
-					const card = heroCard(unit, { localTeam, localId: hero?.id })
+				const card = heroCard(unit, { localTeam, localId: hero?.id, lobby: true })
+				if (sim?.dummies?.includes(unit)) {
 					card.title = 'Sparring dummy'
-					card.summary = 'Practice your kit on this stuffed target.'
-					card.rows = card.rows.map((row) =>
-						row[0] === 'Respawns after'
-							? ['Respawns after', tune.dummies.respawn + ' s']
-							: row[0] === 'Speed'
-								? ['Speed', tune.dummies.speed + ' m/s']
-								: row,
-					)
-					return card
+					card.sentence = `A stuffed target to practise your kit on; it walks at ${tune.dummies.speed} m/s.`
+					card.facts = [['Back up after', `${tune.dummies.respawn} s`]]
 				}
-				if (unit.structure)
-					return structureCard(unit, {
-						localTeam,
-						vulnerable: sim.lane.vulnerable(unit),
-						tick: sim.tick,
-						step: frame.step,
-						layout,
-					})
-				if (unit.kind) return minionCard(unit, { localTeam })
-				return heroCard(unit, { localTeam, localId: hero?.id })
+				return card
 			}
 		}
 		return null
@@ -518,6 +493,9 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 		const { sim, aim, camera, pad } = frame
 		if (frame.device === 'touch' || hover?.source.node?.closest?.('[hidden]')) hover = null
 		if (press?.source.node?.closest?.('[hidden]')) press = null
+		if (pinned?.source.node?.closest?.('[hidden]')) pinned = null
+		// The grace runs while the pointer crosses from the source to its card, and pauses on the card.
+		if (hover?.grace !== undefined && !tip.held && (hover.grace -= dt) <= 0) hover = null
 		if (lens) {
 			put(lens, 'hidden', !!frame.inspectionDisabled, (hidden) => (lens.hidden = hidden))
 			// The pad's Y sticks on; the keyboard's I reads like a 1 there, so it lives in the tooltip.
@@ -528,11 +506,8 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 		if (frame.inspectionDisabled) {
 			inspect.by = null
 			inspect.held = 0
-			world = null
 			previousPad = pad?.buttons.slice() ?? []
 			tip.hide()
-			worldTip.hide()
-			plate.hidden = true
 			return
 		}
 		// Pad: Y held past the threshold opens the cursor, release closes it; the d-pad steps.
@@ -553,12 +528,13 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 
 		let source = null
 		let anchor = null
+		let live = false
 		if (inspect.by) {
 			if (picked) {
-				const r = picked.getBoundingClientRect?.()
 				source = sourceOf.get(picked)
-				anchor = r ? { x: r.left + r.width / 2, y: r.top, bottom: r.bottom } : { x: 0, y: 0 }
-			} else if (sim) {
+				anchor = anchorOf(source)
+				live = true
+			} else if (sim && lobby) {
 				const unit = (aim && pickUnit(sim, aim, frame)) ?? frame.hero
 				if (unit && !unit.dead) {
 					source = { kind: 'unit', unit }
@@ -566,50 +542,12 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 				}
 			}
 		} else if (press && press.held >= tune.hud.longPress) ({ source, anchor } = press)
+		else if (pinned) ({ source, anchor } = pinned)
 		else if (hover) ({ source, anchor } = hover)
+		if (!inspect.by && (pinned || hover)) live = true
 		const card = source && cardFor(source, frame)
-		if (card) tip.show(card, anchor)
+		if (card) tip.show(card, anchor, { live })
 		else tip.hide()
-		updateWorld(dt, frame, !source && !hover && !press && !inspect.by)
-	}
-
-	function updateWorld(dt, frame, free) {
-		const { sim, aim, camera, device } = frame
-		const moved = pointer.moved
-		pointer.moved = false
-		if (!free || !sim || !aim || device === 'gamepad' || device === 'touch') world = null
-		else if (moved) {
-			const unit = pickUnit(sim, aim, frame)
-			if (unit !== world?.unit) world = unit ? { unit, dwell: 0 } : null
-		} else if (world && (world.unit.dead || pickUnit(sim, aim, frame) !== world.unit)) world = null
-		if (world) world.dwell += dt
-
-		const unit = world?.unit
-		const ready = !!unit && world.dwell >= tune.hud.hoverDelay
-		const card = ready ? cardFor({ kind: 'unit', unit }, frame) : null
-		if (card && camera) {
-			const at = screenOf(unit, camera)
-			text(plateName, card.title)
-			plateHp.hidden = plateBar.hidden = !!unit.card
-			text(plateHp, unit.card ? '' : `${Math.round(unit.hp)} / ${Math.round(unit.maxHp)}`)
-			if (!unit.card) prop(plateBar, '--f', String(ring(unit.hp, unit.maxHp)))
-			data(plate, 'team', unit.team)
-			put(plate, 'at', `${Math.round(at.x)},${Math.round(at.y - 34)}`, (v) => {
-				const [x, y] = v.split(',')
-				plate.style.transform = `translate(${x}px, ${y}px) translate(-50%, -100%)`
-			})
-		}
-		put(plate, 'hidden', !card || !camera, (v) => (plate.hidden = v))
-
-		if (card && alt) worldTip.show(card, dock())
-		else worldTip.hide()
-	}
-	// The dock: bottom-left on wide screens, under the top bar on narrow ones. Never the middle of the fight.
-	function dock() {
-		const vw = globalThis.innerWidth ?? 1024
-		if (vw >= 720) return { left: 12, bottom: 12 }
-		const r = top.getBoundingClientRect?.()
-		return { left: 8, top: (r?.bottom ?? 100) + 8 }
 	}
 
 	return {
@@ -679,7 +617,6 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 					s.slot.classList.remove('denied', 'ready')
 				}
 				tip.hide()
-				worldTip.hide()
 			}
 			const enemy = localTeam === 'A' ? 'B' : 'A'
 			if (sim?.matchStats) {
@@ -905,10 +842,7 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 			minimap?.dispose()
 			globalThis.window?.removeEventListener('pointermove', onMove)
 			globalThis.window?.removeEventListener('keydown', onKey)
-			for (const type of ['keydown', 'keyup']) globalThis.window?.removeEventListener(type, onAlt)
-			globalThis.window?.removeEventListener('blur', onBlur)
-			worldTip.dispose()
-			plate.remove()
+			globalThis.window?.removeEventListener('pointerdown', onDown, { capture: true })
 			top.remove()
 			root.remove()
 			bossBar.node.remove()

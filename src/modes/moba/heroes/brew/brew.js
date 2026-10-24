@@ -17,6 +17,7 @@ export default {
 	trait: () => ({
 		name: 'Stagger',
 		icon: 'pocket',
-		summary: 'Stagger banks incoming damage. Swig shields the repayment.',
+		summary:
+			"[[Stagger]] banks the damage you take and repays it later; Swig's [[Shield]] soaks the repayment.",
 	}),
 }

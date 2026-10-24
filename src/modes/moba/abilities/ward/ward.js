@@ -12,6 +12,6 @@ export default {
 		],
 	},
 	card: {
-		summary: `Shield the ally nearest your aim within {range} for {shield:damage} for {duration}.`,
+		sentence: `Gives the ally nearest your aim within {range} a {shield:HP} [[Shield]] for {duration}.`,
 	},
 }

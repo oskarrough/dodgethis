@@ -23,8 +23,7 @@ export default {
 		},
 	},
 	card: {
-		summary:
-			'Serve at the enemy nearest your aim within {range} for {damage:damage}. The ball pings on to {jumps} more within {jumpRange} of the last, each hit {falloff} softer.',
+		sentence: `Serves the enemy nearest your aim within {range} for {damage:damage}; the ball jumps on to {jumps} more within {jumpRange}, each hit {falloff} softer.`,
 	},
 	stages: {
 		release: [

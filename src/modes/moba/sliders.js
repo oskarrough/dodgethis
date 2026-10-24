@@ -147,7 +147,7 @@ export function sliderSections(tune, look, setup, mapId = setup.map, camera = tu
 			cancelLockout: [T, 2, T, 'cancel lockout (s)'],
 			buffer: [T, 1, T, 'press buffer (s)'],
 		},
-		hud: { hoverDelay: [0, 2, 0.05, 'hover delay'] },
+		hud: { tipGrace: [0, 1, 0.05, 'card grace'] },
 		orders: {
 			pick: [0, 2, 0.05, 'attack pick (m)'],
 			attackMovePick: [0, 8, 0.25, 'attack-move pick (m)'],

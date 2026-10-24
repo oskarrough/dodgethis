@@ -71,6 +71,6 @@ export default {
 		},
 	},
 	card: {
-		summary: `Belly slide {range} in {time}. A puddle at the stopping point carries you to its edge, up to {maxRange}.`,
+		sentence: `Belly-slides {range} in {time}; stopping in a puddle carries you on to its edge, up to {maxRange}.`,
 	},
 }

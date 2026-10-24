@@ -75,7 +75,9 @@ export function createNumbers(hero, onChange) {
 			].filter(Boolean)
 			const heroCards = HERO_VIEWS[hero.heroId]?.cards
 			if (heroCards) cards.push(...heroCards({ hero, level: hero.level }))
-			const html = cards.map((card) => '<article>' + cardHtml(card) + '</article>').join('')
+			const html = cards
+				.map((card, i) => '<article>' + cardHtml(card, `lobby-number-${i}`) + '</article>')
+				.join('')
 			if (html !== last) {
 				const at = scroll.scrollTop
 				scroll.innerHTML = last = html

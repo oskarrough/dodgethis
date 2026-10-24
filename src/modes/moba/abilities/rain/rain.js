@@ -13,4 +13,7 @@ export default {
 	tell: 'circle',
 	held: 'circle',
 	effects: { impact: 'rain', effect: 'rain', pose: 'rain', shake: 'shakeRain' },
+	card: {
+		sentence: `Arrows fall in a {radius} circle up to {range} away after {delay}, dealing {damage:damage} and a {slow} [[Slow]] for {duration}.`,
+	},
 }

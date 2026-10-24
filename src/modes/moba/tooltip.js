@@ -1,88 +1,51 @@
 import { tune } from './tune.js'
-import { structureName } from './gates.js'
-import { waveInterval } from './lane.js'
 import { HEROES } from './heroes.js'
-import { units } from '../../core/units.js'
 import { controls } from '../../core/controls.js'
 import { throwHint } from '../../core/intents.js'
-import { resolveUnit } from './units.js'
+import {
+	fillCardTemplate,
+	formatCardValue,
+	keywordTerms,
+	n,
+	pct,
+	sentenceParts,
+} from './card-text.js'
+import { glossary, hasTerm } from './glossary.js'
 
-// A cream sticker card for the stat nerds. Builders are pure: they read live state and `tune`
-// on every call, so an open card follows a `&debug` edit or a level-up. The card element only
-// rewrites when the built content changes. Lobby inspection uses the same builders.
+export { formatCardValue, plainText } from './card-text.js'
+
+// HUD cards, sentence first (docs/ui.md). A card is
+//   { title, tag?, sentence, more?: [sentence], facts?: [[label, value]] }
+// The sentence carries the numbers that matter; [[Keyword]] markup names a glossary term the
+// player can hover or focus. `more` is set like the sentence; facts are quiet labelled lines for
+// what the sentence leaves out. Builders are pure and read live state and `tune` on every call.
 
 const round = (v) => Math.round(v)
-const n = (v) => String(Number(Number(v).toFixed(2)))
-const pct = (v) => `${round(v * 100)}%`
 const growthAt = (level) => 1 + tune.levels.growth * (Math.max(1, level ?? 1) - 1)
-const title = (id) => id[0].toUpperCase() + id.slice(1)
-const side = (team, localTeam) => (team === localTeam ? 'Your' : 'Enemy')
+// flyingKick → Flying kick
+const title = (id) =>
+	id[0].toUpperCase() + id.slice(1).replace(/[A-Z]/g, (c) => ` ${c.toLowerCase()}`)
+const every = (rate) => (rate === 1 ? 'once a second' : `every ${n(1 / rate)} s`)
+const list = (items) =>
+	items.length < 2 ? items.join('') : `${items.slice(0, -1).join(', ')} and ${items.at(-1)}`
 
-// Local tokens ({radius}) read tune[scope]; dotted tokens ({catching.pocketLife}) read
-// from tune's root. No cached values: hovering cards and the kit sheet share this resolver.
-// hp has two prose spellings so existing sentences can keep "damage" and "HP".
-export function formatCardValue(path, value, format) {
-	const unit = resolveUnit(path)
-	if (!Number.isFinite(value) || !Object.hasOwn(units, unit ?? ''))
-		throw new Error(`MOBA card reference: tune.${path} needs a finite number and a declared unit`)
-	if (format !== undefined) {
-		if (unit !== 'hp' || !['damage', 'HP'].includes(format))
-			throw new Error(`MOBA card format: ${path}:${format} is not a supported unit spelling`)
-		return `${n(value)} ${format}`
-	}
-	if (unit === 'fraction') return pct(value)
-	if (unit === 'multiplier') return `×${n(value)}`
-	return `${n(value)}${units[unit].suffix}`
+// A card template: tune numbers filled, every keyword checked against the glossary.
+export function renderCardTemplate(template, scope = '', value) {
+	const text = fillCardTemplate(template, scope, value)
+	for (const term of keywordTerms(text))
+		if (!hasTerm(term))
+			throw new Error(`MOBA card keyword: ${scope} names [[${term}]], not in glossary.js`)
+	return text
 }
 
-export function renderCardTemplate(template, scope = '') {
-	if (typeof template !== 'string')
-		throw new Error(`MOBA card template: ${scope} must declare text, not ${typeof template}`)
-	return template.replace(/\{([^{}]*)\}|[{}]/g, (match, token) => {
-		if (!token || !/^[A-Za-z]\w*(?:\.\w+)*(?::(?:damage|HP))?$/.test(token))
-			throw new Error(`MOBA card token: ${scope} has invalid token ${match}`)
-		const [ref, format] = token.split(':')
-		const path = ref.includes('.') || !scope ? ref : `${scope}.${ref}`
-		const value = path
-			.split('.')
-			.reduce(
-				(object, key) => (object && Object.hasOwn(object, key) ? object[key] : undefined),
-				tune,
-			)
-		return formatCardValue(path, value, format)
-	})
-}
-
-// Ability stats in reading order. Keys not listed (flight height, near-miss) are presentation and stay out.
-const ABILITY_ROWS = [
-	['damage', 'Damage', (v, level, s, f) => f(round(v * growthAt(level)))],
-	['range', 'Range'],
-	['radius', 'Radius'],
-	['angle', 'Cone', (v, _, s, f) => (v >= 360 ? 'all around' : f(v))],
-	['speed', 'Speed'],
-	['time', 'Travel time'],
-	['delay', 'Lands after'],
-	['castPoint', 'Cast time', (v, _, s, f) => (v > 0 ? f(v) : 'instant')],
-	[
-		'slow',
-		'Slow',
-		(v, _, s, f, abilityId) =>
-			`${f(v)} for ${formatCardValue(`${abilityId}.duration`, s.duration)}`,
-	],
-	['duration', 'Window', (v, _, s, f) => (s.slow === undefined ? f(v) : null)],
-	['speedFactor', 'Move speed', (v) => `${pct(v)} while open`],
-	['damageReduction', 'Damage reduction', (v, _, s, f) => `${f(v)} while Catch is active`],
-	['prone', 'Prone after'],
-	['cooldown', 'Cooldown'],
-	['resetCooldown', 'After a catch', (v, _, s, f) => `cooldown drops to ${f(v)}`],
-]
 const KIND = {
-	shot: 'Line skillshot, stops on the first unit hit.',
-	dash: 'Dash toward your aim.',
-	zone: 'Delayed circle at your aim.',
-	stance: 'Stance that catches shots in front of you.',
-	melee: 'Short melee swing.',
+	shot: 'A [[skillshot]] that stops on the first unit it hits.',
+	dash: 'Dashes toward your aim.',
+	zone: 'Lands in a circle at your aim after a short delay.',
+	stance: 'A stance that catches shots in front of you.',
+	melee: 'A short melee swing.',
 }
+
 export function heroTrait(heroId) {
 	const definition = Object.hasOwn(HEROES, heroId) ? HEROES[heroId] : null
 	const trait = definition?.trait?.()
@@ -93,42 +56,31 @@ export function heroTrait(heroId) {
 		...(trait.chip !== undefined && { chip: renderCardTemplate(trait.chip, `heroes.${heroId}`) }),
 	}
 }
+// The unit frame's chip: its card names the trait and says what the chip's number is.
 export function traitCard(heroId) {
 	const trait = heroTrait(heroId)
-	return trait && { title: trait.name, tag: 'trait', summary: trait.summary, rows: [], notes: [] }
+	return trait && { title: trait.name, tag: trait.chip, sentence: trait.summary }
 }
 export const abilityName = (ability) => (ability ? (ability.name ?? title(ability.id)) : 'Empty')
 
 export function abilityCard(ability, { level = 1, key = '' } = {}) {
-	if (!ability)
-		return { title: 'Empty slot', tag: key, summary: 'Not built yet.', rows: [], notes: [] }
+	if (!ability) return { title: 'Empty slot', tag: key, sentence: 'Nothing in this slot yet.' }
 	const s = ability.stats
-	const rows = ABILITY_ROWS.filter(([k]) => s[k] !== undefined)
-		.map(([k, label, f]) => {
-			const format = (value) => formatCardValue(`${ability.id}.${k}`, value)
-			return [label, f ? f(s[k], level, s, format, ability.id) : format(s[k])]
-		})
-		.filter(([, value]) => value !== null)
-	if (s.damage) {
-		rows.push([
-			'vs structures',
-			formatCardValue(
-				`${ability.id}.damage`,
-				round(s.damage * growthAt(level) * tune.waves.abilityStructure),
-			),
-		])
-		rows.push(['Sustained DPS', n((s.damage * growthAt(level)) / s.cooldown)])
-	}
-	const notes = []
-	if (s.damage && level < tune.levels.cap)
-		notes.push(`+${n(s.damage * tune.levels.growth)} damage per level`)
-	notes.push(...(ability.card?.notes ?? []).map((note) => renderCardTemplate(note, ability.id)))
+	// Damage grows with the hero's level, as the hit itself does (ability-effects.js).
+	const scaled = (path, value) =>
+		path === `${ability.id}.damage` ? round(value * growthAt(level)) : value
+	const template = ability.card?.sentence ?? KIND[ability.kind] ?? ''
+	const facts = (ability.card?.facts ?? []).map(([label, value]) => [
+		label,
+		renderCardTemplate(value, ability.id),
+	])
+	if (s.cooldown > 0 && !template.includes('{cooldown}'))
+		facts.push(['Cooldown', formatCardValue(`${ability.id}.cooldown`, s.cooldown)])
 	return {
 		title: abilityName(ability),
 		tag: key,
-		summary: renderCardTemplate(ability.card?.summary ?? KIND[ability.kind] ?? '', ability.id),
-		rows,
-		notes,
+		sentence: renderCardTemplate(template, ability.id, scaled),
+		facts,
 	}
 }
 
@@ -136,96 +88,36 @@ export function heroCard(hero, { localTeam, localId, lobby = false } = {}) {
 	const def = hero.definition
 	const basic = def?.basic
 	const level = hero.level ?? 1
-	const rows = [
-		['HP', `${round(hero.hp)} / ${round(hero.maxHp)}`],
-		['Speed', `${n(def?.base.speed ?? tune.hero.speed)} m/s`],
-	]
-	if (basic) {
-		const damage = basic.damage * growthAt(level)
-		rows.push(['Basic attack', `${round(damage)} · ${n(basic.range)} m · ${n(basic.rate)}/s`])
-		rows.push(['Sustained DPS', n(damage * basic.rate)])
-	}
-	// The lobby's half-second bounce back isn't worth a row.
-	if (!lobby)
-		rows.push(['Respawns after', `${n(tune.respawn.base + tune.respawn.perLevel * level)} s`])
-	const who = hero.id === localId ? '' : hero.team === localTeam ? 'Ally' : 'Enemy'
+	const speed = `${n(def?.base.speed ?? tune.hero.speed)} m/s`
+	const who = hero.id === localId ? '' : hero.team === localTeam ? 'An ally. ' : 'An enemy hero. '
+	const sentence = basic
+		? `${who}Basic attack hits for ${round(basic.damage * growthAt(level))} damage up to ${n(basic.range)} m ${every(basic.rate)}, and moves at ${speed}.`
+		: `${who}Moves at ${speed}; no kit built yet.`
 	return {
 		title: def?.name ?? title(hero.heroId ?? 'hero'),
 		tag: `Lv ${level}`,
-		tone: hero.team,
-		summary: [who, basic ? '' : 'Kit not built'].filter(Boolean).join(' · '),
-		rows,
-		notes: hero.dead ? ['Down, respawning'] : [],
+		sentence,
+		more: hero.dead ? ['Down, respawning.'] : [],
+		// The lobby's half-second bounce back isn't worth a line.
+		facts: lobby
+			? []
+			: [['Respawn if taken down', `${n(tune.respawn.base + tune.respawn.perLevel * level)} s`]],
 	}
 }
 
-export function structureCard(
-	unit,
-	{ localTeam, vulnerable = true, tick = 0, step = 1 / 60, layout } = {},
-) {
-	const t = tune[unit.kind]
-	// Same rule as the lane's guns: from the late mark they fire at a fraction of their damage.
-	const late = tick * step >= (layout?.late ?? tune.match.late)
-	const damage = t.damage * (late ? tune.match.lateGunDamage : 1)
-	const notes = []
-	if (late) notes.push(`Late game: guns at ${pct(tune.match.lateGunDamage)} of ${round(t.damage)}`)
-	if (!vulnerable) notes.push('Protected until its tower falls')
-	if (unit.silentUntil > tick)
-		notes.push(`Silenced by the Ball for ${Math.ceil((unit.silentUntil - tick) * step)} s`)
-	return {
-		title: `${side(unit.team, localTeam)} ${structureName(unit.kind)}`,
-		tone: unit.team,
-		summary: `${title(unit.kind)}. Shoots the nearest enemy in range; heroes who hit its allies come first.`,
-		rows: [
-			['HP', `${round(unit.hp)} / ${round(unit.maxHp)}`],
-			['Shot', `${round(damage)} damage · ${n(t.rate)}/s`],
-			['Range', `${n(t.range)} m`],
-			['Tell', `${n(t.tell)} s`],
-			['Abilities deal', pct(tune.waves.abilityStructure)],
-			['Pays', `${round(tune.waves.structureXp)} XP`],
-		],
-		notes,
-	}
-}
-
-export function minionCard(unit, { localTeam } = {}) {
-	const t = tune.minions[unit.kind]
-	const scale = unit.damageScale ?? 1
-	const rows = [
-		['HP', `${round(unit.hp)} / ${round(unit.maxHp)}`],
-		['Attack', `${round(t.damage * scale)} · ${n(t.rate)}/s`],
-		['Range', `${n(t.range)} m`],
-		['XP', `${round(t.xp)} within ${n(tune.waves.soak)} m`],
-	]
-	if (t.structureDamage) rows.push(['vs structures', `×${n(t.structureDamage)}`])
-	return {
-		title: `${side(unit.team, localTeam)} ${structureName(unit.kind)}`,
-		tone: unit.team,
-		summary:
-			scale > 1 ? `Wave minion, ${pct(scale - 1)} stronger than the first wave.` : 'Wave minion.',
-		rows,
-		notes: [],
-	}
-}
-
-export function ballCard({ nextBall = 0, ballPop = null, carrying = false, device } = {}) {
+export function ballCard({ ballPop = null, carrying = false, device } = {}) {
 	const b = tune.ball
 	return {
 		title: 'The Ball',
-		tag: carrying ? 'yours' : `${Math.max(0, Math.ceil(ballPop ?? nextBall))} s`,
-		summary: carrying
-			? `You carry it. ${throwHint(controls.preset, device)} toward your aim.`
+		sentence: carrying
+			? `You carry it at ${pct(b.carrySpeed)} speed. ${throwHint(controls.preset, device)} toward your aim, up to ${n(b.range)} m.`
 			: ballPop != null
-				? `Live at mid. Pops in ${Math.ceil(ballPop)} s.`
-				: `Spawns at mid in ${Math.max(0, Math.ceil(nextBall))} s. Stand still ${n(b.channel)} s to pick up.`,
-		rows: [
-			['Hero hit', `${round(b.damage)} · stun ${n(b.stun)} s`],
-			['Structure hit', `${pct(b.structureDamage)} max HP · silence ${n(b.silence)} s`],
-			['Throw', `${n(b.range)} m at ${n(b.speed)} m/s`],
-			['Carry speed', pct(b.carrySpeed)],
-			['Lasts', `${n(b.life)} s`],
+				? `It's at mid until the ring runs out. Stand still beside it for ${n(b.channel)} s to pick it up.`
+				: `Spawns at mid when the ring fills. Stand still beside it for ${n(b.channel)} s to pick it up.`,
+		facts: [
+			['Hits a hero', `${round(b.damage)} damage and a [[Stun]]`],
+			['Hits a structure', `${pct(b.structureDamage)} of its max HP and a [[Silence]]`],
 		],
-		notes: [],
 	}
 }
 
@@ -239,59 +131,75 @@ export function levelProgress(xp) {
 	return { level: tune.levels.cap, into: 0, need: 0 }
 }
 
-export function levelCard(team, { mine = true, tone = '' } = {}) {
+// The top bar's dots: who is up on that side, and the level they share.
+export function levelCard(team, { mine = true } = {}) {
 	const { into, need } = levelProgress(team.xp)
 	return {
-		title: `${mine ? 'Your team' : 'Enemy team'}`,
+		title: mine ? 'Your heroes' : 'Enemy heroes',
 		tag: `Lv ${team.level}`,
-		tone,
-		summary: 'Heroes share their team level.',
-		rows: [
-			['XP', `${round(team.xp)}`],
-			['Next level', need ? `${round(need - into)} XP to go` : 'max level'],
-			['Each level', `+${pct(tune.levels.growth)} HP and damage`],
-			[
-				'Hero takedown',
-				`${round(tune.levels.takedown)} + ${round(tune.levels.victimLevel)} × level XP`,
-			],
+		sentence: `Each dot is ${mine ? 'one of your heroes' : 'an enemy hero'}; a hollow dot is down and respawning.`,
+		more: [
+			need
+				? `They share level\u00a0${team.level}, ${round(need - into)}\u00a0XP short of level\u00a0${team.level + 1}.`
+				: `They share level\u00a0${team.level}, the top level.`,
 		],
-		notes: [],
+		facts: [['Each level', `+${pct(tune.levels.growth)} HP and damage`]],
 	}
 }
 
-export function killsCard(kills, { mine = true } = {}) {
+// The score beside the dots. The number is on screen, so the card only says who did what to whom.
+export function killsCard({ mine = true } = {}) {
+	return mine
+		? {
+				title: 'Your takedowns',
+				sentence: 'Times your team has taken down an enemy hero this match.',
+			}
+		: {
+				title: 'Enemy takedowns',
+				sentence: 'Times the enemy team has taken down one of your heroes this match.',
+			}
+}
+
+// The kinds in a wave spawned at `seconds`, in the spawner's order (lane-waves.js): brutes join
+// from the map's late mark.
+export function waveKinds(seconds, late = tune.match.late) {
+	return seconds >= late ? ['melee', 'ranged', 'wizard', 'brute'] : ['melee', 'ranged', 'wizard']
+}
+
+// The clock answers one question: when is the next wave, and what's in it.
+export function clockCard({
+	elapsed = 0,
+	nextWave = 0,
+	layout,
+	lanes = layout?.lanes ?? [],
+	reinforcements = {},
+	team = 'A',
+} = {}) {
+	const at = elapsed + Math.max(0, nextWave)
+	const kinds = waveKinds(at, layout?.late ?? tune.match.late)
+	const lane = lanes.length > 1 ? 'each lane' : 'the lane'
+	const extra = tune.waves.reinforcement
+	const more = lanes
+		.map((l) => [l.id, reinforcements[`${team}-${l.id}`] ?? 0])
+		.filter(([, count]) => count > 0)
+		.map(
+			([id, count]) =>
+				`Plus ${count} more ${extra} in the ${id} lane, one for each enemy fort you took there.`,
+		)
 	return {
-		title: `${mine ? 'Your' : 'Enemy'} takedowns`,
-		tag: String(kills),
-		summary: `${mine ? 'Enemy' : 'Your'} heroes downed this match.`,
-		rows: [],
-		notes: [],
+		title: 'Next wave',
+		tag: `${Math.max(0, Math.ceil(nextWave))} s`,
+		sentence: `Brings ${list(kinds.map((kind) => `${tune.minions[kind].count} ${kind}`))} minion down ${lane}.`,
+		more,
 	}
 }
 
-export function clockCard({ elapsed = 0, nextWave = 0, nextBall, ballPop = null, layout } = {}) {
-	const late = layout?.late ?? tune.match.late
-	const kinds = Object.entries(tune.minions).map(([kind, m]) => `${m.count} ${kind}`)
-	const ball =
-		ballPop != null
-			? `live, pops in ${Math.ceil(ballPop)} s`
-			: nextBall === undefined
-				? null
-				: `in ${Math.max(0, Math.ceil(nextBall))} s`
+// The objective pill says what wins; its card says what stands in the way.
+export function objectiveCard() {
 	return {
-		title: 'Match time',
-		tag: clock(elapsed),
-		summary: `Late game from ${clock(late)}.`,
-		rows: [
-			['Next wave', `in ${Math.max(0, Math.ceil(nextWave))} s`],
-			['Each wave', kinds.join(', ')],
-			...(ball ? [['The Ball', ball]] : []),
-			['Waves', `every ${n(waveInterval(elapsed, late))} s`],
-			['Wave growth', `+${pct(tune.waves.growth)} every ${n(tune.waves.growthPeriod)} s`],
-			['Late Ball', `every ${n(tune.ball.lateInterval)} s`],
-			['Late guns', `${pct(tune.match.lateGunDamage)} of their damage`],
-		],
-		notes: [],
+		title: 'How to win',
+		sentence:
+			'The enemy core takes no damage until the structures guarding it fall, so push a lane to open the way.',
 	}
 }
 
@@ -306,14 +214,50 @@ const escape = (text) =>
 		(c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c],
 	)
 
-export function cardHtml(card) {
-	return `<header><span class="moba-tip-title">${escape(card.title)}</span>${card.tag ? `<span class="moba-tip-tag">${escape(card.tag)}</span>` : ''}</header>${card.summary ? `<p>${escape(card.summary)}</p>` : ''}${card.rows.length ? `<dl>${card.rows.map(([k, v]) => `<dt>${escape(k)}</dt><dd>${escape(v)}</dd>`).join('')}</dl>` : ''}${(card.notes ?? []).map((note) => `<p class="moba-tip-note">${escape(note)}</p>`).join('')}`
+// A sentence with its keywords: each a focusable word holding its own small card.
+function sentenceHtml(text, ids) {
+	return sentenceParts(text)
+		.map((part) => {
+			// A number never wraps away from its unit ("5 m/s", "230 damage").
+			if (typeof part === 'string') return escape(part).replace(/(\d) (?=\S)/g, '$1\u00a0')
+			const entry = glossary(part.term)
+			if (!entry) return escape(part.text)
+			const id = `${ids.prefix}-kw-${ids.next++}`
+			return `<span class="moba-kw" tabindex="0" role="button" aria-expanded="false" aria-describedby="${id}" data-term="${escape(part.term)}">${escape(part.text)}<span class="moba-kw-card" id="${id}" role="tooltip"><b>${escape(entry.name)}</b> ${escape(entry.sentence)}</span></span>`
+		})
+		.join('')
 }
 
-// One floating card. `show(card, anchor)`: anchor is a screen point { x, y } the card sits above
-// (below when there is no room), clamped inside the viewport. No pointer events, never pauses.
-// A HUD anchor may carry its element's `bottom`, so a card that drops below clears it.
-// A docked anchor ({ left, top } or { left, bottom }) pins the card's corner instead of floating it.
+export function cardHtml(card, prefix = 'moba-card') {
+	const ids = { prefix, next: 0 }
+	const lines = [card.sentence, ...(card.more ?? [])].filter(Boolean)
+	const facts = card.facts ?? []
+	return `<header><span class="moba-tip-title">${escape(card.title)}</span>${card.tag ? `<span class="moba-tip-tag">${escape(card.tag)}</span>` : ''}</header>${lines.map((line) => `<p>${sentenceHtml(line, ids)}</p>`).join('')}${facts.length ? `<dl>${facts.map(([k, v]) => `<div><dt>${escape(k)}</dt><dd>${sentenceHtml(v, ids)}</dd></div>`).join('')}</dl>` : ''}`
+}
+
+const MARGIN = 8
+const GAP = 8
+const viewport = () => ({ w: globalThis.innerWidth ?? 1024, h: globalThis.innerHeight ?? 768 })
+const clampTo = (v, low, high) => Math.max(low, Math.min(high, v))
+
+// Beside `rect`, never over it: above, below, right, then left, the first side where the whole
+// card fits; on the cross axis it centres on the source and slides to stay on screen.
+export function placeBeside(rect, width, height, { w, h } = viewport()) {
+	const cx = clampTo((rect.left + rect.right) / 2 - width / 2, MARGIN, w - width - MARGIN)
+	const cy = clampTo((rect.top + rect.bottom) / 2 - height / 2, MARGIN, h - height - MARGIN)
+	const sides = [
+		{ side: 'above', x: cx, y: rect.top - GAP - height, fits: rect.top - GAP - height >= MARGIN },
+		{ side: 'below', x: cx, y: rect.bottom + GAP, fits: rect.bottom + GAP + height <= h - MARGIN },
+		{ side: 'right', x: rect.right + GAP, y: cy, fits: rect.right + GAP + width <= w - MARGIN },
+		{ side: 'left', x: rect.left - GAP - width, y: cy, fits: rect.left - GAP - width >= MARGIN },
+	]
+	const { side, x, y } = sides.find((s) => s.fits) ?? sides[0]
+	return { side, x: Math.round(x), y: Math.round(clampTo(y, MARGIN, h - height - MARGIN)) }
+}
+
+// One floating card. `show(card, anchor, { live })`: the anchor is the source's screen rect
+// ({ left, top, right, bottom }) or a point ({ x, y }). A live card takes the pointer, so its
+// keywords can be hovered, tapped and focused; `held` says the pointer or focus is on it.
 export function createTooltip(parent = document.body, id = 'moba-tip') {
 	const root = document.createElement('div')
 	root.className = 'moba-tip'
@@ -322,45 +266,115 @@ export function createTooltip(parent = document.body, id = 'moba-tip') {
 	root.hidden = true
 	parent.append(root)
 	let shownHtml = ''
-	let shownTone = ''
 	let shownAt = ''
+	let inside = false
+	let openWord = null
+	let shownSide = 'above'
+	const words = () => [...root.querySelectorAll('.moba-kw')]
+	// A keyword's card opens away from the card's source (above the word when the card sits above its
+	// source, so it never drops onto it), flipping to stay on screen.
+	function openKeyword(word) {
+		if (openWord === word) return
+		closeKeyword()
+		if (!word) return
+		openWord = word
+		word.classList.add('open')
+		word.setAttribute('aria-expanded', 'true')
+		const card = word.querySelector('.moba-kw-card')
+		const box = root.getBoundingClientRect()
+		const r = word.getBoundingClientRect()
+		const { w, h } = viewport()
+		const x = clampTo(r.left, MARGIN, w - card.offsetWidth - MARGIN)
+		const fitsBelow = r.bottom + 4 + card.offsetHeight <= h - MARGIN
+		const fitsAbove = r.top - 4 - card.offsetHeight >= MARGIN
+		const below = shownSide === 'above' ? !fitsAbove : fitsBelow
+		const y = below ? r.bottom + 4 : r.top - 4 - card.offsetHeight
+		card.style.left = `${Math.round(x - box.left)}px`
+		card.style.top = `${Math.round(y - box.top)}px`
+	}
+	function closeKeyword() {
+		if (!openWord) return
+		openWord.classList.remove('open')
+		openWord.setAttribute('aria-expanded', 'false')
+		openWord = null
+	}
+	const wordOf = (e) => e.target?.closest?.('.moba-kw')
+	root.addEventListener('pointerenter', () => (inside = true))
+	root.addEventListener('pointerleave', () => {
+		inside = false
+		if (openWord && !openWord.contains(document.activeElement)) closeKeyword()
+	})
+	root.addEventListener('pointerover', (e) => {
+		if (e.pointerType === 'mouse') openKeyword(wordOf(e) ?? null)
+	})
+	// Touch: a tap toggles the word's card. The tap's own focus already opened it, so that one stays.
+	let focusedAt = -Infinity
+	root.addEventListener('click', (e) => {
+		const word = wordOf(e)
+		if (!word) return
+		if (openWord === word && performance.now() - focusedAt > 500) openKeyword(null)
+		else openKeyword(word)
+	})
+	root.addEventListener('focusin', (e) => {
+		focusedAt = performance.now()
+		openKeyword(wordOf(e) ?? null)
+	})
+	root.addEventListener('focusout', (e) => {
+		if (!root.contains(e.relatedTarget)) closeKeyword()
+	})
+	root.addEventListener('contextmenu', (e) => e.preventDefault())
+	// A mouse click opens a word without taking focus from the game; keys and taps still focus it.
+	root.addEventListener('pointerdown', (e) => {
+		if (e.pointerType === 'mouse') e.preventDefault()
+	})
 	return {
 		element: root,
 		get open() {
 			return !root.hidden
 		},
-		show(card, anchor) {
-			const html = cardHtml(card)
-			if (html !== shownHtml) root.innerHTML = shownHtml = html
-			const tone = card.tone ?? ''
-			if (tone !== shownTone) root.dataset.tone = shownTone = tone
+		get held() {
+			return !root.hidden && (inside || root.contains(document.activeElement))
+		},
+		show(card, anchor, { live = false } = {}) {
+			const html = cardHtml(card, id)
+			if (html !== shownHtml) {
+				openWord = null
+				root.innerHTML = shownHtml = html
+			}
 			if (root.hidden) root.hidden = false
-			const width = root.offsetWidth || 0
-			const height = root.offsetHeight || 0
-			const vw = globalThis.innerWidth ?? 1024
-			const vh = globalThis.innerHeight ?? 768
-			const margin = 8
-			const docked = anchor.left !== undefined
-			const left = docked ? anchor.left : anchor.x - width / 2
-			const x = Math.round(Math.max(margin, Math.min(vw - width - margin, left)))
-			const above = anchor.y - height - 14
-			// A HUD element's anchor carries its bottom edge, so a card below clears the element.
-			const below = (anchor.bottom ?? anchor.y) + (anchor.bottom === undefined ? 18 : 8)
-			// Above when it fits, else below when it fits, else pinned inside the viewport (CSS caps the height).
-			const wanted = docked
-				? (anchor.top ?? vh - height - anchor.bottom)
-				: above >= margin || below + height > vh - margin
-					? above
-					: below
-			const y = Math.round(Math.max(margin, Math.min(vh - height - margin, wanted)))
+			if (live !== (root.dataset.live === 'true')) root.dataset.live = String(live)
+			const rect =
+				anchor.left !== undefined
+					? anchor
+					: { left: anchor.x, right: anchor.x, top: anchor.y, bottom: anchor.y }
+			const { side, x, y } = placeBeside(rect, root.offsetWidth || 0, root.offsetHeight || 0)
+			shownSide = side
 			const at = `${x},${y}`
 			if (at !== shownAt) {
 				shownAt = at
 				root.style.transform = `translate(${x}px, ${y}px)`
+				if (openWord) {
+					const word = openWord
+					openWord = null
+					openKeyword(word)
+				}
 			}
 		},
+		// Steps the open keyword: the keyboard's way through a card's terms.
+		stepKeyword(direction) {
+			const all = words()
+			if (!all.length || root.hidden) return false
+			const at = all.indexOf(openWord)
+			const next = at < 0 ? (direction > 0 ? 0 : all.length - 1) : at + direction
+			openKeyword(all[next] ?? null)
+			return true
+		},
 		hide() {
-			if (!root.hidden) root.hidden = true
+			if (root.hidden) return
+			if (root.contains(document.activeElement)) document.activeElement.blur()
+			closeKeyword()
+			inside = false
+			root.hidden = true
 		},
 		dispose() {
 			root.remove()

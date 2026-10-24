@@ -7,7 +7,8 @@ export default {
 	held: 'cone',
 	effects: { cast: 'catch', effect: 'catch', pose: 'catch' },
 	card: {
-		summary: `Catch the first skillshot or Ball entering your cone for no damage. Until caught or disabled, take {damageReduction} less damage from hits that still land while Catch is active.`,
+		sentence: `Opens a {angle} cone for {duration}: the first [[skillshot]] or Ball into it is caught for no damage, and other hits deal {damageReduction} less.`,
+		facts: [['After a catch', `cooldown {resetCooldown}`]],
 	},
 	// The catch window's fan, for any catcher (skills-view.js); Dive's window sits at diveY.
 	look: {

@@ -62,6 +62,22 @@
 				--ui-green: #1b9f5a;
 				--ui-gold: #ff9f1c;
 
+				/* Shared shapes (docs/ui.md, primitives): one per role, never typed per component. */
+				--text-font: 'Josefin Sans', system-ui, sans-serif;
+				--line-thin: 1.5px; /* readouts and cards */
+				--radius-pill: 999px;
+				--radius-card: 14px;
+				--radius-tile: 9px;
+				/* What floats over play: soft and straight down, never an offset. */
+				--shadow-float: 0 6px 20px rgba(38, 68, 95, 0.28);
+				/* Layer order: cards sit above the lil-gui debug panel (1001). */
+				--z-tip: 1002;
+				/* HUD cards: the sentence, and the quieter labelled facts and keyword cards. */
+				--tip-width: 300px;
+				--kw-width: 240px;
+				--tip-text: 400 15px / 1.4 var(--text-font);
+				--tip-fact: 400 13.5px / 1.35 var(--text-font);
+
 				/* Font sizes. Darumadrop reads small, so we run large — base 20px.
 				   Everything points at the base for now; tune each token individually. */
 				--fs-base: 20px;

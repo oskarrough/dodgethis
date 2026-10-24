@@ -90,6 +90,6 @@ export default {
 		},
 	},
 	card: {
-		summary: `Lob for {flight}: heal {healAmount}, deal {damage} and soak. Press again to pop early. A {puddle} puddle keeps soaking.`,
+		sentence: `Lobs a water balloon up to {range} that heals allies {healAmount} and deals {damage:damage} and [[Soak]] to enemies within {radius}; press again to pop it early.`,
 	},
 }

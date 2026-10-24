@@ -211,9 +211,9 @@
 	padding: 0 16px;
 	box-sizing: border-box;
 	background: var(--cream);
-	border: 1.5px solid var(--ink);
-	border-radius: 999px;
-	box-shadow: 0 3px 10px rgba(38, 68, 95, 0.22);
+	border: var(--line-thin) solid var(--ink);
+	border-radius: var(--radius-pill);
+	box-shadow: var(--shadow-float);
 	pointer-events: none;
 	white-space: nowrap;
 }
@@ -222,11 +222,12 @@
 	top: calc(100% + 6px);
 	left: 50%;
 	transform: translateX(-50%);
-	padding: 5px 10px;
-	border-radius: 999px;
+	padding: 5px 12px 4px;
 	background: var(--cream);
-	font-size: calc(var(--fs-base) * 0.8);
-	line-height: 1.2;
+	border: var(--line-thin) solid var(--ink);
+	border-radius: var(--radius-pill);
+	box-shadow: var(--shadow-float);
+	font: var(--tip-fact);
 }
 /* Numbers sit in fixed-width boxes, centred, trimmed to their digits, so the pill never resizes or wobbles. */
 .moba-top b {
@@ -732,131 +733,116 @@
 	opacity: 0;
 }
 
-/* --- Tooltip card --- */
+/* --- Tooltip card (docs/ui.md): one plain sentence first, keywords you can open, quiet labelled
+   facts after. A readout, so the same thin ink edge all round and the soft float shadow. --- */
 .moba-tip {
 	position: fixed;
 	left: 0;
 	top: 0;
-	z-index: 1002; /* above the lil-gui debug panel (1001) */
-	width: min(300px, calc(100vw - 16px));
-	max-height: calc(100vh - 16px);
-	overflow: hidden;
+	z-index: var(--z-tip);
+	width: min(var(--tip-width), calc(100vw - 16px));
 	box-sizing: border-box;
-	padding: 10px 12px 11px;
+	padding: 12px 14px 13px;
 	background: var(--cream);
-	/* A readout: thin line and soft shadow; the team stripe on top says whose. */
-	border: 1.5px solid var(--ink);
-	border-top: 6px solid var(--tone, var(--ink));
-	border-radius: 14px;
-	box-shadow: 0 4px 14px rgba(38, 68, 95, 0.25);
+	border: var(--line-thin) solid var(--ink);
+	border-radius: var(--radius-card);
+	box-shadow: var(--shadow-float);
+	color: var(--ink);
 	pointer-events: none;
 	will-change: transform;
 }
+/* A hovered or pinned card takes the pointer, so its keywords can be opened. */
+.moba-tip[data-live='true'] {
+	pointer-events: auto;
+}
 .moba-tip[hidden] {
 	display: none;
-}
-/* World nameplate: name and exact HP above the unit, small enough to leave the fight readable. */
-.moba-plate {
-	position: fixed;
-	left: 0;
-	top: 0;
-	z-index: 3;
-	display: grid;
-	grid-template-columns: auto auto;
-	align-items: center;
-	gap: 2px 6px;
-	padding: 3px 8px 4px;
-	background: var(--ui-cream);
-	border: 1.5px solid var(--ui-text);
-	border-radius: 9px;
-	box-shadow: 0 2px 6px rgba(38, 68, 95, 0.22);
-	color: var(--ui-text);
-	pointer-events: none;
-	white-space: nowrap;
-	font:
-		700 11px / 1 system-ui,
-		sans-serif;
-}
-.moba-plate[hidden] {
-	display: none;
-}
-.moba-plate[data-team='A'] {
-	--tone: var(--team-a, #5db4ff);
-}
-.moba-plate[data-team='B'] {
-	--tone: var(--team-b, #ff5d5d);
-}
-.moba-plate span {
-	font: 14px / 1 var(--ui-font);
-}
-.moba-plate i {
-	grid-column: 1 / 3;
-	grid-row: 2;
-	height: 5px;
-	border: 1.5px solid var(--ui-text);
-	border-radius: 3px;
-	background: linear-gradient(
-		90deg,
-		var(--tone) calc(var(--f, 1) * 100%),
-		rgba(38, 68, 95, 0.18) 0
-	);
 }
 .moba-tip header {
 	display: flex;
 	align-items: baseline;
 	justify-content: space-between;
 	gap: 8px;
-	margin-bottom: 4px;
 }
 .moba-tip-title {
-	font-size: 22px;
+	font: 22px / 1.05 var(--ui-font);
 }
-/* The tag is the card's index numeral: big, flush right, printed, never a chip. */
+/* The tag (key, level, countdown) is printed in ink, never a side's colour. */
 .moba-tip-tag {
-	font: 24px / 1 var(--ui-font);
+	font: 22px / 1 var(--ui-font);
 	font-variant-numeric: tabular-nums;
-	color: var(--tone, var(--ink));
-	-webkit-text-stroke: 1px var(--ink);
-	paint-order: stroke fill;
 	white-space: nowrap;
 }
+/* The sentence and anything said after it share one style. */
 .moba-tip p {
-	margin: 0 0 6px;
-	font:
-		13px / 1.35 system-ui,
-		sans-serif;
+	margin: 6px 0 0;
+	font: var(--tip-text);
 }
 .moba-tip dl {
+	margin: 10px 0 0;
 	display: grid;
-	grid-template-columns: auto 1fr;
-	gap: 3px 12px;
-	margin: 0;
-	padding-top: 6px;
-	border-top: 1.5px solid var(--ink);
-	font:
-		12px / 1.25 system-ui,
-		sans-serif;
+	gap: 2px;
+	font: var(--tip-fact);
 }
-/* Row captions in small caps, like a game manual's spec table. */
-.moba-tip dt {
-	font-size: 10px;
-	font-weight: 700;
-	letter-spacing: 0.1em;
-	text-transform: uppercase;
-	opacity: 0.7;
-	align-self: center;
+.moba-tip dl div {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0 6px;
 }
+/* Label then value on one line, so the eye never crosses the card to pair them. */
 .moba-tip dd {
 	margin: 0;
-	font-weight: 700;
-	text-align: right;
+	font-weight: 600;
 	font-variant-numeric: tabular-nums;
 }
-.moba-tip .moba-tip-note {
-	margin: 6px 0 0;
-	font-size: 12px;
-	font-style: italic;
-	opacity: 0.85;
+
+/* A keyword: the ink word, a touch heavier, with a dotted underline; never a pill or a side's colour.
+   Its card opens on hover, focus or tap (tooltip.js places it; `.open` is set there). */
+.moba-kw {
+	font-weight: 600;
+	text-decoration: underline dotted;
+	text-decoration-thickness: var(--line-thin);
+	text-underline-offset: 3px;
+	cursor: help;
+	outline: none;
+	border-radius: 3px;
+}
+.moba-kw:focus-visible {
+	box-shadow:
+		0 0 0 2px var(--cream),
+		0 0 0 calc(2px + var(--line-thin)) var(--ink);
+}
+.moba-kw-card {
+	position: absolute;
+	left: 0;
+	top: calc(100% + 4px);
+	z-index: 1;
+	display: none;
+	width: max-content;
+	max-width: min(var(--kw-width), calc(100vw - 16px));
+	box-sizing: border-box;
+	padding: 8px 10px 9px;
+	background: var(--cream);
+	border: var(--line-thin) solid var(--ink);
+	border-radius: var(--radius-tile);
+	box-shadow: var(--shadow-float);
+	font: var(--tip-fact);
+	font-weight: 400;
+	text-align: left;
+	white-space: normal;
+	pointer-events: none;
+}
+.moba-kw-card b {
+	font-weight: 600;
+}
+/* In the tooltip the card is placed against the whole card; on the numbers sheet, under its word. */
+.lobby-number-scroll .moba-kw {
+	position: relative;
+}
+.moba-kw.open > .moba-kw-card,
+.lobby-number-scroll .moba-kw:hover > .moba-kw-card,
+.lobby-number-scroll .moba-kw:focus > .moba-kw-card {
+	display: block;
 }
 
 /* --- Narrow screens: same pieces, smaller; structure rows step under the badges. --- */

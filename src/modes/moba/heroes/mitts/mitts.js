@@ -22,6 +22,6 @@ export default {
 		name: 'Pocket',
 		icon: 'pocket',
 		chip: `{catching.pocketLife}`,
-		summary: `Hold a caught shot for {catching.pocketLife}, then send it back with Toss.`,
+		summary: `A caught shot waits in your glove for {catching.pocketLife}; Toss throws it back.`,
 	}),
 }

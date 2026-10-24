@@ -8,7 +8,9 @@ export default {
 	tell: 'line',
 	held: 'line',
 	effects: { cast: true, hit: true, pose: 'flyingKick' },
-	card: { summary: 'Dash into the first body. Hurt enemies; stop harmlessly at allies.' },
+	card: {
+		sentence: `Kicks up to {range} into the first body, dealing {damage:damage} to an enemy; an ally stops it harmlessly.`,
+	},
 	watch({ hero, sim, ability }) {
 		if (hero.dead || hero.dashAbility !== ability.id || !hero.body.dashing) return
 		const p = hero.body.position

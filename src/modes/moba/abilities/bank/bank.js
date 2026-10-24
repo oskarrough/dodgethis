@@ -11,7 +11,6 @@ export default {
 	held: 'line',
 	effects: { cast: 'nock', projectile: 'loose', hit: 'looseHit', pose: 'draw' },
 	card: {
-		summary: 'A shot that bounces off cover and walls, hitting harder with every cushion.',
-		notes: [`Up to {bank.bounce.max} cushions, +{bank.bounce.damagePerCushion:damage} each`],
+		sentence: `Shoots a ball up to {range} that bounces off walls and cover up to {bank.bounce.max} times, hitting the first unit for {damage:damage} plus {bank.bounce.damagePerCushion:damage} per bounce.`,
 	},
 }

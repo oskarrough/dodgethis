@@ -7,6 +7,7 @@ import { MINION_DEFINITIONS } from '../src/modes/moba/lane-waves.js'
 import { STRUCTURE_DEFINITIONS } from '../src/modes/moba/lane-structures.js'
 import { UNIT_REFS, UNIT_ATTACK_REFS } from '../src/modes/moba/unit-definition.js'
 import { heroTrait, renderCardTemplate } from '../src/modes/moba/tooltip.js'
+import { glossary, glossaryTerms } from '../src/modes/moba/glossary.js'
 import {
 	ABILITIES,
 	defineAbility,
@@ -452,10 +453,13 @@ for (const [id, manifest] of Object.entries(declarations)) {
 	for (const status of Object.values(manifest.statuses ?? {}))
 		checkHooks(id, manifest, status.on, [...AURA_EVENTS, 'apply', 'remove', 'expire'])
 	if (manifest.card) {
-		const { summary = '', notes = [] } = manifest.card
+		const { sentence = '', facts = [], ...rest } = manifest.card
 		try {
-			if (!Array.isArray(notes)) throw new Error('card notes must be an array of templates')
-			for (const template of [summary, ...notes]) {
+			if (Object.keys(rest).length)
+				throw new Error(`card keys are sentence and facts, not ${Object.keys(rest).join(', ')}`)
+			if (!Array.isArray(facts) || facts.some((fact) => !Array.isArray(fact) || fact.length !== 2))
+				throw new Error('card facts must be [label, template] pairs')
+			for (const template of [sentence, ...facts.map(([, value]) => value)]) {
 				renderCardTemplate(template, id)
 				count++
 			}
@@ -505,6 +509,13 @@ for (const id of Object.keys(HEROES)) {
 		errors.push(`${id} trait: ${error.message}`)
 	}
 }
+for (const term of glossaryTerms())
+	try {
+		glossary(term)
+		count++
+	} catch (error) {
+		errors.push(`glossary ${term}: ${error.message}`)
+	}
 if (errors.length) {
 	console.error(`MOBA effect schema: ${errors.length} invalid declarations:\n${errors.join('\n')}`)
 	process.exitCode = 1

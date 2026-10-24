@@ -28,8 +28,7 @@ export default {
 		},
 	},
 	card: {
-		summary:
-			'Chalk a {radius} ring for {duration}. Allies inside run {haste} faster; enemies inside are slowed by {slow}.',
+		sentence: `Chalks a {radius} ring up to {range} away for {duration}: allies inside get {haste} [[Haste]], enemies inside a {slow} [[Slow]].`,
 	},
 	stages: {
 		release: [

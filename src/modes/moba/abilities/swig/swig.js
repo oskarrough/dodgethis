@@ -15,7 +15,8 @@ export default {
 	cancelOnCast: true,
 	effects: { cast: true, pose: 'swig' },
 	card: {
-		summary: 'Root and drink, gaining shield. Orders, casts and disables interrupt the drink.',
+		sentence: `Roots you to drink for up to {duration}, gaining {shieldPerSecond} of [[Shield]]; moving, casting or a [[Stun]] stops the drink.`,
+		facts: [['Shield lasts', `{shieldLife}`]],
 	},
 	onTick({ hero, sim, ability, dt, tick }) {
 		const stats = ability.stats

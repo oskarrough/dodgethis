@@ -14,7 +14,7 @@ export const tuneUnits = {
 		`cooldown castPoint duration dur life time tell windup backswing delay interval lateInterval
 		channel warning stun silence lock linger respawn hold reaction dodgeReaction burstWindow late
 		first passiveStart fullHealSeconds slipTime spitTime closeTime focusUntil decision maxWait maxSeconds think
-		feedLife ending hoverDelay longPress inspectHold warn objective lateStep minInterval growthPeriod helpHold
+		feedLife ending tipGrace longPress inspectHold warn objective lateStep minInterval growthPeriod helpHold
 		calm coyoteTime stallTime repeatPing cancelLockout buffer returnTell pocketLife maxStep response
 		flipMin flipMax castEvery minFlight popTell puddle resetCooldown prone deathRefund sweep payout shieldLife
 		dragTime hitstop reset firstSlam slamEvery lateEvery window immunity swim fly lifeStep handoffFor flipTime

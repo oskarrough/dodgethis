@@ -49,7 +49,7 @@ export default {
 	held: 'line',
 	effects: { cast: 'passWindup', projectile: 'passBall', hit: 'passHit', pose: 'coachPass' },
 	card: {
-		summary: `First hero hit: heal an ally for {healAmount}, or deal {damage} and slow an enemy.`,
+		sentence: `Throws a ball up to {range}: the first hero hit is healed {healAmount} if an ally, or takes {damage:damage} and a {slow} [[Slow]] for {duration} if an enemy.`,
 	},
 	stages: {
 		release: [

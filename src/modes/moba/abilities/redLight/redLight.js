@@ -38,6 +38,6 @@ export default {
 		],
 	},
 	card: {
-		summary: `Freeze enemy heroes moving faster than {movingSpeed} within {radius} for {duration}. Standing still is safe.`,
+		sentence: `Enemy heroes within {radius} moving faster than {movingSpeed} [[freeze]] for {duration}; standing still is safe.`,
 	},
 }

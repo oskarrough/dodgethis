@@ -11,6 +11,6 @@ export default {
 	held: 'line',
 	effects: { cast: 'nock', projectile: 'loose', hit: 'looseHit', pose: 'draw' },
 	card: {
-		notes: [`Momentum: hero hits cut Vault's cooldown by {momentum.reduction}`],
+		sentence: `Shoots an arrow up to {range} that hits the first unit for {damage:damage}. A hero hit gives [[Momentum]].`,
 	},
 }

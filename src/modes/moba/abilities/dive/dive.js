@@ -15,7 +15,7 @@ export default {
 	held: 'arrow',
 	effects: { cast: 'dive', effect: 'dive', pose: 'dive' },
 	card: {
-		summary: 'Dive toward your aim, catching shots all around on the way, then lie prone.',
+		sentence: `Dives {range} toward your aim, catching shots from every side on the way, then lies [[Prone]] for {prone}.`,
 	},
 	stages: {
 		release: [

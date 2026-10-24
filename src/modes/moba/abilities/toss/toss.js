@@ -12,10 +12,6 @@ export default {
 	held: 'line',
 	effects: { cast: 'tossWindup', projectile: 'toss', hit: 'tossHit', pose: 'toss', punch: 'toss' },
 	card: {
-		summary: 'Line skillshot. With a caught shot in your pocket, Toss sends that back instead.',
-		notes: [
-			`Pocketed shots last {catching.pocketLife}`,
-			`Returns keep the caught shot's damage and bypass Toss's cooldown, with a {catching.returnTell} tell`,
-		],
+		sentence: `Throws a glove up to {range} that hits the first unit for {damage:damage}; with a shot in your [[Pocket]], it throws that back instead.`,
 	},
 }

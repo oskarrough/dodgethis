@@ -42,7 +42,6 @@ export default {
 		hero.abilityState.swap.mark = null
 	},
 	card: {
-		summary: 'Trade places with your Ricochet shot, wherever it has bounced to.',
-		notes: [`Only while Ricochet flies, or {linger} after it stops`],
+		sentence: `Trades places with your Ricochet shot while it flies, or up to {linger} after it stops.`,
 	},
 }

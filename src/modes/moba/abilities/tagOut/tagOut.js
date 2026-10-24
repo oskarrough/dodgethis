@@ -91,6 +91,6 @@ export default {
 		],
 	},
 	card: {
-		summary: `Swap with the ally nearest your aim within {range}. Cleanse them; take {damageReduction} less damage for {duration}.`,
+		sentence: `Swaps places with the ally nearest your aim within {range} and [[cleanses|cleanse]] them; you take {damageReduction} less damage for {duration}.`,
 	},
 }

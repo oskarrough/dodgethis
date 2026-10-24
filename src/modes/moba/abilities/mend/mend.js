@@ -26,6 +26,6 @@ export default {
 		],
 	},
 	card: {
-		summary: `Cast for {castPoint} to heal the ally nearest your aim within {range} for {healAmount}. {critChance} chance to heal {critMultiplier}.`,
+		sentence: `After {castPoint}, heals the ally nearest your aim within {range} for {healAmount}, with a {critChance} chance of a {critMultiplier} heal.`,
 	},
 }

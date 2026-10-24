@@ -40,8 +40,6 @@ export default {
 		}
 	},
 	card: {
-		summary:
-			'Place a short wall at the cursor. Ricochet bounces off it; it blocks shots and bodies.',
-		notes: [`{length} wide, lasts {duration}`],
+		sentence: `Places a {length} wall up to {range} away for {duration} that blocks shots and bodies; Ricochet bounces off it.`,
 	},
 }

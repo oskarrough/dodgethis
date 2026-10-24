@@ -92,6 +92,6 @@ export default {
 		},
 	},
 	card: {
-		summary: `Plant a {hp:HP} sprinkler for {duration}. Its {radius} jet sweeps each {sweep}: heal {healAmount}, soak enemies. It blocks nothing.`,
+		sentence: `Plants a {hp:HP} sprinkler for {duration}; each sweep of its {radius} jet heals allies {healAmount} and [[soaks|soak]] enemies.`,
 	},
 }

@@ -49,8 +49,7 @@ export default {
 		},
 	},
 	card: {
-		summary:
-			'Bank incoming damage, then repay it evenly after the stance ends. Shields absorb repayments.',
+		sentence: `For {duration}, damage you take is banked as [[Stagger]] and repaid afterwards; a [[Shield]] soaks the repayment.`,
 	},
 	onStart({ hero, sim }) {
 		// A second stance can bank into a still-paying pool, exactly as before.

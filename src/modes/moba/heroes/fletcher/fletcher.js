@@ -22,6 +22,6 @@ export default {
 		name: 'Momentum',
 		icon: 'momentum',
 		chip: `−{momentum.reduction}`,
-		summary: `Loose hitting a hero cuts Vault's cooldown by {momentum.reduction}.`,
+		summary: `Each Loose that hits a hero takes {momentum.reduction} off Vault's cooldown, so you can leap again sooner.`,
 	}),
 }

@@ -15,4 +15,7 @@ export default {
 			},
 		},
 	},
+	card: {
+		sentence: `After {castPoint}, slams for {damage:damage}, {splash:damage} to those nearby, and leaves a [[Bruise]].`,
+	},
 }
