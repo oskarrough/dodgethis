@@ -286,6 +286,8 @@ export const tuneUnits = {
 	'lobby.floor.grounds.flags.centre': 'm',
 	'lobby.floor.grounds.flags.ring': 'm',
 	'lobby.floor.grounds.flags.stone': 'm',
+	'lobby.floor.grounds.flags.unevenness': 'm',
+	'lobby.floor.grounds.flags.waver': 'm',
 	'lobby.floor.grounds.blocks.groutWidth': 'm',
 	'lobby.floor.grounds.blocks.terraces': 'count',
 	'lobby.floor.grounds.blocks.stairs.angles': 'deg',
