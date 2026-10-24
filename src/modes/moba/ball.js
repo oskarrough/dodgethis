@@ -100,7 +100,7 @@ export function createBall({
 		}
 		if (ball?.state === 'carried') {
 			const h = heroes.find((u) => u.id === ball.carrier)
-			if (h.dead) drop('death')
+			if (!h || h.dead) drop(h ? 'death' : 'clear')
 			else ball.pos = pos(h.body.position)
 		}
 	}
@@ -241,7 +241,9 @@ export function createBall({
 			return
 		}
 		if (ball.state === 'carried') {
-			ball.pos = pos(heroes.find((h) => h.id === ball.carrier).body.position)
+			const h = heroes.find((u) => u.id === ball.carrier)
+			if (!h) drop('clear')
+			else ball.pos = pos(h.body.position)
 			return
 		}
 		const eligible = (h) =>
