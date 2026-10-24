@@ -681,7 +681,7 @@ export default function moba(app, map) {
 					aim: frame.aim,
 					held: hero.dead || sim.ball?.carrying(hero) ? {} : frame.held,
 					unit: hero,
-					units: [...sim.heroes, ...sim.dummies],
+					units: [...sim.heroes, ...sim.dummies].filter((u) => u.team === hero.team || !unseen(u)),
 					lobby: isLobby,
 					tick: sim.tick,
 					bounds: sim.bounds,
