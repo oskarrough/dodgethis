@@ -213,6 +213,7 @@ export function createOverlay(selector = '.overlay') {
 		hide,
 		handleGamepad,
 		setDevice,
+		relabel: renderPrompts,
 		get visible() {
 			return !el.hidden
 		},
