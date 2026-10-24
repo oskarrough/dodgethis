@@ -96,13 +96,50 @@ export default {
 			foot: [0.6, 1.6], // metres between tries for a tuft at the foot
 			tufts: 0.35, // odds that a try grows one
 		},
+		// Carved cover, applied on restart. All ornament stays inside the collision boxes.
+		walls: {
+			blockWidth: 2.2,
+			joint: 0.035,
+			bevel: 0.09,
+			chip: 0.12,
+			footHeight: 0.28,
+			capHeight: 0.34,
+			capStep: 0.12,
+			faceInset: 0.25,
+			panelBorder: 0.09,
+			panelGap: 0.06,
+			relief: 0.18,
+			petals: 8,
+			petalSides: 8,
+			petalWidth: 0.28,
+			flowerRadius: 0.48,
+			flowerHeart: 0.2,
+			mossChance: 0.3,
+			mossLobes: 5,
+			mossHeight: 0.08,
+			mossReach: 0.6,
+			mossDrop: 0.4,
+		},
 		// Sandstone cover and pale pillars instead of the green garden roles.
 		palette: {
-			courtShade: 0xc4865f,
+			courtShade: 0xa9644a,
 			scenery: 0xcdbcae,
 			court: 0xa59c62,
+			page: 0xf1d2b4,
 			leaf: 0x93a85c, // sage and olive: a dry mesa's growth, never lawn green
 			leafDeep: 0x5e7446,
+		},
+		// One low warm sun from the upper left: long violet shadows across a pale court, lit
+		// faces apricot, shade lilac (the ink target, pages/art/altamesa-targets).
+		light: {
+			dir: [-0.72, 0.42, -0.3], // toward the sun
+			sun: 0xffd2a0,
+			shade: 0x4a3a6e,
+			bandMix: [0.4, 0.45],
+			shadow: '#7d6596',
+			shadowStrength: 0.5,
+			shadowLength: 0.85, // fraction of the true projected length
+			shadowPixelsPerMetre: 16,
 		},
 		// The court is printed with a painted tile (floor-print.js, public/tiles/); the isle's
 		// cliff and cloud take the desert's colours (applies on restart).
@@ -112,14 +149,14 @@ export default {
 			style: 'mapped',
 			image: '/tiles/flags-drawn.webp',
 			size: 5, // metres per repeat of the tile
-			base: '#f6e3d3',
-			joint: '#d9b49c',
-			accent: '#d9b49c',
+			base: '#f8ebdd',
+			joint: '#e0c2ab',
+			accent: '#e0c2ab',
 			vary: 0.14, // how much of the drawing survives the lift
 		},
 		look: {
 			contact: { reach: 1.2, strength: 0.3 },
-			shadow: 0.42,
+			shadow: 0.55,
 			clouds: { scale: 26, speed: 0.6, strength: 0.06 },
 			border: 0,
 			joints: 0.035,
@@ -129,14 +166,42 @@ export default {
 			chalk: '#eccfba',
 			moss: '#a39457',
 			mossShade: '#6f6236',
-			stoneLit: '#b0705f',
-			stone: '#83505a',
-			stoneShade: '#55384f',
-			haze: '#f1d2b4',
+			stoneLit: '#d08a62',
+			stone: '#a15f4c',
+			stoneShade: '#5f3f5c',
+			haze: '#f4cfae',
 			cloudLit: '#fff0de',
 			cloud: '#f3d8c1',
 			cloudShade: '#dcb7a8',
 			cloudDeep: '#a98a98',
+		},
+		// Clearer air than Overthrow's, and more far mesas standing in the cloud.
+		haze: { top: 3, bottom: 70, power: 1.4, max: 0.7, near: 30, far: 190 },
+		// Fewer, deeper cloud banks, so the cliff and its ruins show.
+		clouds: {
+			y: -34,
+			size: 900,
+			scale: 34,
+			drift: [0.5, 0.18],
+			puffs: 22,
+			puffMin: 4,
+			puffMax: 7,
+			puffDepth: [18, 30],
+			bob: 0.6,
+		},
+		spires: { count: 34, arches: 4, near: 22, far: 110, sides: 6, radius: [2, 5] },
+		// The crowded rim (altamesa-scenery.js): shares of rim points that carry a ruin, a dead
+		// tree or bones; metres out from the rim and down the cliff.
+		rim: {
+			density: 2, // passes over the rim's points
+			ruins: 0.4,
+			trees: 0.3,
+			bones: 0.06,
+			reach: 2,
+			depth: 3,
+			ruinSize: 1.4,
+			ruinCourses: 3,
+			treeHeight: 1.8,
 		},
 		colors: {
 			sand: '#efd9b4',
@@ -162,4 +227,16 @@ export const units = {
 	'altamesa.overgrowth.drop': 'fraction',
 	'altamesa.overgrowth.taper': 'fraction',
 	'altamesa.overgrowth.tufts': 'fraction',
+	'altamesa.rim.ruins': 'fraction',
+	'altamesa.rim.trees': 'fraction',
+	'altamesa.rim.bones': 'fraction',
+	'altamesa.rim.ruinCourses': 'count',
+	'altamesa.walls.petals': 'count',
+	'altamesa.walls.petalSides': 'count',
+	'altamesa.walls.mossLobes': 'count',
+	'altamesa.walls.petalWidth': 'fraction',
+	'altamesa.walls.flowerRadius': 'fraction',
+	'altamesa.walls.flowerHeart': 'fraction',
+	'altamesa.walls.mossChance': 'fraction',
+	'altamesa.rim.density': 'count',
 }

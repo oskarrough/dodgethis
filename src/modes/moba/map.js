@@ -231,7 +231,8 @@ export function buildMap(scene, world, RAPIER, kind = DEFAULT_MAP) {
 	// A garden keeps its hedges green: dark-teal leaf banks on the hedge boxes.
 	const garden = map.kind === 'garden'
 	const leaf = garden ? material('court') : shade
-	for (const b of [...layout.boxes, ...kerbStones]) {
+	views.cover?.({ boxes: layout.boxes, m, print, material })
+	for (const b of [...(views.cover ? [] : layout.boxes), ...kerbStones]) {
 		if (stoneCover && !(garden && b.kind === 'hedge')) {
 			coursed(b)
 			continue
