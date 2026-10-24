@@ -1,8 +1,7 @@
 .moba-front.front-lobby {
 	z-index: 0;
 }
-.moba-top[hidden],
-.front-lobby .front-distant-fletcher {
+.moba-top[hidden] {
 	display: none;
 }
 .moba-front.front-lobby .front-canvas {
