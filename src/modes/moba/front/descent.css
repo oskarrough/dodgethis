@@ -1,5 +1,5 @@
 /* The crane: the lobby's chrome and the HUD fade with the canvas. */
-.front-craning > :not(.moba-front, script, .lil-gui),
+.front-craning > :not(.moba-front, script, .tuner),
 .front-craning .front-lobby > :not(.front-backdrop, .front-canvas) {
 	opacity: 0;
 	transition: opacity var(--crane-fade) ease-in;
@@ -41,7 +41,7 @@
 		transform: none;
 	}
 }
-.moba-descending > :not(.moba-front):not(script):not(.lil-gui) {
+.moba-descending > :not(.moba-front):not(script):not(.tuner) {
 	visibility: hidden;
 }
 /* The cloud reveal: drawn small, so the browser's upscale keeps it soft. */

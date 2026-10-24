@@ -1,15 +1,15 @@
 ---
 name: Tuning idea
-about: A desk tweak to consider as a default
+about: A Tuner tweak to consider as a default
 title: 'Tuning idea: '
 labels: ['tuning']
 ---
 
 ## Changed values
 
-## Desk JSON
+## Tuner JSON
 
-<!-- Paste JSON from the desk Copy button. -->
+<!-- Paste JSON from the Tuner Copy button. -->
 
 ## Why
 

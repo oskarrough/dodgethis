@@ -1,4 +1,4 @@
-// Turns desk tweaks into a GitHub new-issue URL a player can send to a maintainer.
+// Turns Tuner tweaks into a GitHub new-issue URL a player can send to a maintainer.
 export const ISSUE_NEW = 'https://github.com/oskarrough/dodgethis/issues/new'
 export const ISSUE_TEMPLATE = 'tuning-idea.md'
 export const ISSUE_LABEL = 'tuning'
@@ -49,7 +49,7 @@ export function issueTitle(changes, hero) {
 	const who = hero ? `${prettyId(hero)} ` : ''
 	let title = `Tuning idea: ${who}${bits.join('; ')}`
 	if (title.length <= 90) return title
-	const first = bits[0] ?? 'desk tweaks'
+	const first = bits[0] ?? 'Tuner tweaks'
 	const extra = changes.length > 1 ? `, +${changes.length - 1} more` : ''
 	title = `Tuning idea: ${who}${first}${extra}`
 	return title.length <= 256 ? title : `${title.slice(0, 253)}…`
@@ -69,13 +69,13 @@ export function issueBody({ changes, json, includeJson, limit = Infinity }) {
 	const parts = [
 		'## Changed values',
 		'',
-		...(lines.length ? lines : ['- (see Desk JSON)']),
+		...(lines.length ? lines : ['- (see Tuner JSON)']),
 		'',
-		'## Desk JSON',
+		'## Tuner JSON',
 		'',
 	]
 	if (includeJson) parts.push('```json', json, '```', '')
-	else parts.push('<!-- Paste JSON from the desk Copy button. -->', '')
+	else parts.push('<!-- Paste JSON from the Tuner Copy button. -->', '')
 	parts.push('## Why', '', '_What felt better, and in which situation?_')
 	return parts.join('\n')
 }

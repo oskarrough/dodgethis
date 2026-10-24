@@ -214,7 +214,7 @@ export function mobaFront(app, map) {
 				)
 			}
 			const outside = [...document.body.children].filter(
-				(child) => child.tagName !== 'SCRIPT' && !child.matches('.lil-gui'),
+				(child) => child.tagName !== 'SCRIPT' && !child.matches('.tuner'),
 			)
 			const inert = outside.map((child) => child.inert)
 			outside.forEach((child) => (child.inert = true))

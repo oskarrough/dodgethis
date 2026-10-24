@@ -22,7 +22,7 @@ function walk(object, path = []) {
 	}
 }
 walk(tune)
-// The desk resolves look and the front's tune through the same table (sliders.js, front/index.js).
+// The Tuner resolves look and the front's tune through the same table (sliders.js, front/index.js).
 ;(function more(object, path = []) {
 	for (const [key, value] of Object.entries(object)) {
 		paths.push([...path, key].join('.'))

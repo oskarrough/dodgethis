@@ -1,19 +1,21 @@
-// The desk: live numbers you can try while playing. Backquote (` / the key above Tab) opens it;
+// The Tuner ("Tune" on screen): live numbers you can try while playing. Backquote (` / the key above Tab) opens it;
 // it lists what this screen can tune (folders to open, values to find, actions to run) and pins
 // values as instruments shaped like what they control: a clock for a duration, a speedometer for
 // a speed, a ring for a radius. ?knobs=lob,fog pins from the address. "copy" puts changed values
 // on the clipboard as JSON; "share" opens a GitHub issue so a maintainer can make them the default.
-// Values come from the registry (every tune value) and from the old lil-gui panel ("all values"), which
-// still registers hand-made sliders while they move into notes.
-import './desk.css'
-import { folderOf, shareIssue } from './desk-share.js'
+// Values come from the registry: every tune value, plus hand-made controls (src/core/registry.js).
+import './tuner.css'
+import { folderOf, shareIssue } from './tuner-share.js'
 import { units } from './units.js'
 
-const STORE = 'dt-desk'
+const STORE = 'dt-tuner'
+const OLD_STORE = 'dt-desk' // pins and values saved before the desk was renamed
 const MAX = 36
 
 function kindOf(c) {
 	if (c.unit === 'color') return 'swatch'
+	if (c.choices) return 'choice'
+	if (c.readonly && typeof c.getValue() === 'string') return 'readout'
 	if (!['number', 'boolean'].includes(typeof c.getValue())) return null
 	return units[c.unit]?.instrument ?? 'knob'
 }
@@ -28,14 +30,18 @@ function range(c) {
 
 function read() {
 	try {
-		return { queries: [], values: {}, ...JSON.parse(localStorage.getItem(STORE)) }
+		return {
+			queries: [],
+			values: {},
+			...JSON.parse(localStorage.getItem(STORE) ?? localStorage.getItem(OLD_STORE)),
+		}
 	} catch {
 		return { queries: [], values: {} }
 	}
 }
 
-// `source.entries()` lists every value and action on this screen; `source.showPanel(on)` shows the old panel.
-export function createDesk(source) {
+// `source.entries()` lists every value and action on this screen.
+export function createTuner(source) {
 	const state = read()
 	const fromUrl = new URLSearchParams(location.search).get('knobs')
 	if (fromUrl)
@@ -43,20 +49,19 @@ export function createDesk(source) {
 	const save = () => localStorage.setItem(STORE, JSON.stringify(state))
 
 	const root = document.createElement('section')
-	root.className = 'desk'
+	root.className = 'tuner'
 	root.dataset.quiet = '' // a tuning tool, not the game
 	root.hidden = true
-	root.innerHTML = `<header class="desk-head"><b title="press \` to hide · change a number, then share it as a GitHub issue">desk</b><span class="desk-chips"></span>
+	root.innerHTML = `<header class="tuner-head"><b title="press \` to hide · change a number, then share it as a GitHub issue">Tune</b><span class="tuner-chips"></span>
 		<button data-act="copy" title="copy changed values as JSON, to paste into a GitHub issue">copy</button>
 		<button data-act="share" title="open a GitHub issue with what you changed">share</button>
 		<button data-act="reset" title="put every changed value back">reset</button>
-		<button data-act="panel" title="the old panel with every value as a slider">all values</button>
-		<input class="desk-find" type="search" placeholder="find a value: lob, speed, fog…" /></header>
-		<nav class="desk-index"></nav><div class="desk-board"></div><p class="desk-note"></p>`
+		<input class="tuner-find" type="search" placeholder="find a value: lob, speed, fog…" /></header>
+		<nav class="tuner-index"></nav><div class="tuner-board"></div><p class="tuner-note"></p>`
 	document.body.append(root)
-	const chips = root.querySelector('.desk-chips')
-	const find = root.querySelector('.desk-find')
-	const index = root.querySelector('.desk-index')
+	const chips = root.querySelector('.tuner-chips')
+	const find = root.querySelector('.tuner-find')
+	const index = root.querySelector('.tuner-index')
 	find.addEventListener('input', () => renderIndex())
 	find.addEventListener('focus', () => renderIndex())
 	find.addEventListener('keydown', (e) => {
@@ -71,8 +76,8 @@ export function createDesk(source) {
 		find.value = ''
 		find.blur()
 	})
-	const board = root.querySelector('.desk-board')
-	const note = root.querySelector('.desk-note')
+	const board = root.querySelector('.tuner-board')
+	const note = root.querySelector('.tuner-note')
 	if (state.at) Object.assign(root.style, { left: `${state.at[0]}px`, top: `${state.at[1]}px` })
 	for (const type of ['keydown', 'keyup', 'wheel', 'contextmenu'])
 		root.addEventListener(type, (e) => e.stopPropagation())
@@ -118,7 +123,7 @@ export function createDesk(source) {
 		}
 		const items = []
 		const crumb = document.createElement('p')
-		crumb.className = 'desk-crumb'
+		crumb.className = 'tuner-crumb'
 		if (query) {
 			crumb.textContent = 'Click to pin, or Enter to pin everything matching.'
 			// A whole word beats the start of a word beats anywhere inside one: "lob" finds Lob before globes.
@@ -156,13 +161,13 @@ export function createDesk(source) {
 			)
 			if (browse === null) crumb.textContent = 'On this screen. Click a folder to look inside.'
 			else {
-				crumb.innerHTML = '<button class="desk-back">‹ back</button> '
+				crumb.innerHTML = '<button class="tuner-back">‹ back</button> '
 				crumb.firstChild.onclick = () => {
 					browse = browse.includes('/') ? browse.slice(0, browse.lastIndexOf('/')) : null
 					renderIndex()
 				}
 				const all = document.createElement('button')
-				all.className = 'desk-pinall'
+				all.className = 'tuner-pinall'
 				all.textContent = `pin all of ${browse} (${folders.get(browse)})`
 				all.onclick = () => pin(browse)
 				crumb.append(all)
@@ -190,13 +195,13 @@ export function createDesk(source) {
 			const actions = controllers.filter((c) => c.run)
 			if (browse === null && actions.length) {
 				const h = document.createElement('p')
-				h.className = 'desk-crumb'
+				h.className = 'tuner-crumb'
 				h.textContent = 'Actions'
 				items.push(h)
 				for (const c of actions) {
 					const folder = c.path.split('/').slice(0, -1).join(' / ')
 					const b = chip(c.path, c.label, () => c.run(), null, folder)
-					b.classList.add('desk-action')
+					b.classList.add('tuner-action')
 					items.push(b)
 				}
 			}
@@ -206,7 +211,7 @@ export function createDesk(source) {
 
 	function chip(key, label, onclick, kind, where) {
 		const b = document.createElement('button')
-		b.className = 'desk-pick'
+		b.className = 'tuner-pick'
 		b.title = key
 		if (kind) b.dataset.kind = kind
 		b.textContent = label
@@ -218,12 +223,11 @@ export function createDesk(source) {
 	function rebuild() {
 		const found = matches()
 		root.hidden = !shown
-		source.showPanel(shown && !!state.panel)
 		renderIndex()
 		chips.replaceChildren(
 			...state.queries.map((q) => {
 				const chip = document.createElement('button')
-				chip.className = 'desk-chip'
+				chip.className = 'tuner-chip'
 				chip.textContent = q
 				chip.title = 'unpin'
 				chip.onclick = () => unpin(q)
@@ -243,7 +247,7 @@ export function createDesk(source) {
 		board.replaceChildren(
 			...[...groups].map(([title, els]) => {
 				const group = document.createElement('section')
-				group.innerHTML = `<h3></h3><div class="desk-grid"></div>`
+				group.innerHTML = `<h3></h3><div class="tuner-grid"></div>`
 				group.firstChild.textContent = title
 				group.lastChild.append(...els)
 				return group
@@ -302,12 +306,12 @@ export function createDesk(source) {
 		return [...found.values()]
 	}
 
-	root.querySelector('.desk-head').addEventListener('click', async (e) => {
+	root.querySelector('.tuner-head').addEventListener('click', async (e) => {
 		const act = e.target.dataset?.act
 		if (act === 'copy') {
 			const text = JSON.stringify(state.values, null, '\t')
 			await navigator.clipboard?.writeText(text).catch(() => {})
-			console.info('[desk]', text)
+			console.info('[tuner]', text)
 			e.target.textContent = Object.keys(state.values).length ? 'copied' : 'no changes'
 			setTimeout(() => (e.target.textContent = 'copy'), 1200)
 		}
@@ -321,7 +325,7 @@ export function createDesk(source) {
 			const hero = new URLSearchParams(location.search).get('hero')
 			const { url, omittedJson, json } = shareIssue({ changes, values: state.values, hero })
 			if (omittedJson) await navigator.clipboard?.writeText(json).catch(() => {})
-			console.info('[desk]', url)
+			console.info('[tuner]', url)
 			// An <a> click (not window.open) keeps this a user gesture; noopener would make open() look blocked.
 			const a = Object.assign(document.createElement('a'), {
 				href: url,
@@ -343,11 +347,6 @@ export function createDesk(source) {
 			state.values = {}
 			save()
 		}
-		if (act === 'panel') {
-			state.panel = !state.panel
-			save()
-			rebuild()
-		}
 	})
 	dragHeader(root, (at) => {
 		state.at = at
@@ -365,7 +364,7 @@ export function createDesk(source) {
 	let pending = false
 	return {
 		pin,
-		// Backquote hides the desk along with the panel; pins and values stay.
+		// Backquote hides the Tuner; pins and values stay.
 		show(on) {
 			shown = on
 			rebuild()
@@ -379,6 +378,9 @@ export function createDesk(source) {
 				rebuild()
 			})
 		},
+		setInert(inert) {
+			root.inert = inert
+		},
 		dispose() {
 			cancelAnimationFrame(frame)
 			root.remove()
@@ -387,7 +389,7 @@ export function createDesk(source) {
 }
 
 function dragHeader(root, done) {
-	const head = root.querySelector('.desk-head')
+	const head = root.querySelector('.tuner-head')
 	head.addEventListener('pointerdown', (e) => {
 		if (e.target.closest('button, input')) return
 		const box = root.getBoundingClientRect()
@@ -426,8 +428,9 @@ const about = (key, c) =>
 // you can click to type into (counters too: click the big number). Double-click puts the value back.
 function instrument(key, c, kind, changed) {
 	if (kind === 'swatch') return swatch(key, c, changed)
+	if (kind === 'choice' || kind === 'readout') return picker(key, c, kind, changed)
 	const el = document.createElement('div')
-	el.className = 'desk-mod'
+	el.className = 'tuner-mod'
 	el.dataset.kind = kind
 	el.title = `${about(key, c)}drag · shift for fine · wheel steps · click the number to type · double-click resets`
 	const [min, max] = range(c)
@@ -455,9 +458,9 @@ function instrument(key, c, kind, changed) {
 			? `${v ? 'on' : 'off'}${units[c.unit] ? '' : ' ?'}`
 			: `${+v.toFixed(decimals)}${unit}`
 
-	el.innerHTML = `<div class="desk-face">${FACES[kind]?.(max) ?? ''}</div>
+	el.innerHTML = `<div class="tuner-face">${FACES[kind]?.(max) ?? ''}</div>
 		<label>${c.label}</label><output></output>`
-	const face = el.querySelector('.desk-face')
+	const face = el.querySelector('.tuner-face')
 	const out = el.querySelector('output')
 	const part = (s) => face.querySelector(s)
 	const draw = DRAW[kind](part, { min, max, toFrac, radians, seconds: c.unit === 'ms' ? 0.001 : 1 })
@@ -534,13 +537,13 @@ function instrument(key, c, kind, changed) {
 // Values keep the controller's own format, a 0xrrggbb number or a '#rrggbb' string.
 function swatch(key, c, changed) {
 	const el = document.createElement('div')
-	el.className = 'desk-mod'
+	el.className = 'tuner-mod'
 	el.dataset.kind = 'swatch'
 	el.title = `${about(key, c)}click picks · drag across for hue, up for lightness · shift for fine · double-click resets`
-	el.innerHTML = `<div class="desk-face"><i class="swatch"></i><input type="color" tabindex="-1"></div>
+	el.innerHTML = `<div class="tuner-face"><i class="swatch"></i><input type="color" tabindex="-1"></div>
 		<label></label><output></output>`
 	el.querySelector('label').textContent = c.label
-	const face = el.querySelector('.desk-face')
+	const face = el.querySelector('.tuner-face')
 	const chip = el.querySelector('.swatch')
 	const picker = el.querySelector('input')
 	const out = el.querySelector('output')
@@ -600,6 +603,42 @@ function swatch(key, c, changed) {
 			picker.value = hex
 			out.textContent = hex
 			el.classList.toggle('is-changed', v !== c.initialValue)
+		},
+	}
+}
+
+// One of a few named values (a hero, a log level), or a line of text the game keeps up to date.
+function picker(key, c, kind, changed) {
+	const el = document.createElement('div')
+	el.className = 'tuner-mod'
+	el.dataset.kind = kind
+	el.title = about(key, c).trim()
+	el.innerHTML = `<div class="tuner-face"></div><label></label><output></output>`
+	el.querySelector('label').textContent = c.label
+	const face = el.querySelector('.tuner-face')
+	const out = el.querySelector('output')
+	let select
+	if (kind === 'choice') {
+		select = document.createElement('select')
+		for (const [name, value] of c.choices)
+			select.append(Object.assign(document.createElement('option'), { textContent: name, value }))
+		select.addEventListener('change', () => {
+			c.setValue(c.choices.find(([, v]) => String(v) === select.value)?.[1])
+			changed(key, c)
+		})
+		face.append(select)
+	}
+	let seen
+	return {
+		key,
+		el,
+		draw() {
+			const v = c.getValue()
+			if (v === seen) return
+			seen = v
+			if (select) select.value = String(v)
+			out.textContent = kind === 'choice' ? '' : String(v ?? '')
+			el.classList.toggle('is-changed', kind === 'choice' && v !== c.initialValue)
 		},
 	}
 }

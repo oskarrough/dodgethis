@@ -31,7 +31,7 @@
 
 ## Tune it live
 
-Press `` ` `` (Backquote, the key above Tab) while playing to open the **desk**. It is the same numbers the tune files hold, as instruments you can try in a match — not only a debug panel. Browse this screen's folders, search (try `lob` or `speed`), pin what you care about, and click a readout to type. Tweaks live in this browser until you reset them; they are not the shipped defaults.
+Press `` ` `` (Backquote, the key above Tab) while playing to open the **Tuner**. It is the same numbers the tune files hold, every one of them,, as instruments you can try in a match — not only a debug panel. Browse this screen's folders, search (try `lob` or `speed`), pin what you care about, and click a readout to type. Tweaks live in this browser until you reset them; they are not the shipped defaults.
 
 When a change feels better, **Share** opens a GitHub issue (Tuning idea template, `tuning` label) with old → new values and the JSON. **Copy** puts that JSON on the clipboard. A maintainer or agent can then write it into the matching `<id>-tune.js`.
 

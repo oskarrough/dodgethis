@@ -1,7 +1,9 @@
 // Every tunable value, found by walking the tune sections: each number, on/off, '#rrggbb' colour and
 // number in an array is a value at `section/dotted/key`. Units decide the instrument and range; notes
 // (optional, beside the values in each tune file) add labels, hints, ranges, timing or hide a value.
-// The desk reads this; nobody has to write a slider for a value to be tunable.
+// The Tuner reads this; nobody has to write a slider for a value to be tunable. A section's `build`
+// adds hand-made controls (tune-folder.js), which win over what the walk found for the same value.
+import { createTuneFolder } from './tune-folder.js'
 
 const HEX = /^#[0-9a-f]{6}$/i
 const MAX_DEPTH = 6
@@ -41,7 +43,7 @@ const depth = (e) => e.dotted.split('.').length
 
 const hexFormat = { toHexString: (v) => v, fromHexString: (h) => h }
 
-// One value: the same verbs a desk instrument needs, whatever registered it.
+// One value: the same verbs a Tuner instrument needs, whatever registered it.
 function entry(section, dotted, object, property, options) {
 	const note = options.notes?.[dotted] ?? {}
 	const initialValue = object[property]
@@ -93,8 +95,11 @@ export function createRegistry() {
 	return {
 		// `options`: { notes: { 'dotted.key': { label, hint, range, step, unit, when, hidden } },
 		// units(object, key, dotted) → unit name, onChange(dotted, value), featured: ['dotted.key'] }.
-		add(path, object, options = {}) {
+		add(path, object, options = {}, build = null) {
 			const key = ++id
+			const folder = createTuneFolder(path)
+			build?.(folder, object)
+			const controls = folder.controllersRecursive()
 			const entries = []
 			walk(path, object, options, (e) => entries.push(e))
 			// Short labels collide inside a section ("lift" under splash, lobby and apex); keep the parent there.
@@ -103,21 +108,30 @@ export function createRegistry() {
 			for (const e of entries)
 				if (labels.get(e.label) > 1 && !options.notes?.[e.dotted]?.label)
 					e.label = shortLabel(e.dotted, 2)
-			sections.set(key, { path, object, options, entries })
+			sections.set(key, { path, object, options, entries, controls })
 			return () => sections.delete(key)
 		},
 		// A value reachable from two sections (a style section nested in its map's) shows once, under
 		// the section that holds it most directly, whose onChange is the one that knows about it.
 		entries() {
 			const best = new Map()
+			const controls = []
+			const handled = new Map()
+			for (const s of sections.values())
+				for (const c of s.controls) {
+					controls.push(c)
+					if (!handled.has(c.object)) handled.set(c.object, new Set())
+					handled.get(c.object).add(c.property)
+				}
 			for (const s of sections.values())
 				for (const e of s.entries) {
+					if (handled.get(e.object)?.has(e.property)) continue
 					let byKey = best.get(e.object)
 					if (!byKey) best.set(e.object, (byKey = new Map()))
 					const had = byKey.get(e.property)
 					if (!had || depth(e) < depth(had)) byKey.set(e.property, e)
 				}
-			const all = []
+			const all = controls
 			for (const byKey of best.values()) all.push(...byKey.values())
 			return all
 		},

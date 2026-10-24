@@ -150,5 +150,5 @@ src/
   ai.js          // enemy state machine (threatened / armed / noArrow)
   render.js      // camera, lights, screenshake
   audio.js       // WebAudio synth cues
-  debug.js       // tunables (lil-gui) + leveled log + combat log
+  debug.js       // tunables (the Tuner) + leveled log + combat log
 ```

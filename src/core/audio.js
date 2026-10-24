@@ -480,7 +480,7 @@ export function clickSounds() {
 		'click',
 		(event) => {
 			const button = event.target.closest?.('button')
-			if (!button || button.closest('[data-quiet], .lil-gui')) return
+			if (!button || button.closest('[data-quiet], .tuner')) return
 			const before = plays
 			setTimeout(() => plays === before && ui('confirm'))
 		},

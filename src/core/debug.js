@@ -1,5 +1,4 @@
-import GUI from 'lil-gui'
-import { createDesk } from './desk.js'
+import { createTuner } from './tuner.js'
 import { createRegistry } from './registry.js'
 import { tune } from './tune.js'
 
@@ -65,155 +64,30 @@ export function createCombatLog(selector = '.combat', max = 12) {
 	return { push }
 }
 
-// A lil-gui controller seen as a registry entry, so the desk handles both alike.
-function fromController(c) {
-	const parts = [c.property]
-	for (let g = c.parent; g?.parent; g = g.parent) parts.unshift(g._title)
-	const action = typeof c.getValue() === 'function'
-	return {
-		path: parts.join('/'),
-		object: c.object,
-		property: c.property,
-		label: c._name,
-		unit: c.unit,
-		initialValue: c.initialValue,
-		min: c._min,
-		max: c._max,
-		step: c._step,
-		format: c._format,
-		getValue: () => c.getValue(),
-		setValue: (v) => c.setValue(v),
-		reset: () => c.reset(),
-		run: action ? () => c.getValue().call(c.object) : undefined,
-	}
-}
-
-// The panel behind app.debug. A tune path is a folder path that mirrors the tune object, so
-// `bots/easy` is tune.bots.easy; `engine/…` holds src/core's own and stays last. Cheats are buttons in "cheats".
-// Every value in a section reaches the desk through the registry; a hand-made slider for the same value wins.
+// The panel behind app.debug: the Tuner over a registry of tune sections. A tune path mirrors the
+// tune object, so `bots/easy` is tune.bots.easy; `engine/…` holds src/core's own. Cheats are buttons
+// in "cheats". Every value in a section reaches the Tuner; a section's builder adds hand-made controls.
 export function createDebugPanel() {
-	const gui = new GUI({ title: 'dodgethis / debug' })
-	const folders = new Map()
-	function folder(path) {
-		if (folders.has(path)) return folders.get(path)
-		const cut = path.lastIndexOf('/')
-		const parent = cut < 0 ? gui : folder(path.slice(0, cut))
-		const f = parent.addFolder(path.slice(cut + 1)).close()
-		folders.set(path, f)
-		if (parent === gui && path !== 'engine' && folders.has('engine'))
-			gui.$children.append(folders.get('engine').domElement)
-		return f
-	}
-	// Remove only what this registration added, then drop folders left empty.
-	function adding(path, add) {
-		const f = folder(path)
-		const before = new Set(f.children)
-		add(f)
-		const added = f.children.filter((c) => !before.has(c))
-		refilter()
-		desk.refresh()
+	const registry = createRegistry()
+	const tuner = createTuner(registry)
+	const adding = (...args) => {
+		const remove = registry.add(...args)
+		tuner.refresh()
 		return () => {
-			for (const c of added) c.destroy()
-			desk.refresh()
-			for (let p = path; p; p = p.slice(0, Math.max(0, p.lastIndexOf('/')))) {
-				const empty = folders.get(p)
-				if (!empty || empty.children.length) break
-				empty.destroy()
-				folders.delete(p)
-			}
+			remove()
+			tuner.refresh()
 		}
 	}
-	const registry = createRegistry()
-	const desk = createDesk({
-		entries() {
-			const controllers = gui.controllersRecursive().map(fromController)
-			const handled = new Map()
-			for (const c of controllers) {
-				if (!handled.has(c.object)) handled.set(c.object, new Set())
-				handled.get(c.object).add(c.property)
-			}
-			const found = registry.entries().filter((e) => !handled.get(e.object)?.has(e.property))
-			return [...controllers, ...found]
-		},
-		showPanel: (on) => gui.show(on),
-	})
-	const refilter = addFilter(gui, desk.pin)
-	gui.close()
 	return {
 		// `options` (or a third argument that isn't a builder): { notes, featured, units, onChange }, see registry.js.
 		tune(path, object, build, options) {
 			if (build && typeof build !== 'function') [build, options] = [null, build]
-			const unregister = registry.add(path, object, options)
-			desk.refresh()
-			const remove = build && adding(path, (f) => build(f, object))
-			return () => {
-				unregister()
-				remove?.()
-				desk.refresh()
-			}
+			return adding(path, object, options, build && ((f) => build(f, object)))
 		},
-		cheat: (label, fn) => adding('cheats', (f) => f.add({ run: fn }, 'run').name(label)),
-		// Backquote opens the desk (live numbers, not only a debug panel); "all values" shows the old GUI.
-		show: () => desk.show(true),
-		hide: () => desk.show(false),
-		setInert(inert) {
-			gui.domElement.inert = inert
-		},
+		cheat: (label, fn) => adding('cheats', {}, {}, (f) => f.add({ [label]: fn }, label)),
+		// Backquote opens and hides the tuner.
+		show: () => tuner.show(true),
+		hide: () => tuner.show(false),
+		setInert: (inert) => tuner.setInert(inert),
 	}
-}
-
-// Typing narrows the panel to folders and controls whose names match, opening folders on the way.
-// Clearing it shows everything again and closes what the filter opened; Enter pins the matches to the desk.
-function addFilter(gui, pin) {
-	const input = document.createElement('input')
-	input.type = 'search'
-	input.placeholder = 'filter… (Enter pins to the desk)'
-	input.className = 'debug-filter'
-	input.style.cssText =
-		'display:block;box-sizing:border-box;width:calc(100% - 8px);margin:4px;padding:4px 6px;border:0;border-radius:2px;font:inherit;background:var(--widget-color);color:var(--text-color)'
-	gui.$title.after(input)
-	gui.onOpenClose((changed) => {
-		if (changed === gui) input.style.display = gui._closed ? 'none' : 'block'
-	})
-	const opened = new Set()
-	function visit(folder, query, inherited) {
-		let any = false
-		for (const c of folder.controllers) {
-			const show = inherited || c._name.toLowerCase().includes(query)
-			c.show(show)
-			any ||= show
-		}
-		for (const f of folder.folders) {
-			const named = inherited || f._title.toLowerCase().includes(query)
-			const inside = visit(f, query, named)
-			f.show(named || inside)
-			if (query && inside && f._closed) {
-				f.open()
-				opened.add(f)
-			}
-			any ||= named || inside
-		}
-		return any
-	}
-	let shown = ''
-	function refilter() {
-		const query = input.value.trim().toLowerCase()
-		if (!query && !shown) return
-		if (!query) {
-			for (const f of opened) f.close()
-			opened.clear()
-		}
-		shown = query
-		visit(gui, query, !query)
-	}
-	input.addEventListener('input', refilter)
-	// Keep typing out of the game; Backquote still toggles the panel and Escape leaves the box.
-	input.addEventListener('keydown', (event) => {
-		if (event.code === 'Backquote') return
-		if (event.code === 'Escape') input.blur()
-		if (event.code === 'Enter') pin(input.value.trim())
-		event.stopPropagation()
-	})
-	input.addEventListener('keyup', (event) => event.stopPropagation())
-	return refilter
 }

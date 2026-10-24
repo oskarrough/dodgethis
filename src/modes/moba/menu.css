@@ -212,7 +212,7 @@ canvas.moba-dead-world {
 /* A page shows only itself over the world: the HUD, its pill, the minimap and the corner buttons
    step out; health bars stay as part of the figure. */
 body:has(> .overlay[data-theme^='moba']:not([hidden]))
-	> :not(canvas, .overlay, .fade, .lil-gui, .moba-health-bars) {
+	> :not(canvas, .overlay, .fade, .tuner, .moba-health-bars) {
 	visibility: hidden;
 }
 .overlay .dialog-card.moba-page {

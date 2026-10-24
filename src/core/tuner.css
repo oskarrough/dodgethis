@@ -1,5 +1,5 @@
-/* The desk: a dark plate of instruments, each tinted and shaped by the kind of value it holds. */
-.desk {
+/* The Tuner: a dark plate of instruments, each tinted and shaped by the kind of value it holds. */
+.tuner {
 	position: fixed;
 	left: 16px;
 	top: 16px;
@@ -17,10 +17,10 @@
 	font: 12px/1.2 var(--text-font, system-ui);
 	user-select: none;
 }
-.desk[hidden] {
+.tuner[hidden] {
 	display: none;
 }
-.desk-head {
+.tuner-head {
 	position: sticky;
 	top: 0;
 	z-index: 1;
@@ -33,29 +33,29 @@
 	background: #1d1d21f2;
 	cursor: grab;
 }
-.desk-head b {
+.tuner-head b {
 	margin-right: 4px;
 	letter-spacing: 0.12em;
 	text-transform: uppercase;
 	opacity: 0.6;
 }
-.desk-index {
+.tuner-index {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 4px;
 	padding: 2px 0 8px;
 	border-bottom: 1px solid #ffffff14;
 }
-.desk-index[hidden] {
+.tuner-index[hidden] {
 	display: none;
 }
-.desk-crumb {
+.tuner-crumb {
 	width: 100%;
 	margin: 2px 2px 4px;
 	font-size: 11px;
 	opacity: 0.6;
 }
-.desk-crumb button {
+.tuner-crumb button {
 	padding: 2px 8px;
 	border: 0;
 	border-radius: 999px;
@@ -64,7 +64,7 @@
 	font: inherit;
 	cursor: pointer;
 }
-.desk-pick {
+.tuner-pick {
 	--k: #d8d4ca;
 	display: inline-flex;
 	align-items: baseline;
@@ -78,42 +78,42 @@
 	font: inherit;
 	cursor: pointer;
 }
-.desk-pick:hover {
+.tuner-pick:hover {
 	background: #3a3a41;
 }
-.desk-pick small {
+.tuner-pick small {
 	opacity: 0.45;
 }
-.desk-pick.desk-action {
+.tuner-pick.tuner-action {
 	--k: #f0904a;
 	border-left: 0;
 	background: color-mix(in srgb, var(--k) 22%, #2e2e34);
 }
-.desk-pick[data-kind='clock'] {
+.tuner-pick[data-kind='clock'] {
 	--k: #f2b54a;
 }
-.desk-pick[data-kind='gauge'] {
+.tuner-pick[data-kind='gauge'] {
 	--k: #ef6a50;
 }
-.desk-pick[data-kind='mast'] {
+.tuner-pick[data-kind='mast'] {
 	--k: #7fd18b;
 }
-.desk-pick[data-kind='fan'] {
+.tuner-pick[data-kind='fan'] {
 	--k: #5fc8e0;
 }
-.desk-pick[data-kind='ring'] {
+.tuner-pick[data-kind='ring'] {
 	--k: #b08cf0;
 }
-.desk-pick[data-kind='meter'] {
+.tuner-pick[data-kind='meter'] {
 	--k: #c8e05a;
 }
-.desk-pick[data-kind='tone'] {
+.tuner-pick[data-kind='tone'] {
 	--k: #f08cc0;
 }
-.desk-pick[data-kind='switch'] {
+.tuner-pick[data-kind='switch'] {
 	--k: #f0904a;
 }
-.desk-find {
+.tuner-find {
 	width: 100%;
 	order: 9;
 	box-sizing: border-box;
@@ -125,13 +125,13 @@
 	font: inherit;
 	cursor: text;
 }
-.desk-chips {
+.tuner-chips {
 	display: flex;
 	flex: 1;
 	flex-wrap: wrap;
 	gap: 4px;
 }
-.desk-head button {
+.tuner-head button {
 	padding: 3px 8px;
 	border: 0;
 	border-radius: 999px;
@@ -140,16 +140,16 @@
 	font: inherit;
 	cursor: pointer;
 }
-.desk-head button:hover {
+.tuner-head button:hover {
 	background: #ffffff2a;
 }
-.desk-chip::after {
+.tuner-chip::after {
 	content: ' ✕';
 	font-family: system-ui;
 	font-size: 9px;
 	opacity: 0.5;
 }
-.desk h3 {
+.tuner h3 {
 	margin: 10px 2px 6px;
 	font-size: 10px;
 	font-weight: normal;
@@ -157,23 +157,23 @@
 	text-transform: uppercase;
 	opacity: 0.45;
 }
-.desk-grid {
+.tuner-grid {
 	display: grid;
 	grid-template-columns: repeat(4, 1fr);
 	grid-auto-rows: 78px;
 	grid-auto-flow: row dense;
 	gap: 6px;
 }
-.desk-note:empty {
+.tuner-note:empty {
 	display: none;
 }
-.desk-note {
+.tuner-note {
 	margin: 8px 2px 0;
 	opacity: 0.6;
 }
 
 /* One module: face on top, name and readout below. --k is the kind's colour. */
-.desk-mod {
+.tuner-mod {
 	--k: #d8d4ca;
 	position: relative;
 	display: grid;
@@ -186,7 +186,7 @@
 		0 1px 0 #ffffff12 inset,
 		0 -2px 0 #0004 inset;
 }
-.desk-mod.is-changed::before {
+.tuner-mod.is-changed::before {
 	content: '';
 	position: absolute;
 	top: 6px;
@@ -197,20 +197,20 @@
 	background: var(--k);
 	box-shadow: 0 0 6px var(--k);
 }
-.desk-mod label {
+.tuner-mod label {
 	overflow: hidden;
 	font-size: 10px;
 	white-space: nowrap;
 	text-overflow: ellipsis;
 	opacity: 0.6;
 }
-.desk-mod output {
+.tuner-mod output {
 	font-size: 13px;
 	font-variant-numeric: tabular-nums;
 	color: var(--k);
 	cursor: text;
 }
-.desk-face {
+.tuner-face {
 	position: relative;
 	display: grid;
 	place-items: center;
@@ -218,62 +218,62 @@
 	cursor: ns-resize;
 	touch-action: none;
 }
-.desk-face svg {
+.tuner-face svg {
 	width: 100%;
 	height: 100%;
 	overflow: visible;
 }
-.desk svg .track {
+.tuner svg .track {
 	fill: none;
 	stroke: #ffffff1c;
 	stroke-width: 2;
 }
-.desk svg .lit {
+.tuner svg .lit {
 	fill: none;
 	stroke: var(--k);
 	stroke-width: 4;
 	stroke-linecap: round;
 }
-.desk svg .needle {
+.tuner svg .needle {
 	stroke: var(--k);
 	stroke-width: 3;
 	stroke-linecap: round;
 }
 
-.desk-mod[data-kind='clock'] {
+.tuner-mod[data-kind='clock'] {
 	--k: #f2b54a;
 	grid-column: span 4;
 }
-.desk-mod[data-kind='clock'] .desk-face {
+.tuner-mod[data-kind='clock'] .tuner-face {
 	cursor: ew-resize;
 }
-.desk-mod[data-kind='gauge'] {
+.tuner-mod[data-kind='gauge'] {
 	--k: #ef6a50;
 	grid-column: span 2;
 	grid-row: span 2;
 }
-.desk-mod[data-kind='mast'] {
+.tuner-mod[data-kind='mast'] {
 	--k: #7fd18b;
 	grid-row: span 2;
 }
-.desk-mod[data-kind='fan'] {
+.tuner-mod[data-kind='fan'] {
 	--k: #5fc8e0;
 	grid-column: span 2;
 }
-.desk-mod[data-kind='ring'] {
+.tuner-mod[data-kind='ring'] {
 	--k: #b08cf0;
 	grid-column: span 2;
 	grid-row: span 2;
 }
-.desk-mod[data-kind='meter'] {
+.tuner-mod[data-kind='meter'] {
 	--k: #c8e05a;
 	grid-row: span 2;
 }
-.desk-mod[data-kind='tone'] {
+.tuner-mod[data-kind='tone'] {
 	--k: #f08cc0;
 	grid-column: span 2;
 }
-.desk-mod[data-kind='counter'] {
+.tuner-mod[data-kind='counter'] {
 	grid-column: span 2;
 }
 
@@ -305,11 +305,11 @@
 	box-shadow: 0 0 8px var(--k);
 }
 
-.desk svg .tick {
+.tuner svg .tick {
 	stroke: #ffffff40;
 	stroke-width: 1.5;
 }
-.desk svg .hub {
+.tuner svg .hub {
 	fill: #18181b;
 	stroke: var(--k);
 	stroke-width: 2;
@@ -341,13 +341,13 @@
 	background: var(--k);
 }
 
-.desk svg .wedge {
+.tuner svg .wedge {
 	fill: color-mix(in srgb, var(--k) 30%, transparent);
 	stroke: var(--k);
 	stroke-width: 2;
 	stroke-linejoin: round;
 }
-.desk svg .disc {
+.tuner svg .disc {
 	fill: color-mix(in srgb, var(--k) 25%, transparent);
 	stroke: var(--k);
 	stroke-width: 2;
@@ -369,19 +369,19 @@
 	box-shadow: 0 0 4px color-mix(in srgb, var(--k) 60%, transparent);
 }
 
-.desk svg .wave {
+.tuner svg .wave {
 	fill: none;
 	stroke: var(--k);
 	stroke-width: 2.5;
 }
 
 /* Counter: big digits with nudges either side. */
-.desk-mod[data-kind='counter'] .desk-face {
+.tuner-mod[data-kind='counter'] .tuner-face {
 	grid-template-columns: auto 1fr auto;
 	gap: 4px;
 	width: 100%;
 }
-.desk-mod[data-kind='counter'] button {
+.tuner-mod[data-kind='counter'] button {
 	width: 26px;
 	height: 26px;
 	border: 0;
@@ -398,15 +398,15 @@
 	text-align: center;
 	cursor: text;
 }
-.desk-mod[data-kind='counter'] output {
+.tuner-mod[data-kind='counter'] output {
 	display: none;
 }
 
 /* Switch: a chunky toggle. */
-.desk-mod[data-kind='switch'] {
+.tuner-mod[data-kind='switch'] {
 	--k: #f0904a;
 }
-.desk-mod[data-kind='switch'] .desk-face {
+.tuner-mod[data-kind='switch'] .tuner-face {
 	cursor: pointer;
 }
 .switch {
@@ -437,14 +437,14 @@
 	background: var(--k);
 }
 
-.desk svg .cap {
+.tuner svg .cap {
 	fill: #3a3a41;
 	stroke: #0006;
 	stroke-width: 2;
 }
 
 /* Swatch: a colour chip; click for the picker, drag for hue (across) and lightness (up). */
-.desk-mod[data-kind='swatch'] .desk-face {
+.tuner-mod[data-kind='swatch'] .tuner-face {
 	cursor: move;
 }
 .swatch {
@@ -456,7 +456,7 @@
 		inset 0 0 0 2px #0006,
 		0 1px 0 #ffffff14;
 }
-.desk-mod[data-kind='swatch'] input {
+.tuner-mod[data-kind='swatch'] input {
 	position: absolute;
 	inset: auto 0 0;
 	width: 100%;

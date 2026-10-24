@@ -15,7 +15,7 @@ A small, toy-like hero brawler that grew out of dodgeball, set in the world over
 - Find the game's look and name: rebrand gallery, Oskar's own directions, floating arenas keep recurring.
 - Flagfall: Dunk (knock heroes into the sea) and lanes that meet.
 - Dungeon ([dungeon.md](dungeon.md)): fight the Warden with one to five heroes, solo or with friends and optional bots; read the fight report after each pull. Proved fun (Oskar, 2026-10-20: "visual impact made all the difference").
-- Abilities, heroes and units are declared data ([schema design](../pages/schema-design/)): every tune number has a unit, effects, areas, ground fields, shots and triggers are declarations, the desk pins any value (`?knobs=`). Next new abilities are data first: Lob proved it; Rally ring and Chain lightning are written and waiting.
+- Abilities, heroes and units are declared data ([schema design](../pages/schema-design/)): every tune number has a unit, effects, areas, ground fields, shots and triggers are declarations, the Tuner pins any value (`?knobs=`). Next new abilities are data first: Lob proved it; Rally ring and Chain lightning are written and waiting.
 - Make the agent harness faster: feature map, [verify.md](verify.md), ast-grep.
 
 ### Waiting on Oskar

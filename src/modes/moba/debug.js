@@ -215,7 +215,6 @@ export function createMatchDebug({
 	run.intents.suspend(() => paused)
 
 	run.debug.tune('tryMode', controls, (folder, values) => {
-		const root = folder.parent
 		const match = folder.addFolder(isLobby ? 'lobby' : 'match')
 		match.add(values, 'paused').name('pause / resume').listen()
 		match.add(values, 'step').name('step one tick')
@@ -251,33 +250,6 @@ export function createMatchDebug({
 		}
 		folder.add(values, 'copyLink').name('copy Try Mode link')
 		folder.add(values, 'linkStatus').name('clipboard').disable().listen()
-
-		// Right-clicks over the panel still order on the ground beneath it.
-		root.domElement.addEventListener(
-			'mousedown',
-			(event) => {
-				if (event.button !== 2) return
-				event.preventDefault()
-				event.stopPropagation()
-				app.renderer.domElement.dispatchEvent(
-					new MouseEvent('mousedown', {
-						button: event.button,
-						buttons: event.buttons,
-						clientX: event.clientX,
-						clientY: event.clientY,
-						bubbles: true,
-					}),
-				)
-			},
-			{ capture: true, signal: run.signal },
-		)
-		root.domElement.addEventListener('contextmenu', (event) => event.preventDefault(), {
-			signal: run.signal,
-		})
-		// Try Mode leads the panel, above folders registered before it.
-		root.$children.prepend(folder.domElement)
-		root.open()
-		folder.open()
 	})
 	return controls
 }

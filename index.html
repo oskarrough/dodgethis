@@ -97,7 +97,7 @@
 				--radius-tile: 9px;
 				/* What floats over play: soft and straight down, never an offset. */
 				--shadow-float: 0 6px 20px rgba(38, 68, 95, 0.28);
-				/* Layer order: cards sit above the lil-gui debug panel (1001). */
+				/* Layer order: cards sit above the Tuner (1000). */
 				--z-tip: 1002;
 				/* HUD cards: the sentence, and the quieter labelled facts and keyword cards. */
 				--tip-width: 300px;
@@ -140,10 +140,6 @@
 				background: var(--page-bg);
 				font-family: var(--ui-font);
 				font-size: var(--fs-base);
-			}
-			/* lil-gui auto-places with a 15px right gap — flush it to the edge. */
-			.lil-gui.autoPlace {
-				right: 0;
 			}
 			.app {
 				width: 100vw;

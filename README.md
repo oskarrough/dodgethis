@@ -17,7 +17,7 @@ Use the mode picker to choose Dodgeball or the MOBA prototype. Dodgeball has dif
 
 WASD moves, mouse aims, hold/release shoots the bow, 1/2 selects bow/bowl, and Space/Shift dashes. Online, Escape opens session controls while the match continues. Solo keeps its pause and difficulty flow.
 
-Press `` ` `` (the key above Tab) while playing to open the **desk**. Search for a value, pin it, and drag — or click the number to type. Tweaks stay in this browser until you reset them. When something feels better, **Share** opens a GitHub issue with what you changed so it can become the default; **Copy** puts the same JSON on the clipboard if you need to paste it yourself.
+Press `` ` `` (the key above Tab) while playing to open the **Tuner**. Search for any value, pin it, and drag — or click the number to type. Tweaks stay in this browser until you reset them. When something feels better, **Share** opens a GitHub issue with what you changed so it can become the default; **Copy** puts the same JSON on the clipboard if you need to paste it yourself.
 
 Settings are fixed during a match. New players join between matches. If a guest leaves, the match is cancelled and scores reset; if the host leaves, the session ends. Rejoining creates a fresh connection.
 

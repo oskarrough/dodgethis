@@ -269,7 +269,7 @@ export function startLoading(
 		// Every other key goes nowhere until landing; releases still reach input.
 		function key(event) {
 			if (event.ctrlKey || event.metaKey || event.altKey) return
-			if (event.code === 'Backquote' || event.target?.closest?.('.lil-gui')) return
+			if (event.code === 'Backquote' || event.target?.closest?.('.tuner')) return
 			event.preventDefault()
 			event.stopImmediatePropagation()
 			if (event.code === 'Escape' && !event.repeat) quit()

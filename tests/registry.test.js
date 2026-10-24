@@ -62,3 +62,43 @@ describe('tune registry', () => {
 		expect(labelOf('dodgeReaction')).toBe('dodge reaction')
 	})
 })
+
+describe('hand-made controls', () => {
+	test('a builder labels, ranges and hooks values, and wins over the walk', () => {
+		const registry = createRegistry()
+		const changed = []
+		const look = { tint: 0xff8800, hero: 'mitts', gain: 0.5, depth: 2, sub: { lift: 1 } }
+		registry.add('front', look, {}, (f, o) => {
+			f.add(o, 'gain', 0, 1, 0.01)
+				.name('volume')
+				.onChange((v) => changed.push(v))
+			f.add(o, 'hero', { Mitts: 'mitts', Hook: 'hook' }).name('hero')
+			f.addColor(o, 'tint')
+			f.addFolder('sub').add(o.sub, 'lift', 0, 4, 1)
+			f.add({ go: () => changed.push('ran') }, 'go').name('go')
+		})
+		const byPath = Object.fromEntries(registry.entries().map((e) => [e.path, e]))
+		expect(Object.keys(byPath)).toEqual([
+			'front/gain',
+			'front/hero',
+			'front/tint',
+			'front/go',
+			'front/sub/lift',
+			'front/depth',
+		])
+		const gain = byPath['front/gain']
+		expect([gain.label, gain.min, gain.max, gain.step]).toEqual(['volume', 0, 1, 0.01])
+		gain.setValue(0.25)
+		expect(look.gain).toBe(0.25)
+		expect(byPath['front/hero'].choices).toEqual([
+			['Mitts', 'mitts'],
+			['Hook', 'hook'],
+		])
+		const tint = byPath['front/tint']
+		expect(tint.format.toHexString(tint.getValue())).toBe('#ff8800')
+		tint.setValue(tint.format.fromHexString('#0000ff'))
+		expect(look.tint).toBe(0xff)
+		byPath['front/go'].run()
+		expect(changed).toEqual([0.25, 'ran'])
+	})
+})
