@@ -12,7 +12,8 @@ const world = readFileSync(join(root, 'docs/world.md'), 'utf8')
 const style = look.match(/^> (Moebius[^\n]+)/m)?.[1]
 const avoid = world.match(/^## Prompting images[\s\S]*?^Avoid: ([^\n]+)/m)?.[1]
 const keywords = (label) => world.match(new RegExp(`^\\*\\*${label}:\\*\\* ([^\\n]+)`, 'm'))?.[1]
-if (!style || !avoid) throw new Error('art-prompt: the style block or avoid list moved; update the patterns')
+if (!style || !avoid)
+	throw new Error('art-prompt: the style block or avoid list moved; update the patterns')
 
 const kinds = {
 	frame: {
@@ -86,7 +87,9 @@ if (values.generate) {
 	const key = process.env.OPENAI_API_KEY
 	const model = process.env.ART_MODEL
 	if (!key || !model) {
-		console.error('art-prompt: --generate needs OPENAI_API_KEY and ART_MODEL; the prompt is written.')
+		console.error(
+			'art-prompt: --generate needs OPENAI_API_KEY and ART_MODEL; the prompt is written.',
+		)
 		process.exit(1)
 	}
 	const headers = { Authorization: `Bearer ${key}` }
