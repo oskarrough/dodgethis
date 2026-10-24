@@ -95,27 +95,38 @@ export function createMatchFlow({
 		}
 	}
 
+	function musicLabel() {
+		return `Music: ${isMusicEnabled() ? 'On' : 'Off'}`
+	}
+	function impactLabel() {
+		return `Impact effects: ${tune.fx.impact ? 'On' : 'Off'}`
+	}
+
 	function showPause() {
+		const music = {
+			label: musicLabel(),
+			onSelect: () => {
+				setMusicEnabled(!isMusicEnabled())
+				music.label = musicLabel()
+				overlay.relabel()
+			},
+		}
+		const impact = {
+			label: impactLabel(),
+			onSelect: () => {
+				tune.fx.impact = !tune.fx.impact
+				coreTune.output.rumble = tune.fx.impact
+				impact.label = impactLabel()
+				overlay.relabel()
+			},
+		}
 		overlay.show({
 			title: 'PAUSED',
 			subtitle: `Round ${match.round} · ${match.wins.A}–${match.wins.B}`,
 			actions: [
 				{ label: 'Resume', keyLabel: 'Enter', onSelect: togglePause },
-				{
-					label: `Music: ${isMusicEnabled() ? 'On' : 'Off'}`,
-					onSelect: () => {
-						setMusicEnabled(!isMusicEnabled())
-						showPause()
-					},
-				},
-				{
-					label: `Impact effects: ${tune.fx.impact ? 'On' : 'Off'}`,
-					onSelect: () => {
-						tune.fx.impact = !tune.fx.impact
-						coreTune.output.rumble = tune.fx.impact
-						showPause()
-					},
-				},
+				music,
+				impact,
 				{ label: 'Restart round', key: 'KeyR', keyLabel: 'R', onSelect: restartRound },
 				{
 					label: 'Back to lobby',
