@@ -30,7 +30,11 @@ export function createMatchStats() {
 				else if (source && structures.some((s) => s.id === fact.target))
 					source.structureDamage += fact.damage
 				if (target) {
-					target.recent.unshift({ source: fact.source ?? null, damage: fact.damage })
+					target.recent.unshift({
+						source: fact.source ?? null,
+						damage: fact.damage,
+						ability: fact.ability ?? null,
+					})
 					target.recent.length = Math.min(target.recent.length, tune.hud.recapSources)
 				}
 			} else if (fact.type === 'death' && target) {

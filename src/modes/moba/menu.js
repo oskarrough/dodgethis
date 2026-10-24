@@ -176,10 +176,8 @@ export function createMatchMenu({
 			),
 		)
 	}
-	function result(dt = 0, alpha = 0) {
+	function result(dt = 0) {
 		recap.update({
-			alpha: frozen() ? 0 : alpha,
-			step: app.clock.step,
 			device: app.input.activeDevice?.(),
 			hidden: app.overlay.visible,
 		})

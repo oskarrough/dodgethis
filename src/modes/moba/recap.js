@@ -1,27 +1,50 @@
 import { el } from '../../core/dom.js'
 import { tune as frontTune } from './front/tune.js'
 import { DEFAULT_HERO } from './heroes.js'
+import { abilityOf } from './ability.js'
 
 const titleCase = (word) => word[0].toUpperCase() + word.slice(1)
+// An ability id without a display name, as words: gloveSlap → Glove slap.
+const spaced = (id) => titleCase(id.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase())
 const stats = ['kills', 'deaths', 'heroDamage', 'structureDamage', 'xp']
-const number = (value) => value.toLocaleString(undefined, { maximumFractionDigits: 1 })
+// Whole numbers: a decimal of damage is precision nobody can use.
+const number = (value) => Math.round(value).toLocaleString()
 
 // One run's facts, not a second combat simulation. Only the local death gets a card.
 export function createRecap({ sim, hero, canvas, paper = (node) => node }) {
 	const structures = new Map((sim.lane?.structures ?? []).map((unit) => [unit.id, unit.kind]))
 	let shownDeath = null
-	let root, heading, hits, countdown, help
-	let lastCountdown = ''
+	let root, heading, hits, help
 	if (canvas) {
 		root = paper(el('aside', 'moba-death', document.body))
 		root.hidden = true
 		root.setAttribute('aria-label', 'Death recap')
 		heading = el('h2', '', root)
 		heading.setAttribute('aria-live', 'polite')
-		el('p', 'moba-recap-caption', root).textContent = 'Last damage taken · newest first'
+		el('p', 'moba-recap-caption', root).textContent = 'Last hits taken, by source'
 		hits = el('ol', '', root)
-		countdown = el('p', 'moba-respawn-sticker', root)
+		// The respawn timer is on the unit frame already; the card doesn't repeat it.
 		help = el('p', 'moba-recap-caption', root)
+	}
+	// One line per source, hardest hitter first: its total, how many hits and with what.
+	function bySource(list) {
+		const groups = new Map()
+		for (const hit of list) {
+			const group = groups.get(hit.source) ?? {
+				source: hit.source,
+				damage: 0,
+				count: 0,
+				abilities: [],
+			}
+			groups.set(hit.source, group)
+			group.damage += hit.damage
+			group.count++
+			const unit = sim.heroes?.find((h) => h.id === hit.source)
+			const ability = hit.ability && abilityOf(hit.ability, unit)
+			const name = ability ? (ability.name ?? spaced(ability.id)) : null
+			if (name && !group.abilities.includes(name)) group.abilities.push(name)
+		}
+		return [...groups.values()].sort((a, b) => b.damage - a.damage)
 	}
 	const heroName = (unit) => titleCase(unit.definition?.id ?? unit.heroId ?? DEFAULT_HERO)
 	const sourceName = (id) => {
@@ -32,32 +55,27 @@ export function createRecap({ sim, hero, canvas, paper = (node) => node }) {
 		if (id?.startsWith('dummy')) return 'Training dummy'
 		return id ? titleCase(id) : 'Environment'
 	}
-	function update({ alpha, step, device, hidden = false }) {
+	function update({ device, hidden = false }) {
 		if (!root) return
 		const death = sim.matchStats?.[hero.id]?.death
 		if (death && death.tick !== shownDeath) {
 			shownDeath = death.tick
 			heading.textContent = `Killed by ${sourceName(death.source)}`
 			hits.replaceChildren()
-			for (const hit of death.hits) {
+			for (const group of bySource(death.hits)) {
 				const item = el('li', '', hits)
-				el('span', '', item).textContent = sourceName(hit.source)
-				el('b', '', item).textContent = number(hit.damage)
+				el('b', 'moba-recap-name', item).textContent = sourceName(group.source)
+				el('span', 'moba-recap-damage', item).textContent = number(group.damage)
+				el('span', 'moba-recap-hits', item).textContent = [
+					group.count === 1 ? '1 hit' : `${group.count} hits`,
+					...group.abilities,
+				].join(' · ')
 			}
 		}
 		const dead = hero.dead && !sim.lane?.match.winner
 		canvas.classList.toggle('moba-dead-world', dead)
 		root.hidden = !dead || !death || hidden
 		if (root.hidden) return
-		const seconds = Number.isFinite(hero.respawnTick)
-			? Math.max(0, (hero.respawnTick - sim.tick - alpha) * step)
-			: null
-		const text =
-			seconds == null ? 'Down until the fight resets' : `Respawn in ${seconds.toFixed(1)} s`
-		if (text !== lastCountdown) {
-			countdown.textContent = text
-			lastCountdown = text
-		}
 		const hint =
 			device === 'gamepad'
 				? 'Left stick to look around · LS click to centre'

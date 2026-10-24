@@ -104,7 +104,7 @@ const recapColumns = [
 	'recent',
 	'death',
 ]
-const hitColumns = ['source', 'damage']
+const hitColumns = ['source', 'damage', 'ability']
 const packHits = (hits) => hits.map((hit) => hitColumns.map((key) => hit[key]))
 const unpack = (row, fields) =>
 	Array.isArray(row) && row.length === fields.length
@@ -191,6 +191,7 @@ const recapHits = (hits) =>
 		(hit) =>
 			hit &&
 			(hit.source === null || typeof hit.source === 'string') &&
+			(hit.ability === null || typeof hit.ability === 'string') &&
 			finite(hit.damage) &&
 			hit.damage >= 0,
 	)

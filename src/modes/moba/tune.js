@@ -262,7 +262,7 @@ export const tune = {
 		feedLife: 4,
 		feedLines: 5, // lines on the feed drum, newest at the front
 		ending: 1.5,
-		recapSources: 3,
+		recapSources: 12, // hits the death recap keeps; it groups them by source
 		hoverDelay: 0.25, // a world unit's nameplate opens after the cursor rests this long
 		longPress: 0.4, // touch hold that opens a HUD card
 		inspectHold: 0.35, // pad Y hold that opens a card
