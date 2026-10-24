@@ -113,7 +113,7 @@ Oskar settled these names on 2026-10-24. Each hero keeps its kit and silhouette;
 
 ## References
 
-Moebius (Arzach, The Airtight Garage, his desert courtyards); M. C. Escher (Relativity, Ascending and Descending); Félix Vallotton's woodcuts; Hergé and ligne claire; Warhammer for heft and wear; lucha canaria and its terreros; Super Smash Bros. Melee for feel; N64 and PlayStation-era Japan, Kirby's Dream Land; The Designers Republic and WipEout for the grid; the Warcraft II manual for the voice; Azymuth and Yellow Magic Orchestra for the sound. Our own images live in [pages/vibes/](../pages/vibes/index.html) with their prompts, and superseded ones in [pages/archive/](../pages/archive/README.md).
+Moebius (Arzach, The Airtight Garage, his desert courtyards); M. C. Escher (Relativity, Ascending and Descending); Félix Vallotton's woodcuts; Hergé and ligne claire; Warhammer for heft and wear; lucha canaria and its terreros; Super Smash Bros. Melee for feel; N64 and PlayStation-era Japan, Kirby's Dream Land; The Designers Republic and WipEout for the grid; the Warcraft II manual for the voice; the 1970s paperback and poster painters (Syd Mead's mirror floors and airbrushed light, Vincent Di Fate's skies, George Barr's carved stone, Leo and Diane Dillon, Mike Hinge's flat colour), for light, gradient and reflection rather than their machines; Azymuth and Yellow Magic Orchestra for the sound. Our own images live in [pages/vibes/](../pages/vibes/index.html) with their prompts, and superseded ones in [pages/archive/](../pages/archive/README.md).
 
 ## Prompting images
 

@@ -6,6 +6,7 @@ A web game: two modes, dodgeball and a MOBA, on one engine.
 - Core imports only core; modes and online import core; nothing imports sideways
 - `docs/moba.md` design, `docs/roadmap.md` plan, `docs/verify.md` proving, `docs/build-rules.md` builder rules
 - `docs/world.md` is the world bible: setting, mood, keywords and prompt words for art and music. Read it before you draw, write, name or compose anything
+- Images (concept frames, plates, tiles, inlays, sheets) go through the `art` skill (`.agents/skills/art/`, `bun scripts/art-prompt.js`), which builds every prompt from world.md and look.md
 - Music is made in Oskar's Jukebox (`oskarrough/jukebox`, https://jukebox.0sk.ar); never build a music tool inside dodgethis
 
 ## Navigating
