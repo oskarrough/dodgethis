@@ -93,12 +93,21 @@ export function createOverlay(selector = '.overlay') {
 		el.replaceChildren(card)
 		renderPrompts()
 		el.hidden = false
-		// Clear mode keeps chrome and debug active; curtain mode makes the page outside the dialog inert.
+		// Clear mode keeps chrome and debug active; curtain mode makes the page outside the overlay inert.
+		// An already-open dialog stays on top and must keep input; lifting it only in open() misses this order.
 		outside = [...document.body.children].filter((child) => child !== el)
 		if (clear) {
 			outside = []
 		} else {
-			for (const child of outside) child.inert = true
+			for (const child of outside) {
+				if (
+					typeof HTMLDialogElement === 'function' &&
+					child instanceof HTMLDialogElement &&
+					child.open
+				)
+					continue
+				child.inert = true
+			}
 		}
 		render()
 		buttons[0]?.focus()
