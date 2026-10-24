@@ -88,6 +88,8 @@ Each line is the character in one breath, for whoever writes its fight, draws it
 - **Barquero** (`barquero`). A ferryman who poles a stone boat across the cloud at the bottom of the shade wing. He takes a toll, he does not hurry, and he will happily push you off.
 - **Gnomon** (`gnomon`). The pin of the great sundial at the bottom of the stair. Its shadow sweeps the floor, and the shadow is the attack, as the Ball's shadow is the warning. It has kept time over the mesa since before the first flagstone, and it would like you to know you are late.
 
+Lesser things keep plain common nouns from the same palette, with no article. Manos's throwers are the **Tiestos**, the broken shards of old pots. The boons a wing boss leaves behind are **Lupa**, a cracked magnifying glass; **Azogue**, the quicksilver that backs an old mirror; **Bizcocho**, the potter's word for clay fired once and not yet glazed (it is also a sponge cake, and nobody on the mesa finds this as funny as they used to); and **Tara**, a small clay idol after the one the Guanches left on Gran Canaria.
+
 ## Keywords
 
 **Place:** floating mesas, sea of cloud, desert of air, terracotta flags, hand-cut stone, sun-bleached courtyard, stairs to nowhere, arches onto sky, basalt wall, oxide-red stands, terrero, lucha canaria, waterfalls that never land, night garden, orchid bells, stone lantern, standing stones, faceted crystal keeps, stepped plinths, portal of light, the Ball's shadow, Altamesa, sundial pin, kiln, bell choir, ferry, mirror, clay jars.
