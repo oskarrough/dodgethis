@@ -263,7 +263,8 @@ export function createApp(services = {}) {
 					}
 					intents.use(def.scheme)
 					current = { id, controller, contract, scheme: def.scheme }
-					if (session !== previous) emit('session', session)
+					// Solo reuses one SOLO object, so identity misses a new run; online needs that to leave a pre-match room.
+					if (session !== previous || session === SOLO) emit('session', session)
 					return contract
 				},
 				stop: stopMode,

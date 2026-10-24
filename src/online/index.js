@@ -20,13 +20,19 @@ export default function online(app, { join = null } = {}) {
 	let link = null
 	let mode = null
 	let joining = null
+	let restarting = false
 
 	function stop() {
 		if (!link) return
 		const solo = app.modes.current?.soloStart?.()
 		link.dispose()
 		link = null
-		app.modes.start(solo?.mode ?? mode, solo?.args)
+		restarting = true
+		try {
+			app.modes.start(solo?.mode ?? mode, solo?.args)
+		} finally {
+			restarting = false
+		}
 	}
 
 	const session = createOnlineSession(net, {
@@ -126,15 +132,16 @@ export default function online(app, { join = null } = {}) {
 	app.intents.suspend(() => ui.open)
 	app.clock.pause(() => ui.open && !link)
 	app.on('session', (next) => {
-		if (!link) return
+		if (restarting) return
 		if (!next.shared) {
-			// The replacement run is already live; leaving must not restart it again.
-			link.dispose()
+			// Pre-match rooms have no link; a solo run still has to close them. The replacement is already live.
+			link?.dispose()
 			link = null
-			session.leave()
+			if (session.state) session.leave()
 			ui.hide()
 			return
 		}
+		if (!link) return
 		ui.hide()
 		showNames(session.state)
 		if (app.modes.current?.roomLobby != null) session.setRoomPhase(app.modes.current.roomLobby)
