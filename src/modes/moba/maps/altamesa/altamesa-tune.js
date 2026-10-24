@@ -1,8 +1,8 @@
 export default {
-	// The Hollow Mesa (hollowMesa-layout.js): one open plateau, entrance in the west. The gate road
+	// Altamesa (altamesa-layout.js): one open plateau, entrance in the west. The gate road
 	// leads to the central court; the shade wing lies north (−z), the sun wing south (+z), and the
-	// Sundial's stair east, behind the kiln block. Every place here is a placeholder.
-	hollowMesa: {
+	// Gnomon's stair east, behind the kiln block. Every place here is a placeholder.
+	altamesa: {
 		halfX: 48,
 		halfZ: 32,
 		thickness: 1,
@@ -10,12 +10,12 @@ export default {
 		entrance: { x: -44, z: 0 },
 		encounters: [
 			{ id: 'gateOfHands', x: -26, z: 0, wing: 'gate' },
-			{ id: 'twinPotters', x: -6, z: 0, wing: 'court' },
-			{ id: 'kilnGallery', x: 4, z: -20, wing: 'shade' },
-			{ id: 'ferry', x: 24, z: -24, wing: 'shade' },
-			{ id: 'bellChoir', x: 4, z: 20, wing: 'sun' },
-			{ id: 'mirror', x: 24, z: 24, wing: 'sun' },
-			{ id: 'sundial', x: 38, z: 0, last: true },
+			{ id: 'tinajaBotijo', x: -6, z: 0, wing: 'court' },
+			{ id: 'fornax', x: 4, z: -20, wing: 'shade' },
+			{ id: 'barquero', x: 24, z: -24, wing: 'shade' },
+			{ id: 'carillon', x: 4, z: 20, wing: 'sun' },
+			{ id: 'espejo', x: 24, z: 24, wing: 'sun' },
+			{ id: 'gnomon', x: 38, z: 0, last: true },
 		],
 		wings: ['shade', 'sun'],
 		waystones: [
@@ -84,5 +84,5 @@ export default {
 
 // The dimension of each number above that its name alone does not settle (src/modes/moba/units.js).
 export const units = {
-	hollowMesa: 'm',
+	altamesa: 'm',
 }

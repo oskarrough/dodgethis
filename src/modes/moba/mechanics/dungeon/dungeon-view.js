@@ -73,10 +73,10 @@ export const timer = {
 
 // The top bar's goal line and its card.
 export const goal = {
-	line: 'Fell the Sundial atop the stair',
+	line: 'Fell Gnomon atop the stair',
 	card: () => ({
 		title: 'How to win',
 		sentence:
-			'The Sundial sleeps until the court is cleared and one wing has lost all its bosses. Fell it and the mesa is yours. Fall, and you rise at the last waystone you passed, while the boss that beat you is made whole.',
+			'Gnomon sleeps until the court is cleared and one wing has lost all its bosses. Fell it and the mesa is yours. Fall, and you rise at the last waystone you passed, while the boss that beat you is made whole.',
 	}),
 }

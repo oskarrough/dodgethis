@@ -3,7 +3,7 @@ import { tune } from '../../tune.js'
 
 // Sand to the walls, and a squat stone for each waystone. Bosses and packs bring their own bodies.
 export function ground({ add, material, m }) {
-	const s = tune.hollowMesa
+	const s = tune.altamesa
 	add(
 		new THREE.PlaneGeometry(s.halfX * 2, s.halfZ * 2).rotateX(-Math.PI / 2),
 		material('cream', { flat: true }),

@@ -1,5 +1,5 @@
 export default {
-	// The Twin Potters (`twinPotters-fight.js`): two Wardens of `hp` each, striking at `damage` of a
+	// Tinaja and Botijo (`tinajaBotijo-fight.js`): two Wardens of `hp` each, striking at `damage` of a
 	// Warden's blows, `apart` m either side of the encounter's spot, who are pulled together. Within `kinship` m of each other both take
 	// `shared` of every hit. When one falls the other spins it back to life in `revive` s, whole,
 	// and fights no one while it spins.
@@ -15,8 +15,8 @@ export default {
 
 // The dimension of each number above that its name alone does not settle (src/modes/moba/units.js).
 export const units = {
-	'twinPotters.apart': 'm',
-	'twinPotters.kinship': 'm',
-	'twinPotters.shared': 'fraction',
-	'twinPotters.revive': 's',
+	'tinajaBotijo.apart': 'm',
+	'tinajaBotijo.kinship': 'm',
+	'tinajaBotijo.shared': 'fraction',
+	'tinajaBotijo.revive': 's',
 }

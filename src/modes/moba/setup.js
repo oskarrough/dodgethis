@@ -2,6 +2,9 @@ import { tune } from './tune.js'
 import { DEFAULT_MAP, playableMaps, maps } from './maps/all-maps.js'
 import { DEFAULT_HERO, HEROES, heroDefinition } from './heroes.js'
 
+// Maps that changed their id, so old links still land.
+const renamedMaps = { hollowMesa: 'altamesa' }
+
 // Front screens and direct entry use the same validated match setup.
 export function parseMatchSetup(query, options = {}, warn = console.warn) {
 	const read = (param, value, fallback, valid) => {
@@ -11,7 +14,9 @@ export function parseMatchSetup(query, options = {}, warn = console.warn) {
 		return fallback
 	}
 	const seed = options.seed ?? query.get('seed')
-	const party = !!maps[options.map ?? query.get('map')]?.party
+	const mapId = options.map ?? query.get('map')
+	const mapParam = renamedMaps[mapId] ?? mapId
+	const party = !!maps[mapParam]?.party
 	const playable = (id) =>
 		Object.hasOwn(HEROES, id) &&
 		(options.shared && !party ? heroDefinition(id).listed : heroDefinition(id).playable) === true
@@ -38,7 +43,7 @@ export function parseMatchSetup(query, options = {}, warn = console.warn) {
 				[true, false, '1', '0', 'true', 'false'].includes(v),
 			),
 		),
-		map: read('map', options.map ?? query.get('map'), DEFAULT_MAP, (v) => playableMaps.includes(v)),
+		map: read('map', mapParam, DEFAULT_MAP, (v) => playableMaps.includes(v)),
 		difficulty: read('bots', options.difficulty ?? query.get('bots'), 'easy', (v) =>
 			['easy', 'normal', 'hard'].includes(v),
 		),

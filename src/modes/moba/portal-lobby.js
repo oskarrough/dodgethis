@@ -41,7 +41,7 @@ export function createPortalLobby({ app, run, sim, hero, setup, options }) {
 	const { back: backButton, online: onlineButton } = createCornerNav(el, {
 		label: 'Back to splash',
 	})
-	// A map that can't be played online (the Hollow Mesa, for now) offers no way there.
+	// A map that can't be played online (Altamesa, for now) offers no way there.
 	onlineButton.hidden = !onlineMaps.includes(setup.map)
 	// The world lobby's canvas, sky and pastel palette (lobby.js), without its saucer props.
 	el.prepend(backdrop.el, canvas)

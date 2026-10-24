@@ -43,17 +43,17 @@ import abilities_vault from './abilities/vault/vault-tune.js'
 import abilities_ward, { units as abilities_ward_units } from './abilities/ward/ward-tune.js'
 import abilities_waterFlick from './abilities/waterFlick/waterFlick-tune.js'
 import abilities_yoYoFlick from './abilities/yoYoFlick/yoYoFlick-tune.js'
-import encounters_bellChoir from './encounters/bellChoir/bellChoir-tune.js'
-import encounters_ferry from './encounters/ferry/ferry-tune.js'
+import encounters_barquero from './encounters/barquero/barquero-tune.js'
+import encounters_carillon from './encounters/carillon/carillon-tune.js'
+import encounters_espejo from './encounters/espejo/espejo-tune.js'
+import encounters_fornax from './encounters/fornax/fornax-tune.js'
 import encounters_gateOfHands, {
 	units as encounters_gateOfHands_units,
 } from './encounters/gateOfHands/gateOfHands-tune.js'
-import encounters_kilnGallery from './encounters/kilnGallery/kilnGallery-tune.js'
-import encounters_mirror from './encounters/mirror/mirror-tune.js'
-import encounters_sundial from './encounters/sundial/sundial-tune.js'
-import encounters_twinPotters, {
-	units as encounters_twinPotters_units,
-} from './encounters/twinPotters/twinPotters-tune.js'
+import encounters_gnomon from './encounters/gnomon/gnomon-tune.js'
+import encounters_tinajaBotijo, {
+	units as encounters_tinajaBotijo_units,
+} from './encounters/tinajaBotijo/tinajaBotijo-tune.js'
 import heroes_brew, { units as heroes_brew_units } from './heroes/brew/brew-tune.js'
 import heroes_coach, { units as heroes_coach_units } from './heroes/coach/coach-tune.js'
 import heroes_hook from './heroes/hook/hook-tune.js'
@@ -61,10 +61,8 @@ import heroes_mender from './heroes/mender/mender-tune.js'
 import heroes_mitts from './heroes/mitts/mitts-tune.js'
 import heroes_pong from './heroes/pong/pong-tune.js'
 import heroes_wata, { units as heroes_wata_units } from './heroes/wata/wata-tune.js'
+import maps_altamesa, { units as maps_altamesa_units } from './maps/altamesa/altamesa-tune.js'
 import maps_flagfall, { units as maps_flagfall_units } from './maps/flagfall/flagfall-tune.js'
-import maps_hollowMesa, {
-	units as maps_hollowMesa_units,
-} from './maps/hollowMesa/hollowMesa-tune.js'
 import maps_overthrow, { units as maps_overthrow_units } from './maps/overthrow/overthrow-tune.js'
 import mechanics_ball, { units as mechanics_ball_units } from './mechanics/ball/ball-tune.js'
 import mechanics_dungeon, {
@@ -109,13 +107,13 @@ export const abilities = {
 	yoYoFlick: abilities_yoYoFlick,
 }
 export const encounters = {
-	bellChoir: encounters_bellChoir,
-	ferry: encounters_ferry,
+	barquero: encounters_barquero,
+	carillon: encounters_carillon,
+	espejo: encounters_espejo,
+	fornax: encounters_fornax,
 	gateOfHands: encounters_gateOfHands,
-	kilnGallery: encounters_kilnGallery,
-	mirror: encounters_mirror,
-	sundial: encounters_sundial,
-	twinPotters: encounters_twinPotters,
+	gnomon: encounters_gnomon,
+	tinajaBotijo: encounters_tinajaBotijo,
 }
 export const heroes = {
 	brew: heroes_brew,
@@ -127,8 +125,8 @@ export const heroes = {
 	wata: heroes_wata,
 }
 export const maps = {
+	altamesa: maps_altamesa,
 	flagfall: maps_flagfall,
-	hollowMesa: maps_hollowMesa,
 	overthrow: maps_overthrow,
 }
 export const mechanics = {
@@ -149,12 +147,12 @@ export const units = {
 	...abilities_toss_units,
 	...abilities_ward_units,
 	...encounters_gateOfHands_units,
-	...encounters_twinPotters_units,
+	...encounters_tinajaBotijo_units,
 	...heroes_brew_units,
 	...heroes_coach_units,
 	...heroes_wata_units,
+	...maps_altamesa_units,
 	...maps_flagfall_units,
-	...maps_hollowMesa_units,
 	...maps_overthrow_units,
 	...mechanics_ball_units,
 	...mechanics_dungeon_units,

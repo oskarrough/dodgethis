@@ -6,7 +6,7 @@ import { tune } from '../../tune.js'
 // An ink tether between the twins while Kinship holds, and a red ring round the fallen twin that
 // closes as the wheel spins it back. Plain shapes; the look is Oskar's to give.
 export function view(scene) {
-	const v = () => tune.encounters.twinPotters.view
+	const v = () => tune.encounters.tinajaBotijo.view
 	const owned = []
 	const root = new THREE.Group()
 	scene.add(root)
@@ -25,7 +25,7 @@ export function view(scene) {
 	root.add(ring)
 	return {
 		update(sim, blend) {
-			const fight = sim.dungeon?.encounters?.find((e) => e.id === 'twinPotters')
+			const fight = sim.dungeon?.encounters?.find((e) => e.id === 'tinajaBotijo')
 			if (!fight) return
 			const [a, b] = fight.units.map((u) => u.body?.position)
 			tether.visible = fight.state.kin && !!a && !!b
@@ -38,7 +38,7 @@ export function view(scene) {
 			const fallen = fight.units.find((u) => u.id === fight.state.revives)
 			ring.visible = !!fallen
 			if (!fallen) return
-			const total = tune.encounters.twinPotters.revive / STEP
+			const total = tune.encounters.tinajaBotijo.revive / STEP
 			const share = Math.max(0, Math.min(1, (fight.state.reviveTick - sim.tick - blend) / total))
 			const quantised = Math.round(share * 50) / 50
 			if (quantised !== shown) {

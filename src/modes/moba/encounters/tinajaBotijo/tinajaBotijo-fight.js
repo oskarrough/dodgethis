@@ -5,25 +5,25 @@ import { distance } from '../../../../core/spatial.js'
 
 const ticks = (s) => Math.max(1, Math.round(s / STEP))
 
-// Two Warden pulls, the Thrower and the Shaper, each with its own threat. Pulling one pulls both.
+// Two Warden pulls, Botijo the jug and Tinaja the jar, each with its own threat. Pulling one pulls both.
 // Kinship sets each twin's `damageTaken` while they stand close. When one falls the other goes to
 // the wheel (`wheel`): it stands still and strikes no one for `revive` s, then its kin rises whole,
 // unless it falls first. A wipe resets both. Won when both lie dead.
-export function createTwinPotters(args) {
+export function createTinajaBotijo(args) {
 	const { heroes, spot, systems } = args
-	const g = () => tune.encounters.twinPotters
+	const g = () => tune.encounters.tinajaBotijo
 	const twin = (id, name, side) =>
 		createBossPull({
 			...args,
 			encounter: {
-				id: `twinPotters-${id}`,
+				id,
 				name,
 				spawn: { x: spot.x, z: spot.z + side * g().apart },
 				hp: g().hp,
 				damage: g().damage,
 			},
 		})
-	const twins = [twin('thrower', 'The Thrower', -1), twin('shaper', 'The Shaper', 1)]
+	const twins = [twin('botijo', 'Botijo', -1), twin('tinaja', 'Tinaja', 1)]
 	const state = { phase: 'idle', revives: null, wheel: null, reviveTick: null, kin: false }
 	const alive = (pull) => !pull.unit.dead
 	const living = () => heroes.filter((h) => !h.dead)

@@ -1,9 +1,9 @@
 import { tune } from '../../tune.js'
 
-export function hollowMesaLayout() {
-	const s = tune.hollowMesa
+export function altamesaLayout() {
+	const s = tune.altamesa
 	const bounds = {
-		id: 'hollowMesa',
+		id: 'altamesa',
 		halfX: s.halfX,
 		halfZ: s.halfZ,
 		thickness: s.thickness,
@@ -11,7 +11,7 @@ export function hollowMesaLayout() {
 	const boxes = s.boxes.map((b) => ({ ...b }))
 	const pillars = s.pillars.map((p) => ({ ...p }))
 	return {
-		name: 'Hollow Mesa',
+		name: 'Altamesa',
 		bounds,
 		walkingBounds: bounds,
 		fieldBounds: bounds,

@@ -337,7 +337,7 @@ export function createCombat(ctx) {
 				(unit.structure && (shot.isAbility || shot.slot.startsWith('slot'))
 					? tune.waves.abilityStructure
 					: 1) *
-				// A unit may carry its own share of what it takes (the Twin Potters' Kinship).
+				// A unit may carry its own share of what it takes (Tinaja and Botijo's kinship).
 				(unit.damageTaken ?? 1)
 		if (event.consumed) return consumedHit('amplify')
 		event.damage = incoming
