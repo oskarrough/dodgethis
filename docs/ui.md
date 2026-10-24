@@ -8,7 +8,7 @@ Rules for every screen, learned by reviewing the game screen by screen with Oska
 - **One question per card.** A tooltip answers what the player wants to know right now (when is the next wave, what's in it). Tuning numbers (growth per minute, late-game multipliers) belong in the manual or nowhere.
 - **No jargon without a referent.** "Late game from 6:00" means nothing unless the game shows what changes at 6:00. Name the effect or cut the line.
 - **Label every number.** "90 · 5.5 m · 1/s" is three values pretending to be one; give each its own label.
-- **Team colour means a side, nothing else.** A level, a stat or a title is ink, never blue or red.
+- **Team colour means a side, nothing else.** A level, a stat or a title is ink, never blue or red. Units wear their own colour with team colour as an accent; you are marked in cream (look.md, Units).
 - **Plain words.** "Enemy takedowns" with "Your heroes downed" underneath reads backwards; say who did what to whom.
 - **One reading order.** In a label and value list, the eye goes down the values; labels are quieter than values but never so faint that it zigzags back to decode them.
 

@@ -627,6 +627,8 @@ export default function moba(app, map) {
 				for (const h of [...sim.heroes, ...sim.dummies])
 					if (!h.dead && !blocked(h, 'still', sim.tick))
 						h.body.poseAbility?.(h.cast, blend, h, sim.tick)
+				// Your own hero wears the cream ring; a redress (lobby seat swap) rebuilds it hidden.
+				for (const h of sim.heroes) h.body.setYours?.(h.id === local)
 				const target =
 					!sim.ball?.carrying(hero) && !stickAimed() && frame.aim
 						? sim.pick(hero.team, frame.aim)

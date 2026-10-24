@@ -219,6 +219,11 @@ export const look = {
 		megaphoneLength: 0.65,
 		megaphoneZ: -0.6,
 		megaphoneY: 0.25,
+		// The team foot disc reaches past the body by this much, so the accent reads from the match camera.
+		discReach: 0.16,
+		// Your own hero only: a cream ring outside the disc's ink rim, then a thin ink edge.
+		yoursGap: 0.02,
+		yoursWidth: 0.12,
 	},
 	abilityView: {
 		bouncedAimRadius: 0.06,

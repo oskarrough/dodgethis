@@ -10,6 +10,9 @@ const view = {
 	pocketY: 0.015,
 	pocketRadius: 0.6,
 	pocketWidth: 0.055,
+	beltY: 0.22, // the team belt round the block, proud of its ink border
+	beltHeight: 0.2,
+	beltProud: 0.18,
 	gloveLift: 0.5,
 	gloveTurn: 0.5,
 	tossPull: 0.65,
@@ -24,7 +27,7 @@ const view = {
 	proneTurn: Math.PI / 2,
 }
 
-// Mitts's costume: the rounded block, the glove and the pocket ring under his feet.
+// Mitts's costume: the rounded block with a team belt, the glove and the pocket ring under his feet.
 export function dress({
 	costume,
 	torso,
@@ -37,8 +40,15 @@ export function dress({
 	t,
 	materials,
 }) {
-	const { glove: gloveMaterial, pocket: pocketMaterial } = materials
+	const { glove: gloveMaterial, pocket: pocketMaterial, team } = materials
 	torso.geometry = own(rounded(t.mittsWidth, t.mittsDepth, t.mittsHeight))
+	part(
+		rounded(t.mittsWidth + view.beltProud, t.mittsDepth + view.beltProud, view.beltHeight),
+		team,
+		0,
+		discY + view.beltY,
+		0,
+	)
 	const glove = new THREE.Group()
 	glove.name = 'moba-glove'
 	costume.add(glove)
@@ -91,7 +101,7 @@ export function dress({
 	}
 }
 
-// Every frame: the glove wears the pocketed shot's team, the ring counts its life down, and
+// Every frame: the glove is cream, or wears the pocketed shot's team while it holds one, the ring counts its life down, and
 // the glove follows Toss, Catch, Dive, prone and the slap.
 export function animate(
 	unit,
@@ -101,7 +111,7 @@ export function animate(
 	const { glove, pocketRing, gloveMaterial } = rig
 	const pocket = unit?.abilityState?.pocket
 	gloveMaterial.uniforms.uStyleId.value = styleId(
-		(pocket?.team ?? team) === 'A' ? 'teamA' : 'teamB',
+		!pocket ? 'cream' : (pocket.team ?? team) === 'A' ? 'teamA' : 'teamB',
 	)
 	gloveMaterial.uniforms.uFlat.value = pocket ? 1 : 0
 	pocketRing.visible = !!pocket

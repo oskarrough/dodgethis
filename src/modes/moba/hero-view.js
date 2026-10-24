@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { makeStyleMaterial } from '../../core/stylepass.js'
+import { makeStyleMaterial, styleId } from '../../core/stylepass.js'
 import { look } from './look.js'
 import { STEP } from '../../core/app.js'
 import { castAbility } from './ability.js'
@@ -35,8 +35,10 @@ function dressBox({ torso, part, own, t, materials }) {
 
 // Same costume on the lane body and the select replica. The capsule collider
 // remains untouched; every costume sits above the same inked collision disc.
+// A hero wears its own colour (`color` in its definition); team colour is an accent: the foot disc
+// and the parts a costume dresses in `materials.team`. Your own hero adds a cream ring (`setYours`).
 export function dressHero(body, heroId = DEFAULT_HERO, team = 'A') {
-	heroDefinition(heroId)
+	const definition = heroDefinition(heroId)
 	const t = look.silhouettes
 	const original = body.visual.geometry
 	const hidden = body.visual.children.map((part) => [part, part.visible])
@@ -44,17 +46,23 @@ export function dressHero(body, heroId = DEFAULT_HERO, team = 'A') {
 	const costume = new THREE.Group()
 	costume.name = 'moba-cast-pose'
 	body.visual.add(costume)
+	const bodyStyle = body.visual.material.uniforms.uStyleId
+	const teamStyle = bodyStyle.value
+	bodyStyle.value = styleId(definition.color)
 	const torso = new THREE.Mesh(original, body.visual.material)
 	torso.castShadow = true
 	costume.add(torso)
 	body.visual.geometry = new THREE.BufferGeometry()
 	const empty = body.visual.geometry
-	const teamMaterial = makeStyleMaterial(team === 'A' ? 'teamA' : 'teamB')
+	const teamRole = team === 'A' ? 'teamA' : 'teamB'
+	const teamMaterial = makeStyleMaterial(teamRole)
+	const skin = makeStyleMaterial(definition.color)
 	const cream = makeStyleMaterial('cream')
-	const fins = makeStyleMaterial(team === 'A' ? 'teamA' : 'teamB', { side: THREE.DoubleSide })
+	const yours = makeStyleMaterial('yours', { flat: true })
+	const fins = makeStyleMaterial(teamRole, { side: THREE.DoubleSide })
 	const ink = makeStyleMaterial('ink', { flat: true })
-	const foot = makeStyleMaterial(team === 'A' ? 'teamA' : 'teamB', { flat: true })
-	const gloveMaterial = makeStyleMaterial(team === 'A' ? 'teamA' : 'teamB')
+	const foot = makeStyleMaterial(teamRole, { flat: true })
+	const gloveMaterial = makeStyleMaterial('cream')
 	const pocketMaterial = makeStyleMaterial('ammo', { flat: true })
 	const geometries = []
 	const roots = []
@@ -89,26 +97,17 @@ export function dressHero(body, heroId = DEFAULT_HERO, team = 'A') {
 	}
 	body.mesh.name = `moba-${heroId}`
 	const discY = -body.radius - body.halfHeight + t.discY
-	const footDisc = part(
-		new THREE.CircleGeometry(body.radius, t.segments).rotateX(-Math.PI / 2),
-		foot,
-		0,
-		discY,
-		0,
-		body.mesh,
-	)
+	// The ground marks are sized once the costume is on (see below); costumes may parent to the disc.
+	const footDisc = part(new THREE.BufferGeometry(), foot, 0, discY, 0, body.mesh)
 	footDisc.name = 'foot-disc'
-	const footRing = part(
-		new THREE.RingGeometry(body.radius - t.discBorder, body.radius, t.segments).rotateX(
-			-Math.PI / 2,
-		),
-		ink,
-		0,
-		discY + t.discBorder / 4,
-		0,
-		body.mesh,
-	)
+	const footRing = part(new THREE.BufferGeometry(), ink, 0, discY + t.discBorder / 4, 0, body.mesh)
 	footRing.name = 'foot-ring' // the lobby flip keeps both at full width (lobby-feel.js)
+	// Yours: cream outside the disc's ink rim, edged in ink, so an allied copy of your hero never reads as you.
+	const yoursRing = part(new THREE.BufferGeometry(), ink, 0, discY, 0, body.mesh)
+	yoursRing.name = 'yours-ring'
+	const yoursFill = part(new THREE.BufferGeometry(), yours, 0, t.discBorder / 4, 0, yoursRing)
+	yoursRing.visible = false
+	body.setYours = (on) => (yoursRing.visible = !!on)
 	const { dress = dressBox, animate = null } = HERO_VIEWS[heroId] ?? {}
 	const dressed =
 		dress({
@@ -126,6 +125,7 @@ export function dressHero(body, heroId = DEFAULT_HERO, team = 'A') {
 				ink,
 				cream,
 				fins,
+				skin,
 				team: teamMaterial,
 				glove: gloveMaterial,
 				pocket: pocketMaterial,
@@ -135,6 +135,22 @@ export function dressHero(body, heroId = DEFAULT_HERO, team = 'A') {
 	if (dressed.mouth) body.mouth = dressed.mouth
 	// Move geometry, not the animated root: core's capsule centre is still physics.
 	torso.geometry.computeBoundingBox()
+	// The team disc reaches past the widest of the collider and the torso, so the accent shows from above.
+	const corners = torso.geometry.attributes.position
+	let footprint = body.radius
+	for (let i = 0; i < corners.count; i++)
+		footprint = Math.max(footprint, Math.hypot(corners.getX(i), corners.getZ(i)))
+	const discRadius = footprint + t.discReach
+	const flat = (inner, outer) =>
+		own(new THREE.RingGeometry(inner, outer, t.segments * 2).rotateX(-Math.PI / 2))
+	footDisc.geometry = own(
+		new THREE.CircleGeometry(discRadius, t.segments * 2).rotateX(-Math.PI / 2),
+	)
+	footRing.geometry = flat(discRadius - t.discBorder, discRadius)
+	const yoursInner = discRadius + t.yoursGap
+	const yoursOuter = yoursInner + t.yoursWidth
+	yoursRing.geometry = flat(discRadius, yoursOuter + t.discBorder / 2)
+	yoursFill.geometry = flat(yoursInner, yoursOuter)
 	torso.geometry.translate(0, discY - torso.geometry.boundingBox.min.y, 0)
 	if (dressed.border !== false) {
 		const border = part(torso.geometry.clone(), ink)
@@ -159,7 +175,6 @@ export function dressHero(body, heroId = DEFAULT_HERO, team = 'A') {
 	drawn.visible = false
 	const armDirection = new THREE.Vector3(),
 		armUp = new THREE.Vector3(0, 1, 0)
-	const definition = heroDefinition(heroId)
 	const resolver = { cast: null, definition }
 	let releasePose = null,
 		releaseTick = -Infinity,
@@ -285,7 +300,17 @@ export function dressHero(body, heroId = DEFAULT_HERO, team = 'A') {
 		body.resetAbilityPose()
 		for (const root of roots) root.removeFromParent()
 		for (const g of geometries) g.dispose()
-		for (const material of [teamMaterial, cream, fins, ink, foot, gloveMaterial, pocketMaterial])
+		for (const material of [
+			teamMaterial,
+			skin,
+			cream,
+			yours,
+			fins,
+			ink,
+			foot,
+			gloveMaterial,
+			pocketMaterial,
+		])
 			material.dispose()
 		costume.removeFromParent()
 		empty.dispose()
@@ -293,6 +318,8 @@ export function dressHero(body, heroId = DEFAULT_HERO, team = 'A') {
 		delete body.releaseAbilityPose
 		delete body.poseAbility
 		delete body.mouth
+		delete body.setYours
+		bodyStyle.value = teamStyle
 		body.visual.geometry = original
 		hidden.forEach(([part, visible]) => (part.visible = visible))
 	}

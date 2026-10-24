@@ -37,7 +37,6 @@ export function dress({ torso, costume, discY, own, part, materials }) {
 			Math.PI / 2,
 		),
 	)
-	torso.material = materials.team
 	const yoYo = part(
 		new THREE.CylinderGeometry(
 			view.yoYoRadius,
@@ -45,7 +44,7 @@ export function dress({ torso, costume, discY, own, part, materials }) {
 			view.yoYoDepth,
 			view.segments,
 		).rotateZ(Math.PI / 2),
-		materials.cream,
+		materials.team,
 	)
 	const string = part(
 		new THREE.CylinderGeometry(view.stringRadius, view.stringRadius, 1, view.segments),

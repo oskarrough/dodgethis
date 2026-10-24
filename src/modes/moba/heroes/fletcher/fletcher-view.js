@@ -2,8 +2,9 @@ import * as THREE from 'three'
 export { cards } from './fletcher-numbers.js'
 
 // Fletcher's costume: the capsule, quiver, arrows and the bow rig his poses read.
+// Team accent: the foot disc and the fletchings; the bow stays ink.
 export function dress({ costume, torso, part, own, roots, t, look, materials }) {
-	const { ink, cream, fins, team: teamMaterial } = materials
+	const { ink, cream, fins, skin } = materials
 	torso.geometry = own(new THREE.CapsuleGeometry(t.bodyRadius, t.bodyHalfHeight * 2, 8, t.segments))
 	part(
 		new THREE.CylinderGeometry(t.quiverRadius, t.quiverRadius, t.quiverHeight, t.segments),
@@ -54,11 +55,11 @@ export function dress({ costume, torso, part, own, roots, t, look, materials }) 
 	const hand = part(new THREE.SphereGeometry(a.handRadius, 8, 6), cream)
 	hand.name = 'moba-draw-hand'
 	part(new THREE.SphereGeometry(a.handRadius, 8, 6), cream, 0, 0, -a.bowCurve, bow)
-	const drawArm = part(new THREE.CylinderGeometry(a.armRadius, a.armRadius, 1, 4), teamMaterial)
+	const drawArm = part(new THREE.CylinderGeometry(a.armRadius, a.armRadius, 1, 4), skin)
 	drawArm.name = 'moba-draw-arm'
 	const stringGeometry = new THREE.BufferGeometry()
 	stringGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(36), 3))
-	const bowString = new THREE.Mesh(own(stringGeometry), fins)
+	const bowString = new THREE.Mesh(own(stringGeometry), cream)
 	bowString.frustumCulled = false
 	costume.add(bowString)
 	roots.push(bowString)

@@ -29,6 +29,7 @@ export const PALETTE = {
 	driftwood: 0x8a6c4c,
 	seaTeal: 0x5f9a98,
 	terracotta: 0xc98462,
+	yours: 0xfff0b8, // warm cream: the ring under your own unit, never a team colour
 }
 
 // '#rrggbb' for canvas textures, CSS and anything that wants a string.

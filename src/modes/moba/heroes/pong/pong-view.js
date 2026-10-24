@@ -83,7 +83,7 @@ function blade() {
 		.rotateX(-Math.PI / 2)
 }
 
-// P. Pong: a stocky stone-beaked bruiser in a cream tunic, the team paddle open at his side.
+// P. Pong: a stocky stone-beaked bruiser in a cream tunic with a team band, his wooden paddle open at his side.
 export function dress({ costume, torso, discY, part, own, roots, t, materials }) {
 	const { ink, cream, team } = materials
 	const stone = makeStyleMaterial('scenery', { flat: true })
@@ -148,7 +148,7 @@ export function dress({ costume, torso, discY, part, own, roots, t, materials })
 	paddle.rotation.set(view.paddleTilt, 0, -view.paddleTilt)
 	costume.add(paddle)
 	roots.push(paddle)
-	part(blade(), team, 0, 0, 0, paddle)
+	part(blade(), wood, 0, 0, 0, paddle)
 	part(
 		new THREE.RingGeometry(view.paddleRadius - t.discBorder, view.paddleRadius, t.segments)
 			.rotateX(-Math.PI / 2)

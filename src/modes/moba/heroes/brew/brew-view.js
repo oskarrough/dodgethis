@@ -4,6 +4,14 @@ import { tune } from '../../tune.js'
 export function dress({ torso, part, own, discY, materials }) {
 	const v = tune.heroes.brew.view
 	torso.geometry = own(new THREE.CylinderGeometry(v.width, v.width, v.height, 6))
+	// Team accent: a sash round the middle, proud of the ink border.
+	part(
+		new THREE.CylinderGeometry(v.width + v.sashProud, v.width + v.sashProud, v.sashHeight, 6),
+		materials.team,
+		0,
+		discY + v.sashY,
+		0,
+	)
 	const jug = part(
 		new THREE.CylinderGeometry(v.jugRadius, v.jugRadius, v.jugHeight, 6),
 		materials.cream,
@@ -22,7 +30,7 @@ export function dress({ torso, part, own, discY, materials }) {
 	)
 	const palm = part(
 		new THREE.SphereGeometry(v.palmRadius, 6, 4),
-		materials.team,
+		materials.cream,
 		v.palmX,
 		discY + v.palmY,
 		v.palmZ,

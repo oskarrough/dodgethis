@@ -11,7 +11,7 @@ export default {
 	},
 	name: 'Brew',
 	order: 5,
-	color: 'ammo',
+	color: 'driftwood',
 	silhouette: 'hexagon',
 	icon: '<svg viewBox="0 0 48 48" aria-hidden="true"><path class="tone" d="M12 7 H36 L45 24 L36 41 H12 L3 24 Z"/><path class="cream" d="M28 10 H36 V28 H28 Z"/></svg>',
 	trait: () => ({

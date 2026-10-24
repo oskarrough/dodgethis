@@ -12,6 +12,9 @@ export default {
 	view: {
 		width: 0.65,
 		height: 0.85,
+		sashY: 0.42,
+		sashHeight: 0.16,
+		sashProud: 0.1,
 		jugRadius: 0.2,
 		jugHeight: 0.7,
 		jugZ: 0.43,
