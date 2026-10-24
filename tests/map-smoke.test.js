@@ -12,11 +12,8 @@ import { playableMaps, matchRecipe } from '../src/modes/moba/maps/all-maps.js'
 // dropped under a computed read) or a map whose bots stand still in the first seconds fails here, not in a playtest.
 await RAPIER.init({})
 const SECONDS = 3
-// A dungeon must fall to one bot alone by either wing: jobs latch and bosses leave a way through,
-// so no fight needs a full party.
-const SOLO_SECONDS = 300
-// And a party of three must clear it, carrying a whole wing's boons to the last boss.
-const PARTY_SECONDS = 240
+// A dungeon is tuned for a party of three or four, and three bots must clear it by either wing.
+const PARTY_SECONDS = 900
 
 function nonFinite(value, path = 'layout', out = [], seen = new Set()) {
 	if (typeof value === 'number') {
@@ -53,14 +50,15 @@ for (const id of playableMaps) {
 		}
 	}, 60000)
 
-	// The whole run by each wing in turn: the other wing sleeps, so the bot walks the road, clears
-	// that wing and climbs to the last boss carrying its boons.
+	// The whole run by each wing in turn, for a party of three, the dungeon's baseline: the other
+	// wing sleeps, so the party walks the road, clears that wing and climbs to the last boss
+	// carrying its boons.
 	const layout = matchRecipe(id).layout
 	for (const wing of layout.encounters?.length ? (layout.wings ?? []) : [])
-		test(`${id}: one bot alone clears the run by the ${wing} wing`, () => {
+		test(`${id}: a party of three clears the run by the ${wing} wing`, () => {
 			const { run, dispose } = match(
 				id,
-				agentRoster({ seats: [] }).filter((seat) => seat.id === 'A1'),
+				agentRoster({ seats: [] }).filter((seat) => seat.team === 'A'),
 			)
 			try {
 				const list = run.sim.dungeon.encounters
@@ -69,29 +67,14 @@ for (const id of playableMaps) {
 						e.dormant = true
 						for (const unit of e.units) unit.dormant = true
 					}
-				const limit = Math.ceil(SOLO_SECONDS / STEP)
-				while (run.sim.tick < limit && !run.sim.lane.match.winner && run.step());
-				expect(list.filter((e) => !e.killed && !e.dormant).map((e) => e.id)).toEqual([])
-			} finally {
-				dispose()
-			}
-		}, 60000)
-
-	if (matchRecipe(id).layout.encounters?.some((spot) => spot.wing))
-		test(`${id}: a party of three clears it with a wing's boons`, () => {
-			const { run, dispose } = match(
-				id,
-				agentRoster({ seats: [] }).filter((seat) => seat.team === 'A'),
-			)
-			try {
 				const limit = Math.ceil(PARTY_SECONDS / STEP)
 				while (run.sim.tick < limit && !run.sim.lane.match.winner && run.step());
-				expect(run.sim.lane.match.winner).toBe('A')
+				expect(list.filter((e) => !e.killed && !e.dormant).map((e) => e.id)).toEqual([])
 				expect(run.sim.dungeon.run.boons.length).toBeGreaterThanOrEqual(2)
 			} finally {
 				dispose()
 			}
-		}, 60000)
+		}, 120000)
 }
 
 function match(id, roster) {

@@ -1,7 +1,7 @@
 export default {
 	// Gnomon (`gnomon-fight.js`): a Warden of `hp` striking at `damage` of a Warden's blows.
-	hp: 3000,
-	damage: 0.5,
+	hp: 10000,
+	damage: 0.7,
 	// Every `every` s its shadow falls, an hour hand `length` m long and `width` m wide from its
 	// foot toward the next hero in turn. It lengthens for `warning` s, then lands for `damage` and
 	// holds whoever it covers for `hold` s (a stun), and lies `linger` s before it lifts.

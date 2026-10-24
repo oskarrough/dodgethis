@@ -4,8 +4,8 @@ export default {
 	// of the fight it tolls: a ring of `toll.radius` m is warned round the bell for `toll.warning`
 	// s, then lands for `toll.damage` and a stun of `toll.stun` s on all inside it. Each toll
 	// cracks the bronze, and for `open` s after, Carillon takes `cracked` of every blow.
-	hp: 2000,
-	damage: 0.5,
+	hp: 10000,
+	damage: 0.7,
 	shut: 0.2,
 	cracked: 1.5,
 	open: 6,

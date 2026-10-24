@@ -3,8 +3,8 @@ export default {
 	// Warden's blows, `apart` m either side of the encounter's spot, who are pulled together. Within `kinship` m of each other both take
 	// `shared` of every hit. When one falls the other spins it back to life in `revive` s, whole,
 	// and fights no one while it spins.
-	hp: 900,
-	damage: 0.5,
+	hp: 3000,
+	damage: 0.4,
 	apart: 3,
 	kinship: 6,
 	shared: 0.5,

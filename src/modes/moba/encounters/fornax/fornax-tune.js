@@ -4,8 +4,8 @@ export default {
 	// out of the shade gains a stack of Heat every `heat.every` s and takes `heat.burn` for each
 	// stack held; in the shade a stack cools away every `heat.cool` s. At `heat.bake` stacks the
 	// hero is baked solid for `heat.baked` s and the stacks fall away.
-	hp: 1500,
-	damage: 0.5,
+	hp: 8000,
+	damage: 0.7,
 	hall: 12,
 	heat: { every: 1, cool: 0.5, burn: 10, bake: 5, baked: 3 },
 	// The awning's shade: a circle of `radius` m that walks `span` m either side of the spot along

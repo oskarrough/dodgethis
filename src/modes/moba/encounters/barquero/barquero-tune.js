@@ -11,7 +11,7 @@ export default {
 		{ x: 8, z: -1 },
 	],
 	ring: 2.5,
-	speed: 1.2,
+	speed: 0.7,
 	coast: 3,
 	every: 8,
 	pack: 2,
