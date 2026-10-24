@@ -49,6 +49,15 @@ export const ICONS = {
 	tower: svg(
 		'<path class="stone" d="M16 44 L18 22 L30 22 L32 44 Z"/><path class="tone" d="M14 22 L24 6 L34 22 Z"/>',
 	),
+	fort: svg(
+		'<path class="stone" d="M12 44 L14 20 L34 20 L36 44 Z"/><path class="tone" d="M12 20 L36 20 L36 12 L12 12 Z"/>',
+	),
+	gatehouse: svg(
+		'<path class="stone" d="M6 40 L6 24 L42 24 L42 40 Z"/><path class="tone" d="M6 24 L6 18 L42 18 L42 24 Z"/>',
+	),
+	laser: svg(
+		'<path class="stone" d="M8 42 L8 10 L16 10 L16 42 Z M32 42 L32 10 L40 10 L40 42 Z"/><path class="tone" d="M16 20 L32 20 L32 28 L16 28 Z"/>',
+	),
 	core: svg(
 		'<path class="stone" d="M10 44 L13 36 L35 36 L38 44 Z"/><path class="tone" d="M24 3 L36 19 L24 35 L12 19 Z"/><path class="ink-line" d="M12 19 L36 19 M24 3 L24 35"/>',
 	),
