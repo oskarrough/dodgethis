@@ -6,6 +6,15 @@ import { stepHorizontalVelocity } from './move.js'
 const clamp = (v, lo, hi) => (v < lo ? lo : v > hi ? hi : v)
 const UP = new THREE.Vector3(0, 1, 0)
 
+// Bodies block each other in the ground plane, not through Rapier: the character controller casts against
+// the others' stale poses, lets simultaneous steps overlap, then corrects along the capsule normal, which
+// tilts whenever two heights differ by a hair and bobs both bodies up and down. Bodies sit in their own
+// collision group, which the controller skips; everything else (projectiles, rays) still sees them.
+const BODY_GROUP = 0x0002
+const BODY_GROUPS = BODY_GROUP * 0x10000 + 0xffff
+const CONTROLLER_GROUPS = 0xffff * 0x10000 + (0xffff & ~BODY_GROUP)
+const walkers = new WeakMap() // world → the live bodies on it, in creation order
+
 // A body is the core of anything that walks: the sim pose, a manually moved Rapier kinematic capsule with hand-applied gravity and collider sliding, and the mannequin that renders it.
 // `profile` is the movement profile, read live so tuning applies at once.
 // `bounds(radius)` returns the { x, z } half-extents a dash may not leave; `smooth` is app.smooth. A replica has no physics: its rendered root is its pose.
@@ -65,7 +74,10 @@ export function createBody(
 			)
 	const collider = replica
 		? null
-		: world.createCollider(RAPIER.ColliderDesc.capsule(halfHeight, radius), rigidBody)
+		: world.createCollider(
+				RAPIER.ColliderDesc.capsule(halfHeight, radius).setCollisionGroups(BODY_GROUPS),
+				rigidBody,
+			)
 
 	const controller = replica ? null : world.createCharacterController(0.01)
 	// No autostep: it shape-casts against every crowded capsule and can climb other bodies, trapping overlapping spawns.
@@ -74,6 +86,12 @@ export function createBody(
 	const unsmooth = replica ? null : smooth?.(mesh, () => pose)
 	let retired = false
 	let disposed = false
+	if (!replica && !walkers.has(world)) walkers.set(world, [])
+	const others = replica ? [] : walkers.get(world)
+	const leave = () => {
+		const i = others.indexOf(body)
+		if (i >= 0) others.splice(i, 1)
+	}
 
 	let vx = 0
 	let vz = 0
@@ -230,9 +248,10 @@ export function createBody(
 		vy += tune.physics.gravity * profile.gravityMul * dt
 		desired.y = vy * dt
 
-		controller.computeColliderMovement(collider, desired)
-		const mv = controller.computedMovement()
 		const t = rigidBody.translation()
+		separate(t, desired, dt)
+		controller.computeColliderMovement(collider, desired, undefined, CONTROLLER_GROUPS)
+		const mv = controller.computedMovement()
 		let nx = t.x + mv.x
 		let nz = t.z + mv.z
 		// Clamp dash steps to the bounds while walking can still leave them; never pull an outside body back in.
@@ -258,6 +277,42 @@ export function createBody(
 
 		// Face the steer, not the latched dash direction, so dashes read as sidesteps.
 		face(dir)
+	}
+
+	// Clip this step's horizontal move against the other bodies' planned poses: walking into one slides around it,
+	// and an overlap (spawns, displacements) may only shrink, by `tune.physics.separation` m/s, so stuck bodies ease apart.
+	function separate(at, desired, dt) {
+		const ease = tune.physics.separation * dt
+		const top = at.y + halfHeight + radius
+		const bottom = at.y - halfHeight - radius
+		for (const other of others) {
+			if (other === body || other.retired) continue
+			const q = other.rigidBody.nextTranslation()
+			if (
+				q.y - other.halfHeight - other.radius >= top ||
+				q.y + other.halfHeight + other.radius <= bottom
+			)
+				continue
+			const reach = radius + other.radius
+			const tx = at.x + desired.x - q.x
+			const tz = at.z + desired.z - q.z
+			const after = Math.hypot(tx, tz)
+			if (after >= reach) continue
+			const before = Math.hypot(at.x - q.x, at.z - q.z)
+			let nx = tx
+			let nz = tz
+			let length = after
+			if (length < 1e-6) {
+				// Coincident: part along x, the later body to +x, so the result never depends on float noise.
+				nx = others.indexOf(body) < others.indexOf(other) ? -1 : 1
+				nz = 0
+				length = 1
+			}
+			// A clear body stops at contact; an overlapping one keeps its move if it parts, else eases out.
+			const distance = Math.min(reach, Math.max(after, before + ease))
+			desired.x = q.x + (nx / length) * distance - at.x
+			desired.z = q.z + (nz / length) * distance - at.z
+		}
 	}
 
 	// Read the stepped physics into the sim pose. The rendered root follows directly unless smoothing owns it.
@@ -356,6 +411,7 @@ export function createBody(
 		if (retired) return
 		sync()
 		retired = true
+		leave()
 		visual.position.set(0, 0, 0)
 		visual.rotation.set(0, 0, 0)
 		visual.scale.setScalar(1)
@@ -377,6 +433,7 @@ export function createBody(
 	function dispose() {
 		if (disposed) return
 		disposed = true
+		leave()
 		unsmooth?.()
 		if (!retired && rigidBody) world.removeRigidBody(rigidBody)
 		if (controller) world.removeCharacterController(controller)
@@ -389,6 +446,7 @@ export function createBody(
 		feet.dispose()
 	}
 
+	if (!replica) others.push(body)
 	return body
 }
 

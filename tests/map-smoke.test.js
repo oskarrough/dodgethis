@@ -43,7 +43,8 @@ for (const id of playableMaps) {
 				.filter(({ body: { position: p } }) => ![p.x, p.y, p.z].every(Number.isFinite))
 				.map((u) => u.id)
 			expect(bad).toEqual([])
-			const walked = sim.heroes.filter((h) => h.body.position.distanceTo(start.get(h.id)) > 1)
+			// Half a metre: in the tile room both teams spawn in reach and kite in place, which is moving, not standing still.
+			const walked = sim.heroes.filter((h) => h.body.position.distanceTo(start.get(h.id)) > 0.5)
 			expect(walked.length).toBeGreaterThan(0)
 		} finally {
 			dispose()

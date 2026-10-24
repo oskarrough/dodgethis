@@ -4,6 +4,7 @@ export const tune = {
 		gravity: -9.81,
 		timeScale: 1,
 		paused: false,
+		separation: 3, // m/s: overlapping bodies ease apart this fast, sideways only
 	},
 	camera: {
 		fovKick: 1, // degrees of fov punch per kickFov(1)
