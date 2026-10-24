@@ -9,7 +9,7 @@ import { tune } from './tune.js'
 // meshes, so the deferred pass keeps no ink on
 // them and the props still stand on the glaze; the deferred ground underneath is the same ellipse
 // (see `saucerShape`), kept so the lobby keeps its depth, and nothing is drawn beyond it.
-// `floorOutline`, `floorShape` and `createFences` are Flagfall's torn shore, built from its extent.
+// `floorOutline` and `floorShape` are Flagfall's torn shore, built from its extent.
 
 function rng(seed) {
 	let a = seed >>> 0 || 1
@@ -78,134 +78,6 @@ export function floorShape(s) {
 	return new THREE.ShapeGeometry(shape).rotateX(-Math.PI / 2)
 }
 
-// Four broken runs rather than a perimeter cage. The safe rectangle is inside every possible
-// torn outline; reserve the widest foot plus the bow before placing anything on it.
-export function createFences(floor, s, y, name, depthMaterial = null) {
-	const clearance =
-		floor.jag + s.edgeMargin + Math.max(s.capRadius, s.bollardRadius) + Math.abs(s.bow)
-	const halfX = floor.halfX - clearance,
-		halfZ = floor.halfZ - clearance
-	const group = new THREE.Group()
-	group.name = name
-	group.position.y = y
-	const batches = { posts: [], caps: [], bollards: [], wire: [] }
-	const wire = []
-	const up = new THREE.Vector3(0, 1, 0)
-	function rod(a, b, radius, batch) {
-		const direction = new THREE.Vector3().subVectors(b, a)
-		const geometry = new THREE.CylinderGeometry(
-			radius,
-			radius,
-			direction.length(),
-			s.radialSegments,
-		)
-		geometry.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(up, direction.normalize()))
-		geometry.translate((a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2)
-		batches[batch].push(geometry)
-	}
-	function upright(x, z, height, radius, capHeight, capRadius, batch) {
-		rod(new THREE.Vector3(x, 0, z), new THREE.Vector3(x, height, z), radius, batch)
-		rod(
-			new THREE.Vector3(x, height, z),
-			new THREE.Vector3(x, height + capHeight, z),
-			capRadius,
-			'caps',
-		)
-	}
-	for (const run of s.runs) {
-		const from = new THREE.Vector3(run.from[0] * halfX, 0, run.from[1] * halfZ)
-		const to = new THREE.Vector3(run.to[0] * halfX, 0, run.to[1] * halfZ)
-		const length = from.distanceTo(to)
-		const panels = Math.max(1, Math.ceil(length / s.panelWidth))
-		const width = length / panels
-		const normal = new THREE.Vector3(to.z - from.z, 0, from.x - to.x).normalize()
-		for (let i = 0; i <= panels; i++) {
-			const p = from.clone().lerp(to, i / panels)
-			upright(p.x, p.z, s.height + s.postExtra, s.postRadius, s.capHeight, s.capRadius, 'posts')
-		}
-		for (let panel = 0; panel < panels; panel++) {
-			const point = (x, y) => {
-				const t = x / width,
-					arch = 4 * t * (1 - t),
-					v = y / s.height
-				return from
-					.clone()
-					.lerp(to, (panel + t) / panels)
-					.addScaledVector(normal, s.bow * arch * v)
-					.setY(s.bottom + (s.height - s.bottom - s.sag * arch) * v)
-			}
-			for (let step = 0; step < s.curveSteps; step++)
-				rod(
-					point((width * step) / s.curveSteps, s.height),
-					point((width * (step + 1)) / s.curveSteps, s.height),
-					s.railRadius,
-					'wire',
-				)
-			for (const slope of [-1, 1]) {
-				for (let offset = -width; offset <= s.height + width; offset += s.diamond) {
-					const start = Math.max(0, slope === 1 ? -offset : offset - s.height)
-					const end = Math.min(width, slope === 1 ? s.height - offset : offset)
-					if (end <= start) continue
-					for (let step = 0; step < s.curveSteps; step++) {
-						const x0 = start + ((end - start) * step) / s.curveSteps
-						const x1 = start + ((end - start) * (step + 1)) / s.curveSteps
-						const a = point(x0, slope * x0 + offset),
-							b = point(x1, slope * x1 + offset)
-						wire.push(a.x, a.y, a.z, b.x, b.y, b.z)
-					}
-				}
-			}
-		}
-	}
-	for (const [x, z] of s.bollards)
-		upright(
-			x * halfX,
-			z * halfZ,
-			s.bollardHeight,
-			s.bollardRadius,
-			s.bollardCapHeight,
-			s.bollardRadius,
-			'bollards',
-		)
-	const light = new THREE.Vector3(-0.4, 0.8, 0.45).normalize()
-	for (const [batch, parts] of Object.entries(batches)) {
-		if (!parts.length) continue
-		const geometry = mergeGeometries(parts)
-		for (const part of parts) part.dispose()
-		const color = new THREE.Color(s.colors[batch])
-		const normals = geometry.attributes.normal,
-			colors = []
-		for (let i = 0; i < normals.count; i++) {
-			const shade =
-				0.78 + 0.32 * Math.max(0, new THREE.Vector3().fromBufferAttribute(normals, i).dot(light))
-			colors.push(color.r * shade, color.g * shade, color.b * shade)
-		}
-		geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3))
-		const mesh = new THREE.Mesh(
-			geometry,
-			new THREE.MeshBasicMaterial({
-				vertexColors: true,
-				depthWrite: !depthMaterial,
-				polygonOffset: !!depthMaterial,
-				polygonOffsetFactor: -1,
-				polygonOffsetUnits: -4,
-			}),
-		)
-		mesh.layers.set(FORWARD_LAYER)
-		group.add(mesh)
-		if (depthMaterial) group.add(new THREE.Mesh(geometry, depthMaterial))
-	}
-	const geometry = new THREE.BufferGeometry()
-	geometry.setAttribute('position', new THREE.Float32BufferAttribute(wire, 3))
-	const mesh = new THREE.LineSegments(
-		geometry,
-		new THREE.LineBasicMaterial({ color: s.colors.wire, depthWrite: !depthMaterial }),
-	)
-	mesh.layers.set(FORWARD_LAYER)
-	group.add(mesh)
-	return group
-}
-
 // x = halfX cos t, z = halfZ sin t; seen from above, t runs clockwise from +x through the near edge.
 function ellipsePoint(s, t) {
 	return { x: Math.cos(t) * s.halfX, z: Math.sin(t) * s.halfZ }
@@ -217,16 +89,6 @@ function ellipseNormal(s, t) {
 		z = Math.sin(t) / s.halfZ
 	const d = Math.hypot(x, z)
 	return new THREE.Vector3(x / d, 0, z / d)
-}
-
-// The lip's outer edge, `n` points round: what the hero strip leans against.
-export function saucerRim(n = 48, s = tune.lobby.floor) {
-	return Array.from({ length: n }, (_, i) => {
-		const t = (i / n) * Math.PI * 2
-		const e = ellipsePoint(s, t),
-			out = ellipseNormal(s, t).multiplyScalar(s.rim.width)
-		return new THREE.Vector3(e.x + out.x, s.rim.height, e.z + out.z)
-	})
 }
 
 // The glaze's walkable ellipse, laid flat; the rim's lip starts at its edge.

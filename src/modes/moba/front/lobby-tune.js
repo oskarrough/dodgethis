@@ -35,82 +35,25 @@ export const lobby = {
 	handoffFor: 3, // seconds of live lane simulation carrying the loading roster
 	style: { line: 0.65, pastel: 0.65 },
 	practice: { damage: 0, tell: 0.8, tellY: 0.23 },
-	hud: { margin: 16 },
 	inspect: {
 		range: 16,
-		scrollSpeed: 480,
 		deadzone: 0.2,
 		openSound: { freq: 710, slideTo: 1060, dur: 0.12, gain: 0.045, type: 'sine' },
 		closeSound: { freq: 590, slideTo: 390, dur: 0.1, gain: 0.045, type: 'triangle' },
 	},
-	// The camera fits the whole saucer, cradles and bowl beside the hero strip, `margin` px clear of it, the
+	// The camera fits the whole floor between the team columns, `margin` px clear of them, the
 	// HUD and the screen edges, and `top` px under the screen's top for the corner buttons; live.
 	// height/back keep the lane's 58° pitch.
 	camera: { height: 11, back: 6.875, fov: 40, margin: 16, top: 64, passes: 12 },
-	// Picking from the hero row: the old body turns edge-on to the camera in the first `flipOut` of
-	// `flipTime` s, then the new one comes round like a cutout on a pin, its foot disc down a beat first.
+	// Picking a hero from the portal picker.
 	pick: {
 		// Authored points that pick intents name heroes by; nothing stands there.
 		x: 5.2,
 		z: 0,
 		spacing: 2,
 		radius: 0.7,
-		nameHeight: 1.9,
-		flipTime: 0.25,
-		flipOut: 0.4,
-		flipEdge: 0.06,
-		flipOvershoot: 0.12,
 		sound: { freq: 620, slideTo: 980, dur: 0.14, gain: 0.08, type: 'triangle' },
 		denySound: { freq: 120, slideTo: 70, dur: 0.18, gain: 0.1, type: 'square' },
-	},
-	// Props on the saucer (weather bowl, bot holograms) on a damped spring (lobby-feel.js): a hero
-	// arriving faster than `minSpeed` m/s within `contact` m kicks its squash by `bump` (all of it at
-	// `fullSpeed`) and its lean by `bumpRock` of that; a shot within `reach` m kicks its rock by `hit` and
-	// its squash by `hitSquash` of that. Kicks are spring velocities. `stiffness` and `damping` set the wobble: lower damping, more overshoot.
-	jolt: {
-		stiffness: 220,
-		damping: 13,
-		contact: 0.05,
-		minSpeed: 0.5,
-		fullSpeed: 5,
-		bump: 3.5,
-		bumpRock: 0.25,
-		reach: 0.3,
-		hit: 3,
-		hitSquash: 0.4,
-	},
-	// The hero strip leans on the saucer's left lip, each card `overlap` of its width inside the lip;
-	// it only reseats when the lip moves more than `settle` px, so camera breathing can't jiggle it.
-	strip: { overlap: 0.3, settle: 6 },
-	// Spindrift from your hero card to your plate (lobby-dust.js): blown sand painted on the glaze
-	// along a curve leaving `fromCard` of the card's width in from its right edge, bowed `bow` m
-	// and swaying `swing` m, `width` m either side of its middle and pinched at both ends. The sand
-	// runs at `speed` m/s; gust waves `gust` m apart pass along it every `pulse` s. A few `grains`
-	// hop off it. Once you stand on your plate, `settled` of it stays.
-	dust: {
-		fromCard: 0.2,
-		segments: 96,
-		bow: 2.4,
-		swing: 0.3,
-		width: 1.3,
-		speed: 1.1,
-		gust: 4,
-		pulse: 3.5,
-		alpha: 1,
-		pale: '#e6c088',
-		rust: '#9c4a22',
-		settled: 0.3,
-		grains: {
-			count: 36,
-			life: [1.2, 2.4],
-			hop: 0.45,
-			width: 0.03,
-			length: 0.12,
-			streak: 0.3,
-			alpha: 0.5,
-			color: '#a95a28',
-		},
-		remeasure: 0.5,
 	},
 	ready: {
 		// Authored ground prints and cardboard apply on restart; fill/activation timing is live.
@@ -133,21 +76,6 @@ export const lobby = {
 		labelGap: 0.12,
 		labelSpace: 8, // px between difficulty words before the unpicked ones step aside
 		badge: { keyboard: '', mouse: '', gamepad: 'Start', touch: '' }, // one word on keyboard; pads still learn Start
-		// A bot's hero floats over its seat as a hologram.
-		hologram: {
-			float: 0.32,
-			bob: 0.06,
-			bobRate: 1.1,
-			sway: 0.5,
-			swayRate: 0.35,
-			opacity: 0.85,
-			lines: 14,
-			lift: 0.55, // fill pulled toward cream, off its plate's team colour
-			core: 0.75, // face-on opacity; the rim goes to full
-			outline: 1, // ink silhouette
-			face: 0.75, // eyes wear the picked difficulty's mood, sized to the head
-			faceGap: 0.03,
-		},
 		promptRadius: 1.5,
 		walkSound: { freq: 440, slideTo: 560, dur: 0.1, gain: 0.06, type: 'sine' },
 		enterSound: { freq: 680, slideTo: 760, dur: 0.12, gain: 0.05, type: 'triangle' },
@@ -155,37 +83,6 @@ export const lobby = {
 		cancelSound: { freq: 330, slideTo: 220, dur: 0.1, gain: 0.07, type: 'triangle' },
 		// Your groove starts filling: rising, like a bottle under a tap.
 		grooveSound: { freq: 240, slideTo: 480, dur: 0.3, gain: 0.05, type: 'sine' },
-	},
-	// What the plates are for (#30), all live: bots walk onto their plates as you arrive (`walk`, from
-	// `from` of the way out from the middle), your plate ripples until you stand in it, and a groove runs
-	// from each plate into a trunk up the aisle (`groove.z` deep), turns `into` the bowl's radius out and
-	// dives under it. A branch fills from `lead` of its plate's glaze and drains in `drain` s. The trunk
-	// and the ring inside the bowl (`pool.width` wide) fill as plates glaze, all but the ring's last
-	// `pool.last`, which the last plate to glaze closes. Where
-	// branches join, their glazes run side by side for about `mix.reach` m, then marble together in
-	// streaks `mix.spacing` m apart.
-	flow: {
-		walk: { delay: 0.3, stagger: 0.2, time: 0.7, from: 0.2, hops: 3, hop: 0.12 },
-		ripple: { period: 1.4, grow: 0.35, opacity: 0.55 },
-		groove: {
-			width: 0.22,
-			trunk: 0.32,
-			lip: 0.025,
-			margin: 0.03,
-			bed: '#dccfb2',
-			shadow: 0.45,
-			z: -3,
-			into: 0.8,
-			corner: 0.6,
-			step: 0.05,
-			lead: 0.4,
-			drain: 0.5,
-			taper: 0.1,
-			front: 0.3,
-			mix: { reach: 1.2, side: 1.6, swirl: 0.85, spacing: 0.9, speed: 0.5, twist: 2.2, sharp: 3 },
-			pool: { width: 0.24, last: 0.2 },
-			glint: { spacing: 1.2, speed: 0.5, amount: 0.3 },
-		},
 	},
 	gallery: {
 		// Authored props apply on restart; aim/contact tests and settling are live.
@@ -261,8 +158,6 @@ export const lobby = {
 			leapSound: { freq: 300, slideTo: 900, dur: 0.12, gain: 0.05, type: 'sine' },
 		},
 	},
-	// The lobby's camera starts `distance`× back along its view ray; the canvas fades in from `fadeFrom` of the move.
-	intro: { distance: 4, fadeFrom: 0.6 },
 	// Where you can walk: a rectangle whose corners sit over 1 m inside the saucer's glaze ellipse
 	// (floor.halfX/halfZ). Gallery, seats, dummies and marks all sit inside it.
 	bounds: { halfX: 7, halfZ: 6.2 },
@@ -354,115 +249,6 @@ export const lobby = {
 				},
 			},
 		},
-	},
-	// The weather bowl on the saucer's far right holds the next map in miniature, turning `turn` rad/s under a
-	// painted sky cap. Shapes and colours apply on restart; turning and the label are live. Each map's `look` is
-	// its light in miniature: Overthrow by day, Flagfall by night. Lengths in `maps` are that map's metres.
-	bowl: {
-		x: 9.3,
-		z: -3.8,
-		radius: 2,
-		height: 1.05,
-		wall: 0.16,
-		floor: 0.14,
-		segments: 48,
-		capRadius: 1.5, // the sky arch's half-width; keep it inside radius
-		capHeight: 1.4, // and its height behind the middle of the rim
-		skyPixels: 256,
-		island: 1.45, // the miniature's half-diagonal; keep it inside the cloud bed
-		relief: 2.4, // dioramas exaggerate height
-		lift: 0.16,
-		turn: 0.12,
-		rest: 0.5, // the angle it starts from
-		bob: 0.025,
-		bobRate: 0.8,
-		// Printed on the saucer under the bowl, flush-left from `from` of its radius left of centre.
-		label: { caption: 'Next map', name: '{map}', from: 1 },
-		colors: { glaze: '#f4eddc', inside: '#e6dcc6', foot: '#8d82a8' },
-		maps: {
-			overthrow: {
-				court: '#d8dc9a',
-				stone: '#a49cb4',
-				under: '#6f6888',
-				hedge: '#8faa6a',
-				cap: '#b9c98c',
-				cloud: '#f4c8bc',
-				sky: ['#b99ac2', '#efab8e', '#fae0c6'], // zenith to horizon
-				moon: [0.55, 0.32, 0.14],
-				moonColor: '#fff3dc',
-				crescent: false,
-				stars: 0,
-				star: '#ffffff',
-				isles: 7,
-				isle: '#9d8fb0',
-				wisps: 6,
-				margin: 1.5,
-				slab: 2.5,
-				rock: 6,
-				laneWidth: 3,
-				hedgeHeight: 1.6,
-				wallHeight: 2.4,
-				pillarHeight: 3.4,
-			},
-			flagfall: {
-				court: '#9c88c4',
-				stone: '#5b4870',
-				under: '#3a2c4e',
-				hedge: '#2f6b66',
-				cap: '#6e5a8e',
-				cloud: '#4a3d6b',
-				sky: ['#191533', '#4a3a74'],
-				moon: [0.75, 0.32, 0.13],
-				moonColor: '#d9c8f5',
-				crescent: true,
-				stars: 40,
-				star: '#f3ead2',
-				isles: 6,
-				isle: '#2c2448',
-				wisps: 0,
-				margin: 1.5,
-				slab: 2.5,
-				rock: 6,
-				laneWidth: 3,
-				hedgeHeight: 1.6,
-				wallHeight: 2.4,
-				pillarHeight: 3.4,
-			},
-		},
-	},
-	// Flagfall's shore fence builds from these (map.js); the lobby has none. All apply on restart;
-	// coordinates are fractions of the safe rim rectangle.
-	fence: {
-		edgeMargin: 0.3,
-		height: 1.35,
-		bottom: 0.12,
-		sag: 0.32,
-		bow: 0.12,
-		postRadius: 0.12,
-		postExtra: 0.22,
-		capRadius: 0.16,
-		capHeight: 0.1,
-		railRadius: 0.025,
-		panelWidth: 2.4,
-		diamond: 0.65,
-		curveSteps: 12,
-		radialSegments: 8,
-		bollardRadius: 0.23,
-		bollardHeight: 0.8,
-		bollardCapHeight: 0.14,
-		colors: { posts: '#716b80', wire: '#89989a', bollards: '#8caaa3', caps: '#646779' },
-		runs: [
-			{ from: [-0.9, -1], to: [-0.42, -1] },
-			{ from: [0.35, -1], to: [0.88, -1] },
-			{ from: [-1, -0.7], to: [-1, -0.18] },
-			{ from: [1, 0.05], to: [1, 0.55] },
-		],
-		bollards: [
-			[-0.16, -1],
-			[0.1, -1],
-			[-1, 0.72],
-			[1, -0.72],
-		],
 	},
 	// The saucer has open edges: orders reach `reach` metres past its glaze, so walk off over the lip, fall `depth` metres, then
 	// drop back in from `height` over a random spot inside the walking bounds.
