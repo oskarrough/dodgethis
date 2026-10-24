@@ -7,6 +7,9 @@ import { segmentClear } from './obstacles.js'
 import { SLOTS, ticks, dirOf, cancelAttack } from './sim-kit.js'
 import { inOwnBase } from './base.js'
 
+const killerTeamFromShot = (shot, victim) =>
+	['A', 'B'].includes(shot.team) ? shot.team : victim.team === 'A' ? 'B' : 'A'
+
 // Damage, death and coming back: basic attacks, hits, benching, Flagfall's shove and dunk, respawn and the lobby's drop-in.
 export function createCombat(ctx) {
 	const {
@@ -418,12 +421,11 @@ export function createCombat(ctx) {
 		}
 		if (unit.kind) {
 			cancelAttack(unit, present, 'death')
-			lane.reward(unit, shot.team ?? (unit.team === 'A' ? 'B' : 'A'), ctx.t, shot.owner)
+			lane.reward(unit, killerTeamFromShot(shot, unit), ctx.t, shot.owner)
 			present({ type: 'death', source: shot.owner, target: unit.id, point: at, direction })
 			return
 		}
-		if (lane && !unit.post)
-			lane.reward(unit, shot.team ?? (unit.team === 'A' ? 'B' : 'A'), ctx.t, shot.owner)
+		if (lane && !unit.post) lane.reward(unit, killerTeamFromShot(shot, unit), ctx.t, shot.owner)
 		bench(
 			unit,
 			unit.boss || (ctx.boss?.state.phase === 'engaged' && heroes.includes(unit))
@@ -485,7 +487,7 @@ export function createCombat(ctx) {
 			dunk: dunked,
 			dir,
 			source: shot.owner,
-			team: shot.team ?? (unit.team === 'A' ? 'B' : 'A'),
+			team: killerTeamFromShot(shot, unit),
 		}
 		unit.slickImmuneUntil = ctx.t + steps + ticks(d.immunity)
 		present({
