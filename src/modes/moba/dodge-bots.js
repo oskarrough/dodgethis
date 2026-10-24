@@ -156,7 +156,7 @@ export function createDodgeBot(random) {
 				judged.set(threat.key, { try: random() < k.dodge, at: now + ticks(k.dodgeReaction) })
 			const roll = judged.get(threat.key)
 			if (!roll.try || now < roll.at || !goal) continue
-			goal = clampWalkable(goal, h.body.radius, tune.orders.clearance, sim.obstacles)
+			goal = clampWalkable(goal, h.body.radius, tune.orders.clearance, sim.obstacles, sim.bounds)
 			const travel = distance(p, goal)
 			if (travel / (h.definition.base.speed * ctx.moveScale) <= impact) {
 				dodgeGoal = goal
