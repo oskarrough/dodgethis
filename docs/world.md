@@ -79,7 +79,7 @@ Canarian words come from the islands' first people, the Guanches, and a few have
 
 Each line is the character in one breath, for whoever writes its fight, draws it or names its attacks. The folder names in brackets are the code as it stands today.
 
-- **Manos** (`gateOfHands`). A wall of red clay hands at the mouth of the mesa that grabs whoever stands still and holds on for ten seconds. Not cruel, only very bored, and glad of the company.
+- **Manos** (`manos`). A wall of red clay hands at the mouth of the mesa that grabs whoever stands still and holds on for ten seconds. Not cruel, only very bored, and glad of the company.
 - **Tinaja and Botijo** (`tinajaBotijo`). Two jars who have kept the central court together for longer than either will admit. Tinaja is fat and slow and sits where she likes; Botijo is thin and quick and spits cold water from his spout. Break one and the other takes it personally.
 - **Tagoror**. Not a boss: the central court itself, a ring of standing stones where the twins hold council and both wings begin.
 - **Carillon** (`carillon`). A choir of hanging bells in the sun wing that rings in rounds. Each note lands where the last one pointed, so the fight is a song you learn by being hit by it.

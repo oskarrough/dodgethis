@@ -6,7 +6,7 @@ import { distance } from '../../../../core/spatial.js'
 // hand whose light runs out first. On the hand they stand, unless a shard is coming down there.
 export function handsBotGoal(ctx, view) {
 	const { perceived, h, p, move, setState, frame } = ctx
-	const g = tune.encounters.gateOfHands
+	const g = tune.encounters.manos
 	const party = perceived.heroes
 		.filter((u) => u.team === h.team && !u.dead)
 		.map((u) => u.id)
@@ -24,7 +24,7 @@ export function handsBotGoal(ctx, view) {
 }
 
 export function handsBotThreats({ perceived }, view) {
-	const g = tune.encounters.gateOfHands
+	const g = tune.encounters.manos
 	return view.shards.map((shard) => ({
 		key: `shard:${shard.id}`,
 		centre: { x: shard.x, z: shard.z },

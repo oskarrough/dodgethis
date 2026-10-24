@@ -9,7 +9,7 @@ export default {
 		spawnSpacing: 1.5,
 		entrance: { x: -44, z: 0 },
 		encounters: [
-			{ id: 'gateOfHands', x: -26, z: 0, wing: 'gate' },
+			{ id: 'manos', x: -26, z: 0, wing: 'gate' },
 			{ id: 'tinajaBotijo', x: -6, z: 0, wing: 'court' },
 			{ id: 'fornax', x: 4, z: -20, wing: 'shade' },
 			{ id: 'barquero', x: 24, z: -24, wing: 'shade' },
@@ -61,7 +61,7 @@ export default {
 			{ kind: 'wall', x: -31, z: -14, halfX: 9, halfZ: 1 },
 			{ kind: 'wall', x: -31, z: 14, halfX: 9, halfZ: 1 },
 			{ kind: 'wall', x: 14, z: 0, halfX: 6, halfZ: 7 },
-			// The gate wall from rim to rim; the Gate of Hands keeps the door in its gap.
+			// The gate wall from rim to rim; Manos keeps the door in its gap.
 			{ kind: 'wall', x: -20, z: -18.1, halfX: 1, halfZ: 13.9 },
 			{ kind: 'wall', x: -20, z: 18.1, halfX: 1, halfZ: 13.9 },
 			{ kind: 'hedge', x: 4, z: -30, halfX: 8, halfZ: 0.6 },

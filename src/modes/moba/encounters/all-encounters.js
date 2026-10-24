@@ -3,8 +3,8 @@ import encounters_barquero from './barquero/barquero.js'
 import encounters_carillon from './carillon/carillon.js'
 import encounters_espejo from './espejo/espejo.js'
 import encounters_fornax from './fornax/fornax.js'
-import encounters_gateOfHands from './gateOfHands/gateOfHands.js'
 import encounters_gnomon from './gnomon/gnomon.js'
+import encounters_manos from './manos/manos.js'
 import encounters_tinajaBotijo from './tinajaBotijo/tinajaBotijo.js'
 
 export default {
@@ -12,7 +12,7 @@ export default {
 	carillon: encounters_carillon,
 	espejo: encounters_espejo,
 	fornax: encounters_fornax,
-	gateOfHands: encounters_gateOfHands,
 	gnomon: encounters_gnomon,
+	manos: encounters_manos,
 	tinajaBotijo: encounters_tinajaBotijo,
 }

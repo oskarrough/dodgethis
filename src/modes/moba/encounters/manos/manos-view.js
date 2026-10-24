@@ -6,7 +6,7 @@ import { tune } from '../../tune.js'
 // posts until it opens, the Potsherds' pots, and each shard: a red ring where it will land and the
 // shard itself on its arc. Plain shapes; the look is Oskar's to give.
 export function view(scene) {
-	const g = () => tune.encounters.gateOfHands
+	const g = () => tune.encounters.manos
 	const v = () => g().view
 	const owned = []
 	const root = new THREE.Group()
@@ -67,7 +67,7 @@ export function view(scene) {
 		},
 		present() {},
 		update(sim, blend) {
-			const fight = sim.dungeon?.encounters?.find((e) => e.id === 'gateOfHands')
+			const fight = sim.dungeon?.encounters?.find((e) => e.id === 'manos')
 			if (!fight) return
 			built ??= build(fight, fight.spot)
 			const t = sim.tick + blend

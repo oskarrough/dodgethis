@@ -1,5 +1,5 @@
 export default {
-	// Three hands before the gate (`gateOfHands-fight.js`), placed as offsets from the encounter's
+	// Three hands before the gate (`manos-fight.js`), placed as offsets from the encounter's
 	// spot. A hand fills in `fill` s while a hero stands within `radius` m, then stays lit for
 	// `linger` s after they leave; with all three lit at once the door opens. The first light wakes
 	// the Potsherds, who every `every` s lob a shard at the nearest hero within `reach` m: it lands
@@ -40,7 +40,7 @@ export default {
 
 // The dimension of each number above that its name alone does not settle (src/modes/moba/units.js).
 export const units = {
-	'gateOfHands.fill': 's',
-	'gateOfHands.splash': 'm',
-	'gateOfHands.door.posts': 'm',
+	'manos.fill': 's',
+	'manos.splash': 'm',
+	'manos.door.posts': 'm',
 }

@@ -6,8 +6,8 @@ const ticks = (s) => Math.max(1, Math.round(s / STEP))
 
 // The fight's state: each hand's `fill` (0..1) and `litUntil` tick, the Potsherds' next throw and
 // the shards in the air. Won the tick all three hands are lit; then the door's posts come away.
-export function createGateOfHands({ heroes, spot, systems, removeObstacle }) {
-	const g = () => tune.encounters.gateOfHands
+export function createManos({ heroes, spot, systems, removeObstacle }) {
+	const g = () => tune.encounters.manos
 	const at = (offset) => ({ x: spot.x + offset.x, z: spot.z + offset.z })
 	const hands = g().hands.map((offset, i) => ({ id: i, ...at(offset), fill: 0, litUntil: -1 }))
 	const potsherds = g().potsherds.map((offset, i) => ({ id: `potsherd-${i + 1}`, ...at(offset) }))
@@ -82,9 +82,7 @@ export function createGateOfHands({ heroes, spot, systems, removeObstacle }) {
 			state.open = true
 			state.phase = 'ended'
 			state.shards.length = 0
-			tune.encounters.gateOfHands.door.posts.forEach((_, i) =>
-				removeObstacle(`gateOfHands-door-${i + 1}`),
-			)
+			tune.encounters.manos.door.posts.forEach((_, i) => removeObstacle(`manos-door-${i + 1}`))
 		}
 	}
 	return {
