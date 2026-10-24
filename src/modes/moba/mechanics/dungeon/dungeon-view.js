@@ -4,8 +4,10 @@ import encounterViews from '../../encounters/all-encounter-views.js'
 export { dressBoss as dress } from './dungeon-dress.js'
 
 // The run's drawing is its encounters' drawings, each from its folder's view.
-export function view(scene) {
-	const views = Object.values(encounterViews).flatMap((v) => (v.view ? [v.view(scene)] : []))
+export function view(scene, options) {
+	const views = Object.values(encounterViews).flatMap((v) =>
+		v.view ? [v.view(scene, options)] : [],
+	)
 	return {
 		get markerPosition() {
 			return null

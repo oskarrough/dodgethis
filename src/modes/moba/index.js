@@ -377,6 +377,9 @@ export default function moba(app, map) {
 				mechanics.map((mechanic) => mechanicViews[mechanic.id]?.view).find(Boolean)?.(scene, {
 					returnToLobby,
 					canReturnToLobby: app.session.authoritative,
+					// For a view that draws the styled scene again, such as a mirror floor (mirror.js).
+					renderer: app.renderer,
+					renderStyled: app.renderStyled,
 				}) ?? null
 			const replica = !app.session.authoritative
 				? isLobby

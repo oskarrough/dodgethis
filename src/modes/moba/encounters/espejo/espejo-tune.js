@@ -15,7 +15,25 @@ export default {
 	// Bots that are not its target stand `behind` m at its back.
 	behind: 2.2,
 	// The drawing: the mirror's arc in front of Espejo, and a ring while it polishes.
-	view: { reach: 2.2, rim: 0.16, segments: 32, lift: 0.004 },
+	view: {
+		reach: 2.2,
+		rim: 0.16,
+		segments: 32,
+		lift: 0.004,
+		// The hall's polished floor (mirror.js): `size` m square at height `y`, mirroring the fight at
+		// `scale` of the screen's resolution. `strength` of the reflection shows through the pale
+		// `tint`; joints every `grid` m, `line` m wide; `ripple` shimmers it (a share of the screen).
+		floor: {
+			size: 14,
+			y: 0.011,
+			scale: 0.5,
+			tint: '#ece4e6',
+			strength: 0.4,
+			grid: 3.5,
+			line: 0.04,
+			ripple: 0.003,
+		},
+	},
 }
 
 // The dimension of each number above that its name alone does not settle (src/modes/moba/units.js).
@@ -28,4 +46,7 @@ export const units = {
 	'espejo.every': 's',
 	'espejo.polish': 's',
 	'espejo.behind': 'm',
+	'espejo.view.floor.scale': 'fraction',
+	'espejo.view.floor.strength': 'fraction',
+	'espejo.view.floor.ripple': 'fraction',
 }
