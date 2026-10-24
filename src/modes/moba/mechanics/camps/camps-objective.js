@@ -111,7 +111,11 @@ export function createCamps({ layout, lane, heroes, makeBody, present, obstacles
 			}
 			const alive = camp.guards.filter((g) => !g.dead)
 			if (!alive.length) {
-				const team = camp.guards.at(-1)?.killedBy
+				const last = camp.guards.reduce(
+					(best, g) => ((g.killedAt ?? -1) > (best.killedAt ?? -1) ? g : best),
+					{ killedAt: -1 },
+				)
+				const team = last.killedBy
 				camp.guards = []
 				camp.respawnTick = t + ticks(c.respawn)
 				if (team === 'A' || team === 'B') {

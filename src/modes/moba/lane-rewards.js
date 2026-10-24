@@ -9,6 +9,7 @@ const distance = (a, b) =>
 // Team XP and levels, kill credit, and the health globes wizards drop.
 export function createRewards(shared) {
 	const { layout, heroes, teams, globes, present } = shared
+	let lastHit = 0
 	function addXp(team, amount, point, passive = false, contributions = {}) {
 		const state = teams[team]
 		state.xp += amount
@@ -41,6 +42,7 @@ export function createRewards(shared) {
 		const killer = heroes.find((hero) => hero.id === source && hero.team === killerTeam)
 		const credit = (amount) => (killer ? { [killer.id]: amount } : {})
 		unit.killedBy = killerTeam
+		unit.killedAt = ++lastHit
 		if (unit.structure) {
 			structureDown(shared, unit, killerTeam, t, credit)
 		} else if (!unit.kind) {
