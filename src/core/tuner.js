@@ -1,7 +1,8 @@
 // The Tuner ("Tune" on screen): live numbers you can try while playing. Backquote (` / the key above Tab) opens it;
-// it lists what this screen can tune (folders to open, values to find, actions to run) and pins
-// values as instruments shaped like what they control: a clock for a duration, a speedometer for
-// a speed, a ring for a radius. ?knobs=lob,fog pins from the address. "copy" puts changed values
+// it opens on the screen's featured values, lists what else it can tune (folders to open, values to
+// find, actions to run) and pins values as rows whose input fits the unit: a strip with a looping
+// playhead for a duration, a speedometer for a speed, a fan for an angle, − and + for a count,
+// a switch, a few choices side by side. ?knobs=lob,fog pins from the address. "copy" puts changed values
 // on the clipboard as JSON; "share" opens a GitHub issue so a maintainer can make them the default.
 // Values come from the registry: every tune value, plus hand-made controls (src/core/registry.js).
 import './tuner.css'
@@ -52,18 +53,22 @@ export function createTuner(source) {
 	root.className = 'tuner'
 	root.dataset.quiet = '' // a tuning tool, not the game
 	root.hidden = true
-	root.innerHTML = `<header class="tuner-head"><b title="press \` to hide · change a number, then share it as a GitHub issue">Tune</b><span class="tuner-chips"></span>
+	root.innerHTML = `<header class="tuner-head"><b title="drag to move · press \` to hide">debug · tune</b>
+		<input class="tuner-find" type="search" placeholder="find any value: lob, speed, fog…" /></header>
+		<div class="tuner-chips"></div><nav class="tuner-index"></nav><div class="tuner-board"></div>
+		<p class="tuner-note"></p><footer class="tuner-foot">
+		<button data-act="reset" title="put every changed value back">reset all</button>
 		<button data-act="copy" title="copy changed values as JSON, to paste into a GitHub issue">copy</button>
 		<button data-act="share" title="open a GitHub issue with what you changed">share</button>
-		<button data-act="reset" title="put every changed value back">reset all</button>
-		<input class="tuner-find" type="search" placeholder="find any value: lob, speed, fog…" /></header>
-		<nav class="tuner-index"></nav><div class="tuner-board"></div><p class="tuner-note"></p>`
+		<small>\` hides</small></footer>`
 	document.body.append(root)
 	const chips = root.querySelector('.tuner-chips')
 	const find = root.querySelector('.tuner-find')
 	const index = root.querySelector('.tuner-index')
 	find.addEventListener('input', () => renderIndex())
 	find.addEventListener('focus', () => renderIndex())
+	// Leaving the field folds the index away, after a click on one of its chips has landed.
+	find.addEventListener('blur', () => setTimeout(renderIndex, 150))
 	find.addEventListener('keydown', (e) => {
 		if (e.key === 'Escape') {
 			find.value = ''
@@ -243,35 +248,22 @@ export function createTuner(source) {
 		const keys = found.map((f) => f.key).join('|')
 		if (keys === shownKeys) return
 		shownKeys = keys
-		modules = found.slice(0, MAX).map(({ key, c }) => {
-			const m = instrument(key, c, kindOf(c), changed)
-			const back = Object.assign(document.createElement('button'), {
-				className: 'tuner-reset',
-				textContent: '↺',
-				title: 'back to the default',
-			})
-			back.addEventListener('click', (e) => {
-				e.stopPropagation()
-				c.reset()
-				changed(key, c)
-			})
-			m.el.append(back)
-			return m
-		})
+		modules = found.slice(0, MAX).map(({ key, c }) => row(key, c, kindOf(c), changed))
 		const groups = new Map()
 		for (const [i, m] of modules.entries()) {
-			const folder = found[i].featured
-				? 'featured · find more below'
+			const c = found[i].c
+			const title = found[i].featured
+				? (c.group ?? c.path.split('/').slice(-2, -1)[0] ?? '')
 				: m.key.split('/').slice(0, -1).join(' / ') || 'engine'
-			if (!groups.has(folder)) groups.set(folder, [])
-			groups.get(folder).push(m.el)
+			if (!groups.has(title)) groups.set(title, [])
+			groups.get(title).push(m.el)
 		}
 		board.replaceChildren(
 			...[...groups].map(([title, els]) => {
 				const group = document.createElement('section')
-				group.innerHTML = `<h3></h3><div class="tuner-grid"></div>`
+				group.innerHTML = `<h3></h3>`
 				group.firstChild.textContent = title
-				group.lastChild.append(...els)
+				group.append(...els)
 				return group
 			}),
 		)
@@ -328,7 +320,7 @@ export function createTuner(source) {
 		return [...found.values()]
 	}
 
-	root.querySelector('.tuner-head').addEventListener('click', async (e) => {
+	root.querySelector('.tuner-foot').addEventListener('click', async (e) => {
 		const act = e.target.dataset?.act
 		if (act === 'copy') {
 			const text = JSON.stringify(state.values, null, '\t')
@@ -439,6 +431,7 @@ const polar = (cx, cy, r, deg) => [
 	cx + r * Math.cos((deg * Math.PI) / 180),
 	cy - r * Math.sin((deg * Math.PI) / 180),
 ]
+const clamp01 = (f) => Math.min(1, Math.max(0, f))
 
 // The tooltip's first lines: where the value lives, its note, and when a change shows.
 const about = (key, c) =>
@@ -446,98 +439,72 @@ const about = (key, c) =>
 		.filter(Boolean)
 		.join('\n') + '\n'
 
-// One instrument: a face you drag (up or right for more, Shift for fine), a label, and a readout
-// you can click to type into (counters too: click the big number). Double-click puts the value back.
-function instrument(key, c, kind, changed) {
-	if (kind === 'swatch') return swatch(key, c, changed)
-	if (kind === 'choice' || kind === 'readout') return picker(key, c, kind, changed)
-	const el = document.createElement('div')
-	el.className = 'tuner-mod'
-	el.dataset.kind = kind
-	el.title = `${about(key, c)}drag · shift for fine · wheel steps · click the number to type · double-click resets`
+const HOW = {
+	switch: 'click to flip',
+	choice: 'click one',
+	counter: '− and + step · wheel steps',
+	swatch: 'click to pick a colour',
+	readout: 'the game keeps this up to date',
+}
+
+// A number's range, step and readout, shared by every input that holds one.
+function numeric(c, kind) {
 	const [min, max] = range(c)
-	const stepCandidates = [c.step, units[c.unit]?.step, c.unit === 's' ? 0.05 : null].filter(
-		(s) => s > 0,
-	)
-	const step = stepCandidates.length ? Math.min(...stepCandidates) : (max - min) / 200
+	const steps = [c.step, units[c.unit]?.step, c.unit === 's' ? 0.05 : null].filter((s) => s > 0)
+	const step = steps.length ? Math.min(...steps) : (max - min) / 200
 	const log = kind === 'tone' && min > 0
 	const toFrac = (v) =>
-		log ? Math.log(v / min) / Math.log(max / min) : (v - min) / (max - min || 1)
+		clamp01(log ? Math.log(v / min) / Math.log(max / min) : (v - min) / (max - min || 1))
 	const fromFrac = (f) => (log ? min * (max / min) ** f : min + f * (max - min))
 	const snap = (v) => {
 		const s = Math.round((v - min) / step) * step + min
 		return Math.min(max, Math.max(min, +s.toFixed(6)))
 	}
+	const suffix = units[c.unit]?.suffix ?? ''
+	const decimals = Math.max(0, Math.min(4, -Math.floor(Math.log10(step) + 1e-9)))
+	const show = (v) => `${+v.toFixed(decimals)}${suffix}`
+	return { min, max, step, toFrac, fromFrac, snap, show }
+}
+
+// One row: a label, the input its unit affords, a readout you can click to type into, and ↺ once
+// it differs from the default. Double-clicking the label also puts it back.
+function row(key, c, kind, changed) {
+	const el = document.createElement('div')
+	el.className = 'tuner-row'
+	el.dataset.kind = kind
+	el.innerHTML = `<label></label><div class="tuner-input"></div><output></output>
+		<button class="tuner-reset" title="back to the default">↺</button>`
+	el.querySelector('label').textContent = c.label
+	const out = el.querySelector('output')
+	const holder = el.querySelector('.tuner-input')
+	const isNumber = typeof c.getValue() === 'number' && kind !== 'swatch'
+	const n = isNumber ? numeric(c, kind) : null
 	const set = (v) => {
-		c.setValue(typeof v === 'boolean' ? v : snap(v))
+		c.setValue(n ? n.snap(v) : v)
 		changed(key, c)
 	}
-	const radians = c.unit === 'rad'
-	const unit = units[c.unit]?.suffix ?? ' ?'
-	const decimals = Math.max(0, Math.min(4, -Math.floor(Math.log10(step) + 1e-9)))
-	const show = (v) =>
-		typeof v === 'boolean'
-			? `${v ? 'on' : 'off'}${units[c.unit] ? '' : ' ?'}`
-			: `${+v.toFixed(decimals)}${unit}`
-
-	el.innerHTML = `<div class="tuner-face">${FACES[kind]?.(max) ?? ''}</div>
-		<label>${c.label}</label><output></output>`
-	const face = el.querySelector('.tuner-face')
-	const out = el.querySelector('output')
-	const part = (s) => face.querySelector(s)
-	const draw = DRAW[kind](part, { min, max, toFrac, radians, seconds: c.unit === 'ms' ? 0.001 : 1 })
-
-	const typeValue = () => {
-		if (typeof c.getValue() === 'boolean') return
-		const typed = prompt(`${key}`, c.getValue())
-		if (typed !== null && Number.isFinite(+typed)) set(+typed)
-	}
-	if (typeof c.getValue() === 'boolean') face.addEventListener('click', () => set(!c.getValue()))
-	else {
-		if (kind !== 'counter')
-			face.addEventListener('pointerdown', (e) => {
-				if (e.target.closest('button')) return
-				face.setPointerCapture(e.pointerId)
-				let f = toFrac(c.getValue())
-				let last = [e.clientX, e.clientY]
-				const span = kind === 'clock' ? Math.max(80, face.clientWidth) : 220
-				const move = (m) => {
-					const fine = m.shiftKey ? 0.1 : 1
-					if (kind === 'clock') f += ((m.clientX - last[0]) / span) * fine
-					else f += ((m.clientX - last[0] - (m.clientY - last[1])) / span) * fine
-					f = Math.min(1, Math.max(0, f))
-					last = [m.clientX, m.clientY]
-					set(fromFrac(f))
-				}
-				face.addEventListener('pointermove', move)
-				face.addEventListener(
-					'pointerup',
-					() => {
-						face.removeEventListener('pointermove', move)
-						if (kind === 'tone') blip(c.getValue())
-					},
-					{ once: true },
-				)
-			})
-		face.addEventListener('wheel', (e) => {
-			e.preventDefault()
-			set(c.getValue() + (e.deltaY < 0 ? step : -step))
-		})
-		face.addEventListener('click', (e) => {
-			const by = e.target.closest('button')?.dataset.by
-			if (by) set(c.getValue() + +by * step)
-			if (kind === 'tone' && e.detail === 1 && !by) blip(c.getValue())
-		})
-	}
-	el.addEventListener('dblclick', () => {
+	const input = (INPUTS[kind] ?? INPUTS.bar)(holder, { c, n, set, kind })
+	el.title = `${about(key, c)}${HOW[kind] ?? 'drag the bar · shift for fine · wheel steps'} · click the number to type`
+	const back = () => {
 		c.reset()
 		changed(key, c)
-	})
-	out.addEventListener('click', typeValue)
-	el.querySelector('.counter-num')?.addEventListener('click', (e) => {
-		e.stopPropagation()
-		typeValue()
-	})
+	}
+	el.querySelector('.tuner-reset').addEventListener('click', back)
+	el.querySelector('label').addEventListener('dblclick', back)
+	if (isNumber || kind === 'swatch')
+		out.addEventListener('click', () =>
+			typeInto(out, c, (typed) => {
+				if (kind === 'swatch') {
+					if (/^#?[0-9a-f]{6}$/i.test(typed))
+						set(c.format.fromHexString(`#${typed.replace('#', '')}`))
+				} else if (Number.isFinite(+typed) && typed !== '') set(+typed)
+			}),
+		)
+	if (n)
+		holder.addEventListener('wheel', (e) => {
+			e.preventDefault()
+			set(c.getValue() + (e.deltaY < 0 ? n.step : -n.step))
+		})
 
 	let seen
 	return {
@@ -545,267 +512,186 @@ function instrument(key, c, kind, changed) {
 		el,
 		draw(now) {
 			const v = c.getValue()
-			if (v === seen && kind !== 'clock' && kind !== 'tone') return
-			draw(v, now)
+			if (v === seen && !input.moves) return
+			input.draw(v, now)
 			if (v === seen) return
 			seen = v
-			out.textContent = show(v)
-			el.classList.toggle('is-changed', v !== c.initialValue)
+			if (kind === 'swatch') out.textContent = c.format.toHexString(v)
+			else if (n) out.textContent = n.show(v)
+			el.classList.toggle('is-changed', kind !== 'readout' && v !== c.initialValue)
 		},
 	}
 }
 
-// A colour: click for the picker, drag across for hue and up for lightness (Shift for fine).
-// Values keep the controller's own format, a 0xrrggbb number or a '#rrggbb' string.
-function swatch(key, c, changed) {
-	const el = document.createElement('div')
-	el.className = 'tuner-mod'
-	el.dataset.kind = 'swatch'
-	el.title = `${about(key, c)}click picks · drag across for hue, up for lightness · shift for fine · double-click resets`
-	el.innerHTML = `<div class="tuner-face"><i class="swatch"></i><input type="color" tabindex="-1"></div>
-		<label></label><output></output>`
-	el.querySelector('label').textContent = c.label
-	const face = el.querySelector('.tuner-face')
-	const chip = el.querySelector('.swatch')
-	const picker = el.querySelector('input')
-	const out = el.querySelector('output')
-	const hexOf = (v) => c.format.toHexString(v)
-	const set = (hex) => {
-		c.setValue(c.format.fromHexString(hex))
-		changed(key, c)
+// Click a readout and it becomes a text field: Enter keeps what you typed, Escape or leaving drops it.
+function typeInto(out, c, commit) {
+	if (out.querySelector('input')) return
+	const field = Object.assign(document.createElement('input'), {
+		value: c.format ? c.format.toHexString(c.getValue()) : c.getValue(),
+	})
+	const shown = out.textContent
+	out.replaceChildren(field)
+	field.focus()
+	field.select()
+	let done = false
+	const finish = (keep) => {
+		if (done) return
+		done = true
+		out.textContent = shown
+		if (keep) commit(field.value.trim())
 	}
-	picker.addEventListener('input', () => set(picker.value))
-	face.addEventListener('pointerdown', (e) => {
-		face.setPointerCapture(e.pointerId)
-		const [h, s, l] = toHsl(hexOf(c.getValue()))
-		let hue = h,
-			light = l,
-			moved = false
-		let last = [e.clientX, e.clientY]
+	field.addEventListener('keydown', (e) => {
+		if (e.key === 'Enter') finish(true)
+		if (e.key === 'Escape') finish(false)
+	})
+	field.addEventListener('blur', () => finish(false))
+}
+
+// A bar you press anywhere on: the value jumps there and follows the pointer. Shift moves it finely.
+function bar(holder, { c, n, set, kind }, extra = '') {
+	holder.insertAdjacentHTML('beforeend', `${extra}<div class="tuner-bar"><i></i></div>`)
+	const track = holder.querySelector('.tuner-bar')
+	const fill = track.firstChild
+	track.addEventListener('pointerdown', (e) => {
+		track.setPointerCapture(e.pointerId)
+		const box = track.getBoundingClientRect()
+		let f = clamp01((e.clientX - box.left) / box.width)
+		let last = e.clientX
+		if (!e.shiftKey) set(n.fromFrac(f))
+		else f = n.toFrac(c.getValue())
 		const move = (m) => {
-			const fine = m.shiftKey ? 0.1 : 1
-			const dx = m.clientX - last[0],
-				dy = m.clientY - last[1]
-			last = [m.clientX, m.clientY]
-			moved ||= Math.abs(m.clientX - e.clientX) + Math.abs(m.clientY - e.clientY) > 3
-			if (!moved) return
-			hue = (hue + (dx / 360) * fine + 1) % 1
-			light = clamp01(light - (dy / 300) * fine)
-			set(fromHsl(hue, s, light))
+			f = m.shiftKey
+				? clamp01(f + ((m.clientX - last) / box.width) * 0.1)
+				: clamp01((m.clientX - box.left) / box.width)
+			last = m.clientX
+			set(n.fromFrac(f))
 		}
-		face.addEventListener('pointermove', move)
-		face.addEventListener(
+		track.addEventListener('pointermove', move)
+		track.addEventListener(
 			'pointerup',
 			() => {
-				face.removeEventListener('pointermove', move)
-				if (!moved) picker.click()
+				track.removeEventListener('pointermove', move)
+				if (kind === 'tone') blip(c.getValue())
 			},
 			{ once: true },
 		)
 	})
-	el.addEventListener('dblclick', () => {
-		c.reset()
-		changed(key, c)
-	})
-	out.addEventListener('click', () => {
-		const typed = prompt(`${key}`, hexOf(c.getValue()))
-		if (typed && /^#?[0-9a-f]{6}$/i.test(typed.trim())) set(`#${typed.trim().replace('#', '')}`)
-	})
-
-	let seen
-	return {
-		key,
-		el,
-		draw() {
-			const v = c.getValue()
-			if (v === seen) return
-			seen = v
-			const hex = hexOf(v)
-			chip.style.background = hex
-			picker.value = hex
-			out.textContent = hex
-			el.classList.toggle('is-changed', v !== c.initialValue)
-		},
-	}
+	return (v) => (fill.style.width = `${n.toFrac(v) * 100}%`)
 }
 
-// One of a few named values (a hero, a log level), or a line of text the game keeps up to date.
-function picker(key, c, kind, changed) {
-	const el = document.createElement('div')
-	el.className = 'tuner-mod'
-	el.dataset.kind = kind
-	el.title = about(key, c).trim()
-	el.innerHTML = `<div class="tuner-face"></div><label></label><output></output>`
-	el.querySelector('label').textContent = c.label
-	const face = el.querySelector('.tuner-face')
-	const out = el.querySelector('output')
-	let select
-	if (kind === 'choice') {
-		select = document.createElement('select')
+// Each input fills the row's middle and returns { draw(value, now), moves? }.
+const INPUTS = {
+	bar: (holder, ctx) => ({ draw: bar(holder, ctx) }),
+	// A speed: a small speedometer beside the bar.
+	gauge(holder, ctx) {
+		const drawBar = bar(
+			holder,
+			ctx,
+			svg(
+				`<path class="track" d="M10 55 A40 40 0 0 1 90 55"/><line class="needle" x1="50" y1="55" x2="50" y2="19"/>`,
+			),
+		)
+		const needle = holder.querySelector('.needle')
+		return {
+			draw(v) {
+				drawBar(v)
+				needle.setAttribute('transform', `rotate(${-90 + ctx.n.toFrac(v) * 180} 50 55)`)
+			},
+		}
+	},
+	// An angle: a fan opened that far.
+	fan(holder, ctx) {
+		const drawBar = bar(
+			holder,
+			ctx,
+			svg(`<path class="track" d="M8 56 H92"/><path class="wedge"/>`),
+		)
+		const wedge = holder.querySelector('.wedge')
+		const radians = ctx.c.unit === 'rad'
+		return {
+			draw(v) {
+				drawBar(v)
+				const a = Math.min(179.9, Math.max(0, radians ? (v * 180) / Math.PI : v))
+				const [x, y] = polar(50, 56, 44, a)
+				wedge.setAttribute('d', `M50 56 L94 56 A44 44 0 0 0 ${x} ${y} Z`)
+			},
+		}
+	},
+	// A duration: a strip whose playhead loops at that length, so 0.065 s reads as a blink.
+	clock(holder, ctx) {
+		const drawBar = bar(holder, ctx)
+		const head = Object.assign(document.createElement('b'), { className: 'tuner-head-mark' })
+		holder.querySelector('.tuner-bar').append(head)
+		const seconds = ctx.c.unit === 'ms' ? 0.001 : 1
+		return {
+			moves: true,
+			draw(v, now) {
+				drawBar(v)
+				const span = ctx.n.max || 1
+				head.style.left = v > 0 ? `${(((now / (1000 * seconds)) % v) / span) * 100}%` : '0'
+			},
+		}
+	},
+	// A count: − and +.
+	counter(holder, { c, n, set }) {
+		holder.innerHTML = `<button data-by="-1">−</button><button data-by="1">+</button><small></small>`
+		holder.querySelector('small').textContent = n.step === 1 ? '' : `steps of ${n.step}`
+		holder.addEventListener('click', (e) => {
+			const by = e.target.closest('button')?.dataset.by
+			if (by) set(c.getValue() + +by * n.step)
+		})
+		return { draw() {} }
+	},
+	switch(holder, { c, set }) {
+		holder.innerHTML = `<button class="tuner-switch" aria-label="on or off"><i></i></button>`
+		const sw = holder.firstChild
+		sw.addEventListener('click', () => set(!c.getValue()))
+		return { draw: (v) => sw.classList.toggle('on', !!v) }
+	},
+	// A few named values side by side; a long list falls back to a menu.
+	choice(holder, { c, set }) {
+		if (c.choices.length <= 5) {
+			holder.innerHTML = `<div class="tuner-seg"></div>`
+			const seg = holder.firstChild
+			for (const [name, value] of c.choices) {
+				const b = Object.assign(document.createElement('button'), { textContent: name })
+				b.addEventListener('click', () => set(value))
+				b.dataset.value = String(value)
+				seg.append(b)
+			}
+			return {
+				draw: (v) => {
+					for (const b of seg.children) b.classList.toggle('on', b.dataset.value === String(v))
+				},
+			}
+		}
+		const select = document.createElement('select')
 		for (const [name, value] of c.choices)
 			select.append(Object.assign(document.createElement('option'), { textContent: name, value }))
-		select.addEventListener('change', () => {
-			c.setValue(c.choices.find(([, v]) => String(v) === select.value)?.[1])
-			changed(key, c)
-		})
-		face.append(select)
-	}
-	let seen
-	return {
-		key,
-		el,
-		draw() {
-			const v = c.getValue()
-			if (v === seen) return
-			seen = v
-			if (select) select.value = String(v)
-			out.textContent = kind === 'choice' ? '' : String(v ?? '')
-			el.classList.toggle('is-changed', kind === 'choice' && v !== c.initialValue)
-		},
-	}
-}
-
-function toHsl(hex) {
-	const n = parseInt(hex.slice(1), 16)
-	const [r, g, b] = [n >> 16, (n >> 8) & 255, n & 255].map((x) => x / 255)
-	const max = Math.max(r, g, b),
-		min = Math.min(r, g, b),
-		l = (max + min) / 2,
-		d = max - min
-	if (!d) return [0, 0, l]
-	const s = d / (1 - Math.abs(2 * l - 1))
-	const h =
-		max === r ? (g - b) / d + (g < b ? 6 : 0) : max === g ? (b - r) / d + 2 : (r - g) / d + 4
-	return [h / 6, s, l]
-}
-
-function fromHsl(h, s, l) {
-	const k = (n) => (n + h * 12) % 12
-	const a = s * Math.min(l, 1 - l)
-	const f = (n) => l - a * Math.max(-1, Math.min(k(n) - 3, 9 - k(n), 1))
-	return `#${[f(0), f(8), f(4)]
-		.map((x) =>
-			Math.round(x * 255)
-				.toString(16)
-				.padStart(2, '0'),
+		select.addEventListener('change', () =>
+			set(c.choices.find(([, v]) => String(v) === select.value)?.[1]),
 		)
-		.join('')}`
-}
-
-const ARC = (r, a0, a1, cx = 50, cy = 54) => {
-	const [x0, y0] = polar(cx, cy, r, a0)
-	const [x1, y1] = polar(cx, cy, r, a1)
-	return `M${x0} ${y0} A${r} ${r} 0 ${Math.abs(a1 - a0) > 180 ? 1 : 0} 1 ${x1} ${y1}`
-}
-
-const FACES = {
-	clock: (max) =>
-		`<div class="clock-track" style="--tick:${(max >= 3 ? 1 : 0.1) / max}"><i class="clock-fill"></i><i class="clock-head"></i></div>`,
-	gauge: () =>
-		svg(`<path class="track" d="${ARC(40, 180, 0)}"/><path class="lit" pathLength="1" d="${ARC(40, 180, 0)}"/>
-			${Array.from({ length: 11 }, (_, i) => {
-				const [x0, y0] = polar(50, 54, 44, 180 - i * 18)
-				const [x1, y1] = polar(50, 54, i % 5 ? 47 : 50, 180 - i * 18)
-				return `<line class="tick" x1="${x0}" y1="${y0}" x2="${x1}" y2="${y1}"/>`
-			}).join('')}
-			<line class="needle" x1="50" y1="54" x2="50" y2="20"/><circle class="hub" cx="50" cy="54" r="4"/>`),
-	mast: () => `<div class="mast"><i class="mast-pole"></i><i class="mast-peg"></i></div>`,
-	fan: () => svg(`<line class="track" x1="8" y1="54" x2="92" y2="54"/><path class="wedge"/>`),
-	ring: () =>
-		svg(
-			`<circle class="track" cx="50" cy="50" r="44"/><line class="track" x1="50" y1="2" x2="50" y2="98"/><line class="track" x1="2" y1="50" x2="98" y2="50"/><circle class="disc" cx="50" cy="50"/>`,
-			'0 0 100 100',
-		),
-	meter: () => `<div class="meter">${'<i></i>'.repeat(12)}</div>`,
-	tone: () => svg(`<path class="track" d="M4 30 H96"/><path class="wave"/>`, '0 0 100 60'),
-	counter: () =>
-		`<button data-by="-1">−</button><b class="counter-num"></b><button data-by="1">+</button>`,
-	switch: () => `<div class="switch"><i></i></div>`,
-	knob: () =>
-		svg(
-			`<path class="track" d="${ARC(36, 225, -45, 50, 50)}"/><path class="lit" pathLength="1" d="${ARC(36, 225, -45, 50, 50)}"/><circle class="cap" cx="50" cy="50" r="26"/><line class="needle" x1="50" y1="50" x2="50" y2="28"/>`,
-			'0 0 100 100',
-		),
-}
-
-const clamp01 = (f) => Math.min(1, Math.max(0, f))
-
-// Each draw gets the value and the frame time; only the clock and the tone move on their own.
-const DRAW = {
-	clock: (part, { max, seconds }) => {
-		const fill = part('.clock-fill')
-		const head = part('.clock-head')
-		return (v, now) => {
-			fill.style.width = `${clamp01(v / max) * 100}%`
-			head.style.left = v > 0 ? `${(((now / (1000 * seconds)) % v) / max) * 100}%` : '0'
+		holder.append(select)
+		return { draw: (v) => (select.value = String(v)) }
+	},
+	swatch(holder, { c, set }) {
+		holder.innerHTML = `<button class="tuner-swatch"></button><input type="color" tabindex="-1">`
+		const chip = holder.firstChild
+		const picker = holder.lastChild
+		chip.addEventListener('click', () => picker.click())
+		picker.addEventListener('input', () => set(c.format.fromHexString(picker.value)))
+		return {
+			draw(v) {
+				const hex = c.format.toHexString(v)
+				chip.style.background = hex
+				picker.value = hex
+			},
 		}
 	},
-	gauge: (part, { toFrac }) => {
-		const needle = part('.needle')
-		const lit = part('.lit')
-		return (v) => {
-			const f = clamp01(toFrac(v))
-			needle.setAttribute('transform', `rotate(${-90 + f * 180} 50 54)`)
-			lit.style.strokeDasharray = `${f} 1`
-		}
-	},
-	mast: (part, { toFrac }) => {
-		const pole = part('.mast-pole')
-		const peg = part('.mast-peg')
-		return (v) => {
-			const f = clamp01(toFrac(v))
-			pole.style.height = `${f * 100}%`
-			peg.style.bottom = `${f * 100}%`
-		}
-	},
-	fan: (part, { radians }) => {
-		const wedge = part('.wedge')
-		return (v) => {
-			const a = Math.min(179.9, Math.max(0, radians ? (v * 180) / Math.PI : v))
-			const [x, y] = polar(50, 54, 42, a)
-			wedge.setAttribute('d', `M50 54 L92 54 A42 42 0 0 0 ${x} ${y} Z`)
-		}
-	},
-	ring: (part, { toFrac }) => {
-		const disc = part('.disc')
-		return (v) => disc.setAttribute('r', 2 + clamp01(toFrac(v)) * 42)
-	},
-	meter: (part, { toFrac }) => {
-		const leds = [...part('.meter').children].reverse()
-		return (v) => {
-			const lit = Math.round(clamp01(toFrac(v)) * leds.length)
-			leds.forEach((led, i) => led.classList.toggle('on', i < lit))
-		}
-	},
-	tone: (part, { toFrac }) => {
-		const wave = part('.wave')
-		return (v, now) => {
-			const cycles = 1 + clamp01(toFrac(v)) * 9
-			const shift = (now / 900) % 1
-			let d = ''
-			for (let x = 0; x <= 92; x += 1) {
-				const y = 30 - 20 * Math.sin(((x / 92) * cycles + shift) * Math.PI * 2)
-				d += `${x ? 'L' : 'M'}${x + 4} ${y.toFixed(1)}`
-			}
-			wave.setAttribute('d', d)
-		}
-	},
-	counter: (part) => {
-		const num = part('.counter-num')
-		return (v) => (num.textContent = v)
-	},
-	switch: (part) => {
-		const sw = part('.switch')
-		return (v) => sw.classList.toggle('on', v)
-	},
-	knob: (part, { toFrac }) => {
-		const needle = part('.needle')
-		const lit = part('.lit')
-		return (v) => {
-			const f = clamp01(toFrac(v))
-			needle.setAttribute('transform', `rotate(${-135 + f * 270} 50 50)`)
-			lit.style.strokeDasharray = `${f} 1`
-		}
+	readout(holder) {
+		const text = document.createElement('span')
+		holder.append(text)
+		return { draw: (v) => (text.textContent = String(v ?? '')) }
 	},
 }
 

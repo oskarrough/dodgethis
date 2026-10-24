@@ -94,7 +94,8 @@ export function createRegistry() {
 	let id = 0
 	return {
 		// `options`: { notes: { 'dotted.key': { label, hint, range, step, unit, when, hidden } },
-		// units(object, key, dotted) → unit name, onChange(dotted, value), featured: { 'dotted.key': label } }.
+		// units(object, key, dotted) → unit name, onChange(dotted, value), featured: { 'dotted.key': label },
+		// group: the heading featured values sit under, rank: lower groups show first }.
 		add(path, object, options = {}, build = null) {
 			const key = ++id
 			const folder = createTuneFolder(path)
@@ -144,9 +145,9 @@ export function createRegistry() {
 					const path = `${s.path}/${dotted.replaceAll('.', '/')}`
 					const e =
 						s.controls.find((c) => c.path === path) ?? s.entries.find((x) => x.dotted === dotted)
-					if (e) all.push({ ...e, label })
+					if (e) all.push({ ...e, label, group: s.options.group, rank: s.options.rank ?? 0 })
 				}
-			return all
+			return all.sort((a, b) => a.rank - b.rank)
 		},
 	}
 }

@@ -276,7 +276,7 @@ export default function dodgeball(app, { lobbyExit = null } = {}) {
 			])
 				f.add({ key }, 'key').name(action).disable()
 		})
-		debug.tune('player', tune.player, { featured: featured.player }, (f, t) => {
+		debug.tune('player', tune.player, { featured: featured.player, group: 'player' }, (f, t) => {
 			f.add(t, 'speed', 1, 20, 0.5).unit = 'm/s'
 			f.add(t, 'accel', 1, 40, 0.5).name('accel')
 			f.add(t, 'friction', 0, 30, 0.5).name('friction')
@@ -288,25 +288,30 @@ export default function dodgeball(app, { lobbyExit = null } = {}) {
 			f.add(t, 'dashTime', 0.05, 0.4, 0.01).name('dash time (s)')
 			f.add(t, 'dashCooldown', 0.1, 2, 0.05).name('dash cooldown (s)')
 		})
-		debug.tune('arrow', tune.arrow, { featured: featured.arrow }, (f, t) => {
+		debug.tune('arrow', tune.arrow, { featured: featured.arrow, group: 'weapons' }, (f, t) => {
 			f.add(t, 'maxSpeed', 10, 60, 0.5).name('max speed').unit = 'm/s'
 			f.add(t, 'launchAngle', 0, 60, 1).name('launch angle')
 			f.add(t, 'linearDamping', 0, 2, 0.01).onChange(() => {
 				if (flow?.round) for (const a of flow.round.arrows) a.applyDamping()
 			})
 		})
-		debug.tune('weapons', tune.weapons, { featured: featured.weapons }, (f, t) => {
-			f.add(t, 'chargeTime', 0.3, 2, 0.05).name('charge time (s)').unit = 's'
-			f.add(t, 'chargeMin', 8, 30, 0.5).name('charge min spd')
-			f.add(t, 'chargeMax', 12, 50, 0.5).name('charge max spd')
-			f.add(t, 'perfectWindow', 0.02, 0.3, 0.01).name('perfect window')
-			f.add(t, 'perfectMult', 1, 2.5, 0.05).name('perfect ×')
-			f.add(t, 'bowlSpeed', 6, 30, 0.5).name('bowl speed').unit = 'm/s'
-			f.add(t, 'bowlRadius', 0.15, 1, 0.05).name('bowl radius')
-			f.add(t, 'bowlDensity', 1, 10, 0.5).name('bowl density')
-			f.add(t, 'bowlStop', 0.5, 8, 0.25).name('bowl stop spd')
-		})
-		debug.tune('ai', tune.ai, { featured: featured.ai }, (f, t) => {
+		debug.tune(
+			'weapons',
+			tune.weapons,
+			{ featured: featured.weapons, group: 'weapons' },
+			(f, t) => {
+				f.add(t, 'chargeTime', 0.3, 2, 0.05).name('charge time (s)').unit = 's'
+				f.add(t, 'chargeMin', 8, 30, 0.5).name('charge min spd')
+				f.add(t, 'chargeMax', 12, 50, 0.5).name('charge max spd')
+				f.add(t, 'perfectWindow', 0.02, 0.3, 0.01).name('perfect window')
+				f.add(t, 'perfectMult', 1, 2.5, 0.05).name('perfect ×')
+				f.add(t, 'bowlSpeed', 6, 30, 0.5).name('bowl speed').unit = 'm/s'
+				f.add(t, 'bowlRadius', 0.15, 1, 0.05).name('bowl radius')
+				f.add(t, 'bowlDensity', 1, 10, 0.5).name('bowl density')
+				f.add(t, 'bowlStop', 0.5, 8, 0.25).name('bowl stop spd')
+			},
+		)
+		debug.tune('ai', tune.ai, { featured: featured.ai, group: 'bots' }, (f, t) => {
 			f.add(t, 'enabled')
 			f.add(t, 'reaction', 0, 2, 0.05).name('reaction (s)').unit = 's'
 			f.add(t, 'jitter', 0, 0.6, 0.01).name('aim jitter (rad)')

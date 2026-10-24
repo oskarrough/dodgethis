@@ -215,7 +215,7 @@ export function createMatchDebug({
 	run.intents.suspend(() => paused)
 
 	const featured = { 'match.speed': 'Game speed', 'lobby.speed': 'Game speed' }
-	run.debug.tune('tryMode', controls, { featured }, (folder, values) => {
+	run.debug.tune('tryMode', controls, { featured, group: 'match' }, (folder, values) => {
 		const match = folder.addFolder(isLobby ? 'lobby' : 'match')
 		match.add(values, 'paused').name('pause / resume').listen()
 		match.add(values, 'step').name('step one tick')

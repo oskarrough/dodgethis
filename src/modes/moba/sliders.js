@@ -279,15 +279,17 @@ export function sliderSections(tune, look, setup, mapId = setup.map, camera = tu
 	return Object.entries(sections).map(([path, sliders]) => [path, object(path), sliders, unitAt])
 }
 
-// What a fresh Tuner shows in a match, in players' words, keyed by section then tune key.
+// What a fresh Tuner shows in a match, in players' words: section → [heading, { tune key: label }],
+// headings in this order (Try Mode's game speed comes first).
 const FEATURED = {
-	hero: { speed: 'Run speed' },
-	attack: { damage: 'Attack damage', rate: 'Attack speed' },
-	respawn: { base: 'Respawn time' },
-	ball: { speed: 'Ball throw speed', carrySpeed: 'Ball carrier speed' },
-	juice: { hitstop: 'Hit pause', shakeTaken: 'Screen shake when hit' },
-	follow: { height: 'Camera height', fov: 'Camera lens' },
+	hero: ['hero', { speed: 'Run speed' }],
+	attack: ['hero', { damage: 'Attack damage', rate: 'Attack speed' }],
+	respawn: ['hero', { base: 'Respawn time' }],
+	ball: ['ball', { speed: 'Throw speed', carrySpeed: 'Carrier speed' }],
+	follow: ['camera', { height: 'Height', fov: 'Lens' }],
+	juice: ['feel', { hitstop: 'Hit pause', shakeTaken: 'Shake when hit' }],
 }
+const RANK = { hero: 1, ball: 2, camera: 3, feel: 4 }
 
 // Top-level groups for sections that aren't already nested in tune. Abilities group as they do on disk.
 const groups = {
@@ -323,6 +325,7 @@ export function addSliders(debug, sections, step, more = {}) {
 					unitAt?.(controller.object, controller.property) ??
 					resolveUnit(`${path.replaceAll('/', '.')}.${controller.property}`)
 		}
-		debug.tune(where, object, { units, featured: FEATURED[path] }, build)
+		const [group, featured] = FEATURED[path] ?? []
+		debug.tune(where, object, { units, featured, group, rank: RANK[group] }, build)
 	}
 }
