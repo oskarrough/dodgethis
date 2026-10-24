@@ -106,6 +106,13 @@ export function createSnapshot(ctx) {
 				attackTick: h.attackTick,
 				pos: pos(h.body),
 				vel: { x: q(h.body.velocity.x), z: q(h.body.velocity.z) },
+				grounded: h.body.grounded,
+				dashTime: q(h.body.dashTime),
+				dashDirection: {
+					x: q(h.body.dashDirection.x),
+					y: q(h.body.dashDirection.y),
+					z: q(h.body.dashDirection.z),
+				},
 				yaw: q(h.yaw),
 				order: h.order && {
 					kind: h.order.kind,
