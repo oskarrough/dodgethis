@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { tune } from './tune.js'
+import { launchVelocity, solveLaunch } from './arrow.js'
 import { nearest } from '../../core/spatial.js'
 import { ARENA, blockOutward, bounds } from './arena.js'
 import { blocksSight, steerAround } from './obstacles.js'
@@ -109,8 +110,8 @@ export function createBrain(unit, { reactionMul = 1, jitterMul = 1, rng = Math.r
 		if (unit.heldArrow) {
 			pickupInitialized = false
 			const dist = Math.max(Math.sqrt(d2), 1e-4)
-			const horiz = Math.cos((tune.arrow.launchAngle * Math.PI) / 180) * tune.arrow.impulse
-			const tTravel = dist / Math.max(horiz, 1)
+			const { vx } = launchVelocity(solveLaunch(dist))
+			const tTravel = dist / Math.max(vx, 1)
 			pred.set(target.position.x + tvel.x * tTravel, 0, target.position.z + tvel.z * tTravel)
 			aim.set(pred.x - me.x, 0, pred.z - me.z)
 			if (aim.lengthSq() < 1e-4) aim.set(0, 0, -1)
