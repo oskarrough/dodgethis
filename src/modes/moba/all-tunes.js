@@ -43,7 +43,9 @@ import abilities_vault from './abilities/vault/vault-tune.js'
 import abilities_ward, { units as abilities_ward_units } from './abilities/ward/ward-tune.js'
 import abilities_waterFlick from './abilities/waterFlick/waterFlick-tune.js'
 import abilities_yoYoFlick from './abilities/yoYoFlick/yoYoFlick-tune.js'
-import encounters_barquero from './encounters/barquero/barquero-tune.js'
+import encounters_barquero, {
+	units as encounters_barquero_units,
+} from './encounters/barquero/barquero-tune.js'
 import encounters_carillon from './encounters/carillon/carillon-tune.js'
 import encounters_espejo from './encounters/espejo/espejo-tune.js'
 import encounters_fornax, {
@@ -148,6 +150,7 @@ export const units = {
 	...abilities_tagOut_units,
 	...abilities_toss_units,
 	...abilities_ward_units,
+	...encounters_barquero_units,
 	...encounters_fornax_units,
 	...encounters_gnomon_units,
 	...encounters_manos_units,

@@ -15,7 +15,7 @@ await RAPIER.init({})
 const SECONDS = 3
 // A dungeon's road to its wings, and every wing fight built so far, must fall to one bot alone:
 // jobs latch and bosses leave a way through, so no fight needs a full party.
-const SOLO_SECONDS = 180
+const SOLO_SECONDS = 200
 // And a party of three must clear it, carrying a whole wing's boons to the last boss.
 const PARTY_SECONDS = 240
 
