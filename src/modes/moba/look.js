@@ -189,7 +189,7 @@ export const look = {
 	damageNumbers: {
 		enabled: true,
 		font: 56,
-		family: 'monospace',
+		family: "'Sniglet', 'Josefin Sans', sans-serif", // canvas: no CSS vars
 		outline: 12,
 		height: 0.7,
 		y: 2,

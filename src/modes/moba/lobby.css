@@ -129,9 +129,7 @@
 	background: var(--ui-cream);
 	color: var(--ui-text);
 	box-shadow: 6px 7px 0 var(--ui-text);
-	font:
-		400 16px / 1.4 'Josefin Sans',
-		sans-serif;
+	font: 400 16px / 1.4 var(--text-font);
 }
 .lobby-numbers[hidden] {
 	display: none;

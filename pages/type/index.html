@@ -38,12 +38,12 @@
 			@font-face {
 				font-family: 'Apfel Grotezk';
 				font-weight: 400;
-				src: url('/fonts/picker/apfel-grotezk/apfel-grotezk-latin-400-normal.woff2') format('woff2');
+				src: url('/fonts/apfel-grotezk-latin-400-normal.woff2') format('woff2');
 			}
 			@font-face {
 				font-family: 'Apfel Grotezk';
 				font-weight: 700;
-				src: url('/fonts/picker/apfel-grotezk/apfel-grotezk-latin-700-normal.woff2') format('woff2');
+				src: url('/fonts/apfel-grotezk-latin-700-normal.woff2') format('woff2');
 			}
 			@font-face {
 				font-family: 'Cooper Hewitt';
@@ -466,14 +466,14 @@
 		</template>
 
 		<script type="module">
-			// What ships today (index.html :root and look.js damageNumbers.family).
+			// What ships today (index.html :root and look.js damageNumbers.family), first face of each stack.
 			const SHIPPING = {
 				ui: 'Darumadrop One',
 				uiW: 400,
-				text: 'Josefin Sans',
+				text: 'Sniglet',
 				textW: 400,
-				num: 'monospace',
-				desk: 'Darumadrop One', // desk.css reads --ui-font
+				num: 'Sniglet',
+				desk: 'Sniglet', // desk.css reads --text-font
 				k: 1,
 				track: 0,
 			}
@@ -492,7 +492,7 @@
 				'Striper',
 			]
 			const GROUPS = {
-				Shipping: ['Darumadrop One', 'Josefin Sans', 'Ranchers', 'Barriecito'],
+				Shipping: ['Darumadrop One', 'Comico', 'Apfel Grotezk', 'Sniglet', 'Josefin Sans'],
 				"Oskar's picks": PICKS,
 				Added: [],
 				'More ideas': [

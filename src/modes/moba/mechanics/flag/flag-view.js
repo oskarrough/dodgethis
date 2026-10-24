@@ -39,7 +39,7 @@ export function view(scene) {
 		left: '50%',
 		transform: 'translateX(-50%)',
 		pointerEvents: 'none',
-		font: '600 15px/1.2 system-ui, sans-serif',
+		font: "800 15px/1.2 'Sniglet', 'Josefin Sans', sans-serif",
 		color: '#f4ead2',
 		textShadow: '0 1px 2px #000a',
 	})

@@ -8,9 +8,9 @@
 	--rule: color-mix(in srgb, var(--ui-text) 55%, transparent);
 	/* Between rows of one list: there to guide the eye along a line, not to box each row. */
 	--rule-row: color-mix(in srgb, var(--ui-text) 16%, transparent);
-	--caps: 600 clamp(11px, 0.95vw, 14px) / 1.2 'Josefin Sans', sans-serif;
+	--caps: 600 clamp(11px, 0.95vw, 14px) / 1.2 var(--text-font);
 	/* A note or caption: set like the body, sentence case, full ink. */
-	--note: 400 15px / 1.35 'Josefin Sans', sans-serif;
+	--note: 400 15px / 1.35 var(--text-font);
 	/* The one ink line for readouts and rules on these pages (docs/ui.md, primitives). */
 	--line-thin: 1px;
 	/* A hero or source named in a list: the table rows and the death recap alike. */
@@ -74,9 +74,7 @@ canvas.moba-dead-world {
 	overflow: auto;
 	padding: 22px 26px;
 	transform: translateX(-50%);
-	font:
-		400 18px / 1.3 'Josefin Sans',
-		sans-serif;
+	font: 400 18px / 1.3 var(--text-font);
 	font-variant-numeric: tabular-nums;
 }
 /* Titles are ink on a wash swatch, as on the splash. */
@@ -154,9 +152,7 @@ canvas.moba-dead-world {
    wash. */
 .moba-results {
 	width: min(100%, var(--table-width));
-	font:
-		400 var(--table-size) / 1.4 'Josefin Sans',
-		sans-serif;
+	font: 400 var(--table-size) / 1.4 var(--text-font);
 	font-variant-numeric: tabular-nums;
 	text-align: left;
 }
@@ -518,9 +514,7 @@ body:has(> .overlay[data-theme^='moba']:not([hidden]))
 	grid-row: 3;
 	grid-column: 1 / span 6;
 	margin: 10px 0 0;
-	font:
-		400 clamp(16px, 1.3vw, 24px) / 1.3 'Josefin Sans',
-		sans-serif;
+	font: 400 clamp(16px, 1.3vw, 24px) / 1.3 var(--text-font);
 	letter-spacing: 0;
 	text-transform: none;
 	color: var(--ui-text);

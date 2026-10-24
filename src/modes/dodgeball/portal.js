@@ -21,7 +21,7 @@ function makeLabel(enemies, color, label = String(enemies), labelSize = 150) {
 	g.textBaseline = 'middle'
 	g.lineJoin = 'round'
 
-	g.font = `${labelSize}px "Ranchers", "Darumadrop One", system-ui, sans-serif`
+	g.font = `${labelSize}px "Darumadrop One", "Comico", "Apfel Grotezk", system-ui, sans-serif`
 	g.lineWidth = 30
 	g.strokeStyle = CREAM
 	g.strokeText(label, 128, 128)

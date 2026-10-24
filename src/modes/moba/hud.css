@@ -498,9 +498,7 @@
 	display: inline-flex;
 	align-items: center;
 	gap: 2px;
-	font:
-		700 11px / 1 system-ui,
-		sans-serif;
+	font: 700 11px / 1 var(--text-font);
 }
 .moba-trait.none {
 	display: none;
@@ -540,9 +538,7 @@
 .moba-meter span {
 	position: relative;
 	z-index: 1;
-	font:
-		700 11px / 1 system-ui,
-		sans-serif;
+	font: 700 11px / 1 var(--text-font);
 	color: var(--ink);
 	text-shadow:
 		0 0 2px var(--cream),
@@ -614,9 +610,7 @@
 	min-width: 18px;
 	padding: 2px 4px;
 	box-sizing: border-box;
-	font:
-		700 11px / 1 system-ui,
-		sans-serif;
+	font: 700 11px / 1 var(--text-font);
 	color: var(--cream);
 	background: var(--ink);
 	border-radius: 6px;

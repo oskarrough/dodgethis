@@ -20,9 +20,7 @@
 	overflow: hidden;
 	color: var(--ui-text);
 	background: var(--ui-cream);
-	font:
-		400 clamp(16px, 1.4vw, 22px) / 1.5 'Josefin Sans',
-		sans-serif;
+	font: 400 clamp(16px, 1.4vw, 22px) / 1.5 var(--text-font);
 	font-variant-numeric: tabular-nums;
 }
 .moba-front .front-canvas {
