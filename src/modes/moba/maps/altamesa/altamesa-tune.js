@@ -74,17 +74,19 @@ export default {
 		],
 		view: { waystone: { top: 0.5, radius: 0.7, height: 1.4, sides: 8 } },
 		// Sandstone cover and pale pillars instead of the green garden roles.
-		palette: { courtShade: 0xd49c74, scenery: 0xcdbcae, court: 0xa59c62 },
+		palette: { courtShade: 0xc4865f, scenery: 0xcdbcae, court: 0xa59c62 },
 		// The court is printed with a painted tile (floor-print.js, public/tiles/); the isle's
 		// cliff and cloud take the desert's colours (applies on restart).
 		floor: {
-			style: 'raw',
+			// Mapped, not raw: the tile keeps its drawing but is lifted to pale terracotta, so
+			// team-red telegraphs and navy ink stay the darkest, loudest marks on the court.
+			style: 'mapped',
 			image: '/tiles/flags-drawn.webp',
 			size: 5, // metres per repeat of the tile
-			base: '#d58a6c',
-			joint: '#a8604a',
-			accent: '#a8604a',
-			vary: 0.1,
+			base: '#f6e3d3',
+			joint: '#d9b49c',
+			accent: '#d9b49c',
+			vary: 0.14, // how much of the drawing survives the lift
 		},
 		look: {
 			contact: { reach: 1.2, strength: 0.3 },
@@ -94,8 +96,8 @@ export default {
 			joints: 0.035,
 		},
 		isle: {
-			tarmac: '#c98a6d', // the margin past the tile, close to the flagstones' mean
-			chalk: '#c98a6d',
+			tarmac: '#eccfba', // the margin past the tile, close to the flagstones' mean
+			chalk: '#eccfba',
 			moss: '#a39457',
 			mossShade: '#6f6236',
 			stoneLit: '#b0705f',
