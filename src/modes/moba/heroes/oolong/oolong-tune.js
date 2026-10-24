@@ -38,6 +38,6 @@ export default {
 
 // The dimension of each number above that its name alone does not settle (src/modes/moba/units.js).
 export const units = {
-	'heroes.brew.view.swigEase': 'ticks',
-	'heroes.brew.view.drinkLift': 'height m',
+	'heroes.oolong.view.swigEase': 'ticks',
+	'heroes.oolong.view.drinkLift': 'height m',
 }

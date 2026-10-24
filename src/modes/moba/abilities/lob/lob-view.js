@@ -8,7 +8,7 @@ export const drawsZone = true
 
 const GROUND = tune.map.printLayers.seams + 0.005
 
-// The ball climbs out of Pong's hand and drops on the mark while its shadow swells there.
+// The ball climbs out of Carambola's hand and drops on the mark while its shadow swells there.
 // On landing the mark turns to hot ground for the field's life: a shock ring, a pulsing core, embers.
 export function extras(scene) {
 	const group = new THREE.Group()

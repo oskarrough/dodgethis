@@ -1,8 +1,8 @@
 import { tune } from '../../tune.js'
 import { distance } from '../../../../core/spatial.js'
 
-// Wata alone slides into planting range; Slide itself only knows how to escape.
-export function wataBot(ctx) {
+// Undine alone slides into planting range; Slide itself only knows how to escape.
+export function undineBot(ctx) {
 	const { h, p, now, own, enemies, abilities, cast, frame, safe } = ctx
 	if (ctx.skillsLocked || ctx.castBusy || h.cast || h.body.dashing) return null
 	const [sprinklerSlot, sprinkler] = abilities.find(([, a]) => a.id === 'sprinkler') ?? []
@@ -20,7 +20,7 @@ export function wataBot(ctx) {
 		.filter(
 			(u) =>
 				u.id !== h.id &&
-				u.hp / u.maxHp < tune.heroes.wata.bot.saveHp &&
+				u.hp / u.maxHp < tune.heroes.undine.bot.saveHp &&
 				distance(p, u.pos) > sprinkler.stats.range &&
 				distance(p, u.pos) <= sprinkler.stats.range + slide.stats.range,
 		)

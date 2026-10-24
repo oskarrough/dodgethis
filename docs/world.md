@@ -90,16 +90,16 @@ Lesser things keep plain common nouns from the same palette, with no article. Ma
 
 ## The heroes
 
-Oskar settled these names on 2026-10-24. Each hero keeps its kit and silhouette; the sports props give way to the crafts of the mesas. The folders in brackets are the code as it stands, which renames when someone takes the job.
+Oskar settled these names on 2026-10-24. Each hero keeps its kit and silhouette; the sports props give way to the crafts of the mesas. The folders in brackets are the old ids; the code has been renamed to match, and `?hero=` still accepts the old ids.
 
-- **Ibis** (`fletcher`). A lean hunter with a long neck and a quiver of three reed arrows fletched with heron feathers. Every arrow that finds a hero sends her leaping again.
-- **Kappa** (`mitts`). Low, wide and neckless, a river creature with a shell and one great catching hand. Whatever is thrown at her team she takes and holds, and gives back when it suits her.
-- **Carambola** (`pong`). A stocky stone-beaked bruiser with a wooden paddle who learned the game against walls and still thinks a straight shot is wasted.
-- **Mandador** (`coach`). In lucha canaria the mandador directs the team from the edge of the sand. This one is a flat painted board with a speaking-trumpet, and keeps directing from the touchline after dying, at full volume.
-- **Lasso** (`hook`). A crescent of a fisherman who throws a weighted line. He fishes the cloud sea for whatever falls off the mesas, and on match days he fishes for people.
-- **Oolong** (`brew`). A drum-shaped wrestler-monk who drinks tea in the middle of a fight. He takes everything you have, drinks it off, and is still standing when you run out.
-- **Undine** (`wata`). A squat water spirit with a spouted jug who plants a sprinkler that keeps working after she has moved on.
-- **Salvia** (`mender`, draft). A herb-gatherer with a satchel of sage, who mends what the court breaks and wards what it will break next.
+- **Ibis** (old id `fletcher`). A lean hunter with a long neck and a quiver of three reed arrows fletched with heron feathers. Every arrow that finds a hero sends her leaping again.
+- **Kappa** (old id `mitts`). Low, wide and neckless, a river creature with a shell and one great catching hand. Whatever is thrown at her team she takes and holds, and gives back when it suits her.
+- **Carambola** (old id `pong`). A stocky stone-beaked bruiser with a wooden paddle who learned the game against walls and still thinks a straight shot is wasted.
+- **Mandador** (old id `coach`). In lucha canaria the mandador directs the team from the edge of the sand. This one is a flat painted board with a speaking-trumpet, and keeps directing from the touchline after dying, at full volume.
+- **Lasso** (old id `hook`). A crescent of a fisherman who throws a weighted line. He fishes the cloud sea for whatever falls off the mesas, and on match days he fishes for people.
+- **Oolong** (old id `brew`). A drum-shaped wrestler-monk who drinks tea in the middle of a fight. He takes everything you have, drinks it off, and is still standing when you run out.
+- **Undine** (old id `wata`). A squat water spirit with a spouted jug who plants a sprinkler that keeps working after she has moved on.
+- **Salvia** (old id `mender`). A herb-gatherer with a satchel of sage, who mends what the court breaks and wards what it will break next.
 
 ## Keywords
 

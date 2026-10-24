@@ -30,7 +30,7 @@ export default {
 	},
 	tell: 'tether',
 	held: 'circle',
-	effects: { cast: 'tagOutWindup', impact: 'tagOutSwap', pose: 'coachTag' },
+	effects: { cast: 'tagOutWindup', impact: 'tagOutSwap', pose: 'mandadorTag' },
 	statuses: {
 		guard: {
 			label: 'Tag out',

@@ -80,9 +80,9 @@ export function farmPairs(heroes, crossOnly = false) {
 		.filter(([first, second]) => !crossOnly || first !== second)
 }
 
-// A team is one hero for all three seats, or a lineup like `mitts,fletcher,random`. Practice fields
-// `mixed`: Mitts, Fletcher and a seeded random listed hero, drawn for A then B as practiceRoster does.
-export const MIXED = 'mitts,fletcher,random'
+// A team is one hero for all three seats, or a lineup like `kappa,ibis,random`. Practice fields
+// `mixed`: Kappa, Ibis and a seeded random listed hero, drawn for A then B as practiceRoster does.
+export const MIXED = 'kappa,ibis,random'
 export function farmLineups(teams, seed) {
 	const random = botRandom(seed, 'practice-roster')
 	return teams.map((team) => {
@@ -128,7 +128,7 @@ function matchRoster(
 	}))
 }
 
-// `--set mitts.speed=5.6`: a path into tune, or under tune.heroes when the first key isn't one.
+// `--set kappa.speed=5.6`: a path into tune, or under tune.heroes when the first key isn't one.
 // Paths through an `exp` object (`bots.exp.dive`) may name flags that don't exist yet.
 function tuneSlot(path, root = tune) {
 	if (
@@ -358,7 +358,7 @@ async function sameReplays(values, { seed, matches, maxSeconds }) {
 		throw new Error('Match count exceeds the available uint32 seeds')
 	const lineups = values.lineup.length
 		? values.lineup
-		: ['coach,fletcher,hook', 'mender,hook,coach']
+		: ['mandador,ibis,lasso', 'salvia,lasso,mandador']
 	if (lineups.length !== 2) throw new Error('--same needs two --lineup teams')
 	for (const lineup of lineups) {
 		const heroes = lineup.split(',')
@@ -426,7 +426,7 @@ const HELP = `bun run simulate [options]
 Plays headless bot matches. Default: write logs and tapes for \`bun run simulate --logs runs\`; --summary prints tables.
 
 Teams
-  --heroes fletcher,mitts   each team three of one hero; \`mixed\` is practice's mitts,fletcher,random
+  --heroes ibis,kappa   each team three of one hero; \`mixed\` is practice's kappa,ibis,random
   --lineup a,b,c            a team of those seats (repeatable); \`random\` draws a seeded listed hero
   --cross-only              skip mirror matchups
   --idle A1[,B2]            seats that stand still; --practice = idle A1, allies normal, enemies --difficulty
@@ -441,7 +441,7 @@ Sampling
   --quick                   --summary --cross-only --matches 4
 Identical replay
   --same rev               compare logs byte for byte except tune_hash provenance; non-zero exit on any difference
-                            mixed coach/fletcher/hook vs mender/hook/coach; defaults: seeds 2,3, 120 seconds
+                            mixed mandador/ibis/lasso vs salvia/lasso/mandador; defaults: seeds 2,3, 120 seconds
                             --seeds 2,3,6 gives explicit seeds; otherwise --seed starts them, --matches counts them (default 2)
                             --out keeps both logs; coverage lists cast and uncast roster abilities for each revision
                             supports two --lineup teams, --map, --difficulty and --jobs (runs on one core); no summary or balance options
@@ -583,7 +583,7 @@ export async function farm(argv = process.argv.slice(2)) {
 	agentRoster({ seats: player ? [player.id] : [], idle, difficulty: values.difficulty })
 	const requested = [
 		...new Set(
-			(values.heroes ?? (values.lineup.length ? '' : 'fletcher,mitts'))
+			(values.heroes ?? (values.lineup.length ? '' : 'ibis,kappa'))
 				.split(',')
 				.map((hero) => hero.trim())
 				.filter(Boolean),
@@ -600,8 +600,8 @@ export async function farm(argv = process.argv.slice(2)) {
 	const singles = requested.filter((hero) => hero !== 'mixed')
 	const heroes = [...singles.filter((hero) => Object.hasOwn(HEROES, hero)), ...new Set(lineups)]
 	for (const hero of singles.filter((hero) => !Object.hasOwn(HEROES, hero))) {
-		if (hero !== 'mitts') throw new Error(`Unknown hero: ${hero}`)
-		console.warn('Mitts is not available in this checkout; skipping her matchups.')
+		if (hero !== 'kappa') throw new Error(`Unknown hero: ${hero}`)
+		console.warn('Kappa is not available in this checkout; skipping her matchups.')
 	}
 	if (!heroes.length) throw new Error('No available heroes requested')
 	const pairList = farmPairs(heroes, crossOnly)

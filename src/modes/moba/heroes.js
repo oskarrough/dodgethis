@@ -97,7 +97,7 @@ export function heroDefinition(id = DEFAULT_HERO) {
 	return definition
 }
 
-// The body still uses Brew's movement defaults and identity; only the unit is declared.
+// The body still uses Oolong's movement defaults and identity; only the unit is declared.
 export const WARDEN_UNIT = {
 	hp: 'hp',
 	radius: 'radius',
@@ -109,11 +109,11 @@ export const WARDEN_UNIT = {
 // The Warden's body and kit; a dungeon encounter gives it its own name and HP.
 export function wardenDefinition({ name = 'Warden', hp } = {}) {
 	const definition = unitFromDeclaration(
-		'brew',
+		'oolong',
 		WARDEN_UNIT,
 		() =>
 			Object.assign(
-				Object.create(heroDefinition('brew').base),
+				Object.create(heroDefinition('oolong').base),
 				tune.warden,
 				hp == null ? {} : { hp },
 			),

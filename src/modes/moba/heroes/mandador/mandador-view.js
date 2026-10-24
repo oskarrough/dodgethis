@@ -3,11 +3,11 @@ import { makeStyleMaterial } from '../../../../core/stylepass.js'
 import { tune } from '../../tune.js'
 import { look } from '../../look.js'
 import { sweepObstacles, mapExit } from '../../obstacles.js'
-import { coachThrowOrigin } from './coach-cutout.js'
+import { mandadorThrowOrigin } from './mandador-cutout.js'
 
 // The original flat bar and megaphone, with a separate raised hand for the save.
 export function dress({ torso, part, own, discY, t, materials }) {
-	torso.geometry = own(new THREE.BoxGeometry(t.coachWidth, t.coachHeight, t.coachDepth))
+	torso.geometry = own(new THREE.BoxGeometry(t.mandadorWidth, t.mandadorHeight, t.mandadorDepth))
 	const cone = part(
 		new THREE.CylinderGeometry(
 			t.megaphoneRadius,
@@ -30,39 +30,39 @@ export function dress({ torso, part, own, discY, t, materials }) {
 	const hand = part(
 		new THREE.SphereGeometry(t.fingerRadius, t.segments, 6),
 		materials.cream,
-		t.coachWidth / 2,
-		discY + t.coachHeight * 0.6,
+		t.mandadorWidth / 2,
+		discY + t.mandadorHeight * 0.6,
 		0,
 	)
 	return { cone, hand }
 }
 export function animate(unit, rig, { pose, progress, costume }) {
 	const t = look.silhouettes
-	rig.hand.position.y = -t.coachHeight / 2 + t.coachHeight * 0.6
+	rig.hand.position.y = -t.mandadorHeight / 2 + t.mandadorHeight * 0.6
 	rig.cone.rotation.x = 0
 	rig.hand.position.z = 0
-	if (pose === 'coachTag') rig.hand.position.y += t.coachHeight * progress
-	else if (pose === 'coachRed') {
+	if (pose === 'mandadorTag') rig.hand.position.y += t.mandadorHeight * progress
+	else if (pose === 'mandadorRed') {
 		costume.rotation.y = Math.PI
 		rig.cone.rotation.x = (-progress * Math.PI) / 3
-	} else if (pose === 'coachPass') {
+	} else if (pose === 'mandadorPass') {
 		costume.rotation.z = (-progress * Math.PI) / 8
 		rig.hand.position.z = -progress * t.megaphoneLength
-	} else if (pose === 'coachBasic') costume.rotation.x = (progress * Math.PI) / 12
+	} else if (pose === 'mandadorBasic') costume.rotation.x = (progress * Math.PI) / 12
 	else rig.hand.position.z = 0
 }
 
 // Extra bodies belong to the hero folder; the view runner just forwards the sim lists.
 export function extras(scene) {
 	const group = new THREE.Group()
-	group.name = 'coach-cutouts-and-tethers'
+	group.name = 'mandador-cutouts-and-tethers'
 	scene.add(group)
 	const t = look.silhouettes
 	const grey = makeStyleMaterial('scenery', { flat: true })
 	const ink = makeStyleMaterial('ink', { flat: true })
 	const red = makeStyleMaterial('teamB', { flat: true })
 	const cream = makeStyleMaterial('cream', { flat: true })
-	const body = new THREE.BoxGeometry(t.coachWidth, t.coachHeight, t.coachDepth)
+	const body = new THREE.BoxGeometry(t.mandadorWidth, t.mandadorHeight, t.mandadorDepth)
 	const cone = new THREE.CylinderGeometry(
 		t.megaphoneRadius,
 		t.arrowRadius,
@@ -92,10 +92,10 @@ export function extras(scene) {
 				if (!root) {
 					root = new THREE.Group()
 					const bar = new THREE.Mesh(body, grey)
-					bar.position.y = t.coachHeight / 2
+					bar.position.y = t.mandadorHeight / 2
 					root.add(bar)
 					const megaphone = new THREE.Mesh(cone, ink)
-					megaphone.position.set(0, t.coachHeight / 2, t.megaphoneZ)
+					megaphone.position.set(0, t.mandadorHeight / 2, t.megaphoneZ)
 					root.add(megaphone)
 					root.userData.tell = new THREE.Group()
 					group.add(root.userData.tell, root)
@@ -106,7 +106,7 @@ export function extras(scene) {
 				const tell = root.userData.tell
 				tell.clear()
 				if (c.cast) {
-					const from = coachThrowOrigin({ ...c, x: root.position.x }, bounds, obstacles)
+					const from = mandadorThrowOrigin({ ...c, x: root.position.x }, bounds, obstacles)
 					const end = {
 						x: from.x + c.cast.dir.x * tune.outThrow.range,
 						z: from.z + c.cast.dir.z * tune.outThrow.range,

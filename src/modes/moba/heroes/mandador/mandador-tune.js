@@ -6,5 +6,5 @@ export default {
 
 // The dimension of each number above that its name alone does not settle (src/modes/moba/units.js).
 export const units = {
-	'heroes.coach.cutout.searchStep': 'm',
+	'heroes.mandador.cutout.searchStep': 'm',
 }

@@ -1,7 +1,7 @@
 import { tune } from '../../tune.js'
 import { distance } from '../../../../core/spatial.js'
 
-// E: Pong's ricochet with bodies for walls. One hard serve at the enemy nearest the aim,
+// E: Carambola's ricochet with bodies for walls. One hard serve at the enemy nearest the aim,
 // and the ball pings on through whoever stands closest, softer each time.
 export default {
 	name: 'Pinball',

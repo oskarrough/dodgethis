@@ -6,7 +6,7 @@ import { HEROES, heroDefinition } from '../src/modes/moba/heroes.js'
 const defaults = {
 	map: 'overthrow',
 	difficulty: 'easy',
-	heroId: 'fletcher',
+	heroId: 'ibis',
 	seed: tune.bots.seed,
 	seeded: false,
 	edgePan: true,
@@ -16,7 +16,7 @@ test.each([
 	['bots', 'easy', 'difficulty', 'easy'],
 	['bots', 'normal', 'difficulty', 'normal'],
 	['bots', 'hard', 'difficulty', 'hard'],
-	['hero', 'fletcher', 'heroId', 'fletcher'],
+	['hero', 'ibis', 'heroId', 'ibis'],
 	['seed', '0', 'seed', 0],
 	['seed', '27', 'seed', 27],
 	['seed', '4294967295', 'seed', 4294967295],
@@ -83,7 +83,7 @@ test('hero links accept exactly the playable definitions, including newly comple
 		const warnings = []
 		const playable = Object.hasOwn(HEROES, id) && heroDefinition(id).playable
 		const setup = parseMatchSetup(new URLSearchParams({ hero: id }), {}, (w) => warnings.push(w))
-		expect(setup.heroId).toBe(playable ? id : 'fletcher')
+		expect(setup.heroId).toBe(playable ? id : 'ibis')
 		expect(warnings.length).toBe(playable ? 0 : 1)
 	}
 })

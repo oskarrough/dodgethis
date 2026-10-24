@@ -4,31 +4,31 @@
 			"file": "impact/plate-heavy-001.ogg",
 			"score": 5,
 			"gain": 0.35,
-			"why": "hit, P. Pong family"
+			"why": "hit, Carambola family"
 		},
 		{
 			"file": "impact/plate-medium-001.ogg",
 			"score": 5,
 			"gain": 0.5,
-			"why": "hit, P. Pong family"
+			"why": "hit, Carambola family"
 		},
 		{
 			"file": "impact/plate-light-004.ogg",
 			"score": 5,
 			"gain": 0.45,
-			"why": "hit, P. Pong family"
+			"why": "hit, Carambola family"
 		},
 		{
 			"file": "impact/tin-medium-002.ogg",
 			"score": 5,
 			"gain": 0.35,
-			"why": "hit, P. Pong family"
+			"why": "hit, Carambola family"
 		},
 		{
 			"file": "impact/tin-medium-001.ogg",
 			"score": 5,
 			"gain": 0.3,
-			"why": "hit, P. Pong family"
+			"why": "hit, Carambola family"
 		}
 	],
 	"gloveSlap.impact": [
@@ -36,31 +36,31 @@
 			"file": "impact/soft-medium-001.ogg",
 			"score": 5,
 			"gain": 0.1,
-			"why": "hit, Mitts family"
+			"why": "hit, Kappa family"
 		},
 		{
 			"file": "impact/soft-medium-004.ogg",
 			"score": 5,
 			"gain": 0.1,
-			"why": "hit, Mitts family"
+			"why": "hit, Kappa family"
 		},
 		{
 			"file": "impact/soft-heavy-001.ogg",
 			"score": 5,
 			"gain": 0.15,
-			"why": "hit, Mitts family"
+			"why": "hit, Kappa family"
 		},
 		{
 			"file": "game/player/hit/punch-heavy-004.ogg",
 			"score": 5,
 			"gain": 0.15,
-			"why": "hit, Mitts family"
+			"why": "hit, Kappa family"
 		},
 		{
 			"file": "game/player/hit/punch-heavy-003.ogg",
 			"score": 5,
 			"gain": 0.15,
-			"why": "hit, Mitts family"
+			"why": "hit, Kappa family"
 		}
 	],
 	"loose.hit": [
@@ -68,31 +68,31 @@
 			"file": "impact/wood-light-002.ogg",
 			"score": 5,
 			"gain": 0.45,
-			"why": "hit, Fletcher family"
+			"why": "hit, Ibis family"
 		},
 		{
 			"file": "impact/wood-light-001.ogg",
 			"score": 5,
 			"gain": 0.35,
-			"why": "hit, Fletcher family"
+			"why": "hit, Ibis family"
 		},
 		{
 			"file": "impact/wood-medium-003.ogg",
 			"score": 5,
 			"gain": 0.35,
-			"why": "hit, Fletcher family"
+			"why": "hit, Ibis family"
 		},
 		{
 			"file": "impact/wood-medium-001.ogg",
 			"score": 5,
 			"gain": 0.35,
-			"why": "hit, Fletcher family"
+			"why": "hit, Ibis family"
 		},
 		{
 			"file": "impact/plank-medium-005.ogg",
 			"score": 5,
 			"gain": 0.4,
-			"why": "hit, Fletcher family"
+			"why": "hit, Ibis family"
 		}
 	],
 	"rain.impact": [
@@ -100,31 +100,31 @@
 			"file": "impact/wood-light-005.ogg",
 			"score": 5,
 			"gain": 0.35,
-			"why": "hit, Fletcher family"
+			"why": "hit, Ibis family"
 		},
 		{
 			"file": "impact/wood-light-004.ogg",
 			"score": 5,
 			"gain": 0.35,
-			"why": "hit, Fletcher family"
+			"why": "hit, Ibis family"
 		},
 		{
 			"file": "impact/wood-medium-003.ogg",
 			"score": 5,
 			"gain": 0.3,
-			"why": "hit, Fletcher family"
+			"why": "hit, Ibis family"
 		},
 		{
 			"file": "impact/wood-medium-001.ogg",
 			"score": 5,
 			"gain": 0.3,
-			"why": "hit, Fletcher family"
+			"why": "hit, Ibis family"
 		},
 		{
 			"file": "impact/plank-medium-005.ogg",
 			"score": 5,
 			"gain": 0.3,
-			"why": "hit, Fletcher family"
+			"why": "hit, Ibis family"
 		}
 	],
 	"toss.hit": [
@@ -132,31 +132,31 @@
 			"file": "impact/soft-medium-002.ogg",
 			"score": 5,
 			"gain": 0.05,
-			"why": "hit, Mitts family"
+			"why": "hit, Kappa family"
 		},
 		{
 			"file": "impact/soft-medium-005.ogg",
 			"score": 5,
 			"gain": 0.05,
-			"why": "hit, Mitts family"
+			"why": "hit, Kappa family"
 		},
 		{
 			"file": "impact/soft-heavy-001.ogg",
 			"score": 5,
 			"gain": 0.1,
-			"why": "hit, Mitts family"
+			"why": "hit, Kappa family"
 		},
 		{
 			"file": "game/player/hit/punch-heavy-004.ogg",
 			"score": 5,
 			"gain": 0.05,
-			"why": "hit, Mitts family"
+			"why": "hit, Kappa family"
 		},
 		{
 			"file": "game/player/hit/punch-heavy-003.ogg",
 			"score": 5,
 			"gain": 0.05,
-			"why": "hit, Mitts family"
+			"why": "hit, Kappa family"
 		}
 	],
 	"return.hit": [
@@ -164,31 +164,31 @@
 			"file": "game/player/hit/punch-heavy-003.ogg",
 			"score": 5,
 			"gain": 0.15,
-			"why": "hit, Mitts family"
+			"why": "hit, Kappa family"
 		},
 		{
 			"file": "game/player/hit/punch-heavy-005.ogg",
 			"score": 5,
 			"gain": 0.15,
-			"why": "hit, Mitts family"
+			"why": "hit, Kappa family"
 		},
 		{
 			"file": "game/player/hit/punch-medium-002.ogg",
 			"score": 3.8,
 			"gain": 0.15,
-			"why": "hit, Mitts family"
+			"why": "hit, Kappa family"
 		},
 		{
 			"file": "game/player/hit/punch-medium-001.ogg",
 			"score": 3.7199999999999998,
 			"gain": 0.15,
-			"why": "hit, Mitts family"
+			"why": "hit, Kappa family"
 		},
 		{
 			"file": "impact/soft-medium-001.ogg",
 			"score": 3.5,
 			"gain": 0.1,
-			"why": "hit, Mitts family"
+			"why": "hit, Kappa family"
 		}
 	],
 	"basic.shot": [
@@ -484,7 +484,7 @@
 			"file": "popup/woosh-003.wav",
 			"score": 3.76,
 			"gain": 0.8,
-			"why": "cast, P. Pong family"
+			"why": "cast, Carambola family"
 		},
 		{
 			"file": "rpg/knifeslice-002.ogg",
@@ -508,7 +508,7 @@
 			"file": "popup/woosh-001.wav",
 			"score": 2.96,
 			"gain": 1.5,
-			"why": "cast, P. Pong family"
+			"why": "cast, Carambola family"
 		}
 	],
 	"bank.shot": [
@@ -566,13 +566,13 @@
 			"file": "misc/drop-001.ogg",
 			"score": 2,
 			"gain": 0.15,
-			"why": "Mitts family"
+			"why": "Kappa family"
 		},
 		{
 			"file": "misc/drop-003.ogg",
 			"score": 2,
 			"gain": 0.1,
-			"why": "Mitts family"
+			"why": "Kappa family"
 		}
 	],
 	"cushion.cast": [
@@ -586,25 +586,25 @@
 			"file": "popup/woosh-001.wav",
 			"score": 2.96,
 			"gain": 1.5,
-			"why": "cast, P. Pong family"
+			"why": "cast, Carambola family"
 		},
 		{
 			"file": "popup/woosh-003.wav",
 			"score": 2.26,
 			"gain": 0.85,
-			"why": "cast, P. Pong family"
+			"why": "cast, Carambola family"
 		},
 		{
 			"file": "tap/button-004.wav",
 			"score": 2,
 			"gain": 0.4,
-			"why": "P. Pong family"
+			"why": "Carambola family"
 		},
 		{
 			"file": "tap/button-006.wav",
 			"score": 2,
 			"gain": 0.95,
-			"why": "P. Pong family"
+			"why": "Carambola family"
 		}
 	],
 	"dive.cast": [
@@ -618,25 +618,25 @@
 			"file": "misc/drop-001.ogg",
 			"score": 2,
 			"gain": 0.1,
-			"why": "Mitts family"
+			"why": "Kappa family"
 		},
 		{
 			"file": "misc/drop-003.ogg",
 			"score": 2,
 			"gain": 0.1,
-			"why": "Mitts family"
+			"why": "Kappa family"
 		},
 		{
 			"file": "tap/click-soft.ogg",
 			"score": 2,
 			"gain": 0.7,
-			"why": "Mitts family"
+			"why": "Kappa family"
 		},
 		{
 			"file": "impact/soft-medium-001.ogg",
 			"score": 2,
 			"gain": 0.05,
-			"why": "Mitts family"
+			"why": "Kappa family"
 		}
 	],
 	"gloveSlap.cast": [
@@ -644,31 +644,31 @@
 			"file": "misc/drop-003.ogg",
 			"score": 2,
 			"gain": 0.05,
-			"why": "Mitts family"
+			"why": "Kappa family"
 		},
 		{
 			"file": "misc/drop-002.ogg",
 			"score": 2,
 			"gain": 0.1,
-			"why": "Mitts family"
+			"why": "Kappa family"
 		},
 		{
 			"file": "tap/click-soft.ogg",
 			"score": 2,
 			"gain": 0.65,
-			"why": "Mitts family"
+			"why": "Kappa family"
 		},
 		{
 			"file": "impact/soft-medium-001.ogg",
 			"score": 2,
 			"gain": 0.05,
-			"why": "Mitts family"
+			"why": "Kappa family"
 		},
 		{
 			"file": "impact/soft-medium-004.ogg",
 			"score": 2,
 			"gain": 0.05,
-			"why": "Mitts family"
+			"why": "Kappa family"
 		}
 	],
 	"loose.cast": [
@@ -676,7 +676,7 @@
 			"file": "rpg/knifeslice-002.ogg",
 			"score": 5,
 			"gain": 0.05,
-			"why": "cast, Fletcher family"
+			"why": "cast, Ibis family"
 		},
 		{
 			"file": "digital/phaserup-007.ogg",
@@ -694,13 +694,13 @@
 			"file": "impact/wood-light-002.ogg",
 			"score": 2,
 			"gain": 0.15,
-			"why": "Fletcher family"
+			"why": "Ibis family"
 		},
 		{
 			"file": "impact/wood-light-001.ogg",
 			"score": 2,
 			"gain": 0.1,
-			"why": "Fletcher family"
+			"why": "Ibis family"
 		}
 	],
 	"loose.shot": [
@@ -732,7 +732,7 @@
 			"file": "impact/wood-light-002.ogg",
 			"score": 2,
 			"gain": 0.1,
-			"why": "Fletcher family"
+			"why": "Ibis family"
 		}
 	],
 	"swap.cast": [
@@ -740,31 +740,31 @@
 			"file": "popup/woosh-003.wav",
 			"score": 2.26,
 			"gain": 0.85,
-			"why": "cast, P. Pong family"
+			"why": "cast, Carambola family"
 		},
 		{
 			"file": "tap/button-004.wav",
 			"score": 2,
 			"gain": 0.4,
-			"why": "P. Pong family"
+			"why": "Carambola family"
 		},
 		{
 			"file": "tap/button-006.wav",
 			"score": 2,
 			"gain": 0.95,
-			"why": "P. Pong family"
+			"why": "Carambola family"
 		},
 		{
 			"file": "tap/click-005.ogg",
 			"score": 2,
 			"gain": 0.05,
-			"why": "P. Pong family"
+			"why": "Carambola family"
 		},
 		{
 			"file": "tap/click-003.ogg",
 			"score": 2,
 			"gain": 0.1,
-			"why": "P. Pong family"
+			"why": "Carambola family"
 		}
 	],
 	"toss.cast": [
@@ -772,31 +772,31 @@
 			"file": "misc/drop-004.ogg",
 			"score": 2,
 			"gain": 0.1,
-			"why": "Mitts family"
+			"why": "Kappa family"
 		},
 		{
 			"file": "tap/click-soft.ogg",
 			"score": 2,
 			"gain": 0.95,
-			"why": "Mitts family"
+			"why": "Kappa family"
 		},
 		{
 			"file": "impact/soft-medium-002.ogg",
 			"score": 2,
 			"gain": 0.05,
-			"why": "Mitts family"
+			"why": "Kappa family"
 		},
 		{
 			"file": "impact/soft-medium-005.ogg",
 			"score": 2,
 			"gain": 0.05,
-			"why": "Mitts family"
+			"why": "Kappa family"
 		},
 		{
 			"file": "impact/soft-heavy-001.ogg",
 			"score": 2,
 			"gain": 0.1,
-			"why": "Mitts family"
+			"why": "Kappa family"
 		}
 	],
 	"toss.shot": [
@@ -822,13 +822,13 @@
 			"file": "impact/soft-medium-002.ogg",
 			"score": 2,
 			"gain": 0.05,
-			"why": "Mitts family"
+			"why": "Kappa family"
 		},
 		{
 			"file": "impact/soft-medium-005.ogg",
 			"score": 2,
 			"gain": 0.05,
-			"why": "Mitts family"
+			"why": "Kappa family"
 		}
 	],
 	"vault.cast": [
@@ -836,7 +836,7 @@
 			"file": "rpg/knifeslice-002.ogg",
 			"score": 3.5,
 			"gain": 0.1,
-			"why": "cast, Fletcher family"
+			"why": "cast, Ibis family"
 		},
 		{
 			"file": "digital/phaserup-006.ogg",
@@ -848,19 +848,19 @@
 			"file": "impact/wood-light-003.ogg",
 			"score": 2,
 			"gain": 0.1,
-			"why": "Fletcher family"
+			"why": "Ibis family"
 		},
 		{
 			"file": "misc/pluck-002.ogg",
 			"score": 2,
 			"gain": 0.1,
-			"why": "Fletcher family"
+			"why": "Ibis family"
 		},
 		{
 			"file": "tap/tap-wooden.wav",
 			"score": 2,
 			"gain": 0.3,
-			"why": "Fletcher family"
+			"why": "Ibis family"
 		}
 	],
 	"return.cast": [
@@ -868,25 +868,25 @@
 			"file": "impact/soft-medium-003.ogg",
 			"score": 2,
 			"gain": 0.05,
-			"why": "Mitts family"
+			"why": "Kappa family"
 		},
 		{
 			"file": "impact/soft-heavy-001.ogg",
 			"score": 2,
 			"gain": 0.1,
-			"why": "Mitts family"
+			"why": "Kappa family"
 		},
 		{
 			"file": "game/player/hit/punch-heavy-004.ogg",
 			"score": 2,
 			"gain": 0.1,
-			"why": "Mitts family"
+			"why": "Kappa family"
 		},
 		{
 			"file": "game/player/hit/punch-heavy-003.ogg",
 			"score": 2,
 			"gain": 0.05,
-			"why": "Mitts family"
+			"why": "Kappa family"
 		},
 		{
 			"file": "popup/woosh-003.wav",
@@ -906,13 +906,13 @@
 			"file": "game/player/hit/punch-heavy-004.ogg",
 			"score": 2,
 			"gain": 0.05,
-			"why": "Mitts family"
+			"why": "Kappa family"
 		},
 		{
 			"file": "game/player/hit/punch-heavy-003.ogg",
 			"score": 2,
 			"gain": 0.05,
-			"why": "Mitts family"
+			"why": "Kappa family"
 		},
 		{
 			"file": "game/player/hit/sword-003.wav",
@@ -1636,19 +1636,19 @@
 			"file": "open-close/pop-down.ogg",
 			"score": 6,
 			"gain": 0.05,
-			"why": "name fits, P. Pong family"
+			"why": "name fits, Carambola family"
 		},
 		{
 			"file": "open-close/pop-up-off.ogg",
 			"score": 6,
 			"gain": 0.05,
-			"why": "name fits, P. Pong family"
+			"why": "name fits, Carambola family"
 		},
 		{
 			"file": "open-close/pop-up-on.ogg",
 			"score": 6,
 			"gain": 0.1,
-			"why": "name fits, P. Pong family"
+			"why": "name fits, Carambola family"
 		},
 		{
 			"file": "error/error-015.ogg",
@@ -1668,31 +1668,31 @@
 			"file": "game/player/hit/punch-heavy-002.ogg",
 			"score": 6,
 			"gain": 0.1,
-			"why": "name fits, Mitts family"
+			"why": "name fits, Kappa family"
 		},
 		{
 			"file": "game/player/hit/punch-heavy-001.ogg",
 			"score": 6,
 			"gain": 0.1,
-			"why": "name fits, Mitts family"
+			"why": "name fits, Kappa family"
 		},
 		{
 			"file": "game/player/hit/punch-medium-002.ogg",
 			"score": 4.8,
 			"gain": 0.1,
-			"why": "name fits, Mitts family"
+			"why": "name fits, Kappa family"
 		},
 		{
 			"file": "game/player/hit/punch-medium-001.ogg",
 			"score": 4.72,
 			"gain": 0.1,
-			"why": "name fits, Mitts family"
+			"why": "name fits, Kappa family"
 		},
 		{
 			"file": "tap/click-soft.ogg",
 			"score": 4.5,
 			"gain": 1.25,
-			"why": "name fits, Mitts family"
+			"why": "name fits, Kappa family"
 		}
 	],
 	"catchExpired": [

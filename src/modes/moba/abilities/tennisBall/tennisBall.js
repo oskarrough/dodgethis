@@ -4,5 +4,10 @@ export default {
 	name: 'Tennis ball',
 	kind: 'homing',
 	tell: 'line',
-	effects: { cast: 'tennisWindup', projectile: 'tennisBall', hit: 'tennisHit', pose: 'coachBasic' },
+	effects: {
+		cast: 'tennisWindup',
+		projectile: 'tennisBall',
+		hit: 'tennisHit',
+		pose: 'mandadorBasic',
+	},
 }

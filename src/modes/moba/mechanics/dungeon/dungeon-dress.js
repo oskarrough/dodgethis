@@ -3,7 +3,7 @@ import { tune } from '../../tune.js'
 
 // Temporary Warden costume, distinct windups without another hero in the draft.
 export function dressBoss(body) {
-	const dispose = dressHero(body, 'brew', 'B')
+	const dispose = dressHero(body, 'oolong', 'B')
 	const pose = body.poseAbility
 	const costume = body.mesh.getObjectByName('moba-cast-pose')
 	body.mesh.name = 'moba-warden'

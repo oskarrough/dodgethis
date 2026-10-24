@@ -5,7 +5,7 @@ export default {
 	terms: {
 		momentum: [
 			'Momentum',
-			"Fletcher's trait: each Loose that hits a hero takes {momentum.reduction} off Vault's cooldown.",
+			"Ibis's trait: each Loose that hits a hero takes {momentum.reduction} off Vault's cooldown.",
 		],
 	},
 	unit: {
@@ -20,7 +20,7 @@ export default {
 			},
 		},
 	},
-	name: 'Fletcher',
+	name: 'Ibis',
 	order: 1,
 	color: 'seaTeal',
 	silhouette: 'circle',

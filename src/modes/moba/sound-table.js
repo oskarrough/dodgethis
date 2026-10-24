@@ -21,7 +21,7 @@ const partAbout = {
 	hit: 'projectile hits',
 	impact: 'lands on its targets',
 }
-const owners = { return: HEROES.mitts.name }
+const owners = { return: HEROES.kappa.name }
 for (const hero of Object.values(HEROES))
 	for (const ability of [...Object.values(hero.abilities), ABILITIES[hero.basic?.id]])
 		if (ability) owners[ability.id] ??= hero.name
@@ -81,9 +81,9 @@ export const uses = {
 	shielded: use('Combat', 'A shield absorbs a hit', 'shielded'),
 	nearMiss: use('Combat', 'Your shot just misses someone', 'close'),
 	'nearMiss.passed': use('Combat', 'A shot just misses you (louder when closer)', 'whoosh'),
-	boardExpired: use(HEROES.pong.name, 'A bank board runs out', 'boardExpired'),
-	caught: use(HEROES.mitts.name, 'Catch grabs a shot', 'caught'),
-	catchExpired: use(HEROES.mitts.name, 'Catch ends empty', 'catchExpired'),
+	boardExpired: use(HEROES.carambola.name, 'A bank board runs out', 'boardExpired'),
+	caught: use(HEROES.kappa.name, 'Catch grabs a shot', 'caught'),
+	catchExpired: use(HEROES.kappa.name, 'Catch ends empty', 'catchExpired'),
 	channelCancelled: use('Combat', 'A channel is cancelled', 'channelCancelled'),
 	channelEnd: use('Combat', 'A channel completes', 'channelEnd'),
 	recallStart: use('Movement', 'A hero opens a tear home', 'recallStart'),
@@ -92,7 +92,7 @@ export const uses = {
 	recallCancelled: use('Movement', 'A recall tear collapses, broken or unused', 'recallCancelled'),
 	recallEnd: use('Movement', 'The spawn tear spits a recalled hero out', 'recallEnd'),
 	denied: use('Combat', "An ability you pressed isn't ready", 'ballDenied'),
-	cushion: use(HEROES.pong.name, 'Cushion softens a shot passing through', 'blocked'),
+	cushion: use(HEROES.carambola.name, 'Cushion softens a shot passing through', 'blocked'),
 
 	out: use('Outs', "The ref's whistle on a takedown (tweets count the streak)", 'whistle'),
 	death: use('Outs', "A hero's card slaps the ground", 'cardSlap'),

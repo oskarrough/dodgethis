@@ -11,7 +11,7 @@ export default {
 		cast: 'outThrowWindup',
 		projectile: 'outThrowBall',
 		hit: 'outThrowHit',
-		pose: 'coachThrow',
+		pose: 'mandadorThrow',
 	},
 	card: {
 		sentence: `While you're down, throws from the touchline up to {range} for {damage:damage}; each hero hit takes {deathRefund} off your respawn.`,

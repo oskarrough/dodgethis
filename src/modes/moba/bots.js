@@ -29,7 +29,7 @@ export function interceptTime(from, target, speed) {
 	return roots.length ? Math.min(...roots) : Math.sqrt(c) / speed
 }
 
-// Bots fill a team with Mitts and Fletcher; the enemy's third seat is a seeded random listed hero.
+// Bots fill a team with Kappa and Ibis; the enemy's third seat is a seeded random listed hero.
 export function practiceRoster(
 	local = 'local',
 	difficulty = 'easy',
@@ -69,7 +69,7 @@ export function practiceRoster(
 			const id = `bot-${team}-${i}`
 			if (!claimed.includes(id)) ids.push(id)
 		}
-		const lineup = ['mitts', 'fletcher', listed[Math.floor(random() * listed.length)]]
+		const lineup = ['kappa', 'ibis', listed[Math.floor(random() * listed.length)]]
 		let next = 0
 		return ids.map((id, i) => ({
 			id,

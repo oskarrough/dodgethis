@@ -137,9 +137,9 @@ const PART = {
 	cast: /woosh|swish|cloth|belt|draw|charge|phaserup|powerup|rising|knife/,
 }
 const FAMILY = {
-	Fletcher: /wood|plank|pluck|string|knife|arrow/,
-	Mitts: /soft|punch|leather|cloth|slap|drop/,
-	'P. Pong': /tin|plate|tap|pop|cork/,
+	Ibis: /wood|plank|pluck|string|knife|arrow/,
+	Kappa: /soft|punch|leather|cloth|slap|drop/,
+	Carambola: /tin|plate|tap|pop|cork/,
 	Structures: /metal|plate|bell|mining|tin-medium/,
 	Ball: /glass|bell/,
 	Minions: /generic|monster|wood-light|soft-medium/,

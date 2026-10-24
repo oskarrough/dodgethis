@@ -5,7 +5,7 @@ export default {
 	castColor: '#1fae4a',
 	tell: 'circle',
 	held: 'circle',
-	effects: { cast: true, impact: true, pose: 'menderMend' },
+	effects: { cast: true, impact: true, pose: 'salviaMend' },
 	stages: {
 		release: [
 			{

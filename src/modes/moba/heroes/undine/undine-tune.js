@@ -28,6 +28,6 @@ export default {
 
 // The dimension of each number above that its name alone does not settle (src/modes/moba/units.js).
 export const units = {
-	'heroes.wata.view.releaseSnap': 's',
-	'heroes.wata.view.releaseRecover': 's',
+	'heroes.undine.view.releaseSnap': 's',
+	'heroes.undine.view.releaseRecover': 's',
 }

@@ -5,6 +5,19 @@ import { DEFAULT_HERO, HEROES, heroDefinition } from './heroes.js'
 // Maps that changed their id, so old links still land.
 const renamedMaps = { hollowMesa: 'altamesa' }
 
+// Heroes that changed their id, so old links (?hero=fletcher) still land.
+const renamedHeroes = {
+	fletcher: 'ibis',
+	mitts: 'kappa',
+	pong: 'carambola',
+	coach: 'mandador',
+	hook: 'lasso',
+	brew: 'oolong',
+	wata: 'undine',
+	mender: 'salvia',
+}
+const heroParam = (id) => renamedHeroes[id] ?? id
+
 // Front screens and direct entry use the same validated match setup.
 export function parseMatchSetup(query, options = {}, warn = console.warn) {
 	const read = (param, value, fallback, valid) => {
@@ -26,7 +39,7 @@ export function parseMatchSetup(query, options = {}, warn = console.warn) {
 			Object.entries(options.picks).map(([id, pick]) => [
 				id,
 				{
-					heroId: read('hero', pick.heroId, undefined, playable),
+					heroId: read('hero', heroParam(pick.heroId), undefined, playable),
 					...(pick.team == null
 						? {}
 						: {
@@ -47,7 +60,7 @@ export function parseMatchSetup(query, options = {}, warn = console.warn) {
 		difficulty: read('bots', options.difficulty ?? query.get('bots'), 'easy', (v) =>
 			['easy', 'normal', 'hard'].includes(v),
 		),
-		heroId: read('hero', options.heroId ?? query.get('hero'), DEFAULT_HERO, playable),
+		heroId: read('hero', heroParam(options.heroId ?? query.get('hero')), DEFAULT_HERO, playable),
 		// Re-parsing a parsed setup keeps whether a seed was asked for, not just its value.
 		seeded: options.seeded ?? seed != null,
 		seed: Number(

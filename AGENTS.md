@@ -11,7 +11,7 @@ A web game: two modes, dodgeball and a MOBA, on one engine.
 ## Navigating
 
 - Screens: `/` home (splash) → lobby → match, plus paused and result; `dt.screen()` says which
-- `?mode=moba|dodgeball`, `&play` skips the lobby, `&map=overthrow|flagfall`, `&hero=fletcher`
+- `?mode=moba|dodgeball`, `&play` skips the lobby, `&map=overthrow|flagfall`, `&hero=ibis`
 - `&bots=easy|normal|hard`, `&seed=2`, `&debug` for the panel, `&bots-only`, `&fog=0`, `&replay=<tape>`
 - `/CODE` joins an online room
 

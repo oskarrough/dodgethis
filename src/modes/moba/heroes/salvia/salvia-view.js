@@ -5,9 +5,9 @@ import { tune } from '../../tune.js'
 import { SLOTS } from '../../sim-kit.js'
 import { createEffects, glowMaterial, link, linkGeometry, shellMaterial } from '../../effects.js'
 
-// Coach's bar and megaphone, without the touchline cutout.
+// Mandador's bar and megaphone, without the touchline cutout.
 export function dress({ torso, part, own, discY, t, materials }) {
-	torso.geometry = own(new THREE.BoxGeometry(t.coachWidth, t.coachHeight, t.coachDepth))
+	torso.geometry = own(new THREE.BoxGeometry(t.mandadorWidth, t.mandadorHeight, t.mandadorDepth))
 	const cone = part(
 		new THREE.CylinderGeometry(
 			t.megaphoneRadius,
@@ -30,8 +30,8 @@ export function dress({ torso, part, own, discY, t, materials }) {
 	const hand = part(
 		new THREE.SphereGeometry(t.fingerRadius, t.segments, 6),
 		materials.cream,
-		t.coachWidth / 2,
-		discY + t.coachHeight * 0.6,
+		t.mandadorWidth / 2,
+		discY + t.mandadorHeight * 0.6,
 		0,
 	)
 	// Mend's beam leaves from the megaphone's mouth and follows it as the cast tilts it.
@@ -43,16 +43,16 @@ export function dress({ torso, part, own, discY, t, materials }) {
 
 export function animate(unit, rig, { pose, progress, costume }) {
 	const t = look.silhouettes
-	rig.hand.position.y = -t.coachHeight / 2 + t.coachHeight * 0.6
+	rig.hand.position.y = -t.mandadorHeight / 2 + t.mandadorHeight * 0.6
 	rig.hand.position.z = 0
 	rig.cone.rotation.x = 0
-	if (pose === 'menderMend') {
-		rig.hand.position.y += t.coachHeight * progress
+	if (pose === 'salviaMend') {
+		rig.hand.position.y += t.mandadorHeight * progress
 		rig.cone.rotation.x = (-progress * Math.PI) / 8
-	} else if (pose === 'menderWard') {
+	} else if (pose === 'salviaWard') {
 		rig.hand.position.z = -t.megaphoneLength
 		costume.rotation.z = -Math.PI / 8
-	} else if (pose === 'coachBasic') costume.rotation.x = (progress * Math.PI) / 12
+	} else if (pose === 'mandadorBasic') costume.rotation.x = (progress * Math.PI) / 12
 }
 
 const easeOut = (x) => 1 - (1 - x) ** 3
@@ -128,7 +128,7 @@ export function extras(scene) {
 			const time = performance.now() / 1000
 			effects.update(dt)
 
-			// Aim preview: your Mender always shows whom the next Mend or Ward would pick.
+			// Aim preview: your Salvia always shows whom the next Mend or Ward would pick.
 			preview.visible = previewLine.visible = false
 			const kit = unit?.definition?.abilities ?? {}
 			const spell = Object.entries(kit).find(

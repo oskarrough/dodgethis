@@ -1,14 +1,14 @@
 import { tune } from '../../tune.js'
 import { distance } from '../../../../core/spatial.js'
 
-// E: Coach chalks a ring on the stone. Her side runs through it; the other side wades.
+// E: Mandador chalks a ring on the stone. Her side runs through it; the other side wades.
 export default {
 	name: 'Rally ring',
 	kind: 'instant',
 	tell: 'circle',
 	held: 'circle',
 	icon: '<svg viewBox="0 0 48 48" aria-hidden="true"><circle class="tone" cx="24" cy="24" r="19"/><circle class="cream" cx="24" cy="24" r="13"/><path class="ink-line" d="M15 30 L24 16 L33 30 M19 24 H29"/></svg>',
-	effects: { cast: true, pose: 'coachRed' },
+	effects: { cast: true, pose: 'mandadorRed' },
 	// Ring the closest enemy hero when a teammate is already on them: the chase speeds up, the runner slows.
 	bot: {
 		priority: 18,

@@ -47,7 +47,7 @@ export default {
 	aimAssist: true,
 	tell: 'line',
 	held: 'line',
-	effects: { cast: 'passWindup', projectile: 'passBall', hit: 'passHit', pose: 'coachPass' },
+	effects: { cast: 'passWindup', projectile: 'passBall', hit: 'passHit', pose: 'mandadorPass' },
 	card: {
 		sentence: `Throws a ball up to {range}: the first hero hit is healed {healAmount} if an ally, or takes {damage:damage} and a {slow} [[Slow]] for {duration} if an enemy.`,
 	},

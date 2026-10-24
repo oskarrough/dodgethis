@@ -1,4 +1,4 @@
-import { wataBot } from './wata-bot.js'
+import { undineBot } from './undine-bot.js'
 
 export default {
 	unit: {
@@ -7,9 +7,9 @@ export default {
 		speed: 'speed',
 		attack: 'waterFlick',
 		kit: { slot1: 'balloon', slot2: 'sprinkler', slot3: 'slide' },
-		brain: wataBot,
+		brain: undineBot,
 	},
-	name: 'Wata',
+	name: 'Undine',
 	order: 6,
 	color: 'seaTeal',
 	silhouette: 'circle',

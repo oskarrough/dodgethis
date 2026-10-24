@@ -3,7 +3,7 @@ import { sweepHit } from '../../obstacles.js'
 
 export default {
 	kind: 'dash',
-	// The generic dash ignores first-body contact; Brew's hero hook owns every kick.
+	// The generic dash ignores first-body contact; Oolong's hero hook owns every kick.
 	bot: false,
 	tell: 'line',
 	held: 'line',

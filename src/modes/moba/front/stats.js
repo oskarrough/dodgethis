@@ -37,8 +37,8 @@ export function heroStats(kit, front, level = 1, heroId = DEFAULT_HERO) {
 	}
 }
 
-// Fletcher's flight and dodging numbers, behind his extra numbers-panel cards.
-export function fletcherStats(kit, front, level = 1) {
+// Ibis's flight and dodging numbers, behind his extra numbers-panel cards.
+export function ibisStats(kit, front, level = 1) {
 	const mul = growth(front, level)
 	const qClear = kit.loose.radius + kit.hero.radius
 	const rainClear = kit.rain.radius + kit.hero.radius

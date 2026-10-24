@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { makeStyleMaterial } from '../../../../core/stylepass.js'
 
-// P. Pong's build, in metres and radians. Forward is -z; heights are above the foot disc.
+// Carambola's build, in metres and radians. Forward is -z; heights are above the foot disc.
 const view = {
 	bodyRadius: 0.58,
 	bodyHeight: 0.72,
@@ -83,7 +83,7 @@ function blade() {
 		.rotateX(-Math.PI / 2)
 }
 
-// P. Pong: a stocky stone-beaked bruiser in a cream tunic with a team band, his wooden paddle open at his side.
+// Carambola: a stocky stone-beaked bruiser in a cream tunic with a team band, his wooden paddle open at his side.
 export function dress({ costume, torso, discY, part, own, roots, t, materials }) {
 	const { ink, cream, team } = materials
 	const stone = makeStyleMaterial('scenery', { flat: true })

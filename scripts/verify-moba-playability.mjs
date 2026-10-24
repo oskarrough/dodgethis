@@ -113,7 +113,7 @@ try {
 			await dt.key('KeyN'); proof.assert(dt.game.lobby.numbers.open,'Numbers did not open');
 			await dt.key('KeyN'); proof.assert(!dt.game.lobby.numbers.open,'Numbers did not close');
 			await dt.key('KeyH'); await dt.key('KeyG');
-			proof.assert(dt.game.lobby.setup.heroId==='mitts','H did not pick Mitts');
+			proof.assert(dt.game.lobby.setup.heroId==='kappa','H did not pick Kappa');
 			return true;
 		`)
 		browser('wait', '--timeout', '5000', '--fn', 'dt.game.lobby.setup.difficulty==="normal"')
@@ -125,7 +125,7 @@ try {
 			proof.assert(!document.querySelector('.moba-front'),'Loading did not finish');
 			proof.assert(document.querySelector('.splash').hidden,'Dodgeball splash leaked into MOBA');
 			proof.assert(document.querySelector('.overlay').hidden,'Queued Start paused the match');
-			proof.assert(proof.local().heroId==='mitts','Match lost the chosen hero');
+			proof.assert(proof.local().heroId==='kappa','Match lost the chosen hero');
 			return true;
 		`)
 	})
@@ -173,7 +173,7 @@ try {
 		`)
 		browser('wait', '.front-lobby')
 		evaluate(`
-			proof.assert(dt.screen()==='lobby'&&dt.game.lobby.setup.heroId==='mitts','Hero select lost the pick');
+			proof.assert(dt.screen()==='lobby'&&dt.game.lobby.setup.heroId==='kappa','Hero select lost the pick');
 			await dt.key('Escape'); proof.assert(dt.screen()==='splash','Esc did not return to splash');
 			return true;
 		`)

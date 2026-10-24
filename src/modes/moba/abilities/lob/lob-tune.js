@@ -20,7 +20,7 @@ export default {
 	view: {
 		height: 11, // how far up the ball goes before it turns
 		ballRadius: 0.28,
-		up: 0.3, // share of the delay spent rising out of Pong's hand
+		up: 0.3, // share of the delay spent rising out of Carambola's hand
 		shadowFrom: 0.15, // the shadow's first size, against the mark
 		ringWidth: 0.06,
 		ground: 0.015,

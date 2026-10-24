@@ -6,7 +6,7 @@ export default {
 		attack: 'yoYoFlick',
 		kit: { slot1: 'throw', slot2: 'tangle', slot3: 'aroundTheWorld' },
 	},
-	name: 'Hook',
+	name: 'Lasso',
 	order: 4,
 	color: 'terracotta',
 	silhouette: 'crescent',

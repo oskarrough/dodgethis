@@ -1,6 +1,6 @@
 import { tune } from '../../tune.js'
-import { coachCutoutDeath, coachCutoutTick, coachCutoutFrame } from './coach-cutout.js'
-import { coachBotDead } from './coach-bots.js'
+import { mandadorCutoutDeath, mandadorCutoutTick, mandadorCutoutFrame } from './mandador-cutout.js'
+import { mandadorBotDead } from './mandador-bots.js'
 
 export default {
 	unit: {
@@ -10,15 +10,15 @@ export default {
 		attack: 'tennisBall',
 		kit: { slot1: 'pass', slot2: 'tagOut', slot3: 'rallyRing' },
 		traits: {
-			onDeath: coachCutoutDeath,
-			onTick: coachCutoutTick,
+			onDeath: mandadorCutoutDeath,
+			onTick: mandadorCutoutTick,
 			onHit({ hero, shot, target, tick, ticks }) {
 				if (hero.dead && shot.ability === 'outThrow' && target.hero)
 					hero.respawnTick = Math.max(tick, hero.respawnTick - ticks(tune.outThrow.deathRefund))
 			},
 		},
 	},
-	name: 'Coach',
+	name: 'Mandador',
 	order: 4,
 	color: 'cream',
 	silhouette: 'bar',
@@ -29,6 +29,6 @@ export default {
 		chip: `{outThrow.deathRefund}`,
 		summary: `While dead, walk the touchline and throw. Each hero hit takes {outThrow.deathRefund} off your death timer.`,
 	}),
-	botDead: coachBotDead,
-	outOfPlay: coachCutoutFrame,
+	botDead: mandadorBotDead,
+	outOfPlay: mandadorCutoutFrame,
 }

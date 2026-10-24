@@ -17,7 +17,7 @@ export default {
 	},
 	// Who the Warden turns on: damage times `multiplier` per hero, healing at `heal`, and a new
 	// target must beat the old by `switch`.
-	threat: { multiplier: { brew: 3 }, heal: 0.5, switch: 1.1 },
+	threat: { multiplier: { oolong: 3 }, heal: 0.5, switch: 1.1 },
 }
 
 // The dimension of each number above that its name alone does not settle (src/modes/moba/units.js).

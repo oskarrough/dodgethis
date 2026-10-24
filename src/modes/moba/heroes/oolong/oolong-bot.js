@@ -2,11 +2,11 @@ import { STEP } from '../../../../core/app.js'
 import { tune } from '../../tune.js'
 import { sweepHit } from '../../obstacles.js'
 import { distance } from '../../../../core/spatial.js'
-// Only Brew's own HP is live; targets and threats come from the delayed public view.
-export function brewBot(ctx) {
+// Only Oolong's own HP is live; targets and threats come from the delayed public view.
+export function oolongBot(ctx) {
 	const { h, p, now, frame, enemies, perceived, cast, safe } = ctx
-	const b = tune.heroes.brew.bot
-	const memory = (h.brewBot ??= { hp: h.hp, tick: now, burst: 0 })
+	const b = tune.heroes.oolong.bot
+	const memory = (h.oolongBot ??= { hp: h.hp, tick: now, burst: 0 })
 	if (now - memory.tick > b.burstWindow / STEP) memory.burst = 0
 	if (h.hp < memory.hp) {
 		memory.burst += memory.hp - h.hp

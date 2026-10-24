@@ -14,7 +14,7 @@ export default {
 		cast: { count: 4, speed: 1.5, life: 0.2, size: 0.07 },
 		impact: { count: 16, speed: 2, life: 0.35, size: 0.12 },
 	},
-	// The bubble on a warded ally (heroes/mender/mender-view.js).
+	// The bubble on a warded ally (heroes/salvia/salvia-view.js).
 	view: {
 		color: '#3fa9ff',
 		radius: 0.95,

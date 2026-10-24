@@ -3,7 +3,7 @@ export default {
 	terms: {
 		pocket: [
 			'Pocket',
-			"Mitts's trait: a caught shot waits in the glove for {catching.pocketLife}, and Toss throws it back.",
+			"Kappa's trait: a caught shot waits in the glove for {catching.pocketLife}, and Toss throws it back.",
 		],
 	},
 	unit: {
@@ -19,7 +19,7 @@ export default {
 			},
 		},
 	},
-	name: 'Mitts',
+	name: 'Kappa',
 	order: 2,
 	color: 'terracotta',
 	silhouette: 'square',

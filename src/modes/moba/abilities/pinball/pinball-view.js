@@ -5,7 +5,7 @@ import { tune } from '../../tune.js'
 
 const GROUND = tune.map.printLayers.seams + 0.006
 
-// While Pong winds up, a dashed line runs to whoever is served. Each hit sends the ball
+// While Carambola winds up, a dashed line runs to whoever is served. Each hit sends the ball
 // hopping from the last body to the next, one short arc per link, with a ring where it lands.
 export function extras(scene) {
 	const group = new THREE.Group()
@@ -54,7 +54,7 @@ export function extras(scene) {
 		},
 		update({ units = [], dt = 0 }) {
 			clock += dt
-			// The serve's tell: dashes from Pong to the locked target, or where it stood.
+			// The serve's tell: dashes from Carambola to the locked target, or where it stood.
 			let used = 0
 			for (const u of units) {
 				if (u.dead || u.cast?.ability !== 'pinball') continue

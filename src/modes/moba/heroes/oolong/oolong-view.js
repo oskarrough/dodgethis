@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { tune } from '../../tune.js'
 
 export function dress({ torso, part, own, discY, materials }) {
-	const v = tune.heroes.brew.view
+	const v = tune.heroes.oolong.view
 	torso.geometry = own(new THREE.CylinderGeometry(v.width, v.width, v.height, 6))
 	// Team accent: a sash round the middle, proud of the ink border.
 	part(
@@ -38,7 +38,7 @@ export function dress({ torso, part, own, discY, materials }) {
 	return { jug, palm, jugY: discY + v.jugY, swig: 0, last: null }
 }
 export function animate(unit, rig, { costume, pose, progress, time, alpha }) {
-	const v = tune.heroes.brew.view
+	const v = tune.heroes.oolong.view
 	// Ease the drink in and out instead of snapping between poses.
 	const drinking = unit?.channel?.ability === 'swig'
 	const step = rig.last === null ? 0 : Math.max(0, time - rig.last)

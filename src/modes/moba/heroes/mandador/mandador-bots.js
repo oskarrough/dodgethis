@@ -1,20 +1,20 @@
 import { neutralFrame } from '../../../../core/intents.js'
 import { tune } from '../../tune.js'
 import { botClearLine } from '../../ability-bots.js'
-import { coachThrowOrigin } from './coach-cutout.js'
+import { mandadorThrowOrigin } from './mandador-cutout.js'
 import { distance } from '../../../../core/spatial.js'
-export function coachBotDead({ h, sim, perceived, interceptTime }) {
+export function mandadorBotDead({ h, sim, perceived, interceptTime }) {
 	const frame = neutralFrame(),
 		c = sim.cutouts.find((u) => u.owner === h.id)
 	if (!c) return frame
 	const enemies = perceived.heroes.filter((u) => !u.dead && u.team !== h.team)
-	const origin = coachThrowOrigin(c, sim.bounds, sim.obstacles)
+	const origin = mandadorThrowOrigin(c, sim.bounds, sim.obstacles)
 	const target = enemies.sort(
 		(a, b) => distance(origin, a.pos) - distance(origin, b.pos) || a.id.localeCompare(b.id),
 	)[0]
 	if (!target || c.cast) return frame
 	const shotAt = (x) => {
-		const from = coachThrowOrigin({ ...c, x }, sim.bounds, sim.obstacles)
+		const from = mandadorThrowOrigin({ ...c, x }, sim.bounds, sim.obstacles)
 		const lead = tune.outThrow.castPoint + interceptTime(from, target, tune.outThrow.speed)
 		const aim = {
 			x: target.pos.x + target.vel.x * lead,
@@ -39,7 +39,7 @@ export function coachBotDead({ h, sim, perceived, interceptTime }) {
 	const edge = sim.bounds.halfX - tune.outThrow.radius
 	const clamp = (x) => Math.max(-edge, Math.min(edge, x))
 	const candidates = [clamp(target.pos.x), -edge, edge]
-	const step = Math.max(tune.outThrow.radius, tune.heroes.coach.cutout.searchStep)
+	const step = Math.max(tune.outThrow.radius, tune.heroes.mandador.cutout.searchStep)
 	for (let offset = step; offset < edge * 2; offset += step)
 		candidates.push(clamp(c.x - offset), clamp(c.x + offset))
 	candidates.sort((a, b) => Math.abs(a - c.x) - Math.abs(b - c.x) || a - b)

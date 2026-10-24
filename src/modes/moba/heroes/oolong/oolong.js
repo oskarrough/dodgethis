@@ -1,4 +1,4 @@
-import { brewBot } from './brew-bot.js'
+import { oolongBot } from './oolong-bot.js'
 
 export default {
 	unit: {
@@ -7,9 +7,9 @@ export default {
 		speed: 'speed',
 		attack: 'palmStrike',
 		kit: { slot1: 'flyingKick', slot2: 'stagger', slot3: 'swig' },
-		brain: brewBot,
+		brain: oolongBot,
 	},
-	name: 'Brew',
+	name: 'Oolong',
 	order: 5,
 	color: 'driftwood',
 	silhouette: 'hexagon',

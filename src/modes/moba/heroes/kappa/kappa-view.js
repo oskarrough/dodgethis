@@ -4,7 +4,7 @@ import { STEP } from '../../../../core/app.js'
 import { tune } from '../../tune.js'
 import { stateUntil } from '../../statuses.js'
 
-// Mitts's pocket ring and glove poses, in metres and radians.
+// Kappa's pocket ring and glove poses, in metres and radians.
 const view = {
 	segments: 48,
 	pocketY: 0.015,
@@ -27,7 +27,7 @@ const view = {
 	proneTurn: Math.PI / 2,
 }
 
-// Mitts's costume: the rounded block with a team belt, the glove and the pocket ring under his feet.
+// Kappa's costume: the rounded block with a team belt, the glove and the pocket ring under his feet.
 export function dress({
 	costume,
 	torso,
@@ -41,9 +41,9 @@ export function dress({
 	materials,
 }) {
 	const { glove: gloveMaterial, pocket: pocketMaterial, team } = materials
-	torso.geometry = own(rounded(t.mittsWidth, t.mittsDepth, t.mittsHeight))
+	torso.geometry = own(rounded(t.kappaWidth, t.kappaDepth, t.kappaHeight))
 	part(
-		rounded(t.mittsWidth + view.beltProud, t.mittsDepth + view.beltProud, view.beltHeight),
+		rounded(t.kappaWidth + view.beltProud, t.kappaDepth + view.beltProud, view.beltHeight),
 		team,
 		0,
 		discY + view.beltY,
@@ -72,7 +72,7 @@ export function dress({
 		rounded(t.gloveWidth, t.gloveDepth, t.fingerRadius * 2),
 		gloveMaterial,
 		t.gloveX,
-		discY + t.mittsHeight / 2,
+		discY + t.kappaHeight / 2,
 		t.gloveZ,
 		glove,
 	)
@@ -81,7 +81,7 @@ export function dress({
 			new THREE.SphereGeometry(t.fingerRadius, 8, 6),
 			gloveMaterial,
 			t.gloveX + (i - (t.fingerCount - 1) / 2) * t.fingerSpacing,
-			discY + t.mittsHeight / 2,
+			discY + t.kappaHeight / 2,
 			t.gloveZ - t.gloveDepth / 2,
 			glove,
 		)
@@ -89,7 +89,7 @@ export function dress({
 		new THREE.SphereGeometry(t.fingerRadius, 8, 6),
 		gloveMaterial,
 		t.gloveX - t.gloveWidth / 2 - t.fingerRadius,
-		discY + t.mittsHeight / 2,
+		discY + t.kappaHeight / 2,
 		t.gloveZ + t.gloveDepth / 2,
 		glove,
 	)

@@ -6,7 +6,7 @@ export default {
 		attack: 'tennisBall',
 		kit: { slot1: 'mend', slot2: 'ward' },
 	},
-	name: 'Mender',
+	name: 'Salvia',
 	draft: true,
 	color: 'cream',
 	silhouette: 'bar',

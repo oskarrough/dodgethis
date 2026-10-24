@@ -1,7 +1,7 @@
 import * as THREE from 'three'
-export { cards } from './fletcher-numbers.js'
+export { cards } from './ibis-numbers.js'
 
-// Fletcher's costume: the capsule, quiver, arrows and the bow rig his poses read.
+// Ibis's costume: the capsule, quiver, arrows and the bow rig his poses read.
 // Team accent: the foot disc and the fletchings; the bow stays ink.
 export function dress({ costume, torso, part, own, roots, t, look, materials }) {
 	const { ink, cream, fins, skin } = materials

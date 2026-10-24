@@ -8,8 +8,8 @@ export default {
 	order: 3,
 	layout: altamesaLayout,
 	mechanics: ['packs', 'dungeon', 'bots'],
-	party: ['brew', 'mitts', 'fletcher'],
-	suggestedHero: 'mender',
+	party: ['oolong', 'kappa', 'ibis'],
+	suggestedHero: 'salvia',
 	online: false,
 	palette: () => ({}),
 	cut: () => {

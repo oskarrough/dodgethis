@@ -22,7 +22,7 @@ export default {
 	},
 	tell: 'selfCircle',
 	held: 'selfCircle',
-	effects: { cast: 'redLightWindup', impact: 'redLightFreeze', pose: 'coachRed' },
+	effects: { cast: 'redLightWindup', impact: 'redLightFreeze', pose: 'mandadorRed' },
 	statusEffects: [{ effect: 'freeze', duration: 'duration' }],
 	stages: {
 		release: [

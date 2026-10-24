@@ -57,5 +57,5 @@ The moment: the last Q hits the crystal, the camera rises, and the fight you jus
 - **Comic-strip recap [medium]:** the match ends on three halftone panels frozen from the biggest `present` facts (a catch, a multi-hit, the core), ready to screenshot.
 - **Hot potato [medium]:** a ticking ball sticks to the last hero it touched. Tag an enemy to pass it; it blows at zero for 25% HP.
 - **The crowd [medium]:** cardboard kids line the boundary, heads turning to follow the Ball and the loudest fact, "ooh" on a near miss. The fight off-screen is wherever they're all looking; the dead stand among them.
-- **Rally [medium]:** a tennis ball crosses the centreline. If it bounces twice on your half, your front structure takes 400; any hit sends it back. Pong, inside a MOBA.
+- **Rally [medium]:** a tennis ball crosses the centreline. If it bounces twice on your half, your front structure takes 400; any hit sends it back. Carambola, inside a MOBA.
 - **The old court [big]:** after 10:00 the lobby lifts into the original floating dodgethis court with void edges. Ball hits knock back 3 m, and anyone knocked off hangs in the air, looks at the camera, and drops.

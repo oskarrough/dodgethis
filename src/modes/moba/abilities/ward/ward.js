@@ -4,7 +4,7 @@ export default {
 	kind: 'instant',
 	tell: 'circle',
 	held: 'circle',
-	effects: { cast: true, impact: true, pose: 'menderWard' },
+	effects: { cast: true, impact: true, pose: 'salviaWard' },
 	statusEffects: [{ effect: 'shield', amount: 'shield', duration: 'duration' }],
 	stages: {
 		release: [

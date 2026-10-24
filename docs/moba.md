@@ -39,7 +39,7 @@ The boundary can enter the view near a base: the lens never zooms in just to hid
             └─────────────────────── pause/result ▸ Modes ──────────────────┘
 ```
 
-There are three screens: splash, [lobby](#lobby) and match. The crane and descent between lobby and match are one camera move, not a screen, and take no input. Each screen gives Enter one meaning. `?mode=moba&play&hero=mitts&bots=hard` skips the front end and cuts straight into the match. `modes/moba/front/` owns the splash, backdrop, descent and numbers sheet; `lobby.js` owns the lobby. The in-game look is [look.md](look.md).
+There are three screens: splash, [lobby](#lobby) and match. The crane and descent between lobby and match are one camera move, not a screen, and take no input. Each screen gives Enter one meaning. `?mode=moba&play&hero=kappa&bots=hard` skips the front end and cuts straight into the match. `modes/moba/front/` owns the splash, backdrop, descent and numbers sheet; `lobby.js` owns the lobby. The in-game look is [look.md](look.md).
 
 Nearer layers travel further, so a move reads as a camera, not a slide.
 

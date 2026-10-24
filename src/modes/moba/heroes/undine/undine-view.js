@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import { tune } from '../../tune.js'
 
 export function dress({ torso, part, own, discY, materials }) {
-	const v = tune.heroes.wata.view
+	const v = tune.heroes.undine.view
 	// Bake the pot's proportions into the geometry: hero-view grounds the torso and clones its geometry
 	// for the ink border, and a mesh scale would leave that border as a full-size ink ball.
 	torso.geometry = own(new THREE.SphereGeometry(1, 16, 10).scale(v.width, v.height, v.depth))
@@ -35,7 +35,7 @@ export function animate(
 	rig,
 	{ costume, pose, progress, alpha, releasing, releasePose, fire, settle },
 ) {
-	const v = tune.heroes.wata.view
+	const v = tune.heroes.undine.view
 	rig.spout.rotation.z = -Math.PI / 3
 	if (releasing) {
 		pose = releasePose

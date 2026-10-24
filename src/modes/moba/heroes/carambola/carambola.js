@@ -5,7 +5,7 @@ export default {
 		speed: 'speed',
 		kit: { slot1: 'bank', slot2: 'lob', slot3: 'pinball' },
 	},
-	name: 'P. Pong',
+	name: 'Carambola',
 	color: 'cream',
 	silhouette: 'triangle',
 }

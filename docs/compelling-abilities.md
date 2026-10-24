@@ -17,7 +17,7 @@ Every one of these is a verb the other players can see. That's the lesson: excit
 
 ## Designing a new ability
 
-1. **Name the moment first.** Write the clip it makes: "Mitts catches the Ball out of the air and the whole lane turns." If you can't, it's a stat, not an ability.
+1. **Name the moment first.** Write the clip it makes: "Kappa catches the Ball out of the air and the whole lane turns." If you can't, it's a stat, not an ability.
 2. **Take a dodgeball verb.** Catch, ricochet, out-not-gone, dodge, the Ball. Each hero owns one rule the others don't use ([heroes.md](heroes.md)); a new ability should sharpen its hero's rule, not borrow another's.
 3. **Leave a hole for a teammate.** The best kits are half a combo. A slow, a wall, a pull: something an ally can cash in. Abilities that finish their own setup make teammates spectators.
 4. **Give the target a reply.** Every disable has a tell they can read, an exit they can take or a teammate who can answer it. The counterplay is part of the fun, for both sides.

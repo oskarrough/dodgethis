@@ -54,13 +54,13 @@ import encounters_manos, { units as encounters_manos_units } from './encounters/
 import encounters_tinajaBotijo, {
 	units as encounters_tinajaBotijo_units,
 } from './encounters/tinajaBotijo/tinajaBotijo-tune.js'
-import heroes_brew, { units as heroes_brew_units } from './heroes/brew/brew-tune.js'
-import heroes_coach, { units as heroes_coach_units } from './heroes/coach/coach-tune.js'
-import heroes_hook from './heroes/hook/hook-tune.js'
-import heroes_mender from './heroes/mender/mender-tune.js'
-import heroes_mitts from './heroes/mitts/mitts-tune.js'
-import heroes_pong from './heroes/pong/pong-tune.js'
-import heroes_wata, { units as heroes_wata_units } from './heroes/wata/wata-tune.js'
+import heroes_carambola from './heroes/carambola/carambola-tune.js'
+import heroes_kappa from './heroes/kappa/kappa-tune.js'
+import heroes_lasso from './heroes/lasso/lasso-tune.js'
+import heroes_mandador, { units as heroes_mandador_units } from './heroes/mandador/mandador-tune.js'
+import heroes_oolong, { units as heroes_oolong_units } from './heroes/oolong/oolong-tune.js'
+import heroes_salvia from './heroes/salvia/salvia-tune.js'
+import heroes_undine, { units as heroes_undine_units } from './heroes/undine/undine-tune.js'
 import maps_altamesa, { units as maps_altamesa_units } from './maps/altamesa/altamesa-tune.js'
 import maps_flagfall, { units as maps_flagfall_units } from './maps/flagfall/flagfall-tune.js'
 import maps_overthrow, { units as maps_overthrow_units } from './maps/overthrow/overthrow-tune.js'
@@ -116,13 +116,13 @@ export const encounters = {
 	tinajaBotijo: encounters_tinajaBotijo,
 }
 export const heroes = {
-	brew: heroes_brew,
-	coach: heroes_coach,
-	hook: heroes_hook,
-	mender: heroes_mender,
-	mitts: heroes_mitts,
-	pong: heroes_pong,
-	wata: heroes_wata,
+	carambola: heroes_carambola,
+	kappa: heroes_kappa,
+	lasso: heroes_lasso,
+	mandador: heroes_mandador,
+	oolong: heroes_oolong,
+	salvia: heroes_salvia,
+	undine: heroes_undine,
 }
 export const maps = {
 	altamesa: maps_altamesa,
@@ -149,9 +149,9 @@ export const units = {
 	...encounters_gnomon_units,
 	...encounters_manos_units,
 	...encounters_tinajaBotijo_units,
-	...heroes_brew_units,
-	...heroes_coach_units,
-	...heroes_wata_units,
+	...heroes_mandador_units,
+	...heroes_oolong_units,
+	...heroes_undine_units,
 	...maps_altamesa_units,
 	...maps_flagfall_units,
 	...maps_overthrow_units,

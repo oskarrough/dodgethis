@@ -3,12 +3,12 @@ import { tune } from '../../tune.js'
 import { abilityOf } from '../../ability.js'
 import { dirOf, yawOf } from '../../sim-kit.js'
 
-export function coachCutoutDeath({ hero, sim }) {
+export function mandadorCutoutDeath({ hero, sim }) {
 	const flank = hero.team === 'A' ? -1 : 1
 	sim.cutouts.push({
-		id: `coach-cutout:${hero.id}`,
+		id: `mandador-cutout:${hero.id}`,
 		owner: hero.id,
-		heroId: 'coach',
+		heroId: 'mandador',
 		team: hero.team,
 		x: hero.body.position.x,
 		prevX: hero.body.position.x,
@@ -20,8 +20,8 @@ export function coachCutoutDeath({ hero, sim }) {
 	})
 }
 
-export function coachThrowOrigin(cutout, bounds, obstacles) {
-	const clearance = tune.outThrow.radius + tune.heroes.coach.cutout.inset
+export function mandadorThrowOrigin(cutout, bounds, obstacles) {
+	const clearance = tune.outThrow.radius + tune.heroes.mandador.cutout.inset
 	let inland = bounds.halfZ - clearance
 	for (const wall of obstacles) {
 		if (
@@ -34,14 +34,14 @@ export function coachThrowOrigin(cutout, bounds, obstacles) {
 	return { x: cutout.x, z: cutout.flank * inland }
 }
 
-export function coachCutoutFrame({ hero, sim, tick = sim.tick, alpha = 0 }) {
+export function mandadorCutoutFrame({ hero, sim, tick = sim.tick, alpha = 0 }) {
 	if (!hero.dead) return null
 	const c = sim.cutouts.find((u) => u.owner === hero.id)
 	if (!c) return null
 	return {
 		abilities: { slot1: abilityOf('outThrow'), slot2: null, slot3: null, slot4: null },
 		position: { x: (c.prevX ?? c.x) + (c.x - (c.prevX ?? c.x)) * alpha, y: 0, z: c.z },
-		aimOrigin: coachThrowOrigin(
+		aimOrigin: mandadorThrowOrigin(
 			{ ...c, x: (c.prevX ?? c.x) + (c.x - (c.prevX ?? c.x)) * alpha },
 			sim.bounds,
 			sim.obstacles,
@@ -51,7 +51,7 @@ export function coachCutoutFrame({ hero, sim, tick = sim.tick, alpha = 0 }) {
 	}
 }
 
-export function coachCutoutTick({ hero, sim, tick, ticks, dt, intents, present }) {
+export function mandadorCutoutTick({ hero, sim, tick, ticks, dt, intents, present }) {
 	const c = sim.cutouts.find((u) => u.owner === hero.id)
 	if (!hero.dead || !c || tick >= hero.respawnTick) return
 	const frame = intents.get(hero.id),
@@ -75,7 +75,7 @@ export function coachCutoutTick({ hero, sim, tick, ticks, dt, intents, present }
 	}
 	if (frame.order && !cancel) c.goalX = frame.order.x
 	if (!c.cast && !cancel) {
-		const step = tune.heroes.coach.cutout.speed * dt
+		const step = tune.heroes.mandador.cutout.speed * dt
 		const dx =
 			Math.abs(frame.move.x) > 0
 				? frame.move.x * step
@@ -98,7 +98,7 @@ export function coachCutoutTick({ hero, sim, tick, ticks, dt, intents, present }
 			present({ type: 'denied', hero: hero.id, slot: 'slot1', reason: 'cooldown' })
 			continue
 		}
-		const origin = coachThrowOrigin(c, sim.bounds, sim.obstacles),
+		const origin = mandadorThrowOrigin(c, sim.bounds, sim.obstacles),
 			at = edge.at ?? frame.aim
 		const dx = at ? at.x - origin.x : dirOf(hero.yaw).x
 		const dz = at ? at.z - origin.z : dirOf(hero.yaw).z
@@ -141,7 +141,7 @@ export function coachCutoutTick({ hero, sim, tick, ticks, dt, intents, present }
 				noHelp: true,
 				isAbility: true,
 			},
-			coachThrowOrigin(c, sim.bounds, sim.obstacles),
+			mandadorThrowOrigin(c, sim.bounds, sim.obstacles),
 		)
 		c.cast = null
 	}

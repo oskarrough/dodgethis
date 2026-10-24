@@ -15,7 +15,7 @@ export default {
 		cast: { count: 5, speed: 0.6, life: 0.4, size: 0.08 },
 		impact: { count: 18, speed: 1.8, life: 0.5, size: 0.12 },
 	},
-	// Mender's aim preview, cast beam and landing (heroes/mender/mender-view.js).
+	// Salvia's aim preview, cast beam and landing (heroes/salvia/salvia-view.js).
 	view: {
 		color: '#1fae4a',
 		ground: 0.04,

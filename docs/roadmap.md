@@ -30,9 +30,9 @@ Open questions live in Oskar's bb inbox (`bb tasks list --project INBOX`), one t
 
 ## Next
 
-- Balance from the farm once bots play every kit properly; Mitts tuning.
+- Balance from the farm once bots play every kit properly; Kappa tuning.
 - Online MOBA through the existing rooms, then the lobby's online seats.
-- Pong and Skip, then Yo-yo and Mascot: six built heroes, ten designed at most.
+- Carambola and Skip, then Yo-yo and Mascot: six built heroes, ten designed at most.
 - Juice and sound everywhere; the frozen briefs come back one by one.
 - The world shows up in the art: Overthrow's day isles over cloud, Flagfall's night garden, keeps ([look.md](look.md)).
 

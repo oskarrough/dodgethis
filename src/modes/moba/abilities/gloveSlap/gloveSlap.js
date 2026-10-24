@@ -1,4 +1,4 @@
-// Mitts's basic: a short melee swing.
+// Kappa's basic: a short melee swing.
 export default {
 	kind: 'melee',
 	tell: 'line',

@@ -67,12 +67,12 @@ describe('hand-made controls', () => {
 	test('a builder labels, ranges and hooks values, and wins over the walk', () => {
 		const registry = createRegistry()
 		const changed = []
-		const look = { tint: 0xff8800, hero: 'mitts', gain: 0.5, depth: 2, sub: { lift: 1 } }
+		const look = { tint: 0xff8800, hero: 'kappa', gain: 0.5, depth: 2, sub: { lift: 1 } }
 		registry.add('front', look, {}, (f, o) => {
 			f.add(o, 'gain', 0, 1, 0.01)
 				.name('volume')
 				.onChange((v) => changed.push(v))
-			f.add(o, 'hero', { Mitts: 'mitts', Hook: 'hook' }).name('hero')
+			f.add(o, 'hero', { Kappa: 'kappa', Lasso: 'lasso' }).name('hero')
 			f.addColor(o, 'tint')
 			f.addFolder('sub').add(o.sub, 'lift', 0, 4, 1)
 			f.add({ go: () => changed.push('ran') }, 'go').name('go')
@@ -91,8 +91,8 @@ describe('hand-made controls', () => {
 		gain.setValue(0.25)
 		expect(look.gain).toBe(0.25)
 		expect(byPath['front/hero'].choices).toEqual([
-			['Mitts', 'mitts'],
-			['Hook', 'hook'],
+			['Kappa', 'kappa'],
+			['Lasso', 'lasso'],
 		])
 		const tint = byPath['front/tint']
 		expect(tint.format.toHexString(tint.getValue())).toBe('#ff8800')

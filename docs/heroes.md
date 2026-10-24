@@ -1,29 +1,29 @@
 # Heroes
 
-The next three heroes after the Fletcher, for [moba.md](moba.md). Mitts comes from [ideas.md](ideas.md); P. Pong and Coach are new. Each one takes a dodgeball rule the Fletcher doesn't use: catch, ricochet, out-not-gone. Slice 1 is built: mode-local definitions, Fletcher's retuned kit and all four silhouettes. Mitts is playable in practice with Pocket, Toss, Catch and Dive. Coach is playable with Out, not gone, Pass, Tag out and Red light. R abilities wait for M5, like Volley.
+The next three heroes after the Ibis, for [moba.md](moba.md). Kappa comes from [ideas.md](ideas.md); Carambola and Mandador are new. Each one takes a dodgeball rule the Ibis doesn't use: catch, ricochet, out-not-gone. Slice 1 is built: mode-local definitions, Ibis's retuned kit and all four silhouettes. Kappa is playable in practice with Pocket, Toss, Catch and Dive. Mandador is playable with Out, not gone, Pass, Tag out and Red light. R abilities wait for M5, like Volley.
 
 **Dodge deadline.** The latest tick a centred target at 8 m can start moving and still clear, measured in the stepper (projectile radius, edge contact and tick order included), not derived by formula. The host needs 0.2 s of it; at 100 ms RTT a guest loses 0.12 s on average and 0.21 s at worst. So every dodgeable shot here has a deadline of at least 0.45 s, and most of it is windup that shows the hitbox. The original design measured Toss at 0.55 s and Ricochet at 0.60 s (Trick Shot 0.67, Pass 0.48, touchline throw 0.82 s). Toss is now 0.3 s / 22 m/s and Ricochet 0.3 s / 20 m/s; those old shot deadlines are not measurements of the current tunes.
 
-**Fletcher's Q** takes the reviewer's fix: cast point 0.3 s with a ground line tell for enemies, and 20 m/s instead of 24. That moves its deadline from about 0.27 to 0.52 s.
+**Ibis's Q** takes the reviewer's fix: cast point 0.3 s with a ground line tell for enemies, and 20 m/s instead of 24. That moves its deadline from about 0.27 to 0.52 s.
 
 **Tells.** Anything that damages, stops or moves an enemy has a cast point of at least 0.3 s and shows its exact hitbox to enemies for all of it. A caught shot sent back shows its line for at least 0.5 s. Self-only casts (stances, dashes) are instant and show their state on the ground while it lasts.
 
-**Interception.** One moba-local resolver handles every catch. It only takes straight hero skillshots: never basics, minion or tower shots, which home. A caught shot is frozen as `{ damage, speed, radius, range, pierce }`, with damage including any cushions it had banked, and it comes back as a new straight shot owned by the catcher: no further banking, no trait procs for its original owner. It hits structures like any ability (25%, blocked when invulnerable). The Ball is never a shot here; see Mitts.
+**Interception.** One moba-local resolver handles every catch. It only takes straight hero skillshots: never basics, minion or tower shots, which home. A caught shot is frozen as `{ damage, speed, radius, range, pierce }`, with damage including any cushions it had banked, and it comes back as a new straight shot owned by the catcher: no further banking, no trait procs for its original owner. It hits structures like any ability (25%, blocked when invulnerable). The Ball is never a shot here; see Kappa.
 
 **Silhouettes.** The foot disc is the hitbox: every hero keeps the 0.45 m collision circle, drawn as an inked disc. Bodies above it may be slimmer or wider; the disc is the promise, the body is character. Each hero owns one body shape and one prop, and reuses no minion prop (shield disc, stick, cone hat, block helmet). Team colour sits on the disc, the prop and the top of the body, so a mirror match is one shape in two colours.
 
-| Hero     | Role              | Shape from above                         | Prop                                                            |
-| -------- | ----------------- | ---------------------------------------- | --------------------------------------------------------------- |
-| Fletcher | ranged poke       | small circle: the capsule, slimmed       | quiver of three big fletched arrows, fanned behind him          |
-| Mitts    | keeper, frontline | rounded square, low and wide, no neck    | notched catcher's glove: thumb gap and finger bumps, not a disc |
-| P. Pong  | trick-shot burst  | rounded triangle, point forward          | round team paddle held open at his side, rolled net on his back |
-| Coach    | captain, support  | flat bar: a cardboard cutout, 1.3 × 0.25 | megaphone held out front, a flared cone lying flat              |
+| Hero      | Role              | Shape from above                         | Prop                                                            |
+| --------- | ----------------- | ---------------------------------------- | --------------------------------------------------------------- |
+| Ibis      | ranged poke       | small circle: the capsule, slimmed       | quiver of three big fletched arrows, fanned behind him          |
+| Kappa     | keeper, frontline | rounded square, low and wide, no neck    | notched catcher's glove: thumb gap and finger bumps, not a disc |
+| Carambola | trick-shot burst  | rounded triangle, point forward          | round team paddle held open at his side, rolled net on his back |
+| Mandador  | captain, support  | flat bar: a cardboard cutout, 1.3 × 0.25 | megaphone held out front, a flared cone lying flat              |
 
 ## Slice 1: hero definitions
 
-Before any new kit, moba has a hero table, inside the mode and not core. Each entry holds base HP, speed, basic attack, one ability per slot and trait hooks. Level-ups scale the hero's own base, not `tune.hero`. Momentum becomes the Fletcher's trait hook, so another hero's Q doesn't recharge Vault. Piercing, healing, bouncing and catching become ability properties instead of branches on `slot1`. Pocket and bag are per-hero state, replicated and cleared on death. Boards and cutouts are sim-level lists; a cutout can exist while its owner is dead. Freeze is a timer on the frozen unit, next to its slow. Test: a match of six Fletchers built from the table matches today's full-lane test tick for tick. Screenshot all four silhouettes in grayscale at the lane's 58° pitch and one shared scale, with Fletcher at 20 px; the shape alone must tell them apart. Bodies sit on the disc; the quiver tilts back 35° and has flat fins. Mitts has an inked body edge and larger finger bumps, and Coach's bar is 1.3 m wide. Practice uses your selected hero (or `hero=mitts`) plus a Mitts and a Fletcher bot, versus a Mitts, a Fletcher and a random playable hero. Without `seed=` each match draws its own seed, which also picks that random hero. `heroes.js` exposes `playable` when a definition has a basic and a kit; Coach is listed and pickable. `bots.js` reads the seat's definition for basics, abilities, ranges and damage. Bots select shots, zones, dashes and catch responses from ability kinds and metadata. Mitts times Catch against enemy windups and shots in the lagged view, including the Ball. Routine Stop orders preserve committed windups; one nearest teammate stages for a future Ball while the others keep the lane moving.
+Before any new kit, moba has a hero table, inside the mode and not core. Each entry holds base HP, speed, basic attack, one ability per slot and trait hooks. Level-ups scale the hero's own base, not `tune.hero`. Momentum becomes the Ibis's trait hook, so another hero's Q doesn't recharge Vault. Piercing, healing, bouncing and catching become ability properties instead of branches on `slot1`. Pocket and bag are per-hero state, replicated and cleared on death. Boards and cutouts are sim-level lists; a cutout can exist while its owner is dead. Freeze is a timer on the frozen unit, next to its slow. Test: a match of six Ibiss built from the table matches today's full-lane test tick for tick. Screenshot all four silhouettes in grayscale at the lane's 58° pitch and one shared scale, with Ibis at 20 px; the shape alone must tell them apart. Bodies sit on the disc; the quiver tilts back 35° and has flat fins. Kappa has an inked body edge and larger finger bumps, and Mandador's bar is 1.3 m wide. Practice uses your selected hero (or `hero=kappa`) plus a Kappa and a Ibis bot, versus a Kappa, a Ibis and a random playable hero. Without `seed=` each match draws its own seed, which also picks that random hero. `heroes.js` exposes `playable` when a definition has a basic and a kit; Mandador is listed and pickable. `bots.js` reads the seat's definition for basics, abilities, ranges and damage. Bots select shots, zones, dashes and catch responses from ability kinds and metadata. Kappa times Catch against enemy windups and shots in the lagged view, including the Ball. Routine Stop orders preserve committed windups; one nearest teammate stages for a future Ball while the others keep the lane moving.
 
-`heroes.js` owns the table; seats use `heroId` (default `fletcher`). Mitts has her own basic, kit and Pocket hook; Pong has Kiss, Ricochet, Cushion and Pinball; Coach has Pass, Tag out and Red light, plus her dead-player cutout. `hero-view.js` dresses both the lane and hero select's replica. `abilityState` carries pocket, bag and folder-owned hero/ability state (including Brew's Stagger pool). Expiring hero `shields` absorb damage before HP and are replicated alongside it. The snapshot carries complete projectile records (including frozen stats and `passed`), zones with ability identity, boards, cutouts, per-unit statuses (including slows, stun, freeze, prone and motion).
+`heroes.js` owns the table; seats use `heroId` (default `ibis`). Kappa has her own basic, kit and Pocket hook; Carambola has Kiss, Ricochet, Cushion and Pinball; Mandador has Pass, Tag out and Red light, plus her dead-player cutout. `hero-view.js` dresses both the lane and hero select's replica. `abilityState` carries pocket, bag and folder-owned hero/ability state (including Oolong's Stagger pool). Expiring hero `shields` absorb damage before HP and are replicated alongside it. The snapshot carries complete projectile records (including frozen stats and `passed`), zones with ability identity, boards, cutouts, per-unit statuses (including slows, stun, freeze, prone and motion).
 
 When several slows are active, the strongest wins: movement uses the lowest factor, not their product. Each application keeps its own expiry, even from the same source. A weaker slow takes over if it outlasts the stronger one. A slow cleanse removes them all.
 
@@ -31,7 +31,7 @@ The sim owns the catch resolver. `openCatch(hero, { duration, radius, angle, acc
 
 Abilities identify their `tell`, `held` shape and `effects`, independent of their slot. Stance and channel kinds are mobile by default; a channel can declare `root` or `cancelOnMove`. `onStart`, `onTick`, `onRelease`, `onEnd`, `onCancel` and `onDashEnd` handle their own state transitions. Trait hooks receive `{ hero, sim, tick, ticks, intents, present }`: `onTick` also runs while dead, `onDeath` runs after clearing Pocket/Bag, `onCatch` receives the intercepted source and window (Pocket keeps the thrower's team outside its frozen shot), and `onHit` additionally receives source, shot and target. A death hook can create a cutout; respawn removes it. Prone and freeze block the affected hero's actions, while a Dive window can remain active through prone. Freeze also blocks Ball pickup, like stun. The Ball's stun stops minions from moving and attacking for its duration. These are mechanisms, not the three new kits. Costumes and tells receive the unit and simulation tick explicitly, including replay and hero-select preview; the engine body carries no MOBA state or clock.
 
-## Mitts, the keeper
+## Kappa, the keeper
 
 Frontline counter to skillshots. She stands in front of her team, takes shots and sends them back. Rain, basics and flanks bypass interception; active Catch softens landed damage. 1900 HP, 5.6 m/s. Basic: a glove slap, 3.5 m range, 130 damage, 1/s.
 
@@ -47,13 +47,13 @@ Frontline counter to skillshots. She stands in front of her team, takes shots an
 
 **Timing.** Catch is a read, not a guarantee. She presses on the enemy's windup: 1.0 s covers a 0.5 s cast point, the flight to her arc and 0.21 s of guest lag, but pressing too early still expires first. A returned Volley has a deadline of about 0.48 s through Q or R. Test early and late guest presses at 100 ms RTT.
 
-**The moment:** the enemy Fletcher looses Volley at her carry. Mitts dives across the line, catches it lying on her front, gets up and sends 320 damage back through all three of them.
+**The moment:** the enemy Ibis looses Volley at her carry. Kappa dives across the line, catches it lying on her front, gets up and sends 320 damage back through all three of them.
 
-**Counter-play:** throw a cheap shot into the arc to burn W, or wait it out. The cone faces one way, so flank her. Rain, basics and tower shots cannot be caught, but active, unconsumed W reduces their damage along with uncaught skillshot and Ball hits. The prone after Dive is 0.4 s of free hits. A Mitts walking in Catch freezes to Red light; standing in it, she's safe.
+**Counter-play:** throw a cheap shot into the arc to burn W, or wait it out. The cone faces one way, so flank her. Rain, basics and tower shots cannot be caught, but active, unconsumed W reduces their damage along with uncaught skillshot and Ball hits. The prone after Dive is 0.4 s of free hits. A Kappa walking in Catch freezes to Red light; standing in it, she's safe.
 
-## P. Pong, the trick shot
+## Carambola, the trick shot
 
-Burst from odd angles. The Fletcher pokes you down the lane; Pong finishes you behind the pillar. Strongest in the lobby and near walls, weakest in the open road. He hits celluloid balls with a ping pong paddle: a stocky stone-beaked bruiser in a cream tunic, a rolled net on his back. 1300 HP, the lowest, 5.0 m/s.
+Burst from odd angles. The Ibis pokes you down the lane; Carambola finishes you behind the pillar. Strongest in the lobby and near walls, weakest in the open road. He hits celluloid balls with a ping carambola paddle: a stocky stone-beaked bruiser in a cream tunic, a rolled net on his back. 1300 HP, the lowest, 5.0 m/s.
 
 | Key   | Name       | Numbers                                                                                                                                                                                                                                     |
 | ----- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -65,39 +65,39 @@ Burst from odd angles. The Fletcher pokes you down the lane; Pong finishes you b
 
 His own Q indicator draws the full bounce path, so aiming at a wall is learnable in one game. Cushion brings walls into the open road and stops a shot without catching it. Pinball pings a serve from enemy to enemy, softer each hop. R remains a future design.
 
-**The moment:** the Fletcher limps home on 400 HP behind the far pillar. The red dotted line zigzags across the lobby, everyone scatters, and after five cushions it finds him for 500.
+**The moment:** the Ibis limps home on 400 HP behind the far pillar. The red dotted line zigzags across the lobby, everyone scatters, and after five cushions it finds him for 500.
 
-**Counter-play:** fight him in the open road, where there's nothing to bank off. Every bank path is printed for its cast point, so step off the line. Shoot around Cushion's ends; its posts block walking too. Mitts catches his balls, frozen at the damage they'd banked. Pinball chains to the nearest unhit enemy in reach: keep apart so the serve can't bounce through.
+**Counter-play:** fight him in the open road, where there's nothing to bank off. Every bank path is printed for its cast point, so step off the line. Shoot around Cushion's ends; its posts block walking too. Kappa catches his balls, frozen at the damage they'd banked. Pinball chains to the nearest unhit enemy in reach: keep apart so the serve can't bounce through.
 
-## Coach, the captain
+## Mandador, the captain
 
-Coach is a placeholder name (was Skip; Oskar names her). Support. Keeps her team in the game by healing, swapping and calling people back, and makes enemies stand still. She shouts through a megaphone. 1450 HP, 5.0 m/s. Basic: a tennis ball, 5 m range, 70 damage, 1/s, homing.
+Mandador is a placeholder name (was Skip; Oskar names her). Support. Keeps her team in the game by healing, swapping and calling people back, and makes enemies stand still. She shouts through a megaphone. 1450 HP, 5.0 m/s. Basic: a tennis ball, 5 m range, 70 damage, 1/s, homing.
 
-| Key   | Name          | Numbers                                                                                                                                                                                                                                                                                                                        |
-| ----- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Trait | Out, not gone | While dead she's a flat grey cutout on her side's touchline, walking its full length at 5 m/s, untargetable. One action, a throw: cast point 0.35, range 14, 12 m/s, radius 0.35, 60 damage, cooldown 3, heroes only. Each hit takes 2 s off her death timer.                                                                  |
-| Q     | Pass          | Line skillshot that stops at the first hero, friend or foe, and passes minions. Cast point 0.3, range 10, 20 m/s, radius 0.4. An ally heals 180; an enemy takes 90 and a 25% slow for 1 s. Cooldown 3.                                                                                                                         |
-| W     | Tag out       | The ally hero nearest the aim within 7 m. Cast point 0.3: her hand goes up and enemies see a dashed tether. Then the two swap places instantly. The ally's stun, freeze and slow end; motion ends for both heroes. Dive's prone cost remains. Coach takes 30% less damage for 2 s. A Ball carrier keeps the Ball. Cooldown 14. |
-| E     | Red light     | Cast point 0.5: she turns her back, raises the megaphone, and enemies see a red 5 m ring filling. On resolve, every enemy hero inside moving faster than 0.5 m/s is frozen for 1.25 s in its running pose. Standing, casting and attacking are safe. Minions ignore it. Cooldown 12.                                           |
-| R     | Back in!      | Needs a dead ally. Channel 1 s behind a big "Back in!" speech bubble; a stun breaks it. The ally with the longest death timer runs on from the touchline and respawns at her side at 50% HP. Cooldown 100. Denied with the icon flash if nobody is dead.                                                                       |
+| Key   | Name          | Numbers                                                                                                                                                                                                                                                                                                                           |
+| ----- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Trait | Out, not gone | While dead she's a flat grey cutout on her side's touchline, walking its full length at 5 m/s, untargetable. One action, a throw: cast point 0.35, range 14, 12 m/s, radius 0.35, 60 damage, cooldown 3, heroes only. Each hit takes 2 s off her death timer.                                                                     |
+| Q     | Pass          | Line skillshot that stops at the first hero, friend or foe, and passes minions. Cast point 0.3, range 10, 20 m/s, radius 0.4. An ally heals 180; an enemy takes 90 and a 25% slow for 1 s. Cooldown 3.                                                                                                                            |
+| W     | Tag out       | The ally hero nearest the aim within 7 m. Cast point 0.3: her hand goes up and enemies see a dashed tether. Then the two swap places instantly. The ally's stun, freeze and slow end; motion ends for both heroes. Dive's prone cost remains. Mandador takes 30% less damage for 2 s. A Ball carrier keeps the Ball. Cooldown 14. |
+| E     | Red light     | Cast point 0.5: she turns her back, raises the megaphone, and enemies see a red 5 m ring filling. On resolve, every enemy hero inside moving faster than 0.5 m/s is frozen for 1.25 s in its running pose. Standing, casting and attacking are safe. Minions ignore it. Cooldown 12.                                              |
+| R     | Back in!      | Needs a dead ally. Channel 1 s behind a big "Back in!" speech bubble; a stun breaks it. The ally with the longest death timer runs on from the touchline and respawns at her side at 50% HP. Cooldown 100. Denied with the icon flash if nobody is dead.                                                                          |
 
 **The cutout** is its own moba-local unit, not the dead hero's body: the sim ignores a dead hero's intents, so the cutout reads them instead. Its throws launch from the inside edge of the boundary wall, since a shot born outside the map expires at once. Hedges, pillars and structures block them. They never call tower or minion help. It's the ideas doc's global rule, tried on one hero first.
 
-**The moment:** an ally drops Rain on two enemies and Coach calls red light. Walk out and freeze inside the circle; stand still and take the Rain. Most people run, and the Rain lands on two statues.
+**The moment:** an ally drops Rain on two enemies and Mandador calls red light. Walk out and freeze inside the circle; stand still and take the Rain. Most people run, and the Rain lands on two statues.
 
-**Counter-play:** stop. Red light is beaten by standing still, not by leaving: from the centre, 5 m is out of reach in 0.5 s, and a Vault ends long before the resolve. Body-block Pass, since it stops at the first hero. Burst the ally during Tag out's tether, because Coach lands where they stood. Stun the Back in! channel.
+**Counter-play:** stop. Red light is beaten by standing still, not by leaving: from the centre, 5 m is out of reach in 0.5 s, and a Vault ends long before the resolve. Body-block Pass, since it stops at the first hero. Burst the ally during Tag out's tether, because Mandador lands where they stood. Stun the Back in! channel.
 
 **Online:** Red light asks a guest to let go of the stick, and 0.5 s leaves 0.29 s at worst. Tag out is a teleport with no displacement state; the guest's 2 m snap covers it.
 
 ## The six
 
-A 3v3 with six unique heroes (Oskar, 2026-10-14). Fletcher, Mitts and P. Pong are built; Hook, Brew and Coach join them, picked against [compelling-abilities.md](compelling-abilities.md): Hook starts fights (the catch, then the payoff), Brew wins by being hit (the brave escape), Coach saves allies (the save). Kits are Q, W, E and a trait; R waits for M5. Every number is a starting value. Silhouettes are placeholders until Oskar draws them: Hook a crescent with a yo-yo on a string, Brew a wide hexagonal drum with a jug on his back.
+A 3v3 with six unique heroes (Oskar, 2026-10-14). Ibis, Kappa and Carambola are built; Lasso, Oolong and Mandador join them, picked against [compelling-abilities.md](compelling-abilities.md): Hook starts fights (the catch, then the payoff), Oolong wins by being hit (the brave escape), Mandador saves allies (the save). Kits are Q, W, E and a trait; R waits for M5. Every number is a starting value. Silhouettes are placeholders until Oskar draws them: Hook a crescent with a yo-yo on a string, Oolong a wide hexagonal drum with a jug on his back.
 
-## Hook, the initiator
+## Lasso, the initiator
 
-Built and listed (`hook`), with a crescent-and-yo-yo placeholder costume. Throw and Around the world share a replicated displacement that cancels the target's channel and dash; collision and walking bounds can shorten it. Around the world's knockback takes 0.35 s. Hook has no trait specified yet.
+Built and listed (`lasso`), with a crescent-and-yo-yo placeholder costume. Throw and Around the world share a replicated displacement that cancels the target's channel and dash; collision and walking bounds can shorten it. Around the world's knockback takes 0.35 s. Hook has no trait specified yet.
 
-Starts fights. Nothing else built can drag someone out of position; Hook's whole kit is getting a target into his team's reach and keeping them there. Stitches with a yo-yo. 1900 HP, 5.2 m/s. Basic: a yo-yo flick, 3.5 m range, 90 damage, 1/s.
+Starts fights. Nothing else built can drag someone out of position; Lasso's whole kit is getting a target into his team's reach and keeping them there. Stitches with a yo-yo. 1900 HP, 5.2 m/s. Basic: a yo-yo flick, 3.5 m range, 90 damage, 1/s.
 
 | Key | Name             | Numbers                                                                                                                                                                                                                              |
 | --- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -105,11 +105,11 @@ Starts fights. Nothing else built can drag someone out of position; Hook's whole
 | W   | Tangle           | Cast point 0.3 with the cone shown: a 3.5 m, 90° cone for 110 damage and a 40% slow for 1.5 s. The payoff after Throw. Cooldown 6.                                                                                                   |
 | E   | Around the world | Cast point 0.3 with the ring shown, then a 2.5 m loop: every enemy hero inside takes 60 and is knocked 2.5 m straight out from Hook. Peel for when the fight he started comes back at him. Cooldown 10.                              |
 
-**The moment:** their Fletcher looses from behind his Mitts. The yo-yo threads the gap, Fletcher lands at your feet, Tangle, and your Pong banks the kill.
+**The moment:** their Ibis looses from behind his Kappa. The yo-yo threads the gap, Ibis lands at your feet, Tangle, and your Carambola banks the kill.
 
-**Counter-play:** keep a minion or a teammate on the line; the yo-yo takes the first body. 0.4 s with the line shown is the longest tell in the game, so sidestep it. Mitts catches the yo-yo like any straight hero shot: the 80 comes back at Hook, the drag doesn't.
+**Counter-play:** keep a minion or a teammate on the line; the yo-yo takes the first body. 0.4 s with the line shown is the longest tell in the game, so sidestep it. Kappa catches the yo-yo like any straight hero shot: the 80 comes back at Hook, the drag doesn't.
 
-## Brew, the bruiser
+## Oolong, the bruiser
 
 Wins by being hit. Dives in, soaks the burst, drinks it off and kicks his way out. Chen with a sports drink. 1800 HP, 5.2 m/s. Basic: a palm strike, 3 m range, 85 damage, 1/s.
 
@@ -119,11 +119,11 @@ Wins by being hit. Dives in, soaks the burst, drinks it off and kicks his way ou
 | W   | Stagger     | Instant stance, 3 s: damage he takes doesn't land; it fills a pool that pays out evenly over the 3 s after the stance ends. Shields soak the payout as it lands. The pool shows as a draining bar under his health. Cooldown 14. |
 | E   | Swig        | Channel up to 2 s, rooted: 150 shield per second into one shield refreshed to 4 s. Moving, casting, a stun or a pull ends it. Cooldown 10 from the channel's end.                                                                |
 
-**The moment:** Fletcher, Mitts and their tower all on you at 600. You Stagger, kneel and Swig: the burst trickles into your shield. They've spent everything; you kick a minion out of the fight on 900.
+**The moment:** Ibis, Kappa and their tower all on you at 600. You Stagger, kneel and Swig: the burst trickles into your shield. They've spent everything; you kick a minion out of the fight on 900.
 
 **Counter-play:** burst him outside Stagger, or stop the drink: he's rooted, so Throw, Tangle's slow after it, Red light or any stun breaks it, and a stun is a stun. Wait out Stagger before committing. Tune so the drink beats a burst and loses to pressure: two heroes on him for 6 s still win.
 
-## Wata, the water support
+## Undine, the water support
 
 The refactor's test (2026-10-14): the first hero built on statuses, folder bots and summons, counted by how many shared engine files she touches. Heals by splashing, slows by soaking, and plants a sprinkler that keeps working while she moves on. Balloons, puddles and sprinklers outlive her death, but clear on hero swap, removal and match end. 1500 HP, 5.0 m/s. Basic: a water flick, 5 m range, 65 damage, 1/s, homing. Silhouette placeholder: a squat round jug with a spout, until Oskar draws her.
 
@@ -133,6 +133,6 @@ The refactor's test (2026-10-14): the first hero built on statuses, folder bots 
 | W   | Sprinkler | Plant within 6 m (cast point 0.3). A 300 HP summon for 5 s: its jet sweeps a 4 m circle once a second, healing allies 50 and soaking enemies it passes. Enemies can break it; it blocks nothing. Cooldown 14.                                                                                       |
 | E   | Slide     | Instant 5 m belly slide toward the aim over 0.3 s. On a puddle it doesn't stop until the puddle ends, up to 10 m. Cooldown 8.                                                                                                                                                                       |
 
-**The moment:** your Brew is drinking under three enemies. You plant the sprinkler on him, lob a balloon at his feet and slide out along the puddle; the chasers wade through soak and he walks out on full shield.
+**The moment:** your Oolong is drinking under three enemies. You plant the sprinkler on him, lob a balloon at his feet and slide out along the puddle; the chasers wade through soak and he walks out on full shield.
 
 **Counter-play:** break the sprinkler first, with targeted basics, zones or balloon pops; untargeted skillshots pass through its 300 HP body. Fight away from puddles: the slide and the soak both live on them. The balloon's ring shows where it lands, so step off it, but watch for the early pop.
