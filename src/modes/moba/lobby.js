@@ -223,6 +223,7 @@ export function createLobby({
 		heroes: heroChoices,
 	})
 	const flips = createFlips()
+	flips.watch(sim.heroes)
 	const jolts = createJolts({ bowl, props })
 	props.syncSeats()
 	const stamp = el.querySelector('.lobby-pick-stamp')

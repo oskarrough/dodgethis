@@ -54,13 +54,27 @@ function clearFlip(mesh) {
 	}
 }
 
+// Clone geometries and materials: the sim's dispose path shares them and then frees them.
+function snapshotGhost(mesh) {
+	const ghost = mesh.clone(true)
+	ghost.traverse((o) => {
+		if (o.geometry) o.geometry = o.geometry.clone()
+		if (o.material && !Array.isArray(o.material)) o.material = o.material.clone()
+	})
+	return ghost
+}
+
 // On a swap the old body turns edge-on, then the new one comes round with a little overshoot. Its foot disc
 // is down at full width from the first frame, so the shadow changes a beat before the body does. Swaps
-// happen in the sim, which has already disposed the old body: its mesh comes back for the turn away.
+// happen in the sim, which has already disposed the old body: a clone of its dressed mesh comes back
+// for the turn away (the original is empty by then).
 export function createFlips() {
 	const shown = new Map()
 	const flips = new Map()
 	const pending = new Map()
+	const hooked = new WeakSet()
+	const ghosts = new WeakMap()
+	let live = true
 	const drop = (flip) => {
 		if (!flip?.ghost) return
 		flip.ghost.removeFromParent()
@@ -70,7 +84,28 @@ export function createFlips() {
 		})
 		flip.ghost = null
 	}
+	const takeGhost = (body) => {
+		const ghost = ghosts.get(body) ?? null
+		ghosts.delete(body)
+		return ghost
+	}
+	const watchBody = (body) => {
+		if (!body || hooked.has(body)) return
+		hooked.add(body)
+		const dispose = body.dispose
+		body.dispose = () => {
+			if (live && !ghosts.has(body) && body.mesh?.children.length)
+				ghosts.set(body, snapshotGhost(body.mesh))
+			dispose()
+		}
+	}
 	return {
+		watch(heroes) {
+			for (const human of heroes) {
+				watchBody(human.body)
+				if (!shown.has(human.id)) shown.set(human.id, { body: human.body, heroId: human.heroId })
+			}
+		},
 		// `time` in seconds of lobby sim time: the swap fact's own tick, so a hidden tab skips the flip.
 		start(id, time) {
 			pending.set(id, time)
@@ -78,7 +113,10 @@ export function createFlips() {
 		update(heroes, time, camera) {
 			const f = tune.lobby.pick
 			right.setFromMatrixColumn(camera.matrixWorld, 0).setY(0).normalize()
+			const ids = new Set()
 			for (const human of heroes) {
+				ids.add(human.id)
+				watchBody(human.body)
 				const was = shown.get(human.id)
 				if (was && was.heroId !== human.heroId) {
 					drop(flips.get(human.id))
@@ -86,11 +124,12 @@ export function createFlips() {
 					pending.delete(human.id)
 					const flip = { at, ghost: null }
 					flips.set(human.id, flip)
-					if (was.body !== human.body && time - at < f.flipTime * f.flipOut) {
-						flip.ghost = was.body.mesh
+					const ghost = takeGhost(was.body)
+					if (ghost && was.body !== human.body && time - at < f.flipTime * f.flipOut) {
+						flip.ghost = ghost
 						human.body.mesh.parent?.add(flip.ghost)
-					}
-				}
+					} else drop({ ghost })
+				} else if (was && was.body !== human.body) drop({ ghost: takeGhost(was.body) })
 				shown.set(human.id, { body: human.body, heroId: human.heroId })
 				const flip = flips.get(human.id)
 				if (!flip) continue
@@ -117,14 +156,24 @@ export function createFlips() {
 					setFlip(mesh, { ...axis, s: f.flipEdge + (1 - f.flipEdge) * open })
 				}
 			}
+			for (const [id, rec] of shown) {
+				if (ids.has(id)) continue
+				drop(flips.get(id))
+				drop({ ghost: takeGhost(rec.body) })
+				flips.delete(id)
+				pending.delete(id)
+				shown.delete(id)
+			}
 		},
 		// A body that rides on into the match must leave with its own matrix.
 		dispose() {
+			live = false
 			for (const [id, flip] of flips) {
 				drop(flip)
 				const mesh = shown.get(id)?.body.mesh
 				if (mesh) clearFlip(mesh)
 			}
+			for (const rec of shown.values()) drop({ ghost: takeGhost(rec.body) })
 		},
 	}
 }
