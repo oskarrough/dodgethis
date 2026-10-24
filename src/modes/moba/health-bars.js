@@ -96,9 +96,11 @@ export function createHealthBars() {
 					? `${unit.team === localTeam ? 'Your' : 'Enemy'} ${structureName(unit.kind)}`
 					: names.has(unit.id)
 						? names.get(unit.id)
-						: unit.heroId
-							? unit.heroId[0].toUpperCase() + unit.heroId.slice(1)
-							: ''
+						: unit.boss
+							? unit.definition.name
+							: unit.heroId
+								? unit.heroId[0].toUpperCase() + unit.heroId.slice(1)
+								: ''
 				if (bar.label.textContent !== text) bar.label.textContent = text
 				bar.label.hidden = !text
 				bar.element.dataset.hero = String(!unit.structure && !!unit.heroId)

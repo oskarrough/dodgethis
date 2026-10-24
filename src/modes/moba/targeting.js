@@ -18,7 +18,9 @@ export function createTargeting({
 			.filter((u) => !u.dead && u.hp !== null)
 			.map((u) => ({ id: u.id, team: u.team, unit: u, hero: false })),
 		...heroes.filter((h) => !h.dead).map((h) => ({ id: h.id, team: h.team, unit: h, hero: true })),
-		...dummies.filter((d) => !d.dead).map((d) => ({ id: d.id, team: d.team, unit: d, hero: true })),
+		...dummies
+			.filter((d) => !d.dead && !d.dormant)
+			.map((d) => ({ id: d.id, team: d.team, unit: d, hero: true })),
 		...(lane
 			? [...lane.minions, ...lane.structures]
 					.filter((u) => !u.dead)

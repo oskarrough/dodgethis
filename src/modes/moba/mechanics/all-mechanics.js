@@ -4,8 +4,10 @@ import mechanics_boss from './boss/boss.js'
 import mechanics_bots from './bots/bots.js'
 import mechanics_camps from './camps/camps.js'
 import mechanics_dummies from './dummies/dummies.js'
+import mechanics_dungeon from './dungeon/dungeon.js'
 import mechanics_flag from './flag/flag.js'
 import mechanics_minions from './minions/minions.js'
+import mechanics_packs from './packs/packs.js'
 import mechanics_structures from './structures/structures.js'
 
 export default {
@@ -14,7 +16,9 @@ export default {
 	bots: mechanics_bots,
 	camps: mechanics_camps,
 	dummies: mechanics_dummies,
+	dungeon: mechanics_dungeon,
 	flag: mechanics_flag,
 	minions: mechanics_minions,
+	packs: mechanics_packs,
 	structures: mechanics_structures,
 }

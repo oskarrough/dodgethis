@@ -355,7 +355,7 @@ export function createCombat(ctx) {
 				source: shot.owner,
 			})
 		if (unit.recall) ctx.cancelRecall(unit, 'hit')
-		if (unit.threat) ctx.boss?.addThreat(shot.owner, damage)
+		if (unit.threat) ctx.boss?.addThreat(shot.owner, damage, unit)
 		unit.hp = Math.max(0, unit.hp - damage)
 		const lethal = unit.hp === 0
 		if (!unit.kind && damage > 0) ball?.hurt(unit)

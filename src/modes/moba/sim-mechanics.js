@@ -64,7 +64,8 @@ export function layMechanicGround({
 }
 
 // Then, once heroes stand, the mechanics that act: the lane, neutral camps, and each mechanic's population
-// (Ball, dummies, flag). `systems()` reaches the sim's combat, wired after the mechanics.
+// (Ball, dummies, flag, the boss or a dungeon's bosses, a dungeon's packs). `systems()` reaches the sim's
+// combat, wired after the mechanics.
 export function plugMechanics({
 	mechanics,
 	ground,
@@ -114,7 +115,7 @@ export function plugMechanics({
 		lane && campsMechanic
 			? campsMechanic({ layout, lane, heroes, makeBody: laneView.makeBody, present, obstacles })
 			: null
-	const populations = { ball: null, dummies: [], flag: null, boss: null }
+	const populations = { ball: null, dummies: [], flag: null, boss: null, packs: null }
 	for (const mechanic of mechanics) {
 		if (!mechanic.create) continue
 		populations[mechanic.population] = mechanic.create({
@@ -124,6 +125,7 @@ export function plugMechanics({
 			lane,
 			layout,
 			makeBody: bodyAt,
+			makeMinion: laneView?.makeBody,
 			targets: () => [...heroes, ...(lane?.structures ?? [])],
 			vulnerable: (unit) => lane?.vulnerable(unit) ?? true,
 			obstacles,
@@ -140,6 +142,7 @@ export function plugMechanics({
 			},
 		})
 	}
-	if (populations.boss) populations.dummies.push(populations.boss.unit)
+	if (populations.boss)
+		populations.dummies.push(...(populations.boss.units ?? [populations.boss.unit]))
 	return { lane, camps, ...populations }
 }

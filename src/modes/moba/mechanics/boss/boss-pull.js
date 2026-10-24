@@ -7,11 +7,13 @@ import { ticks, yawOf } from '../../sim-kit.js'
 
 const distance = (a, b) => Math.hypot(a.x - b.x, a.z - b.z)
 
-export function createBossPull({ heroes, layout, makeBody, present, systems, view }) {
-	const definition = wardenDefinition()
-	const spawn = { ...layout.spawns.boss }
+// One boss and its pull. The Warden's room has one at `layout.spawns.boss`; a dungeon passes an
+// `encounter` (id, name, spawn, hp) for each boss on its map.
+export function createBossPull({ heroes, layout, makeBody, present, systems, view, encounter }) {
+	const definition = wardenDefinition(encounter)
+	const spawn = { ...(encounter?.spawn ?? layout.spawns.boss) }
 	const unit = {
-		id: 'warden',
+		id: encounter?.id ?? 'warden',
 		heroId: 'warden',
 		boss: true,
 		team: 'B',
@@ -33,7 +35,13 @@ export function createBossPull({ heroes, layout, makeBody, present, systems, vie
 		cd: [],
 		cancelUntil: [],
 	}
-	const state = { phase: 'idle', started: null, resetTick: null, nextSwing: 0, nextSlam: 0 }
+	const state = {
+		phase: 'idle',
+		started: null,
+		resetTick: null,
+		nextSwing: 0,
+		nextSlam: 0,
+	}
 	const living = () => heroes.filter((h) => !h.dead)
 	const values = () =>
 		Object.fromEntries(Object.entries(unit.threat).map(([id, value]) => [id, Math.round(value)]))
@@ -109,7 +117,14 @@ export function createBossPull({ heroes, layout, makeBody, present, systems, vie
 		state.resetTick = t + ticks(tune.boss.reset)
 		systems().endCast(unit, result)
 		if (!unit.dead) unit.body.update({ x: 0, z: 0 }, STEP, 0)
-		present({ type: 'pull', team: 'A', state: 'end', result, bossHp: unit.hp, threat: values() })
+		present({
+			type: 'pull',
+			team: 'A',
+			state: 'end',
+			result,
+			bossHp: unit.hp,
+			threat: values(),
+		})
 	}
 	function reset() {
 		const ctx = systems()

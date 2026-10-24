@@ -197,23 +197,30 @@ function drawLayout(layout, liveStructures, scale, height, parent, make) {
 		return
 	}
 	box('minimap-floor', 0, 0, bounds.halfX, bounds.halfZ, { rx: 1 })
-	if (s?.lane) {
-		for (const flank of [-1, 1])
-			box(
-				'minimap-lane',
-				0,
-				flank * s.lane.centreZ,
-				bounds.halfX,
-				(s.lane.outerZ - s.lane.innerZ) / 2,
+	// A map without lanes (a dungeon) has no court chalk: floor and cover only.
+	if (layout.lanes.length) {
+		if (s?.lane) {
+			for (const flank of [-1, 1])
+				box(
+					'minimap-lane',
+					0,
+					flank * s.lane.centreZ,
+					bounds.halfX,
+					(s.lane.outerZ - s.lane.innerZ) / 2,
+				)
+			box('minimap-lane', 0, 0, s.clearing.halfX, s.clearing.halfZ)
+		} else {
+			const m = tune.map
+			box('minimap-lane', 0, 0, bounds.halfX, m.hedgeInnerZ)
+			make(
+				'circle',
+				{ class: 'minimap-chalk', cx: X(0), cy: Y(0), r: m.plazaRadius * scale },
+				parent,
 			)
-		box('minimap-lane', 0, 0, s.clearing.halfX, s.clearing.halfZ)
-	} else {
-		const m = tune.map
-		box('minimap-lane', 0, 0, bounds.halfX, m.hedgeInnerZ)
-		make('circle', { class: 'minimap-chalk', cx: X(0), cy: Y(0), r: m.plazaRadius * scale }, parent)
-		line('minimap-chalk', 0, -(bounds.halfZ - inset), 0, bounds.halfZ - inset)
+			line('minimap-chalk', 0, -(bounds.halfZ - inset), 0, bounds.halfZ - inset)
+		}
+		box('minimap-chalk', 0, 0, bounds.halfX - inset, bounds.halfZ - inset)
 	}
-	box('minimap-chalk', 0, 0, bounds.halfX - inset, bounds.halfZ - inset)
 	for (const b of layout.boxes) box(`minimap-${b.kind}`, b.x, b.z, b.halfX, b.halfZ, { rx: 0.4 })
 	for (const p of layout.pillars)
 		make(

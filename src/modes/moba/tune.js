@@ -414,8 +414,9 @@ export const tune = {
 }
 
 // The body's movement profile is the hero section; its extra keys are ignored by the body.
-// Folder tunes (all-tunes.js): an ability's at tune[id], a hero's at tune.heroes[id], a map's or
-// mechanic's keys at the top. An ability or hero id that is already a top-level key would shadow it, so it throws.
+// Folder tunes (all-tunes.js): an ability's at tune[id], a hero's at tune.heroes[id], an encounter's at
+// tune.encounters[id], a map's or mechanic's keys at the top. An ability or hero id that is already a
+// top-level key would shadow it, so it throws.
 const claim = (key, owner) => {
 	if (Object.hasOwn(tune, key)) throw new Error(`MOBA ${owner} collides with tune.${key}`)
 }
@@ -428,6 +429,8 @@ for (const [id, numbers] of Object.entries(tunes.heroes)) {
 	if (Object.hasOwn(tune.heroes, id)) throw new Error(`MOBA hero ${id} has two tunes`)
 	tune.heroes[id] = numbers
 }
+claim('encounters', 'the encounter folders')
+tune.encounters = tunes.encounters
 for (const [kind, folders] of [
 	['map', tunes.maps],
 	['mechanic', tunes.mechanics],

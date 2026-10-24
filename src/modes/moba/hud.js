@@ -191,7 +191,10 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 	// Cards from the top bar open below the bar and the pill together.
 	const objective = el('span', 'moba-objective', top)
 	const topBar = [top, objective]
-	hot(objective, { kind: 'objective' }, topBar).textContent = 'Destroy the enemy core to win'
+	// A mechanic's view may say how its match is won instead (`goal`: line, card).
+	const goal = (mechanics ?? []).map(({ id }) => mechanicViews[id]?.goal).find(Boolean)
+	hot(objective, { kind: 'objective' }, topBar).textContent =
+		goal?.line ?? 'Destroy the enemy core to win'
 	const summary = el('span', 'moba-sr', top)
 	const sides = {}
 	const side = (which) => {
@@ -454,7 +457,7 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 				return t ? t.timer.card(t.reading, { device: frame.device }) : null
 			}
 			case 'objective':
-				return objectiveCard()
+				return goal?.card() ?? objectiveCard()
 			case 'unit': {
 				// Only the lobby's inspect cursor reads units: its cardboard bots and sparring dummies.
 				const unit = source.unit

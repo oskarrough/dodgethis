@@ -30,14 +30,16 @@ export function createMatchMenu({
 	returnToLobby = () => false,
 }) {
 	const recap = createRecap({ sim, hero, canvas: app.renderer?.domElement, paper })
-	const goal = sim.boss
-		? el(
-				'p',
-				'dungeon-goal',
-				document.body,
-				'Keep your party alive; the Warden turns on whoever hurts it most.',
-			)
-		: null
+	// The Warden's room says its goal here; a dungeon says it in the top bar.
+	const goal =
+		sim.boss && !sim.boss.bosses
+			? el(
+					'p',
+					'dungeon-goal',
+					document.body,
+					'Keep your party alive; the Warden turns on whoever hurts it most.',
+				)
+			: null
 	let paused = false
 	let resultShown = false
 	let backHeld = false

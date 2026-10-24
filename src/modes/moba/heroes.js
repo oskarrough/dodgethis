@@ -106,14 +106,20 @@ export const WARDEN_UNIT = {
 	kit: { slot1: 'swing', slot2: 'slam' },
 	brain: 'boss',
 }
-export function wardenDefinition() {
+// The Warden's body and kit; a dungeon encounter gives it its own name and HP.
+export function wardenDefinition({ name = 'Warden', hp } = {}) {
 	const definition = unitFromDeclaration(
 		'brew',
 		WARDEN_UNIT,
-		() => Object.assign(Object.create(heroDefinition('brew').base), tune.boss),
+		() =>
+			Object.assign(
+				Object.create(heroDefinition('brew').base),
+				tune.boss,
+				hp == null ? {} : { hp },
+			),
 		ABILITIES,
 	)
-	definition.name = 'Warden'
+	definition.name = name
 	return definition
 }
 

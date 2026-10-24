@@ -83,8 +83,9 @@ export function createRewards(shared) {
 			present({ type: 'globe', state: 'spawn', team: killerTeam, point: { ...globe.pos } })
 		}
 	}
+	// The trickle from each base; a map without bases (a dungeon) has none.
 	function passiveXp(t) {
-		if (t >= ticks(tune.levels.passiveStart) && t % ticks(1) === 0) {
+		if (layout.bases && t >= ticks(tune.levels.passiveStart) && t % ticks(1) === 0) {
 			for (const team of ['A', 'B'])
 				addXp(
 					team,

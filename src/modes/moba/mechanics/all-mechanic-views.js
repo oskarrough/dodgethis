@@ -2,6 +2,7 @@
 import * as ball_view from './ball/ball-view.js'
 import * as boss_view from './boss/boss-view.js'
 import * as dummies_view from './dummies/dummies-view.js'
+import * as dungeon_view from './dungeon/dungeon-view.js'
 import * as flag_view from './flag/flag-view.js'
 import * as structures_view from './structures/structures-view.js'
 
@@ -9,6 +10,7 @@ export default {
 	ball: ball_view,
 	boss: boss_view,
 	dummies: dummies_view,
+	dungeon: dungeon_view,
 	flag: flag_view,
 	structures: structures_view,
 }
