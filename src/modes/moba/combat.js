@@ -337,8 +337,10 @@ export function createCombat(ctx) {
 				(unit.structure && (shot.isAbility || shot.slot.startsWith('slot'))
 					? tune.waves.abilityStructure
 					: 1) *
-				// A unit may carry its own share of what it takes (Tinaja and Botijo's kinship).
-				(unit.damageTaken ?? 1)
+				// A unit may carry its own share of what it takes (Tinaja and Botijo's kinship), and
+				// its own say over each striker (Espejo's mirror).
+				(unit.damageTaken ?? 1) *
+				(unit.damageFrom?.(event.source, rawDamage) ?? 1)
 		if (event.consumed) return consumedHit('amplify')
 		event.damage = incoming
 		ctx.reactAuras('damage', participants, event)

@@ -46,7 +46,12 @@ export const dungeonBots = {
 	createBot() {
 		const { botPerceive, botThreats } = bossBots.createBot()
 		return {
-			botPerceive,
+			// Mid-pull there is nowhere to heal (a waystone mends only out of a fight), so a hurt
+			// bot fights on rather than drag the boss home.
+			botPerceive: (ctx) => ({
+				...botPerceive(ctx),
+				holdGround: ctx.perceived.boss?.phase === 'engaged',
+			}),
 			botThreats(ctx) {
 				const encounter = ctx.perceived.encounter
 				return [

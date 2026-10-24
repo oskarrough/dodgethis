@@ -1,8 +1,15 @@
-// Espejo, at the sun wing's end: a polished disc that throws the party's own shots back at it.
-// A placeholder Warden under the encounter's name until the fight is built.
-// Win it and the party carries its boon to Gnomon.
+import { createEspejo } from './espejo-fight.js'
+import { espejoBotGoal } from './espejo-bots.js'
+
+// Espejo, at the sun wing's end: a glazier with a mirror for a face. Strike it from the front and
+// your blow is thrown back at you; it turns slowly toward whoever it hates most. So one holds it
+// looking away while the rest work at its back. Now and then it stops to polish its face and
+// forgets every grudge, and the nearest hero must take it up. Win it and the party carries its
+// boon to Gnomon.
 export default {
 	name: 'Espejo',
+	create: createEspejo,
+	botGoal: espejoBotGoal,
 	boon: {
 		id: 'azogue',
 		name: 'Azogue',

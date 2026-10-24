@@ -223,7 +223,7 @@ export function createBot(
 		}
 	const { returnShot, selectTarget, fight, hold, push } = combat
 	const retreat = (ctx) => {
-		if (!combat.retreating) return null
+		if (!combat.retreating || ctx.holdGround) return null
 		ctx.setState('retreat')
 		if (!phases.retreat?.(ctx)) ctx.move(ctx.h.spawn)
 		return ctx.frame
@@ -277,6 +277,7 @@ export function createBot(
 			ctx.pressure = contributions.reduce((sum, c) => sum + (c.pressure ?? 0), 0)
 			ctx.skillsLocked = contributions.some((c) => c.skillsLocked)
 			ctx.castBusy = contributions.some((c) => c.castBusy)
+			ctx.holdGround = contributions.some((c) => c.holdGround)
 			ctx.moveScale = contributions.reduce((scale, c) => scale * (c.moveScale ?? 1), 1)
 			ctx.preferredTargets = contributions.flatMap((c) => c.preferredTargets ?? [])
 			combat.assess(ctx)

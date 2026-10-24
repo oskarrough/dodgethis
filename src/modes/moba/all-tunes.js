@@ -49,7 +49,9 @@ import encounters_barquero, {
 import encounters_carillon, {
 	units as encounters_carillon_units,
 } from './encounters/carillon/carillon-tune.js'
-import encounters_espejo from './encounters/espejo/espejo-tune.js'
+import encounters_espejo, {
+	units as encounters_espejo_units,
+} from './encounters/espejo/espejo-tune.js'
 import encounters_fornax, {
 	units as encounters_fornax_units,
 } from './encounters/fornax/fornax-tune.js'
@@ -154,6 +156,7 @@ export const units = {
 	...abilities_ward_units,
 	...encounters_barquero_units,
 	...encounters_carillon_units,
+	...encounters_espejo_units,
 	...encounters_fornax_units,
 	...encounters_gnomon_units,
 	...encounters_manos_units,
