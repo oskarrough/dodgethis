@@ -165,3 +165,28 @@
 .portal-status[data-go='true'] {
 	background: #9fe3d6;
 }
+/* The map's name over the tear, which is its preview (portal-lobby.js placeCaption). */
+.portal-map {
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 1;
+	display: grid;
+	justify-items: start;
+	gap: 2px;
+	translate: 0 -100%;
+	margin: 0;
+	color: var(--ui-text);
+	text-align: left;
+	white-space: nowrap;
+	pointer-events: none;
+}
+.portal-map small {
+	font:
+		400 15px / 1.2 'Josefin Sans',
+		system-ui,
+		sans-serif;
+}
+.portal-map b {
+	font: 400 clamp(26px, 2.4vw, 40px) / 1 var(--ui-font);
+}

@@ -10,7 +10,7 @@ import { tune as frontTune } from './front/tune.js'
 import { createCornerNav } from '../../core/corner-nav.js'
 import { ICONS } from './hud.js'
 import { createLobbyFloor, saucerExtent } from './lobby-floor.js'
-import { bowlExtent, createWeatherBowl } from './lobby-bowl.js'
+import { mapLayout } from './maps/all-maps.js'
 import { validLobbyHandoff } from './lobby-handoff.js'
 import { createPortal } from '../../core/portal.js'
 import { createPortalFar } from './portal-far.js'
@@ -35,7 +35,8 @@ export function createPortalLobby({ app, run, sim, hero, setup, options }) {
 	applySkin(el)
 	el.innerHTML = `<div class="portal-seats"></div>
 		<nav class="portal-picker" aria-label="Pick a hero" hidden></nav>
-		<p class="portal-status" role="status"></p>`
+		<p class="portal-status" role="status"></p>
+		<p class="portal-map"><small>Next map</small><b></b></p>`
 	const { back: backButton } = createCornerNav(el, { label: 'Back to splash' })
 	// The world lobby's canvas, sky and pastel palette (lobby.js), without its saucer props.
 	el.prepend(backdrop.el, canvas)
@@ -57,7 +58,6 @@ export function createPortalLobby({ app, run, sim, hero, setup, options }) {
 	)
 
 	const floor = createLobbyFloor(app.scene, app.renderer)
-	const bowl = createWeatherBowl(app.scene, el, setup.map, app.renderer)
 	const far = createPortalFar(setup.map)
 	const tear = createPortal(app.renderer, {
 		draw(target, camera) {
@@ -76,6 +76,18 @@ export function createPortalLobby({ app, run, sim, hero, setup, options }) {
 	const mouth = new THREE.Vector3(p.x, p.tearRadius, p.z)
 	tear.place(mouth, facing)
 	tear.exit(new THREE.Vector3(0, p.farHeight, 0), facing)
+	// The tear is the map preview; its caption names the map, printed beside it on the floor, where the
+	// top of the screen can't clip it.
+	const mapCaption = el.querySelector('.portal-map')
+	mapCaption.querySelector('b').textContent = mapLayout(setup.map).name
+	const captionAt = new THREE.Vector3(p.tearRadius * 0.8, 0, p.z)
+	const projected = new THREE.Vector3()
+	function placeCaption(camera) {
+		projected.copy(captionAt).project(camera)
+		mapCaption.hidden = projected.z < -1 || projected.z > 1
+		mapCaption.style.left = `${((projected.x + 1) * innerWidth) / 2}px`
+		mapCaption.style.top = `${((1 - projected.y) * innerHeight) / 2}px`
+	}
 	let viewTime = sim.tick * app.clock.step
 	const squeezed = new Set()
 	const entered = new Set() // heroes in the tear last frame, so each step in flashes it once
@@ -137,8 +149,8 @@ export function createPortalLobby({ app, run, sim, hero, setup, options }) {
 		}
 	}
 
-	// The whole saucer and bowl in frame between the team columns; nothing follows.
-	const extent = [...saucerExtent(), ...bowlExtent()]
+	// The whole saucer in frame between the team columns; nothing follows.
+	const extent = saucerExtent()
 	const fitter = new THREE.PerspectiveCamera()
 	const fit = { key: '', x: 0, z: 0, distance: 30 }
 	const point = new THREE.Vector3()
@@ -489,7 +501,6 @@ export function createPortalLobby({ app, run, sim, hero, setup, options }) {
 			el.remove()
 			app.setPalette({})
 			floor.dispose()
-			bowl.dispose()
 			tear.dispose()
 			far.dispose()
 			for (const h of squeezed) h.body.mesh?.scale.setScalar(1)
@@ -579,7 +590,7 @@ export function createPortalLobby({ app, run, sim, hero, setup, options }) {
 				tear.update(dt, app.camera.view)
 				slip(time, from)
 			}
-			bowl.update(sim.tick * app.clock.step, app.camera.view)
+			placeCaption(app.camera.view)
 			update(from)
 		},
 		hudFrame: () => ({

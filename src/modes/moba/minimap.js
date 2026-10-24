@@ -137,7 +137,7 @@ export function createMinimap(
 						const icon = marker.firstChild
 						for (const [key, value] of Object.entries({ x: -5, y: -5, width: 10, height: 10 }))
 							icon.setAttribute(key, value)
-						make('path', { class: 'minimap-destroyed', d: 'M-4 4 L4 -4' }, marker)
+						make('path', { class: 'minimap-destroyed', d: 'M-4 4 L4 -4 M-4 -4 L4 4' }, marker)
 					} else {
 						make('circle', { class: 'minimap-local', r: 4 }, marker)
 						make('circle', { class: 'tone', r: 2.3 }, marker)

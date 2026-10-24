@@ -19,14 +19,13 @@ function lobbyRimCover() {
 }
 
 export function lobbyLayout() {
-	const s = tune.lobby.floor,
-		b = tune.lobby.bowl
+	const s = tune.lobby.floor
 	return {
 		name: 'Lobby',
 		bounds: tune.lobby.bounds,
 		walkingBounds: tune.lobby.bounds,
 		fieldBounds: { halfX: s.halfX + s.rim.width, halfZ: s.halfZ + s.rim.width },
-		obstacles: [...lobbyRimCover(), { kind: 'lobby-bowl', x: b.x, z: b.z, r: b.radius }],
+		obstacles: lobbyRimCover(),
 		boxes: [],
 		pillars: [],
 		spawns: { A: tune.lobby.marks[0], B: tune.lobby.marks[tune.lobby.capacity / 2] },
