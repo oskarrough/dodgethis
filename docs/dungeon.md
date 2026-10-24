@@ -4,6 +4,16 @@ A WoW-style pull in the moba mode: one to five heroes fight a boss, and after ev
 
 Dungeon is a MOBA map on the splash, with the same online rooms as the other MOBA maps. Its party holds one to five heroes, all on the same team: go alone, invite friends, add bots, or mix them. Empty places stay empty. Its dedicated party screen suggests Mender for you and lists all five slots. Choose your hero from your row's dropdown; the host adds or removes bots and chooses their heroes directly in each row. Each guest marks Ready, then the host starts the dungeon. Solo, Enter dungeon starts immediately. Party edits clear readiness. There are no walking controls or ready plates on this screen; the other maps keep their walk-around lobby. A map already gets heroes, casting, statuses, facts, bots, camera and HUD for free, and the contract lets a map pick its own mechanics. Names (Mender, Warden, Mend, Ward, Slam) are placeholders until Oskar names them.
 
+## The Hollow Mesa
+
+The Hollow Mesa is a proof of concept for a longer dungeon: one open plateau of sand and red stone (`?mode=moba&map=hollowMesa&play`, in `maps/hollowMesa/`) where a party of up to five walks in from the west, fights through hand-placed packs of guards and fells a series of Wardens. Every Warden is a placeholder with a name and a pool of health, because the real fights are not built yet, and three bots clear the whole mesa in about 150 seconds.
+
+The packs (`mechanics/packs/`) stand where the layout puts them, each made of melee, ranged and brute guards on team `N`. When any one of them notices a hero the whole pack wakes together, and if the party flees the guards follow only so far before they turn home, heal to full once they are calm, and wait. A few walk a patrol loop between two points until they spot someone. A pack that dies stays dead.
+
+Each Warden is an encounter (`encounters/<id>/`, see `extending.md`), and the layout places seven along the road: the Gate of Hands, the Twin Potters, the Kiln Gallery, the Ferry, the Bell Choir, the Mirror and the Sundial. The Kiln Gallery and the Ferry lie in the shade wing to the north, the Bell Choir and the Mirror in the sun wing to the south, and the Sundial waits at the top of the stair in the east. The dungeon run (`mechanics/dungeon/dungeon-run.js`) lets several of these pulls stand open at once. A Warden that falls stays fallen, and the heroes who died in that fight rise a few seconds later at their waystones. A wipe puts back only the Warden you were fighting. The Sundial sleeps until every Warden outside the wings is dead and one whole wing besides, and its death ends the run with a win for the party.
+
+Eight waystones stand along the road. Walk up to one and it attunes, so that anyone who falls rises at the last stone you passed instead of at the gate. The hourglass in the top bar counts the run against three marks, Glass, Clay and Stone, and the goal line beside it keeps the Sundial in view. Bots fight any woken pack near them and otherwise walk to the next Warden.
+
 ## A pull
 
 1. Your chosen party stands at the entrance of a round room. The Warden waits in the middle.

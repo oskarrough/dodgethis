@@ -4,7 +4,7 @@
 
 - **core** (`src/core/`): the engine. Physics, loop, intents, camera, sound, screens. Imports nothing above it.
 - **mode** (`src/modes/<id>/`): a game you can play. `dodgeball` and `moba`. A mode owns a loop, a ground and a win condition, and imports only core.
-- **mod** (`src/modes/moba/<kind>/<id>/`): a piece dropped into a mode. A hero, ability, map or mechanic: three fixed files, found by folder. Today only moba has mods.
+- **mod** (`src/modes/moba/<kind>/<id>/`): a piece dropped into a mode. A hero, ability, map, mechanic or encounter: three fixed files (an encounter needs two), found by folder. Today only moba has mods.
 - **online** (`src/online/`): networking. Not a mode and not core; it imports core and restarts whichever mode is running.
 - **plugin**: the mechanism, `function (app) { … }`. Modes and online are plugins; the word names how they attach, never a folder.
 
@@ -41,7 +41,7 @@ It's an ongoing goal of the game to be extremely malleable, inspired by emacs, n
 
 ## Drop a folder in
 
-A hero, ability, map or mechanic is a folder under `src/modes/moba/{heroes,abilities,maps,mechanics}/<id>/`. Three files have fixed names, because the game has to find them without running your code:
+A hero, ability, map, mechanic or encounter is a folder under `src/modes/moba/{heroes,abilities,maps,mechanics,encounters}/<id>/`. Three files have fixed names, because the game has to find them without running your code:
 
 - `<id>.js` is the logic. The headless simulation loads it, so it never imports drawing code.
 - `<id>-view.js` is the drawing. Only the browser loads it.
@@ -64,7 +64,9 @@ Copy `heroes/wata/` and `abilities/balloon/`; Wata was built this way and touche
 
 Every new MOBA tune number needs a unit in `src/modes/moba/units.js` (exact dotted suffixes override bare fields; blocks can declare defaults); `bun scripts/check-moba-units.js` enforces coverage.
 
-A mechanic is something a map switches on: structures, minions, the Ball, bots, camps, the flag, practice dummies. `mechanics/ball/` is the whole example: logic, bots, drawing, numbers (`ball-tune.js`, its keys at the top of `tune`), keywords (`terms`) and a top-bar countdown (the view's `timer`: `icon`, `read`, `card`, shown by `hud.js` for any mechanic that has one). Casting, catching, bounce and damage are the engine every ability runs through; an ability is a data head and a code body in that path, never its own projectile loop.
+A mechanic is something a map switches on: structures, minions, the Ball, bots, camps, the flag, practice dummies. `mechanics/ball/` is the whole example: logic, bots, drawing, numbers (`ball-tune.js`, its keys at the top of `tune`), keywords (`terms`) and a top-bar countdown (the view's `timer`: `icon`, `read`, `card`, shown by `hud.js` for any mechanic that has one; a view's `goal` works the same way for the top-bar goal line and its card, as the dungeon's does). Casting, catching, bounce and damage are the engine every ability runs through; an ability is a data head and a code body in that path, never its own projectile loop.
+
+An encounter is a boss fight a dungeon map places. It has two files, `encounters/<id>/<id>.js` (its name, and later its code) and `<id>-tune.js` (its numbers, which land at `tune.encounters[id]`); `scripts/collect-mods.js` gathers the folders into `encounters/all-encounters.js`. A map places it by listing `{ id, x, z }` in its `layout.encounters` (with `wing` or `last` where the run needs them), and the dungeon run hands the boss pull its name, spawn and hp. `encounters/gateOfHands/` is the smallest example.
 
 ## Find where anything lives
 
