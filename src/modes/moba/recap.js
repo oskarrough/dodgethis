@@ -49,8 +49,11 @@ export function createRecap({ sim, hero, canvas, paper = (node) => node }) {
 		canvas.classList.toggle('moba-dead-world', dead)
 		root.hidden = !dead || !death || hidden
 		if (root.hidden) return
-		const seconds = Math.max(0, (hero.respawnTick - sim.tick - alpha) * step)
-		const text = `Respawn in ${seconds.toFixed(1)} s`
+		const seconds = Number.isFinite(hero.respawnTick)
+			? Math.max(0, (hero.respawnTick - sim.tick - alpha) * step)
+			: null
+		const text =
+			seconds == null ? 'Down until the fight resets' : `Respawn in ${seconds.toFixed(1)} s`
 		if (text !== lastCountdown) {
 			countdown.textContent = text
 			lastCountdown = text

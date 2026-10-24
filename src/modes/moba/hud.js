@@ -101,7 +101,11 @@ export function matchFrame(sim, hero, blend, step) {
 		localTeam: hero.team,
 		hp: hero.hp,
 		maxHp: hero.maxHp,
-		respawn: hero.dead ? Math.max(0, until(hero.respawnTick)) : null,
+		respawn: !hero.dead
+			? null
+			: Number.isFinite(hero.respawnTick)
+				? Math.max(0, until(hero.respawnTick))
+				: Infinity,
 	}
 }
 
@@ -759,8 +763,9 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 				(id) => (traitIcon.innerHTML = ICONS[id] ?? ''),
 			)
 			text(traitText, heroicTrait?.chip ?? '')
+			const timed = Number.isFinite(respawn)
 			flag(portrait, 'dead', respawn != null)
-			text(respawnNode, respawn != null ? String(Math.ceil(respawn)) : '')
+			text(respawnNode, timed ? String(Math.ceil(respawn)) : '')
 			const shield = statusBar(hero, 'shield')
 			const pending = statusBar(hero, 'pending')
 			const shieldHp = shield.amount
@@ -769,9 +774,11 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 			prop(health, '--tick', `${((tune.hud.hpTick / Math.max(1, maxHp)) * 100).toFixed(3)}%`)
 			text(
 				healthText,
-				respawn != null
-					? `Respawn in ${Math.ceil(respawn)} s`
-					: `${Math.min(Math.ceil(hp), Math.round(maxHp))} / ${Math.round(maxHp)}${shieldHp > 0 ? ` + ${Math.ceil(shieldHp)} ${shield.label.toLowerCase()}` : ''}${staggerHp > 0 ? ` · ${Math.ceil(staggerHp)} ${pending.label.toLowerCase()}` : ''}`,
+				respawn == null
+					? `${Math.min(Math.ceil(hp), Math.round(maxHp))} / ${Math.round(maxHp)}${shieldHp > 0 ? ` + ${Math.ceil(shieldHp)} ${shield.label.toLowerCase()}` : ''}${staggerHp > 0 ? ` · ${Math.ceil(staggerHp)} ${pending.label.toLowerCase()}` : ''}`
+					: timed
+						? `Respawn in ${Math.ceil(respawn)} s`
+						: 'Down',
 			)
 			if (teams) {
 				const progress = levelProgress(teams[localTeam].xp)

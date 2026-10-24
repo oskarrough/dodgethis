@@ -949,7 +949,11 @@ export function createLobby({
 				cooldowns: hero.cd.slice(0, 3).map((cd) => Math.max(0, cd - alpha) * step),
 				hp: hero.hp,
 				maxHp: hero.maxHp,
-				respawn: hero.dead ? Math.max(0, hero.respawnTick - sim.tick - alpha) * step : null,
+				respawn: !hero.dead
+					? null
+					: Number.isFinite(hero.respawnTick)
+						? Math.max(0, hero.respawnTick - sim.tick - alpha) * step
+						: Infinity,
 			}
 		},
 	}
