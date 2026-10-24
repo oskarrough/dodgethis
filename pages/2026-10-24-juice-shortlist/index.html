@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Juice shortlist · dodgethis</title>
+		<link rel="stylesheet" href="/pages/page.css" />
+		<style>
+			.page {
+				max-width: 1280px;
+			}
+			#grid {
+				display: grid;
+				grid-template-columns: repeat(3, 1fr);
+				gap: 14px;
+			}
+			figure {
+				margin: 0;
+			}
+			.tile {
+				aspect-ratio: 4 / 3;
+				border: 2px solid #26445f;
+				border-radius: 6px;
+			}
+			.tile span {
+				display: inline-block;
+				position: relative;
+				z-index: 1;
+				margin: 8px 10px;
+				font-weight: 700;
+				color: #26445f;
+			}
+			figcaption {
+				font-size: 14px;
+				line-height: 1.4;
+				margin-top: 6px;
+			}
+			figcaption b {
+				font-size: 16px;
+			}
+			figcaption i {
+				color: #6b6259;
+			}
+			canvas#gl {
+				position: fixed;
+				left: 0;
+				top: 0;
+				width: 100vw;
+				height: 100vh;
+				pointer-events: none;
+			}
+			@media (max-width: 800px) {
+				#grid {
+					grid-template-columns: 1fr;
+				}
+			}
+		</style>
+	</head>
+	<body class="page">
+		<main>
+			<h1>Juice shortlist</h1>
+			<p class="lede">
+				Nine ways a blow could land, each drawn in our own flat ink, looping on a stand-in fight:
+				blue strikes red. They are sketches in plain three.js, not the game, to choose which ones we
+				build into the shared kit. Every one is cheap enough for our WebGL style pass; none needs
+				WebGPU.
+			</p>
+			<div id="grid"></div>
+		</main>
+		<canvas id="gl"></canvas>
+		<script type="module" src="./lab.js"></script>
+	</body>
+</html>
