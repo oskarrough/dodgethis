@@ -26,6 +26,20 @@ export function clampMap(p, margin = 0, bounds = FLOOR) {
 
 // First exit from the map, preserving a shot/aim's heading rather than bending it along the edge.
 export function mapExit(a, b, margin = 0, bounds = FLOOR) {
+	if (bounds.radius !== undefined) {
+		const r = Math.max(0, bounds.radius - margin)
+		const dx = b.x - a.x,
+			dz = b.z - a.z
+		const c = a.x * a.x + a.z * a.z - r * r
+		if (c > 0) return 0
+		const qa = dx * dx + dz * dz
+		if (!qa) return null
+		const qb = 2 * (a.x * dx + a.z * dz),
+			disc = qb * qb - 4 * qa * c
+		if (disc < 0) return null
+		const t = (-qb + Math.sqrt(disc)) / (2 * qa)
+		return t >= 0 && t <= 1 ? t : null
+	}
 	let at = null
 	for (const [key, half] of [
 		['x', bounds.halfX - margin],
@@ -167,8 +181,13 @@ export function contactNormal(p, radius = 0, obstacles = OBSTACLES, bounds = FLO
 		gap = Math.abs(g)
 		best = { x, z }
 	}
-	keep(bounds.halfX - radius - Math.abs(p.x), -Math.sign(p.x), 0)
-	keep(bounds.halfZ - radius - Math.abs(p.z), 0, -Math.sign(p.z))
+	if (bounds.radius !== undefined) {
+		const d = Math.hypot(p.x, p.z) || 1
+		keep(bounds.radius - radius - d, -p.x / d, -p.z / d)
+	} else {
+		keep(bounds.halfX - radius - Math.abs(p.x), -Math.sign(p.x), 0)
+		keep(bounds.halfZ - radius - Math.abs(p.z), 0, -Math.sign(p.z))
+	}
 	for (const o of obstacles) {
 		const cx = o.r !== undefined ? o.x : Math.max(o.x - o.halfX, Math.min(o.x + o.halfX, p.x))
 		const cz = o.r !== undefined ? o.z : Math.max(o.z - o.halfZ, Math.min(o.z + o.halfZ, p.z))
