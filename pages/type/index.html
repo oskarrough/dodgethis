@@ -143,7 +143,7 @@
 				background: #26445f;
 				color: #fffdf4;
 			}
-			.controls input[type='text'] {
+			.controls select {
 				font: 12px system-ui;
 				width: 100%;
 				box-sizing: border-box;
@@ -338,14 +338,15 @@
 		<div class="bar">
 			<h1>Type picker</h1>
 			<p>
-				Column one is what ships. Type any Google Fonts family name to load it. The link in the
-				address bar holds every column, so it can be shared as is. Drop a .woff2, .otf or .ttf
-				anywhere on the page to try a font file; it is named after the file.
+				Column one is what ships. Pick faces from the menus, or lay out one column per pick. The
+				link in the address bar holds every column. Drop a .woff2, .otf or .ttf anywhere to try a
+				font file.
 			</p>
+			<button id="picks">One column per pick</button>
+			<input id="other" type="text" placeholder="Add any Google font…" />
 			<button id="add">+ Column</button>
 		</div>
 		<div id="cols"></div>
-		<datalist id="families"></datalist>
 
 		<template id="col">
 			<div class="col">
@@ -355,14 +356,17 @@
 						<button data-act="dup">Duplicate</button>
 						<button data-act="del">Remove</button>
 					</div>
-					<label>Display</label><input type="text" list="families" data-k="ui" /><span></span>
-					<label>weight</label
+					<label>Display</label
+					><select data-k="ui"></select
+					><span></span> <label>weight</label
 					><input type="range" min="100" max="900" step="100" data-k="uiW" /><output></output>
-					<label>Text</label><input type="text" list="families" data-k="text" /><span></span>
-					<label>weight</label
+					<label>Text</label
+					><select data-k="text"></select
+					><span></span> <label>weight</label
 					><input type="range" min="100" max="900" step="100" data-k="textW" /><output></output>
-					<label>Numbers</label><input type="text" list="families" data-k="num" /><span></span>
-					<label>Size</label
+					<label>Numbers</label
+					><select data-k="num"></select
+					><span></span> <label>Size</label
 					><input type="range" min="0.6" max="1.6" step="0.05" data-k="k" /><output></output>
 					<label>Tracking</label
 					><input type="range" min="-0.08" max="0.2" step="0.01" data-k="track" /><output></output>
@@ -385,8 +389,9 @@
 					<div class="tip">
 						<h3 class="d">Tangle</h3>
 						<p class="t">
-							Flick the yo-yo along a line. The first enemy hit is <span class="kw">Slowed</span> by
-							40% and takes 60 damage; a hero already slowed is <span class="kw">Stunned</span>
+							Flick the yo-yo along a line. The first enemy hit is
+							<span class="kw">Slowed</span> by 40% and takes 60 damage; a hero already slowed is
+							<span class="kw">Stunned</span>
 							instead.
 						</p>
 						<div class="fact t">Cooldown 8s · Range 9m · Hook's second skill</div>
@@ -457,13 +462,11 @@
 				k: 1,
 				track: 0,
 			}
-			// Oskar's picks first. Comico and Striper load from Fontshare's CDN; the self-hosted three are LOCAL.
+			// Comico and Striper load from Fontshare's CDN; the self-hosted ones are LOCAL; the rest are Google.
 			const FONTSHARE = new Set(['Comico', 'Striper'])
-			const SUGGESTIONS = [
-				'Darumadrop One',
-				'Ranchers',
-				'Barriecito',
-				'Josefin Sans',
+			// Picks that can carry sentences too, so their column sets the text role as well.
+			const TEXTY = new Set(['Hyperlegible Sans', 'Apfel Grotezk', 'Cooper Hewitt', 'Grandstander'])
+			const PICKS = [
 				'Gluten',
 				'Grandstander',
 				'Hyperlegible Sans',
@@ -472,38 +475,60 @@
 				'Pigeon',
 				'Comico',
 				'Striper',
-				'Atkinson Hyperlegible Next',
-				'Fredoka',
-				'Baloo 2',
-				'Lilita One',
-				'Titan One',
-				'Luckiest Guy',
-				'Chango',
-				'Bowlby One',
-				'Rammetto One',
-				'Sniglet',
-				'Chewy',
-				'Mochiy Pop One',
-				'Dela Gothic One',
-				'Bungee',
-				'Rubik',
-				'Nunito',
-				'Outfit',
-				'Figtree',
-				'Lexend',
-				'Recursive',
-				'Space Grotesk',
-				'DM Sans',
-				'Atkinson Hyperlegible',
-				'Jost',
-				'Quicksand',
-				'Varela Round',
-				'M PLUS Rounded 1c',
-				'system-ui',
-				'ui-rounded',
-				'monospace',
-				'ui-monospace',
 			]
+			const GROUPS = {
+				Shipping: ['Darumadrop One', 'Josefin Sans', 'Ranchers', 'Barriecito'],
+				"Oskar's picks": PICKS,
+				Added: [],
+				'More ideas': [
+					'Atkinson Hyperlegible Next',
+					'Fredoka',
+					'Baloo 2',
+					'Lilita One',
+					'Titan One',
+					'Luckiest Guy',
+					'Chango',
+					'Bowlby One',
+					'Rammetto One',
+					'Sniglet',
+					'Chewy',
+					'Mochiy Pop One',
+					'Dela Gothic One',
+					'Bungee',
+					'Rubik',
+					'Nunito',
+					'Outfit',
+					'Figtree',
+					'Lexend',
+					'Recursive',
+					'Space Grotesk',
+					'DM Sans',
+					'Atkinson Hyperlegible',
+					'Jost',
+					'Quicksand',
+					'Varela Round',
+					'M PLUS Rounded 1c',
+				],
+				Generic: ['system-ui', 'ui-rounded', 'monospace', 'ui-monospace'],
+			}
+			const known = (f) => Object.values(GROUPS).some((g) => g.includes(f))
+			function addFamily(f) {
+				if (f && !known(f)) GROUPS.Added.push(f)
+			}
+			const options = () =>
+				Object.entries(GROUPS)
+					.filter(([, g]) => g.length)
+					.map(
+						([name, g]) =>
+							`<optgroup label="${name}">${g.map((f) => `<option>${f}</option>`).join('')}</optgroup>`,
+					)
+					.join('')
+			const pickColumns = () =>
+				PICKS.map((f) => ({
+					...SHIPPING,
+					ui: f,
+					text: TEXTY.has(f) ? f : SHIPPING.text,
+				}))
 			const LOCAL = new Set([
 				'Josefin Sans',
 				'Hyperlegible Sans',
@@ -517,9 +542,6 @@
 				'sans-serif',
 				'serif',
 			])
-			document.getElementById('families').innerHTML = SUGGESTIONS.map(
-				(f) => `<option value="${f}">`,
-			).join('')
 
 			// Google Fonts css2 refuses a weight a family lacks, so ask for the variable range first, then plain.
 			const loaded = new Map()
@@ -557,9 +579,9 @@
 			try {
 				cols = JSON.parse(decodeURIComponent(location.hash.slice(1)))
 			} catch {}
-			if (!Array.isArray(cols) || !cols.length)
-				cols = [{ ...SHIPPING }, { ...SHIPPING, ui: 'Lilita One', text: 'Nunito' }]
+			if (!Array.isArray(cols) || cols.length < 2) cols = [{ ...SHIPPING }, ...pickColumns()]
 			cols[0] = { ...SHIPPING } // the first column stays the reference
+			for (const c of cols) for (const f of [c.ui, c.text, c.num]) addFamily(f)
 
 			const root = document.getElementById('cols')
 			const tpl = document.getElementById('col')
@@ -573,7 +595,7 @@
 				const el = tpl.content.firstElementChild.cloneNode(true)
 				const shipping = i === 0
 				el.classList.toggle('shipping', shipping)
-				el.querySelector('.name').textContent = shipping ? 'Shipping' : `Candidate ${i}`
+				el.querySelector('.name').textContent = shipping ? 'Shipping' : c.ui
 				if (shipping) el.querySelector('[data-act=del]').remove()
 				el.querySelector('[data-act=dup]').onclick = () => {
 					cols.splice(i + 1, 0, { ...c })
@@ -585,13 +607,14 @@
 				})
 				for (const input of el.querySelectorAll('[data-k]')) {
 					const k = input.dataset.k
+					if (input.tagName === 'SELECT') input.innerHTML = options()
 					input.value = c[k]
 					input.disabled = shipping
 					const out = input.nextElementSibling
 					input.addEventListener('input', () => {
 						c[k] = input.type === 'range' ? +input.value : input.value
 						apply(el, c)
-						if (input.type === 'text') load(c[k])
+						if (input.tagName === 'SELECT') load(c[k])
 						history.replaceState(null, '', '#' + encodeURIComponent(JSON.stringify(cols)))
 					})
 					input._out = out
@@ -637,11 +660,22 @@
 					const face = new FontFace(family, await file.arrayBuffer())
 					document.fonts.add(await face.load())
 					LOCAL.add(family)
-					document
-						.getElementById('families')
-						.insertAdjacentHTML('afterbegin', `<option value="${family}">`)
+					addFamily(family)
 					cols.push({ ...cols.at(-1), ui: family })
 				}
+				render()
+			})
+
+			document.getElementById('picks').onclick = () => {
+				cols = [{ ...SHIPPING }, ...pickColumns()]
+				render()
+			}
+			document.getElementById('other').addEventListener('change', (e) => {
+				const family = e.target.value.trim()
+				e.target.value = ''
+				if (!family) return
+				addFamily(family)
+				cols.push({ ...SHIPPING, ui: family })
 				render()
 			})
 
