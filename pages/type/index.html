@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Type picker · dodgethis</title>
+		<link rel="stylesheet" href="/pages/page.css" />
+		<!-- A tool, so it styles itself. Each column is a set of the game's three type roles:
+		     display (--ui-font), text (--text-font) and the canvas damage numbers (look.js). The first
+		     column is what ships; the rest are candidates. Any Google Fonts family name loads on entry. -->
+		<style>
+			@font-face {
+				font-family: 'Josefin Sans';
+				font-weight: 300;
+				src: url('/fonts/josefin-sans-light-latin.woff2') format('woff2');
+			}
+			@font-face {
+				font-family: 'Josefin Sans';
+				font-weight: 400;
+				src: url('/fonts/josefin-sans-regular-latin.woff2') format('woff2');
+			}
+			/* Not on Google Fonts, so self-hosted for this tool only (OFL, licence beside each). */
+			@font-face {
+				font-family: 'Hyperlegible Sans';
+				font-weight: 400;
+				src: url('/fonts/picker/hyperlegible-sans/HyperlegibleSans-Regular.woff2') format('woff2');
+			}
+			@font-face {
+				font-family: 'Hyperlegible Sans';
+				font-weight: 500;
+				src: url('/fonts/picker/hyperlegible-sans/HyperlegibleSans-Medium.woff2') format('woff2');
+			}
+			@font-face {
+				font-family: 'Hyperlegible Sans';
+				font-weight: 700;
+				src: url('/fonts/picker/hyperlegible-sans/HyperlegibleSans-Bold.woff2') format('woff2');
+			}
+			@font-face {
+				font-family: 'Apfel Grotezk';
+				font-weight: 400;
+				src: url('/fonts/picker/apfel-grotezk/apfel-grotezk-latin-400-normal.woff2') format('woff2');
+			}
+			@font-face {
+				font-family: 'Apfel Grotezk';
+				font-weight: 700;
+				src: url('/fonts/picker/apfel-grotezk/apfel-grotezk-latin-700-normal.woff2') format('woff2');
+			}
+			@font-face {
+				font-family: 'Cooper Hewitt';
+				font-weight: 300;
+				src: url('/fonts/picker/cooper-hewitt/cooper-hewitt-latin-300-normal.woff2') format('woff2');
+			}
+			@font-face {
+				font-family: 'Cooper Hewitt';
+				font-weight: 400;
+				src: url('/fonts/picker/cooper-hewitt/cooper-hewitt-latin-400-normal.woff2') format('woff2');
+			}
+			@font-face {
+				font-family: 'Cooper Hewitt';
+				font-weight: 500;
+				src: url('/fonts/picker/cooper-hewitt/cooper-hewitt-latin-500-normal.woff2') format('woff2');
+			}
+			@font-face {
+				font-family: 'Cooper Hewitt';
+				font-weight: 600;
+				src: url('/fonts/picker/cooper-hewitt/cooper-hewitt-latin-600-normal.woff2') format('woff2');
+			}
+			@font-face {
+				font-family: 'Cooper Hewitt';
+				font-weight: 700;
+				src: url('/fonts/picker/cooper-hewitt/cooper-hewitt-latin-700-normal.woff2') format('woff2');
+			}
+			@font-face {
+				font-family: 'Cooper Hewitt';
+				font-weight: 800;
+				src: url('/fonts/picker/cooper-hewitt/cooper-hewitt-latin-800-normal.woff2') format('woff2');
+			}
+			.page.app {
+				max-width: none;
+				padding: 16px;
+				background: #8fd7ff;
+			}
+			.bar {
+				display: flex;
+				gap: 12px;
+				align-items: baseline;
+				flex-wrap: wrap;
+				margin-bottom: 12px;
+			}
+			.bar h1 {
+				margin: 0;
+				font-size: 20px;
+			}
+			.bar p {
+				margin: 0;
+				flex: 1;
+				font-size: 13px;
+			}
+			button {
+				font: 600 13px/1 system-ui;
+				padding: 6px 10px;
+				border: 1px solid #26445f55;
+				border-radius: 6px;
+				background: #fffdf4;
+				cursor: pointer;
+			}
+			#cols {
+				display: grid;
+				grid-auto-flow: column;
+				grid-auto-columns: minmax(340px, 1fr);
+				gap: 12px;
+				overflow-x: auto;
+				align-items: start;
+			}
+			.col {
+				--ui-font: system-ui;
+				--text-font: system-ui;
+				--num-font: monospace;
+				--ui-w: 400;
+				--text-w: 400;
+				--k: 1;
+				--track: 0em;
+				color: #26445f;
+				background: #fffdf4;
+				border-radius: 14px;
+				overflow: hidden;
+			}
+			.col.shipping {
+				outline: 3px solid #ffbf3f;
+			}
+			.controls {
+				display: grid;
+				grid-template-columns: auto 1fr 64px;
+				gap: 4px 8px;
+				align-items: center;
+				padding: 10px 12px;
+				font: 12px/1.2 system-ui;
+				background: #26445f;
+				color: #fffdf4;
+			}
+			.controls input[type='text'] {
+				font: 12px system-ui;
+				width: 100%;
+				box-sizing: border-box;
+			}
+			.controls input[type='range'] {
+				width: 100%;
+			}
+			.controls output {
+				font-variant-numeric: tabular-nums;
+				text-align: right;
+			}
+			.controls .head {
+				grid-column: 1 / -1;
+				display: flex;
+				gap: 6px;
+				align-items: center;
+			}
+			.controls .head b {
+				flex: 1;
+			}
+			.controls .head button {
+				padding: 3px 6px;
+				font-size: 11px;
+			}
+			/* The samples. Sizes are the game's own, times the column's scale. */
+			.d {
+				font-family: var(--ui-font);
+				font-weight: var(--ui-w);
+				letter-spacing: var(--track);
+			}
+			.t {
+				font-family: var(--text-font);
+				font-weight: var(--text-w);
+			}
+			.s {
+				padding: 12px;
+				border-top: 1px solid #26445f1a;
+			}
+			.s > small {
+				display: block;
+				font: 10px/1 system-ui;
+				text-transform: uppercase;
+				letter-spacing: 0.08em;
+				opacity: 0.5;
+				margin-bottom: 8px;
+			}
+			.topbar {
+				display: flex;
+				gap: 14px;
+				align-items: center;
+				justify-content: center;
+				padding: 6px 16px;
+				border-radius: 999px;
+				background: #fffdf4;
+				box-shadow: 0 0 0 1.5px #26445f inset;
+				font-size: calc(20px * var(--k));
+				line-height: 1;
+				font-variant-numeric: tabular-nums;
+			}
+			.blue {
+				color: #1677ff;
+			}
+			.red {
+				color: #ff4f6d;
+			}
+			.field {
+				background: #69d66f;
+				display: flex;
+				justify-content: space-around;
+				align-items: end;
+				padding: 18px 8px 12px;
+			}
+			.plate {
+				text-align: center;
+				font-size: calc(20px * var(--k));
+				line-height: 1;
+			}
+			.plate i {
+				display: block;
+				width: 72px;
+				height: 7px;
+				margin: 4px auto 0;
+				border-radius: 4px;
+				background: linear-gradient(90deg, var(--c) 64%, #26445f33 0);
+			}
+			.dmg {
+				font: bold calc(28px * var(--k)) / 1 var(--num-font);
+				color: #fff;
+				-webkit-text-stroke: 6px #26445f;
+				paint-order: stroke fill;
+			}
+			.dmg.heal {
+				color: #7dff9c;
+			}
+			.tip {
+				max-width: 300px;
+				padding: 12px 14px;
+				border-radius: 14px;
+				background: #fffdf4;
+				box-shadow: 0 6px 20px rgba(38, 68, 95, 0.28);
+			}
+			.tip h3 {
+				margin: 0 0 6px;
+				font-size: calc(22px * var(--k));
+				line-height: 1.05;
+			}
+			.tip p {
+				margin: 0 0 6px;
+				font-size: calc(15px * var(--k));
+				line-height: 1.4;
+			}
+			.tip .fact {
+				font-size: calc(13.5px * var(--k));
+				line-height: 1.35;
+				color: #5f7897;
+			}
+			.kw {
+				color: #ff9f1c;
+				text-decoration: underline dotted;
+			}
+			.buttons {
+				display: flex;
+				gap: 8px;
+				flex-wrap: wrap;
+			}
+			.buttons span {
+				padding: 10px 16px;
+				border-radius: 999px;
+				background: #ffcf5a;
+				box-shadow: 0 0 0 1.5px #26445f inset;
+				font-size: calc(20px * var(--k));
+				line-height: 1;
+			}
+			.buttons span.quiet {
+				background: #fffdf4;
+			}
+			.terra {
+				background: #c98462;
+				text-align: center;
+				padding: 24px 8px;
+			}
+			.terra .title {
+				font-size: calc(72px * var(--k));
+				line-height: 1;
+				color: #fffdf4;
+				-webkit-text-stroke: 3px #26445f;
+				paint-order: stroke fill;
+			}
+			.terra .sub {
+				margin-top: 6px;
+				font-size: calc(20px * var(--k));
+				color: #fffdf4;
+			}
+			.score {
+				width: 100%;
+				border-collapse: collapse;
+				font-size: calc(15px * var(--k));
+				font-variant-numeric: tabular-nums;
+			}
+			.score th {
+				font-weight: 600;
+				font-size: calc(12px * var(--k));
+				text-transform: uppercase;
+				letter-spacing: 0.06em;
+				text-align: left;
+				color: #5f7897;
+				padding-bottom: 4px;
+			}
+			.score td {
+				padding: 3px 0;
+				border-top: 1px solid #26445f14;
+			}
+			.score td + td,
+			.score th + th {
+				text-align: right;
+			}
+			.score .d {
+				font-size: calc(18px * var(--k));
+			}
+			.css {
+				margin: 0;
+				padding: 10px 12px;
+				font: 11px/1.4 ui-monospace, monospace;
+				white-space: pre-wrap;
+				background: #26445f0d;
+			}
+		</style>
+	</head>
+	<body class="page app">
+		<div class="bar">
+			<h1>Type picker</h1>
+			<p>
+				Column one is what ships. Type any Google Fonts family name to load it. The link in the
+				address bar holds every column, so it can be shared as is. Drop a .woff2, .otf or .ttf anywhere on
+				the page to try a font file; it is named after the file.
+			</p>
+			<button id="add">+ Column</button>
+		</div>
+		<div id="cols"></div>
+		<datalist id="families"></datalist>
+
+		<template id="col">
+			<div class="col">
+				<div class="controls">
+					<div class="head">
+						<b class="name"></b>
+						<button data-act="dup">Duplicate</button>
+						<button data-act="del">Remove</button>
+					</div>
+					<label>Display</label><input type="text" list="families" data-k="ui" /><span></span>
+					<label>weight</label><input type="range" min="100" max="900" step="100" data-k="uiW" /><output></output>
+					<label>Text</label><input type="text" list="families" data-k="text" /><span></span>
+					<label>weight</label><input type="range" min="100" max="900" step="100" data-k="textW" /><output></output>
+					<label>Numbers</label><input type="text" list="families" data-k="num" /><span></span>
+					<label>Size</label><input type="range" min="0.6" max="1.6" step="0.05" data-k="k" /><output></output>
+					<label>Tracking</label><input type="range" min="-0.08" max="0.2" step="0.01" data-k="track" /><output></output>
+				</div>
+
+				<div class="s">
+					<small>Top bar · display 20px</small>
+					<div class="topbar d"><span class="blue">3</span><span>07:42</span><span class="red">1</span></div>
+				</div>
+				<div class="s field">
+					<div class="plate d" style="--c: #1677ff">Hook<i></i></div>
+					<div class="dmg">128</div>
+					<div class="plate d" style="--c: #ff4f6d">Mender<i></i></div>
+					<div class="dmg heal">+40</div>
+				</div>
+				<div class="s">
+					<small>Tooltip · display title, text sentence and fact</small>
+					<div class="tip">
+						<h3 class="d">Tangle</h3>
+						<p class="t">
+							Flick the yo-yo along a line. The first enemy hit is <span class="kw">Slowed</span> by
+							40% and takes 60 damage; a hero already slowed is <span class="kw">Stunned</span>
+							instead.
+						</p>
+						<div class="fact t">Cooldown 8s · Range 9m · Hook's second skill</div>
+					</div>
+				</div>
+				<div class="s">
+					<small>Buttons · display 20px</small>
+					<div class="buttons d"><span>Play online</span><span>Ready</span><span class="quiet">Leave match</span></div>
+				</div>
+				<div class="s terra">
+					<div class="title d">Flagfall</div>
+					<div class="sub d">Best of three · first to the flag</div>
+				</div>
+				<div class="s">
+					<small>Scoreboard · text table, caps header</small>
+					<table class="score t">
+						<tr><th>Hero</th><th>K</th><th>D</th><th>A</th><th>Dmg</th></tr>
+						<tr><td class="d blue">Fletcher</td><td>7</td><td>2</td><td>4</td><td>11 240</td></tr>
+						<tr><td class="d blue">Coach</td><td>1</td><td>3</td><td>12</td><td>4 018</td></tr>
+						<tr><td class="d red">Brew</td><td>4</td><td>5</td><td>3</td><td>8 655</td></tr>
+						<tr><td class="d red">Mitts</td><td>2</td><td>6</td><td>1</td><td>6 102</td></tr>
+					</table>
+				</div>
+				<pre class="css"></pre>
+			</div>
+		</template>
+
+		<script type="module">
+			// What ships today (index.html :root and look.js damageNumbers.family).
+			const SHIPPING = {
+				ui: 'Darumadrop One',
+				uiW: 400,
+				text: 'Josefin Sans',
+				textW: 400,
+				num: 'monospace',
+				k: 1,
+				track: 0,
+			}
+			// Oskar's picks first. Comico and Striper load from Fontshare's CDN; the self-hosted three are LOCAL.
+			const FONTSHARE = new Set(['Comico', 'Striper'])
+			const SUGGESTIONS = [
+				'Darumadrop One', 'Ranchers', 'Barriecito', 'Josefin Sans',
+				'Gluten', 'Grandstander', 'Hyperlegible Sans', 'Apfel Grotezk', 'Cooper Hewitt', 'Comico', 'Striper',
+				'Atkinson Hyperlegible Next',
+				'Fredoka', 'Baloo 2', 'Lilita One', 'Titan One', 'Luckiest Guy', 'Chango', 'Bowlby One',
+				'Rammetto One', 'Sniglet', 'Chewy', 'Mochiy Pop One', 'Dela Gothic One',
+				'Bungee', 'Rubik', 'Nunito', 'Outfit', 'Figtree', 'Lexend', 'Recursive', 'Space Grotesk',
+				'DM Sans', 'Atkinson Hyperlegible', 'Jost', 'Quicksand', 'Varela Round', 'M PLUS Rounded 1c',
+				'system-ui', 'ui-rounded', 'monospace', 'ui-monospace',
+			]
+			const LOCAL = new Set(['Josefin Sans', 'Hyperlegible Sans', 'Apfel Grotezk', 'Cooper Hewitt', 'system-ui', 'ui-rounded', 'monospace', 'ui-monospace', 'sans-serif', 'serif'])
+			document.getElementById('families').innerHTML = SUGGESTIONS.map((f) => `<option value="${f}">`).join('')
+
+			// Google Fonts css2 refuses a weight a family lacks, so ask for the variable range first, then plain.
+			const loaded = new Map()
+			function load(family) {
+				family = family.trim()
+				if (!family || LOCAL.has(family) || loaded.has(family)) return loaded.get(family)
+				const q = encodeURIComponent(family).replace(/%20/g, '+')
+				const slug = family.toLowerCase().replace(/ /g, '-')
+				const urls = FONTSHARE.has(family) ? [`https://api.fontshare.com/v2/css?f[]=${slug}@400&display=swap`] : [
+					`https://fonts.googleapis.com/css2?family=${q}:wght@100..900&display=swap`,
+					`https://fonts.googleapis.com/css2?family=${q}:wght@400;700&display=swap`,
+					`https://fonts.googleapis.com/css2?family=${q}&display=swap`,
+				]
+				const p = (async () => {
+					for (const url of urls) {
+						const r = await fetch(url).catch(() => null)
+						if (!r?.ok) continue
+						const style = document.createElement('style')
+						style.textContent = await r.text()
+						document.head.append(style)
+						return true
+					}
+					return false
+				})()
+				loaded.set(family, p)
+				return p
+			}
+
+			const GENERIC = /^(system-ui|ui-\w+|monospace|sans-serif|serif)$/
+			const stack = (f) => (GENERIC.test(f) ? f : `'${f}'`) + ', system-ui, sans-serif'
+
+			let cols
+			try {
+				cols = JSON.parse(decodeURIComponent(location.hash.slice(1)))
+			} catch {}
+			if (!Array.isArray(cols) || !cols.length) cols = [{ ...SHIPPING }, { ...SHIPPING, ui: 'Lilita One', text: 'Nunito' }]
+			cols[0] = { ...SHIPPING } // the first column stays the reference
+
+			const root = document.getElementById('cols')
+			const tpl = document.getElementById('col')
+
+			function render() {
+				root.replaceChildren(...cols.map(column))
+				history.replaceState(null, '', '#' + encodeURIComponent(JSON.stringify(cols)))
+			}
+
+			function column(c, i) {
+				const el = tpl.content.firstElementChild.cloneNode(true)
+				const shipping = i === 0
+				el.classList.toggle('shipping', shipping)
+				el.querySelector('.name').textContent = shipping ? 'Shipping' : `Candidate ${i}`
+				if (shipping) el.querySelector('[data-act=del]').remove()
+				el.querySelector('[data-act=dup]').onclick = () => {
+					cols.splice(i + 1, 0, { ...c })
+					render()
+				}
+				el.querySelector('[data-act=del]')?.addEventListener('click', () => {
+					cols.splice(i, 1)
+					render()
+				})
+				for (const input of el.querySelectorAll('[data-k]')) {
+					const k = input.dataset.k
+					input.value = c[k]
+					input.disabled = shipping
+					const out = input.nextElementSibling
+					input.addEventListener('input', () => {
+						c[k] = input.type === 'range' ? +input.value : input.value
+						apply(el, c)
+						if (input.type === 'text') load(c[k])
+						history.replaceState(null, '', '#' + encodeURIComponent(JSON.stringify(cols)))
+					})
+					input._out = out
+				}
+				for (const f of [c.ui, c.text, c.num]) load(f)
+				apply(el, c)
+				return el
+			}
+
+			function apply(el, c) {
+				el.style.setProperty('--ui-font', stack(c.ui))
+				el.style.setProperty('--text-font', stack(c.text))
+				el.style.setProperty('--num-font', stack(c.num))
+				el.style.setProperty('--ui-w', c.uiW)
+				el.style.setProperty('--text-w', c.textW)
+				el.style.setProperty('--k', c.k)
+				el.style.setProperty('--track', c.track + 'em')
+				for (const input of el.querySelectorAll('input[type=range]')) {
+					const v = c[input.dataset.k]
+					input._out.textContent = input.dataset.k === 'k' ? Math.round(v * 100) + '%' : v
+				}
+				el.querySelector('.css').textContent = [
+					`--ui-font: ${stack(c.ui)};`,
+					`--text-font: ${stack(c.text)};`,
+					`/* look.js damageNumbers.family */ '${c.num}'`,
+					c.uiW !== 400 || c.track ? `/* display: weight ${c.uiW}, letter-spacing ${c.track}em */` : '',
+					c.textW !== 400 ? `/* text: weight ${c.textW} */` : '',
+					c.k !== 1 ? `--fs-base: ${Math.round(20 * c.k)}px; /* and tip sizes ×${c.k} */` : '',
+				]
+					.filter(Boolean)
+					.join('\n')
+			}
+
+			// Dropped font files become families named after the file. They live for this tab only.
+			addEventListener('dragover', (e) => e.preventDefault())
+			addEventListener('drop', async (e) => {
+				e.preventDefault()
+				for (const file of e.dataTransfer.files) {
+					if (!/\.(woff2?|otf|ttf)$/i.test(file.name)) continue
+					const family = file.name.replace(/\.\w+$/, '')
+					const face = new FontFace(family, await file.arrayBuffer())
+					document.fonts.add(await face.load())
+					LOCAL.add(family)
+					document.getElementById('families').insertAdjacentHTML('afterbegin', `<option value="${family}">`)
+					cols.push({ ...cols.at(-1), ui: family })
+				}
+				render()
+			})
+
+			document.getElementById('add').onclick = () => {
+				cols.push({ ...cols.at(-1) })
+				render()
+			}
+			render()
+		</script>
+	</body>
