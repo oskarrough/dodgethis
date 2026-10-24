@@ -25,3 +25,10 @@ export default {
 		pop: { life: 0.35, to: 1.9 },
 	},
 }
+
+// The dimension of each number above that its name alone does not settle (src/modes/moba/units.js).
+export const units = {
+	'ward.view.grow': 's',
+	'ward.view.flash': 's',
+	'ward.view.pop.to': 'multiplier',
+}

@@ -25,3 +25,15 @@ export default {
 		ringWidth: 0.08,
 	},
 }
+
+// The dimension of each number above that its name alone does not settle (src/modes/moba/units.js).
+export const units = {
+	'pinball.jumps': 'count',
+	'pinball.jumpRange': 'm',
+	'pinball.falloff': 'fraction',
+	'pinball.view.hopTime': 's',
+	'pinball.view.arc': 'height m',
+	'pinball.view.dashFill': 'fraction',
+	'pinball.view.ringLife': 's',
+	'pinball.view.ringWidth': 'fraction',
+}

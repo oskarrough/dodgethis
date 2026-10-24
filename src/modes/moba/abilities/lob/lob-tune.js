@@ -33,3 +33,19 @@ export default {
 		pulse: 7,
 	},
 }
+
+// The dimension of each number above that its name alone does not settle (src/modes/moba/units.js).
+export const units = {
+	'lob.fieldRadius': 'm',
+	'lob.fieldLife': 's',
+	'lob.burnDamage': 'hp',
+	'lob.fieldSlow': 'fraction',
+	'lob.view.up': 'fraction',
+	'lob.view.shadowFrom': 'fraction',
+	'lob.view.shockGrow': 'multiplier',
+	'lob.view.shockLife': 's',
+	'lob.view.embers': 'count',
+	'lob.view.emberRise': 'height m',
+	'lob.view.emberLife': 's',
+	'lob.view.pulse': 'rad/s',
+}

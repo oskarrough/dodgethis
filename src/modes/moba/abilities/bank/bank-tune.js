@@ -7,3 +7,8 @@ export default {
 	cooldown: 4,
 	bounce: { max: 2, damagePerCushion: 40 },
 }
+
+// The dimension of each number above that its name alone does not settle (src/modes/moba/units.js).
+export const units = {
+	'bank.bounce.max': 'count',
+}

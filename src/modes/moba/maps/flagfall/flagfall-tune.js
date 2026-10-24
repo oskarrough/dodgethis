@@ -193,3 +193,28 @@ const flagfall = {
 }
 
 export default { flagfall }
+
+// The dimension of each number above that its name alone does not settle (src/modes/moba/units.js).
+export const units = {
+	jungle: 'm',
+	'hedge.runs': 'm',
+	'flagfall.gaps': 'm',
+	'moon.at': 'm',
+	leaf: 'm',
+	'print.layers': 'height m',
+	'print.radii': 'm',
+	'flagfall.dunk.flight': 'm',
+	'flagfall.dunk.sink': 's',
+	'flagfall.garden.sink': 'm',
+	'flagfall.garden.low': 'height m',
+	'flagfall.garden.tall': 'height m',
+	'flagfall.garden.bell': 'm',
+	'flagfall.flag.every': 's',
+	'flagfall.flag.silence': 's',
+	'flagfall.flag.pole': 'height m',
+	'flagfall.pool.strength': 'fraction',
+	'flagfall.pool.spread': 'fraction',
+	'flagfall.kerb.offset': 'multiplier',
+	'flagfall.kerb.ends': 'm',
+	'flagfall.glow.post': 'height m',
+}

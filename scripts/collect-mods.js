@@ -54,13 +54,35 @@ function maps() {
 
 function tunes() {
 	const imports = []
+	const withUnits = []
 	const groups = ['abilities', 'encounters', 'heroes', 'maps', 'mechanics'].map((kind) => {
 		const ids = folders(kind).filter((id) => has(kind, id, `${id}-tune.js`))
-		for (const id of ids)
-			imports.push(`import ${name(`${kind}_${id}`)} from './${kind}/${id}/${id}-tune.js'\n`)
+		for (const id of ids) {
+			// A tune file may also export `units`: dimensions only its own keys need.
+			const own = /^export const units\b/m.test(
+				readFileSync(join(MOBA, kind, id, `${id}-tune.js`), 'utf8'),
+			)
+			const binding = name(`${kind}_${id}`)
+			const from = `from './${kind}/${id}/${id}-tune.js'\n`
+			const one = `import ${binding}, { units as ${binding}_units } ${from}`
+			imports.push(
+				!own
+					? `import ${binding} ${from}`
+					: one.length <= 100
+						? one
+						: `import ${binding}, {\n\tunits as ${binding}_units,\n} ${from}`,
+			)
+			if (own) withUnits.push(`...${binding}_units`)
+		}
 		return `export const ${kind} = ${object(ids.map((id) => entry(id, name(`${kind}_${id}`))))}\n`
 	})
-	return HEADER + imports.join('') + (imports.length ? '\n' : '') + groups.join('')
+	return (
+		HEADER +
+		imports.join('') +
+		(imports.length ? '\n' : '') +
+		groups.join('') +
+		`export const units = ${object(withUnits)}\n`
+	)
 }
 
 // One drawing entry per folder, namespace-imported with its named hooks.

@@ -29,3 +29,10 @@ export default {
 		},
 	},
 }
+
+// The dimension of each number above that its name alone does not settle (src/modes/moba/units.js).
+export const units = {
+	'mend.view.preview.line': 'fraction',
+	'mend.view.preview.pulse': 'rad/s',
+	'mend.view.beam.glow': 'fraction',
+}

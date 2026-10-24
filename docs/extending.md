@@ -45,7 +45,7 @@ A hero, ability, map, mechanic or encounter is a folder under `src/modes/moba/{h
 
 - `<id>.js` is the logic. The headless simulation loads it, so it never imports drawing code.
 - `<id>-view.js` is the drawing. Only the browser loads it.
-- `<id>-tune.js` is the numbers. The root `tune.js` gathers every folder's numbers into one `tune` object, so sliders, replays and every reader see one tree.
+- `<id>-tune.js` is the numbers. The root `tune.js` gathers every folder's numbers into one `tune` object, so sliders, replays and every reader see one tree. A number whose name alone does not say its dimension (`gateOfHands.fill` is seconds, not a fraction) is declared in the same file, as `export const units = { 'gateOfHands.fill': 's' }`; `collect-mods` gathers these into `units.js`, and `bun run check` fails on a missing or stale one. Bare field names shared by many folders stay in `units.js`.
 
 Everything else in the folder is yours. `bun run collect-mods` writes the `all-*.js` lists the game imports and runs before `dev` and `check`, so adding a folder is enough. Ids are unique; a duplicate fails to load.
 

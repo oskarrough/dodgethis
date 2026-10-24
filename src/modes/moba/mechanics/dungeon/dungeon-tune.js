@@ -19,3 +19,13 @@ export default {
 	// target must beat the old by `switch`.
 	threat: { multiplier: { brew: 3 }, heal: 0.5, switch: 1.1 },
 }
+
+// The dimension of each number above that its name alone does not settle (src/modes/moba/units.js).
+export const units = {
+	hourglass: 's',
+	'waystone.rise': 's',
+	'threat.heal': 'multiplier',
+	'threat.multiplier': 'multiplier',
+	'threat.switch': 'multiplier',
+	'warden.pose.slamLift': 'height m',
+}

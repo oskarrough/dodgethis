@@ -25,3 +25,17 @@ export default {
 		fade: 0.5, // seconds the ring takes to rub out at the end
 	},
 }
+
+// The dimension of each number above that its name alone does not settle (src/modes/moba/units.js).
+export const units = {
+	'rallyRing.view.chalkWidth': 'fraction',
+	'rallyRing.haste': 'fraction',
+	'rallyRing.pulse': 's',
+	'rallyRing.bot.reach': 'multiplier',
+	'rallyRing.view.dashes': 'count',
+	'rallyRing.view.dashFill': 'fraction',
+	'rallyRing.view.draw': 's',
+	'rallyRing.view.dust': 'count',
+	'rallyRing.view.dustRise': 'height m',
+	'rallyRing.view.dustLife': 's',
+}

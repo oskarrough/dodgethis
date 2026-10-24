@@ -12,3 +12,8 @@ export default {
 		impact: { freq: 900, slideTo: 350, type: 'sine', dur: 0.16, gain: 0.13 },
 	},
 }
+
+// The dimension of each number above that its name alone does not settle (src/modes/moba/units.js).
+export const units = {
+	'tagOut.view.dashFill': 'fraction',
+}

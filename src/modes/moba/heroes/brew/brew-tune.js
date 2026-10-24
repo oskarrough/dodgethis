@@ -35,3 +35,9 @@ export default {
 		strikeReach: 0.5,
 	},
 }
+
+// The dimension of each number above that its name alone does not settle (src/modes/moba/units.js).
+export const units = {
+	'heroes.brew.view.swigEase': 'ticks',
+	'heroes.brew.view.drinkLift': 'height m',
+}

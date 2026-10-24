@@ -149,3 +149,13 @@ export const overthrowTerrain = {
 }
 
 export default { map: overthrowMap, overthrowTerrain }
+
+// The dimension of each number above that its name alone does not settle (src/modes/moba/units.js).
+export const units = {
+	map: 'm',
+	'spires.radius': 'm',
+	printLayers: 'height m',
+	markerLayers: 'height m',
+	'stone.drums': 'multiplier',
+	'overthrowTerrain.patchScale': 'm',
+}

@@ -37,3 +37,10 @@ export default {
 		lift: 0.005,
 	},
 }
+
+// The dimension of each number above that its name alone does not settle (src/modes/moba/units.js).
+export const units = {
+	'gateOfHands.fill': 's',
+	'gateOfHands.splash': 'm',
+	'gateOfHands.door.posts': 'm',
+}

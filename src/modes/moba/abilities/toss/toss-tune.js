@@ -11,3 +11,9 @@ export default {
 		hitstop: 0.025, // Hero contact only; presentation slowdown, ignored in shared sessions.
 	},
 }
+
+// The dimension of each number above that its name alone does not settle (src/modes/moba/units.js).
+export const units = {
+	'toss.feedback.shotKick': 'm',
+	'toss.feedback.hitKick': 'm',
+}

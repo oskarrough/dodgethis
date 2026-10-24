@@ -26,3 +26,8 @@ export default {
 		hit: { count: 6, speed: 1.8, life: 0.25, size: 0.08 },
 	},
 }
+
+// The dimension of each number above that its name alone does not settle (src/modes/moba/units.js).
+export const units = {
+	'balloon.flight': 's',
+}
