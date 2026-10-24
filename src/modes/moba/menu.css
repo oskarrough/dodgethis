@@ -6,6 +6,8 @@
    `data-light` from the map. */
 .moba-paper {
 	--rule: color-mix(in srgb, var(--ui-text) 55%, transparent);
+	/* Between rows of one list: there to guide the eye along a line, not to box each row. */
+	--rule-row: color-mix(in srgb, var(--ui-text) 16%, transparent);
 	--caps: 600 clamp(11px, 0.95vw, 14px) / 1.2 'Josefin Sans', sans-serif;
 	--wash: url('/splash/wash-day.webp');
 	--wash-tall: url('/splash/wash-day-tall.webp');
@@ -93,13 +95,13 @@ canvas.moba-dead-world {
 	justify-content: space-between;
 	gap: 12px;
 	padding: 6px 0;
-	border-bottom: 1px solid var(--rule);
+	border-bottom: 1px solid var(--rule-row);
 }
 .moba-recap-caption {
 	margin: 12px 0 0;
-	font: var(--caps);
-	letter-spacing: 0.14em;
-	text-transform: uppercase;
+	font:
+		400 15px / 1.3 'Josefin Sans',
+		sans-serif;
 }
 /* The respawn timer is a readout: ink printed on one painted ribbon. */
 .moba-respawn-sticker {
@@ -135,7 +137,7 @@ canvas.moba-dead-world {
 }
 .moba-results :is(th, td) {
 	padding: 7px 10px;
-	border-bottom: 1px solid var(--rule);
+	border-bottom: 1px solid var(--rule-row);
 	text-align: right;
 }
 .moba-results th:first-child {

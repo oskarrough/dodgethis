@@ -12,9 +12,15 @@ Rules for every screen, learned by reviewing the game screen by screen with Oska
 - **Plain words.** "Enemy takedowns" with "Your heroes downed" underneath reads backwards; say who did what to whom.
 - **One reading order.** In a label and value list, the eye goes down the values; labels are quieter than values but never so faint that it zigzags back to decode them.
 
+## Keep
+
+- Titles inked on a watercolour brush stroke (death recap, result, pause). This is the front end's signature; new pages use it.
+
 ## How it is built
 
 - **Primitives, not values.** Shared shapes are CSS custom properties, never numbers typed per component, so siblings can't drift (the HUD and front end had 26 `border-radius` values and six border widths). One radius per role (pill, card, tile); one ink line per weight from look.md, thin for readouts and cards, thick for pressables and units; one shadow for what floats and one offset shadow for what you press. A tooltip, a pill and a tile are each one class used everywhere; a variant changes a token, not the recipe.
+- **Caps only for a few words.** A sentence in capitals reads as shouting; hints and instructions are sentence case.
+- **Row rules whisper.** Lines between rows of one list are faint guides; only the rule under a heading is full ink.
 - **No grey tracked uppercase.** Dimmed, letter-spaced small caps read as generated filler. Labels are sentence case in the ink colour; hierarchy comes from size and weight. Let long values wrap rather than shrink or truncate.
 - **No one-sided borders.** A coloured stripe on one edge of a card is a template tell. A card's edge is the same all the way round.
 - **Shadows mean something.** Offset shadows are for things you press; a tooltip floats with a soft shadow, never an offset one.
