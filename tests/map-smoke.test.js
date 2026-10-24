@@ -1,0 +1,71 @@
+import { expect, test } from 'bun:test'
+import * as THREE from 'three'
+import RAPIER from '@dimforge/rapier3d-compat'
+import { STEP } from '../src/core/app.js'
+import { tune as coreTune } from '../src/core/tune.js'
+import { agentRoster } from '../src/modes/moba/agents.js'
+import { buildColliders } from '../src/modes/moba/obstacles.js'
+import { createAgentMatch } from '../src/modes/moba/agent-match.js'
+import { playableMaps, matchRecipe } from '../src/modes/moba/maps/all-maps.js'
+
+// Every playable map, bots only, for a short stretch: a layout number gone NaN (a tune key
+// dropped under a computed read) or a map whose bots stand still fails here, not in a playtest.
+await RAPIER.init({})
+const SECONDS = 40
+
+function nonFinite(value, path = 'layout', out = [], seen = new Set()) {
+	if (typeof value === 'number') {
+		if (!Number.isFinite(value)) out.push(`${path} = ${value}`)
+	} else if (value && typeof value === 'object' && !seen.has(value)) {
+		seen.add(value)
+		for (const [key, child] of Object.entries(value)) nonFinite(child, `${path}.${key}`, out, seen)
+	}
+	return out
+}
+
+for (const id of playableMaps) {
+	test(`${id}: layout numbers are finite`, () => {
+		expect(nonFinite(matchRecipe(id).layout)).toEqual([])
+	})
+
+	test(`${id}: a bot match stays finite and the bots fight`, () => {
+		const recipe = matchRecipe(id)
+		const world = new RAPIER.World({ x: 0, y: coreTune.physics.gravity, z: 0 })
+		world.timestep = STEP
+		const { obstacles, bounds, settings } = recipe.layout
+		const unbuild = buildColliders(world, RAPIER, obstacles, bounds, settings?.scale ?? 1)
+		let damage = 0
+		const run = createAgentMatch({
+			recipe,
+			scene: new THREE.Scene(),
+			world,
+			RAPIER,
+			roster: agentRoster({ seats: [] }),
+			seed: 2,
+			recordInputs: false,
+			capturePerception: false,
+			onLog(row) {
+				damage += row.effective_damage ?? 0
+			},
+		})
+		try {
+			const { sim } = run
+			const start = new Map(sim.heroes.map((h) => [h.id, h.body.position.clone()]))
+			const limit = Math.ceil(SECONDS / STEP)
+			while (sim.tick < limit && run.step());
+			const units = [...sim.heroes, ...(sim.lane?.structures ?? []), ...(sim.lane?.minions ?? [])]
+			const bad = units
+				.filter((u) => u.body?.position)
+				.filter(({ body: { position: p } }) => ![p.x, p.y, p.z].every(Number.isFinite))
+				.map((u) => u.id)
+			expect(bad).toEqual([])
+			const walked = sim.heroes.filter((h) => h.body.position.distanceTo(start.get(h.id)) > 3)
+			expect(walked.length).toBeGreaterThan(0)
+			expect(damage).toBeGreaterThan(0)
+		} finally {
+			run.dispose()
+			unbuild()
+			world.free()
+		}
+	}, 60000)
+}

@@ -1,6 +1,6 @@
 // Leftovers lint: what a removal can strand. A stylesheet nothing imports, and a MOBA tune key
-// whose name no code mentions (by name; a key read through a variable or computed name still
-// passes, so this misses some and never cries wolf on a live one).
+// whose name no code mentions. It matches names only: a key read through a computed name
+// (s.structures[`${kind}X`]) looks unread, so spell such reads out before deleting what it flags.
 import { execSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { basename } from 'node:path'

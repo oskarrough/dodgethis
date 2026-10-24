@@ -51,6 +51,8 @@ export function flagfallLayout() {
 			{ x: s.waveSpawnX, z: flank * s.lane.pathZ },
 		],
 	}))
+	// Named reads, not s.structures[`${kind}X`]: check-unread only sees keys spelled out in code.
+	const structureX = { tower: s.structures.towerX, fort: s.structures.fortX }
 	const structures = ['A', 'B'].flatMap((team) => [
 		...['tower', 'fort'].flatMap((kind) =>
 			lanes.map((lane) => ({
@@ -59,7 +61,7 @@ export function flagfallLayout() {
 				lane: lane.id,
 				kind,
 				after: kind === 'fort' ? [`tower-${team}-${lane.id}`] : [],
-				x: (team === 'A' ? -1 : 1) * s.structures[`${kind}X`],
+				x: (team === 'A' ? -1 : 1) * structureX[kind],
 				z: lane.path[0].z,
 			})),
 		),
