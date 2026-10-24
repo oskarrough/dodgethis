@@ -83,6 +83,7 @@ Paths are under `src/modes/moba/` unless they start with `src/`. `tune.js` means
 - Scoreboard (Tab or pad Select, live table mid-match): `recap.js` `createRecap` (the `board` aside, class `moba-scoreboard`); `match-stats.js` `createMatchStats`
 - Pause menu (Esc, pad Start, or the top-left menu tile): `menu.js` `createMatchMenu`, `openMenu`, the manual page `pausePage` (Quick cast as a checkbox under the actions), Leave game to the splash `quit`; tile from `src/core/corner-nav.js`; `menu.css`; `tune.js` `hud`
 - Combat log: `src/core/debug.js` `createCombatLog`
+- Damage meter (bottom-left card, M toggles; damage done, healing done, damage taken and deaths per hero; segments for each fight, each dungeon encounter and the whole match; click a row for its abilities or sources): folder `meter/` (`meter.js` `createMeter`, the fact ledger; `meter-view.js` `createMeterView`; `meter.css`); `encounter` start/end facts from `mechanics/dungeon/dungeon-run.js` `announce`; hooked in `index.js`
 
 ### Flagfall
 

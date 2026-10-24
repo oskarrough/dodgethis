@@ -5,6 +5,8 @@ import { createBossPull } from './dungeon-warden.js'
 import { distance } from '../../../../core/spatial.js'
 
 const ticks = (s) => Math.max(1, Math.round(s / STEP))
+// An encounter is under way from its first stir until it ends or resets; its own words for that differ.
+const fighting = (phase) => phase !== 'idle' && phase !== 'ended' && phase !== 'reset'
 
 // An encounter folder without its own fight: a Warden under the encounter's name and HP.
 function wardenStandIn(args, spot) {
@@ -28,7 +30,7 @@ function wardenStandIn(args, spot) {
 // `current()` is the encounter being fought, or else the next one; `bossUnit()` is its boss for the
 // HUD bar, `engaged()` says a pull is on, and `addThreat` routes damage to the unit's own encounter.
 export function createDungeon(args) {
-	const { heroes, layout, lane } = args
+	const { heroes, layout, lane, present } = args
 	const list = layout.encounters.map((spot) => {
 		const create = encounters[spot.id].create
 		const fight = create ? create({ ...args, spot }) : wardenStandIn(args, spot)
@@ -37,8 +39,10 @@ export function createDungeon(args) {
 			id: spot.id,
 			wing: spot.wing ?? null,
 			last: !!spot.last,
+			name: encounters[spot.id].name,
 			killed: false,
 			dormant: false,
+			fighting: false,
 		}
 		sleep(entry, !!spot.last)
 		return entry
@@ -59,6 +63,19 @@ export function createDungeon(args) {
 	const stairOpen = () =>
 		list.every((e) => e.killed || e.last || layout.wings.includes(e.wing)) &&
 		layout.wings.some((wing) => list.every((e) => e.wing !== wing || e.killed))
+	// `encounter` facts mark a boss fight's start and end for whoever keeps score (the damage meter).
+	function announce(entry) {
+		const now = fighting(entry.state.phase)
+		if (now === entry.fighting) return
+		entry.fighting = now
+		present?.({
+			type: 'encounter',
+			state: now ? 'start' : 'end',
+			id: entry.id,
+			name: entry.name,
+			...(!now && { result: entry.won() ? 'killed' : 'wiped' }),
+		})
+	}
 	function attune() {
 		for (const h of heroes) {
 			if (h.dead) continue
@@ -74,6 +91,7 @@ export function createDungeon(args) {
 		for (const entry of list) {
 			if (entry.killed || entry.dormant) continue
 			entry.step(t, dt)
+			announce(entry)
 			if (!entry.won()) continue
 			entry.killed = true
 			// The fight is won: whoever fell in it rises at their waystone.

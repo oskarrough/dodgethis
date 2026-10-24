@@ -1,0 +1,163 @@
+/* The damage meter card, bottom left: cream paper, navy ink line, the text stack. */
+.moba-tally {
+	--ink: var(--ui-text);
+	position: fixed;
+	left: 14px;
+	bottom: 14px;
+	z-index: 3;
+	box-sizing: border-box;
+	width: clamp(230px, 19vw, 290px);
+	padding: 6px 8px 7px;
+	background: var(--ui-cream);
+	border: 1.5px solid var(--ink);
+	border-radius: 14px;
+	box-shadow: 0 3px 10px rgba(38, 68, 95, 0.22);
+	color: var(--ink);
+	font: 400 13px / 1.15 var(--text-font);
+	user-select: none;
+}
+.moba-tally[hidden] {
+	display: none;
+}
+.moba-tally button {
+	font: inherit;
+	color: inherit;
+	background: none;
+	border: 0;
+	padding: 0;
+	cursor: pointer;
+}
+.moba-tally button:disabled {
+	opacity: 0.3;
+	cursor: default;
+}
+/* Tally and reset on top, the segment and its arrows beneath. */
+.moba-tally header {
+	display: grid;
+	grid-template-columns: 1fr auto;
+	align-items: center;
+	gap: 3px 6px;
+	padding: 0 2px 5px;
+	margin-bottom: 4px;
+	border-bottom: 1.5px solid var(--ink);
+}
+.moba-tally .meter-mode {
+	justify-self: start;
+	font-size: 14px;
+	font-weight: 700;
+	white-space: nowrap;
+}
+.moba-tally .meter-nav {
+	grid-column: 1 / -1;
+	display: flex;
+	align-items: center;
+	gap: 2px;
+	min-width: 0;
+}
+.moba-tally .meter-segment {
+	flex: 1;
+	text-align: center;
+}
+.moba-tally .meter-segment {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-size: 12px;
+	opacity: 0.8;
+}
+.moba-tally .meter-step {
+	font-size: 16px;
+	line-height: 1;
+	padding: 0 3px;
+}
+.moba-tally .meter-reset {
+	font-size: 14px;
+	padding-left: 2px;
+}
+.moba-tally ol {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: grid;
+	gap: 2px;
+}
+.moba-tally li {
+	--tone: var(--ui-blue);
+	position: relative;
+	display: flex;
+	align-items: baseline;
+	gap: 6px;
+	padding: 3px 6px;
+	border-radius: 5px;
+	isolation: isolate;
+	font-variant-numeric: tabular-nums;
+}
+.moba-tally li[data-team='A'] {
+	--tone: var(--team-a, #5db4ff);
+}
+.moba-tally li[data-team='B'] {
+	--tone: var(--team-b, #ff5d5d);
+}
+/* The bar: a wash of team colour as wide as the row's share of the leader. */
+.moba-tally li::before {
+	content: '';
+	position: absolute;
+	inset: 0 auto 0 0;
+	width: calc(var(--share, 0) * 100%);
+	background: color-mix(in srgb, var(--tone) 38%, transparent);
+	border-right: 1.5px solid var(--tone);
+	border-radius: 5px;
+	z-index: -1;
+}
+.moba-tally li[tabindex] {
+	cursor: pointer;
+}
+.moba-tally li[tabindex]:hover,
+.moba-tally li[tabindex]:focus-visible {
+	outline: 1.5px solid var(--ink);
+	outline-offset: -1px;
+}
+.moba-tally .meter-name {
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.moba-tally .meter-value {
+	white-space: nowrap;
+}
+.moba-tally .meter-value small,
+.moba-tally .meter-note {
+	font-weight: 400;
+	font-size: 11px;
+	opacity: 0.7;
+	margin-left: 4px;
+}
+.moba-tally .meter-note {
+	margin-left: 0;
+	min-width: 3.2em;
+	text-align: right;
+}
+.moba-tally .meter-back {
+	font-weight: 700;
+}
+.moba-tally .meter-back::before {
+	display: none;
+}
+.moba-tally .meter-empty {
+	opacity: 0.6;
+	font-style: italic;
+}
+.moba-tally .meter-foot {
+	margin: 4px 2px 0;
+	font-size: 11px;
+	opacity: 0.7;
+	text-align: right;
+}
+.moba-tally .meter-foot:empty {
+	display: none;
+}
+.moba-tally .meter-empty::before {
+	display: none;
+}

@@ -6,6 +6,7 @@ import { look } from './look.js'
 import { FLOOR } from './obstacles.js'
 import { matchRecipe, onlineMaps, maps } from './maps/all-maps.js'
 import mechanicViews from './mechanics/all-mechanic-views.js'
+import { createMeterView } from './meter/meter-view.js'
 import { castAbility } from './ability.js'
 import { blocked } from './statuses.js'
 import { createSim } from './sim.js'
@@ -70,6 +71,7 @@ const FACTS = [
 	'hit',
 	'heal',
 	'pull',
+	'encounter',
 	'threat',
 	'absorb',
 	'status',
@@ -596,6 +598,8 @@ export default function moba(app, map) {
 				lobby?.afterStep()
 			})
 			onPresent(feedback.present)
+			const meter = isLobby ? null : createMeterView({ sim, local })
+			if (meter) onPresent(meter.present)
 			if (ballView) (replica?.onReportFact ?? onPresent)(ballView.present)
 			const ballFacts = []
 			run.on('present', (fact) => {
@@ -819,6 +823,7 @@ export default function moba(app, map) {
 				feedback.reset()
 				replica?.dispose()
 				ballView?.dispose()
+				meter?.dispose()
 				view.dispose()
 				skillsView.dispose()
 				recallView?.dispose()
