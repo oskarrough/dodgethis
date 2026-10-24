@@ -2,7 +2,7 @@
 
 A web game: two modes, dodgeball and a MOBA, on one engine.
 
-- Four words (glossary in `docs/extending.md`): core is the engine (`src/core/`); a mode is a game you can play (`src/modes/dodgeball`, `src/modes/moba`); a mod is a piece dropped into a mode (hero, ability, map, mechanic: a folder with `<id>.js`, `<id>-view.js`, `<id>-tune.js`); online is networking (`src/online/`)
+- Four words (glossary in `docs/extending.md`): core is the engine (`src/core/`); a mode is a game you can play (`src/modes/dodgeball`, `src/modes/moba`); a mod is a piece dropped into a mode (hero, ability, map, mechanic, or a dungeon encounter: a folder with `<id>.js`, `<id>-view.js`, `<id>-tune.js`); online is networking (`src/online/`)
 - Core imports only core; modes and online import core; nothing imports sideways
 - `docs/moba.md` design, `docs/roadmap.md` plan, `docs/verify.md` proving, `docs/build-rules.md` builder rules
 - `docs/world.md` is the world bible: setting, mood, keywords and prompt words for art and music. Read it before you draw, write, name or compose anything
