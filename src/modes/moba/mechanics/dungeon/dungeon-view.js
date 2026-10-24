@@ -1,6 +1,24 @@
 import { tune } from '../../tune.js'
+import encounterViews from '../../encounters/all-encounter-views.js'
 
 export { dressBoss as dress } from '../boss/boss-dress.js'
+
+// The run's drawing is its encounters' drawings, each from its folder's view.
+export function view(scene) {
+	const views = Object.values(encounterViews).flatMap((v) => (v.view ? [v.view(scene)] : []))
+	return {
+		get markerPosition() {
+			return null
+		},
+		present() {},
+		update(...args) {
+			for (const v of views) v.update(...args)
+		},
+		dispose() {
+			for (const v of views) v.dispose()
+		},
+	}
+}
 
 const clock = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`
 const MARKS = [

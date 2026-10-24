@@ -16,15 +16,17 @@ export function layMechanicGround({
 }) {
 	const laneMechanic = mechanics.find((mechanic) => mechanic.lane)?.lane
 	const laneView = laneMechanic ? createLaneView(scene, smooth, layout) : null
+	// A tower's height is its kind's; any other post (a dungeon door) carries its own.
+	const heightOf = (o) => o.height ?? tune[o.kind].height
 	const towerObstacles = mechanics.flatMap((mechanic) => mechanic.obstacles?.(layout) ?? [])
 	const obstacles = [...mapObstacles, ...towerObstacles]
 	const towerColliders = new Map(
 		towerObstacles.map((o) => [
 			o.id,
 			world.createCollider(
-				RAPIER.ColliderDesc.cylinder(tune[o.kind].height / 2, o.r).setTranslation(
+				RAPIER.ColliderDesc.cylinder(heightOf(o) / 2, o.r).setTranslation(
 					o.x,
-					tune[o.kind].height / 2,
+					heightOf(o) / 2,
 					o.z,
 				),
 			),
@@ -126,6 +128,7 @@ export function plugMechanics({
 			layout,
 			makeBody: bodyAt,
 			makeMinion: laneView?.makeBody,
+			removeObstacle: (id) => removeTower({ id }),
 			targets: () => [...heroes, ...(lane?.structures ?? [])],
 			vulnerable: (unit) => lane?.vulnerable(unit) ?? true,
 			obstacles,

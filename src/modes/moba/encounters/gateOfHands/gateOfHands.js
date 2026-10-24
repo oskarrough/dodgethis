@@ -1,3 +1,23 @@
-// The Mesa gate, where stone hands latch on whoever stands on their plates.
-// A placeholder Warden under the encounter's name until the fight is built.
-export default { name: 'The Gate of Hands' }
+import { tune } from '../../tune.js'
+import { createGateOfHands } from './gateOfHands-fight.js'
+import { handsBotGoal, handsBotThreats } from './gateOfHands-bots.js'
+
+// The Mesa gate. Three great clay hands rise from the sand, and the gate opens only while all
+// three are lit at once. The first light wakes the Potsherds in the walls, who lob shards at
+// anyone who stands still. Three heroes may hold a hand each; a lone hero must run the circuit.
+export default {
+	name: 'The Gate of Hands',
+	create: createGateOfHands,
+	// The door's posts, laid with the map's ground so paths and bodies treat them as walls.
+	obstacles: (spot) =>
+		tune.encounters.gateOfHands.door.posts.map((z, i) => ({
+			id: `gateOfHands-door-${i + 1}`,
+			kind: 'door',
+			x: spot.x + tune.encounters.gateOfHands.door.x,
+			z: spot.z + z,
+			r: tune.encounters.gateOfHands.door.radius,
+			height: tune.encounters.gateOfHands.door.height,
+		})),
+	botGoal: handsBotGoal,
+	botThreats: handsBotThreats,
+}

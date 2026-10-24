@@ -55,12 +55,15 @@ export default {
 				],
 			},
 		],
-		// Walls (`kind: 'wall'`) and low hedges: the gate road's two sides and the kiln block
-		// between the wings.
+		// Walls (`kind: 'wall'`) and low hedges: the gate road's two sides, the kiln block between
+		// the wings, and the gate wall.
 		boxes: [
 			{ kind: 'wall', x: -31, z: -14, halfX: 9, halfZ: 1 },
 			{ kind: 'wall', x: -31, z: 14, halfX: 9, halfZ: 1 },
 			{ kind: 'wall', x: 14, z: 0, halfX: 6, halfZ: 7 },
+			// The gate wall from rim to rim; the Gate of Hands keeps the door in its gap.
+			{ kind: 'wall', x: -20, z: -18.1, halfX: 1, halfZ: 13.9 },
+			{ kind: 'wall', x: -20, z: 18.1, halfX: 1, halfZ: 13.9 },
 			{ kind: 'hedge', x: 4, z: -30, halfX: 8, halfZ: 0.6 },
 		],
 		pillars: [

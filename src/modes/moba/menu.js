@@ -32,7 +32,7 @@ export function createMatchMenu({
 	const recap = createRecap({ sim, hero, canvas: app.renderer?.domElement, paper })
 	// The Warden's room says its goal here; a dungeon says it in the top bar.
 	const goal =
-		sim.boss && !sim.boss.bosses
+		sim.boss && !sim.boss.encounters
 			? el(
 					'p',
 					'dungeon-goal',
