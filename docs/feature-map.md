@@ -55,29 +55,45 @@ Paths are under `src/modes/moba/` unless they start with `src/`. `tune.js` means
 
 ## Match: HUD
 
+### Frame and bars
+
 - HUD (portrait, ability slots, cooldown rings, level, health): `hud.js` `createHud`, `matchFrame`; `hud.css`; `tune.js` `hud`; `moba.md`
 - Top bar (one cream pill: a hero face per player on each side, greyed with respawn seconds when down, health bars under your own side only, takedowns, clock, the Ball countdown; fixed width; the win condition stays visible beneath it): `hud.js` `createHud` (`moba-top`, `moba-objective`); `hud.css` Top bar
-- Game log and feed (fact → sentence for the local player; the feed drum mid-right shows kills, wipes, structures, goals and Ball calls): `game-log.js` `createGameLog`, `FEED`; `feedback.js` `log.record`; `hud.js` `feed`; `hud.css` `.moba-feed`; `tune.js` `hud.feedLife`, `feedLines`
 - Ability slot keys (Q, W, E and pad RB, RT, LB): `hud.js` `KEYS`, `SLOTS`
+- Health bars over units: `health-bars.js` `createHealthBars`; `health-bars.css`; `look.js` `healthBars`
+
+### Tooltips and inspect
+
 - Inspect mode (hold I or pad button, hover to read cards): `hud.js` `KEY_INSPECT`, `PAD_INSPECT`, `pickUnit`
 - Tooltips and unit cards (hero, tower, minion, Ball, level, kills, clock): `tooltip.js` `createTooltip`, `heroCard`, `abilityCard`, `structureCard`, `minionCard`, `ballCard`, `levelCard`, `killsCard`, `clockCard`; `hud.js` `cardFor`, `updateTip`. Ability `card.summary`/`card.notes` and hero trait text are checked templates: `tooltip.js` `renderCardTemplate`, `formatCardValue` resolves local `{radius}` or root `{catching.pocketLife}` tune references through declared units; hp prose may use `{damage:damage}` or `{hp:HP}`. `scripts/check-moba-effects.js` rejects unresolved tokens. `bun run kit` (`scripts/kit.js`) prints all registered heroes' basic attacks, slots and traits with live units
 - Match clock (its card carries the next wave and the Ball): `tooltip.js` `clock`, `clockCard`; `hud.js`
-- Health bars over units: `health-bars.js` `createHealthBars`; `health-bars.css`; `look.js` `healthBars`
+
+### Over the world
+
 - Damage numbers: `damage-numbers.js` `createDamageNumbers`; `look.js` `damageNumbers`
 - Edge pips for off-screen allies, enemies, Ball: `pips.js` `edgePip`, `createPips`; `look.js` `pips`
 - Minimap, its camera-view outline and click/drag to move the camera: `minimap.js` `createMinimap` (`drawView`, `onFocus` → `follow.focus`); `maps/all-maps.js` `matchRecipe`; `hud.js`; `hud.css` `.moba-minimap`
 - Fog of war (on by default, `?fog=0` turns it off; sight, hidden enemies, haze over unseen ground in the map's shade and sky colours, drifting soft rim, sight growing in and shrinking out): `fog.js` `createFog` (mask canvas plus its haze shader); match rules and look `tune.js` `fog`; hooked in `index.js` present (passes the map palette); minimap filtering in `minimap.js`; CPU proof: `docs/verify.md` Browser proofs (the dodgeball `benchmark()` cannot time MOBA)
+- Onboarding cues (floor arrow, hero ring, You sticker, Ball and goal pointer): `onboarding.js` `createOnboarding`; `look.js` `onboarding`
+- Dead-world grey-out and respawn timer: `recap.js` `createRecap` (`moba-dead-world`); `combat.js` `respawn`; `tune.js` `respawn`
+
+### Panels and logs
+
+- Game log and feed (fact → sentence for the local player; the feed drum mid-right shows kills, wipes, structures, goals and Ball calls): `game-log.js` `createGameLog`, `FEED`; `feedback.js` `log.record`; `hud.js` `feed`; `hud.css` `.moba-feed`; `tune.js` `hud.feedLife`, `feedLines`
+- Scoreboard (Tab or pad Select, live table mid-match): `recap.js` `createRecap` (the `board` aside, class `moba-scoreboard`); `match-stats.js` `createMatchStats`
+- Pause menu (Esc, pad Start, or the top-left menu tile): `menu.js` `createMatchMenu`, `openMenu`, the manual page `pausePage` (Quick cast as a checkbox under the actions), Leave game to the splash `quit`; tile from `src/core/corner-nav.js`; `menu.css`; `tune.js` `hud`
+- Combat log: `src/core/debug.js` `createCombatLog`
+
+### Flagfall
+
 - Flagfall mercenary camps (neutral guards at the camp marks fight back and leash; clearing one sends mercs down the nearest lane; respawn; bots clear them when their lane is quiet): `mechanics/camps/camps-objective.js` `createCamps`, bots `mechanics/camps/camps-bots.js` `campBots` (`escort` phase); mechanic `mechanics/camps/`, on in `maps/flagfall/flagfall.js` `mechanics`; `layout.camps` in `maps/flagfall/flagfall-layout.js`; `tune.js` `camps`; lane hooks `passive`, team `'N'`, `route` in `lane.js`
 - Flagfall jungle (rooms, spine walls, brush, camp/flag/gatehouse marks): `maps/flagfall/flagfall-layout.js` `flagfallLayout`; `tune.js` `flagfall.jungle`; marks and brush mats in `maps/flagfall/flagfall-view.js` `ground`
 - Flagfall gates, two kinds on one mechanic (own team passes, enemies are held out and siege it, shots hit it): the gatehouse, a no-gun stone tower at the fort's chalk bar that the fort waits for (rubble when it falls), and the laser gate, two posts and a hologram beam between fort and core that waits for the fort and that the core waits for (stubs when it falls): `gates.js` `addGates`, `holdGates`, `GATES`; `tune.js` `gatehouse`, `laser`, `flagfall.jungle.gatehouseX`/`laserX`; laser look in `lane-view.js` `makeBody` (`look.laneView.laser`), beam shader shared with the lobby holograms in `hologram.js`; hooked in `maps/flagfall/flagfall-layout.js`, `sim.js` step, `mechanics/structures/structures.js` obstacles (`obstacle: false`), `lane.js` (no gun, `tune[kind].xp`)
 - Flagfall centre flag (hoist clock, hold the ring, team XP and per-lane silence; HUD line, minimap dot; bots' nearest two go): `mechanics/flag/flag-objective.js` `createFlag`; `mechanics/flag/flag-view.js` `view`; `mechanics/flag/flag-bots.js` `flagBots`; mechanic `mechanics/flag/`; `minimap.js` objectives; `tune.js` `flagfall.flag`, `bots.flagGo`
-- Scoreboard (Tab or pad Select, live table mid-match): `recap.js` `createRecap` (the `board` aside, class `moba-scoreboard`); `match-stats.js` `createMatchStats`
-- Pause menu (Esc, pad Start, or the top-left menu tile): `menu.js` `createMatchMenu`, `openMenu`, the manual page `pausePage` (Quick cast as a checkbox under the actions), Leave game to the splash `quit`; tile from `src/core/corner-nav.js`; `menu.css`; `tune.js` `hud`
-- Onboarding cues (floor arrow, hero ring, You sticker, Ball and goal pointer): `onboarding.js` `createOnboarding`; `look.js` `onboarding`
-- Dead-world grey-out and respawn timer: `recap.js` `createRecap` (`moba-dead-world`); `combat.js` `respawn`; `tune.js` `respawn`
-- Combat log: `src/core/debug.js` `createCombatLog`
 
 ## Match: heroes and kits
+
+### Kit engine
 
 - Hero, ability, map and mechanic folders (how to add one): `extending.md`
 - Hero table and kit definitions: `heroes.js` `heroDefinition`, `HEROES`, `freshAbilityState`; `ability.js` `abilityOf`, `castAbility`; `tune.js` `heroes`, `hero`; `heroes.md`
@@ -86,28 +102,35 @@ Paths are under `src/modes/moba/` unless they start with `src/`. `tune.js` means
 - Replicated unit statuses (shields, Stagger bank/repayment, strongest-wins slows, stun, freeze, prone, motion and Tag out guard): `statuses.js` `createStatuses`, `statusDefinition`, `statusBar`, `moveSpeed`, `blocked`, `stateUntil`; `ability.js` `effectStatuses` generates Pass/Rain/Tangle slows, Ward shield and Red light freeze from folder `statusEffects` records with tune-key parameters (`scripts/check-moba-effects.js` checks references and units); `statuses.js` resolves tune-key duration/amount/interval fields at application; custom folder `statuses` declarations with `label`, `tags`, `states`, `stack` (default refresh by key/source, opt-in `maxStacks`), `bar`, `on` aura hooks and tick-based `interval`; `sim.apply`, `sim.remove`, `sim.cleanse`. One state gate table owns `move`, `cast`, `shield`, `catch`, `ballPickup` and `still`; frozen blocks Ball pickup like stun, prone still permits catching, Tag out cleanses stun/freeze/slow/motion but not prone. Minions honour the Ball's stun in `lane.js` `units`. Engine declarations `core.stun` and `core.motion` resolve before abilities; `displacement.js` carries motion's host-only path through its endpoint tick, then `on.expire` replans. `reactAuras` dispatches ordered `amplify`, `damage`, `absorb`, `hit`, `damaged`, `cast`, `death` and `tick` hooks; local `on.apply`, `on.remove`, `on.expire` own lifecycle. Amplification precedes damage interception, then shields drain oldest first; `aura-damage.js` `absorbAura` is the shared shield hook. Ability-level `on` maps are innate listeners without replicated records. `sim-snapshot.js`, `lane-replica.js`, `lobby-replica.js` carry the ordered records and stable ids; `packStatuses` omits motion paths. HUD, health bars, hit logs, `scripts/bench/report.js` and Brew's bot read declaration labels. Pocket/Bag returns still keep damage only, as before; retaining statuses on caught returns belongs to a separate behaviour change.
 - Damage and hit resolution: `combat.js` `hit`; `skillshot.js` `stepShot`, `interceptShot`
 - Combat facts for fight reports: `combat.js` `heal` (`sim.heal`, an isolated seeded crit stream, overheal; Mend, Pass, Balloon and Sprinkler), `hit` (absorbed damage and periodic status); `statuses.js` `createStatuses` (status on/refresh/off, shield absorption and overwrite/expiry waste); `casting.js` `endCast`, `sim-kit.js` `cancelAttack` (reasoned interruptions); each cast emitter owns its lock and target id; `index.js` `FACTS`. Status and absorb facts stay in match logs and ride `online/link.js` fact envelopes so guests reduce the same fight report. Swig grows one shield instead of per-tick slivers.
-- Dungeon (`?map=dungeon`, also on the splash): round room, the Warden with threat, Swing, Slam and its bruise, pulls, room reset and party bots: `maps/dungeon/`, `mechanics/boss/` (`boss-pull.js`), `abilities/swing/`, `abilities/slam/`; `docs/dungeon.md`
-- Mender hero, a healer: `heroes/mender/`; Mend (targeted cast heal through `sim.heal`): `abilities/mend/`; Ward (shield): `abilities/ward/`; `docs/dungeon.md`
-- After-pull fight report in the dungeon (result, party table, mender spells, deaths, threat, wasted casts): `mechanics/boss/boss-report.js` `reduceFight`; `mechanics/boss/boss-view.js`; `hud.css` `.moba-fight-report`; `docs/dungeon.md`
-- Mender's aim preview, Mend beam and landing, Ward bubble: `heroes/mender/mender-view.js` `extras`; green heal numbers: `damage-numbers.js` `heal`
-- Cast bars (player above the skill bar, boss at the top): `cast-bar.js` `createCastBar`, `cast-bar.css`; `hud.js`
 - Effects kit (rings, columns, shells, impact recipes): `effects.js` `createEffects`, `createImpacts`; an ability's `impact` recipe in its tune file (Slam, Swing)
-- Dungeon on the splash, using the portal lobby for its party: `front/index.js`; `lobby-state.js`, `lobby-handoff.js`; `bots.js`; `mechanics/boss/boss-view.js`; `menu.js`
 - Skillshot shapes and sweeps: `skillshot.js` `stepShot`, `closest`; `obstacles.js` `sweepHit`, `sweepObstacles`; `skills-view.js` `lineReach`, `bouncedLinePath` (held Ricochet preview traces the sim's `stepShot`); `view.js` thin dotted Ricochet path (`look.js` `abilityView.bouncedAimRadius`, `bouncedAimSpacing`)
 - Ability telegraphs for enemies (ground line tell): `skills-view.js` `createSkillsView`; `look.js` `abilityView`; `heroes.md`
+- Catching and the Pocket (caught shots held and thrown back): `projectiles.js` `openCatch`, `throwCaught`, `resolveInterception` (the pocket takes the caught shot's team); `casting.js` `traitContext`; `tune.js` `catching`, `momentum`
+- Hero costumes and silhouettes: `hero-view.js` `dressHero`, costumes in `heroes/<id>/<id>-view.js` (`dress`, optional `animate`); `look.js` `silhouettes`; `look.md`
+- Level, XP and stat growth: `tooltip.js` `levelProgress`; `combat.js` `hit`; `tune.js` `levels`
+- Globes (health pickups): `lane-rewards.js` `createRewards` (`reward` drops them, `stepGlobes`); `lane-view.js` `createLaneView`; `tune.js` `globes`
+- Scripted test hero: `scripted.js` `createScriptedHero`; `tune.js` `scripted`
+
+### Heroes
+
+- Mender hero, a healer: `heroes/mender/`; Mend (targeted cast heal through `sim.heal`): `abilities/mend/`; Ward (shield): `abilities/ward/`; `docs/dungeon.md`
+- Mender's aim preview, Mend beam and landing, Ward bubble: `heroes/mender/mender-view.js` `extras`; green heal numbers: `damage-numbers.js` `heal`
 - Fletcher, ranged poke. Q Loose (arrow shot), W Rain (zone), E Vault (dash): `abilities/{loose,vault,rain}/`, `heroes/fletcher/`; `heroes.md`
 - Mitts, keeper. Q Toss (throw caught shots), W Catch (stance), E Dive (dash): `heroes/mitts/mitts.js`, `abilities/{toss,catch,dive}/`; glove and pocket poses in `heroes/mitts/mitts-view.js` `animate`; Toss/return punch in `feedback.js` (ability `effects.punch`, `toss-tune.js` `feedback`), puffs and sound recipes in `look.js` (uses `toss.shot`, `toss.hit`, `return.shot`, `return.hit` in `sound-table.js`); the catch window's fan in `abilities/catch/catch.js` `look`
 - Mitts glove slap (basic): `abilities/gloveSlap/`
-- Catching and the Pocket (caught shots held and thrown back): `projectiles.js` `openCatch`, `throwCaught`, `resolveInterception` (the pocket takes the caught shot's team); `casting.js` `traitContext`; `tune.js` `catching`, `momentum`
 - P. Pong (id `pong`, was Carom): `heroes/pong/` (stone-beaked costume with paddle and back net in `costume.js`, tune, `index.js`), Q Ricochet `abilities/bank/` (bounces, data in its tune; drawn as a cream celluloid ball in `view.js`), W Cushion `abilities/cushion/` (a short wall of posts at the cursor via `sim.addCover`, drawn as one net on two end posts per cast in `skills-view.js`), E Pinball `abilities/pinball/` (targeted enemy serve within `range`; the ball pings from each hit to the nearest unhit enemy within `jumpRange`, `falloff` softer each hop; drawn in `pinball-view.js`). Bots: Pinball's own `bot` (via `ability-bots.js` `abilityTactics`) serves the nearest enemy in range, and `fight-bots.js` walls a target with no cover to bank off. Trick Shot, Kiss's bounce and Backboard are not built; design in `heroes.md`.
 - Coach, captain (id `coach`, was Skip): `heroes/coach/` (flat bar and megaphone placeholder); basic `abilities/tennisBall/`, Q `abilities/pass/` (first hero, ally heal or enemy slow), W `abilities/tagOut/` (ally swap and cleanse, temporary damage reduction), E `abilities/redLight/` (freeze moving enemy heroes). Out, not gone: `coach-cutout.js` reads dead-player intents, walks the touchline and launches `abilities/outThrow/` from inside the wall; hero hits shorten death by two seconds. Costume, cutout and dashed tether: `coach-view.js`; live bot tactics and thresholds: `abilities/{tagOut,redLight,pass}/` `bot.act`, in save/freeze/heal priority order via `ability-bots.js` `abilityTactics`; dead-player bot: `coach-bots.js` `coachBotDead`, via `botDead` in `bots.js`. Kit numbers and sound recipes live in the folder tune files. R Back in! waits for M5.
 - Wata, water support (id `wata`): `heroes/wata/` (squat round jug/spout placeholder); basic `abilities/waterFlick/` (homing), Q `abilities/balloon/` (lob, early pop, splash heal/damage, four-second soaking puddle), W `abilities/sprinkler/` (breakable sweeping heal/soak summon), E `abilities/slide/` (belly slide extended through connected puddles). Soak is a folder status resolved by `statuses.js`; each ability owns its `bot`, sounds and juice; `heroes/wata/wata-bot.js` owns Slide-to-Sprinkler ally saves. `casting.js` dispatches `onRecast` before cooldown gates without resetting cooldown. `summons.js` owns `sim.summon(owner, key, at)`, HP/lifetime/statuses/tick and cleanup on swap, removal and match end (summons outlive owner death); no physics blockers, XP rewards or displacement. `sim-snapshot.js` and `lobby-replica.js` replicate and interpolate the list for both maps. `skills-view.js` discovers ability-folder `extras` through the generated `abilities/all-ability-views.js`, so Balloon and Sprinkler draw in their own folders.
 - Brew, bruiser (id `brew`): `heroes/brew/`, palm strike `abilities/palmStrike/`, Q Flying kick `abilities/flyingKick/` (first-unit dash), W Stagger `abilities/stagger/` (deferred pool and even repayment), E Swig `abilities/swig/` (interruptible rooted shield channel). Shield absorption: `aura-damage.js` `absorbAura`, dispatched by `statuses.js` `reactAuras` through `combat.js` `hit`; shield and pool bars: `health-bars.js`; replication: `sim-snapshot.js`, `lane-replica.js`, `lobby-replica.js`. Hero-specific bot decisions and shared burst memory: `heroes/brew/brew-bot.js`, dispatched in `bots.js`; Flying kick's `bot: false` opts out of generic dashes.
 - Hook, initiator (id `hook`): `heroes/hook/` (crescent and yo-yo placeholder); basic `abilities/yoYoFlick/`, Q `abilities/throw/` (first body, damage and drag; caught returns keep damage only), W `abilities/tangle/` (cone and slow), E `abilities/aroundTheWorld/` (radial hero knockback). Reusable `displacement.js` `createDisplacement`, `stepUnitDisplacement`, `sim.displace` moves heroes/minions over a duration, clips at cover/bounds and cancels cast/channel/dash; `core.motion` statuses carry its host-only path; `sim-snapshot.js` and `lane-replica.js` replicate the status without that path. Bots: clear-line Throw, nearby cone payoff, radial peel against a crowd in `fight-bots.js`; `abilities/tangle/` selects `bot: 'cone'`, `abilities/aroundTheWorld/` selects `bot: 'radial'`.
-- Hero costumes and silhouettes: `hero-view.js` `dressHero`, costumes in `heroes/<id>/<id>-view.js` (`dress`, optional `animate`); `look.js` `silhouettes`; `look.md`
-- Level, XP and stat growth: `tooltip.js` `levelProgress`; `combat.js` `hit`; `tune.js` `levels`
-- Globes (health pickups): `lane-rewards.js` `createRewards` (`reward` drops them, `stepGlobes`); `lane-view.js` `createLaneView`; `tune.js` `globes`
-- Scripted test hero: `scripted.js` `createScriptedHero`; `tune.js` `scripted`
+
+### Dungeon
+
+- Dungeon (`?map=dungeon`, also on the splash): round room, the Warden with threat, Swing, Slam and its bruise, pulls, room reset and party bots: `maps/dungeon/`, `mechanics/boss/` (`boss-pull.js`), `abilities/swing/`, `abilities/slam/`; `docs/dungeon.md`
+- After-pull fight report in the dungeon (result, party table, mender spells, deaths, threat, wasted casts): `mechanics/boss/boss-report.js` `reduceFight`; `mechanics/boss/boss-view.js`; `hud.css` `.moba-fight-report`; `docs/dungeon.md`
+- Mender's aim preview, Mend beam and landing, Ward bubble: `heroes/mender/mender-view.js` `extras`; green heal numbers: `damage-numbers.js` `heal`
+- Cast bars (player above the skill bar, boss at the top): `cast-bar.js` `createCastBar`, `cast-bar.css`; `hud.js`
+- Dungeon on the splash, using the portal lobby for its party: `front/index.js`; `lobby-state.js`, `lobby-handoff.js`; `bots.js`; `mechanics/boss/boss-view.js`; `menu.js`
 
 ## Match: lane, minions, towers
 
