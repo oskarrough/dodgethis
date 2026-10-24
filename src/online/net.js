@@ -120,6 +120,7 @@ export class Net {
 		this.handlers = new Map()
 		this.onPeerJoin = null
 		this.onPeerLeave = null
+		this.onReclaim = null
 		this.onDisconnect = null
 		this._generation = 0
 		this._connections = new Set()
@@ -338,7 +339,11 @@ export class Net {
 			reason = 'Invalid peer identity'
 		else if (this.conns.has(conn.peer) || this._pending.has(conn.peer))
 			reason = 'That player is already connected'
-		else if (this.conns.size + this._pending.size >= this.capacity() - 1)
+		// A seated peer may be a refresh still holding its slot; one extra handshake lets hello reclaim it.
+		else if (
+			this.conns.size + this._pending.size >=
+			this.capacity() - 1 + (this.conns.size ? 1 : 0)
+		)
 			reason = `That lobby is full (${this.capacity()} players maximum)`
 		if (reason) {
 			this._refuse(conn, reason, generation)
@@ -376,13 +381,14 @@ export class Net {
 				this._refuse(conn, 'That lobby is closed; a match may already be running', generation)
 				return
 			}
-			if (this.conns.size >= this.capacity() - 1) {
-				this._refuse(conn, `That lobby is full (${this.capacity()} players maximum)`, generation)
-				return
-			}
 			const data = message.d.data
 			if (!plainJoinData(data) || !this.validJoinData(data)) {
 				this._refuse(conn, 'Invalid player selection; refresh and join again', generation)
+				return
+			}
+			this.onReclaim?.(conn.peer, data)
+			if (this.conns.size >= this.capacity() - 1) {
+				this._refuse(conn, `That lobby is full (${this.capacity()} players maximum)`, generation)
 				return
 			}
 			this._pending.delete(conn.peer)

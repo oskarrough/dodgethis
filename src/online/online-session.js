@@ -96,6 +96,19 @@ export function createOnlineSession(
 				: p
 		})
 	}
+	function silentSeat(key, peerId) {
+		return (
+			validKey(key) &&
+			state.humans.find(
+				(h) => keys.get(h.peerId) === key && h.peerId !== peerId && silent(h.peerId),
+			)
+		)
+	}
+	// Transport counts the zombie until hello; drop it so a refresh is not "lobby is full".
+	net.onReclaim = (peerId, joined) => {
+		const stale = silentSeat(joined?.key, peerId)
+		if (stale) net.drop(stale.peerId)
+	}
 	net.onPeerJoin = (peerId, joined) => {
 		if (!net.isHost || !state) return
 		if (state.humans.some((p) => p.peerId === peerId)) return
@@ -105,8 +118,7 @@ export function createOnlineSession(
 		if (state.phase === 'match') {
 			// A refresh may beat its old connection's close; that quiet seat goes back to a bot first, then to this tab.
 			// A duplicated tab copies the key too, but its original still talks and keeps its seat.
-			const stale =
-				validKey(key) && state.humans.find((h) => keys.get(h.peerId) === key && silent(h.peerId))
+			const stale = silentSeat(key, peerId)
 			if (stale) net.drop(stale.peerId)
 			const back = validKey(key) && left.get(key)
 			const prefer =
@@ -134,6 +146,14 @@ export function createOnlineSession(
 			return
 		}
 		if (state.phase !== 'lobby') return
+		const stale = silentSeat(key, peerId)
+		if (stale) {
+			net.drop(stale.peerId)
+			if (state.humans.some((h) => h.peerId === stale.peerId)) {
+				keys.delete(stale.peerId)
+				state.humans = state.humans.filter((h) => h.peerId !== stale.peerId)
+			}
+		}
 		const team =
 			state.humans.filter((p) => p.team === 'A').length <=
 			state.humans.filter((p) => p.team === 'B').length
