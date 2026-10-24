@@ -18,17 +18,17 @@ The tallest of them is Altamesa, and it is hollow. Mesa is Spanish for table, so
 
 ## What is settled and what is open
 
-| Settled                                                                                                                                                                                               | Open                                                                              |
-| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| Floating stone over cloud; Moebius line and sky; Escher stairs and arches; the desert mesa is the hub and each map keeps its own biome (Overthrow green isles, Flagfall night jungle) in the same sky | The game's name, and whether the world gets one (#25)                             |
-| The terracotta terrero lobby, pastel apricot-to-violet sky, distant mesas, the portal                                                                                                                 |                                                                                   |
-| Overthrow by day, Flagfall by night; teams are sashes, not sides                                                                                                                                      | Hero names and origins: Coach, Hook, Brew, Mender and Wata are placeholders (#24) |
-| Cream paper cards with a thin navy ink line; one navy ink, never black                                                                                                                                |                                                                                   |
-| Altamesa and its cast: Gnomon, Tinaja and Botijo, Fornax, Carillon, Espejo, Barquero, Manos and the court Tagoror; one naming palette for the whole world                                             |                                                                                   |
-| Vallotton woodcuts for the splash map cards, cut from each map's real layout                                                                                                                          | Who the heroes are, and why they come up to fight                                 |
-| Type: display Darumadrop One, Comico, Apfel Grotezk; text Sniglet, Josefin Sans                                                                                                                       | Music beyond the synthesised scenes; Oskar is working on audio himself            |
-| No text where the world can show it: the portal fills with light instead of counting                                                                                                                  |                                                                                   |
-| Charm with weight: cute proportions, worn materials, never plush                                                                                                                                      |                                                                                   |
+| Settled                                                                                                                                                                                               | Open                                                                   |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| Floating stone over cloud; Moebius line and sky; Escher stairs and arches; the desert mesa is the hub and each map keeps its own biome (Overthrow green isles, Flagfall night jungle) in the same sky | The game's name, and whether the world gets one (#25)                  |
+| The terracotta terrero lobby, pastel apricot-to-violet sky, distant mesas, the portal                                                                                                                 |                                                                        |
+| Overthrow by day, Flagfall by night; teams are sashes, not sides                                                                                                                                      | Hero looks and origins beyond the one-liners below (#24)               |
+| Cream paper cards with a thin navy ink line; one navy ink, never black                                                                                                                                |                                                                        |
+| Altamesa and its cast: Gnomon, Tinaja and Botijo, Fornax, Carillon, Espejo, Barquero, Manos and the court Tagoror; one naming palette for the whole world                                             |                                                                        |
+| Vallotton woodcuts for the splash map cards, cut from each map's real layout                                                                                                                          | Who the heroes are, and why they come up to fight                      |
+| Type: display Darumadrop One, Comico, Apfel Grotezk; text Sniglet, Josefin Sans                                                                                                                       | Music beyond the synthesised scenes; Oskar is working on audio himself |
+| No text where the world can show it: the portal fills with light instead of counting                                                                                                                  |                                                                        |
+| Charm with weight: cute proportions, worn materials, never plush                                                                                                                                      |                                                                        |
 
 ## The feeling
 
@@ -87,6 +87,19 @@ Each line is the character in one breath, for whoever writes its fight, draws it
 - **Gnomon** (`gnomon`). The pin of the great sundial at the bottom of the stair. Its shadow sweeps the floor, and the shadow is the attack, as the Ball's shadow is the warning. It has kept time over the mesa since before the first flagstone, and it would like you to know you are late.
 
 Lesser things keep plain common nouns from the same palette, with no article. Manos's throwers are the **Tiestos**, the broken shards of old pots. The boons a wing boss leaves behind are **Lupa**, a cracked magnifying glass; **Azogue**, the quicksilver that backs an old mirror; **Bizcocho**, the potter's word for clay fired once and not yet glazed (it is also a sponge cake, and nobody on the mesa finds this as funny as they used to); and **Tara**, a small clay idol after the one the Guanches left on Gran Canaria.
+
+## The heroes
+
+Oskar settled these names on 2026-10-24. Each hero keeps its kit and silhouette; the sports props give way to the crafts of the mesas. The folders in brackets are the code as it stands, which renames when someone takes the job.
+
+- **Ibis** (`fletcher`). A lean hunter with a long neck and a quiver of three reed arrows fletched with heron feathers. Every arrow that finds a hero sends her leaping again.
+- **Kappa** (`mitts`). Low, wide and neckless, a river creature with a shell and one great catching hand. Whatever is thrown at her team she takes and holds, and gives back when it suits her.
+- **Carambola** (`pong`). A stocky stone-beaked bruiser with a wooden paddle who learned the game against walls and still thinks a straight shot is wasted.
+- **Mandador** (`coach`). In lucha canaria the mandador directs the team from the edge of the sand. This one is a flat painted board with a speaking-trumpet, and keeps directing from the touchline after dying, at full volume.
+- **Lasso** (`hook`). A crescent of a fisherman who throws a weighted line. He fishes the cloud sea for whatever falls off the mesas, and on match days he fishes for people.
+- **Oolong** (`brew`). A drum-shaped wrestler-monk who drinks tea in the middle of a fight. He takes everything you have, drinks it off, and is still standing when you run out.
+- **Undine** (`wata`). A squat water spirit with a spouted jug who plants a sprinkler that keeps working after she has moved on.
+- **Salvia** (`mender`, draft). A herb-gatherer with a satchel of sage, who mends what the court breaks and wards what it will break next.
 
 ## Keywords
 
