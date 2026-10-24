@@ -429,13 +429,157 @@ const SKETCHES = [
 			t.shakeDir.set(1, 0, 0)
 		},
 	},
+	// Glow versions, for comparison: additive light in the manner of the three.js TSL VFX examples.
+	{
+		glow: true,
+		title: 'Glow pop',
+		text: 'Beside 3. A soft white-gold flare blooms at the point of contact with a spray of bright sparks, added as light rather than printed as ink.',
+		note: 'Reads as power and heat; brightens whatever sits behind it.',
+		setup(t) {
+			t.flare = glowSprite(t, 0xfff2c0, 2.4, 2.5)
+			t.sparks = sparks(t, 16, 0xffd890)
+		},
+		hit(t) {
+			t.freeze = 0.05
+			flashUnit(t.b, 0.07)
+			launch(t.sparks, t.b.position, 3.2)
+		},
+		update(t, dt) {
+			const k = t.since / 0.28
+			t.flare.visible = k < 1
+			t.flare.position.set(t.b.position.x - 0.35, 0.85, 0)
+			t.flare.quaternion.copy(t.camera.quaternion)
+			t.flare.scale.setScalar(0.6 + 0.8 * easeOut(Math.min(1, k * 2)))
+			t.flare.material.uniforms.uAlpha.value = (1 - k) ** 1.5
+			flySparks(t, t.sparks, dt)
+		},
+	},
+	{
+		glow: true,
+		title: 'Glow shockwave',
+		text: 'Beside 4. A ring of pale light races out over the floor with a soft halo, and the ground under the blow lights up for a moment.',
+		note: 'Glowing rings on the floor are what telegraphs are made of; this is where readability would suffer first.',
+		setup(t) {
+			const m = new THREE.Mesh(
+				new THREE.PlaneGeometry(2, 2).rotateX(-Math.PI / 2),
+				new THREE.ShaderMaterial({
+					uniforms: { uK: { value: 0 }, uColor: { value: new THREE.Color(0xbff4ff) } },
+					transparent: true,
+					depthWrite: false,
+					blending: THREE.AdditiveBlending,
+					vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.); }`,
+					fragmentShader: `uniform float uK; uniform vec3 uColor; varying vec2 vUv;
+						void main(){
+							float r = length(vUv - 0.5) * 2.0;
+							float ring = exp(-pow((r - 0.85) * 9.0, 2.0)) * 0.9 * (1.0 - smoothstep(0.92, 1.0, r));
+							float pool = exp(-r * r * 8.0) * (1.0 - uK) * 0.5;
+							float a = (ring * (1.0 - uK) + pool);
+							gl_FragColor = vec4(uColor * a, 1.0);
+						}`,
+				}),
+			)
+			m.position.y = 0.03
+			m.visible = false
+			t.scene.add(m)
+			t.wave = m
+		},
+		hit(t) {
+			t.freeze = 0.04
+			flashUnit(t.b, 0.07)
+		},
+		update(t) {
+			const k = t.since / 0.4
+			t.wave.visible = k < 1
+			if (!t.wave.visible) return
+			t.wave.position.x = t.b.position.x
+			t.wave.scale.setScalar(0.4 + 1.8 * easeOut(k))
+			t.wave.material.uniforms.uK.value = k
+		},
+	},
+	{
+		glow: true,
+		title: 'Glow sparks',
+		text: 'Beside 7. The struck unit skids back in a shower of hot streaks that fall and fade, with a warm flash on the floor beneath it.',
+		note: 'The sparks look good alone; in a five-on-five scrum they pile into a bright smear.',
+		setup(t) {
+			SKETCHES[6].setup(t)
+			t.sparks = sparks(t, 22, 0xffb070)
+			t.pool = glowSprite(t, 0xffc890, 1.7, 4)
+			t.pool.rotation.x = -Math.PI / 2
+			t.pool.position.y = 0.03
+		},
+		hit(t) {
+			SKETCHES[6].hit(t)
+			for (const p of t.puffs) p.mesh.visible = false
+			launch(t.sparks, t.b.position, 4)
+		},
+		update(t, dt) {
+			SKETCHES[6].update(t, dt)
+			for (const p of t.puffs) p.mesh.visible = false
+			const k = t.since / 0.3
+			t.pool.visible = k < 1
+			t.pool.position.x = t.b.position.x
+			t.pool.material.uniforms.uAlpha.value = (1 - k) * 0.6
+			flySparks(t, t.sparks, dt)
+		},
+	},
 ]
+
+// A camera-facing additive sprite: a soft round falloff, brightest in the middle.
+function glowSprite(t, color, size, sharp) {
+	const m = new THREE.Mesh(
+		new THREE.PlaneGeometry(size, size),
+		new THREE.ShaderMaterial({
+			uniforms: { uColor: { value: new THREE.Color(color) }, uAlpha: { value: 1 } },
+			transparent: true,
+			depthWrite: false,
+			depthTest: false,
+			blending: THREE.AdditiveBlending,
+			vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.); }`,
+			fragmentShader: `uniform vec3 uColor; uniform float uAlpha; varying vec2 vUv;
+				void main(){ float r = length(vUv - 0.5) * 2.0; float a = (exp(-r * r * ${sharp.toFixed(1)}) * 0.9 + exp(-r * r * 40.0) * 0.8) * (1.0 - smoothstep(0.55, 1.0, r));
+				gl_FragColor = vec4(uColor * a * uAlpha, 1.0); }`,
+		}),
+	)
+	m.visible = false
+	m.renderOrder = 5
+	t.scene.add(m)
+	return m
+}
+function sparks(t, n, color) {
+	return Array.from({ length: n }, (_, i) => {
+		const m = glowSprite(t, color, 0.35, 3)
+		return { mesh: m, v: new THREE.Vector3(), i, life: 0 }
+	})
+}
+function launch(list, at, speed) {
+	for (const p of list) {
+		const a = (p.i / list.length) * Math.PI * 2 + p.i * 0.7
+		const s = speed * (0.5 + ((p.i * 7) % 5) / 8)
+		p.v.set(Math.cos(a) * s * 0.8 - 1, 2 + (p.i % 3), Math.sin(a) * s * 0.6)
+		p.mesh.position.set(at.x - 0.3, 0.8, at.z)
+		p.life = 0.35 + (p.i % 4) * 0.06
+	}
+}
+function flySparks(t, list, dt) {
+	for (const p of list) {
+		p.life -= dt
+		p.mesh.visible = p.life > 0
+		if (!p.mesh.visible) continue
+		p.v.y -= 9 * dt
+		p.mesh.position.addScaledVector(p.v, dt)
+		p.mesh.quaternion.copy(t.camera.quaternion)
+		p.mesh.rotateZ(Math.atan2(p.v.y - p.v.z * 0.5, p.v.x))
+		p.mesh.scale.set(1 + Math.hypot(p.v.x, p.v.y, p.v.z) * 0.25, 0.45, 1)
+		p.mesh.material.uniforms.uAlpha.value = Math.min(1, p.life * 4)
+	}
+}
 
 const grid = document.getElementById('grid')
 const tiles = SKETCHES.map((fx, i) => {
 	const fig = document.createElement('figure')
 	fig.innerHTML = `<div class="tile"><span>${i + 1} ${fx.title}</span></div><figcaption><b>${i + 1}. ${fx.title}</b><br>${fx.text} <i>${fx.note}</i></figcaption>`
-	grid.append(fig)
+	;(fx.glow ? document.getElementById('glow') : grid).append(fig)
 	const t = tile(fx)
 	t.el = fig.firstChild
 	return t

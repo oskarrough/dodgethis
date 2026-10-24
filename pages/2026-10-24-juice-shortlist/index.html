@@ -9,7 +9,8 @@
 			.page {
 				max-width: 1280px;
 			}
-			#grid {
+			#grid,
+			#glow {
 				display: grid;
 				grid-template-columns: repeat(3, 1fr);
 				gap: 14px;
@@ -50,7 +51,8 @@
 				pointer-events: none;
 			}
 			@media (max-width: 800px) {
-				#grid {
+				#grid,
+				#glow {
 					grid-template-columns: 1fr;
 				}
 			}
@@ -66,6 +68,12 @@
 				WebGPU.
 			</p>
 			<div id="grid"></div>
+			<h2>Glow, for comparison</h2>
+			<p>
+				Three of the same blows done the way the three.js TSL showcases do them: additive light, soft
+				falloff, sparks. Each sits beside its ink cousin above, 3, 4 and 7.
+			</p>
+			<div id="glow"></div>
 		</main>
 		<canvas id="gl"></canvas>
 		<script type="module" src="./lab.js"></script>
