@@ -615,6 +615,7 @@
 						c[k] = input.type === 'range' ? +input.value : input.value
 						apply(el, c)
 						if (input.tagName === 'SELECT') load(c[k])
+						if (k === 'ui') el.querySelector('.name').textContent = c.ui
 						history.replaceState(null, '', '#' + encodeURIComponent(JSON.stringify(cols)))
 					})
 					input._out = out
