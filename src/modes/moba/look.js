@@ -106,7 +106,7 @@ export const look = {
 		domeWidth: 0.045,
 		// The invulnerability dome: dashed horizontal rings on a dome over the structure, never meridians
 		// (seen edge-on from the match camera a meridian reads as a pole through the crystal).
-		domeRings: [0, 0.45, 1.2],
+		domeRings: [0, 0.45], // a third, higher ring crossed the crystal and was too loud
 		domeReach: 0.9, // past the structure's radius at the ground
 		domeLift: 0.6, // over the structure's height
 		domeDash: 0.1, // a dash's thickness; thinner and the style pass inks it grey
