@@ -77,11 +77,12 @@ export function createControl(ctx) {
 		if (readySeats && !readySeats.portal) {
 			const box = readySeats.seatOf(h.id)
 			const cancel = frame.pressed.some((e) => ['cancel', 'stop'].includes(e.action))
+			const attack = frame.pressed.some((e) => e.action === 'primary')
 			const movement =
 				Math.hypot(frame.move.x, frame.move.z) > 0 ||
 				(frame.order &&
 					(!box || Math.hypot(frame.order.x - box.x, frame.order.z - box.z) > tune.orders.arrival))
-			if (cancel || (h.readyWalk && movement)) {
+			if (cancel || (h.readyWalk && (movement || attack))) {
 				if (h.readyWalk || box?.enteredAt != null) present({ type: 'readyCancel', hero: h.id })
 				if (h.readyWalk) h.order = null
 				h.readyWalk = false
