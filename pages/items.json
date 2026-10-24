@@ -122,8 +122,8 @@
 		"at": "2026-10-20T20:51:01.405Z",
 		"title": "Dungeon party lobby",
 		"ask": "Five explicit rows, hero dropdowns and bot controls; guests ready, host starts. Is this clear and slick enough? Browser proof: two connected players edited heroes/bots and readiness reset correctly; solo launch entered Dungeon with one hero. Multiplayer launch and lobby return remain unchecked after the browser proof was interrupted.",
-		"status": "To review",
-		"decision": "",
+		"status": "Archived",
+		"decision": "Retired with the saucer lobby on 2026-10-24; the portal lobby replaced it.",
 		"media": ["media/2026-10-20-dungeon-party-lobby/dungeon-party-final.webp"],
 		"links": ["http://office-linux.heron-mermaid.ts.net:5173/?mode=moba&map=dungeon"],
 		"thread": "thr_6sgc9s2jhb",
@@ -203,8 +203,8 @@
 		"at": "2026-10-14T08:48:33.563Z",
 		"title": "Lobby feel: the swap flip and a calmer layout (#5)",
 		"ask": "Does the flip read as a cutout turning on a pin? The clip runs three swaps slowed to 1.2 s, then two at the real 0.25 s. The stills are the lobby from a fresh / at 390, 1440 and 2560×1080: at 390 the difficulty words no longer run together, health bars shrink and the controls label clears the ability bar; at wide screens 'Next map' no longer spills over the rim.",
-		"status": "Decided",
-		"decision": "Reviewed.",
+		"status": "Archived",
+		"decision": "Reviewed. Retired with the saucer lobby on 2026-10-24; the portal lobby replaced it.",
 		"media": [
 			"media/2026-10-14-lobby-feel-the-swap-flip-and-a-calmer-la/swap-flip.webm",
 			"media/2026-10-14-lobby-feel-the-swap-flip-and-a-calmer-la/lobby-390.webp",
@@ -219,8 +219,8 @@
 		"at": "2026-10-13T12:23:51.897Z",
 		"title": "Choose your hero: five takes",
 		"ask": "Which one: 1 stamp, 2 brush, 3 tag, 4 emboss, 5 wordless footprints? Play any with /?caption=stamp, brush, tag, emboss or wordless.",
-		"status": "Decided",
-		"decision": "Reviewed.",
+		"status": "Archived",
+		"decision": "Reviewed. Retired with the saucer lobby on 2026-10-24; the portal lobby replaced it.",
 		"media": [
 			"media/2026-10-13-choose-your-hero-five-takes/caption-1-stamp.webp",
 			"media/2026-10-13-choose-your-hero-five-takes/caption-2-brush.webp",
@@ -236,8 +236,8 @@
 		"at": "2026-10-13T10:12:04.233Z",
 		"title": "Choose your hero, cut into the platter",
 		"ask": "Does the engraving read as part of the platter, beside the cards? Wide window, then narrow.",
-		"status": "Decided",
-		"decision": "Reviewed.",
+		"status": "Archived",
+		"decision": "Reviewed. Retired with the saucer lobby on 2026-10-24; the portal lobby replaced it.",
 		"media": [
 			"media/2026-10-13-choose-your-hero-cut-into-the-platter/engrave-wide-crop.webp",
 			"media/2026-10-13-choose-your-hero-cut-into-the-platter/engrave-narrow-crop.webp"
@@ -250,8 +250,8 @@
 		"at": "2026-10-13T10:00:43.844Z",
 		"title": "Hero strip leans on the platter, with a caption",
 		"ask": "Does 'Choose your hero' over your pick read as a choice, and do the cards now feel part of the lobby? Before is today; after is the default lobby camera.",
-		"status": "Decided",
-		"decision": "Reviewed.",
+		"status": "Archived",
+		"decision": "Reviewed. Retired with the saucer lobby on 2026-10-24; the portal lobby replaced it.",
 		"media": [
 			"media/2026-10-13-hero-strip-leans-on-the-platter-with-a-c/strip-before.webp",
 			"media/2026-10-13-hero-strip-leans-on-the-platter-with-a-c/strip-after.webp",
@@ -265,8 +265,8 @@
 		"at": "2026-10-13T09:43:17.634Z",
 		"title": "Lobby holograms read on their plates",
 		"ask": "Do the holograms read on their plates now, and are the paler plates still clearly two teams? Before is Oskar's screenshot; after is the default lobby camera, cropped, then the full view.",
-		"status": "Decided",
-		"decision": "Reviewed.",
+		"status": "Archived",
+		"decision": "Reviewed. Retired with the saucer lobby on 2026-10-24; the portal lobby replaced it.",
 		"media": [
 			"media/2026-10-13-lobby-holograms-read-on-their-plates/holograms-before.webp",
 			"media/2026-10-13-lobby-holograms-read-on-their-plates/holograms-after-crop.webp",
@@ -280,8 +280,8 @@
 		"at": "2026-10-13T08:59:51.547Z",
 		"title": "Lobby controls label and WASD offer",
 		"ask": "Does the bottom-right Controls label and the one-time Switch to WASD? note read right in the lobby?",
-		"status": "Decided",
-		"decision": "Reviewed.",
+		"status": "Archived",
+		"decision": "Reviewed. Retired with the saucer lobby on 2026-10-24; the portal lobby replaced it.",
 		"media": ["media/2026-10-13-lobby-controls-label-and-wasd-offer/lobby-controls-offer.webp"],
 		"links": [],
 		"thread": "thr_27qnwfh6gs",
@@ -291,8 +291,8 @@
 		"at": "2026-10-13T08:35:52.709Z",
 		"title": "Lobby: plates flow to the map (#30)",
 		"ask": "Run is the only look. The trunk and the ring inside the weather bowl now fill as the bots glaze their plates, so before you step on the bowl is fed all but its last arc, and your plate closes it. Team glazes still marble into streaks where branches join. Does the bowl read as fed before you step on? Play it: step onto your plate last.",
-		"status": "Decided",
-		"decision": "Reviewed.",
+		"status": "Archived",
+		"decision": "Reviewed. Retired with the saucer lobby on 2026-10-24; the portal lobby replaced it.",
 		"media": [
 			"media/2026-10-13-lobby-plates-flow-to-the-map-30-/bowl-bots-in.webp",
 			"media/2026-10-13-lobby-plates-flow-to-the-map-30-/junction-and-bowl.webp"
@@ -661,8 +661,8 @@
 		"at": "2026-10-10T14:33:00.710Z",
 		"title": "Lobby whole saucer in frame",
 		"ask": "Does the lobby now read as one whole floating saucer in an unbroken sky at wide, desktop and phone sizes?",
-		"status": "Decided",
-		"decision": "Style fine; whole saucer in frame. Keep improving.",
+		"status": "Archived",
+		"decision": "Style fine; whole saucer in frame. Keep improving. Retired with the saucer lobby on 2026-10-24; the portal lobby replaced it.",
 		"media": [
 			"media/2026-10-10-lobby-whole-saucer-in-frame/fit-wide.webp",
 			"media/2026-10-10-lobby-whole-saucer-in-frame/fit-desk.webp",
@@ -715,8 +715,8 @@
 		"at": "2026-10-10T11:16:41.559Z",
 		"title": "Lobby Pocket weather pass",
 		"ask": "Cute with swagger yet? Judge the painted lip band, the iron cradles and the NEXT MAP caption, by day and by night.",
-		"status": "Decided",
-		"decision": "Style fine; whole saucer in frame. Keep improving.",
+		"status": "Archived",
+		"decision": "Style fine; whole saucer in frame. Keep improving. Retired with the saucer lobby on 2026-10-24; the portal lobby replaced it.",
 		"media": [
 			"media/2026-10-10-lobby-pocket-weather-pass/lobby-pocket-weather-day.webp",
 			"media/2026-10-10-lobby-pocket-weather-pass/lobby-pocket-weather-night.webp"
@@ -743,8 +743,8 @@
 		"at": "2026-10-10T11:14:31.991Z",
 		"title": "Lobby Ready on the saucer",
 		"ask": "Is it clear you walk onto your plate to ready, and does the glaze filling in from the middle feel like part of the saucer?",
-		"status": "Decided",
-		"decision": "Style fine; whole saucer in frame. Keep improving.",
+		"status": "Archived",
+		"decision": "Style fine; whole saucer in frame. Keep improving. Retired with the saucer lobby on 2026-10-24; the portal lobby replaced it.",
 		"media": [
 			"media/2026-10-10-lobby-ready-on-the-saucer/ready-on-the-saucer.webp",
 			"media/2026-10-10-lobby-ready-on-the-saucer/ready-filling.webp"
@@ -773,8 +773,8 @@
 		"at": "2026-10-10T11:10:13.349Z",
 		"title": "Lobby weather bowl",
 		"ask": "Does the turning bowl read as the next map (Flagfall by night here, Overthrow by day), and is it big enough to notice?",
-		"status": "Decided",
-		"decision": "Style fine; whole saucer in frame. Keep improving.",
+		"status": "Archived",
+		"decision": "Style fine; whole saucer in frame. Keep improving. Retired with the saucer lobby on 2026-10-24; the portal lobby replaced it.",
 		"media": [
 			"media/2026-10-10-lobby-weather-bowl/weather-bowl-flagfall.webp",
 			"media/2026-10-10-lobby-weather-bowl/bowl-turn-crop.webm"
@@ -817,8 +817,8 @@
 		"at": "2026-10-10T11:03:52.457Z",
 		"title": "Lobby saucer",
 		"ask": "Does the glazed saucer in its iron cradles read as one floating ceramic world, and do the seat plates read as inlaid glaze?",
-		"status": "Decided",
-		"decision": "Style fine; whole saucer in frame. Keep improving.",
+		"status": "Archived",
+		"decision": "Style fine; whole saucer in frame. Keep improving. Retired with the saucer lobby on 2026-10-24; the portal lobby replaced it.",
 		"media": ["media/2026-10-10-lobby-saucer/lobby-saucer.webp"],
 		"links": [],
 		"thread": "thr_dwbukqxwup",
