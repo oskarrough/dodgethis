@@ -10,6 +10,19 @@ export default {
 	layout: overthrowLayout,
 	mechanics: ['structures', 'minions', 'ball', 'bots'],
 	palette: () => ({ ...tune.overthrowTerrain.palette, light: tune.overthrowTerrain.light }),
+	// The splash woodcut's flat colours (front/woodcut.js): apricot haze, sage court, violet stone.
+	cut: () => {
+		const c = tune.overthrowTerrain.colors
+		return {
+			sky: c.haze,
+			cloud: c.cloudShade,
+			court: c.tarmac,
+			ink: c.ink,
+			cliff: c.stoneShade,
+			gouge: c.cloudShade,
+			moss: c.moss,
+		}
+	},
 	debugTune: {
 		name: 'overthrowTerrain',
 		values: tune.overthrowTerrain,

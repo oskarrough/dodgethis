@@ -102,14 +102,24 @@ export const tune = {
 	// settles back in the slower `snap` s.
 	// The title sits still for `calm` ms (min, max), then one letter dodges or the Ball glints.
 	title: { calm: [3500, 9000] },
-	// Each map's illustration, `public/splash/<map>-<width>.webp`; `wash` is the cream veil on
-	// the art of a tile you're not on.
+	// Each map's woodcut (woodcut.js): the island `turn`ed degrees and `tip`ped like the camera,
+	// `margin` of the card left as paper, a `cliff` metres deep over a `root` of `teeth` hanging
+	// that share of the card; `gouges` and `strokes` cut the void and the cliff, `grain` and
+	// `wobble` roughen every edge like a knife. `wash` is the cream veil on a tile you're not on.
 	tile: {
-		art: { overthrow: '/splash/overthrow', flagfall: '/splash/flagfall' },
-		artWidths: [480, 960],
+		cut: {
+			turn: -8,
+			tip: 0.6,
+			margin: 0.08,
+			cliff: 8,
+			root: 0.32,
+			teeth: 13,
+			gouges: 26,
+			strokes: 70,
+			grain: 0.035,
+			wobble: 3,
+		},
 		wash: 0.22,
-		outlinePadding: 5,
-		outlineWidth: 1.5,
 		snap: 0.12,
 		hover: 0.05,
 		press: 0.06,

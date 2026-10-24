@@ -11,6 +11,20 @@ export default {
 	layout: flagfallLayout,
 	mechanics: ['structures', 'minions', 'camps', 'flag', 'bots'],
 	palette: () => ({ ...tune.flagfall.palette, light: tune.flagfall.light }),
+	// The splash woodcut's flat colours (front/woodcut.js): night sky, a pale moon, violet court.
+	cut: () => {
+		const c = tune.flagfall.colors
+		return {
+			sky: c.haze,
+			cloud: c.cloudLit,
+			orb: tune.flagfall.specks.color,
+			court: c.tarmac,
+			ink: c.ink,
+			cliff: c.ink,
+			gouge: c.tarmac,
+			moss: c.moss,
+		}
+	},
 	debugTune: {
 		name: 'flagfall',
 		values: tune.flagfall,
