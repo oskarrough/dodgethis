@@ -451,6 +451,7 @@ export function createFightBot(
 					h.body.radius,
 					tune.orders.clearance,
 					sim.obstacles,
+					sim.bounds,
 				)
 				if (safe(landing, [target]) && cast(dashSlot, landing)) return frame
 			}
