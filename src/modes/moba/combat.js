@@ -480,6 +480,7 @@ export function createCombat(ctx) {
 		const steps = Math.max(1, Math.ceil((d.time * distance) / d.push / STEP))
 		unit.body.cancelDash()
 		unit.dashAbility = null
+		endCast(unit, 'disabled')
 		cancelChannel(unit, 'disabled')
 		if (distance > 1e-3) unit.body.dash(dir, { distance, time: steps * STEP - 1e-9 })
 		unit.shove = {
