@@ -1,8 +1,9 @@
 # Settings for arbe-file-as-issues, arbe-create-threads-from-issues and arbe-autobot.
 repo = "oskarrough/dodgethis"
 bb = { project = "proj_dhp5r3qujz", machine = "office-linux" }
+# Cursor (acp-cursor) without a payment method on file runs only composer-2.5, grok-4.6 and Auto; Opus 5, Fable 5 and GPT-5.6 Sol answer "Add a payment method".
 orchestrator = "acp-cursor composer-2.5 medium"
-fix = "acp-cursor claude-opus-5 high"
-verify = "acp-cursor claude-opus-5 high"
+fix = "acp-cursor grok-4.6 high"
+verify = "acp-cursor grok-4.6 high"
 max_threads = 3
 lookback = "2 hours" # schedule interval plus overlap
