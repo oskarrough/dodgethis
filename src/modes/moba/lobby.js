@@ -270,6 +270,7 @@ export function createLobby({
 	)
 	let inspectionAim = null
 	let readyPrimary = false
+	let onlineSlot = false
 	let loadingQueued = false
 	const readySounds = new Map()
 	let pickSoundTick = null
@@ -654,12 +655,6 @@ export function createLobby({
 		// Neither the crane nor a modal takes lobby pad input.
 		if (ending || document.querySelector('dialog[open]')) return void (previous = buttons.slice())
 		const down = (i) => buttons[i] && !previous[i] && !blockedPad.has(i)
-		if (down(8) && !numbers.open) {
-			app.intents.cancel(hero.id)
-			onlineEntry.click()
-			previous = buttons.slice()
-			return
-		}
 		const cancel = down(1)
 		const start = down(9)
 		const cycle = down(12)
@@ -672,6 +667,7 @@ export function createLobby({
 				tune.lobby.ready.promptRadius &&
 			!Object.keys(app.intents.get(hero.id).held).length
 		const view = down(8)
+		const online = down(2)
 		previous = buttons.slice()
 		if (view || (numbers.open && cancel)) {
 			numbers.toggle()
@@ -684,6 +680,11 @@ export function createLobby({
 			ready()
 		} else if (cycle) cycleHero()
 		else if (difficulty) cycleDifficulty()
+		else if (online) {
+			app.intents.cancel(hero.id)
+			onlineSlot = true
+			onlineEntry.click()
+		}
 		const pad = app.input.activeDevice() === 'gamepad'
 		const nextDevice = pad ? 'gamepad' : touch ? 'touch' : mouse ? 'mouse' : 'keyboard'
 		if (device === nextDevice) return
@@ -692,7 +693,7 @@ export function createLobby({
 		strip.setDevice(device)
 		backButton.querySelector('kbd').textContent = device === 'gamepad' ? 'B' : ''
 		props.setDevice(device)
-		onlineEntry.querySelector('kbd').textContent = device === 'gamepad' ? 'Select' : ''
+		onlineEntry.querySelector('kbd').textContent = device === 'gamepad' ? 'X' : ''
 	})
 	// Screen changes drop pending casts/orders. The device reset requires a fresh press;
 	// inherited navigation keys and the initial pad buttons also have their own release guard.
@@ -813,6 +814,10 @@ export function createLobby({
 			if (readyPrimary) {
 				run.intents.consume(hero.id, 'primary')
 				readyPrimary = false
+			}
+			if (onlineSlot) {
+				run.intents.consume(hero.id, 'slot5')
+				onlineSlot = false
 			}
 			if (
 				galleryShot?.projectile === null &&
