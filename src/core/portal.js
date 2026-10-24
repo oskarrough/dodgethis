@@ -32,6 +32,7 @@ const SHAPE = /* glsl */ `
 	uniform float uQuiver;
 	uniform float uFlare;
 	uniform float uPop;
+	uniform float uFill;
 	uniform vec3 uColorA;
 	uniform vec3 uColorB;
 	uniform vec3 uColorC;
@@ -78,6 +79,7 @@ export function createPortal(renderer, options = {}) {
 		uQuiver: { value: 0 },
 		uFlare: { value: 0 },
 		uPop: { value: 0 },
+		uFill: { value: 0 },
 		uR: { value: R },
 		uRes: { value: new THREE.Vector2(1, 1) },
 		uPx: { value: 1 },
@@ -135,6 +137,18 @@ export function createPortal(renderer, options = {}) {
 								texture2D(tFar, uv + bend * 1.4).r,
 								texture2D(tFar, uv + bend).g,
 								texture2D(tFar, uv + bend * 0.6).b);
+							// Filling: the rim's light pours in from the bottom and rises to the brim, a
+							// wavering surface with a white seam on top.
+							if (uFill > 0.0) {
+								float level = mix(-1.08, 1.04, uFill)
+									+ 0.035 * sin(vP.x * 11.0 + uTime * 5.0)
+									+ 0.02 * sin(vP.x * 23.0 - uTime * 7.3);
+								float under = smoothstep(0.0, 0.02, level - vP.y);
+								float swirl = 0.5 + 0.5 * sin(vP.y * 6.0 - uTime * 2.0 + sin(vP.x * 4.0 + uTime) * 1.5);
+								vec3 light = mix(uColorA, uColorB, swirl);
+								col = mix(col, mix(uColorC, light, 0.3 + 0.15 * swirl), under * 0.72);
+								col = mix(col, uColorC, exp(-abs(vP.y - level) * 70.0) * 0.9);
+							}
 							float edge = pow(rim, 10.0) * (0.55 + uFlare);
 							col = mix(col, tint, min(edge, 0.85));
 							gl_FragColor = vec4(col, 1.0);
@@ -277,6 +291,7 @@ export function createPortal(renderer, options = {}) {
 	let popStart = -1
 	let flare = 0
 	let charge = 0 // 0-1 set by the owner: a held build-up, brighter and shivering as it fills
+	let fill = 0 // 0-1 set by the owner: light rising inside the mouth to the brim
 
 	function open() {
 		if (phase === 'opening' || phase === 'open') return
@@ -338,6 +353,7 @@ export function createPortal(renderer, options = {}) {
 		uniforms.uFlare.value = Math.max(flare, charge * 1.2)
 		uniforms.uQuiver.value = phase === 'collapsing' ? 1 - openness * 0.5 : charge * charge * 0.8
 		uniforms.uPop.value = pop
+		uniforms.uFill.value = fill
 	}
 
 	// --- Geometry -----------------------------------------------------------------------------
@@ -554,6 +570,12 @@ export function createPortal(renderer, options = {}) {
 		},
 		set charge(value) {
 			charge = Math.min(1, Math.max(0, value))
+		},
+		get fill() {
+			return fill
+		},
+		set fill(value) {
+			fill = Math.min(1, Math.max(0, value))
 		},
 		update,
 		crossed,

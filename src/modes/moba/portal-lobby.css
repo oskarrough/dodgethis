@@ -173,12 +173,6 @@
 .portal-map small:empty {
 	display: none;
 }
-.portal-map small[data-go='true'] {
-	padding: 0 4px;
-	background: #9fe3d6;
-	color: var(--ui-text);
-	text-shadow: none;
-}
 .portal-map small {
 	font:
 		400 18px / 1.2 'Josefin Sans',

@@ -114,7 +114,7 @@ export function createPortalLobby({ app, run, sim, hero, setup, options }) {
 		Math.abs(h.body.position.x - mouth.x) < p.tearRadius * p.width &&
 		depth(h) <= p.reach + 0.01
 	// The tear answers: a flash as each hero steps in, a low hum while it waits for the rest, then a
-	// build-up that fills over the countdown.
+	// build-up as light fills the mouth over the countdown.
 	function charge(time, from, dt) {
 		for (const h of sim.heroes) {
 			if (!inside(h)) entered.delete(h)
@@ -131,6 +131,10 @@ export function createPortalLobby({ app, run, sim, hero, setup, options }) {
 					? p.charge.hum
 					: 0
 		tear.charge += (target - tear.charge) * Math.min(1, dt * p.charge.ease)
+		// The countdown is the mouth filling with light to the brim; leaving drains it.
+		const level = from !== null ? Math.min(1, (time - from * app.clock.step) / p.countdown) : 0
+		tear.fill =
+			level > tear.fill ? level : tear.fill + (level - tear.fill) * Math.min(1, dt * p.charge.drain)
 	}
 	// Walking in shrinks a hero away over `p.sink` m; after the countdown everyone left slips in too.
 	function slip(time, from) {
@@ -404,23 +408,13 @@ export function createPortalLobby({ app, run, sim, hero, setup, options }) {
 		syncPick()
 		stand(countdownFrom)
 		const go = humans().length > 0 && outside().length === 0
-		const left =
-			countdownFrom === null
-				? null
-				: Math.max(0, p.countdown - (sim.tick - countdownFrom) * app.clock.step)
+		// The countdown is the tear filling with light, not words; only who it waits for is said.
 		status.textContent =
-			ending || left === 0
-				? 'Going in…'
-				: !humans().length
-					? ''
-					: go
-						? `Going in ${Math.ceil(left ?? p.countdown)}…`
-						: inside(hero)
-							? `Waiting for ${outside()
-									.map((s) => label(s.occupant.id))
-									.join(', ')}`
-							: ''
-		status.dataset.go = String(go)
+			!ending && !go && humans().length && inside(hero)
+				? `Waiting for ${outside()
+						.map((s) => label(s.occupant.id))
+						.join(', ')}`
+				: ''
 		const state = JSON.stringify([
 			app.session.authoritative,
 			app.session.shared,
