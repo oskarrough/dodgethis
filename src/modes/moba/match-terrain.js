@@ -129,6 +129,7 @@ diffuseColor.rgb *= 1.0 - courtPool.x * (1.0 - exp(-dot(poolAt, poolAt) * 1.6));
 			...layout.posts.map((p) => ({ ...p, kind: 'post' })),
 		]) {
 			const radius = footprints.radii[point.kind]
+			if (radius == null) continue // gates print no footprint
 			const geometry = own(
 				new THREE.RingGeometry(radius - footprints.footprintWidth, radius, s.chalkSegments).rotateX(
 					-Math.PI / 2,
