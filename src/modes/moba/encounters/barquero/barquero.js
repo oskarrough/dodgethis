@@ -13,6 +13,6 @@ export default {
 	boon: {
 		id: 'tara',
 		name: 'Tara',
-		line: 'Gnomon guards itself less',
+		line: 'Gnomon turns back half as far',
 	},
 }

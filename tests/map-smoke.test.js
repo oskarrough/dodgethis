@@ -7,15 +7,14 @@ import { agentRoster } from '../src/modes/moba/agents.js'
 import { buildColliders } from '../src/modes/moba/obstacles.js'
 import { createAgentMatch } from '../src/modes/moba/agent-match.js'
 import { playableMaps, matchRecipe } from '../src/modes/moba/maps/all-maps.js'
-import encounters from '../src/modes/moba/encounters/all-encounters.js'
 
 // Every playable map, bots only, for a short stretch: a layout number gone NaN (a tune key
 // dropped under a computed read) or a map whose bots stand still in the first seconds fails here, not in a playtest.
 await RAPIER.init({})
 const SECONDS = 3
-// A dungeon's road to its wings, and then each wing fight built so far, must fall to one bot
-// alone: jobs latch and bosses leave a way through, so no fight needs a full party.
-const SOLO_SECONDS = 200
+// A dungeon must fall to one bot alone by either wing: jobs latch and bosses leave a way through,
+// so no fight needs a full party.
+const SOLO_SECONDS = 300
 // And a party of three must clear it, carrying a whole wing's boons to the last boss.
 const PARTY_SECONDS = 240
 
@@ -54,30 +53,25 @@ for (const id of playableMaps) {
 		}
 	}, 60000)
 
-	// The wing fights one at a time: every other wing encounter sleeps, so the bot walks the road
-	// and then straight to the one under test.
+	// The whole run by each wing in turn: the other wing sleeps, so the bot walks the road, clears
+	// that wing and climbs to the last boss carrying its boons.
 	const layout = matchRecipe(id).layout
-	const wingFights = (layout.encounters ?? []).filter(
-		(spot) => layout.wings?.includes(spot.wing) && encounters[spot.id].create,
-	)
-	for (const target of layout.encounters?.length ? [null, ...wingFights] : [])
-		test(`${id}: one bot alone wins the road${target ? ` and ${target.id}` : ''}`, () => {
+	for (const wing of layout.encounters?.length ? (layout.wings ?? []) : [])
+		test(`${id}: one bot alone clears the run by the ${wing} wing`, () => {
 			const { run, dispose } = match(
 				id,
 				agentRoster({ seats: [] }).filter((seat) => seat.id === 'A1'),
 			)
 			try {
-				const { wings } = run.sim.layout
 				const list = run.sim.dungeon.encounters
 				for (const e of list)
-					if (wings.includes(e.wing) && e.id !== target?.id) {
+					if (layout.wings.includes(e.wing) && e.wing !== wing) {
 						e.dormant = true
 						for (const unit of e.units) unit.dormant = true
 					}
-				const road = list.filter((e) => !e.last && !e.dormant)
 				const limit = Math.ceil(SOLO_SECONDS / STEP)
-				while (run.sim.tick < limit && !road.every((e) => e.killed) && run.step());
-				expect(road.filter((e) => !e.killed).map((e) => e.id)).toEqual([])
+				while (run.sim.tick < limit && !run.sim.lane.match.winner && run.step());
+				expect(list.filter((e) => !e.killed && !e.dormant).map((e) => e.id)).toEqual([])
 			} finally {
 				dispose()
 			}

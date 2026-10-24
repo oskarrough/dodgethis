@@ -3,6 +3,7 @@ import * as barquero_view from './barquero/barquero-view.js'
 import * as carillon_view from './carillon/carillon-view.js'
 import * as espejo_view from './espejo/espejo-view.js'
 import * as fornax_view from './fornax/fornax-view.js'
+import * as gnomon_view from './gnomon/gnomon-view.js'
 import * as manos_view from './manos/manos-view.js'
 import * as tinajaBotijo_view from './tinajaBotijo/tinajaBotijo-view.js'
 
@@ -11,6 +12,7 @@ export default {
 	carillon: carillon_view,
 	espejo: espejo_view,
 	fornax: fornax_view,
+	gnomon: gnomon_view,
 	manos: manos_view,
 	tinajaBotijo: tinajaBotijo_view,
 }

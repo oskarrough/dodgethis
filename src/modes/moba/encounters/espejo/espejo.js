@@ -13,6 +13,6 @@ export default {
 	boon: {
 		id: 'azogue',
 		name: 'Azogue',
-		line: 'Gnomon’s blows slide off you',
+		line: 'Gnomon’s shadow falls short',
 	},
 }
