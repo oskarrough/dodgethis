@@ -202,9 +202,8 @@ export function createLink({
 			if (host) return type === 'intent' && receiveIntent(data, from)
 			return type === 'state' && receiveState(data, from)
 		},
-		// Status/absorb facts are report-only; guests already receive statuses in snapshots.
+		// Host: every gameplay fact the mode presents rides the next envelope.
 		record(fact) {
-			if (fact.type === 'status' || fact.type === 'absorb') return
 			if (!disposed && host && currentContract())
 				facts.push({ id: ++factId, fact: structuredClone(fact) })
 		},
