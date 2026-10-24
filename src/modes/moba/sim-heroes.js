@@ -208,6 +208,7 @@ export function createRoster(ctx) {
 		ctx.removeGround(id)
 		ctx.removeSummons(id)
 		ball?.hurt(hero)
+		if (ball?.carrying(hero)) ball.drop('clear')
 		endCast(hero, 'clear')
 		cancelAttack(hero, present, 'clear')
 		endStance(hero, 'clear')
