@@ -484,7 +484,6 @@ export const look = {
 		channelEnd: { count: 8, speed: 2, life: 0.35, size: 0.08 },
 		recallEnd: { count: 14, speed: 2.4, life: 0.45, size: 0.08 },
 		ballGoal: {
-			freeze: 0.09,
 			shake: 0.7,
 			kick: 1.5,
 			rumbleLow: 0.4,

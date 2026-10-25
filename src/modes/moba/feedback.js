@@ -35,16 +35,12 @@ export function createFeedback({
 		hitmarker.classList.add(kind)
 	}
 
-	// A goal freezes the clock briefly; the core ignores it when the session is shared.
-	let freeze = 0
 	const later = [] // { left, run }: presentation timed to an animation, like a splash on landing
 	function beat(dt) {
 		const elapsed = Math.max(0, Math.min(dt, 0.1))
 		for (let i = later.length - 1; i >= 0; i--)
 			if ((later[i].left -= elapsed) <= 0) later.splice(i, 1)[0].run()
-		const frozen = Math.min(freeze, elapsed)
-		freeze = Math.max(0, freeze - elapsed)
-		return elapsed > 0 ? 1 - frozen / elapsed : 1
+		return 1 // the sim never slows for a hit; this only runs the `later` timers once a frame
 	}
 
 	const unitOf = (id) =>
@@ -180,7 +176,6 @@ export function createFeedback({
 			case 'ballHit':
 				if (fact.kind === 'structure') {
 					log.record(fact)
-					freeze = Math.max(freeze, look.juice.ballGoal.freeze)
 					camera.shake(look.juice.ballGoal.shake)
 					camera.kick(look.juice.ballGoal.kick)
 					if (mine || onMe || unitOf(fact.target)?.team === unitOf(local)?.team)
@@ -618,7 +613,6 @@ export function createFeedback({
 		reset() {
 			for (const hero of sim.heroes) hero.body.resetAbilityPose?.()
 			for (const dummy of sim.dummies) dummy.body.resetAbilityPose?.()
-			freeze = 0
 			later.length = 0
 			aggroPingTick = -1
 			sounded.clear()
