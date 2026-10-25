@@ -75,6 +75,17 @@
 	white-space: nowrap;
 }
 
+/* The readout panel, shared by the top bar, its objective line and the minimap. The minimap sits on
+   the body, outside the HUD's --cream/--ink scope, so the tokens come from --ui-*. */
+.moba-top,
+.moba-objective,
+.moba-minimap {
+	background: var(--ui-cream);
+	border: var(--line-thin) solid var(--ui-text);
+	border-radius: var(--radius-pill);
+	box-shadow: var(--shadow-float);
+}
+
 /* A readout like the top bar and unit frame: cream, thin ink line, soft shadow. Press or drag it to
    move the camera. */
 .moba-minimap {
@@ -86,11 +97,7 @@
 	height: auto;
 	z-index: 3;
 	padding: 6px;
-	/* Appended to body, outside the HUD's --cream/--ink scope. */
-	background: var(--ui-cream);
-	border: 1.5px solid var(--ui-text);
 	border-radius: 20px;
-	box-shadow: 0 3px 10px rgba(38, 68, 95, 0.22);
 	overflow: visible;
 	cursor: pointer;
 	touch-action: none;
@@ -210,12 +217,9 @@
 	height: 40px;
 	padding: 0 16px;
 	box-sizing: border-box;
-	background: var(--cream);
-	border: var(--line-thin) solid var(--ink);
-	border-radius: var(--radius-pill);
-	box-shadow: var(--shadow-float);
 	pointer-events: none;
 	white-space: nowrap;
+	font-family: var(--text-font);
 }
 .moba-objective {
 	position: absolute;
@@ -223,10 +227,6 @@
 	left: 50%;
 	transform: translateX(-50%);
 	padding: 5px 12px 4px;
-	background: var(--cream);
-	border: var(--line-thin) solid var(--ink);
-	border-radius: var(--radius-pill);
-	box-shadow: var(--shadow-float);
 	font: var(--tip-fact);
 }
 /* Numbers sit in fixed-width boxes, centred, trimmed to their digits, so the pill never resizes or wobbles. */
