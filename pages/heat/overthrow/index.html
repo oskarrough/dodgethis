@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Overthrow heat maps · Dodgethis</title>
+		<link rel="stylesheet" href="/pages/page.css" />
+		<style>
+			.page section img {
+				aspect-ratio: 16 / 9;
+			}
+			.page h2 {
+				margin-top: 0;
+			}
+		</style>
+	</head>
+	<body class="page">
+		<main>
+			<p><a href="/pages/">Pinboard</a></p>
+			<h1>Overthrow heat maps</h1>
+			<p>12 matches · 4,225 simulated seconds · 352 seconds per match · 0 timeouts.</p>
+			<p>
+				Six hard bots, with Kappa, Ibis and a seeded random hero on each team. Seeds 2–13. The court
+				is counted in 1 m squares; each colour grows stronger from zero to its own busiest square on
+				a logarithmic scale. A soft blur joins neighbouring squares. Open an image to inspect the
+				ground.
+			</p>
+			<section>
+				<figure>
+					<h2>Presence</h2>
+					<a href="presence.webp"
+						><img
+							src="presence.webp"
+							alt="Overthrow: presence over the court, with wall and pillar outlines"
+							width="1440"
+							height="810"
+					/></a>
+					<figcaption>
+						Living heroes, sampled once each second. Bare ground received no samples; it may still
+						have been crossed between them. 23,602 hero-seconds sampled; busiest square: 235.
+					</figcaption>
+				</figure>
+				<figure>
+					<h2>Fights</h2>
+					<a href="fights.webp"
+						><img
+							src="fights.webp"
+							alt="Overthrow: fights over the court, with wall and pillar outlines"
+							width="1440"
+							height="810"
+					/></a>
+					<figcaption>
+						Damage where the blow lands, weighted by HP removed. This includes heroes, minions,
+						summons and structures. 2,043,742 HP removed; busiest square: 47,746.
+					</figcaption>
+				</figure>
+				<figure>
+					<h2>Deaths</h2>
+					<a href="deaths.webp"
+						><img
+							src="deaths.webp"
+							alt="Overthrow: deaths over the court, with wall and pillar outlines"
+							width="1440"
+							height="810"
+					/></a>
+					<figcaption>
+						Deaths of the six heroes, counted where they fell. Minions and summons are excluded, as
+						are swims home after a dunk. 106 hero deaths; busiest square: 2.
+					</figcaption>
+				</figure>
+			</section>
+			<p>
+				718 of 2,112 open squares (34.0%) had no living hero sample. Walls and pillars are outlined
+				at their ground footprints; raised stone in the photograph spreads beyond these outlines.
+				The image top is −z, with team A at the left.
+			</p>
+			<p>
+				0 events or samples lacked an in-bounds position and were omitted. These are bot routes, not
+				a verdict on human play.
+			</p>
+			<p>
+				<a href="map.webp">Court photograph</a> · <a href="heat.json">Grids and match results</a>
+			</p>
+		</main>
+	</body>
+</html>

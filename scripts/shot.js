@@ -1,7 +1,7 @@
 // bun run shot <map> [--spots name,...] [--out dir] [--gray] [--compare target.png] [--photo] [--seed 2]
 // Opens a moba match on the shared dev server at 1600×900 and screenshots named spots (`start` plus the map tune's `shots`),
 // or with --photo freezes it, hides the HUD and shoots fixed camera poses (the tune's `photos`, else wide, rim and lane).
-import { existsSync, mkdirSync } from 'node:fs'
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { parseArgs } from 'node:util'
 
@@ -61,7 +61,8 @@ const evaluate = (js) => {
 }
 
 const url = run('sh', [join(root, 'scripts/dev-agent.sh')])
-const page = `${url}?mode=moba&play&map=${map}&hero=ibis&bots=easy&seed=${values.seed}`
+const topdown = values.photo && values.spots?.split(',').includes('topdown')
+const page = `${url}?mode=moba&play&map=${map}&hero=ibis&bots=easy&seed=${values.seed}${topdown ? '&fog=0' : ''}`
 
 function boot() {
 	browser('set', 'viewport', '1600', '900')
@@ -93,6 +94,12 @@ try {
 				lane: { eye: [-x - 6, 9, 0], target: [0, 0, 0], fov: 45 },
 			}))(evaluate('dt.game.moba.sim.bounds')))
 	if (photos) {
+		// Opt-in survey pose, with enough margin to keep the whole court in frame.
+		if (topdown) {
+			const { halfX, halfZ } = evaluate('dt.game.moba.sim.bounds')
+			const height = (Math.max(halfZ, halfX / (1600 / 900)) * 1.08) / Math.tan(Math.PI / 6)
+			photos.topdown = { eye: [0, height, 0], target: [0, 0, 0], fov: 60 }
+		}
 		names = values.spots ? values.spots.split(',') : Object.keys(photos)
 		const missing = names.find((name) => !photos[name])
 		if (missing) throw new Error(`no photo "${missing}" (${Object.keys(photos).join(', ')})`)
@@ -113,6 +120,17 @@ try {
 		}
 		const file = join(out, `${photos ? 'photo-' : ''}${name}.png`)
 		browser('screenshot', file)
+		if (photos && name === 'topdown')
+			writeFileSync(
+				join(out, 'photo-topdown.json'),
+				JSON.stringify(
+					evaluate(`(() => {
+					const camera = dt.game.camera
+					return { width: 1600, height: 900, bounds: dt.game.moba.sim.bounds,
+						projection: camera.projectionMatrix.toArray(), view: camera.matrixWorldInverse.toArray() }
+				})()`),
+				),
+			)
 		console.log(file)
 		if (values.gray) {
 			const gray = file.replace(/\.png$/, '-gray.png')

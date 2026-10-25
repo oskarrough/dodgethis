@@ -1,5 +1,27 @@
 [
 	{
+		"at": "2026-10-25T08:46:40.000Z",
+		"title": "Heat map: Flagfall",
+		"ask": "Where bots stand, fight and die over 12 hard matches. 43% of the open ground is never stood on: which rooms are dead weight?",
+		"status": "To review",
+		"decision": "",
+		"media": ["heat/flagfall/deaths.webp", "heat/flagfall/presence.webp"],
+		"links": [],
+		"thread": "thr_wrz2sknwdm",
+		"page": "heat/flagfall/"
+	},
+	{
+		"at": "2026-10-25T08:46:40.000Z",
+		"title": "Heat map: Overthrow",
+		"ask": "Where bots stand, fight and die over 12 hard matches. 75 of 106 hero deaths fall on one side (+z), and a third of the open ground is never stood on. Map fix, or bot habit?",
+		"status": "To review",
+		"decision": "",
+		"media": ["heat/overthrow/deaths.webp", "heat/overthrow/presence.webp"],
+		"links": [],
+		"thread": "thr_wrz2sknwdm",
+		"page": "heat/overthrow/"
+	},
+	{
 		"at": "2026-10-22T14:01:01.678Z",
 		"title": "Overthrow palette toward the floating pillars",
 		"ask": "Closer to the reference? Darker cliff band, creamier haze, olive moss, sage-stone court instead of butter-green. Push further on the desk with ?debug&knobs=style.",
