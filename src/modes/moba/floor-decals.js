@@ -17,6 +17,7 @@ export function createFloorDecals({ decals, layout, groundY, own }) {
 				tSheet: { value: null },
 				uGrid: { value: decals.grid },
 				uStrength: { value: decals.strength },
+				uMute: { value: decals.mute ?? 0 },
 			},
 			vertexShader: /* glsl */ `
 attribute vec2 cell;

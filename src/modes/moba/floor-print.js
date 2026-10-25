@@ -1,10 +1,11 @@
 import * as THREE from 'three'
 import { FORWARD_LAYER } from '../../core/stylepass.js'
+import { bind, paint } from './restyle.js'
 import { castShadows } from './match-terrain.js'
 
 // Printed floors over a map's court: one shader draws slabs, flagstones, pavers, sand, a dial
 // inlay or a painted tile, and every floor shares contact darkening at the foot of cover, the
-// map's baked sun shadow and slow cloud shadows. The tile room shows them all; a map lays one.
+// map's live sun shadow and slow cloud shadows. The tile room shows them all; a map lays one.
 export const FLOOR_STYLES = {
 	print: 0,
 	slabs: 1,
@@ -232,8 +233,10 @@ export function createFloorPrint({ layout, terrain, casts, look, own }) {
 				floorExtent: { value: new THREE.Vector2(extent.halfX, extent.halfZ) },
 				floorShadowPrint: { value: shadowPrint },
 				floorShadowOn: { value: shadowPrint ? 1 : 0 },
-				floorShadowStrength: { value: look.shadow },
-				floorShadowColour: { value: new THREE.Color(terrain.light.shadow) },
+				floorShadowStrength: bind({}, (u) => {
+					u.value = look.shadow
+				}),
+				floorShadowColour: { value: paint(terrain.light, 'shadow') },
 				floorContactPrint: { value: contactPrint },
 				floorContactStrength: { value: contactPrint ? look.contact.strength : 0 },
 				floorImage: tile.image,

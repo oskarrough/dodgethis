@@ -3,7 +3,7 @@ import { HAZE, NOISE } from '../../isle.js'
 import { bind, paint } from '../../restyle.js'
 
 // Wide white curtains, a lilac underfold and a dissolving foot, always outside the rim.
-export function morningFalls({ s, own, forward, shared }, sites, mistSize) {
+export function morningFalls({ s, own, forward, shared }, sites, water) {
 	const positions = [],
 		uv = []
 	for (const p of sites) {
@@ -62,24 +62,69 @@ export function morningFalls({ s, own, forward, shared }, sites, mistSize) {
 		}),
 	)
 	forward(new THREE.Mesh(geometry, material), 'overthrow-morning-falls')
+	// A curved white crest turns the horizontal stream over the edge into its curtain.
+	const lips = []
+	for (const p of sites) {
+		for (let i = 0; i < 4; i++) {
+			const a = (i * Math.PI) / 8,
+				b = ((i + 1) * Math.PI) / 8
+			const left = p.x - p.width * 0.54,
+				right = p.x + p.width * 0.54
+			const ya = p.y + Math.cos(a) * water.lip,
+				yb = p.y + Math.cos(b) * water.lip
+			const za = p.z + Math.sin(a) * water.lip,
+				zb = p.z + Math.sin(b) * water.lip
+			lips.push(
+				left,
+				ya,
+				za,
+				left,
+				yb,
+				zb,
+				right,
+				ya,
+				za,
+				right,
+				ya,
+				za,
+				left,
+				yb,
+				zb,
+				right,
+				yb,
+				zb,
+			)
+		}
+	}
+	const lipGeometry = own(new THREE.BufferGeometry())
+	lipGeometry.setAttribute('position', new THREE.Float32BufferAttribute(lips, 3))
+	const lipMaterial = own(
+		new THREE.ShaderMaterial({
+			uniforms: { ...shared, uWater: { value: paint(s.colors, 'water') } },
+			side: THREE.DoubleSide,
+			vertexShader: `varying vec3 vWorld;void main(){vec4 p=modelMatrix*vec4(position,1.0);vWorld=p.xyz;gl_Position=projectionMatrix*viewMatrix*p;}`,
+			fragmentShader: `${HAZE}\nuniform vec3 uWater;void main(){gl_FragColor=vec4(isleHaze(uWater),1.0);}`,
+		}),
+	)
+	forward(new THREE.Mesh(lipGeometry, lipMaterial), 'overthrow-fall-lips')
 	const mist = own(
 		new THREE.ShaderMaterial({
 			transparent: true,
 			depthWrite: false,
-			uniforms: { ...shared, uMist: { value: paint(s.colors, 'cloudLit') } },
+			uniforms: { ...shared, uMist: { value: paint(s.colors, 'water') } },
 			vertexShader: `varying vec3 vWorld;varying vec2 vMist;
 		void main(){vMist=uv;vec4 p=modelMatrix*vec4(position,1.0);vWorld=p.xyz;gl_Position=projectionMatrix*viewMatrix*p;}`,
 			fragmentShader: `${HAZE}\n${NOISE}
 		varying vec2 vMist;uniform vec3 uMist;
 		void main(){vec2 p=(vMist-0.5)*2.0;float edge=1.0-smoothstep(0.2,1.0,length(p));
-		float body=0.55+0.45*isleNoise(vMist*5.0);gl_FragColor=vec4(isleHaze(uMist),edge*body*0.6);}`,
+		float body=0.55+0.45*isleNoise(vMist*5.0);gl_FragColor=vec4(isleHaze(uMist),edge*body*0.85);}`,
 		}),
 	)
 	const mistPositions = [],
 		mistUV = []
 	for (const p of sites) {
-		const r = p.width * mistSize,
-			y = p.y - p.height * 0.8,
+		const r = p.width * water.mist,
+			y = p.y - p.height * 0.86,
 			z = p.z + 0.8
 		mistPositions.push(
 			p.x - r,

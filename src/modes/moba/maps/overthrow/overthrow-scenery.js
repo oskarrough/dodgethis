@@ -18,5 +18,5 @@ export function scenery(isle) {
 	)
 	const falls = morningPillars(isle, s.sky)
 	morningAir(isle, s.sky)
-	morningFalls(isle, falls, s.sky.waterfall.mist)
+	morningFalls(isle, falls, s.sky.waterfall)
 }

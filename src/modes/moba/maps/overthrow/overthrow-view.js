@@ -43,14 +43,10 @@ export function ground(scope) {
 	const compile = floor.material.onBeforeCompile
 	floor.material.onBeforeCompile = (shader) => {
 		compile(shader)
-		// The shared floor owns the shadow print; its tints can still follow this map live.
+		// The map's floor palette follows its live style values too.
 		bind(shader.uniforms.floorBase.value, (c) => c.set(settings.floor.base))
 		bind(shader.uniforms.floorJoint.value, (c) => c.set(settings.floor.joint))
 		bind(shader.uniforms.floorAccent.value, (c) => c.set(settings.floor.accent))
-		bind(shader.uniforms.floorShadowColour.value, (c) => c.set(settings.light.shadow))
-		bind(shader.uniforms.floorShadowStrength, (u) => {
-			u.value = settings.look.shadow
-		})
 	}
 	group.add(floor)
 	const decals = createFloorDecals({

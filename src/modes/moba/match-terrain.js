@@ -3,7 +3,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'
 import { FORWARD_LAYER, makeStyleMaterial } from '../../core/stylepass.js'
 import { floorShape } from './lobby-floor.js'
 import { createIsle } from './isle.js'
-import { bind, paint } from './restyle.js'
+import { bind, bindShadowLight, paint } from './restyle.js'
 
 // A presentation skin, never a source of walking bounds or colliders. The torn edge sits
 // outside the entire playable rectangle even at the extremes of the restart controls.
@@ -175,20 +175,19 @@ export function convexHull(points) {
 }
 
 export function castShadows({ layout, s, extent, casts, own }) {
-	// One low light (Overthrow's sun, Flagfall's moon) prints long violet shadows from cover onto the court, baked once like the
-	// contact above: the swept footprint of each box and pillar, never a shadow map.
-	let shadowPrint = null
-	// Headless builds (tests, the bot harness) have no canvas; the print is presentation only.
-	if (casts && typeof document !== 'undefined') {
-		const ppm = s.light.shadowPixelsPerMetre * devicePixelRatio
-		const canvas = document.createElement('canvas')
-		canvas.width = Math.ceil(extent.halfX * 2 * ppm)
-		canvas.height = Math.ceil(extent.halfZ * 2 * ppm)
-		const ctx = canvas.getContext('2d')
+	// Headless builds have no canvas; the print is presentation only. The texture stays
+	// stable while a changed sun redraws its swept footprints on the same canvas.
+	if (!casts || typeof document === 'undefined') return null
+	const ppm = s.light.shadowPixelsPerMetre * devicePixelRatio
+	const canvas = document.createElement('canvas')
+	canvas.width = Math.ceil(extent.halfX * 2 * ppm)
+	canvas.height = Math.ceil(extent.halfZ * 2 * ppm)
+	const ctx = canvas.getContext('2d')
+	const px = (x) => ((x + extent.halfX) / (2 * extent.halfX)) * canvas.width
+	const pz = (z) => ((z + extent.halfZ) / (2 * extent.halfZ)) * canvas.height
+	const redraw = (texture) => {
 		ctx.fillStyle = '#fff'
 		ctx.fillRect(0, 0, canvas.width, canvas.height)
-		const px = (x) => ((x + extent.halfX) / (2 * extent.halfX)) * canvas.width
-		const pz = (z) => ((z + extent.halfZ) / (2 * extent.halfZ)) * canvas.height
 		const [lx, ly, lz] = s.light.dir
 		const reach = s.light.shadowLength / Math.max(0.05, ly)
 		const offset = (h) => ({ x: -lx * reach * h, z: -lz * reach * h })
@@ -218,8 +217,11 @@ export function castShadows({ layout, s, extent, casts, own }) {
 			ctx.lineTo(px(p.x + o.x), pz(p.z + o.z))
 			ctx.stroke()
 		}
-		shadowPrint = own(new THREE.CanvasTexture(canvas))
-		shadowPrint.anisotropy = 4
+		texture.needsUpdate = true
 	}
+	const shadowPrint = own(new THREE.CanvasTexture(canvas))
+	shadowPrint.anisotropy = 4
+	redraw(shadowPrint)
+	own(bindShadowLight(shadowPrint, s.light, redraw))
 	return shadowPrint
 }

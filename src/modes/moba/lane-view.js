@@ -4,6 +4,7 @@ import { FORWARD_LAYER, glows, makeStyleMaterial } from '../../core/stylepass.js
 import { STEP } from '../../core/app.js'
 import { tune } from './tune.js'
 import { look } from './look.js'
+import { bind, bindShadowLight } from './restyle.js'
 import { convexHull } from './match-terrain.js'
 import { hologramMaterial } from './hologram.js'
 import { flowerBand, flowerPanel, chippedBlock } from './carve.js'
@@ -545,27 +546,43 @@ export function createLaneView(scene, smooth = null, layout = null, mapView = nu
 		// The low sun's printed shadow: base circle swept toward the tip, never a shadow map.
 		function printShadow(px, pz, r, height) {
 			const light = layout.light ?? tune.overthrowTerrain.light
-			const [lx, ly, lz] = light.dir
-			const reach = (light.shadowLength / Math.max(0.05, ly)) * height
-			const points = []
-			for (let i = 0; i < 24; i++) {
-				const a = (i / 24) * Math.PI * 2
-				points.push({ x: Math.cos(a) * r, z: Math.sin(a) * r })
-				points.push({
-					x: -lx * reach + Math.cos(a) * r * 0.35,
-					z: -lz * reach + Math.sin(a) * r * 0.35,
-				})
+			const geometry = () => {
+				const [lx, ly, lz] = light.dir
+				const reach = (light.shadowLength / Math.max(0.05, ly)) * height
+				const points = []
+				for (let i = 0; i < 24; i++) {
+					const a = (i / 24) * Math.PI * 2
+					points.push({ x: Math.cos(a) * r, z: Math.sin(a) * r })
+					points.push({
+						x: -lx * reach + Math.cos(a) * r * 0.35,
+						z: -lz * reach + Math.sin(a) * r * 0.35,
+					})
+				}
+				const shape = new THREE.Shape(convexHull(points).map((p) => new THREE.Vector2(p.x, -p.z)))
+				return new THREE.ShapeGeometry(shape).rotateX(-Math.PI / 2)
 			}
-			const shape = new THREE.Shape(convexHull(points).map((p) => new THREE.Vector2(p.x, -p.z)))
-			const geometry = new THREE.ShapeGeometry(shape).rotateX(-Math.PI / 2)
-			const print = new THREE.MeshBasicMaterial({
-				color: light.shadow,
-				transparent: true,
-				opacity: light.shadowStrength,
-				depthWrite: false,
-			})
-			owned.push(geometry, print)
-			const mesh = new THREE.Mesh(geometry, print)
+			const print = bind(
+				new THREE.MeshBasicMaterial({
+					color: light.shadow,
+					transparent: true,
+					opacity: light.shadowStrength,
+					depthWrite: false,
+				}),
+				(m) => {
+					m.color.set(light.shadow)
+					m.opacity = light.shadowStrength
+				},
+			)
+			owned.push(print)
+			const mesh = new THREE.Mesh(geometry(), print)
+			owned.push(
+				bindShadowLight(mesh, light, (target) => {
+					const old = target.geometry
+					target.geometry = geometry()
+					old.dispose()
+				}),
+			)
+			owned.push({ dispose: () => mesh.geometry.dispose() })
 			mesh.name = 'moba-structure-shadow'
 			mesh.position.set(px, look.laneView.stone.shadowY, pz)
 			mesh.layers.set(FORWARD_LAYER)

@@ -24,6 +24,31 @@ export function restyle() {
 	}
 }
 
+// Sun sliders fire many changes while dragged. Reuse the existing print and redraw only
+// after the last change; disposal cancels pending work when a match or structure leaves.
+export function bindShadowLight(target, light, redraw) {
+	let previous = [...light.dir, light.shadowLength]
+	let timer = null
+	let disposed = false
+	bind(target, (value) => {
+		if (disposed) return
+		const next = [...light.dir, light.shadowLength]
+		if (next.every((n, i) => n === previous[i])) return
+		previous = next
+		clearTimeout(timer)
+		timer = setTimeout(() => {
+			timer = null
+			if (!disposed) redraw(value)
+		}, 80)
+	})
+	return {
+		dispose() {
+			disposed = true
+			clearTimeout(timer)
+		},
+	}
+}
+
 // The debug panel's style folder, one subfolder per section of a map's look (?knobs=style pins them).
 const colours = (keys) => (f, o) => {
 	for (const key of keys ?? Object.keys(o)) f.addColor(o, key).unit = 'color'
@@ -33,6 +58,30 @@ export const styleKnobs = {
 	palette: colours(),
 	light(f, o) {
 		colours(['sun', 'shade', 'shadow'])(f, o)
+		const direction = {
+			get azimuth() {
+				return THREE.MathUtils.radToDeg(Math.atan2(o.dir[2], o.dir[0]))
+			},
+			set azimuth(degrees) {
+				const a = THREE.MathUtils.degToRad(degrees)
+				const elevation = THREE.MathUtils.degToRad(this.elevation)
+				o.dir = [
+					Math.cos(a) * Math.cos(elevation),
+					Math.sin(elevation),
+					Math.sin(a) * Math.cos(elevation),
+				]
+			},
+			get elevation() {
+				return THREE.MathUtils.radToDeg(Math.atan2(o.dir[1], Math.hypot(o.dir[0], o.dir[2])))
+			},
+			set elevation(degrees) {
+				const a = THREE.MathUtils.degToRad(this.azimuth)
+				const e = THREE.MathUtils.degToRad(degrees)
+				o.dir = [Math.cos(a) * Math.cos(e), Math.sin(e), Math.sin(a) * Math.cos(e)]
+			},
+		}
+		f.add(direction, 'azimuth', -180, 180, 1).unit = 'deg'
+		f.add(direction, 'elevation', 5, 85, 1).unit = 'deg'
 		f.add(o, 'shadowStrength', 0, 1, 0.01).unit = 'fraction'
 		const bands = {
 			get litBand() {

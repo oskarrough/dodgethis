@@ -189,8 +189,8 @@ const overthrow = {
 		drop: 10,
 		dropStep: 18,
 		haze: { top: 0, bottom: 65, power: 0.85, max: 0.94, near: 6, far: 95 },
-		colors: { stoneLit: '#b1a6b1', stone: '#95889e', stoneShade: '#776d87' },
-		waterfall: { width: 0.9, height: 1.15, mist: 2 },
+		colors: { stoneLit: '#b1a6b1', stone: '#95889e', stoneShade: '#91879e' },
+		waterfall: { width: 0.9, height: 1.15, mist: 2.4, lip: 0.12 },
 		radius: [1.8, 2.6],
 		height: [8, 13],
 		sides: 9,
@@ -227,9 +227,9 @@ const overthrow = {
 		style: 'mapped',
 		image: '/tiles/flags-drawn.webp',
 		size: 5,
-		base: '#d4cea9',
-		joint: '#b8b897',
-		accent: '#c6c8a6',
+		base: '#e1e2c3',
+		joint: '#bfc6a4',
+		accent: '#d0d7b6',
 		vary: 0.1,
 	},
 	decals: {
@@ -237,8 +237,8 @@ const overthrow = {
 		grid: 4,
 		count: 110,
 		size: [1.6, 3.6],
-		strength: 0.65,
-		mute: 0.3,
+		strength: 0.9,
+		mute: 0.2,
 		seed: 9,
 		clear: 0.5,
 		skip: [],
@@ -252,7 +252,7 @@ const overthrow = {
 	},
 	colors: {
 		...overthrowTerrain.colors,
-		tarmac: '#d4cea9',
+		tarmac: '#e1e2c3',
 		chalk: '#c3bd99',
 		moss: '#9eae68',
 		mossShade: '#53654a',
@@ -267,7 +267,7 @@ const overthrow = {
 	},
 	palette: {
 		page: 0xdbe1cc,
-		courtShade: 0x847b92,
+		courtShade: 0x948a9f,
 		scenery: 0xc2bca7,
 		court: 0x77875a,
 		leaf: 0x9cbd54,
@@ -358,3 +358,6 @@ export const units = {
 	'overthrowTerrain.patchScale': 'm',
 	'overthrow.patchScale': 'm',
 }
+
+// Camera spots for `bun run shot overthrow`: [x, z] where hero 0 stands and the camera looks.
+export const shots = { tower: [-22, 2], rim: [0, -10], core: [-36, 0] }
