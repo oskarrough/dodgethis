@@ -72,7 +72,7 @@ export default {
 			{ x: 0, z: -7, r: 1 },
 			{ x: 0, z: 7, r: 1 },
 		],
-		view: { waystone: { top: 0.5, radius: 0.7, height: 1.4, sides: 8 } },
+		view: { waystone: { top: 0.5, radius: 0.7, height: 1.4, sides: 8 }, pillarRelief: 0.14 },
 		// Painted images from public/art/altamesa/ (map-art.js): inlays on the court, a face over
 		// every wall, a plate under the isle. Empty until Oskar's paintings land (applies on restart).
 		art: {
@@ -124,7 +124,7 @@ export default {
 		palette: {
 			courtShade: 0xa9644a,
 			scenery: 0xcdbcae,
-			court: 0xa59c62,
+			court: 0x788049,
 			page: 0xf1d2b4,
 			leaf: 0x93a85c, // sage and olive: a dry mesa's growth, never lawn green
 			leafDeep: 0x5e7446,
@@ -202,6 +202,9 @@ export default {
 			ruinSize: 1.4,
 			ruinCourses: 3,
 			treeHeight: 1.8,
+			strata: { height: [2.8, 5.4], depth: [0.7, 1.5], tilt: 0.2, gaps: 0.28 },
+			tree: { lean: 0.65 },
+			lichen: { lobes: 4, squash: 0.18 },
 		},
 		colors: {
 			sand: '#efd9b4',
