@@ -1,27 +1,29 @@
 # Art week
 
-A week (from 2026-10-25) to bring the match look close to the Reference shelf, one map at a time. Arbe judges, Astra (GPT-6 Astra threads) paints target frames and builds. Oskar sees a before/after per beat.
+A week from 2026-10-25 to bring the match look close to the Reference shelf. Arbe directs and judges; builders are agent threads. Oskar sees a before and after at each real step and steers when he likes; "go" means go, with no pick needed.
 
-## How each job runs
+## What Oskar asked for (keep these in view)
 
-1. **Target.** Astra paints over a real match-camera screenshot in the ink direction (flat colour, navy line, hatching, glow allowed). Oskar picked ink over painted and hybrid on 2026-10-25 (`pages/art/altamesa-targets/`).
-2. **Build.** One Astra thread per job, owning a named set of files; jobs run in parallel only when their files don't overlap.
-3. **Judge.** Arbe compares the build to the target at 1600×900, sends it back with concrete notes or accepts it, runs `bun run check` and `bun run test`, and pushes a checkpoint.
-4. **Show.** A before/after for Oskar at each real step.
+- Look like the references, close, not a nod (look.md, Direction). Ink direction with glow, bloom and painted touches allowed (2026-10-25).
+- Floors with life: decals and variety, but plain enough to fight on.
+- Detail and polish. Push to main at every breather.
+- Reuse techniques across maps, units and objects (the kit, below).
+- Light that can change live; a sun slider first, a light picked per match later.
+- The real goal is a machine: agents working together so that "make ten maps" is cheap. That means skills in the repo, tools instead of hand work, and above all fast verification: 10% of the time for 90% of the certainty, then move on and polish in a later round.
+- Try a cheap model (DeepSeek V4.1 Flash on pi) beside Opus and Astra and compare how they fare.
 
-## The bar
+## How a job runs
 
-Hold a match screenshot beside the target frame. It passes when the court is clearly the lightest plate, the surround is crowded and drawn, the light has a direction, and telegraphs and units are still the loudest marks. Every screenshot is taken at the shipped match camera, never a tweaked one.
+1. **Target.** A painter paints over a real match screenshot (`bun run shot <map>`) in the ink direction. Two takes; the judge picks unless Oskar wants to.
+2. **Build.** One builder per map, owning its map folder. Shared files (`carve.js`, `rim-dress.js`, `floor-*.js`, `stylepass.js`) have one owner at a time.
+3. **Check, fast.** `bun run shot <map> --gray`: one look at each spot against the target, the court lightest in grey, telegraphs loudest, triangles under 300k, no browser errors. Good enough is good enough.
+4. **Steer.** The judge answers each step with numbered notes; the builder folds them into the next step.
+5. **Push.** `bun run check` and `bun run test` green, commit, push.
 
-## Plan
+## Done
 
-Day 1 (done): Altamesa light, rim ruins and dead trees, carved flower walls; the shared carving kit; glow; Flagfall by night; floor decals on both; carved towers and cores with damage stages. Astra works in one standing thread (thr_6y3iwcf5f5) so it keeps the code in its head; painting-only jobs may go to a second.
+Day 1, 2026-10-25: all three maps rebuilt toward their targets (Altamesa dawn, Flagfall night, Overthrow green morning in `pages/art/*-targets/`); the carving kit; glow; floor decals; carved towers and cores with damage stages; live sun with live shadows; `bun run shot` and `bun run decal-sheet`.
 
-1. ~~**Altamesa finish.**~~ (done but the sundial inlay) Rim ruins that read as ruins (carved, broken, overgrown) instead of boxes; overgrowth thinned so the carving shows; sun bloom in the haze; the pillars carved to match the walls; Gnomon's sundial inlay.
-2. ~~**Glow pass (engine).**~~ (done; impacts and lanterns still to opt in) A soft bloom for things that emit light (Ball, crystals, lanterns, ability impacts) with a threshold that never lifts the court; shared by every map.
-3. ~~**Flagfall by night.**~~ (done) Target frame from the blue-beast and night-castle refs, then build: a deeper moon, glowing night garden, moonlit carved stone, Hinge-style poured water.
-4. **Overthrow.** Its own direction: a target pair for Oskar to pick from, then build.
-5. **Units.** A target sheet for the cast in the ink direction (heft, wear, one hard angle), then a pass on hero meshes. Silhouettes and sizes are fixed.
-6. **Hatching on scenery.** World-anchored ink hatching on cliffs and walls only, if the targets still call for it after 1–5.
+## Next
 
-Each step ends in a pushed checkpoint and a before/after.
+Tracked as GitHub issues labelled `art-week`.
