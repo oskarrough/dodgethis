@@ -24,6 +24,7 @@ uniform vec2 uSize;
 uniform float uTime;
 uniform float uEdge;
 uniform vec4 uLook; // dim, sky share, cloud, drift (m)
+uniform vec4 uRim; // court half-size (xy), metres past it where the haze starts and finishes fading
 varying vec2 vUv;
 varying vec2 vWorld;
 float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
@@ -49,7 +50,10 @@ void main() {
 	fog += (texture2D(uMask, uv + vec2(e.x, -e.y)).r + texture2D(uMask, uv - vec2(e.x, -e.y)).r) * 0.1;
 	float cloud = noise(vWorld * 0.07 + flow * 0.15) * 0.7 + b * 0.3;
 	vec3 col = mix(uShade, uSky, clamp(uLook.y + (cloud - 0.5) * uLook.z, 0.0, 1.0));
-	gl_FragColor = vec4(col, fog * uLook.x * (1.0 - uLook.z * cloud));
+	// Only the court and its rim strip haze over; past the cliff edge the surround stays clear.
+	vec2 past = max(abs(vWorld) - uRim.xy, 0.0);
+	float keep = 1.0 - smoothstep(uRim.z, uRim.w, length(past));
+	gl_FragColor = vec4(col, fog * uLook.x * (1.0 - uLook.z * cloud) * keep);
 }`
 
 // Fog of war behind `?fog`: your team's heroes, minions and structures see a circle each.
@@ -78,6 +82,7 @@ export function createFog(scene, bounds, brush = [], palette = {}) {
 			uTime: { value: 0 },
 			uEdge: { value: 0 },
 			uLook: { value: new THREE.Vector4() },
+			uRim: { value: new THREE.Vector4(bounds.halfX, bounds.halfZ, f.rimFade[0], f.rimFade[1]) },
 		},
 		transparent: true,
 		depthWrite: false,

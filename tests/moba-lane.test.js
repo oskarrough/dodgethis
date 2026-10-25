@@ -149,7 +149,10 @@ test('intent movement, ordered paths and Vault all respect the same hedge collid
 		expect(Math.hypot(h.body.position.x - 18, h.body.position.z - 10.5)).toBeLessThan(
 			tune.orders.arrival,
 		)
-		const meshes = scene.getObjectByName('moba-map').children
+		// The style pass needs opaque role materials; forward-layer scenery (falls, mist) may blend.
+		const meshes = scene
+			.getObjectByName('moba-map')
+			.children.filter((mesh) => mesh.layers.isEnabled(0))
 		expect(meshes.every((mesh) => !mesh.material.transparent)).toBe(true)
 	} finally {
 		harness.dispose()

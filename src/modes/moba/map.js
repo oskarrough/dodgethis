@@ -126,8 +126,10 @@ export function buildMap(scene, world, RAPIER, kind = DEFAULT_MAP) {
 			'patchScale',
 		])
 			terrain[key] *= scale
-		// A map with settings swaps the isle's light and air; cliff, spires and stone stay shared.
+		// Map settings override the isle; absent keys retain the shared daylight defaults.
 		for (const key of [
+			'cliff',
+			'spires',
 			'colors',
 			'light',
 			'pool',

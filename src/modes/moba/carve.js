@@ -537,3 +537,47 @@ export function lichenClump(radius, shape, rand) {
 	}
 	return joinCarving(parts)
 }
+
+// Fluted upright stone: unequal vertical ribs share a broken grass-sized crown.
+// No light or colour is baked here; the map can shade the same pillar at any hour.
+export function cliffPillar(radius, height, shape, rand) {
+	const sides = shape.sides
+	const radii = Array.from({ length: sides }, () => radius * (0.8 + rand() * 0.2))
+	const tops = Array.from({ length: sides }, () => -rand() * radius * 0.12)
+	const vertices = []
+	const point = (i, level) => {
+		const a = ((i % sides) * Math.PI * 2) / sides
+		const taper = 1 - level * shape.taper
+		return [
+			Math.cos(a) * radii[i % sides] * taper,
+			tops[i % sides] - height * level,
+			Math.sin(a) * radii[i % sides] * taper,
+		]
+	}
+	for (let i = 0; i < sides; i++) {
+		vertices.push(0, 0, 0, ...point(i + 1, 0), ...point(i, 0))
+		for (let level = 0; level < shape.levels; level++) {
+			const a = point(i, level / shape.levels),
+				b = point(i + 1, level / shape.levels)
+			const c = point(i + 1, (level + 1) / shape.levels),
+				d = point(i, (level + 1) / shape.levels)
+			vertices.push(...a, ...b, ...d, ...b, ...c, ...d)
+		}
+	}
+	const core = new THREE.BufferGeometry()
+	core.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3))
+	core.computeVertexNormals()
+	const parts = [core]
+	for (let i = 0; i < sides; i++) {
+		if (rand() < shape.gaps) continue
+		const a = (i * Math.PI * 2) / sides
+		const drop = radius * (0.15 + rand() * 0.6)
+		const h = height * (0.6 + rand() * 0.35)
+		parts.push(
+			sandstone(radius * 0.34, h, radius * 0.38, radius * 0.08)
+				.translate(0, -drop - h / 2, radius * 0.83)
+				.rotateY(a),
+		)
+	}
+	return joinCarving(parts)
+}

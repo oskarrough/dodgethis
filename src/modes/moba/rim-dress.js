@@ -3,6 +3,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'
 import { makeStyleMaterial } from '../../core/stylepass.js'
 import {
 	carvedBlock,
+	cliffPillar,
 	brokenColumn,
 	ruinStair,
 	brokenArch,
@@ -54,6 +55,46 @@ export function dressRim(
 					)
 			}
 			parts[role].push(geometry)
+		}
+		if (r.pillars) {
+			const p = r.pillars
+			const radius = p.radius[0] + rand() * (p.radius[1] - p.radius[0])
+			const height = p.height[0] + rand() * (p.height[1] - p.height[0])
+			at.set(
+				rim.x + normal.x * (radius + r.reach),
+				-rand() * p.drop,
+				rim.z + normal.z * (radius + r.reach),
+			)
+			put(cliffPillar(radius, height, p, rand))
+			for (let clump = 0; clump < p.grass; clump++) {
+				const a = rand() * Math.PI * 2
+				const reach = Math.sqrt(rand()) * radius * 0.8
+				const size = radius * (0.3 + rand() * 0.22)
+				put(
+					lichenClump(size, r.lichen, rand)
+						.scale(1, 1.4 + rand(), 1)
+						.translate(Math.sin(a) * reach, size * 0.12, Math.cos(a) * reach),
+					clump % 4 ? 'moss' : 'wood',
+				)
+			}
+			// Ivy follows the outer ribs, with gaps and unequal lengths.
+			for (let trail = 0; trail < p.ivy; trail++) {
+				const a = rand() * Math.PI * 2
+				const length = radius * (0.8 + rand() * 2)
+				for (let leaf = 0; leaf < 5; leaf++)
+					put(
+						lichenClump(radius * (0.25 - leaf * 0.035), r.lichen, rand)
+							.rotateX(1.1)
+							.rotateY(a)
+							.translate(
+								Math.sin(a) * radius * 0.9,
+								(-leaf * length) / 5,
+								Math.cos(a) * radius * 0.9,
+							),
+						'moss',
+					)
+			}
+			continue
 		}
 		put(ruinStack(size, r.strata, rand))
 		// Patches lie on the lip and turn down its outward face, never float above a shelf.

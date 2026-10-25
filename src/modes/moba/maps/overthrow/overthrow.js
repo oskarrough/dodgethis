@@ -11,10 +11,10 @@ export default {
 	},
 	layout: overthrowLayout,
 	mechanics: ['structures', 'minions', 'ball', 'bots'],
-	palette: () => ({ ...tune.overthrowTerrain.palette, light: tune.overthrowTerrain.light }),
-	// The splash woodcut's flat colours (front/woodcut.js): apricot haze, sage court, violet stone.
+	palette: () => ({ ...tune.overthrow.palette, light: tune.overthrow.light }),
+	// The splash woodcut's flat colours: morning haze, sage court and lavender stone.
 	cut: () => {
-		const c = tune.overthrowTerrain.colors
+		const c = tune.overthrow.colors
 		return {
 			sky: c.haze,
 			cloud: c.cloudShade,
@@ -26,8 +26,8 @@ export default {
 		}
 	},
 	debugTune: {
-		name: 'overthrowTerrain',
-		values: tune.overthrowTerrain,
+		name: 'overthrow',
+		values: tune.overthrow,
 		late: tune.map,
 		add(f, s) {
 			for (const [key, min, max, step] of [

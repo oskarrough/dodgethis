@@ -28,6 +28,8 @@ export function overthrowLayout() {
 
 	return {
 		name: m.name,
+		settings: tune.overthrow,
+		light: tune.overthrow.light,
 		bounds: { id: 'overthrow', halfX: m.halfX, halfZ: m.halfZ, thickness: m.thickness },
 		structureStyle: 'stone',
 		obstacles,

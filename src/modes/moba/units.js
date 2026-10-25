@@ -160,6 +160,7 @@ export const tuneUnits = {
 	'fog.reveal': '1/s',
 	'fog.resolution': 'px/m',
 	'fog.drift': 'm',
+	'fog.rimFade': 'm',
 	'clouds.drift': 'm/s',
 	'haze.top': 'height m',
 	'haze.bottom': 'height m',

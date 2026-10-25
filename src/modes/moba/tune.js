@@ -239,6 +239,7 @@ export const tune = {
 		reveal: 6, // per second: ground fades in and out as sight sweeps
 		resolution: 1, // mask px per m; the soft rim needs no more
 		height: 0.08,
+		rimFade: [2, 4], // m past the court: the haze fades out here, so it never greys the surround
 		margin: 14, // m of dim past the floor's edge, wider than the camera's rim view
 	},
 	waves: {
