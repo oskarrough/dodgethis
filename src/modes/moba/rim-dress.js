@@ -125,6 +125,31 @@ export function dressRim(
 		} else if (roll < r.ruins + r.trees) put(deadTree(r.treeHeight, r.tree, rand), 'wood')
 		else put(bleachedBones(size), 'bone')
 	}
+	// Optional pale crust on upward ruin faces; existing maps keep their original single batch.
+	if (roles.cap && parts.ruin.length) {
+		const faces = [[], []],
+			normals = [[], []]
+		for (const g of parts.ruin) {
+			const p = g.attributes.position,
+				n = g.attributes.normal
+			for (let i = 0; i < p.count; i += 3) {
+				const band = n.getY(i) > 0.65 ? 1 : 0
+				for (let j = i; j < i + 3; j++) {
+					faces[band].push(p.getX(j), p.getY(j), p.getZ(j))
+					normals[band].push(n.getX(j), n.getY(j), n.getZ(j))
+				}
+			}
+			g.dispose()
+		}
+		const split = faces.map((vertices, i) => {
+			const g = new THREE.BufferGeometry()
+			g.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3))
+			g.setAttribute('normal', new THREE.Float32BufferAttribute(normals[i], 3))
+			return g
+		})
+		parts.ruin = [split[0]]
+		parts.cap = [split[1]]
+	}
 	for (const [role, list] of Object.entries(parts)) {
 		if (!list.length) continue
 		const geometry = own(mergeGeometries(list))

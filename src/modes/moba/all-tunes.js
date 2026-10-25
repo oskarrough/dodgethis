@@ -72,6 +72,7 @@ import heroes_undine, { units as heroes_undine_units } from './heroes/undine/und
 import maps_altamesa, { units as maps_altamesa_units } from './maps/altamesa/altamesa-tune.js'
 import maps_flagfall, { units as maps_flagfall_units } from './maps/flagfall/flagfall-tune.js'
 import maps_overthrow, { units as maps_overthrow_units } from './maps/overthrow/overthrow-tune.js'
+import maps_salinas, { units as maps_salinas_units } from './maps/salinas/salinas-tune.js'
 import maps_tileroom, { units as maps_tileroom_units } from './maps/tileroom/tileroom-tune.js'
 import mechanics_ball, { units as mechanics_ball_units } from './mechanics/ball/ball-tune.js'
 import mechanics_dungeon, {
@@ -137,6 +138,7 @@ export const maps = {
 	altamesa: maps_altamesa,
 	flagfall: maps_flagfall,
 	overthrow: maps_overthrow,
+	salinas: maps_salinas,
 	tileroom: maps_tileroom,
 }
 export const mechanics = {
@@ -169,6 +171,7 @@ export const units = {
 	...maps_altamesa_units,
 	...maps_flagfall_units,
 	...maps_overthrow_units,
+	...maps_salinas_units,
 	...maps_tileroom_units,
 	...mechanics_ball_units,
 	...mechanics_dungeon_units,

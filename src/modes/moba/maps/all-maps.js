@@ -3,6 +3,7 @@ import maps_altamesa from './altamesa/altamesa.js'
 import maps_flagfall from './flagfall/flagfall.js'
 import maps_lobby from './lobby/lobby.js'
 import maps_overthrow from './overthrow/overthrow.js'
+import maps_salinas from './salinas/salinas.js'
 import maps_tileroom from './tileroom/tileroom.js'
 import { mapRegistry } from './recipes.js'
 
@@ -12,6 +13,7 @@ export const maps = {
 	flagfall: maps_flagfall,
 	lobby: maps_lobby,
 	overthrow: maps_overthrow,
+	salinas: maps_salinas,
 	tileroom: maps_tileroom,
 }
 export const { playableMaps, onlineMaps, mapLayout, matchRecipe } = mapRegistry(maps, DEFAULT_MAP)

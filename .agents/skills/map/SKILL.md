@@ -9,10 +9,20 @@ A map is a folder in `src/modes/moba/maps/<id>/` (docs/extending.md): `<id>.js` 
 
 ## The loop
 
+0. **New map bootstrap.** Create the manifest, independent tune and layout, and a plain ground view first. Copy the nearest layout, not its biome. Run `bun run collect-mods`, `jj status` (snapshot new files), `bun run check`, and `bun test tests/map-smoke.test.js --test-name-pattern <id>` before painting. A smaller layout does not shrink heroes or tower/fort colliders: preserve navigable lane widths around those circles. Salinas needed 7.5 m lanes after shortening Flagfall to 80%.
 1. **Target.** One paintover of a real screenshot (`bun run shot <map> --spots start`) in the ink direction, through the art skill's target-frame recipe. Two takes; pick one and go. Oskar steers later; "go" means no pick is needed. Keep it in `pages/art/<map>-targets/`.
-2. **Build, step by step:** light and haze, then stone (walls, pillars, plinths), then the rim, then the sky and far scenery, then the floor and decals. One fast check after each step.
+2. **Build, step by step:** light and haze, then stone (walls, pillars, plinths), then the rim, then the sky and far scenery, then the floor and decals. One fast check after each step; a judge may explicitly allow paired steps.
 3. **Fast check.** `bun run shot <map> --compare pages/art/<map>-targets/<take>.webp --gray`, about 10 seconds. Look once: does it read like the target, is the court the lightest plate in grey, do telegraphs stay loudest, triangles under 300k, no browser errors. Fix what is clearly wrong and move on; a later polish round is cheaper than perfect now. At most three tries per step.
-4. **Push.** `bun run check` and `bun run test` green, commit your files with a user-facing message, push.
+4. **Handoff or push, as briefed.** `bun run check` and `bun run test` green. If the brief asks for push-ready work or a judge owns the commit, leave your files uncommitted and report them; otherwise commit your files with a user-facing message and push. Generated registries from collect-mods belong with the new map.
+
+## New-map details
+
+- Read the hook call site before implementing it. `kerbs` receives `{ boxes, m, print, material, layout }`, not a height; derive height from the map tune and layout scale.
+- After adding a source file, `jj status` snapshots it before the leftovers check: that check reads tracked files and can otherwise report a real new reader as missing.
+- A visible sun needs placement at the shipped match camera, in the void it actually sees. Project the centre to check it. An opaque sun must write depth so the later cloud plane cannot paint over it.
+- A pale mapped tile can vanish: `floor.vary` controls its remapped contrast, not only random variation. Check joints at match distance before repainting the asset.
+- Shared kit extensions must be opt-in. Re-run start shots on Altamesa, Flagfall and Overthrow after a shared change.
+- For a timed dry run, record UTC checkpoints per step and the screenshot attempt count. Record provider token usage only when reported as consumption; context-window occupancy (`bb thread context`) is not a token bill and must not be reported as one.
 
 ## The kit: reuse it before writing geometry
 
