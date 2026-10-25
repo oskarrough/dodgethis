@@ -267,7 +267,6 @@ export function sliderSections(tune, look, setup, mapId = setup.map, camera = tu
 		juice: {
 			...each(['attackSquash', 'castSquash', 'vaultSquash', 'rainSquash'], () => [-0.3, 0.3, 0.01]),
 			flash: [0, 0.3, 0.01, 'hit flash (s)'],
-			hitstop: [0, 0.3, 0.005, 'hitstop (s)'],
 			shakeTaken: [0, 1, 0.05, 'shake on you'],
 			shakeTakedown: [0, 1, 0.05, 'shake when you die'],
 			impact: [0, 2, 0.05, 'impact ×'],
@@ -304,7 +303,7 @@ const FEATURED = {
 	respawn: ['hero', { base: 'Respawn time' }],
 	ball: ['ball', { speed: 'Throw speed', carrySpeed: 'Carrier speed' }],
 	follow: ['camera', { height: 'Height', fov: 'Lens' }],
-	juice: ['feel', { impact: 'Impact', hitstop: 'Hit pause', shakeTaken: 'Shake when hit' }],
+	juice: ['feel', { impact: 'Impact', shakeTaken: 'Shake when hit' }],
 }
 const RANK = { hero: 1, ball: 2, camera: 3, feel: 4 }
 

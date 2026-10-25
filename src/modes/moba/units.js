@@ -20,7 +20,7 @@ export const tuneUnits = {
 		feedLife ending tipGrace longPress inspectHold warn objective lateStep minInterval growthPeriod helpHold
 		calm coyoteTime stallTime repeatPing cancelLockout buffer returnTell pocketLife maxStep response
 		flipMin flipMax castEvery minFlight popTell puddle resetCooldown prone deathRefund sweep payout shieldLife
-		dragTime hitstop reset firstSlam slamEvery lateEvery window immunity swim fly lifeStep handoffFor flipTime
+		dragTime reset firstSlam slamEvery lateEvery window immunity swim fly lifeStep handoffFor flipTime
 		remeasure fillTime settleTime slamTime leapTime stickFor releaseTime punchTime period stagger drain
 		flightEase afterStagger releaseSnap releaseRecover grow flash`,
 	),
