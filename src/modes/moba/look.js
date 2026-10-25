@@ -77,7 +77,7 @@ export const look = {
 			crownHeight: 0.55,
 			crenels: 6,
 			crenelSize: 0.38,
-			tip: 0.5,
+			tip: 0.65,
 			tipAspect: 1.7,
 			bannerWidth: 0.75,
 			bannerHeight: 1.5,
@@ -93,6 +93,19 @@ export const look = {
 			crackWidth: 0.08,
 			seed: 7, // all clients chip and crack the same stone
 			shadowY: 0.012, // between the court's inlays (0.01) and road prints (0.015)
+			carving: {
+				petals: 8,
+				petalSides: 8,
+				petalWidth: 0.28,
+				flowerHeart: 0.2,
+				relief: 0.13,
+				panelBorder: 0.055,
+				bevel: 0.055,
+				chip: 0.045,
+			},
+			damageLean: 0.035, // radians at 66%; the tower turns about its foot
+			damageLastLean: 0.12, // radians at 33%
+			damageCrack: 0.055, // width of the two staged splits in the stone
 		},
 		rubbleRadius: 0.7,
 		rubbleHeight: 0.35,

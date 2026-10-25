@@ -89,14 +89,14 @@ export function nightGarden({ s, own, forward, outline, outward, count, rand }) 
 			put(
 				new THREE.TubeGeometry(
 					new THREE.CatmullRomCurve3([new THREE.Vector3(), bend, tip]),
-					5,
+					3,
 					size * 0.055,
-					4,
+					3,
 					false,
 				),
 				'deep',
 			)
-			const cup = new THREE.CylinderGeometry(size * 0.2, size, size * 1.35, 8, 2, true)
+			const cup = new THREE.CylinderGeometry(size * 0.2, size, size * 1.35, 8, 1, true)
 			const positions = cup.attributes.position
 			for (let v = 0; v < positions.count; v++) {
 				const y = positions.getY(v)
@@ -116,13 +116,13 @@ export function nightGarden({ s, own, forward, outline, outward, count, rand }) 
 			const throat = tip.clone().addScaledVector(mouth, size * 1.28)
 			put(cup.applyQuaternion(turn).translate(centre.x, centre.y, centre.z), 'petal')
 			put(
-				new THREE.SphereGeometry(size * 0.48, 7, 5).translate(throat.x, throat.y, throat.z),
+				new THREE.SphereGeometry(size * 0.48, 5, 3).translate(throat.x, throat.y, throat.z),
 				'throat',
 			)
 			for (const sign of [-1, 1]) {
 				const end = tip.clone().addScaledVector(mouth, size * 1.6)
 				put(
-					new THREE.CylinderGeometry(size * 0.065, size * 0.09, size * 0.65, 5)
+					new THREE.CylinderGeometry(size * 0.065, size * 0.09, size * 0.65, 3)
 						.rotateZ(sign * 0.28)
 						.applyQuaternion(turn)
 						.translate(end.x + sign * size * 0.18, end.y, end.z),

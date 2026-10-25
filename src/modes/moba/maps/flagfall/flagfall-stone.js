@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'
 import { tune } from '../../tune.js'
-import { carvedWalls, flowerPanel, lichenClump, sandstone } from '../../carve.js'
+import { carvedWalls, chippedBlock, flowerPanel, lichenClump, sandstone } from '../../carve.js'
 
 function stoneRandom() {
 	let seed = 0
@@ -13,6 +13,9 @@ function stoneRandom() {
 
 function wallStone(boxes, height, scale, print, material, kerb = false) {
 	const c = { ...tune.flagfall.carving }
+	c.petalSides = Math.max(4, Math.ceil(c.petalSides / 2))
+	c.mossDetail = 0
+	const lichen = { ...tune.flagfall.lichen, sides: 4, rows: 3 }
 	for (const key of [
 		'blockWidth',
 		'joint',
@@ -45,9 +48,10 @@ function wallStone(boxes, height, scale, print, material, kerb = false) {
 			mossDrop: 0.16 * scale,
 		})
 	const rand = stoneRandom()
-	const { stone, moss } = carvedWalls(boxes, () => height, c, rand)
+	const { stone, moss } = kerb ? {} : carvedWalls(boxes, () => height, c, rand)
 	const relief = []
 	const tops = []
+	const kerbMoss = []
 	if (stone) {
 		const positions = [[], []],
 			normals = [[], []]
@@ -78,13 +82,40 @@ function wallStone(boxes, height, scale, print, material, kerb = false) {
 			const along = -half + ((i + 0.5) * half * 2) / count
 			const x = b.x + (alongX ? along : 0),
 				z = b.z + (alongX ? 0 : along)
-			if (kerb)
+			const span = (half * 2) / count
+			if (kerb) {
+				// At this height the camera sees a chipped block and its top flower.
+				// Four miniature wall courses and side reliefs were hidden under this cap.
+				const width = (alongX ? span : depth * 2) - c.joint
+				const length = (alongX ? depth * 2 : span) - c.joint
+				relief.push(
+					chippedBlock(width, height - c.capHeight - c.mossHeight, length, c, rand).translate(
+						x,
+						(height - c.capHeight - c.mossHeight) / 2,
+						z,
+					),
+				)
+				tops.push(
+					chippedBlock(width, c.capHeight, length, c, rand).translate(
+						x,
+						height - c.mossHeight - c.capHeight / 2,
+						z,
+					),
+				)
+				if (rand() < c.mossChance)
+					kerbMoss.push(
+						lichenClump(c.mossReach, lichen, rand).translate(
+							x + (alongX ? 0 : depth * 0.6),
+							height - c.mossHeight,
+							z + (alongX ? depth * 0.6 : 0),
+						),
+					)
 				relief.push(
 					flowerPanel(Math.min(depth * 0.78, 0.22 * scale), c.relief, c)
 						.rotateX(-Math.PI / 2)
 						.translate(x, height - c.relief, z),
 				)
-			const span = (half * 2) / count
+			}
 			if (!kerb) {
 				const width = (alongX ? span : depth * 2) - c.capStep * 2 - c.bevel * 2
 				const length = (alongX ? depth * 2 : span) - c.capStep * 2 - c.bevel * 2
@@ -108,7 +139,7 @@ function wallStone(boxes, height, scale, print, material, kerb = false) {
 			for (let patch = 0; patch < 3; patch++) {
 				if (rand() > tune.flagfall.lichen.chance) continue
 				const radius = Math.min(depth * 0.6, tune.flagfall.lichen.radius * scale)
-				const geometry = lichenClump(radius, tune.flagfall.lichen, rand)
+				const geometry = lichenClump(radius, lichen, rand)
 					.rotateX(patch ? 0.7 : 0)
 					.translate(
 						x + (alongX ? span * 0.35 + (rand() - 0.5) * radius : depth * 0.8),
@@ -129,7 +160,11 @@ function wallStone(boxes, height, scale, print, material, kerb = false) {
 	}
 	print(relief, material('courtShade'), kerb ? 'flagfall-carved-kerbs' : 'flagfall-carved-walls')
 	print(tops, material('scenery'), kerb ? 'flagfall-kerb-tops' : 'flagfall-wall-tops')
-	print(moss ? [moss] : [], material('leaf'), kerb ? 'flagfall-kerb-moss' : 'flagfall-wall-moss')
+	print(
+		moss ? [moss] : kerbMoss,
+		material('leaf'),
+		kerb ? 'flagfall-kerb-moss' : 'flagfall-wall-moss',
+	)
 	print(rust, material('leafDeep'), kerb ? 'flagfall-kerb-lichen' : 'flagfall-wall-lichen')
 }
 

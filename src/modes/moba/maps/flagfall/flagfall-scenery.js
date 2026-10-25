@@ -8,8 +8,8 @@ export function scenery(isle) {
 	const s = tune.flagfall
 	dressRim(
 		isle,
-		s.rim,
-		s.carving,
+		{ ...s.rim, lichen: { ...s.rim.lichen, sides: 4, rows: 3 } },
+		{ ...s.carving, petalSides: Math.max(4, Math.ceil(s.carving.petalSides / 2)) },
 		{ ruin: 'courtShade', wood: 'ink', bone: 'cream', moss: 'leaf' },
 		'flagfall-rim',
 	)

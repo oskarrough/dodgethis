@@ -1,10 +1,12 @@
 import * as THREE from 'three'
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'
 import { FORWARD_LAYER, glows, makeStyleMaterial } from '../../core/stylepass.js'
 import { STEP } from '../../core/app.js'
 import { tune } from './tune.js'
 import { look } from './look.js'
 import { convexHull } from './match-terrain.js'
 import { hologramMaterial } from './hologram.js'
+import { flowerBand, flowerPanel, chippedBlock } from './carve.js'
 
 // `layout.structureStyle === 'stone'` (both isles; `layout.light` picks sun or moon) builds towers and the core in stone
 // with team colour only on banners and crystals, and prints each one's shadow on the court.
@@ -40,6 +42,9 @@ export function createLaneView(scene, smooth = null, layout = null, mapView = nu
 		}
 		let crystal = null
 		let float = null
+		let stoneTilt = null
+		let looseMerlons = null
+		let fallenMerlons = null
 		const cracks = []
 		let shadow = null
 		const glowColour = team === 'A' ? look.glow.crystalA : team === 'B' ? look.glow.crystalB : null
@@ -149,7 +154,28 @@ export function createLaneView(scene, smooth = null, layout = null, mapView = nu
 						y += dv
 					}
 				}
-				mapView?.corePlinth?.({ radius, base, stone: s, part, material })
+				if (mapView?.corePlinth) mapView.corePlinth({ radius, base, stone: s, part, material })
+				else {
+					part(
+						flowerBand(radius * 0.985, radius * 0.97, s.plinth - s.bevel, s.sides, s.carving),
+						grey,
+						base,
+					)
+					const band = part(
+						flowerBand(
+							radius * s.step * 0.985,
+							radius * s.step * 0.97,
+							upper - s.bevel,
+							s.sides + 1,
+							s.carving,
+						),
+						pale,
+						base + s.plinth - 0.02,
+					)
+					band.position.x = s.stepShift[0]
+					band.position.z = s.stepShift[1]
+					band.rotation.y = Math.PI / s.sides
+				}
 				// The crystal floats over the plinth: a lean, unequal halves, every facet a little off.
 				const width = radius * v.coreWidth
 				const gem = new THREE.OctahedronGeometry(width)
@@ -193,6 +219,8 @@ export function createLaneView(scene, smooth = null, layout = null, mapView = nu
 			} else {
 				// Drum, tapered shaft, crenellated crown, crystal tip; the banner hangs toward the camera.
 				const rand = seeded(s.seed + Math.round(x * 7 + z * 13))
+				const night = layout.bounds.id === 'flagfall'
+				const merlon = { ...s.carving, bevel: s.carving.bevel * 0.3, chip: s.carving.chip * 0.35 }
 				part(
 					chisel(stoneCourse(radius * 1.04, radius * 0.94, s.drum, s.sides, s.bevel), rand, {
 						jitter: s.jitter,
@@ -200,7 +228,7 @@ export function createLaneView(scene, smooth = null, layout = null, mapView = nu
 						chipChance: s.chipChance,
 						top: s.drum - s.bevel - 1e-3,
 					}),
-					pale,
+					night ? grey : pale,
 					base,
 				)
 				const shaftBottom = base + s.drum
@@ -221,16 +249,104 @@ export function createLaneView(scene, smooth = null, layout = null, mapView = nu
 					pale,
 					crown + s.crownHeight / 2,
 				)
+				const battlements = []
 				for (let i = 0; i < s.crenels; i++) {
 					const angle = ((i + 0.5) / s.crenels) * Math.PI * 2
-					const crenel = part(
-						new THREE.BoxGeometry(s.crenelSize, s.crenelSize, s.crenelSize),
-						pale,
-						crown + s.crownHeight + s.crenelSize / 2,
+					battlements.push(
+						chippedBlock(s.crenelSize, s.crenelSize, s.crenelSize, merlon, rand)
+							.rotateY(-angle)
+							.translate(
+								Math.cos(angle) * radius * s.crown * 0.82,
+								crown + s.crownHeight + s.crenelSize / 2,
+								Math.sin(angle) * radius * s.crown * 0.82,
+							),
 					)
-					crenel.position.x = Math.cos(angle) * radius * s.crown * 0.82
-					crenel.position.z = Math.sin(angle) * radius * s.crown * 0.82
-					crenel.rotation.y = -angle
+				}
+				part(mergeGeometries(battlements.slice(0, -2)), pale, 0).name = 'stone-tower-battlements'
+				looseMerlons = part(mergeGeometries(battlements.slice(-2)), pale, 0)
+				looseMerlons.name = 'stone-tower-loose-merlons'
+				for (const g of battlements) g.dispose()
+				const fallen = []
+				for (const angle of [0.7, 2.6]) {
+					const block = chippedBlock(s.crenelSize, s.crenelSize, s.crenelSize, merlon, rand)
+						.rotateX(angle)
+						.rotateZ(angle * 0.7)
+					block.computeBoundingBox()
+					block.translate(
+						Math.cos(angle) * (radius + s.crenelSize * 1.4),
+						base - block.boundingBox.min.y,
+						Math.sin(angle) * (radius + s.crenelSize * 1.4),
+					)
+					fallen.push(block)
+				}
+				fallenMerlons = part(mergeGeometries(fallen), pale, 0)
+				for (const g of fallen) g.dispose()
+				fallenMerlons.name = 'stone-tower-fallen-merlons'
+				fallenMerlons.visible = false
+				mesh.add(fallenMerlons)
+				part(
+					flowerBand(radius * s.shaftBottom, radius * s.shaftTop, s.shaft, s.sides, s.carving),
+					pale,
+					shaftBottom,
+				).name = 'stone-tower-shaft-carving'
+				part(
+					flowerBand(radius * 1.04, radius * 0.94, s.drum - s.bevel, s.sides, s.carving),
+					night ? pale : grey,
+					base,
+				).name = 'stone-tower-drum-carving'
+				const carving = [
+					flowerBand(
+						radius * s.shaftTop,
+						radius * s.crown,
+						s.crownHeight,
+						s.sides,
+						s.carving,
+					).translate(0, crown, 0),
+				]
+				// The crown rosettes sit between the battlements, visible from the match camera.
+				for (let side = 0; side < s.crenels; side++) {
+					const angle = ((side + 0.5) * Math.PI * 2) / s.crenels
+					const r = radius * s.crown * 0.65
+					carving.push(
+						flowerPanel(s.crenelSize * 0.42, s.carving.relief * 0.3, s.carving)
+							.rotateX(-Math.PI / 2)
+							.translate(Math.sin(angle) * r, crown + s.crownHeight, Math.cos(angle) * r),
+					)
+				}
+				part(mergeGeometries(carving), grey, 0).name = 'stone-tower-carving'
+				for (const g of carving) g.dispose()
+				// One merged fissure per health threshold. Each follows a face of the
+				// tapered shaft; it remains legible over the raised flower band.
+				for (const side of [-1, 1]) {
+					const phi = (side * Math.PI) / s.sides
+					const split = []
+					let u = side * radius * 0.12
+					for (let leg = 0; leg < 5; leg++) {
+						const y0 = (leg / 5) * s.shaft,
+							y1 = ((leg + 1) / 5) * s.shaft
+						const next = u + (rand() - 0.5) * radius * 0.3
+						const y = (y0 + y1) / 2
+						const r =
+							radius *
+							THREE.MathUtils.lerp(s.shaftBottom, s.shaftTop, y / s.shaft) *
+							Math.cos(Math.PI / s.sides)
+						split.push(
+							new THREE.BoxGeometry(
+								s.damageCrack,
+								Math.hypot(next - u, y1 - y0),
+								s.carving.relief * 2,
+							)
+								.rotateZ(Math.atan2(u - next, y1 - y0))
+								.translate((u + next) / 2, shaftBottom + y, r)
+								.rotateY(phi),
+						)
+						u = next
+					}
+					const crack = part(mergeGeometries(split), ink, 0)
+					for (const g of split) g.dispose()
+					crack.name = 'stone-tower-damage'
+					crack.visible = false
+					cracks.push(crack)
 				}
 				crystal = part(
 					new THREE.OctahedronGeometry(s.tip).scale(1, s.tipAspect, 1),
@@ -250,6 +366,15 @@ export function createLaneView(scene, smooth = null, layout = null, mapView = nu
 				banner.rotation.x = -lean
 				const rod = part(new THREE.BoxGeometry(s.bannerWidth * 1.25, 0.08, 0.08), ink, crown - 0.05)
 				rod.position.z = banner.position.z
+				stoneTilt = new THREE.Group()
+				stoneTilt.name = 'stone-tower-lean'
+				stoneTilt.position.y = base
+				while (visual.children.length) {
+					const piece = visual.children[0]
+					piece.position.y -= base
+					stoneTilt.add(piece)
+				}
+				visual.add(stoneTilt)
 			}
 			shadow = printShadow(x, z, radius, tune[kind].height)
 		} else if (kind === 'core') {
@@ -555,6 +680,9 @@ export function createLaneView(scene, smooth = null, layout = null, mapView = nu
 			dome,
 			crystal,
 			float,
+			stoneTilt,
+			looseMerlons,
+			fallenMerlons,
 			laser,
 			cracks,
 			helpTether,
@@ -601,6 +729,14 @@ export function createLaneView(scene, smooth = null, layout = null, mapView = nu
 				}
 				for (const [i, crack] of unit.body.cracks.entries())
 					crack.visible = unit.hp <= unit.maxHp * (1 - (i + 1) * v.coreCrack)
+			}
+			if (unit.body.stoneTilt) {
+				let stage = 0
+				for (const crack of unit.body.cracks) if (crack.visible) stage++
+				const lean = stage > 1 ? v.stone.damageLastLean : stage * v.stone.damageLean
+				unit.body.stoneTilt.rotation.z = lean * (unit.team === 'A' ? -1 : 1)
+				unit.body.looseMerlons.visible = stage < 2
+				unit.body.fallenMerlons.visible = stage > 1
 			}
 			if (unit.kind === 'tower') visual.scale.x = visual.scale.z = 1 + progress * v.towerCharge
 			else if (unit.kind === 'fort') visual.rotation.z = progress * v.fortPose

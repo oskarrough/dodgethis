@@ -77,6 +77,43 @@ export function flowerPanel(radius, relief, c) {
 	return geometry
 }
 
+// A framed flower on every face of a tapered stone course. Relief follows the
+// face slope and stays within the course's original circular envelope.
+export function flowerBand(bottom, top, height, sides, c) {
+	const parts = []
+	const apothem = Math.cos(Math.PI / sides)
+	const faceWidth = 2 * Math.min(bottom, top) * Math.sin(Math.PI / sides)
+	const width = Math.min(faceWidth * 0.8, height * 1.2)
+	const panelHeight = Math.min(height * 0.9, width * 1.4)
+	const border = Math.min(c.panelBorder, width * 0.1, panelHeight * 0.1)
+	const slope = Math.atan(((top - bottom) * apothem) / height)
+	for (let side = 0; side < sides; side++) {
+		const angle = ((side + 0.5) * Math.PI * 2) / sides
+		const put = (g) =>
+			parts.push(
+				g
+					.rotateX(slope)
+					.translate(0, height / 2, ((bottom + top) / 2) * apothem + c.relief * 0.4)
+					.rotateY(angle),
+			)
+		put(flowerPanel(Math.min(width, panelHeight) * 0.44, c.relief, c))
+		for (const sign of [-1, 1]) {
+			put(sandstone(width, border, c.relief * 0.5).translate(0, (sign * panelHeight) / 2, 0))
+			put(sandstone(border, panelHeight, c.relief * 0.5).translate((sign * width) / 2, 0, 0))
+		}
+	}
+	const geometry = joinCarving(parts)
+	const p = geometry.attributes.position
+	for (let i = 0; i < p.count; i++) {
+		const y = THREE.MathUtils.clamp(p.getY(i), 0, height)
+		const radius = THREE.MathUtils.lerp(bottom, top, y / height)
+		const shrink = Math.min(1, radius / (Math.hypot(p.getX(i), p.getZ(i)) || 1))
+		p.setXYZ(i, p.getX(i) * shrink, y, p.getZ(i) * shrink)
+	}
+	geometry.computeVertexNormals()
+	return geometry
+}
+
 export function chippedBlock(width, height, depth, c, rand) {
 	const bevel = Math.min(c.bevel, width / 4, height / 4, depth / 4)
 	const cuts = Array.from({ length: 4 }, () => bevel + rand() * c.chip)
@@ -165,7 +202,7 @@ export function carvedWalls(boxes, heightOf, c, rand) {
 						const angle = (lobe * Math.PI * 2) / c.mossLobes
 						const radius = reach * (0.5 + rand() / 2)
 						put(
-							new THREE.IcosahedronGeometry(1, 1)
+							new THREE.IcosahedronGeometry(1, c.mossDetail ?? 1)
 								.scale(radius, c.mossHeight, radius)
 								.translate(
 									x + (c.mossEdge ?? 0) * dx * 0.28 + (Math.cos(angle) * reach) / 2,
@@ -183,7 +220,7 @@ export function carvedWalls(boxes, heightOf, c, rand) {
 						[ix === nx - 1, false, 1],
 					]) {
 						if (!edge) continue
-						const curtain = new THREE.IcosahedronGeometry(1, 1)
+						const curtain = new THREE.IcosahedronGeometry(1, c.mossDetail ?? 1)
 							.scale(reach, c.mossDrop, c.faceInset)
 							.translate(
 								alongX ? x : -z,
@@ -489,7 +526,7 @@ export function lichenClump(radius, shape, rand) {
 		const a = (lobe * Math.PI * 2) / shape.lobes
 		const r = radius * (0.55 + rand() * 0.25)
 		parts.push(
-			new THREE.SphereGeometry(r, 8, 5)
+			new THREE.SphereGeometry(r, shape.sides ?? 8, shape.rows ?? 5)
 				.scale(1, shape.squash, 0.8)
 				.translate(
 					Math.cos(a) * radius * (0.4 + rand() * 0.2),
