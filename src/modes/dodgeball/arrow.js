@@ -6,7 +6,7 @@ import { ARENA, clamp as clampToCourt, onCourt } from './arena.js'
 import { PALETTE } from '../../core/style.js'
 import { makeStyleMaterial, FORWARD_LAYER } from '../../core/stylepass.js'
 
-// Held → flying → grounded → held (plan.md): only flying arrows own bodies; held arrows ride hands, grounded arrows are pickup markers.
+// Held → flying → grounded → held (git history: plan.md): only flying arrows own bodies; held arrows ride hands, grounded arrows are pickup markers.
 
 const FORWARD = new THREE.Vector3(0, 0, 1)
 const GROUND_Y = 0.045
