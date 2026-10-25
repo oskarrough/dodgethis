@@ -1,13 +1,59 @@
 import * as THREE from 'three'
-import { FORWARD_LAYER } from '../../../../core/stylepass.js'
+import { FORWARD_LAYER, makeStyleMaterial } from '../../../../core/stylepass.js'
 import { look } from '../../look.js'
 import { tune } from '../../tune.js'
 import { SLOTS } from '../../sim-kit.js'
 import { createEffects, glowMaterial, link, linkGeometry, shellMaterial } from '../../effects.js'
 
-// Mandador's bar and megaphone, without the touchline cutout.
-export function dress({ torso, part, own, discY, t, materials }) {
-	torso.geometry = own(new THREE.BoxGeometry(t.mandadorWidth, t.mandadorHeight, t.mandadorDepth))
+// A sage-marked board with a split crown, distinct from Mandador's square plank top.
+export function dress({ torso, part, detail, face, own, discY, t, materials }) {
+	const x = t.mandadorWidth / 2,
+		h = t.mandadorHeight
+	const board = new THREE.Shape()
+	board.moveTo(-x, 0)
+	board.lineTo(x, 0)
+	board.lineTo(x, h - 0.22)
+	board.lineTo(x - 0.16, h - 0.06)
+	board.lineTo(0.2, h)
+	board.lineTo(0, h - 0.24)
+	board.lineTo(-0.2, h)
+	board.lineTo(-x + 0.16, h - 0.06)
+	board.lineTo(-x, h - 0.22)
+	board.closePath()
+	torso.geometry = own(
+		new THREE.ExtrudeGeometry(board, { depth: t.mandadorDepth, bevelEnabled: false }).translate(
+			0,
+			0,
+			-t.mandadorDepth / 2,
+		),
+	)
+	const wood = own(makeStyleMaterial('driftwood'))
+	const leaf = own(makeStyleMaterial('leafDeep', { flat: true }))
+	face(0.84, discY + h - 0.26, -0.13)
+	detail(
+		[
+			new THREE.BoxGeometry(0.022, h - 0.42, 0.014).translate(-0.4, discY + h * 0.44, -0.132),
+			new THREE.BoxGeometry(0.02, h - 0.48, 0.014).translate(0.38, discY + h * 0.42, -0.132),
+			new THREE.BoxGeometry(t.mandadorWidth, 0.13, t.mandadorDepth + 0.012).translate(
+				0,
+				discY + 0.09,
+				0,
+			),
+		],
+		wood,
+	)
+	// A shallow sprig is part of the board, not an extra prop or a team-coloured badge.
+	const sprig = [new THREE.BoxGeometry(0.035, 0.43, 0.02).translate(0.31, discY + 0.7, -0.145)]
+	for (let i = 0; i < 3; i++) {
+		const side = i % 2 ? -1 : 1
+		sprig.push(
+			new THREE.OctahedronGeometry(0.11, 0)
+				.scale(1, 0.5, 0.15)
+				.rotateZ(side * 0.45)
+				.translate(0.31 + side * 0.07, discY + 0.59 + i * 0.12, -0.15),
+		)
+	}
+	detail(sprig, leaf)
 	const cone = part(
 		new THREE.CylinderGeometry(
 			t.megaphoneRadius,
@@ -38,7 +84,7 @@ export function dress({ torso, part, own, discY, t, materials }) {
 	const mouth = new THREE.Object3D()
 	mouth.position.z = -t.megaphoneLength / 2
 	cone.add(mouth)
-	return { cone, hand, mouth }
+	return { cone, hand, mouth, border: false }
 }
 
 export function animate(unit, rig, { pose, progress, costume }) {

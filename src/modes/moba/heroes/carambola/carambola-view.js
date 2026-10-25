@@ -12,14 +12,6 @@ const view = {
 	headSquash: 0.82,
 	headY: 0.98,
 	headZ: -0.04,
-	browWidth: 0.24,
-	browTilt: 0.32,
-	browY: 1.06,
-	browZ: -0.3,
-	eyeRadius: 0.04,
-	eyeX: 0.11,
-	eyeY: 0.98,
-	eyeZ: -0.34,
 	beakRadius: 0.1,
 	beakLength: 0.26,
 	beakY: 0.88,
@@ -84,11 +76,11 @@ function blade() {
 }
 
 // Carambola: a stocky stone-beaked bruiser in a cream tunic with a team band, his wooden paddle open at his side.
-export function dress({ costume, torso, discY, part, own, roots, t, materials }) {
+export function dress({ costume, torso, discY, part, detail, face, own, roots, t, materials }) {
 	const { ink, cream, team } = materials
-	const stone = makeStyleMaterial('scenery', { flat: true })
-	const wood = makeStyleMaterial('driftwood')
-	const beak = makeStyleMaterial('sand', { flat: true })
+	const stone = own(makeStyleMaterial('sand'))
+	const wood = own(makeStyleMaterial('driftwood'))
+	const beak = own(makeStyleMaterial('sand', { flat: true }))
 	const y = (h) => discY + h
 	torso.material = cream
 	torso.geometry = own(prism(view.bodyRadius, view.bodyHeight, t.corner / 2))
@@ -110,22 +102,8 @@ export function dress({ costume, torso, discY, part, own, roots, t, materials })
 		y(view.headY),
 		view.headZ,
 	)
+	face(0.52, y(1.23), -0.24)
 	for (const side of [-1, 1]) {
-		const brow = part(
-			new THREE.BoxGeometry(view.browWidth, 0.1, 0.14),
-			ink,
-			side * view.browWidth * 0.48,
-			y(view.browY),
-			view.browZ,
-		)
-		brow.rotation.z = -side * view.browTilt
-		part(
-			new THREE.SphereGeometry(view.eyeRadius, 8, 6),
-			cream,
-			side * view.eyeX,
-			y(view.eyeY),
-			view.eyeZ,
-		)
 		part(
 			new THREE.ConeGeometry(view.earRadius, view.earHeight, 4),
 			stone,
@@ -149,6 +127,18 @@ export function dress({ costume, torso, discY, part, own, roots, t, materials })
 	costume.add(paddle)
 	roots.push(paddle)
 	part(blade(), wood, 0, 0, 0, paddle)
+	detail(
+		[-1, 1].map((side) =>
+			new THREE.BoxGeometry(0.012, 0.008, 0.48).translate(
+				side * 0.12,
+				view.paddleDepth / 2 + 0.008,
+				0,
+			),
+		),
+		ink,
+		paddle,
+	)
+	part(prism(view.bodyRadius, 0.1, 0), wood, 0, y(0.08), 0)
 	part(
 		new THREE.RingGeometry(view.paddleRadius - t.discBorder, view.paddleRadius, t.segments)
 			.rotateX(-Math.PI / 2)

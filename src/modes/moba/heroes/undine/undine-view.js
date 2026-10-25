@@ -1,11 +1,31 @@
 import * as THREE from 'three'
 import { tune } from '../../tune.js'
 
-export function dress({ torso, part, own, discY, materials }) {
+export function dress({ torso, part, detail, face, own, discY, materials }) {
 	const v = tune.heroes.undine.view
 	// Bake the pot's proportions into the geometry: hero-view grounds the torso and clones its geometry
 	// for the ink border, and a mesh scale would leave that border as a full-size ink ball.
-	torso.geometry = own(new THREE.SphereGeometry(1, 16, 10).scale(v.width, v.height, v.depth))
+	const enamel = new THREE.SphereGeometry(1, 12, 8).scale(v.width, v.height, v.depth).toNonIndexed()
+	enamel.computeVertexNormals()
+	torso.geometry = own(enamel)
+	face(0.9, discY + 1.29, -0.36)
+	const chip = new THREE.BufferGeometry()
+	chip.setAttribute(
+		'position',
+		new THREE.Float32BufferAttribute(
+			[
+				-0.43, 1.2, -0.25, -0.3, 1.18, -0.43, -0.18, 1.31, -0.29, 0.32, 1.22, 0.2, 0.45, 1.14, 0.24,
+				0.5, 1.13, 0.06,
+			],
+			3,
+		),
+	)
+	chip.computeVertexNormals()
+	part(chip.translate(0, discY, 0), materials.cream)
+	const hem = new THREE.CylinderGeometry(0.55, 0.43, 0.14, 12).translate(0, discY + 0.18, 0)
+	const normals = hem.attributes.normal
+	for (let i = 0; i < normals.count; i++) normals.setXYZ(i, 0, -1, 0)
+	part(hem, materials.skin)
 	part(
 		new THREE.CylinderGeometry(v.neckRadius, v.neckRadius, v.neckHeight, 12),
 		materials.cream,
@@ -13,14 +33,24 @@ export function dress({ torso, part, own, discY, materials }) {
 		discY + v.neckY,
 		0,
 	)
-	const spout = part(
-		new THREE.CylinderGeometry(v.spoutRadius, v.spoutRadius, v.spoutLength, 10),
-		materials.cream,
-		v.spoutX,
-		discY + v.spoutY,
-		0,
-	)
+	const spoutShape = new THREE.CylinderGeometry(v.spoutRadius, v.spoutRadius, v.spoutLength, 6)
+	const lip = spoutShape.attributes.position
+	for (let i = 0; i < lip.count; i++)
+		if (lip.getY(i) > 0 && lip.getX(i) < v.spoutRadius * 0.5) lip.setY(i, lip.getY(i) - 0.12)
+	spoutShape.computeVertexNormals()
+	const spout = part(spoutShape, materials.cream, v.spoutX, discY + v.spoutY, 0)
 	spout.rotation.z = -Math.PI / 3
+	detail(
+		[
+			new THREE.CylinderGeometry(v.spoutRadius * 0.68, v.spoutRadius * 0.68, 0.016, 6).translate(
+				0,
+				v.spoutLength / 2 - 0.13,
+				0,
+			),
+		],
+		materials.ink,
+		spout,
+	)
 	part(
 		new THREE.TorusGeometry(v.handleRadius, v.handleTube, 6, 16),
 		materials.ink,

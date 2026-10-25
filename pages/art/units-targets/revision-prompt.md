@@ -1,0 +1,12 @@
+# Cast sheet correction
+
+Edit image 1, the generated eight-panel sheet. Keep the materials, colours, ink and eight identities. Correct these specific failures against the source screenshots:
+
+1. Each figure must use the steep game camera, 58 degrees ABOVE the ground, only 32 degrees away from straight down. The source screenshots are the authority. No cinematic low angle. Keep the current large inspection views but make all the small copies actual match scale (65-95 px tall including disc) and the SAME camera as the big view. Remove redundant rear views and loose prop drawings so there is room for labels.
+2. Mandador top right and Salvia bottom right must be a BROAD THIN BOARD: physical width 1.3 m, height 1.5 m, depth 0.25 m. At this steep camera the projected board is visibly WIDER than it is tall, like the screenshot, NOT a tall door. Their disc is circular on the ground and the thin top edge is clearly visible. Keep the speaking trumpet, but flatten any satchel onto the face within the existing board outline. Salvia gets a sage sprig emblem, Mandador does not get a satchel. No extra legs or body.
+3. Oolong must have exactly ONE pair of tiny eyes, two eyes total, under ONE brow on the front upper edge; remove the second pair and the second face. Preserve the simple low hexagonal drum and original jug size.
+4. Lasso must have exactly ONE pair of tiny eyes at the forward existing tip. Leave the other end plain chipped hide, preserving the empty crescent. No second face.
+5. Ibis body remains a slim ROUND capsule from above, NOT a square pillar. Keep the chisel planes and short beak within the slim capsule, and exactly three arrows. Reduce the cream dangling scarf patch to a quiet seam.
+6. Add only these small ink text labels under the large views (sheet annotations, not game text): Ibis / Hide · cloth; Kappa / Hide · shell; Carambola / Stone · cloth · wood; Mandador / Painted wood; Lasso / Hide · cord; Oolong / Bark · cloth · enamel; Undine / Enamel; Salvia / Bark · cloth. At bottom of each cell show just one small same-angle copy marked Match size. Keep all eight panels in their current order.
+
+Do not add detail or change the other silhouettes. Team blue remains only on the discs and designated single accents. Low-poly primitives, navy ink, restrained flat colour, dignified and worn, no plush. Output landscape 1600 by 900. The latest correction overrides any previous text and turnaround instructions.

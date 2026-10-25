@@ -6,8 +6,40 @@ import { sweepObstacles, mapExit } from '../../obstacles.js'
 import { mandadorThrowOrigin } from './mandador-cutout.js'
 
 // The original flat bar and megaphone, with a separate raised hand for the save.
-export function dress({ torso, part, own, discY, t, materials }) {
-	torso.geometry = own(new THREE.BoxGeometry(t.mandadorWidth, t.mandadorHeight, t.mandadorDepth))
+export function dress({ torso, part, detail, face, own, discY, t, materials }) {
+	const board = new THREE.Shape()
+	const x = t.mandadorWidth / 2,
+		h = t.mandadorHeight
+	board.moveTo(-x, 0)
+	board.lineTo(x, 0)
+	board.lineTo(x, h - 0.14)
+	board.lineTo(x - 0.16, h)
+	board.lineTo(0.05, h)
+	board.lineTo(-0.02, h - 0.12)
+	board.lineTo(-0.12, h)
+	board.lineTo(-x, h)
+	board.closePath()
+	torso.geometry = own(
+		new THREE.ExtrudeGeometry(board, { depth: t.mandadorDepth, bevelEnabled: false }).translate(
+			0,
+			0,
+			-t.mandadorDepth / 2,
+		),
+	)
+	const wood = own(makeStyleMaterial('driftwood'))
+	face(0.88, discY + h - 0.14, -0.13)
+	detail(
+		[
+			new THREE.BoxGeometry(0.025, h - 0.32, 0.014).translate(-0.3, discY + h * 0.46, -0.132),
+			new THREE.BoxGeometry(0.022, h - 0.42, 0.014).translate(0.37, discY + h * 0.44, -0.132),
+			new THREE.BoxGeometry(t.mandadorWidth, 0.13, t.mandadorDepth + 0.012).translate(
+				0,
+				discY + 0.09,
+				0,
+			),
+		],
+		wood,
+	)
 	const cone = part(
 		new THREE.CylinderGeometry(
 			t.megaphoneRadius,
@@ -34,7 +66,8 @@ export function dress({ torso, part, own, discY, t, materials }) {
 		discY + t.mandadorHeight * 0.6,
 		0,
 	)
-	return { cone, hand }
+	// The ink pass outlines the board; the old expanded shell hid its entire painted face.
+	return { cone, hand, border: false }
 }
 export function animate(unit, rig, { pose, progress, costume }) {
 	const t = look.silhouettes

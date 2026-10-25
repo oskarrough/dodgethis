@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { styleId } from '../../../../core/stylepass.js'
+import { makeStyleMaterial, styleId } from '../../../../core/stylepass.js'
 import { STEP } from '../../../../core/app.js'
 import { tune } from '../../tune.js'
 import { stateUntil } from '../../statuses.js'
@@ -34,14 +34,54 @@ export function dress({
 	footDisc,
 	discY,
 	part,
+	detail,
+	face,
 	own,
 	rounded,
 	roots,
 	t,
 	materials,
 }) {
-	const { glove: gloveMaterial, pocket: pocketMaterial, team } = materials
-	torso.geometry = own(rounded(t.kappaWidth, t.kappaDepth, t.kappaHeight))
+	const { glove: gloveMaterial, pocket: pocketMaterial, team, ink, skin } = materials
+	const shell = rounded(t.kappaWidth, t.kappaDepth, t.kappaHeight)
+	const points = shell.attributes.position
+	for (let i = 0; i < points.count; i++) {
+		const x = points.getX(i),
+			z = points.getZ(i)
+		if (points.getY(i) > 0) {
+			points.setXYZ(i, x * 0.9, 0.2, z * 0.9)
+			if (x < -0.22 && z < -0.18) points.setY(i, 0.1)
+		}
+	}
+	shell.computeVertexNormals()
+	torso.geometry = own(shell)
+	face(0.72, discY + 0.63, -0.37)
+	const shellTop = own(makeStyleMaterial('sand'))
+	part(
+		new THREE.CylinderGeometry(0.34, 0.45, 0.1, 8).scale(1, 1, 0.88),
+		shellTop,
+		0,
+		discY + 0.65,
+		0,
+	)
+	// The horns replace roof height rather than growing the costume's bounds.
+	detail(
+		[-1, 1].map((side) =>
+			new THREE.ConeGeometry(0.075, 0.22, 4).translate(side * 0.29, discY + 0.69, -0.16),
+		),
+		materials.cream,
+	)
+	const wear = rounded(t.kappaWidth, t.kappaDepth, 0.12).translate(0, discY + 0.1, 0)
+	const normals = wear.attributes.normal
+	for (let i = 0; i < normals.count; i++) normals.setXYZ(i, 0, -1, 0)
+	part(wear, skin)
+	detail(
+		[
+			new THREE.BoxGeometry(0.02, 0.012, 0.16).rotateY(-0.4).translate(-0.15, discY + 0.703, 0.1),
+			new THREE.BoxGeometry(0.12, 0.012, 0.022).rotateY(-0.5).translate(0.13, discY + 0.703, -0.1),
+		],
+		ink,
+	)
 	part(
 		rounded(t.kappaWidth + view.beltProud, t.kappaDepth + view.beltProud, view.beltHeight),
 		team,
@@ -53,6 +93,17 @@ export function dress({
 	glove.name = 'moba-glove'
 	costume.add(glove)
 	roots.push(glove)
+	detail(
+		[-1, 1].map((side) =>
+			new THREE.BoxGeometry(0.018, 0.016, t.gloveDepth * 0.72).translate(
+				t.gloveX + side * 0.17,
+				discY + t.kappaHeight / 2 + t.fingerRadius + 0.01,
+				t.gloveZ,
+			),
+		),
+		ink,
+		glove,
+	)
 	const pocketRing = part(
 		new THREE.RingGeometry(
 			view.pocketRadius - view.pocketWidth,

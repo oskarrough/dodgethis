@@ -1,9 +1,22 @@
 import * as THREE from 'three'
 import { tune } from '../../tune.js'
 
-export function dress({ torso, part, own, discY, materials }) {
+export function dress({ torso, part, detail, face, own, discY, materials }) {
 	const v = tune.heroes.oolong.view
 	torso.geometry = own(new THREE.CylinderGeometry(v.width, v.width, v.height, 6))
+	face(0.86, discY + 0.88, -0.4)
+	const hem = new THREE.CylinderGeometry(v.width, v.width, 0.12, 6).translate(0, discY + 0.09, 0)
+	const normals = hem.attributes.normal
+	for (let i = 0; i < normals.count; i++) normals.setXYZ(i, 0, -1, 0)
+	part(hem, materials.skin)
+	detail(
+		[-1, 1].map((side) =>
+			new THREE.BoxGeometry(0.025, 0.012, 0.35)
+				.rotateY(side * 0.32)
+				.translate(side * 0.24, discY + v.height + 0.006, 0.05),
+		),
+		materials.ink,
+	)
 	// Team accent: a sash round the middle, proud of the ink border.
 	part(
 		new THREE.CylinderGeometry(v.width + v.sashProud, v.width + v.sashProud, v.sashHeight, 6),
@@ -25,6 +38,24 @@ export function dress({ torso, part, own, discY, materials }) {
 		materials.ink,
 		0,
 		v.neckY - v.jugY,
+		0,
+		jug,
+	)
+	// A missing bite in the enamel lid is visible from above and moves with the jug.
+	part(
+		new THREE.CylinderGeometry(
+			v.neckRadius * 1.2,
+			v.neckRadius * 1.15,
+			0.06,
+			8,
+			1,
+			false,
+			0.5,
+			Math.PI * 2 - 0.8,
+		),
+		materials.cream,
+		0,
+		v.neckY - v.jugY + v.neckHeight / 2 - 0.03,
 		0,
 		jug,
 	)

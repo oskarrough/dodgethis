@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'
 import { FORWARD_LAYER, makeStyleMaterial, styleId } from '../../core/stylepass.js'
 import { PALETTE } from '../../core/style.js'
 import { glowMaterial } from './effects.js'
@@ -60,6 +61,7 @@ export function dressHero(body, heroId = DEFAULT_HERO, team = 'A') {
 	const teamMaterial = makeStyleMaterial(teamRole)
 	const skin = makeStyleMaterial(definition.color)
 	const cream = makeStyleMaterial('cream')
+	const eyesMaterial = makeStyleMaterial('cream', { flat: true })
 	const yours = makeStyleMaterial('yours', { flat: true })
 	const fins = makeStyleMaterial(teamRole, { side: THREE.DoubleSide })
 	const ink = makeStyleMaterial('ink', { flat: true })
@@ -80,6 +82,41 @@ export function dressHero(body, heroId = DEFAULT_HERO, team = 'A') {
 		parent.add(mesh)
 		roots.push(mesh)
 		return mesh
+	}
+	// Small carved marks share a draw per material, including the cast's two-eyed brow band.
+	function detail(pieces, material, parent = costume) {
+		const ready = pieces.map((g) => {
+			const flat = g.index ? g.toNonIndexed() : g
+			flat.deleteAttribute('uv')
+			if (flat !== g) g.dispose()
+			return flat
+		})
+		const geometry = mergeGeometries(ready)
+		for (const g of ready) g.dispose()
+		return part(geometry, material, 0, 0, 0, parent)
+	}
+	function face(width, y, z) {
+		const brow = new THREE.Group()
+		brow.position.set(0, y, z)
+		// Tip the carved face toward the roof: the match camera mostly sees upper planes.
+		brow.rotation.x = 1.1
+		costume.add(brow)
+		roots.push(brow)
+		const band = part(new THREE.BoxGeometry(width, 0.23, 0.045), ink, 0, 0, 0, brow)
+		band.name = 'hero-brow'
+		const eyes = detail(
+			[-1, 1].map((side) =>
+				new THREE.BoxGeometry(Math.min(0.12, width * 0.24), 0.075, 0.018).translate(
+					side * width * 0.23,
+					-0.035,
+					-0.034,
+				),
+			),
+			eyesMaterial,
+			brow,
+		)
+		eyes.name = 'hero-eyes'
+		return brow
 	}
 	function rounded(width, depth, height) {
 		const shape = new THREE.Shape()
@@ -124,6 +161,8 @@ export function dressHero(body, heroId = DEFAULT_HERO, team = 'A') {
 			footDisc,
 			discY,
 			part,
+			detail,
+			face,
 			own,
 			rounded,
 			roots,
@@ -312,6 +351,7 @@ export function dressHero(body, heroId = DEFAULT_HERO, team = 'A') {
 			teamMaterial,
 			skin,
 			cream,
+			eyesMaterial,
 			yours,
 			fins,
 			ink,

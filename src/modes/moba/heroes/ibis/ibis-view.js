@@ -3,9 +3,58 @@ export { cards } from './ibis-numbers.js'
 
 // Ibis's costume: the capsule, quiver, arrows and the bow rig his poses read.
 // Team accent: the foot disc and the fletchings; the bow stays ink.
-export function dress({ costume, torso, part, own, roots, t, look, materials }) {
+export function dress({
+	costume,
+	torso,
+	part,
+	detail,
+	face,
+	discY,
+	own,
+	roots,
+	t,
+	look,
+	materials,
+}) {
 	const { ink, cream, fins, skin } = materials
-	torso.geometry = own(new THREE.CapsuleGeometry(t.bodyRadius, t.bodyHalfHeight * 2, 8, t.segments))
+	const shell = new THREE.CapsuleGeometry(t.bodyRadius, t.bodyHalfHeight * 2, 4, 12).toNonIndexed()
+	shell.computeVertexNormals()
+	torso.geometry = own(shell)
+	const y = (height) => discY + height
+	face(0.46, y(1.68), -0.18)
+	// A short four-sided beak stays inside the existing bow-and-quiver envelope.
+	part(new THREE.ConeGeometry(0.1, 0.2, 4).rotateX(-Math.PI / 2), cream, 0, y(1.51), -0.27)
+	// A V cut through the crown leaves two hard crest points without adding height.
+	const crest = new THREE.Shape()
+	crest.moveTo(-0.13, 1.52)
+	crest.lineTo(-0.1, 1.76)
+	crest.lineTo(0, 1.64)
+	crest.lineTo(0.1, 1.76)
+	crest.lineTo(0.13, 1.52)
+	crest.closePath()
+	part(
+		new THREE.ExtrudeGeometry(crest, { depth: 0.07, bevelEnabled: false }).translate(
+			0,
+			discY,
+			-0.035,
+		),
+		ink,
+	)
+	detail(
+		[
+			new THREE.BoxGeometry(0.035, 0.58, 0.025).rotateZ(-0.24).translate(0.06, y(0.72), -0.275),
+			new THREE.BoxGeometry(0.14, 0.025, 0.025).translate(-0.08, y(0.42), -0.275),
+		],
+		ink,
+	)
+	const wear = new THREE.CylinderGeometry(t.bodyRadius, t.bodyRadius * 0.82, 0.16, 12).translate(
+		0,
+		y(0.19),
+		0,
+	)
+	const normals = wear.attributes.normal
+	for (let i = 0; i < normals.count; i++) normals.setXYZ(i, 0, -1, 0)
+	part(wear, skin)
 	part(
 		new THREE.CylinderGeometry(t.quiverRadius, t.quiverRadius, t.quiverHeight, t.segments),
 		ink,
