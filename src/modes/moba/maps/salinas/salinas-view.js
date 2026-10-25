@@ -154,11 +154,25 @@ export function ground(scope) {
 	})
 	const floor = floors.sheet({ ...s.floor, x: 0, z: 0 }, bounds.halfX, bounds.halfZ).mesh
 	const compile = floor.material.onBeforeCompile
+	floor.material.customProgramCacheKey = () => 'salinas-floor'
 	floor.material.onBeforeCompile = (shader) => {
 		compile(shader)
 		bind(shader.uniforms.floorBase.value, (c) => c.set(s.floor.base))
 		bind(shader.uniforms.floorJoint.value, (c) => c.set(s.floor.joint))
 		bind(shader.uniforms.floorAccent.value, (c) => c.set(s.floor.accent))
+		shader.uniforms.saltSun = {
+			value: bind(new THREE.Vector2(), (v) => v.set(s.light.dir[0], s.light.dir[2]).normalize()),
+		}
+		shader.uniforms.saltWarm = { value: bind(new THREE.Color(), (c) => c.set(s.floor.warm)) }
+		shader.uniforms.saltWarmStrength = bind({}, (u) => {
+			u.value = s.floor.warmStrength
+		})
+		shader.fragmentShader =
+			'uniform vec2 saltSun; uniform vec3 saltWarm; uniform float saltWarmStrength;\n' +
+			shader.fragmentShader.replace(
+				'fShade(floorColour, floorPoint);',
+				'floorColour = mix(floorColour, saltWarm, smoothstep(-35., 42., dot(floorPoint, saltSun)) * saltWarmStrength);\nfShade(floorColour, floorPoint);',
+			)
 	}
 	group.add(floor)
 	const decals = createFloorDecals({

@@ -1,4 +1,4 @@
-// bun run shot <map> [--spots name,...] [--out dir] [--gray] [--compare target.png] [--photo] [--seed 2]
+// bun run shot <map> [--spots name,...] [--out dir] [--gray] [--compare target.png] [--photo] [--seed 2] [--light name]
 // Opens a moba match on the shared dev server at 1600×900 and screenshots named spots (`start` plus the map tune's `shots`),
 // or with --photo freezes it, hides the HUD and shoots fixed camera poses (the tune's `photos`, else wide, rim and lane).
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
@@ -14,12 +14,13 @@ const { values, positionals } = parseArgs({
 		compare: { type: 'string' },
 		photo: { type: 'boolean', default: false },
 		seed: { type: 'string', default: '2' },
+		light: { type: 'string' },
 	},
 })
 const map = positionals[0]
 if (!map) {
 	console.error(
-		'usage: bun run shot <map> [--spots name,...] [--out dir] [--gray] [--compare target.png] [--photo] [--seed 2]',
+		'usage: bun run shot <map> [--spots name,...] [--out dir] [--gray] [--compare target.png] [--photo] [--seed 2] [--light name]',
 	)
 	process.exit(1)
 }
@@ -62,7 +63,7 @@ const evaluate = (js) => {
 
 const url = run('sh', [join(root, 'scripts/dev-agent.sh')])
 const topdown = values.photo && values.spots?.split(',').includes('topdown')
-const page = `${url}?mode=moba&play&map=${map}&hero=ibis&bots=easy&seed=${values.seed}${topdown ? '&fog=0' : ''}`
+const page = `${url}?mode=moba&play&map=${map}&hero=ibis&bots=easy&seed=${values.seed}${topdown ? '&fog=0' : ''}${values.light ? `&light=${encodeURIComponent(values.light)}` : ''}`
 
 function boot() {
 	browser('set', 'viewport', '1600', '900')
@@ -82,6 +83,12 @@ try {
 	} catch (error) {
 		console.error(`boot failed, retrying once: ${error.message}`)
 		boot()
+	}
+	if (values.light) {
+		const light = evaluate('dt.game.moba.setup.light')
+		if (values.light !== 'random' && light !== values.light)
+			throw new Error(`requested light ${values.light}, got ${light}`)
+		console.log(`light=${light}`)
 	}
 
 	// Camera poses from the court's half extents: high over the middle, low across the near rim, down the lane.

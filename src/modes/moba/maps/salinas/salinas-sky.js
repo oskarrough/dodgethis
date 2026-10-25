@@ -24,6 +24,41 @@ export function sunset({ s, own, forward, around, rand, shared }) {
 	}
 	glows(disc, sun.bloom)
 	own({ dispose: () => disc.clear() })
+	// A broad veil sits in the void with the sun, behind the cliff and court depth.
+	const veil = forward(
+		new THREE.Mesh(
+			own(new THREE.PlaneGeometry(sun.radius * sun.halo * 2, sun.radius * sun.halo * 2)),
+			own(
+				new THREE.ShaderMaterial({
+					transparent: true,
+					depthWrite: false,
+					uniforms: {
+						color: { value: paint(sun, 'color') },
+						haze: bind({}, (u) => {
+							u.value = sun.haze
+						}),
+						rays: bind({}, (u) => {
+							u.value = sun.rays
+						}),
+					},
+					vertexShader:
+						'varying vec2 at; void main(){at=uv*2.-1.;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+					fragmentShader: `varying vec2 at; uniform vec3 color; uniform float haze,rays;
+				void main(){float radius=length(at);float angle=atan(at.y,at.x);
+				float veil=exp(-radius*radius*5.)*haze;
+				float shaft=pow(max(0.,sin(angle*7.+.6)),6.)*rays*smoothstep(.25,.4,radius);
+				float fade=1.-smoothstep(.55,1.,radius);
+				gl_FragColor=vec4(color,(veil+shaft)*fade);}`,
+				}),
+			),
+		),
+		'salinas-sun-haze',
+	)
+	bind(veil.position, (v) => v.set(...sun.at))
+	veil.onBeforeRender = (_r, _s, camera) => {
+		veil.quaternion.copy(camera.quaternion)
+		veil.updateMatrixWorld()
+	}
 	const cloud = own(
 		new THREE.ShaderMaterial({
 			uniforms: {

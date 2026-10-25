@@ -25,7 +25,7 @@ import { facts as soundFacts } from './sound-table.js'
 import { createFeedback } from './feedback.js'
 import { createStamps } from './stamps.js'
 import { createMatchMenu } from './menu.js'
-import { parseMatchSetup } from './setup.js'
+import { parseMatchSetup, applyMatchLight } from './setup.js'
 import { createMatchDebug } from './debug.js'
 import { createFog } from './fog.js'
 import { restyle, styleKnobs } from './restyle.js'
@@ -128,6 +128,13 @@ export default function moba(app, map) {
 				...(options.setup ?? options),
 				shared: app.session.shared,
 			})
+			// Pick once before the map reads its tune; the same seed gives guests the same light.
+			if (!setup.seeded)
+				Object.assign(setup, { seed: (Math.random() * 2 ** 32) >>> 0, seeded: true })
+			if (!isLobby) {
+				setup.light = applyMatchLight(setup)
+				restyle()
+			}
 			const party = maps[setup.map].party
 			const kind = isLobby ? 'lobby' : setup.map
 			const match = matchRecipe(kind)
@@ -234,9 +241,6 @@ export default function moba(app, map) {
 			)
 			const cursor = createCursor(app.renderer.domElement)
 			const difficulty = setup.difficulty
-			// Without an explicit seed each match draws one, so bots and the enemy's random hero vary; copied links keep it.
-			if (!setup.seeded)
-				Object.assign(setup, { seed: (Math.random() * 2 ** 32) >>> 0, seeded: true })
 			setup.picks = {
 				...setup.picks,
 				[local]: {
@@ -907,6 +911,7 @@ export default function moba(app, map) {
 						? {
 								setup: {
 									map: setup.map,
+									light: setup.light,
 									difficulty: setup.difficulty,
 									seed: setup.seed,
 									seeded: true,

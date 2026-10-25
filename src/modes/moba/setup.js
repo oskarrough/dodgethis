@@ -1,6 +1,7 @@
 import { tune } from './tune.js'
 import { DEFAULT_MAP, playableMaps, maps } from './maps/all-maps.js'
 import { DEFAULT_HERO, HEROES, heroDefinition } from './heroes.js'
+import { botRandom } from './bots.js'
 
 // Maps that changed their id, so old links still land.
 const renamedMaps = { hollowMesa: 'altamesa' }
@@ -29,6 +30,8 @@ export function parseMatchSetup(query, options = {}, warn = console.warn) {
 	const seed = options.seed ?? query.get('seed')
 	const mapId = options.map ?? query.get('map')
 	const mapParam = renamedMaps[mapId] ?? mapId
+	const map = read('map', mapParam, DEFAULT_MAP, (v) => playableMaps.includes(v))
+	const lights = tune[map]?.lights ?? {}
 	const party = !!maps[mapParam]?.party
 	const playable = (id) =>
 		Object.hasOwn(HEROES, id) &&
@@ -56,7 +59,13 @@ export function parseMatchSetup(query, options = {}, warn = console.warn) {
 				[true, false, '1', '0', 'true', 'false'].includes(v),
 			),
 		),
-		map: read('map', mapParam, DEFAULT_MAP, (v) => playableMaps.includes(v)),
+		map,
+		light: read(
+			'light',
+			options.light ?? query.get('light'),
+			'random',
+			(v) => v === 'random' || Object.hasOwn(lights, v),
+		),
 		difficulty: read('bots', options.difficulty ?? query.get('bots'), 'easy', (v) =>
 			['easy', 'normal', 'hard'].includes(v),
 		),
@@ -76,6 +85,37 @@ export function parseMatchSetup(query, options = {}, warn = console.warn) {
 			),
 		),
 	}
+}
+
+const lightDefaults = new Map()
+
+// morning/dusk, night/moonrise, dawn/noon and sunset/blueHour are map-owned patches.
+// Restore the original sections first: a new match must not inherit yesterday's dusk.
+export function applyMatchLight({ map, light, seed }) {
+	const settings = tune[map]
+	const presets = settings?.lights
+	const names = Object.keys(presets ?? {})
+	if (!names.length) return 'random'
+	const name = Object.hasOwn(presets, light)
+		? light
+		: names[Math.floor(botRandom(seed, `${map}:light`)() * names.length)]
+	if (!lightDefaults.has(map)) {
+		const sections = new Set(Object.values(presets).flatMap(Object.keys))
+		lightDefaults.set(
+			map,
+			Object.fromEntries([...sections].map((key) => [key, structuredClone(settings[key])])),
+		)
+	}
+	// Preserve nested object identities: the live colour and shadow bindings retain them.
+	function merge(target, patch) {
+		for (const [key, value] of Object.entries(patch)) {
+			if (value && typeof value === 'object' && !Array.isArray(value)) merge(target[key], value)
+			else target[key] = structuredClone(value)
+		}
+	}
+	merge(settings, lightDefaults.get(map))
+	merge(settings, presets[name])
+	return name
 }
 
 export function wantsDirectPlay(query, warn = console.warn) {
@@ -162,6 +202,7 @@ export function matchLink(href, setup, botsOnly = false, training = setup.tryMod
 		mode: 'moba',
 		play: '',
 		map: setup.map,
+		light: setup.light ?? 'random',
 		bots: setup.difficulty,
 		hero: setup.heroId,
 		seed: setup.seed,

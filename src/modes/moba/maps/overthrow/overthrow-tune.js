@@ -152,6 +152,34 @@ export const overthrowTerrain = {
 // Geometry applies on restart; colours, haze and the sun are live style values.
 const overthrow = {
 	...structuredClone(overthrowTerrain),
+	lights: {
+		morning: {},
+		dusk: {
+			light: {
+				dir: [-0.88, 0.38, -0.28],
+				sun: '#ffe0b6',
+				shade: '#514669',
+				bandMix: [0.28, 0.34],
+				shadow: '#77627f',
+				shadowStrength: 0.34,
+				shadowLength: 0.9,
+			},
+			haze: { far: 155, max: 0.88 },
+			palette: { page: '#d5b9bf', scenery: '#c2aca5', leaf: '#999e67' },
+			colors: {
+				tarmac: '#e5ddc4',
+				stoneLit: '#aa969d',
+				stone: '#827084',
+				stoneShade: '#51465f',
+				haze: '#d5b9bf',
+				cloudLit: '#f3deca',
+				cloud: '#dcc4c1',
+				cloudShade: '#b5a7b7',
+				cloudDeep: '#8e8ba3',
+			},
+			sky: { colors: { stoneLit: '#b6a2b0', stone: '#9e8b9f', stoneShade: '#8e7f99' } },
+		},
+	},
 	scale: 1,
 	carving: {
 		blockWidth: 2.6,

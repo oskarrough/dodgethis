@@ -5,12 +5,13 @@ import { cliffPillar, chippedBlock } from '../../carve.js'
 import { paint } from '../../restyle.js'
 import { tune } from '../../tune.js'
 
-// Salt works sit wholly past the collision rim. Their crust, timber and iron each draw once.
-export function saltWorks({ own, forward, outline, rand }) {
+// Static salt works are batched past the collision rim; only the wheels turn separately.
+export function saltWorks({ own, forward, outline, rand, shared }) {
 	const s = tune.salinas
 	const w = s.workings,
 		parts = { courtShade: [], scenery: [], leaf: [], leafDeep: [] },
-		water = []
+		water = [],
+		rotors = []
 	const halfX = Math.max(...outline.map((p) => Math.abs(p.x)))
 	const halfZ = Math.max(...outline.map((p) => Math.abs(p.z)))
 	const put = (g, role, origin) => {
@@ -28,8 +29,26 @@ export function saltWorks({ own, forward, outline, rand }) {
 		g.translate(...from.add(to).multiplyScalar(0.5).toArray())
 		put(g, role, origin)
 	}
-	for (const [side, fraction, drop, size, pump, outset] of w.sites) {
-		const origin = [side * (halfX + size * 0.85 + outset), -drop, fraction * halfZ]
+	const sites = [...w.sites]
+	const cascade = w.cascade
+	for (const side of [-1, 1])
+		for (let tier = 0; tier < cascade.tiers; tier++)
+			for (let i = 0; i < cascade.perSide; i++)
+				sites.push([
+					side,
+					-0.84 + (i * 1.6) / Math.max(1, cascade.perSide - 1) + tier * 0.05,
+					10 + tier * cascade.step + rand() * 3,
+					cascade.radius[0] + rand() * (cascade.radius[1] - cascade.radius[0]),
+					0,
+					cascade.outset * (tier + 1),
+				])
+	for (const [side, fraction, drop, size, pump, outset] of sites) {
+		// Follow the cliff's outward flare; otherwise lower pans disappear inside its face.
+		const origin = [
+			side * (halfX + drop * s.cliff.flare + size * 0.85 + outset),
+			-drop,
+			fraction * halfZ,
+		]
 		put(cliffPillar(size, w.shelfDepth, s.rim.pillars, rand), 'courtShade', origin)
 		put(
 			new THREE.CylinderGeometry(size * 0.91, size * 0.94, 0.28, 7).translate(0, 0.06, 0),
@@ -137,6 +156,7 @@ export function saltWorks({ own, forward, outline, rand }) {
 			}
 		const wheel = [origin[0] + px, origin[1] + H, origin[2] + pz + 0.3]
 		put(new THREE.CylinderGeometry(0.23, 0.23, 0.28, 8).rotateX(Math.PI / 2), 'leafDeep', wheel)
+		const starts = { leaf: parts.leaf.length, leafDeep: parts.leafDeep.length }
 		for (let blade = 0; blade < w.blades; blade++) {
 			const angle = (blade * Math.PI * 2) / w.blades,
 				r = w.pumpRadius
@@ -159,6 +179,11 @@ export function saltWorks({ own, forward, outline, rand }) {
 				wheel,
 			)
 		}
+		for (const role of ['leaf', 'leafDeep']) {
+			const pieces = parts[role].splice(starts[role])
+			for (const g of pieces) g.translate(-wheel[0], -wheel[1], -wheel[2])
+			rotors.push({ pieces, role, wheel, phase: fraction * 3, speed: 0.85 + drop * 0.02 })
+		}
 	}
 	const batch = (list, mat, name, opaque) => {
 		if (!list.length) return
@@ -172,9 +197,18 @@ export function saltWorks({ own, forward, outline, rand }) {
 		for (const g of ready) g.dispose()
 		const mesh = forward(new THREE.Mesh(geometry, own(mat)), name)
 		if (opaque) mesh.layers.set(0)
+		return mesh
 	}
 	for (const [role, list] of Object.entries(parts))
 		batch(list, makeStyleMaterial(role), `salinas-works-${role}`, true)
+	for (const [i, rotor] of rotors.entries()) {
+		const mesh = batch(rotor.pieces, makeStyleMaterial(rotor.role), `salinas-wheel-${i}`, true)
+		mesh.position.set(...rotor.wheel)
+		mesh.onBeforeRender = () => {
+			mesh.rotation.z = rotor.phase + shared.uTime.value * w.turnSpeed * rotor.speed
+			mesh.updateMatrixWorld()
+		}
+	}
 	const brine = new THREE.ShaderMaterial({
 		uniforms: {
 			lit: { value: paint(w, 'brine') },

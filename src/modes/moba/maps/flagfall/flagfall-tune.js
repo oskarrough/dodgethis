@@ -2,6 +2,35 @@
 
 // Flagfall: two lanes on the shared court in the shallows. All geometry applies on restart.
 const flagfall = {
+	lights: {
+		night: {},
+		moonrise: {
+			light: {
+				dir: [-0.86, 0.35, -0.3],
+				sun: '#ddd1f3',
+				shade: '#343050',
+				bandMix: [0.16, 0.4],
+				shadow: '#51466f',
+				shadowStrength: 0.36,
+				shadowLength: 0.7,
+			},
+			haze: { far: 115, max: 0.9 },
+			palette: { page: '#353047', scenery: '#887da5', courtShade: '#514673' },
+			colors: {
+				tarmac: '#7d729f',
+				stoneLit: '#50466e',
+				stone: '#403659',
+				stoneShade: '#2d2847',
+				haze: '#48405c',
+				cloudLit: '#8b7d9f',
+				cloud: '#665c83',
+				cloudShade: '#484365',
+				cloudDeep: '#34324e',
+			},
+			moon: { at: [-80, -31, -12], size: 28, color: '#e2cde9', limb: '#f1ddea' },
+			sky: { isles: { haze: '#514761', shade: '#3c3753', stone: '#625873', lit: '#8c7e98' } },
+		},
+	},
 	name: 'Flagfall',
 	late: 360,
 	scale: 1, // one multiplier for every layout metre; applies on restart

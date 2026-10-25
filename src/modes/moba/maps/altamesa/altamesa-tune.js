@@ -3,6 +3,33 @@ export default {
 	// leads to the central court; the shade wing lies north (−z), the sun wing south (+z), and the
 	// Gnomon's stair east, behind the kiln block. Every place here is a placeholder.
 	altamesa: {
+		lights: {
+			dawn: {},
+			noon: {
+				light: {
+					dir: [-0.22, 0.96, -0.1],
+					sun: '#fff1d5',
+					shade: '#62596d',
+					bandMix: [0.18, 0.3],
+					shadow: '#8c7d91',
+					shadowStrength: 0.35,
+					shadowLength: 0.5,
+				},
+				haze: { far: 210, max: 0.65 },
+				palette: { page: '#dce0d7', scenery: '#d6c9b4', courtShade: '#aa8065' },
+				isle: {
+					tarmac: '#e6d7c5',
+					stoneLit: '#c6a383',
+					stone: '#a17f6b',
+					stoneShade: '#655765',
+					haze: '#dce0d7',
+					cloudLit: '#f0ede2',
+					cloud: '#d9dcd6',
+					cloudShade: '#b8bfca',
+					cloudDeep: '#8e9cae',
+				},
+			},
+		},
 		halfX: 48,
 		halfZ: 32,
 		thickness: 1,

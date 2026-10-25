@@ -1,5 +1,21 @@
 [
 	{
+		"at": "2026-10-25T09:31:53.000Z",
+		"title": "A second light for every map",
+		"ask": "Each map now has two times of day, picked per match or with ?light=: Overthrow morning or dusk, Flagfall night or moonrise, Altamesa dawn or noon, Salinas sunset or blue hour. Moonrise and blue hour land; Overthrow's dusk is too close to its morning and Altamesa's noon is washed out. Keep, and push those two further?",
+		"status": "To review",
+		"decision": "",
+		"media": [
+			"2026-10-25-match-lights/flagfall-moonrise.webp",
+			"2026-10-25-match-lights/salinas-blueHour.webp"
+		],
+		"links": [
+			"http://office-linux.heron-mermaid.ts.net:5173/?mode=moba&play&map=flagfall&light=moonrise"
+		],
+		"thread": "thr_wrz2sknwdm",
+		"page": "2026-10-25-match-lights/"
+	},
+	{
 		"at": "2026-10-25T08:46:40.000Z",
 		"title": "Heat map: Flagfall",
 		"ask": "Where bots stand, fight and die over 12 hard matches. 43% of the open ground is never stood on: which rooms are dead weight?",
