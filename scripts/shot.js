@@ -1,5 +1,6 @@
-// bun run shot <map> [--spots name,...] [--out dir] [--gray] [--compare target.png] [--seed 2]
-// Opens a moba match on the shared dev server at 1600×900 and screenshots named spots (`start` plus the map tune's `shots`).
+// bun run shot <map> [--spots name,...] [--out dir] [--gray] [--compare target.png] [--photo] [--seed 2]
+// Opens a moba match on the shared dev server at 1600×900 and screenshots named spots (`start` plus the map tune's `shots`),
+// or with --photo freezes it, hides the HUD and shoots fixed camera poses (the tune's `photos`, else wide, rim and lane).
 import { existsSync, mkdirSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { parseArgs } from 'node:util'
@@ -11,13 +12,14 @@ const { values, positionals } = parseArgs({
 		out: { type: 'string' },
 		gray: { type: 'boolean', default: false },
 		compare: { type: 'string' },
+		photo: { type: 'boolean', default: false },
 		seed: { type: 'string', default: '2' },
 	},
 })
 const map = positionals[0]
 if (!map) {
 	console.error(
-		'usage: bun run shot <map> [--spots name,...] [--out dir] [--gray] [--compare target.png] [--seed 2]',
+		'usage: bun run shot <map> [--spots name,...] [--out dir] [--gray] [--compare target.png] [--photo] [--seed 2]',
 	)
 	process.exit(1)
 }
@@ -29,9 +31,10 @@ if (values.compare && !existsSync(values.compare)) {
 
 const root = join(import.meta.dir, '..')
 const tuneFile = join(root, 'src/modes/moba/maps', map, `${map}-tune.js`)
-const shots = (await import(tuneFile).catch(() => ({}))).shots ?? {}
-const names = values.spots ? values.spots.split(',') : ['start', ...Object.keys(shots)]
-for (const name of names)
+const mapTune = await import(tuneFile).catch(() => ({}))
+const shots = mapTune.shots ?? {}
+let names = values.spots ? values.spots.split(',') : ['start', ...Object.keys(shots)]
+for (const name of values.photo ? [] : names)
 	if (name !== 'start' && !shots[name]) {
 		console.error(
 			`no spot "${name}" in ${map}-tune.js shots (${Object.keys(shots).join(', ') || 'none'})`,
@@ -80,8 +83,26 @@ try {
 		boot()
 	}
 
+	// Camera poses from the court's half extents: high over the middle, low across the near rim, down the lane.
+	const photos =
+		values.photo &&
+		(mapTune.photos ??
+			(({ halfX: x, halfZ: z }) => ({
+				wide: { eye: [0, x * 1.2, x], target: [0, 0, 0], fov: 40 },
+				rim: { eye: [-x * 0.35, 3, z + 5], target: [x * 0.15, 1, -z], fov: 55 },
+				lane: { eye: [-x - 6, 9, 0], target: [0, 0, 0], fov: 45 },
+			}))(evaluate('dt.game.moba.sim.bounds')))
+	if (photos) {
+		names = values.spots ? values.spots.split(',') : Object.keys(photos)
+		const missing = names.find((name) => !photos[name])
+		if (missing) throw new Error(`no photo "${missing}" (${Object.keys(photos).join(', ')})`)
+	}
+
 	for (const name of names) {
-		if (name !== 'start') {
+		if (photos) {
+			evaluate(`dt.photo(${JSON.stringify(photos[name])})`)
+			browser('wait', '600')
+		} else if (name !== 'start') {
 			const [x, z] = shots[name]
 			evaluate(`(() => {
 				const m = dt.game.moba, b = m.sim.heroes[0].body
@@ -90,17 +111,17 @@ try {
 			})()`)
 			browser('wait', '1200')
 		}
-		const file = join(out, `${name}.png`)
+		const file = join(out, `${photos ? 'photo-' : ''}${name}.png`)
 		browser('screenshot', file)
 		console.log(file)
 		if (values.gray) {
-			const gray = join(out, `${name}-gray.png`)
+			const gray = file.replace(/\.png$/, '-gray.png')
 			run('magick', [file, '-colorspace', 'Gray', gray])
 			console.log(gray)
 		}
 		// Target, frame and grey side by side at half size, so a judge needs one look.
 		if (values.compare) {
-			const compare = join(out, `${name}-compare.png`)
+			const compare = file.replace(/\.png$/, '-compare.png')
 			run('magick', [
 				resolve(values.compare),
 				file,

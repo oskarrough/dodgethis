@@ -19,6 +19,8 @@ const BUTTONS = {
 	right: 15,
 }
 
+import { createPhoto } from './photo.js'
+
 const frame = () => new Promise(requestAnimationFrame)
 // At least two frames, so one input phase is sure to see the key or button down; then `ms`,
 // then until `until()` is true. False if `until` was still false after ten seconds.
@@ -64,6 +66,7 @@ export function createProofApi(app, input) {
 	}
 	return {
 		screen,
+		photo: createPhoto(app),
 		device: () => input.activeDevice(),
 		get game() {
 			return app.debug.game
