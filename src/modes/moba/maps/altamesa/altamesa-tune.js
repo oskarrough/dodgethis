@@ -84,10 +84,10 @@ export default {
 		// the faces, tufts at the foot. Never more than `spill` m past a wall (applies on restart).
 		overgrowth: {
 			seed: 3,
-			cover: 0.7, // odds that a run along a wall's top is grown
-			run: [2, 6], // metres per run
+			cover: 0.24, // odds that a run along a wall's top is grown
+			run: [1.4, 3], // metres per run
 			step: [0.35, 0.7], // metres between clumps in a run
-			clump: [0.4, 0.8], // clump radius in metres
+			clump: [0.28, 0.52], // clump radius in metres
 			squash: 0.62,
 			hang: 0.6, // odds that a clump drops fronds down its face
 			drop: [0.3, 0.8], // how far down the face, as a share of the wall's height

@@ -263,7 +263,8 @@ export function buildMap(scene, world, RAPIER, kind = DEFAULT_MAP) {
 			)
 	}
 
-	for (const p of layout.pillars) {
+	views.pillars?.({ pillars: layout.pillars, m, print, material })
+	for (const p of views.pillars ? [] : layout.pillars) {
 		if (stoneCover) {
 			const c = tune.overthrowTerrain.stone
 			let y = 0

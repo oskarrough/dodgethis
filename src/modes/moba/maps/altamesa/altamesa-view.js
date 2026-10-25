@@ -6,6 +6,7 @@ import { overgrowth } from '../../overgrowth.js'
 import { createMapArt } from '../../map-art.js'
 export { scenery } from './altamesa-scenery.js'
 export { cover } from './altamesa-walls.js'
+export { pillars } from './altamesa-pillars.js'
 
 // The mesa top on its isle over the cloud, the court printed with a painted tile, dry growth
 // spilling over the walls, and a squat stone for each waystone. Bosses and packs bring their own bodies.

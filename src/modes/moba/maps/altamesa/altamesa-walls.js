@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { ConvexGeometry } from 'three/addons/geometries/ConvexGeometry.js'
 import { tune } from '../../tune.js'
+import { flower } from './altamesa-stone.js'
 
 // One sandstone draw and one moss draw for the whole map; print owns their disposal.
 export function cover({ boxes, m, print, material }) {
@@ -162,25 +163,7 @@ export function cover({ boxes, m, print, material }) {
 						),
 					)
 				}
-				for (let petal = 0; petal < c.petals; petal++) {
-					const angle = (petal * Math.PI * 2) / c.petals
-					const middle = (radius * (1 + c.flowerHeart)) / 2
-					const edge = Array.from({ length: c.petalSides }, (_, j) => {
-						const a = (j * Math.PI * 2) / c.petalSides
-						return [
-							Math.cos(a) * radius * c.petalWidth,
-							middle + Math.sin(a) * (radius - middle),
-							0,
-						]
-					})
-					const ridge = [0, middle, c.relief]
-					const vertices = []
-					for (let j = 0; j < edge.length; j++)
-						vertices.push(...edge[j], ...edge[(j + 1) % edge.length], ...ridge)
-					const geometry = new THREE.BufferGeometry()
-					geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3))
-					relief(geometry.rotateZ(angle))
-				}
+				relief(flower(radius, c.relief))
 				relief(
 					new THREE.CylinderGeometry(
 						radius * c.flowerHeart,
