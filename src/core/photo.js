@@ -1,5 +1,6 @@
 // Photo mode, for proofs and wallpapers: dt.photo({ eye, target, fov }) holds the simulation, hides every
 // layer over the canvas and holds the camera on that pose; dt.photo() lets the match go on as it was.
+// Without `eye` the camera stays where it is; `hud: true` keeps the HUD, so dt.photo({ hud: true }) only freezes.
 import { tune } from './tune.js'
 
 const STYLE = 'body[data-photo] > :not(canvas) { visibility: hidden !important; }'
@@ -20,12 +21,15 @@ export function createPhoto(app) {
 				Object.assign(document.createElement('style'), { id: 'photo-style', textContent: STYLE }),
 			)
 		const at = (p) => ({ x: p[0] ?? p.x, y: p[1] ?? p.y, z: p[2] ?? p.z })
-		const frame = { eye: at(pose.eye), target: at(pose.target), fov: pose.fov }
 		wasPaused = tune.physics.paused
 		tune.physics.paused = true
-		release = app.camera.frame(() => frame)
-		app.camera.update(0)
-		document.body.dataset.photo = ''
+		release = () => {}
+		if (pose.eye) {
+			const frame = { eye: at(pose.eye), target: at(pose.target), fov: pose.fov }
+			release = app.camera.frame(() => frame)
+			app.camera.update(0)
+		}
+		if (!pose.hud) document.body.dataset.photo = ''
 		return true
 	}
 	return photo
