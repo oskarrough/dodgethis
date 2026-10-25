@@ -161,3 +161,11 @@
 .moba-tally .meter-empty::before {
 	display: none;
 }
+
+/* Phones: stop short of the minimap (168 px wide, 14 px in from the right) and sit above the action bar. */
+@media (max-width: 720px) {
+	.moba-tally {
+		width: calc(100vw - 168px - 14px * 3);
+		bottom: 96px;
+	}
+}
