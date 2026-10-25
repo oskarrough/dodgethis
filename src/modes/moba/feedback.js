@@ -357,6 +357,15 @@ export function createFeedback({
 				return
 			}
 			case 'impact':
+				// A miss still lands. Hits already flash through their contact recipe.
+				if (ability && !fact.hit && !fact.periodic && look.juice.impact > 0)
+					view.effects.flare(fact.point, {
+						size: 1.2,
+						streak: 0,
+						life: 0.2,
+						...ability.stats?.impact?.flare,
+						opacity: Math.min(1, look.juice.impact),
+					})
 				juice.burst(
 					fact.point,
 					{ x: 0, y: 1, z: 0 },

@@ -211,23 +211,44 @@ export const FORWARD_LAYER = 1
 export const GLOW_LAYER = 2
 const glowMaterials = new Map()
 let glowTwins = 0 // live twins; the bloom pass is skipped while there are none
-// `glows(mesh, color)` gives each mesh under `object` a twin in the glow layer only, drawn in
-// `color`; the twin follows its mesh (same parent transform) and is disposed with the material cache.
-export function glows(object, color) {
-	const key = new THREE.Color(color).getHex()
-	let material = glowMaterials.get(key)
-	if (!material) {
-		material = new THREE.MeshBasicMaterial({ color: key, depthWrite: false })
-		glowMaterials.set(key, material)
-	}
+// A glow twin follows its source. Sprites retain their alpha mask and live opacity; a shader
+// source can supply a rim-only material. Clear the source's children before disposing it.
+// Supplied materials belong to the caller; sprite copies are released when their twin is removed.
+export function glows(object, color, { material: supplied } = {}) {
 	const meshes = []
-	object.traverse((o) => o.isMesh && !o.userData.glowTwin && meshes.push(o))
+	object.traverse((o) => (o.isMesh || o.isSprite) && !o.userData.glowTwin && meshes.push(o))
 	for (const mesh of meshes) {
-		const twin = new THREE.Mesh(mesh.geometry, material)
+		if (mesh.children.some((child) => child.userData.glowTwin)) continue
+		let material = supplied
+		if (!material && mesh.isSprite) {
+			material = mesh.material.clone()
+			material.color.set(color)
+		} else if (!material) {
+			const key = new THREE.Color(color).getHex()
+			material = glowMaterials.get(key)
+			if (!material) {
+				material = new THREE.MeshBasicMaterial({ color: key, depthWrite: false })
+				glowMaterials.set(key, material)
+			}
+		}
+		const twin = mesh.isSprite
+			? new THREE.Sprite(material)
+			: new THREE.Mesh(mesh.geometry, material)
+		if (mesh.isSprite) {
+			twin.center.copy(mesh.center)
+			if (!supplied)
+				twin.onBeforeRender = () => {
+					material.opacity = mesh.material.opacity
+					material.rotation = mesh.material.rotation
+				}
+		}
 		twin.userData.glowTwin = true
 		twin.layers.set(GLOW_LAYER)
 		twin.frustumCulled = false
-		twin.addEventListener('removed', () => glowTwins--)
+		twin.addEventListener('removed', () => {
+			glowTwins--
+			if (mesh.isSprite && !supplied) material.dispose()
+		})
 		glowTwins++
 		mesh.add(twin)
 	}

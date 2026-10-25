@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { glows } from './stylepass.js'
 
 // A tear in the air that shows another place, live and in parallax. The far view is drawn from
 // the viewing camera carried through the tear (place → exit) into a target the size of the
@@ -281,6 +282,27 @@ export function createPortal(renderer, options = {}) {
 		object.add(spill)
 	}
 	object.traverse((child) => child.layers.set(o.layer))
+	// Bloom only the ragged mouth. The far view and the ground spill must never become emitters.
+	const rimGlow = new THREE.ShaderMaterial({
+		uniforms,
+		vertexShader: hole.material.vertexShader,
+		fragmentShader: /* glsl */ `
+			${SHAPE}
+			varying vec2 vP;
+			void main() {
+				if (uOpen <= 0.0) discard;
+				float a = atan(vP.y, vP.x);
+				float d = length(vP) / edgeAt(a, uOpen);
+				float rim = exp(-abs(d - 1.0) * 32.0) * smoothstep(0.0, 0.2, uOpen);
+				if (rim < 0.004) discard;
+				gl_FragColor = vec4(tearColor(a) * 0.3, rim);
+				#include <colorspace_fragment>
+			}`,
+		side: THREE.DoubleSide,
+		transparent: true,
+		depthWrite: false,
+	})
+	glows(hole, null, { material: rimGlow })
 
 	// --- Animation ----------------------------------------------------------------------------
 
@@ -548,6 +570,8 @@ export function createPortal(renderer, options = {}) {
 	}
 
 	function dispose() {
+		hole.clear()
+		rimGlow.dispose()
 		object.removeFromParent()
 		object.traverse((child) => {
 			child.geometry?.dispose()

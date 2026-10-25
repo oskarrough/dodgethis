@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { FORWARD_LAYER } from '../../core/stylepass.js'
+import { FORWARD_LAYER, glows } from '../../core/stylepass.js'
 
 // The effects kit: short-lived world marks any view composes (ground ring, light column, shell, airbrushed flare, smear),
 // the shell and link helpers for marks a view keeps, and `createImpacts`, which turns an ability's
@@ -167,6 +167,7 @@ export function createEffects(parent) {
 				sprite.scale.setScalar(size * (0.5 + 0.5 * bloom) * (1 + 0.15 * k))
 				sprite.material.opacity = opacity * (k < 0.2 ? bloom : (1 - (k - 0.2) / 0.8) ** 2)
 			})
+			glows(body.mesh, new THREE.Color(color).multiplyScalar(0.35))
 			add(null, sprayMaterial(line, color), at, life * 0.7, (k, sprite) => {
 				sprite.position.y = y
 				sprite.scale.set(streak * (0.4 + 0.6 * easeOut(Math.min(1, k * 3))), size * 0.08, 1)
@@ -239,6 +240,7 @@ export function createEffects(parent) {
 				effect.step(k, effect.mesh)
 				if (k < 1) continue
 				parent.remove(effect.mesh)
+				effect.mesh.clear()
 				effect.mesh.material.dispose()
 				effect.owned?.dispose()
 				live.splice(i, 1)
@@ -247,6 +249,7 @@ export function createEffects(parent) {
 		reset() {
 			for (const effect of live) {
 				parent.remove(effect.mesh)
+				effect.mesh.clear()
 				effect.mesh.material.dispose()
 				effect.owned?.dispose()
 			}

@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js'
-import { FORWARD_LAYER, makeStyleMaterial } from '../../core/stylepass.js'
+import { FORWARD_LAYER, glows, makeStyleMaterial } from '../../core/stylepass.js'
 import { tune as coreTune } from '../../core/tune.js'
 import { tune } from './tune.js'
 import { glowTexture } from './isle.js'
@@ -327,6 +327,8 @@ export function buildMap(scene, world, RAPIER, kind = DEFAULT_MAP) {
 		for (const p of lanterns) {
 			const core = add(new THREE.SphereGeometry(g.lantern * scale, 12, 8), bulb, p.x, p.y, p.z)
 			core.layers.set(FORWARD_LAYER)
+			glows(core, new THREE.Color(g.color).multiplyScalar(0.45))
+			owned.push({ dispose: () => core.clear() })
 			const ring = new THREE.Sprite(halo)
 			ring.scale.setScalar(g.lantern * g.halo * scale * 2)
 			ring.position.copy(core.position)
