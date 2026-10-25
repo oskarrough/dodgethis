@@ -58,7 +58,7 @@ The art skill paints a 4×4 sheet on magenta; `bun run decal-sheet <in.png> publ
 
 ## Seeing it
 
-Use `bun run shot`, not a hand-driven browser: it boots, retries once, places spots and reports triangles and errors. `--light <name>` picks a time of day, `--photo` takes HUD-free wide, rim and lane views, `--compare` puts a target beside the frame, and `bun run heat <map>` shows where bots stand, fight and die. Open the files it prints; files freshly written to /tmp can race the image reader, so read the copy under the out dir.
+Use `bun run shot`, not a hand-driven browser: it boots, retries once, places spots and reports triangles and errors. `--hero <id>` picks your hero and `--lineup` stands the cast in a row. `--light <name>` picks a time of day, `--photo` takes HUD-free wide, rim and lane views, `--compare` puts a target beside the frame, and `bun run heat <map>` shows where bots stand, fight and die. Open the files it prints; files freshly written to /tmp can race the image reader, so read the copy under the out dir.
 
 ## Working with other agents
 
