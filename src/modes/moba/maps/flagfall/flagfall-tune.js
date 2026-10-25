@@ -8,7 +8,57 @@ const flagfall = {
 	// Flagfall by night: Overthrow's stone isle (isle.js) under a moon. These replace
 	// overthrowTerrain's keys of the same name; the rest (cliff, spires, stone) are shared.
 	// The surround is darkest, the court one clear step lighter, units and glows lightest.
-	palette: { page: 0x1b1733, courtShade: 0x6a6390, scenery: 0x8a83ab, court: 0x1d4541 },
+	palette: {
+		page: 0x1b1733,
+		courtShade: 0x454b73,
+		scenery: 0x777b9f,
+		court: 0x183a44,
+		leaf: 0x2c5660,
+		leafDeep: 0x9b6657,
+		bowl: 0xa473b8, // orchid petals; this map has no bowl props
+	},
+	carving: {
+		blockWidth: 2.2,
+		joint: 0.035,
+		bevel: 0.09,
+		chip: 0.12,
+		footHeight: 0.28,
+		capHeight: 0.34,
+		capStep: 0.12,
+		faceInset: 0.25,
+		panelBorder: 0.09,
+		panelGap: 0.06,
+		relief: 0.18,
+		petals: 8,
+		petalSides: 8,
+		petalWidth: 0.28,
+		flowerRadius: 0.48,
+		flowerHeart: 0.2,
+		mossChance: 0.25,
+		mossLobes: 5,
+		mossHeight: 0.08,
+		mossReach: 0.32,
+		mossEdge: 0.9,
+		mossDrop: 0.4,
+	},
+	lichen: { lobes: 4, squash: 0.16, chance: 0.6, radius: 0.14 },
+	floor: {
+		style: 'mapped',
+		image: '/tiles/flags-drawn.webp',
+		size: 5,
+		base: '#8783a5',
+		joint: '#716d92',
+		accent: '#716d92',
+		vary: 0.1,
+	},
+	look: {
+		contact: { reach: 1.2, strength: 0.2 },
+		shadow: 0.45,
+		clouds: { scale: 26, speed: 0.3, strength: 0.035 },
+		border: 0,
+		joints: 0.025,
+	},
+
 	colors: {
 		tarmac: '#6d6597', // the court: mid-violet, greyed so team blue stays its own hue
 		chalk: '#635b8b', // worn stone inlays, under 10% darker than the court
@@ -19,10 +69,10 @@ const flagfall = {
 		stoneShade: '#272146',
 		ink: '#1c2244',
 		haze: '#1d1839',
-		cloudLit: '#4c4280',
-		cloud: '#372f65',
-		cloudShade: '#2a2353',
-		cloudDeep: '#1f1940',
+		cloudLit: '#64629b',
+		cloud: '#424876',
+		cloudShade: '#30365e',
+		cloudDeep: '#222647',
 		water: '#fbf9ff',
 		waterShade: '#c6bfe4',
 	},
@@ -41,7 +91,7 @@ const flagfall = {
 	pool: { strength: 0.16, spread: 0.95 },
 	haze: { top: 1.2, bottom: 24, power: 0.8, max: 0.93, near: 14, far: 100 },
 	clouds: {
-		y: -34,
+		y: -90,
 		size: 900,
 		scale: 38,
 		drift: [0.3, 0.1],
@@ -55,34 +105,86 @@ const flagfall = {
 	// A big lilac moon low in the void past Blue's end, rising out of the cloud.
 	moon: {
 		at: [-80, -24, -12],
-		size: 24,
-		color: '#d4cbf2',
-		seas: '#bfb3e6',
-		ink: '#1c2244',
-		halo: '#b9a9ee',
-		haloScale: 1.5, // never bloom past its source
-		haloOpacity: 0.2,
+		size: 22,
+		color: '#cbb9e8',
+		seas: '#a18bc9',
+		limb: '#f4e7ed',
+		terminator: '#b39dd6',
+		bloom: 0x352c50,
+	},
+	sky: {
+		cloudScale: 20,
+		stars: { at: [-82, -27, -34], spread: [26, 14] },
+		galaxy: { at: [-82, -27, -34], size: [36, 10], roll: 0.5, color: '#b0a4d5', strength: 0.42 },
+		isles: {
+			anchors: [
+				[-87, -52, -52.5, 1.65],
+				[-103, -64, -76.5, 1.5],
+				[-81, -64, -38.5, 1.65],
+				[-79, -60, -18.5, 1.4],
+				[-87, -80, -30.5, 1.7],
+				[-121, -68, -88.5, 1.6],
+			],
+			count: 26,
+			near: 50,
+			far: 110,
+			radius: [1, 2],
+			drop: [45, 70],
+			haze: '#363c60',
+			shade: '#303952',
+			stone: '#505982',
+			lit: '#7279a1',
+			windows: '#eee1c7',
+			bloom: 0x6c5b39,
+		},
+	},
+	rim: {
+		density: 1,
+		ruins: 0.7,
+		trees: 0,
+		bones: 0,
+		reach: 0.4,
+		depth: 5,
+		ruinSize: 1.1,
+		ruinCourses: 2,
+		treeHeight: 1.8,
+		strata: { height: [3.5, 7], depth: [0.5, 1], tilt: 0.12, gaps: 0.2 },
+		tree: { lean: 0.65 },
+		lichen: { lobes: 4, squash: 0.16 },
 	},
 	// The night garden: deep-teal leaf fans and orchid bells over the rim, glowing cream.
 	garden: {
-		every: 1, // rim points between clumps
-		chance: 0.6,
+		density: 1, // fans per rim segment
+		chance: 0.55,
 		sink: 0.25, // m under the rim the clump roots
-		leaves: 5,
-		leaf: [1.1, 2.1], // length range, m
+		leaves: 7,
+		leaf: [0.9, 3.2], // length range, m
 		width: 0.42,
 		low: 0.35, // m the near rims' leaves may rise, so they never cover the court
 		tall: 1.4, // the far rim's
-		bells: 2,
-		bell: 0.32,
-		flower: '#b98fe0', // orchid: never coral, never a team hue
+		bells: 3,
+		bell: 0.55,
 		glow: '#fff2d6',
-		glowSize: 0.55,
-		glowHalo: 2,
-		glowHaloOpacity: 0.22,
+		bloom: 0x8a7448,
 	},
-	// Sparse cream specks drifting in the dark below the rim.
-	specks: { count: 160, near: 2, far: 60, y: [-30, -3], size: 0.5, color: '#f3ecff' },
+	// Poured enamel in small basins below the rim, mirrored at both ends.
+	ledgePools: {
+		sites: [
+			{ fraction: -0.55, drop: 5.5, radius: 2.2 },
+			{ fraction: 0.05, drop: 6, radius: 2.5 },
+			{ fraction: 0.62, drop: 5, radius: 2.1 },
+		], // rim fraction, drop and radius
+		reach: 5.2,
+		squash: 0.72,
+		depth: 4,
+		fill: 0.85,
+		segments: 40,
+		line: 0.022,
+		violet: '#363d65',
+		teal: '#355c68',
+		ripple: '#9cbfc7',
+	},
+	specks: { count: 90, near: 15, far: 80, y: [-30, -3], size: 0.18, color: '#f3ecff' },
 	// The shore kerb: low coursed stone on the safe rim, cut at the dunk gaps. Metres.
 	kerb: { height: 0.55, depth: 0.55, offset: 0.45, ends: 0.3 }, // offset: share of the margin
 	// Cream glows: lantern bulbs and halos. Small; never past their source.
@@ -196,6 +298,46 @@ export default { flagfall }
 
 // The dimension of each number above that its name alone does not settle (src/modes/moba/units.js).
 export const units = {
+	'flagfall.ledgePools': 'm',
+	'flagfall.ledgePools.sites.0.fraction': 'fraction',
+	'flagfall.ledgePools.sites.1.fraction': 'fraction',
+	'flagfall.ledgePools.sites.2.fraction': 'fraction',
+	'flagfall.ledgePools.segments': 'count',
+	'flagfall.ledgePools.fill': 'fraction',
+	'flagfall.ledgePools.squash': 'fraction',
+	'flagfall.moon.bloom': 'color',
+	'flagfall.sky': 'm',
+	'flagfall.sky.galaxy.roll': 'rad',
+	'flagfall.sky.galaxy.strength': 'fraction',
+	'flagfall.sky.isles.count': 'count',
+	'flagfall.sky.isles.bloom': 'color',
+
+	'flagfall.rim': 'm',
+	'flagfall.rim.density': 'count',
+	'flagfall.rim.ruins': 'fraction',
+	'flagfall.rim.trees': 'fraction',
+	'flagfall.rim.bones': 'fraction',
+	'flagfall.rim.ruinCourses': 'count',
+	'flagfall.rim.lichen.lobes': 'count',
+	'flagfall.garden.density': 'count',
+	'flagfall.garden.bloom': 'color',
+
+	'flagfall.carving': 'm',
+	'flagfall.carving.petals': 'count',
+	'flagfall.carving.petalSides': 'count',
+	'flagfall.carving.petalWidth': 'fraction',
+	'flagfall.carving.flowerRadius': 'fraction',
+	'flagfall.carving.flowerHeart': 'fraction',
+	'flagfall.carving.mossLobes': 'count',
+	'flagfall.carving.mossChance': 'fraction',
+	'flagfall.carving.mossEdge': 'fraction',
+	'flagfall.lichen.lobes': 'count',
+	'flagfall.floor.vary': 'fraction',
+	'flagfall.look': 'm',
+	'flagfall.look.clouds.speed': 'm/s',
+	'flagfall.look.clouds.strength': 'fraction',
+	'flagfall.look.contact.strength': 'fraction',
+	'flagfall.look.shadow': 'fraction',
 	jungle: 'm',
 	'hedge.runs': 'm',
 	'flagfall.gaps': 'm',

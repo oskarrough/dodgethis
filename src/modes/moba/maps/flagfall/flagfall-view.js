@@ -1,8 +1,10 @@
 import * as THREE from 'three'
 export { scenery } from './flagfall-scenery.js'
+export { cover, kerbs, corePlinth } from './flagfall-stone.js'
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'
 import { FORWARD_LAYER } from '../../../../core/stylepass.js'
 import { createMatchTerrain } from '../../match-terrain.js'
+import { createFloorPrint } from '../../floor-print.js'
 
 // Flagfall's ground, drawn by map.js in place of the lane's: two lanes of chalk and kerbs,
 // the wet slick, camp and flag marks, lantern posts. Returns the terrain it built.
@@ -127,11 +129,28 @@ export function ground(scope) {
 		mesh.layers.set(FORWARD_LAYER)
 		mesh.renderOrder = -3
 	}
-	const unterrain = createMatchTerrain(group, layout, terrain, chalkLayout, {
-		scenery: isleScenery,
-		footprints: s.print,
+	const unterrain = createMatchTerrain(
+		group,
+		layout,
+		{ ...terrain, spires: { ...terrain.spires, count: 0, arches: 0 } },
+		chalkLayout,
+		{
+			scenery: isleScenery,
+			footprints: s.print,
+			casts: { hedge: m.hedgeHeight, wall: m.wallHeight, pillar: m.pillarHeight + m.capHeight },
+		},
+	)
+	const floors = createFloorPrint({
+		layout,
+		terrain,
 		casts: { hedge: m.hedgeHeight, wall: m.wallHeight, pillar: m.pillarHeight + m.capHeight },
+		look: s.look,
+		own: (resource) => {
+			owned.push(resource)
+			return resource
+		},
 	})
+	group.add(floors.sheet({ ...s.floor, x: 0, z: 0 }, bounds.halfX, bounds.halfZ).mesh)
 	for (const side of [-1, 1]) {
 		const team = material(side < 0 ? 'teamA' : 'teamB', { flat: true })
 		const kerbs = []
@@ -169,5 +188,13 @@ export function ground(scope) {
 		)
 		lanterns.push({ x: post.x, y: (g.post + g.lantern) * scale, z: post.z })
 	}
-	return unterrain
+	const dispose = () => {
+		floors.dispose()
+		unterrain?.()
+	}
+	dispose.update = (dt) => {
+		floors.update(dt)
+		unterrain?.update?.(dt)
+	}
+	return dispose
 }

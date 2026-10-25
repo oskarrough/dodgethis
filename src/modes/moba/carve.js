@@ -168,9 +168,9 @@ export function carvedWalls(boxes, heightOf, c, rand) {
 							new THREE.IcosahedronGeometry(1, 1)
 								.scale(radius, c.mossHeight, radius)
 								.translate(
-									x + (Math.cos(angle) * reach) / 2,
+									x + (c.mossEdge ?? 0) * dx * 0.28 + (Math.cos(angle) * reach) / 2,
 									top,
-									z + (Math.sin(angle) * reach) / 2,
+									z + (c.mossEdge ?? 0) * dz * 0.28 + (Math.sin(angle) * reach) / 2,
 								),
 							moss,
 						)

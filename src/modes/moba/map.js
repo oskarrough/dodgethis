@@ -231,8 +231,12 @@ export function buildMap(scene, world, RAPIER, kind = DEFAULT_MAP) {
 	// A garden keeps its hedges green: dark-teal leaf banks on the hedge boxes.
 	const garden = map.kind === 'garden'
 	const leaf = garden ? material('court') : shade
-	views.cover?.({ boxes: layout.boxes, m, print, material })
-	for (const b of [...(views.cover ? [] : layout.boxes), ...kerbStones]) {
+	const uncovered = views.cover?.({ boxes: layout.boxes, m, print, material, layout })
+	views.kerbs?.({ boxes: kerbStones, m, print, material, layout })
+	for (const b of [
+		...(views.cover ? (uncovered ?? []) : layout.boxes),
+		...(views.kerbs ? [] : kerbStones),
+	]) {
 		if (stoneCover && !(garden && b.kind === 'hedge')) {
 			coursed(b)
 			continue
