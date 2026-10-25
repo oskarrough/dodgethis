@@ -38,6 +38,7 @@ A web game: two modes, dodgeball and a MOBA, on one engine.
 
 - No new unit tests; keep the suite green with `bun test <file>` while iterating and `bun run test` before pushing
 - Default: make the change and trust it
+- Fast checks over thorough ones: 10% of the time for 90% of the certainty, then move on; a later polish round is cheaper than perfect now. For anything visual, `bun run shot <map>` (with `--compare`, `--gray`, `--photo`, `--light`) is one look
 - Prove only when the brief asks or the user must judge a look or feel: one screenshot, clip or headless number, once, via `bun run review`
 - `pages/` is the pinboard (proofs, pitches, concept art, one folder each, listed in `pages/index.html`), served by the dev server; link there, never to thread storage
 
@@ -51,6 +52,8 @@ Everything we write for players or for each other (game text, tooltips, docs, pr
 - Leave out startup and AI vocabulary: "seamless", "unlock", "elevate", "core loop", "delightful", "game-changer", "it's not X, it's Y"
 
 ## Coordinating
+
+- Running several threads at once: read the `orchestrate` skill (`.agents/skills/orchestrate/`). Making or polishing a map: the `map` skill. Any image: the `art` skill
 
 - The coordinator briefs (goal, done means, owned files; a proof only when Oskar must judge a look or feel), reviews with the reverse model, owns `pages/items.json` and this file. Briefs never ask for replay sweeps, probes or proof pages unless Oskar does (2026-10-22)
 - The user owns the look; questions that can wait go to the inbox

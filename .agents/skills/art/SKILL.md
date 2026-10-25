@@ -37,6 +37,8 @@ Pass `--ref` once per reference image. Name what to take from each one in the br
 
 Painting threads (Codex) make the images; code threads ask one by `bb thread tell` and wait. Never invent another provider.
 
+**Heroes.** Before a hero is painted or modelled, its row in docs/heroes.md's silhouettes table names its shape from above, its one prop and its accent part, and no two rows share a shape or prop. The cast sheet once drew Salvia as a copy of Mandador's board because nothing said otherwise. Paint the whole cast on one sheet at match size, so twins show up side by side, and keep the family mark: a dark brow band with small cream eyes, chipped edges, one hard angle each.
+
 ## Check before you show it
 
 - Every saturated patch is team red, team blue or Ball gold; scenery stays in its map's roles.

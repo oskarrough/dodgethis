@@ -51,7 +51,14 @@ The art skill paints a 4×4 sheet on magenta; `bun run decal-sheet <in.png> publ
 - Pale on pale: court, walls and plinth in one value. Walls a step darker, tops lit, court lightest.
 - Repeating patterns: the same moss on every block. Randomize and skip most.
 - Decals or inlays that read as telegraphs or outshine a red ring.
-- A triangle blowout from hidden detail (Flagfall's kerb was 195k). Cut what the match camera can't see.
+- A triangle blowout from hidden detail (Flagfall's kerb was 195k, Altamesa's rim moss 92k). Cut what the match camera can't see.
+- Fog of war or another overlay greying the surround. If the surround looks washed out, check overlays before retuning the haze.
+- A second light that's only a tint of the first. A new time of day changes sun angle, shadow length, the shade band and the sky; check it with `--light` and `--compare` against its own target.
+- Scenery near team red, blue or Ball gold (brine pans, flowers, glows). Pull it toward coral, apricot, sage or cream.
+
+## Seeing it
+
+Use `bun run shot`, not a hand-driven browser: it boots, retries once, places spots and reports triangles and errors. `--light <name>` picks a time of day, `--photo` takes HUD-free wide, rim and lane views, `--compare` puts a target beside the frame, and `bun run heat <map>` shows where bots stand, fight and die. Open the files it prints; files freshly written to /tmp can race the image reader, so read the copy under the out dir.
 
 ## Working with other agents
 
