@@ -3,10 +3,10 @@
 // find, actions to run) and pins values as rows whose input fits the unit: a strip with a looping
 // playhead for a duration, a speedometer for a speed, a fan for an angle, − and + for a count,
 // a switch, a few choices side by side. ?knobs=lob,fog pins from the address. "copy" puts changed values
-// on the clipboard as JSON; "share" opens a GitHub issue so a maintainer can make them the default.
+// on the clipboard as JSON, "copy as tune" as a snippet for the map's tune file; "share" opens a GitHub issue so a maintainer can make them the default.
 // Values come from the registry: every tune value, plus hand-made controls (src/core/registry.js).
 import './tuner.css'
-import { folderOf, shareIssue } from './tuner-share.js'
+import { folderOf, shareIssue, tuneSnippet } from './tuner-share.js'
 import { units } from './units.js'
 
 const STORE = 'dt-tuner'
@@ -59,6 +59,7 @@ export function createTuner(source) {
 		<p class="tuner-note"></p><footer class="tuner-foot">
 		<button data-act="reset" title="put every changed value back">reset all</button>
 		<button data-act="copy" title="copy changed values as JSON, to paste into a GitHub issue">copy</button>
+		<button data-act="tune" title="copy changed values as a snippet for this map's tune file">copy as tune</button>
 		<button data-act="share" title="open a GitHub issue with what you changed">share</button>
 		<small>\` hides</small></footer>`
 	document.body.append(root)
@@ -328,6 +329,14 @@ export function createTuner(source) {
 			console.info('[tuner]', text)
 			e.target.textContent = Object.keys(state.values).length ? 'copied' : 'no changes'
 			setTimeout(() => (e.target.textContent = 'copy'), 1200)
+		}
+		if (act === 'tune') {
+			const changes = collectChanges()
+			const text = tuneSnippet(changes, new URLSearchParams(location.search).get('map'))
+			await navigator.clipboard?.writeText(text).catch(() => {})
+			console.info('[tuner]', text)
+			e.target.textContent = changes.length ? 'copied' : 'no changes'
+			setTimeout(() => (e.target.textContent = 'copy as tune'), 1200)
 		}
 		if (act === 'share') {
 			const changes = collectChanges()

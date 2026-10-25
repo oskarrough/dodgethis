@@ -1,6 +1,6 @@
-// bun run shot <map> [--spots name,...] [--out dir] [--gray] [--seed 2]
+// bun run shot <map> [--spots name,...] [--out dir] [--gray] [--compare target.png] [--seed 2]
 // Opens a moba match on the shared dev server at 1600×900 and screenshots named spots (`start` plus the map tune's `shots`).
-import { mkdirSync } from 'node:fs'
+import { existsSync, mkdirSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { parseArgs } from 'node:util'
 
@@ -10,12 +10,20 @@ const { values, positionals } = parseArgs({
 		spots: { type: 'string' },
 		out: { type: 'string' },
 		gray: { type: 'boolean', default: false },
+		compare: { type: 'string' },
 		seed: { type: 'string', default: '2' },
 	},
 })
 const map = positionals[0]
 if (!map) {
-	console.error('usage: bun run shot <map> [--spots name,...] [--out dir] [--gray] [--seed 2]')
+	console.error(
+		'usage: bun run shot <map> [--spots name,...] [--out dir] [--gray] [--compare target.png] [--seed 2]',
+	)
+	process.exit(1)
+}
+
+if (values.compare && !existsSync(values.compare)) {
+	console.error(`no target image at ${values.compare}`)
 	process.exit(1)
 }
 
@@ -89,6 +97,28 @@ try {
 			const gray = join(out, `${name}-gray.png`)
 			run('magick', [file, '-colorspace', 'Gray', gray])
 			console.log(gray)
+		}
+		// Target, frame and grey side by side at half size, so a judge needs one look.
+		if (values.compare) {
+			const compare = join(out, `${name}-compare.png`)
+			run('magick', [
+				resolve(values.compare),
+				file,
+				'(',
+				file,
+				'-colorspace',
+				'Gray',
+				')',
+				'-resize',
+				'800x450^',
+				'-gravity',
+				'center',
+				'-extent',
+				'800x450',
+				'+append',
+				compare,
+			])
+			console.log(compare)
 		}
 	}
 
