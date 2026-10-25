@@ -506,7 +506,6 @@ export const look = {
 		vaultSquash: 0.16,
 		rainSquash: -0.16,
 		flash: 0.07,
-		hitstop: 0.065, // your own takedowns only; ignored when shared
 		shakeTaken: 0.15,
 		shakeRain: 0.12, // your rain landing on someone
 		rain: { count: 36, speed: 4.5, life: 0.45, size: 0.12 }, // the landing, not the cast

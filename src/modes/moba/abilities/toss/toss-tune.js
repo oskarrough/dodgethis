@@ -13,7 +13,6 @@ export default {
 	feedback: {
 		shotKick: 0.35,
 		hitKick: 0.65,
-		hitstop: 0.025, // Hero contact only; presentation slowdown, ignored in shared sessions.
 	},
 }
 

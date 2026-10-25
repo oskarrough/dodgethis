@@ -35,8 +35,7 @@ export function createFeedback({
 		hitmarker.classList.add(kind)
 	}
 
-	// Your own takedowns get a short hitstop; the core ignores it when the session is shared.
-	let stop = 0
+	// A goal freezes the clock briefly; the core ignores it when the session is shared.
 	let freeze = 0
 	const later = [] // { left, run }: presentation timed to an animation, like a splash on landing
 	function beat(dt) {
@@ -45,9 +44,7 @@ export function createFeedback({
 			if ((later[i].left -= elapsed) <= 0) later.splice(i, 1)[0].run()
 		const frozen = Math.min(freeze, elapsed)
 		freeze = Math.max(0, freeze - elapsed)
-		const slowed = Math.min(stop, elapsed - frozen)
-		stop = Math.max(0, stop - (elapsed - frozen))
-		return elapsed > 0 ? 1 - (frozen + slowed * 0.9) / elapsed : 1
+		return elapsed > 0 ? 1 - frozen / elapsed : 1
 	}
 
 	const unitOf = (id) =>
@@ -421,7 +418,6 @@ export function createFeedback({
 				)
 				if (mine && punch && fact.damage > 0 && sim.heroes.includes(unit)) {
 					camera.kick(punch.hitKick)
-					stop = Math.max(stop, punch.hitstop)
 				}
 				if (mine && fact.crit) camera.shake(look.juice.shakeTaken)
 				if (onMe) {
@@ -500,9 +496,8 @@ export function createFeedback({
 					camera.shake(look.juice.shakeTakedown)
 					input.rumble(0.35, 0.6, 85)
 				}
-				// Your takedown: hitstop now, then the camera kicks when the stamp lands. No shake.
+				// Your takedown: the impact frame prints, then the camera kicks when the stamp lands. No shake.
 				if (mine && !onMe) {
-					stop = look.juice.hitstop
 					if (look.juice.impact > 0) camera.impactFrame?.(look.juice.takedownFrame)
 					hitmark('kill', fact.point)
 					input.rumble(0.35, 0.6, 85)
@@ -623,7 +618,6 @@ export function createFeedback({
 		reset() {
 			for (const hero of sim.heroes) hero.body.resetAbilityPose?.()
 			for (const dummy of sim.dummies) dummy.body.resetAbilityPose?.()
-			stop = 0
 			freeze = 0
 			later.length = 0
 			aggroPingTick = -1
