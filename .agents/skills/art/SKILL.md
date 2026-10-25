@@ -29,6 +29,14 @@ Pass `--ref` once per reference image. Name what to take from each one in the br
 - **Anywhere with `OPENAI_API_KEY`**, add `--generate` and set `ART_MODEL` to the image model's id. The script calls the images API and saves `1.png`, `2.png` … beside the prompt.
 - **Otherwise** hand `prompt.md` and the refs to Oskar or a Codex thread; never invent another provider.
 
+## Two recipes that worked (2026-10-25)
+
+**Target frame (a paintover).** Image 1 is a real screenshot from `bun run shot <map> --spots start`. Attach the map's references and an approved target from another map as the style anchor (`pages/art/*-targets/`). Keep exactly: camera, framing and layout (walls and pillars are colliders), every unit's place, size, silhouette, team colour and navy outline, the HUD, and telegraphs as the loudest marks. Change freely: floor material, walls, everything past the rim, and the light. Ask for two takes, one close and one bold, at 1600×900, plus `notes.md` with one line per take and a build order on our kit. Save in `pages/art/<map>-targets/` with `prompt.md`.
+
+**Decal sheet.** A 2048×2048 sheet, 4×4 cells of 512 px, one decal per cell, centred, seen straight down, flat light, on pure magenta `#ff00ff`, with no magenta anywhere else. Drawn, like `public/tiles/flags-drawn.webp`: flat colour, a sparing thin navy line, a soft wash, soft fading edges. Low contrast: nothing as dark as navy in large areas, nothing red or gold, no text, no rings of dots and no tracks or arrows, which read as telegraphs. List the sixteen cells in the brief. Then run `bun run decal-sheet <in.png> public/art/<map>-decals.webp`.
+
+Painting threads (Codex) make the images; code threads ask one by `bb thread tell` and wait. Never invent another provider.
+
 ## Check before you show it
 
 - Every saturated patch is team red, team blue or Ball gold; scenery stays in its map's roles.
