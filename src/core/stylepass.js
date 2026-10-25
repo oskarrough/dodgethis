@@ -217,7 +217,7 @@ export function glows(object, color) {
 	const key = new THREE.Color(color).getHex()
 	let material = glowMaterials.get(key)
 	if (!material) {
-		material = new THREE.MeshBasicMaterial({ color: key, depthTest: false, depthWrite: false })
+		material = new THREE.MeshBasicMaterial({ color: key, depthWrite: false })
 		glowMaterials.set(key, material)
 	}
 	const meshes = []
@@ -317,6 +317,12 @@ export function createStylePass(canvas) {
 		stencilBuffer: false,
 		generateMipmaps: false,
 	}
+	// The source pass shares the opaque depth, so a glow behind a wall stays hidden.
+	const glowSource = new THREE.WebGLRenderTarget(2, 2, {
+		...glowOpts,
+		depthTexture,
+		depthBuffer: true,
+	})
 	const glowA = new THREE.WebGLRenderTarget(2, 2, glowOpts)
 	const glowB = new THREE.WebGLRenderTarget(2, 2, glowOpts)
 	const blur = new THREE.ShaderMaterial({
@@ -381,6 +387,7 @@ export function createStylePass(canvas) {
 		const rh = Math.max(2, Math.floor(h * pixelRatio))
 		data.setSize(rw, rh)
 		composed.setSize(rw, rh)
+		glowSource.setSize(rw, rh)
 		glowSize.set(Math.max(2, Math.floor(rw / 4)), Math.max(2, Math.floor(rh / 4)))
 		glowA.setSize(glowSize.x, glowSize.y)
 		glowB.setSize(glowSize.x, glowSize.y)
@@ -397,6 +404,9 @@ export function createStylePass(canvas) {
 		post.uniforms.uSunTint.value.set(light.sun ?? PALETTE.cream)
 		post.uniforms.uShadeTint.value.set(light.shade ?? PALETTE.ink)
 		post.uniforms.uBandMix.value.set(...(light.bandMix ?? [0.32, 0.18]))
+		// `glow` is optional: { strength, radius } for the bloom, per map.
+		glow.strength = worldColors.glow?.strength ?? 1
+		glow.radius = worldColors.glow?.radius ?? 1
 	}
 
 	// `target` (optional) takes the styled frame still linear, for a view drawn inside the next frame (a portal's far side).
@@ -434,14 +444,14 @@ export function createStylePass(canvas) {
 		blit.uniforms.uGlow.value = 0
 		if (glow.on && glowTwins > 0 && post.uniforms.uImpact.value === 0) {
 			camera.layers.set(GLOW_LAYER)
-			renderer.setRenderTarget(glowA)
+			renderer.setRenderTarget(glowSource)
 			renderer.setClearColor(0x000000, 0)
 			renderer.clear(true, false, false)
 			renderer.render(scene, camera)
 			camera.layers.set(OPAQUE_LAYER)
 			for (let pass = 0; pass < 2; pass++)
 				for (const [from, to, x, y] of [
-					[glowA, glowB, 1, 0],
+					[pass ? glowA : glowSource, glowB, 1, 0],
 					[glowB, glowA, 0, 1],
 				]) {
 					blur.uniforms.tImage.value = from.texture
@@ -471,6 +481,7 @@ export function createStylePass(canvas) {
 	function dispose() {
 		data.dispose()
 		composed.dispose()
+		glowSource.dispose()
 		glowA.dispose()
 		glowB.dispose()
 		blur.dispose()

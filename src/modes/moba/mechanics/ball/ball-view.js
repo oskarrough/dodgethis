@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { makeStyleMaterial } from '../../../../core/stylepass.js'
+import { glows, makeStyleMaterial } from '../../../../core/stylepass.js'
 import { STEP } from '../../../../core/app.js'
 import { tune } from '../../tune.js'
 import { look } from '../../look.js'
@@ -37,7 +37,10 @@ export function createBallView(scene, { rng = Math.random } = {}) {
 	const channel = ring(v.channelRadius, v.fillY, accent)
 	const ball = new THREE.Group()
 	root.add(ball)
-	mesh(new THREE.SphereGeometry(v.radius, v.segments, v.segments / 2), cream, ball)
+	glows(
+		mesh(new THREE.SphereGeometry(v.radius, v.segments, v.segments / 2), cream, ball),
+		look.glow.ball,
+	)
 	for (const rotation of [0, Math.PI / 2]) {
 		const seam = mesh(new THREE.TorusGeometry(v.radius, v.seamWidth, 8, v.segments), ink, ball)
 		seam.rotation.y = rotation

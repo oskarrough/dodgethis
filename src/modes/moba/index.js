@@ -183,7 +183,7 @@ export default function moba(app, map) {
 				}
 			}
 			if (!options.handoff && !options.sharedLobby) departed.clear()
-			app.setPalette(palette)
+			app.setPalette({ ...palette, glow: look.glow })
 			document.documentElement.style.removeProperty('--page-bg')
 			// The lobby plays the main theme; a descent keeps the wind and starts the map's score on landing.
 			audio.setMatchMusic(isLobby ? null : maps[setup.map].music)
@@ -429,7 +429,7 @@ export default function moba(app, map) {
 				const repaint = () => {
 					Object.assign(palette, maps[kind].palette())
 					restyle()
-					app.setPalette(palette)
+					app.setPalette({ ...palette, glow: look.glow })
 				}
 				for (const [section, add] of Object.entries(styleKnobs))
 					if (debugTune.values[section])

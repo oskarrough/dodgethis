@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { FORWARD_LAYER, makeStyleMaterial } from '../../core/stylepass.js'
+import { FORWARD_LAYER, glows, makeStyleMaterial } from '../../core/stylepass.js'
 import { STEP } from '../../core/app.js'
 import { tune } from './tune.js'
 import { look } from './look.js'
@@ -8,7 +8,8 @@ import { hologramMaterial } from './hologram.js'
 
 // `layout.structureStyle === 'stone'` (both isles; `layout.light` picks sun or moon) builds towers and the core in stone
 // with team colour only on banners and crystals, and prints each one's shadow on the court.
-export function createLaneView(scene, smooth = null, layout = null) {
+// `mapView` (optional) is the map's view module; its `corePlinth` may dress the stone core's plinth.
+export function createLaneView(scene, smooth = null, layout = null, mapView = null) {
 	const bodies = new Set()
 	const stone = layout?.structureStyle === 'stone'
 	function makeBody(x, z, team, kind) {
@@ -41,6 +42,7 @@ export function createLaneView(scene, smooth = null, layout = null) {
 		let float = null
 		const cracks = []
 		let shadow = null
+		const glowColour = team === 'A' ? look.glow.crystalA : team === 'B' ? look.glow.crystalB : null
 		let laser = null
 		if (kind === 'laser') {
 			// Two stone posts with team emitters, a flickering hologram sheet strung between them.
@@ -147,6 +149,7 @@ export function createLaneView(scene, smooth = null, layout = null) {
 						y += dv
 					}
 				}
+				mapView?.corePlinth?.({ radius, base, stone: s, part, material })
 				// The crystal floats over the plinth: a lean, unequal halves, every facet a little off.
 				const width = radius * v.coreWidth
 				const gem = new THREE.OctahedronGeometry(width)
@@ -462,6 +465,8 @@ export function createLaneView(scene, smooth = null, layout = null) {
 			helpTether.visible = false
 			scene.add(helpTether)
 		}
+		// The team crystal (core, tower tip) carries the only team-hued glow.
+		if (crystal && glowColour !== null) glows(crystal, glowColour)
 		const body = {
 			position: pose.position,
 			mesh,

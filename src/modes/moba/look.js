@@ -55,6 +55,16 @@ export const look = {
 		font: 12,
 		tickMinGap: 4,
 	},
+	// Bloom (core/stylepass.js `glows`): the colour each light source adds over the frame,
+	// already dimmed; the pass blurs it at quarter size. Team crystals glow in their own hue,
+	// the only scenery-sized glow allowed one (look.md, Structures).
+	glow: {
+		strength: 1,
+		radius: 1.6,
+		crystalA: 0x3f8fd0,
+		crystalB: 0xc84a4a,
+		ball: 0xb89a40,
+	},
 	laneView: {
 		// Overthrow's stone structures (lane-view.js); metres from the structure's foot.
 		stone: {

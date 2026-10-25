@@ -1,5 +1,6 @@
 import { createLaneView } from './lane-view.js'
 import mechanicViews from './mechanics/all-mechanic-views.js'
+import mapViews from './maps/all-map-views.js'
 import { tune } from './tune.js'
 
 // Where map mechanics plug into the sim, in two passes. The ground comes before any body: the lane's
@@ -15,7 +16,9 @@ export function layMechanicGround({
 	replan,
 }) {
 	const laneMechanic = mechanics.find((mechanic) => mechanic.lane)?.lane
-	const laneView = laneMechanic ? createLaneView(scene, smooth, layout) : null
+	const laneView = laneMechanic
+		? createLaneView(scene, smooth, layout, mapViews[layout?.bounds?.id])
+		: null
 	// A tower's height is its kind's; any other post (a dungeon door) carries its own.
 	const heightOf = (o) => o.height ?? tune[o.kind].height
 	const towerObstacles = mechanics.flatMap((mechanic) => mechanic.obstacles?.(layout) ?? [])
