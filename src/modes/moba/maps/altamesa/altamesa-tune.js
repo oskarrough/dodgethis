@@ -76,7 +76,19 @@ export default {
 		// Painted images from public/art/altamesa/ (map-art.js): inlays on the court, a face over
 		// every wall, a plate under the isle. Empty until Oskar's paintings land (applies on restart).
 		art: {
-			inlays: [], // { image, x, z, size, turn (deg), round, opacity }
+			inlays: [
+				// Gnomon's sundial, set into the boss arena at (38, 0). Kept quiet so a red tell still
+				// reads loudest on the court.
+				{
+					image: '/art/altamesa/gnomon-sundial.webp',
+					x: 38,
+					z: 0,
+					size: 12,
+					turn: 0,
+					round: true,
+					opacity: 0.6,
+				},
+			], // { image, x, z, size, turn (deg), round, opacity }
 			walls: null, // { image, size (m per repeat), strength, tint }
 			plate: null, // { image, size (m), fade, haze }
 		},
