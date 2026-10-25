@@ -558,7 +558,7 @@ export default function moba(app, map) {
 				ready: options.ready,
 				clearCamera: cameraControls.clear,
 			})
-			run.clock.scale(feedback.beat)
+			run.clock.scale(feedback.beat) // frame timer for `later`; always 1
 			run.intents.suspend(() => coreTune.physics.paused)
 			run.input.stickAim((dir, magnitude, slot) =>
 				lobby && input.pad()?.buttons[3]
