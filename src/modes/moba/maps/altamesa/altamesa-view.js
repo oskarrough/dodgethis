@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import { tune } from '../../tune.js'
 import { createMatchTerrain } from '../../match-terrain.js'
 import { createFloorPrint } from '../../floor-print.js'
+import { createFloorDecals } from '../../floor-decals.js'
 import { overgrowth } from '../../overgrowth.js'
 import { createMapArt } from '../../map-art.js'
 export { scenery } from './altamesa-scenery.js'
@@ -33,6 +34,8 @@ export function ground(scope) {
 	}
 	const floors = createFloorPrint({ layout, terrain: desert, casts, look: s.look, own })
 	group.add(floors.sheet({ ...s.floor, x: 0, z: 0 }, s.halfX, s.halfZ).mesh)
+	const decals = createFloorDecals({ decals: s.decals, layout, groundY: desert.groundY, own })
+	if (decals) group.add(decals)
 	const growth = overgrowth(
 		layout.boxes,
 		(b) => (b.kind === 'hedge' ? m.hedgeHeight : m.wallHeight),

@@ -51,6 +51,18 @@ const flagfall = {
 		accent: '#716d92',
 		vary: 0.1,
 	},
+	// Painted decals on the court (floor-decals.js): moss, petals, cracks, moon inlays.
+	decals: {
+		image: '/art/flagfall-decals.webp',
+		grid: 4,
+		count: 160,
+		size: [1.8, 4.2],
+		strength: 0.75,
+		mute: 0.35,
+		seed: 7,
+		clear: 0.5,
+		skip: [12, 14], // the dotted ring and the tracks read as telegraphs and arrows
+	},
 	look: {
 		contact: { reach: 1.2, strength: 0.2 },
 		shadow: 0.45,
@@ -333,6 +345,14 @@ export const units = {
 	'flagfall.carving.mossEdge': 'fraction',
 	'flagfall.lichen.lobes': 'count',
 	'flagfall.floor.vary': 'fraction',
+	'flagfall.decals.strength': 'fraction',
+	'flagfall.decals.mute': 'fraction',
+	'flagfall.decals.count': 'count',
+	'flagfall.decals.grid': 'count',
+	'flagfall.decals.seed': 'count',
+	'flagfall.decals.skip': 'count',
+	'flagfall.decals.size': 'm',
+	'flagfall.decals.clear': 'm',
 	'flagfall.look': 'm',
 	'flagfall.look.clouds.speed': 'm/s',
 	'flagfall.look.clouds.strength': 'fraction',

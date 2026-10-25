@@ -154,6 +154,18 @@ export default {
 			accent: '#e0c2ab',
 			vary: 0.14, // how much of the drawing survives the lift
 		},
+		// Painted decals on the court (floor-decals.js): a 4×4 sheet with alpha.
+		decals: {
+			image: '/art/altamesa-decals.webp',
+			grid: 4,
+			count: 110,
+			size: [1.6, 4],
+			strength: 0.9,
+			mute: 0.3,
+			skip: [12, 14], // the dotted ring and the tracks read as telegraphs and arrows
+			seed: 11,
+			clear: 0.5,
+		},
 		look: {
 			contact: { reach: 1.2, strength: 0.3 },
 			shadow: 0.55,
@@ -223,6 +235,12 @@ export const units = {
 	'altamesa.look.clouds.speed': 'm/s',
 	'altamesa.look.clouds.strength': 'fraction',
 	'altamesa.floor.vary': 'fraction',
+	'altamesa.decals.strength': 'fraction',
+	'altamesa.decals.mute': 'fraction',
+	'altamesa.decals.count': 'count',
+	'altamesa.decals.grid': 'count',
+	'altamesa.decals.seed': 'count',
+	'altamesa.decals.skip': 'count',
 	'altamesa.overgrowth.seed': 'count',
 	'altamesa.overgrowth.cover': 'fraction',
 	'altamesa.overgrowth.squash': 'fraction',

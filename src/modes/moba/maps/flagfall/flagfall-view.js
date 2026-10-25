@@ -5,6 +5,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'
 import { FORWARD_LAYER } from '../../../../core/stylepass.js'
 import { createMatchTerrain } from '../../match-terrain.js'
 import { createFloorPrint } from '../../floor-print.js'
+import { createFloorDecals } from '../../floor-decals.js'
 
 // Flagfall's ground, drawn by map.js in place of the lane's: two lanes of chalk and kerbs,
 // the wet slick, camp and flag marks, lantern posts. Returns the terrain it built.
@@ -151,6 +152,13 @@ export function ground(scope) {
 		},
 	})
 	group.add(floors.sheet({ ...s.floor, x: 0, z: 0 }, bounds.halfX, bounds.halfZ).mesh)
+	const decals = createFloorDecals({
+		decals: s.decals,
+		layout,
+		groundY: terrain.groundY,
+		own: (resource) => (owned.push(resource), resource),
+	})
+	if (decals) group.add(decals)
 	for (const side of [-1, 1]) {
 		const team = material(side < 0 ? 'teamA' : 'teamB', { flat: true })
 		const kerbs = []

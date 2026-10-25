@@ -27,6 +27,9 @@ uniform sampler2D floorShadowPrint, floorContactPrint;
 uniform float floorShadowOn, floorShadowStrength, floorContactStrength;
 uniform vec3 floorShadowColour;
 uniform vec3 floorClouds; // scale, speed, strength
+// Large-scale life: patches of warmer and cooler stone (scale m, strength) so the tile never reads as wallpaper.
+uniform vec2 floorPatches;
+uniform vec3 floorWarm, floorCool;
 varying vec2 floorPoint;
 
 float fHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
@@ -145,6 +148,15 @@ vec3 fFloor(vec2 p) {
 	return col;
 }
 
+void fLife(inout vec3 col, vec2 p) {
+	if (floorPatches.y > 0.0) {
+		float warm = smoothstep(0.45, 0.75, fFbm(p / floorPatches.x + 3.1));
+		float cool = smoothstep(0.5, 0.8, fFbm(p / (floorPatches.x * 0.7) - 7.3));
+		col = mix(col, col * floorWarm * 1.15, warm * floorPatches.y);
+		col = mix(col, col * floorCool * 1.15, cool * floorPatches.y * 0.8);
+	}
+}
+
 void fShade(inout vec3 col, vec2 p) {
 	vec2 uv = vec2(0.5) + vec2(p.x, -p.y) / (floorExtent * 2.0);
 	// Contact: soft darkening where cover meets the floor.
@@ -198,7 +210,7 @@ export function createFloorPrint({ layout, terrain, casts, look, own }) {
 		tiles.push(tile)
 		return tile
 	}
-	// One floor `w` ({ style, x, z, base, joint, accent, size, vary, joints?, image? }) on a
+	// One floor `w` ({ style, x, z, base, joint, accent, size, vary, joints?, image?, patches? }) on a
 	// halfX × halfZ rectangle; returns the mesh (to add) and its tile slot.
 	const sheet = (w, halfX, halfZ) => {
 		const tile = slot(w.image)
@@ -226,6 +238,11 @@ export function createFloorPrint({ layout, terrain, casts, look, own }) {
 				floorContactStrength: { value: contactPrint ? look.contact.strength : 0 },
 				floorImage: tile.image,
 				floorImageOn: tile.on,
+				floorPatches: {
+					value: new THREE.Vector2(w.patches?.scale ?? 18, w.patches?.strength ?? 0),
+				},
+				floorWarm: { value: new THREE.Color(w.patches?.warm ?? '#ffffff') },
+				floorCool: { value: new THREE.Color(w.patches?.cool ?? '#ffffff') },
 				floorClouds: {
 					value: new THREE.Vector3(look.clouds.scale, look.clouds.speed, look.clouds.strength),
 				},
@@ -240,7 +257,7 @@ export function createFloorPrint({ layout, terrain, casts, look, own }) {
 				floorChunk +
 				shader.fragmentShader.replace(
 					'#include <color_fragment>',
-					'#include <color_fragment>\nvec3 floorColour = fFloor(floorPoint);\nfShade(floorColour, floorPoint);\ndiffuseColor.rgb = floorColour;',
+					'#include <color_fragment>\nvec3 floorColour = fFloor(floorPoint);\nfLife(floorColour, floorPoint);\nfShade(floorColour, floorPoint);\ndiffuseColor.rgb = floorColour;',
 				)
 		}
 		const mesh = new THREE.Mesh(
