@@ -24,6 +24,8 @@ A week from 2026-10-25 to bring the match look close to the Reference shelf. Arb
 
 Day 1, 2026-10-25: all three maps rebuilt toward their targets (Altamesa dawn, Flagfall night, Overthrow green morning in `pages/art/*-targets/`); the carving kit; glow; floor decals; carved towers and cores with damage stages; live sun with live shadows; `bun run shot` and `bun run decal-sheet`.
 
+Later the same day: Salinas, a new map made end to end from the map skill in about 23 minutes; a second light for every map; heat maps; photo mode; copy-as-tune; the cast with faces, wear and an edge. All eleven `art-week` issues closed.
+
 ## Next
 
-Tracked as GitHub issues labelled `art-week`.
+New work goes in as GitHub issues labelled `art-week`. Open threads: why Overthrow's deaths pile on one side (bots or map?), Flagfall's unused rooms, bare sky past the far rim in low photo views, and measuring tokens per map once bb reports them.
