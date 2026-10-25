@@ -204,6 +204,7 @@ export function createRenderer() {
 		kickFov,
 		nudge,
 		impactFrame: style.impactFrame,
+		glow: style.glow,
 		updateCamera,
 		render,
 		renderStyled,

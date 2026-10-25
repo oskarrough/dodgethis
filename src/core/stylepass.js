@@ -205,6 +205,34 @@ export function instanceStyle(role, { flat = true } = {}) {
 
 const OPAQUE_LAYER = 0
 export const FORWARD_LAYER = 1
+// Things that emit light opt in (`glows(mesh)`): they are drawn again, small and blurred, and added
+// over the frame as an airbrushed bloom. Opt-in rather than a brightness threshold, so the pale
+// court and cream marks never bloom.
+export const GLOW_LAYER = 2
+const glowMaterials = new Map()
+let glowTwins = 0 // live twins; the bloom pass is skipped while there are none
+// `glows(mesh, color)` gives each mesh under `object` a twin in the glow layer only, drawn in
+// `color`; the twin follows its mesh (same parent transform) and is disposed with the material cache.
+export function glows(object, color) {
+	const key = new THREE.Color(color).getHex()
+	let material = glowMaterials.get(key)
+	if (!material) {
+		material = new THREE.MeshBasicMaterial({ color: key, depthTest: false, depthWrite: false })
+		glowMaterials.set(key, material)
+	}
+	const meshes = []
+	object.traverse((o) => o.isMesh && !o.userData.glowTwin && meshes.push(o))
+	for (const mesh of meshes) {
+		const twin = new THREE.Mesh(mesh.geometry, material)
+		twin.userData.glowTwin = true
+		twin.layers.set(GLOW_LAYER)
+		twin.frustumCulled = false
+		twin.addEventListener('removed', () => glowTwins--)
+		glowTwins++
+		mesh.add(twin)
+	}
+	return object
+}
 
 export function createStylePass(canvas) {
 	const renderer = new THREE.WebGLRenderer({
@@ -279,18 +307,60 @@ export function createStylePass(canvas) {
 	const postScene = new THREE.Scene().add(quad)
 	const postCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1)
 
-	// Final blit, converting to the display's color space exactly once.
-	const blit = new THREE.ShaderMaterial({
-		uniforms: { tImage: { value: composed.texture }, uEncode: { value: 1 } },
+	// Bloom: glow-layer objects drawn at quarter size, blurred twice each way, added in the blit.
+	const glowOpts = {
+		type: THREE.HalfFloatType,
+		format: THREE.RGBAFormat,
+		minFilter: THREE.LinearFilter,
+		magFilter: THREE.LinearFilter,
+		depthBuffer: false,
+		stencilBuffer: false,
+		generateMipmaps: false,
+	}
+	const glowA = new THREE.WebGLRenderTarget(2, 2, glowOpts)
+	const glowB = new THREE.WebGLRenderTarget(2, 2, glowOpts)
+	const blur = new THREE.ShaderMaterial({
+		uniforms: { tImage: { value: null }, uStep: { value: new THREE.Vector2() } },
 		vertexShader: postVert,
 		fragmentShader: `
 			precision highp float;
 			varying vec2 vUv;
 			uniform sampler2D tImage;
+			uniform vec2 uStep;
+			void main() {
+				vec4 c = texture2D(tImage, vUv) * 0.227;
+				c += (texture2D(tImage, vUv + uStep * 1.385) + texture2D(tImage, vUv - uStep * 1.385)) * 0.316;
+				c += (texture2D(tImage, vUv + uStep * 3.231) + texture2D(tImage, vUv - uStep * 3.231)) * 0.070;
+				gl_FragColor = c;
+			}`,
+		depthTest: false,
+		depthWrite: false,
+	})
+	const blurQuad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), blur)
+	blurQuad.frustumCulled = false
+	const blurScene = new THREE.Scene().add(blurQuad)
+	const glow = { strength: 1, radius: 1, on: true }
+	let glowSize = new THREE.Vector2(2, 2)
+
+	// Final blit, converting to the display's color space exactly once.
+	const blit = new THREE.ShaderMaterial({
+		uniforms: {
+			tImage: { value: composed.texture },
+			tGlow: { value: glowA.texture },
+			uGlow: { value: 0 },
+			uEncode: { value: 1 },
+		},
+		vertexShader: postVert,
+		fragmentShader: `
+			precision highp float;
+			varying vec2 vUv;
+			uniform sampler2D tImage;
+			uniform sampler2D tGlow;
+			uniform float uGlow;
 			uniform float uEncode;
 			void main() {
 				vec4 image = texture2D(tImage, vUv);
-				vec3 c = image.rgb;
+				vec3 c = image.rgb + texture2D(tGlow, vUv).rgb * uGlow;
 				// linear -> sRGB
 				vec3 lo = c * 12.92;
 				vec3 hi = 1.055 * pow(max(c, vec3(0.0031308)), vec3(1.0 / 2.4)) - 0.055;
@@ -311,6 +381,9 @@ export function createStylePass(canvas) {
 		const rh = Math.max(2, Math.floor(h * pixelRatio))
 		data.setSize(rw, rh)
 		composed.setSize(rw, rh)
+		glowSize.set(Math.max(2, Math.floor(rw / 4)), Math.max(2, Math.floor(rh / 4)))
+		glowA.setSize(glowSize.x, glowSize.y)
+		glowB.setSize(glowSize.x, glowSize.y)
 		post.uniforms.uRes.value.set(rw, rh)
 	}
 
@@ -357,7 +430,32 @@ export function createStylePass(canvas) {
 			camera.layers.set(OPAQUE_LAYER)
 		}
 
-		// 4. one conversion to display color space
+		// 4. bloom from whatever opted into the glow layer
+		blit.uniforms.uGlow.value = 0
+		if (glow.on && glowTwins > 0 && post.uniforms.uImpact.value === 0) {
+			camera.layers.set(GLOW_LAYER)
+			renderer.setRenderTarget(glowA)
+			renderer.setClearColor(0x000000, 0)
+			renderer.clear(true, false, false)
+			renderer.render(scene, camera)
+			camera.layers.set(OPAQUE_LAYER)
+			for (let pass = 0; pass < 2; pass++)
+				for (const [from, to, x, y] of [
+					[glowA, glowB, 1, 0],
+					[glowB, glowA, 0, 1],
+				]) {
+					blur.uniforms.tImage.value = from.texture
+					blur.uniforms.uStep.value.set(
+						(x * glow.radius * (pass + 1)) / glowSize.x,
+						(y * glow.radius * (pass + 1)) / glowSize.y,
+					)
+					renderer.setRenderTarget(to)
+					renderer.render(blurScene, postCam)
+				}
+			blit.uniforms.uGlow.value = glow.strength
+		}
+
+		// 5. one conversion to display color space
 		renderer.setRenderTarget(target)
 		renderer.clear(true, true, false)
 		blit.uniforms.uEncode.value = target ? 0 : 1
@@ -373,6 +471,10 @@ export function createStylePass(canvas) {
 	function dispose() {
 		data.dispose()
 		composed.dispose()
+		glowA.dispose()
+		glowB.dispose()
+		blur.dispose()
+		blurQuad.geometry.dispose()
 		depthTexture.dispose()
 		post.dispose()
 		blit.dispose()
@@ -387,5 +489,16 @@ export function createStylePass(canvas) {
 		post.uniforms.uAlpha.value = alpha ? 1 : 0
 	})
 
-	return { renderer, setSize, setPalette, setStylePreset, render, impactFrame, dispose, pixelRatio }
+	// `glow` is live: { on, strength, radius } (a map or the debug panel may change it).
+	return {
+		renderer,
+		setSize,
+		setPalette,
+		setStylePreset,
+		render,
+		impactFrame,
+		dispose,
+		pixelRatio,
+		glow,
+	}
 }
