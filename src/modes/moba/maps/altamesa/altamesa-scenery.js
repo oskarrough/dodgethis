@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { tune } from '../../tune.js'
 import { dressRim } from '../../rim-dress.js'
+import { bind, paint } from '../../restyle.js'
 
 export function scenery(scope) {
 	const { s, own, forward, points } = scope
@@ -12,22 +13,29 @@ export function scenery(scope) {
 		'altamesa-rim',
 	)
 
-	// Airbrushed apricot on the sunward cloud sea. Kept below all playable ground;
+	// Airbrushed light on the sunward cloud sea. Kept below all playable ground;
 	// this forward veil never enters the ink pass or changes another map's sky.
 	const edge = new THREE.Vector2(
 		Math.max(...points[0].map((p) => Math.abs(p.x))),
 		Math.max(...points[0].map((p) => Math.abs(p.z))),
 	)
-	const sun = new THREE.Vector2(s.light.dir[0], s.light.dir[2]).normalize()
+	const tint = tune.altamesa.skyGlow
 	const glow = own(
 		new THREE.ShaderMaterial({
 			transparent: true,
 			depthWrite: false,
 			uniforms: {
-				sun: { value: sun },
+				sun: {
+					value: bind(new THREE.Vector2(), (v) =>
+						v.set(s.light.dir[0], s.light.dir[2]).normalize(),
+					),
+				},
 				edge: { value: edge },
-				apricot: { value: new THREE.Color('#ffb87e') },
-				cream: { value: new THREE.Color('#ffe6c0') },
+				color: { value: paint(tint, 'color') },
+				cream: { value: paint(tint, 'heart') },
+				strength: bind({}, (u) => {
+					u.value = tint.strength
+				}),
 			},
 			vertexShader: /* glsl */ `
 		varying vec2 world;
@@ -38,7 +46,8 @@ export function scenery(scope) {
 		}`,
 			fragmentShader: /* glsl */ `
 		uniform vec2 sun, edge;
-		uniform vec3 apricot, cream;
+		uniform vec3 color, cream;
+		uniform float strength;
 		varying vec2 world;
 		void main() {
 			float along = dot(world, sun);
@@ -47,7 +56,7 @@ export function scenery(scope) {
 			float heart = exp(-pow((along - 125.0) / 65.0, 2.0) - pow(across / 100.0, 2.0));
 			float outside = max(abs(world.x) - edge.x, abs(world.y) - edge.y);
 			float clearCliff = smoothstep(4.0, 22.0, outside);
-			gl_FragColor = vec4(mix(apricot, cream, heart), halo * clearCliff * 0.78);
+			gl_FragColor = vec4(mix(color, cream, heart), halo * clearCliff * strength);
 		}`,
 		}),
 	)
