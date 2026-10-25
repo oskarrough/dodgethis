@@ -15,11 +15,11 @@ Hold a match screenshot beside the target frame. It passes when the court is cle
 
 ## Plan
 
-Day 1 (done): Altamesa light, rim ruins and dead trees, carved flower walls.
+Day 1 (done): Altamesa light, rim ruins and dead trees, carved flower walls; the shared carving kit; glow; Flagfall by night; floor decals on both; carved towers and cores with damage stages. Astra works in one standing thread (thr_6y3iwcf5f5) so it keeps the code in its head; painting-only jobs may go to a second.
 
-1. **Altamesa finish.** Rim ruins that read as ruins (carved, broken, overgrown) instead of boxes; overgrowth thinned so the carving shows; sun bloom in the haze; the pillars carved to match the walls; Gnomon's sundial inlay.
-2. **Glow pass (engine).** A soft bloom for things that emit light (Ball, crystals, lanterns, ability impacts) with a threshold that never lifts the court; shared by every map.
-3. **Flagfall by night.** Target frame from the blue-beast and night-castle refs, then build: a deeper moon, glowing night garden, moonlit carved stone, Hinge-style poured water.
+1. ~~**Altamesa finish.**~~ (done but the sundial inlay) Rim ruins that read as ruins (carved, broken, overgrown) instead of boxes; overgrowth thinned so the carving shows; sun bloom in the haze; the pillars carved to match the walls; Gnomon's sundial inlay.
+2. ~~**Glow pass (engine).**~~ (done; impacts and lanterns still to opt in) A soft bloom for things that emit light (Ball, crystals, lanterns, ability impacts) with a threshold that never lifts the court; shared by every map.
+3. ~~**Flagfall by night.**~~ (done) Target frame from the blue-beast and night-castle refs, then build: a deeper moon, glowing night garden, moonlit carved stone, Hinge-style poured water.
 4. **Overthrow.** Its own direction: a target pair for Oskar to pick from, then build.
 5. **Units.** A target sheet for the cast in the ink direction (heft, wear, one hard angle), then a pass on hero meshes. Silhouettes and sizes are fixed.
 6. **Hatching on scenery.** World-anchored ink hatching on cliffs and walls only, if the targets still call for it after 1–5.
