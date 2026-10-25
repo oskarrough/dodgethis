@@ -380,3 +380,6 @@ export const units = {
 	'flagfall.kerb.ends': 'm',
 	'flagfall.glow.post': 'height m',
 }
+
+// Camera spots for `bun run shot flagfall`: [x, z] where hero 0 stands and the camera looks.
+export const shots = { tower: [-18, -12], rim: [0, -17], core: [-38, 0] }

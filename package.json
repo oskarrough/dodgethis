@@ -17,6 +17,8 @@
 		"simulate": "bun scripts/farm.js",
 		"kit": "bun run collect-mods && bun scripts/kit.js",
 		"review": "bun scripts/review.js",
+		"shot": "bun scripts/shot.js",
+		"decal-sheet": "bun scripts/decal-sheet.js",
 		"sound:check": "bun scripts/sound-check.js",
 		"sound:sync": "bun scripts/sound-library.js",
 		"where": "bun scripts/where.js",

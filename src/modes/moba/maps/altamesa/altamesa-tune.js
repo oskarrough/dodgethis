@@ -261,3 +261,6 @@ export const units = {
 	'altamesa.walls.mossChance': 'fraction',
 	'altamesa.rim.density': 'count',
 }
+
+// Camera spots for `bun run shot altamesa`: [x, z] where hero 0 stands and the camera looks.
+export const shots = { gate: [-34, -8], west: [-38, -24], pillars: [-6, 0], gnomon: [38, 0] }
