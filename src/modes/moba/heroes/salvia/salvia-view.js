@@ -1,103 +1,99 @@
 import * as THREE from 'three'
 import { FORWARD_LAYER, makeStyleMaterial } from '../../../../core/stylepass.js'
-import { look } from '../../look.js'
 import { tune } from '../../tune.js'
 import { SLOTS } from '../../sim-kit.js'
 import { createEffects, glowMaterial, link, linkGeometry, shellMaterial } from '../../effects.js'
 
-// A sage-marked board with a split crown, distinct from Mandador's square plank top.
-export function dress({ torso, part, detail, face, own, discY, t, materials }) {
-	const x = t.mandadorWidth / 2,
-		h = t.mandadorHeight
-	const board = new THREE.Shape()
-	board.moveTo(-x, 0)
-	board.lineTo(x, 0)
-	board.lineTo(x, h - 0.22)
-	board.lineTo(x - 0.16, h - 0.06)
-	board.lineTo(0.2, h)
-	board.lineTo(0, h - 0.24)
-	board.lineTo(-0.2, h)
-	board.lineTo(-x + 0.16, h - 0.06)
-	board.lineTo(-x, h - 0.22)
-	board.closePath()
+// A hooded herb-gatherer: a round cloth skirt, pointed sage hood and bark satchel.
+export function dress({ torso, part, detail, face, own, discY, materials }) {
+	const cloth = [
+		[0, 0],
+		[0.46, 0],
+		[0.53, 0.16],
+		[0.48, 0.62],
+		[0.34, 1.12],
+		[0, 1.24],
+	]
 	torso.geometry = own(
-		new THREE.ExtrudeGeometry(board, { depth: t.mandadorDepth, bevelEnabled: false }).translate(
-			0,
-			0,
-			-t.mandadorDepth / 2,
-		),
+		new THREE.LatheGeometry(
+			cloth.map(([r, y]) => new THREE.Vector2(r, y)),
+			10,
+		).toNonIndexed(),
 	)
-	const wood = own(makeStyleMaterial('driftwood'))
-	const leaf = own(makeStyleMaterial('leafDeep', { flat: true }))
-	face(0.84, discY + h - 0.26, -0.13)
+	torso.geometry.computeVertexNormals()
+	const sage = own(makeStyleMaterial('leafDeep'))
+	const leaf = own(makeStyleMaterial('leaf'))
+	const bark = own(makeStyleMaterial('driftwood'))
+	const hood = new THREE.ConeGeometry(0.43, 0.65, 7).toNonIndexed()
+	const points = hood.attributes.position
+	for (let i = 0; i < points.count; i++)
+		if (points.getY(i) > 0) points.setXYZ(i, -0.16, points.getY(i), 0.12)
+	hood.computeVertexNormals()
+	part(hood, sage, 0, discY + 1.175, 0.04)
+	face(0.6, discY + 1.11, -0.35)
+	// The skirt's worn hem and the satchel strap are broad enough to read from above.
 	detail(
 		[
-			new THREE.BoxGeometry(0.022, h - 0.42, 0.014).translate(-0.4, discY + h * 0.44, -0.132),
-			new THREE.BoxGeometry(0.02, h - 0.48, 0.014).translate(0.38, discY + h * 0.42, -0.132),
-			new THREE.BoxGeometry(t.mandadorWidth, 0.13, t.mandadorDepth + 0.012).translate(
-				0,
-				discY + 0.09,
-				0,
-			),
+			new THREE.CylinderGeometry(0.51, 0.47, 0.12, 10).translate(0, discY + 0.07, 0),
+			new THREE.BoxGeometry(0.075, 0.76, 0.04).rotateZ(-0.53).translate(0.04, discY + 0.64, -0.43),
 		],
-		wood,
+		bark,
 	)
-	// A shallow sprig is part of the board, not an extra prop or a team-coloured badge.
-	const sprig = [new THREE.BoxGeometry(0.035, 0.43, 0.02).translate(0.31, discY + 0.7, -0.145)]
-	for (let i = 0; i < 3; i++) {
-		const side = i % 2 ? -1 : 1
-		sprig.push(
-			new THREE.OctahedronGeometry(0.11, 0)
-				.scale(1, 0.5, 0.15)
-				.rotateZ(side * 0.45)
-				.translate(0.31 + side * 0.07, discY + 0.59 + i * 0.12, -0.15),
+	const satchel = part(
+		new THREE.SphereGeometry(1, 8, 5).scale(0.23, 0.28, 0.23),
+		bark,
+		0.47,
+		discY + 0.55,
+		0,
+	)
+	part(new THREE.BoxGeometry(0.3, 0.09, 0.32), sage, 0, 0.2, 0, satchel)
+	// Only the small clasp takes the team's colour; cloth and sage are always her own.
+	part(new THREE.BoxGeometry(0.13, 0.075, 0.15), materials.team, 0, 0.25, -0.04, satchel)
+	const sprigs = []
+	for (let i = 0; i < 4; i++) {
+		const x = (i - 1.5) * 0.09
+		sprigs.push(
+			new THREE.OctahedronGeometry(0.17, 0)
+				.scale(0.55, 1.3, 0.3)
+				.rotateZ(-0.3 + i * 0.24)
+				.translate(x, 0.36 + (i % 2) * 0.08, 0.07),
 		)
 	}
-	detail(sprig, leaf)
-	const cone = part(
-		new THREE.CylinderGeometry(
-			t.megaphoneRadius,
-			t.arrowRadius,
-			t.megaphoneLength,
-			t.segments,
-		).rotateX(-Math.PI / 2),
-		materials.team,
-		0,
-		t.megaphoneY,
-		t.megaphoneZ,
-	)
-	part(
-		new THREE.CircleGeometry(t.megaphoneMouth, t.segments),
-		materials.ink,
-		0,
-		t.megaphoneY,
-		t.megaphoneZ - t.megaphoneLength / 2 - t.discBorder / 4,
-	).rotation.y = Math.PI
+	detail(sprigs, leaf, satchel)
 	const hand = part(
-		new THREE.SphereGeometry(t.fingerRadius, t.segments, 6),
+		new THREE.SphereGeometry(0.12, 8, 5),
 		materials.cream,
-		t.mandadorWidth / 2,
-		discY + t.mandadorHeight * 0.6,
-		0,
+		-0.43,
+		discY + 0.62,
+		-0.13,
 	)
-	// Mend's beam leaves from the megaphone's mouth and follows it as the cast tilts it.
+	// Keep the cast origin attached to the raised sage instead of the old trumpet.
 	const mouth = new THREE.Object3D()
-	mouth.position.z = -t.megaphoneLength / 2
-	cone.add(mouth)
-	return { cone, hand, mouth, border: false }
+	mouth.position.set(0, 0.48, 0.07)
+	satchel.add(mouth)
+	return {
+		satchel,
+		hand,
+		mouth,
+		restY: discY + 0.62,
+		satchelY: discY + 0.55,
+		border: false,
+		// Preserve the shipped board's disc exactly while changing the costume silhouette.
+		footprintRadius: Math.hypot(Math.fround(0.65), Math.fround(0.125)),
+	}
 }
 
 export function animate(unit, rig, { pose, progress, costume }) {
-	const t = look.silhouettes
-	rig.hand.position.y = -t.mandadorHeight / 2 + t.mandadorHeight * 0.6
-	rig.hand.position.z = 0
-	rig.cone.rotation.x = 0
+	rig.hand.position.set(-0.43, rig.restY, -0.13)
+	rig.satchel.position.y = rig.satchelY
+	rig.satchel.rotation.z = 0
 	if (pose === 'salviaMend') {
-		rig.hand.position.y += t.mandadorHeight * progress
-		rig.cone.rotation.x = (-progress * Math.PI) / 8
+		rig.hand.position.y += 0.38 * progress
+		rig.satchel.position.y += 0.2 * progress
+		rig.satchel.rotation.z = -0.22 * progress
 	} else if (pose === 'salviaWard') {
-		rig.hand.position.z = -t.megaphoneLength
-		costume.rotation.z = -Math.PI / 8
+		rig.hand.position.z -= 0.24 * progress
+		costume.rotation.z = -0.12 * progress
 	} else if (pose === 'mandadorBasic') costume.rotation.x = (progress * Math.PI) / 12
 }
 

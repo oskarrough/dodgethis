@@ -49,3 +49,11 @@ The fight view stages six heroes at the painted frame's Overthrow position and m
 The one-off geometry audit compared each dressed hero with revision `85b1b6b66c844a58008738fb78d978d9f80b1dc7`: all eight foot-disc radii are exactly unchanged. One of each hero totals 6,938 visible triangles versus 6,756 before, an increase of 182 (2.7%). Visible hero meshes rise from 87 to 120; repeated facial and seam geometry is merged by material. No collision, simulation, team-accent or animation code changed.
 
 The final Overthrow morning shot reports 277,821 triangles and 158 calls. Browser errors are empty. `bun run check` and `bun run test` pass (271 passed, one skipped).
+
+## Salvia's own silhouette
+
+[Lineup](salvia/lineup.png) · [Lineup in grey](salvia/lineup-gray.png) · [Fight view](salvia/fight.png) · [Fight in grey](salvia/fight-gray.png) · [Hero select](salvia/select.png)
+
+The original sheet's shared board identity was rejected in the follow-up. Salvia is now a round herb-gatherer in worn cream cloth, with a pointed sage hood and a bark satchel full of leaves. Her team accent is the small satchel clasp. The broad brow and cream eyes stay in the cast's family. Her hand and satchel rise for Mend; the beam follows the sage bundle. Mandador keeps the painted board, with a hollow flared speaking-trumpet and rolled rim whose mouth moves with the cone.
+
+Salvia's foot-disc radius remains exactly 0.8219100913308282 m; her collider is untouched. Her visible geometry drops from 644 to 530 triangles. Mandador rises from 604 to 616. Both silhouettes separate in grey at match distance. Hero select was checked by switching from Salvia to Mandador and back. Cast origin and reset checks pass, browser errors are empty, and check and test are green (271 passed, one skipped). The earlier paintings and build record above remain as the history of the first direction.

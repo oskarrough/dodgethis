@@ -187,7 +187,7 @@ export function dressHero(body, heroId = DEFAULT_HERO, team = 'A') {
 	let footprint = body.radius
 	for (let i = 0; i < corners.count; i++)
 		footprint = Math.max(footprint, Math.hypot(corners.getX(i), corners.getZ(i)))
-	const discRadius = footprint + t.discReach
+	const discRadius = (dressed.footprintRadius ?? footprint) + t.discReach
 	const flat = (inner, outer) =>
 		own(new THREE.RingGeometry(inner, outer, t.segments * 2).rotateX(-Math.PI / 2))
 	footDisc.geometry = own(

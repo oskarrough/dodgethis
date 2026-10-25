@@ -40,24 +40,31 @@ export function dress({ torso, part, detail, face, own, discY, t, materials }) {
 		],
 		wood,
 	)
+	// A hollow speaking-trumpet, with its mouth and rolled lip parented to the flare.
 	const cone = part(
-		new THREE.CylinderGeometry(
-			t.megaphoneRadius,
-			t.arrowRadius,
-			t.megaphoneLength,
-			t.segments,
-		).rotateX(-Math.PI / 2),
+		new THREE.CylinderGeometry(t.megaphoneRadius, 0.075, t.megaphoneLength, 12, 1, true).rotateX(
+			-Math.PI / 2,
+		),
 		materials.team,
 		0,
 		t.megaphoneY,
 		t.megaphoneZ,
 	)
 	part(
-		new THREE.CircleGeometry(t.megaphoneMouth, t.segments),
+		new THREE.TorusGeometry(t.megaphoneRadius - 0.018, 0.025, 4, 12),
+		materials.team,
+		0,
+		0,
+		-t.megaphoneLength / 2,
+		cone,
+	)
+	part(
+		new THREE.CircleGeometry(t.megaphoneRadius - 0.045, 12),
 		materials.ink,
 		0,
-		t.megaphoneY,
-		t.megaphoneZ - t.megaphoneLength / 2 - t.discBorder / 4,
+		0,
+		-t.megaphoneLength / 2 + 0.025,
+		cone,
 	).rotation.y = Math.PI
 	const hand = part(
 		new THREE.SphereGeometry(t.fingerRadius, t.segments, 6),

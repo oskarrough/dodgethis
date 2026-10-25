@@ -10,14 +10,20 @@ The next three heroes after the Ibis, for [moba.md](moba.md). Kappa comes from [
 
 **Interception.** One moba-local resolver handles every catch. It only takes straight hero skillshots: never basics, minion or tower shots, which home. A caught shot is frozen as `{ damage, speed, radius, range, pierce }`, with damage including any cushions it had banked, and it comes back as a new straight shot owned by the catcher: no further banking, no trait procs for its original owner. It hits structures like any ability (25%, blocked when invulnerable). The Ball is never a shot here; see Kappa.
 
-**Silhouettes.** The foot disc is the hitbox: every hero keeps the 0.45 m collision circle, drawn as an inked disc. Bodies above it may be slimmer or wider; the disc is the promise, the body is character. Each hero owns one body shape and one prop, and reuses no minion prop (shield disc, stick, cone hat, block helmet). Team colour sits on the disc, the prop and the top of the body, so a mirror match is one shape in two colours.
+**Silhouettes.** Every hero keeps the 0.45 m collision circle. The translucent team disc reaches beyond the body; it is a recognition mark, not the collision boundary. Bodies above it may be slimmer or wider. Each hero owns one body shape and one prop, and reuses no minion prop (shield disc, stick, cone hat, block helmet). Team colour sits on the disc plus at most one small accent; the body wears its own materials, as specified in [look.md](look.md#units).
 
-| Hero      | Role              | Shape from above                         | Prop                                                            |
-| --------- | ----------------- | ---------------------------------------- | --------------------------------------------------------------- |
-| Ibis      | ranged poke       | small circle: the capsule, slimmed       | quiver of three big fletched arrows, fanned behind him          |
-| Kappa     | keeper, frontline | rounded square, low and wide, no neck    | notched catcher's glove: thumb gap and finger bumps, not a disc |
-| Carambola | trick-shot burst  | rounded triangle, point forward          | round team paddle held open at his side, rolled net on his back |
-| Mandador  | captain, support  | flat bar: a cardboard cutout, 1.3 × 0.25 | megaphone held out front, a flared cone lying flat              |
+| Hero      | Role                | Shape from above                                                  | Prop                                                                     |
+| --------- | ------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| Ibis      | ranged poke         | slim capsule with a notched crest                                 | quiver of three reed arrows, fanned behind her                           |
+| Kappa     | keeper, frontline   | low rounded square, bevelled shell and two short horns            | cream catcher's glove with a thumb gap and finger bumps                  |
+| Carambola | trick-shot burst    | triangle, point forward, stone beak                               | wooden paddle held open at his side                                      |
+| Mandador  | captain, support    | flat painted board, 1.3 × 0.25 m, chipped square top              | flared speaking-trumpet with a rolled rim; the trumpet takes team colour |
+| Lasso     | catcher, initiation | open crescent with a hooked tip                                   | weighted yo-yo and line                                                  |
+| Oolong    | frontline, sustain  | broad low hexagonal drum                                          | chipped enamel tea jug; the sash takes team colour                       |
+| Undine    | control, sustain    | squat round jug with a pointed side spout and loop handle         | enamel spout; no team accent beyond the disc                             |
+| Salvia    | healer, warder      | rounded cloth skirt beneath a pointed sage hood, never a flat bar | bark satchel spilling sage; only its small clasp takes team colour       |
+
+Salvia is a herb-gatherer, not Mandador's twin. Her round body, hood and satchel must remain distinct from the touchline director's board and trumpet, including in grayscale and in hero select. Her collision and the shipped foot-disc radius remain unchanged when her costume changes.
 
 ## Slice 1: hero definitions
 
