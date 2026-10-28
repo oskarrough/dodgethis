@@ -2,6 +2,7 @@
 import * as balloon_view from './balloon/balloon-view.js'
 import * as lob_view from './lob/lob-view.js'
 import * as pinball_view from './pinball/pinball-view.js'
+import * as rain_view from './rain/rain-view.js'
 import * as rallyRing_view from './rallyRing/rallyRing-view.js'
 import * as sprinkler_view from './sprinkler/sprinkler-view.js'
 
@@ -9,6 +10,7 @@ export default {
 	balloon: balloon_view,
 	lob: lob_view,
 	pinball: pinball_view,
+	rain: rain_view,
 	rallyRing: rallyRing_view,
 	sprinkler: sprinkler_view,
 }

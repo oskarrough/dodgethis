@@ -25,8 +25,8 @@ A surgical edit outside your owned files (a setter, an export, a hook) is fine w
 ## Sim, bots and net
 
 - Every enemy attack or cast has a visible tell of at least 0.3 s, and every action gets its own pose. No shared squash.
-- Input is never swallowed: stop and move cancel windups (a windup is any cast point or basic-attack windup; a cancelled cast point refunds its cooldown), and a new order cancels the backswing. A buffered press that can't become legal flashes a deny.
-- Holding RMB re-sends orders every 100 ms; nothing but stop or cancel may break a windup.
+- Input is never swallowed: stop and cancel interrupt cast points and basic windups; cancelled cast points refund to the cancellation lockout. Movement queues behind cast points, so held walking aim and RMB resends cannot cancel them. Movement can cancel a basic windup, and a new order cancels its backswing. A buffered press that can't become legal flashes a deny.
+- Holding RMB re-sends orders each simulation step; repeated attack orders preserve the basic windup.
 - Every outcome emits a fact with its own feedback: blocked shots, repeated orders and denied casts included. Nothing vanishes silently.
 - Damage facts carry effective damage (HP actually removed), not attempted damage.
 - A sim hook's event fields keep the same types at every dispatch site: aim points and target units have separate fields.

@@ -13,7 +13,12 @@ export default {
 	tell: 'circle',
 	held: 'circle',
 	effects: { impact: 'rain', effect: 'rain', pose: 'rain', shake: 'shakeRain' },
+	stages: {
+		release({ hero, tick }) {
+			hero.abilityState.rain = { released: tick }
+		},
+	},
 	card: {
-		sentence: `Arrows fall in a {radius} circle up to {range} away after {delay}, dealing {damage:damage} and a {slow} [[Slow]] for {duration}.`,
+		sentence: `Draws for {castPoint}, then arrows fall in a {radius} circle up to {range} away {delay} later, dealing {damage:damage} and a {slow} [[Slow]] for {duration}.`,
 	},
 }

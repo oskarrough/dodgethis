@@ -15,7 +15,9 @@ export default {
 		if (hero.dead || hero.dashAbility !== ability.id || !hero.body.dashing) return
 		const p = hero.body.position
 		const dir = hero.body.dashDirection
-		const step = (ability.stats.range / ability.stats.time) * STEP
+		// casting.js rounds the dash to whole fixed steps; sweep exactly that same travel.
+		const time = Math.max(1, Math.ceil(ability.stats.time / STEP)) * STEP - 1e-9
+		const step = (ability.stats.range / time) * STEP
 		const to = { x: p.x + dir.x * step, z: p.z + dir.z * step }
 		const units = [
 			...sim.heroes,
@@ -34,7 +36,7 @@ export default {
 					to.z,
 					unit.body.position.x,
 					unit.body.position.z,
-					hero.body.radius + unit.body.radius,
+					ability.stats.radius + unit.body.radius,
 				),
 			}))
 			.filter((c) => c.at != null)

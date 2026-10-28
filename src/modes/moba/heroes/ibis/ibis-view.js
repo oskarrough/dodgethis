@@ -1,5 +1,7 @@
 import * as THREE from 'three'
 export { cards } from './ibis-numbers.js'
+export { animate } from './ibis-motion.js'
+export { extras } from './ibis-marks.js'
 
 // Ibis's costume: the capsule, quiver, arrows and the bow rig his poses read.
 // Team accent: the foot disc and the fletchings; the bow stays ink.
@@ -112,5 +114,14 @@ export function dress({
 	bowString.frustumCulled = false
 	costume.add(bowString)
 	roots.push(bowString)
-	return { border: false, bow, hand, bowString, drawArm }
+	return {
+		border: false,
+		bow,
+		hand,
+		bowString,
+		drawArm,
+		restY: costume.position.y,
+		quiverZ: t.quiverZ,
+		arrowHeight: t.arrowHeight,
+	}
 }

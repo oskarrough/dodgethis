@@ -121,7 +121,7 @@ test('a slot press buffers for tune.cast.buffer: it fires on the first legal ste
 	expect(casts()).toHaveLength(3)
 })
 
-test('a cast roots for its cast point, then the order resumes; an order given meanwhile wins', () => {
+test('a cast roots through held movement and repeated orders, then resumes walking', () => {
 	place(-10, 8)
 	step(60) // Settle on the floor before measuring a longer rooted cast.
 	const goal = { x: 10, z: 8 }
@@ -142,15 +142,31 @@ test('a cast roots for its cast point, then the order resumes; an order given me
 	while (hero().order) step()
 	expect(Math.hypot(pos().x - goal.x, pos().z - goal.z)).toBeLessThan(tune.orders.arrival)
 
-	step(Math.round(tune.loose.cooldown * 60))
-	press('slot1', { x: 10, z: 0 })
-	step(2)
-	const other = { x: 0, z: 12 }
-	feed({ order: other })
-	step()
-	expect(hero().cast).not.toBeNull()
-	while (hero().order) step()
-	expect(Math.hypot(pos().x - other.x, pos().z - other.z)).toBeLessThan(tune.orders.arrival)
+	for (const movement of [
+		{ order: { x: 0, z: 12 } },
+		{ order: { x: 0, z: 12, kind: 'attack-move' } },
+		{ move: { x: 0, z: 1 } },
+	]) {
+		press('stop')
+		step(Math.round(tune.loose.cooldown * 60))
+		place(0, 8)
+		const before = facts.filter((f) => f.type === 'projectile').length
+		feed({ ...movement, pressed: [{ action: 'slot1', at: { x: 10, z: 8 } }] })
+		step()
+		const start = pos()
+		for (let i = 1; i < castPoint; i++) {
+			feed(movement)
+			step()
+			expect(pos().x).toBeCloseTo(start.x, 5)
+			expect(pos().z).toBeCloseTo(start.z, 5)
+		}
+		expect(facts.filter((f) => f.type === 'projectile')).toHaveLength(before + 1)
+		expect(facts.filter((f) => f.type === 'denied' && f.reason === 'cancelled')).toHaveLength(0)
+		feed(movement)
+		step(2)
+		expect(pos().z).toBeGreaterThan(start.z)
+		feed()
+	}
 })
 
 test('skillshots sweep: a thin target between two sampled positions is hit, a close pass is a near miss', () => {

@@ -149,6 +149,8 @@ export function createControl(ctx) {
 			h.body.update({ x: 0, z: 0 }, dt, 0)
 			return
 		}
+		// Movement queues behind cast points, including held RMB resends and walking aim.
+		if (frame.order) issue(h, frame.order)
 		if (h.cast && frame.pressed.some((e) => ['stop', 'cancel'].includes(e.action))) {
 			const cast = h.cast
 			const slotIndex = SLOTS.indexOf(cast.slot)
@@ -183,7 +185,7 @@ export function createControl(ctx) {
 		const heldBall = ball?.control(h, frame, intents, dirOf(h.yaw))
 		if (
 			Math.hypot(frame.move.x, frame.move.z) > 0.01 ||
-			frame.pressed.some((e) => e.action === 'stop')
+			frame.pressed.some((e) => ['stop', 'cancel'].includes(e.action))
 		)
 			cancelAttack(h, present, 'input')
 		if (
@@ -199,6 +201,7 @@ export function createControl(ctx) {
 					if (SLOTS.includes(s.action)) intents.consume(h.id, s.action)
 				intents.consume(h.id, 'stop')
 			} else if (e.action === 'cancel') {
+				if (h.order?.kind === 'attack') h.order = null
 				h.buffered = null
 				intents.consume(h.id, 'cancel') // channels arrive with mount and R
 			} else if (e.action === 'primary') {
@@ -206,7 +209,6 @@ export function createControl(ctx) {
 				intents.consume(h.id, 'primary')
 			}
 		}
-		if (frame.order) issue(h, frame.order)
 		if (Math.hypot(frame.move.x, frame.move.z) > 0.01) h.order = null
 		if (frame.order && ['move', 'attack-move'].includes(h.order?.kind))
 			cancelAttack(h, present, 'order')

@@ -33,6 +33,9 @@ const columns = {
 		'recall',
 		'recallReady',
 		'catchWindow',
+		'grounded',
+		'dashTime',
+		'dashDirection',
 	],
 	minions: [
 		'statuses',

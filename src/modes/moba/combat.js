@@ -176,11 +176,14 @@ export function createCombat(ctx) {
 			target: target?.id ?? null,
 			phase: 'backswing',
 			left: ticks(h.definition.basic.backswing),
+			total: ticks(h.definition.basic.backswing),
+			distance: Math.min(length, h.definition.basic.range),
 			startedTick: ctx.t,
 		}
 		if (h.definition.basic.kind === 'melee') return
 		present({
 			type: 'projectile',
+			...(shot.ability && { ability: shot.ability }),
 			id: shot.id,
 			hero: h.id,
 			slot: 'primary',

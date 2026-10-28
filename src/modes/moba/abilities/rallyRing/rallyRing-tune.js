@@ -23,6 +23,13 @@ export default {
 		dustRise: 0.6,
 		dustLife: 0.9,
 		fade: 0.5, // seconds the ring takes to rub out at the end
+		callSpokes: 14, // strokes thrown from the middle to the rim when the ring lands
+		callFrom: 0.3, // their start and end, as shares of the ring's radius
+		callTo: 0.95,
+		callInner: 0.3,
+		callWidth: 0.14,
+		callLife: 0.34,
+		callLate: 0.15, // a ring seen later than this after landing skips the call
 	},
 }
 
@@ -38,4 +45,11 @@ export const units = {
 	'rallyRing.view.dust': 'count',
 	'rallyRing.view.dustRise': 'height m',
 	'rallyRing.view.dustLife': 's',
+	'rallyRing.view.callSpokes': 'count',
+	'rallyRing.view.callFrom': 'fraction',
+	'rallyRing.view.callTo': 'fraction',
+	'rallyRing.view.callInner': 'fraction',
+	'rallyRing.view.callWidth': 'fraction',
+	'rallyRing.view.callLife': 's',
+	'rallyRing.view.callLate': 's',
 }

@@ -148,6 +148,7 @@ export function mobaReplay(app) {
 					unit: hero,
 					tick: sim.tick,
 					casters: sim.heroes,
+					units: [...sim.heroes, ...sim.dummies, ...sim.lane.minions],
 					zones: sim.zones,
 					obstacles: sim.obstacles,
 					alpha: blend,

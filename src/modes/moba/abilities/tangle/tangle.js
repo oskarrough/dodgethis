@@ -11,15 +11,27 @@ export default {
 		sentence: `A {range} cone in front of you deals {damage:damage} and a {slow} [[Slow]] for {duration}.`,
 	},
 	stages: {
-		release: [
-			{
-				deliver: 'area',
-				from: 'self',
-				shape: 'cone',
-				targets: 'enemies',
-				blockedBy: 'cover',
-				hit: ['damage', 'slow'],
+		release: {
+			do: [
+				{
+					deliver: 'area',
+					from: 'self',
+					shape: 'cone',
+					targets: 'enemies',
+					blockedBy: 'cover',
+					hit: ['damage', 'slow'],
+				},
+			],
+			after({ hero, ability, event, present }) {
+				present({
+					type: 'contact',
+					part: 'sweep',
+					source: hero.id,
+					ability: ability.id,
+					point: { ...hero.body.position },
+					direction: { ...event.dir, y: 0 },
+				})
 			},
-		],
+		},
 	},
 }

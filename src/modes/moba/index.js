@@ -610,7 +610,11 @@ export default function moba(app, map) {
 			if (meter) onPresent(meter.present)
 			if (ballView) (replica?.onReportFact ?? onPresent)(ballView.present)
 			const ballFacts = []
+			// `dt.game.moba.facts` is the whole stream's tail, newest last: proofs assert casts, hits and denials from it.
+			const facts = []
 			run.on('present', (fact) => {
+				facts.push(fact)
+				if (facts.length > tune.proof.facts) facts.shift()
 				if (!fact.type.startsWith('ball')) return
 				ballFacts.push(fact)
 				if (ballFacts.length > tune.proof.trace) ballFacts.shift()
@@ -699,7 +703,9 @@ export default function moba(app, map) {
 					aim: frame.aim,
 					held: hero.dead || sim.ball?.carrying(hero) ? {} : frame.held,
 					unit: hero,
-					units: [...sim.heroes, ...sim.dummies].filter((u) => u.team === hero.team || !unseen(u)),
+					units: [...sim.heroes, ...sim.dummies, ...(sim.lane?.minions ?? [])].filter(
+						(u) => u.team === hero.team || !unseen(u),
+					),
 					lobby: isLobby,
 					tick: sim.tick,
 					bounds: sim.bounds,
@@ -796,6 +802,7 @@ export default function moba(app, map) {
 						controls,
 						proof: { ...tune.proof, step: app.clock.step, botsOnly },
 						ballFacts,
+						facts,
 						ballView,
 						replica: replica?.stats,
 						snapshot: () => sim.snapshot(),

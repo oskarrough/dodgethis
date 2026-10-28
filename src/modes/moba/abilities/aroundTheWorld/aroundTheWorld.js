@@ -10,14 +10,26 @@ export default {
 		sentence: `Loops the yo-yo around you: enemy heroes within {radius} take {damage:damage} and are [[knocked back|knockback]] {knockback}.`,
 	},
 	stages: {
-		release: [
-			{
-				deliver: 'area',
-				from: 'self',
-				shape: 'circle',
-				targets: 'enemyHero',
-				hit: ['damage', 'knockback'],
+		release: {
+			do: [
+				{
+					deliver: 'area',
+					from: 'self',
+					shape: 'circle',
+					targets: 'enemyHero',
+					hit: ['damage', 'knockback'],
+				},
+			],
+			after({ hero, ability, event, present }) {
+				present({
+					type: 'contact',
+					part: 'sweep',
+					source: hero.id,
+					ability: ability.id,
+					point: { ...hero.body.position },
+					direction: { ...event.dir, y: 0 },
+				})
 			},
-		],
+		},
 	},
 }

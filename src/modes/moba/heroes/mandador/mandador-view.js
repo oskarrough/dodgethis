@@ -1,9 +1,11 @@
 import * as THREE from 'three'
+import { STEP } from '../../../../core/app.js'
 import { makeStyleMaterial } from '../../../../core/stylepass.js'
 import { tune } from '../../tune.js'
 import { look } from '../../look.js'
-import { sweepObstacles, mapExit } from '../../obstacles.js'
-import { mandadorThrowOrigin } from './mandador-cutout.js'
+import { poseWindup, poseStrike } from '../../pose-curve.js'
+import { createMandadorCutouts } from './mandador-cutout-view.js'
+import { createMandadorMarks } from './mandador-marks.js'
 
 // The original flat bar and megaphone, with a separate raised hand for the save.
 export function dress({ torso, part, detail, face, own, discY, t, materials }) {
@@ -76,133 +78,94 @@ export function dress({ torso, part, detail, face, own, discY, t, materials }) {
 	// The ink pass outlines the board; the old expanded shell hid its entire painted face.
 	return { cone, hand, border: false }
 }
-export function animate(unit, rig, { pose, progress, costume }) {
-	const t = look.silhouettes
-	rig.hand.position.y = -t.mandadorHeight / 2 + t.mandadorHeight * 0.6
-	rig.cone.rotation.x = 0
-	rig.hand.position.z = 0
-	if (pose === 'mandadorTag') rig.hand.position.y += t.mandadorHeight * progress
-	else if (pose === 'mandadorRed') {
-		costume.rotation.y = Math.PI
-		rig.cone.rotation.x = (-progress * Math.PI) / 3
-	} else if (pose === 'mandadorPass') {
-		costume.rotation.z = (-progress * Math.PI) / 8
-		rig.hand.position.z = -progress * t.megaphoneLength
-	} else if (pose === 'mandadorBasic') costume.rotation.x = (progress * Math.PI) / 12
-	else rig.hand.position.z = 0
+const POSES = { mandadorPass: 'pass', mandadorTag: 'tag', mandadorRed: 'rally' }
+// A cast that reached its last stretch counts as released when it ends; an earlier end was a cancel and snaps nothing.
+const RELEASED = 0.6
+const memory = new WeakMap() // unit → the cast it last posed: { kind, progress, time, releasedAt }
+const clamp01 = (x) => Math.max(0, Math.min(1, x))
+
+// What the board is doing now: the spec it follows and how far it has coiled (0..1+) and struck. Casts coil with their
+// progress and snap when they end; the basic coils over its windup and snaps into its backswing. null: at rest.
+function actionOf(unit, pose, progress, time, alpha) {
+	const poses = tune.heroes.mandador.view.pose
+	const attack = unit?.attack
+	if (attack?.phase === 'windup') {
+		const p = 1 - (attack.left - alpha) / Math.max(1, attack.total ?? 1)
+		return { spec: poses.basic, coil: poseWindup(p), strike: 0, hop: 0 }
+	}
+	if (attack?.phase === 'backswing') {
+		const spec = poses.basic
+		const ticks = Math.round(tune.tennisBall.backswing / STEP)
+		return released(spec, (ticks - attack.left + alpha) * STEP)
+	}
+	const kind = POSES[pose]
+	if (!unit)
+		return kind ? { spec: poses[kind], coil: poseWindup(progress), strike: 0, hop: 0 } : null
+	let rec = memory.get(unit)
+	if (rec && time < rec.time) rec = null // a replay seek or a restart
+	if (kind) {
+		memory.set(unit, { kind, progress, time, releasedAt: null })
+		return { spec: poses[kind], coil: poseWindup(progress), strike: 0, hop: 0 }
+	}
+	if (!rec) return null
+	if (rec.releasedAt == null && rec.kind && rec.progress >= RELEASED && time - rec.time < 6)
+		rec.releasedAt = time
+	rec.time = time
+	rec.kind = rec.releasedAt == null ? null : rec.kind
+	memory.set(unit, rec)
+	if (rec.releasedAt == null) return null
+	const out = released(poses[rec.kind], (time - rec.releasedAt) * STEP)
+	if (!out) memory.delete(unit)
+	return out
 }
 
-// Extra bodies belong to the hero folder; the view runner just forwards the sim lists.
-export function extras(scene) {
-	const group = new THREE.Group()
-	group.name = 'mandador-cutouts-and-tethers'
-	scene.add(group)
-	const t = look.silhouettes
-	const grey = makeStyleMaterial('scenery', { flat: true })
-	const ink = makeStyleMaterial('ink', { flat: true })
-	const red = makeStyleMaterial('teamB', { flat: true })
-	const cream = makeStyleMaterial('cream', { flat: true })
-	const body = new THREE.BoxGeometry(t.mandadorWidth, t.mandadorHeight, t.mandadorDepth)
-	const cone = new THREE.CylinderGeometry(
-		t.megaphoneRadius,
-		t.arrowRadius,
-		t.megaphoneLength,
-		t.segments,
-	).rotateX(-Math.PI / 2)
-	const line = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2).translate(0, 0, -0.5)
-	const cutouts = new Map(),
-		tethers = new Map()
-	function strip(parent, material, from, to, width) {
-		const m = new THREE.Mesh(line, material)
-		m.position.set(from.x, tune.map.markerLayers.aim, from.z)
-		m.rotation.y = Math.atan2(to.x - from.x, to.z - from.z) + Math.PI
-		m.scale.set(width, 1, Math.hypot(to.x - from.x, to.z - from.z))
-		parent.add(m)
-	}
+// `seconds` after the release: the snap runs to 1 and the coil it came from lets go; null once settled.
+function released(spec, seconds) {
+	const fire = clamp01(seconds / Math.max(STEP, spec.snap))
+	const settle = 1 - clamp01((seconds - spec.snap) / Math.max(STEP, spec.recover))
+	if (settle <= 0) return null
 	return {
-		update({ cutouts: live = [], units = [], bounds, obstacles = [], alpha = 0 }) {
-			const ids = new Set(live.map((c) => c.id))
-			for (const [id, r] of cutouts)
-				if (!ids.has(id)) {
-					group.remove(r, r.userData.tell)
-					cutouts.delete(id)
-				}
-			for (const c of live) {
-				let root = cutouts.get(c.id)
-				if (!root) {
-					root = new THREE.Group()
-					const bar = new THREE.Mesh(body, grey)
-					bar.position.y = t.mandadorHeight / 2
-					root.add(bar)
-					const megaphone = new THREE.Mesh(cone, ink)
-					megaphone.position.set(0, t.mandadorHeight / 2, t.megaphoneZ)
-					root.add(megaphone)
-					root.userData.tell = new THREE.Group()
-					group.add(root.userData.tell, root)
-					cutouts.set(c.id, root)
-				}
-				root.position.set((c.prevX ?? c.x) + (c.x - (c.prevX ?? c.x)) * alpha, 0, c.z)
-				root.rotation.y = c.cast?.yaw ?? (c.flank < 0 ? Math.PI : 0)
-				const tell = root.userData.tell
-				tell.clear()
-				if (c.cast) {
-					const from = mandadorThrowOrigin({ ...c, x: root.position.x }, bounds, obstacles)
-					const end = {
-						x: from.x + c.cast.dir.x * tune.outThrow.range,
-						z: from.z + c.cast.dir.z * tune.outThrow.range,
-					}
-					const length =
-						tune.outThrow.range *
-						Math.min(
-							sweepObstacles(from, end, tune.outThrow.radius, obstacles) ?? 1,
-							mapExit(from, end, tune.outThrow.radius, bounds) ?? 1,
-						)
-					const to = { x: from.x + c.cast.dir.x * length, z: from.z + c.cast.dir.z * length }
-					strip(tell, red, from, to, tune.outThrow.radius * 2)
-					const progress = 1 - (c.cast.left - alpha) / Math.max(1, c.cast.total)
-					strip(
-						tell,
-						cream,
-						from,
-						{ x: from.x + (to.x - from.x) * progress, z: from.z + (to.z - from.z) * progress },
-						tune.outThrow.radius,
-					)
-				}
-			}
-			for (const r of tethers.values()) group.remove(r)
-			tethers.clear()
-			for (const u of units) {
-				if (u.dead || u.cast?.ability !== 'tagOut') continue
-				const ally = units.find((a) => a.id === u.cast.targetId)
-				if (!ally || ally.dead) continue
-				const from = u.body.mesh.position,
-					to = ally.body.mesh.position
-				const length = Math.hypot(to.x - from.x, to.z - from.z),
-					spacing = tune.tagOut.view.dashSpacing
-				const tether = new THREE.Group()
-				for (let along = 0; along < length; along += spacing) {
-					const end = Math.min(length, along + spacing * tune.tagOut.view.dashFill)
-					strip(
-						tether,
-						red,
-						{
-							x: from.x + ((to.x - from.x) * along) / length,
-							z: from.z + ((to.z - from.z) * along) / length,
-						},
-						{
-							x: from.x + ((to.x - from.x) * end) / length,
-							z: from.z + ((to.z - from.z) * end) / length,
-						},
-						tune.tagOut.radius * 2,
-					)
-				}
-				group.add(tether)
-				tethers.set(u.id, tether)
-			}
+		spec,
+		coil: (1 - fire) * settle,
+		strike: poseStrike(fire, settle),
+		hop: Math.sin(Math.PI * fire) * settle,
+	}
+}
+
+export function animate(unit, rig, { pose, progress, alpha, time, costume }) {
+	const t = look.silhouettes
+	const base = -t.mandadorHeight / 2 + t.mandadorHeight * 0.6
+	rig.hand.position.y = base
+	rig.hand.position.z = 0
+	rig.cone.rotation.x = 0
+	costume.position.set(0, 0, 0)
+	costume.scale.set(1, 1, 1)
+	const action = actionOf(unit, pose, progress, time, alpha)
+	if (!action) return
+	const { spec, coil, strike, hop } = action
+	costume.rotation.x = spec.back * coil - spec.forward * strike
+	costume.rotation.z = (spec.roll ?? 0) * coil - (spec.rollStrike ?? 0) * strike
+	rig.hand.position.z = (spec.handBack ?? 0) * coil - (spec.handReach ?? 0) * strike
+	rig.hand.position.y = base + (spec.handLift ?? 0) * coil - (spec.handDrop ?? 0) * strike
+	rig.cone.rotation.x = (spec.cone ?? 0) * coil + (spec.coneStrike ?? 0) * strike
+	const crouch = (spec.crouch ?? 0) * coil
+	costume.scale.set(1 + crouch * 0.4, 1 - crouch + (spec.stretch ?? 0) * strike, 1)
+	costume.position.y = (spec.hop ?? 0) * hop
+}
+
+// Everything the hero draws beyond its body: the swap tether and marks, the status marks, and the out-of-play cutouts.
+export function extras(scene) {
+	const cutouts = createMandadorCutouts(scene)
+	const marks = createMandadorMarks(scene)
+	return {
+		update(frame) {
+			cutouts.update(frame)
+			marks.update(frame)
 		},
+		contact: (fact) => marks.contact(fact),
 		dispose() {
-			scene.remove(group)
-			for (const owned of [grey, ink, red, cream, body, cone, line]) owned.dispose()
+			cutouts.dispose()
+			marks.dispose()
 		},
 	}
 }

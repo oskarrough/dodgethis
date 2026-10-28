@@ -213,7 +213,7 @@ export const tune = {
 		maxSeconds: 900,
 	},
 	scripted: { think: 0.1, tell: 0.3, retreat: 0.35, recover: 0.9, file: 2, hold: 3 },
-	proof: { batch: 3600, trace: 128 },
+	proof: { batch: 3600, trace: 128, facts: 512 },
 	hud: {
 		feedLife: 4,
 		feedLines: 5, // lines on the feed drum, newest at the front
@@ -358,7 +358,7 @@ export const tune = {
 	attack: {
 		damage: 90,
 		rate: 1,
-		windup: 0.15,
+		windup: 0.3,
 		backswing: 0.25,
 		speed: 24,
 		radius: 0.12,

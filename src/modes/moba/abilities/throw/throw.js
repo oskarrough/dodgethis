@@ -1,6 +1,7 @@
 export default {
 	name: 'Throw',
 	kind: 'shot',
+	projectileShape: 'ball',
 	catchable: true,
 	tell: 'line',
 	held: 'line',
@@ -11,6 +12,19 @@ export default {
 		sentence: `Throws a yo-yo up to {range}; the first enemy hit takes {damage:damage} and is dragged to {dragDistance} in front of you.`,
 	},
 	stages: {
+		hit: {
+			after({ hero, ability, event, present }) {
+				if (!event.shot?.hitEffects || !event.target || event.target.dead || hero.dead) return
+				present({
+					type: 'contact',
+					part: 'reel',
+					source: hero.id,
+					target: event.target.id,
+					ability: ability.id,
+					point: { ...event.target.body.position },
+				})
+			},
+		},
 		release: [
 			{
 				deliver: 'shot',

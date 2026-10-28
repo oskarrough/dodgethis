@@ -1,15 +1,19 @@
 import * as THREE from 'three'
 import { STEP } from '../../../../core/app.js'
+import { PALETTE } from '../../../../core/style.js'
 import { makeStyleMaterial } from '../../../../core/stylepass.js'
 import { tune } from '../../tune.js'
+import { createEffects } from '../../effects.js'
 
 const GROUND = tune.map.printLayers.seams + 0.006
 
 // The chalk ring: strokes in the caster's colour drawn round in a quarter second, a cream
 // inner line, dust kicked up along the rim. It creeps round while it lasts and rubs out at the end.
+// The call lands as strokes thrown from its middle out to the rim, in the caster's colour.
 export function extras(scene) {
 	const group = new THREE.Group()
 	scene.add(group)
+	const effects = createEffects(group)
 	const owned = []
 	const own = (o) => {
 		owned.push(o)
@@ -62,13 +66,15 @@ export function extras(scene) {
 	function clear() {
 		for (const r of rings.values()) group.remove(r.root)
 		rings.clear()
+		effects.reset()
 	}
 
 	return {
 		update({ groundFields = [], tick, alpha = 0 }) {
-			if (tick < last) clear() // a replay seek or a reset
-			last = tick
 			const now = tick + alpha
+			if (now < last) clear() // a replay seek or a reset
+			effects.update(Number.isFinite(last) && now >= last ? (now - last) * STEP : 0)
+			last = now
 			const fields = groundFields.filter((f) => f.ability === 'rallyRing' && f.until > now)
 			const ids = new Set(fields.map((f) => f.id))
 			for (const [id, r] of rings)
@@ -77,7 +83,25 @@ export function extras(scene) {
 					rings.delete(id)
 				}
 			for (const field of fields) {
-				if (!rings.has(field.id)) rings.set(field.id, draw(field))
+				if (!rings.has(field.id)) {
+					rings.set(field.id, draw(field))
+					// A ring seen late (a guest joining, a seek) lands without the call.
+					if ((now - field.from) * STEP < v.callLate)
+						effects.spokes(
+							{ x: field.x, z: field.z },
+							{
+								color: PALETTE[field.team === 'A' ? 'teamA' : 'teamB'],
+								ink: PALETTE.ink,
+								count: v.callSpokes,
+								from: field.radius * v.callFrom,
+								to: field.radius * v.callTo,
+								inner: v.callInner,
+								width: v.callWidth,
+								life: v.callLife,
+								turn: field.from * 0.7,
+							},
+						)
+				}
 				const r = rings.get(field.id)
 				const age = (now - r.from) * STEP
 				const left = (r.until - now) * STEP
@@ -102,6 +126,7 @@ export function extras(scene) {
 		},
 		dispose() {
 			clear()
+			effects.dispose()
 			scene.remove(group)
 			for (const o of owned) o.dispose()
 		},

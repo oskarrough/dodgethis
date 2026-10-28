@@ -4,44 +4,49 @@ export default {
 	range: 8,
 	radius: 0.6, // the aim marker
 	jumps: 3,
+	flight: 0.12, // seven ticks per link: the visible ball and damage arrive together
 	jumpRange: 4.5,
 	falloff: 0.2,
 	cooldown: 9,
-	// Each hop pings: a bright little flare, one ring, and the target knocked aside.
+	// Each arrival is a four-point strike, with a brief local hold on the body.
+	juice: { hit: { count: 0, speed: 0, life: 0.1, size: 0.1 } },
 	impact: {
+		flare: null,
+		ripples: null,
 		splash: 0.8,
-		flare: { size: 1.5, streak: 2.6, life: 0.2, color: '#fff6dc' },
-		ripples: { count: 1, from: 0.4, to: 1.2, life: 0.25, width: 0.08 },
+		spokes: { count: 4, from: 0.25, to: 1.15, width: 0.12, life: 0.16, color: '#fff6dc' },
 		skid: 0.3,
 		hold: 0.035,
 	},
 	sound: {
 		cast: { freq: 520, slideTo: 780, type: 'triangle', dur: 0.1, gain: 0.1 },
-		impact: { freq: 1300, slideTo: 900, type: 'square', dur: 0.06, gain: 0.09 },
+		impact: {
+			freq: 1300,
+			slideTo: 900,
+			type: 'square',
+			dur: 0.06,
+			gain: 0.09,
+		},
 	},
 	view: {
-		hopTime: 0.11, // the ball's flight between two bodies; hits land at once, so keep it short
-		arc: 0.9, // height of each hop
+		arc: 0.35, // height of each hop
 		height: 1, // where it meets a body
 		ballRadius: 0.27,
 		dashSpacing: 0.45,
 		dashFill: 0.5,
 		tetherWidth: 0.1,
-		ringFrom: 0.3,
-		ringTo: 1.1,
-		ringLife: 0.25,
-		ringWidth: 0.08,
+		traceLife: 0.16,
 	},
 }
 
 // The dimension of each number above that its name alone does not settle (src/modes/moba/units.js).
 export const units = {
+	'pinball.flight': 's',
+	'pinball.impact.spokes.from': 'm',
 	'pinball.jumps': 'count',
 	'pinball.jumpRange': 'm',
 	'pinball.falloff': 'fraction',
-	'pinball.view.hopTime': 's',
 	'pinball.view.arc': 'height m',
 	'pinball.view.dashFill': 'fraction',
-	'pinball.view.ringLife': 's',
-	'pinball.view.ringWidth': 'fraction',
+	'pinball.view.traceLife': 's',
 }

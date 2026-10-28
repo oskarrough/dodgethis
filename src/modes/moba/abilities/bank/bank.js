@@ -9,7 +9,7 @@ export default {
 	aimAssist: true,
 	tell: 'line',
 	held: 'line',
-	effects: { cast: 'nock', projectile: 'loose', hit: 'looseHit', pose: 'draw' },
+	effects: { cast: true, projectile: true, hit: true, pose: 'bank' },
 	card: {
 		sentence: `Shoots a ball up to {range} that bounces off walls and cover up to {bank.bounce.max} times, hitting the first unit for {damage:damage} plus {bank.bounce.damagePerCushion:damage} per bounce.`,
 	},

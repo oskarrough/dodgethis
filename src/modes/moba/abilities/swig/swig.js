@@ -15,7 +15,7 @@ export default {
 	cancelOnCast: true,
 	effects: { cast: true, pose: 'swig' },
 	card: {
-		sentence: `Roots you to drink for up to {duration}, gaining {shieldPerSecond} of [[Shield]]; moving, casting or a [[Stun]] stops the drink.`,
+		sentence: `Roots you to drink for up to {duration}, gaining {shieldPerSecond} of [[Shield]] each second; moving, casting or a [[Stun]] stops the drink.`,
 		facts: [['Shield lasts', `{shieldLife}`]],
 	},
 	onTick({ hero, sim, ability, dt, tick }) {

@@ -7,10 +7,12 @@ export default {
 	slow: 0.4,
 	duration: 1.5,
 	cooldown: 6,
-	// Caught in the rope: the target is held a beat longer and rings close in like a lasso drawing tight.
+	// The sweep is drawn once at release; contact cinches a single loop around each victim.
 	impact: {
-		ripples: { count: 3, from: 1.4, to: 0.6, life: 0.32, gap: 0.06, width: 0.06 },
-		hold: 0.08,
+		// The release arc owns hits and misses; suppress the shared miss flare too.
+		flare: null,
+		ripples: { count: 1, from: 1.1, to: 0.65, life: 0.16, width: 0.08 },
+		hold: 0.055,
 		skid: 0.1,
 	},
 	sound: {
@@ -18,6 +20,6 @@ export default {
 		impact: { freq: 420, slideTo: 110, type: 'sawtooth', dur: 0.18, gain: 0.17 },
 	},
 	juice: {
-		impact: { count: 16, speed: 2.2, life: 0.32, size: 0.07 },
+		impact: { count: 0, speed: 2.2, life: 0.32, size: 0.07 },
 	},
 }

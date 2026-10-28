@@ -9,14 +9,20 @@ import abilities_cushion, {
 	units as abilities_cushion_units,
 } from './abilities/cushion/cushion-tune.js'
 import abilities_dive from './abilities/dive/dive-tune.js'
-import abilities_flyingKick from './abilities/flyingKick/flyingKick-tune.js'
-import abilities_gloveSlap from './abilities/gloveSlap/gloveSlap-tune.js'
+import abilities_flyingKick, {
+	units as abilities_flyingKick_units,
+} from './abilities/flyingKick/flyingKick-tune.js'
+import abilities_gloveSlap, {
+	units as abilities_gloveSlap_units,
+} from './abilities/gloveSlap/gloveSlap-tune.js'
 import abilities_lob, { units as abilities_lob_units } from './abilities/lob/lob-tune.js'
 import abilities_loose from './abilities/loose/loose-tune.js'
 import abilities_mend, { units as abilities_mend_units } from './abilities/mend/mend-tune.js'
-import abilities_outThrow from './abilities/outThrow/outThrow-tune.js'
+import abilities_outThrow, {
+	units as abilities_outThrow_units,
+} from './abilities/outThrow/outThrow-tune.js'
 import abilities_palmStrike from './abilities/palmStrike/palmStrike-tune.js'
-import abilities_pass from './abilities/pass/pass-tune.js'
+import abilities_pass, { units as abilities_pass_units } from './abilities/pass/pass-tune.js'
 import abilities_pinball, {
 	units as abilities_pinball_units,
 } from './abilities/pinball/pinball-tune.js'
@@ -27,7 +33,9 @@ import abilities_rallyRing, {
 import abilities_redLight from './abilities/redLight/redLight-tune.js'
 import abilities_slam, { units as abilities_slam_units } from './abilities/slam/slam-tune.js'
 import abilities_slide from './abilities/slide/slide-tune.js'
-import abilities_sprinkler from './abilities/sprinkler/sprinkler-tune.js'
+import abilities_sprinkler, {
+	units as abilities_sprinkler_units,
+} from './abilities/sprinkler/sprinkler-tune.js'
 import abilities_stagger from './abilities/stagger/stagger-tune.js'
 import abilities_swap from './abilities/swap/swap-tune.js'
 import abilities_swig from './abilities/swig/swig-tune.js'
@@ -36,12 +44,16 @@ import abilities_tagOut, {
 	units as abilities_tagOut_units,
 } from './abilities/tagOut/tagOut-tune.js'
 import abilities_tangle from './abilities/tangle/tangle-tune.js'
-import abilities_tennisBall from './abilities/tennisBall/tennisBall-tune.js'
+import abilities_tennisBall, {
+	units as abilities_tennisBall_units,
+} from './abilities/tennisBall/tennisBall-tune.js'
 import abilities_throw from './abilities/throw/throw-tune.js'
 import abilities_toss, { units as abilities_toss_units } from './abilities/toss/toss-tune.js'
 import abilities_vault from './abilities/vault/vault-tune.js'
 import abilities_ward, { units as abilities_ward_units } from './abilities/ward/ward-tune.js'
-import abilities_waterFlick from './abilities/waterFlick/waterFlick-tune.js'
+import abilities_waterFlick, {
+	units as abilities_waterFlick_units,
+} from './abilities/waterFlick/waterFlick-tune.js'
 import abilities_yoYoFlick from './abilities/yoYoFlick/yoYoFlick-tune.js'
 import encounters_barquero, {
 	units as encounters_barquero_units,
@@ -67,7 +79,7 @@ import heroes_kappa from './heroes/kappa/kappa-tune.js'
 import heroes_lasso from './heroes/lasso/lasso-tune.js'
 import heroes_mandador, { units as heroes_mandador_units } from './heroes/mandador/mandador-tune.js'
 import heroes_oolong, { units as heroes_oolong_units } from './heroes/oolong/oolong-tune.js'
-import heroes_salvia from './heroes/salvia/salvia-tune.js'
+import heroes_salvia, { units as heroes_salvia_units } from './heroes/salvia/salvia-tune.js'
 import heroes_undine, { units as heroes_undine_units } from './heroes/undine/undine-tune.js'
 import maps_altamesa, { units as maps_altamesa_units } from './maps/altamesa/altamesa-tune.js'
 import maps_flagfall, { units as maps_flagfall_units } from './maps/flagfall/flagfall-tune.js'
@@ -150,14 +162,21 @@ export const units = {
 	...abilities_balloon_units,
 	...abilities_bank_units,
 	...abilities_cushion_units,
+	...abilities_flyingKick_units,
+	...abilities_gloveSlap_units,
 	...abilities_lob_units,
 	...abilities_mend_units,
+	...abilities_outThrow_units,
+	...abilities_pass_units,
 	...abilities_pinball_units,
 	...abilities_rallyRing_units,
 	...abilities_slam_units,
+	...abilities_sprinkler_units,
 	...abilities_tagOut_units,
+	...abilities_tennisBall_units,
 	...abilities_toss_units,
 	...abilities_ward_units,
+	...abilities_waterFlick_units,
 	...encounters_barquero_units,
 	...encounters_carillon_units,
 	...encounters_espejo_units,
@@ -167,6 +186,7 @@ export const units = {
 	...encounters_tinajaBotijo_units,
 	...heroes_mandador_units,
 	...heroes_oolong_units,
+	...heroes_salvia_units,
 	...heroes_undine_units,
 	...maps_altamesa_units,
 	...maps_flagfall_units,

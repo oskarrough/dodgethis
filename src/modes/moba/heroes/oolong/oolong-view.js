@@ -1,5 +1,8 @@
 import * as THREE from 'three'
 import { tune } from '../../tune.js'
+import { STEP } from '../../../../core/app.js'
+import { makeStyleMaterial } from '../../../../core/stylepass.js'
+import { poseWindup, poseStrike } from '../../pose-curve.js'
 
 export function dress({ torso, part, detail, face, own, discY, materials }) {
 	const v = tune.heroes.oolong.view
@@ -66,27 +69,154 @@ export function dress({ torso, part, detail, face, own, discY, materials }) {
 		discY + v.palmY,
 		v.palmZ,
 	)
-	return { jug, palm, jugY: discY + v.jugY, swig: 0, last: null }
+	// A tucked heel only clears the hem during the kick; the resting silhouette stays a drum.
+	const heel = part(new THREE.BoxGeometry(v.heelWidth, v.heelHeight, v.heelLength), materials.cream)
+	// Two broken cuffs carry the debt and the tea shield without painting another danger area.
+	const cuff = (material, start) =>
+		part(
+			new THREE.RingGeometry(
+				v.cuffRadius - v.cuffWidth,
+				v.cuffRadius,
+				12,
+				1,
+				start,
+				Math.PI,
+			).rotateX(-Math.PI / 2),
+			material,
+			0,
+			discY + v.sashY,
+			0,
+		)
+	const debt = cuff(materials.ink, 0)
+	const shield = cuff(own(makeStyleMaterial('cream', { flat: true })), Math.PI)
+	return {
+		jug,
+		palm,
+		heel,
+		debt,
+		shield,
+		discY,
+		jugY: discY + v.jugY,
+		last: null,
+		drinkEnd: -Infinity,
+		drinkAmount: 0,
+		kicked: false,
+		kickEnd: -Infinity,
+	}
 }
 export function animate(unit, rig, { costume, pose, progress, time, alpha }) {
 	const v = tune.heroes.oolong.view
-	// Ease the drink in and out instead of snapping between poses.
-	const drinking = unit?.channel?.ability === 'swig'
-	const step = rig.last === null ? 0 : Math.max(0, time - rig.last)
+	// History is only for the two short recoveries; all sustained poses read replicated state.
+	if (!unit || unit.dead || (rig.last !== null && time < rig.last)) {
+		rig.drinkEnd = rig.kickEnd = -Infinity
+		rig.drinkAmount = 0
+		rig.kicked = false
+	}
 	rig.last = time
-	rig.swig += ((drinking ? 1 : 0) - rig.swig) * Math.min(1, step / v.swigEase)
-	const s = rig.swig * rig.swig * (3 - 2 * rig.swig)
-	rig.jug.rotation.x = v.drinkTilt * s
-	rig.jug.position.y = rig.jugY + v.drinkLift * s
-	rig.palm.position.z = v.palmZ
-	if (drinking || s > 0.01) costume.rotation.x = -v.drinkLean * s
-	else if (pose === 'flyingKick' || unit?.dashAbility === 'flyingKick')
-		costume.rotation.x = -v.kickLean * (pose ? progress : 1)
-	else if (unit?.stance?.ability === 'stagger') costume.rotation.z = Math.sin(time) * v.staggerLean
-	else if (unit?.attack)
-		rig.palm.position.z -=
-			v.strikeReach *
-			(unit.attack.phase === 'windup'
-				? Math.max(0, 1 - (unit.attack.left - alpha) / Math.max(1, unit.attack.total))
-				: 1)
+	costume.position.set(0, 0, 0)
+	costume.scale.set(1, 1, 1)
+	rig.jug.position.set(0, rig.jugY, v.jugZ)
+	rig.jug.rotation.set(0, 0, 0)
+	rig.palm.position.set(v.palmX, rig.discY + v.palmY, v.palmZ)
+	rig.palm.scale.set(1, 1, 1)
+	rig.heel.visible = rig.debt.visible = rig.shield.visible = false
+	if (!unit || unit.dead) return
+
+	const active = (key) =>
+		unit.statuses?.find((s) => s.key === key && (s.until == null || s.until > time))
+	const bank = active('stagger.bank')
+	const shield = active('swig.shield')
+	const burden = Math.min(1, (bank?.amount ?? 0) / Math.max(1, unit.maxHp * v.debtFraction))
+	rig.debt.visible = burden > 0
+	rig.debt.scale.setScalar(1 + burden * v.debtGrow)
+	rig.shield.visible = (shield?.amount ?? 0) > 0
+	const fullShield = Math.max(1, tune.swig.shieldPerSecond * tune.swig.duration)
+	rig.shield.scale.setScalar(1 + v.shieldGrow * Math.min(1, (shield?.amount ?? 0) / fullShield))
+
+	const drinking = unit.channel?.ability === 'swig'
+	const drinkAge = drinking ? (unit.channel.total - unit.channel.left + alpha) * STEP : 0
+	const lift = drinking ? poseWindup(drinkAge / v.drinkRaise) : 0
+	if (drinking) {
+		rig.drinkAmount = lift
+		rig.drinkEnd = time
+	}
+	const lower = Math.max(0, 1 - ((time - rig.drinkEnd) * STEP) / v.drinkRecover)
+	const sip = drinking ? Math.sin((drinkAge * Math.PI) / v.gulpPeriod) ** 4 : 0
+	const drink = drinking ? lift : rig.drinkAmount * lower * lower
+
+	const kicking = unit.dashAbility === 'flyingKick' && unit.body.dashing
+	if (rig.kicked && !kicking) rig.kickEnd = time
+	rig.kicked = kicking
+	const landing = Math.max(0, 1 - ((time - rig.kickEnd) * STEP) / v.kickRecover)
+	const brace = unit.stance?.ability === 'stagger'
+	if (brace) {
+		const age = Math.max(0, tune.stagger.duration - (unit.stance.until - time) * STEP)
+		const plant = poseWindup(age / v.braceTime)
+		costume.scale.set(1 + v.braceWide * plant, 1 - v.braceLow * plant, 1)
+		costume.rotation.x = v.staggerLean * plant
+		costume.rotation.z = -v.staggerLean * burden
+		rig.palm.position.set(v.guardX, rig.discY + v.guardY, v.guardZ)
+		rig.palm.scale.set(v.guardWide, 1, v.palmFlat)
+		rig.jug.position.x = -v.guardX
+	}
+	if (drinking || drink > 0.001) {
+		rig.jug.rotation.x = -v.drinkTilt * drink - v.gulpTilt * sip
+		rig.jug.position.y += v.drinkLift * drink + v.gulpLift * sip
+		rig.jug.position.z -= v.drinkReach * drink
+		rig.palm.position.set(
+			v.guardX * (1 - drink),
+			rig.discY + v.palmY + v.drinkLift * drink,
+			v.palmZ - v.drinkReach * drink,
+		)
+		costume.rotation.x = -v.drinkLean * drink
+	}
+	if (pose === 'flyingKick') {
+		const coil = poseWindup(progress)
+		costume.rotation.x = v.kickCoil * coil
+		costume.rotation.y = -v.kickTurn * coil
+		costume.scale.set(1 + v.braceWide * coil, 1 - v.braceLow * coil, 1)
+		rig.palm.position.z += v.palmPull * coil
+		rig.heel.visible = true
+		rig.heel.position.set(-v.heelX, rig.discY + v.heelLift * coil, -v.heelTuck)
+		rig.heel.rotation.x = -v.kickCoil * coil
+	} else if (kicking || (landing > 0 && !drinking && !unit.attack && !pose && !brace)) {
+		const extend = kicking ? 1 : poseStrike(1, landing * landing)
+		costume.rotation.x = -v.kickLean * extend
+		costume.rotation.y = v.kickTurn * extend
+		rig.heel.visible = true
+		rig.heel.position.set(
+			-v.heelX,
+			rig.discY + v.heelLift * extend,
+			-v.heelTuck - v.heelReach * extend,
+		)
+		rig.heel.rotation.x = v.kickLean * extend
+		rig.jug.position.z += v.jugFollow * extend
+		rig.palm.position.z += v.palmPull * extend
+		if (!kicking) costume.scale.y = 1 - v.landLow * Math.sin(Math.PI * landing)
+	}
+	if (unit.attack) {
+		const attack = unit.attack
+		const winding = attack.phase === 'windup'
+		const coil = winding
+			? poseWindup(Math.max(0, 1 - (attack.left - alpha) / Math.max(1, attack.total)))
+			: 0
+		const elapsed = (time - attack.startedTick) * STEP
+		const settle = Math.max(
+			0,
+			((attack.left - alpha) * STEP) / Math.max(STEP, tune.palmStrike.backswing),
+		)
+		// Contact is the first backswing tick, so the palm is already extended there.
+		const strike = winding ? 0 : poseStrike(1, settle)
+		costume.rotation.y = -v.palmTurn * coil + v.palmTurn * strike
+		costume.rotation.x = v.palmLean * coil - v.palmLean * strike
+		rig.palm.position.x = v.palmX - v.palmCross * strike
+		rig.palm.position.z = v.palmZ + v.palmPull * coil - v.strikeReach * strike
+		rig.palm.scale.set(
+			1 + v.palmOpen * strike,
+			1 + v.palmOpen * strike,
+			1 - (1 - v.palmFlat) * strike,
+		)
+		rig.jug.rotation.z =
+			v.palmLean * strike * Math.max(0, 1 - elapsed / Math.max(STEP, tune.palmStrike.backswing))
+	}
 }

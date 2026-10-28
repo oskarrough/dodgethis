@@ -304,6 +304,7 @@ export function createCasting(ctx) {
 			phase: 'windup',
 			left: ticks(basic.windup),
 			total: ticks(basic.windup),
+			startedTick: ctx.t,
 		}
 		h.yaw = yawOf(at.x - p.x, at.z - p.z)
 		trace(h, h.attack, at, basic.id)

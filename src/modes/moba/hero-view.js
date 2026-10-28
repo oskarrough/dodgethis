@@ -230,6 +230,7 @@ export function dressHero(body, heroId = DEFAULT_HERO, team = 'A') {
 		releasePose = null
 		releaseTick = -Infinity
 		costume.rotation.set(0, 0, 0)
+		costume.scale.set(1, 1, 1)
 		drawn.visible = false
 		body.poseAbility?.(null, 0, null, Number.isFinite(lastTick) ? lastTick : 0)
 	}

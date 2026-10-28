@@ -1,4 +1,8 @@
 import * as THREE from 'three'
+import { STEP } from '../../../../core/app.js'
+import { tune } from '../../tune.js'
+import { ticks } from '../../sim-kit.js'
+import { poseWindup, poseStrike } from '../../pose-curve.js'
 import { makeStyleMaterial } from '../../../../core/stylepass.js'
 
 // Carambola's build, in metres and radians. Forward is -z; heights are above the foot disc.
@@ -210,5 +214,106 @@ export function dress({ costume, torso, discY, part, detail, face, own, roots, t
 			y(view.netY),
 			view.netZ,
 		)
-	return {}
+	const sweep = new THREE.Group()
+	// A single cut of cream follows the paddle; its ink edge keeps it legible on stone.
+	for (const [material, inner, outer] of [
+		[ink, 0.72, 1.12],
+		[cream, 0.79, 1.05],
+	]) {
+		const arc = part(
+			new THREE.RingGeometry(inner, outer, 20, 1, 0.1, 1.8).rotateX(-Math.PI / 2),
+			material,
+			0,
+			material === cream ? 0.012 : 0,
+			0,
+			sweep,
+		)
+		arc.rotation.y = -1.7
+	}
+	sweep.position.set(0, y(view.paddleY), -0.25)
+	costume.add(sweep)
+	roots.push(sweep)
+	const motion = tune.heroes.carambola.view
+	return {
+		paddle,
+		paddleY: y(view.paddleY),
+		sweep,
+		releases: Object.fromEntries(
+			['bank', 'lob', 'pinball'].map((key) => [
+				key,
+				{ snap: motion[key].releaseSnap, recover: motion[key].releaseRecover },
+			]),
+		),
+	}
+}
+
+// The body stays planted; the open blade carries the action's silhouette.
+export function animate(
+	unit,
+	rig,
+	{ pose, progress, alpha, time, releasing, releasePose, fire, settle, costume },
+) {
+	const { paddle, paddleY, sweep } = rig
+	paddle.position.set(view.paddleX, paddleY, view.paddleZ)
+	paddle.rotation.set(view.paddleTilt, 0, -view.paddleTilt)
+	sweep.visible = false
+	let action = releasing ? releasePose : pose
+	let coil = pose ? poseWindup(progress) : releasing ? (1 - fire) * settle : 0
+	let strike = releasing ? poseStrike(fire, settle) : 0
+	const attack = unit?.attack
+	if (!pose && !releasing && attack) {
+		action = 'basic'
+		const m = tune.heroes.carambola.view.basic
+		if (attack.phase === 'windup') {
+			const total = attack.total ?? ticks(unit.definition.basic.windup)
+			coil = poseWindup(1 - (attack.left - alpha) / Math.max(1, total))
+		} else {
+			const elapsed = Math.max(0, (time - attack.startedTick) * STEP)
+			const f = Math.min(1, elapsed / Math.max(STEP, m.releaseSnap))
+			const s = Math.max(
+				0,
+				1 - Math.max(0, elapsed - m.releaseSnap) / Math.max(STEP, m.releaseRecover),
+			)
+			coil = (1 - f) * s
+			strike = poseStrike(f, s)
+		}
+	}
+	const m = tune.heroes.carambola.view[action]
+	if (!m) return
+	costume.rotation.y = -m.swingTurn * coil + m.swingTurn * 0.65 * strike
+	costume.rotation.x = -m.lean * coil + m.lean * strike
+	paddle.position.z += m.reach * coil - m.reach * strike
+	paddle.position.x += m.reach * 0.25 * coil - m.reach * 0.4 * strike
+	paddle.position.y +=
+		action === 'lob' ? -m.height * 0.35 * coil + m.height * strike : m.height * coil
+	paddle.rotation.y += -m.swingTurn * coil + m.swingTurn * strike
+	paddle.rotation.x += action === 'lob' ? -0.6 * coil + 1.1 * strike : -0.35 * strike
+	paddle.rotation.z -= m.lean * coil
+	sweep.visible = strike > 0.35
+	sweep.scale.setScalar(0.85 + 0.35 * strike)
+	sweep.rotation.y = -m.swingTurn * strike
+	sweep.rotation.x = action === 'lob' ? -0.8 : 0
+}
+
+// Zone and summon releases carry a contact fact; cancellation never produces one.
+// Queue at most one per caster until the next presentation update, also on guests.
+export function extras() {
+	const releases = new Map()
+	let last = -Infinity
+	return {
+		contact(fact) {
+			if (fact.part === 'release' && ['lob', 'pinball'].includes(fact.ability))
+				releases.set(fact.source, fact)
+		},
+		update({ units = [], tick }) {
+			if (tick < last) releases.clear()
+			last = tick
+			for (const [id, fact] of releases)
+				units.find((u) => u.id === id)?.body.releaseAbilityPose?.(fact.ability, fact.tick)
+			releases.clear()
+		},
+		dispose() {
+			releases.clear()
+		},
+	}
 }

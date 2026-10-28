@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { FORWARD_LAYER, glows } from '../../core/stylepass.js'
 
-// The effects kit: short-lived world marks any view composes (ground ring, light column, shell, airbrushed flare, smear),
+// The effects kit: short-lived world marks any view composes (ground ring, spokes, streak, light column, shell, airbrushed flare, smear),
 // the shell and link helpers for marks a view keeps, and `createImpacts`, which turns an ability's
 // `impact` recipe (its tune file) into kit marks, juice, a hit number and distance-scaled shake.
 const easeOut = (x) => 1 - (1 - x) ** 3
@@ -73,6 +73,32 @@ function arcGeometry(segments = 32) {
 	return geometry
 }
 
+// `count` tapered strokes laid radially between `inner` and 1 (unit radius), each a thin kite pointing outward.
+function spokeGeometry(count, inner, width) {
+	const positions = []
+	for (let i = 0; i < count; i++) {
+		const a = (i / count) * Math.PI * 2
+		const [sx, sz] = [Math.sin(a), Math.cos(a)]
+		// Root at `inner` (full width), tip at 1 (a point).
+		const root = [sx * inner, sz * inner]
+		const half = width / 2
+		positions.push(
+			root[0] + sz * half,
+			0,
+			root[1] - sx * half,
+			root[0] - sz * half,
+			0,
+			root[1] + sx * half,
+			sx,
+			0,
+			sz,
+		)
+	}
+	const geometry = new THREE.BufferGeometry()
+	geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
+	return geometry
+}
+
 const shellVert = `
 varying vec3 vNormal;
 varying vec3 vView;
@@ -125,6 +151,12 @@ export function createEffects(parent) {
 	const ringOf = (width) =>
 		rings.get(width) ??
 		rings.set(width, new THREE.RingGeometry(1 - width, 1, 64).rotateX(-Math.PI / 2)).get(width)
+	const spokes = new Map() // `${count}:${inner}:${width}` → geometry
+	const spokesOf = (count, inner, width) => {
+		const key = `${count}:${inner}:${width}`
+		return spokes.get(key) ?? spokes.set(key, spokeGeometry(count, inner, width)).get(key)
+	}
+	const streakBox = linkGeometry()
 	const column = new THREE.CylinderGeometry(1, 1, 1, 24, 1, true).translate(0, 0.5, 0)
 	const sphere = new THREE.SphereGeometry(1, 32, 20)
 	const live = [] // { mesh, age, life, step(k, mesh) }
@@ -157,9 +189,65 @@ export function createEffects(parent) {
 				mesh.material.opacity = opacity * (1 - Math.max(0, k))
 			})
 		},
+		// Radial strokes thrown out from `at` and thinning as they go: a landing, a call, a release. Opt-in, like every mark
+		// here. `from`/`to` are the outer radius in metres (strokes start at `inner` of it), `width` the root width as a
+		// fraction of that radius, `turn` rotates the set so two bursts never line up. Drawn flat on the ground.
+		spokes(
+			at,
+			{
+				color,
+				ink = '#26445f',
+				count = 10,
+				from = 0.6,
+				to = 2.2,
+				inner = 0.45,
+				width = 0.22,
+				life = 0.3,
+				y = 0.05,
+				opacity = 1,
+				turn = 0,
+				delay = 0,
+			},
+		) {
+			const total = life + delay
+			// An ink set a touch wider underneath, so the light strokes read on a pale floor (null: none).
+			for (const [tone, grow, lift] of ink
+				? [
+						[ink, 0.14, 0],
+						[color, 0, 0.01],
+					]
+				: [[color, 0, 0]])
+				add(spokesOf(count, inner, width + grow), glowMaterial(tone), at, total, (t, mesh) => {
+					const k = (t * total - delay) / life
+					mesh.visible = k >= 0
+					mesh.position.y = y + lift
+					mesh.rotation.y = turn + 0.25 * easeOut(Math.max(0, k))
+					mesh.scale.setScalar(from + (to - from) * easeOut(Math.max(0, k)))
+					mesh.material.opacity = opacity * (1 - Math.max(0, k)) ** 1.5
+				})
+		},
+		// A straight stroke between two ground points that thins to nothing and fades: the line a dash or a throw leaves,
+		// ink-edged like the smear. `y` and `toY` are heights at each end; it lies where it was drawn, however the unit moves on.
+		streak(
+			from,
+			to,
+			{ color, ink = '#26445f', width = 0.35, life = 0.25, y = 0.6, toY = y, opacity = 0.9 },
+		) {
+			for (const [tone, grow, lift] of ink
+				? [
+						[ink, 0.14, 0],
+						[color, 0, 0.01],
+					]
+				: [[color, 0, 0]])
+				add(streakBox, glowMaterial(tone), from, life, (k, mesh) => {
+					link(mesh, from, to, y + lift, (width + grow) * (1 - k), toY + lift)
+					mesh.material.opacity = opacity * (1 - k) ** 1.5
+				})
+		},
 		// An airbrushed glow at a point of contact with one hard horizontal flare through it, added as light.
 		// It blooms in the first fifth of its life and fades out after; `streak` is the flare's length in metres.
 		flare(at, { color = '#fff2cc', size = 1.6, streak = 3, life = 0.28, y = 0.9, opacity = 1 }) {
+			if (size <= 0 || life <= 0 || opacity <= 0) return
 			const { glow, streak: line } = airbrush()
 			const body = add(null, sprayMaterial(glow, color), at, life, (k, sprite) => {
 				const bloom = k < 0.2 ? easeOut(k / 0.2) : 1
@@ -257,7 +345,8 @@ export function createEffects(parent) {
 		},
 		dispose() {
 			this.reset()
-			for (const geometry of [...rings.values(), column, sphere]) geometry.dispose()
+			for (const geometry of [...rings.values(), ...spokes.values(), streakBox, column, sphere])
+				geometry.dispose()
 		},
 	}
 }
@@ -319,6 +408,13 @@ export function createImpacts({ effects, juice, camera, pop, feel = () => ({}) }
 				streak: (recipe.flare.streak ?? 3) * weight * s,
 			})
 		}
+		if (recipe.spokes)
+			effects?.spokes(at, {
+				...recipe.spokes,
+				from: (recipe.spokes.from ?? 0.6) * s,
+				to: (recipe.spokes.to ?? 2.2) * s,
+				turn: tick * 0.7, // seeded by the tick, so a replay draws the same burst
+			})
 		for (let i = 0; i < (recipe.ripples?.count ?? 0); i++) {
 			const r = recipe.ripples
 			effects?.ring(at, {

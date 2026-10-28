@@ -253,12 +253,15 @@ export function createSkillsView(scene) {
 		}
 		const definition = unit?.definition ?? heroDefinition()
 		const holding = Object.entries(definition.abilities).filter(([slot, a]) => held[slot] && a)
-		const circle = holding.find(([, a]) => ['circle', 'selfCircle'].includes(a.held))?.[1]
+		const castingZone = unit?.cast && castAbility(unit)?.kind === 'zone' ? castAbility(unit) : null
+		const circle =
+			holding.find(([, a]) => ['circle', 'selfCircle'].includes(a.held))?.[1] ?? castingZone
+		const circleAim = castingZone && castingZone === circle ? unit.cast.target : aim
 		const dash = holding.find(([, a]) => a.held === 'arrow')?.[1]
 		const cone = holding.find(([, a]) => a.held === 'cone')?.[1]
 		if (cone && !heldCone) heldCone = mesh(coneGeometry, ink)
 		if (heldCone) heldCone.visible = !!(cone && aim)
-		heldCircle.visible = !!(circle && aim)
+		heldCircle.visible = !!(circle && circleAim)
 		heldArrow.visible = !!(dash && aim)
 		if (aim) {
 			const dx = aim.x - hero.x,
@@ -270,13 +273,7 @@ export function createSkillsView(scene) {
 				heldCone.rotation.y = Math.atan2(dx, dz) + Math.PI
 				heldCone.scale.setScalar(cone.stats.radius)
 			}
-			if (circle) {
-				const stats = circle.stats,
-					reach = Math.min(1, stats.range / (distance || 1))
-				const at = clampMap({ x: hero.x + dx * reach, z: hero.z + dz * reach }, 0, bounds)
-				heldCircle.position.set(at.x, GROUND, at.z)
-				heldCircle.scale.setScalar(stats.radius)
-			}
+
 			if (dash) {
 				heldArrow.position.set(hero.x, GROUND + 0.001, hero.z)
 				heldArrow.rotation.y = Math.atan2(dx, dz) + Math.PI
@@ -291,6 +288,16 @@ export function createSkillsView(scene) {
 				heldArrow.scale.set(1, 1, Math.hypot(end.x - hero.x, end.z - hero.z))
 			}
 		}
+		if (circle && circleAim) {
+			const stats = circle.stats
+			const dx = circleAim.x - hero.x,
+				dz = circleAim.z - hero.z
+			const reach = Math.min(1, stats.range / (Math.hypot(dx, dz) || 1))
+			const at = clampMap({ x: hero.x + dx * reach, z: hero.z + dz * reach }, 0, bounds)
+			heldCircle.position.set(at.x, GROUND, at.z)
+			heldCircle.scale.setScalar(stats.radius)
+		}
+
 		// Cushion: one net per cast, end post to end post.
 		const casts = new Map()
 		for (const o of obstacles) {
@@ -355,6 +362,8 @@ export function createSkillsView(scene) {
 			tell.edge.position.set(z.x, GROUND + 0.002, z.z)
 			tell.fill.position.set(z.x, GROUND + 0.003, z.z)
 			tell.edge.scale.setScalar(stats.radius)
+			// An ability may own its boundary while retaining shared flight and landing marks.
+			tell.edge.visible = !ABILITY_VIEWS[z.ability]?.drawsBoundary
 			const progress = Math.max(0, Math.min(1, 1 - (z.left - alpha) / Math.max(1, z.total)))
 			tell.fill.scale.setScalar(stats.radius * Math.max(0.01, progress))
 			// Each arrow starts late by its stagger and accelerates, so all of them land on impact.

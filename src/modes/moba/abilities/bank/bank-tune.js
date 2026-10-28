@@ -6,9 +6,16 @@ export default {
 	radius: 0.35,
 	cooldown: 4,
 	bounce: { max: 2, damagePerCushion: 40 },
+	sound: {
+		cast: { freq: 180, slideTo: 260, type: 'triangle', dur: 0.08, gain: 0.1 },
+		shot: { freq: 700, slideTo: 360, type: 'triangle', dur: 0.06, gain: 0.16 },
+		hit: { freq: 940, slideTo: 420, type: 'triangle', dur: 0.09, gain: 0.18 },
+	},
+	juice: { hit: { count: 0, speed: 0, life: 0.1, size: 0.1 } },
 	impact: {
-		flare: { size: 2, streak: 4, life: 0.24, color: '#fff1c9' },
-		ripples: { count: 2, from: 0.5, to: 1.5, life: 0.3, gap: 0.06, width: 0.08 },
+		flare: null,
+		ripples: null,
+		spokes: { count: 3, from: 0.3, to: 1.4, width: 0.15, life: 0.18, color: '#fff1c9' },
 		skid: 0.35,
 		hold: 0.05,
 	},
@@ -16,5 +23,6 @@ export default {
 
 // The dimension of each number above that its name alone does not settle (src/modes/moba/units.js).
 export const units = {
+	'bank.impact.spokes.from': 'm',
 	'bank.bounce.max': 'count',
 }

@@ -78,7 +78,7 @@ export function oolongBot(ctx) {
 						target.pos.z,
 						u.pos.x,
 						u.pos.z,
-						h.body.radius + u.radius,
+						tune.flyingKick.radius + u.radius,
 					),
 				}))
 				.filter((contact) => contact.at != null)

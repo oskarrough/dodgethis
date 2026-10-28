@@ -90,7 +90,7 @@ export const tuneUnits = {
 		bagLimit fitIterations every`,
 	),
 	...fields('int', 'seed seedMax'),
-	...fields('ticks', 'thinkTicks batch trace'),
+	...fields('ticks', 'thinkTicks batch trace facts'),
 	...fields('1/s', 'rate accel airAccel friction stopFriction pullRate roll damping'),
 	...fields('1/s²', 'stiffness'),
 	...fields('px', 'edgeBand skyPixels labelSpace'),

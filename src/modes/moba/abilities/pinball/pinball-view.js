@@ -1,120 +1,147 @@
 import * as THREE from 'three'
+import { STEP } from '../../../../core/app.js'
 import { makeStyleMaterial } from '../../../../core/stylepass.js'
 import { link, linkGeometry } from '../../effects.js'
 import { tune } from '../../tune.js'
 
 const GROUND = tune.map.printLayers.seams + 0.006
 
-// While Carambola winds up, a dashed line runs to whoever is served. Each hit sends the ball
-// hopping from the last body to the next, one short arc per link, with a ring where it lands.
 export function extras(scene) {
 	const group = new THREE.Group()
 	scene.add(group)
 	const owned = []
-	const own = (o) => {
-		owned.push(o)
-		return o
+	const own = (resource) => {
+		owned.push(resource)
+		return resource
 	}
+	const flat = (role) => own(makeStyleMaterial(role, { flat: true }))
+	const teams = { A: flat('teamA'), B: flat('teamB') }
+	const ink = flat('ink'),
+		cream = flat('cream')
+	const bar = own(linkGeometry())
+	const sphere = own(new THREE.SphereGeometry(1, 12, 8))
+	const seam = own(new THREE.TorusGeometry(1.01, 0.09, 4, 16))
+	const live = new Map()
+	const traces = []
+	let last = -Infinity
 	const v = tune.pinball.view
-	const red = own(makeStyleMaterial('terracotta', { flat: true })),
-		gold = own(makeStyleMaterial('ammo', { flat: true })),
-		cream = own(makeStyleMaterial('cream', { flat: true }))
-	const dash = own(linkGeometry())
-	const ball = own(new THREE.SphereGeometry(1, 12, 8))
-	const ring = own(new THREE.RingGeometry(1 - v.ringWidth, 1, 32).rotateX(-Math.PI / 2))
-	const tethers = []
-	const hops = [] // { from, to, start, ball, ring }
-	let clock = 0
-
-	function tether(index) {
-		return (tethers[index] ??= Array.from({ length: 24 }, () => {
-			const m = new THREE.Mesh(dash, red)
-			group.add(m)
-			return m
-		}))
+	const mesh = (geometry, material, parent = group) => {
+		const object = new THREE.Mesh(geometry, material)
+		parent.add(object)
+		return object
+	}
+	function remove(id, rig) {
+		group.remove(rig.root)
+		live.delete(id)
 	}
 	function clear() {
-		for (const hop of hops) group.remove(hop.ball, hop.ring)
-		hops.length = 0
+		for (const [id, rig] of live) remove(id, rig)
+		for (const trace of traces) group.remove(trace.edge, trace.line)
+		traces.length = 0
 	}
-
+	function stroke(edge, line, from, to, width, height) {
+		link(edge, from, to, height, width * 1.6)
+		link(line, from, to, height + 0.015, width)
+		edge.scale.y = line.scale.y = 0.025
+	}
 	return {
 		contact(fact) {
 			if (fact.ability !== 'pinball' || !fact.origin) return
-			const hop = {
+			// Bounded residue, timed by facts rather than the renderer's wall clock.
+			if (traces.length >= 32) {
+				const old = traces.shift()
+				group.remove(old.edge, old.line)
+			}
+			traces.push({
 				from: fact.origin,
 				to: fact.point,
-				start: clock + fact.hop * v.hopTime,
-				ball: new THREE.Mesh(ball, gold),
-				ring: new THREE.Mesh(ring, cream),
-			}
-			hop.ball.visible = hop.ring.visible = false
-			group.add(hop.ball, hop.ring)
-			hops.push(hop)
+				tick: fact.tick,
+				edge: mesh(bar, ink),
+				line: mesh(bar, cream),
+			})
 		},
-		update({ units = [], dt = 0 }) {
-			clock += dt
-			// The serve's tell: dashes from Carambola to the locked target, or where it stood.
-			let used = 0
-			for (const u of units) {
-				if (u.dead || u.cast?.ability !== 'pinball') continue
-				const from = u.body.mesh?.position ?? u.body.position
-				const target = units.find((t) => t.id === u.cast.targetId)
-				const to = target?.body.mesh?.position ?? u.cast.target
-				const length = Math.hypot(to.x - from.x, to.z - from.z)
-				const strips = tether(used++)
-				for (const [k, m] of strips.entries()) {
-					const along = k * v.dashSpacing
-					m.visible = along < length
-					if (!m.visible) continue
-					const end = Math.min(length, along + v.dashSpacing * v.dashFill)
-					link(
-						m,
-						{
-							x: from.x + ((to.x - from.x) * along) / length,
-							z: from.z + ((to.z - from.z) * along) / length,
-						},
-						{
-							x: from.x + ((to.x - from.x) * end) / length,
-							z: from.z + ((to.z - from.z) * end) / length,
-						},
-						GROUND,
-						v.tetherWidth,
-					)
-					m.scale.y = 0.01
+		update({ units = [], summons = [], tick, alpha = 0 }) {
+			const now = tick + alpha
+			if (now < last) clear()
+			last = now
+			const entries = [
+				...units
+					.filter((u) => !u.dead && u.cast?.ability === 'pinball')
+					.map((u) => ({ id: `tell-${u.id}`, unit: u, team: u.team })),
+				...summons
+					.filter((u) => u.key === 'pinball' && !u.dead)
+					.map((u) => ({ id: u.id, unit: u, team: u.team, flight: true })),
+			]
+			const ids = new Set(entries.map((e) => e.id))
+			for (const [id, rig] of live) if (!ids.has(id)) remove(id, rig)
+			for (const e of entries) {
+				let rig = live.get(e.id)
+				if (!rig) {
+					rig = { root: new THREE.Group() }
+					group.add(rig.root)
+					if (e.flight) {
+						rig.ball = mesh(sphere, cream, rig.root)
+						mesh(seam, teams[e.team], rig.ball)
+						rig.edge = mesh(bar, ink, rig.root)
+						rig.line = mesh(bar, cream, rig.root)
+					} else
+						rig.dashes = Array.from(
+							{
+								length: Math.min(
+									64,
+									Math.ceil(tune.pinball.range / Math.max(0.1, v.dashSpacing)) + 1,
+								),
+							},
+							() => mesh(bar, teams[e.team], rig.root),
+						)
+					live.set(e.id, rig)
+				}
+				const u = e.unit
+				if (e.flight) {
+					const d = u.data
+					const p = Math.max(0, Math.min(1, (now - d.depart) / Math.max(1, d.arrive - d.depart)))
+					const to = {
+						x: d.start.x + (d.to.x - d.start.x) * p,
+						z: d.start.z + (d.to.z - d.start.z) * p,
+					}
+					rig.ball.position.set(to.x, v.height + v.arc * 4 * p * (1 - p), to.z)
+					rig.ball.scale.setScalar(v.ballRadius)
+					rig.ball.rotation.z = p * Math.PI
+					stroke(rig.edge, rig.line, d.start, to, v.tetherWidth, v.height)
+				} else {
+					const from = u.body.mesh?.position ?? u.body.position
+					const target = units.find((t) => t.id === u.cast.targetId)
+					const to = target?.body.mesh?.position ?? u.cast.target
+					const length = Math.hypot(to.x - from.x, to.z - from.z)
+					const spacing = Math.max(0.1, v.dashSpacing, length / rig.dashes.length)
+					for (const [i, dash] of rig.dashes.entries()) {
+						const start = i * spacing
+						dash.visible = start < length
+						if (!dash.visible) continue
+						const end = Math.min(length, start + spacing * v.dashFill)
+						const at = (distance) => ({
+							x: from.x + ((to.x - from.x) * distance) / length,
+							z: from.z + ((to.z - from.z) * distance) / length,
+						})
+						link(dash, at(start), at(end), GROUND, v.tetherWidth)
+						dash.scale.y = 0.015
+					}
 				}
 			}
-			for (let i = used; i < tethers.length; i++) for (const m of tethers[i]) m.visible = false
-
-			for (let i = hops.length - 1; i >= 0; i--) {
-				const hop = hops[i]
-				const k = (clock - hop.start) / v.hopTime
-				const landed = (clock - hop.start - v.hopTime) / v.ringLife
-				if (landed >= 1) {
-					group.remove(hop.ball, hop.ring)
-					hops.splice(i, 1)
-					continue
-				}
-				hop.ball.visible = k >= 0 && k < 1
-				if (hop.ball.visible) {
-					hop.ball.scale.setScalar(v.ballRadius)
-					hop.ball.position.set(
-						hop.from.x + (hop.to.x - hop.from.x) * k,
-						v.height + v.arc * 4 * k * (1 - k),
-						hop.from.z + (hop.to.z - hop.from.z) * k,
-					)
-				}
-				hop.ring.visible = landed >= 0
-				if (hop.ring.visible) {
-					hop.ring.position.set(hop.to.x, GROUND, hop.to.z)
-					hop.ring.scale.setScalar(v.ringFrom + (v.ringTo - v.ringFrom) * (1 - (1 - landed) ** 2))
-				}
+			for (let i = traces.length - 1; i >= 0; i--) {
+				const trace = traces[i]
+				const age = Math.max(0, (now - trace.tick) * STEP) / Math.max(STEP, v.traceLife)
+				if (age >= 1) {
+					group.remove(trace.edge, trace.line)
+					traces.splice(i, 1)
+				} else
+					stroke(trace.edge, trace.line, trace.from, trace.to, v.tetherWidth * (1 - age), v.height)
 			}
 		},
 		dispose() {
 			clear()
 			scene.remove(group)
-			for (const o of owned) o.dispose()
+			for (const resource of owned) resource.dispose()
 		},
 	}
 }

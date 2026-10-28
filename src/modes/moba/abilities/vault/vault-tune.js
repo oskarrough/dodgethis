@@ -1,1 +1,20 @@
-export default { castPoint: 0, range: 4, time: 0.18, cooldown: 3 }
+export default {
+	castPoint: 0,
+	range: 4,
+	time: 0.18,
+	cooldown: 3,
+	view: {
+		height: 0.65,
+		tilt: 0.7,
+		lean: 0.24,
+		squash: 0.22,
+		settleTime: 0.14,
+		life: 0.16,
+		count: 5,
+		from: 0.25,
+		to: 0.85,
+		width: 0.09,
+		opacity: 0.45,
+		ground: 0.018,
+	},
+}

@@ -235,6 +235,8 @@ export async function createBrowserApp() {
 		tune: app.debug.tunables,
 		perf,
 		renderer: view.renderer,
+		// Draws the current state now, so a proof that steps the simulation itself can grab the canvas (scripts/cast.js).
+		render: () => view.render(),
 		scene: app.scene,
 		camera: view.camera,
 		get world() {

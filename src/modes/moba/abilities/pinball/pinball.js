@@ -1,3 +1,4 @@
+import { pinballFlight, servePinball } from './pinball-flight.js'
 import { tune } from '../../tune.js'
 import { distance } from '../../../../core/spatial.js'
 
@@ -9,7 +10,7 @@ export default {
 	tell: 'tether',
 	held: 'circle',
 	icon: '<svg viewBox="0 0 48 48" aria-hidden="true"><circle class="tone" cx="9" cy="38" r="5"/><circle class="tone" cx="24" cy="12" r="5"/><circle class="tone" cx="40" cy="34" r="5"/><path class="ink-line" d="M9 38 L24 12 L40 34"/><circle class="gold" cx="32" cy="23" r="4"/></svg>',
-	effects: { cast: true, impact: true, pose: 'draw' },
+	effects: { cast: true, impact: true, pose: 'pinball' },
 	// Serve at the closest enemy hero in reach; the chain finds the rest.
 	bot: {
 		priority: 12,
@@ -23,18 +24,22 @@ export default {
 		},
 	},
 	card: {
-		sentence: `Serves the enemy nearest your aim within {range} for {damage:damage}; the ball jumps on to {jumps} more within {jumpRange}, each hit {falloff} softer.`,
+		sentence: `Serves the enemy nearest your aim within {range} for {damage:damage}; the ball jumps on to {jumps} more within {jumpRange}, each flight takes {flight} and each hit is {falloff} softer.`,
 	},
+	summon: pinballFlight,
 	stages: {
-		release: [
-			{
-				deliver: 'target',
-				pick: 'nearestAim',
-				targets: 'enemy',
-				range: 'range',
-				hit: ['damage'],
-				chain: { range: 'jumpRange', repeat: 'jumps', falloff: 'falloff' },
-			},
-		],
+		release: {
+			// Retain normal aim selection; the flight carries this delivery to contact.
+			replace: servePinball,
+			do: [
+				{
+					deliver: 'target',
+					pick: 'nearestAim',
+					targets: 'enemy',
+					range: 'range',
+					hit: ['damage'],
+				},
+			],
+		},
 	},
 }

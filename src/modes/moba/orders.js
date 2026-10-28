@@ -231,7 +231,8 @@ export function createOrders(ctx) {
 									: h.definition.basic.windup,
 							),
 						}
-						if (h.definition.basic.id) h.attack.total = h.attack.left
+						h.attack.total = h.attack.left
+						h.attack.startedTick = ctx.t
 						h.yaw = yawOf(tp.x - p.x, tp.z - p.z)
 						trace(h, h.attack, tp, h.definition.basic.id)
 						ctx.reactAuras('cast', ctx.auraUnits(), {
