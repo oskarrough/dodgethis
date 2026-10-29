@@ -1,0 +1,4882 @@
+[
+	{
+		"tick": 92,
+		"stance": true,
+		"channel": false,
+		"bank": 0,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 93,
+		"stance": true,
+		"channel": false,
+		"bank": 0,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 94,
+		"stance": true,
+		"channel": false,
+		"bank": 0,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 95,
+		"stance": true,
+		"channel": false,
+		"bank": 0,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 96,
+		"stance": true,
+		"channel": false,
+		"bank": 0,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 97,
+		"stance": true,
+		"channel": false,
+		"bank": 0,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 98,
+		"stance": true,
+		"channel": false,
+		"bank": 0,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 99,
+		"stance": true,
+		"channel": false,
+		"bank": 0,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 100,
+		"stance": true,
+		"channel": false,
+		"bank": 0,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 101,
+		"stance": true,
+		"channel": false,
+		"bank": 0,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 102,
+		"stance": true,
+		"channel": false,
+		"bank": 0,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 103,
+		"stance": true,
+		"channel": false,
+		"bank": 0,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 104,
+		"stance": true,
+		"channel": false,
+		"bank": 0,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 105,
+		"stance": true,
+		"channel": false,
+		"bank": 0,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 106,
+		"stance": true,
+		"channel": false,
+		"bank": 0,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 107,
+		"stance": true,
+		"channel": false,
+		"bank": 0,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 108,
+		"stance": true,
+		"channel": false,
+		"bank": 0,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 109,
+		"stance": true,
+		"channel": false,
+		"bank": 0,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 110,
+		"stance": true,
+		"channel": false,
+		"bank": 0,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 111,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 112,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 113,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 114,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 115,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 116,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 117,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 118,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 119,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 120,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 121,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 122,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 123,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 124,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 125,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 126,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 127,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 128,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 129,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 130,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 131,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 132,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 133,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 134,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 135,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 136,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 137,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 138,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 139,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 140,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 141,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 142,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 143,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 144,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 145,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 146,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 147,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 148,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 149,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 150,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 151,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 152,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 153,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 154,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 155,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 156,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 157,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 158,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 159,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 160,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 161,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 162,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 163,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 164,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 165,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 166,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 167,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 168,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 169,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 170,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 171,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 172,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 173,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 174,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 175,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 176,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 177,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 178,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 179,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 180,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 181,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 182,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 183,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 184,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 185,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 186,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 187,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 188,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 189,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 190,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 191,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 192,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 193,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 194,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 195,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 196,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 197,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 198,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 199,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 200,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 201,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 202,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 203,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 204,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 205,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 206,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 207,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 208,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 209,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 210,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 211,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 212,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 213,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 214,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 215,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 216,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 217,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 218,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 219,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 220,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 221,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 222,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 223,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 224,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 225,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 226,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 227,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 228,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 229,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 230,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 231,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 232,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 233,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 234,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 235,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 236,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 237,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 238,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 239,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 240,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 241,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 242,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 243,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 244,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 245,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 246,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 247,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 248,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 249,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 250,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 251,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 252,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 253,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 254,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 255,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 256,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 257,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 258,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 259,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 260,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 261,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 262,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 263,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 264,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 265,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 266,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 267,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 268,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 269,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 270,
+		"stance": true,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 271,
+		"stance": false,
+		"channel": false,
+		"bank": 90,
+		"shield": 0,
+		"hp": 1800
+	},
+	{
+		"tick": 272,
+		"stance": false,
+		"channel": false,
+		"bank": 89.5,
+		"shield": 0,
+		"hp": 1799.5
+	},
+	{
+		"tick": 273,
+		"stance": false,
+		"channel": false,
+		"bank": 89,
+		"shield": 0,
+		"hp": 1799
+	},
+	{
+		"tick": 274,
+		"stance": false,
+		"channel": false,
+		"bank": 88.5,
+		"shield": 0,
+		"hp": 1798.5
+	},
+	{
+		"tick": 275,
+		"stance": false,
+		"channel": false,
+		"bank": 88,
+		"shield": 0,
+		"hp": 1798
+	},
+	{
+		"tick": 276,
+		"stance": false,
+		"channel": false,
+		"bank": 87.5,
+		"shield": 0,
+		"hp": 1797.5
+	},
+	{
+		"tick": 277,
+		"stance": false,
+		"channel": false,
+		"bank": 87,
+		"shield": 0,
+		"hp": 1797
+	},
+	{
+		"tick": 278,
+		"stance": false,
+		"channel": false,
+		"bank": 86.5,
+		"shield": 0,
+		"hp": 1796.5
+	},
+	{
+		"tick": 279,
+		"stance": false,
+		"channel": false,
+		"bank": 86,
+		"shield": 0,
+		"hp": 1796
+	},
+	{
+		"tick": 280,
+		"stance": false,
+		"channel": false,
+		"bank": 85.5,
+		"shield": 0,
+		"hp": 1795.5
+	},
+	{
+		"tick": 281,
+		"stance": false,
+		"channel": false,
+		"bank": 85,
+		"shield": 0,
+		"hp": 1795
+	},
+	{
+		"tick": 282,
+		"stance": false,
+		"channel": false,
+		"bank": 84.5,
+		"shield": 0,
+		"hp": 1794.5
+	},
+	{
+		"tick": 283,
+		"stance": false,
+		"channel": false,
+		"bank": 84,
+		"shield": 0,
+		"hp": 1794
+	},
+	{
+		"tick": 284,
+		"stance": false,
+		"channel": false,
+		"bank": 83.5,
+		"shield": 0,
+		"hp": 1793.5
+	},
+	{
+		"tick": 285,
+		"stance": false,
+		"channel": false,
+		"bank": 83,
+		"shield": 0,
+		"hp": 1793
+	},
+	{
+		"tick": 286,
+		"stance": false,
+		"channel": false,
+		"bank": 82.5,
+		"shield": 0,
+		"hp": 1792.5
+	},
+	{
+		"tick": 287,
+		"stance": false,
+		"channel": false,
+		"bank": 82,
+		"shield": 0,
+		"hp": 1792
+	},
+	{
+		"tick": 288,
+		"stance": false,
+		"channel": false,
+		"bank": 81.5,
+		"shield": 0,
+		"hp": 1791.5
+	},
+	{
+		"tick": 289,
+		"stance": false,
+		"channel": false,
+		"bank": 81,
+		"shield": 0,
+		"hp": 1791
+	},
+	{
+		"tick": 290,
+		"stance": false,
+		"channel": false,
+		"bank": 80.5,
+		"shield": 0,
+		"hp": 1790.5
+	},
+	{
+		"tick": 291,
+		"stance": false,
+		"channel": false,
+		"bank": 80,
+		"shield": 0,
+		"hp": 1790
+	},
+	{
+		"tick": 292,
+		"stance": false,
+		"channel": false,
+		"bank": 79.5,
+		"shield": 0,
+		"hp": 1789.5
+	},
+	{
+		"tick": 293,
+		"stance": false,
+		"channel": false,
+		"bank": 79,
+		"shield": 0,
+		"hp": 1789
+	},
+	{
+		"tick": 294,
+		"stance": false,
+		"channel": false,
+		"bank": 78.5,
+		"shield": 0,
+		"hp": 1788.5
+	},
+	{
+		"tick": 295,
+		"stance": false,
+		"channel": false,
+		"bank": 78,
+		"shield": 0,
+		"hp": 1788
+	},
+	{
+		"tick": 296,
+		"stance": false,
+		"channel": false,
+		"bank": 77.5,
+		"shield": 0,
+		"hp": 1787.5
+	},
+	{
+		"tick": 297,
+		"stance": false,
+		"channel": false,
+		"bank": 77,
+		"shield": 0,
+		"hp": 1799.5
+	},
+	{
+		"tick": 298,
+		"stance": false,
+		"channel": false,
+		"bank": 76.5,
+		"shield": 0,
+		"hp": 1799
+	},
+	{
+		"tick": 299,
+		"stance": false,
+		"channel": false,
+		"bank": 76,
+		"shield": 0,
+		"hp": 1798.5
+	},
+	{
+		"tick": 300,
+		"stance": false,
+		"channel": false,
+		"bank": 75.5,
+		"shield": 0,
+		"hp": 1798
+	},
+	{
+		"tick": 301,
+		"stance": false,
+		"channel": false,
+		"bank": 75,
+		"shield": 0,
+		"hp": 1797.5
+	},
+	{
+		"tick": 302,
+		"stance": false,
+		"channel": false,
+		"bank": 74.5,
+		"shield": 0,
+		"hp": 1797
+	},
+	{
+		"tick": 303,
+		"stance": false,
+		"channel": false,
+		"bank": 74,
+		"shield": 0,
+		"hp": 1796.5
+	},
+	{
+		"tick": 304,
+		"stance": false,
+		"channel": false,
+		"bank": 73.5,
+		"shield": 0,
+		"hp": 1796
+	},
+	{
+		"tick": 305,
+		"stance": false,
+		"channel": false,
+		"bank": 73,
+		"shield": 0,
+		"hp": 1795.5
+	},
+	{
+		"tick": 306,
+		"stance": false,
+		"channel": false,
+		"bank": 72.5,
+		"shield": 0,
+		"hp": 1795
+	},
+	{
+		"tick": 307,
+		"stance": false,
+		"channel": false,
+		"bank": 72,
+		"shield": 0,
+		"hp": 1794.5
+	},
+	{
+		"tick": 308,
+		"stance": false,
+		"channel": false,
+		"bank": 71.5,
+		"shield": 0,
+		"hp": 1794
+	},
+	{
+		"tick": 309,
+		"stance": false,
+		"channel": false,
+		"bank": 71,
+		"shield": 0,
+		"hp": 1793.5
+	},
+	{
+		"tick": 310,
+		"stance": false,
+		"channel": false,
+		"bank": 70.5,
+		"shield": 0,
+		"hp": 1793
+	},
+	{
+		"tick": 311,
+		"stance": false,
+		"channel": false,
+		"bank": 70,
+		"shield": 0,
+		"hp": 1792.5
+	},
+	{
+		"tick": 312,
+		"stance": false,
+		"channel": false,
+		"bank": 69.5,
+		"shield": 0,
+		"hp": 1792
+	},
+	{
+		"tick": 313,
+		"stance": false,
+		"channel": false,
+		"bank": 69,
+		"shield": 0,
+		"hp": 1791.5
+	},
+	{
+		"tick": 314,
+		"stance": false,
+		"channel": false,
+		"bank": 68.5,
+		"shield": 0,
+		"hp": 1791
+	},
+	{
+		"tick": 315,
+		"stance": false,
+		"channel": false,
+		"bank": 68,
+		"shield": 0,
+		"hp": 1790.5
+	},
+	{
+		"tick": 316,
+		"stance": false,
+		"channel": true,
+		"bank": 67.5,
+		"shield": 0,
+		"hp": 1790
+	},
+	{
+		"tick": 317,
+		"stance": false,
+		"channel": true,
+		"bank": 67,
+		"shield": 2,
+		"hp": 1790
+	},
+	{
+		"tick": 318,
+		"stance": false,
+		"channel": true,
+		"bank": 66.5,
+		"shield": 4,
+		"hp": 1790
+	},
+	{
+		"tick": 319,
+		"stance": false,
+		"channel": true,
+		"bank": 66,
+		"shield": 6,
+		"hp": 1790
+	},
+	{
+		"tick": 320,
+		"stance": false,
+		"channel": true,
+		"bank": 65.5,
+		"shield": 8,
+		"hp": 1790
+	},
+	{
+		"tick": 321,
+		"stance": false,
+		"channel": true,
+		"bank": 65,
+		"shield": 10,
+		"hp": 1790
+	},
+	{
+		"tick": 322,
+		"stance": false,
+		"channel": true,
+		"bank": 64.5,
+		"shield": 12,
+		"hp": 1790
+	},
+	{
+		"tick": 323,
+		"stance": false,
+		"channel": true,
+		"bank": 64,
+		"shield": 14,
+		"hp": 1790
+	},
+	{
+		"tick": 324,
+		"stance": false,
+		"channel": true,
+		"bank": 63.5,
+		"shield": 16,
+		"hp": 1790
+	},
+	{
+		"tick": 325,
+		"stance": false,
+		"channel": true,
+		"bank": 63,
+		"shield": 18,
+		"hp": 1790
+	},
+	{
+		"tick": 326,
+		"stance": false,
+		"channel": true,
+		"bank": 62.5,
+		"shield": 20,
+		"hp": 1790
+	},
+	{
+		"tick": 327,
+		"stance": false,
+		"channel": true,
+		"bank": 62,
+		"shield": 22,
+		"hp": 1790
+	},
+	{
+		"tick": 328,
+		"stance": false,
+		"channel": true,
+		"bank": 61.5,
+		"shield": 24,
+		"hp": 1790
+	},
+	{
+		"tick": 329,
+		"stance": false,
+		"channel": true,
+		"bank": 61,
+		"shield": 26,
+		"hp": 1790
+	},
+	{
+		"tick": 330,
+		"stance": false,
+		"channel": true,
+		"bank": 60.5,
+		"shield": 28,
+		"hp": 1790
+	},
+	{
+		"tick": 331,
+		"stance": false,
+		"channel": true,
+		"bank": 60,
+		"shield": 30,
+		"hp": 1790
+	},
+	{
+		"tick": 332,
+		"stance": false,
+		"channel": true,
+		"bank": 59.5,
+		"shield": 32,
+		"hp": 1790
+	},
+	{
+		"tick": 333,
+		"stance": false,
+		"channel": true,
+		"bank": 59,
+		"shield": 34,
+		"hp": 1790
+	},
+	{
+		"tick": 334,
+		"stance": false,
+		"channel": true,
+		"bank": 58.5,
+		"shield": 36,
+		"hp": 1790
+	},
+	{
+		"tick": 335,
+		"stance": false,
+		"channel": true,
+		"bank": 58,
+		"shield": 38,
+		"hp": 1790
+	},
+	{
+		"tick": 336,
+		"stance": false,
+		"channel": true,
+		"bank": 57.5,
+		"shield": 40,
+		"hp": 1790
+	},
+	{
+		"tick": 337,
+		"stance": false,
+		"channel": true,
+		"bank": 57,
+		"shield": 42,
+		"hp": 1790
+	},
+	{
+		"tick": 338,
+		"stance": false,
+		"channel": true,
+		"bank": 56.5,
+		"shield": 44,
+		"hp": 1790
+	},
+	{
+		"tick": 339,
+		"stance": false,
+		"channel": true,
+		"bank": 56,
+		"shield": 46,
+		"hp": 1790
+	},
+	{
+		"tick": 340,
+		"stance": false,
+		"channel": true,
+		"bank": 55.5,
+		"shield": 48,
+		"hp": 1790
+	},
+	{
+		"tick": 341,
+		"stance": false,
+		"channel": true,
+		"bank": 55,
+		"shield": 50,
+		"hp": 1790
+	},
+	{
+		"tick": 342,
+		"stance": false,
+		"channel": true,
+		"bank": 54.5,
+		"shield": 52,
+		"hp": 1790
+	},
+	{
+		"tick": 343,
+		"stance": false,
+		"channel": true,
+		"bank": 54,
+		"shield": 54,
+		"hp": 1790
+	},
+	{
+		"tick": 344,
+		"stance": false,
+		"channel": true,
+		"bank": 53.5,
+		"shield": 56,
+		"hp": 1790
+	},
+	{
+		"tick": 345,
+		"stance": false,
+		"channel": true,
+		"bank": 53,
+		"shield": 58,
+		"hp": 1790
+	},
+	{
+		"tick": 346,
+		"stance": false,
+		"channel": true,
+		"bank": 52.5,
+		"shield": 60,
+		"hp": 1790
+	},
+	{
+		"tick": 347,
+		"stance": false,
+		"channel": true,
+		"bank": 52,
+		"shield": 62,
+		"hp": 1790
+	},
+	{
+		"tick": 348,
+		"stance": false,
+		"channel": true,
+		"bank": 51.5,
+		"shield": 64,
+		"hp": 1790
+	},
+	{
+		"tick": 349,
+		"stance": false,
+		"channel": true,
+		"bank": 51,
+		"shield": 66,
+		"hp": 1790
+	},
+	{
+		"tick": 350,
+		"stance": false,
+		"channel": true,
+		"bank": 50.5,
+		"shield": 68,
+		"hp": 1790
+	},
+	{
+		"tick": 351,
+		"stance": false,
+		"channel": true,
+		"bank": 50,
+		"shield": 70,
+		"hp": 1790
+	},
+	{
+		"tick": 352,
+		"stance": false,
+		"channel": true,
+		"bank": 49.5,
+		"shield": 72,
+		"hp": 1790
+	},
+	{
+		"tick": 353,
+		"stance": false,
+		"channel": true,
+		"bank": 49,
+		"shield": 74,
+		"hp": 1790
+	},
+	{
+		"tick": 354,
+		"stance": false,
+		"channel": true,
+		"bank": 48.5,
+		"shield": 76,
+		"hp": 1790
+	},
+	{
+		"tick": 355,
+		"stance": false,
+		"channel": true,
+		"bank": 48,
+		"shield": 78,
+		"hp": 1790
+	},
+	{
+		"tick": 356,
+		"stance": false,
+		"channel": true,
+		"bank": 47.5,
+		"shield": 80,
+		"hp": 1790
+	},
+	{
+		"tick": 357,
+		"stance": false,
+		"channel": true,
+		"bank": 47,
+		"shield": 82,
+		"hp": 1790
+	},
+	{
+		"tick": 358,
+		"stance": false,
+		"channel": true,
+		"bank": 46.5,
+		"shield": 84,
+		"hp": 1790
+	},
+	{
+		"tick": 359,
+		"stance": false,
+		"channel": true,
+		"bank": 46,
+		"shield": 86,
+		"hp": 1790
+	},
+	{
+		"tick": 360,
+		"stance": false,
+		"channel": true,
+		"bank": 45.5,
+		"shield": 88,
+		"hp": 1790
+	},
+	{
+		"tick": 361,
+		"stance": false,
+		"channel": true,
+		"bank": 45,
+		"shield": 90,
+		"hp": 1790
+	},
+	{
+		"tick": 362,
+		"stance": false,
+		"channel": true,
+		"bank": 44.5,
+		"shield": 92,
+		"hp": 1790
+	},
+	{
+		"tick": 363,
+		"stance": false,
+		"channel": true,
+		"bank": 44,
+		"shield": 94,
+		"hp": 1790
+	},
+	{
+		"tick": 364,
+		"stance": false,
+		"channel": true,
+		"bank": 43.5,
+		"shield": 96,
+		"hp": 1790
+	},
+	{
+		"tick": 365,
+		"stance": false,
+		"channel": true,
+		"bank": 43,
+		"shield": 98,
+		"hp": 1790
+	},
+	{
+		"tick": 366,
+		"stance": false,
+		"channel": true,
+		"bank": 42.5,
+		"shield": 100,
+		"hp": 1790
+	},
+	{
+		"tick": 367,
+		"stance": false,
+		"channel": true,
+		"bank": 42,
+		"shield": 102,
+		"hp": 1790
+	},
+	{
+		"tick": 368,
+		"stance": false,
+		"channel": true,
+		"bank": 41.5,
+		"shield": 104,
+		"hp": 1790
+	},
+	{
+		"tick": 369,
+		"stance": false,
+		"channel": true,
+		"bank": 41,
+		"shield": 106,
+		"hp": 1790
+	},
+	{
+		"tick": 370,
+		"stance": false,
+		"channel": true,
+		"bank": 40.5,
+		"shield": 108,
+		"hp": 1790
+	},
+	{
+		"tick": 371,
+		"stance": false,
+		"channel": true,
+		"bank": 40,
+		"shield": 110,
+		"hp": 1790
+	},
+	{
+		"tick": 372,
+		"stance": false,
+		"channel": true,
+		"bank": 39.5,
+		"shield": 112,
+		"hp": 1790
+	},
+	{
+		"tick": 373,
+		"stance": false,
+		"channel": true,
+		"bank": 39,
+		"shield": 114,
+		"hp": 1790
+	},
+	{
+		"tick": 374,
+		"stance": false,
+		"channel": true,
+		"bank": 38.5,
+		"shield": 116,
+		"hp": 1790
+	},
+	{
+		"tick": 375,
+		"stance": false,
+		"channel": true,
+		"bank": 38,
+		"shield": 118,
+		"hp": 1790
+	},
+	{
+		"tick": 376,
+		"stance": false,
+		"channel": true,
+		"bank": 37.5,
+		"shield": 120,
+		"hp": 1790
+	},
+	{
+		"tick": 377,
+		"stance": false,
+		"channel": true,
+		"bank": 37,
+		"shield": 122,
+		"hp": 1790
+	},
+	{
+		"tick": 378,
+		"stance": false,
+		"channel": true,
+		"bank": 36.5,
+		"shield": 124,
+		"hp": 1790
+	},
+	{
+		"tick": 379,
+		"stance": false,
+		"channel": true,
+		"bank": 36,
+		"shield": 126,
+		"hp": 1790
+	},
+	{
+		"tick": 380,
+		"stance": false,
+		"channel": true,
+		"bank": 35.5,
+		"shield": 128,
+		"hp": 1790
+	},
+	{
+		"tick": 381,
+		"stance": false,
+		"channel": true,
+		"bank": 35,
+		"shield": 130,
+		"hp": 1790
+	},
+	{
+		"tick": 382,
+		"stance": false,
+		"channel": true,
+		"bank": 34.5,
+		"shield": 132,
+		"hp": 1790
+	},
+	{
+		"tick": 383,
+		"stance": false,
+		"channel": true,
+		"bank": 34,
+		"shield": 134,
+		"hp": 1790
+	},
+	{
+		"tick": 384,
+		"stance": false,
+		"channel": true,
+		"bank": 33.5,
+		"shield": 136,
+		"hp": 1790
+	},
+	{
+		"tick": 385,
+		"stance": false,
+		"channel": true,
+		"bank": 33,
+		"shield": 138,
+		"hp": 1790
+	},
+	{
+		"tick": 386,
+		"stance": false,
+		"channel": true,
+		"bank": 32.5,
+		"shield": 140,
+		"hp": 1790
+	},
+	{
+		"tick": 387,
+		"stance": false,
+		"channel": true,
+		"bank": 32,
+		"shield": 142,
+		"hp": 1790
+	},
+	{
+		"tick": 388,
+		"stance": false,
+		"channel": true,
+		"bank": 31.5,
+		"shield": 144,
+		"hp": 1790
+	},
+	{
+		"tick": 389,
+		"stance": false,
+		"channel": true,
+		"bank": 31,
+		"shield": 146,
+		"hp": 1790
+	},
+	{
+		"tick": 390,
+		"stance": false,
+		"channel": true,
+		"bank": 30.5,
+		"shield": 148,
+		"hp": 1790
+	},
+	{
+		"tick": 391,
+		"stance": false,
+		"channel": true,
+		"bank": 30,
+		"shield": 150,
+		"hp": 1790
+	},
+	{
+		"tick": 392,
+		"stance": false,
+		"channel": true,
+		"bank": 29.5,
+		"shield": 152,
+		"hp": 1790
+	},
+	{
+		"tick": 393,
+		"stance": false,
+		"channel": true,
+		"bank": 29,
+		"shield": 154,
+		"hp": 1790
+	},
+	{
+		"tick": 394,
+		"stance": false,
+		"channel": true,
+		"bank": 28.5,
+		"shield": 156,
+		"hp": 1790
+	},
+	{
+		"tick": 395,
+		"stance": false,
+		"channel": true,
+		"bank": 28,
+		"shield": 158,
+		"hp": 1790
+	},
+	{
+		"tick": 396,
+		"stance": false,
+		"channel": true,
+		"bank": 27.5,
+		"shield": 160,
+		"hp": 1790
+	},
+	{
+		"tick": 397,
+		"stance": false,
+		"channel": true,
+		"bank": 27,
+		"shield": 162,
+		"hp": 1790
+	},
+	{
+		"tick": 398,
+		"stance": false,
+		"channel": true,
+		"bank": 26.5,
+		"shield": 164,
+		"hp": 1790
+	},
+	{
+		"tick": 399,
+		"stance": false,
+		"channel": true,
+		"bank": 26,
+		"shield": 166,
+		"hp": 1790
+	},
+	{
+		"tick": 400,
+		"stance": false,
+		"channel": true,
+		"bank": 25.5,
+		"shield": 168,
+		"hp": 1790
+	},
+	{
+		"tick": 401,
+		"stance": false,
+		"channel": true,
+		"bank": 25,
+		"shield": 170,
+		"hp": 1790
+	},
+	{
+		"tick": 402,
+		"stance": false,
+		"channel": true,
+		"bank": 24.5,
+		"shield": 172,
+		"hp": 1790
+	},
+	{
+		"tick": 403,
+		"stance": false,
+		"channel": true,
+		"bank": 24,
+		"shield": 174,
+		"hp": 1790
+	},
+	{
+		"tick": 404,
+		"stance": false,
+		"channel": true,
+		"bank": 23.5,
+		"shield": 176,
+		"hp": 1790
+	},
+	{
+		"tick": 405,
+		"stance": false,
+		"channel": true,
+		"bank": 23,
+		"shield": 178,
+		"hp": 1790
+	},
+	{
+		"tick": 406,
+		"stance": false,
+		"channel": true,
+		"bank": 22.5,
+		"shield": 180,
+		"hp": 1790
+	},
+	{
+		"tick": 407,
+		"stance": false,
+		"channel": true,
+		"bank": 22,
+		"shield": 182,
+		"hp": 1790
+	},
+	{
+		"tick": 408,
+		"stance": false,
+		"channel": true,
+		"bank": 21.5,
+		"shield": 184,
+		"hp": 1790
+	},
+	{
+		"tick": 409,
+		"stance": false,
+		"channel": true,
+		"bank": 21,
+		"shield": 186,
+		"hp": 1790
+	},
+	{
+		"tick": 410,
+		"stance": false,
+		"channel": true,
+		"bank": 20.5,
+		"shield": 188,
+		"hp": 1790
+	},
+	{
+		"tick": 411,
+		"stance": false,
+		"channel": true,
+		"bank": 20,
+		"shield": 190,
+		"hp": 1790
+	},
+	{
+		"tick": 412,
+		"stance": false,
+		"channel": true,
+		"bank": 19.5,
+		"shield": 192,
+		"hp": 1790
+	},
+	{
+		"tick": 413,
+		"stance": false,
+		"channel": true,
+		"bank": 19,
+		"shield": 194,
+		"hp": 1790
+	},
+	{
+		"tick": 414,
+		"stance": false,
+		"channel": true,
+		"bank": 18.5,
+		"shield": 196,
+		"hp": 1790
+	},
+	{
+		"tick": 415,
+		"stance": false,
+		"channel": true,
+		"bank": 18,
+		"shield": 198,
+		"hp": 1790
+	},
+	{
+		"tick": 416,
+		"stance": false,
+		"channel": true,
+		"bank": 17.5,
+		"shield": 200,
+		"hp": 1790
+	},
+	{
+		"tick": 417,
+		"stance": false,
+		"channel": true,
+		"bank": 17,
+		"shield": 202,
+		"hp": 1790
+	},
+	{
+		"tick": 418,
+		"stance": false,
+		"channel": true,
+		"bank": 16.5,
+		"shield": 204,
+		"hp": 1790
+	},
+	{
+		"tick": 419,
+		"stance": false,
+		"channel": true,
+		"bank": 16,
+		"shield": 206,
+		"hp": 1790
+	},
+	{
+		"tick": 420,
+		"stance": false,
+		"channel": true,
+		"bank": 15.5,
+		"shield": 208,
+		"hp": 1790
+	},
+	{
+		"tick": 421,
+		"stance": false,
+		"channel": true,
+		"bank": 15,
+		"shield": 210,
+		"hp": 1790
+	},
+	{
+		"tick": 422,
+		"stance": false,
+		"channel": true,
+		"bank": 14.5,
+		"shield": 212,
+		"hp": 1790
+	},
+	{
+		"tick": 423,
+		"stance": false,
+		"channel": true,
+		"bank": 14,
+		"shield": 214,
+		"hp": 1790
+	},
+	{
+		"tick": 424,
+		"stance": false,
+		"channel": true,
+		"bank": 13.5,
+		"shield": 216,
+		"hp": 1790
+	},
+	{
+		"tick": 425,
+		"stance": false,
+		"channel": true,
+		"bank": 13,
+		"shield": 218,
+		"hp": 1790
+	},
+	{
+		"tick": 426,
+		"stance": false,
+		"channel": true,
+		"bank": 12.5,
+		"shield": 220,
+		"hp": 1790
+	},
+	{
+		"tick": 427,
+		"stance": false,
+		"channel": true,
+		"bank": 12,
+		"shield": 222,
+		"hp": 1790
+	},
+	{
+		"tick": 428,
+		"stance": false,
+		"channel": true,
+		"bank": 11.5,
+		"shield": 224,
+		"hp": 1790
+	},
+	{
+		"tick": 429,
+		"stance": false,
+		"channel": true,
+		"bank": 11,
+		"shield": 226,
+		"hp": 1790
+	},
+	{
+		"tick": 430,
+		"stance": false,
+		"channel": true,
+		"bank": 10.5,
+		"shield": 228,
+		"hp": 1790
+	},
+	{
+		"tick": 431,
+		"stance": false,
+		"channel": true,
+		"bank": 10,
+		"shield": 230,
+		"hp": 1790
+	},
+	{
+		"tick": 432,
+		"stance": false,
+		"channel": true,
+		"bank": 9.5,
+		"shield": 232,
+		"hp": 1790
+	},
+	{
+		"tick": 433,
+		"stance": false,
+		"channel": true,
+		"bank": 9,
+		"shield": 234,
+		"hp": 1790
+	},
+	{
+		"tick": 434,
+		"stance": false,
+		"channel": true,
+		"bank": 8.5,
+		"shield": 236,
+		"hp": 1790
+	},
+	{
+		"tick": 435,
+		"stance": false,
+		"channel": true,
+		"bank": 8,
+		"shield": 238,
+		"hp": 1790
+	},
+	{
+		"tick": 436,
+		"stance": false,
+		"channel": false,
+		"bank": 7.5,
+		"shield": 240,
+		"hp": 1790
+	},
+	{
+		"tick": 437,
+		"stance": false,
+		"channel": false,
+		"bank": 7,
+		"shield": 239.5,
+		"hp": 1790
+	},
+	{
+		"tick": 438,
+		"stance": false,
+		"channel": false,
+		"bank": 6.5,
+		"shield": 239,
+		"hp": 1790
+	},
+	{
+		"tick": 439,
+		"stance": false,
+		"channel": false,
+		"bank": 6,
+		"shield": 238.5,
+		"hp": 1790
+	},
+	{
+		"tick": 440,
+		"stance": false,
+		"channel": false,
+		"bank": 5.5,
+		"shield": 238,
+		"hp": 1790
+	},
+	{
+		"tick": 441,
+		"stance": false,
+		"channel": false,
+		"bank": 5,
+		"shield": 237.5,
+		"hp": 1790
+	},
+	{
+		"tick": 442,
+		"stance": false,
+		"channel": false,
+		"bank": 4.5,
+		"shield": 237,
+		"hp": 1790
+	},
+	{
+		"tick": 443,
+		"stance": false,
+		"channel": false,
+		"bank": 4,
+		"shield": 236.5,
+		"hp": 1790
+	},
+	{
+		"tick": 444,
+		"stance": false,
+		"channel": false,
+		"bank": 3.5,
+		"shield": 236,
+		"hp": 1790
+	},
+	{
+		"tick": 445,
+		"stance": false,
+		"channel": false,
+		"bank": 3,
+		"shield": 235.5,
+		"hp": 1790
+	},
+	{
+		"tick": 446,
+		"stance": false,
+		"channel": false,
+		"bank": 2.5,
+		"shield": 235,
+		"hp": 1790
+	},
+	{
+		"tick": 447,
+		"stance": false,
+		"channel": false,
+		"bank": 2,
+		"shield": 234.5,
+		"hp": 1790
+	},
+	{
+		"tick": 448,
+		"stance": false,
+		"channel": false,
+		"bank": 1.5,
+		"shield": 234,
+		"hp": 1790
+	},
+	{
+		"tick": 449,
+		"stance": false,
+		"channel": false,
+		"bank": 1,
+		"shield": 233.5,
+		"hp": 1790
+	},
+	{
+		"tick": 450,
+		"stance": false,
+		"channel": false,
+		"bank": 0.5,
+		"shield": 233,
+		"hp": 1790
+	},
+	{
+		"tick": 451,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 452,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 453,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 454,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 455,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 456,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 457,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 458,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 459,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 460,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 461,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 462,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 463,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 464,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 465,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 466,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 467,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 468,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 469,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 470,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 471,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 472,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 473,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 474,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 475,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 476,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 477,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 478,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 479,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 480,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 481,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 482,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 483,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 484,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 485,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 486,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 487,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 488,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 489,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 490,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 491,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 492,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 493,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 494,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 495,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 496,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 497,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 498,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 499,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 500,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 501,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 502,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 503,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 504,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 505,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 506,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 507,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 508,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 509,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 510,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 511,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 512,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 513,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 514,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 515,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 516,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 517,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 518,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 519,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 520,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 521,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 522,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 523,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 524,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 525,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 526,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 527,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 528,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 529,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 530,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 531,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 532,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 533,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 534,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 535,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 536,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 537,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 538,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 539,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 540,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 541,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 542,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 543,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 544,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 545,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 546,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 547,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 548,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 549,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 550,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 551,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 552,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 553,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 554,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 555,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 556,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 557,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 558,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 559,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 560,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 561,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 562,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 563,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 564,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 565,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 566,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 567,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 568,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 569,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 570,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 571,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 572,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 573,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 574,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 575,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 576,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 577,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 578,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 579,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 580,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 581,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 582,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 583,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 584,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 585,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 586,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 587,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 588,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 589,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 590,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 591,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 592,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 593,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 594,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 595,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 596,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 597,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 598,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 599,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 600,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 601,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 602,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 603,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 604,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 605,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 606,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 607,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 608,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 609,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 610,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 611,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 612,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 613,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 614,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 615,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 616,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 617,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 618,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 619,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 620,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 621,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 622,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 623,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 624,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 625,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 626,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 627,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 628,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 629,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 630,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 631,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 632,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 633,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 634,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 635,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 636,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 637,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 638,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 639,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 640,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 641,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 642,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 643,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 644,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 645,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 646,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 647,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 648,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 649,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 650,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 651,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 652,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 653,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 654,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 655,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 656,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 657,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 658,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 659,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 660,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 661,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 662,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 663,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 664,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 665,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 666,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 667,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 668,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 669,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 670,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 671,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 672,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 673,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 674,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 675,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 232.5,
+		"hp": 1790
+	},
+	{
+		"tick": 676,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 0,
+		"hp": 1790
+	},
+	{
+		"tick": 677,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 0,
+		"hp": 1790
+	},
+	{
+		"tick": 678,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 0,
+		"hp": 1790
+	},
+	{
+		"tick": 679,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 0,
+		"hp": 1790
+	},
+	{
+		"tick": 680,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 0,
+		"hp": 1790
+	},
+	{
+		"tick": 681,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 0,
+		"hp": 1790
+	},
+	{
+		"tick": 682,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 0,
+		"hp": 1790
+	},
+	{
+		"tick": 683,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 0,
+		"hp": 1790
+	},
+	{
+		"tick": 684,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 0,
+		"hp": 1790
+	},
+	{
+		"tick": 685,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 0,
+		"hp": 1790
+	},
+	{
+		"tick": 686,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 0,
+		"hp": 1790
+	},
+	{
+		"tick": 687,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 0,
+		"hp": 1790
+	},
+	{
+		"tick": 688,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 0,
+		"hp": 1790
+	},
+	{
+		"tick": 689,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 0,
+		"hp": 1790
+	},
+	{
+		"tick": 690,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 0,
+		"hp": 1790
+	},
+	{
+		"tick": 691,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 0,
+		"hp": 1790
+	},
+	{
+		"tick": 692,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 0,
+		"hp": 1790
+	},
+	{
+		"tick": 693,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 0,
+		"hp": 1790
+	},
+	{
+		"tick": 694,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 0,
+		"hp": 1790
+	},
+	{
+		"tick": 695,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 0,
+		"hp": 1790
+	},
+	{
+		"tick": 696,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 0,
+		"hp": 1790
+	},
+	{
+		"tick": 697,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 0,
+		"hp": 1790
+	},
+	{
+		"tick": 698,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 0,
+		"hp": 1790
+	},
+	{
+		"tick": 699,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 0,
+		"hp": 1790
+	},
+	{
+		"tick": 700,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 0,
+		"hp": 1790
+	},
+	{
+		"tick": 701,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 0,
+		"hp": 1790
+	}
+]

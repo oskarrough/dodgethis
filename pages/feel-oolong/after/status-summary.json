@@ -1,0 +1,17 @@
+{
+	"ok": true,
+	"samples": 610,
+	"maxBank": 90,
+	"maxShield": 240,
+	"shieldAbsorbsRepayment": true,
+	"stanceExpiredWithDebt": true,
+	"final": {
+		"tick": 701,
+		"stance": false,
+		"channel": false,
+		"bank": 0,
+		"shield": 0,
+		"hp": 1790
+	},
+	"method": "Local W and E through workshop keyboard events; one staged enemy attack order stopped on first banked hit. No damage or status injected. Workshop resets HP and cooldowns between steps while debt continues."
+}

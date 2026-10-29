@@ -1,0 +1,34 @@
+{
+	"ok": true,
+	"momentumReductionSeconds": 2,
+	"replicatedState": {
+		"pocket": null,
+		"bag": [],
+		"ibis": {
+			"momentumTick": 43
+		},
+		"vault": {
+			"from": {
+				"x": 0,
+				"z": 0
+			},
+			"landed": 11,
+			"to": {
+				"x": -4.000000476837158,
+				"z": -6.190128409855333e-10
+			}
+		},
+		"rain": {
+			"released": 97
+		}
+	},
+	"rainCancelCooldownTicks": 45,
+	"coverage": [
+		"vault release and landing",
+		"Loose hit and exact Momentum cooldown reduction",
+		"Rain stop cancellation before release",
+		"Rain hit and slow",
+		"zone and slow expiry",
+		"state snapshot"
+	]
+}

@@ -1,0 +1,416 @@
+{
+	"hero": "undine",
+	"map": "overthrow",
+	"seed": 2,
+	"viewport": "1280x720",
+	"ok": true,
+	"timing": "Frame-stepped: the sim ran exactly 1/60 s per tick, whatever the host load; every time below is authored sim time. Wall time (56 s, load 13.63) and software-rendered frames say nothing about hardware FPS or input latency, which this does not measure.",
+	"clip": {
+		"file": "cast.webm",
+		"frames": 153,
+		"seconds": 5.1,
+		"fps": 30,
+		"ticksPerFrame": 2,
+		"slow": 1
+	},
+	"steps": [
+		{
+			"step": "basic",
+			"ability": "waterFlick",
+			"kind": "basic",
+			"aim": "enemy",
+			"ok": true,
+			"problems": [],
+			"authored": {
+				"castPoint": 0.3,
+				"castLock": 0.3,
+				"phases": [
+					{
+						"now": "attack:windup",
+						"at": 0,
+						"seconds": 0.283
+					},
+					{
+						"now": "attack:backswing",
+						"at": 0.283,
+						"seconds": 0.2
+					}
+				],
+				"firstHit": 0.467,
+				"settled": 0.483
+			},
+			"cooldownTicksLeft": null,
+			"hits": [
+				{
+					"at": 0.467,
+					"damage": 65,
+					"target": "try-1"
+				}
+			],
+			"heals": 0,
+			"facts": ["order", "cast", "projectile", "hit"],
+			"hp": {
+				"me": 1500,
+				"foe": 1335,
+				"friend": 1450
+			},
+			"log": [
+				{
+					"tick": 81,
+					"type": "order",
+					"hero": "local",
+					"target": "try-1",
+					"point": {
+						"x": -6,
+						"z": 0
+					}
+				},
+				{
+					"tick": 81,
+					"type": "cast",
+					"hero": "local",
+					"ability": "waterFlick",
+					"slot": "primary",
+					"lock": 0.3,
+					"target": {
+						"x": -6,
+						"z": 0
+					},
+					"targetId": "try-1",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 81,
+					"type": "activity",
+					"now": "attack:windup"
+				},
+				{
+					"tick": 98,
+					"type": "projectile",
+					"hero": "local",
+					"slot": "primary",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 98,
+					"type": "activity",
+					"now": "attack:backswing"
+				},
+				{
+					"tick": 109,
+					"type": "hit",
+					"ability": "waterFlick",
+					"slot": "primary",
+					"damage": 65,
+					"source": "local",
+					"target": "try-1",
+					"point": {
+						"x": -6.65,
+						"z": 0
+					}
+				},
+				{
+					"tick": 110,
+					"type": "activity",
+					"now": ""
+				}
+			],
+			"frames": 42
+		},
+		{
+			"step": "slot1",
+			"ability": "balloon",
+			"kind": "instant",
+			"aim": "enemy",
+			"ok": true,
+			"problems": [],
+			"authored": {
+				"castPoint": 0,
+				"castLock": 0,
+				"phases": [],
+				"firstHit": 0.6,
+				"settled": 0.75
+			},
+			"cooldownTicksLeft": 255,
+			"hits": [
+				{
+					"at": 0.6,
+					"damage": 80,
+					"target": "try-1"
+				}
+			],
+			"heals": 0,
+			"facts": ["cast", "impact", "status", "hit"],
+			"hp": {
+				"me": 1500,
+				"foe": 1320,
+				"friend": 1450
+			},
+			"log": [
+				{
+					"tick": 177,
+					"type": "cast",
+					"hero": "local",
+					"ability": "balloon",
+					"slot": "slot1",
+					"lock": 0,
+					"target": {
+						"x": -3.25,
+						"z": 0
+					},
+					"targetId": null,
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 213,
+					"type": "impact",
+					"hero": "local",
+					"ability": "balloon",
+					"point": {
+						"x": -3.25,
+						"z": 0
+					}
+				},
+				{
+					"tick": 213,
+					"type": "status",
+					"source": "local",
+					"target": "try-1"
+				},
+				{
+					"tick": 213,
+					"type": "hit",
+					"ability": "balloon",
+					"slot": "slot1",
+					"damage": 80,
+					"source": "local",
+					"target": "try-1",
+					"point": {
+						"x": -3.25,
+						"z": 0
+					}
+				},
+				{
+					"tick": 213,
+					"type": "status",
+					"source": "local",
+					"target": "try-1"
+				},
+				{
+					"tick": 214,
+					"type": "status",
+					"source": "local",
+					"target": "try-1"
+				},
+				{
+					"tick": 215,
+					"type": "status",
+					"source": "local",
+					"target": "try-1"
+				},
+				{
+					"tick": 216,
+					"type": "status",
+					"source": "local",
+					"target": "try-1"
+				},
+				{
+					"tick": 217,
+					"type": "status",
+					"source": "local",
+					"target": "try-1"
+				},
+				{
+					"tick": 218,
+					"type": "status",
+					"source": "local",
+					"target": "try-1"
+				},
+				{
+					"tick": 219,
+					"type": "status",
+					"source": "local",
+					"target": "try-1"
+				},
+				{
+					"tick": 220,
+					"type": "status",
+					"source": "local",
+					"target": "try-1"
+				},
+				{
+					"tick": 221,
+					"type": "status",
+					"source": "local",
+					"target": "try-1"
+				},
+				{
+					"tick": 222,
+					"type": "status",
+					"source": "local",
+					"target": "try-1"
+				}
+			],
+			"frames": 32
+		},
+		{
+			"step": "slot2",
+			"ability": "sprinkler",
+			"kind": "instant",
+			"aim": "enemy",
+			"ok": true,
+			"problems": [],
+			"authored": {
+				"castPoint": 0.3,
+				"castLock": 0.3,
+				"phases": [
+					{
+						"now": "cast:sprinkler",
+						"at": 0,
+						"seconds": 0.283
+					}
+				],
+				"firstHit": null,
+				"settled": 0.633
+			},
+			"cooldownTicksLeft": 780,
+			"hits": [],
+			"heals": 0,
+			"facts": ["cast", "impact", "status", "heal"],
+			"hp": {
+				"me": 1500,
+				"foe": 1400,
+				"friend": 1450
+			},
+			"log": [
+				{
+					"tick": 473,
+					"type": "cast",
+					"hero": "local",
+					"ability": "sprinkler",
+					"slot": "slot2",
+					"lock": 0.3,
+					"target": {
+						"x": -5.49,
+						"z": 0
+					},
+					"targetId": null,
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 473,
+					"type": "activity",
+					"now": "cast:sprinkler"
+				},
+				{
+					"tick": 490,
+					"type": "impact",
+					"hero": "local",
+					"ability": "sprinkler",
+					"point": {
+						"x": -5.49,
+						"z": 0
+					}
+				},
+				{
+					"tick": 490,
+					"type": "status",
+					"source": "local",
+					"target": "try-1"
+				},
+				{
+					"tick": 490,
+					"type": "activity",
+					"now": ""
+				},
+				{
+					"tick": 511,
+					"type": "heal",
+					"ability": "sprinkler",
+					"source": "local",
+					"target": "try-2"
+				}
+			],
+			"frames": 40
+		},
+		{
+			"step": "slot3",
+			"ability": "slide",
+			"kind": "instant",
+			"aim": "enemy",
+			"ok": true,
+			"problems": [],
+			"authored": {
+				"castPoint": 0,
+				"castLock": 0,
+				"phases": [
+					{
+						"now": "dash:slide",
+						"at": 0,
+						"seconds": 0.283
+					}
+				],
+				"firstHit": null,
+				"settled": 0.667
+			},
+			"cooldownTicksLeft": 420,
+			"hits": [],
+			"heals": 0,
+			"facts": ["cast", "status"],
+			"hp": {
+				"me": 1500,
+				"foe": 1400,
+				"friend": 1450
+			},
+			"log": [
+				{
+					"tick": 810,
+					"type": "cast",
+					"hero": "local",
+					"ability": "slide",
+					"slot": "slot3",
+					"lock": 0,
+					"target": {
+						"x": -6.26,
+						"z": 0
+					},
+					"targetId": null,
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 810,
+					"type": "activity",
+					"now": "dash:slide"
+				},
+				{
+					"tick": 827,
+					"type": "activity",
+					"now": ""
+				},
+				{
+					"tick": 850,
+					"type": "status",
+					"reason": "expired",
+					"source": "local",
+					"target": "try-1"
+				}
+			],
+			"frames": 39
+		}
+	]
+}

@@ -1,0 +1,49 @@
+{
+	"pinball": {
+		"hits": [
+			{
+				"tick": 33,
+				"target": "B0",
+				"damage": 130
+			},
+			{
+				"tick": 40,
+				"target": "B1",
+				"damage": 104
+			},
+			{
+				"tick": 47,
+				"target": "B2",
+				"damage": 83.20000000000002
+			},
+			{
+				"tick": 54,
+				"target": "B3",
+				"damage": 66.56000000000002
+			}
+		],
+		"replicaPacketsAccepted": 65,
+		"remainingSummons": 0
+	},
+	"pinballView": {
+		"backwardTickClears": true,
+		"disposeRemovesGroup": true
+	},
+	"cancel": {
+		"hits": 0,
+		"summons": 0,
+		"refunded": true
+	},
+	"ownerDeath": {
+		"hits": 0,
+		"summons": 0
+	},
+	"lob": {
+		"firstFieldTick": 64,
+		"lastVisibleBoundaryRadius": 2.2,
+		"expiryCleared": true
+	},
+	"lobView": {
+		"disposeRemovesGroup": true
+	}
+}

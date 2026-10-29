@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Mandador, the whole kit · dodgethis</title>
+		<link rel="stylesheet" href="/pages/page.css" />
+	</head>
+	<body class="page">
+		<main>
+			<h1>Mandador, the whole kit</h1>
+			<p><small>To review · 2026-10-29</small></p>
+			<p>
+				<b
+					>Does each action read as a coil, a release and a mark, and do the support actions land as
+					hard as the damage?</b
+				>
+			</p>
+
+			<p>
+				One clip, seven steps, at the match camera on Overthrow: the tennis ball, Pass at an enemy
+				(hit and slow), Pass to an ally (the catch and the heal), Pass thrown wide, Tag out, Rally
+				ring, and the trait, where Mandador falls and her cutout throws from the touchline and takes
+				two seconds off her respawn. Every step is driven by a real pointer, real Q W E key events
+				and right or left clicks, and each is asserted from the facts the sim produced (see
+				proof.json).
+			</p>
+			<p>
+				Cast points are unchanged (0.3 s for the ball, Pass, Tag out and Rally ring; 0.35 s for the
+				cutout throw). The ball hit at 0.55 s, Pass at 0.53 s. What changed is the body (each cast
+				coils over its cast point and snaps on release, which the old poses did not do, and the
+				basic had no pose at all), the marks the release and the landing leave, and the status marks
+				(guard, slow, haste) that did not exist.
+			</p>
+			<p>
+				<small
+					>Frame-stepped: the sim advanced exactly 1/60 s per tick whatever the load, two ticks to a
+					frame, so the clip plays at authored speed (1x). It is one hero and a staged row, not a
+					crowded fight, and it has no HUD. It measures nothing about FPS or input latency. Wall
+					time was a few minutes on a shared, software-rendered machine.</small
+				>
+			</p>
+			<div class="media">
+				<figure>
+					<video src="proof/proof.webm" controls></video>
+					<figcaption>
+						proof.webm · <a href="proof/proof.json">proof.json</a> ·
+						<a href="before.json">before.json</a> (the kit before the pass, same tool, no clip)
+					</figcaption>
+				</figure>
+				<figure>
+					<video src="fixes/cast.webm" controls></video>
+					<figcaption>
+						fixes/cast.webm · <a href="fixes/cast.json">cast.json</a> · a re-cast of the basic and
+						Tag out after review: the basic's arc and Tag out's guard ring in the main clip above
+						predate these two fixes. There is no before video, only before.json.
+					</figcaption>
+				</figure>
+			</div>
+
+			<script src="../viewer.js"></script>
+		</main>
+	</body>
+</html>

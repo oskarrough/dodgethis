@@ -1,0 +1,36 @@
+{
+	"frames": 99,
+	"seconds": 3.3,
+	"ticksPerFrame": 2,
+	"log": [
+		{
+			"caught": true
+		},
+		{
+			"hp": {
+				"me": 2200,
+				"foe": 1250,
+				"friend": 1450
+			},
+			"facts": ["activity", "cast", "projectile", "hit"]
+		}
+	],
+	"marks": [
+		{
+			"frame": 4,
+			"text": "W: the catch opens"
+		},
+		{
+			"frame": 15,
+			"text": "the foe fires; the cone takes it"
+		},
+		{
+			"frame": 28,
+			"text": "the shot waits in the glove as a ball"
+		},
+		{
+			"frame": 58,
+			"text": "Q: Toss throws it back"
+		}
+	]
+}

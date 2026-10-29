@@ -1,0 +1,108 @@
+{
+	"checks": [
+		{
+			"heroId": "carambola",
+			"idleView": true,
+			"basicPhases": true,
+			"cancelClearsOrder": true,
+			"heldMovePreservesCast": true,
+			"dash": false
+		},
+		{
+			"heroId": "ibis",
+			"idleView": true,
+			"basicPhases": true,
+			"cancelClearsOrder": true,
+			"heldMovePreservesCast": true,
+			"dash": true
+		},
+		{
+			"heroId": "kappa",
+			"idleView": true,
+			"basicPhases": true,
+			"cancelClearsOrder": true,
+			"heldMovePreservesCast": true,
+			"dash": true
+		},
+		{
+			"heroId": "lasso",
+			"idleView": true,
+			"basicPhases": true,
+			"cancelClearsOrder": true,
+			"heldMovePreservesCast": true,
+			"dash": false
+		},
+		{
+			"heroId": "mandador",
+			"idleView": true,
+			"basicPhases": true,
+			"cancelClearsOrder": true,
+			"heldMovePreservesCast": true,
+			"dash": false
+		},
+		{
+			"heroId": "oolong",
+			"idleView": true,
+			"basicPhases": true,
+			"cancelClearsOrder": true,
+			"heldMovePreservesCast": true,
+			"dash": true
+		},
+		{
+			"heroId": "salvia",
+			"idleView": true,
+			"basicPhases": true,
+			"cancelClearsOrder": true,
+			"heldMovePreservesCast": true,
+			"dash": false
+		},
+		{
+			"heroId": "undine",
+			"idleView": true,
+			"basicPhases": true,
+			"cancelClearsOrder": true,
+			"heldMovePreservesCast": true,
+			"dash": true
+		}
+	],
+	"presets": [
+		{
+			"preset": "moba",
+			"movementFrames": 40,
+			"casts": 1,
+			"projectiles": 1,
+			"rooted": true,
+			"resumed": true,
+			"stopAndCancelRefund": true
+		},
+		{
+			"preset": "wasd",
+			"movementFrames": 40,
+			"casts": 1,
+			"projectiles": 1,
+			"rooted": true,
+			"resumed": true,
+			"stopAndCancelRefund": true
+		},
+		{
+			"preset": "keyboard",
+			"movementFrames": 40,
+			"casts": 1,
+			"projectiles": 1,
+			"rooted": true,
+			"resumed": true,
+			"stopAndCancelRefund": true
+		},
+		{
+			"preset": "pad",
+			"movementFrames": 40,
+			"casts": 1,
+			"projectiles": 1,
+			"rooted": true,
+			"resumed": true,
+			"stopAndCancelRefund": true
+		}
+	],
+	"packets": 229,
+	"dashSamples": 53
+}

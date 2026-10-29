@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Undine's water</title>
+		<style>
+			:root {
+				color-scheme: light;
+				font-family: system-ui, sans-serif;
+				color: #26445f;
+				background: #f4efdf;
+			}
+			body {
+				max-width: 1100px;
+				margin: 0 auto;
+				padding: 32px 20px 64px;
+			}
+			h1 {
+				font-size: clamp(2rem, 5vw, 4rem);
+				margin-bottom: 12px;
+			}
+			p {
+				max-width: 76ch;
+				line-height: 1.6;
+			}
+			video {
+				width: 100%;
+				border: 1px solid #26445f;
+				background: #26445f;
+			}
+			a {
+				color: inherit;
+			}
+			table {
+				width: 100%;
+				border-collapse: collapse;
+				margin-block: 24px;
+			}
+			th,
+			td {
+				text-align: left;
+				padding: 12px 8px;
+				border-bottom: 1px solid #b6b9b1;
+				vertical-align: top;
+			}
+			summary {
+				cursor: pointer;
+				padding-block: 20px;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>Undine's water</h1>
+		<p>
+			The jug coils for a sharp flick, tips a heavy balloon over the court and plants a sprinkler
+			with a steady turning blade. Slide carries her low behind a bow wave. Two small falling drops
+			mark those left Soaked.
+		</p>
+		<video
+			controls
+			playsinline
+			preload="metadata"
+			src="cast.webm"
+			aria-label="Undine's complete kit, captured at authored speed"
+		></video>
+		<p>
+			The clip runs at authored speed: one frame for every two simulation ticks, played at 30 frames
+			per second. These are real mouse and keyboard casts in an isolated Overthrow scene. It shows
+			the basic attack, Balloon hitting and missing, a puddle drying, Sprinkler completing its life
+			and Slide. It does not measure hardware frame rate or input latency, and it is not a crowded
+			fight or an online guest recording.
+		</p>
+		<table>
+			<thead>
+				<tr>
+					<th>Action</th>
+					<th>The change</th>
+					<th>Authored time</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>Water flick</td>
+					<td>
+						The spout and body coil together, then snap. A compact inked splash replaces the
+						particle cloud. Water travels faster.
+					</td>
+					<td>
+						Windup stays 0.30 s. Recovery falls from 0.20 to 0.12 s; travel speed rises from 18 to
+						24 m/s.
+					</td>
+				</tr>
+				<tr>
+					<td>Balloon</td>
+					<td>
+						The existing weighted flight, tied neck, crown and exact puddle boundary remain. The jug
+						now visibly throws it, and contact briefly holds the struck body.
+					</td>
+					<td>
+						Immediate release, 0.60 s flight and 4 s puddle remain. Local hit hold is 0.045 s.
+					</td>
+				</tr>
+				<tr>
+					<td>Sprinkler</td>
+					<td>
+						A planted enamel head recoils each turn. Its inked blade follows the same angular sweep
+						that heals and Soaks.
+					</td>
+					<td>0.30 s cast, one turn each second, 5 s lifetime remain.</td>
+				</tr>
+				<tr>
+					<td>Slide</td>
+					<td>
+						A low bow wave replaces spray. The jug rights itself after the dash; water disappears
+						when movement ends.
+					</td>
+					<td>
+						Five metres in 0.26 s, rounded up to 16 simulation ticks; previously 0.30 s. Recovery is
+						visual only, 0.14 s.
+					</td>
+				</tr>
+			</tbody>
+		</table>
+		<p>
+			Separate headless checks exercised Balloon's healing and Soak, Sprinkler's repeated healing
+			and expiry, and a connected puddle carrying Slide seven metres. The film begins with
+			full-health targets; healing amounts were verified separately. The missed puddle is still
+			drying when its segment ends; its final expiry was checked headlessly. Undine has no separate
+			trait in her current kit.
+		</p>
+		<p>
+			<a href="cast.json">Cast assertions and measured phases</a> ·
+			<a href="verification.json">Interaction and resource checks</a>
+		</p>
+		<details>
+			<summary>The baseline</summary>
+			<video
+				controls
+				playsinline
+				preload="none"
+				src="before/cast.webm"
+				aria-label="Undine before this pass, at authored speed"
+			></video>
+			<p>
+				<a href="before/cast.json">Baseline cast record</a>. The existing balloon pass was already
+				present.
+			</p>
+		</details>
+	</body>
+</html>

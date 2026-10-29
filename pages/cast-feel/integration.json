@@ -1,0 +1,118 @@
+{
+	"status": "review_complete",
+	"heroes": ["ibis", "kappa", "oolong", "lasso", "mandador", "undine", "carambola", "salvia"],
+	"coverage": {
+		"heroes": 8,
+		"slottedAbilities": 23,
+		"basicConsumers": 8,
+		"record": "../../docs/feel-pass.md"
+	},
+	"base": "4e3c6860",
+	"remoteMain": "4e3c6860",
+	"change": "zqkwkqrx",
+	"checks": {
+		"check": "passed",
+		"test": {
+			"passed": 271,
+			"skipped": 1,
+			"failed": 0
+		},
+		"compactGuestPackets": 229,
+		"activeDashSamples": 53,
+		"kappaRealInputSteps": 5,
+		"heldInputPresets": ["moba", "wasd", "keyboard", "pad"],
+		"idleViews": 8,
+		"focusedTests": {
+			"passed": 51,
+			"failed": 0
+		},
+		"rainRealInputSteps": 1,
+		"rainBoundaryLifecycle": "exact radius, stable allocation, expiry, rewind and disposal passed",
+		"productionBuild": "passed; legacy pinboard script and bundle-size warnings",
+		"finalLocalHttpChecks": 2
+	},
+	"proof": {
+		"page": "http://office-linux.heron-mermaid.ts.net:5173/pages/cast-feel/",
+		"clip": "fight.webm",
+		"seconds": 6,
+		"frames": 180,
+		"castingHeroes": 7,
+		"method": "One staged 4v4 with real Undine pointer/Q/W input and seven ordinary hard bots; two fixed simulation ticks per frame. Colour and grayscale frames inspected. No HUD, injected damage, hardware FPS or input-latency measurement.",
+		"pageInspection": "1280x900, all eight kit links present, video duration 6 seconds, no horizontal overflow or browser errors.",
+		"localHttpChecks": 13,
+		"userHostnameCheck": "curl to office-linux.heron-mermaid.ts.net:5173 failed with exit 7 from this shell; the shared local server on port 5199 served the page, clip and all eight kit pages with HTTP 200.",
+		"rainCorrection": {
+			"clip": "rain/cast.webm",
+			"seconds": 1.33,
+			"frames": 40,
+			"damage": 180,
+			"firstHitSeconds": 0.567,
+			"inspected": true
+		}
+	},
+	"reviewTask": "INBOX-18",
+	"blockers": [],
+	"limits": [
+		"No live two-peer visual or independent-NAT proof; compact guest application exercised headlessly.",
+		"No hardware responsiveness or audio listening judgment.",
+		"Older Ibis and Carambola basic clips retain their historical timings; integrated phases verified headlessly.",
+		"Crowded capture precedes final cast-circle, Cancel-order and held-movement corrections. Focused Rain capture covers the corrected idle/circle path; controls were verified headlessly.",
+		"Faint Vault/Momentum, Slide wake and slow residue remain optional polish."
+	],
+	"deferredSharedRequests": [
+		"Outbound Throw string and projectile replacement hook",
+		"Cushion contact forwarding",
+		"Critical-readiness replication",
+		"Special returned-Toss impact recipe",
+		"Universal instant-release hook",
+		"Generic foe/support/cutout staging flags; existing one-off scripts retained"
+	],
+	"checkpointSlices": [
+		{
+			"title": "Give every hero a distinct windup and impact",
+			"scope": "All runtime kit and shared fixes, Balloon, effects primitives, generated registries, existing movement test and contradicted hero documentation."
+		},
+		{
+			"title": "Preview whole kits through real casts",
+			"scope": "Capture and cast helpers, shot integration, package commands, proof hooks, exercised skill and verification notes; depends on runtime slice."
+		},
+		{
+			"title": "Put the whole cast on the pinboard",
+			"scope": "All eight kit proofs, Balloon study, crowded proof, coverage and manifest, pinboard registry, owned workflow definition."
+		}
+	],
+	"ownedFiles": "owned-files.json",
+	"ownedFileCount": 169,
+	"finalReview": {
+		"originalVerdict": "rejected",
+		"resolved": [
+			"Held movement no longer cancels cast windups; Stop and Cancel retain refund and attack-order cleanup.",
+			"Rain boundary now belongs to its ability view through drawsBoundary.",
+			"Focused browser capture found and resolved idle null-cast crash in landing-circle selection."
+		],
+		"independentRereview": false,
+		"verification": "Existing movement test extended; actual pointClick sampler with mocked RMB, keys and pad axes; all eight idle views; focused real-input Rain clip inspected."
+	},
+	"shipment": {
+		"verifiedPushes": [
+			{
+				"slice": "runtime",
+				"change": "zqkwkqrxmqkrztszxnqypuoomxztnxrv",
+				"commit": "8890634c082ea3610ccf5b5c9f10d20f73bb15b1",
+				"files": 82,
+				"pushed": true
+			},
+			{
+				"slice": "tools",
+				"change": "wwkzyvzztopksxxlunqqknqxnvltroun",
+				"commit": "bfe9513ff6904794b0fbdfc5179fe5cb6d6abf71",
+				"files": 7,
+				"pushed": true
+			}
+		],
+		"publicationChange": "yorpvtuk",
+		"publicationTitle": "Put the whole cast on the pinboard",
+		"publicationFiles": 80,
+		"note": "The final publication commit carries this record; its push is verified in the workflow result."
+	}
+}

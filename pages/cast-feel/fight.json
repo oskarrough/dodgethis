@@ -1,0 +1,10767 @@
+{
+	"method": "Staged 4v4, real pointer and Q/W key events for Undine; seven hard bots use ordinary AI. No injected damage. No HUD. Fixed 1/60 s ticks, two ticks per video frame; not hardware FPS or input latency.",
+	"seconds": 6,
+	"wallSeconds": 51.655,
+	"actorCount": 7,
+	"facts": [
+		{
+			"hero": "bot-B-2",
+			"kind": "move",
+			"point": {
+				"x": -8.8,
+				"z": 3
+			},
+			"repeat": false,
+			"target": null,
+			"tick": 1,
+			"type": "order"
+		},
+		{
+			"hero": "bot-A-2",
+			"kind": "move",
+			"point": {
+				"x": 8.8,
+				"z": 3
+			},
+			"repeat": false,
+			"target": null,
+			"tick": 2,
+			"type": "order"
+		},
+		{
+			"hero": "bot-A-1",
+			"kind": "move",
+			"point": {
+				"x": 8.8,
+				"z": 0
+			},
+			"repeat": false,
+			"target": null,
+			"tick": 3,
+			"type": "order"
+		},
+		{
+			"hero": "bot-B-1",
+			"kind": "move",
+			"point": {
+				"x": -8.8,
+				"z": 0
+			},
+			"repeat": false,
+			"target": null,
+			"tick": 4,
+			"type": "order"
+		},
+		{
+			"hero": "bot-B-0",
+			"kind": "move",
+			"point": {
+				"x": -8.8,
+				"z": -3
+			},
+			"repeat": false,
+			"target": null,
+			"tick": 6,
+			"type": "order"
+		},
+		{
+			"hero": "try-1",
+			"point": {
+				"x": -46.5,
+				"y": 1.05,
+				"z": -1.5
+			},
+			"tick": 77,
+			"type": "spawn"
+		},
+		{
+			"hero": "try-2",
+			"point": {
+				"x": -49.5,
+				"y": 1.05,
+				"z": 0
+			},
+			"tick": 77,
+			"type": "spawn"
+		},
+		{
+			"hero": "try-3",
+			"point": {
+				"x": -10.5,
+				"y": 1.05,
+				"z": 2.5
+			},
+			"tick": 84,
+			"type": "spawn"
+		},
+		{
+			"hero": "try-4",
+			"point": {
+				"x": -10.5,
+				"y": 1.05,
+				"z": 4
+			},
+			"tick": 84,
+			"type": "spawn"
+		},
+		{
+			"hero": "try-5",
+			"point": {
+				"x": -10.5,
+				"y": 1.05,
+				"z": 5.5
+			},
+			"tick": 84,
+			"type": "spawn"
+		},
+		{
+			"hero": "try-6",
+			"point": {
+				"x": -7.5,
+				"y": 1.05,
+				"z": 1
+			},
+			"tick": 84,
+			"type": "spawn"
+		},
+		{
+			"hero": "try-7",
+			"point": {
+				"x": -7.5,
+				"y": 1.05,
+				"z": 2.5
+			},
+			"tick": 84,
+			"type": "spawn"
+		},
+		{
+			"hero": "try-8",
+			"point": {
+				"x": -7.5,
+				"y": 1.05,
+				"z": 4
+			},
+			"tick": 84,
+			"type": "spawn"
+		},
+		{
+			"hero": "try-9",
+			"point": {
+				"x": -7.5,
+				"y": 1.05,
+				"z": 5.5
+			},
+			"tick": 84,
+			"type": "spawn"
+		},
+		{
+			"hero": "try-3",
+			"kind": "move",
+			"point": {
+				"x": 8.8,
+				"z": 0
+			},
+			"repeat": false,
+			"target": null,
+			"tick": 85,
+			"type": "order"
+		},
+		{
+			"ability": "rallyRing",
+			"direction": {
+				"x": 0.8944271909999159,
+				"z": -0.4472135954999579
+			},
+			"hero": "try-4",
+			"lock": 0.3,
+			"point": {
+				"x": -12,
+				"y": 1.0555763244628906,
+				"z": 1
+			},
+			"slot": "slot3",
+			"target": {
+				"x": -6,
+				"z": -2
+			},
+			"targetId": null,
+			"tick": 85,
+			"type": "cast"
+		},
+		{
+			"hero": "try-5",
+			"kind": "move",
+			"point": {
+				"x": 8.8,
+				"z": 0
+			},
+			"repeat": false,
+			"target": null,
+			"tick": 85,
+			"type": "order"
+		},
+		{
+			"hero": "try-6",
+			"kind": "attack",
+			"point": {
+				"x": -11,
+				"z": -2
+			},
+			"repeat": false,
+			"target": "try-3",
+			"tick": 85,
+			"type": "order"
+		},
+		{
+			"ability": "flyingKick",
+			"direction": {
+				"x": -0.7071067811865475,
+				"z": 0.7071067811865475
+			},
+			"hero": "try-7",
+			"lock": 0.3,
+			"point": {
+				"x": -6,
+				"y": 1.0555763244628906,
+				"z": -2
+			},
+			"slot": "slot1",
+			"target": {
+				"x": -9,
+				"z": 1
+			},
+			"targetId": null,
+			"tick": 85,
+			"type": "cast"
+		},
+		{
+			"ability": "pinball",
+			"direction": {
+				"x": -0.9486832980505138,
+				"z": 0.31622776601683794
+			},
+			"hero": "try-8",
+			"lock": 0.35,
+			"point": {
+				"x": -3,
+				"y": 1.0555763244628906,
+				"z": -1
+			},
+			"slot": "slot3",
+			"target": {
+				"x": -9,
+				"z": 1
+			},
+			"targetId": "local",
+			"tick": 85,
+			"type": "cast"
+		},
+		{
+			"hero": "try-9",
+			"kind": "attack",
+			"point": {
+				"x": -12,
+				"z": 4
+			},
+			"repeat": false,
+			"target": "try-5",
+			"tick": 85,
+			"type": "order"
+		},
+		{
+			"hero": "try-4",
+			"kind": "move",
+			"point": {
+				"x": 8.8,
+				"z": 0
+			},
+			"repeat": false,
+			"target": null,
+			"tick": 91,
+			"type": "order"
+		},
+		{
+			"ability": "rallyRing",
+			"hero": "try-4",
+			"reason": "input",
+			"slot": "slot3",
+			"tick": 91,
+			"type": "castCancelled"
+		},
+		{
+			"ability": "rallyRing",
+			"hero": "try-4",
+			"reason": "cancelled",
+			"slot": "slot3",
+			"tick": 91,
+			"type": "denied"
+		},
+		{
+			"hero": "try-8",
+			"kind": "attack",
+			"point": {
+				"x": -10.530168533325195,
+				"z": -1.952542066574097
+			},
+			"repeat": false,
+			"target": "try-3",
+			"tick": 91,
+			"type": "order"
+		},
+		{
+			"ability": "tangle",
+			"direction": {
+				"x": -0.9893740125606388,
+				"z": 0.14539278960684707
+			},
+			"hero": "try-6",
+			"lock": 0.3,
+			"point": {
+				"x": -5.90301513671875,
+				"y": 1.056776523590088,
+				"z": 0.5448846817016602
+			},
+			"slot": "slot2",
+			"target": {
+				"x": -9,
+				"z": 1
+			},
+			"targetId": null,
+			"tick": 97,
+			"type": "cast"
+		},
+		{
+			"ability": "balloon",
+			"direction": {
+				"x": 1,
+				"z": -4.4375807148577015e-16
+			},
+			"hero": "local",
+			"lock": 0,
+			"point": {
+				"x": -9,
+				"y": 1.0575766563415527,
+				"z": 1
+			},
+			"slot": "slot1",
+			"target": {
+				"x": -4.997015145093057,
+				"z": 0.9999999999999982
+			},
+			"targetId": null,
+			"tick": 105,
+			"type": "cast"
+		},
+		{
+			"ability": "pinball",
+			"part": "release",
+			"point": {
+				"x": -3,
+				"y": 1.0575766563415527,
+				"z": -1
+			},
+			"source": "try-8",
+			"tick": 105,
+			"type": "contact"
+		},
+		{
+			"ability": "lob",
+			"direction": {
+				"x": -0.9323206063331866,
+				"z": 0.36163280687255034
+			},
+			"hero": "try-8",
+			"lock": 0.3,
+			"point": {
+				"x": -3.2203242778778076,
+				"y": 1.0579767227172852,
+				"z": -1.0289812088012695
+			},
+			"slot": "slot2",
+			"target": {
+				"x": -7.949120609291231,
+				"z": 0.8052460718585717
+			},
+			"targetId": null,
+			"tick": 109,
+			"type": "cast"
+		},
+		{
+			"ability": "flyingKick",
+			"absorbed": 0,
+			"damage": 100,
+			"direction": {
+				"x": -0.7071067811865475,
+				"y": 0,
+				"z": 0.7071067811865475
+			},
+			"hp": 1400,
+			"lethal": false,
+			"maxHp": 1500,
+			"periodic": false,
+			"point": {
+				"x": -9,
+				"y": 1.1,
+				"z": 1
+			},
+			"slot": "slot1",
+			"source": "try-7",
+			"target": "local",
+			"tick": 110,
+			"type": "hit"
+		},
+		{
+			"ability": "pinball",
+			"absorbed": 0,
+			"damage": 130,
+			"direction": {
+				"x": -0.9486832923959204,
+				"y": 0,
+				"z": 0.3162277829806171
+			},
+			"hp": 1270,
+			"lethal": false,
+			"maxHp": 1500,
+			"periodic": false,
+			"point": {
+				"x": -9,
+				"y": 1.1,
+				"z": 1.0000001192092896
+			},
+			"slot": "slot3",
+			"source": "try-8",
+			"target": "local",
+			"tick": 112,
+			"type": "hit"
+		},
+		{
+			"ability": "pinball",
+			"hop": 0,
+			"origin": {
+				"x": -3,
+				"z": -1
+			},
+			"part": "impact",
+			"point": {
+				"x": -9,
+				"z": 1.0000001192092896
+			},
+			"source": "try-8",
+			"tick": 112,
+			"type": "contact"
+		},
+		{
+			"amount": 0,
+			"key": "tangle.slow",
+			"label": "Slow",
+			"source": "try-6",
+			"state": "on",
+			"status": 1,
+			"target": "local",
+			"tick": 114,
+			"type": "status",
+			"until": 204
+		},
+		{
+			"ability": "tangle",
+			"absorbed": 0,
+			"damage": 110,
+			"direction": {
+				"x": -0.9893740125606388,
+				"y": 0,
+				"z": 0.14539278960684707
+			},
+			"hp": 1160,
+			"lethal": false,
+			"maxHp": 1500,
+			"periodic": false,
+			"point": {
+				"x": -9,
+				"y": 1.1,
+				"z": 1.0000001192092896
+			},
+			"slot": "slot2",
+			"source": "try-6",
+			"target": "local",
+			"tick": 114,
+			"type": "hit"
+		},
+		{
+			"ability": "tangle",
+			"direction": {
+				"x": -0.9893740125606388,
+				"y": 0,
+				"z": 0.14539278960684707
+			},
+			"hero": "try-6",
+			"hit": true,
+			"point": {
+				"x": -5.90301513671875,
+				"y": 1.058476805686951,
+				"z": 0.5448846817016602
+			},
+			"tick": 114,
+			"type": "impact"
+		},
+		{
+			"ability": "tangle",
+			"direction": {
+				"x": -0.9893740125606388,
+				"y": 0,
+				"z": 0.14539278960684707
+			},
+			"part": "sweep",
+			"point": {
+				"x": -5.90301513671875,
+				"y": 1.058476805686951,
+				"z": 0.5448846817016602
+			},
+			"source": "try-6",
+			"tick": 114,
+			"type": "contact"
+		},
+		{
+			"ability": "throw",
+			"direction": {
+				"x": -0.7803273889250174,
+				"z": -0.6253712226297791
+			},
+			"hero": "try-6",
+			"lock": 0.3,
+			"point": {
+				"x": -5.90301513671875,
+				"y": 1.0585768222808838,
+				"z": 0.5448846817016602
+			},
+			"slot": "slot1",
+			"target": {
+				"x": -8.744518214159159,
+				"z": -1.732357254010969
+			},
+			"targetId": null,
+			"tick": 115,
+			"type": "cast"
+		},
+		{
+			"hero": "try-7",
+			"kind": "attack",
+			"point": {
+				"x": -8.540292739868164,
+				"z": -1.75154447555542
+			},
+			"repeat": false,
+			"target": "try-3",
+			"tick": 115,
+			"type": "order"
+		},
+		{
+			"ability": "palmStrike",
+			"direction": {
+				"x": -0.0832447397701559,
+				"z": -0.9965291331921003
+			},
+			"hero": "try-7",
+			"lock": 0.3,
+			"point": {
+				"x": -8.363604545593262,
+				"y": 1.0585768222808838,
+				"z": 0.3636033833026886
+			},
+			"slot": "primary",
+			"target": {
+				"x": -8.540292739868164,
+				"z": -1.75154447555542
+			},
+			"targetId": "try-3",
+			"tick": 115,
+			"type": "cast"
+		},
+		{
+			"ability": "pinball",
+			"absorbed": 0,
+			"damage": 104,
+			"direction": {
+				"x": -0.9852863457753096,
+				"y": 0,
+				"z": -0.1709117223268702
+			},
+			"hp": 1346,
+			"lethal": false,
+			"maxHp": 1450,
+			"periodic": false,
+			"point": {
+				"x": -9.886757850646973,
+				"y": 1.1,
+				"z": 0.8461795449256897
+			},
+			"slot": "slot3",
+			"source": "try-8",
+			"target": "try-4",
+			"tick": 119,
+			"type": "hit"
+		},
+		{
+			"ability": "pinball",
+			"hop": 1,
+			"origin": {
+				"x": -9,
+				"z": 1.0000001192092896
+			},
+			"part": "impact",
+			"point": {
+				"x": -9.886757850646973,
+				"z": 0.8461795449256897
+			},
+			"source": "try-8",
+			"tick": 119,
+			"type": "contact"
+		},
+		{
+			"ability": "lob",
+			"part": "release",
+			"point": {
+				"x": -3.2203242778778076,
+				"y": 1.059677004814148,
+				"z": -1.0289812088012695
+			},
+			"source": "try-8",
+			"tick": 126,
+			"type": "contact"
+		},
+		{
+			"ability": "pinball",
+			"absorbed": 0,
+			"damage": 83.20000000000002,
+			"direction": {
+				"x": 0.46065040292452625,
+				"y": 0,
+				"z": 0.8875816617559603
+			},
+			"hp": 1316.8,
+			"lethal": false,
+			"maxHp": 1400,
+			"periodic": false,
+			"point": {
+				"x": -8.590256690979004,
+				"y": 1.1,
+				"z": 3.3442792892456055
+			},
+			"slot": "slot3",
+			"source": "try-8",
+			"target": "try-5",
+			"tick": 126,
+			"type": "hit"
+		},
+		{
+			"ability": "pinball",
+			"hop": 2,
+			"origin": {
+				"x": -9.886757850646973,
+				"z": 0.8461795449256897
+			},
+			"part": "impact",
+			"point": {
+				"x": -8.590256690979004,
+				"z": 3.3442792892456055
+			},
+			"source": "try-8",
+			"tick": 126,
+			"type": "contact"
+		},
+		{
+			"ability": "pass",
+			"direction": {
+				"x": 0.950281878236568,
+				"z": 0.31139099520567465
+			},
+			"hero": "try-4",
+			"lock": 0.3,
+			"point": {
+				"x": -9.855253219604492,
+				"y": 1.059777021408081,
+				"z": 0.7197483777999878
+			},
+			"slot": "slot1",
+			"target": {
+				"x": -9,
+				"z": 1.0000001192092896
+			},
+			"targetId": null,
+			"tick": 127,
+			"type": "cast"
+		},
+		{
+			"ability": "mend",
+			"direction": {
+				"x": -0.17217420993716065,
+				"z": -0.9850665162477684
+			},
+			"hero": "try-5",
+			"lock": 1,
+			"point": {
+				"x": -8.590256690979004,
+				"y": 1.059777021408081,
+				"z": 3.3442792892456055
+			},
+			"slot": "slot1",
+			"target": {
+				"x": -9,
+				"z": 1.0000003576278689
+			},
+			"targetId": "local",
+			"tick": 127,
+			"type": "cast"
+		},
+		{
+			"direction": {
+				"x": -0.9898143780872838,
+				"z": -0.1423639593846826
+			},
+			"hero": "try-8",
+			"lock": 0.3,
+			"point": {
+				"x": -3.2203242778778076,
+				"y": 1.059777021408081,
+				"z": -1.0289812088012695
+			},
+			"slot": "primary",
+			"target": {
+				"x": -7.545354843139648,
+				"z": -1.651045799255371
+			},
+			"targetId": "try-3",
+			"tick": 127,
+			"type": "cast"
+		},
+		{
+			"ability": "throw",
+			"direction": {
+				"x": -0.7803273889250174,
+				"z": -0.6253712226297791
+			},
+			"hero": "try-6",
+			"id": 2,
+			"point": {
+				"x": -5.90301513671875,
+				"y": 1.1,
+				"z": 0.5448846817016602
+			},
+			"slot": "slot1",
+			"tick": 132,
+			"type": "projectile"
+		},
+		{
+			"ability": "yoYoFlick",
+			"direction": {
+				"x": -0.4707507051601395,
+				"z": -0.8822662713666614
+			},
+			"hero": "try-6",
+			"lock": 0.3,
+			"point": {
+				"x": -5.90301513671875,
+				"y": 1.060099959373474,
+				"z": 0.5448846817016602
+			},
+			"slot": "primary",
+			"target": {
+				"x": -7.047885894775391,
+				"z": -1.6007963418960571
+			},
+			"targetId": "try-3",
+			"tick": 133,
+			"type": "cast"
+		},
+		{
+			"ability": "palmStrike",
+			"hero": "try-7",
+			"hit": true,
+			"point": {
+				"x": -7.047885894775391,
+				"y": 1.1,
+				"z": -1.6007963418960571
+			},
+			"tick": 133,
+			"type": "impact"
+		},
+		{
+			"ability": "palmStrike",
+			"absorbed": 0,
+			"damage": 85,
+			"direction": {
+				"x": 0.5564905991982777,
+				"y": 0,
+				"z": -0.8308539059328913
+			},
+			"hp": 1315,
+			"lethal": false,
+			"maxHp": 1400,
+			"periodic": false,
+			"point": {
+				"x": -7.047885894775391,
+				"y": 1.1,
+				"z": -1.6007963418960571
+			},
+			"projectile": 3,
+			"slot": "primary",
+			"source": "try-7",
+			"target": "try-3",
+			"tick": 133,
+			"type": "hit"
+		},
+		{
+			"distance": 0.2896256336336354,
+			"point": {
+				"x": -7.428929005044922,
+				"y": 1.1,
+				"z": -0.6780156483475911
+			},
+			"projectile": 2,
+			"source": "try-6",
+			"target": "try-3",
+			"tick": 136,
+			"type": "nearMiss"
+		},
+		{
+			"hero": "try-7",
+			"kind": "move",
+			"point": {
+				"x": -7.363604545593262,
+				"z": 0.3636033833026886
+			},
+			"repeat": false,
+			"target": null,
+			"tick": 139,
+			"type": "order"
+		},
+		{
+			"ability": "catch",
+			"direction": {
+				"x": -0.8725187474606618,
+				"z": -0.4885806333960421
+			},
+			"hero": "try-9",
+			"lock": 0,
+			"point": {
+				"x": -3.997302770614624,
+				"y": 1.059999942779541,
+				"z": 4
+			},
+			"slot": "slot2",
+			"target": {
+				"x": -3.997302770614624,
+				"z": 4
+			},
+			"targetId": null,
+			"tick": 139,
+			"type": "cast"
+		},
+		{
+			"ability": "balloon",
+			"hero": "local",
+			"hit": true,
+			"point": {
+				"x": -4.997015145093057,
+				"y": 0,
+				"z": 0.9999999999999982
+			},
+			"tick": 141,
+			"type": "impact"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "on",
+			"status": 2,
+			"target": "try-6",
+			"tick": 141,
+			"type": "status",
+			"until": 261
+		},
+		{
+			"ability": "balloon",
+			"absorbed": 0,
+			"damage": 80,
+			"direction": {
+				"x": 0,
+				"y": 0,
+				"z": 0
+			},
+			"hp": 1820,
+			"lethal": false,
+			"maxHp": 1900,
+			"periodic": false,
+			"point": {
+				"x": -4.997015145093057,
+				"y": 1.1,
+				"z": 0.9999999999999982
+			},
+			"slot": "slot1",
+			"source": "local",
+			"target": "try-6",
+			"tick": 141,
+			"type": "hit"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 141,
+			"type": "status",
+			"until": 261,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 142,
+			"type": "status",
+			"until": 262,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 143,
+			"type": "status",
+			"until": 263,
+			"wasted": 0
+		},
+		{
+			"ability": "pass",
+			"direction": {
+				"x": 0.950281878236568,
+				"z": 0.31139099520567465
+			},
+			"hero": "try-4",
+			"id": 4,
+			"point": {
+				"x": -9.855253219604492,
+				"y": 1.1,
+				"z": 0.71974778175354
+			},
+			"slot": "slot1",
+			"tick": 144,
+			"type": "projectile"
+		},
+		{
+			"ability": "pass",
+			"amount": 180,
+			"crit": false,
+			"hp": 1340,
+			"maxHp": 1500,
+			"overheal": 0,
+			"periodic": false,
+			"source": "try-4",
+			"target": "local",
+			"tick": 144,
+			"type": "heal"
+		},
+		{
+			"ability": "pass",
+			"heal": 180,
+			"hp": 1340,
+			"maxHp": 1500,
+			"part": "hit",
+			"point": {
+				"x": -9,
+				"y": 1.060099959373474,
+				"z": 1.0000008344650269
+			},
+			"projectile": 4,
+			"source": "try-4",
+			"target": "local",
+			"tick": 144,
+			"type": "contact"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 144,
+			"type": "status",
+			"until": 264,
+			"wasted": 0
+		},
+		{
+			"ability": "rallyRing",
+			"direction": {
+				"x": 0.9726605733216276,
+				"z": -0.23223136977084413
+			},
+			"hero": "try-4",
+			"lock": 0.3,
+			"point": {
+				"x": -9.855253219604492,
+				"y": 1.060099959373474,
+				"z": 0.71974778175354
+			},
+			"slot": "slot3",
+			"target": {
+				"x": -8.363604545593262,
+				"z": 0.3636033833026886
+			},
+			"targetId": null,
+			"tick": 145,
+			"type": "cast"
+		},
+		{
+			"hero": "try-6",
+			"kind": "attack",
+			"point": {
+				"x": -9,
+				"z": 1.0000008344650269
+			},
+			"repeat": false,
+			"target": "local",
+			"tick": 145,
+			"type": "order"
+		},
+		{
+			"hero": "try-7",
+			"kind": "attack",
+			"point": {
+				"x": -6.052947998046875,
+				"z": -1.5002975463867188
+			},
+			"repeat": true,
+			"target": "try-3",
+			"tick": 145,
+			"type": "order"
+		},
+		{
+			"direction": {
+				"x": -0.9864383657061074,
+				"z": -0.1641321134423845
+			},
+			"hero": "try-8",
+			"id": 5,
+			"point": {
+				"x": -3.2203242778778076,
+				"y": 1.1,
+				"z": -1.0289812088012695
+			},
+			"slot": "primary",
+			"tick": 145,
+			"type": "projectile"
+		},
+		{
+			"ability": "bank",
+			"direction": {
+				"x": -0.9882569696767848,
+				"z": -0.15280105328582827
+			},
+			"hero": "try-8",
+			"lock": 0.3,
+			"point": {
+				"x": -3.2203242778778076,
+				"y": 1.060099959373474,
+				"z": -1.0289812088012695
+			},
+			"slot": "slot1",
+			"target": {
+				"x": -6.279188224100812,
+				"z": -1.501932725645907
+			},
+			"targetId": null,
+			"tick": 145,
+			"type": "cast"
+		},
+		{
+			"hero": "try-9",
+			"kind": "attack",
+			"point": {
+				"x": -9,
+				"z": 1.0000008344650269
+			},
+			"repeat": false,
+			"target": "local",
+			"tick": 145,
+			"type": "order"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 145,
+			"type": "status",
+			"until": 265,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 146,
+			"type": "status",
+			"until": 266,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 147,
+			"type": "status",
+			"until": 267,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 148,
+			"type": "status",
+			"until": 268,
+			"wasted": 0
+		},
+		{
+			"ability": null,
+			"absorbed": 0,
+			"damage": 90,
+			"direction": {
+				"x": -0.9830881169153042,
+				"y": 0,
+				"z": -0.1831331602411788
+			},
+			"hp": 1225,
+			"lethal": false,
+			"maxHp": 1400,
+			"periodic": false,
+			"point": {
+				"x": -5.078030314434937,
+				"y": 1.1,
+				"z": -1.354037236327323
+			},
+			"projectile": 5,
+			"slot": "primary",
+			"source": "try-8",
+			"target": "try-3",
+			"tick": 149,
+			"type": "hit"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 149,
+			"type": "status",
+			"until": 269,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 150,
+			"type": "status",
+			"until": 270,
+			"wasted": 0
+		},
+		{
+			"hero": "try-4",
+			"kind": "move",
+			"point": {
+				"x": -11.095956623851375,
+				"z": 0.6640968690013747
+			},
+			"repeat": false,
+			"target": null,
+			"tick": 151,
+			"type": "order"
+		},
+		{
+			"ability": "rallyRing",
+			"hero": "try-4",
+			"reason": "input",
+			"slot": "slot3",
+			"tick": 151,
+			"type": "castCancelled"
+		},
+		{
+			"ability": "rallyRing",
+			"hero": "try-4",
+			"reason": "cancelled",
+			"slot": "slot3",
+			"tick": 151,
+			"type": "denied"
+		},
+		{
+			"hero": "try-5",
+			"kind": "move",
+			"point": {
+				"x": -8.72032607971061,
+				"z": 3.859381321384242
+			},
+			"repeat": false,
+			"target": null,
+			"tick": 151,
+			"type": "order"
+		},
+		{
+			"ability": "mend",
+			"hero": "try-5",
+			"reason": "input",
+			"slot": "slot1",
+			"tick": 151,
+			"type": "castCancelled"
+		},
+		{
+			"ability": "mend",
+			"hero": "try-5",
+			"reason": "cancelled",
+			"slot": "slot1",
+			"tick": 151,
+			"type": "denied"
+		},
+		{
+			"hero": "try-6",
+			"kind": "move",
+			"point": {
+				"x": -5.886468001419401,
+				"z": 0.4943872586746594
+			},
+			"repeat": true,
+			"target": null,
+			"tick": 151,
+			"type": "order"
+		},
+		{
+			"ability": "yoYoFlick",
+			"hero": "try-6",
+			"reason": "order",
+			"slot": "primary",
+			"tick": 151,
+			"type": "castCancelled"
+		},
+		{
+			"hero": "try-8",
+			"kind": "attack",
+			"point": {
+				"x": -9,
+				"z": 1.0000008344650269
+			},
+			"repeat": false,
+			"target": "local",
+			"tick": 151,
+			"type": "order"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 151,
+			"type": "status",
+			"until": 271,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 152,
+			"type": "status",
+			"until": 272,
+			"wasted": 0
+		},
+		{
+			"ability": "sprinkler",
+			"direction": {
+				"x": 0.8932750741437736,
+				"z": -0.4495104469458255
+			},
+			"hero": "local",
+			"lock": 0.3,
+			"point": {
+				"x": -9,
+				"y": 1.060099959373474,
+				"z": 1.0000008344650269
+			},
+			"slot": "slot2",
+			"target": {
+				"x": -7,
+				"z": -0.006431472798650972
+			},
+			"targetId": null,
+			"tick": 153,
+			"type": "cast"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 153,
+			"type": "status",
+			"until": 273,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 154,
+			"type": "status",
+			"until": 274,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 155,
+			"type": "status",
+			"until": 275,
+			"wasted": 0
+		},
+		{
+			"ability": "throw",
+			"direction": {
+				"x": -0.7803273889250174,
+				"y": 0,
+				"z": -0.6253712226297791
+			},
+			"point": {
+				"x": -13.57049589919102,
+				"y": 1.1,
+				"z": -5.6
+			},
+			"projectile": 2,
+			"reason": "obstacle",
+			"slot": "slot1",
+			"source": "try-6",
+			"tick": 156,
+			"type": "blocked"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 156,
+			"type": "status",
+			"until": 276,
+			"wasted": 0
+		},
+		{
+			"hero": "try-6",
+			"kind": "attack",
+			"point": {
+				"x": -9,
+				"z": 1.0000008344650269
+			},
+			"repeat": true,
+			"target": "local",
+			"tick": 157,
+			"type": "order"
+		},
+		{
+			"ability": "yoYoFlick",
+			"direction": {
+				"x": -0.9873801704365364,
+				"z": 0.1583679229791076
+			},
+			"hero": "try-6",
+			"lock": 0.3,
+			"point": {
+				"x": -5.888621807098389,
+				"y": 1.060099959373474,
+				"z": 0.5009605288505554
+			},
+			"slot": "primary",
+			"target": {
+				"x": -9,
+				"z": 1.0000008344650269
+			},
+			"targetId": "local",
+			"tick": 157,
+			"type": "cast"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 157,
+			"type": "status",
+			"until": 277,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 158,
+			"type": "status",
+			"until": 278,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 159,
+			"type": "status",
+			"until": 279,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 160,
+			"type": "status",
+			"until": 280,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 161,
+			"type": "status",
+			"until": 281,
+			"wasted": 0
+		},
+		{
+			"ability": "bank",
+			"direction": {
+				"x": -0.9882569696767848,
+				"z": -0.15280105328582827
+			},
+			"hero": "try-8",
+			"id": 6,
+			"point": {
+				"x": -3.2203242778778076,
+				"y": 1.1,
+				"z": -1.0289812088012695
+			},
+			"slot": "slot1",
+			"tick": 162,
+			"type": "projectile"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 162,
+			"type": "status",
+			"until": 282,
+			"wasted": 0
+		},
+		{
+			"hero": "try-5",
+			"kind": "move",
+			"point": {
+				"x": 8.8,
+				"z": 0
+			},
+			"repeat": false,
+			"target": null,
+			"tick": 163,
+			"type": "order"
+		},
+		{
+			"ability": "bank",
+			"absorbed": 0,
+			"damage": 170,
+			"direction": {
+				"x": -0.9882569696767848,
+				"y": 0,
+				"z": -0.15280105328582827
+			},
+			"hp": 1055,
+			"lethal": false,
+			"maxHp": 1400,
+			"periodic": false,
+			"point": {
+				"x": -3.713226449122475,
+				"y": 1.1,
+				"z": -1.1051921268560032
+			},
+			"projectile": 6,
+			"slot": "slot1",
+			"source": "try-8",
+			"target": "try-3",
+			"tick": 163,
+			"type": "hit"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 163,
+			"type": "status",
+			"until": 283,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 164,
+			"type": "status",
+			"until": 284,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "on",
+			"status": 3,
+			"target": "try-7",
+			"tick": 164,
+			"type": "status",
+			"until": 284
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 165,
+			"type": "status",
+			"until": 285,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 165,
+			"type": "status",
+			"until": 285,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 166,
+			"type": "status",
+			"until": 286,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 166,
+			"type": "status",
+			"until": 286,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "on",
+			"status": 4,
+			"target": "try-8",
+			"tick": 166,
+			"type": "status",
+			"until": 286
+		},
+		{
+			"ability": "lob",
+			"absorbed": 0,
+			"damage": 150,
+			"direction": {
+				"x": -0.9832572915181732,
+				"y": 0,
+				"z": 0.18222266235665183
+			},
+			"hp": 1190,
+			"lethal": false,
+			"maxHp": 1500,
+			"periodic": false,
+			"point": {
+				"x": -9,
+				"y": 1.1,
+				"z": 1.0000008344650269
+			},
+			"slot": "slot2",
+			"source": "try-8",
+			"target": "local",
+			"tick": 167,
+			"type": "hit"
+		},
+		{
+			"ability": "lob",
+			"direction": {
+				"x": -0.9323206063331866,
+				"y": 0,
+				"z": 0.36163280687255034
+			},
+			"hero": "try-8",
+			"hit": true,
+			"point": {
+				"x": -7.949120609291231,
+				"z": 0.8052460718585717
+			},
+			"tick": 167,
+			"type": "impact"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 167,
+			"type": "status",
+			"until": 287,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 167,
+			"type": "status",
+			"until": 287,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 167,
+			"type": "status",
+			"until": 287,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "lob.groundSlow",
+			"label": "Slow",
+			"source": "try-8",
+			"state": "on",
+			"status": 5,
+			"target": "local",
+			"tick": 167,
+			"type": "status",
+			"until": 228
+		},
+		{
+			"ability": "lob",
+			"absorbed": 0,
+			"damage": 18,
+			"direction": {
+				"x": -0.9323206063331866,
+				"y": 0,
+				"z": 0.36163280687255034
+			},
+			"hp": 1172,
+			"lethal": false,
+			"maxHp": 1500,
+			"periodic": true,
+			"point": {
+				"x": -9,
+				"y": 1.1,
+				"z": 1.0000008344650269
+			},
+			"slot": "slot2",
+			"source": "try-8",
+			"target": "local",
+			"tick": 167,
+			"type": "hit"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 168,
+			"type": "status",
+			"until": 288,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 168,
+			"type": "status",
+			"until": 288,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 168,
+			"type": "status",
+			"until": 288,
+			"wasted": 0
+		},
+		{
+			"hero": "try-4",
+			"kind": "move",
+			"point": {
+				"x": 8.8,
+				"z": 0
+			},
+			"repeat": false,
+			"target": null,
+			"tick": 169,
+			"type": "order"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 169,
+			"type": "status",
+			"until": 289,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 169,
+			"type": "status",
+			"until": 289,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 169,
+			"type": "status",
+			"until": 289,
+			"wasted": 0
+		},
+		{
+			"ability": "sprinkler",
+			"hero": "local",
+			"hit": false,
+			"point": {
+				"x": -7,
+				"y": 0,
+				"z": -0.006431472798650972
+			},
+			"tick": 170,
+			"type": "impact"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 170,
+			"type": "status",
+			"until": 290,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 170,
+			"type": "status",
+			"until": 290,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 170,
+			"type": "status",
+			"until": 290,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 170,
+			"type": "status",
+			"until": 290,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 170,
+			"type": "status",
+			"until": 290,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 170,
+			"type": "status",
+			"until": 290,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "lob.groundSlow",
+			"label": "Slow",
+			"source": "try-8",
+			"state": "on",
+			"status": 6,
+			"target": "summon-3",
+			"tick": 170,
+			"type": "status",
+			"until": 228
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 171,
+			"type": "status",
+			"until": 291,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 171,
+			"type": "status",
+			"until": 291,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 171,
+			"type": "status",
+			"until": 291,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 172,
+			"type": "status",
+			"until": 292,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 172,
+			"type": "status",
+			"until": 292,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 172,
+			"type": "status",
+			"until": 292,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 173,
+			"type": "status",
+			"until": 293,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 173,
+			"type": "status",
+			"until": 293,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 173,
+			"type": "status",
+			"until": 293,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 174,
+			"type": "status",
+			"until": 294,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 174,
+			"type": "status",
+			"until": 294,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 174,
+			"type": "status",
+			"until": 294,
+			"wasted": 0
+		},
+		{
+			"ability": "yoYoFlick",
+			"hero": "try-6",
+			"hit": true,
+			"point": {
+				"x": -9,
+				"y": 1.1,
+				"z": 1.0000008344650269
+			},
+			"tick": 175,
+			"type": "impact"
+		},
+		{
+			"ability": "yoYoFlick",
+			"absorbed": 0,
+			"damage": 90,
+			"direction": {
+				"x": -0.9873801704365364,
+				"y": 0,
+				"z": 0.1583679229791078
+			},
+			"hp": 1082,
+			"lethal": false,
+			"maxHp": 1500,
+			"periodic": false,
+			"point": {
+				"x": -9,
+				"y": 1.1,
+				"z": 1.0000008344650269
+			},
+			"projectile": 7,
+			"slot": "primary",
+			"source": "try-6",
+			"target": "local",
+			"tick": 175,
+			"type": "hit"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 175,
+			"type": "status",
+			"until": 295,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 175,
+			"type": "status",
+			"until": 295,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 175,
+			"type": "status",
+			"until": 295,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "lob.groundSlow",
+			"label": "Slow",
+			"source": "try-8",
+			"state": "on",
+			"status": 7,
+			"target": "try-4",
+			"tick": 175,
+			"type": "status",
+			"until": 228
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 176,
+			"type": "status",
+			"until": 296,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 176,
+			"type": "status",
+			"until": 296,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 176,
+			"type": "status",
+			"until": 296,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 177,
+			"type": "status",
+			"until": 297,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 177,
+			"type": "status",
+			"until": 297,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 177,
+			"type": "status",
+			"until": 297,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 178,
+			"type": "status",
+			"until": 298,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 178,
+			"type": "status",
+			"until": 298,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 178,
+			"type": "status",
+			"until": 298,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 179,
+			"type": "status",
+			"until": 299,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 179,
+			"type": "status",
+			"until": 299,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 179,
+			"type": "status",
+			"until": 299,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 180,
+			"type": "status",
+			"until": 300,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 180,
+			"type": "status",
+			"until": 300,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 180,
+			"type": "status",
+			"until": 300,
+			"wasted": 0
+		},
+		{
+			"hero": "try-6",
+			"kind": "move",
+			"point": {
+				"x": -4.888621807098389,
+				"z": 0.5009605288505554
+			},
+			"repeat": false,
+			"target": null,
+			"tick": 181,
+			"type": "order"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 181,
+			"type": "status",
+			"until": 301,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 181,
+			"type": "status",
+			"until": 301,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 181,
+			"type": "status",
+			"until": 301,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 182,
+			"type": "status",
+			"until": 302,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 182,
+			"type": "status",
+			"until": 302,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 182,
+			"type": "status",
+			"until": 302,
+			"wasted": 0
+		},
+		{
+			"ability": "sprinkler",
+			"amount": 50,
+			"crit": false,
+			"hp": 1366.8,
+			"maxHp": 1400,
+			"overheal": 0,
+			"periodic": true,
+			"source": "local",
+			"target": "try-5",
+			"tick": 183,
+			"type": "heal"
+		},
+		{
+			"ability": "sprinkler",
+			"ambient": true,
+			"heal": 50,
+			"hp": 1366.8,
+			"maxHp": 1400,
+			"part": "hit",
+			"point": {
+				"x": -7.061145782470703,
+				"y": 1.059999942779541,
+				"z": 3.397665500640869
+			},
+			"source": "local",
+			"target": "try-5",
+			"tick": 183,
+			"type": "contact"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 183,
+			"type": "status",
+			"until": 303,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 183,
+			"type": "status",
+			"until": 303,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 183,
+			"type": "status",
+			"until": 303,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 184,
+			"type": "status",
+			"until": 304,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 184,
+			"type": "status",
+			"until": 304,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 184,
+			"type": "status",
+			"until": 304,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 185,
+			"type": "status",
+			"until": 305,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 185,
+			"type": "status",
+			"until": 305,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 185,
+			"type": "status",
+			"until": 305,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 186,
+			"type": "status",
+			"until": 306,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 186,
+			"type": "status",
+			"until": 306,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 186,
+			"type": "status",
+			"until": 306,
+			"wasted": 0
+		},
+		{
+			"hero": "try-6",
+			"kind": "attack",
+			"point": {
+				"x": -9,
+				"z": 1.0000008344650269
+			},
+			"repeat": true,
+			"target": "local",
+			"tick": 187,
+			"type": "order"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 187,
+			"type": "status",
+			"until": 307,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 187,
+			"type": "status",
+			"until": 307,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 187,
+			"type": "status",
+			"until": 307,
+			"wasted": 0
+		},
+		{
+			"direction": {
+				"x": -0.9526772512557472,
+				"z": 0.30398364255300653
+			},
+			"hero": "try-8",
+			"lock": 0.3,
+			"point": {
+				"x": -3.796846866607666,
+				"y": 1.059999942779541,
+				"z": -0.6602397561073303
+			},
+			"slot": "primary",
+			"target": {
+				"x": -9,
+				"z": 1.0000008344650269
+			},
+			"targetId": "local",
+			"tick": 188,
+			"type": "cast"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 188,
+			"type": "status",
+			"until": 308,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 188,
+			"type": "status",
+			"until": 308,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 188,
+			"type": "status",
+			"until": 308,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 189,
+			"type": "status",
+			"until": 309,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 189,
+			"type": "status",
+			"until": 309,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 189,
+			"type": "status",
+			"until": 309,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 190,
+			"type": "status",
+			"until": 310,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 190,
+			"type": "status",
+			"until": 310,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 190,
+			"type": "status",
+			"until": 310,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 191,
+			"type": "status",
+			"until": 311,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 191,
+			"type": "status",
+			"until": 311,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 191,
+			"type": "status",
+			"until": 311,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 192,
+			"type": "status",
+			"until": 312,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 192,
+			"type": "status",
+			"until": 312,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 192,
+			"type": "status",
+			"until": 312,
+			"wasted": 0
+		},
+		{
+			"ability": "sprinkler",
+			"amount": 50,
+			"crit": false,
+			"hp": 1132,
+			"maxHp": 1500,
+			"overheal": 0,
+			"periodic": true,
+			"source": "local",
+			"target": "local",
+			"tick": 193,
+			"type": "heal"
+		},
+		{
+			"ability": "sprinkler",
+			"ambient": true,
+			"heal": 50,
+			"hp": 1132,
+			"maxHp": 1500,
+			"part": "hit",
+			"point": {
+				"x": -9,
+				"y": 1.059999942779541,
+				"z": 1.0000011920928955
+			},
+			"source": "local",
+			"target": "local",
+			"tick": 193,
+			"type": "contact"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 193,
+			"type": "status",
+			"until": 313,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 193,
+			"type": "status",
+			"until": 313,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 193,
+			"type": "status",
+			"until": 313,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 194,
+			"type": "status",
+			"until": 314,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 194,
+			"type": "status",
+			"until": 314,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 194,
+			"type": "status",
+			"until": 314,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 195,
+			"type": "status",
+			"until": 315,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 195,
+			"type": "status",
+			"until": 315,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 195,
+			"type": "status",
+			"until": 315,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 196,
+			"type": "status",
+			"until": 316,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 196,
+			"type": "status",
+			"until": 316,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 196,
+			"type": "status",
+			"until": 316,
+			"wasted": 0
+		},
+		{
+			"ability": "sprinkler",
+			"amount": 50,
+			"crit": false,
+			"hp": 1396,
+			"maxHp": 1450,
+			"overheal": 0,
+			"periodic": true,
+			"source": "local",
+			"target": "try-4",
+			"tick": 197,
+			"type": "heal"
+		},
+		{
+			"ability": "sprinkler",
+			"ambient": true,
+			"heal": 50,
+			"hp": 1396,
+			"maxHp": 1450,
+			"part": "hit",
+			"point": {
+				"x": -9.595715522766112,
+				"y": 1.059999942779541,
+				"z": 0.32537344098091125
+			},
+			"source": "local",
+			"target": "try-4",
+			"tick": 197,
+			"type": "contact"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 197,
+			"type": "status",
+			"until": 317,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 197,
+			"type": "status",
+			"until": 317,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 197,
+			"type": "status",
+			"until": 317,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "lob.groundSlow",
+			"label": "Slow",
+			"source": "try-8",
+			"state": "refresh",
+			"status": 6,
+			"target": "summon-3",
+			"tick": 197,
+			"type": "status",
+			"until": 258,
+			"wasted": 0
+		},
+		{
+			"ability": "lob",
+			"absorbed": 0,
+			"damage": 18,
+			"direction": {
+				"x": -0.9323206063331866,
+				"y": 0,
+				"z": 0.36163280687255034
+			},
+			"hp": 282,
+			"lethal": false,
+			"maxHp": 300,
+			"periodic": true,
+			"point": {
+				"x": -7,
+				"y": 1.1,
+				"z": -0.006431472798650972
+			},
+			"slot": "slot2",
+			"source": "try-8",
+			"target": "summon-3",
+			"tick": 197,
+			"type": "hit"
+		},
+		{
+			"amount": 0,
+			"key": "lob.groundSlow",
+			"label": "Slow",
+			"source": "try-8",
+			"state": "refresh",
+			"status": 5,
+			"target": "local",
+			"tick": 197,
+			"type": "status",
+			"until": 258,
+			"wasted": 0
+		},
+		{
+			"ability": "lob",
+			"absorbed": 0,
+			"damage": 18,
+			"direction": {
+				"x": -0.9323206063331866,
+				"y": 0,
+				"z": 0.36163280687255034
+			},
+			"hp": 1114,
+			"lethal": false,
+			"maxHp": 1500,
+			"periodic": true,
+			"point": {
+				"x": -9,
+				"y": 1.1,
+				"z": 1.0000014305114746
+			},
+			"slot": "slot2",
+			"source": "try-8",
+			"target": "local",
+			"tick": 197,
+			"type": "hit"
+		},
+		{
+			"amount": 0,
+			"key": "lob.groundSlow",
+			"label": "Slow",
+			"source": "try-8",
+			"state": "refresh",
+			"status": 7,
+			"target": "try-4",
+			"tick": 197,
+			"type": "status",
+			"until": 258,
+			"wasted": 0
+		},
+		{
+			"ability": "lob",
+			"absorbed": 0,
+			"damage": 18,
+			"direction": {
+				"x": -0.9323206063331866,
+				"y": 0,
+				"z": 0.36163280687255034
+			},
+			"hp": 1378,
+			"lethal": false,
+			"maxHp": 1450,
+			"periodic": true,
+			"point": {
+				"x": -9.595715522766112,
+				"y": 1.1,
+				"z": 0.32537344098091125
+			},
+			"slot": "slot2",
+			"source": "try-8",
+			"target": "try-4",
+			"tick": 197,
+			"type": "hit"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 198,
+			"type": "status",
+			"until": 318,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 198,
+			"type": "status",
+			"until": 318,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 198,
+			"type": "status",
+			"until": 318,
+			"wasted": 0
+		},
+		{
+			"ability": "rallyRing",
+			"direction": {
+				"x": 0.9683864134477456,
+				"z": -0.24945491426270253
+			},
+			"hero": "try-4",
+			"lock": 0.3,
+			"point": {
+				"x": -9.565876960754396,
+				"y": 1.060099959373474,
+				"z": 0.30015602707862854
+			},
+			"slot": "slot3",
+			"target": {
+				"x": -5.824697971343994,
+				"z": -0.6635661721229553
+			},
+			"targetId": null,
+			"tick": 199,
+			"type": "cast"
+		},
+		{
+			"ability": "mend",
+			"direction": {
+				"x": -0.8360609704485398,
+				"z": -0.5486365406101256
+			},
+			"hero": "try-5",
+			"lock": 1,
+			"point": {
+				"x": -5.856905460357666,
+				"y": 1.060099959373474,
+				"z": 3.062549591064453
+			},
+			"slot": "slot1",
+			"target": {
+				"x": -9,
+				"z": 1.0000014305114746
+			},
+			"targetId": "local",
+			"tick": 199,
+			"type": "cast"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 199,
+			"type": "status",
+			"until": 319,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 199,
+			"type": "status",
+			"until": 319,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 199,
+			"type": "status",
+			"until": 319,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 200,
+			"type": "status",
+			"until": 320,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 200,
+			"type": "status",
+			"until": 320,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 200,
+			"type": "status",
+			"until": 320,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 201,
+			"type": "status",
+			"until": 321,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 201,
+			"type": "status",
+			"until": 321,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 201,
+			"type": "status",
+			"until": 321,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 202,
+			"type": "status",
+			"until": 322,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 202,
+			"type": "status",
+			"until": 322,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 202,
+			"type": "status",
+			"until": 322,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 203,
+			"type": "status",
+			"until": 323,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 203,
+			"type": "status",
+			"until": 323,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 203,
+			"type": "status",
+			"until": 323,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "tangle.slow",
+			"label": "Slow",
+			"reason": "expired",
+			"source": "try-6",
+			"state": "off",
+			"status": 1,
+			"target": "local",
+			"tick": 204,
+			"type": "status",
+			"until": 204,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 204,
+			"type": "status",
+			"until": 324,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 204,
+			"type": "status",
+			"until": 324,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 204,
+			"type": "status",
+			"until": 324,
+			"wasted": 0
+		},
+		{
+			"hero": "try-6",
+			"kind": "attack",
+			"point": {
+				"x": -1.4532912969589231,
+				"z": -1.0303740501403809
+			},
+			"repeat": false,
+			"target": "try-3",
+			"tick": 205,
+			"type": "order"
+		},
+		{
+			"hero": "try-9",
+			"kind": "attack",
+			"point": {
+				"x": -1.4532912969589231,
+				"z": -1.0303740501403809
+			},
+			"repeat": false,
+			"target": "try-3",
+			"tick": 205,
+			"type": "order"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 205,
+			"type": "status",
+			"until": 325,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 205,
+			"type": "status",
+			"until": 325,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 205,
+			"type": "status",
+			"until": 325,
+			"wasted": 0
+		},
+		{
+			"direction": {
+				"x": -0.9526772268451278,
+				"z": 0.3039837190552758
+			},
+			"hero": "try-8",
+			"id": 8,
+			"point": {
+				"x": -3.796846628189087,
+				"y": 1.1,
+				"z": -0.6602396965026855
+			},
+			"slot": "primary",
+			"tick": 206,
+			"type": "projectile"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 206,
+			"type": "status",
+			"until": 326,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 206,
+			"type": "status",
+			"until": 326,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 206,
+			"type": "status",
+			"until": 326,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 207,
+			"type": "status",
+			"until": 327,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 207,
+			"type": "status",
+			"until": 327,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 207,
+			"type": "status",
+			"until": 327,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 208,
+			"type": "status",
+			"until": 328,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 208,
+			"type": "status",
+			"until": 328,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 208,
+			"type": "status",
+			"until": 328,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 209,
+			"type": "status",
+			"until": 329,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 209,
+			"type": "status",
+			"until": 329,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 209,
+			"type": "status",
+			"until": 329,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 210,
+			"type": "status",
+			"until": 330,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 210,
+			"type": "status",
+			"until": 330,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 210,
+			"type": "status",
+			"until": 330,
+			"wasted": 0
+		},
+		{
+			"hero": "try-8",
+			"kind": "move",
+			"point": {
+				"x": -2.7968461513519287,
+				"z": -0.6602395176887512
+			},
+			"repeat": false,
+			"target": null,
+			"tick": 211,
+			"type": "order"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 211,
+			"type": "status",
+			"until": 331,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 211,
+			"type": "status",
+			"until": 331,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 211,
+			"type": "status",
+			"until": 331,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 212,
+			"type": "status",
+			"until": 332,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 212,
+			"type": "status",
+			"until": 332,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 212,
+			"type": "status",
+			"until": 332,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 213,
+			"type": "status",
+			"until": 333,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 213,
+			"type": "status",
+			"until": 333,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 213,
+			"type": "status",
+			"until": 333,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 214,
+			"type": "status",
+			"until": 334,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 214,
+			"type": "status",
+			"until": 334,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 214,
+			"type": "status",
+			"until": 334,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 215,
+			"type": "status",
+			"until": 335,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 215,
+			"type": "status",
+			"until": 335,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 215,
+			"type": "status",
+			"until": 335,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 216,
+			"type": "status",
+			"until": 336,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 216,
+			"type": "status",
+			"until": 336,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 216,
+			"type": "status",
+			"until": 336,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "on",
+			"status": 8,
+			"target": "local",
+			"tick": 216,
+			"type": "status",
+			"until": 262
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "on",
+			"status": 9,
+			"target": "try-4",
+			"tick": 216,
+			"type": "status",
+			"until": 262
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "on",
+			"status": 10,
+			"target": "try-5",
+			"tick": 216,
+			"type": "status",
+			"until": 262
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "on",
+			"status": 11,
+			"target": "summon-3",
+			"tick": 216,
+			"type": "status",
+			"until": 262
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundSlow",
+			"label": "Slow",
+			"source": "try-4",
+			"state": "on",
+			"status": 12,
+			"target": "try-6",
+			"tick": 216,
+			"type": "status",
+			"until": 262
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundSlow",
+			"label": "Slow",
+			"source": "try-4",
+			"state": "on",
+			"status": 13,
+			"target": "try-7",
+			"tick": 216,
+			"type": "status",
+			"until": 262
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundSlow",
+			"label": "Slow",
+			"source": "try-4",
+			"state": "on",
+			"status": 14,
+			"target": "try-8",
+			"tick": 216,
+			"type": "status",
+			"until": 262
+		},
+		{
+			"hero": "try-8",
+			"kind": "attack",
+			"point": {
+				"x": -0.4580252170562744,
+				"z": -0.9331467747688292
+			},
+			"repeat": true,
+			"target": "try-3",
+			"tick": 217,
+			"type": "order"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 217,
+			"type": "status",
+			"until": 337,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 217,
+			"type": "status",
+			"until": 337,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 217,
+			"type": "status",
+			"until": 337,
+			"wasted": 0
+		},
+		{
+			"ability": null,
+			"absorbed": 0,
+			"damage": 90,
+			"direction": {
+				"x": -0.9526772268451276,
+				"y": 0,
+				"z": 0.3039837190552763
+			},
+			"hp": 1024,
+			"lethal": false,
+			"maxHp": 1500,
+			"periodic": false,
+			"point": {
+				"x": -8.456973980698278,
+				"y": 1.1,
+				"z": 0.8267307106499671
+			},
+			"projectile": 8,
+			"slot": "primary",
+			"source": "try-8",
+			"target": "local",
+			"tick": 218,
+			"type": "hit"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 218,
+			"type": "status",
+			"until": 338,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 218,
+			"type": "status",
+			"until": 338,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 218,
+			"type": "status",
+			"until": 338,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 219,
+			"type": "status",
+			"until": 339,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 219,
+			"type": "status",
+			"until": 339,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 219,
+			"type": "status",
+			"until": 339,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 220,
+			"type": "status",
+			"until": 340,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 220,
+			"type": "status",
+			"until": 340,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 220,
+			"type": "status",
+			"until": 340,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 221,
+			"type": "status",
+			"until": 341,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 221,
+			"type": "status",
+			"until": 341,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 221,
+			"type": "status",
+			"until": 341,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 222,
+			"type": "status",
+			"until": 342,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 222,
+			"type": "status",
+			"until": 342,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 222,
+			"type": "status",
+			"until": 342,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 223,
+			"type": "status",
+			"until": 343,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 223,
+			"type": "status",
+			"until": 343,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 223,
+			"type": "status",
+			"until": 343,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 224,
+			"type": "status",
+			"until": 344,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 224,
+			"type": "status",
+			"until": 344,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 224,
+			"type": "status",
+			"until": 344,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 225,
+			"type": "status",
+			"until": 345,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 225,
+			"type": "status",
+			"until": 345,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 225,
+			"type": "status",
+			"until": 345,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 226,
+			"type": "status",
+			"until": 346,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 226,
+			"type": "status",
+			"until": 346,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 226,
+			"type": "status",
+			"until": 346,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 227,
+			"type": "status",
+			"until": 347,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 227,
+			"type": "status",
+			"until": 347,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "lob.groundSlow",
+			"label": "Slow",
+			"source": "try-8",
+			"state": "refresh",
+			"status": 6,
+			"target": "summon-3",
+			"tick": 227,
+			"type": "status",
+			"until": 288,
+			"wasted": 0
+		},
+		{
+			"ability": "lob",
+			"absorbed": 0,
+			"damage": 18,
+			"direction": {
+				"x": -0.9323206063331866,
+				"y": 0,
+				"z": 0.36163280687255034
+			},
+			"hp": 264,
+			"lethal": false,
+			"maxHp": 300,
+			"periodic": true,
+			"point": {
+				"x": -7,
+				"y": 1.1,
+				"z": -0.006431472798650972
+			},
+			"slot": "slot2",
+			"source": "try-8",
+			"target": "summon-3",
+			"tick": 227,
+			"type": "hit"
+		},
+		{
+			"amount": 0,
+			"key": "lob.groundSlow",
+			"label": "Slow",
+			"source": "try-8",
+			"state": "refresh",
+			"status": 5,
+			"target": "local",
+			"tick": 227,
+			"type": "status",
+			"until": 288,
+			"wasted": 0
+		},
+		{
+			"ability": "lob",
+			"absorbed": 0,
+			"damage": 18,
+			"direction": {
+				"x": -0.9323206063331866,
+				"y": 0,
+				"z": 0.36163280687255034
+			},
+			"hp": 1006,
+			"lethal": false,
+			"maxHp": 1500,
+			"periodic": true,
+			"point": {
+				"x": -9,
+				"y": 1.1,
+				"z": 1.0000016689300537
+			},
+			"slot": "slot2",
+			"source": "try-8",
+			"target": "local",
+			"tick": 227,
+			"type": "hit"
+		},
+		{
+			"amount": 0,
+			"key": "lob.groundSlow",
+			"label": "Slow",
+			"source": "try-8",
+			"state": "refresh",
+			"status": 7,
+			"target": "try-4",
+			"tick": 227,
+			"type": "status",
+			"until": 288,
+			"wasted": 0
+		},
+		{
+			"ability": "lob",
+			"absorbed": 0,
+			"damage": 18,
+			"direction": {
+				"x": -0.9323206063331866,
+				"y": 0,
+				"z": 0.36163280687255034
+			},
+			"hp": 1360,
+			"lethal": false,
+			"maxHp": 1450,
+			"periodic": true,
+			"point": {
+				"x": -9.007278442382812,
+				"y": 1.1,
+				"z": 0.10003110021352768
+			},
+			"slot": "slot2",
+			"source": "try-8",
+			"target": "try-4",
+			"tick": 227,
+			"type": "hit"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 228,
+			"type": "status",
+			"until": 348,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 228,
+			"type": "status",
+			"until": 348,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 229,
+			"type": "status",
+			"until": 349,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 229,
+			"type": "status",
+			"until": 349,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 230,
+			"type": "status",
+			"until": 350,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 230,
+			"type": "status",
+			"until": 350,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 230,
+			"type": "status",
+			"until": 350,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 230,
+			"type": "status",
+			"until": 350,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 231,
+			"type": "status",
+			"until": 351,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 231,
+			"type": "status",
+			"until": 351,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 8,
+			"target": "local",
+			"tick": 231,
+			"type": "status",
+			"until": 277,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 9,
+			"target": "try-4",
+			"tick": 231,
+			"type": "status",
+			"until": 277,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 10,
+			"target": "try-5",
+			"tick": 231,
+			"type": "status",
+			"until": 277,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 11,
+			"target": "summon-3",
+			"tick": 231,
+			"type": "status",
+			"until": 277,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundSlow",
+			"label": "Slow",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 12,
+			"target": "try-6",
+			"tick": 231,
+			"type": "status",
+			"until": 277,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundSlow",
+			"label": "Slow",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 13,
+			"target": "try-7",
+			"tick": 231,
+			"type": "status",
+			"until": 277,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundSlow",
+			"label": "Slow",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 14,
+			"target": "try-8",
+			"tick": 231,
+			"type": "status",
+			"until": 277,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 232,
+			"type": "status",
+			"until": 352,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 232,
+			"type": "status",
+			"until": 352,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 233,
+			"type": "status",
+			"until": 353,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 233,
+			"type": "status",
+			"until": 353,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 234,
+			"type": "status",
+			"until": 354,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 234,
+			"type": "status",
+			"until": 354,
+			"wasted": 0
+		},
+		{
+			"hero": "try-7",
+			"kind": "attack",
+			"point": {
+				"x": -9,
+				"z": 1.0000019073486328
+			},
+			"repeat": false,
+			"target": "local",
+			"tick": 235,
+			"type": "order"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 235,
+			"type": "status",
+			"until": 355,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 235,
+			"type": "status",
+			"until": 355,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 236,
+			"type": "status",
+			"until": 356,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 236,
+			"type": "status",
+			"until": 356,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 237,
+			"type": "status",
+			"until": 357,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 237,
+			"type": "status",
+			"until": 357,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 238,
+			"type": "status",
+			"until": 358,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 238,
+			"type": "status",
+			"until": 358,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 239,
+			"type": "status",
+			"until": 359,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 239,
+			"type": "status",
+			"until": 359,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 240,
+			"type": "status",
+			"until": 360,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 240,
+			"type": "status",
+			"until": 360,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 241,
+			"type": "status",
+			"until": 361,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 241,
+			"type": "status",
+			"until": 361,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 241,
+			"type": "status",
+			"until": 361,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 242,
+			"type": "status",
+			"until": 362,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 242,
+			"type": "status",
+			"until": 362,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 242,
+			"type": "status",
+			"until": 362,
+			"wasted": 0
+		},
+		{
+			"ability": "sprinkler",
+			"amount": 33.200000000000045,
+			"crit": false,
+			"hp": 1400,
+			"maxHp": 1400,
+			"overheal": 16.799999999999955,
+			"periodic": true,
+			"source": "local",
+			"target": "try-5",
+			"tick": 243,
+			"type": "heal"
+		},
+		{
+			"ability": "sprinkler",
+			"ambient": true,
+			"heal": 33.200000000000045,
+			"hp": 1400,
+			"maxHp": 1400,
+			"part": "hit",
+			"point": {
+				"x": -5.856905460357666,
+				"y": 1.059999942779541,
+				"z": 3.062549591064453
+			},
+			"source": "local",
+			"target": "try-5",
+			"tick": 243,
+			"type": "contact"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 243,
+			"type": "status",
+			"until": 363,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 243,
+			"type": "status",
+			"until": 363,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 243,
+			"type": "status",
+			"until": 363,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 244,
+			"type": "status",
+			"until": 364,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 244,
+			"type": "status",
+			"until": 364,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 244,
+			"type": "status",
+			"until": 364,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 245,
+			"type": "status",
+			"until": 365,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 245,
+			"type": "status",
+			"until": 365,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 245,
+			"type": "status",
+			"until": 365,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 246,
+			"type": "status",
+			"until": 366,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 246,
+			"type": "status",
+			"until": 366,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 246,
+			"type": "status",
+			"until": 366,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 8,
+			"target": "local",
+			"tick": 246,
+			"type": "status",
+			"until": 292,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 9,
+			"target": "try-4",
+			"tick": 246,
+			"type": "status",
+			"until": 292,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 10,
+			"target": "try-5",
+			"tick": 246,
+			"type": "status",
+			"until": 292,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 11,
+			"target": "summon-3",
+			"tick": 246,
+			"type": "status",
+			"until": 292,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundSlow",
+			"label": "Slow",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 12,
+			"target": "try-6",
+			"tick": 246,
+			"type": "status",
+			"until": 292,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundSlow",
+			"label": "Slow",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 13,
+			"target": "try-7",
+			"tick": 246,
+			"type": "status",
+			"until": 292,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundSlow",
+			"label": "Slow",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 14,
+			"target": "try-8",
+			"tick": 246,
+			"type": "status",
+			"until": 292,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 247,
+			"type": "status",
+			"until": 367,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 247,
+			"type": "status",
+			"until": 367,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 247,
+			"type": "status",
+			"until": 367,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 248,
+			"type": "status",
+			"until": 368,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 248,
+			"type": "status",
+			"until": 368,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 248,
+			"type": "status",
+			"until": 368,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 249,
+			"type": "status",
+			"until": 369,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 249,
+			"type": "status",
+			"until": 369,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 249,
+			"type": "status",
+			"until": 369,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 250,
+			"type": "status",
+			"until": 370,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 250,
+			"type": "status",
+			"until": 370,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 4,
+			"target": "try-8",
+			"tick": 250,
+			"type": "status",
+			"until": 370,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 251,
+			"type": "status",
+			"until": 371,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 251,
+			"type": "status",
+			"until": 371,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 252,
+			"type": "status",
+			"until": 372,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 252,
+			"type": "status",
+			"until": 372,
+			"wasted": 0
+		},
+		{
+			"ability": "sprinkler",
+			"amount": 50,
+			"crit": false,
+			"hp": 1056,
+			"maxHp": 1500,
+			"overheal": 0,
+			"periodic": true,
+			"source": "local",
+			"target": "local",
+			"tick": 253,
+			"type": "heal"
+		},
+		{
+			"ability": "sprinkler",
+			"ambient": true,
+			"heal": 50,
+			"hp": 1056,
+			"maxHp": 1500,
+			"part": "hit",
+			"point": {
+				"x": -9,
+				"y": 1.059999942779541,
+				"z": 1.0000019073486328
+			},
+			"source": "local",
+			"target": "local",
+			"tick": 253,
+			"type": "contact"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 253,
+			"type": "status",
+			"until": 373,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 253,
+			"type": "status",
+			"until": 373,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 254,
+			"type": "status",
+			"until": 374,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 254,
+			"type": "status",
+			"until": 374,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 2,
+			"target": "try-6",
+			"tick": 255,
+			"type": "status",
+			"until": 375,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 255,
+			"type": "status",
+			"until": 375,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 256,
+			"type": "status",
+			"until": 376,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 257,
+			"type": "status",
+			"until": 377,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "lob.groundSlow",
+			"label": "Slow",
+			"source": "try-8",
+			"state": "refresh",
+			"status": 6,
+			"target": "summon-3",
+			"tick": 257,
+			"type": "status",
+			"until": 318,
+			"wasted": 0
+		},
+		{
+			"ability": "lob",
+			"absorbed": 0,
+			"damage": 18,
+			"direction": {
+				"x": -0.9323206063331866,
+				"y": 0,
+				"z": 0.36163280687255034
+			},
+			"hp": 246,
+			"lethal": false,
+			"maxHp": 300,
+			"periodic": true,
+			"point": {
+				"x": -7,
+				"y": 1.1,
+				"z": -0.006431472798650972
+			},
+			"slot": "slot2",
+			"source": "try-8",
+			"target": "summon-3",
+			"tick": 257,
+			"type": "hit"
+		},
+		{
+			"amount": 0,
+			"key": "lob.groundSlow",
+			"label": "Slow",
+			"source": "try-8",
+			"state": "refresh",
+			"status": 5,
+			"target": "local",
+			"tick": 257,
+			"type": "status",
+			"until": 318,
+			"wasted": 0
+		},
+		{
+			"ability": "lob",
+			"absorbed": 0,
+			"damage": 18,
+			"direction": {
+				"x": -0.9323206063331866,
+				"y": 0,
+				"z": 0.36163280687255034
+			},
+			"hp": 1038,
+			"lethal": false,
+			"maxHp": 1500,
+			"periodic": true,
+			"point": {
+				"x": -9,
+				"y": 1.1,
+				"z": 1.0000019073486328
+			},
+			"slot": "slot2",
+			"source": "try-8",
+			"target": "local",
+			"tick": 257,
+			"type": "hit"
+		},
+		{
+			"amount": 0,
+			"key": "lob.groundSlow",
+			"label": "Slow",
+			"source": "try-8",
+			"state": "refresh",
+			"status": 7,
+			"target": "try-4",
+			"tick": 257,
+			"type": "status",
+			"until": 318,
+			"wasted": 0
+		},
+		{
+			"ability": "lob",
+			"absorbed": 0,
+			"damage": 18,
+			"direction": {
+				"x": -0.9323206063331866,
+				"y": 0,
+				"z": 0.36163280687255034
+			},
+			"hp": 1342,
+			"lethal": false,
+			"maxHp": 1450,
+			"periodic": true,
+			"point": {
+				"x": -6.740673542022705,
+				"y": 1.1,
+				"z": 0.523529589176178
+			},
+			"slot": "slot2",
+			"source": "try-8",
+			"target": "try-4",
+			"tick": 257,
+			"type": "hit"
+		},
+		{
+			"ability": "mend",
+			"amount": 250,
+			"crit": false,
+			"hp": 1288,
+			"maxHp": 1500,
+			"overheal": 0,
+			"periodic": false,
+			"source": "try-5",
+			"target": "local",
+			"tick": 258,
+			"type": "heal"
+		},
+		{
+			"ability": "mend",
+			"part": "impact",
+			"point": {
+				"x": -9,
+				"y": 1.059999942779541,
+				"z": 1.0000019073486328
+			},
+			"source": "try-5",
+			"target": "local",
+			"tick": 258,
+			"type": "contact"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 258,
+			"type": "status",
+			"until": 378,
+			"wasted": 0
+		},
+		{
+			"hero": "try-3",
+			"kind": "move",
+			"point": {
+				"x": -10.5,
+				"z": 2.5
+			},
+			"repeat": false,
+			"target": null,
+			"tick": 259,
+			"type": "order"
+		},
+		{
+			"ability": "mend",
+			"direction": {
+				"x": -0.8360611013534035,
+				"z": -0.5486363411256439
+			},
+			"hero": "try-5",
+			"lock": 1,
+			"point": {
+				"x": -5.856905460357666,
+				"y": 1.060099959373474,
+				"z": 3.062549591064453
+			},
+			"slot": "slot1",
+			"target": {
+				"x": -9,
+				"z": 1.0000019073486328
+			},
+			"targetId": "local",
+			"tick": 259,
+			"type": "cast"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 259,
+			"type": "status",
+			"until": 379,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 260,
+			"type": "status",
+			"until": 380,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 261,
+			"type": "status",
+			"until": 381,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 8,
+			"target": "local",
+			"tick": 261,
+			"type": "status",
+			"until": 307,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 9,
+			"target": "try-4",
+			"tick": 261,
+			"type": "status",
+			"until": 307,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 10,
+			"target": "try-5",
+			"tick": 261,
+			"type": "status",
+			"until": 307,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 11,
+			"target": "summon-3",
+			"tick": 261,
+			"type": "status",
+			"until": 307,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundSlow",
+			"label": "Slow",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 12,
+			"target": "try-6",
+			"tick": 261,
+			"type": "status",
+			"until": 307,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundSlow",
+			"label": "Slow",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 13,
+			"target": "try-7",
+			"tick": 261,
+			"type": "status",
+			"until": 307,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundSlow",
+			"label": "Slow",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 14,
+			"target": "try-8",
+			"tick": 261,
+			"type": "status",
+			"until": 307,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 262,
+			"type": "status",
+			"until": 382,
+			"wasted": 0
+		},
+		{
+			"direction": {
+				"x": 0.9984270963256564,
+				"z": 0.056065437862539355
+			},
+			"hero": "try-8",
+			"lock": 0.3,
+			"point": {
+				"x": -2.6182520389556885,
+				"y": 1.060099959373474,
+				"z": -0.7990912199020386
+			},
+			"slot": "primary",
+			"target": {
+				"x": 2.8247203826904297,
+				"z": -0.4934478402137756
+			},
+			"targetId": "try-3",
+			"tick": 263,
+			"type": "cast"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 263,
+			"type": "status",
+			"until": 383,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 264,
+			"type": "status",
+			"until": 384,
+			"wasted": 0
+		},
+		{
+			"hero": "try-3",
+			"kind": "move",
+			"point": {
+				"x": 8.8,
+				"z": 0
+			},
+			"repeat": true,
+			"target": null,
+			"tick": 265,
+			"type": "order"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 265,
+			"type": "status",
+			"until": 385,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 266,
+			"type": "status",
+			"until": 386,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 267,
+			"type": "status",
+			"until": 387,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 268,
+			"type": "status",
+			"until": 388,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 269,
+			"type": "status",
+			"until": 389,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundSlow",
+			"label": "Slow",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 12,
+			"target": "try-6",
+			"tick": 269,
+			"type": "status",
+			"until": 299
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 270,
+			"type": "status",
+			"until": 390,
+			"wasted": 0
+		},
+		{
+			"hero": "try-3",
+			"kind": "move",
+			"point": {
+				"x": -10.5,
+				"z": 2.5
+			},
+			"repeat": true,
+			"target": null,
+			"tick": 271,
+			"type": "order"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 271,
+			"type": "status",
+			"until": 391,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 272,
+			"type": "status",
+			"until": 392,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 273,
+			"type": "status",
+			"until": 393,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 274,
+			"type": "status",
+			"until": 394,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 275,
+			"type": "status",
+			"until": 395,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 276,
+			"type": "status",
+			"until": 396,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "lob.groundSlow",
+			"label": "Slow",
+			"source": "try-8",
+			"state": "refresh",
+			"status": 7,
+			"target": "try-4",
+			"tick": 276,
+			"type": "status",
+			"until": 306
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 8,
+			"target": "local",
+			"tick": 276,
+			"type": "status",
+			"until": 322,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 9,
+			"target": "try-4",
+			"tick": 276,
+			"type": "status",
+			"until": 322,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 10,
+			"target": "try-5",
+			"tick": 276,
+			"type": "status",
+			"until": 322,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 11,
+			"target": "summon-3",
+			"tick": 276,
+			"type": "status",
+			"until": 322,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundSlow",
+			"label": "Slow",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 13,
+			"target": "try-7",
+			"tick": 276,
+			"type": "status",
+			"until": 322,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundSlow",
+			"label": "Slow",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 14,
+			"target": "try-8",
+			"tick": 276,
+			"type": "status",
+			"until": 322,
+			"wasted": 0
+		},
+		{
+			"hero": "try-3",
+			"kind": "move",
+			"point": {
+				"x": 8.8,
+				"z": 0
+			},
+			"repeat": true,
+			"target": null,
+			"tick": 277,
+			"type": "order"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 277,
+			"type": "status",
+			"until": 397,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 278,
+			"type": "status",
+			"until": 398,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 279,
+			"type": "status",
+			"until": 399,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 280,
+			"type": "status",
+			"until": 400,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 280,
+			"type": "status",
+			"until": 400,
+			"wasted": 0
+		},
+		{
+			"direction": {
+				"x": 0.9945655146712352,
+				"z": 0.10411261703915188
+			},
+			"hero": "try-8",
+			"id": 9,
+			"point": {
+				"x": -2.6182520389556885,
+				"y": 1.1,
+				"z": -0.7990912199020386
+			},
+			"slot": "primary",
+			"tick": 281,
+			"type": "projectile"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 281,
+			"type": "status",
+			"until": 401,
+			"wasted": 0
+		},
+		{
+			"ability": "palmStrike",
+			"direction": {
+				"x": -0.9030165841809052,
+				"z": 0.42960568978337565
+			},
+			"hero": "try-7",
+			"lock": 0.3,
+			"point": {
+				"x": -6.336873531341553,
+				"y": 1.059999942779541,
+				"z": -0.26696738600730896
+			},
+			"slot": "primary",
+			"target": {
+				"x": -9,
+				"z": 1.0000019073486328
+			},
+			"targetId": "local",
+			"tick": 282,
+			"type": "cast"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 282,
+			"type": "status",
+			"until": 402,
+			"wasted": 0
+		},
+		{
+			"hero": "try-3",
+			"kind": "move",
+			"point": {
+				"x": -10.5,
+				"z": 2.5
+			},
+			"repeat": true,
+			"target": null,
+			"tick": 283,
+			"type": "order"
+		},
+		{
+			"hero": "try-8",
+			"kind": "move",
+			"point": {
+				"x": -1.6182520389556885,
+				"z": -0.7990912199020386
+			},
+			"repeat": false,
+			"target": null,
+			"tick": 283,
+			"type": "order"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 283,
+			"type": "status",
+			"until": 403,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 284,
+			"type": "status",
+			"until": 404,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 285,
+			"type": "status",
+			"until": 405,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 286,
+			"type": "status",
+			"until": 406,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 287,
+			"type": "status",
+			"until": 407,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "lob.groundSlow",
+			"label": "Slow",
+			"source": "try-8",
+			"state": "refresh",
+			"status": 6,
+			"target": "summon-3",
+			"tick": 287,
+			"type": "status",
+			"until": 348,
+			"wasted": 0
+		},
+		{
+			"ability": "lob",
+			"absorbed": 0,
+			"damage": 18,
+			"direction": {
+				"x": -0.9323206063331866,
+				"y": 0,
+				"z": 0.36163280687255034
+			},
+			"hp": 228,
+			"lethal": false,
+			"maxHp": 300,
+			"periodic": true,
+			"point": {
+				"x": -7,
+				"y": 1.1,
+				"z": -0.006431472798650972
+			},
+			"slot": "slot2",
+			"source": "try-8",
+			"target": "summon-3",
+			"tick": 287,
+			"type": "hit"
+		},
+		{
+			"amount": 0,
+			"key": "lob.groundSlow",
+			"label": "Slow",
+			"source": "try-8",
+			"state": "refresh",
+			"status": 5,
+			"target": "local",
+			"tick": 287,
+			"type": "status",
+			"until": 348,
+			"wasted": 0
+		},
+		{
+			"ability": "lob",
+			"absorbed": 0,
+			"damage": 18,
+			"direction": {
+				"x": -0.9323206063331866,
+				"y": 0,
+				"z": 0.36163280687255034
+			},
+			"hp": 1270,
+			"lethal": false,
+			"maxHp": 1500,
+			"periodic": true,
+			"point": {
+				"x": -9,
+				"y": 1.1,
+				"z": 1.0000019073486328
+			},
+			"slot": "slot2",
+			"source": "try-8",
+			"target": "local",
+			"tick": 287,
+			"type": "hit"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 288,
+			"type": "status",
+			"until": 408,
+			"wasted": 0
+		},
+		{
+			"hero": "try-3",
+			"kind": "move",
+			"point": {
+				"x": 8.8,
+				"z": 0
+			},
+			"repeat": true,
+			"target": null,
+			"tick": 289,
+			"type": "order"
+		},
+		{
+			"ability": "yoYoFlick",
+			"direction": {
+				"x": 0.9999291367405908,
+				"z": 0.011904683835238048
+			},
+			"hero": "try-6",
+			"lock": 0.3,
+			"point": {
+				"x": -0.7492994666099548,
+				"y": 1.060099959373474,
+				"z": -0.14957818388938904
+			},
+			"slot": "primary",
+			"target": {
+				"x": 2.687399387359619,
+				"z": -0.1086624711751938
+			},
+			"targetId": "try-3",
+			"tick": 289,
+			"type": "cast"
+		},
+		{
+			"hero": "try-8",
+			"kind": "attack",
+			"point": {
+				"x": 2.687399387359619,
+				"z": -0.1086624711751938
+			},
+			"repeat": true,
+			"target": "try-3",
+			"tick": 289,
+			"type": "order"
+		},
+		{
+			"ability": "sprinkler",
+			"amount": 50,
+			"crit": false,
+			"hp": 1392,
+			"maxHp": 1450,
+			"overheal": 0,
+			"periodic": true,
+			"source": "local",
+			"target": "try-4",
+			"tick": 289,
+			"type": "heal"
+		},
+		{
+			"ability": "sprinkler",
+			"ambient": true,
+			"heal": 50,
+			"hp": 1392,
+			"maxHp": 1450,
+			"part": "hit",
+			"point": {
+				"x": -4.242183685302734,
+				"y": 1.059999942779541,
+				"z": 0.4363389015197754
+			},
+			"source": "local",
+			"target": "try-4",
+			"tick": 289,
+			"type": "contact"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 289,
+			"type": "status",
+			"until": 409,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 290,
+			"type": "status",
+			"until": 410,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 291,
+			"type": "status",
+			"until": 411,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 8,
+			"target": "local",
+			"tick": 291,
+			"type": "status",
+			"until": 337,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 9,
+			"target": "try-4",
+			"tick": 291,
+			"type": "status",
+			"until": 337,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 10,
+			"target": "try-5",
+			"tick": 291,
+			"type": "status",
+			"until": 337,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 11,
+			"target": "summon-3",
+			"tick": 291,
+			"type": "status",
+			"until": 337,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundSlow",
+			"label": "Slow",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 13,
+			"target": "try-7",
+			"tick": 291,
+			"type": "status",
+			"until": 337,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundSlow",
+			"label": "Slow",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 14,
+			"target": "try-8",
+			"tick": 291,
+			"type": "status",
+			"until": 337,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 292,
+			"type": "status",
+			"until": 412,
+			"wasted": 0
+		},
+		{
+			"ability": null,
+			"absorbed": 0,
+			"damage": 90,
+			"direction": {
+				"x": 0.9917416902280876,
+				"y": 0,
+				"z": 0.12825139322259188
+			},
+			"hp": 965,
+			"lethal": false,
+			"maxHp": 1400,
+			"periodic": false,
+			"point": {
+				"x": 2.417134833615888,
+				"y": 1.1,
+				"z": -0.15016363597189933
+			},
+			"projectile": 9,
+			"slot": "primary",
+			"source": "try-8",
+			"target": "try-3",
+			"tick": 293,
+			"type": "hit"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 293,
+			"type": "status",
+			"until": 413,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 294,
+			"type": "status",
+			"until": 414,
+			"wasted": 0
+		},
+		{
+			"hero": "try-3",
+			"kind": "move",
+			"point": {
+				"x": -10.5,
+				"z": 2.5
+			},
+			"repeat": true,
+			"target": null,
+			"tick": 295,
+			"type": "order"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 295,
+			"type": "status",
+			"until": 415,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 296,
+			"type": "status",
+			"until": 416,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 297,
+			"type": "status",
+			"until": 417,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 298,
+			"type": "status",
+			"until": 418,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundSlow",
+			"label": "Slow",
+			"reason": "expired",
+			"source": "try-4",
+			"state": "off",
+			"status": 12,
+			"target": "try-6",
+			"tick": 299,
+			"type": "status",
+			"until": 299,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 299,
+			"type": "status",
+			"until": 419,
+			"wasted": 0
+		},
+		{
+			"ability": "palmStrike",
+			"hero": "try-7",
+			"hit": true,
+			"point": {
+				"x": -9,
+				"y": 1.1,
+				"z": 1.0000019073486328
+			},
+			"tick": 300,
+			"type": "impact"
+		},
+		{
+			"ability": "palmStrike",
+			"absorbed": 0,
+			"damage": 85,
+			"direction": {
+				"x": -0.9030165841809052,
+				"y": 0,
+				"z": 0.4296056897833757
+			},
+			"hp": 1185,
+			"lethal": false,
+			"maxHp": 1500,
+			"periodic": false,
+			"point": {
+				"x": -9,
+				"y": 1.1,
+				"z": 1.0000019073486328
+			},
+			"projectile": 10,
+			"slot": "primary",
+			"source": "try-7",
+			"target": "local",
+			"tick": 300,
+			"type": "hit"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 300,
+			"type": "status",
+			"until": 420,
+			"wasted": 0
+		},
+		{
+			"hero": "try-3",
+			"kind": "move",
+			"point": {
+				"x": 8.8,
+				"z": 0
+			},
+			"repeat": true,
+			"target": null,
+			"tick": 301,
+			"type": "order"
+		},
+		{
+			"hero": "try-7",
+			"kind": "move",
+			"point": {
+				"x": -5.336873531341553,
+				"z": -0.26696738600730896
+			},
+			"repeat": false,
+			"target": null,
+			"tick": 301,
+			"type": "order"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 301,
+			"type": "status",
+			"until": 421,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 302,
+			"type": "status",
+			"until": 422,
+			"wasted": 0
+		},
+		{
+			"ability": "sprinkler",
+			"amount": 0,
+			"crit": false,
+			"hp": 1400,
+			"maxHp": 1400,
+			"overheal": 50,
+			"periodic": true,
+			"source": "local",
+			"target": "try-5",
+			"tick": 303,
+			"type": "heal"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 303,
+			"type": "status",
+			"until": 423,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 304,
+			"type": "status",
+			"until": 424,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 305,
+			"type": "status",
+			"until": 425,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "lob.groundSlow",
+			"label": "Slow",
+			"reason": "expired",
+			"source": "try-8",
+			"state": "off",
+			"status": 7,
+			"target": "try-4",
+			"tick": 306,
+			"type": "status",
+			"until": 306,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 306,
+			"type": "status",
+			"until": 426,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 8,
+			"target": "local",
+			"tick": 306,
+			"type": "status",
+			"until": 352,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 9,
+			"target": "try-4",
+			"tick": 306,
+			"type": "status",
+			"until": 352,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 10,
+			"target": "try-5",
+			"tick": 306,
+			"type": "status",
+			"until": 352,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 11,
+			"target": "summon-3",
+			"tick": 306,
+			"type": "status",
+			"until": 352,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundSlow",
+			"label": "Slow",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 13,
+			"target": "try-7",
+			"tick": 306,
+			"type": "status",
+			"until": 352,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundSlow",
+			"label": "Slow",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 14,
+			"target": "try-8",
+			"tick": 306,
+			"type": "status",
+			"until": 352,
+			"wasted": 0
+		},
+		{
+			"hero": "try-3",
+			"kind": "move",
+			"point": {
+				"x": -10.5,
+				"z": 2.5
+			},
+			"repeat": true,
+			"target": null,
+			"tick": 307,
+			"type": "order"
+		},
+		{
+			"ability": "yoYoFlick",
+			"hero": "try-6",
+			"hit": false,
+			"point": {
+				"x": 3.076866626739502,
+				"y": 1.1,
+				"z": 0.03855184093117714
+			},
+			"tick": 307,
+			"type": "impact"
+		},
+		{
+			"hero": "try-7",
+			"kind": "attack",
+			"point": {
+				"x": -9,
+				"z": 1.0000019073486328
+			},
+			"repeat": true,
+			"target": "local",
+			"tick": 307,
+			"type": "order"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 307,
+			"type": "status",
+			"until": 427,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 308,
+			"type": "status",
+			"until": 428,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 309,
+			"type": "status",
+			"until": 429,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 310,
+			"type": "status",
+			"until": 430,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 311,
+			"type": "status",
+			"until": 431,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 312,
+			"type": "status",
+			"until": 432,
+			"wasted": 0
+		},
+		{
+			"hero": "try-3",
+			"kind": "move",
+			"point": {
+				"x": 8.8,
+				"z": 0
+			},
+			"repeat": true,
+			"target": null,
+			"tick": 313,
+			"type": "order"
+		},
+		{
+			"hero": "try-6",
+			"kind": "move",
+			"point": {
+				"x": 0.25070053339004517,
+				"z": -0.14957818388938904
+			},
+			"repeat": false,
+			"target": null,
+			"tick": 313,
+			"type": "order"
+		},
+		{
+			"hero": "try-7",
+			"kind": "attack",
+			"point": {
+				"x": 2.707740306854248,
+				"z": 0.12476889789104462
+			},
+			"repeat": true,
+			"target": "try-3",
+			"tick": 313,
+			"type": "order"
+		},
+		{
+			"ability": "sprinkler",
+			"amount": 50,
+			"crit": false,
+			"hp": 1235,
+			"maxHp": 1500,
+			"overheal": 0,
+			"periodic": true,
+			"source": "local",
+			"target": "local",
+			"tick": 313,
+			"type": "heal"
+		},
+		{
+			"ability": "sprinkler",
+			"ambient": true,
+			"heal": 50,
+			"hp": 1235,
+			"maxHp": 1500,
+			"part": "hit",
+			"point": {
+				"x": -9,
+				"y": 1.059999942779541,
+				"z": 1.0000019073486328
+			},
+			"source": "local",
+			"target": "local",
+			"tick": 313,
+			"type": "contact"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 313,
+			"type": "status",
+			"until": 433,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 314,
+			"type": "status",
+			"until": 434,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 315,
+			"type": "status",
+			"until": 435,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 9,
+			"target": "try-4",
+			"tick": 315,
+			"type": "status",
+			"until": 345
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 316,
+			"type": "status",
+			"until": 436,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 317,
+			"type": "status",
+			"until": 437,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "lob.groundSlow",
+			"label": "Slow",
+			"source": "try-8",
+			"state": "refresh",
+			"status": 6,
+			"target": "summon-3",
+			"tick": 317,
+			"type": "status",
+			"until": 378,
+			"wasted": 0
+		},
+		{
+			"ability": "lob",
+			"absorbed": 0,
+			"damage": 18,
+			"direction": {
+				"x": -0.9323206063331866,
+				"y": 0,
+				"z": 0.36163280687255034
+			},
+			"hp": 210,
+			"lethal": false,
+			"maxHp": 300,
+			"periodic": true,
+			"point": {
+				"x": -7,
+				"y": 1.1,
+				"z": -0.006431472798650972
+			},
+			"slot": "slot2",
+			"source": "try-8",
+			"target": "summon-3",
+			"tick": 317,
+			"type": "hit"
+		},
+		{
+			"amount": 0,
+			"key": "lob.groundSlow",
+			"label": "Slow",
+			"source": "try-8",
+			"state": "refresh",
+			"status": 5,
+			"target": "local",
+			"tick": 317,
+			"type": "status",
+			"until": 378,
+			"wasted": 0
+		},
+		{
+			"ability": "lob",
+			"absorbed": 0,
+			"damage": 18,
+			"direction": {
+				"x": -0.9323206063331866,
+				"y": 0,
+				"z": 0.36163280687255034
+			},
+			"hp": 1217,
+			"lethal": false,
+			"maxHp": 1500,
+			"periodic": true,
+			"point": {
+				"x": -9,
+				"y": 1.1,
+				"z": 1.0000019073486328
+			},
+			"slot": "slot2",
+			"source": "try-8",
+			"target": "local",
+			"tick": 317,
+			"type": "hit"
+		},
+		{
+			"ability": "mend",
+			"amount": 250,
+			"crit": false,
+			"hp": 1467,
+			"maxHp": 1500,
+			"overheal": 0,
+			"periodic": false,
+			"source": "try-5",
+			"target": "local",
+			"tick": 318,
+			"type": "heal"
+		},
+		{
+			"ability": "mend",
+			"part": "impact",
+			"point": {
+				"x": -9,
+				"y": 1.059999942779541,
+				"z": 1.0000019073486328
+			},
+			"source": "try-5",
+			"target": "local",
+			"tick": 318,
+			"type": "contact"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 318,
+			"type": "status",
+			"until": 438,
+			"wasted": 0
+		},
+		{
+			"hero": "try-3",
+			"kind": "move",
+			"point": {
+				"x": -10.5,
+				"z": 2.5
+			},
+			"repeat": true,
+			"target": null,
+			"tick": 319,
+			"type": "order"
+		},
+		{
+			"ability": "mend",
+			"direction": {
+				"x": 0.9476192332005724,
+				"z": -0.31940223679298063
+			},
+			"hero": "try-5",
+			"lock": 1,
+			"point": {
+				"x": -5.856905460357666,
+				"y": 1.060099959373474,
+				"z": 3.062549591064453
+			},
+			"slot": "slot1",
+			"target": {
+				"x": 3.0865464210510254,
+				"z": 0.1330680102109909
+			},
+			"targetId": "try-3",
+			"tick": 319,
+			"type": "cast"
+		},
+		{
+			"hero": "try-6",
+			"kind": "attack",
+			"point": {
+				"x": 3.0865464210510254,
+				"z": 0.1330680102109909
+			},
+			"repeat": true,
+			"target": "try-3",
+			"tick": 319,
+			"type": "order"
+		},
+		{
+			"hero": "try-7",
+			"kind": "attack",
+			"point": {
+				"x": -9,
+				"z": 1.0000019073486328
+			},
+			"repeat": true,
+			"target": "local",
+			"tick": 319,
+			"type": "order"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 319,
+			"type": "status",
+			"until": 439,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 320,
+			"type": "status",
+			"until": 440,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 321,
+			"type": "status",
+			"until": 441,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 8,
+			"target": "local",
+			"tick": 321,
+			"type": "status",
+			"until": 367,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 10,
+			"target": "try-5",
+			"tick": 321,
+			"type": "status",
+			"until": 367,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 11,
+			"target": "summon-3",
+			"tick": 321,
+			"type": "status",
+			"until": 367,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundSlow",
+			"label": "Slow",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 13,
+			"target": "try-7",
+			"tick": 321,
+			"type": "status",
+			"until": 367,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundSlow",
+			"label": "Slow",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 14,
+			"target": "try-8",
+			"tick": 321,
+			"type": "status",
+			"until": 367,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 322,
+			"type": "status",
+			"until": 442,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 323,
+			"type": "status",
+			"until": 443,
+			"wasted": 0
+		},
+		{
+			"direction": {
+				"x": 0.9813009896059944,
+				"z": 0.19247952565999343
+			},
+			"hero": "try-8",
+			"lock": 0.3,
+			"point": {
+				"x": -2.287696123123169,
+				"y": 1.059999942779541,
+				"z": -0.7990912199020386
+			},
+			"slot": "primary",
+			"target": {
+				"x": 2.7982707023620605,
+				"z": 0.1985073685646057
+			},
+			"targetId": "try-3",
+			"tick": 324,
+			"type": "cast"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 324,
+			"type": "status",
+			"until": 444,
+			"wasted": 0
+		},
+		{
+			"hero": "try-3",
+			"kind": "move",
+			"point": {
+				"x": 8.8,
+				"z": 0
+			},
+			"repeat": true,
+			"target": null,
+			"tick": 325,
+			"type": "order"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 325,
+			"type": "status",
+			"until": 445,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 326,
+			"type": "status",
+			"until": 446,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 327,
+			"type": "status",
+			"until": 447,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 328,
+			"type": "status",
+			"until": 448,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 329,
+			"type": "status",
+			"until": 449,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 330,
+			"type": "status",
+			"until": 450,
+			"wasted": 0
+		},
+		{
+			"hero": "try-3",
+			"kind": "move",
+			"point": {
+				"x": -10.5,
+				"z": 2.5
+			},
+			"repeat": true,
+			"target": null,
+			"tick": 331,
+			"type": "order"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 331,
+			"type": "status",
+			"until": 451,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 332,
+			"type": "status",
+			"until": 452,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 333,
+			"type": "status",
+			"until": 453,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 334,
+			"type": "status",
+			"until": 454,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 335,
+			"type": "status",
+			"until": 455,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 336,
+			"type": "status",
+			"until": 456,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 8,
+			"target": "local",
+			"tick": 336,
+			"type": "status",
+			"until": 382,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 10,
+			"target": "try-5",
+			"tick": 336,
+			"type": "status",
+			"until": 382,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 11,
+			"target": "summon-3",
+			"tick": 336,
+			"type": "status",
+			"until": 382,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundSlow",
+			"label": "Slow",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 13,
+			"target": "try-7",
+			"tick": 336,
+			"type": "status",
+			"until": 382,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundSlow",
+			"label": "Slow",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 14,
+			"target": "try-8",
+			"tick": 336,
+			"type": "status",
+			"until": 382,
+			"wasted": 0
+		},
+		{
+			"hero": "try-3",
+			"kind": "move",
+			"point": {
+				"x": 8.8,
+				"z": 0
+			},
+			"repeat": true,
+			"target": null,
+			"tick": 337,
+			"type": "order"
+		},
+		{
+			"ability": "pass",
+			"direction": {
+				"x": 0.9948228908534656,
+				"z": -0.101623894010973
+			},
+			"hero": "try-4",
+			"lock": 0.3,
+			"point": {
+				"x": -0.2194235771894455,
+				"y": 1.060099959373474,
+				"z": 0.7399354577064514
+			},
+			"slot": "slot1",
+			"target": {
+				"x": 2.508151676767421,
+				"z": 0.46130614482718624
+			},
+			"targetId": null,
+			"tick": 337,
+			"type": "cast"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 337,
+			"type": "status",
+			"until": 457,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 338,
+			"type": "status",
+			"until": 458,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 339,
+			"type": "status",
+			"until": 459,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 340,
+			"type": "status",
+			"until": 460,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 341,
+			"type": "status",
+			"until": 461,
+			"wasted": 0
+		},
+		{
+			"direction": {
+				"x": 0.9798519326363118,
+				"z": 0.19972528660358707
+			},
+			"hero": "try-8",
+			"id": 12,
+			"point": {
+				"x": -2.287696123123169,
+				"y": 1.1,
+				"z": -0.7990912199020386
+			},
+			"slot": "primary",
+			"tick": 342,
+			"type": "projectile"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 342,
+			"type": "status",
+			"until": 462,
+			"wasted": 0
+		},
+		{
+			"hero": "try-3",
+			"kind": "move",
+			"point": {
+				"x": -10.5,
+				"z": 2.5
+			},
+			"repeat": true,
+			"target": null,
+			"tick": 343,
+			"type": "order"
+		},
+		{
+			"ability": "palmStrike",
+			"direction": {
+				"x": -0.9484815309561412,
+				"z": 0.31683242484804913
+			},
+			"hero": "try-7",
+			"lock": 0.3,
+			"point": {
+				"x": -6.20556640625,
+				"y": 1.060099959373474,
+				"z": 0.06654443591833115
+			},
+			"slot": "primary",
+			"target": {
+				"x": -9,
+				"z": 1.0000019073486328
+			},
+			"targetId": "local",
+			"tick": 343,
+			"type": "cast"
+		},
+		{
+			"hero": "try-8",
+			"kind": "move",
+			"point": {
+				"x": -1.287696123123169,
+				"z": -0.7990912199020386
+			},
+			"repeat": false,
+			"target": null,
+			"tick": 343,
+			"type": "order"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 343,
+			"type": "status",
+			"until": 463,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 344,
+			"type": "status",
+			"until": 464,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"reason": "expired",
+			"source": "try-4",
+			"state": "off",
+			"status": 9,
+			"target": "try-4",
+			"tick": 345,
+			"type": "status",
+			"until": 345,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 345,
+			"type": "status",
+			"until": 465,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 345,
+			"type": "status",
+			"until": 465,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 346,
+			"type": "status",
+			"until": 466,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 347,
+			"type": "status",
+			"until": 467,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "lob.groundSlow",
+			"label": "Slow",
+			"source": "try-8",
+			"state": "refresh",
+			"status": 5,
+			"target": "local",
+			"tick": 347,
+			"type": "status",
+			"until": 377
+		},
+		{
+			"amount": 0,
+			"key": "lob.groundSlow",
+			"label": "Slow",
+			"source": "try-8",
+			"state": "refresh",
+			"status": 6,
+			"target": "summon-3",
+			"tick": 347,
+			"type": "status",
+			"until": 377
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 348,
+			"type": "status",
+			"until": 468,
+			"wasted": 0
+		},
+		{
+			"hero": "try-3",
+			"kind": "move",
+			"point": {
+				"x": 8.8,
+				"z": 0
+			},
+			"repeat": true,
+			"target": null,
+			"tick": 349,
+			"type": "order"
+		},
+		{
+			"hero": "try-8",
+			"kind": "attack",
+			"point": {
+				"x": 2.7299280166625977,
+				"z": 0.3486284017562866
+			},
+			"repeat": true,
+			"target": "try-3",
+			"tick": 349,
+			"type": "order"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 349,
+			"type": "status",
+			"until": 469,
+			"wasted": 0
+		},
+		{
+			"ability": "yoYoFlick",
+			"direction": {
+				"x": 0.9868058529914904,
+				"z": 0.161908024821925
+			},
+			"hero": "try-6",
+			"lock": 0.3,
+			"point": {
+				"x": -0.3564106822013855,
+				"y": 1.059999942779541,
+				"z": -0.14957821369171145
+			},
+			"slot": "primary",
+			"target": {
+				"x": 2.7223060131073,
+				"z": 0.35555553436279297
+			},
+			"targetId": "try-3",
+			"tick": 350,
+			"type": "cast"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 350,
+			"type": "status",
+			"until": 470,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 351,
+			"type": "status",
+			"until": 471,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 8,
+			"target": "local",
+			"tick": 351,
+			"type": "status",
+			"until": 397,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 10,
+			"target": "try-5",
+			"tick": 351,
+			"type": "status",
+			"until": 397,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 11,
+			"target": "summon-3",
+			"tick": 351,
+			"type": "status",
+			"until": 397,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundSlow",
+			"label": "Slow",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 13,
+			"target": "try-7",
+			"tick": 351,
+			"type": "status",
+			"until": 397,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundSlow",
+			"label": "Slow",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 14,
+			"target": "try-8",
+			"tick": 351,
+			"type": "status",
+			"until": 397,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 352,
+			"type": "status",
+			"until": 472,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 353,
+			"type": "status",
+			"until": 473,
+			"wasted": 0
+		},
+		{
+			"ability": "pass",
+			"direction": {
+				"x": 0.9948228908534656,
+				"z": -0.101623894010973
+			},
+			"hero": "try-4",
+			"id": 13,
+			"point": {
+				"x": -0.2194235771894455,
+				"y": 1.1,
+				"z": 0.7399354577064514
+			},
+			"slot": "slot1",
+			"tick": 354,
+			"type": "projectile"
+		},
+		{
+			"distance": 0.050000021413216966,
+			"point": {
+				"x": -0.2194235771894455,
+				"y": 1.1,
+				"z": 0.7399354577064514
+			},
+			"projectile": 13,
+			"source": "try-4",
+			"target": "try-6",
+			"tick": 354,
+			"type": "nearMiss"
+		},
+		{
+			"ability": null,
+			"absorbed": 0,
+			"damage": 90,
+			"direction": {
+				"x": 0.9879697115881252,
+				"y": 0,
+				"z": 0.15464749912131415
+			},
+			"hp": 875,
+			"lethal": false,
+			"maxHp": 1400,
+			"periodic": false,
+			"point": {
+				"x": 2.5455563477230156,
+				"y": 1.1,
+				"z": 0.2466655335979273
+			},
+			"projectile": 12,
+			"slot": "primary",
+			"source": "try-8",
+			"target": "try-3",
+			"tick": 354,
+			"type": "hit"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 354,
+			"type": "status",
+			"until": 474,
+			"wasted": 0
+		},
+		{
+			"hero": "try-3",
+			"kind": "move",
+			"point": {
+				"x": -10.5,
+				"z": 2.5
+			},
+			"repeat": true,
+			"target": null,
+			"tick": 355,
+			"type": "order"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 355,
+			"type": "status",
+			"until": 475,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 356,
+			"type": "status",
+			"until": 476,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 357,
+			"type": "status",
+			"until": 477,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 358,
+			"type": "status",
+			"until": 478,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 359,
+			"type": "status",
+			"until": 479,
+			"wasted": 0
+		},
+		{
+			"ability": "pass",
+			"amount": 180,
+			"crit": false,
+			"hp": 1055,
+			"maxHp": 1400,
+			"overheal": 0,
+			"periodic": false,
+			"source": "try-4",
+			"target": "try-3",
+			"tick": 360,
+			"type": "heal"
+		},
+		{
+			"ability": "pass",
+			"heal": 180,
+			"hp": 1055,
+			"maxHp": 1400,
+			"part": "hit",
+			"point": {
+				"x": 2.7355797290802,
+				"y": 1.060099959373474,
+				"z": 0.40168577432632446
+			},
+			"projectile": 13,
+			"source": "try-4",
+			"target": "try-3",
+			"tick": 360,
+			"type": "contact"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 360,
+			"type": "status",
+			"until": 480,
+			"wasted": 0
+		},
+		{
+			"hero": "try-3",
+			"kind": "move",
+			"point": {
+				"x": 8.8,
+				"z": 0
+			},
+			"repeat": true,
+			"target": null,
+			"tick": 361,
+			"type": "order"
+		},
+		{
+			"ability": "palmStrike",
+			"hero": "try-7",
+			"hit": true,
+			"point": {
+				"x": -9,
+				"y": 1.1,
+				"z": 1.0000019073486328
+			},
+			"tick": 361,
+			"type": "impact"
+		},
+		{
+			"ability": "palmStrike",
+			"absorbed": 0,
+			"damage": 85,
+			"direction": {
+				"x": -0.948481530956141,
+				"y": 0,
+				"z": 0.31683242484804913
+			},
+			"hp": 1382,
+			"lethal": false,
+			"maxHp": 1500,
+			"periodic": false,
+			"point": {
+				"x": -9,
+				"y": 1.1,
+				"z": 1.0000019073486328
+			},
+			"projectile": 14,
+			"slot": "primary",
+			"source": "try-7",
+			"target": "local",
+			"tick": 361,
+			"type": "hit"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 361,
+			"type": "status",
+			"until": 481,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 362,
+			"type": "status",
+			"until": 482,
+			"wasted": 0
+		},
+		{
+			"ability": "sprinkler",
+			"amount": 0,
+			"crit": false,
+			"hp": 1400,
+			"maxHp": 1400,
+			"overheal": 50,
+			"periodic": true,
+			"source": "local",
+			"target": "try-5",
+			"tick": 363,
+			"type": "heal"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 363,
+			"type": "status",
+			"until": 483,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 364,
+			"type": "status",
+			"until": 484,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 365,
+			"type": "status",
+			"until": 485,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 366,
+			"type": "status",
+			"until": 486,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 8,
+			"target": "local",
+			"tick": 366,
+			"type": "status",
+			"until": 412,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 10,
+			"target": "try-5",
+			"tick": 366,
+			"type": "status",
+			"until": 412,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 11,
+			"target": "summon-3",
+			"tick": 366,
+			"type": "status",
+			"until": 412,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundSlow",
+			"label": "Slow",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 13,
+			"target": "try-7",
+			"tick": 366,
+			"type": "status",
+			"until": 412,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundSlow",
+			"label": "Slow",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 14,
+			"target": "try-8",
+			"tick": 366,
+			"type": "status",
+			"until": 412,
+			"wasted": 0
+		},
+		{
+			"hero": "try-3",
+			"kind": "move",
+			"point": {
+				"x": -10.5,
+				"z": 2.5
+			},
+			"repeat": true,
+			"target": null,
+			"tick": 367,
+			"type": "order"
+		},
+		{
+			"hero": "try-7",
+			"kind": "move",
+			"point": {
+				"x": -5.20556640625,
+				"z": 0.06654443591833115
+			},
+			"repeat": false,
+			"target": null,
+			"tick": 367,
+			"type": "order"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 367,
+			"type": "status",
+			"until": 487,
+			"wasted": 0
+		},
+		{
+			"ability": "yoYoFlick",
+			"hero": "try-6",
+			"hit": false,
+			"point": {
+				"x": 3.123119354248047,
+				"y": 1.1,
+				"z": 0.387130469083786
+			},
+			"tick": 368,
+			"type": "impact"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 368,
+			"type": "status",
+			"until": 488,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 369,
+			"type": "status",
+			"until": 489,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"reason": "expired",
+			"source": "local",
+			"state": "off",
+			"status": 4,
+			"target": "try-8",
+			"tick": 370,
+			"type": "status",
+			"until": 370,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 370,
+			"type": "status",
+			"until": 490,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 371,
+			"type": "status",
+			"until": 491,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 372,
+			"type": "status",
+			"until": 492,
+			"wasted": 0
+		},
+		{
+			"hero": "try-3",
+			"kind": "move",
+			"point": {
+				"x": 8.8,
+				"z": 0
+			},
+			"repeat": true,
+			"target": null,
+			"tick": 373,
+			"type": "order"
+		},
+		{
+			"hero": "try-6",
+			"kind": "attack",
+			"point": {
+				"x": 1.1688544750213623,
+				"z": 0.280811607837677
+			},
+			"repeat": false,
+			"target": "try-4",
+			"tick": 373,
+			"type": "order"
+		},
+		{
+			"hero": "try-7",
+			"kind": "attack",
+			"point": {
+				"x": -9,
+				"z": 1.0000019073486328
+			},
+			"repeat": true,
+			"target": "local",
+			"tick": 373,
+			"type": "order"
+		},
+		{
+			"ability": "sprinkler",
+			"amount": 50,
+			"crit": false,
+			"hp": 1432,
+			"maxHp": 1500,
+			"overheal": 0,
+			"periodic": true,
+			"source": "local",
+			"target": "local",
+			"tick": 373,
+			"type": "heal"
+		},
+		{
+			"ability": "sprinkler",
+			"ambient": true,
+			"heal": 50,
+			"hp": 1432,
+			"maxHp": 1500,
+			"part": "hit",
+			"point": {
+				"x": -9,
+				"y": 1.059999942779541,
+				"z": 1.0000019073486328
+			},
+			"source": "local",
+			"target": "local",
+			"tick": 373,
+			"type": "contact"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 373,
+			"type": "status",
+			"until": 493,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 374,
+			"type": "status",
+			"until": 494,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"reason": "expired",
+			"source": "local",
+			"state": "off",
+			"status": 2,
+			"target": "try-6",
+			"tick": 375,
+			"type": "status",
+			"until": 375,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 375,
+			"type": "status",
+			"until": 495,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 376,
+			"type": "status",
+			"until": 496,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "lob.groundSlow",
+			"label": "Slow",
+			"reason": "expired",
+			"source": "try-8",
+			"state": "off",
+			"status": 5,
+			"target": "local",
+			"tick": 377,
+			"type": "status",
+			"until": 377,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "lob.groundSlow",
+			"label": "Slow",
+			"reason": "expired",
+			"source": "try-8",
+			"state": "off",
+			"status": 6,
+			"target": "summon-3",
+			"tick": 377,
+			"type": "status",
+			"until": 377,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 377,
+			"type": "status",
+			"until": 497,
+			"wasted": 0
+		},
+		{
+			"ability": "mend",
+			"amount": 250,
+			"crit": false,
+			"hp": 1305,
+			"maxHp": 1400,
+			"overheal": 0,
+			"periodic": false,
+			"source": "try-5",
+			"target": "try-3",
+			"tick": 378,
+			"type": "heal"
+		},
+		{
+			"ability": "mend",
+			"part": "impact",
+			"point": {
+				"x": 3.0360755920410156,
+				"y": 1.059999942779541,
+				"z": 0.4308960735797882
+			},
+			"source": "try-5",
+			"target": "try-3",
+			"tick": 378,
+			"type": "contact"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 378,
+			"type": "status",
+			"until": 498,
+			"wasted": 0
+		},
+		{
+			"hero": "try-3",
+			"kind": "move",
+			"point": {
+				"x": -10.5,
+				"z": 2.5
+			},
+			"repeat": true,
+			"target": null,
+			"tick": 379,
+			"type": "order"
+		},
+		{
+			"ability": "mend",
+			"direction": {
+				"x": 0.9583705538913384,
+				"z": -0.28552737422882835
+			},
+			"hero": "try-5",
+			"lock": 1,
+			"point": {
+				"x": -5.856905460357666,
+				"y": 1.060099959373474,
+				"z": 3.062549591064453
+			},
+			"slot": "slot1",
+			"target": {
+				"x": 3.11916446685791,
+				"z": 0.4245101511478424
+			},
+			"targetId": "try-3",
+			"tick": 379,
+			"type": "cast"
+		},
+		{
+			"hero": "try-6",
+			"kind": "attack",
+			"point": {
+				"x": 3.11916446685791,
+				"z": 0.4245101511478424
+			},
+			"repeat": true,
+			"target": "try-3",
+			"tick": 379,
+			"type": "order"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 379,
+			"type": "status",
+			"until": 499,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 380,
+			"type": "status",
+			"until": 500,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 8,
+			"target": "local",
+			"tick": 381,
+			"type": "status",
+			"until": 427,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 10,
+			"target": "try-5",
+			"tick": 381,
+			"type": "status",
+			"until": 427,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 11,
+			"target": "summon-3",
+			"tick": 381,
+			"type": "status",
+			"until": 427,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundSlow",
+			"label": "Slow",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 13,
+			"target": "try-7",
+			"tick": 381,
+			"type": "status",
+			"until": 427,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundSlow",
+			"label": "Slow",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 14,
+			"target": "try-8",
+			"tick": 381,
+			"type": "status",
+			"until": 427,
+			"wasted": 0
+		},
+		{
+			"hero": "try-3",
+			"kind": "move",
+			"point": {
+				"x": 8.8,
+				"z": 0
+			},
+			"repeat": true,
+			"target": null,
+			"tick": 385,
+			"type": "order"
+		},
+		{
+			"hero": "try-7",
+			"kind": "attack",
+			"point": {
+				"x": 2.8459789752960205,
+				"z": 0.5233567953109741
+			},
+			"repeat": false,
+			"target": "try-3",
+			"tick": 385,
+			"type": "order"
+		},
+		{
+			"direction": {
+				"x": 0.96412373872415,
+				"z": 0.26545322832575835
+			},
+			"hero": "try-8",
+			"lock": 0.3,
+			"point": {
+				"x": -1.957140326499939,
+				"y": 1.060099959373474,
+				"z": -0.7990912199020386
+			},
+			"slot": "primary",
+			"target": {
+				"x": 2.8459789752960205,
+				"z": 0.5233567953109741
+			},
+			"targetId": "try-3",
+			"tick": 385,
+			"type": "cast"
+		},
+		{
+			"hero": "try-3",
+			"kind": "move",
+			"point": {
+				"x": -10.5,
+				"z": 2.5
+			},
+			"repeat": true,
+			"target": null,
+			"tick": 391,
+			"type": "order"
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 8,
+			"target": "local",
+			"tick": 396,
+			"type": "status",
+			"until": 442,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 10,
+			"target": "try-5",
+			"tick": 396,
+			"type": "status",
+			"until": 442,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 11,
+			"target": "summon-3",
+			"tick": 396,
+			"type": "status",
+			"until": 442,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundSlow",
+			"label": "Slow",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 13,
+			"target": "try-7",
+			"tick": 396,
+			"type": "status",
+			"until": 442,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundSlow",
+			"label": "Slow",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 14,
+			"target": "try-8",
+			"tick": 396,
+			"type": "status",
+			"until": 442,
+			"wasted": 0
+		},
+		{
+			"hero": "try-3",
+			"kind": "move",
+			"point": {
+				"x": 8.8,
+				"z": 0
+			},
+			"repeat": false,
+			"target": null,
+			"tick": 403,
+			"type": "order"
+		},
+		{
+			"hero": "try-4",
+			"kind": "move",
+			"point": {
+				"x": -10.5,
+				"z": 4
+			},
+			"repeat": false,
+			"target": null,
+			"tick": 403,
+			"type": "order"
+		},
+		{
+			"direction": {
+				"x": 0.94540958006362,
+				"z": 0.3258845285126764
+			},
+			"hero": "try-8",
+			"id": 16,
+			"point": {
+				"x": -1.957140326499939,
+				"y": 1.1,
+				"z": -0.7990912199020386
+			},
+			"slot": "primary",
+			"tick": 403,
+			"type": "projectile"
+		},
+		{
+			"ability": "bank",
+			"direction": {
+				"x": 0.9872643879154328,
+				"z": 0.15908811506195508
+			},
+			"hero": "try-8",
+			"lock": 0.3,
+			"point": {
+				"x": -1.957140326499939,
+				"y": 1.060099959373474,
+				"z": -0.7990912199020386
+			},
+			"slot": "slot1",
+			"target": {
+				"x": 3.4645716490962055,
+				"z": 0.07456526884016657
+			},
+			"targetId": null,
+			"tick": 403,
+			"type": "cast"
+		},
+		{
+			"hero": "try-4",
+			"kind": "move",
+			"point": {
+				"x": 8.8,
+				"z": 0
+			},
+			"repeat": true,
+			"target": null,
+			"tick": 409,
+			"type": "order"
+		},
+		{
+			"amount": 0,
+			"key": "balloon.soak",
+			"label": "Soak",
+			"source": "local",
+			"state": "refresh",
+			"status": 3,
+			"target": "try-7",
+			"tick": 409,
+			"type": "status",
+			"until": 529,
+			"wasted": 0
+		},
+		{
+			"ability": "yoYoFlick",
+			"direction": {
+				"x": 0.9631790002908688,
+				"z": 0.26886095551173417
+			},
+			"hero": "try-6",
+			"lock": 0.3,
+			"point": {
+				"x": -0.15740755200386047,
+				"y": 1.060099959373474,
+				"z": -0.11368900537490843
+			},
+			"slot": "primary",
+			"target": {
+				"x": 3.0636701583862305,
+				"z": 0.7854398488998413
+			},
+			"targetId": "try-3",
+			"tick": 411,
+			"type": "cast"
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 8,
+			"target": "local",
+			"tick": 411,
+			"type": "status",
+			"until": 457,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 10,
+			"target": "try-5",
+			"tick": 411,
+			"type": "status",
+			"until": 457,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 11,
+			"target": "summon-3",
+			"tick": 411,
+			"type": "status",
+			"until": 457,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundSlow",
+			"label": "Slow",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 13,
+			"target": "try-7",
+			"tick": 411,
+			"type": "status",
+			"until": 457,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundSlow",
+			"label": "Slow",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 14,
+			"target": "try-8",
+			"tick": 411,
+			"type": "status",
+			"until": 457,
+			"wasted": 0
+		},
+		{
+			"hero": "try-3",
+			"kind": "move",
+			"point": {
+				"x": -10.5,
+				"z": 2.5
+			},
+			"repeat": false,
+			"target": null,
+			"tick": 415,
+			"type": "order"
+		},
+		{
+			"hero": "try-4",
+			"kind": "move",
+			"point": {
+				"x": -10.5,
+				"z": 4
+			},
+			"repeat": true,
+			"target": null,
+			"tick": 415,
+			"type": "order"
+		},
+		{
+			"ability": null,
+			"absorbed": 0,
+			"crit": true,
+			"damage": 108,
+			"direction": {
+				"x": 0.982451948558272,
+				"y": 0,
+				"z": 0.1865158673519625
+			},
+			"hp": 1197,
+			"lethal": false,
+			"maxHp": 1400,
+			"periodic": false,
+			"point": {
+				"x": 2.8382753805022047,
+				"y": 1.1,
+				"z": 0.6075398512735964
+			},
+			"projectile": 16,
+			"slot": "primary",
+			"source": "try-8",
+			"target": "try-3",
+			"tick": 415,
+			"type": "hit"
+		},
+		{
+			"ability": "bank",
+			"direction": {
+				"x": 0.9872643879154328,
+				"z": 0.15908811506195508
+			},
+			"hero": "try-8",
+			"id": 17,
+			"point": {
+				"x": -1.957140326499939,
+				"y": 1.1,
+				"z": -0.7990912199020386
+			},
+			"slot": "slot1",
+			"tick": 420,
+			"type": "projectile"
+		},
+		{
+			"hero": "try-4",
+			"kind": "move",
+			"point": {
+				"x": 8.8,
+				"z": 0
+			},
+			"repeat": true,
+			"target": null,
+			"tick": 421,
+			"type": "order"
+		},
+		{
+			"ability": "sprinkler",
+			"amount": 0,
+			"crit": false,
+			"hp": 1400,
+			"maxHp": 1400,
+			"overheal": 50,
+			"periodic": true,
+			"source": "local",
+			"target": "try-5",
+			"tick": 423,
+			"type": "heal"
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 8,
+			"target": "local",
+			"tick": 426,
+			"type": "status",
+			"until": 472,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 10,
+			"target": "try-5",
+			"tick": 426,
+			"type": "status",
+			"until": 472,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 11,
+			"target": "summon-3",
+			"tick": 426,
+			"type": "status",
+			"until": 472,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundSlow",
+			"label": "Slow",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 13,
+			"target": "try-7",
+			"tick": 426,
+			"type": "status",
+			"until": 472,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundSlow",
+			"label": "Slow",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 14,
+			"target": "try-8",
+			"tick": 426,
+			"type": "status",
+			"until": 472,
+			"wasted": 0
+		},
+		{
+			"hero": "try-3",
+			"kind": "move",
+			"point": {
+				"x": 2.4528420819094947,
+				"z": 1.3295946868666908
+			},
+			"repeat": false,
+			"target": null,
+			"tick": 427,
+			"type": "order"
+		},
+		{
+			"hero": "try-4",
+			"kind": "move",
+			"point": {
+				"x": -10.5,
+				"z": 4
+			},
+			"repeat": true,
+			"target": null,
+			"tick": 427,
+			"type": "order"
+		},
+		{
+			"ability": "yoYoFlick",
+			"hero": "try-6",
+			"hit": true,
+			"point": {
+				"x": 2.4197726249694824,
+				"y": 1.1,
+				"z": 0.9890040159225464
+			},
+			"tick": 429,
+			"type": "impact"
+		},
+		{
+			"ability": "yoYoFlick",
+			"absorbed": 0,
+			"damage": 90,
+			"direction": {
+				"x": 0.919379011915592,
+				"y": 0,
+				"z": 0.39337289236691153
+			},
+			"hp": 1107,
+			"lethal": false,
+			"maxHp": 1400,
+			"periodic": false,
+			"point": {
+				"x": 2.4197726249694824,
+				"y": 1.1,
+				"z": 0.9890040159225464
+			},
+			"projectile": 18,
+			"slot": "primary",
+			"source": "try-6",
+			"target": "try-3",
+			"tick": 429,
+			"type": "hit"
+		},
+		{
+			"ability": "bank",
+			"absorbed": 0,
+			"damage": 170,
+			"direction": {
+				"x": 0.9872643879154328,
+				"y": 0,
+				"z": 0.15908811506195508
+			},
+			"hp": 1222,
+			"lethal": false,
+			"maxHp": 1450,
+			"periodic": false,
+			"point": {
+				"x": 2.048119910585392,
+				"y": 1.1,
+				"z": -0.15368224004821934
+			},
+			"projectile": 17,
+			"slot": "slot1",
+			"source": "try-8",
+			"target": "try-4",
+			"tick": 432,
+			"type": "hit"
+		},
+		{
+			"hero": "try-4",
+			"kind": "move",
+			"point": {
+				"x": 8.8,
+				"z": 0
+			},
+			"repeat": true,
+			"target": null,
+			"tick": 433,
+			"type": "order"
+		},
+		{
+			"hero": "try-6",
+			"kind": "move",
+			"point": {
+				"x": 0.8425924479961395,
+				"z": -0.11368900537490843
+			},
+			"repeat": false,
+			"target": null,
+			"tick": 433,
+			"type": "order"
+		},
+		{
+			"ability": "sprinkler",
+			"amount": 50,
+			"crit": false,
+			"hp": 1482,
+			"maxHp": 1500,
+			"overheal": 0,
+			"periodic": true,
+			"source": "local",
+			"target": "local",
+			"tick": 433,
+			"type": "heal"
+		},
+		{
+			"ability": "sprinkler",
+			"ambient": true,
+			"heal": 50,
+			"hp": 1482,
+			"maxHp": 1500,
+			"part": "hit",
+			"point": {
+				"x": -9,
+				"y": 1.059999942779541,
+				"z": 1.0000019073486328
+			},
+			"source": "local",
+			"target": "local",
+			"tick": 433,
+			"type": "contact"
+		},
+		{
+			"ability": "mend",
+			"amount": 250,
+			"crit": false,
+			"hp": 1357,
+			"maxHp": 1400,
+			"overheal": 0,
+			"periodic": false,
+			"source": "try-5",
+			"target": "try-3",
+			"tick": 438,
+			"type": "heal"
+		},
+		{
+			"ability": "mend",
+			"part": "impact",
+			"point": {
+				"x": 2.434922933578491,
+				"y": 1.059999942779541,
+				"z": 1.3579257726669312
+			},
+			"source": "try-5",
+			"target": "try-3",
+			"tick": 438,
+			"type": "contact"
+		},
+		{
+			"hero": "try-3",
+			"kind": "move",
+			"point": {
+				"x": 8.8,
+				"z": 0
+			},
+			"repeat": false,
+			"target": null,
+			"tick": 439,
+			"type": "order"
+		},
+		{
+			"hero": "try-4",
+			"kind": "move",
+			"point": {
+				"x": -10.5,
+				"z": 4
+			},
+			"repeat": true,
+			"target": null,
+			"tick": 439,
+			"type": "order"
+		},
+		{
+			"hero": "try-6",
+			"kind": "attack",
+			"point": {
+				"x": 2.434922933578491,
+				"z": 1.3579257726669312
+			},
+			"repeat": true,
+			"target": "try-3",
+			"tick": 439,
+			"type": "order"
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 8,
+			"target": "local",
+			"tick": 441,
+			"type": "status",
+			"until": 487,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 10,
+			"target": "try-5",
+			"tick": 441,
+			"type": "status",
+			"until": 487,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundHaste",
+			"label": "Haste",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 11,
+			"target": "summon-3",
+			"tick": 441,
+			"type": "status",
+			"until": 487,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundSlow",
+			"label": "Slow",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 13,
+			"target": "try-7",
+			"tick": 441,
+			"type": "status",
+			"until": 487,
+			"wasted": 0
+		},
+		{
+			"amount": 0,
+			"key": "rallyRing.groundSlow",
+			"label": "Slow",
+			"source": "try-4",
+			"state": "refresh",
+			"status": 14,
+			"target": "try-8",
+			"tick": 441,
+			"type": "status",
+			"until": 487,
+			"wasted": 0
+		}
+	],
+	"roster": [
+		{
+			"heroId": "undine",
+			"id": "local",
+			"team": "A"
+		},
+		{
+			"heroId": "ibis",
+			"id": "try-3",
+			"team": "A"
+		},
+		{
+			"heroId": "mandador",
+			"id": "try-4",
+			"team": "A"
+		},
+		{
+			"heroId": "salvia",
+			"id": "try-5",
+			"team": "A"
+		},
+		{
+			"heroId": "lasso",
+			"id": "try-6",
+			"team": "B"
+		},
+		{
+			"heroId": "oolong",
+			"id": "try-7",
+			"team": "B"
+		},
+		{
+			"heroId": "carambola",
+			"id": "try-8",
+			"team": "B"
+		},
+		{
+			"heroId": "kappa",
+			"id": "try-9",
+			"team": "B"
+		}
+	],
+	"samples": [
+		{
+			"alive": 8,
+			"fields": 0,
+			"shots": 0,
+			"summons": 0,
+			"tick": 96,
+			"zones": 0
+		},
+		{
+			"alive": 8,
+			"fields": 0,
+			"shots": 0,
+			"summons": 2,
+			"tick": 108,
+			"zones": 0
+		},
+		{
+			"alive": 8,
+			"fields": 0,
+			"shots": 0,
+			"summons": 2,
+			"tick": 120,
+			"zones": 0
+		},
+		{
+			"alive": 8,
+			"fields": 0,
+			"shots": 1,
+			"summons": 1,
+			"tick": 132,
+			"zones": 1
+		},
+		{
+			"alive": 8,
+			"fields": 1,
+			"shots": 1,
+			"summons": 1,
+			"tick": 144,
+			"zones": 1
+		},
+		{
+			"alive": 8,
+			"fields": 1,
+			"shots": 0,
+			"summons": 1,
+			"tick": 156,
+			"zones": 1
+		},
+		{
+			"alive": 8,
+			"fields": 2,
+			"shots": 0,
+			"summons": 1,
+			"tick": 168,
+			"zones": 0
+		},
+		{
+			"alive": 8,
+			"fields": 2,
+			"shots": 0,
+			"summons": 2,
+			"tick": 180,
+			"zones": 0
+		},
+		{
+			"alive": 8,
+			"fields": 2,
+			"shots": 0,
+			"summons": 2,
+			"tick": 192,
+			"zones": 0
+		},
+		{
+			"alive": 8,
+			"fields": 2,
+			"shots": 0,
+			"summons": 2,
+			"tick": 204,
+			"zones": 0
+		},
+		{
+			"alive": 8,
+			"fields": 3,
+			"shots": 1,
+			"summons": 2,
+			"tick": 216,
+			"zones": 0
+		},
+		{
+			"alive": 8,
+			"fields": 3,
+			"shots": 0,
+			"summons": 2,
+			"tick": 228,
+			"zones": 0
+		},
+		{
+			"alive": 8,
+			"fields": 3,
+			"shots": 0,
+			"summons": 2,
+			"tick": 240,
+			"zones": 0
+		},
+		{
+			"alive": 8,
+			"fields": 3,
+			"shots": 0,
+			"summons": 2,
+			"tick": 252,
+			"zones": 0
+		},
+		{
+			"alive": 8,
+			"fields": 3,
+			"shots": 0,
+			"summons": 2,
+			"tick": 264,
+			"zones": 0
+		},
+		{
+			"alive": 8,
+			"fields": 3,
+			"shots": 0,
+			"summons": 2,
+			"tick": 276,
+			"zones": 0
+		},
+		{
+			"alive": 8,
+			"fields": 3,
+			"shots": 1,
+			"summons": 2,
+			"tick": 288,
+			"zones": 0
+		},
+		{
+			"alive": 8,
+			"fields": 3,
+			"shots": 0,
+			"summons": 2,
+			"tick": 300,
+			"zones": 0
+		},
+		{
+			"alive": 8,
+			"fields": 3,
+			"shots": 0,
+			"summons": 2,
+			"tick": 312,
+			"zones": 0
+		},
+		{
+			"alive": 8,
+			"fields": 3,
+			"shots": 0,
+			"summons": 2,
+			"tick": 324,
+			"zones": 0
+		},
+		{
+			"alive": 8,
+			"fields": 3,
+			"shots": 0,
+			"summons": 2,
+			"tick": 336,
+			"zones": 0
+		},
+		{
+			"alive": 8,
+			"fields": 2,
+			"shots": 1,
+			"summons": 2,
+			"tick": 348,
+			"zones": 0
+		},
+		{
+			"alive": 8,
+			"fields": 2,
+			"shots": 0,
+			"summons": 2,
+			"tick": 360,
+			"zones": 0
+		},
+		{
+			"alive": 8,
+			"fields": 2,
+			"shots": 0,
+			"summons": 2,
+			"tick": 372,
+			"zones": 0
+		},
+		{
+			"alive": 8,
+			"fields": 1,
+			"shots": 0,
+			"summons": 1,
+			"tick": 384,
+			"zones": 0
+		},
+		{
+			"alive": 8,
+			"fields": 1,
+			"shots": 0,
+			"summons": 1,
+			"tick": 396,
+			"zones": 0
+		},
+		{
+			"alive": 8,
+			"fields": 1,
+			"shots": 1,
+			"summons": 1,
+			"tick": 408,
+			"zones": 0
+		},
+		{
+			"alive": 8,
+			"fields": 1,
+			"shots": 1,
+			"summons": 1,
+			"tick": 420,
+			"zones": 0
+		},
+		{
+			"alive": 8,
+			"fields": 1,
+			"shots": 0,
+			"summons": 1,
+			"tick": 432,
+			"zones": 0
+		},
+		{
+			"alive": 8,
+			"fields": 1,
+			"shots": 0,
+			"summons": 1,
+			"tick": 444,
+			"zones": 0
+		}
+	]
+}

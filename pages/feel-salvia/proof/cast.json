@@ -1,0 +1,511 @@
+{
+	"hero": "salvia",
+	"map": "overthrow",
+	"seed": 2,
+	"viewport": "1280x720",
+	"ok": true,
+	"timing": "Frame-stepped: the sim ran exactly 1/60 s per tick, whatever the host load; every time below is authored sim time. Wall time (118 s, load 14.17) and software-rendered frames say nothing about hardware FPS or input latency, which this does not measure.",
+	"clip": {
+		"file": "/home/osk/sites/dodgethis/pages/feel-salvia/proof/cast.webm",
+		"frames": 350,
+		"seconds": 11.67,
+		"fps": 30,
+		"ticksPerFrame": 2,
+		"slow": 1
+	},
+	"steps": [
+		{
+			"step": "basic",
+			"ability": "tennisBall",
+			"kind": "basic",
+			"aim": "enemy",
+			"ok": true,
+			"problems": [],
+			"authored": {
+				"castPoint": 0.3,
+				"castLock": 0.3,
+				"phases": [
+					{
+						"now": "attack:windup",
+						"at": 0,
+						"seconds": 0.283
+					},
+					{
+						"now": "attack:backswing",
+						"at": 0.283,
+						"seconds": 0.25
+					}
+				],
+				"firstHit": 0.483,
+				"settled": 0.533
+			},
+			"cooldownTicksLeft": null,
+			"hits": [
+				{
+					"at": 0.483,
+					"damage": 70,
+					"target": "try-1"
+				}
+			],
+			"heals": 0,
+			"facts": ["order", "cast", "projectile", "hit"],
+			"hp": {
+				"me": 1400,
+				"foe": 1330,
+				"friend": 1450
+			},
+			"log": [
+				{
+					"tick": 82,
+					"type": "order",
+					"hero": "local",
+					"target": "try-1",
+					"point": {
+						"x": -6,
+						"z": 0
+					}
+				},
+				{
+					"tick": 82,
+					"type": "cast",
+					"hero": "local",
+					"ability": "tennisBall",
+					"slot": "primary",
+					"lock": 0.3,
+					"target": {
+						"x": -6,
+						"z": 0
+					},
+					"targetId": "try-1",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 82,
+					"type": "activity",
+					"now": "attack:windup"
+				},
+				{
+					"tick": 99,
+					"type": "projectile",
+					"hero": "local",
+					"slot": "primary",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 99,
+					"type": "activity",
+					"now": "attack:backswing"
+				},
+				{
+					"tick": 111,
+					"type": "hit",
+					"ability": "tennisBall",
+					"slot": "primary",
+					"damage": 70,
+					"source": "local",
+					"target": "try-1",
+					"point": {
+						"x": -6.65,
+						"z": 0
+					}
+				},
+				{
+					"tick": 114,
+					"type": "activity",
+					"now": ""
+				}
+			],
+			"frames": 44
+		},
+		{
+			"step": "mend:ally:hurt=700:note=gather_then_pour",
+			"note": "gather_then_pour",
+			"ability": "mend",
+			"kind": "instant",
+			"aim": "ally",
+			"ok": true,
+			"problems": [],
+			"authored": {
+				"castPoint": 1,
+				"castLock": 1,
+				"phases": [
+					{
+						"now": "cast:mend",
+						"at": 0,
+						"seconds": 0.983
+					}
+				],
+				"firstHit": null,
+				"settled": 0.983
+			},
+			"cooldownTicksLeft": 0,
+			"hits": [],
+			"heals": 0,
+			"facts": ["cast", "heal", "contact"],
+			"hp": {
+				"me": 1400,
+				"foe": 1400,
+				"friend": 1000
+			},
+			"log": [
+				{
+					"tick": 181,
+					"type": "cast",
+					"hero": "local",
+					"ability": "mend",
+					"slot": "slot1",
+					"lock": 1,
+					"target": {
+						"x": -6.25,
+						"z": 2.2
+					},
+					"targetId": "try-2",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 181,
+					"type": "activity",
+					"now": "cast:mend"
+				},
+				{
+					"tick": 240,
+					"type": "heal",
+					"ability": "mend",
+					"source": "local",
+					"target": "try-2"
+				},
+				{
+					"tick": 240,
+					"type": "contact",
+					"ability": "mend",
+					"source": "local",
+					"target": "try-2",
+					"point": {
+						"x": -6.25,
+						"z": 2.2
+					}
+				},
+				{
+					"tick": 240,
+					"type": "activity",
+					"now": ""
+				}
+			],
+			"frames": 60
+		},
+		{
+			"step": "mend:ally:hurt=700:cancel=0.35:tail=0.6:note=stopped_part_way",
+			"note": "stopped_part_way",
+			"ability": "mend",
+			"kind": "instant",
+			"aim": "ally",
+			"ok": true,
+			"problems": [],
+			"authored": {
+				"castPoint": 1,
+				"castLock": 1,
+				"phases": [
+					{
+						"now": "cast:mend",
+						"at": 0,
+						"seconds": 0.383
+					}
+				],
+				"firstHit": null,
+				"settled": 0.383
+			},
+			"cooldownTicksLeft": 0,
+			"hits": [],
+			"heals": 0,
+			"facts": ["cast", "castCancelled", "denied"],
+			"hp": {
+				"me": 1400,
+				"foe": 1400,
+				"friend": 750
+			},
+			"log": [
+				{
+					"tick": 303,
+					"type": "cast",
+					"hero": "local",
+					"ability": "mend",
+					"slot": "slot1",
+					"lock": 1,
+					"target": {
+						"x": -6.25,
+						"z": 2.2
+					},
+					"targetId": "try-2",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 303,
+					"type": "activity",
+					"now": "cast:mend"
+				},
+				{
+					"tick": 326,
+					"type": "castCancelled",
+					"hero": "local",
+					"ability": "mend",
+					"slot": "slot1",
+					"reason": "input"
+				},
+				{
+					"tick": 326,
+					"type": "denied",
+					"hero": "local",
+					"ability": "mend",
+					"slot": "slot1",
+					"reason": "cancelled"
+				},
+				{
+					"tick": 326,
+					"type": "activity",
+					"now": ""
+				}
+			],
+			"frames": 56
+		},
+		{
+			"step": "ward:ally:volley=0.5+70/1.0+70/1.6+520:tail=2.8:note=two_balls_soaked_then_a_third_breaks_it",
+			"note": "two_balls_soaked_then_a_third_breaks_it",
+			"ability": "ward",
+			"kind": "instant",
+			"aim": "ally",
+			"ok": true,
+			"problems": [],
+			"authored": {
+				"castPoint": 0,
+				"castLock": 0,
+				"phases": [],
+				"firstHit": null,
+				"settled": 1.667
+			},
+			"cooldownTicksLeft": 537,
+			"hits": [],
+			"heals": 0,
+			"facts": ["cast", "status", "contact", "projectile", "absorb", "hit"],
+			"hp": {
+				"me": 1400,
+				"foe": 1400,
+				"friend": 1290
+			},
+			"log": [
+				{
+					"tick": 415,
+					"type": "cast",
+					"hero": "local",
+					"ability": "ward",
+					"slot": "slot2",
+					"lock": 0,
+					"target": {
+						"x": -6.25,
+						"z": 2.2
+					},
+					"targetId": "try-2",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 415,
+					"type": "status",
+					"source": "local",
+					"target": "try-2"
+				},
+				{
+					"tick": 415,
+					"type": "contact",
+					"ability": "ward",
+					"source": "local",
+					"target": "try-2",
+					"point": {
+						"x": -6.25,
+						"z": 2.2
+					}
+				},
+				{
+					"tick": 434,
+					"type": "projectile",
+					"hero": "try-1",
+					"ability": "tennisBall",
+					"slot": "primary",
+					"point": {
+						"x": -2.5,
+						"z": 0
+					}
+				},
+				{
+					"tick": 448,
+					"type": "absorb",
+					"source": "local",
+					"target": "try-2"
+				},
+				{
+					"tick": 448,
+					"type": "hit",
+					"ability": "tennisBall",
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "try-2",
+					"point": {
+						"x": -5.69,
+						"z": 1.87
+					}
+				},
+				{
+					"tick": 464,
+					"type": "projectile",
+					"hero": "try-1",
+					"ability": "tennisBall",
+					"slot": "primary",
+					"point": {
+						"x": -2.5,
+						"z": 0
+					}
+				},
+				{
+					"tick": 478,
+					"type": "absorb",
+					"source": "local",
+					"target": "try-2"
+				},
+				{
+					"tick": 478,
+					"type": "hit",
+					"ability": "tennisBall",
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "try-2",
+					"point": {
+						"x": -5.69,
+						"z": 1.87
+					}
+				},
+				{
+					"tick": 500,
+					"type": "projectile",
+					"hero": "try-1",
+					"ability": "tennisBall",
+					"slot": "primary",
+					"point": {
+						"x": -2.5,
+						"z": 0
+					}
+				},
+				{
+					"tick": 514,
+					"type": "absorb",
+					"source": "local",
+					"target": "try-2"
+				},
+				{
+					"tick": 514,
+					"type": "hit",
+					"ability": "tennisBall",
+					"slot": "primary",
+					"damage": 160,
+					"source": "try-1",
+					"target": "try-2",
+					"point": {
+						"x": -5.69,
+						"z": 1.87
+					}
+				},
+				{
+					"tick": 515,
+					"type": "status",
+					"reason": "spent",
+					"source": "local",
+					"target": "try-2"
+				}
+			],
+			"frames": 101
+		},
+		{
+			"step": "ward:ally:rush=6:tail=2.4:note=6_s_of_steady_bubble_skipped_then_it_runs_out",
+			"note": "6_s_of_steady_bubble_skipped_then_it_runs_out",
+			"ability": "ward",
+			"kind": "instant",
+			"aim": "ally",
+			"ok": true,
+			"problems": [],
+			"authored": {
+				"castPoint": 0,
+				"castLock": 0,
+				"phases": [],
+				"firstHit": null,
+				"settled": 8
+			},
+			"cooldownTicksLeft": 201,
+			"hits": [],
+			"heals": 0,
+			"facts": ["cast", "status", "contact"],
+			"hp": {
+				"me": 1400,
+				"foe": 1400,
+				"friend": 1450
+			},
+			"log": [
+				{
+					"tick": 618,
+					"type": "cast",
+					"hero": "local",
+					"ability": "ward",
+					"slot": "slot2",
+					"lock": 0,
+					"target": {
+						"x": -6.25,
+						"z": 2.2
+					},
+					"targetId": "try-2",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 618,
+					"type": "status",
+					"source": "local",
+					"target": "try-2"
+				},
+				{
+					"tick": 618,
+					"type": "contact",
+					"ability": "ward",
+					"source": "local",
+					"target": "try-2",
+					"point": {
+						"x": -6.25,
+						"z": 2.2
+					}
+				},
+				{
+					"tick": 1098,
+					"type": "status",
+					"reason": "expired",
+					"source": "local",
+					"target": "try-2"
+				}
+			],
+			"frames": 89
+		}
+	]
+}

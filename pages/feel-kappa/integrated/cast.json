@@ -1,0 +1,435 @@
+{
+	"hero": "kappa",
+	"map": "overthrow",
+	"seed": 2,
+	"viewport": "960x540",
+	"ok": true,
+	"timing": "Frame-stepped: the sim ran exactly 1/60 s per tick, whatever the host load; every time below is authored sim time. Wall time (55 s, load 7.11) and software-rendered frames say nothing about hardware FPS or input latency, which this does not measure.",
+	"clip": {
+		"file": "/home/osk/sites/dodgethis/pages/feel-kappa/integrated/cast.webm",
+		"frames": 222,
+		"seconds": 7.4,
+		"fps": 30,
+		"ticksPerFrame": 2,
+		"slow": 1
+	},
+	"steps": [
+		{
+			"step": "basic",
+			"ability": "gloveSlap",
+			"kind": "basic",
+			"aim": "enemy",
+			"ok": true,
+			"problems": [],
+			"authored": {
+				"castPoint": 0.3,
+				"castLock": 0.3,
+				"phases": [
+					{
+						"now": "attack:windup",
+						"at": 0,
+						"seconds": 0.3
+					},
+					{
+						"now": "attack:backswing",
+						"at": 0.3,
+						"seconds": 0.25
+					}
+				],
+				"firstHit": 0.3,
+				"settled": 0.55
+			},
+			"cooldownTicksLeft": null,
+			"hits": [
+				{
+					"at": 0.3,
+					"damage": 130,
+					"target": "try-1"
+				}
+			],
+			"heals": 0,
+			"facts": ["order", "cast", "impact", "hit"],
+			"hp": {
+				"me": 2200,
+				"foe": 1270,
+				"friend": 1450
+			},
+			"log": [
+				{
+					"tick": 111,
+					"type": "order",
+					"hero": "local",
+					"target": "try-1",
+					"point": {
+						"x": -7.2,
+						"z": 0
+					}
+				},
+				{
+					"tick": 111,
+					"type": "cast",
+					"hero": "local",
+					"ability": "gloveSlap",
+					"slot": "primary",
+					"lock": 0.3,
+					"target": {
+						"x": -7.2,
+						"z": 0
+					},
+					"targetId": "try-1",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 111,
+					"type": "activity",
+					"now": "attack:windup"
+				},
+				{
+					"tick": 129,
+					"type": "impact",
+					"hero": "local",
+					"ability": "gloveSlap",
+					"point": {
+						"x": -7.2,
+						"z": 0
+					}
+				},
+				{
+					"tick": 129,
+					"type": "hit",
+					"ability": "gloveSlap",
+					"slot": "primary",
+					"damage": 130,
+					"source": "local",
+					"target": "try-1",
+					"point": {
+						"x": -7.2,
+						"z": 0
+					}
+				},
+				{
+					"tick": 129,
+					"type": "activity",
+					"now": "attack:backswing"
+				},
+				{
+					"tick": 144,
+					"type": "activity",
+					"now": ""
+				}
+			],
+			"frames": 44
+		},
+		{
+			"step": "slot1",
+			"ability": "toss",
+			"kind": "shot",
+			"aim": "enemy",
+			"ok": true,
+			"problems": [],
+			"authored": {
+				"castPoint": 0.3,
+				"castLock": 0.3,
+				"phases": [
+					{
+						"now": "cast:toss",
+						"at": 0,
+						"seconds": 0.283
+					}
+				],
+				"firstHit": 0.55,
+				"settled": 0.55
+			},
+			"cooldownTicksLeft": 180,
+			"hits": [
+				{
+					"at": 0.55,
+					"damage": 180,
+					"target": "try-1"
+				}
+			],
+			"heals": 0,
+			"facts": ["cast", "projectile", "hit"],
+			"hp": {
+				"me": 2200,
+				"foe": 1220,
+				"friend": 1450
+			},
+			"log": [
+				{
+					"tick": 211,
+					"type": "cast",
+					"hero": "local",
+					"ability": "toss",
+					"slot": "slot1",
+					"lock": 0.3,
+					"target": {
+						"x": -3.26,
+						"z": 0
+					},
+					"targetId": null,
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 211,
+					"type": "activity",
+					"now": "cast:toss"
+				},
+				{
+					"tick": 228,
+					"type": "projectile",
+					"hero": "local",
+					"ability": "toss",
+					"slot": "slot1",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 228,
+					"type": "activity",
+					"now": ""
+				},
+				{
+					"tick": 244,
+					"type": "hit",
+					"ability": "toss",
+					"slot": "slot1",
+					"damage": 180,
+					"source": "local",
+					"target": "try-1",
+					"point": {
+						"x": -4.05,
+						"z": 0
+					}
+				}
+			],
+			"frames": 40
+		},
+		{
+			"step": "slot1:miss",
+			"ability": "toss",
+			"kind": "shot",
+			"aim": "miss",
+			"ok": true,
+			"problems": [],
+			"authored": {
+				"castPoint": 0.3,
+				"castLock": 0.3,
+				"phases": [
+					{
+						"now": "cast:toss",
+						"at": 0,
+						"seconds": 0.283
+					}
+				],
+				"firstHit": null,
+				"settled": 0.683
+			},
+			"cooldownTicksLeft": 180,
+			"hits": [],
+			"heals": 0,
+			"facts": ["cast", "projectile", "expired"],
+			"hp": {
+				"me": 2200,
+				"foe": 1400,
+				"friend": 1450
+			},
+			"log": [
+				{
+					"tick": 291,
+					"type": "cast",
+					"hero": "local",
+					"ability": "toss",
+					"slot": "slot1",
+					"lock": 0.3,
+					"target": {
+						"x": -16.74,
+						"z": 0
+					},
+					"targetId": null,
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 291,
+					"type": "activity",
+					"now": "cast:toss"
+				},
+				{
+					"tick": 308,
+					"type": "projectile",
+					"hero": "local",
+					"ability": "toss",
+					"slot": "slot1",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 308,
+					"type": "activity",
+					"now": ""
+				},
+				{
+					"tick": 332,
+					"type": "expired",
+					"reason": "range",
+					"source": "local",
+					"point": {
+						"x": -19,
+						"z": 0
+					}
+				}
+			],
+			"frames": 39
+		},
+		{
+			"step": "slot2",
+			"ability": "catch",
+			"kind": "stance",
+			"aim": "self",
+			"ok": true,
+			"problems": [],
+			"authored": {
+				"castPoint": 0,
+				"castLock": 0,
+				"phases": [
+					{
+						"now": "stance:catch",
+						"at": 0,
+						"seconds": 1
+					}
+				],
+				"firstHit": null,
+				"settled": 1
+			},
+			"cooldownTicksLeft": 497,
+			"hits": [],
+			"heals": 0,
+			"facts": ["cast"],
+			"hp": {
+				"me": 2200,
+				"foe": 1400,
+				"friend": 1450
+			},
+			"log": [
+				{
+					"tick": 371,
+					"type": "cast",
+					"hero": "local",
+					"ability": "catch",
+					"slot": "slot2",
+					"lock": 0,
+					"target": {
+						"x": -10,
+						"z": 0
+					},
+					"targetId": null,
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 371,
+					"type": "activity",
+					"now": "stance:catch"
+				},
+				{
+					"tick": 431,
+					"type": "activity",
+					"now": ""
+				}
+			],
+			"frames": 61
+		},
+		{
+			"step": "slot3",
+			"ability": "dive",
+			"kind": "dash",
+			"aim": "enemy",
+			"ok": true,
+			"problems": [],
+			"authored": {
+				"castPoint": 0,
+				"castLock": 0,
+				"phases": [
+					{
+						"now": "dash:dive",
+						"at": 0,
+						"seconds": 0.233
+					}
+				],
+				"firstHit": null,
+				"settled": 0.633
+			},
+			"cooldownTicksLeft": 423,
+			"hits": [],
+			"heals": 0,
+			"facts": ["cast", "status"],
+			"hp": {
+				"me": 2200,
+				"foe": 1400,
+				"friend": 1450
+			},
+			"log": [
+				{
+					"tick": 494,
+					"type": "cast",
+					"hero": "local",
+					"ability": "dive",
+					"slot": "slot3",
+					"lock": 0,
+					"target": {
+						"x": -7.01,
+						"z": 0
+					},
+					"targetId": null,
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 494,
+					"type": "activity",
+					"now": "dash:dive"
+				},
+				{
+					"tick": 508,
+					"type": "status",
+					"source": null,
+					"target": "local",
+					"amount": 0,
+					"key": "dive.prone"
+				},
+				{
+					"tick": 508,
+					"type": "activity",
+					"now": ""
+				},
+				{
+					"tick": 532,
+					"type": "status",
+					"reason": "expired",
+					"source": null,
+					"target": "local",
+					"amount": 0,
+					"key": "dive.prone"
+				}
+			],
+			"frames": 38
+		}
+	]
+}

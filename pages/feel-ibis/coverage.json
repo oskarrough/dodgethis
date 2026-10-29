@@ -1,0 +1,211 @@
+{
+	"hero": "ibis",
+	"status": "implemented and captured; integration checks pending in shared checkout",
+	"files": [
+		"src/modes/moba/heroes/ibis/ibis.js",
+		"src/modes/moba/heroes/ibis/ibis-view.js",
+		"src/modes/moba/heroes/ibis/ibis-motion.js",
+		"src/modes/moba/heroes/ibis/ibis-marks.js",
+		"src/modes/moba/abilities/loose/loose-tune.js",
+		"src/modes/moba/abilities/rain/rain.js",
+		"src/modes/moba/abilities/rain/rain-tune.js",
+		"src/modes/moba/abilities/vault/vault.js",
+		"src/modes/moba/abilities/vault/vault-tune.js"
+	],
+	"proof": {
+		"url": "http://office-linux.heron-mermaid.ts.net:5173/pages/feel-ibis/",
+		"before": "before/cast.webm",
+		"after": "after/cast.webm",
+		"seconds": 10.4,
+		"speed": 1,
+		"captureViewport": "1280x720",
+		"exportSize": "960x540",
+		"method": "real mouse and keyboard; frame-stepped 1/60 s simulation; one frame per two ticks; 30 fps playback",
+		"steps": [
+			{
+				"step": "basic",
+				"ok": true,
+				"authored": {
+					"castPoint": 0.15,
+					"castLock": 0.15,
+					"phases": [
+						{
+							"now": "attack:windup",
+							"at": 0,
+							"seconds": 0.133
+						},
+						{
+							"now": "attack:backswing",
+							"at": 0.133,
+							"seconds": 0.25
+						}
+					],
+					"firstHit": 0.283,
+					"settled": 0.383
+				},
+				"hits": [
+					{
+						"at": 0.283,
+						"damage": 90,
+						"target": "try-1"
+					}
+				]
+			},
+			{
+				"step": "loose",
+				"ok": true,
+				"authored": {
+					"castPoint": 0.3,
+					"castLock": 0.3,
+					"phases": [
+						{
+							"now": "cast:loose",
+							"at": 0,
+							"seconds": 0.283
+						}
+					],
+					"firstHit": 0.583,
+					"settled": 0.583
+				},
+				"hits": [
+					{
+						"at": 0.583,
+						"damage": 230,
+						"target": "try-1"
+					}
+				]
+			},
+			{
+				"step": "loose:miss",
+				"ok": true,
+				"authored": {
+					"castPoint": 0.3,
+					"castLock": 0.3,
+					"phases": [
+						{
+							"now": "cast:loose",
+							"at": 0,
+							"seconds": 0.283
+						}
+					],
+					"firstHit": null,
+					"settled": 0.733
+				},
+				"hits": []
+			},
+			{
+				"step": "rain:tail=2",
+				"ok": true,
+				"authored": {
+					"castPoint": 0.12,
+					"castLock": 0.11666666666666667,
+					"phases": [
+						{
+							"now": "cast:rain",
+							"at": 0,
+							"seconds": 0.1
+						}
+					],
+					"firstHit": 0.567,
+					"settled": 2.067
+				},
+				"hits": [
+					{
+						"at": 0.567,
+						"damage": 180,
+						"target": "try-1"
+					}
+				]
+			},
+			{
+				"step": "rain:miss:tail=2",
+				"ok": true,
+				"authored": {
+					"castPoint": 0.12,
+					"castLock": 0.11666666666666667,
+					"phases": [
+						{
+							"now": "cast:rain",
+							"at": 0,
+							"seconds": 0.1
+						}
+					],
+					"firstHit": null,
+					"settled": 0.567
+				},
+				"hits": []
+			},
+			{
+				"step": "vault",
+				"ok": true,
+				"authored": {
+					"castPoint": 0,
+					"castLock": 0,
+					"phases": [
+						{
+							"now": "dash:vault",
+							"at": 0,
+							"seconds": 0.167
+						}
+					],
+					"firstHit": null,
+					"settled": 0.167
+				},
+				"hits": []
+			}
+		]
+	},
+	"changes": {
+		"basic": {
+			"before": "No local pose for inherited basic attack.",
+			"after": "65%-strength taut bow draw, matched hand/string/shaft, release during backswing.",
+			"timing": "Unchanged 0.15 s windup, 0.25 s backswing; observed first hit 0.283 s at 4.4 m.",
+			"unchanged": "Shared damage 90, projectile, cadence and critical-hit behavior; integration owns them."
+		},
+		"loose": {
+			"before": "Linear pose, 20 m/s flight, 0.26 s contact flare, 0.05 s hold, 0.4 m skid.",
+			"after": "Coil and snap via pose curves; 24 m/s flight; 0.18 s flare, 0.045 s local hold, 0.3 m skid; removes generic shot/hit particles.",
+			"timing": "0.3 s cast retained; observed first hit at staged 8 m improves 0.633 to 0.583 s.",
+			"unchanged": "230 damage, 11 m range, 0.3 m radius, 4 s cooldown, catchable first-hit projectile."
+		},
+		"rain": {
+			"before": "0 s cast and 0.7 s delay; shared golden circle and arrows; particle impact.",
+			"after": "Upward bow draw; 0.12 s cast plus 0.48 s fall; exact team boundary; inked contact strokes without particle cloud.",
+			"timing": "Nominal 0.6 s total; fixed-step lock 0.116667 s; observed first hit 0.683 to 0.567 s; 0.2 s view recovery.",
+			"unchanged": "180 damage, 2.5 m radius, 7 m reach, 30% slow for 1.5 s, 6 s cooldown. Shared falling arrows and planted residue reused; local ownership ring ends with zone."
+		},
+		"vault": {
+			"before": "Immediate dash and generic full-range gold arrow.",
+			"after": "Tucked visual arc, landing compression and short spokes; quiet streak uses actual endpoints, including blocked travel.",
+			"timing": "Unchanged cast 0 s, travel 0.18 s, observed dash phase 0.167 s; view landing settle 0.14 s and mark life 0.16 s.",
+			"unchanged": "4 m range, 3 s cooldown, collision and movement rules; view-only lift never adds invulnerability."
+		},
+		"momentum": {
+			"before": "Cooldown reduction without source feedback.",
+			"after": "Two brief rising cream strokes on allied Ibis after a Loose hero hit; last proc tick is bounded hero-owned replicated state.",
+			"timing": "Unchanged 2 s Vault cooldown reduction; cue 0.24 s."
+		}
+	},
+	"checks": {
+		"capture": "6/6 steps pass; both misses hit nobody; Rain tail includes slow and residue expiry.",
+		"existingTests": "82 pass, 0 fail across moba, replica, moba-setup, moba-lane and moba-session tests.",
+		"mechanics": "contracts.json: exact Momentum reduction, Vault endpoint, Rain cancellation/refund, hit/slow and expiry, snapshot state.",
+		"resources": "resources.json: no duplicate marks per frame; expiry and backwards tick clear; disposal restores empty scene.",
+		"ownedLintFormat": "pass",
+		"effectSchema": "pass",
+		"fullCheck": "blocked by unowned tune.mend.healImpact.spokes.from unit declaration on final run. Earlier run reached unrelated Salvia unread keys."
+	},
+	"review": "Reviewed all nine owned source files and their callers. No new facts, registries, global hit stop or framework; no commits or pushes. Scene marks are bounded and use tick+alpha; materials/geometries disposed. One post-pass contact sheet inspected.",
+	"sharedRequests": [
+		"Integration owns the inherited basic windup: 0.15 s is below the 0.3 s enemy-tell rule.",
+		"The requested bun run check automatically regenerated src/modes/moba/all-tunes.js from concurrent work; integration should retain/review that generated file. No registry was hand-edited.",
+		"Clear the unowned Mend unit-schema failure before final integration."
+	],
+	"limitations": [
+		"Staged isolated clip with no HUD; no crowded-fight, hardware FPS, latency, audio-quality or two-browser guest proof.",
+		"Capture resets cooldowns between steps; the numeric Momentum benefit is verified separately.",
+		"Guest state paths inspected and snapshot data asserted; an extra ad hoc guest harness also rejected its unchanged baseline, so it is not counted as guest proof.",
+		"Shared Rain renderer still owns golden fill and planted-arrow residue; local changes add ownership and improve timing/pose/contact.",
+		"No independent reviewer spawned, as instructed."
+	]
+}

@@ -1,0 +1,61 @@
+{
+	"method": "Existing bootMoba harness, intent-driven casts; separate view lifecycle probe with replicated body/status/summon shapes. No new unit tests.",
+	"interactions": {
+		"balloonHeal": 160,
+		"soakApplied": true,
+		"connectedSlideMetres": 7.000230657704453,
+		"sprinklerHeals": true,
+		"fieldsSummonsAndSoakExpired": true,
+		"connectedSlideRemainingAfterFirstTick": 0.34999999899999995,
+		"connectedSlideTotalAuthoredSeconds": 0.36666666666666664
+	},
+	"viewLifecycle": {
+		"releaseOnce": true,
+		"backwardsTickClears": true,
+		"disposeClearsScene": true
+	},
+	"online": "Snapshot and replica callers inspected; no two-browser online proof.",
+	"existingTests": {
+		"command": "bun test tests/moba.test.js tests/actions.test.js tests/replica.test.js tests/registry.test.js tests/collect-mods.test.js --only-failures",
+		"pass": 48,
+		"fail": 0,
+		"expectCalls": 1008
+	},
+	"castProof": {
+		"stepsPassed": 5,
+		"seconds": 14.57,
+		"frames": 437,
+		"encodedFps": 30,
+		"simulationTicksPerFrame": 2,
+		"speedMultiplier": 1,
+		"coverage": [
+			"waterFlick hit",
+			"balloon hit and Soak",
+			"balloon miss and drying puddle",
+			"sprinkler ally cast, full lifetime and expiry",
+			"slide dash"
+		],
+		"limitations": [
+			"Balloon miss segment ends approximately 0.35 s before puddle expiry; final expiry asserted headlessly.",
+			"Healing amounts and seven-metre connected slide asserted headlessly, not shown as a combo in the clip.",
+			"No recast, two-browser guest or crowded-fight capture.",
+			"No hardware FPS or input-latency measurement."
+		]
+	},
+	"review": {
+		"complete": true,
+		"comparison": "Owned files compared against copies taken before edits; existing Balloon view and simulation unchanged.",
+		"fixedFinding": "Added upward normals to the new sprinkler blade geometry.",
+		"resources": "Shared geometry/materials per view, one rig per active affected unit/summon, no trail history; backward ticks and disposal clear them."
+	},
+	"check": {
+		"ownedLintAndFormat": "pass",
+		"wholeCheckLatest": "Blocked by missing dimension tune.mend.healImpact.spokes.from outside ownership.",
+		"earlierWholeCheck": "Unit schema, leftovers, effect/card schema and lint passed; format failures outside ownership."
+	},
+	"sharedRequests": [
+		"Regenerate and integrate all-tunes.js; required check regenerated it when local unit declarations were added.",
+		"Cast judge counts heals using fact.hero, but sprinkler heal facts carry fact.source. The clip report says heals: 0 despite heal facts in its log.",
+		"A shared successful-release cue for instant abilities would replace Undine's local summon-birth-to-release-pose bridge. Current local bridge works with existing replicated summons."
+	]
+}

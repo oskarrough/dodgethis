@@ -1,5 +1,16 @@
 [
 	{
+		"at": "2026-10-29T01:17:24.171421Z",
+		"title": "The cast in motion",
+		"ask": "Do the bodies and hostile ground remain clear when all eight kits meet?",
+		"status": "To review",
+		"decision": "",
+		"media": ["cast-feel/fight-cover.webp", "cast-feel/fight.webm"],
+		"links": ["/pages/balloon-polish/"],
+		"thread": "thr_vdgc5ujmti",
+		"page": "cast-feel/"
+	},
+	{
 		"at": "2026-10-25T10:14:49.000Z",
 		"title": "The cast gets faces, wear and an edge",
 		"ask": "Every hero keeps its silhouette, size and team colours, and gains a brow band with small cream eyes, chipped edges, material wear and one hard angle: Kappa's horns, Ibis's crest, Salvia's split crown. 182 extra triangles in all. Does the family read, and is anyone too cute or too grim?",
@@ -251,7 +262,7 @@
 	{
 		"at": "2026-10-14T08:48:33.563Z",
 		"title": "Lobby feel: the swap flip and a calmer layout (#5)",
-		"ask": "Does the flip read as a cutout turning on a pin? The clip runs three swaps slowed to 1.2 s, then two at the real 0.25 s. The stills are the lobby from a fresh / at 390, 1440 and 2560×1080: at 390 the difficulty words no longer run together, health bars shrink and the controls label clears the ability bar; at wide screens 'Next map' no longer spills over the rim.",
+		"ask": "Does the flip read as a cutout turning on a pin? The clip runs three swaps slowed to 1.2 s, then two at the real 0.25 s. The stills are the lobby from a fresh / at 390, 1440 and 2560\u00d71080: at 390 the difficulty words no longer run together, health bars shrink and the controls label clears the ability bar; at wide screens 'Next map' no longer spills over the rim.",
 		"status": "Archived",
 		"decision": "Reviewed. Retired with the saucer lobby on 2026-10-24; the portal lobby replaced it.",
 		"media": [
@@ -595,7 +606,7 @@
 	{
 		"at": "2026-10-10T20:00:06.411Z",
 		"title": "Three lanes or a richer Flagfall",
-		"ask": "Grow Flagfall toward your HotS map (88 × 44 m, a tight jungle of 4 m paths and brush, flags inside, gates at the forts) and park three lanes until 5v5 bots exist?",
+		"ask": "Grow Flagfall toward your HotS map (88 \u00d7 44 m, a tight jungle of 4 m paths and brush, flags inside, gates at the forts) and park three lanes until 5v5 bots exist?",
 		"status": "Decided",
 		"decision": "Reviewed.",
 		"media": ["three-lanes/hots-reference.webp"],
@@ -620,7 +631,7 @@
 	{
 		"at": "2026-10-10T15:37:18.325Z",
 		"title": "Match camera shows both long rims",
-		"ask": "Mid-court at 1440×900: do both long rims show on each map, and are the heroes still big enough?",
+		"ask": "Mid-court at 1440\u00d7900: do both long rims show on each map, and are the heroes still big enough?",
 		"status": "Archived",
 		"decision": "Replaced: one close lens on every map that pans past the rims (Oskar, 2026-10-10)",
 		"media": [
@@ -634,7 +645,7 @@
 	{
 		"at": "2026-10-10T15:29:28.817Z",
 		"title": "Overthrow by day, built",
-		"ask": "Concept left, the game right, at the shipped match camera (2560×1440, Radeon 780M). Does the isle read? And: should the match camera show both rims and the front cliff like the concept? Today its clamp keeps the view inside the court's width, so mid-court frames show only court.",
+		"ask": "Concept left, the game right, at the shipped match camera (2560\u00d71440, Radeon 780M). Does the isle read? And: should the match camera show both rims and the front cliff like the concept? Today its clamp keeps the view inside the court's width, so mid-court frames show only court.",
 		"status": "Decided",
 		"decision": "Reviewed.",
 		"media": [
@@ -679,7 +690,7 @@
 	},
 	{
 		"at": "2026-10-10T14:58:39.920Z",
-		"title": "Overthrow day · round 2",
+		"title": "Overthrow day \u00b7 round 2",
 		"ask": "Is this Overthrow?",
 		"status": "Decided",
 		"decision": "Round 2. Add warm light and violet shade across the court in the build.",
@@ -1084,7 +1095,7 @@
 	{
 		"at": "2026-10-10T10:54:00.000Z",
 		"title": "Setting boards",
-		"ask": "Reference boards for the world’s setting.",
+		"ask": "Reference boards for the world\u2019s setting.",
 		"status": "Archived",
 		"decision": "",
 		"page": "archive/boards/",

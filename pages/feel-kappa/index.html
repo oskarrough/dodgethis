@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Kappa, the keeper · dodgethis</title>
+		<link rel="stylesheet" href="/pages/page.css" />
+	</head>
+	<body class="page">
+		<main>
+			<h1>Kappa, the keeper</h1>
+			<p><small>To review · 2026-10-29</small></p>
+			<p>
+				<b
+					>Does the slap land hard, does the toss feel heavy, and does a catch pay off in the
+					hand?</b
+				>
+			</p>
+
+			<p>
+				Kappa stands across the court from a foe and plays his whole kit once. The glove Slap cocks
+				out to the side, lunges across in the last of its windup and lands with a wide arc and a
+				spray of strokes; the third slap in a row is the heavy one. Toss draws the glove back and
+				high with the body turned behind it, holds that for a breath, then throws through and
+				follows on, leaving a pale line where the glove went and a burst of strokes where it landed.
+				Catch snaps the palm up toward the cone. Dive flattens him into a low skid and leaves a
+				streak behind. The clip ends with a catch: the foe's shot is taken in the glove, the ring
+				pulls in, the shot sits in the palm as a ball in its thrower's colour, and Toss sends it
+				back.
+			</p>
+			<p>
+				Integration brings the slap to a 0.3 second windup. Its recovery stays at 0.25 seconds. The
+				new clip below also shows the smaller Toss contact without the old camera shake. Toss, Catch
+				and Dive keep their earlier timings.
+			</p>
+			<p>
+				<small
+					>Staged on Overthrow, seed 2, 1280 × 720, through
+					<code>bun run cast kappa --clip</code> (real pointer, real Q W E keys and right-click) at
+					authored speed: the sim is stepped one 1/60 s tick at a time and every second tick becomes
+					a frame, so the host's load does not change the pace. No HUD, one target, no crowd; it
+					shows shapes and sequence, and says nothing about frame rate or input latency. The last
+					scene is <code>catch-proof.js</code> in this folder: a real W key opens the catch, the
+					foe's shot is injected through the sim (the foe cannot aim), and a real Q key throws it
+					back for 150 damage.</small
+				>
+			</p>
+			<div class="media">
+				<figure>
+					<video src="integrated/cast.webm" controls></video>
+					<figcaption>
+						Integrated kit · basic, Toss hit and miss, Catch expiry and Dive.
+						<a href="catch.webm">Catch and return</a> retain their earlier proof;
+						<a href="kit.webm">the older combined clip</a> has the superseded Toss burst.
+					</figcaption>
+				</figure>
+			</div>
+			<p>
+				<small
+					>Before, for comparison: <a href="before/cast.webm">before/cast.webm</a>. Authored times:
+					<a href="integrated/cast.json">after/cast.json</a>,
+					<a href="catch.json">catch.json</a>.</small
+				>
+			</p>
+
+			<script src="../viewer.js"></script>
+		</main>
+	</body>
+</html>

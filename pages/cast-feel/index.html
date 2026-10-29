@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>The cast in motion · dodgethis</title>
+		<link rel="stylesheet" href="/pages/page.css" />
+		<style>
+			video {
+				width: 100%;
+				max-width: 960px;
+				aspect-ratio: 16 / 9;
+			}
+			table {
+				width: 100%;
+				border-collapse: collapse;
+			}
+			td,
+			th {
+				text-align: left;
+				padding: 0.6rem;
+				border-bottom: 1px solid #26445f44;
+			}
+			img {
+				max-width: 100%;
+			}
+			.stills {
+				display: flex;
+				gap: 1rem;
+			}
+			.stills figure {
+				margin: 0;
+				width: 50%;
+			}
+		</style>
+	</head>
+	<body class="page">
+		<main>
+			<p><a href="../">The pinboard</a></p>
+			<h1>The cast in motion</h1>
+			<p>
+				Eight heroes take the court. Each has a distinct draw, strike and recovery; water, cord and
+				stone still belong to the same world.
+			</p>
+			<p>Judge whether the bodies and hostile ground remain clear when the kits meet.</p>
+			<video src="fight.webm" controls preload="metadata" poster="fight-cover.webp"></video>
+			<p>
+				<small
+					>Six seconds at authored speed. Staged four against four on Overthrow, with real pointer
+					and Q/W inputs for Undine and seven ordinary hard bots. Seven heroes cast. No injected
+					damage, no HUD, no claim about hardware frame rate or input latency.
+					<a href="fight.json">Facts and staging</a>.</small
+				>
+			</p>
+			<details>
+				<summary>Colour and grayscale</summary>
+				<div class="stills">
+					<figure>
+						<img src="fight.webp" alt="Two moments of the crowded fight in colour" />
+						<figcaption>Team rims remain distinct in colour.</figcaption>
+					</figure>
+					<figure>
+						<img src="fight-gray.webp" alt="The same two moments in grayscale" />
+						<figcaption>
+							Overlapping rings converge in grayscale; bodies and directional marks still read.
+						</figcaption>
+					</figure>
+				</div>
+			</details>
+			<p>
+				The final control correction lets held movement wait for a cast to finish. Stop and Cancel
+				still interrupt it. The crowded clip above predates that correction; the linked input checks
+				cover it. A <a href="rain/cast.webm">final Rain clip</a> and its
+				<a href="rain/cast.json">cast record</a> check the relocated team boundary and the corrected
+				idle and landing-circle drawing.
+			</p>
+			<h2>The company</h2>
+			<table>
+				<thead>
+					<tr>
+						<th>Hero</th>
+						<th>The kit</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td><a href="../feel-ibis/">Ibis</a></td>
+						<td>The bow draws taut; Rain and Vault keep their own shapes.</td>
+					</tr>
+					<tr>
+						<td><a href="../feel-kappa/">Kappa</a></td>
+						<td>
+							The glove loads, catches and returns. The integrated clip shows the revised Toss.
+						</td>
+					</tr>
+					<tr>
+						<td><a href="../feel-oolong/">Oolong</a></td>
+						<td>A palm, a raised heel, a planted guard and a measured drink.</td>
+					</tr>
+					<tr>
+						<td><a href="../feel-lasso/">Lasso</a></td>
+						<td>The weight and its strokes turn together; the binding follows its victim.</td>
+					</tr>
+					<tr>
+						<td><a href="../feel-mandador/">Mandador</a></td>
+						<td>Pass, exchange and rally each have a call and an answer.</td>
+					</tr>
+					<tr>
+						<td><a href="../feel-undine/">Undine</a></td>
+						<td>The jug throws water with weight; the sprinkler shows where its blade passes.</td>
+					</tr>
+					<tr>
+						<td><a href="../feel-carambola/">Carambola</a></td>
+						<td>The paddle serves, banks and lobs; each Pinball hit waits for its flight.</td>
+					</tr>
+					<tr>
+						<td><a href="../feel-salvia/">Salvia</a></td>
+						<td>Mend gathers and pours; Ward forms, takes blows and breaks or expires.</td>
+					</tr>
+				</tbody>
+			</table>
+			<p>
+				<a href="../balloon-polish/">The earlier Balloon study</a> remains alongside Undine's whole
+				kit.
+			</p>
+			<p>
+				The linked pages retain baseline and correction clips. Current basics all draw for 0.3
+				seconds; older Ibis and Carambola clips show their earlier 0.15 seconds. Kappa has a fresh
+				integrated clip. Mandador and Salvia have source baselines without before videos.
+			</p>
+			<p>
+				<small
+					>All 23 slots, eight basics and declared traits are covered in
+					<a href="/docs/feel-pass.md">the coverage record</a>.
+					<a href="contracts.json">Guest and input checks</a> cover all four held-input paths, eight
+					idle hero views, 229 compact packets and 53 active dash samples; no live two-peer session
+					was filmed. <a href="integration.json">Integration result</a> ·
+					<a href="owned-files.json">Exact owned files</a>.</small
+				>
+			</p>
+			<script src="../viewer.js"></script>
+		</main>
+	</body>
+</html>

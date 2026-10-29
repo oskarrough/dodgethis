@@ -1,0 +1,309 @@
+{
+	"hero": "oolong",
+	"changedSourceFiles": [
+		"src/modes/moba/heroes/oolong/oolong-bot.js",
+		"src/modes/moba/heroes/oolong/oolong-tune.js",
+		"src/modes/moba/heroes/oolong/oolong-view.js",
+		"src/modes/moba/abilities/palmStrike/palmStrike-tune.js",
+		"src/modes/moba/abilities/flyingKick/flyingKick.js",
+		"src/modes/moba/abilities/flyingKick/flyingKick-tune.js",
+		"src/modes/moba/abilities/swig/swig.js"
+	],
+	"abilities": {
+		"palmStrike": {
+			"before": {
+				"windup": 0.3,
+				"backswing": 0.25,
+				"rate": 1,
+				"damage": 85
+			},
+			"after": {
+				"windup": 0.3,
+				"backswing": 0.16,
+				"rate": 1,
+				"damage": 85,
+				"smear": {
+					"radius": 1.05,
+					"width": 0.36,
+					"sweep": 1.2,
+					"life": 0.14
+				}
+			},
+			"motion": "The hand tucks beside the ribs during the quick held coil, opens on contact, then returns. One narrow smear replaces the particle burst, flare and ripples; local hold 0.035 s and skid 0.22 m.",
+			"unchanged": "The 0.3 s enemy tell, reach, damage and repeat cadence remain so the faster recovery adds control without hiding the strike."
+		},
+		"flyingKick": {
+			"before": {
+				"castPoint": 0.3,
+				"travel": 0.3,
+				"tellRadius": 0.4,
+				"sweepRadius": 0.45
+			},
+			"after": {
+				"castPoint": 0.3,
+				"travel": 0.22,
+				"tellRadius": 0.45,
+				"sweepRadius": 0.45,
+				"visualRecovery": 0.18,
+				"fixedStepTravel": 0.23333333333333334,
+				"impactSpokes": {
+					"count": 7,
+					"from": 0.5,
+					"to": 2.2,
+					"inner": 0.35,
+					"width": 0.22,
+					"life": 0.24,
+					"color": "#fff5de"
+				}
+			},
+			"motion": "A raised knee and backward body coil release into an extended heel. The jug follows behind; the body settles on landing. A broad seven-stroke impact star replaces the flare, dust and ripples; local hold remains 0.07 s.",
+			"unchanged": "First-body stop, harmless ally contact, 6 m reach, 100 damage and 7 s cooldown remain. Bot prediction and sweep now read the same radius as the warning."
+		},
+		"stagger": {
+			"before": {
+				"castPoint": 0,
+				"duration": 3,
+				"payout": 3,
+				"cooldown": 14
+			},
+			"after": {
+				"castPoint": 0,
+				"duration": 3,
+				"payout": 3,
+				"cooldown": 14,
+				"visualPlantWindow": 0.12
+			},
+			"motion": "A broad low guard replaces the continuous sway. Banked damage expands an ink cuff and loads one shoulder. The cuff persists only while debt remains.",
+			"unchanged": "Banking and repayment rules are already a clear defensive choice; no added startup delay or damage change."
+		},
+		"swig": {
+			"before": {
+				"castPoint": 0,
+				"duration": 2,
+				"shieldPerSecond": 150,
+				"shieldLife": 4,
+				"cooldown": 10
+			},
+			"after": {
+				"castPoint": 0,
+				"duration": 2,
+				"shieldPerSecond": 150,
+				"shieldLife": 4,
+				"cooldown": 10,
+				"gulpPeriod": 0.5,
+				"visualLower": 0.2,
+				"visualRaiseWindow": 0.14
+			},
+			"motion": "The jug tips toward the mouth, lifted clear of the drum body, with measured gulps and a short lowering motion. A cream cuff displays remaining shield. The card now says shield is gained each second.",
+			"unchanged": "Root, move/cast/stun cancellation, continuous shield gain and expiry are unchanged."
+		}
+	},
+	"noChange": [
+		"Hero identity, resting dimensions, sash and roster unchanged. The heel is hidden at rest.",
+		"Existing distinct sound definitions retained; no listening claim.",
+		"Stagger and Swig simulation hooks retained. All new status visuals consume replicated statuses, stance, channel and attack data."
+	],
+	"checks": {
+		"focusedFirst": "46 passed across moba, actions, replica and registry tests.",
+		"focusedSecond": "40 passed, 1 skipped across moba-session, intents, moba-agents, roster and feedback.",
+		"fullSuite": "270 passed, 1 skipped, 1 failed: moba-session replay tuning differed during concurrent edits. The failing test passed alone afterward (1 passed).",
+		"headlessStatus": {
+			"banked": 90,
+			"shieldAfterSwig": 238,
+			"hp": 1799.5,
+			"bankExpired": true,
+			"shieldExpired": true
+		},
+		"resources": {
+			"finite": true,
+			"rewindReset": true,
+			"disposedMaterials": 7,
+			"materials": 7,
+			"disposedGeometries": 15,
+			"geometries": 15
+		},
+		"schema": "Unit and ability/card schema checks passed; owned-source oxlint passed.",
+		"check": "First check reached formatting and failed only on unrelated .bb/workflows/whole-cast-feel.js, pages/balloon-polish/index.html and pages/feel-kappa/before/cast.json. Latest check stopped on unowned tune.mend.healImpact.spokes.from. Owned files pass lint, formatting and their schema declarations.",
+		"fullSuiteFinalAttempt": "239 passed; six test files failed to load because a concurrent Mandador edit imported missing mandador-marks.js. Integration must rerun after the shared tree settles.",
+		"finalKickSweep": {
+			"enemyHits": 1,
+			"enemyFirstHitSeconds": 0.43333333333333335,
+			"enemyStopX": 3.5999999046325684,
+			"missHits": 0,
+			"missEndX": 5.999850749969482,
+			"allyHits": 0,
+			"allyStopX": 3.5999999046325684,
+			"method": "Real slot1 intents in the existing headless harness, target at 4.5 m; full miss reaches 6 m. Confirms the final rounded-speed sweep retains the captured hit timing."
+		}
+	},
+	"review": "Reviewed the complete owned diff against the start-of-task copies and checked animate, collision, bot sweep and disposal callers. Fixed the kick warning/sweep mismatch and made new actions take precedence over kick recovery.",
+	"sharedRequests": [
+		"Accept the all-tunes.js regeneration from the required check command; it imports the local flyingKick units declaration. No manual registry edit.",
+		"Integration owns adding the proof page to the shared registry and the crowded-fight/online-device judgment."
+	],
+	"limitations": [
+		"Staged Overthrow casts, not a crowded fight.",
+		"Canvas only, no HUD or audio; authored-speed playback is not measured FPS or input latency.",
+		"Online data shapes inspected and existing session tests run; no live two-peer guest clip.",
+		"Shared-checkout full-suite timing race; integration should run the final full suite after tuning settles.",
+		"The final defensive segment was restaged at 5 m separation after the default Swig staging obscured the jug."
+	],
+	"committed": false,
+	"pushed": false,
+	"proof": {
+		"url": "http://office-linux.heron-mermaid.ts.net:5173/pages/feel-oolong/",
+		"motion": "after/cast.webm",
+		"baseline": "before.webm",
+		"authoredSeconds": 16.267,
+		"playback": "1x authored speed, 2 simulation ticks per encoded frame at 30 fps; this is not measured rendering FPS.",
+		"coverage": [
+			"Palm Strike hit",
+			"Flying Kick hit",
+			"Flying Kick miss",
+			"Flying Kick ally stop",
+			"Stagger brace, incoming attack, bank and repayment",
+			"Swig drink, shield absorption, shield expiry"
+		],
+		"capturedBefore": {
+			"palmFirstHit": 0.283,
+			"palmRecovery": 0.25,
+			"kickFirstHit": 0.467,
+			"kickTravelToContact": 0.183
+		},
+		"capturedAfter": {
+			"palmFirstHit": 0.283,
+			"palmRecovery": 0.167,
+			"kickFirstHit": 0.433,
+			"kickTravelToContact": 0.15,
+			"kickMissTravel": 0.233,
+			"kickAllyTravel": 0.1,
+			"stagger": 3,
+			"swig": 2
+		},
+		"timingNote": "The cast fact and activity samples differ by one simulation tick. Requested durations are quantized to 1/60 s; full-flight dash activity includes the transition tick.",
+		"tuneReviewNote": "The original whole-kit clip predates the final kick radius, rounded sweep and contact-mark revisions. The contact-review supplement captures the current Palm Strike and Flying Kick hits; unchanged defensive and miss coverage is retained from the whole-kit study.",
+		"statusAssertions": {
+			"ok": true,
+			"samples": 610,
+			"maxBank": 90,
+			"maxShield": 240,
+			"shieldAbsorbsRepayment": true,
+			"stanceExpiredWithDebt": true,
+			"final": {
+				"tick": 701,
+				"stance": false,
+				"channel": false,
+				"bank": 0,
+				"shield": 0,
+				"hp": 1790
+			},
+			"method": "Local W and E through workshop keyboard events; one staged enemy attack order stopped on first banked hit. No damage or status injected. Workshop resets HP and cooldowns between steps while debt continues."
+		},
+		"encodedDurationSeconds": 16.233
+	},
+	"reviewFindingsResolved": [
+		"The old 0.40 m kick warning did not match its 0.45 m body sweep. Warning, collision and bot prediction now share flyingKick.radius = 0.45 m.",
+		"Kick landing recovery yields to a new cast, attack, brace or drink.",
+		"The per-rig flat shield material is owned and disposed; no shared palette mutation.",
+		"Flying Kick watch now matches casting.js whole-tick travel duration; otherwise a fractional authored time would sweep slightly ahead of the real dash.",
+		"Flying Kick contact star strengthened to seven broader strokes over 0.24 s.",
+		"Palm Strike contact smear widened to 0.36 and extended to 0.14 s."
+	],
+	"contactReview": {
+		"sourceFiles": [
+			"src/modes/moba/abilities/flyingKick/flyingKick-tune.js",
+			"src/modes/moba/abilities/palmStrike/palmStrike-tune.js"
+		],
+		"flyingKick": "Contact star: 5 to 7 spokes, outer reach 1.6 to 2.2 m before impact scaling, inner fraction 0.4 to 0.35, width 0.14 to 0.22, life 0.17 to 0.24 s. Keeps the single cream-and-ink mark; no extra particles.",
+		"palmStrike": "Smear width 0.30 to 0.36 and life 0.12 to 0.14 s, keeping the same radius and arc.",
+		"timing": "Gameplay timing, damage, collision, team marks and status mechanics unchanged from the submitted pass.",
+		"stagger": "No change: stance duration has no modifier today. Reading live stance totals is deferred until such a modifier exists; no speculative shared-state contract added.",
+		"checks": {
+			"focusedTests": "11 pass, 0 fail: moba, actions, feedback.",
+			"effects": "Passed, 205 tune references and card templates.",
+			"unread": "Passed.",
+			"projectCheck": "Blocked by unowned tune.mend.healImpact.spokes.from unit declaration.",
+			"ownedLintAndFormat": "Passed for both tune files and updated proof metadata/page."
+		},
+		"review": "Reviewed both changed tune files and createImpacts/spokes/smear callers. Only finite visual dimensions, count and lifetimes change; existing lifecycle and bounded cleanup remain in use.",
+		"proof": "contact-review/cast.webm",
+		"reuse": "Original before and whole-kit after clips retained; contact revision supersedes only Palm Strike and Flying Kick hit visuals.",
+		"capture": {
+			"ok": true,
+			"viewport": "960x540",
+			"frames": 85,
+			"seconds": 2.83,
+			"ticksPerFrame": 2,
+			"encodedFps": 30,
+			"speed": "1x authored speed, not measured hardware FPS",
+			"bytes": 186099,
+			"steps": [
+				{
+					"step": "basic",
+					"ability": "palmStrike",
+					"ok": true,
+					"problems": [],
+					"authored": {
+						"castPoint": 0.3,
+						"castLock": 0.3,
+						"phases": [
+							{
+								"now": "attack:windup",
+								"at": 0,
+								"seconds": 0.283
+							},
+							{
+								"now": "attack:backswing",
+								"at": 0.283,
+								"seconds": 0.167
+							}
+						],
+						"firstHit": 0.283,
+						"settled": 0.45
+					},
+					"hits": [
+						{
+							"at": 0.283,
+							"damage": 85,
+							"target": "try-1"
+						}
+					]
+				},
+				{
+					"step": "slot1",
+					"ability": "flyingKick",
+					"ok": true,
+					"problems": [],
+					"authored": {
+						"castPoint": 0.3,
+						"castLock": 0.3,
+						"phases": [
+							{
+								"now": "cast:flyingKick",
+								"at": 0,
+								"seconds": 0.283
+							},
+							{
+								"now": "dash:flyingKick",
+								"at": 0.283,
+								"seconds": 0.15
+							}
+						],
+						"firstHit": 0.433,
+						"settled": 0.433
+					},
+					"hits": [
+						{
+							"at": 0.433,
+							"damage": 100,
+							"target": "try-1"
+						}
+					]
+				}
+			],
+			"method": "Workshop real pointer, right-click and Q input under the shared capture lock, fresh match on the final kick radius and rounded-sweep tree.",
+			"visualCheck": "Inspected the 2.2 s contact frame at 800 px: the cream-and-ink kick star extends visibly past the overlapping bodies. Motion sequence is available in the labelled clip."
+		},
+		"unresolved": "No confirmed owned blocker remains. Global check still needs the Mend units fix; future Stagger duration modifiers remain a non-blocking note."
+	}
+}

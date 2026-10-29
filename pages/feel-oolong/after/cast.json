@@ -1,0 +1,4422 @@
+{
+	"hero": "oolong",
+	"map": "overthrow",
+	"seed": 2,
+	"viewport": "1280x720",
+	"ok": true,
+	"timing": "Frame-stepped at 1/60 s per tick, two ticks per video frame, played at authored speed. Four combat steps plus a fresh defensive pair with wider target staging. Encoding 30 fps is not measured hardware FPS.",
+	"clip": {
+		"file": "cast.webm",
+		"frames": 488,
+		"seconds": 16.267,
+		"fps": 30,
+		"ticksPerFrame": 2,
+		"slow": 1,
+		"encodedViewport": "960x540",
+		"encodedDurationSeconds": 16.233,
+		"note": "The authored frame total is 16.267 s; the encoded container reports 16.233 s after concatenation."
+	},
+	"steps": [
+		{
+			"step": "basic",
+			"ability": "palmStrike",
+			"kind": "basic",
+			"aim": "enemy",
+			"ok": true,
+			"problems": [],
+			"authored": {
+				"castPoint": 0.3,
+				"castLock": 0.3,
+				"phases": [
+					{
+						"now": "attack:windup",
+						"at": 0,
+						"seconds": 0.283
+					},
+					{
+						"now": "attack:backswing",
+						"at": 0.283,
+						"seconds": 0.167
+					}
+				],
+				"firstHit": 0.283,
+				"settled": 0.45
+			},
+			"cooldownTicksLeft": null,
+			"hits": [
+				{
+					"at": 0.283,
+					"damage": 85,
+					"target": "try-1"
+				}
+			],
+			"heals": 0,
+			"facts": ["order", "cast", "impact", "hit"],
+			"hp": {
+				"me": 1800,
+				"foe": 1315,
+				"friend": 1450
+			},
+			"log": [
+				{
+					"tick": 82,
+					"type": "order",
+					"hero": "local",
+					"target": "try-1",
+					"point": {
+						"x": -7.6,
+						"z": 0
+					}
+				},
+				{
+					"tick": 82,
+					"type": "cast",
+					"hero": "local",
+					"ability": "palmStrike",
+					"slot": "primary",
+					"lock": 0.3,
+					"target": {
+						"x": -7.6,
+						"z": 0
+					},
+					"targetId": "try-1",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 82,
+					"type": "activity",
+					"now": "attack:windup"
+				},
+				{
+					"tick": 99,
+					"type": "impact",
+					"hero": "local",
+					"ability": "palmStrike",
+					"point": {
+						"x": -7.6,
+						"z": 0
+					}
+				},
+				{
+					"tick": 99,
+					"type": "hit",
+					"ability": "palmStrike",
+					"slot": "primary",
+					"damage": 85,
+					"source": "local",
+					"target": "try-1",
+					"point": {
+						"x": -7.6,
+						"z": 0
+					}
+				},
+				{
+					"tick": 99,
+					"type": "activity",
+					"now": "attack:backswing"
+				},
+				{
+					"tick": 109,
+					"type": "activity",
+					"now": ""
+				}
+			],
+			"frames": 41,
+			"captureSession": "combat",
+			"clipStartSeconds": 0.0
+		},
+		{
+			"step": "slot1",
+			"ability": "flyingKick",
+			"kind": "dash",
+			"aim": "enemy",
+			"ok": true,
+			"problems": [],
+			"authored": {
+				"castPoint": 0.3,
+				"castLock": 0.3,
+				"phases": [
+					{
+						"now": "cast:flyingKick",
+						"at": 0,
+						"seconds": 0.283
+					},
+					{
+						"now": "dash:flyingKick",
+						"at": 0.283,
+						"seconds": 0.15
+					}
+				],
+				"firstHit": 0.433,
+				"settled": 0.433
+			},
+			"cooldownTicksLeft": 351,
+			"hits": [
+				{
+					"at": 0.433,
+					"damage": 100,
+					"target": "try-1"
+				}
+			],
+			"heals": 0,
+			"facts": ["cast", "hit"],
+			"hp": {
+				"me": 1800,
+				"foe": 1300,
+				"friend": 1450
+			},
+			"log": [
+				{
+					"tick": 176,
+					"type": "cast",
+					"hero": "local",
+					"ability": "flyingKick",
+					"slot": "slot1",
+					"lock": 0.3,
+					"target": {
+						"x": -5.49,
+						"z": 0
+					},
+					"targetId": null,
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 176,
+					"type": "activity",
+					"now": "cast:flyingKick"
+				},
+				{
+					"tick": 193,
+					"type": "activity",
+					"now": "dash:flyingKick"
+				},
+				{
+					"tick": 202,
+					"type": "hit",
+					"ability": "flyingKick",
+					"slot": "slot1",
+					"damage": 100,
+					"source": "local",
+					"target": "try-1",
+					"point": {
+						"x": -5.5,
+						"z": 0
+					}
+				},
+				{
+					"tick": 202,
+					"type": "activity",
+					"now": ""
+				}
+			],
+			"frames": 44,
+			"captureSession": "combat",
+			"clipStartSeconds": 1.3666666666666667
+		},
+		{
+			"step": "slot1:miss",
+			"ability": "flyingKick",
+			"kind": "dash",
+			"aim": "miss",
+			"ok": true,
+			"problems": [],
+			"authored": {
+				"castPoint": 0.3,
+				"castLock": 0.3,
+				"phases": [
+					{
+						"now": "cast:flyingKick",
+						"at": 0,
+						"seconds": 0.283
+					},
+					{
+						"now": "dash:flyingKick",
+						"at": 0.283,
+						"seconds": 0.233
+					}
+				],
+				"firstHit": null,
+				"settled": 0.517
+			},
+			"cooldownTicksLeft": 346,
+			"hits": [],
+			"heals": 0,
+			"facts": ["cast"],
+			"hp": {
+				"me": 1800,
+				"foe": 1400,
+				"friend": 1450
+			},
+			"log": [
+				{
+					"tick": 265,
+					"type": "cast",
+					"hero": "local",
+					"ability": "flyingKick",
+					"slot": "slot1",
+					"lock": 0.3,
+					"target": {
+						"x": -14.51,
+						"z": 0
+					},
+					"targetId": null,
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 265,
+					"type": "activity",
+					"now": "cast:flyingKick"
+				},
+				{
+					"tick": 282,
+					"type": "activity",
+					"now": "dash:flyingKick"
+				},
+				{
+					"tick": 296,
+					"type": "activity",
+					"now": ""
+				}
+			],
+			"frames": 47,
+			"captureSession": "combat",
+			"clipStartSeconds": 2.8333333333333335
+		},
+		{
+			"step": "slot1:ally",
+			"ability": "flyingKick",
+			"kind": "dash",
+			"aim": "ally",
+			"ok": true,
+			"problems": [],
+			"authored": {
+				"castPoint": 0.3,
+				"castLock": 0.3,
+				"phases": [
+					{
+						"now": "cast:flyingKick",
+						"at": 0,
+						"seconds": 0.283
+					},
+					{
+						"now": "dash:flyingKick",
+						"at": 0.283,
+						"seconds": 0.1
+					}
+				],
+				"firstHit": null,
+				"settled": 0.383
+			},
+			"cooldownTicksLeft": 354,
+			"hits": [],
+			"heals": 0,
+			"facts": ["cast"],
+			"hp": {
+				"me": 1800,
+				"foe": 1400,
+				"friend": 1450
+			},
+			"log": [
+				{
+					"tick": 359,
+					"type": "cast",
+					"hero": "local",
+					"ability": "flyingKick",
+					"slot": "slot1",
+					"lock": 0.3,
+					"target": {
+						"x": -7.76,
+						"z": 2.19
+					},
+					"targetId": null,
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 359,
+					"type": "activity",
+					"now": "cast:flyingKick"
+				},
+				{
+					"tick": 376,
+					"type": "activity",
+					"now": "dash:flyingKick"
+				},
+				{
+					"tick": 382,
+					"type": "activity",
+					"now": ""
+				}
+			],
+			"frames": 42,
+			"captureSession": "combat",
+			"clipStartSeconds": 4.4
+		},
+		{
+			"step": "slot2:gap=5:tail=0.2",
+			"ability": "stagger",
+			"kind": "stance",
+			"aim": "self",
+			"ok": true,
+			"problems": [],
+			"authored": {
+				"castPoint": 0,
+				"castLock": 0,
+				"phases": [
+					{
+						"now": "stance:stagger",
+						"at": 0,
+						"seconds": 3
+					}
+				],
+				"firstHit": null,
+				"settled": 3.417
+			},
+			"cooldownTicksLeft": 635,
+			"hits": [],
+			"heals": 0,
+			"facts": ["cast", "status", "projectile", "hit"],
+			"hp": {
+				"me": 1787.5,
+				"foe": 1400,
+				"friend": 1450
+			},
+			"log": [
+				{
+					"tick": 91,
+					"type": "cast",
+					"hero": "local",
+					"ability": "stagger",
+					"slot": "slot2",
+					"lock": 0,
+					"target": {
+						"x": -10,
+						"z": 0
+					},
+					"targetId": null,
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 91,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 91,
+					"type": "activity",
+					"now": "stance:stagger"
+				},
+				{
+					"tick": 92,
+					"type": "cast",
+					"hero": "try-1",
+					"slot": "primary",
+					"lock": 0.15,
+					"target": {
+						"x": -10,
+						"z": 0
+					},
+					"targetId": "local",
+					"point": {
+						"x": -5,
+						"z": 0
+					}
+				},
+				{
+					"tick": 100,
+					"type": "projectile",
+					"hero": "try-1",
+					"slot": "primary",
+					"point": {
+						"x": -5,
+						"z": 0
+					}
+				},
+				{
+					"tick": 111,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -9.43,
+						"z": 0
+					}
+				},
+				{
+					"tick": 271,
+					"type": "activity",
+					"now": ""
+				},
+				{
+					"tick": 272,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0.5,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 273,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0.5,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 274,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0.5,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 275,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0.5,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 276,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0.5,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 277,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0.5,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 278,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0.5,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 279,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0.5,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 280,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0.5,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 281,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0.5,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 282,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0.5,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 283,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0.5,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 284,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0.5,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 285,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0.5,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 286,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0.5,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 287,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0.5,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 288,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0.5,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 289,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0.5,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 290,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0.5,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 291,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0.5,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 292,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0.5,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 293,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0.5,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 294,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0.5,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 295,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0.5,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 296,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0.5,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				}
+			],
+			"frames": 112,
+			"captureSession": "defense",
+			"clipStartSeconds": 5.8
+		},
+		{
+			"step": "slot3:gap=5:tail=4.2",
+			"ability": "swig",
+			"kind": "channel",
+			"aim": "self",
+			"ok": true,
+			"problems": [],
+			"authored": {
+				"castPoint": 0,
+				"castLock": 0,
+				"phases": [
+					{
+						"now": "channel:swig",
+						"at": 0,
+						"seconds": 2
+					}
+				],
+				"firstHit": null,
+				"settled": 6
+			},
+			"cooldownTicksLeft": 334,
+			"hits": [],
+			"heals": 0,
+			"facts": ["hit", "cast", "status", "absorb", "channelEnd"],
+			"hp": {
+				"me": 1790,
+				"foe": 1400,
+				"friend": 1450
+			},
+			"log": [
+				{
+					"tick": 298,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0.5,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 299,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0.5,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 300,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0.5,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 301,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0.5,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 302,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0.5,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 303,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0.5,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 304,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0.5,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 305,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0.5,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 306,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0.5,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 307,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0.5,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 308,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0.5,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 309,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0.5,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 310,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0.5,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 311,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0.5,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 312,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0.5,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 313,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0.5,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 314,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0.5,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 315,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0.5,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 316,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0.5,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 316,
+					"type": "cast",
+					"hero": "local",
+					"ability": "swig",
+					"slot": "slot3",
+					"lock": 0,
+					"target": {
+						"x": -10,
+						"z": 0
+					},
+					"targetId": null,
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 316,
+					"type": "activity",
+					"now": "channel:swig"
+				},
+				{
+					"tick": 317,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 317,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 317,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 318,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 318,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 318,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 319,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 319,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 319,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 320,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 320,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 320,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 321,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 321,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 321,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 322,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 322,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 322,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 323,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 323,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 323,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 324,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 324,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 324,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 325,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 325,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 325,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 326,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 326,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 326,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 327,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 327,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 327,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 328,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 328,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 328,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 329,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 329,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 329,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 330,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 330,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 330,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 331,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 331,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 331,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 332,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 332,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 332,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 333,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 333,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 333,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 334,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 334,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 334,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 335,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 335,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 335,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 336,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 336,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 336,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 337,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 337,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 337,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 338,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 338,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 338,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 339,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 339,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 339,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 340,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 340,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 340,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 341,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 341,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 341,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 342,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 342,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 342,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 343,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 343,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 343,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 344,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 344,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 344,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 345,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 345,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 345,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 346,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 346,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 346,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 347,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 347,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 347,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 348,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 348,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 348,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 349,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 349,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 349,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 350,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 350,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 350,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 351,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 351,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 351,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 352,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 352,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 352,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 353,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 353,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 353,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 354,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 354,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 354,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 355,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 355,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 355,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 356,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 356,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 356,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 357,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 357,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 357,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 358,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 358,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 358,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 359,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 359,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 359,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 360,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 360,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 360,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 361,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 361,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 361,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 362,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 362,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 362,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 363,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 363,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 363,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 364,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 364,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 364,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 365,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 365,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 365,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 366,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 366,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 366,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 367,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 367,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 367,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 368,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 368,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 368,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 369,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 369,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 369,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 370,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 370,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 370,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 371,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 371,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 371,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 372,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 372,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 372,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 373,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 373,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 373,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 374,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 374,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 374,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 375,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 375,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 375,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 376,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 376,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 376,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 377,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 377,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 377,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 378,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 378,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 378,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 379,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 379,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 379,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 380,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 380,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 380,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 381,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 381,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 381,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 382,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 382,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 382,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 383,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 383,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 383,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 384,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 384,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 384,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 385,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 385,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 385,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 386,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 386,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 386,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 387,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 387,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 387,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 388,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 388,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 388,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 389,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 389,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 389,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 390,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 390,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 390,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 391,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 391,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 391,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 392,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 392,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 392,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 393,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 393,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 393,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 394,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 394,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 394,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 395,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 395,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 395,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 396,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 396,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 396,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 397,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 397,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 397,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 398,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 398,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 398,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 399,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 399,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 399,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 400,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 400,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 400,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 401,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 401,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 401,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 402,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 402,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 402,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 403,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 403,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 403,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 404,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 404,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 404,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 405,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 405,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 405,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 406,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 406,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 406,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 407,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 407,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 407,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 408,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 408,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 408,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 409,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 409,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 409,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 410,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 410,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 410,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 411,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 411,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 411,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 412,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 412,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 412,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 413,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 413,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 413,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 414,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 414,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 414,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 415,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 415,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 415,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 416,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 416,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 416,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 417,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 417,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 417,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 418,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 418,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 418,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 419,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 419,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 419,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 420,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 420,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 420,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 421,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 421,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 421,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 422,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 422,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 422,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 423,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 423,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 423,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 424,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 424,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 424,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 425,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 425,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 425,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 426,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 426,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 426,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 427,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 427,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 427,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 428,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 428,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 428,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 429,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 429,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 429,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 430,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 430,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 430,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 431,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 431,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 431,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 432,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 432,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 432,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 433,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 433,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 433,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 434,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 434,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 434,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 435,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 435,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 435,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 436,
+					"type": "status",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 436,
+					"type": "channelEnd",
+					"hero": "local",
+					"ability": "swig",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 436,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 436,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 436,
+					"type": "activity",
+					"now": ""
+				},
+				{
+					"tick": 437,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 437,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 438,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 438,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 439,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 439,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 440,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 440,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 441,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 441,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 442,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 442,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 443,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 443,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 444,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 444,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 445,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 445,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 446,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 446,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 447,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 447,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 448,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 448,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 449,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 449,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 450,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 450,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 451,
+					"type": "absorb",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 451,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 0,
+					"source": "try-1",
+					"target": "local",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 452,
+					"type": "status",
+					"reason": "expired",
+					"source": "local",
+					"target": "local"
+				},
+				{
+					"tick": 676,
+					"type": "status",
+					"reason": "expired",
+					"source": "local",
+					"target": "local"
+				}
+			],
+			"frames": 202,
+			"captureSession": "defense",
+			"clipStartSeconds": 9.533333333333333
+		}
+	],
+	"captureSessions": {
+		"combat": "Frame-stepped: the sim ran exactly 1/60 s per tick, whatever the host load; every time below is authored sim time. Wall time (163 s, load 14.99) and software-rendered frames say nothing about hardware FPS or input latency, which this does not measure.",
+		"defense": "Frame-stepped: the sim ran exactly 1/60 s per tick, whatever the host load; every time below is authored sim time. Wall time (112 s, load 13.31) and software-rendered frames say nothing about hardware FPS or input latency, which this does not measure."
+	},
+	"restaging": "The original close target obscured Swig; only Stagger and Swig were recaptured, with the target 5 m away. Each step still uses the workshop real-input driver. The final radius/sweep consistency fixes are additionally verified headlessly."
+}

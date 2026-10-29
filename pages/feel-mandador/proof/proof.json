@@ -1,0 +1,244 @@
+{
+	"hero": "mandador",
+	"map": "overthrow",
+	"viewport": "1280x720",
+	"ok": true,
+	"timing": "Frame-stepped: the sim ran exactly 1/60 s per tick whatever the host load, so every time here is authored sim time. Wall time was 165 s on a shared, software-rendered box; FPS and input latency are not measured.",
+	"clip": {
+		"file": "/home/osk/sites/dodgethis/pages/feel-mandador/proof/proof.webm",
+		"frames": 450,
+		"seconds": 15,
+		"fps": 30,
+		"ticksPerFrame": 2
+	},
+	"steps": [
+		{
+			"step": "basic",
+			"title": "Tennis ball · basic · enemy",
+			"ok": true,
+			"problems": [],
+			"castLock": 0.3,
+			"firstHit": 0.55,
+			"firstHitDamage": 70,
+			"checks": [
+				{
+					"ok": true,
+					"what": "a basic windup began"
+				},
+				{
+					"ok": true,
+					"what": "the windup became a backswing"
+				},
+				{
+					"ok": true,
+					"what": "the ball hit the enemy"
+				}
+			],
+			"seen": {
+				"hero": [],
+				"foe": []
+			},
+			"facts": ["order", "cast:tennisBall", "activity", "projectile", "hit:tennisBall"],
+			"frames": 45
+		},
+		{
+			"step": "pass-enemy",
+			"title": "Pass · enemy hit and slow",
+			"ok": true,
+			"problems": [],
+			"castLock": 0.3,
+			"firstHit": 0.533,
+			"firstHitDamage": 90,
+			"checks": [
+				{
+					"ok": true,
+					"what": "Q became a Pass cast"
+				},
+				{
+					"ok": true,
+					"what": "the ball hit the enemy"
+				},
+				{
+					"ok": true,
+					"what": "the enemy was slowed"
+				}
+			],
+			"seen": {
+				"hero": [],
+				"foe": ["pass.slow"]
+			},
+			"facts": ["cast:pass", "activity", "projectile:pass", "status", "hit:pass"],
+			"frames": 60
+		},
+		{
+			"step": "pass-ally",
+			"title": "Pass · ally catches and is healed",
+			"ok": true,
+			"problems": [],
+			"castLock": 0.3,
+			"firstHit": null,
+			"firstHitDamage": null,
+			"checks": [
+				{
+					"ok": true,
+					"what": "Q became a Pass cast"
+				},
+				{
+					"ok": true,
+					"what": "the ally was healed"
+				}
+			],
+			"seen": {
+				"hero": [],
+				"foe": []
+			},
+			"facts": ["cast:pass", "activity", "projectile:pass", "heal:pass", "contact:pass"],
+			"frames": 44
+		},
+		{
+			"step": "pass-miss",
+			"title": "Pass · thrown wide, expires",
+			"ok": true,
+			"problems": [],
+			"castLock": 0.3,
+			"firstHit": null,
+			"firstHitDamage": null,
+			"checks": [
+				{
+					"ok": true,
+					"what": "Q became a Pass cast"
+				},
+				{
+					"ok": true,
+					"what": "it hit nobody"
+				}
+			],
+			"seen": {
+				"hero": [],
+				"foe": []
+			},
+			"facts": ["cast:pass", "activity", "projectile:pass", "blocked:pass"],
+			"frames": 45
+		},
+		{
+			"step": "tag-out",
+			"title": "Tag out · swap with the ally, guard up",
+			"ok": true,
+			"problems": [],
+			"castLock": 0.3,
+			"firstHit": null,
+			"firstHitDamage": null,
+			"checks": [
+				{
+					"ok": true,
+					"what": "W became a Tag out cast"
+				},
+				{
+					"ok": true,
+					"what": "the swap landed"
+				},
+				{
+					"ok": true,
+					"what": "the guard went up"
+				},
+				{
+					"ok": true,
+					"what": "the two traded places"
+				}
+			],
+			"seen": {
+				"hero": ["tagOut.guard"],
+				"foe": []
+			},
+			"facts": ["cast:tagOut", "activity", "status", "contact:tagOut"],
+			"frames": 94
+		},
+		{
+			"step": "rally-ring",
+			"title": "Rally ring · call, ring, haste and wade",
+			"ok": true,
+			"problems": [],
+			"castLock": 0.3,
+			"firstHit": null,
+			"firstHitDamage": null,
+			"checks": [
+				{
+					"ok": true,
+					"what": "E became a Rally ring cast"
+				},
+				{
+					"ok": true,
+					"what": "the ring went up"
+				},
+				{
+					"ok": true,
+					"what": "she ran hasted inside it"
+				},
+				{
+					"ok": true,
+					"what": "the enemy waded slowed"
+				}
+			],
+			"seen": {
+				"hero": ["rallyRing.groundHaste"],
+				"foe": ["rallyRing.groundSlow"]
+			},
+			"facts": ["cast:rallyRing", "activity", "status", "order"],
+			"frames": 112
+		},
+		{
+			"step": "out-throw",
+			"title": "Out, not gone · the cutout throws from the touchline",
+			"ok": true,
+			"problems": [],
+			"castLock": 0.35,
+			"firstHit": 0.75,
+			"firstHitDamage": 60,
+			"checks": [
+				{
+					"ok": true,
+					"what": "Q became an Out, not gone throw"
+				},
+				{
+					"ok": true,
+					"what": "the cutout hit the enemy"
+				},
+				{
+					"ok": true,
+					"what": "the hit took 2.00 s off the respawn"
+				}
+			],
+			"seen": {
+				"hero": [],
+				"foe": ["rallyRing.groundSlow"]
+			},
+			"facts": [
+				"projectile:tennisBall",
+				"cast",
+				"hit:tennisBall",
+				"status",
+				"death",
+				"hit",
+				"cast:outThrow",
+				"projectile:outThrow",
+				"hit:outThrow"
+			],
+			"respawnTicksBefore": 1593,
+			"respawnTicksAfter": 1473,
+			"frames": 50,
+			"debug": {
+				"cast": "outThrow",
+				"cd": 1289,
+				"tick": 1111,
+				"respawn": 1593,
+				"dead": true,
+				"x": -10,
+				"z": -14,
+				"foe": {
+					"x": -10,
+					"z": -7
+				}
+			}
+		}
+	]
+}

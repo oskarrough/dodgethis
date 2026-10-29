@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Carambola's trick shots</title>
+		<style>
+			:root {
+				color-scheme: light;
+				font-family: Georgia, serif;
+				background: #eee5d3;
+				color: #203047;
+			}
+			body {
+				max-width: 1000px;
+				margin: auto;
+				padding: 40px 24px;
+			}
+			h1 {
+				font-size: clamp(2rem, 5vw, 3.6rem);
+				margin: 8px 0 16px;
+			}
+			h2 {
+				font-size: 1.5rem;
+				margin-top: 36px;
+			}
+			p {
+				max-width: 78ch;
+				line-height: 1.6;
+			}
+			small,
+			th {
+				font-family: system-ui, sans-serif;
+			}
+			video {
+				display: block;
+				width: 100%;
+				border: 1px solid #203047;
+				background: #203047;
+			}
+			table {
+				width: 100%;
+				border-collapse: collapse;
+				margin: 24px 0;
+			}
+			th,
+			td {
+				text-align: left;
+				padding: 12px 8px;
+				border-bottom: 1px solid #b9b1a4;
+				vertical-align: top;
+			}
+			td {
+				line-height: 1.5;
+			}
+			a {
+				color: #245c74;
+			}
+			summary {
+				cursor: pointer;
+				padding: 16px 0;
+			}
+			code {
+				font-size: 0.85em;
+			}
+			footer {
+				border-top: 1px solid #b9b1a4;
+				margin-top: 32px;
+				padding-top: 16px;
+			}
+		</style>
+	</head>
+	<body>
+		<small>THE CAST IN MOTION · 29 OCTOBER 2026</small>
+		<h1>Carambola's trick shots</h1>
+		<p>
+			The paddle goes back before the ball goes anywhere. Ricochet comes off a low, sideways sweep;
+			Lob climbs from an underarm swing and falls hard; Pinball strikes one body after another, with
+			a short white line showing the road it took.
+		</p>
+		<video controls preload="metadata" src="after/cast.webm"></video>
+		<p>
+			Authored speed: two simulation ticks per video frame, played at 30 frames per second. This is
+			an isolated arrangement on Overthrow, driven by real pointer, keyboard and right-click inputs.
+			It does not measure hardware frame rate, latency or a crowded fight.
+		</p>
+		<p>
+			The sequence shows an ordinary attack, a fifth-hit attack with its charge staged, a straight
+			Ricochet, a pillar bank, a missed Ricochet, Lob through its full burn, a missed Lob through
+			expiry, and a four-body Pinball chain. The pillar bank uses the court's existing stone; no
+			obstacle was added.
+		</p>
+		<p>
+			The corrected basic windup keeps Carambola visible through the coil.
+			<a href="after/basic-windup.webp">Four consecutive windup frames</a> show the body and paddle.
+		</p>
+		<h2>The rhythm</h2>
+		<table>
+			<thead>
+				<tr>
+					<th>Action</th>
+					<th>Before</th>
+					<th>After</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>Ordinary attack</td>
+					<td>0.15 s windup and 0.25 s backswing; the paddle stood still.</td>
+					<td>
+						The same cadence and damage, with a small coil and a 0.04 s snap into 0.18 s visual
+						recovery. The inherited fifth-hit critical remains intact.
+					</td>
+				</tr>
+				<tr>
+					<td>Ricochet</td>
+					<td>0.30 s cast, 20 m/s flight, two possible cushions. It borrowed the bow's cues.</td>
+					<td>
+						The same honest trajectory and damage reward, with a broad sideways coil, a 0.045 s
+						release and 0.17 s recovery. A three-point strike replaces the flare and ripple stack.
+					</td>
+				</tr>
+				<tr>
+					<td>Lob</td>
+					<td>
+						0.25 s cast and 0.90 s flight. Its ball jumped sideways at the top; its shrinking patch
+						understated the last moments of danger.
+					</td>
+					<td>
+						0.30 s cast and 0.70 s continuous flight, with a low paddle swing, a hanging apex and an
+						accelerating drop. The 3 s burn retains its full 2.2 m boundary until expiry.
+					</td>
+				</tr>
+				<tr>
+					<td>Pinball</td>
+					<td>0.35 s cast; every hit happened at once, while the drawing played delayed hops.</td>
+					<td>
+						The same cast, then seven simulation ticks per flight (0.117 s, from the 0.12 s tune).
+						Damage lands with each arrival. Four targets take 130, 104, 83.2 and 66.56 damage.
+					</td>
+				</tr>
+			</tbody>
+		</table>
+		<h2>The court's rules</h2>
+		<p>
+			Damage, ranges and cooldowns are unchanged. The burn still slows by 25% and ticks every
+			half-second. Pinball keeps its nearest-target selection, explicit distance/id ties and three
+			further jumps, never striking the same body twice. A released chain ends if Carambola dies.
+			Its flight state travels through the existing summon snapshots.
+		</p>
+		<p>
+			Ricochet keeps the existing reflected aiming guide. Cushion facts currently reach sound
+			feedback but not the local ability views, so there is no new wall-contact flash. Carambola has
+			no separate declared trait; the shared basic attack supplies the fifth-hit critical. Its
+			charge count is not replicated, so this pass adds no misleading charge meter.
+		</p>
+		<h2>Evidence</h2>
+		<p>
+			<a href="after/cast.json">Real-input assertions and timings</a> ·
+			<a href="contracts.json">Chain, replica, cancellation, expiry and disposal checks</a> ·
+			<a href="coverage.json">Coverage and integration notes</a>
+		</p>
+		<details>
+			<summary>The earlier kit</summary>
+			<video controls preload="none" src="before/cast.webm"></video>
+			<p>
+				The earlier capture uses the same authored-speed stepping. Its default tail ended before Lob
+				landed; subsequent rows contain late burn hits. Use the clip to compare motion, and the
+				tuned durations above for that spell's timing.
+				<a href="before/cast.json">Earlier capture record</a>.
+			</p>
+		</details>
+		<footer>
+			<p>
+				The proof stages targets and prerequisites; the casts themselves use real inputs. The
+				replica check is headless packet acceptance, not a live two-browser session. Independent
+				review and the crowded-fight judgment belong to integration.
+			</p>
+		</footer>
+	</body>
+</html>

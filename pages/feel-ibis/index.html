@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Ibis · The drawn bow</title>
+		<style>
+			:root {
+				color-scheme: light;
+				background: #eee8d7;
+				color: #263c50;
+				font:
+					18px/1.5 Georgia,
+					serif;
+			}
+			body {
+				max-width: 1120px;
+				margin: 4rem auto;
+				padding: 0 1.4rem;
+			}
+			h1 {
+				font-size: clamp(2.4rem, 6vw, 4.5rem);
+				font-weight: normal;
+				line-height: 1.1;
+				margin: 0.4rem 0 1.4rem;
+			}
+			h2 {
+				font-weight: normal;
+			}
+			p {
+				max-width: 76ch;
+			}
+			video {
+				display: block;
+				width: 100%;
+				background: #263c50;
+				border-radius: 5px;
+			}
+			a {
+				color: inherit;
+			}
+			table {
+				border-collapse: collapse;
+				width: 100%;
+				font:
+					16px/1.5 system-ui,
+					sans-serif;
+			}
+			th,
+			td {
+				text-align: left;
+				vertical-align: top;
+				padding: 0.8rem;
+				border-bottom: 1px solid #263c5033;
+			}
+			th {
+				font-weight: 600;
+			}
+			small {
+				font:
+					14px/1.5 system-ui,
+					sans-serif;
+			}
+			details {
+				margin: 2rem 0;
+			}
+			summary {
+				cursor: pointer;
+			}
+			nav {
+				font:
+					15px system-ui,
+					sans-serif;
+				margin-top: 2rem;
+			}
+		</style>
+	</head>
+	<body>
+		<small>DODGETHIS / THE CAST IN MOTION / IBIS</small>
+		<h1>The drawn bow</h1>
+		<p>
+			Ibis draws against the bow, sends a volley overhead, then folds into a short leap. A shaft
+			that finds a hero lifts two pale feather marks at her feet; Momentum has brought the next leap
+			closer.
+		</p>
+		<video controls loop playsinline preload="metadata" src="after/cast.webm"></video>
+		<p>
+			<small
+				>Authored speed, 1×. The real app advances one 1/60-second tick at a time; the clip records
+				every second tick and plays those images at 30 frames per second. This is an isolated,
+				staged match-camera capture through real pointer and keyboard inputs. It measures neither
+				hardware frame rate nor input latency and shows no HUD or crowded fight.</small
+			>
+		</p>
+		<table>
+			<thead>
+				<tr>
+					<th>Action</th>
+					<th>Before</th>
+					<th>After</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>Basic attack</td>
+					<td>No local bow draw during the inherited attack.</td>
+					<td>
+						A small draw and release, with hand, arrow and string moving together. The shared 0.15 s
+						windup and 0.25 s backswing remain.
+					</td>
+				</tr>
+				<tr>
+					<td>Loose</td>
+					<td>Linear lean; shaft travels at 20 m/s.</td>
+					<td>
+						A taut coil and sharp release; shaft travels at 24 m/s. The 0.3 s cast stays. Contact
+						has a shorter spear-shaped flash and a 0.045 s local hold.
+					</td>
+				</tr>
+				<tr>
+					<td>Rain</td>
+					<td>Instant cast followed by a 0.7 s fall; gold boundary and particle impact.</td>
+					<td>
+						A 0.12 s upward draw followed by a 0.48 s fall. The exact 2.5 m boundary carries team
+						colour. Existing falling shafts remain, with brief inked contact strokes in place of the
+						cloud. The 30% slow lasts 1.5 s.
+					</td>
+				</tr>
+				<tr>
+					<td>Vault</td>
+					<td>Immediate 4 m dash in 0.18 s, with a full-range floor arrow.</td>
+					<td>
+						The same immediate escape, with a tucked arc, a 0.14 s landing settle and a faint trail
+						drawn between the actual departure and landing. The landing mark lasts 0.16 s.
+					</td>
+				</tr>
+				<tr>
+					<td>Momentum</td>
+					<td>Cooldown reduction without a world cue.</td>
+					<td>
+						Two short rising strokes on allied Ibis when Loose hits a hero. The reduction remains
+						two seconds.
+					</td>
+				</tr>
+			</tbody>
+		</table>
+		<p>
+			The final clip covers the basic, Loose hit and miss, Rain hit and miss through expiry, and
+			Vault. Momentum appears on the Loose hit. Separate simulation assertions check the exact
+			cooldown reduction, Rain cancellation and slow, zone expiry and snapshot state. The capture
+			resets cooldowns between actions, so the video alone does not prove Momentum's numerical
+			benefit.
+		</p>
+		<details>
+			<summary>The first cast</summary>
+			<p>The unmodified baseline, also at authored speed.</p>
+			<video controls playsinline preload="none" src="before/cast.webm"></video>
+		</details>
+		<p>
+			<small
+				>The shared basic still has a 0.15 s warning, below the project's 0.3 s enemy-tell rule; its
+				timing belongs to integration. Rain still uses the shared falling-arrow renderer and its
+				quiet planted-arrow residue. Online packet data is preserved, but this is not a two-browser
+				guest proof.</small
+			>
+		</p>
+		<nav>
+			<a href="coverage.json">Coverage and handoff</a> ·
+			<a href="after/cast.json">Final cast assertions</a> ·
+			<a href="before/cast.json">Baseline assertions</a> ·
+			<a href="contracts.json">Mechanics assertions</a> ·
+			<a href="resources.json">Expiry and disposal</a>
+		</nav>
+	</body>
+</html>

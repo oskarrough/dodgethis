@@ -1,0 +1,456 @@
+{
+	"hero": "carambola",
+	"map": "overthrow",
+	"seed": 2,
+	"viewport": "1280x720",
+	"ok": true,
+	"timing": "Frame-stepped: the sim ran exactly 1/60 s per tick, whatever the host load; every time below is authored sim time. Wall time (61 s, load 18.5) and software-rendered frames say nothing about hardware FPS or input latency, which this does not measure.",
+	"clip": {
+		"file": "cast.webm",
+		"frames": 158,
+		"seconds": 5.27,
+		"fps": 30,
+		"ticksPerFrame": 2,
+		"slow": 1
+	},
+	"steps": [
+		{
+			"step": "basic",
+			"ability": "basic",
+			"kind": "basic",
+			"aim": "enemy",
+			"ok": true,
+			"problems": [],
+			"authored": {
+				"castPoint": 0.15,
+				"castLock": 0.15,
+				"phases": [
+					{
+						"now": "attack:windup",
+						"at": 0,
+						"seconds": 0.133
+					},
+					{
+						"now": "attack:backswing",
+						"at": 0.133,
+						"seconds": 0.25
+					}
+				],
+				"firstHit": 0.283,
+				"settled": 0.383
+			},
+			"cooldownTicksLeft": null,
+			"hits": [
+				{
+					"at": 0.283,
+					"damage": 90,
+					"target": "try-1"
+				}
+			],
+			"heals": 0,
+			"facts": ["order", "cast", "projectile", "hit"],
+			"hp": {
+				"me": 1300,
+				"foe": 1310,
+				"friend": 1450
+			},
+			"log": [
+				{
+					"tick": 81,
+					"type": "order",
+					"hero": "local",
+					"target": "try-1",
+					"point": {
+						"x": -5.6,
+						"z": 0
+					}
+				},
+				{
+					"tick": 81,
+					"type": "cast",
+					"hero": "local",
+					"slot": "primary",
+					"lock": 0.15,
+					"target": {
+						"x": -5.6,
+						"z": 0
+					},
+					"targetId": "try-1",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 81,
+					"type": "activity",
+					"now": "attack:windup"
+				},
+				{
+					"tick": 89,
+					"type": "projectile",
+					"hero": "local",
+					"slot": "primary",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 89,
+					"type": "activity",
+					"now": "attack:backswing"
+				},
+				{
+					"tick": 98,
+					"type": "hit",
+					"ability": null,
+					"slot": "primary",
+					"damage": 90,
+					"source": "local",
+					"target": "try-1",
+					"point": {
+						"x": -6.17,
+						"z": 0
+					}
+				},
+				{
+					"tick": 104,
+					"type": "activity",
+					"now": ""
+				}
+			],
+			"frames": 39
+		},
+		{
+			"step": "slot1",
+			"ability": "bank",
+			"kind": "shot",
+			"aim": "enemy",
+			"ok": true,
+			"problems": [],
+			"authored": {
+				"castPoint": 0.3,
+				"castLock": 0.3,
+				"phases": [
+					{
+						"now": "cast:bank",
+						"at": 0,
+						"seconds": 0.283
+					}
+				],
+				"firstHit": 0.617,
+				"settled": 0.617
+			},
+			"cooldownTicksLeft": 180,
+			"hits": [
+				{
+					"at": 0.617,
+					"damage": 170,
+					"target": "try-1"
+				}
+			],
+			"heals": 0,
+			"facts": ["cast", "projectile", "hit"],
+			"hp": {
+				"me": 1300,
+				"foe": 1230,
+				"friend": 1450
+			},
+			"log": [
+				{
+					"tick": 171,
+					"type": "cast",
+					"hero": "local",
+					"ability": "bank",
+					"slot": "slot1",
+					"lock": 0.3,
+					"target": {
+						"x": -2.49,
+						"z": 0
+					},
+					"targetId": null,
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 171,
+					"type": "activity",
+					"now": "cast:bank"
+				},
+				{
+					"tick": 188,
+					"type": "projectile",
+					"hero": "local",
+					"ability": "bank",
+					"slot": "slot1",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 188,
+					"type": "activity",
+					"now": ""
+				},
+				{
+					"tick": 208,
+					"type": "hit",
+					"ability": "bank",
+					"slot": "slot1",
+					"damage": 170,
+					"source": "local",
+					"target": "try-1",
+					"point": {
+						"x": -3.3,
+						"z": 0
+					}
+				}
+			],
+			"frames": 40
+		},
+		{
+			"step": "slot2",
+			"ability": "lob",
+			"kind": "zone",
+			"aim": "enemy",
+			"ok": true,
+			"problems": [],
+			"authored": {
+				"castPoint": 0.25,
+				"castLock": 0.25,
+				"phases": [
+					{
+						"now": "cast:lob",
+						"at": 0,
+						"seconds": 0.233
+					}
+				],
+				"firstHit": null,
+				"settled": 0.233
+			},
+			"cooldownTicksLeft": 483,
+			"hits": [],
+			"heals": 0,
+			"facts": ["cast"],
+			"hp": {
+				"me": 1300,
+				"foe": 1400,
+				"friend": 1450
+			},
+			"log": [
+				{
+					"tick": 251,
+					"type": "cast",
+					"hero": "local",
+					"ability": "lob",
+					"slot": "slot2",
+					"lock": 0.25,
+					"target": {
+						"x": -3.99,
+						"z": 0
+					},
+					"targetId": null,
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 251,
+					"type": "activity",
+					"now": "cast:lob"
+				},
+				{
+					"tick": 265,
+					"type": "activity",
+					"now": ""
+				}
+			],
+			"frames": 38
+		},
+		{
+			"step": "slot3",
+			"ability": "pinball",
+			"kind": "instant",
+			"aim": "enemy",
+			"ok": true,
+			"problems": [],
+			"authored": {
+				"castPoint": 0.35,
+				"castLock": 0.35,
+				"phases": [
+					{
+						"now": "cast:pinball",
+						"at": 0,
+						"seconds": 0.333
+					}
+				],
+				"firstHit": 0.333,
+				"settled": 0.833
+			},
+			"cooldownTicksLeft": 477,
+			"hits": [
+				{
+					"at": 0.333,
+					"damage": 130,
+					"target": "try-1"
+				},
+				{
+					"at": 0.333,
+					"damage": 18,
+					"target": "try-1"
+				},
+				{
+					"at": 0.833,
+					"damage": 18,
+					"target": "try-1"
+				}
+			],
+			"heals": 0,
+			"facts": ["hit", "impact", "status", "cast", "contact"],
+			"hp": {
+				"me": 1300,
+				"foe": 1066,
+				"friend": 1450
+			},
+			"log": [
+				{
+					"tick": 318,
+					"type": "hit",
+					"ability": "lob",
+					"slot": "slot2",
+					"damage": 150,
+					"source": "local",
+					"target": "try-1",
+					"point": {
+						"x": -4,
+						"z": 0
+					}
+				},
+				{
+					"tick": 318,
+					"type": "impact",
+					"hero": "local",
+					"ability": "lob",
+					"point": {
+						"x": -3.99,
+						"z": 0
+					}
+				},
+				{
+					"tick": 318,
+					"type": "status",
+					"source": "local",
+					"target": "try-1"
+				},
+				{
+					"tick": 318,
+					"type": "hit",
+					"ability": "lob",
+					"slot": "slot2",
+					"damage": 18,
+					"source": "local",
+					"target": "try-1",
+					"point": {
+						"x": -4,
+						"z": 0
+					}
+				},
+				{
+					"tick": 328,
+					"type": "cast",
+					"hero": "local",
+					"ability": "pinball",
+					"slot": "slot3",
+					"lock": 0.35,
+					"target": {
+						"x": -4,
+						"z": 0
+					},
+					"targetId": "try-1",
+					"point": {
+						"x": -10,
+						"z": 0
+					}
+				},
+				{
+					"tick": 328,
+					"type": "activity",
+					"now": "cast:pinball"
+				},
+				{
+					"tick": 348,
+					"type": "hit",
+					"ability": "pinball",
+					"slot": "slot3",
+					"damage": 130,
+					"source": "local",
+					"target": "try-1",
+					"point": {
+						"x": -4,
+						"z": 0
+					}
+				},
+				{
+					"tick": 348,
+					"type": "contact",
+					"ability": "pinball",
+					"source": "local",
+					"target": "try-1",
+					"point": {
+						"x": -4,
+						"z": 0
+					}
+				},
+				{
+					"tick": 348,
+					"type": "status",
+					"source": "local",
+					"target": "try-1"
+				},
+				{
+					"tick": 348,
+					"type": "hit",
+					"ability": "lob",
+					"slot": "slot2",
+					"damage": 18,
+					"source": "local",
+					"target": "try-1",
+					"point": {
+						"x": -4,
+						"z": 0
+					}
+				},
+				{
+					"tick": 348,
+					"type": "activity",
+					"now": ""
+				},
+				{
+					"tick": 378,
+					"type": "status",
+					"source": "local",
+					"target": "try-1"
+				},
+				{
+					"tick": 378,
+					"type": "hit",
+					"ability": "lob",
+					"slot": "slot2",
+					"damage": 18,
+					"source": "local",
+					"target": "try-1",
+					"point": {
+						"x": -4,
+						"z": 0
+					}
+				}
+			],
+			"frames": 41
+		}
+	]
+}

@@ -1,0 +1,142 @@
+{
+	"hero": "carambola",
+	"status": "complete_pending_integration_review",
+	"files": [
+		"src/modes/moba/heroes/carambola/carambola-tune.js",
+		"src/modes/moba/heroes/carambola/carambola-view.js",
+		"src/modes/moba/abilities/bank/bank.js",
+		"src/modes/moba/abilities/bank/bank-tune.js",
+		"src/modes/moba/abilities/lob/lob.js",
+		"src/modes/moba/abilities/lob/lob-tune.js",
+		"src/modes/moba/abilities/lob/lob-view.js",
+		"src/modes/moba/abilities/pinball/pinball.js",
+		"src/modes/moba/abilities/pinball/pinball-tune.js",
+		"src/modes/moba/abilities/pinball/pinball-view.js",
+		"src/modes/moba/abilities/pinball/pinball-flight.js"
+	],
+	"basic": {
+		"changed": "Local paddle coil, flick, cream sweep and recovery.",
+		"unchanged": "Inherited damage, projectile, 0.15 s windup, 0.25 s backswing, 1 attack/s and every-fifth-hit critical. Shared attack code belongs to integration.",
+		"visual_seconds": {
+			"snap": 0.04,
+			"recover": 0.18
+		}
+	},
+	"bank": {
+		"changed": "Distinct low sideways paddle coil and release; three-point impact, local hold and own cast/shot/hit cues.",
+		"unchanged": "0.3 s cast, 20 m/s, 10 m total path, 0.35 m radius, two cushions, 170 damage plus 40 per cushion, 4 s cooldown. Existing reflected aim guide and cream ball preserved.",
+		"visual_seconds": {
+			"snap": 0.045,
+			"recover": 0.17
+		}
+	},
+	"lob": {
+		"changed": "0.25 to 0.3 s tell; 0.9 to 0.7 s flight; continuous 4.6 m-high arc instead of 11 m rise and horizontal teleport; underarm release; six-point impact; team rim remains exact through expiry; gold removed, embers removed, burn interior quieter.",
+		"unchanged": "150 landing damage, 8 m range, 2.2 m radius, 3 s burn, 18 damage every 0.5 s, 25% slow, 9 s cooldown.",
+		"visual_seconds": {
+			"snap": 0.065,
+			"recover": 0.24
+		}
+	},
+	"pinball": {
+		"changed": "Distinct high paddle slap; real replicated flight instead of instantaneous damage plus delayed decorative hops; seven simulation ticks per contact; current moving target tracked; short inked path and four-point impacts; no gold.",
+		"unchanged": "0.35 s tell, 130 first damage, 8 m initial range, three further jumps within 4.5 m, 20% damage falloff, 9 s cooldown; deterministic distance/id tie-breaking and no revisits.",
+		"visual_seconds": {
+			"snap": 0.035,
+			"recover": 0.19,
+			"flight_tune": 0.12,
+			"flight_ticks": 7,
+			"flight_actual": 0.11666666666666667
+		},
+		"owner_death": "Released chain ends; no later damage."
+	},
+	"identity": "Original hero manifest, name, triangle body, proportions, paddle and team band retained. No separate declared hero trait. Shared critical attack feedback retained without adding a charge meter.",
+	"checks": {
+		"full_suite": "271 pass, 1 skip, 0 fail; 10843 assertions.",
+		"focused_suite": "11 pass across moba, moba-lane, snapshot-buffer, moba-session; 3251 assertions.",
+		"owned_lint_and_format": "pass",
+		"effect_schema": "pass, 205 references/card templates.",
+		"unit_schema": "Owned additions passed; later blocked by concurrent tune.mend.healImpact.spokes.from.",
+		"whole_check": "Reached formatting; failed on .bb/workflows/whole-cast-feel.js, pages/balloon-polish/index.html and concurrent Ibis/Kappa/Undine proof files. None edited.",
+		"whole_check_latest": "Blocked at unit schema by tune.mend.healImpact.spokes.from, outside ownership.",
+		"sound": "Bank cues have distinct local synth definitions; not evaluated by ear or offline audio measurement. The sound checker writes a shared report outside this ownership, so its queued run was stopped."
+	},
+	"contracts": "contracts.json: four ordered contacts and damage falloff, 65 accepted replica packets, stop cancellation and refund after lockout, owner death, full Lob boundary and expiry, view restart/disposal.",
+	"review": {
+		"method": "Self-review with arbe-review; read actual casting, effects, combat, pose and snapshot callers. No extra agents spawned.",
+		"fixed": "Removed accidental nested tune fields, suppressed inherited flare/particle stacks, guarded zero-duration/division cases and bounded Pinball dashes/traces.",
+		"pending": "Local blocker corrected and replacement clip inspected; integration acceptance remains pending.",
+		"revision": {
+			"fix": "Carambola basic windup uses attack.total when supplied, otherwise ticks(unit.definition.basic.windup); preserves the longer bot windup and prevents NaN transforms.",
+			"lobComment": "Restored the drawsZone ownership explanation.",
+			"finiteTransforms": "171 one-off samples passed: missing, normal and extended total; left 18..0; alpha 0, 0.5, 0.99. No test files added.",
+			"focusedTests": "10 passed initially; session test failed with Replay tuning differs from this build during concurrent tuning edits, then passed alone (1 pass, 34 assertions).",
+			"check": "bun run check blocked by unowned tune.mend.healImpact.spokes.from.",
+			"lintFormat": "Both revised source files passed oxlint and oxfmt.",
+			"effects": "205 references/card templates passed.",
+			"timing": "No authored timing, damage or simulation changes in this revision.",
+			"review": "Re-read both complete revised files and hero-view, orders, casting, pose-curve and skills-view callers. No further owned blocker found.",
+			"retained": "Zero-count juice recipes intentionally suppress inherited default bursts; a shared named none recipe is outside this revision.",
+			"capture": "All eight real-input steps passed. Basic-windup frames 4\u20137 visually inspected: full body and paddle remain visible. after/basic-windup.webp is the inspected crop sheet.",
+			"publication": "Proof page and clip served by local dev server on port 5199; existing user-facing hostname could not be reached from this shell."
+		}
+	},
+	"shared_requests": [
+		{
+			"contract": "Cushion facts reach ability views",
+			"reason": "feedback.js currently sends cushion only to sound. Forward the existing cushion fact to skillsView.contact so bank-local view feedback can mark actual wall contact without duplicating shot simulation."
+		},
+		{
+			"contract": "Basic charge count in snapshots",
+			"reason": "basicStreak is host-only. Replicate it before adding a five-hit readiness marker that must work on guests."
+		},
+		{
+			"contract": "Move cancellation",
+			"reason": "A raw move order during Pinball windup still releases. control.js cancels casts only for stop/cancel. Build rules promise move cancellation too; shared input/casting owner should settle this."
+		},
+		{
+			"contract": "Inherited basic tell",
+			"reason": "Its existing 0.15 s windup remains below the stated 0.3 s enemy-tell floor. Shared attack timing is outside this ownership."
+		},
+		{
+			"contract": "Duration on every order-driven basic attack",
+			"reason": "orders.js currently sets attack.total only when basic.id exists; inherited Carambola basics lack it. Local fallback removes this dependency. Integration should make total available on every order-path basic and check other hero views."
+		},
+		{
+			"contract": "Self-cast ground tell for Lob",
+			"reason": "Inherited held-aim-to-release gap leaves the caster without a ground mark during the 0.3 s cast point; enemies receive their shared tell. Shared skills-view owns this."
+		}
+	],
+	"limitations": [
+		"Staged isolated capture, not crowded combat or hardware responsiveness.",
+		"Replica validation is headless packet acceptance, not live two-browser/network proof.",
+		"Critical-ready state is staged for the final basic; the basic itself uses real right-click input.",
+		"The earlier default capture ended its Lob segment before landing and recorded later burn hits under the next step.",
+		"No commits, pushes, registry or shared-file edits.",
+		"Lob reconstructs its launch point from the visible owner when a zone is first presented; a late or fog-hidden guest may see a different starting arc. Exact danger location, radius and expiry remain snapshot-driven."
+	],
+	"proof": "http://office-linux.heron-mermaid.ts.net:5173/pages/feel-carambola/",
+	"capture": {
+		"ok": true,
+		"steps": 8,
+		"frames": 509,
+		"seconds": 16.97,
+		"ticksPerFrame": 2,
+		"playbackFps": 30,
+		"speed": "authored",
+		"before": "before/cast.webm",
+		"after": "after/cast.webm",
+		"bankCushionDamage": 210,
+		"missesHitNobody": ["bank:miss", "lob:miss:tail=3.5"],
+		"firstHitSeconds": {
+			"basic": 0.283,
+			"criticalBasic": 0.283,
+			"bank": 0.617,
+			"bankCushion": 0.7,
+			"lob": 0.967,
+			"pinball": [0.45, 0.567, 0.683, 0.8]
+		},
+		"visualInspection": "Replacement capture: basic-windup frames 4\u20137 inspected in one crop sheet; body and paddle remain visible through the coil. Prior full-kit review remains applicable; no timing or mechanics changed.",
+		"export": "VP9 CRF 43, 1280\u00d7720; 509 frames at 30 fps, 16.966 seconds, no audio; 903206 bytes."
+	}
+}
