@@ -5,6 +5,9 @@
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { parseArgs } from 'node:util'
+import { bootMatch, browserSession, devServer, holdCaptureLock, run } from './capture.js'
+
+holdCaptureLock() // browser work on this box queues behind other captures
 
 // A bare --lineup means every playable hero.
 const argv = Bun.argv.slice(2)
@@ -63,45 +66,16 @@ for (const name of values.photo || lineup ? [] : names)
 
 const out = resolve(values.out ?? join(process.env.BB_THREAD_STORAGE ?? '/tmp', 'shots', map))
 mkdirSync(out, { recursive: true })
-const session = `shot-${process.env.BB_THREAD_ID ?? 'x'}-${map}-${process.pid}`
+const { browser, evaluate, errors, close } = browserSession(
+	`shot-${process.env.BB_THREAD_ID ?? 'x'}-${map}`,
+)
 
-function run(cmd, args, { quiet = false } = {}) {
-	const p = Bun.spawnSync([cmd, ...args], { stdout: 'pipe', stderr: 'pipe' })
-	const text = p.stdout.toString().trim()
-	if (p.exitCode !== 0 && !quiet)
-		throw new Error(`${cmd} ${args[0]}: ${p.stderr.toString().trim() || text}`)
-	return text
-}
-const browser = (...args) => run('agent-browser', ['--session', session, ...args])
-const evaluate = (js) => {
-	const reply = JSON.parse(run('agent-browser', ['--session', session, '--json', 'eval', js]))
-	if (!reply.success) throw new Error(`eval: ${reply.error}`)
-	return reply.data?.result
-}
-
-const url = run('sh', [join(root, 'scripts/dev-agent.sh')])
+const url = devServer()
 const topdown = values.photo && values.spots?.split(',').includes('topdown')
 const page = `${url}?mode=moba&play&map=${map}&hero=${values.hero}&bots=easy&seed=${values.seed}${topdown ? '&fog=0' : ''}${values.light ? `&light=${encodeURIComponent(values.light)}` : ''}`
 
-function boot() {
-	browser('set', 'viewport', '1600', '900')
-	browser('open', page)
-	browser(
-		'wait',
-		'--timeout',
-		'90000',
-		'--fn',
-		"window.dt?.screen()==='match' && !document.querySelector('.moba-front')",
-	)
-	browser('wait', '1500')
-}
 try {
-	try {
-		boot()
-	} catch (error) {
-		console.error(`boot failed, retrying once: ${error.message}`)
-		boot()
-	}
+	bootMatch({ browser }, page)
 	if (values.light) {
 		const light = evaluate('dt.game.moba.setup.light')
 		if (values.light !== 'random' && light !== values.light)
@@ -219,11 +193,11 @@ try {
 		'(() => { const r = dt.game.renderer.info.render; return [r.triangles, r.calls] })()',
 	)
 	console.log(`triangles=${info?.[0]} calls=${info?.[1]}`)
-	const errors = run('agent-browser', ['--session', session, 'errors'], { quiet: true })
-	if (errors && !/no (page )?errors/i.test(errors)) console.log(`errors:\n${errors}`)
+	const problems = errors()
+	if (problems && !/no (page )?errors/i.test(problems)) console.log(`errors:\n${problems}`)
 } catch (error) {
 	console.error(error.message)
 	process.exitCode = 1
 } finally {
-	run('agent-browser', ['--session', session, 'close'], { quiet: true })
+	close()
 }

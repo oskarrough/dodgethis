@@ -43,6 +43,10 @@ Use a fresh session name per match. Detached sessions stay frozen between calls;
 
 Replay uses the CLI's WASM build and validates its final state.
 
+## Cast previews
+
+`bun run cast <hero> --clip --out pages/<proof>` stages a kit through real pointer and key input and writes asserted facts plus authored-speed video. Read `.agents/skills/ability-feel/SKILL.md` for exercised options and limits. `cast` and `shot` take the shared capture lock; wrap other browser work with `bun run capture -- <command>` and inspect its owner with `bun run capture --status`. Cast clips have no HUD and do not measure hardware FPS or latency. Support prerequisites and Mandador's dead cutout use the existing scripts in their proof folders.
+
 ## Browser proofs
 
 1. `uptime`: load past 12 makes timing failures random; go headless or wait.

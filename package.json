@@ -19,6 +19,8 @@
 		"kit": "bun run collect-mods && bun scripts/kit.js",
 		"review": "bun scripts/review.js",
 		"shot": "bun scripts/shot.js",
+		"cast": "bun scripts/cast.js",
+		"capture": "bun scripts/capture.js",
 		"decal-sheet": "bun scripts/decal-sheet.js",
 		"sound:check": "bun scripts/sound-check.js",
 		"sound:sync": "bun scripts/sound-library.js",
