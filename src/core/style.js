@@ -32,6 +32,7 @@ export const PALETTE = {
 	yours: 0xfff0b8, // warm cream: the ring under your own unit, never a team colour
 	leaf: 0x7fa86a, // overgrowth on walls (overgrowth.js): lit clumps…
 	leafDeep: 0x55805e, // …and the fronds and tufts in their shade
+	enamelViolet: 0x9b8ca8, // Lasso's worn enamel, muted beneath the team-coloured weight
 }
 
 // '#rrggbb' for canvas textures, CSS and anything that wants a string.

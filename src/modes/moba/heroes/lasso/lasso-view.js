@@ -6,12 +6,12 @@ export { extras } from './lasso-effects.js'
 
 // Worn hide around an open crescent, a suspended weight and its dark string.
 const view = {
-	radius: 0.75,
-	innerRadius: 0.58,
-	innerOffset: 0.35,
-	height: 0.85,
-	yoYoRadius: 0.24,
-	yoYoDepth: 0.16,
+	radius: 0.63,
+	innerRadius: 0.5,
+	innerOffset: 0.3,
+	height: 0.68,
+	yoYoRadius: 0.28,
+	yoYoDepth: 0.24,
 	stringRadius: 0.025,
 	handX: 0.55,
 	handY: 0.75,
@@ -45,7 +45,27 @@ export function dress({ torso, costume, discY, own, part, detail, face, material
 	for (let i = 0; i < rim.count; i++)
 		if (rim.getY(i) > -0.01 && rim.getX(i) > 0 && rim.getZ(i) < -0.43) rim.setY(i, -0.13)
 	torso.geometry.computeVertexNormals()
-	const brow = face(0.34, discY + 0.78, -0.59)
+	// A broad enamel ridge follows the outside only; the crescent stays open.
+	const ridge = new THREE.Shape()
+	ridge.absarc(0, 0, view.radius * 0.97, Math.PI / 3, (Math.PI * 5) / 3, false)
+	ridge.absarc(0, 0, view.radius * 0.73, (Math.PI * 5) / 3, Math.PI / 3, true)
+	ridge.closePath()
+	part(
+		new THREE.ExtrudeGeometry(ridge, { depth: 0.085, bevelEnabled: false, curveSegments: 7 })
+			.rotateX(Math.PI / 2)
+			.translate(0, discY + view.height + 0.045, 0),
+		materials.cream,
+	)
+	// A handful of wide chips, rather than texture, break the pale ridge.
+	detail(
+		[1.5, 2.7, 3.8, 4.8].map((angle) =>
+			new THREE.BoxGeometry(0.15, 0.018, 0.035)
+				.rotateY(-angle)
+				.translate(Math.cos(angle) * 0.55, discY + view.height + 0.056, Math.sin(angle) * 0.55),
+		),
+		materials.skin,
+	)
+	const brow = face(0.34, discY + 0.65, -0.5)
 	brow.position.x = 0.24
 	// A hooked blade sits in the existing crescent tip, leaving the gap open.
 	const hook = new THREE.Shape()
@@ -57,6 +77,7 @@ export function dress({ torso, costume, discY, own, part, detail, face, material
 	part(
 		new THREE.ExtrudeGeometry(hook, { depth: 0.08, bevelEnabled: false })
 			.rotateX(Math.PI / 2)
+			.scale(0.84, 1, 0.84)
 			.translate(0, discY + view.height, 0),
 		materials.cream,
 	)
@@ -70,10 +91,10 @@ export function dress({ torso, costume, discY, own, part, detail, face, material
 		[
 			new THREE.BoxGeometry(0.025, 0.012, 0.18)
 				.rotateY(-0.35)
-				.translate(-0.57, discY + view.height + 0.004, 0.1),
+				.translate(-0.48, discY + view.height + 0.004, 0.1),
 			new THREE.BoxGeometry(0.025, 0.012, 0.14)
 				.rotateY(0.65)
-				.translate(-0.15, discY + view.height + 0.004, 0.62),
+				.translate(-0.15, discY + view.height + 0.004, 0.5),
 		],
 		materials.ink,
 	)
@@ -85,6 +106,16 @@ export function dress({ torso, costume, discY, own, part, detail, face, material
 			view.segments,
 		).rotateZ(Math.PI / 2),
 		materials.team,
+	)
+	part(
+		new THREE.CylinderGeometry(view.yoYoRadius + 0.008, view.yoYoRadius + 0.008, 0.035, 12).rotateZ(
+			Math.PI / 2,
+		),
+		materials.ink,
+		0,
+		0,
+		0,
+		yoYo,
 	)
 	// An enamel slash on each cheek makes the spool's rotation visible.
 	for (const side of [-1, 1])

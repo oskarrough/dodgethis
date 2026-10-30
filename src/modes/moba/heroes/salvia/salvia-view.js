@@ -29,9 +29,11 @@ export function dress({ torso, part, detail, face, own, discY, materials }) {
 	const hood = new THREE.ConeGeometry(0.43, 0.65, 7).toNonIndexed()
 	const points = hood.attributes.position
 	for (let i = 0; i < points.count; i++)
-		if (points.getY(i) > 0) points.setXYZ(i, -0.16, points.getY(i), 0.12)
+		if (points.getY(i) > 0) points.setXYZ(i, -0.16, points.getY(i) + 0.12, 0.48)
 	hood.computeVertexNormals()
 	part(hood, sage, 0, discY + 1.175, 0.04)
+	// A raised fold carries the hood's point across the roof, where the match camera sees it.
+	part(new THREE.ConeGeometry(0.13, 0.5, 4).rotateX(0.45), sage, -0.12, discY + 1.35, 0.24)
 	face(0.6, discY + 1.11, -0.35)
 	// The skirt's worn hem and the satchel strap are broad enough to read from above.
 	detail(
@@ -49,6 +51,16 @@ export function dress({ torso, part, detail, face, own, discY, materials }) {
 		0,
 	)
 	part(new THREE.BoxGeometry(0.3, 0.09, 0.32), sage, 0, 0.2, 0, satchel)
+	// The bag is bark, not a second face: two pale, broken grain cuts on its outer side.
+	detail(
+		[-1, 1].map((side) =>
+			new THREE.BoxGeometry(0.025, 0.24, 0.025)
+				.rotateZ(side * 0.2)
+				.translate(side * 0.09, -0.03, -0.21),
+		),
+		materials.cream,
+		satchel,
+	)
 	// Only the small clasp takes the team's colour; cloth and sage are always her own.
 	part(new THREE.BoxGeometry(0.13, 0.075, 0.15), materials.team, 0, 0.25, -0.04, satchel)
 	const sprigs = []

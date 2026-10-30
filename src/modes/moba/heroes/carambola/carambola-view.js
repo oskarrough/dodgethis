@@ -10,20 +10,14 @@ const view = {
 	bodyRadius: 0.58,
 	bodyHeight: 0.72,
 	bandRadius: 0.62,
-	bandHeight: 0.2,
+	bandHeight: 0.14,
 	bandY: 0.42,
-	headRadius: 0.4,
+	headRadius: 0.43,
 	headSquash: 0.82,
 	headY: 0.98,
 	headZ: -0.04,
-	beakRadius: 0.1,
-	beakLength: 0.26,
-	beakY: 0.88,
-	beakZ: -0.44,
-	earRadius: 0.1,
-	earHeight: 0.22,
-	earX: 0.2,
-	earY: 1.28,
+	beakY: 1.13,
+	beakZ: -0.32,
 	clawX: 0.18,
 	clawZ: -0.42,
 	paddleRadius: 0.36,
@@ -84,7 +78,7 @@ export function dress({ costume, torso, discY, part, detail, face, own, roots, t
 	const { ink, cream, team } = materials
 	const stone = own(makeStyleMaterial('sand'))
 	const wood = own(makeStyleMaterial('driftwood'))
-	const beak = own(makeStyleMaterial('sand', { flat: true }))
+	const beak = ink
 	const y = (h) => discY + h
 	torso.material = cream
 	torso.geometry = own(prism(view.bodyRadius, view.bodyHeight, t.corner / 2))
@@ -98,7 +92,7 @@ export function dress({ costume, torso, discY, part, detail, face, own, roots, t
 			view.clawZ,
 		)
 
-	// Head: a faceted stone lump with a heavy brow, small eyes, a beak and two chipped ears.
+	// Head: a faceted stone lump with a heavy brow and a broad chipped beak.
 	part(
 		new THREE.IcosahedronGeometry(view.headRadius, 0).scale(1, view.headSquash, 1),
 		stone,
@@ -107,21 +101,39 @@ export function dress({ costume, torso, discY, part, detail, face, own, roots, t
 		view.headZ,
 	)
 	face(0.52, y(1.23), -0.24)
-	for (const side of [-1, 1]) {
-		part(
-			new THREE.ConeGeometry(view.earRadius, view.earHeight, 4),
-			stone,
-			side * view.earX,
-			y(view.earY),
-			view.headZ + 0.04,
-		).rotation.z = -side * 0.35
-	}
+	// A chipped cap and broad wedge replace the old little ears and conical nose.
+	part(prism(0.39, 0.09, 0), stone, 0, y(1.27), -0.07)
+	const bill = new THREE.Shape()
+	bill.moveTo(-0.24, 0)
+	bill.lineTo(0.19, 0)
+	bill.lineTo(0.25, -0.14)
+	bill.lineTo(0.06, -0.45)
+	bill.lineTo(0, -0.5)
+	bill.lineTo(-0.22, -0.18)
+	bill.closePath()
 	part(
-		new THREE.ConeGeometry(view.beakRadius, view.beakLength, 4).rotateX(-Math.PI / 2),
+		new THREE.ExtrudeGeometry(bill, { depth: 0.36, bevelEnabled: false }).rotateX(Math.PI / 2),
 		beak,
 		0,
 		y(view.beakY),
 		view.beakZ,
+	)
+	// Low, faceted shoulders keep the tunic's point-forward roof intact.
+	for (const side of [-1, 1]) {
+		part(
+			new THREE.IcosahedronGeometry(0.24, 0).scale(0.72, 1.3, 0.9),
+			stone,
+			side * 0.43,
+			y(0.69),
+			0.07,
+		).rotation.z = side * 0.18
+	}
+	detail(
+		[
+			new THREE.BoxGeometry(0.11, 0.025, 0.035).translate(-0.15, y(1.37), -0.13),
+			new THREE.BoxGeometry(0.025, 0.012, 0.15).rotateY(-0.4).translate(0.12, y(1.37), -0.02),
+		],
+		cream,
 	)
 
 	// The paddle, open and out front, its worn handle running back to the fist.
@@ -144,7 +156,14 @@ export function dress({ costume, torso, discY, part, detail, face, own, roots, t
 	)
 	part(prism(view.bodyRadius, 0.1, 0), wood, 0, y(0.08), 0)
 	part(
-		new THREE.RingGeometry(view.paddleRadius - t.discBorder, view.paddleRadius, t.segments)
+		new THREE.RingGeometry(
+			view.paddleRadius - t.discBorder,
+			view.paddleRadius,
+			t.segments,
+			1,
+			view.notchAngle + view.notchRadius / view.paddleRadius,
+			Math.PI * 2 - (2 * view.notchRadius) / view.paddleRadius,
+		)
 			.rotateX(-Math.PI / 2)
 			.translate(0, view.paddleDepth / 2 + 0.002, 0),
 		ink,

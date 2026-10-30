@@ -23,9 +23,28 @@ export function dress({
 	shell.computeVertexNormals()
 	torso.geometry = own(shell)
 	const y = (height) => discY + height
-	face(0.46, y(1.68), -0.18)
-	// A short four-sided beak stays inside the existing bow-and-quiver envelope.
-	part(new THREE.ConeGeometry(0.1, 0.2, 4).rotateX(-Math.PI / 2), cream, 0, y(1.51), -0.27)
+	// The hunter's pale neck and swept head sit over a slim, sea-teal coat.
+	part(new THREE.CylinderGeometry(0.13, 0.21, 0.56, 5), cream, 0, y(1.32), -0.04)
+	part(new THREE.IcosahedronGeometry(0.3, 0).scale(0.78, 0.62, 1.12), cream, 0, y(1.64), -0.12)
+	face(0.36, y(1.69), -0.28)
+	// A thin extruded profile gives the beak a hook, not a conical snout.
+	const beak = new THREE.Shape()
+	beak.moveTo(0, 0)
+	beak.lineTo(0.42, -0.015)
+	beak.lineTo(1.18, -0.07)
+	beak.lineTo(1.52, -0.13)
+	beak.lineTo(1.1, -0.16)
+	beak.lineTo(0.04, -0.14)
+	beak.closePath()
+	part(
+		new THREE.ExtrudeGeometry(beak, { depth: 0.11, bevelEnabled: false })
+			.translate(0, 0, -0.055)
+			.rotateY(Math.PI / 2),
+		ink,
+		0,
+		y(1.58),
+		-0.26,
+	)
 	// A V cut through the crown leaves two hard crest points without adding height.
 	const crest = new THREE.Shape()
 	crest.moveTo(-0.13, 1.52)
@@ -42,6 +61,24 @@ export function dress({
 		),
 		ink,
 	)
+	// Two ragged feather planes and a pale chipped hem, rather than surface noise.
+	for (const side of [-1, 1]) {
+		const wing = new THREE.Shape()
+		wing.moveTo(side * 0.16, 1.12)
+		wing.lineTo(side * 0.32, 0.99)
+		wing.lineTo(side * 0.37, 0.4)
+		wing.lineTo(side * 0.24, 0.51)
+		wing.lineTo(side * 0.21, 0.35)
+		wing.lineTo(side * 0.12, 0.6)
+		wing.closePath()
+		part(
+			new THREE.ExtrudeGeometry(wing, { depth: 0.21, bevelEnabled: false }),
+			cream,
+			0,
+			discY,
+			-0.13,
+		)
+	}
 	detail(
 		[
 			new THREE.BoxGeometry(0.035, 0.58, 0.025).rotateZ(-0.24).translate(0.06, y(0.72), -0.275),
@@ -64,12 +101,25 @@ export function dress({
 		t.quiverY,
 		t.quiverZ,
 	)
+	part(
+		new THREE.CylinderGeometry(t.quiverRadius * 1.18, t.quiverRadius * 1.18, 0.075, 6),
+		cream,
+		0,
+		t.quiverY + t.quiverHeight / 2 - 0.03,
+		t.quiverZ,
+	)
 	for (let i = 0; i < t.arrowCount; i++) {
 		const offset = i - (t.arrowCount - 1) / 2
 		const arrow = new THREE.Group()
-		arrow.position.set(offset * t.arrowSpacing, t.arrowY, t.quiverZ)
-		arrow.rotation.z = -offset * t.arrowFan
-		arrow.rotation.x = t.arrowTilt
+		arrow.position.set(
+			offset * t.arrowSpacing * 1.35,
+			t.arrowY + 0.25 + (offset === 0 ? 0.15 : 0),
+			t.quiverZ + 0.35,
+		)
+		arrow.rotation.z = -offset * t.arrowFan * 1.3
+		// Keep the tips behind the neck, but rake away from the camera-facing back.
+		// The opposite rake projects all three shafts onto one horizontal line at 58 degrees.
+		arrow.rotation.x = -t.arrowTilt
 		costume.add(arrow)
 		roots.push(arrow)
 		part(
@@ -81,14 +131,18 @@ export function dress({
 			arrow,
 		)
 		for (let fin = 0; fin < t.finCount; fin++) {
-			const mesh = part(
-				new THREE.PlaneGeometry(t.fletchingRadius * 2, t.fletchingHeight),
-				fins,
-				0,
-				t.arrowHeight / 2,
-				0,
-				arrow,
-			)
+			// Pointed, narrow vanes leave daylight between the three arrow tops.
+			const feather = new THREE.Shape()
+			const width = t.fletchingRadius * 0.65
+			const height = t.fletchingHeight * 0.85
+			feather.moveTo(0, height)
+			feather.lineTo(width, height * 0.12)
+			feather.lineTo(width * 0.65, -height * 0.6)
+			feather.lineTo(0, -height * 0.35)
+			feather.lineTo(-width * 0.65, -height * 0.6)
+			feather.lineTo(-width, height * 0.12)
+			feather.closePath()
+			const mesh = part(new THREE.ShapeGeometry(feather), fins, 0, t.arrowHeight / 2, 0, arrow)
 			mesh.rotation.y = (fin * Math.PI) / t.finCount
 		}
 	}

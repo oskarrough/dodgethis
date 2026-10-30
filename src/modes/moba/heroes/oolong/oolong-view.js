@@ -12,6 +12,14 @@ export function dress({ torso, part, detail, face, own, discY, materials }) {
 	const normals = hem.attributes.normal
 	for (let i = 0; i < normals.count; i++) normals.setXYZ(i, 0, -1, 0)
 	part(hem, materials.skin)
+	// A worn wooden lip gives the drum a hard, readable edge without changing its footprint.
+	part(
+		new THREE.CylinderGeometry(v.width * 0.92, v.width, 0.1, 6),
+		materials.skin,
+		0,
+		discY + v.height - 0.05,
+		0,
+	)
 	detail(
 		[-1, 1].map((side) =>
 			new THREE.BoxGeometry(0.025, 0.012, 0.35)
@@ -22,18 +30,32 @@ export function dress({ torso, part, detail, face, own, discY, materials }) {
 	)
 	// Team accent: a sash round the middle, proud of the ink border.
 	part(
-		new THREE.CylinderGeometry(v.width + v.sashProud, v.width + v.sashProud, v.sashHeight, 6),
+		new THREE.CylinderGeometry(
+			v.width + v.sashProud * 0.25,
+			v.width + v.sashProud * 0.25,
+			v.sashHeight * 0.4,
+			6,
+		),
 		materials.team,
 		0,
 		discY + v.sashY,
 		0,
 	)
 	const jug = part(
-		new THREE.CylinderGeometry(v.jugRadius, v.jugRadius, v.jugHeight, 6),
+		new THREE.CylinderGeometry(v.jugRadius * 1.35, v.jugRadius * 1.35, v.jugHeight, 6),
 		materials.cream,
 		0,
-		discY + v.jugY,
-		v.jugZ,
+		discY + v.jugY + 0.2,
+		v.jugZ + 0.16,
+	)
+	// A dark shoulder and pale chipped rim make the enamel vessel legible over the back.
+	part(
+		new THREE.CylinderGeometry(v.jugRadius * 1.08, v.jugRadius * 1.35, 0.08, 6),
+		materials.cream,
+		0,
+		v.jugHeight / 2 - 0.04,
+		0,
+		jug,
 	)
 	// The neck rides on the jug so it tips with it.
 	part(
@@ -96,7 +118,7 @@ export function dress({ torso, part, detail, face, own, discY, materials }) {
 		debt,
 		shield,
 		discY,
-		jugY: discY + v.jugY,
+		jugY: discY + v.jugY + 0.2,
 		last: null,
 		drinkEnd: -Infinity,
 		drinkAmount: 0,
@@ -115,7 +137,7 @@ export function animate(unit, rig, { costume, pose, progress, time, alpha }) {
 	rig.last = time
 	costume.position.set(0, 0, 0)
 	costume.scale.set(1, 1, 1)
-	rig.jug.position.set(0, rig.jugY, v.jugZ)
+	rig.jug.position.set(0, rig.jugY, v.jugZ + 0.16)
 	rig.jug.rotation.set(0, 0, 0)
 	rig.palm.position.set(v.palmX, rig.discY + v.palmY, v.palmZ)
 	rig.palm.scale.set(1, 1, 1)

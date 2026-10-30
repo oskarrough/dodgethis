@@ -101,14 +101,26 @@ export function dress({
 	}
 	shell.computeVertexNormals()
 	torso.geometry = own(shell)
-	face(0.72, discY + 0.63, -0.37)
+	face(0.78, discY + 0.66, -0.39)
 	const shellTop = own(makeStyleMaterial('sand'))
-	part(
-		new THREE.CylinderGeometry(0.34, 0.45, 0.1, 8).scale(1, 1, 0.88),
-		shellTop,
-		0,
-		discY + 0.65,
-		0,
+	part(rounded(t.kappaWidth * 0.94, t.kappaDepth * 0.94, 0.18), shellTop, 0, discY + 0.65, 0)
+	// Broad scutes and a broken rim carry the shell's weight at match size.
+	detail(
+		[-1, 1].flatMap((x) =>
+			[-1, 1].map((z) =>
+				new THREE.CylinderGeometry(0.19, 0.23, 0.065, 5)
+					.scale(1, 1, 0.85)
+					.translate(x * 0.2, discY + 0.77, z * 0.19),
+			),
+		),
+		skin,
+	)
+	detail(
+		[
+			new THREE.BoxGeometry(0.25, 0.05, 0.11).rotateY(0.25).translate(-0.28, discY + 0.75, 0.31),
+			new THREE.BoxGeometry(0.14, 0.045, 0.1).rotateY(-0.3).translate(0.34, discY + 0.75, 0.09),
+		],
+		materials.cream,
 	)
 	// The horns replace roof height rather than growing the costume's bounds.
 	detail(
@@ -166,7 +178,7 @@ export function dress({
 	pocketRing.visible = false
 	// Palm ends before the thumb: the intervening gap is real geometry, not paint.
 	part(
-		rounded(t.gloveWidth, t.gloveDepth, t.fingerRadius * 2),
+		rounded(t.gloveWidth, t.gloveDepth * 0.86, t.fingerRadius * 1.65),
 		gloveMaterial,
 		t.gloveX,
 		discY + t.kappaHeight / 2,
@@ -175,17 +187,31 @@ export function dress({
 	)
 	for (let i = 0; i < t.fingerCount; i++)
 		part(
-			new THREE.SphereGeometry(t.fingerRadius, 8, 6),
+			new THREE.DodecahedronGeometry(t.fingerRadius).scale(1.05, 1.35, 1.5),
 			gloveMaterial,
 			t.gloveX + (i - (t.fingerCount - 1) / 2) * t.fingerSpacing,
 			discY + t.kappaHeight / 2,
 			t.gloveZ - t.gloveDepth / 2,
 			glove,
 		)
+	// Bone knuckles remain on the animated catching hand, above its thumb gap.
+	detail(
+		Array.from({ length: t.fingerCount }, (_, i) =>
+			new THREE.BoxGeometry(0.07, 0.025, 0.16)
+				.rotateY(0.16)
+				.translate(
+					t.gloveX + (i - (t.fingerCount - 1) / 2) * t.fingerSpacing,
+					discY + t.kappaHeight / 2 + t.fingerRadius * 0.9,
+					t.gloveZ - t.gloveDepth / 2,
+				),
+		),
+		shellTop,
+		glove,
+	)
 	part(
 		new THREE.SphereGeometry(t.fingerRadius, 8, 6),
 		gloveMaterial,
-		t.gloveX - t.gloveWidth / 2 - t.fingerRadius,
+		t.gloveX - t.gloveWidth / 2 - t.fingerRadius * 1.3,
 		discY + t.kappaHeight / 2,
 		t.gloveZ + t.gloveDepth / 2,
 		glove,
