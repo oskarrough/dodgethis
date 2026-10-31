@@ -28,7 +28,7 @@ Pass `--ref` once per reference image. Name what to take from each one in the br
 - **Codex:** ask a GPT model in a Codex thread to generate the image, passing the prompt and references.
 - **OpenCode:** call `experimental_image_generate` with the prompt, ordered `images` references and output `path`. It runs in the background; wait for its completion notice, then inspect the saved image. Discover available image models with `models(type: "image")`; omit `model` to use the configured default. GPT Image 2 has worked here through the existing OpenAI subscription login.
 
-Use the existing subscription by default. Do not create accounts, buy credits or spend OpenRouter/API credits without Oskar's approval. OpenCode may automatically fall back to another image model when the default cannot handle a request, so check the available providers before generating and do not proceed if a paid fallback could be used without approval. Image-model availability depends on the connected provider; do not assume a chat model or subscription provides an image model. If neither route is available, hand Oskar the prompt and references.
+Existing OpenRouter and API credits may be used, including automatic image-model fallbacks; do not buy credits or create accounts without Oskar's approval. Image-model availability depends on the connected provider; do not assume a chat model or subscription provides an image model. If neither route is available, hand Oskar the prompt and references.
 
 ## Two recipes that worked (2026-10-25)
 
