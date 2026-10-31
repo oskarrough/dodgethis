@@ -1,10 +1,12 @@
 import * as THREE from 'three'
 import { STEP } from '../../../../core/app.js'
+import * as audio from '../../../../core/audio.js'
 import { PALETTE } from '../../../../core/style.js'
 import { makeStyleMaterial } from '../../../../core/stylepass.js'
 import { createEffects } from '../../effects.js'
 import { tune } from '../../tune.js'
 import { wardenFigure } from './dungeon-figures.js'
+import { playUse } from '../../sounds.js'
 import './dungeon-ceremony.css'
 
 const clamp = (n) => Math.max(0, Math.min(1, n))
@@ -68,6 +70,7 @@ export function wardenCeremony(scene) {
 		card.querySelector('p').textContent = end ? words.fall : words.arrival
 		card.dataset.encounter = id
 		card.dataset.moment = end ? 'fall' : 'arrival'
+		playUse(audio, `warden.${id}.${end ? 'fall' : 'arrival'}`)
 	}
 	function roomAfter(id, at) {
 		if (rooms.has(id)) return

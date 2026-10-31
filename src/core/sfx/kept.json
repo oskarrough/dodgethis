@@ -98,5 +98,61 @@
 				"gain": 0.45
 			}
 		]
+	},
+	"warden.manos.arrival": {
+		"kept": "warden.manos.arrival--wood-heavy-002.ogg",
+		"gain": 0.035
+	},
+	"warden.manos.fall": {
+		"kept": "warden.manos.fall--wood-heavy-005.ogg",
+		"gain": 0.035
+	},
+	"warden.tinajaBotijo.arrival": {
+		"kept": "warden.tinajaBotijo.arrival--glass-heavy-002.ogg",
+		"gain": 0.035
+	},
+	"warden.tinajaBotijo.fall": {
+		"kept": "warden.tinajaBotijo.fall--glass-heavy-004.ogg",
+		"gain": 0.035
+	},
+	"warden.carillon.arrival": {
+		"kept": "warden.carillon.arrival--bell-heavy-004.ogg",
+		"gain": 0.035
+	},
+	"warden.carillon.fall": {
+		"kept": "warden.carillon.fall--bell-heavy-005.ogg",
+		"gain": 0.035
+	},
+	"warden.espejo.arrival": {
+		"kept": "warden.espejo.arrival--glass-light-003.ogg",
+		"gain": 0.035
+	},
+	"warden.espejo.fall": {
+		"kept": "warden.espejo.fall--glass-heavy-003.ogg",
+		"gain": 0.035
+	},
+	"warden.fornax.arrival": {
+		"kept": "warden.fornax.arrival--close-002.ogg",
+		"gain": 0.035
+	},
+	"warden.fornax.fall": {
+		"kept": "warden.fornax.fall--close-003.ogg",
+		"gain": 0.035
+	},
+	"warden.barquero.arrival": {
+		"kept": "warden.barquero.arrival--wood-medium-003.ogg",
+		"gain": 0.035
+	},
+	"warden.barquero.fall": {
+		"kept": "warden.barquero.fall--wood-heavy-001.ogg",
+		"gain": 0.035
+	},
+	"warden.gnomon.arrival": {
+		"kept": "warden.gnomon.arrival--slide-rock.ogg",
+		"gain": 0.7
+	},
+	"warden.gnomon.fall": {
+		"kept": "warden.gnomon.fall--slide-rock.ogg",
+		"gain": 0.7
 	}
 }

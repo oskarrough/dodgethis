@@ -116,6 +116,15 @@ export const uses = {
 	globe: use('Progress', 'A globe is picked up', 'globe'),
 	matchOver: use('Progress', 'The match ends', 'matchOver'),
 
+	...Object.fromEntries(
+		['manos', 'tinajaBotijo', 'carillon', 'espejo', 'fornax', 'barquero', 'gnomon'].flatMap((id) =>
+			['arrival', 'fall'].map((moment) => [
+				`warden.${id}.${moment}`,
+				{ source: `Warden ${id}`, about: `${id} ${moment} card`, bus: 'world' },
+			]),
+		),
+	),
+
 	'ui.hover': use('Menus', 'Pointer over a button', 'hover'),
 	'ui.press': use('Menus', 'Mouse down on a button', 'press'),
 	'ui.confirm': use('Menus', 'Mouse up on a button', 'confirm'),
@@ -255,7 +264,7 @@ const BUS = {
 	Minions: 'world',
 	Objectives: 'world',
 }
-for (const use of Object.values(uses)) use.bus = BUS[use.source] ?? 'hero'
+for (const use of Object.values(uses)) use.bus ??= BUS[use.source] ?? 'hero'
 
 const ending = (suffix) => Object.keys(abilityUses).filter((id) => id.endsWith(suffix))
 const structures = ['tower', 'core', 'melee', 'brute', 'ranged', 'wizard']
@@ -331,6 +340,7 @@ export const facts = {
 	flagTaken: ['flagTaken'],
 	flagLowered: ['flagLowered'],
 	matchOver: ['matchOver'],
+	encounter: Object.keys(uses).filter((id) => id.startsWith('warden.')),
 }
 
 // Facts that stay silent on purpose, and why; any other fact with no uses is waiting for a sound.
