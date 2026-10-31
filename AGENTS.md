@@ -21,7 +21,7 @@ A web game: two modes, dodgeball and a MOBA, on one engine.
 ## Scripts
 
 - `bun run dev:agent` shared dev server, never stop it
-- The shared dev server sometimes stops noticing edits and serves stale CSS or JS: curl the file to check, and if it's stale run a private `vite --port <free>` instead
+- If the shared server serves stale code, check it runs from this checkout (`readlink /proc/<vite pid>/cwd`); once it ran from an old worktree for days
 - `bun run check` lint, format and leftovers, a few seconds: run it often
 - `bun run test` the unit tests and map smoke, before every push (the pre-push hook runs it under git; jj skips hooks, so run it yourself)
 - `bun run simulate --summary` headless bot matches; `play:headless` drives one
@@ -34,7 +34,8 @@ A web game: two modes, dodgeball and a MOBA, on one engine.
 
 - Start by checking you're on current `main`: `jj git fetch`, then `jj log -r 'main::@' ` (or `jj new main` if the working copy is empty). A fetch alone doesn't move the checkout, and paths and docs go stale fast
 - Others work here at the same time: touch only your files
-- No `jj restore`, worktrees or PRs
+- No `jj restore` or PRs
+- Quick code changes stay in this checkout. Take a bb worktree when your job proves a look (shots, clips) or runs for hours, so other threads' half-done edits can't break your proof; there `bun run dev:agent` starts a server of your own
 - Commit your own files with a user-facing message; in jj name them (`jj commit <paths> -m …`), since a bare `jj commit` takes every thread's edits in the checkout
 - When something costs you time (a wrong guess, a tool that misled you, a pitfall you hit), write one sentence where the next agent will meet it: the skill you were using, or this file if no skill covers it, in the same commit. Fix a skill that misled you rather than working around it
 - Every push to `main` deploys: push checkpoints, never `wrangler deploy`
