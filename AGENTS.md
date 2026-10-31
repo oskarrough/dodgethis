@@ -31,6 +31,7 @@ A web game: two modes, dodgeball and a MOBA, on one engine.
 
 ## Shared checkout
 
+- Start by checking you're on current `main`: `jj git fetch`, then `jj log -r 'main::@' ` (or `jj new main` if the working copy is empty). A fetch alone doesn't move the checkout, and paths and docs go stale fast
 - Others work here at the same time: touch only your files
 - No `jj restore`, worktrees or PRs
 - Commit your own files with a user-facing message
