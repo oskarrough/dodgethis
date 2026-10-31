@@ -12,7 +12,7 @@ A hero is done when a player can name them from the match camera at a glance and
 3. **Build** the hero in `src/modes/moba/heroes/<id>/`.
 4. **Read.** In a worktree, `bun install` once and render your own checkout with `DEV_AGENT_PORT=<a free port>`; the shared dev server may be serving someone else's code. Run `bun run shot overthrow --lineup --read` and look at `read.png`: the whole cast in colour, then in grayscale at match size. Fix the build and shoot again until the new hero is clearly their own shape in grayscale.
 5. **Feel.** Run `bun run cast <id> --clip` through the `ability-feel` skill, with the basic attack and at least one ability. Every press should answer on its first frame. To look at the clip, tile it into one image: `ffmpeg -i cast.webm -vf "fps=4,scale=480:-1,tile=4x3" -frames:v 1 sheet.png`.
-6. **Second eye.** Have a different model critique `read.png` and the clip sheet: `bb thread spawn --project $BB_PROJECT_ID --parent-self --provider codex --prompt-file -` with the image paths and what to judge, then read its answer with `bb thread output <id>`. Fix one round of what it finds, and file the rest in Oskar's inbox (`bb tasks create --project INBOX`) rather than dropping them.
+6. **Second eye.** Have a different model critique `read.png` and the clip sheet: `bb thread spawn --project $BB_PROJECT_ID --parent-self --provider codex --prompt-file -` with the image paths and what to judge, then read its answer with `bb thread output <id>`. Fix one round of what it finds, and file the rest as a GitHub issue assigned to oskarrough (`gh issue create --assignee oskarrough`) rather than dropping them.
 
 ## What has gone wrong before
 
