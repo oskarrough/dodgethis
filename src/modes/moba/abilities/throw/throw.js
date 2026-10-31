@@ -1,7 +1,7 @@
 export default {
 	name: 'Throw',
 	kind: 'shot',
-	projectileShape: 'ball',
+	projectileShape: 'spool',
 	catchable: true,
 	tell: 'line',
 	held: 'line',

@@ -26,7 +26,7 @@ const view = {
 	orbitHeight: 0.5,
 	flickReach: 0.65,
 	snap: 0.065,
-	recover: 0.24,
+	throwFlight: 0.36,
 	segments: 24,
 }
 const up = new THREE.Vector3(0, 1, 0)
@@ -142,7 +142,8 @@ export function dress({ torso, costume, discY, own, part, detail, face, material
 		discY,
 		costume,
 		releases: {
-			throwYoYo: { snap: view.snap, recover: view.recover },
+			// Recovery lasts the longest flight (range / speed), so the spool is only ever in one place.
+			throwYoYo: { snap: view.snap, recover: view.throwFlight },
 			tangle: { snap: 0.05, recover: 0.2 },
 			aroundTheWorld: { snap: 0.08, recover: 0.24 },
 		},
@@ -157,6 +158,7 @@ export function animate(
 	const { yoYo, string, hand, span, discY } = rig
 	yoYo.position.set(view.idleX, discY + view.idleY, view.idleZ)
 	yoYo.rotation.y = time * STEP * 12
+	yoYo.visible = string.visible = true
 	const action = pose ?? (releasing ? releasePose : null)
 	const coil = pose ? poseWindup(progress) : releasing ? (1 - fire) * settle : 0
 	const strike = releasing ? poseStrike(fire, settle) : 0
@@ -166,6 +168,8 @@ export function animate(
 		yoYo.position.z += view.throwPull * coil - view.throwReach * strike
 		yoYo.position.y += view.throwPull * coil + strike * 0.15
 		costume.rotation.set(-0.22 * coil + 0.16 * strike, -0.65 * coil + 0.2 * strike, 0.16 * coil)
+		// Once thrown, the spool is the shot itself; the hand stays empty until it could be back.
+		if (releasing) yoYo.visible = string.visible = false
 	} else if (action === 'tangle') {
 		// Load on the hand side; mesh yaw mirrors this local angle into the release stroke.
 		const angle = pose

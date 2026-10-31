@@ -113,22 +113,32 @@ export function createView(scene, smooth) {
 	const celluloidGeometry = own(new THREE.SphereGeometry(0.2, 12, 8))
 	const celluloidMaterial = flat('cream')
 	const trailMaterial = flat('cream')
+	// A thrown spool (Lasso's yo-yo): team cheek face-up, an ink rim, and an ink string behind it.
+	const spoolGeometry = own(new THREE.CylinderGeometry(0.3, 0.3, 0.16, 20))
+	const spoolRimGeometry = own(new THREE.CylinderGeometry(0.33, 0.33, 0.05, 20))
+	const spoolTrailGeometry = own(new THREE.BoxGeometry(0.05, 0.04, 1).translate(0, 0, -0.5))
+	const inkMaterial = flat('ink')
 	const bolts = new Map() // shot id → { mesh, trail, shot, from, pose, unsmooth }
 	const UP = new THREE.Vector3(0, 1, 0)
 	function bolt(shot, from) {
 		const mesh = new THREE.Group()
-		const spherical = shot.ability === 'bank' || abilityOf(shot.ability)?.projectileShape === 'ball'
+		const shape = abilityOf(shot.ability)?.projectileShape
+		const spool = shape === 'spool'
+		const spherical = shot.ability === 'bank' || shape === 'ball'
 		const body = new THREE.Mesh(
-			spherical ? celluloidGeometry : boltGeometry,
-			spherical
-				? celluloidMaterial
-				: shot.slot === 'primary' || ['tower', 'ranged', 'wizard'].includes(shot.slot)
-					? barColors[shot.team]
+			spool ? spoolGeometry : spherical ? celluloidGeometry : boltGeometry,
+			spool || shot.slot === 'primary' || ['tower', 'ranged', 'wizard'].includes(shot.slot)
+				? (barColors[shot.team] ?? boltMaterial)
+				: spherical
+					? celluloidMaterial
 					: boltMaterial,
 		)
+		if (spool) body.add(new THREE.Mesh(spoolRimGeometry, inkMaterial))
 		if (shot.slot === 'primary') body.scale.setScalar(tune.attack.visualScale)
 		if (shot.slot === 'tower') body.scale.setScalar(look.laneView.orbScale)
-		const trail = new THREE.Mesh(trailGeometry, trailMaterial)
+		const trail = spool
+			? new THREE.Mesh(spoolTrailGeometry, inkMaterial)
+			: new THREE.Mesh(trailGeometry, trailMaterial)
 		trail.scale.z = 0.001
 		mesh.add(body, trail)
 		group.add(mesh)
