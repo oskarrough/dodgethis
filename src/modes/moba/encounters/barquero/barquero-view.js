@@ -39,6 +39,8 @@ export function view(scene) {
 		clay,
 	)
 	let built = null
+	let delivered = false
+	let lastTick = -1
 	function build(fight) {
 		const points = fight.road()
 		const dot = new THREE.CircleGeometry(v().road, 12)
@@ -61,9 +63,14 @@ export function view(scene) {
 		return true
 	}
 	return {
+		present(fact) {
+			if (fact.type === 'encounter' && fact.id === 'barquero') delivered = fact.result === 'killed'
+		},
 		update(sim) {
 			const fight = sim.dungeon?.encounters?.find((e) => e.id === 'barquero')
-			root.visible = !!fight && !fight.killed
+			if (sim.tick < lastTick) delivered = false
+			lastTick = sim.tick
+			root.visible = !!fight && !fight.killed && !delivered
 			if (!root.visible) return
 			built ??= build(fight)
 			const on = sim.tick < fight.state.rollsUntil

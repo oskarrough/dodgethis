@@ -1,5 +1,22 @@
 [
 	{
+		"at": "2026-10-31T22:33:51.261Z",
+		"title": "Wardens of Altamesa",
+		"ask": "Judge the arrival, the weight of the fall, and whether the quiet room reads as cleared.",
+		"status": "To review",
+		"decision": "",
+		"media": [
+			"media/2026-10-31-wardens-of-altamesa/before-arrival.png",
+			"media/2026-10-31-wardens-of-altamesa/after-arrival.png",
+			"media/2026-10-31-wardens-of-altamesa/before-clear.png",
+			"media/2026-10-31-wardens-of-altamesa/after-clear.png",
+			"media/2026-10-31-wardens-of-altamesa/after-fall.png"
+		],
+		"links": [],
+		"thread": "thr_82amqx9zsz",
+		"page": "2026-10-31-wardens-of-altamesa/"
+	},
+	{
 		"at": "2026-10-31T22:30:44.222Z",
 		"title": "Lasso: Around the world gets its own orbit ring",
 		"ask": "Around the world now closes a full ring at its true reach, with short spikes flung outward, while Tangle keeps its open snare arc. Land it, or try another shape?",

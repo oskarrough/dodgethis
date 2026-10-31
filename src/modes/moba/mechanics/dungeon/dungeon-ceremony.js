@@ -177,13 +177,14 @@ export function wardenCeremony(scene) {
 					const point =
 						id === 'barquero'
 							? fight.road().at(-1)
-							: { x: at.x + tune.encounters.manos.door.x, z: at.z - 4 }
+							: { x: at.x + tune.encounters.manos.door.x - 2.6, z: at.z - 4.8 }
 					figure.root.visible = !won
 					figure.root.position.set(point.x, lift * 0.7, point.z)
 					figure.root.rotation.z = lift * (id === 'manos' ? -0.5 : 0.2)
 					if (won) fall(id, point, record.end)
 				}
-				if (won && (time - record.end) * STEP > 0.6) roomAfter(id, record.at)
+				if (won && (time - record.end) * STEP > 0.6)
+					roomAfter(id, id === 'barquero' ? fight.road().at(-1) : record.at)
 			}
 			for (const [id, figure] of fallen) {
 				const age = Math.max(0, (time - figure.tick) * STEP)
