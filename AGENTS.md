@@ -21,6 +21,7 @@ A web game: two modes, dodgeball and a MOBA, on one engine.
 ## Scripts
 
 - `bun run dev:agent` shared dev server, never stop it
+- The shared dev server sometimes stops noticing edits and serves stale CSS or JS: curl the file to check, and if it's stale run a private `vite --port <free>` instead
 - `bun run check` lint, format and leftovers, a few seconds: run it often
 - `bun run test` the unit tests and map smoke, before every push (the pre-push hook runs it under git; jj skips hooks, so run it yourself)
 - `bun run simulate --summary` headless bot matches; `play:headless` drives one
