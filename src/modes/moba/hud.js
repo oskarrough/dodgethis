@@ -196,8 +196,27 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 	const topBar = [top, objective]
 	// A mechanic's view may say how its match is won instead (`goal`: line, card).
 	const goal = (mechanics ?? []).map(({ id }) => mechanicViews[id]?.goal).find(Boolean)
-	hot(objective, { kind: 'objective' }, topBar).textContent =
-		goal?.line ?? 'Destroy the enemy core to win'
+	hot(objective, { kind: 'objective' }, topBar)
+	if (!goal?.marks) objective.textContent = goal?.line ?? 'Destroy the enemy core to win'
+	// A goal with `marks` is drawn: a small mark per target, struck through when it falls.
+	const marks = new Map()
+	function drawMarks(list) {
+		for (const m of list) {
+			let mark = marks.get(m.id)
+			if (!mark) {
+				mark = el('i', 'moba-mark', objective, m.icon)
+				const lock = el('i', 'moba-mark-lock', mark, goal.lock ?? '')
+				const strike = el('i', 'moba-mark-strike', mark)
+				marks.set(m.id, mark)
+				mark.parts = { lock, strike }
+			}
+			data(mark, 'state', m.state)
+			data(mark, 'last', String(!!m.last))
+			put(mark, 'label', m.name, (v) => mark.setAttribute('aria-label', v))
+		}
+		const says = list.map((m) => `${m.name}${m.state === 'down' ? ' fallen' : ''}`).join(', ')
+		put(objective, 'says', says, (v) => objective.setAttribute('aria-label', v))
+	}
 	const summary = el('span', 'moba-sr', top)
 	const sides = {}
 	const side = (which) => {
@@ -686,6 +705,7 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 					prop(t.face, '--f', String(!r ? 0 : r.full ? 1 : ring(r.left, r.total)))
 					flag(t.node, 'warn', !!r?.warn)
 				}
+				if (goal?.marks) drawMarks(goal.marks(sim))
 				const alive = (t) => sim?.heroes?.filter((h) => h.team === t && !h.dead).length ?? 0
 				// One plain sentence for screen readers and scripts; only rewritten when a whole second ticks.
 				text(

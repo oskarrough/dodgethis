@@ -1,5 +1,6 @@
 import { wardenCeremony } from './dungeon-ceremony.js'
 import { tune } from '../../tune.js'
+import { LOCK, wardenMarks } from './dungeon-marks.js'
 import encounterViews from '../../encounters/all-encounter-views.js'
 
 export { dressBoss as dress } from './dungeon-dress.js'
@@ -80,9 +81,12 @@ export const timer = {
 	},
 }
 
-// The top bar's goal line and its card.
+// The top bar's goal and its card. The goal is drawn, not written: a mark per Warden (`marks`);
+// `line` is only what a screen reader hears.
 export const goal = {
-	line: 'Fell Gnomon atop the stair',
+	line: 'Wardens',
+	marks: wardenMarks,
+	lock: LOCK,
 	card: (sim) => {
 		const boons = sim?.dungeon?.run.boons ?? []
 		return {
