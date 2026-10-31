@@ -7,7 +7,7 @@
 // frame-stepped sim becomes one video frame, so the clip plays at authored speed whatever the load on the box:
 // the sim never runs on the browser's clock here. It shows the match camera but no HUD (the canvas only).
 // The row stands on Overthrow's centre line, clear of cover (`--at x,z` for another map or spot; the hero faces +x).
-// Writes cast.json (the assertions and authored times), frames/ and cast.webm to --out. Takes the capture lock.
+// Writes cast.json (the assertions and authored times), frames/, cast.webm and a frame sheet per step to --out. Takes the capture lock.
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { parseArgs } from 'node:util'
@@ -362,8 +362,33 @@ if (values.clip && frameCount) {
 		'yuv420p',
 		file,
 	])
+	// An agent can't watch the clip: each step also becomes one sheet of up to 18 evenly spaced frames.
+	const sheets = []
+	let first = 1
+	for (const [i, segment] of segments.entries()) {
+		const count = Math.min(18, segment.frames)
+		const picks = [
+			...new Set(
+				Array.from({ length: count }, (_, k) => first + Math.floor((k * segment.frames) / count)),
+			),
+		]
+		first += segment.frames
+		if (!picks.length) continue
+		const sheet = join(out, `sheet-${i + 1}-${segment.step.replace(/[^\w-]+/g, '-')}.jpg`)
+		run('magick', [
+			'montage',
+			...picks.map((n) => join(framesDir, `${String(n).padStart(5, '0')}.jpg`)),
+			'-tile',
+			'6x',
+			'-geometry',
+			'480x+2+2',
+			sheet,
+		])
+		sheets.push(sheet)
+	}
 	clip = {
 		file,
+		sheets,
 		frames: frameCount,
 		seconds: +(frameCount / fps).toFixed(2),
 		fps,
@@ -393,6 +418,6 @@ for (const r of results) {
 	)
 }
 console.log(
-	`${join(out, 'cast.json')}${clip ? `\n${clip.file} (${clip.frames} frames, ${clip.seconds} s at ${clip.fps} fps)` : ''}`,
+	`${join(out, 'cast.json')}${clip ? `\n${clip.file} (${clip.frames} frames, ${clip.seconds} s at ${clip.fps} fps)\n${clip.sheets.join('\n')}` : ''}`,
 )
 if (!report.ok) process.exitCode = 1
