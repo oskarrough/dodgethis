@@ -7,7 +7,6 @@ A web game: two modes, dodgeball and a MOBA, on one engine.
 - `docs/moba.md` design, `docs/roadmap.md` plan, `docs/verify.md` proving, `docs/build-rules.md` builder rules
 - `docs/world.md` is the world bible: setting, mood, keywords and prompt words for art and music. Read it before you draw, write, name or compose anything
 - Images (concept frames, plates, tiles, inlays, sheets) go through the `art` skill (`.agents/skills/art/`, `bun scripts/art-prompt.js`), which builds every prompt from world.md and look.md
-- For concepts, pass that prompt and its references to OpenCode's `experimental_image_generate`; keep the prompt beside the review image in `pages/art/`.
 - Generated concepts are targets for review, not shipping assets; do not put them into the game without Oskar's review.
 - Music is made in Oskar's Jukebox (`oskarrough/jukebox`, https://jukebox.0sk.ar); never build a music tool inside dodgethis
 
@@ -21,7 +20,7 @@ A web game: two modes, dodgeball and a MOBA, on one engine.
 ## Scripts
 
 - `bun run dev:agent` shared dev server, never stop it
-- If the shared server serves stale code, check it runs from this checkout (`readlink /proc/<vite pid>/cwd`); once it ran from an old worktree for days
+- If the shared server serves stale code, check it runs from this checkout (`readlink /proc/<vite pid>/cwd`)
 - `bun run check` lint, format and leftovers, a few seconds: run it often
 - `bun run test` the unit tests and map smoke, before every push (the pre-push hook runs it under git; jj skips hooks, so run it yourself)
 - `bun run simulate --summary` headless bot matches; `play:headless` drives one
@@ -61,5 +60,5 @@ Everything we write for players or for each other (game text, tooltips, docs, pr
 
 - Running several threads at once: read the `orchestrate` skill (`.agents/skills/orchestrate/`). Making or polishing a map: the `map` skill. Making or reworking a hero: the `hero` skill. Any image: the `art` skill
 
-- The coordinator briefs (goal, done means, owned files; a proof only when Oskar must judge a look or feel), reviews with the reverse model and owns this file; workers pin their own pages with `bun run review`, which writes `pages/items.json`. Briefs never ask for replay sweeps, probes or proof pages unless Oskar does (2026-10-22)
+- The coordinator briefs (goal, done means, owned files; a proof only when Oskar must judge a look or feel), reviews with the reverse model and owns this file; workers pin their own pages with `bun run review`, which writes `pages/items.json`. Briefs never ask for replay sweeps, probes or proof pages unless Oskar does
 - The user owns the look; a question that can wait becomes a GitHub issue assigned to oskarrough, with a screenshot, and work carries on meanwhile
