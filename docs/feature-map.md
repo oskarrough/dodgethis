@@ -233,7 +233,7 @@ Paths are under `src/modes/moba/` unless they start with `src/`. `tune.js` means
 - Stale build gets "New version, reload": `net.js` `BUILD`, `staleBuild`; `vite.config.js` `define`; `online-ui.js` `stale`; dev fake `/CODE?build=old`
 - Link previews (og tags, key art `public/og.jpg`) and the room's own preview title: `index.html`; `worker/index.js` `roomPage`
 - Result card Copy link (a line of the match plus the address bar's link, the room's when shared): moba `menu.js` `share`
-- A dungeon run's result page (a quiet beat on the last fall, then the Warden marks, the run's time, your level and the party's deaths, a slot for the talent build; Try again starts the same party and difficulty afresh, Leave goes home): moba `run-result.js`, `run-result.css`, `menu.js` `result`; `tune.hud.runEnding`
+- A dungeon run's result page (a quiet beat on the last fall, then the Warden marks, the run's time, your level, the party's deaths and your talent build; Try again starts the same party and difficulty afresh, Leave goes home): moba `run-result.js`, `run-result.css`, `menu.js` `result`; `tune.hud.runEnding`
 - Transport (peer link, envelopes): `src/online/net.js` `Net`, `plainJoinData`; `src/online/link.js` `createLink`
 - Online parity, snapshot and replica wiring (Cushion cover, gates, camps, flag, guest fog): `sim-snapshot.js` `snapshot` writes host state; `lane-replica.js` `projectLaneSnapshot`, `createLaneReplica` packs/applies lane state; moba `index.js` `FACTS` whitelists feedback and registers guest fog; `lobby-replica.js` handles the lobby; `src/modes/dodgeball/replica.js` handles dodgeball; `network.md`
 
