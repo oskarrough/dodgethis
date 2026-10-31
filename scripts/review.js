@@ -89,6 +89,8 @@ if (import.meta.main) {
 	const items = existsSync(itemsPath) ? JSON.parse(readFileSync(itemsPath, 'utf8')) : []
 	items.unshift(item)
 	writeFileSync(itemsPath, JSON.stringify(items, null, '\t') + '\n')
+	// JSON.stringify spreads short arrays over lines; oxfmt (bun run check) wants them on one
+	Bun.spawnSync(['bunx', 'oxfmt', itemsPath])
 	writePage(item)
 	console.log(`http://office-linux.heron-mermaid.ts.net:5173/pages/${item.page}`)
 }
