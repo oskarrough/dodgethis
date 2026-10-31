@@ -1,7 +1,8 @@
-// bun run shot <map> [--spots name,...] [--out dir] [--gray] [--compare target.png] [--photo] [--seed 2] [--light name] [--hero id] [--lineup [ids]]
+// bun run shot <map> [--spots name,...] [--out dir] [--gray] [--compare target.png] [--photo] [--seed 2] [--light name] [--hero id] [--lineup [ids]] [--read]
 // Opens a moba match on the shared dev server at 1600×900 and screenshots named spots (`start` plus the map tune's `shots`),
 // or with --photo freezes it, hides the HUD and shoots fixed camera poses (the tune's `photos`, else wide, rim and lane).
 // --lineup stands every playable hero (or the listed ids) in a row facing the camera, frozen, as lineup.png.
+// --read adds read.png: the row in colour above the same row in grayscale at a third of its size, blown back up.
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { parseArgs } from 'node:util'
@@ -21,6 +22,7 @@ const { values, positionals } = parseArgs({
 		spots: { type: 'string' },
 		out: { type: 'string' },
 		gray: { type: 'boolean', default: false },
+		read: { type: 'boolean', default: false },
 		compare: { type: 'string' },
 		photo: { type: 'boolean', default: false },
 		seed: { type: 'string', default: '2' },
@@ -32,7 +34,7 @@ const { values, positionals } = parseArgs({
 const map = positionals[0]
 if (!map) {
 	console.error(
-		'usage: bun run shot <map> [--spots name,...] [--out dir] [--gray] [--compare target.png] [--photo] [--seed 2] [--light name] [--hero id] [--lineup [ids]]',
+		'usage: bun run shot <map> [--spots name,...] [--out dir] [--gray] [--compare target.png] [--photo] [--seed 2] [--light name] [--hero id] [--lineup [ids]] [--read]',
 	)
 	process.exit(1)
 }
@@ -164,6 +166,39 @@ try {
 			const gray = file.replace(/\.png$/, '-gray.png')
 			run('magick', [file, '-colorspace', 'Gray', gray])
 			console.log(gray)
+		}
+		// About 130 px a hero at the match camera, so the crop holds the row and its names and bars.
+		if (values.read && row) {
+			const width = Math.min(1600, lineup.length * 130 + 60)
+			const crop = `${width}x170+${Math.round(800 - width / 2)}+325`
+			const read = join(out, 'read.png')
+			run('magick', [
+				'(',
+				file,
+				'-crop',
+				crop,
+				'+repage',
+				'-resize',
+				'200%',
+				')',
+				'(',
+				file,
+				'-crop',
+				crop,
+				'+repage',
+				'-colorspace',
+				'Gray',
+				'-resize',
+				'34%',
+				'-filter',
+				'point',
+				'-resize',
+				'588%',
+				')',
+				'-append',
+				read,
+			])
+			console.log(read)
 		}
 		// Target, frame and grey side by side at half size, so a judge needs one look.
 		if (values.compare) {

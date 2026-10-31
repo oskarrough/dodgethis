@@ -56,7 +56,7 @@ Everything we write for players or for each other (game text, tooltips, docs, pr
 
 ## Coordinating
 
-- Running several threads at once: read the `orchestrate` skill (`.agents/skills/orchestrate/`). Making or polishing a map: the `map` skill. Any image: the `art` skill
+- Running several threads at once: read the `orchestrate` skill (`.agents/skills/orchestrate/`). Making or polishing a map: the `map` skill. Making or reworking a hero: the `hero` skill. Any image: the `art` skill
 
 - The coordinator briefs (goal, done means, owned files; a proof only when Oskar must judge a look or feel), reviews with the reverse model, owns `pages/items.json` and this file. Briefs never ask for replay sweeps, probes or proof pages unless Oskar does (2026-10-22)
 - The user owns the look; questions that can wait go to the inbox

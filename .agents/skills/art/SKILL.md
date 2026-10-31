@@ -42,7 +42,7 @@ An agent with either image tool may paint; otherwise a code thread asks a capabl
 
 **Heroes.** Before a hero is painted or modelled, its row in docs/heroes.md's silhouettes table names its shape from above, its one prop and its accent part, and no two rows share a shape or prop. Name the hero's own colour and the one team-coloured part in the prompt; exclude other red, blue and gold, which the generator likes to add as scarves and fittings. Keep the family mark: a dark brow band with small cream eyes, chipped edges, one hard angle each.
 
-Before building, inspect the top view at roughly 34 px against the actual court colour and in grayscale, beside the existing cast. The large side view may look splendid while the shape seen by a player vanishes. Pick a study and give the builder one sentence explaining why, plus the two or three shapes that must survive at match size. After building, inspect one real match-camera lineup and correct anything that failed to translate; a concept is a target, not proof of the in-game result.
+The rest of a hero's path, from build to readability and feel, is the `hero` skill.
 
 ## Check before you show it
 
