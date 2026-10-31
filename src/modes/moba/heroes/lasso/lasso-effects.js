@@ -65,10 +65,40 @@ export function extras(scene) {
 						radius: Math.max(0.01, (world ? stats.radius : stats.range) - 0.18),
 						width: 0.18,
 						sweep: world ? Math.PI * 2 : (stats.angle * Math.PI) / 180,
-						life: world ? 0.24 : 0.18,
+						life: world ? 0.2 : 0.18,
 						y: 0.42,
 						opacity: 0.75,
 					})
+					// Tangle leaves an open snare; Around the world closes the orbit on the ground at its true reach,
+					// and short strokes fling out past it where the knockback sends them.
+					if (world) {
+						for (const [color, width, y] of [
+							[PALETTE.ink, 0.11, 0.05],
+							[PALETTE.cream, 0.06, 0.06],
+						])
+							effects.ring(fact.point, {
+								color,
+								from: stats.radius,
+								to: stats.radius + 0.12,
+								width: width / stats.radius,
+								life: 0.38,
+								delay: 0.06,
+								y,
+								opacity: 0.95,
+							})
+						effects.spokes(fact.point, {
+							color: PALETTE.cream,
+							ink: PALETTE.ink,
+							count: 8,
+							from: stats.radius + 0.2,
+							to: stats.radius + 1.1,
+							inner: 0.78,
+							width: 0.08,
+							life: 0.26,
+							delay: 0.08,
+							turn: fact.tick * 0.7,
+						})
+					}
 				} else {
 					const previous = reels.get(fact.target)
 					if (previous) remove(reels, fact.target, previous)
