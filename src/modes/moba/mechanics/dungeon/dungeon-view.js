@@ -92,7 +92,7 @@ export const goal = {
 		return {
 			title: 'How to win',
 			sentence:
-				'Gnomon sleeps until the court is cleared and one wing has lost all its bosses. Fell it and the mesa is yours. Fall, and you rise at the last waystone you passed, while the boss that beat you is made whole. Each wing boss leaves a boon that weakens Gnomon.',
+				'Gnomon sleeps until the six other Wardens have fallen, the wings in whichever order you like. Fell it and the mesa is yours. Fall, and you rise at the last waystone you passed, while the boss that beat you is made whole. Each wing boss leaves a boon that weakens Gnomon.',
 			facts: boons.length ? boons.map((boon) => [boon.name, boon.line]) : [['Boons', 'None yet']],
 		}
 	},

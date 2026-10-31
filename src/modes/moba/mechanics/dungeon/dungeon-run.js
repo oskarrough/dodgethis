@@ -26,8 +26,7 @@ function wardenStandIn(args, spot) {
 // One run through a dungeon map. Each of `layout.encounters` (`{ id, x, z, wing, last }`) is a fight
 // from its encounter folder: its `create` (a Warden stand-in without one) returns `state`, `step`,
 // `won`, its `units`, and optionally threat, bot hooks and `unit`, its boss. The `last` sleeps until
-// every encounter outside the wings is won and one of `layout.wings` is cleared; winning it ends the
-// run. A wipe resets only the boss you fell to, and you rise at the last waystone you passed; a
+// every other encounter is won, wings included; winning it ends the run. A wipe resets only the boss you fell to, and you rise at the last waystone you passed; a
 // waystone also mends whoever stands beside it while no boss fight is on. An encounter with a `boon`
 // leaves it when won, and the last is told each time (`bless`).
 // `current()` is the encounter being fought, or else the next one; `bossUnit()` is its boss for the
@@ -66,10 +65,8 @@ export function createDungeon(input) {
 	const current = () => engaged() ?? next() ?? list.at(-1)
 	// A boss stands in for the bar when the current encounter has none.
 	const anyBoss = list.find((e) => e.unit)
-	// The encounters outside the wings must all be won, and every one of one wing.
-	const stairOpen = () =>
-		list.every((e) => e.killed || e.last || layout.wings.includes(e.wing)) &&
-		layout.wings.some((wing) => list.every((e) => e.wing !== wing || e.killed))
+	// Every encounter but the last must be won; the wings may come in either order.
+	const stairOpen = () => list.every((e) => e.killed || e.last)
 	// `encounter` facts mark a boss fight's start and end for whoever keeps score (the damage meter).
 	function announce(entry) {
 		const now = fighting(entry.state.phase)
