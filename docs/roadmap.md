@@ -41,10 +41,12 @@ Open questions live in GitHub issues assigned to Oskar, one issue per ask, with 
 - A league: make a team, climb, see who gets rank 1.
 - Guest-side prediction, once guest latency actually bites.
 - The camera tilts out to the horizon when a core dies.
-- The heroic layer: mounts and R abilities (M5).
+- Mounts (M5).
 - Talents, once the kits settle and the farm can measure them.
 - 5v5.
 
 ## Shelved
+
+- Ultimate abilities: Oskar doesn't want them.
 
 - Highlight clips from replays.
