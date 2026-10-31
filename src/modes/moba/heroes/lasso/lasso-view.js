@@ -10,9 +10,9 @@ const view = {
 	innerRadius: 0.5,
 	innerOffset: 0.3,
 	height: 0.68,
-	yoYoRadius: 0.33,
-	yoYoDepth: 0.3,
-	stringRadius: 0.025,
+	yoYoRadius: 0.38,
+	yoYoDepth: 0.2,
+	stringRadius: 0.04,
 	handX: 0.55,
 	handY: 0.75,
 	handZ: -0.15,
@@ -98,18 +98,17 @@ export function dress({ torso, costume, discY, own, part, detail, face, material
 		],
 		materials.ink,
 	)
+	// The spool lies flat, so its team-coloured cheek faces the roof camera whichever way Lasso turns.
 	const yoYo = part(
-		new THREE.CylinderGeometry(
-			view.yoYoRadius,
-			view.yoYoRadius,
-			view.yoYoDepth,
-			view.segments,
-		).rotateZ(Math.PI / 2),
+		new THREE.CylinderGeometry(view.yoYoRadius, view.yoYoRadius, view.yoYoDepth, view.segments),
 		materials.team,
 	)
 	part(
-		new THREE.CylinderGeometry(view.yoYoRadius + 0.008, view.yoYoRadius + 0.008, 0.035, 12).rotateZ(
-			Math.PI / 2,
+		new THREE.CylinderGeometry(
+			view.yoYoRadius + 0.012,
+			view.yoYoRadius + 0.012,
+			0.05,
+			view.segments,
 		),
 		materials.ink,
 		0,
@@ -117,14 +116,14 @@ export function dress({ torso, costume, discY, own, part, detail, face, material
 		0,
 		yoYo,
 	)
-	// An enamel slash on each cheek makes the spool's rotation visible.
+	// An ink slash across each cheek makes the spin visible without washing out the team face.
 	for (const side of [-1, 1])
 		part(
-			new THREE.BoxGeometry(0.015, view.yoYoRadius * 0.25, view.yoYoRadius * 1.5),
-			materials.cream,
+			new THREE.BoxGeometry(view.yoYoRadius * 1.4, 0.015, view.yoYoRadius * 0.18),
+			materials.ink,
+			0,
 			side * (view.yoYoDepth / 2 + 0.005),
 			view.yoYoRadius * 0.25,
-			0,
 			yoYo,
 		)
 	const string = part(
@@ -157,7 +156,7 @@ export function animate(
 ) {
 	const { yoYo, string, hand, span, discY } = rig
 	yoYo.position.set(view.idleX, discY + view.idleY, view.idleZ)
-	yoYo.rotation.x = time * STEP * 12
+	yoYo.rotation.y = time * STEP * 12
 	const action = pose ?? (releasing ? releasePose : null)
 	const coil = pose ? poseWindup(progress) : releasing ? (1 - fire) * settle : 0
 	const strike = releasing ? poseStrike(fire, settle) : 0
