@@ -403,11 +403,41 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden])) > .moba-top {
 .overlay .moba-pause .actions {
 	grid-row: 3;
 	grid-column: 1 / span 6;
+	flex-direction: column;
+	flex-wrap: nowrap;
+	align-items: stretch;
+	width: max-content;
+	max-width: 100%;
+	gap: clamp(14px, 1.8vw, 24px);
+}
+/* Leave wears a door with an arrow out of it, drawn in the same ink as the card's type. */
+.overlay .moba-pause .actions button.pause-leave {
+	align-items: center;
+}
+.overlay .moba-pause .pause-leave .label {
+	flex: none;
+	padding-left: 0.3em;
+}
+.moba-pause .pause-door {
+	display: grid;
+	place-items: center;
+	flex: none;
+	width: 1.15em;
+	margin-left: 0.6em;
+}
+.moba-pause .pause-door svg {
+	width: 100%;
+	height: 1.15em;
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 2.6;
+	stroke-linecap: round;
+	stroke-linejoin: round;
 }
 /* Quick cast is a setting under the actions: an unnumbered row with the box as
    the only frame (frame means press). Your cursor on it lifts the box and fills it with the wash. */
 .overlay .moba-pause .actions button.pause-check {
-	flex: 0 0 100%;
+	flex: none;
 	justify-content: flex-start;
 	align-self: start;
 	gap: 0.6em;

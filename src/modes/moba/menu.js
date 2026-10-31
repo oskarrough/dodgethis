@@ -1,6 +1,5 @@
 import { tune } from './tune.js'
-import { controls, cyclePreset, onPreset, setQuickCast } from '../../core/controls.js'
-import { PRESETS } from '../../core/intents.js'
+import { controls, setQuickCast } from '../../core/controls.js'
 import { hex } from '../../core/style.js'
 import { createCornerNav } from '../../core/corner-nav.js'
 import { createRecap } from './recap.js'
@@ -66,7 +65,6 @@ export function createMatchMenu({
 		resetInput()
 		app.audio.setMusicScene(paused ? 'paused' : 'play')
 		if (!paused) return app.overlay.hide()
-		presetAction.label = presetLabel()
 		app.overlay.show({
 			title: 'PAUSED',
 			theme: 'moba-pause',
@@ -74,10 +72,10 @@ export function createMatchMenu({
 			spaceConfirm: false,
 			actions: [
 				{ label: 'Resume', onSelect: toggle },
-				{ label: sim.dungeon ? 'Party lobby' : 'Leave game', onSelect: sim.dungeon ? leave : quit },
-				// Settings, not actions: the last cursor stops, drawn small under the two.
+				{ label: 'Leave', onSelect: sim.dungeon ? leave : quit },
+				// A setting, not an action: the last cursor stop, drawn small under the two. The
+				// controls preset lives on the top-right tile.
 				{ label: 'Quick cast', onSelect: toggleQuickCast },
-				presetAction,
 			],
 		})
 		const card = document.querySelector('.overlay[data-theme="moba-pause"] .dialog-card')
@@ -90,19 +88,6 @@ export function createMatchMenu({
 			.querySelector('.overlay[data-theme="moba-pause"] .pause-check')
 			?.setAttribute('aria-checked', String(controls.quickCast))
 	}
-	const presetLabel = () => `Controls: ${PRESETS[controls.preset]?.name ?? PRESETS.moba.name}`
-	// Cycles MOBA → WASD → keyboard only in place, dropping any held aim from the old bindings.
-	const presetAction = { label: presetLabel(), onSelect: nextPreset }
-	function nextPreset() {
-		cyclePreset()
-		app.intents.cancel(hero.id)
-	}
-	// The top-right tile cycles it too, even under the open page.
-	const offPreset = onPreset(() => {
-		presetAction.label = presetLabel()
-		const label = document.querySelector('.overlay[data-theme="moba-pause"] .pause-preset .label')
-		if (label) label.textContent = presetAction.label
-	})
 	// The front end's paper for anything that stops play: the map's wash, day or night, and the
 	// two team inks (menu.css).
 	function paper(node) {
@@ -131,8 +116,16 @@ export function createMatchMenu({
 	// how the match stands, so the page holds only what you can do.
 	function pausePage(card) {
 		paper(card).classList.add('moba-page', 'moba-pause')
-		const [, , quick, preset] = card.querySelectorAll('.actions button')
-		preset?.classList.add('pause-check', 'pause-preset')
+		const [, leaveButton, quick] = card.querySelectorAll('.actions button')
+		leaveButton?.classList.add('pause-leave')
+		leaveButton?.prepend(
+			el(
+				'span',
+				'pause-door',
+				null,
+				'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4.5H5.5v15H10"/><path d="M9.5 12h10.5M16.5 8.2 20.3 12l-3.8 3.8"/></svg>',
+			),
+		)
 		if (!quick) return
 		quick.classList.add('pause-check')
 		quick.setAttribute('role', 'checkbox')
@@ -270,7 +263,6 @@ export function createMatchMenu({
 		'abort',
 		() => {
 			recap.dispose()
-			offPreset()
 			corner?.el.remove()
 			app.overlay.hide()
 		},
