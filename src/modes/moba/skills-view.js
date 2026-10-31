@@ -63,7 +63,9 @@ export function createSkillsView(scene) {
 	const extras = [...Object.values(HERO_VIEWS), ...Object.values(ABILITY_VIEWS)].flatMap((view) =>
 		view.extras ? [view.extras(scene)] : [],
 	)
-	const ring = new THREE.RingGeometry(0.94, 1, 48).rotateX(-Math.PI / 2)
+	// The edge of every circle tell, zone mark and held aim ring: a 3% stroke, half of the old one,
+	// so a 4 m Slam warning reads as an edge rather than a band.
+	const ring = new THREE.RingGeometry(0.97, 1, 48).rotateX(-Math.PI / 2)
 	const disc = new THREE.CircleGeometry(1, 48).rotateX(-Math.PI / 2)
 	const arrow = new THREE.Shape()
 	arrow.moveTo(-0.18, 0)
