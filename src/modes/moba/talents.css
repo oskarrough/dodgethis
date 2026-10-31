@@ -1,0 +1,300 @@
+/* The talent tree (talents-view.js). The chip and the open row's talents are pressable, so they wear the
+   thick ink and the offset shadow; the panel is a readout like the unit frame above it: cream, thin line,
+   soft shadow. Rows sit on a grid with the level as a big index numeral. */
+.moba-talent-chip,
+.moba-talents {
+	--ink: var(--ui-text);
+	--cream: var(--ui-cream);
+	--apricot: color-mix(in srgb, var(--ui-gold) 22%, var(--ui-cream));
+	--talent-top: calc(24px + clamp(38px, 3.2vw, 52px) + 90px);
+	position: fixed;
+	left: 12px;
+	/* Over the damage meter while open: you asked for the tree. */
+	z-index: 4;
+	color: var(--ink);
+	font: var(--fs-base) / 1 var(--ui-font);
+}
+.moba-talent-chip[hidden],
+.moba-talents[hidden] {
+	display: none;
+}
+
+.moba-talent-chip {
+	top: var(--talent-top);
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	height: 34px;
+	padding: 0 6px 0 12px;
+	box-sizing: border-box;
+	background: var(--cream);
+	border: var(--line-thin) solid var(--ink);
+	border-radius: var(--radius-pill);
+	box-shadow: var(--shadow-float);
+	font-size: 17px;
+	cursor: pointer;
+	pointer-events: auto;
+	transition: transform 0.08s;
+}
+.moba-talent-chip .level:empty {
+	display: none;
+}
+.moba-talent-chip .key,
+.moba-talents .talent .key {
+	min-width: 18px;
+	padding: 3px 5px;
+	box-sizing: border-box;
+	font: 700 11px / 1 var(--text-font);
+	color: var(--cream);
+	background: var(--ink);
+	border-radius: 6px;
+	text-align: center;
+}
+/* Awake: a row is open. Now it is a thing to press, and it says so with the frame. */
+.moba-talent-chip.awake {
+	background: var(--apricot);
+	border-width: 3px;
+	box-shadow: 3px 4px 0 var(--ink);
+	animation: moba-talent-wake 0.5s ease-out 1;
+}
+.moba-talent-chip.awake .level {
+	display: grid;
+	place-items: center;
+	width: 24px;
+	height: 24px;
+	margin-left: -6px;
+	font-size: 17px;
+	font-weight: 400;
+	background: var(--cream);
+	border: 2px solid var(--ink);
+	border-radius: 50%;
+}
+.moba-talent-chip:hover {
+	transform: translate(-1px, -2px);
+}
+.moba-talent-chip[aria-pressed='true'] {
+	transform: translate(2px, 3px);
+	box-shadow: 1px 1px 0 var(--ink);
+}
+@keyframes moba-talent-wake {
+	0% {
+		transform: scale(0.85);
+	}
+	60% {
+		transform: scale(1.08);
+	}
+	100% {
+		transform: none;
+	}
+}
+
+.moba-talents {
+	top: calc(var(--talent-top) + 44px);
+	width: min(1000px, calc(100vw - 24px));
+	max-height: calc(100vh - var(--talent-top) - 56px);
+	overflow-y: auto;
+	box-sizing: border-box;
+	padding: 12px 14px 6px;
+	background: var(--cream);
+	border: var(--line-thin) solid var(--ink);
+	border-radius: var(--radius-card);
+	box-shadow: var(--shadow-float);
+	pointer-events: auto;
+}
+.moba-talents header {
+	display: grid;
+	grid-template-columns: 44px 1fr auto;
+	align-items: end;
+	column-gap: 10px;
+	padding-bottom: 8px;
+	border-bottom: var(--line-thin) solid var(--ink);
+}
+.moba-talents h2 {
+	grid-column: 1 / 3;
+	margin: 0;
+	font: 400 30px / 1 var(--ui-font);
+}
+.moba-talents .lede {
+	grid-column: 1 / 3;
+	margin: 4px 0 0;
+	font: var(--tip-fact);
+}
+.moba-talents .close {
+	grid-column: 3;
+	grid-row: 1 / 3;
+	align-self: start;
+	width: 30px;
+	height: 30px;
+	padding: 0 0 2px;
+	font: 700 20px / 1 var(--text-font);
+	color: var(--ink);
+	background: var(--cream);
+	border: 3px solid var(--ink);
+	border-radius: 50%;
+	box-shadow: 2px 3px 0 var(--ink);
+	cursor: pointer;
+}
+.moba-talents .close::before {
+	content: '×';
+}
+
+.moba-talents .row {
+	display: grid;
+	grid-template-columns: 44px repeat(3, minmax(0, 1fr));
+	gap: 6px;
+	padding: 5px 6px;
+	margin: 0 -6px;
+	border-radius: var(--radius-tile);
+	/* Rules between rows whisper (docs/ui.md). */
+	border-bottom: 1px solid color-mix(in srgb, var(--ink) 14%, transparent);
+}
+.moba-talents .row:last-child {
+	border-bottom: 0;
+}
+.moba-talents .index {
+	display: grid;
+	align-content: start;
+	justify-items: start;
+	gap: 2px;
+	padding-top: 2px;
+}
+.moba-talents .index b {
+	font: 400 38px / 0.9 var(--ui-font);
+}
+.moba-talents .index span {
+	font: 400 12px / 1 var(--text-font);
+}
+
+.moba-talents .talent {
+	position: relative;
+	display: grid;
+	grid-template-columns: 28px minmax(0, 1fr) auto;
+	align-items: center;
+	align-content: start;
+	gap: 3px 7px;
+	padding: 6px 8px 7px;
+	box-sizing: border-box;
+	text-align: left;
+	color: var(--ink);
+	font: inherit;
+	background: transparent;
+	border: var(--line-thin) solid transparent;
+	border-radius: var(--radius-tile);
+	cursor: default;
+}
+.moba-talents .talent .icon svg {
+	display: block;
+	width: 28px;
+	height: 28px;
+}
+.moba-talents .talent svg .tone {
+	fill: var(--ui-blue);
+	stroke: var(--ink);
+	stroke-width: 3;
+	stroke-linejoin: round;
+}
+.moba-talents .talent svg .cream {
+	fill: var(--cream);
+	stroke: var(--ink);
+	stroke-width: 3;
+}
+.moba-talents .talent svg .ink-line {
+	fill: none;
+	stroke: var(--ink);
+	stroke-width: 4;
+	stroke-linecap: round;
+}
+.moba-talents .talent .name {
+	font: 700 14px / 1.15 var(--text-font);
+}
+.moba-talents .talent .key:empty {
+	display: none;
+}
+.moba-talents .talent .text {
+	grid-column: 1 / -1;
+	margin: 0;
+	font: 400 12.5px / 1.3 var(--text-font);
+}
+.moba-talents .moba-kw {
+	position: relative;
+}
+.moba-talents .moba-kw:hover > .moba-kw-card,
+.moba-talents .moba-kw:focus > .moba-kw-card {
+	display: block;
+}
+
+/* Locked: the level is still ahead. Seen in full, just quieter, so you can look forward to it. */
+.moba-talents .row[data-state='locked'] .talent,
+.moba-talents .row[data-state='locked'] .index {
+	opacity: 0.5;
+}
+.moba-talents .row[data-state='locked'] .talent svg .tone {
+	fill: color-mix(in srgb, var(--ui-blue) 25%, var(--cream));
+}
+/* Open: the row you pick from now. Its three are pressable. */
+.moba-talents .row[data-state='open'] {
+	background: var(--apricot);
+}
+.moba-talents .row[data-state='open'] .talent {
+	background: var(--cream);
+	border: 3px solid var(--ink);
+	box-shadow: 3px 4px 0 var(--ink);
+	cursor: pointer;
+	transition:
+		transform 0.06s,
+		box-shadow 0.06s;
+}
+.moba-talents .row[data-state='open'] .talent:hover {
+	transform: translate(-1px, -2px);
+	box-shadow: 4px 6px 0 var(--ink);
+}
+/* Done: the one you took stands; the other two step back. */
+.moba-talents .row[data-state='done'] .talent:not(.picked) {
+	opacity: 0.38;
+}
+.moba-talents .row[data-state='done'] .talent:not(.picked) svg .tone {
+	fill: color-mix(in srgb, var(--ui-blue) 25%, var(--cream));
+}
+.moba-talents .talent.picked {
+	background: var(--cream);
+	border: var(--line-thin) solid var(--ink);
+}
+.moba-talents .talent.picked::after {
+	content: '';
+	position: absolute;
+	top: 9px;
+	right: 9px;
+	width: 14px;
+	height: 8px;
+	border-left: 3px solid var(--ink);
+	border-bottom: 3px solid var(--ink);
+	transform: rotate(-45deg);
+}
+
+@media (max-width: 720px) {
+	.moba-talents .row {
+		grid-template-columns: 40px minmax(0, 1fr);
+	}
+	.moba-talents .row .talent {
+		grid-column: 2;
+	}
+	.moba-talents .index b {
+		font-size: 34px;
+	}
+}
+
+/* Short screens: the whole tree still fits without scrolling. */
+@media (max-height: 960px) {
+	.moba-talents .lede {
+		display: none;
+	}
+	.moba-talents .row {
+		padding: 3px 6px;
+	}
+	.moba-talents .talent {
+		padding: 5px 8px 6px;
+	}
+	.moba-talents .talent .text {
+		font-size: 12px;
+	}
+}

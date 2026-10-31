@@ -36,6 +36,7 @@ const columns = {
 		'grounded',
 		'dashTime',
 		'dashDirection',
+		'talents',
 	],
 	minions: [
 		'statuses',
@@ -348,6 +349,15 @@ export function createLaneReplica(simulation, scene) {
 				!(h.respawnTick === null || tick(h.respawnTick))
 			)
 				return 'Invalid hero level or respawn clock'
+			if (
+				h.talents != null &&
+				!(
+					Array.isArray(h.talents) &&
+					h.talents.length <= 6 &&
+					h.talents.every((c) => c == null || [0, 1, 2].includes(c))
+				)
+			)
+				return 'Invalid talent picks'
 			const row = state.matchStats[h.id]
 			if (!row || row.heroId !== h.heroId || row.team !== h.team)
 				return 'Missing or mismatched hero recap'

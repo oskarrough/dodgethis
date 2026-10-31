@@ -25,6 +25,15 @@ window.addEventListener('pointerdown', () => {
 	device = 'keyboard'
 })
 
+// Actions a mode's own UI presses (a click on a talent card), taken by the next sample in order.
+const queuedActions = []
+export function queueAction(action) {
+	if (queuedActions.length < 8) queuedActions.push(action)
+}
+export function consumeQueued() {
+	return queuedActions.splice(0)
+}
+
 // Every fresh key-down, in order, for schemes that bind letters (pointClick's Q W E R Z S).
 const keyEdges = []
 export function consumeKeys() {
@@ -77,6 +86,7 @@ window.addEventListener('blur', () => {
 	padSlotQueued = null
 	keyEdges.length = 0
 	keyUps.length = 0
+	queuedActions.length = 0
 	padNeedsRelease = true
 })
 

@@ -89,6 +89,7 @@ const FACTS = [
 	'structureDown',
 	'shielded',
 	'levelUp',
+	'talent',
 	'swap',
 	'pick',
 	'seatClaim',

@@ -17,6 +17,9 @@ export const ACTIONS = Object.freeze([
 	'slot4',
 	'slot5',
 	'recall',
+	'talent1',
+	'talent2',
+	'talent3',
 ])
 
 // How long (seconds of simulation) an unconsumed press stays in the frame. Unlisted actions last one step.
@@ -214,6 +217,7 @@ export function pointClick(device, ground, options = POINT_CLICK) {
 	return function sample(stickAim = null) {
 		// Direct-only edges must not pile up for the next mode that reads them.
 		device.consumeSlot()
+		const queued = device.consumeQueued?.() ?? [] // presses the mode's own UI made (a talent pick)
 		const clicked = device.consumePress() // left click: attack-move if armed, a throw while carrying, or WASD's attack
 		device.consumeRelease()
 		device.consumeDash()
@@ -247,7 +251,9 @@ export function pointClick(device, ground, options = POINT_CLICK) {
 		}
 		const keyAt = (slot) => (preset.facing ? facingAim(slot) : at)
 
-		const pressed = []
+		const pressed = queued
+			.filter((a) => ACTIONS.includes(a))
+			.map((action) => ({ action, at: null }))
 		if (!pad) aiming.clear() // a lost pad or a blur drops held aims without casting (keyboard aims check keyHeld below)
 		for (const [i, slot] of PAD_AIMS)
 			if (down(i)) {

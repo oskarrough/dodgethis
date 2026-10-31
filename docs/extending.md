@@ -27,7 +27,7 @@
 - Camera: core owns the rig, shake, FOV kick and the unshaken aim camera. The mode supplies `frame(dt) → { eye, target }`, applied to both cameras, with shake applied to the render camera only.
 - Unit visual: it lives on the core body (root `mesh`, a cosmetic `visual` child, a default mannequin). Loadouts parent their parts to `visual`.
 - Lobby: dodgeball owns its difficulty portals. A fresh visit opens the splash in `moba/front/`, where the MOBA maps are the default and Dodgeball is a bonus pick; there's no in-game mode switch. `?mode=dodgeball` opens the hub, `?mode=moba` opens MOBA difficulty, and adding `&play` starts the match directly.
-- Oskar's calls: one input path for solo and online humans; `shared` as the single social flag; each mode owns its replica; movement feel is a per-mode tune value; no talents in the MVP; pad casts hold to aim and release to fire.
+- Oskar's calls: one input path for solo and online humans; `shared` as the single social flag; each mode owns its replica; movement feel is a per-mode tune value; no talents in the MVP's lanes (the dungeon has them, docs/dungeon.md); pad casts hold to aim and release to fire.
 
 ## Tune it live
 
@@ -58,7 +58,8 @@ Copy `heroes/undine/` and `abilities/balloon/`.
 3. **Effects:** declare `statuses` (slow, stun, freeze, shield, damage over time; tags, stacks, cleanse) and apply them with `sim.apply(unit, '<ability>.<status>', …)`. The strongest slow wins; a stun always lands in full.
 4. **Bots:** `bot` names a built-in tactic (`shoot`, `zone`, `dash`, `blink`, `cover`, `catch`, `cone`, `radial`), opts out with `false`, or brings `{ priority, act(ctx, slot) }`. Leave it out and the bot infers one from the kind.
 5. **Summons:** declare `summon: { hp: 'hp', radius: 'bodyRadius', lifetime: 'duration', brain }` and call `sim.summon(owner, '<ability>', at)`: an owned, replicated unit that outlives its owner's death and clears on hero swap, removal or match end. Computed values may remain functions of stats (Balloon's lifetime is flight plus puddle); `state` and `validData` keep custom state local.
-6. **Check:** `bun run collect-mods` (runs before `dev` and `check`), then `bun run simulate --report --lineup <id>,ibis,kappa` to see every ability cast and land.
+6. **Talents:** a tree for the dungeon is `heroes/<id>/<id>-talents.js`, handed to the hero as `talents`: six rows of three, a `name`, an `icon` and a manual-voiced `text` each, and `bot`, the column a bot takes per row. A talent changes the hero by restating its kit (`stats`, `ability`, `after`, `stages`, `traits`, aura `on` hooks); `talents.js` says what each does, and Ibis and Oolong show them all. Numbers go in `<id>-tune.js` under `talents.<talentId>`, which the text reads with `{tokens}`.
+7. **Check:** `bun run collect-mods` (runs before `dev` and `check`), then `bun run simulate --report --lineup <id>,ibis,kappa` to see every ability cast and land.
 
 `unit-definition.js` resolves this MOBA-local shape for heroes, the Warden (`heroes.js` `WARDEN_UNIT`), minions (`lane-waves.js`) and structures (`lane-structures.js`). Numeric fields name local tune keys; `attack` may instead map damage/rate/range/tell to tune keys. `brain: 'lane'` and `'boss'` identify the existing controllers, not a new dispatcher. Spawn order, live getters and each controller's evaluation points stay unchanged. `bun scripts/check-moba-effects.js` checks unit references and rejects unknown fields; computed fields stay code. Dodgeball keeps its own definitions.
 

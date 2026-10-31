@@ -1,4 +1,5 @@
 import { oolongBot } from './oolong-bot.js'
+import talents from './oolong-talents.js'
 
 export default {
 	unit: {
@@ -9,6 +10,7 @@ export default {
 		kit: { slot1: 'flyingKick', slot2: 'stagger', slot3: 'swig' },
 		brain: oolongBot,
 	},
+	talents,
 	name: 'Oolong',
 	order: 5,
 	color: 'driftwood',

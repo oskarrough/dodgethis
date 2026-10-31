@@ -92,6 +92,7 @@ export function createHeroMaker({ scene, world, RAPIER, smooth, lobby, floor, wa
 			lastOrder: -Infinity,
 			stall: 0,
 			lastRemaining: null,
+			talents: null, // picks by row in a dungeon run (talents.js); null where there are none
 		}
 	}
 	return { bodyAt, makeHero }
@@ -167,6 +168,8 @@ export function createRoster(ctx) {
 		hero.maxHp = definition.base.hp * (1 + tune.levels.growth * (hero.level - 1))
 		hero.hp = hero.maxHp * fraction
 		hero.abilityState = freshAbilityState(definition)
+		if (hero.talents) hero.talents = [] // a new hero starts a fresh tree
+		hero.talentState = {}
 		hero.attack = null
 		hero.attackTick = 0
 		hero.order = null

@@ -396,7 +396,9 @@ export function createStatuses(ctx) {
 	}
 	const context = (unit, status, extra = {}) => {
 		const [id] = status.key.split('.')
-		const ability = abilityOf(id)
+		// A hero source's own numbers, so a talent that restates them (talents.js) reaches its statuses.
+		const source = extra.source ?? status.src
+		const ability = abilityOf(id, source == null ? null : ctx.heroes.find((h) => h.id === source))
 		return {
 			unit,
 			hero: unit,
@@ -524,11 +526,17 @@ export function createStatuses(ctx) {
 					const hook = definition?.on?.[name]
 					if (hook) listeners.push({ unit, status, definition, hook, order: status.id })
 				}
-			if (abilities)
+			if (abilities) {
 				for (const ability of Object.values(unit.definition?.abilities ?? {})) {
 					const hook = ability?.on?.[name]
 					if (hook) listeners.push({ unit, ability, hook, order: 0 })
 				}
+				// A picked talent's aura hooks (talents.js), after the kit's.
+				for (const talent of unit.definition?.talentAuras ?? []) {
+					const hook = talent.on[name]
+					if (hook) listeners.push({ unit, talent, hook, order: 0 })
+				}
+			}
 		}
 		listeners.sort(
 			(a, b) =>
@@ -539,7 +547,7 @@ export function createStatuses(ctx) {
 						? 1
 						: 0),
 		)
-		for (const { unit, status, definition, ability, hook } of listeners) {
+		for (const { unit, status, definition, ability, talent, hook } of listeners) {
 			if (status?.removed) continue
 			if (unit.dead && name !== 'tick' && !(name === 'death' && unit === event.target)) continue
 			if (ability && !Object.values(unit.definition?.abilities ?? {}).includes(ability)) continue
@@ -548,7 +556,9 @@ export function createStatuses(ctx) {
 				continue
 			const info = status
 				? context(unit, status)
-				: { ...ctx.traitContext(unit), unit, ability, stats: ability.stats }
+				: talent
+					? { ...ctx.traitContext(unit), unit, numbers: talent.numbers, state: talent.state }
+					: { ...ctx.traitContext(unit), unit, ability, stats: ability.stats }
 			if (name === 'tick' && status && definition.interval !== undefined) {
 				if (ctx.t < status.next) continue
 				status.next += ticks(resolve(definition.interval, info) ?? STEP)

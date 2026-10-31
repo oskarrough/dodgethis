@@ -4,6 +4,7 @@ import { abilityOf } from './ability.js'
 import { blocked, moveSpeed } from './statuses.js'
 import { SLOTS, ticks, yawOf, dirOf, cancelAttack } from './sim-kit.js'
 import { stepUnitDisplacement } from './displacement.js'
+import { openRow, pickTalent, botColumn } from './talents.js'
 
 // One tick of one unit: a hero turns its intents frame into orders, casts and movement; a dummy strafes and shoots.
 export function createControl(ctx) {
@@ -30,10 +31,40 @@ export function createControl(ctx) {
 		cancelChannel,
 	} = ctx
 
+	// A talent pick is an intent like any other (talent1–3 take the open row's columns), and it is
+	// taken even while dead or stunned, so the choice never waits on the fight. Bots take their
+	// hero's preference as soon as a row opens. Talents exist only in a dungeon run.
+	function talents(h) {
+		if (!ctx.dungeon) return
+		h.talents ??= []
+		const frame = intents.get(h.id)
+		for (const edge of frame.pressed.slice()) {
+			const column = ['talent1', 'talent2', 'talent3'].indexOf(edge.action)
+			if (column < 0) continue
+			intents.consume(h.id, edge.action)
+			take(h, column)
+		}
+		const row = ctx.botIds.has(h.id) ? openRow(h) : -1
+		if (row >= 0) take(h, botColumn(h, row))
+	}
+	function take(h, column) {
+		const picked = pickTalent(h, column)
+		if (picked)
+			present({
+				type: 'talent',
+				hero: h.id,
+				row: picked.row,
+				column,
+				talent: picked.talent.id,
+				point: { ...h.body.position },
+			})
+	}
+
 	function control(h, dt) {
 		for (let i = 0; i < h.cd.length; i++)
 			if (training.noCooldowns && h.id === training.local) h.cd[i] = 0
 			else if (h.cd[i] > 0) h.cd[i]--
+		talents(h)
 		if (h.dead) {
 			if (readySeats) {
 				readySeats.cancel(h.id, ctx.t)

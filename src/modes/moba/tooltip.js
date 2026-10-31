@@ -197,7 +197,7 @@ const escape = (text) =>
 	)
 
 // A sentence with its keywords: each a focusable word holding its own small card.
-function sentenceHtml(text, ids) {
+export function sentenceHtml(text, ids) {
 	return sentenceParts(text)
 		.map((part) => {
 			// A number never wraps away from its unit ("5 m/s", "230 damage").

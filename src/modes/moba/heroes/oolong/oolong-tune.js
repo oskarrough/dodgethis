@@ -1,6 +1,25 @@
 export default {
 	hp: 1800,
 	speed: 5.2,
+	// His talent tree's numbers (oolong-talents.js), one block per talent.
+	talents: {
+		teaHands: { fraction: 0.35 },
+		twoHands: { radius: 1.6, fraction: 0.5 },
+		openPalm: { every: 3, distance: 2.5, time: 0.2 },
+		longKick: { range: 3, castPoint: 0.2 },
+		rebound: { distance: 3, time: 0.25 },
+		slowBrew: { payout: 3 },
+		spill: { fraction: 0.4, radius: 3 },
+		firmFooting: { range: 2.5, slow: 0.4, duration: 1.5 },
+		bottomless: { duration: 2, cooldown: 4 },
+		walkingDrink: { factor: 0.6 },
+		sharedPot: { radius: 4, fraction: 0.5 },
+		challenge: { radius: 7, threat: 300 },
+		spicedBrew: { factor: 1.6 },
+		secondWind: { health: 0.35, cooldown: 30 },
+		teapotTyphoon: { radius: 3, damage: 80, distance: 3, time: 0.25 },
+		ironBelly: { fraction: 0.3, payout: 3 },
+	},
 	bot: {
 		safeRange: 6,
 		burstHp: 0.06,
@@ -72,7 +91,20 @@ export default {
 }
 
 // The dimension of each number above that its name alone does not settle (src/modes/moba/units.js).
+const talent = (id, key) => `heroes.oolong.talents.${id}.${key}`
 export const units = {
+	[talent('teaHands', 'fraction')]: 'fraction',
+	[talent('twoHands', 'fraction')]: 'fraction',
+	[talent('openPalm', 'distance')]: 'm',
+	[talent('rebound', 'distance')]: 'm',
+	[talent('spill', 'fraction')]: 'fraction',
+	[talent('walkingDrink', 'factor')]: 'fraction',
+	[talent('sharedPot', 'fraction')]: 'fraction',
+	[talent('challenge', 'threat')]: 'hp',
+	[talent('spicedBrew', 'factor')]: 'multiplier',
+	[talent('secondWind', 'health')]: 'fraction',
+	[talent('teapotTyphoon', 'distance')]: 'm',
+	[talent('ironBelly', 'fraction')]: 'fraction',
 	...Object.fromEntries(
 		['drinkRaise', 'drinkRecover', 'gulpPeriod', 'kickRecover', 'braceTime'].map((key) => [
 			`heroes.oolong.view.${key}`,

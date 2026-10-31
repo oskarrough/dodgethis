@@ -305,6 +305,9 @@ export function createFeedback({
 				cue('levelUp', { ...fact, point })
 				return
 			}
+			case 'talent':
+				if (fact.hero === local) cue('talent', fact)
+				return
 			case 'globe':
 				if (fact.state === 'expired') {
 					view.ping('move', fact.point)

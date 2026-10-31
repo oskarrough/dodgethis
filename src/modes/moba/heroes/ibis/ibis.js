@@ -1,4 +1,5 @@
 import { tune } from '../../tune.js'
+import talents from './ibis-talents.js'
 
 export default {
 	// Keywords this folder's cards may name with [[Term]] (glossary.js).
@@ -23,6 +24,7 @@ export default {
 		},
 	},
 	state: () => ({ momentumTick: null }),
+	talents,
 	name: 'Ibis',
 	order: 1,
 	color: 'seaTeal',

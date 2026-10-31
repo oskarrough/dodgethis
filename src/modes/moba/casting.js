@@ -250,6 +250,7 @@ export function createCasting(ctx) {
 				total: ticks(skill.delay),
 				ability: ability.id,
 				slot,
+				radius: skill.radius, // the caster's own, which a talent may restate
 			}
 			zones.push(zone)
 			ctx.rememberAbilityEvent(zone, event)

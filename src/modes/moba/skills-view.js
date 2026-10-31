@@ -350,8 +350,9 @@ export function createSkillsView(scene) {
 			}
 		for (const z of zones) {
 			if (ABILITY_VIEWS[z.ability]?.drawsZone) continue
-			const stats = abilityOf(z.ability ?? 'rain')?.stats ?? z.stats
-			if (!stats) continue
+			const shared = abilityOf(z.ability ?? 'rain')?.stats ?? z.stats
+			if (!shared) continue
+			const stats = z.radius ? { ...shared, radius: z.radius } : shared
 			if (!tells.has(z.id))
 				tells.set(z.id, {
 					edge: mesh(ring, gold),

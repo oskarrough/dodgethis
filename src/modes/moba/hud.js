@@ -6,6 +6,7 @@ import { tune } from './tune.js'
 import { createMinimap } from './minimap.js'
 import { el } from '../../core/dom.js'
 import { createCastBar } from './cast-bar.js'
+import { createTalentsView } from './talents-view.js'
 import {
 	abilityCard,
 	clock,
@@ -294,6 +295,8 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 	// The lobby is for walking and picking; the hero frame only earns its corner in a match.
 	document.body.append(top, root, ...(lobby ? [] : [unitFrame]), feed)
 	const bossBar = createCastBar(document.body, { kind: 'boss', min: 0 })
+	// The talent tree, in a dungeon run (talents.js); it stays hidden wherever a hero has no picks.
+	const talents = lobby ? null : createTalentsView(document.body)
 	const tip = createTooltip(document.body)
 	// A tap outside a pinned card lets it go.
 	const onDown = (e) => {
@@ -616,6 +619,7 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 			}
 			castBar.update(dt, { ...casting, unit: frame.hero })
 			bossBar.update(dt, { ...casting, unit: frame.sim?.dungeon?.bossUnit() })
+			talents?.update({ hero: frame.hero, pad: frame.pad, device: frame.device })
 			const {
 				cooldowns,
 				device = 'keyboard',
@@ -857,6 +861,7 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 			top.remove()
 			root.remove()
 			bossBar.node.remove()
+			talents?.dispose()
 			unitFrame.remove()
 			lens?.remove()
 			feed.remove()

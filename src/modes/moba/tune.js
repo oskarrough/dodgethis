@@ -89,6 +89,8 @@ export const tune = {
 		takedown: 200,
 		victimLevel: 40,
 	},
+	// The talent tree (talents.js): row n opens at level first + n, in the dungeon only.
+	talents: { first: 2 },
 	globes: { heal: 0.15, life: 15, pickup: 1, radius: 0.35, height: 0.6, spin: 2 },
 	// Behind x (towards your end of the map) is your base: your own team takes no hits there and heals
 	// from any health to full in fullHealSeconds. base-view.js prints it: a team-tinted wash (`fill`

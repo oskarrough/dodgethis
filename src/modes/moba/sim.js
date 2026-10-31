@@ -436,6 +436,7 @@ export function createSim({
 		swapHero,
 		throwCaught,
 		launchShot,
+		nextId: () => ++ctx.shotIds, // a fresh shot or zone id, for a hook that makes one
 		hit: ctx.hit,
 		heal: ctx.heal,
 		apply: ctx.apply,

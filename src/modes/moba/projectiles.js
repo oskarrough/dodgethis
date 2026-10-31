@@ -47,7 +47,7 @@ export function createProjectiles(ctx) {
 		for (let i = zones.length - 1; i >= 0; i--) {
 			const zone = zones[i]
 			if (--zone.left > 0) continue
-			const ability = abilityOf(zone.ability ?? 'rain')
+			const ability = abilityOf(zone.ability ?? 'rain', ctx.find(zone.owner))
 			const skill = ability.stats
 			touch(zone, { kind: 'zone', point: { x: zone.x, z: zone.z }, radius: skill.radius })
 			ctx.reactAbility(

@@ -126,6 +126,7 @@ export function createSnapshot(ctx) {
 				recall: h.recall && structuredClone(h.recall),
 				recallReady: h.recallReady,
 				catchWindow: h.catchWindow && { ...h.catchWindow },
+				talents: h.talents ? h.talents.slice() : null,
 			})),
 			dummies: dummies.map((d) => ({
 				id: d.id,

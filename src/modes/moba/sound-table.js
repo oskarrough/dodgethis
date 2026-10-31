@@ -113,6 +113,7 @@ export const uses = {
 
 	xp: use('Progress', 'You gain XP', 'xp'),
 	levelUp: use('Progress', 'You level up', 'levelUp'),
+	talent: use('Progress', 'You take a talent', 'globe'),
 	globe: use('Progress', 'A globe is picked up', 'globe'),
 	matchOver: use('Progress', 'The match ends', 'matchOver'),
 
@@ -324,6 +325,7 @@ export const facts = {
 	structureDown: ['structureDown'],
 	shielded: ['shielded'],
 	levelUp: ['levelUp'],
+	talent: ['talent'],
 	swap: ['lobby.pick', 'lobby.flip'],
 	pick: ['lobby.galleryPick'],
 	seatClaim: [],
