@@ -10,7 +10,7 @@ import { tune as frontTune } from './front/tune.js'
 import { createCornerNav } from '../../core/corner-nav.js'
 import { ICONS } from './hud.js'
 import { createLobbyFloor, saucerExtent } from './lobby-floor.js'
-import { mapLayout, maps, onlineMaps } from './maps/all-maps.js'
+import { mapLayout, onlineMaps } from './maps/all-maps.js'
 import { validLobbyHandoff } from './lobby-handoff.js'
 import { createPortal } from '../../core/portal.js'
 import { createPortalFar } from './portal-far.js'
@@ -38,7 +38,7 @@ export function createPortalLobby({ app, run, sim, hero, setup, options, gallery
 	el.innerHTML = `<div class="portal-seats"></div>
 		<nav class="portal-picker" aria-label="Pick a hero" hidden></nav>
 		<p class="portal-map"><b></b></p>
-		<div class="portal-gallery" aria-label="Difficulty" hidden></div>`
+		<div class="portal-gallery" aria-label="Difficulty"></div>`
 	const { back: backButton, online: onlineButton } = createCornerNav(el, {
 		label: 'Back to splash',
 	})
@@ -94,24 +94,22 @@ export function createPortalLobby({ app, run, sim, hero, setup, options, gallery
 		mapCaption.style.left = `${((projected.x + 1) * innerWidth) / 2}px`
 		mapCaption.style.top = `${((1 - projected.y) * innerHeight) / 2}px`
 	}
-	// A party map's difficulty gallery (lobby-props.js): three words on the floor, shot to pick one.
-	// The pick stands up, the others lie flat; it sets how hard the Wardens and their packs come.
+	// The difficulty gallery (lobby-props.js): three words on the floor, shot to pick one.
+	// The pick stands up, the others lie flat; it sets how hard the enemy bots play, or how hard the Wardens and their packs come.
 	const galleryEl = el.querySelector('.portal-gallery')
-	const shownGallery = maps[setup.map].party ? gallery : null
-	const galleryWords = (shownGallery?.standees ?? []).map((stand) => {
+	const galleryWords = gallery.standees.map((stand) => {
 		const word = document.createElement('span')
 		word.textContent = stand.id[0].toUpperCase() + stand.id.slice(1)
 		galleryEl.append(word)
 		return { stand, word, at: new THREE.Vector3(stand.x, 0, stand.z) }
 	})
-	galleryEl.hidden = !shownGallery
 	function placeGallery(camera, time) {
 		for (const { stand, word, at } of galleryWords) {
 			projected.copy(at).project(camera)
 			// Lying flat is a lean of `lie`, not a right angle, so the word is still read from above.
-			const lean = (-shownGallery.angle(stand, time / app.clock.step, app.clock.step) * 2) / Math.PI
+			const lean = (-gallery.angle(stand, time / app.clock.step, app.clock.step) * 2) / Math.PI
 			word.hidden = projected.z < -1 || projected.z > 1
-			word.dataset.picked = String(stand.id === shownGallery.difficulty)
+			word.dataset.picked = String(stand.id === gallery.difficulty)
 			word.style.left = `${((projected.x + 1) * innerWidth) / 2}px`
 			word.style.top = `${((1 - projected.y) * innerHeight) / 2}px`
 			word.style.transform = `translate(-50%, -100%) perspective(200px) rotateX(${lean * tune.lobby.gallery.lie}deg)`
@@ -517,7 +515,7 @@ export function createPortalLobby({ app, run, sim, hero, setup, options, gallery
 	function beginLoading() {
 		if (ending || !app.session.authoritative || !readySeats.allReady()) return
 		syncPick()
-		if (shownGallery) setup.difficulty = shownGallery.difficulty
+		setup.difficulty = gallery.difficulty
 		const roster = readySeats.laneRoster(hero.id, setup.difficulty, setup.seed)
 		// Picks keep each seat's side: back in the lobby they rebuild both teams of three.
 		setup.picks = Object.fromEntries(roster.map((r) => [r.id, { heroId: r.heroId, team: r.team }]))
@@ -629,7 +627,7 @@ export function createPortalLobby({ app, run, sim, hero, setup, options, gallery
 				slip(time, from)
 			}
 			placeCaption(app.camera.view)
-			if (shownGallery) placeGallery(app.camera.view, time)
+			placeGallery(app.camera.view, time)
 			update(from)
 		},
 		hudFrame: () => ({

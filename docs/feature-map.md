@@ -27,7 +27,7 @@ Paths are under `src/modes/moba/` unless they start with `src/`. `tune.js` means
 - Lobby floor, terracotta flagstones ringed by oxide-red terrero stands (`?ground=saucer` shows the old saucer), with a solid rim for bodies, shots and held Ricochet previews: `lobby-floor.js` `createLobbyFloor`, `saucerExtent`; `maps/lobby/lobby-layout.js` `lobbyLayout`, `lobbyRimCover`; `obstacles.js` `buildColliders`, `sweepObstacles`; `front/lobby-tune.js` `floor.style`, `grounds`
 - Seats, roster, ready state (1 s fill; stepping out cancels): `lobby-state.js` `createReadySeats`; `tune.js` `lobby.ready`
 - Back and Play online, the top-left row in both modes' lobbies: `src/core/corner-nav.js` `createCornerNav`; `index.html` `.corner-nav`; used by `portal-lobby.js` and `src/modes/dodgeball/index.js`
-- Difficulty gallery, three standees you shoot to pick: `lobby-props.js` `createDifficultyGallery`; `tune.js` `lobby.gallery`
+- Difficulty gallery, three words on the floor you shoot to pick (both lobbies; sets the enemy bots on the lane maps, the dungeon dial on Altamesa): `lobby-props.js` `createDifficultyGallery`, drawn by `portal-lobby.js` `placeGallery`; `tune.js` `lobby.gallery`
 - Lobby practice dummies (players can't hit each other): `dummy-view.js` `dressDummy`; mechanic `mechanics/dummies/` (dressed through `mechanics/dummies/dummies-view.js`); `tune.js` `dummies`, `lobby.practice`; `look.js` `dummyView`
 - Lobby sounds: seat enter, ready, cancel, pick, bot add and remove, hero popover open and close, back, difficulty pick (`lobby.*`, `ui.menuOpen`, `ui.menuClose`): `sound-table.js`; `portal-lobby.js`
 - Every button clicks: a click whose handler played nothing gets `ui.confirm`; `data-quiet` opts a button out: `audio.js` `clickSounds`
