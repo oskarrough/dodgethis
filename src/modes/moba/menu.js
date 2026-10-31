@@ -72,7 +72,7 @@ export function createMatchMenu({
 			spaceConfirm: false,
 			actions: [
 				{ label: 'Resume', onSelect: toggle },
-				{ label: 'Leave', onSelect: sim.dungeon ? leave : quit },
+				{ label: 'Leave', onSelect: quit },
 				// A setting, not an action: the last cursor stop, drawn small under the two. The
 				// controls preset lives on the top-right tile.
 				{ label: 'Quick cast', onSelect: toggleQuickCast },
