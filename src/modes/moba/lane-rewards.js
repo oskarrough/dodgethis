@@ -46,13 +46,9 @@ export function createRewards(shared) {
 		if (unit.structure) {
 			structureDown(shared, unit, killerTeam, t, credit)
 		} else if (!unit.kind) {
-			addXp(
-				killerTeam,
-				tune.levels.takedown + tune.levels.victimLevel * unit.level,
-				unit.body.position,
-				false,
-				credit(tune.levels.takedown + tune.levels.victimLevel * unit.level),
-			)
+			// A Warden names its own prize; a fallen hero is worth a takedown by level.
+			const amount = unit.xp ?? tune.levels.takedown + tune.levels.victimLevel * unit.level
+			addXp(killerTeam, amount, unit.body.position, false, credit(amount))
 		} else {
 			const soaking = heroes.filter(
 				(h) =>
@@ -62,7 +58,7 @@ export function createRewards(shared) {
 					distance(unit, h) <= tune.waves.soak,
 			)
 			if (soaking.length) {
-				const amount = tune.minions[unit.kind].xp
+				const amount = unit.xp ?? tune.minions[unit.kind].xp
 				addXp(
 					unit.team === 'N' ? killerTeam : unit.team === 'A' ? 'B' : 'A',
 					amount,

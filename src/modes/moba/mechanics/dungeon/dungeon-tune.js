@@ -11,6 +11,8 @@ export default {
 		speed: 3.5,
 		aggro: 8,
 		reset: 3,
+		// What the party earns for a fallen Warden (the run's whole pack farm is worth a little more).
+		xp: 400,
 		firstSlam: 10,
 		slamEvery: 16,
 		pose: { swingTurn: 1, swingLean: 0.2, slamLean: 0.6, slamLift: 0.4 },

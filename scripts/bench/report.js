@@ -39,6 +39,7 @@ export function matchReport(roster, { STEP, towerRange, count = [] }) {
 			]),
 		),
 		firstTower: null,
+		levels: { A: 1, B: 1 },
 		summonsDestroyed: {},
 		statusLabels: {},
 		abilities: {},
@@ -130,6 +131,7 @@ export function matchReport(roster, { STEP, towerRange, count = [] }) {
 		},
 		// Fallen structures by kind; a laser gate reads as one.
 		finish(sim) {
+			for (const team of ['A', 'B']) counters.levels[team] = sim.lane?.teams?.[team]?.level ?? 1
 			const kinds = new Map((sim.lane?.structures ?? []).map((item) => [item.id, item.kind]))
 			for (const fall of counters.falls) {
 				const kind = kinds.get(fall.id) ?? fall.id.split('-')[0]
@@ -307,11 +309,13 @@ export function addResult(cell, { pair, winner, duration, report }) {
 		seconds: 0,
 		towers: 0,
 		towerSeconds: 0,
+		levelA: 0,
 		A: { deaths: 0, damage: 0, structureHits: 0 },
 		B: { deaths: 0, damage: 0, structureHits: 0 },
 	})
 	row.n++
 	row.seconds += duration
+	row.levelA += report.levels?.A ?? 1
 	if (winner) row.decided++
 	if (winner === 'A') row.aWins++
 	if (report.firstTower !== null) {
@@ -440,6 +444,7 @@ export function summarySections(sides, labels) {
 					avg(row, (entry) => (entry.towers ? entry.towerSeconds / entry.towers : NaN)),
 					clock,
 				),
+				...(two ? [] : [fixed(1)(row.levelA / row.n)]),
 				pair(
 					baseRow && avg(baseRow, (entry) => entry.seconds / entry.n / 60),
 					avg(row, (entry) => entry.seconds / entry.n / 60),
@@ -457,6 +462,7 @@ export function summarySections(sides, labels) {
 				...rateHeader('A win %'),
 				...(two ? [] : ['kills A-B', 'dmg A-B', 'struct hits A-B']),
 				'1st tower m:ss',
+				...(two ? [] : ['A level']),
 				'minutes',
 			],
 			matchups,

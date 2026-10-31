@@ -39,7 +39,7 @@ export function createPacks({ layout, lane, heroes, makeMinion, obstacles }) {
 	for (const pack of packs) {
 		pack.guards = pack.kinds.map((kind, i) => {
 			const at = spot(pack, i)
-			const { hp, damage } = p.guards[kind]
+			const { hp, damage, xp } = p.guards[kind]
 			return {
 				id: `${pack.id}-${i + 1}`,
 				pack: pack.id,
@@ -53,6 +53,7 @@ export function createPacks({ layout, lane, heroes, makeMinion, obstacles }) {
 				hp,
 				maxHp: hp,
 				damageScale: damage,
+				xp,
 				dead: false,
 				body: makeMinion(at.x, at.z, 'N', kind),
 				target: null,

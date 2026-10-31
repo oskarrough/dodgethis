@@ -55,6 +55,7 @@ export function createBarquero({ heroes, spot, lane, makeMinion }) {
 				hp: g().bardino.hp,
 				maxHp: g().bardino.hp,
 				damageScale: g().bardino.damage,
+				xp: 0, // the fall is the prize, not its adds
 				dead: false,
 				body: makeMinion(at.x, at.z, 'N', 'melee'),
 				target: null,
