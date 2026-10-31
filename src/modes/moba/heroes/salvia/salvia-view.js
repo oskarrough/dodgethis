@@ -13,8 +13,8 @@ export function dress({ torso, part, detail, face, own, discY, materials }) {
 		[0.46, 0],
 		[0.53, 0.16],
 		[0.48, 0.62],
-		[0.34, 1.12],
-		[0, 1.24],
+		[0.36, 0.96],
+		[0, 1.04],
 	]
 	torso.geometry = own(
 		new THREE.LatheGeometry(
@@ -26,15 +26,14 @@ export function dress({ torso, part, detail, face, own, discY, materials }) {
 	const sage = own(makeStyleMaterial('leafDeep'))
 	const leaf = own(makeStyleMaterial('leaf'))
 	const bark = own(makeStyleMaterial('driftwood'))
-	const hood = new THREE.ConeGeometry(0.43, 0.65, 7).toNonIndexed()
+	// A tall hood covers her whole crown and tips forward over the face, so the point clears her outline at the match camera.
+	const hood = new THREE.ConeGeometry(0.52, 0.86, 8).toNonIndexed()
 	const points = hood.attributes.position
 	for (let i = 0; i < points.count; i++)
-		if (points.getY(i) > 0) points.setXYZ(i, -0.16, points.getY(i) + 0.12, 0.48)
+		if (points.getY(i) > 0) points.setXYZ(i, 0, points.getY(i), -0.3)
 	hood.computeVertexNormals()
-	part(hood, sage, 0, discY + 1.175, 0.04)
-	// A raised fold carries the hood's point across the roof, where the match camera sees it.
-	part(new THREE.ConeGeometry(0.13, 0.5, 4).rotateX(0.45), sage, -0.12, discY + 1.35, 0.24)
-	face(0.6, discY + 1.11, -0.35)
+	part(hood, sage, 0, discY + 1.2, 0.02)
+	face(0.5, discY + 1.1, -0.47)
 	// The skirt's worn hem and the satchel strap are broad enough to read from above.
 	detail(
 		[

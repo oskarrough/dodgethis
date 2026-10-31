@@ -31,15 +31,17 @@ export function dress({
 	const beak = new THREE.Shape()
 	beak.moveTo(0, 0)
 	beak.lineTo(0.42, -0.015)
-	beak.lineTo(1.18, -0.07)
-	beak.lineTo(1.52, -0.13)
-	beak.lineTo(1.1, -0.16)
+	beak.lineTo(0.92, -0.07)
+	beak.lineTo(1.16, -0.13)
+	beak.lineTo(0.86, -0.16)
 	beak.lineTo(0.04, -0.14)
 	beak.closePath()
 	part(
 		new THREE.ExtrudeGeometry(beak, { depth: 0.11, bevelEnabled: false })
 			.translate(0, 0, -0.055)
-			.rotateY(Math.PI / 2),
+			.rotateY(Math.PI / 2)
+			// Drooped and shorter so the bill stays under her health bar when she faces away.
+			.rotateX(-0.4),
 		ink,
 		0,
 		y(1.58),
