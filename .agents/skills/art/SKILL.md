@@ -21,13 +21,14 @@ The script pastes the style block, the keywords and the avoid list for the kind,
 - `inlay`: one arena's floor mark, such as Gnomon's sundial, seen straight down, for a single landmark.
 - `sheet`: a character or prop sheet: silhouette from above, one prop, material, the cast line from world.md.
 
-Pass `--ref` once per reference image. Name what to take from each one in the brief (value, light, framing), never its ornament.
+Pass `--ref` once per reference image. Name what to take from each one in the brief (value, light, framing), never its ornament. Keep the exact prompt sent to the generator beside each image, including any edits to the script's output and the references in their submitted order; do not reconstruct it afterwards.
 
 ## Generate
 
-- **In Codex**, use the built-in image generator with the prompt in `prompt.md` and the refs attached. It is the house generator (look.md, Concept art).
-- **Anywhere with `OPENAI_API_KEY`**, add `--generate` and set `ART_MODEL` to the image model's id. The script calls the images API and saves `1.png`, `2.png` … beside the prompt.
-- **Otherwise** hand `prompt.md` and the refs to Oskar or a Codex thread; never invent another provider.
+- **Codex:** ask a GPT model in a Codex thread to generate the image, passing the prompt and references.
+- **OpenCode:** call `experimental_image_generate` with the prompt, ordered `images` references and output `path`. It runs in the background; wait for its completion notice, then inspect the saved image. Discover available image models with `models(type: "image")`; omit `model` to use the configured default. GPT Image 2 has worked here through the existing OpenAI subscription login.
+
+Use the existing subscription by default. Do not create accounts, buy credits or spend OpenRouter/API credits without Oskar's approval. OpenCode may automatically fall back to another image model when the default cannot handle a request, so check the available providers before generating and do not proceed if a paid fallback could be used without approval. Image-model availability depends on the connected provider; do not assume a chat model or subscription provides an image model. If neither route is available, hand Oskar the prompt and references.
 
 ## Two recipes that worked (2026-10-25)
 
@@ -35,9 +36,11 @@ Pass `--ref` once per reference image. Name what to take from each one in the br
 
 **Decal sheet.** The prompt script currently has no decal kind; use `--kind inlay` with an explicit 4×4 asset-sheet brief overriding its single-inlay framing. Do not use `sheet`, which appends character-sheet instructions. A 2048×2048 sheet, 4×4 cells of 512 px, one decal per cell, centred, seen straight down, flat light, on pure magenta `#ff00ff`, with no magenta anywhere else. Drawn, like `public/tiles/flags-drawn.webp`: flat colour, a sparing thin navy line, a soft wash, soft fading edges. Low contrast: nothing as dark as navy in large areas, nothing red or gold, no text, no rings of dots and no tracks or arrows, which read as telegraphs. List the sixteen cells in the brief. Ask for no drawn grid lines or cell borders, with a clear magenta gutter inside every cell. A broken rosette can still read as a ring: inspect and skip it even if the prompt forbade rings. Then run `bun run decal-sheet <in.png> public/art/<map>-decals.webp`. Inspect its printed check-image path on the dark background; if faint scuffs retain pink, increase `--fuzz` (Salinas used 40), inspect again, and mute them in the map. The tool resizes the shipping sheet to 1024 by default; use `--size` if another output size is needed.
 
-Painting threads (Codex) make the images; code threads ask one by `bb thread tell` and wait. Never invent another provider.
+An agent with either image tool may paint; otherwise a code thread asks a capable painting thread by `bb thread tell` and waits.
 
-**Heroes.** Before a hero is painted or modelled, its row in docs/heroes.md's silhouettes table names its shape from above, its one prop and its accent part, and no two rows share a shape or prop. The cast sheet once drew Salvia as a copy of Mandador's board because nothing said otherwise. Paint the whole cast on one sheet at match size, so twins show up side by side, and keep the family mark: a dark brow band with small cream eyes, chipped edges, one hard angle each.
+**Heroes.** Before a hero is painted or modelled, its row in docs/heroes.md's silhouettes table names its shape from above, its one prop and its accent part, and no two rows share a shape or prop. Name the hero's own colour and the one team-coloured part in the prompt; exclude other red, blue and gold, which the generator likes to add as scarves and fittings. Keep the family mark: a dark brow band with small cream eyes, chipped edges, one hard angle each.
+
+Before building, inspect the top view at roughly 34 px against the actual court colour and in grayscale, beside the existing cast. The large side view may look splendid while the shape seen by a player vanishes. Pick a study and give the builder one sentence explaining why, plus the two or three shapes that must survive at match size. After building, inspect one real match-camera lineup and correct anything that failed to translate; a concept is a target, not proof of the in-game result.
 
 ## Check before you show it
 
