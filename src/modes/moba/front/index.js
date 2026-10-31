@@ -4,7 +4,7 @@ import { tune } from './tune.js'
 import { unitResolver } from '../units.js'
 import { playUse } from '../sounds.js'
 import { woodcut } from './woodcut.js'
-import { briefs, versus } from './briefs.js'
+import { briefs, groups } from './briefs.js'
 import { applySkin, paintedCard, paintedEdge, paintedWash } from './skin.js'
 import { parseMatchSetup } from '../setup.js'
 import { playableMaps, mapLayout, maps as mapManifests } from '../maps/all-maps.js'
@@ -24,8 +24,14 @@ const maps = playableMaps
 		const name = layout.name
 		// Every map is cut from its own layout, so the card shows the map you'll play.
 		const picture = woodcut(id, layout, mapManifests[id].cut())
-		return { mode: 'moba', map: id, name, picture, ...briefs[id], party: !!mapManifests[id].party }
+		const group = mapManifests[id].party ? 'dungeon' : 'versus'
+		return { mode: 'moba', map: id, name, picture, ...briefs[id], group }
 	})
+	// The versus maps first, then the dungeon on its own: a different game, set apart.
+	.sort((a, b) => (a.group === 'dungeon') - (b.group === 'dungeon'))
+
+const tileHtml = (tile, i) =>
+	`<button type="button" class="front-tile skin-card" data-mode="${tile.mode}" data-map="${tile.map}" data-light="${tune.skin.light[tile.map] ?? tune.skin.light.bonus}" style="--wash: ${tune.skin.wash[tile.map] ?? tune.skin.wash.bonus}">${paintedCard(i)}<span class="skin-sheet"></span><span class="skin-ring"></span><span class="skin-face"></span><span class="front-tile-art front-tile-cut">${tile.picture}${paintedEdge(i)}</span><span class="front-tile-label skin-title">${paintedWash(i)}<span class="front-tile-name">${tile.name}</span>${tile.who ? `<small class="front-tile-who">${tile.who}</small>` : ''}</span></button>`
 
 // The splash is the only menu before the playable lobby.
 export function mobaFront(app, map) {
@@ -156,8 +162,17 @@ export function mobaFront(app, map) {
 				.map((c, i) => `<span class="front-letter${i === 1 ? ' front-ball' : ''}">${c}</span>`)
 				.join('')
 			el.innerHTML = `<div class="front-chrome"><h1 class="front-heading" aria-label="DodgeThis"><span aria-hidden="true">${title}</span></h1><p class="front-notice" role="status" hidden></p>
-				<div class="front-tiles front-modes" role="group" aria-label="Game or map">${maps.map((tile, i) => `<button type="button" class="front-tile skin-card" data-mode="${tile.mode}" data-map="${tile.map}" data-light="${tune.skin.light[tile.map] ?? tune.skin.light.bonus}" style="--wash: ${tune.skin.wash[tile.map] ?? tune.skin.wash.bonus}">${paintedCard(i)}<span class="skin-sheet"></span><span class="skin-ring"></span><span class="skin-face"></span><span class="front-tile-art front-tile-cut">${tile.picture}${paintedEdge(i)}</span><span class="front-tile-label skin-title">${paintedWash(i)}<span class="front-tile-name">${tile.name}</span>${tile.who ? `<small class="front-tile-who">${tile.who}</small>` : ''}</span></button>`).join('')}</div>
-				<p class="front-brief" aria-live="polite" hidden><span class="front-brief-text"></span><small class="front-brief-seats"></small></p>
+				<div class="front-tiles front-modes" role="group" aria-label="Game or map">${Object.entries(
+					groups,
+				)
+					.map(([group, heading]) => [group, heading, maps.filter((tile) => tile.group === group)])
+					.filter(([, , tiles]) => tiles.length)
+					.map(
+						([group, heading, tiles]) =>
+							`<section class="front-group" data-group="${group}" aria-label="${heading}"><h2 class="front-group-name">${heading}</h2><div class="front-group-row">${tiles.map((tile) => tileHtml(tile, maps.indexOf(tile))).join('')}</div></section>`,
+					)
+					.join('')}</div>
+				<p class="front-brief" aria-live="polite" hidden></p>
 				<button type="button" class="front-bonus skin-card" data-mode="${bonus.mode}" data-light="${tune.skin.light.bonus}" style="--wash: ${tune.skin.wash.bonus}">${paintedCard(maps.length)}<span class="skin-sheet"></span><span class="skin-ring"></span><span class="skin-face"></span>${paintedWash(maps.length)}<svg viewBox="0 0 64 64" aria-hidden="true">${bonus.glyph}</svg><small class="front-bonus-kicker">Bonus</small><span class="front-bonus-name">${bonus.name}</span></button></div>`
 			const chrome = el.querySelector('.front-chrome')
 			const notice = el.querySelector('.front-notice')
@@ -167,8 +182,8 @@ export function mobaFront(app, map) {
 				const tile = maps[index]
 				brief.hidden = !tile?.brief
 				if (!tile?.brief) return
-				brief.querySelector('.front-brief-text').textContent = tile.brief
-				brief.querySelector('.front-brief-seats').textContent = tile.party ? '' : versus
+				brief.textContent = tile.brief
+				brief.dataset.group = tile.group
 			}
 			notice.textContent = options.notice ?? ''
 			notice.hidden = !options.notice
@@ -291,6 +306,7 @@ export function mobaFront(app, map) {
 				const order = [
 					chrome.querySelector('.front-heading'),
 					notice,
+					...chrome.querySelectorAll('.front-group-name'),
 					brief,
 					...buttons.filter((button) => button !== picked),
 					picked,
@@ -299,7 +315,9 @@ export function mobaFront(app, map) {
 				const { title, card, bonus, cardScale } = tune.tile.leave
 				const flight = (node) => {
 					const [x, y] =
-						node === chrome.querySelector('.front-heading') || node === notice
+						node === chrome.querySelector('.front-heading') ||
+						node === notice ||
+						node.classList.contains('front-group-name')
 							? title
 							: node === brief || node.classList.contains('front-bonus')
 								? bonus

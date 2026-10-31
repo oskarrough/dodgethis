@@ -234,9 +234,44 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	gap: 3.5vw;
+	gap: 5vw;
 	padding: clamp(150px, 26vh, 260px) 5vw clamp(190px, 28vh, 300px);
 	pointer-events: none;
+}
+/* The cards stand in groups by kind, each under a small painted heading. */
+.front-group {
+	flex: 3 1 0;
+	min-width: 0;
+	display: grid;
+	grid-template-columns: minmax(0, 1fr);
+	gap: 1.2vh;
+	justify-items: center;
+}
+.front-group[data-group='dungeon'] {
+	flex: 1.2 1 0;
+}
+.front-group-row {
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 3.5vw;
+}
+.front-group-name {
+	margin: 0;
+	font: 400 clamp(18px, 1.7vw, 30px) / 1 var(--ui-font);
+	letter-spacing: 0.02em;
+	color: var(--ui-cream);
+	-webkit-text-stroke: 0.14em var(--ui-text);
+	paint-order: stroke fill;
+	text-shadow: 0.06em 0.08em 0 var(--ui-text);
+	transform: rotate(-1.5deg);
+	position: relative;
+	z-index: 2; /* over the focused card's wash bloom */
+}
+.front-group[data-group='dungeon'] .front-group-name {
+	color: #f3b48f;
+	transform: rotate(1.5deg);
 }
 /* A map card: the illustration in an ink frame, the name on a band that floods ink when
    you're on it. */
@@ -245,6 +280,7 @@
 	--tile-pad: clamp(10px, 1vw, 16px);
 	flex: 0 1 min(28vw, 460px);
 	min-width: 0;
+	max-width: 460px;
 	display: grid;
 	grid-template-rows: auto auto;
 	padding: var(--tile-pad) var(--skin-line) var(--skin-line);
@@ -414,15 +450,11 @@
 	transform: translateX(-50%) rotate(-0.4deg);
 	pointer-events: none;
 }
-.front-brief-seats {
-	display: block;
-	margin-top: 0.3em;
-	font-size: 0.85em;
-	font-style: italic;
-	opacity: 0.75;
-}
-.front-brief-seats:empty {
-	display: none;
+.front-brief[data-group='dungeon'] {
+	background: #f6e2c9;
+	border-color: #7a3a24;
+	box-shadow: 0.2em 0.25em 0 #7a3a24;
+	color: #4a2618;
 }
 .moba-front[data-skin='stone'] .front-tile.selected .front-tile-name {
 	color: var(--ui-cream);
@@ -576,10 +608,21 @@
 }
 /* Narrow and tall: the cards stack as strips, art left and name right. */
 @media (max-width: 700px) {
-	.front-tiles {
+	.front-tiles,
+	.front-group-row {
 		flex-direction: column;
 		gap: 26px;
+	}
+	.front-tiles {
 		padding: clamp(110px, 18vh, 150px) 7vw clamp(96px, 14vh, 130px);
+	}
+	.front-group,
+	.front-group[data-group='dungeon'] {
+		flex: 0 0 auto;
+		width: 100%;
+	}
+	.front-group-row {
+		gap: 18px;
 	}
 	.front-tile {
 		flex: 0 0 auto;

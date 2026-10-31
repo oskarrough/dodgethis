@@ -156,9 +156,17 @@ export const tune = {
 			bloom: { frequency: 0.008, scale: 60, soften: 4, pooling: 2.2, rim: 5 },
 		},
 		// Each map's wash: apricot by day, orchid by night, never a team hue.
-		wash: { overthrow: '#f0b48a', flagfall: '#b99ad8', bonus: '#e9c9b0', hero: '#f0b48a' },
-		// Painted materials per map light: frame and title wash, by day or night.
-		light: { overthrow: 'day', flagfall: 'night', bonus: 'day' },
+		// Altamesa's is the red stone of the mesa: the dungeon is another game, and looks it.
+		wash: {
+			overthrow: '#f0b48a',
+			flagfall: '#b99ad8',
+			altamesa: '#e0805c',
+			bonus: '#e9c9b0',
+			hero: '#f0b48a',
+		},
+		// Painted materials per map light: frame and title wash, by day, by night, or in the
+		// mesa's terracotta.
+		light: { overthrow: 'day', flagfall: 'night', altamesa: 'mesa', bonus: 'day' },
 	},
 	move: { freq: 880, slideTo: 1175, dur: 0.045, gain: 0.03, type: 'square' },
 	enter: { frequencies: [392, 587.33], gap: 0.06, dur: 0.3, gain: 0.05, type: 'triangle' },
