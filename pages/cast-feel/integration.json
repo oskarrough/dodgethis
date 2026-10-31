@@ -5,7 +5,7 @@
 		"heroes": 8,
 		"slottedAbilities": 23,
 		"basicConsumers": 8,
-		"record": "../../docs/feel-pass.md"
+		"record": "https://github.com/oskarrough/dodgethis/blob/139ea6c0/docs/feel-pass.md"
 	},
 	"base": "4e3c6860",
 	"remoteMain": "4e3c6860",

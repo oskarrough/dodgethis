@@ -5,7 +5,17 @@ description: Polish how a dodgethis hero's casts, basic attack and abilities mov
 
 # Ability feel
 
-Read `docs/feel-pass.md` (the workshop notes: peer-game lessons, what the kit offers) once, then work in your hero and ability folders. The kit is real code you reuse; there is no parallel VFX system.
+Work in your hero and ability folders. The kit is real code you reuse; there is no parallel VFX system.
+
+## Direction
+
+The feel pass (October 2026) took its lessons from three games. Super Smash Bros. freezes the two fighters briefly on a hit, shakes the struck one more than the striker and scales the shake by camera distance, while the hurtbox never moves ([Sakurai on hit stop](https://sourcegaming.info/2015/11/11/thoughts-on-hitstop-sakurais-famitsu-column-vol-490-1/)). Heroes of the Storm puts team-fight readability first: powerful silhouettes, and effects that read before they dazzle. Hades draws combat as flat graphic strokes (arcs, rays, rings) rather than particle clouds, which suits look.md's flat shapes with an ink keyline. Nobody here has played these games with a stopwatch, so take the shapes of the ideas, not timings.
+
+1. Anticipation is a shape, not a wait. Spend a cast point on a coil that changes the silhouette, release with a snap, then recover. Never lengthen anything just to display it.
+2. The hit is local. Bodies take a short view-only hold, a skid and a distance-scaled shake; the hit area and the sim never move.
+3. One dominant graphic mark per action, drawn as flat strokes with ink. Anything that lingers is quieter than the telegraph and ends with the hitbox.
+4. Give each hero a distinct rhythm and silhouette: precise and quick, heavy and delayed, elastic, areal. A kit that moves one way is one note.
+5. Judge it as a fight: crowded, at the match camera, in grayscale. A cast clip shows one hero's shapes and sequence; it does not prove a fight reads.
 
 ## See it: one command
 
@@ -27,7 +37,9 @@ It boots a fresh Overthrow match, clears the field, stands a target and an ally 
 - Hero motion: your `<id>-view.js` `animate(unit, rig, { pose, progress, fire, settle, releasing, time, alpha, costume })`. The integrated heroes use their own coils and releases; `poseWindup(progress)` (quick coil, held taut, small overshoot) and `poseStrike(fire, settle)` (snap past the pose and back) in `src/modes/moba/pose-curve.js` are the shared shapes. The pose name comes from the ability's `effects.pose`. Basics read replicated `unit.attack` (`phase`, `left`, `total`, `startedTick`; backswing also carries resolved `distance`). Instant actions use existing contact or summon-birth cues; there is no universal release hook.
 - Ground and light marks: `effects` in `src/modes/moba/effects.js` (`ring`, `spokes`, `streak`, `flare`, `smear`, `column`, `shell`), all opt-in, timed by presentation `dt`, cleared on `reset()`. A tune-only way in: an `impact` recipe in `<id>-tune.js` read by `createImpacts` (rings, spokes, flare, ripples, smear, hold, skid, nudge, shake, number). Look at `balloon-tune.js` and `gloveSlap-tune.js` before inventing one.
 - Marks that outlive a cast (zones, summons, fields): an ability view's `extras(scene)` returning `{ update({ summons, groundFields, tick, alpha }), contact?(fact), dispose() }` (see `balloon-view.js`). Build from `tick + alpha`, never wall time; remove everything on a backwards tick (restart) and on `dispose`.
+- `spokes` throws tapered strokes out flat on the ground, over a slightly wider ink set so they read on pale stone: for landings, calls and releases. `streak` is the thinning line a dash or throw leaves. Both can sit in an `impact` recipe, where they scale with the impact and turn with the tick so replays draw the same burst.
 - Per-unit hit feel (flash, squash, skid, hold) goes through `createImpacts`; it moves what is drawn, never the sim. No global hit stop.
+- Proof hooks: `dt.game.moba.facts` holds the last 512 facts, newest last; `dt.game.render()` draws now, for a proof that steps the sim itself.
 
 ## Rules that keep bouncing back in review
 
