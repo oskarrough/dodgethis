@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Undine ribbon spell · dodgethis</title>
+<link rel="stylesheet" href="/pages/page.css" />
+<style>
+.media.gray { filter: grayscale(1); }
+.controls { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+</style>
+</head>
+<body class="page">
+<main>
+<h1>Undine ribbon spell</h1>
+<p><small>To review · 2026-10-31 · thr_hxqqxu37vk</small></p>
+<p><b>Does the bright nib and thin teal tail read as moving ink? Compare Balloon before and after with the reference.</b></p>
+
+<p>Undine sends Balloon along a bowed stroke, cream at its head and teal at its thinning tail. A short navy brush curl turns around her feet as it leaves. The landing circle, splash and spell timing remain the same.</p>
+<p class="controls"><button id="play" type="button">Play both from the start</button><label><input id="gray" type="checkbox" /> Grayscale</label><label><input id="slow" type="checkbox" /> Half speed</label></p>
+<div class="media"><figure><video muted playsinline loop preload="auto" src="../media/2026-10-31-undine-ribbon-spell/undine-before.webm" controls></video><figcaption>Before: the round balloon.</figcaption></figure>
+<figure><video muted playsinline loop preload="auto" src="../media/2026-10-31-undine-ribbon-spell/undine-after.webm" controls></video><figcaption>After: the moving brush stroke.</figcaption></figure>
+<figure><img src="../media/2026-10-31-undine-ribbon-spell/ribbon-spell-ref.png" alt="ribbon-spell-ref.png" loading="lazy" /><figcaption>Oskar’s reference: bright heads, coloured tails and dark brush arcs.</figcaption></figure></div>
+
+<p>Both clips use <code>bun run cast undine --steps slot1 --clip</code>: a real pointer and Q press in a staged Overthrow encounter at 1280 × 720. The clip advances two simulation ticks per frame and plays at authored speed. Both casts passed, landed at 0.6 seconds and dealt 80 damage. This proves one cast’s drawing, not a crowded fight or hardware performance.</p>
+<script>
+const videos = [...document.querySelectorAll('video')]
+document.querySelector('#play').addEventListener('click', () => {
+  for (const video of videos) { video.currentTime = 0; video.play() }
+})
+document.querySelector('#gray').addEventListener('change', (event) => {
+  document.querySelector('.media').classList.toggle('gray', event.target.checked)
+})
+document.querySelector('#slow').addEventListener('change', (event) => {
+  for (const video of videos) video.playbackRate = event.target.checked ? 0.5 : 1
+})
+</script>
+</main>
+</body>
+</html>

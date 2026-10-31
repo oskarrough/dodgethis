@@ -4,6 +4,7 @@ import { PALETTE } from '../../../../core/style.js'
 import { FORWARD_LAYER, makeStyleMaterial } from '../../../../core/stylepass.js'
 import { tune } from '../../tune.js'
 import { ticks } from '../../sim-kit.js'
+import { createEffects } from '../../effects.js'
 
 export function extras(scene) {
 	const group = new THREE.Group()
@@ -24,8 +25,6 @@ export function extras(scene) {
 		new THREE.RingGeometry(1 - v.rippleWidth, 1, 24, 1, 0, Math.PI).rotateX(-Math.PI / 2),
 	)
 	const disc = own(new THREE.CircleGeometry(1, 40).rotateX(-Math.PI / 2))
-	const ball = own(new THREE.SphereGeometry(1, 12, 8))
-	const neck = own(new THREE.ConeGeometry(1, 1, 5))
 	const drop = own(new THREE.SphereGeometry(1, 6, 4))
 	const pose = new THREE.Object3D()
 	const live = new Map()
@@ -34,12 +33,13 @@ export function extras(scene) {
 	function remove(id, rig) {
 		group.remove(rig.root)
 		for (const material of rig.waterMaterials) material.dispose()
+		rig.ribbon?.dispose()
 		rig.drops?.dispose()
 		live.delete(id)
 	}
 
 	return {
-		update({ summons = [], groundFields = [], tick, alpha = 0 }) {
+		update({ summons = [], groundFields = [], tick, alpha = 0, dt = 0 }) {
 			const now = tick + alpha
 			if (now < last) for (const [id, rig] of live) remove(id, rig)
 			last = now
@@ -65,15 +65,22 @@ export function extras(scene) {
 					root.add(edge)
 					rig = { root, edge, waterMaterials: [] }
 					if (flight) {
-						const balloon = new THREE.Group()
-						const orb = new THREE.Mesh(ball, materials.cream)
-						const knot = new THREE.Mesh(neck, materials[unit.team])
-						knot.position.y = 1 + v.neckLength / 2
-						knot.scale.set(v.neckWidth, v.neckLength, v.neckWidth)
-						knot.rotation.z = Math.PI
-						balloon.add(orb, knot)
-						root.add(balloon)
-						rig.balloon = balloon
+						rig.ribbon = createEffects(root)
+						const { start, target } = unit.data
+						rig.ribbon.ribbon(start, target, {
+							color: PALETTE.seaTeal,
+							head: PALETTE.cream,
+							ink: PALETTE.ink,
+							width: v.ribbonWidth,
+							bend: v.ribbonBend,
+							tail: v.ribbonTail,
+							height: v.height,
+							y: v.ground + v.ballRadius,
+							life: tune.balloon.flight,
+							brush: true,
+						})
+						// A late snapshot starts partway through the stroke; subsequent motion uses presentation dt.
+						rig.ribbon.update(Math.max(0, (now - unit.from) * STEP))
 					} else {
 						const water = (geometry, color) => {
 							const material = new THREE.MeshBasicMaterial({
@@ -115,25 +122,8 @@ export function extras(scene) {
 				rig.edge.position.set(at.x, v.ground, at.z)
 				rig.edge.scale.setScalar(radius)
 				if (flight) {
-					const fraction = Math.max(
-						0,
-						Math.min(1, (now - unit.from) / Math.max(1, ticks(stats.flight))),
-					)
-					const sag = Math.sin(Math.PI * fraction)
-					const squash = v.wobble * Math.sin(fraction * Math.PI * 2) * sag
-					const width = 1 + squash
-					rig.balloon.position.set(
-						start.x + (target.x - start.x) * fraction,
-						v.ground + v.ballRadius + v.height * 4 * fraction * (1 - fraction),
-						start.z + (target.z - start.z) * fraction,
-					)
-					rig.balloon.rotation.set(0, Math.atan2(target.x - start.x, target.z - start.z), 0)
-					rig.balloon.rotateX(v.lean * (1 - 2 * fraction))
-					rig.balloon.scale.set(
-						v.ballRadius * width,
-						v.ballRadius / (width * width),
-						v.ballRadius * width,
-					)
+					if (rig.presented) rig.ribbon.update(dt)
+					rig.presented = true
 				} else {
 					const age = Math.max(0, (now - unit.from) * STEP)
 					const life = Math.max(STEP, (unit.until - unit.from) * STEP)

@@ -226,6 +226,86 @@ export function createEffects(parent) {
 					mesh.material.opacity = opacity * (1 - Math.max(0, k)) ** 1.5
 				})
 		},
+		// A moving brush stroke: a bright nib and a fading, tapered tail along a bowed lob.
+		// Heights/bend/width are metres; tail is the fraction of the path visible behind the nib.
+		ribbon(
+			from,
+			to,
+			{
+				color,
+				head = '#fffdf4',
+				ink = '#26445f',
+				width = 0.3,
+				bend = 1,
+				height = 0,
+				y = 0.6,
+				toY = y,
+				tail = 0.55,
+				life = 0.6,
+				opacity = 0.95,
+				brush = false,
+			},
+		) {
+			const dx = to.x - from.x,
+				dz = to.z - from.z
+			const length = Math.hypot(dx, dz) || 1
+			const nx = dz / length,
+				nz = -dx / length
+			const segments = 32
+			const hot = new THREE.Color(head)
+			for (const border of ink ? [true, false] : [false]) {
+				const geometry = arcGeometry(segments)
+				const colors = new THREE.Float32BufferAttribute(new Float32Array((segments + 1) * 8), 4)
+				geometry.setAttribute('color', colors)
+				const tone = new THREE.Color(border ? ink : color)
+				const mix = new THREE.Color()
+				const material = glowMaterial('#ffffff', opacity)
+				material.vertexColors = true
+				material.side = THREE.DoubleSide
+				add(geometry, material, from, life, (k, mesh) => {
+					const end = k
+					const start = Math.max(0, end - tail)
+					const position = geometry.attributes.position
+					mesh.position.y = border ? 0 : 0.012
+					for (let i = 0; i <= segments; i++) {
+						const u = i / segments
+						const t = start + (end - start) * u
+						const bow = 4 * t * (1 - t)
+						const tx = dx + nx * bend * 4 * (1 - 2 * t)
+						const tz = dz + nz * bend * 4 * (1 - 2 * t)
+						const tangent = Math.hypot(tx, tz) || 1
+						const nib = Math.min(1, (1 - u) * 8)
+						const half = (width / 2 + (border ? 0.035 : 0)) * u ** 0.7 * nib
+						mix.copy(tone)
+						if (!border) mix.lerp(hot, Math.max(0, (u - 0.62) / 0.38))
+						for (let j = 0; j < 2; j++) {
+							const side = j ? 1 : -1
+							position.setXYZ(
+								i * 2 + j,
+								dx * t + nx * bend * bow + ((side * tz) / tangent) * half,
+								y + (toY - y) * t + height * bow,
+								dz * t + nz * bend * bow - ((side * tx) / tangent) * half,
+							)
+							colors.setXYZW(i * 2 + j, mix.r, mix.g, mix.b, u ** 0.6)
+						}
+					}
+					position.needsUpdate = true
+					colors.needsUpdate = true
+					mesh.material.opacity = opacity * Math.min(1, (1 - k) * 8)
+				}).owned = geometry
+			}
+			if (brush && ink)
+				this.smear(from, Math.atan2(dx, dz), {
+					color: ink,
+					ink,
+					radius: 1.05,
+					width: 0.16,
+					sweep: 4.8,
+					life: Math.min(life, 0.35),
+					y: 0.12,
+					opacity: 0.85,
+				})
+		},
 		// A straight stroke between two ground points that thins to nothing and fades: the line a dash or a throw leaves,
 		// ink-edged like the smear. `y` and `toY` are heights at each end; it lies where it was drawn, however the unit moves on.
 		streak(
