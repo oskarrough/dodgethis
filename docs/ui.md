@@ -2,6 +2,17 @@
 
 Rules for every screen, learned by reviewing the game screen by screen with Oskar (2026-10-24). [look.md](look.md) sets the direction; this says how to apply it to anything you build. If the two disagree, this doc is the newer word.
 
+## Oskar's rules
+
+1. Avoid labels or explanation text that wasn't explicitly asked for.
+2. Be consistent. If you're designing a control, look for similar controls.
+3. Be consistent in style, layout and general experience.
+4. To be consistent, reuse components/view code when you can.
+5. Keep things together that belong together.
+6. Avoid language as much as possible. Most of our worldwide audience are not native English speakers.
+7. Show, don't tell.
+8. Give instant (sub 50ms) response to user interactions. If you can't do the thing that fast, present an indicator that their request has been received.
+
 ## What a screen says
 
 - **Never repeat what is already on screen.** A tooltip explains the thing you hovered; it does not echo its value. The clock's card never prints the clock.
