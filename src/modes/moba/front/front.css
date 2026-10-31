@@ -235,7 +235,7 @@
 	align-items: center;
 	justify-content: center;
 	gap: 3.5vw;
-	padding: clamp(150px, 26vh, 260px) 5vw clamp(110px, 16vh, 170px);
+	padding: clamp(150px, 26vh, 260px) 5vw clamp(190px, 28vh, 300px);
 	pointer-events: none;
 }
 /* A map card: the illustration in an ink frame, the name on a band that floods ink when
@@ -380,6 +380,49 @@
 	text-align: center;
 	letter-spacing: 0.01em;
 	transition: color var(--skin-press) linear;
+}
+/* What kind of game and how many, small under the name, like Bonus's kicker. */
+.front-tile-who {
+	margin-top: 0.35em;
+	font-size: 0.62em;
+	line-height: 1.2;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	text-align: center;
+	opacity: 0.8;
+	transition: color var(--skin-press) linear;
+}
+.moba-front[data-skin='stone'] .front-tile.selected .front-tile-who {
+	color: var(--ui-cream);
+}
+/* The briefing for the card you're on, a cream slip between the row and Bonus. */
+.front-brief {
+	position: absolute;
+	left: 50%;
+	bottom: calc(max(22px, 5vh) + 3.6em);
+	width: min(44em, 84vw);
+	margin: 0;
+	padding: 0.7em 1.2em 0.75em;
+	background: var(--ui-cream);
+	border: 0.12em solid var(--ui-text);
+	border-radius: 0.25em;
+	box-shadow: 0.2em 0.25em 0 var(--ui-text);
+	font-size: 0.86em;
+	line-height: 1.45;
+	text-align: center;
+	text-wrap: pretty;
+	transform: translateX(-50%) rotate(-0.4deg);
+	pointer-events: none;
+}
+.front-brief-seats {
+	display: block;
+	margin-top: 0.3em;
+	font-size: 0.85em;
+	font-style: italic;
+	opacity: 0.75;
+}
+.front-brief-seats:empty {
+	display: none;
 }
 .moba-front[data-skin='stone'] .front-tile.selected .front-tile-name {
 	color: var(--ui-cream);
@@ -569,8 +612,20 @@
 	.front-tile-name {
 		font-size: clamp(26px, 8vw, 44px);
 	}
+	.front-brief {
+		display: none;
+	}
 	.front-tile-label > .skin-wash {
 		top: 24%;
 		height: 52%;
+	}
+}
+/* Too short for a slip between the row and Bonus: the cards' own lines carry it. */
+@media (max-height: 600px) {
+	.front-brief {
+		display: none;
+	}
+	.front-tiles {
+		padding-bottom: clamp(110px, 16vh, 170px);
 	}
 }
