@@ -547,6 +547,7 @@ export default function moba(app, map) {
 					difficulty,
 					setup,
 					returnToLobby,
+					roster,
 				})
 			const controls = createMatchDebug({
 				app,

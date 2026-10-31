@@ -220,6 +220,7 @@ export const tune = {
 		feedLife: 4,
 		feedLines: 5, // lines on the feed drum, newest at the front
 		ending: 1.5,
+		runEnding: 3.5, // a dungeon run's quiet beat after the last fall, before its result page
 		recapSources: 12, // hits the death recap keeps; it groups them by source
 		tipGrace: 0.3, // a hovered card stays this long after the pointer leaves its source, so it can reach the card
 		longPress: 0.4, // touch hold that opens a HUD card

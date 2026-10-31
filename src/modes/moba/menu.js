@@ -5,10 +5,15 @@ import { createCornerNav } from '../../core/corner-nav.js'
 import { createRecap } from './recap.js'
 import { tune as front } from './front/tune.js'
 import { el } from '../../core/dom.js'
+import { runResult } from './run-result.js'
 import './menu.css'
 
 // The map's name in the manual's Japanese running head.
 const MAP_KANA = { overthrow: '転覆', flagfall: '旗落とし' }
+
+// A door with an arrow out of it: Leave, on the pause and the run's result page.
+const DOOR =
+	'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4.5H5.5v15H10"/><path d="M9.5 12h10.5M16.5 8.2 20.3 12l-3.8 3.8"/></svg>'
 
 const MENU_ICON =
 	'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6.5h14M5 12h14M5 17.5h14" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/></svg>'
@@ -25,6 +30,7 @@ export function createMatchMenu({
 	difficulty = 'easy',
 	setup = { difficulty },
 	returnToLobby = () => false,
+	roster = [],
 }) {
 	const recap = createRecap({ sim, hero, canvas: app.renderer?.domElement, paper })
 	let paused = false
@@ -58,6 +64,15 @@ export function createMatchMenu({
 	const restart = () => {
 		resetInput()
 		app.modes.start('moba', { options: { setup } })
+	}
+	// A dungeon run starts over with the same party and difficulty: the seats it was dealt.
+	const runAgain = () => {
+		resetInput()
+		app.modes.start('moba', { roster: structuredClone(roster), options: { setup } })
+	}
+	function door(button) {
+		button?.classList.add('pause-leave')
+		button?.prepend(el('span', 'pause-door', null, DOOR))
 	}
 	function toggle() {
 		if (!ready() || sim.lane?.match.winner || !app.session.actions.includes('pause')) return
@@ -117,15 +132,7 @@ export function createMatchMenu({
 	function pausePage(card) {
 		paper(card).classList.add('moba-page', 'moba-pause')
 		const [, leaveButton, quick] = card.querySelectorAll('.actions button')
-		leaveButton?.classList.add('pause-leave')
-		leaveButton?.prepend(
-			el(
-				'span',
-				'pause-door',
-				null,
-				'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4.5H5.5v15H10"/><path d="M9.5 12h10.5M16.5 8.2 20.3 12l-3.8 3.8"/></svg>',
-			),
-		)
+		door(leaveButton)
 		if (!quick) return
 		quick.classList.add('pause-check')
 		quick.setAttribute('role', 'checkbox')
@@ -146,46 +153,60 @@ export function createMatchMenu({
 		})
 		recap.updateBoard(board && !app.overlay.visible && !resultShown)
 		if (!sim.lane?.match.winner || resultShown) return
+		const won = sim.lane.match.winner === hero.team
 		if (endingElapsed === null) {
 			endingElapsed = 0
 			resetInput()
 			const core = sim.lane.structures?.find((unit) => unit.kind === 'core' && unit.dead)
 			if (core) focusCore(core.body.position)
+			// A run's end: the camera rests on the last to fall and the music gives way to the wind.
+			if (sim.dungeon) {
+				const fallen = won ? sim.dungeon.encounters.find((e) => e.last)?.units[0] : hero
+				if (fallen) focusCore(fallen.body.position)
+				app.audio.setMusicScene('wind')
+			}
 		}
 		endingElapsed += Math.max(0, dt)
-		if (endingElapsed < tune.hud.ending) return
+		if (endingElapsed < (sim.dungeon ? tune.hud.runEnding : tune.hud.ending)) return
 		resultShown = true
 		app.audio.setMusicScene('paused')
+		// A run's page draws its own end (run-result.js); its ways on are again and home.
+		const solo = sim.dungeon && !app.session.shared
 		app.overlay.show({
 			title: sim.lane?.match.winner === hero.team ? 'VICTORY' : 'DEFEAT',
 			theme: sim.lane?.match.winner === hero.team ? 'moba-victory' : 'moba-defeat',
 			accent: hex(sim.lane?.match.winner === 'A' ? 'teamA' : 'teamB'),
 			pointerGuard: true,
 			spaceConfirm: false,
-			// A dungeon is won by its last boss, not a core.
-			subtitle: sim.dungeon
-				? `${sim.dungeon.encounters.find((e) => e.last)?.name ?? 'The last boss'} has fallen`
-				: sim.lane?.match.winner === hero.team
-					? 'Enemy core destroyed'
-					: 'Your core fell',
-			actions: app.session.shared
+			// A dungeon's marks show who fell; a lane says how the core went.
+			subtitle: sim.dungeon ? '' : won ? 'Enemy core destroyed' : 'Your core fell',
+			actions: solo
 				? [
-						{
-							label: app.session.authoritative ? 'Return to lobby' : 'Room menu · waiting for host',
-							onSelect: leave,
-						},
-						share,
+						{ label: 'Try again', key: 'KeyR', keyLabel: 'R', onSelect: runAgain },
+						{ label: 'Leave', onSelect: quit },
 					]
-				: [
-						{ label: 'Again', key: 'KeyR', keyLabel: 'R', onSelect: restart },
-						{ label: 'Return to lobby', onSelect: leave },
-						share,
-					],
+				: app.session.shared
+					? [
+							{
+								label: app.session.authoritative
+									? 'Return to lobby'
+									: 'Room menu · waiting for host',
+								onSelect: leave,
+							},
+							share,
+						]
+					: [
+							{ label: 'Again', key: 'KeyR', keyLabel: 'R', onSelect: restart },
+							{ label: 'Return to lobby', onSelect: leave },
+							share,
+						],
 		})
 		const card = document.querySelector('.overlay .dialog-card')
 		if (!app.renderer || !card) return
-		recap.showTable(card)
-		page(card, 'moba-result', sim.lane.match.winner === hero.team ? '勝利' : '敗北')
+		if (sim.dungeon) runResult(card, { sim, hero })
+		else recap.showTable(card)
+		page(card, 'moba-result', won ? '勝利' : '敗北')
+		if (solo) door(card.querySelectorAll('.actions button')[1])
 	}
 	// The result card's brag: a line of the match and the link the address bar shows, the room's in a shared match.
 	const share = {

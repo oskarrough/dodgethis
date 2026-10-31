@@ -410,22 +410,23 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden])) > .moba-top {
 	max-width: 100%;
 	gap: clamp(14px, 1.8vw, 24px);
 }
-/* Leave wears a door with an arrow out of it, drawn in the same ink as the card's type. */
-.overlay .moba-pause .actions button.pause-leave {
+/* Leave wears a door with an arrow out of it, drawn in the same ink as the card's type, on the
+   pause and on a run's result page. */
+.overlay :is(.moba-pause, .moba-result) .actions button.pause-leave {
 	align-items: center;
 }
-.overlay .moba-pause .pause-leave .label {
+.overlay :is(.moba-pause, .moba-result) .pause-leave .label {
 	flex: none;
 	padding-left: 0.3em;
 }
-.moba-pause .pause-door {
+:is(.moba-pause, .moba-result) .pause-door {
 	display: grid;
 	place-items: center;
 	flex: none;
 	width: 1.15em;
 	margin-left: 0.6em;
 }
-.moba-pause .pause-door svg {
+:is(.moba-pause, .moba-result) .pause-door svg {
 	width: 100%;
 	height: 1.15em;
 	fill: none;
