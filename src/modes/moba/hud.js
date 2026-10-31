@@ -21,7 +21,7 @@ import {
 	objectiveCard,
 } from './tooltip.js'
 import { controls } from '../../core/controls.js'
-import { presetKeys } from '../../core/intents.js'
+import { attackKey, presetKeys } from '../../core/intents.js'
 import { STEP } from '../../core/app.js'
 import mechanicViews from './mechanics/all-mechanic-views.js'
 
@@ -70,6 +70,9 @@ export const ICONS = {
 	triangle: svg('<path class="tone" d="M24 8 L42 40 L6 40 Z"/>'),
 	bar: svg('<rect class="tone" x="8" y="18" width="32" height="14" rx="5"/>'),
 	empty: svg('<path class="ink-line" d="M16 24 L32 24" opacity="0.4"/>'),
+	attack: svg(
+		'<path class="tone" d="M34 6 L42 6 L42 14 L18 38 L10 30 Z"/><path class="ink-line" d="M8 40 L16 32 M12 36 L6 42"/>',
+	),
 	recall: svg(
 		'<path class="tone" d="M24 5 Q35 24 24 43 Q13 24 24 5 Z"/><path class="ink-line" d="M24 12 Q29 24 24 36 Q19 24 24 12 Z"/>',
 	),
@@ -252,6 +255,11 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 		const left = el('span', 'left', slot)
 		return { action, slot, icon, key, left, deniedFor: 0, fraction: -1 }
 	})
+	// Attack: a small chip with the key that fires the basic attack, set like Recall beside it.
+	const attack = el('div', 'moba-slot moba-recall moba-attack', slotRow)
+	attack.setAttribute('aria-label', 'Attack')
+	el('span', 'icon', attack).innerHTML = ICONS.attack
+	const attackKeyNode = el('span', 'key', attack)
 	// Recall (B): a smaller chip after the kit. Its sweep is the cooldown, or the tear's progress while recalling.
 	const recall = el('div', 'moba-slot moba-recall', slotRow)
 	recall.setAttribute('aria-label', 'Recall')
@@ -778,6 +786,8 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 				)
 			}
 
+			text(attackKeyNode, attackKey(controls.preset, device))
+			put(attack, 'touch', device === 'touch', (v) => (attack.hidden = v))
 			put(recall, 'hidden', !teams || frame.lobby, (hidden) => (recall.hidden = hidden))
 			if (recallDenied > 0 && (recallDenied -= dt) <= 0) recall.classList.remove('denied')
 			text(recallKey, device === 'gamepad' ? '▼' : 'B')

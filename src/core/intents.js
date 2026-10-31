@@ -160,6 +160,14 @@ export const presetKeys = (id) => {
 		codeLabel(aims.find(([, s]) => s === slot)[0]),
 	)
 }
+// The label on the HUD's attack tile: the key that fires the basic attack. MOBA arms it with A and clicks; WASD clicks; the pad uses A.
+export const attackKey = (id, device) => {
+	if (device === 'gamepad') return 'A'
+	const preset = presetOf(id)
+	const tap = Object.entries(preset.taps).find(([, action]) => action === 'primary')
+	if (tap) return codeLabel(tap[0])
+	return preset.mouse === 'attack' ? 'Click' : 'A'
+}
 // Throw prompt for the onboarding pointer and Ball card. Click when the mouse throws; otherwise the first slot plus the primary tap (Space). The pad's A is primary; touch names no key.
 export const throwHint = (id, device) => {
 	if (device === 'touch') return 'Throw'

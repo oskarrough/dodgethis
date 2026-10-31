@@ -645,6 +645,16 @@
 	border-radius: 12px;
 	transform: rotate(3deg);
 }
+.moba-attack {
+	transform: rotate(-3deg);
+}
+.moba-attack .key {
+	left: 50%;
+	translate: -50% 0;
+	padding: 2px 3px;
+	font-size: 10px;
+	white-space: nowrap;
+}
 .moba-recall[hidden] {
 	display: none;
 }
