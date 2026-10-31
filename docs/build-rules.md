@@ -9,13 +9,13 @@ Discoverable names. Agents find code by plain-text search, so every identifier i
 - No bare-role filenames (`utils.js`, `helpers.js`, `types.js`). In a registered folder (`heroes/<id>/`, `abilities/<id>/`, `mechanics/<id>/`, `maps/<id>/`), the three conventional filenames are `<id>.js`, `<id>-tune.js`, `<id>-view.js`. Every helper filename also carries the id; its role is the author's.
 - Keep strings whole: fact names, bot goals, tune keys, `--ui-*` tokens and error messages are never built from templates. An error message starts with a unique literal so a log line greps back to its throw site.
 - One definition site per symbol: move, don't copy, and rename in the same commit as the behaviour change.
-- A new fact type gets an entry in `index.js` `FACTS`, or guests drop every packet carrying it. Facts carry plain objects, not arrays (`validFact` rejects arrays); use keyed objects for collections.
+- A new fact type gets an entry in `src/modes/moba/index.js` `FACTS`, or online guests drop every packet carrying it. Facts carry plain objects, not arrays (`validFact` rejects arrays); use keyed objects for collections.
 
 A surgical edit outside your owned files (a setter, an export, a hook) is fine without asking; name it in the report.
 
 - When the user's judgment is useful, report the actual local dev URL and shortest route plus one specific thing to judge. The coordinator pings them; don't leave review hidden in a long completion report.
 - A proof says how it was made: a bots-only fast-forward proves nothing about a human playing.
-- Every number lives in the mode's tune.js, and every slider has a sane range (fractions 0–1, times at least one step). No slider value may produce NaN or reverse movement.
+- Every number lives in a tune file (the mode's `tune.js` or a folder's `<id>-tune.js`), and every slider has a sane range (fractions 0–1, times at least one step). No slider value may produce NaN or reverse movement.
 - Tune sliders apply live, or are labelled "applies on restart". HUD text is built from tune, never hard-coded, and written only when it changes.
 - Update the docs line your change contradicts.
 - App-wide and run-owned debug APIs share one namespace: check both registrations before renaming a key, keep duplicate protection, and prove unregister/re-entry. Scope helpers by action or mode so a lobby object cannot collide with a lobby action.
@@ -45,7 +45,7 @@ A surgical edit outside your owned files (a setter, an export, a hook) is fine w
 
 ## View, UI and screens
 
-- For MOBA concept art and terrain, read the Concept art recipe in [look.md](../../docs/look.md) and use our nouns from [world.md](../../docs/world.md). Judge the crowded fight as well as the establishing shot.
+- For MOBA concept art and terrain, read the Concept art recipe in [look.md](look.md#concept-art) and use our nouns from [world.md](world.md). Judge the crowded fight as well as the establishing shot.
 - A debug folder is named for its tune key (`bots/easy` for `tune.bots.easy`); `debugPath` in `sliders.js` puts top-level keys into a group (abilities, hero, lane, controls, feel). Restart-only terrain controls must rebuild both visible geometry and its depth geometry, and keep walking bounds safe across their slider ranges.
 - Everything drawn moves with render interpolation: telegraphs, fills and timers blend with `alpha`, not just bodies.
 - Keyboard, mouse and pad get equal treatment: aim cues, cursors and help text cover all three.
@@ -66,5 +66,4 @@ A surgical edit outside your owned files (a setter, an export, a hook) is fine w
 - A new screen or mode handles shared sessions or refuses them with a notice; a guest never sits on a frozen screen.
 - Proof screenshots use the real game camera and assert the state they claim (idle is idle, "mid-flight" waits for the flight). Start from a fresh `/` when proving the route; targeted visual fixes may use a direct setup and must say how they got there.
 - Trace interactions (pointer sweeps, reversals mid-transition), not just idle.
-- A new fact type gets an entry in `src/modes/moba/index.js` `FACTS`, or online guests drop every packet carrying it.
 - Tunes may be prototype copies (`Object.create(tune.x)`, e.g. moba `index.js` `cameraTune`): never `{ ...t }` one, which keeps only own keys; override with `Object.assign(Object.create(t), { … })`.

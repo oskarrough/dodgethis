@@ -1,6 +1,6 @@
 # Compelling abilities
 
-What makes an ability worth pressing, for designing new kits and tuning old ones. Distilled from two Reddit threads of Heroes of the Storm players building dream "pick any three abilities" heroes and ranking ultimates (2026-10-14). Their power rankings were argued to bits; what they got excited about was consistent. The hard rules (tells, dodge deadline, interception) live in [heroes.md](heroes.md); this is the taste around them.
+What makes an ability worth pressing, for designing new kits and tuning old ones. Distilled from Heroes of the Storm players building dream "pick any three abilities" heroes and ranking ultimates: their power rankings were argued to bits, but what they got excited about was consistent. The hard rules (tells, dodge deadline, interception) live in [heroes.md](heroes.md); this is the taste around them.
 
 ## What people get excited about
 

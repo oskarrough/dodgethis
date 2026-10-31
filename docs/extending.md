@@ -23,7 +23,7 @@
 
 ## Settled
 
-- `feedback.js`: core gets a juice kit of verbs (`burst`, `mark`, `flash`, `retire`). Each mode keeps its own fact-to-verb switch. It moves into dodgeball whole for now and is extracted at moba M1.
+- `feedback.js`: core gets a juice kit of verbs (`burst`, `mark`, `flash`, `retire`). Each mode keeps its own fact-to-verb switch.
 - Camera: core owns the rig, shake, FOV kick and the unshaken aim camera. The mode supplies `frame(dt) → { eye, target }`, applied to both cameras, with shake applied to the render camera only.
 - Unit visual: it lives on the core body (root `mesh`, a cosmetic `visual` child, a default mannequin). Loadouts parent their parts to `visual`.
 - Lobby: dodgeball owns its difficulty portals. A fresh visit opens the splash in `moba/front/`, where the MOBA maps are the default and Dodgeball is a bonus pick; there's no in-game mode switch. `?mode=dodgeball` opens the hub, `?mode=moba` opens MOBA difficulty, and adding `&play` starts the match directly.
@@ -31,7 +31,7 @@
 
 ## Tune it live
 
-Press `` ` `` (Backquote, the key above Tab) while playing to open the **Tuner**. It is the same numbers the tune files hold, every one of them,, as instruments you can try in a match — not only a debug panel. Browse this screen's folders, search (try `lob` or `speed`), pin what you care about, and click a readout to type. Tweaks live in this browser until you reset them; they are not the shipped defaults.
+Press `` ` `` (Backquote, the key above Tab) while playing to open the **Tuner**. It is the same numbers the tune files hold, every one of them, as instruments you can try in a match — not only a debug panel. Browse this screen's folders, search (try `lob` or `speed`), pin what you care about, and click a readout to type. Tweaks live in this browser until you reset them; they are not the shipped defaults.
 
 When a change feels better, **Share** opens a GitHub issue (Tuning idea template, `tuning` label) with old → new values and the JSON. **Copy** puts that JSON on the clipboard. A maintainer or agent can then write it into the matching `<id>-tune.js`.
 
@@ -51,7 +51,7 @@ Everything else in the folder is yours. `bun run collect-mods` writes the `all-*
 
 ## Make a hero
 
-Copy `heroes/undine/` and `abilities/balloon/`; Undine was built this way and touched one shared engine file.
+Copy `heroes/undine/` and `abilities/balloon/`.
 
 1. **Hero:** `heroes/<id>/<id>.js` declares `{ unit: { hp: 'hp', radius: 'radius', speed: 'speed', attack, kit: { slot1, slot2, slot3 }, traits, brain }, name, silhouette, icon }`. `attack` names a basic ability; omit it for the default ranged attack. `brain` is an optional hero bot function. Selection and presentation stay outside `unit`. HP, speed and costume sizes go in `<id>-tune.js`; the costume in `<id>-view.js`.
 2. **Ability:** `abilities/<id>/<id>.js` declares a `kind` (`shot`, `zone`, `dash`, `melee`, `stance`, `channel`, `instant`), its `tell` and `card`, and code in hooks: `onStart`, `onTick`, `onRelease`, `onRecast`, `onHit`, `onEnd`, `onCancel`, `onDashEnd`. Numbers, `sound` and `juice` live in `<id>-tune.js`. A keyword your card names with `[[Term]]` that no other folder defines goes in `terms: { id: ['Name', 'One sentence with {tune.paths}.'] }`, on the ability or the hero; `glossary.js` keeps only the shared ones.
@@ -76,7 +76,7 @@ An encounter is a fight a dungeon map places. Its folder holds `encounters/<id>/
 
 Use `stages: { release: [{ deliver: 'area', from: 'self', shape: 'cone', targets: 'enemies', blockedBy: 'cover', hit: ['damage', 'slow'] }] }` (Tangle). Circles read `radius`; cones read `range` and `angle`. An action's `radius` can name another metres reference. Reach includes the target's body radius. Damage reads `damage` with level growth at each target's release-time evaluation; `slow` and `freeze` use the matching `statusEffects` record. Knockback reads `knockback` and `time` (Around the world). Explicit damage/knockback records can bind other local tune keys; damage's `scale: null` disables growth. `ability-effects.js` resolves effect numbers at delivery, including status magnitude/duration and slow clamping. A zero slow creates no status.
 
-Every area uses targeting population order and coordinate snapshots; `targets: 'enemyHero'` includes practice dummies, including for Red light now. Red light's `where: ({ target, stats }) => Math.hypot(target.body.velocity.x, target.body.velocity.z) > stats.movingSpeed` is a code escape hatch, not schema; it receives only the bare target and stats. `from: 'at'` centres an area on the event point (the zone's `{ x, z }` on `land`). Statuses resolve before damage; further effects on a lethal target are dropped. Damage areas emit the collective impact; freeze emits contact feedback.
+Every area uses targeting population order and coordinate snapshots; `targets: 'enemyHero'` includes practice dummies, including for Red light. Red light's `where: ({ target, stats }) => Math.hypot(target.body.velocity.x, target.body.velocity.z) > stats.movingSpeed` is a code escape hatch, not schema; it receives only the bare target and stats. `from: 'at'` centres an area on the event point (the zone's `{ x, z }` on `land`). Statuses resolve before damage; further effects on a lethal target are dropped. Damage areas emit the collective impact; freeze emits contact feedback.
 
 ## Declare a target ability
 

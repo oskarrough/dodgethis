@@ -16,7 +16,7 @@ The desert mesa is the hub, and every court is its own island floating in the sa
 
 Every few minutes the Ball falls out of the sky, a shard of something bright. You see its shadow first, which is fair warning, and it lands hot and hits harder than anything made up here until it cools. The keeps are faceted crystals on stepped plinths, guarded by stone towers, and the minions are small nameless things of the mesas that follow the nearest keep and walk at whatever it points at.
 
-The tallest of them is Altamesa, and it is hollow. Mesa is Spanish for table, so the name is a high table, which is roughly what it looks like from a passing cloud. Inside it waits a dungeon for a party of three, kept by seven characters who have had a long time alone to grow strange: Manos at the gate, Tinaja and Botijo in the court, Carillon and Espejo down the sun wing, Fornax and Barquero down the shade wing, and Gnomon at the bottom, who has kept time over the mesa longer than anyone has kept count ([deck](https://claude.ai/artifact/GRXdewN9rWPFrdpSKuD8H7)). Their cast list is below.
+The tallest of them is Altamesa, and it is hollow. Mesa is Spanish for table, so the name is a high table, which is roughly what it looks like from a passing cloud. Inside it waits a dungeon for a small party, kept by seven characters who have had a long time alone to grow strange: Manos at the gate, Tinaja and Botijo in the court, Carillon and Espejo down the sun wing, Fornax and Barquero down the shade wing, and Gnomon at the bottom, who has kept time over the mesa longer than anyone has kept count ([deck](https://claude.ai/artifact/GRXdewN9rWPFrdpSKuD8H7)). Their cast list is below.
 
 ## What is settled and what is open
 
@@ -92,7 +92,7 @@ Lesser things keep plain common nouns from the same palette, with no article. Ma
 
 ## The heroes
 
-Oskar settled these names on 2026-10-24. Each hero keeps its kit and silhouette; the sports props give way to the crafts of the mesas. The folders in brackets are the old ids; the code has been renamed to match, and `?hero=` still accepts the old ids.
+Oskar settled these names on 2026-10-24. Each hero keeps its kit and silhouette; the sports props give way to the crafts of the mesas. The old ids in brackets still work in `?hero=`.
 
 - **Ibis** (old id `fletcher`). A lean hunter with a long neck and a quiver of three reed arrows fletched with heron feathers. Every arrow that finds a hero sends her leaping again.
 - **Kappa** (old id `mitts`). Low, wide and neckless, a river creature with a shell and one great catching hand. Whatever is thrown at her team she takes and holds, and gives back when it suits her.
@@ -144,8 +144,6 @@ Avoid: plush, felt, glossy eyes, blush, chibi faces, mobile-card-game rendering,
 
 ## Prompting music and sound
 
-Music is made in Oskar's own tool, [Jukebox](https://jukebox.0sk.ar) (the `oskarrough/jukebox` repo), so Dodgethis never builds a music tool of its own.
-
-Start from the menu prompt in [sound.md](sound.md#splash-and-lobby-prompt) and keep its scene tempos (lobby about 112, match 120, clutch 138). Keywords: Azymuth jazz-funk warmth and Yellow Magic Orchestra machine, Fender Rhodes with 9ths and 11ths, singing fretless-style bass, light samba kit with shaker and cuíca, glassy Minimoog portamento, square-wave arpeggios, vocoder pads, gentle tape saturation, wide stereo, sunset over floating mesas, stretching before a match, seamless loop, no vocals. Effects take one material family per source (Fletcher string and wood, Mitts leather and thump, stone and iron for structures, bright glass and a low bloom for the Ball, quiet wood and paper for menus), land on the frame and keep fight tails under 400 ms.
+Music is made in Oskar's [Jukebox](https://jukebox.0sk.ar) ([sound.md](sound.md#music)). Start from the menu prompt in [sound.md](sound.md#splash-and-lobby-prompt) and keep its scene tempos (lobby about 112, match 120, clutch 138). Keywords: Azymuth jazz-funk warmth and Yellow Magic Orchestra machine, Fender Rhodes with 9ths and 11ths, singing fretless-style bass, light samba kit with shaker and cuíca, glassy Minimoog portamento, square-wave arpeggios, vocoder pads, gentle tape saturation, wide stereo, sunset over floating mesas, stretching before a match, seamless loop, no vocals. Effects take one material family per source (Ibis string and wood, Kappa leather and thump, stone and iron for structures, bright glass and a low bloom for the Ball, quiet wood and paper for menus), land on the frame and keep fight tails under 400 ms.
 
 Avoid: kazoo, cartoon boings, plush squeaks, beeps in menus, orchestral fantasy bombast, dread or horror drones, EDM drops, vocals, and anything that sits over the effects in a fight.

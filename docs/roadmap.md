@@ -12,28 +12,28 @@ A small, toy-like hero brawler that grew out of dodgeball, set in the world over
 
 ## Now
 
-- Find the game's look and name: rebrand gallery, Oskar's own directions, floating arenas keep recurring.
+- Find the game's name ([world.md](world.md), #25).
 - Flagfall: Dunk (knock heroes into the sea) and lanes that meet.
-- Dungeon ([dungeon.md](dungeon.md)): fight the Warden with one to five heroes, solo or with friends and optional bots; read the fight report after each pull. Proved fun (Oskar, 2026-10-20: "visual impact made all the difference").
-- Abilities, heroes and units are declared data ([schema design](../pages/schema-design/)): every tune number has a unit, effects, areas, ground fields, shots and triggers are declarations, the Tuner pins any value (`?knobs=`). Next new abilities are data first: Lob proved it; Rally ring and Chain lightning are written and waiting.
+- Dungeon ([dungeon.md](dungeon.md)): Altamesa's seven encounters for one to five heroes, solo or with friends and optional bots; next, what the dial scales and what remembers you. Proved fun (Oskar, 2026-10-20: "visual impact made all the difference").
+- Abilities, heroes and units are declared data ([schema design](../pages/schema-design/)): every tune number has a unit, effects, areas, ground fields, shots and triggers are declarations, the Tuner pins any value (`?knobs=`). New abilities are data first, as Lob and Rally ring are.
 - Make the agent harness faster: feature map, [verify.md](verify.md), ast-grep.
 
 ### Waiting on Oskar
 
-Open questions live in GitHub issues assigned to Oskar, one issue per ask, with a screenshot when it is about a look.
+GitHub issues assigned to Oskar (AGENTS.md, Coordinating).
 
 ### Agent todo
 
 - [ ] Check whether restarts stutter while the three big textures reload.
 - [ ] Still unproven online: a hidden guest tab catching up, and play over a real network.
-- [ ] Keep a headless two-peer check (`bun run online:check`): host and guest sims, snapshots through JSON, rejected snapshots and dropped facts counted. The online-parity thread wrote a throwaway one on 2026-10-11.
+- [ ] Keep a headless two-peer check (`bun run online:check`): host and guest sims, snapshots through JSON, rejected snapshots and dropped facts counted.
 
 ## Next
 
 - Balance from the farm once bots play every kit properly; Kappa tuning.
 - Online MOBA through the existing rooms, then the lobby's online seats.
-- Carambola and Skip, then Yo-yo and Mascot: six built heroes, ten designed at most.
-- Juice and sound everywhere; the frozen briefs come back one by one.
+- More heroes: eight are built, ten at most.
+- Juice and sound everywhere.
 - The world shows up in the art: Overthrow's day isles over cloud, Flagfall's night garden, keeps ([look.md](look.md)).
 
 ## Later
