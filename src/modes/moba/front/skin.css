@@ -212,8 +212,10 @@
 [data-light='night'] > .skin-sheet::after {
 	border-image-source: url('/splash/frame-night.webp');
 }
-/* The dungeon's card: the day frame and wash fired to the mesa's red stone. */
-[data-light='mesa'] > .skin-sheet::after,
+/* Altamesa wears carved red stone; its title keeps the terracotta wash. */
+[data-light='mesa'] > .skin-sheet::after {
+	border-image-source: url('/splash/frame-mesa.webp');
+}
 .moba-front[data-skin='painted'] [data-light='mesa'] .skin-title::after {
 	filter: hue-rotate(-24deg) saturate(1.7) brightness(0.88);
 }
