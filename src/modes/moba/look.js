@@ -213,7 +213,8 @@ export const look = {
 		enabled: true,
 		font: 56,
 		family: "'Sniglet', 'Josefin Sans', sans-serif", // canvas: no CSS vars
-		outline: 12,
+		outline: 7,
+		spacing: 4, // px between digits, so the outlines don't fuse them
 		height: 0.7,
 		y: 2,
 		life: 0.85,

@@ -19,9 +19,11 @@ export function createDamageNumbers(parent) {
 		const context = canvas.getContext('2d')
 		const font = `bold ${t.font}px ${t.family}`
 		context.font = font
+		context.letterSpacing = `${t.spacing}px`
 		canvas.width = Math.ceil(context.measureText(label).width + t.outline * 2)
 		canvas.height = Math.ceil(t.font * 1.4 + t.outline * 2)
 		context.font = font
+		context.letterSpacing = `${t.spacing}px`
 		context.textAlign = 'center'
 		context.textBaseline = 'middle'
 		context.lineJoin = 'round'
