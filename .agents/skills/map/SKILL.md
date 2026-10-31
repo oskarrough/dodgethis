@@ -22,7 +22,6 @@ A map is a folder in `src/modes/moba/maps/<id>/` (docs/extending.md): `<id>.js` 
 - A visible sun needs placement at the shipped match camera, in the void it actually sees. Project the centre to check it. An opaque sun must write depth so the later cloud plane cannot paint over it.
 - A pale mapped tile can vanish: `floor.vary` controls its remapped contrast, not only random variation. Check joints at match distance before repainting the asset.
 - Shared kit extensions must be opt-in. Re-run start shots on Altamesa, Flagfall and Overthrow after a shared change.
-- For a timed dry run, record UTC checkpoints per step and the screenshot attempt count. Record provider token usage only when reported as consumption; context-window occupancy (`bb thread context`) is not a token bill and must not be reported as one.
 
 ## The kit: reuse it before writing geometry
 

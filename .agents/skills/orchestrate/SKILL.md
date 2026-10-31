@@ -13,6 +13,7 @@ The coordinator holds the goal and the bar; builders hold the code.
 - **Pick the model for the job.** GPT Astra (Codex) for big visual builds and every image. Opus for tools and careful plumbing; it catches bugs in the brief. A cheap model (DeepSeek Flash on pi) for well-specified jobs that have a recipe and a check. It follows recipes in one pass, but its own eye is weaker, so judge its look work.
 - **Painting is a service.** Code threads ask a painter thread by message for an image with an exact path and spec, then wait. Never ask a thread that can't make images to make one.
 - **The coordinator doesn't dig.** Hunting through code for where a thing lives is a worker's job, even a small one: hand it to a cheap model with the leads you have, and stay free to talk with Oskar.
+- **Bring Oskar ideas, unasked.** Between his messages, look at the game the way a new player would (screens, a headless run, the workers' proof pages) and come back with what's weakest and your pick for it. Most of what he asks for, you could have proposed first.
 
 - **Spread across machines.** office-linux has the GPU and Oskar's dev server: browser, shot and clip jobs go there. Headless jobs (simulate, docs, logic, tuning) go to hetzner (`bb thread spawn --machine hetzner --new-environment worktree`); it is slower, which shows up slowness that a fast box hides.
 

@@ -32,7 +32,7 @@ Pass `--ref` once per reference image. Name what to take from each one in the br
 
 Existing OpenRouter and API credits may be used, including automatic image-model fallbacks; do not buy credits or create accounts without Oskar's approval. Image-model availability depends on the connected provider; do not assume a chat model or subscription provides an image model. If neither route is available, hand Oskar the prompt and references.
 
-## Two recipes that worked (2026-10-25)
+## Two recipes that work
 
 **Target frame (a paintover).** Image 1 is a real screenshot from `bun run shot <map> --spots start`. Attach the map's references and an approved target from another map as the style anchor (`pages/art/*-targets/`). Keep exactly: camera, framing and layout (walls and pillars are colliders), every unit's place, size, silhouette, team colour and navy outline, the HUD, and telegraphs as the loudest marks. Change freely: floor material, walls, everything past the rim, and the light. Ask for two takes, one close and one bold, at 1600×900, plus `notes.md` with one line per take and a build order on our kit. Save in `pages/art/<map>-targets/` with `prompt.md`.
 
