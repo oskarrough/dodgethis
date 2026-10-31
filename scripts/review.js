@@ -92,5 +92,5 @@ if (import.meta.main) {
 	// JSON.stringify spreads short arrays over lines; oxfmt (bun run check) wants them on one
 	Bun.spawnSync(['bunx', 'oxfmt', itemsPath])
 	writePage(item)
-	console.log(`http://office-linux.heron-mermaid.ts.net:5173/pages/${item.page}`)
+	console.log(`https://dodgethis.0sk.ar/pages/${item.page} (live once pushed to main and deployed)`)
 }

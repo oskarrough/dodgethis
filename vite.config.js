@@ -336,13 +336,27 @@ const soundShowcase = {
 
 // Sibling files Vite leaves behind (items.json, <a href> images, classic viewer.js)
 // and /pages/page.css so that path still works next to the hashed stylesheet.
+// Cloudflare refuses a deploy holding any asset over 25 MiB, so a larger clip is left
+// out of the build (and named here) instead of failing it; shrink it to have it live.
+const MAX_ASSET = 24 * 1024 * 1024
 const pages = {
 	name: 'pages',
 	apply: 'build',
 	closeBundle() {
 		cpSync('pages', join('dist', 'pages'), {
 			recursive: true,
-			filter: (src) => statSync(src).isDirectory() || !src.endsWith('.html'),
+			filter: (src) => {
+				const stat = statSync(src)
+				if (stat.isDirectory()) return true
+				if (src.endsWith('.html')) return false
+				if (stat.size > MAX_ASSET) {
+					console.warn(
+						`pages: skipped ${src}, ${(stat.size / 1048576).toFixed(1)} MiB is over the 24 MiB deploy limit`,
+					)
+					return false
+				}
+				return true
+			},
 		})
 	},
 }

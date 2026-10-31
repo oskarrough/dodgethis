@@ -46,7 +46,7 @@ A web game: two modes, dodgeball and a MOBA, on one engine.
 - Default: make the change and trust it
 - Fast checks over thorough ones: 10% of the time for 90% of the certainty, then move on; a later polish round is cheaper than perfect now. For anything visual, `bun run shot <map>` (with `--compare`, `--gray`, `--photo`, `--light`) is one look
 - Prove only when the brief asks or the user must judge a look or feel: one screenshot, clip or headless number, once, via `bun run review`
-- `pages/` is the pinboard (proofs, pitches, concept art, one folder each, listed in `pages/index.html`), served by the dev server; link there, never to thread storage
+- `pages/` is the pinboard (proofs, pitches, concept art, one folder each, listed in `pages/index.html`), served by the dev server and, after every push to `main`, live at `https://dodgethis.0sk.ar/pages/<folder>/`; hand Oskar the live link (push first), never a `:5173` address or thread storage
 
 ## Voice
 
