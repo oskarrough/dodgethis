@@ -15,6 +15,8 @@ What worked during the art week (2026-10-25, docs/art-week.md). The coordinator 
 
 - **The coordinator doesn't dig.** Hunting through code for where a thing lives is a worker's job, even a small one: hand it to a cheap model with the leads you have, and stay free to talk with Oskar.
 
+- **Bring Oskar ideas, unasked.** Between his messages, look at the game the way a new player would (screens, a headless run, the workers' proof pages) and come back with what's weakest and your pick for it. Most of what he asks for, you could have proposed first.
+
 ## The brief
 
 Six parts, every time: the goal (in the player's terms, plus the target image), the skill to read, the files it owns, the files it must not touch (and who's in them), the fast check, and how to report (`bb thread tell <coordinator> '<what, the shot path>'`). Briefs with all six came back clean; briefs missing the off-limits line caused collisions.
