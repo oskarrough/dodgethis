@@ -1,0 +1,77 @@
+{
+  "report": {
+    "light": {
+      "bandMix": [
+        0.32,
+        0.5
+      ],
+      "dir": [
+        0.78,
+        0.27,
+        -0.42
+      ],
+      "shade": 5064041,
+      "shadow": 7431038,
+      "shadowLength": 1.1,
+      "shadowPixelsPerMetre": 16,
+      "shadowStrength": 0.42,
+      "sun": 15711647
+    },
+    "snapshot": {
+      "encounters": [
+        {
+          "dormant": false,
+          "id": "manos",
+          "killed": true,
+          "killedTick": 159,
+          "last": false
+        },
+        {
+          "dormant": false,
+          "id": "tinajaBotijo",
+          "killed": true,
+          "killedTick": 159,
+          "last": false
+        },
+        {
+          "dormant": false,
+          "id": "fornax",
+          "killed": true,
+          "killedTick": 159,
+          "last": false
+        },
+        {
+          "dormant": false,
+          "id": "barquero",
+          "killed": true,
+          "killedTick": 159,
+          "last": false
+        },
+        {
+          "dormant": false,
+          "id": "carillon",
+          "killed": true,
+          "killedTick": 159,
+          "last": false
+        },
+        {
+          "dormant": false,
+          "id": "espejo",
+          "killed": true,
+          "killedTick": 159,
+          "last": false
+        },
+        {
+          "dormant": false,
+          "id": "gnomon",
+          "killed": false,
+          "killedTick": null,
+          "last": true
+        }
+      ]
+    },
+    "tick": 561,
+    "triangles": 202662
+  },
+  "errors": ""
+}

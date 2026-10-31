@@ -1,3 +1,5 @@
+import { dressFloor } from './altamesa-floor.js'
+import { remnants } from './altamesa-remnants.js'
 import * as THREE from 'three'
 import { tune } from '../../tune.js'
 import { createMatchTerrain } from '../../match-terrain.js'
@@ -33,7 +35,10 @@ export function ground(scope) {
 		return resource
 	}
 	const floors = createFloorPrint({ layout, terrain: desert, casts, look: s.look, own })
-	group.add(floors.sheet({ ...s.floor, x: 0, z: 0 }, s.halfX, s.halfZ).mesh)
+	const court = floors.sheet({ ...s.floor, x: 0, z: 0 }, s.halfX, s.halfZ).mesh
+	dressFloor(court, s.groundColors)
+	group.add(court)
+	remnants(scope, s)
 	const decals = createFloorDecals({ decals: s.decals, layout, groundY: desert.groundY, own })
 	if (decals) group.add(decals)
 	const growth = overgrowth(

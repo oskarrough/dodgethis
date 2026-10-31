@@ -31,6 +31,7 @@ A map is a folder in `src/modes/moba/maps/<id>/` (docs/extending.md): `<id>.js` 
 - `glows(mesh, color)` (core/stylepass.js) for light sources: crystals, bell throats, lit windows, the moon. Never the court, never a team hue on scenery.
 - `floor-print.js` prints the court from a drawn tile, `floor-decals.js` scatters a decal sheet over it, and `map-art.js` lays painted inlays, such as Gnomon's sundial.
 - Live light: sun direction, tints, haze and shadows follow the Tuner (backtick in a match), so expose numbers as tune values bound through `restyle.js`, never baked constants.
+- A moving sun must leave more than 80 ms between `restyle()` calls: `bindShadowLight` debounces its redraw, so per-frame changes postpone the shadows until the sun stops; Altamesa samples at 8 Hz from simulation ticks.
 
 ## The tune blocks every map has
 

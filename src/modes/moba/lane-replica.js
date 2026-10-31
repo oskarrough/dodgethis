@@ -227,6 +227,23 @@ export function createLaneReplica(simulation, scene) {
 	}
 	function validateState(state) {
 		if (state.map !== simulation.bounds.id) return 'Lane map mismatch'
+		if (simulation.dungeon) {
+			const entries = state.dungeon?.encounters
+			const expected = simulation.dungeon.encounters
+			if (
+				!Array.isArray(entries) ||
+				entries.length !== expected.length ||
+				entries.some(
+					(e, i) =>
+						!e ||
+						e.id !== expected[i].id ||
+						typeof e.killed !== 'boolean' ||
+						typeof e.dormant !== 'boolean' ||
+						(e.killed ? !tick(e.killedTick) || e.killedTick > state.t : e.killedTick !== null),
+				)
+			)
+				return 'Invalid dungeon victory clock'
+		}
 		if (
 			!state.match ||
 			!['early', 'objective', 'late'].includes(state.match.phase) ||
@@ -435,6 +452,16 @@ export function createLaneReplica(simulation, scene) {
 				for (const side of ['A', 'B']) Object.assign(lane.teams[side], before.teams[side])
 				lane.globes.splice(0, lane.globes.length, ...structuredClone(before.globes))
 				sim.matchStats = structuredClone(before.matchStats)
+				if (before.dungeon && simulation.dungeon) {
+					for (const state of before.dungeon.encounters) {
+						const encounter = simulation.dungeon.encounters.find((e) => e.id === state.id)
+						if (encounter) {
+							encounter.killed = state.killed
+							encounter.killedTick = state.killedTick
+							encounter.dormant = state.dormant
+						}
+					}
+				}
 				ball = structuredClone(before.ball)
 				if (before.flag && simulation.flag)
 					Object.assign(simulation.flag.state, structuredClone(before.flag))

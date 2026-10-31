@@ -385,6 +385,7 @@ export default function moba(app, map) {
 					// For a view that draws the styled scene again, such as a mirror floor (mirror.js).
 					renderer: app.renderer,
 					renderStyled: app.renderStyled,
+					setLight: (light) => app.setPalette({ ...palette, light, glow: look.glow }),
 				}) ?? null
 			const replica = !app.session.authoritative
 				? isLobby

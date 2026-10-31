@@ -1,5 +1,23 @@
 [
 	{
+		"at": "2026-10-31T23:55:51.818Z",
+		"title": "Altamesa from gate to dusk",
+		"ask": "Worn paving gives way to windblown sand. The shade wing lies cool, the sun wing holds the heat, and each fallen Warden brings the long shadows of Gnomon’s court closer.",
+		"status": "To review",
+		"decision": "",
+		"media": [
+			"media/2026-10-31-altamesa-from-gate-to-dusk/01-before.png",
+			"media/2026-10-31-altamesa-from-gate-to-dusk/02-target.png",
+			"media/2026-10-31-altamesa-from-gate-to-dusk/03-after-gate.png",
+			"media/2026-10-31-altamesa-from-gate-to-dusk/04-gnomon-at-dusk.png",
+			"media/2026-10-31-altamesa-from-gate-to-dusk/05-courts-at-dusk.png",
+			"media/2026-10-31-altamesa-from-gate-to-dusk/06-after-gray.png"
+		],
+		"links": ["/pages/art/altamesa-terrain-targets/notes.md"],
+		"thread": "thr_eskwtf9y6g",
+		"page": "2026-10-31-altamesa-from-gate-to-dusk/"
+	},
+	{
 		"at": "2026-10-31T23:48:02.602Z",
 		"title": "Talent trees for Ibis and Oolong",
 		"ask": "Does the tree read well, locked and unlocked? The chip under the unit frame wakes when a row opens; T (pad: d-pad up) opens the tree beside play, and 1 2 3, a click or the d-pad takes the open row's talent. Rows ahead are shown in full but quieter, the open row is framed on an apricot band, and taken rows keep the pick with a tick while the other two step back.",

@@ -46,6 +46,7 @@ export function createDungeon(input) {
 			last: !!spot.last,
 			name: encounters[spot.id].name,
 			killed: false,
+			killedTick: null,
 			dormant: false,
 			fighting: false,
 		})
@@ -113,6 +114,7 @@ export function createDungeon(input) {
 			announce(entry)
 			if (!entry.won()) continue
 			entry.killed = true
+			entry.killedTick = t
 			const boon = encounters[entry.id].boon
 			if (boon) {
 				run.boons.push(boon)

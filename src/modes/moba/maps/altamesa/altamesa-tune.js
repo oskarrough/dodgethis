@@ -151,59 +151,76 @@ export default {
 			panelGap: 0.06,
 			relief: 0.18,
 			petals: 8,
-			petalSides: 8,
+			petalSides: 5,
 			petalWidth: 0.28,
 			flowerRadius: 0.48,
 			flowerHeart: 0.2,
 			mossChance: 0.3,
-			mossLobes: 5,
+			mossLobes: 3,
 			mossHeight: 0.08,
 			mossReach: 0.6,
 			mossDrop: 0.4,
 		},
 		// Sandstone cover and pale pillars instead of the green garden roles.
 		palette: {
-			courtShade: 0xa9644a,
-			scenery: 0xcdbcae,
+			courtShade: 0xaa705d,
+			scenery: 0xc69b80,
 			court: 0x788049,
 			page: 0xf1d2b4,
 			leaf: 0x93a85c, // sage and olive: a dry mesa's growth, never lawn green
 			leafDeep: 0x5e7446,
 		},
-		// One low warm sun from the upper left: long violet shadows across a pale court, lit
-		// faces apricot, shade lilac (the ink target, pages/art/altamesa-targets).
+		// The gate opens in warm morning light. Warden victories carry this sun westward
+		// into the long lilac shadows of Gnomon’s last court (altamesa-sun.js).
 		light: {
-			dir: [-0.72, 0.42, -0.3], // toward the sun
-			sun: 0xffd2a0,
-			shade: 0x4a3a6e,
+			dir: [-0.65, 0.68, -0.34], // toward the sun
+			sun: 0xffdfb5,
+			shade: 0x56466e,
 			bandMix: [0.4, 0.45],
 			shadow: '#7d6596',
-			shadowStrength: 0.5,
-			shadowLength: 0.85, // fraction of the true projected length
+			shadowStrength: 0.42,
+			shadowLength: 0.8, // fraction of the true projected length
 			shadowPixelsPerMetre: 16,
 		},
 		// The court is printed with a painted tile (floor-print.js, public/tiles/); the isle's
 		// cliff and cloud take the desert's colours (applies on restart).
+		sunset: {
+			seconds: 6,
+			dir: [0.78, 0.27, -0.42],
+			sun: '#efbd9f',
+			shade: '#4d4569',
+			shadow: '#71637e',
+			bandMix: [0.32, 0.5],
+			shadowLength: 1.1,
+			sky: '#b198b2',
+			heart: '#efd0be',
+		},
+		groundColors: {
+			sand: '#e6c9a4',
+			shadeStone: '#cec8ce',
+			sunStone: '#dfb99b',
+			ritualStone: '#d8cbbf',
+		},
 		floor: {
 			// Mapped, not raw: the tile keeps its drawing but is lifted to pale terracotta, so
 			// team-red telegraphs and navy ink stay the darkest, loudest marks on the court.
 			style: 'mapped',
 			image: '/tiles/flags-drawn.webp',
 			size: 5, // metres per repeat of the tile
-			base: '#f8ebdd',
-			joint: '#e0c2ab',
-			accent: '#e0c2ab',
-			vary: 0.14, // how much of the drawing survives the lift
+			base: '#eed8bb',
+			joint: '#c8ab90',
+			accent: '#dbc0a0',
+			vary: 0.16, // how much of the drawing survives the lift
 		},
 		// Painted decals on the court (floor-decals.js): a 4×4 sheet with alpha.
 		decals: {
 			image: '/art/altamesa-decals.webp',
 			grid: 4,
-			count: 110,
+			count: 80,
 			size: [1.6, 4],
-			strength: 0.9,
-			mute: 0.3,
-			skip: [12, 14], // the dotted ring and the tracks read as telegraphs and arrows
+			strength: 0.65,
+			mute: 0.48,
+			skip: [3, 12, 14], // both broken rings and the tracks read as telegraphs and arrows
 			seed: 11,
 			clear: 0.5,
 		},
@@ -229,7 +246,7 @@ export default {
 			cloudDeep: '#a98a98',
 		},
 		// Clearer air than Overthrow's, and more far mesas standing in the cloud.
-		haze: { top: 3, bottom: 70, power: 1.4, max: 0.7, near: 30, far: 190 },
+		haze: { top: 3, bottom: 70, power: 1.6, max: 0.65, near: 38, far: 210 },
 		skyGlow: { color: '#ffb87e', heart: '#ffe6c0', strength: 0.78 },
 		// Fewer, deeper cloud banks, so the cliff and its ruins show.
 		clouds: {
@@ -243,13 +260,13 @@ export default {
 			puffDepth: [18, 30],
 			bob: 0.6,
 		},
-		spires: { count: 34, arches: 4, near: 22, far: 110, sides: 6, radius: [2, 5] },
+		spires: { count: 42, arches: 5, near: 30, far: 120, sides: 6, radius: [1.8, 4] },
 		// The crowded rim (altamesa-scenery.js): shares of rim points that carry a ruin, a dead
 		// tree or bones; metres out from the rim and down the cliff.
 		rim: {
-			density: 2, // passes over the rim's points
+			density: 1, // passes over the rim's points
 			ruins: 0.4,
-			trees: 0.3,
+			trees: 0.17,
 			bones: 0.06,
 			reach: 2,
 			depth: 3,
@@ -273,6 +290,10 @@ export default {
 // The dimension of each number above that its name alone does not settle (src/modes/moba/units.js).
 export const units = {
 	altamesa: 'm',
+	'altamesa.sunset.seconds': 's',
+	'altamesa.sunset.dir': 'fraction',
+	'altamesa.sunset.bandMix': 'fraction',
+	'altamesa.sunset.shadowLength': 'fraction',
 	'altamesa.look.contact.strength': 'fraction',
 	'altamesa.look.shadow': 'fraction',
 	'altamesa.look.clouds.speed': 'm/s',
@@ -306,4 +327,12 @@ export const units = {
 }
 
 // Camera spots for `bun run shot altamesa`: [x, z] where hero 0 stands and the camera looks.
-export const shots = { gate: [-34, -8], west: [-38, -24], pillars: [-6, 0], gnomon: [38, 0] }
+export const shots = {
+	gate: [-34, -8],
+	west: [-38, -24],
+	pillars: [-6, 0],
+	shade: [12, -22],
+	sun: [12, 22],
+	stair: [28, 0],
+	gnomon: [38, 0],
+}

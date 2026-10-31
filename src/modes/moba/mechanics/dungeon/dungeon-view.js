@@ -1,3 +1,4 @@
+import { altamesaSun } from '../../maps/altamesa/altamesa-sun.js'
 import { wardenCeremony } from './dungeon-ceremony.js'
 import { tune } from '../../tune.js'
 import { LOCK, wardenMarks } from './dungeon-marks.js'
@@ -8,6 +9,7 @@ export { dressBoss as dress } from './dungeon-dress.js'
 // The run's drawing is its encounters' drawings, each from its folder's view.
 export function view(scene, options) {
 	const ceremony = wardenCeremony(scene)
+	const sun = altamesaSun(options?.setLight)
 	const views = Object.values(encounterViews).flatMap((v) =>
 		v.view ? [v.view(scene, options)] : [],
 	)
@@ -20,10 +22,12 @@ export function view(scene, options) {
 			for (const v of views) v.present?.(fact)
 		},
 		update(...args) {
+			sun.update(...args)
 			for (const v of views) v.update(...args)
 			ceremony.update(...args)
 		},
 		dispose() {
+			sun.dispose()
 			ceremony.dispose()
 			for (const v of views) v.dispose()
 		},

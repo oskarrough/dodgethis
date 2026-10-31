@@ -10,6 +10,7 @@ export function createSnapshot(ctx) {
 		dummies,
 		lane,
 		ball,
+		dungeon,
 		flag,
 		obstacles,
 		matchStats,
@@ -31,6 +32,17 @@ export function createSnapshot(ctx) {
 		const ballState = ball?.snapshot()
 		const state = {
 			t: ctx.t,
+			...(dungeon && {
+				dungeon: {
+					encounters: dungeon.encounters.map(({ id, last, killed, killedTick, dormant }) => ({
+						id,
+						last,
+						killed,
+						killedTick,
+						dormant,
+					})),
+				},
+			}),
 			...((lane || ball) && {
 				match: { ...(lane && { ...lane.match, nextWave: lane.nextWave }), ...ballState?.match },
 			}),
