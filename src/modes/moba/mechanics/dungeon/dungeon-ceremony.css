@@ -1,7 +1,7 @@
 .warden-card {
 	position: fixed;
 	left: 24px;
-	bottom: 112px;
+	bottom: var(--warden-card-bottom, 112px);
 	width: min(340px, calc(100vw - 48px));
 	box-sizing: border-box;
 	padding: 18px 22px;
@@ -34,7 +34,7 @@
 @media (max-width: 700px) {
 	.warden-card {
 		left: 12px;
-		bottom: 180px;
+		bottom: var(--warden-card-bottom, 180px);
 		width: 250px;
 		padding: 10px 14px;
 	}

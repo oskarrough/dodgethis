@@ -27,6 +27,16 @@ export function wardenCeremony(scene) {
 	card.setAttribute('role', 'status')
 	card.innerHTML = '<small></small><h2></h2><p></p>'
 	document.body.append(card)
+	// The meter grows with the party and its drill-down; reserve its actual height, not a row count.
+	function placeCard() {
+		const meter = document.querySelector('.moba-tally')
+		const bounds = meter?.getBoundingClientRect()
+		if (bounds?.height)
+			card.style.setProperty('--warden-card-bottom', `${window.innerHeight - bounds.top + 12}px`)
+		else card.style.removeProperty('--warden-card-bottom')
+	}
+	const meterSize = new ResizeObserver(placeCard)
+	window.addEventListener('resize', placeCard)
 	let caption = null
 	let previous = null
 	const rubbleMaterial = makeStyleMaterial('scenery')
@@ -49,6 +59,9 @@ export function wardenCeremony(scene) {
 	function say(id, end, at, tick, local) {
 		if (!local || Math.hypot(local.x - at.x, local.z - at.z) > 28) return
 		const words = tune.encounters[id].ceremony
+		const meter = document.querySelector('.moba-tally')
+		if (meter) meterSize.observe(meter)
+		placeCard()
 		caption = { tick, end }
 		card.querySelector('small').textContent = end ? 'The room falls quiet' : words.title
 		card.querySelector('h2').textContent = words.name
@@ -229,6 +242,8 @@ export function wardenCeremony(scene) {
 			clayMaterial.dispose()
 			rubbleGeometry.dispose()
 			rubbleMaterial.dispose()
+			meterSize.disconnect()
+			window.removeEventListener('resize', placeCard)
 			card.remove()
 		},
 	}
