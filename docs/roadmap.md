@@ -20,7 +20,7 @@ A small, toy-like hero brawler that grew out of dodgeball, set in the world over
 
 ### Waiting on Oskar
 
-Open questions live in Oskar's bb inbox (`bb tasks list --project INBOX`), one task per ask; AGENTS.md step 8 says how to file one.
+Open questions live in GitHub issues assigned to Oskar, one issue per ask, with a screenshot when it is about a look.
 
 ### Agent todo
 
