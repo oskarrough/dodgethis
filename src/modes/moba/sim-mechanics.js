@@ -81,6 +81,7 @@ export function plugMechanics({
 	summons,
 	present,
 	bodyAt,
+	difficulty,
 	systems,
 }) {
 	const { laneMechanic, laneView, obstacles, removeTower } = ground
@@ -126,6 +127,7 @@ export function plugMechanics({
 		populations[mechanic.population] = mechanic.create({
 			heroes,
 			posts,
+			difficulty,
 			systems,
 			lane,
 			layout,

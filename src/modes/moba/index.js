@@ -298,15 +298,14 @@ export default function moba(app, map) {
 					if (mark) used.add(mark)
 				}
 			}
-			const gallery =
-				isLobby && !party
-					? createDifficultyGallery({
-							local,
-							difficulty,
-							present: run.present,
-							dummies: () => sim.dummies,
-						})
-					: null
+			const gallery = isLobby
+				? createDifficultyGallery({
+						local,
+						difficulty,
+						present: run.present,
+						dummies: () => sim.dummies,
+					})
+				: null
 			const botsOnly = query.has('debug') && query.has('bots-only')
 			const simulation = map.start(
 				run,
@@ -318,6 +317,7 @@ export default function moba(app, map) {
 						...match,
 						intents: run.intents,
 						heroes: seats,
+						difficulty,
 						bots:
 							mechanics.some((mechanic) => mechanic.controllers) && app.session.authoritative
 								? seats.filter((seat) =>
@@ -369,7 +369,7 @@ export default function moba(app, map) {
 							...(isLobby && { posts: tune.lobby.portal.dummies }),
 							spawns: lobbySpawns,
 							respawn: tune.lobby.respawn,
-							footprint: party ? null : gallery.contact,
+							footprint: gallery.contact,
 						}),
 						seed: setup.seed,
 					}),

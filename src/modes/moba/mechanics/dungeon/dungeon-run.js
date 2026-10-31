@@ -2,6 +2,7 @@ import { STEP } from '../../../../core/app.js'
 import { tune } from '../../tune.js'
 import encounters from '../../encounters/all-encounters.js'
 import { createBossPull } from './dungeon-warden.js'
+import { createDial } from './dungeon-dial.js'
 import { distance } from '../../../../core/spatial.js'
 
 const ticks = (s) => Math.max(1, Math.round(s / STEP))
@@ -31,7 +32,9 @@ function wardenStandIn(args, spot) {
 // leaves it when won, and the last is told each time (`bless`).
 // `current()` is the encounter being fought, or else the next one; `bossUnit()` is its boss for the
 // HUD bar, `engaged()` says a pull is on, and `addThreat` routes damage to the unit's own encounter.
-export function createDungeon(args) {
+export function createDungeon(input) {
+	// One dial for the whole run, set by who walked in and the difficulty picked in the lobby.
+	const args = { ...input, dial: createDial(input.heroes.length, input.difficulty) }
 	const { heroes, layout, lane, present } = args
 	const list = layout.encounters.map((spot) => {
 		const create = encounters[spot.id].create
@@ -134,6 +137,7 @@ export function createDungeon(args) {
 		encounters: list,
 		run,
 		units: list.flatMap((e) => e.units),
+		dial: args.dial,
 		current,
 		engaged: () => !!engaged(),
 		bossUnit: () => current().unit ?? anyBoss?.unit,

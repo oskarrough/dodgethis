@@ -14,6 +14,7 @@ export function createAgentMatch({
 	RAPIER,
 	roster,
 	seed,
+	difficulty, // A dungeon's spot on its dial; bots keep their seat's own skill.
 	recipe = matchRecipe(),
 	smooth,
 	present = () => {},
@@ -107,6 +108,7 @@ export function createAgentMatch({
 		RAPIER,
 		heroes: roster,
 		seed,
+		difficulty,
 		...recipe,
 		smooth,
 		bots: roster.filter((seat) => seat.controller === 'bot'),

@@ -74,11 +74,13 @@ export const lobby = {
 	gallery: {
 		x: 0,
 		z: 5.7,
-		spacing: 2.0,
+		spacing: 3.2,
 		radius: 0.4,
 		aimRadius: 2,
 		settleTime: 0.35,
 		overshoot: 0.12,
+		// How far, in degrees, an unpicked word leans back toward the floor in the party lobby.
+		lie: 45,
 		shotSound: { freq: 790, slideTo: 350, dur: 0.09, gain: 0.07, type: 'sine' },
 		pickSound: { freq: 140, slideTo: 420, dur: 0.2, gain: 0.1, type: 'sine' },
 		// The old magnets' sounds, still in the sound table (sound-table.js).

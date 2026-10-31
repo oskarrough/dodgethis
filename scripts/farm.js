@@ -108,15 +108,20 @@ export function farmRoster(heroes, difficulty, index, crossOnly = false, seed = 
 function matchRoster(
 	mods,
 	lineups,
-	{ difficulty, idle = [], practice = false, player = null, map = null },
+	{ difficulty, idle = [], practice = false, player = null, map = null, party: size = null },
 ) {
 	const party = mods.matchRecipe(map ?? undefined).party
+	// A party map's bots play normal, as in the game; --difficulty is the dungeon dial's spot there.
+	// --party N fields N heroes: the lineup's first, then the map's party over and over.
 	if (party)
-		return [lineups[0][0], ...party].map((heroId, i) => ({
+		return Array.from(
+			{ length: size ?? party.length + 1 },
+			(_, i) => [lineups[0][0], ...party][i % (party.length + 1)],
+		).map((heroId, i) => ({
 			id: `A${i + 1}`,
 			team: 'A',
 			heroId,
-			difficulty,
+			difficulty: 'normal',
 			controller:
 				player?.id === `A${i + 1}` ? 'agent' : idle.includes(`A${i + 1}`) ? 'idle' : 'bot',
 		}))
@@ -197,6 +202,7 @@ export async function runFarmMatch({
 	seed,
 	roster,
 	maxSeconds,
+	difficulty,
 	runId = matchId,
 	commit = null,
 	summary = false,
@@ -244,6 +250,7 @@ export async function runFarmMatch({
 			RAPIER,
 			roster,
 			seed,
+			difficulty,
 			matchId,
 			runId,
 			commit,
@@ -431,7 +438,8 @@ Teams
   --cross-only              skip mirror matchups
   --idle A1[,B2]            seats that stand still; --practice = idle A1, allies normal, enemies --difficulty
   --player A1[:north]       a stand-in human: its own bot plays the seat outside the team's lane deal, in that lane
-  --difficulty hard         easy, normal or hard
+  --difficulty hard         easy, normal or hard; on a party map (altamesa) the dungeon dial's spot, and bots play normal
+  --party N                 on a party map, field N heroes (1 to 5; default the map's party and the lineup's first)
   --map flagfall            overthrow or flagfall (default: the game's default map)
 Sampling
   --matches N               default 4 for summaries, 20 for logs; rounded up to full matchup rotations; each rotation shares a seed
@@ -475,6 +483,7 @@ export async function farm(argv = process.argv.slice(2)) {
 			heroes: { type: 'string' },
 			lineup: { type: 'string', multiple: true, default: [] },
 			difficulty: { type: 'string', default: 'hard' },
+			party: { type: 'string' },
 			map: { type: 'string' },
 			jobs: { type: 'string' },
 			'cross-only': { type: 'boolean' },
@@ -571,6 +580,8 @@ export async function farm(argv = process.argv.slice(2)) {
 		throw new Error('max-seconds must be at least one step')
 	if (!['easy', 'normal', 'hard'].includes(values.difficulty))
 		throw new Error('difficulty must be easy, normal or hard')
+	if (values.party != null && !/^[1-5]$/.test(values.party))
+		throw new Error('--party must be 1 to 5')
 	if (values.same) return sameReplays(values, { seed, matches: requestedMatches, maxSeconds })
 	const idle = [
 		...new Set([
@@ -676,6 +687,7 @@ export async function farm(argv = process.argv.slice(2)) {
 		count: values.count?.split(',').filter(Boolean) ?? [],
 		map: values.map ?? null,
 		difficulty: values.difficulty,
+		party: values.party == null ? null : Number(values.party),
 		idle,
 		player,
 		practice: !!values.practice,

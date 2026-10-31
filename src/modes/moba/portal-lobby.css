@@ -173,3 +173,24 @@
 .portal-map b {
 	font: 400 clamp(26px, 2.4vw, 40px) / 1 var(--ui-font);
 }
+/* The difficulty gallery: words painted like the map's name, standing on the floor where they are shot. */
+.portal-gallery span {
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 1;
+	transform-origin: 50% 100%;
+	color: var(--ui-cream);
+	text-shadow:
+		0 2px 0 var(--ui-text),
+		0 -1px 0 var(--ui-text),
+		1.5px 0 0 var(--ui-text),
+		-1.5px 0 0 var(--ui-text);
+	font: 400 clamp(18px, 1.6vw, 26px) / 1 var(--ui-font);
+	white-space: nowrap;
+	opacity: 0.6;
+	pointer-events: none;
+}
+.portal-gallery span[data-picked='true'] {
+	opacity: 1;
+}

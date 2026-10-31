@@ -8,7 +8,8 @@ const ticks = (s) => Math.max(1, Math.round(s / STEP))
 // rolls toward) moves while someone stands in its ring and for a moment after; bardinos come in
 // packs and run at the pusher. The fight is `idle` until the first push, then `engaged`. If the
 // whole party falls, the bardinos scatter and Tara rolls home. Won when Tara reaches the ferry.
-export function createBarquero({ heroes, spot, lane, makeMinion }) {
+// The run's `dial` weighs each bardino's health and bite, as it does a pack guard's.
+export function createBarquero({ heroes, spot, lane, makeMinion, dial }) {
 	const g = () => tune.encounters.barquero
 	const road = () => g().road.map((o) => ({ x: spot.x + o.x, z: spot.z + o.z }))
 	const idol = { ...road()[0], leg: 1 }
@@ -52,9 +53,9 @@ export function createBarquero({ heroes, spot, lane, makeMinion }) {
 				file: 0,
 				team: 'N',
 				kind: 'melee',
-				hp: g().bardino.hp,
-				maxHp: g().bardino.hp,
-				damageScale: g().bardino.damage,
+				hp: Math.round(g().bardino.hp * dial.hp()),
+				maxHp: Math.round(g().bardino.hp * dial.hp()),
+				damageScale: g().bardino.damage * dial.damage(),
 				xp: 0, // the fall is the prize, not its adds
 				dead: false,
 				body: makeMinion(at.x, at.z, 'N', 'melee'),

@@ -178,6 +178,7 @@ export const tuneUnits = {
 	jitter: 'rad',
 	'lobby.floor.crazing.jitter': 'fraction',
 	'lobby.floor.cradle.angles': 'deg',
+	'lobby.gallery.lie': 'deg',
 	'lobby.floor.cradle.open': 'deg',
 	'lobby.floor.cradle.pole': 'm',
 	'lobby.floor.grounds.flags.centre': 'm',

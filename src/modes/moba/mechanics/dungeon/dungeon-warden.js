@@ -7,9 +7,11 @@ import { ticks, yawOf } from '../../sim-kit.js'
 import { distance } from '../../../../core/spatial.js'
 
 // One boss and its pull. A dungeon passes an
-// `encounter` (id, name, spawn, hp) for each boss on its map.
-export function createBossPull({ heroes, makeBody, present, systems, view, encounter }) {
+// `encounter` (id, name, spawn, hp) for each boss on its map, and the run's `dial` (`dungeon-dial.js`)
+// sets its health at each spawn and reset and the weight of each blow.
+export function createBossPull({ heroes, makeBody, present, systems, view, encounter, dial }) {
 	const definition = wardenDefinition(encounter)
+	const health = () => Math.round(definition.base.hp * (dial?.hp() ?? 1))
 	const spawn = { ...encounter.spawn }
 	const unit = {
 		id: encounter?.id ?? 'warden',
@@ -20,8 +22,8 @@ export function createBossPull({ heroes, makeBody, present, systems, view, encou
 		spawn,
 		dress: view.dress,
 		body: makeBody(spawn.x, spawn.z, 'B', definition, view.dress),
-		hp: definition.base.hp,
-		maxHp: definition.base.hp,
+		hp: health(),
+		maxHp: health(),
 		level: tune.hero.level,
 		xp: encounter.xp ?? tune.warden.xp,
 		yaw: 0,
@@ -146,7 +148,7 @@ export function createBossPull({ heroes, makeBody, present, systems, view, encou
 			h.recall = null
 			h.cd.fill(0)
 			h.yaw = 0
-			if (h === unit) h.maxHp = definition.base.hp
+			if (h === unit) h.maxHp = health()
 			h.hp = h.maxHp
 			ctx.intents.cancel(h.id)
 			ctx.respawn(h)
@@ -158,7 +160,7 @@ export function createBossPull({ heroes, makeBody, present, systems, view, encou
 	}
 	function strike(target, damage, ability) {
 		if (!target || target.dead) return
-		damage *= encounter?.damage ?? 1
+		damage *= (encounter?.damage ?? 1) * (dial?.damage() ?? 1)
 		const p = unit.body.position,
 			q = target.body.position
 		const d = distance(p, q) || 1

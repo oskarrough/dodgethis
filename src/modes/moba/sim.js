@@ -51,6 +51,7 @@ export function createSim({
 	scripted = [],
 	bots = [],
 	seed = tune.bots.seed,
+	difficulty = 'normal', // The lobby's pick: a named spot on a dungeon's dial (dungeon-dial.js).
 	driveBots = true, // Replay retains controller identity (and its tells), but supplies recorded frames.
 	intercept = null,
 	footprint = null, // Lobby observer: aimed props and real, clipped cast footprints.
@@ -174,6 +175,7 @@ export function createSim({
 		summons,
 		present,
 		bodyAt,
+		difficulty,
 		systems: () => ctx,
 	})
 
