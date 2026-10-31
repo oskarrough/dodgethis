@@ -159,7 +159,7 @@ function checkActions(id, manifest, actions) {
 		}
 		const targeted = action.deliver === 'target'
 		const fields = targeted
-			? ['deliver', 'pick', 'targets', 'range', 'hit', 'chain', 'before', 'after']
+			? ['deliver', 'pick', 'targets', 'self', 'range', 'hit', 'chain', 'before', 'after']
 			: ['deliver', 'from', 'shape', 'radius', 'targets', 'blockedBy', 'where', 'hit']
 		for (const field of Object.keys(action))
 			if (!fields.includes(field)) errors.push(`${id}: unknown ${action.deliver} field ${field}`)
@@ -167,6 +167,8 @@ function checkActions(id, manifest, actions) {
 			if (action.pick !== 'nearestAim') errors.push(`${id}: unknown target pick ${action.pick}`)
 			if (!['ally', 'enemy'].includes(action.targets))
 				errors.push(`${id}: unknown target team ${action.targets}`)
+			if (action.self !== undefined && (action.self !== true || action.targets !== 'ally'))
+				errors.push(`${id}: self needs targets ally and no value`)
 			if (action.chain !== undefined) {
 				if (action.targets !== 'enemy') errors.push(`${id}: only enemy targets chain`)
 				for (const field of Object.keys(action.chain ?? {}))

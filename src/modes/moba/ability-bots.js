@@ -59,7 +59,7 @@ export function saveTactics(ctx) {
 		const hurt = ctx.own
 			.filter(
 				(ally) =>
-					ally.id !== h.id &&
+					(ally.id !== h.id || delivery.self) &&
 					ally.hp > 0 &&
 					distance(ctx.p, ally.pos) <= stats[delivery.range] &&
 					(shield

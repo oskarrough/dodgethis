@@ -164,11 +164,12 @@ function effectStatuses(manifest) {
 }
 
 // Targeted casts lock a living teammate, or any enemy unit, at cast start, with stable distance/id ties.
+// An ally action with `self: true` (Ward) also counts its caster, who wins whenever she is nearest the aim.
 function pickAbilityTarget({ hero, sim, target, ability }, action) {
 	const candidates =
 		action.targets === 'enemy'
 			? sim.enemiesOf(hero.team).map((enemy) => enemy.unit)
-			: sim.heroes.filter((unit) => unit.id !== hero.id && unit.team === hero.team)
+			: sim.heroes.filter((unit) => unit.team === hero.team && (unit.id !== hero.id || action.self))
 	return (
 		candidates
 			.filter(

@@ -8,10 +8,17 @@ export default {
 	statusEffects: [{ effect: 'shield', amount: 'shield', duration: 'duration' }],
 	stages: {
 		release: [
-			{ deliver: 'target', pick: 'nearestAim', targets: 'ally', range: 'range', hit: ['shield'] },
+			{
+				deliver: 'target',
+				pick: 'nearestAim',
+				targets: 'ally',
+				self: true,
+				range: 'range',
+				hit: ['shield'],
+			},
 		],
 	},
 	card: {
-		sentence: `Gives the ally nearest your aim within {range} a {shield:HP} [[Shield]] for {duration}.`,
+		sentence: `Gives the ally nearest your aim within {range} a {shield:HP} [[Shield]] for {duration}. Aimed at Salvia herself, or with no ally closer, it settles on her.`,
 	},
 }

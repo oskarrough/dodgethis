@@ -80,7 +80,7 @@ Every area uses targeting population order and coordinate snapshots; `targets: '
 
 ## Declare a target ability
 
-Use `stages: { release: [{ deliver: 'target', pick: 'nearestAim', targets: 'ally', range: 'range', hit: ['shield'] }] }` (Ward). `ability.js` supplies cast-start picking: living teammates other than the caster, nearest the aim point, ties by id. `statuses.js` rechecks the locked ally's life, team and range at release; a lost target emits `targetLost`, never retargets. Target actions can keep code in `before` and `after` around their effects; Tag out uses these for its position swap and guard.
+Use `stages: { release: [{ deliver: 'target', pick: 'nearestAim', targets: 'ally', range: 'range', hit: ['shield'] }] }` (Ward). `ability.js` supplies cast-start picking: living teammates other than the caster, nearest the aim point, ties by id; `self: true` counts the caster too, so Ward can cover Salvia when she is nearest the aim. `statuses.js` rechecks the locked ally's life, team and range at release; a lost target emits `targetLost`, never retargets. Target actions can keep code in `before` and `after` around their effects; Tag out uses these for its position swap and guard.
 
 Ally payloads are heal, shield and cleanse records. Enemy targets use damage; Pinball uses `targets: 'enemy'` and `chain` to jump from each impact to the nearest unhit enemy, with level-scaled damage falling off per hop. Heal accepts tune references for amount and optional crit chance/multiplier; `scale: null` disables level growth, as Mend and Pass require. Shield uses its matching `statusEffects` record. Cleanse lists status tags in order; `'cleanse'` expands to stun, freeze, slow. Target effects emit contact feedback; a custom `after` owns that feedback instead.
 
@@ -94,7 +94,7 @@ Pass uses `targets: 'heroes'` with separate `allies: [{ effect: 'heal', amount: 
 
 Catch windows are self effects: `{ effect: 'catch', duration: 'duration', radius: 'radius', angle: 'angle', acceptBall: true, resetCooldown: 'resetCooldown' }`. An optional `linger` adds another seconds reference to the initial duration. Dive's `dashEnd` hook applies its unattributed prone state and extends an existing catch window; it never reopens a spent catch. Stance `release` runs when the stance opens.
 
-Ally-targeted release declarations carrying heal or shield infer the `save` bot tactic. It runs after dodging, uses delayed teammate health, positions and shields, picks the lowest health fraction in range (ties by id), and tries shields before heals. Mend requires the missing health set by `bot.deficit` times its heal amount. Ward requires health below `bot.saveHp`, an enemy within `bot.dangerRange`, and no active shield. `bot: false` still opts out; custom bot acts run first. Projectile saves such as Pass keep their custom lead and clear-line tactic.
+Ally-targeted release declarations carrying heal or shield infer the `save` bot tactic. It runs after dodging, uses delayed teammate health, positions and shields, picks the lowest health fraction in range (ties by id), and tries shields before heals. Mend requires the missing health set by `bot.deficit` times its heal amount. Ward requires health below `bot.saveHp`, an enemy within `bot.dangerRange`, and no active shield, and because it declares `self: true` its caster is a candidate, so a lone Salvia wards herself. `bot: false` still opts out; custom bot acts run first. Projectile saves such as Pass keep their custom lead and clear-line tactic.
 
 ## Declare a ground field
 
