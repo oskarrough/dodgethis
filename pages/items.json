@@ -21,13 +21,8 @@
 		"ask": "Do the bodies and hostile ground remain clear when all eight kits meet?",
 		"status": "To review",
 		"decision": "",
-		"media": [
-			"cast-feel/fight-cover.webp",
-			"cast-feel/fight.webm"
-		],
-		"links": [
-			"/pages/balloon-polish/"
-		],
+		"media": ["cast-feel/fight-cover.webp", "cast-feel/fight.webm"],
+		"links": ["/pages/balloon-polish/"],
 		"thread": "thr_vdgc5ujmti",
 		"page": "cast-feel/"
 	},
@@ -37,13 +32,8 @@
 		"ask": "Every hero keeps its silhouette, size and team colours, and gains a brow band with small cream eyes, chipped edges, material wear and one hard angle: Kappa's horns, Ibis's crest, Salvia's split crown. 182 extra triangles in all. Does the family read, and is anyone too cute or too grim?",
 		"status": "To review",
 		"decision": "",
-		"media": [
-			"art/units-targets/lineup.webp",
-			"art/units-targets/fight-built.webp"
-		],
-		"links": [
-			"http://office-linux.heron-mermaid.ts.net:5173/?mode=moba&play&map=overthrow"
-		],
+		"media": ["art/units-targets/lineup.webp", "art/units-targets/fight-built.webp"],
+		"links": ["http://office-linux.heron-mermaid.ts.net:5173/?mode=moba&play&map=overthrow"],
 		"thread": "thr_6y3iwcf5f5",
 		"page": "art/units-targets/"
 	},
@@ -69,10 +59,7 @@
 		"ask": "Where bots stand, fight and die over 12 hard matches. 43% of the open ground is never stood on: which rooms are dead weight?",
 		"status": "To review",
 		"decision": "",
-		"media": [
-			"heat/flagfall/deaths.webp",
-			"heat/flagfall/presence.webp"
-		],
+		"media": ["heat/flagfall/deaths.webp", "heat/flagfall/presence.webp"],
 		"links": [],
 		"thread": "thr_wrz2sknwdm",
 		"page": "heat/flagfall/"
@@ -83,10 +70,7 @@
 		"ask": "Where bots stand, fight and die over 12 hard matches. 75 of 106 hero deaths fall on one side (+z), and a third of the open ground is never stood on. Map fix, or bot habit?",
 		"status": "To review",
 		"decision": "",
-		"media": [
-			"heat/overthrow/deaths.webp",
-			"heat/overthrow/presence.webp"
-		],
+		"media": ["heat/overthrow/deaths.webp", "heat/overthrow/presence.webp"],
 		"links": [],
 		"thread": "thr_wrz2sknwdm",
 		"page": "heat/overthrow/"
@@ -111,12 +95,8 @@
 		"ask": "Pong's E, replacing Swap. Serve at the enemy nearest the aim for 130; the ball hops to up to 3 more within 4.5 m, each 20% softer. Real speed, then the hops at quarter speed. Does the hop read, and is the name right?",
 		"status": "To review",
 		"decision": "",
-		"media": [
-			"media/2026-10-22-pinball-pong-s-ball-pings-from-enemy-to-/pinball.webm"
-		],
-		"links": [
-			"http://office-linux.heron-mermaid.ts.net:5173/?mode=moba&play&hero=pong&bots=easy"
-		],
+		"media": ["media/2026-10-22-pinball-pong-s-ball-pings-from-enemy-to-/pinball.webm"],
+		"links": ["http://office-linux.heron-mermaid.ts.net:5173/?mode=moba&play&hero=pong&bots=easy"],
 		"thread": "thr_sk2rtkbpbu",
 		"page": "2026-10-22-pinball-pong-s-ball-pings-from-enemy-to-/"
 	},
@@ -126,12 +106,8 @@
 		"ask": "Coach's E, replacing Red light. Allies inside run 25% faster, enemies are slowed 30%, for 5 s. Does the chalk ring read in a scrum, and is Red light worth losing for it?",
 		"status": "To review",
 		"decision": "",
-		"media": [
-			"media/2026-10-22-rally-ring-coach-chalks-a-ring-her-side-/rally-ring.webm"
-		],
-		"links": [
-			"http://office-linux.heron-mermaid.ts.net:5173/?mode=moba&play&hero=coach&bots=easy"
-		],
+		"media": ["media/2026-10-22-rally-ring-coach-chalks-a-ring-her-side-/rally-ring.webm"],
+		"links": ["http://office-linux.heron-mermaid.ts.net:5173/?mode=moba&play&hero=coach&bots=easy"],
 		"thread": "thr_sk2rtkbpbu",
 		"page": "2026-10-22-rally-ring-coach-chalks-a-ring-her-side-/"
 	},
@@ -141,9 +117,7 @@
 		"ask": "Headless check passed: Lob and Balloon drawings clear locally and on network peers before field expiry.",
 		"status": "To review",
 		"decision": "",
-		"media": [
-			"media/2026-10-22-ground-fields-end-with-the-match/ground-proof.png"
-		],
+		"media": ["media/2026-10-22-ground-fields-end-with-the-match/ground-proof.png"],
 		"links": [],
 		"thread": "thr_5k5554wgkh",
 		"page": "2026-10-22-ground-fields-end-with-the-match/"
@@ -154,9 +128,7 @@
 		"ask": "Does the landing feel heavy and the hot ground look hot? Shadow grows on the mark for 0.9 s, ball drops in, then 3 s of hot ground.",
 		"status": "To review",
 		"decision": "",
-		"media": [
-			"media/2026-10-22-lob-p-pong-s-ball-from-the-sky/lob.webm"
-		],
+		"media": ["media/2026-10-22-lob-p-pong-s-ball-from-the-sky/lob.webm"],
 		"links": [],
 		"thread": "thr_2qdkiixdsk",
 		"page": "2026-10-22-lob-p-pong-s-ball-from-the-sky/"
@@ -167,9 +139,7 @@
 		"ask": "Direct match setup with Coach. Hovered Pass, pinned a copy of that tooltip for comparison, then hovered Red light. The desk changed Red light radius from 5 m to 4 m; the open sentence and Radius row both followed. Existing wording remains, with consistent units. No gameplay hooks changed.",
 		"status": "To review",
 		"decision": "",
-		"media": [
-			"media/2026-10-22-ability-cards-from-live-templates/ability-templates.webp"
-		],
+		"media": ["media/2026-10-22-ability-cards-from-live-templates/ability-templates.webp"],
 		"links": [],
 		"thread": "thr_ikhu29ci7k",
 		"page": "2026-10-22-ability-cards-from-live-templates/"
@@ -180,9 +150,7 @@
 		"ask": "Cooldowns are clocks, radii are rings, damage is counted in hp, and none of the ability controls has a ? unit. Readouts come from the declarations, not their names.",
 		"status": "To review",
 		"decision": "",
-		"media": [
-			"media/2026-10-22-declared-tune-units-on-the-desk/declared-units.webp"
-		],
+		"media": ["media/2026-10-22-declared-tune-units-on-the-desk/declared-units.webp"],
 		"links": [],
 		"thread": "thr_qkq8q3q2gx",
 		"page": "2026-10-22-declared-tune-units-on-the-desk/"
@@ -221,9 +189,7 @@
 		"ask": "Do the instrument kinds read as what they control?",
 		"status": "To review",
 		"decision": "",
-		"media": [
-			"media/2026-10-22-desk-instruments-for-tune-values/desk-crop.webp"
-		],
+		"media": ["media/2026-10-22-desk-instruments-for-tune-values/desk-crop.webp"],
 		"links": [],
 		"thread": "thr_jzgc6jfmba",
 		"page": "2026-10-22-desk-instruments-for-tune-values/"
@@ -234,12 +200,8 @@
 		"ask": "Five explicit rows, hero dropdowns and bot controls; guests ready, host starts. Is this clear and slick enough? Browser proof: two connected players edited heroes/bots and readiness reset correctly; solo launch entered Dungeon with one hero. Multiplayer launch and lobby return remain unchecked after the browser proof was interrupted.",
 		"status": "Archived",
 		"decision": "Retired with the saucer lobby on 2026-10-24; the portal lobby replaced it.",
-		"media": [
-			"media/2026-10-20-dungeon-party-lobby/dungeon-party-final.webp"
-		],
-		"links": [
-			"http://office-linux.heron-mermaid.ts.net:5173/?mode=moba&map=dungeon"
-		],
+		"media": ["media/2026-10-20-dungeon-party-lobby/dungeon-party-final.webp"],
+		"links": ["http://office-linux.heron-mermaid.ts.net:5173/?mode=moba&map=dungeon"],
 		"thread": "thr_6sgc9s2jhb",
 		"page": "2026-10-20-dungeon-party-lobby/"
 	},
@@ -249,9 +211,7 @@
 		"ask": "Do the two bars read at a glance, and is the Slam bar in the right place?",
 		"status": "Decided",
 		"decision": "Fine as it is.",
-		"media": [
-			"media/2026-10-20-cast-bars-for-mend-and-the-warden-s-slam/castbars.webp"
-		],
+		"media": ["media/2026-10-20-cast-bars-for-mend-and-the-warden-s-slam/castbars.webp"],
 		"links": [],
 		"thread": "thr_ay29w73d7r",
 		"page": "2026-10-20-cast-bars-for-mend-and-the-warden-s-slam/"
@@ -262,9 +222,7 @@
 		"ask": "Does the cursor ring, the green beam and the +300 make Mend read? Is 1.2 s the right cast?",
 		"status": "Decided",
 		"decision": "Okay; the beam now leaves from the megaphone.",
-		"media": [
-			"media/2026-10-20-mender-heals-you-can-see/mender-heal.webm"
-		],
+		"media": ["media/2026-10-20-mender-heals-you-can-see/mender-heal.webm"],
 		"links": [],
 		"thread": "thr_ay29w73d7r",
 		"page": "2026-10-20-mender-heals-you-can-see/"
@@ -275,12 +233,8 @@
 		"ask": "Direct-play proof with bots and waves disabled; positioned two allies, injured Mitts, aimed at him and used Q then W. Mend held HP at 1500 during its 90-tick (1.5 s) cast, then healed 300 to 1800. Ward applied 500 shield for 480 ticks (8 s) to Mitts only. Judge whether the shield bar is clear.",
 		"status": "To review",
 		"decision": "",
-		"media": [
-			"media/2026-10-20-mender-mend-and-ward/mender-mend-ward.webp"
-		],
-		"links": [
-			"http://office-linux.heron-mermaid.ts.net:5173/?mode=moba&play&hero=mender&debug"
-		],
+		"media": ["media/2026-10-20-mender-mend-and-ward/mender-mend-ward.webp"],
+		"links": ["http://office-linux.heron-mermaid.ts.net:5173/?mode=moba&play&hero=mender&debug"],
 		"thread": "thr_xuf4ywcr66",
 		"page": "2026-10-20-mender-mend-and-ward/"
 	},
@@ -404,9 +358,7 @@
 		"ask": "Does the bottom-right Controls label and the one-time Switch to WASD? note read right in the lobby?",
 		"status": "Archived",
 		"decision": "Reviewed. Retired with the saucer lobby on 2026-10-24; the portal lobby replaced it.",
-		"media": [
-			"media/2026-10-13-lobby-controls-label-and-wasd-offer/lobby-controls-offer.webp"
-		],
+		"media": ["media/2026-10-13-lobby-controls-label-and-wasd-offer/lobby-controls-offer.webp"],
 		"links": [],
 		"thread": "thr_27qnwfh6gs",
 		"page": "2026-10-13-lobby-controls-label-and-wasd-offer/"
@@ -421,9 +373,7 @@
 			"media/2026-10-13-lobby-plates-flow-to-the-map-30-/bowl-bots-in.webp",
 			"media/2026-10-13-lobby-plates-flow-to-the-map-30-/junction-and-bowl.webp"
 		],
-		"links": [
-			"/"
-		],
+		"links": ["/"],
 		"thread": "thr_hcrr25efxq",
 		"page": "2026-10-13-lobby-plates-flow-to-the-map-30-/"
 	},
@@ -433,9 +383,7 @@
 		"ask": "Agree with the worst friction?",
 		"status": "Decided",
 		"decision": "Reviewed.",
-		"media": [
-			"media/2026-10-11-sound-board-walkthrough/walkthrough.webp"
-		],
+		"media": ["media/2026-10-11-sound-board-walkthrough/walkthrough.webp"],
 		"links": [],
 		"thread": "thr_zg6p82q57t",
 		"page": "2026-10-11-sound-board-walkthrough/"
@@ -446,9 +394,7 @@
 		"ask": "Does generating feel quick enough?",
 		"status": "Decided",
 		"decision": "Reviewed.",
-		"media": [
-			"media/2026-10-11-generate-sounds/generate-sounds.webp"
-		],
+		"media": ["media/2026-10-11-generate-sounds/generate-sounds.webp"],
 		"links": [],
 		"thread": "thr_56cjyats25",
 		"page": "2026-10-11-generate-sounds/"
@@ -459,9 +405,7 @@
 		"ask": "Does scrubbing feel right?",
 		"status": "Decided",
 		"decision": "Reviewed.",
-		"media": [
-			"media/2026-10-11-sound-map/sound-map.webp"
-		],
+		"media": ["media/2026-10-11-sound-map/sound-map.webp"],
 		"links": [],
 		"thread": "thr_m6gtdxtin8",
 		"page": "2026-10-11-sound-map/"
@@ -512,9 +456,7 @@
 		"ask": "Is PAUSED quiet enough, and does Esc toggle fast now?",
 		"status": "Decided",
 		"decision": "Reviewed.",
-		"media": [
-			"media/2026-10-11-pause-menu-vibe-quieter/pause2.webp"
-		],
+		"media": ["media/2026-10-11-pause-menu-vibe-quieter/pause2.webp"],
 		"links": [],
 		"thread": "thr_piszjt2sgm",
 		"page": "2026-10-11-pause-menu-vibe-quieter/"
@@ -525,9 +467,7 @@
 		"ask": "Does the bounce preview read?",
 		"status": "Decided",
 		"decision": "Reviewed.",
-		"media": [
-			"media/2026-10-11-bank-bounce-preview/bank-bounce.webp"
-		],
+		"media": ["media/2026-10-11-bank-bounce-preview/bank-bounce.webp"],
 		"links": [],
 		"thread": "thr_4xnq2c8zbt",
 		"page": "2026-10-11-bank-bounce-preview/"
@@ -581,9 +521,7 @@
 		"ask": "Pong's costume (stone head, brow, beak, team paddle, back net) and the Cushion net: keep, or what changes?",
 		"status": "Decided",
 		"decision": "Reviewed.",
-		"media": [
-			"media/2026-10-11-p-pong-first-build/pong-match.webp"
-		],
+		"media": ["media/2026-10-11-p-pong-first-build/pong-match.webp"],
 		"links": [],
 		"thread": "thr_zhs8vb5rkp",
 		"page": "2026-10-11-p-pong-first-build/"
@@ -600,9 +538,7 @@
 			"carom-redesign/pong-sheet.webp",
 			"carom-redesign/pong-match.webp"
 		],
-		"links": [
-			"http://office-linux.heron-mermaid.ts.net:5173/pages/carom-redesign/"
-		],
+		"links": ["http://office-linux.heron-mermaid.ts.net:5173/pages/carom-redesign/"],
 		"thread": "thr_fgrufkvvdh",
 		"page": "carom-redesign/"
 	},
@@ -612,9 +548,7 @@
 		"ask": "First take on the laser gate: two posts, a flickering team-colour beam. Keep, recolour, or rethink?",
 		"status": "Decided",
 		"decision": "Reviewed.",
-		"media": [
-			"media/2026-10-10-flagfall-laser-gate/laser-gate.webp"
-		],
+		"media": ["media/2026-10-10-flagfall-laser-gate/laser-gate.webp"],
 		"links": [],
 		"thread": "thr_zujatwsc6m",
 		"page": "2026-10-10-flagfall-laser-gate/"
@@ -625,9 +559,7 @@
 		"ask": "The gate is a placeholder stone drum spanning the lane. Is a drum fine for now, or should it read as a wall?",
 		"status": "Decided",
 		"decision": "Reviewed.",
-		"media": [
-			"media/2026-10-10-flagfall-gates/flagfall-gate.webp"
-		],
+		"media": ["media/2026-10-10-flagfall-gates/flagfall-gate.webp"],
 		"links": [],
 		"thread": "thr_88z9qrycxv",
 		"page": "2026-10-10-flagfall-gates/"
@@ -638,9 +570,7 @@
 		"ask": "Plain flag at the chalk cross: HUD line, ring with fill arc, minimap dot. Look is yours.",
 		"status": "Decided",
 		"decision": "Reviewed.",
-		"media": [
-			"media/2026-10-10-flagfall-centre-flag/flag.webp"
-		],
+		"media": ["media/2026-10-10-flagfall-centre-flag/flag.webp"],
 		"links": [],
 		"thread": "thr_wfq8ficigf",
 		"page": "2026-10-10-flagfall-centre-flag/"
@@ -651,9 +581,7 @@
 		"ask": "Does the fog look unchanged: same edge, same darkness?",
 		"status": "Decided",
 		"decision": "Reviewed.",
-		"media": [
-			"media/2026-10-10-cheaper-fog-of-war/fog-after.webp"
-		],
+		"media": ["media/2026-10-10-cheaper-fog-of-war/fog-after.webp"],
 		"links": [],
 		"thread": "thr_ut6hmdpqhz",
 		"page": "2026-10-10-cheaper-fog-of-war/"
@@ -664,9 +592,7 @@
 		"ask": "Camp guards (plain cream for now) at a jungle camp mark, 55 s in. Clear one and its mercs march the nearest lane for you. Does the camp read as neutral?",
 		"status": "Decided",
 		"decision": "Reviewed.",
-		"media": [
-			"media/2026-10-10-flagfall-mercenary-camps/camp.webp"
-		],
+		"media": ["media/2026-10-10-flagfall-mercenary-camps/camp.webp"],
 		"links": [],
 		"thread": "thr_bxbcth5sxc",
 		"page": "2026-10-10-flagfall-mercenary-camps/"
@@ -677,9 +603,7 @@
 		"ask": "Block gone; four jungle rooms behind a stone spine, each opening on two lane holes and the clearing, moss brush at the holes. Lantern + chalk square = camp, cross = flag, bars across the lanes = gates (all marks only). Does it feel worth walking into under fog?",
 		"status": "Decided",
 		"decision": "Reviewed.",
-		"media": [
-			"media/2026-10-10-flagfall-jungle-rooms-brush-marks/jungle.webp"
-		],
+		"media": ["media/2026-10-10-flagfall-jungle-rooms-brush-marks/jungle.webp"],
 		"links": [],
 		"thread": "thr_egsuf57dc2",
 		"page": "2026-10-10-flagfall-jungle-rooms-brush-marks/"
@@ -690,9 +614,7 @@
 		"ask": "First take behind ?fog: your heroes, minions and structures see 10/7/10 m; enemy units outside vanish and the ground dims. Is the dim strong enough, and should it read as darkness or as haze?",
 		"status": "Decided",
 		"decision": "Love it; 10% darker, on in every match (Oskar)",
-		"media": [
-			"media/2026-10-10-fog-of-war-on-flagfall/fog-flagfall.webp"
-		],
+		"media": ["media/2026-10-10-fog-of-war-on-flagfall/fog-flagfall.webp"],
 		"links": [],
 		"thread": "thr_egsuf57dc2",
 		"page": "2026-10-10-fog-of-war-on-flagfall/"
@@ -703,12 +625,8 @@
 		"ask": "Grow Flagfall toward your HotS map (88 × 44 m, a tight jungle of 4 m paths and brush, flags inside, gates at the forts) and park three lanes until 5v5 bots exist?",
 		"status": "Decided",
 		"decision": "Reviewed.",
-		"media": [
-			"three-lanes/hots-reference.webp"
-		],
-		"links": [
-			"/pages/three-lanes/"
-		],
+		"media": ["three-lanes/hots-reference.webp"],
+		"links": ["/pages/three-lanes/"],
 		"thread": "thr_ns72rgdbmc",
 		"page": "three-lanes/"
 	},
@@ -722,9 +640,7 @@
 			"media/2026-10-10-flagfall-by-night-built/flagfall-night-built.webp",
 			"media/2026-10-10-flagfall-by-night-built/02-fight.webp"
 		],
-		"links": [
-			"/pages/flagfall-night/"
-		],
+		"links": ["/pages/flagfall-night/"],
 		"thread": "thr_md62iqhzu8",
 		"page": "2026-10-10-flagfall-by-night-built/"
 	},
@@ -838,9 +754,7 @@
 		"ask": "Manual is now the only pause page, with PAUSED running down the first column. Right weight and place?",
 		"status": "Decided",
 		"decision": "Decided: manual with vertical PAUSED.",
-		"media": [
-			"media/2026-10-10-pause-manual-with-vertical-paused/vertical-1440.webp"
-		],
+		"media": ["media/2026-10-10-pause-manual-with-vertical-paused/vertical-1440.webp"],
 		"links": [],
 		"thread": "thr_ra883cf55x",
 		"page": "2026-10-10-pause-manual-with-vertical-paused/"
@@ -981,9 +895,7 @@
 		"ask": "Does the glazed saucer in its iron cradles read as one floating ceramic world, and do the seat plates read as inlaid glaze?",
 		"status": "Archived",
 		"decision": "Style fine; whole saucer in frame. Keep improving. Retired with the saucer lobby on 2026-10-24; the portal lobby replaced it.",
-		"media": [
-			"media/2026-10-10-lobby-saucer/lobby-saucer.webp"
-		],
+		"media": ["media/2026-10-10-lobby-saucer/lobby-saucer.webp"],
 		"links": [],
 		"thread": "thr_dwbukqxwup",
 		"page": "2026-10-10-lobby-saucer/"
