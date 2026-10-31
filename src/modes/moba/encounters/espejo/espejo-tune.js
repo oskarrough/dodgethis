@@ -1,4 +1,12 @@
 export default {
+	ceremony: {
+		name: 'Espejo',
+		title: 'The borrowed face',
+		arrival:
+			'The mirror knows every blow you bring. Give it one face to watch, and strike from behind.',
+		fall: 'The silvered face lies in pieces. Nothing in the hall answers your reflection.',
+		color: 'scenery',
+	},
 	// Espejo (`espejo-fight.js`): a Warden of `hp` with a mirror for a face, striking at `damage`
 	// of a Warden's blows. Its face turns toward the hero it hates most at `turn` degrees a second.
 	// A blow struck from within `cone` degrees of where it faces lands at only `front`, and `back`

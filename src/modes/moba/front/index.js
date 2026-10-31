@@ -4,6 +4,7 @@ import { tune } from './tune.js'
 import { unitResolver } from '../units.js'
 import { playUse } from '../sounds.js'
 import { woodcut } from './woodcut.js'
+import { briefs, versus } from './briefs.js'
 import { applySkin, paintedCard, paintedEdge, paintedWash } from './skin.js'
 import { parseMatchSetup } from '../setup.js'
 import { playableMaps, mapLayout, maps as mapManifests } from '../maps/all-maps.js'
@@ -23,7 +24,7 @@ const maps = playableMaps
 		const name = layout.name
 		// Every map is cut from its own layout, so the card shows the map you'll play.
 		const picture = woodcut(id, layout, mapManifests[id].cut())
-		return { mode: 'moba', map: id, name, picture }
+		return { mode: 'moba', map: id, name, picture, ...briefs[id], party: !!mapManifests[id].party }
 	})
 
 // The splash is the only menu before the playable lobby.
@@ -155,10 +156,20 @@ export function mobaFront(app, map) {
 				.map((c, i) => `<span class="front-letter${i === 1 ? ' front-ball' : ''}">${c}</span>`)
 				.join('')
 			el.innerHTML = `<div class="front-chrome"><h1 class="front-heading" aria-label="DodgeThis"><span aria-hidden="true">${title}</span></h1><p class="front-notice" role="status" hidden></p>
-				<div class="front-tiles front-modes" role="group" aria-label="Game or map">${maps.map((tile, i) => `<button type="button" class="front-tile skin-card" data-mode="${tile.mode}" data-map="${tile.map}" data-light="${tune.skin.light[tile.map] ?? tune.skin.light.bonus}" style="--wash: ${tune.skin.wash[tile.map] ?? tune.skin.wash.bonus}">${paintedCard(i)}<span class="skin-sheet"></span><span class="skin-ring"></span><span class="skin-face"></span><span class="front-tile-art front-tile-cut">${tile.picture}${paintedEdge(i)}</span><span class="front-tile-label skin-title">${paintedWash(i)}<span class="front-tile-name">${tile.name}</span></span></button>`).join('')}</div>
+				<div class="front-tiles front-modes" role="group" aria-label="Game or map">${maps.map((tile, i) => `<button type="button" class="front-tile skin-card" data-mode="${tile.mode}" data-map="${tile.map}" data-light="${tune.skin.light[tile.map] ?? tune.skin.light.bonus}" style="--wash: ${tune.skin.wash[tile.map] ?? tune.skin.wash.bonus}">${paintedCard(i)}<span class="skin-sheet"></span><span class="skin-ring"></span><span class="skin-face"></span><span class="front-tile-art front-tile-cut">${tile.picture}${paintedEdge(i)}</span><span class="front-tile-label skin-title">${paintedWash(i)}<span class="front-tile-name">${tile.name}</span>${tile.who ? `<small class="front-tile-who">${tile.who}</small>` : ''}</span></button>`).join('')}</div>
+				<p class="front-brief" id="front-brief" aria-live="polite" hidden><span class="front-brief-text"></span><small class="front-brief-seats"></small></p>
 				<button type="button" class="front-bonus skin-card" data-mode="${bonus.mode}" data-light="${tune.skin.light.bonus}" style="--wash: ${tune.skin.wash.bonus}">${paintedCard(maps.length)}<span class="skin-sheet"></span><span class="skin-ring"></span><span class="skin-face"></span>${paintedWash(maps.length)}<svg viewBox="0 0 64 64" aria-hidden="true">${bonus.glyph}</svg><small class="front-bonus-kicker">Bonus</small><span class="front-bonus-name">${bonus.name}</span></button></div>`
 			const chrome = el.querySelector('.front-chrome')
 			const notice = el.querySelector('.front-notice')
+			const brief = el.querySelector('.front-brief')
+			// The card you're on is read out under the row; Bonus has no brief, so it clears.
+			const readBrief = (index) => {
+				const tile = maps[index]
+				brief.hidden = !tile?.brief
+				if (!tile?.brief) return
+				brief.querySelector('.front-brief-text').textContent = tile.brief
+				brief.querySelector('.front-brief-seats').textContent = tile.party ? '' : versus
+			}
 			notice.textContent = options.notice ?? ''
 			notice.hidden = !options.notice
 			// The lobby hands its backdrop back on Esc; only a cold entry builds one.
@@ -280,16 +291,17 @@ export function mobaFront(app, map) {
 				const order = [
 					chrome.querySelector('.front-heading'),
 					notice,
+					brief,
 					...buttons.filter((button) => button !== picked),
 					picked,
 				].filter(Boolean)
-				// The title and notice fly up and left, the map cards shrink as they fall, Bonus falls.
+				// The title and notice fly up and left, the map cards shrink as they fall, Bonus and the brief fall.
 				const { title, card, bonus, cardScale } = tune.tile.leave
 				const flight = (node) => {
 					const [x, y] =
 						node === chrome.querySelector('.front-heading') || node === notice
 							? title
-							: node.classList.contains('front-bonus')
+							: node === brief || node.classList.contains('front-bonus')
 								? bonus
 								: card
 					const scale = node.classList.contains('front-tile') ? cardScale : 1
@@ -329,6 +341,7 @@ export function mobaFront(app, map) {
 				count: buttons.length,
 				initialBackHeld: !!app.input.pad()?.buttons[1],
 				focus(index) {
+					readBrief(index)
 					buttons.forEach((button, i) => {
 						button.classList.toggle('selected', i === index)
 						button.setAttribute('aria-current', String(i === index))

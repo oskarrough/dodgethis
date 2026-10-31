@@ -1,4 +1,11 @@
 export default {
+	ceremony: {
+		name: 'Carillon',
+		title: 'The bronze choir',
+		arrival: 'The bronze keeps its singer safe. Let the bell toll, then strike through the cracks.',
+		fall: 'The last note has passed. Broken bronze lies still in the sun.',
+		color: 'sand',
+	},
 	// Carillon (`carillon-fight.js`): a Warden of `hp` inside a bronze bell, striking at `damage`
 	// of a Warden's blows. Shut, the bell lets through only `shut` of every blow. Every `every` s
 	// of the fight it tolls: a ring of `toll.radius` m is warned round the bell for `toll.warning`

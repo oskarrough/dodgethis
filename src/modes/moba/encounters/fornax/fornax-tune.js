@@ -1,4 +1,11 @@
 export default {
+	ceremony: {
+		name: 'Fornax',
+		title: 'The patient kiln',
+		arrival: 'Fornax has room for one more firing. Keep to the wandering shade.',
+		fall: 'The kiln has spent its last heat. Cold ash settles in the hall.',
+		color: 'sand',
+	},
 	// Fornax (`fornax-fight.js`): a Warden of `hp`, striking at `damage` of a Warden's blows, in a
 	// hall of `hall` m round the encounter's spot. While the fight is on, a hero in the hall but
 	// out of the shade gains a stack of Heat every `heat.every` s and takes `heat.burn` for each

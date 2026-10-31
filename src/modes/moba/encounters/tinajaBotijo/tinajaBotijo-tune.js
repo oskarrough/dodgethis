@@ -1,4 +1,12 @@
 export default {
+	ceremony: {
+		name: 'Tinaja and Botijo',
+		title: 'Keepers of Tagoror',
+		arrival:
+			'They have shared this court for centuries. Break them together, or one will mend the other.',
+		fall: 'The wheel stands still. Neither jar will mend the other now.',
+		color: 'terracotta',
+	},
 	// Tinaja and Botijo (`tinajaBotijo-fight.js`): two Wardens of `hp` each, striking at `damage` of a
 	// Warden's blows, `apart` m either side of the encounter's spot, who are pulled together. Within `kinship` m of each other both take
 	// `shared` of every hit. When one falls the other spins it back to life in `revive` s, whole,

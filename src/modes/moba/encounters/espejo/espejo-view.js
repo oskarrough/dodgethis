@@ -46,7 +46,11 @@ export function view(scene, { renderer, renderStyled } = {}) {
 			const now = performance.now()
 			const dt = Math.min(0.1, (now - last) / 1000)
 			last = now
-			if (fight?.spot && !floor)
+			if ((fight?.killed || fight?.unit.dead) && floor) {
+				floor.dispose()
+				floor = null
+			}
+			if (fight?.spot && !fight.killed && !fight.unit.dead && !floor)
 				floor = createMirror(scene, renderStyled, {
 					...v().floor,
 					x: fight.spot.x,

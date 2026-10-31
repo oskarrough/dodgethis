@@ -39,6 +39,7 @@ export function createDungeon(args) {
 		// Onto the fight itself, so its getters (a twin fight's `unit`) stay live.
 		const entry = Object.assign(fight, {
 			id: spot.id,
+			spot,
 			wing: spot.wing ?? null,
 			last: !!spot.last,
 			name: encounters[spot.id].name,
@@ -76,6 +77,15 @@ export function createDungeon(args) {
 			state: now ? 'start' : 'end',
 			id: entry.id,
 			name: entry.name,
+			at: { x: entry.spot.x, z: entry.spot.z },
+			...(!now &&
+				entry.won() && {
+					fallen: entry.units.map((unit) => ({
+						id: unit.id,
+						at: { x: unit.body.position.x, z: unit.body.position.z },
+						yaw: unit.yaw,
+					})),
+				}),
 			...(!now && { result: entry.won() ? 'killed' : 'wiped' }),
 		})
 	}

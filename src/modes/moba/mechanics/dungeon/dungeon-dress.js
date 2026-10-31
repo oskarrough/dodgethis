@@ -1,14 +1,23 @@
 import { dressHero } from '../../hero-view.js'
+import { wardenFigure } from './dungeon-figures.js'
 import { tune } from '../../tune.js'
 
-// Temporary Warden costume, distinct windups without another hero in the draft.
+// Keep the shared body, foot disc and hit response; each Warden wears its own sculpted body.
 export function dressBoss(body) {
 	const dispose = dressHero(body, 'oolong', 'B')
 	const pose = body.poseAbility
 	const costume = body.mesh.getObjectByName('moba-cast-pose')
+	let figure = null
 	body.mesh.name = 'moba-warden'
 	body.poseAbility = (cast, alpha, unit, tick) => {
 		pose(cast, alpha, unit, tick)
+		if (unit && !figure) {
+			for (const child of costume.children) child.visible = false
+			figure = wardenFigure(unit.id)
+			figure.root.position.y = -body.radius - body.halfHeight
+			costume.add(figure.root)
+		}
+		costume.scale.set(1, 1, 1)
 		const progress = cast ? Math.max(0, Math.min(1, 1 - (cast.left - alpha) / cast.total)) : 0
 		const p = tune.warden.pose
 		if (cast?.ability === 'swing') {
@@ -20,5 +29,8 @@ export function dressBoss(body) {
 			costume.position.y = p.slamLift * progress
 		} else costume.position.y = 0
 	}
-	return dispose
+	return () => {
+		figure?.dispose()
+		dispose()
+	}
 }

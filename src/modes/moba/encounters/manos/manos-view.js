@@ -32,6 +32,8 @@ export function view(scene) {
 		return m
 	}
 	let built = null
+	let released = false
+	let lastTick = -1
 	function build(fight, spot) {
 		const r = g().radius
 		const hands = fight.hands.map((hand) => {
@@ -65,18 +67,23 @@ export function view(scene) {
 		get markerPosition() {
 			return null
 		},
-		present() {},
+		present(fact) {
+			if (fact.type === 'encounter' && fact.id === 'manos') released = fact.result === 'killed'
+		},
 		update(sim, blend) {
 			const fight = sim.dungeon?.encounters?.find((e) => e.id === 'manos')
 			if (!fight) return
+			if (sim.tick < lastTick) released = false
+			lastTick = sim.tick
+			const cleared = fight.killed || released
 			built ??= build(fight, fight.spot)
 			const t = sim.tick + blend
 			for (const { hand, fill } of built.hands) {
-				const share = t < hand.litUntil ? 1 : hand.fill
+				const share = cleared || t < hand.litUntil ? 1 : hand.fill
 				fill.scale.setScalar(Math.max(0.001, share))
-				fill.material = t < hand.litUntil ? light : stone
+				fill.material = !cleared && t < hand.litUntil ? light : stone
 			}
-			for (const post of built.door) post.visible = !fight.state.open
+			for (const post of built.door) post.visible = !fight.state.open && !cleared
 			const live = new Set()
 			for (const shard of fight.state.shards) {
 				live.add(shard.id)

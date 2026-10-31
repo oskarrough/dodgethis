@@ -28,6 +28,7 @@ export function view(scene) {
 	pivot.add(hand)
 	const dial = new THREE.Group()
 	root.add(dial)
+	const stone = material('scenery')
 	const ink = material('ink'),
 		blue = material('teamA')
 	const span = (Math.PI * 2) / HOURS
@@ -49,11 +50,12 @@ export function view(scene) {
 	return {
 		update(sim) {
 			const fight = sim.dungeon?.encounters?.find((e) => e.id === 'gnomon')
-			root.visible = !!fight && !fight.killed && !fight.unit.dead && !fight.dormant
+			root.visible = !!fight && !fight.dormant
 			if (!root.visible) return
 			const { state, unit } = fight
+			const cleared = fight.killed || unit.dead
 			const s = state.shadow
-			pivot.visible = !!s
+			pivot.visible = !!s && !cleared
 			if (s) {
 				const warning = s.lands - s.warned || 1
 				const grown = s.landed ? 1 : Math.min(1, (sim.tick - s.warned) / warning)
@@ -68,8 +70,8 @@ export function view(scene) {
 			const filled = left == null ? 0 : Math.round(HOURS * (1 - left / g().rewind.every))
 			const near = left != null && left <= g().rewind.warning
 			marks.forEach((m, i) => {
-				m.visible = i < filled
-				m.material = near ? blue : ink
+				m.visible = cleared ? i % 3 !== 0 : i < filled
+				m.material = cleared ? stone : near ? blue : ink
 			})
 		},
 		dispose() {

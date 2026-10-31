@@ -1,3 +1,4 @@
+import { wardenCeremony } from './dungeon-ceremony.js'
 import { tune } from '../../tune.js'
 import encounterViews from '../../encounters/all-encounter-views.js'
 
@@ -5,6 +6,7 @@ export { dressBoss as dress } from './dungeon-dress.js'
 
 // The run's drawing is its encounters' drawings, each from its folder's view.
 export function view(scene, options) {
+	const ceremony = wardenCeremony(scene)
 	const views = Object.values(encounterViews).flatMap((v) =>
 		v.view ? [v.view(scene, options)] : [],
 	)
@@ -12,11 +14,16 @@ export function view(scene, options) {
 		get markerPosition() {
 			return null
 		},
-		present() {},
+		present(fact) {
+			ceremony.present(fact)
+			for (const v of views) v.present?.(fact)
+		},
 		update(...args) {
 			for (const v of views) v.update(...args)
+			ceremony.update(...args)
 		},
 		dispose() {
+			ceremony.dispose()
 			for (const v of views) v.dispose()
 		},
 	}

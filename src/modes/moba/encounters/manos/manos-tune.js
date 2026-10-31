@@ -1,4 +1,11 @@
 export default {
+	ceremony: {
+		name: 'Manos',
+		title: 'The hands at the gate',
+		arrival: 'The old hands have felt your step. Hold their marks, and they may yet let go.',
+		fall: 'The hands have loosened. The road into Altamesa lies open.',
+		color: 'terracotta',
+	},
 	// Three hands before the gate (`manos-fight.js`), placed as offsets from the encounter's
 	// spot. A hand fills in `fill` s while a hero stands within `radius` m, then stays lit for
 	// `linger` s after they leave; with all three lit at once the door opens. The first light wakes

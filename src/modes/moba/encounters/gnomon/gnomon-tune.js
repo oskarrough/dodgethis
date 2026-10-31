@@ -1,4 +1,11 @@
 export default {
+	ceremony: {
+		name: 'Gnomon',
+		title: 'Keeper of the hours',
+		arrival: 'The oldest shadow on the mesa has stirred. Step aside when its hand reaches for you.',
+		fall: 'The pin has fallen. For the first time in an age, the shadow keeps no hour.',
+		color: 'enamelViolet',
+	},
 	// Gnomon (`gnomon-fight.js`): a Warden of `hp` striking at `damage` of a Warden's blows.
 	hp: 10000,
 	damage: 0.7,

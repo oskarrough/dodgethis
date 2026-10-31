@@ -1,4 +1,11 @@
 export default {
+	ceremony: {
+		name: 'Barquero',
+		title: 'The ferryman',
+		arrival: 'The boatman waits for Tara. Bring him his fare, and keep the hounds from the road.',
+		fall: 'Tara has reached the ferry. Barquero takes up his pole and leaves the berth behind.',
+		color: 'enamelViolet',
+	},
 	// Barquero (`barquero-fight.js`): Tara, a clay idol, stands at the first point of `road`
 	// (offsets from the encounter's spot) and must reach the last, where Barquero waits with his
 	// ferry. It rolls at `speed` m/s while a hero stands within `ring` m of it, and coasts on for
