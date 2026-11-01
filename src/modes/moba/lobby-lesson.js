@@ -3,6 +3,7 @@ import { activeDevice } from '../../core/input.js'
 import { controls } from '../../core/controls.js'
 import { attackKey, PRESETS } from '../../core/intents.js'
 import { keysFor } from './hud.js'
+import { keyCapHtml } from '../../core/keycap.js'
 import { channelAt, channelPoint } from './maps/lobby/lobby-layout.js'
 import { tune } from './tune.js'
 import { hintMemory } from './mechanics/hints/hints-memory.js'
@@ -17,19 +18,14 @@ const SLOTS = ['slot1', 'slot2', 'slot3']
 // Movement abilities: every dash, and Undine's Slide, which dashes without saying so.
 const moves = (ability) => ability?.kind === 'dash' || ability?.id === 'slide'
 
-const cap = (text) => `<span class="key-cap">${text}</span>`
-const MOUSE =
-	'<svg viewBox="0 0 24 24" aria-hidden="true"><path class="body" d="M12 2.5a6.5 6.5 0 0 1 6.5 6.5v6a6.5 6.5 0 0 1-13 0V9A6.5 6.5 0 0 1 12 2.5zM5.5 10h13M12 2.5V10"/><path class="press" d="M12 2.5a6.5 6.5 0 0 1 6.5 6.5v1H12z"/></svg>'
-const STICK =
-	'<svg viewBox="0 0 24 24" aria-hidden="true"><circle class="body" cx="12" cy="12" r="8.5"/><circle class="press" cx="12" cy="12" r="4"/></svg>'
 // How you walk, drawn in key glyphs: the right mouse button, WASD, the arrows or the left stick.
 function walkKeys(scheme) {
-	if (scheme === 'pad') return `<span class="key-cap key-icon">${STICK}</span>`
-	if (PRESETS[scheme]?.mouse === 'orders') return `<span class="key-cap key-icon">${MOUSE}</span>`
+	if (scheme === 'pad') return keyCapHtml('Stick')
+	if (PRESETS[scheme]?.mouse === 'orders') return keyCapHtml('Click')
 	const [up, left, down, right] = PRESETS[scheme]?.arrows
 		? ['↑', '←', '↓', '→']
 		: ['W', 'A', 'S', 'D']
-	return `<span class="key-cross">${cap(up)}${cap(left)}${cap(down)}${cap(right)}</span>`
+	return `<span class="key-cross">${[up, left, down, right].map((k) => keyCapHtml(k)).join('')}</span>`
 }
 
 export function createLobbyLesson({ el, hero, bell, onPresent }) {
@@ -104,13 +100,13 @@ export function createLobbyLesson({ el, hero, bell, onPresent }) {
 				cues.dash,
 				camera,
 				{ x: p.x, z: p.z + 0.9 },
-				dash && !known(dash) && atBank && !water.wet ? cap(keys[SLOTS.indexOf(dash)]) : '',
+				dash && !known(dash) && atBank && !water.wet ? keyCapHtml(keys[SLOTS.indexOf(dash)]) : '',
 				!!dash && known(dash),
 			)
 			// The bell: your attack and the rest of your kit, one key each, over its arch.
 			const left = kit.filter((slot) => slot !== dash && !known(slot))
-			const strike = known('attack') ? [] : [cap(attackKey(controls.preset, activeDevice()))]
-			const rings = [...strike, ...left.map((slot) => cap(keys[SLOTS.indexOf(slot)]))]
+			const strike = known('attack') ? [] : [keyCapHtml(attackKey(controls.preset, activeDevice()))]
+			const rings = [...strike, ...left.map((slot) => keyCapHtml(keys[SLOTS.indexOf(slot)]))]
 			place(
 				cues.bell,
 				camera,

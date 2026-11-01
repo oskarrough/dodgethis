@@ -91,6 +91,8 @@
 
 				/* Shared shapes (docs/ui.md, primitives): one per role, never typed per component. */
 				--text-font: 'Sniglet', 'Josefin Sans', system-ui, sans-serif;
+				--key-font:
+					'Apfel Grotezk', 'Josefin Sans', system-ui, sans-serif; /* key labels: plain, legible (core/keycap.js) */
 				--line-thin: 1.5px; /* readouts and cards */
 				--radius-pill: 999px;
 				--radius-card: 14px;
@@ -584,6 +586,7 @@
 				width: 26px;
 				height: 26px;
 				border-radius: 8px;
+				font-family: var(--key-font);
 				font-size: var(--fs-key);
 				font-weight: 700;
 				color: var(--ui-text);

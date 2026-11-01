@@ -23,7 +23,7 @@ export function createTalentsView(parent = document.body) {
 	chip.tabIndex = -1
 	const chipLevel = el('b', 'level', chip) // rows waiting on a pick
 	const chipText = el('span', 'text', chip)
-	const chipKey = el('span', 'key', chip)
+	const chipKey = el('span', 'key-cap', chip)
 	const panel = el('section', 'moba-talents', parent)
 	panel.setAttribute('aria-label', 'Talents')
 	panel.hidden = true
@@ -67,7 +67,7 @@ export function createTalentsView(parent = document.body) {
 				const icon = el('span', 'icon', cell, talent.icon)
 				icon.setAttribute('aria-hidden', 'true')
 				el('b', 'name', cell, talent.name)
-				const key = el('span', 'key', cell)
+				const key = el('span', 'key-cap', cell)
 				el(
 					'p',
 					'text',

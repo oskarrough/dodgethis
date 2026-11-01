@@ -39,17 +39,6 @@
 .moba-talent-chip .level:empty {
 	display: none;
 }
-.moba-talent-chip .key,
-.moba-talents .talent .key {
-	min-width: 18px;
-	padding: 3px 5px;
-	box-sizing: border-box;
-	font: 700 11px / 1 var(--text-font);
-	color: var(--cream);
-	background: var(--ink);
-	border-radius: 6px;
-	text-align: center;
-}
 /* Awake: a row is open. Now it is a thing to press, and it says so with the frame. */
 .moba-talent-chip.awake {
 	background: var(--apricot);
@@ -207,7 +196,7 @@
 .moba-talents .talent .name {
 	font: 700 14px / 1.15 var(--text-font);
 }
-.moba-talents .talent .key:empty {
+.moba-talents .talent .key-cap:empty {
 	display: none;
 }
 .moba-talents .talent .text {

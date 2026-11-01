@@ -39,6 +39,7 @@ Rules for every screen. [look.md](look.md) sets the direction; this says how to 
 ## How it is built
 
 - **Primitives, not values.** Shared shapes are CSS custom properties, never numbers typed per component, so siblings can't drift. One radius per role (pill, card, tile); one ink line per weight from look.md, thin for readouts and cards, thick for pressables and units; one shadow for what floats and one offset shadow for what you press. A tooltip, a pill and a tile are each one class used everywhere; a variant changes a token, not the recipe.
+- **One keycap.** Every key label is `core/keycap.js`: dark ink in the key face on a small cream cap, never the display face or an outline. Space, a click and the stick are drawn, not spelled. Floor hints draw the same cap on a canvas (`hints-view.js`).
 - **Caps only for a few words.** A sentence in capitals reads as shouting; hints and instructions are sentence case.
 - **Row rules whisper.** Lines between rows of one list are faint guides; only the rule under a heading is full ink.
 - **No grey tracked uppercase.** Dimmed, letter-spaced small caps read as generated filler. Labels are sentence case in the ink colour; hierarchy comes from size and weight. Let long values wrap rather than shrink or truncate.

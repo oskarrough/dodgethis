@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { statusBar } from './statuses.js'
 import './hud.css'
+import { setKeyCap } from '../../core/keycap.js'
 import { heroDefinition } from './heroes.js'
 import { tune } from './tune.js'
 import { createMinimap } from './minimap.js'
@@ -124,6 +125,7 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 		write(value)
 	}
 	const text = (node, value) => put(node, 'text', value, (v) => (node.textContent = v))
+	const keycap = (node, value) => put(node, 'key', value, (v) => setKeyCap(node, v))
 	const prop = (node, name, value) => put(node, name, value, (v) => node.style.setProperty(name, v))
 	const flag = (node, name, on) =>
 		put(node, `.${name}`, on, (v) => (v ? node.classList.add(name) : node.classList.remove(name)))
@@ -272,7 +274,7 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 		slot.tabIndex = -1
 		const icon = el('span', 'icon', slot)
 		el('span', 'sweep', slot)
-		const key = el('span', 'key', slot)
+		const key = el('span', 'key-cap', slot)
 		const left = el('span', 'left', slot)
 		return { action, slot, icon, key, left, deniedFor: 0, fraction: -1 }
 	})
@@ -280,13 +282,13 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 	const attack = el('div', 'moba-slot moba-recall moba-attack', slotRow)
 	attack.setAttribute('aria-label', 'Attack')
 	el('span', 'icon', attack).innerHTML = ICONS.attack
-	const attackKeyNode = el('span', 'key', attack)
+	const attackKeyNode = el('span', 'key-cap', attack)
 	// Recall (B): a smaller chip after the kit. Its sweep is the cooldown, or the tear's progress while recalling.
 	const recall = el('div', 'moba-slot moba-recall', slotRow)
 	recall.setAttribute('aria-label', 'Recall')
 	el('span', 'icon', recall).innerHTML = ICONS.recall
 	el('span', 'sweep', recall)
-	const recallKey = el('span', 'key', recall)
+	const recallKey = el('span', 'key-cap', recall)
 	const recallLeft = el('span', 'left', recall)
 	let recallDenied = 0
 	// The feed: a drum mid-right printed with the game log's calls. A new line turns the drum, so the newest sits
@@ -786,7 +788,7 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 					ability?.id ?? 'empty',
 					(id) => (s.icon.innerHTML = ability?.icon ?? ICONS[id] ?? ''),
 				)
-				text(s.key, keys[i])
+				keycap(s.key, keys[i])
 				put(s.key, 'touch', device === 'touch', (v) => (s.key.style.display = v ? 'none' : ''))
 				flag(s.slot, 'ball', !!carryingBall)
 				const fraction = total > 0 ? ring(cooldown, total) : 0
@@ -811,11 +813,11 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 				)
 			}
 
-			text(attackKeyNode, attackKey(controls.preset, device))
+			keycap(attackKeyNode, attackKey(controls.preset, device))
 			put(attack, 'touch', device === 'touch', (v) => (attack.hidden = v))
 			put(recall, 'hidden', !teams || frame.lobby, (hidden) => (recall.hidden = hidden))
 			if (recallDenied > 0 && (recallDenied -= dt) <= 0) recall.classList.remove('denied')
-			text(recallKey, device === 'gamepad' ? '▼' : 'B')
+			keycap(recallKey, device === 'gamepad' ? '▼' : 'B')
 			put(
 				recallKey,
 				'touch',

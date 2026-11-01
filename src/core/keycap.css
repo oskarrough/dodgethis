@@ -1,0 +1,47 @@
+/* The keycap (keycap.js): a plain face, dark ink on cream, a thin line and a lip under it. Size
+   follows --key-size, so a lesson on the floor and a corner badge are the same cap. */
+:root {
+	--key-size: 11px;
+}
+.key-cap {
+	display: inline-grid;
+	place-items: center;
+	min-width: calc(var(--key-size) * 1.7);
+	height: calc(var(--key-size) * 1.6);
+	padding: 0 calc(var(--key-size) * 0.4);
+	box-sizing: border-box;
+	font: 700 var(--key-size) / 1 var(--key-font);
+	color: var(--ui-text);
+	background: var(--ui-cream);
+	border: var(--line-thin) solid var(--ui-text);
+	border-radius: calc(var(--key-size) * 0.4);
+	box-shadow: 0 calc(var(--key-size) * 0.14) 0 var(--ui-text);
+	text-align: center;
+	white-space: nowrap;
+	-webkit-text-stroke: 0;
+}
+.key-cap.key-icon {
+	padding: 0 calc(var(--key-size) * 0.2);
+}
+.key-cap.key-wide {
+	min-width: calc(var(--key-size) * 3);
+}
+.key-cap.key-wide svg {
+	width: calc(var(--key-size) * 2.2);
+}
+.key-cap svg {
+	width: calc(var(--key-size) * 1.5);
+	height: calc(var(--key-size) * 1.1);
+	fill: none;
+	stroke: var(--ui-text);
+	stroke-width: 2.2;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+.key-cap .press {
+	fill: var(--ui-text);
+}
+
+.key-cap:empty {
+	display: none;
+}

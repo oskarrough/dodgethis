@@ -47,8 +47,9 @@ function drawGlyph(canvas, glyph, pressed) {
 	g.clearRect(0, 0, SIZE, SIZE)
 	const ink = hex('ink')
 	const cream = hex('cream')
+	// The key face (core/keycap.js), so a floor key reads like the ones on the bar.
 	const font =
-		getComputedStyle(document.documentElement).getPropertyValue('--ui-font').trim() || 'sans-serif'
+		getComputedStyle(document.documentElement).getPropertyValue('--key-font').trim() || 'sans-serif'
 	g.lineJoin = 'round'
 	g.lineCap = 'round'
 	const cap = (x, y, w, h, r, lip, line, label, size) => {
@@ -64,16 +65,29 @@ function drawGlyph(canvas, glyph, pressed) {
 		g.roundRect(x, y + sink, w, h, r)
 		g.fill()
 		g.stroke()
+		if (label === 'Space') {
+			// A wide cap marked with the space bar's bracket instead of the word.
+			g.strokeStyle = ink
+			g.lineWidth = 12
+			g.beginPath()
+			g.moveTo(x + w * 0.2, y + sink + h * 0.4)
+			g.lineTo(x + w * 0.2, y + sink + h * 0.62)
+			g.lineTo(x + w * 0.8, y + sink + h * 0.62)
+			g.lineTo(x + w * 0.8, y + sink + h * 0.4)
+			g.stroke()
+			return
+		}
 		if (!label) return
 		g.fillStyle = ink
 		g.textAlign = 'center'
 		g.textBaseline = 'middle'
-		g.font = `400 ${size}px ${font}`
+		g.font = `700 ${size}px ${font}`
 		g.fillText(label, x + w / 2, y + sink + h / 2 + size * 0.06, w - line * 3)
 	}
 	if (glyph.kind === 'key') {
 		const size = glyph.label.length > 1 ? 92 : 128
-		cap(36, 40, 184, 160, 34, 22, 10, glyph.label, size)
+		if (glyph.label === 'Space') cap(16, 70, 224, 110, 28, 20, 10, glyph.label, size)
+		else cap(36, 40, 184, 160, 34, 22, 10, glyph.label, size)
 	} else if (glyph.kind === 'walk') {
 		const k = 72
 		for (const [label, x, y] of [
@@ -158,11 +172,13 @@ export function hints({ scene, sim, hero, onPresent }) {
 		return texture
 	}
 	// The face may land after the first glyph is drawn; redraw once it does.
-	document.fonts?.ready.then(() => {
-		for (const texture of textures.values()) texture.dispose()
-		textures.clear()
-		if (shown) plate.material.map = textureFor(shown.glyph, shown.answered)
-	})
+	Promise.all([document.fonts?.load('700 64px "Apfel Grotezk"'), document.fonts?.ready]).then(
+		() => {
+			for (const texture of textures.values()) texture.dispose()
+			textures.clear()
+			if (shown) plate.material.map = textureFor(shown.glyph, shown.answered)
+		},
+	)
 	const printed = (geometry, color, map = null) => {
 		const material = new THREE.MeshBasicMaterial({
 			color,
