@@ -9,7 +9,7 @@ const ticks = (s) => Math.max(1, Math.round(s / STEP))
 // The packs at `layout.packs`: each `{ x, z, guards: [kind…], patrol?: [{ x, z }…] }`. Guards are
 // neutral (team 'N') lane minions that stand at their post, or walk the patrol loop, until a hero
 // comes near or strikes one; then the whole pack fights. A pack left alone heals and goes home. Dead guards stay dead: a dungeon is cleared once.
-export function createPacks({ layout, lane, heroes, makeMinion, obstacles, difficulty }) {
+export function createPacks({ layout, lane, heroes, makeMinion, obstacles, difficulty, view }) {
 	const p = tune.packs
 	// Guards are as tough and bite as hard as the dungeon's dial says (`dungeon-dial.js`).
 	const dial = createDial(heroes.length, difficulty)
@@ -44,6 +44,8 @@ export function createPacks({ layout, lane, heroes, makeMinion, obstacles, diffi
 			const at = spot(pack, i)
 			const { damage, xp } = p.guards[kind]
 			const hp = Math.round(p.guards[kind].hp * dial.hp())
+			const body = makeMinion(at.x, at.z, 'N', kind)
+			view?.dress?.(body, kind) // packs-view.js: the Wardens' servants in clay and stone
 			return {
 				id: `${pack.id}-${i + 1}`,
 				pack: pack.id,
@@ -59,7 +61,7 @@ export function createPacks({ layout, lane, heroes, makeMinion, obstacles, diffi
 				damageScale: damage * dial.damage(),
 				xp,
 				dead: false,
-				body: makeMinion(at.x, at.z, 'N', kind),
+				body,
 				target: null,
 				forced: null,
 				aggroUntil: 0,

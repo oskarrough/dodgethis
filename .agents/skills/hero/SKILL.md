@@ -20,3 +20,4 @@ A hero is done when a player can name them from the match camera at a glance and
 - A long beak pointed through its own health bar when the hero faced away.
 - Team colour on a small part seen edge-on goes pale. Give it a face the camera can see; on a prop that turns with the hero, put the accent on top, not on a side.
 - The image generator adds red scarves, blue sashes and gold fittings. Leave them out of the build.
+- `--lineup` seats heroes only. To judge mobs side by side, eval in the page: `await import('/src/…-view.js')`, make bodies with `dt.game.moba.sim.laneView.makeBody(x, z, 'N', kind)`, dress them, then `dt.photo({ hud: true })` and screenshot.
