@@ -6,6 +6,7 @@ import mechanics_dummies from './dummies/dummies.js'
 import mechanics_dungeon from './dungeon/dungeon.js'
 import mechanics_flag from './flag/flag.js'
 import mechanics_hints from './hints/hints.js'
+import mechanics_memory from './memory/memory.js'
 import mechanics_minions from './minions/minions.js'
 import mechanics_packs from './packs/packs.js'
 import mechanics_structures from './structures/structures.js'
@@ -18,6 +19,7 @@ export default {
 	dungeon: mechanics_dungeon,
 	flag: mechanics_flag,
 	hints: mechanics_hints,
+	memory: mechanics_memory,
 	minions: mechanics_minions,
 	packs: mechanics_packs,
 	structures: mechanics_structures,

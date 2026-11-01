@@ -379,15 +379,32 @@ export default function moba(app, map) {
 			)
 			// Assigned boxes are reservations, not won claims; walking into one stamps the claim tick.
 			if (isLobby) for (const seat of simulation.readySeats.seats) seat.claimTick = null
-			const ballView =
-				mechanics.map((mechanic) => mechanicViews[mechanic.id]?.view).find(Boolean)?.(scene, {
-					returnToLobby,
-					canReturnToLobby: app.session.authoritative,
-					// For a view that draws the styled scene again, such as a mirror floor (mirror.js).
-					renderer: app.renderer,
-					renderStyled: app.renderStyled,
-					setLight: (light) => app.setPalette({ ...palette, light, glow: look.glow }),
-				}) ?? null
+			// Every mechanic that draws gets its view; they read as one (the Ball's marker is the first's).
+			const mechanicDrawings = mechanics.flatMap((mechanic) => {
+				const make = mechanicViews[mechanic.id]?.view
+				return make
+					? [
+							make(scene, {
+								returnToLobby,
+								canReturnToLobby: app.session.authoritative,
+								// For a view that draws the styled scene again, such as a mirror floor (mirror.js).
+								renderer: app.renderer,
+								renderStyled: app.renderStyled,
+								setLight: (light) => app.setPalette({ ...palette, light, glow: look.glow }),
+							}),
+						]
+					: []
+			})
+			const ballView = mechanicDrawings.length
+				? {
+						get markerPosition() {
+							return mechanicDrawings[0].markerPosition ?? null
+						},
+						present: (fact) => mechanicDrawings.forEach((v) => v.present?.(fact)),
+						update: (...args) => mechanicDrawings.forEach((v) => v.update(...args)),
+						dispose: () => mechanicDrawings.forEach((v) => v.dispose()),
+					}
+				: null
 			const replica = !app.session.authoritative
 				? isLobby
 					? createLobbyReplica(simulation, scene)

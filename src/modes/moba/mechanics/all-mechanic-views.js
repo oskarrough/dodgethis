@@ -4,6 +4,7 @@ import * as dummies_view from './dummies/dummies-view.js'
 import * as dungeon_view from './dungeon/dungeon-view.js'
 import * as flag_view from './flag/flag-view.js'
 import * as hints_view from './hints/hints-view.js'
+import * as memory_view from './memory/memory-view.js'
 import * as packs_view from './packs/packs-view.js'
 import * as structures_view from './structures/structures-view.js'
 
@@ -13,6 +14,7 @@ export default {
 	dungeon: dungeon_view,
 	flag: flag_view,
 	hints: hints_view,
+	memory: memory_view,
 	packs: packs_view,
 	structures: structures_view,
 }
