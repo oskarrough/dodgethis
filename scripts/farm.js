@@ -112,11 +112,14 @@ function matchRoster(
 ) {
 	const party = mods.matchRecipe(map ?? undefined).party
 	// A party map's bots play normal, as in the game; --difficulty is the dungeon dial's spot there.
-	// --party N fields N heroes: the lineup's first, then the map's party over and over.
+	// --party N fields N heroes: the lineup's first, then the map's party over and over. A --lineup of
+	// mixed heroes is fielded as written instead, so `--lineup kappa,oolong,salvia` brings Salvia.
+	const own = new Set(lineups[0]).size > 1 ? lineups[0] : [lineups[0][0]]
+	const pool = [...own, ...(own.length > 1 ? [] : party)]
 	if (party)
 		return Array.from(
-			{ length: size ?? party.length + 1 },
-			(_, i) => [lineups[0][0], ...party][i % (party.length + 1)],
+			{ length: size ?? (own.length > 1 ? own.length : party.length + 1) },
+			(_, i) => pool[i % pool.length],
 		).map((heroId, i) => ({
 			id: `A${i + 1}`,
 			team: 'A',
@@ -439,7 +442,7 @@ Teams
   --idle A1[,B2]            seats that stand still; --practice = idle A1, allies normal, enemies --difficulty
   --player A1[:north]       a stand-in human: its own bot plays the seat outside the team's lane deal, in that lane
   --difficulty hard         easy, normal or hard; on a party map (altamesa) the dungeon dial's spot, and bots play normal
-  --party N                 on a party map, field N heroes (1 to 5; default the map's party and the lineup's first)
+  --party N                 on a party map, field N heroes (1 to 5; default the map's party and the lineup's first, or a mixed --lineup as written)
   --map flagfall            overthrow or flagfall (default: the game's default map)
 Sampling
   --matches N               default 4 for summaries, 20 for logs; rounded up to full matchup rotations; each rotation shares a seed

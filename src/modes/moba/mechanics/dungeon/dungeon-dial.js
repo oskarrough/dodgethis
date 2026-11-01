@@ -13,7 +13,7 @@ export function createDial(partySize, difficulty = 'normal') {
 			return value()
 		},
 		hp: () => scale(d().hp),
-		damage: () => scale(d().damage),
+		damage: () => scale(d().damage) * (d().blows[difficulty] ?? 1),
 		tempo: () => scale(d().tempo),
 		mechanics: () => d().mechanics * (value() - d().at),
 	}

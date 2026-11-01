@@ -53,13 +53,14 @@ for (const id of playableMaps) {
 
 	// The whole run by each wing in turn, for a party of three, the dungeon's baseline: the other
 	// wing sleeps, so the party walks the road, clears that wing and climbs to the last boss
-	// carrying its boons.
+	// carrying its boons. On easy, since the party has no healer and normal is meant to need one.
 	const layout = matchRecipe(id).layout
 	for (const wing of layout.encounters?.length ? (layout.wings ?? []) : [])
 		test(`${id}: a party of three clears the run by the ${wing} wing`, () => {
 			const { run, dispose } = match(
 				id,
 				agentRoster({ seats: [] }).filter((seat) => seat.team === 'A'),
+				'easy',
 			)
 			try {
 				const list = run.sim.dungeon.encounters
@@ -78,7 +79,7 @@ for (const id of playableMaps) {
 		}, 120000)
 }
 
-function match(id, roster) {
+function match(id, roster, difficulty) {
 	const recipe = matchRecipe(id)
 	const world = new RAPIER.World({ x: 0, y: coreTune.physics.gravity, z: 0 })
 	world.timestep = STEP
@@ -91,6 +92,7 @@ function match(id, roster) {
 		RAPIER,
 		roster,
 		seed: 2,
+		difficulty,
 		recordInputs: false,
 		capturePerception: false,
 		onLog() {},

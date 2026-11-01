@@ -28,8 +28,10 @@ export default {
 	// were set for. Health keeps pace with the party, steeply enough that a lone hero meets a fifth
 	// of a Warden (the floor) and a pair three fifths; any more and the bots cannot get a lone hero
 	// past Fornax or Espejo. Damage stays where it is (`damage` 0): a bigger party dies more to the
-	// number of bodies than to the weight of a blow. Each Warden's own `hp` and `damage` are set
-	// for a party of three on normal. `tempo` (how much
+	// number of bodies than to the weight of a blow. The difficulty weighs the blows instead:
+	// `blows` multiplies every Warden's, guard's and bardino's damage, so on normal a party of three
+	// needs its healer by the second wing and on hard from Fornax on, while easy stays soloable by
+	// two bots. Each Warden's own `hp` and `damage` are set for a party of three. `tempo` (how much
 	// faster a fight's clock runs) and `mechanics` (how many more of them at once) scale the same way,
 	// per point of dial, once a fight reads them.
 	dial: {
@@ -37,6 +39,7 @@ export default {
 		spots: { easy: 0.3, normal: 1, hard: 1.5 },
 		hp: 0.4,
 		damage: 0,
+		blows: { easy: 1, normal: 2, hard: 2.5 },
 		floor: 0.2,
 		tempo: 0,
 		mechanics: 0,
