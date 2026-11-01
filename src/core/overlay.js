@@ -1,6 +1,7 @@
-// Full-screen non-playing modal with persistent cursor navigation by keyboard or gamepad; actions are { label, key?, keyLabel?, onSelect }, where key is a KeyboardEvent.code and keyLabel is its button hint.
+// Full-screen non-playing modal with persistent cursor navigation by keyboard or gamepad; actions are { label, key?, keyLabel?, onSelect }, where key is a KeyboardEvent.code and keyLabel is its button hint; `volumes: true` adds the music and sound sliders under them.
 import { ui } from './audio.js'
 import { el as make } from './dom.js'
+import { createVolumes } from './volume.js'
 
 export function createOverlay(selector = '.overlay') {
 	const el = document.querySelector(selector)
@@ -28,6 +29,7 @@ export function createOverlay(selector = '.overlay') {
 		accent = '',
 		pointerGuard = false,
 		spaceConfirm = true,
+		volumes = false,
 	} = {}) {
 		guardPointer = pointerGuard
 		pointerMoved = false
@@ -89,6 +91,8 @@ export function createOverlay(selector = '.overlay') {
 			})
 			card.append(row)
 		}
+		// Music and sound volume, for the menus that hold settings.
+		if (volumes) createVolumes(card)
 
 		el.replaceChildren(card)
 		renderPrompts()
@@ -175,8 +179,10 @@ export function createOverlay(selector = '.overlay') {
 	window.addEventListener('keydown', (e) => {
 		if (e.ctrlKey || e.metaKey || e.altKey) return
 		if (el.hidden || !actions.length) return
+		// A volume slider keeps its own arrow keys and a volume icon its own Enter; only Tab moves on from them.
+		if (e.code !== 'Tab' && e.target.closest?.('.volumes')) return
 		if (e.code === 'Tab') {
-			const focusable = buttons
+			const focusable = [...buttons, ...el.querySelectorAll('.volumes :is(button, input)')]
 			const current = focusable.indexOf(document.activeElement)
 			const direction = e.shiftKey ? -1 : 1
 			const next =

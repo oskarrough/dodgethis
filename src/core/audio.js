@@ -41,10 +41,42 @@ let musicScene = 'lobby'
 let matchMusic = null // the map's scored scene, which 'play' becomes (maps' `music`)
 let musicEnabled = true
 let gestureReceived = false
+
+// Two levels, apart: music and sound effects each have their own volume (0–1, remembered), and muting one
+// never touches the other. They sit on two gains between the buses and the master (`levels`).
+const VOLUME_KEYS = { music: 'dodgethis.volume.music', sound: 'dodgethis.volume.sound' }
+const volumes = { music: 1, sound: 1 }
+const volumeListeners = new Set()
 try {
-	musicEnabled = globalThis.localStorage?.getItem('dodgethis.music') !== 'off'
+	const store = globalThis.localStorage
+	for (const kind of Object.keys(volumes)) {
+		const saved = Number.parseFloat(store?.getItem(VOLUME_KEYS[kind]))
+		if (saved >= 0 && saved <= 1) volumes[kind] = saved
+	}
+	// The old music on/off switch carries over as a music volume of zero.
+	if (store?.getItem(VOLUME_KEYS.music) === null && store?.getItem('dodgethis.music') === 'off')
+		volumes.music = 0
 } catch {
 	/* Storage can be unavailable in private contexts. */
+}
+const curve = (level) => level * level // loudness is felt roughly squared
+let levels = null // { sound, music } GainNodes, made with the context
+export function getVolume(kind) {
+	return volumes[kind]
+}
+export function setVolume(kind, level) {
+	volumes[kind] = Math.min(1, Math.max(0, level))
+	if (levels && ctx) levels[kind].gain.setTargetAtTime(curve(volumes[kind]), ctx.currentTime, 0.01)
+	try {
+		globalThis.localStorage?.setItem(VOLUME_KEYS[kind], String(volumes[kind]))
+	} catch {
+		/* The level still holds for this session. */
+	}
+	for (const listener of volumeListeners) listener(kind, volumes[kind])
+}
+export function onVolumeChange(listener) {
+	volumeListeners.add(listener)
+	return () => volumeListeners.delete(listener)
 }
 
 export function syncMusic() {
@@ -70,18 +102,6 @@ export function previewMusic(scene) {
 	musicEnabled = !!scene
 	if (scene) musicScene = scene
 	syncMusic()
-}
-export function setMusicEnabled(enabled) {
-	musicEnabled = !!enabled
-	try {
-		globalThis.localStorage?.setItem('dodgethis.music', musicEnabled ? 'on' : 'off')
-	} catch {
-		/* The preference still works for this session. */
-	}
-	syncMusic()
-}
-export function isMusicEnabled() {
-	return musicEnabled
 }
 globalThis.document?.addEventListener?.('visibilitychange', syncMusic)
 globalThis.window?.addEventListener('pagehide', () => music?.setEnabled(false))
@@ -113,13 +133,19 @@ const mix = (key) => mixOf()[key] ?? tune.mix[key]
 function wire(context) {
 	const out = context.createGain()
 	out.connect(context.destination)
+	const level = {}
+	for (const kind of ['sound', 'music']) {
+		level[kind] = context.createGain()
+		level[kind].gain.value = curve(volumes[kind])
+		level[kind].connect(out)
+	}
 	const named = {}
 	for (const name of BUSES) {
 		named[name] = context.createGain()
 		named[name].gain.value = mix(name)
-		named[name].connect(out)
+		named[name].connect(name === 'music' ? level.music : level.sound)
 	}
-	return [out, named]
+	return [out, named, level]
 }
 onSwapChange(() => {
 	if (buses) for (const name of BUSES) buses[name].gain.setValueAtTime(mix(name), ctx.currentTime)
@@ -158,7 +184,7 @@ export function onBus(name, play) {
 function ac() {
 	if (!ctx) {
 		ctx = new (window.AudioContext || window['webkitAudioContext'])()
-		;[master, buses] = wire(ctx)
+		;[master, buses, levels] = wire(ctx)
 		master.gain.value = tune.output.sound ? 1 : 0
 		ctx.addEventListener?.('statechange', syncMusic)
 	}

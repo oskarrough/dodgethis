@@ -1,0 +1,120 @@
+/* The music and sound volume rows (volume.js): an icon tile and a slider, in the ink of the menu around them. */
+.volumes {
+	display: grid;
+	gap: 8px;
+	margin: clamp(10px, 1.4vw, 20px) auto 0;
+	width: min(100%, 13em);
+	font: 400 clamp(18px, 1.6vw, 26px) / 1 var(--ui-font);
+	color: var(--ui-text);
+	text-align: left;
+}
+.volume {
+	display: flex;
+	align-items: center;
+	gap: 0.6em;
+}
+.volumes .volume-icon {
+	display: grid;
+	place-items: center;
+	flex: none;
+	width: 1.6em;
+	height: 1.6em;
+	margin: 0;
+	padding: 0.2em;
+	color: var(--ui-text);
+	background: var(--ui-cream);
+	border: 2px solid var(--ui-text);
+	border-radius: 7px 5px 8px 6px;
+	box-shadow: 2px 3px 4px color-mix(in srgb, var(--ui-text) 22%, transparent);
+	cursor: pointer;
+	transition:
+		transform 0.18s cubic-bezier(0.2, 1.9, 0.45, 1),
+		background 0.12s;
+}
+.volumes .volume-icon svg {
+	width: 100%;
+	height: 100%;
+	fill: none;
+	stroke: currentColor;
+	stroke-width: 2.6;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+}
+.volumes .volume-icon:is(:hover, :focus-visible) {
+	outline: none;
+	background: var(--ui-button, #ffcf5a);
+	transform: translate(-1px, -2px) rotate(-4deg);
+}
+.volumes .volume-icon:active {
+	transform: scale(0.92);
+	transition-duration: 0.06s;
+}
+.volumes .cross,
+.volume.muted .waves {
+	display: none;
+}
+.volume.muted .cross {
+	display: inline;
+}
+.volume.muted .volume-slider {
+	opacity: 0.45;
+}
+.volume-slider {
+	flex: 1;
+	min-width: 6em;
+	height: 1.6em;
+	margin: 0;
+	background: none;
+	cursor: pointer;
+	appearance: none;
+	-webkit-appearance: none;
+	touch-action: none;
+	--track: 0.3em;
+}
+.volume-slider:focus-visible {
+	outline: 2px solid var(--ui-text);
+	outline-offset: 3px;
+	border-radius: 6px;
+}
+.volume-slider::-webkit-slider-runnable-track {
+	height: var(--track);
+	border-radius: 99px;
+	background: linear-gradient(
+		to right,
+		var(--ui-text) var(--fill, 100%),
+		color-mix(in srgb, var(--ui-text) 22%, transparent) var(--fill, 100%)
+	);
+}
+.volume-slider::-moz-range-track {
+	height: var(--track);
+	border-radius: 99px;
+	background: color-mix(in srgb, var(--ui-text) 22%, transparent);
+}
+.volume-slider::-moz-range-progress {
+	height: var(--track);
+	border-radius: 99px;
+	background: var(--ui-text);
+}
+.volume-slider::-webkit-slider-thumb {
+	appearance: none;
+	-webkit-appearance: none;
+	width: 1em;
+	height: 1em;
+	margin-top: calc((var(--track) - 1em) / 2 - 2px);
+	border: 2px solid var(--ui-text);
+	border-radius: 50%;
+	background: var(--ui-cream);
+	box-shadow: 2px 3px 4px color-mix(in srgb, var(--ui-text) 22%, transparent);
+}
+.volume-slider::-moz-range-thumb {
+	width: 1em;
+	height: 1em;
+	box-sizing: border-box;
+	border: 2px solid var(--ui-text);
+	border-radius: 50%;
+	background: var(--ui-cream);
+	box-shadow: 2px 3px 4px color-mix(in srgb, var(--ui-text) 22%, transparent);
+}
+.volume-slider:is(:hover, :active)::-webkit-slider-thumb {
+	background: var(--ui-button, #ffcf5a);
+}

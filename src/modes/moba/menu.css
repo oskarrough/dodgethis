@@ -586,3 +586,12 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden])) > .moba-top {
 		grid-column: 1 / -1;
 	}
 }
+
+/* The volume rows sit in the pause page's left column, right under Hints, on the same left edge. */
+.overlay .moba-pause > .volumes {
+	grid-row: 4;
+	grid-column: 1 / span 6;
+	align-self: start;
+	margin: 0;
+	padding-top: clamp(14px, 1.6vw, 22px);
+}

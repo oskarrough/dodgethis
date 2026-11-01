@@ -2,7 +2,7 @@ import { createRound } from './round.js'
 import { createReplicaRound, snapshotRound } from './replica.js'
 import { createActions } from './actions.js'
 import { createPortal } from './portal.js'
-import { sfx, isMusicEnabled, setMusicEnabled, setMusicScene } from '../../core/audio.js'
+import { sfx, setMusicScene } from '../../core/audio.js'
 import { SOLO } from '../../core/app.js'
 import { validateRoster } from '../../core/roster.js'
 import { tune } from './tune.js'
@@ -95,22 +95,11 @@ export function createMatchFlow({
 		}
 	}
 
-	function musicLabel() {
-		return `Music: ${isMusicEnabled() ? 'On' : 'Off'}`
-	}
 	function impactLabel() {
 		return `Impact effects: ${tune.fx.impact ? 'On' : 'Off'}`
 	}
 
 	function showPause() {
-		const music = {
-			label: musicLabel(),
-			onSelect: () => {
-				setMusicEnabled(!isMusicEnabled())
-				music.label = musicLabel()
-				overlay.relabel()
-			},
-		}
 		const impact = {
 			label: impactLabel(),
 			onSelect: () => {
@@ -122,10 +111,10 @@ export function createMatchFlow({
 		}
 		overlay.show({
 			title: 'PAUSED',
+			volumes: true,
 			subtitle: `Round ${match.round} · ${match.wins.A}–${match.wins.B}`,
 			actions: [
 				{ label: 'Resume', keyLabel: 'Enter', onSelect: togglePause },
-				music,
 				impact,
 				{ label: 'Restart round', key: 'KeyR', keyLabel: 'R', onSelect: restartRound },
 				{

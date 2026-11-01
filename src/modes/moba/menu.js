@@ -84,6 +84,7 @@ export function createMatchMenu({
 		app.overlay.show({
 			title: 'PAUSED',
 			theme: 'moba-pause',
+			volumes: true,
 			pointerGuard: true,
 			spaceConfirm: false,
 			actions: [
