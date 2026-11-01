@@ -38,6 +38,8 @@ let master = null
 let buses = null // bus name → GainNode into master (tune.mix)
 let music = null
 let musicScene = 'lobby'
+let sceneBeforePause = null // what 'paused' interrupted, which the music slider lets you hear
+let auditioning = false
 let matchMusic = null // the map's scored scene, which 'play' becomes (maps' `music`)
 let musicEnabled = true
 let gestureReceived = false
@@ -83,14 +85,23 @@ export function syncMusic() {
 	if (!gestureReceived || !ctx) return
 	if (!music) music = createMusic(ctx, buses.music, { volume: () => tune.output.volume })
 	music.refreshVolume()
-	music.setScene(musicScene === 'play' && matchMusic ? matchMusic : musicScene)
+	const scene =
+		auditioning && musicScene === 'paused' && sceneBeforePause ? sceneBeforePause : musicScene
+	music.setScene(scene === 'play' && matchMusic ? matchMusic : scene)
 	music.setEnabled(
 		musicEnabled && tune.output.sound && ctx.state === 'running' && !globalThis.document?.hidden,
 	)
 }
 
 export function setMusicScene(scene) {
+	if (scene !== 'paused') sceneBeforePause = scene
 	musicScene = scene
+	syncMusic()
+}
+// While a paused menu's music slider is in use the music plays on at the chosen level, so you hear what you set.
+export function auditionMusic(on) {
+	if (auditioning === on) return
+	auditioning = on
 	syncMusic()
 }
 export function setMatchMusic(scene) {

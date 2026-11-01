@@ -1,6 +1,6 @@
 // The two volume controls, music and sound, for any menu that holds settings: an icon you tap to mute that one,
 // and a slider beside it. The icon carries the meaning (no words); a muted one wears the same cross as the mute tile.
-import { getVolume, onVolumeChange, setVolume, ui } from './audio.js'
+import { auditionMusic, getVolume, onVolumeChange, setVolume, ui } from './audio.js'
 import { el } from './dom.js'
 import './volume.css'
 
@@ -30,7 +30,29 @@ export function createVolumes(parent, ref = null) {
 		Object.assign(slider, { type: 'range', min: 0, max: 1, step: 0.05 })
 		slider.setAttribute('aria-label', `${name} volume`)
 		let nudged = 0
+		// A paused menu is silent; while you set the music it plays on, until a moment after you let go.
+		let held = false
+		let quiet = 0
+		const hear = (hold = 1200) => {
+			if (kind !== 'music') return
+			auditionMusic(true)
+			clearTimeout(quiet)
+			if (!held) quiet = setTimeout(() => auditionMusic(false), hold)
+		}
+		slider.addEventListener('pointerdown', () => {
+			held = true
+			hear()
+			window.addEventListener(
+				'pointerup',
+				() => {
+					held = false
+					hear(600)
+				},
+				{ once: true },
+			)
+		})
 		slider.addEventListener('input', () => {
+			hear()
 			const level = Number(slider.value)
 			setVolume(kind, level)
 			if (level > 0) before[kind] = level
@@ -44,6 +66,7 @@ export function createVolumes(parent, ref = null) {
 		mute.addEventListener('click', () => {
 			const level = getVolume(kind)
 			setVolume(kind, level > 0 ? 0 : before[kind] || 1)
+			hear()
 			if (kind === 'sound' && getVolume(kind) > 0) ui('switch')
 		})
 		return { kind, name, row, mute, slider }
