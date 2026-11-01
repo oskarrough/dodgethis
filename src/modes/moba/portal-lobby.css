@@ -108,10 +108,6 @@
 .portal-seat[data-kind='empty'] .lobby-hero-strip-face {
 	font: 400 calc(var(--tile) * 0.42) / 1 var(--ui-font);
 }
-/* Bots are holograms on the floor, so their cards wear the same cold blue. */
-.portal-seat[data-kind='bot'] .skin-card {
-	filter: hue-rotate(170deg) saturate(0.5) brightness(1.05);
-}
 .portal-seat:has(.skin-card[aria-pressed='true']) {
 	transform: translateX(10px) rotate(-4deg) scale(1.06);
 }
