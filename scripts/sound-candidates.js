@@ -30,6 +30,11 @@ export function syncCandidates() {
 				.map((c) => c.file),
 		),
 	].sort()
+	// An empty or missing shortlist is a broken sync, not a wish to delete the committed candidates.
+	if (local && !files.length)
+		throw new Error(
+			`${SOURCE} names no sounds; run sound:check first, then sound:sync. Candidates left as they were.`,
+		)
 	for (const file of files) {
 		if (!file || file.startsWith('/') || file.split(/[\\/]/).some((part) => part === '..' || !part))
 			throw new Error(`Invalid candidate path: ${file}`)

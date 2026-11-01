@@ -216,6 +216,11 @@ export async function writeShortlists(rows) {
 // `bun run sound:sync`: mirror the library from Dropbox, measure new files and rebuild every shortlist.
 export const DROPBOX = `${process.env.HOME}/Dropbox/Rough Resources/Sounds/osk-sfx/`
 if (import.meta.main) {
+	// Without the built-in levels there is nothing to shortlist for: stop before touching anything.
+	if (!existsSync('sounds/builtins.json'))
+		throw new Error(
+			'sounds/builtins.json is missing. Run `bun run sound:check <dev server url>` first.',
+		)
 	execFileSync('rsync', ['-a', '--delete', DROPBOX, `${LIBRARY}/`])
 	const builtins = existsSync('sounds/builtins.json')
 		? JSON.parse(readFileSync('sounds/builtins.json', 'utf8'))
