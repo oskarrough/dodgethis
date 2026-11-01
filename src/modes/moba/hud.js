@@ -243,9 +243,9 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 	root.prepend(castBar.node)
 	const unitFrame = el('div', 'moba-hud moba-unit')
 	const portrait = el('div', 'moba-portrait', unitFrame)
-	const avatar = el('div', 'moba-avatar', portrait)
-	// Only the badge opens the hero card; the whole frame sits too close to play to tip on every pass.
-	hot(el('span', 'moba-info', avatar), { kind: 'portrait' }, unitFrame).textContent = 'i'
+	// The hero's mark printed straight on the paper, level on its corner. Only the mark opens the hero
+	// card; the whole frame sits too close to play to tip on every pass.
+	const avatar = hot(el('div', 'moba-avatar', portrait), { kind: 'portrait' }, unitFrame)
 	const face = el('span', '', avatar)
 	const heroLevel = el('b', 'moba-lv', avatar)
 	const respawnNode = el('b', 'moba-respawn', avatar)
@@ -260,6 +260,19 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 	const healthText = el('span', '', health)
 	const xpBar = el('div', 'moba-xp moba-meter', vitals)
 	const xpText = el('span', '', xpBar)
+	// Party frames: a smaller scrap of the same paper for each teammate, stacked under yours.
+	const party = el('div', 'moba-party', unitFrame)
+	const mates = []
+	// The talent chip hangs under the last frame, however many teammates there are.
+	const frameSize = globalThis.ResizeObserver
+		? new ResizeObserver(() =>
+				document.documentElement.style.setProperty(
+					'--unit-frame-bottom',
+					`${Math.round(unitFrame.getBoundingClientRect().bottom)}px`,
+				),
+			)
+		: null
+	frameSize?.observe(unitFrame)
 	const slotRow = el('div', 'moba-slots', bar)
 	slotRow.dataset.quiet = '' // a slot casts; the ability is its sound
 	const slots = SLOTS.map((action, index) => {
@@ -557,6 +570,37 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 						? `Respawn in ${Math.ceil(respawn)} s`
 						: 'Down',
 			)
+			const team = sim?.heroes?.filter((h) => h.team === localTeam && h !== hero) ?? []
+			while (mates.length < team.length) {
+				const node = el('div', 'moba-portrait moba-mate', party)
+				const mark = el('div', 'moba-avatar', node)
+				const vitals = el('div', 'moba-vitals', node)
+				mates.push({
+					node,
+					face: el('span', '', mark),
+					wait: el('b', 'moba-respawn', mark),
+					name: el('div', 'moba-name', vitals),
+					hp: el('div', 'moba-health moba-meter', vitals),
+				})
+			}
+			while (mates.length > team.length) mates.pop().node.remove()
+			team.forEach((h, i) => {
+				const m = mates[i]
+				const definition = h.definition ?? heroDefinition(h.heroId)
+				put(m.face, 'icon', h.heroId, (id) => {
+					m.face.innerHTML =
+						definition.icon ?? ICONS[id] ?? ICONS[definition.silhouette] ?? ICONS.circle
+				})
+				text(m.name, definition.name ?? h.heroId)
+				const left =
+					h.dead && Number.isFinite(h.respawnTick)
+						? Math.ceil((h.respawnTick - sim.tick) * (frame.step ?? 1 / 60))
+						: null
+				flag(m.node, 'dead', !!h.dead)
+				text(m.wait, left > 0 ? String(left) : '')
+				prop(m.hp, '--f', String(h.dead ? 0 : ring(h.hp, h.maxHp)))
+				prop(m.hp, '--tick', `${((tune.hud.hpTick / Math.max(1, h.maxHp)) * 100).toFixed(3)}%`)
+			})
 			if (teams) {
 				const progress = levelProgress(teams[localTeam].xp)
 				prop(xpBar, '--f', String(progress.need ? ring(progress.into, progress.need) : 1))
@@ -655,6 +699,7 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 			root.remove()
 			bossBar.node.remove()
 			talents?.dispose()
+			frameSize?.disconnect()
 			unitFrame.remove()
 			feed.remove()
 			tip.dispose()

@@ -6,7 +6,7 @@
 	--ink: var(--ui-text);
 	--cream: var(--ui-cream);
 	--apricot: color-mix(in srgb, var(--ui-gold) 22%, var(--ui-cream));
-	--talent-top: calc(24px + clamp(38px, 3.2vw, 52px) + 90px);
+	--talent-top: calc(var(--unit-frame-bottom, calc(24px + clamp(38px, 3.2vw, 52px) + 82px)) + 8px);
 	position: fixed;
 	left: 12px;
 	/* Over the damage meter while open: you asked for the tree. */

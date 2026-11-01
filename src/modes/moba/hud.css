@@ -1,4 +1,4 @@
-/* Match HUD. Frame means press: ability tiles wear 3 px ink and a hard offset shadow; readouts (top bar, unit frame) are smooth cream with a thin line and a soft shadow. */
+/* Match HUD. Frame means press: ability tiles wear 3 px ink and a hard offset shadow; readouts are smooth cream with a thin line and a soft shadow (the top bar) or deckled paper (the unit frame). */
 .moba-top,
 .moba-hud,
 .moba-tip,
@@ -449,74 +449,51 @@
 	width: auto;
 	transform: none;
 	justify-items: start;
+	gap: 4px;
 }
 .moba-bar {
 	display: flex;
 	align-items: flex-end;
 	gap: 12px;
 }
+/* The unit frame: a scrap of the splash's deckled paper with the hero's mark printed straight on it,
+   the level inked on the mark's corner, health as a painted strip and experience as a gold rule under
+   it. Teammates get a smaller scrap each (.moba-mate), stacked under yours. */
 .moba-portrait {
 	display: flex;
 	align-items: center;
 	gap: 10px;
-	/* A readout, like the top bar: smooth cream, thin line, soft shadow, never a button frame. */
-	padding: 8px 14px 8px 8px;
-	background: var(--cream);
-	border: 1.5px solid var(--ink);
-	border-radius: 44px 20px 20px 44px;
-	box-shadow: 0 3px 10px rgba(38, 68, 95, 0.22);
+	padding: 0 4px 0 0;
+	border: 13px solid transparent;
+	border-image: url('/splash/paper.webp') 64 fill / 13px / 0 stretch;
+	filter: drop-shadow(2px 4px 3px color-mix(in srgb, var(--ink) 22%, transparent));
 }
 .moba-avatar {
 	position: relative;
-	width: 58px;
-	height: 58px;
-	border: 3px solid var(--ink);
-	border-radius: 50%;
-	background: radial-gradient(circle at 35% 30%, #fff 0 20%, #f3ecd6 60%);
-	box-sizing: border-box;
 	display: grid;
 	place-items: center;
-	overflow: visible;
+	width: 54px;
+	height: 54px;
+	margin: -4px 0;
 }
 .moba-avatar svg {
-	width: 46px;
-	height: 46px;
+	display: block;
+	width: 54px;
+	height: 54px;
 	transition: filter 0.2s;
 }
+/* The level: a big index numeral inked on the mark's corner, haloed in paper so it reads over it. */
 .moba-lv {
 	position: absolute;
 	right: -7px;
-	bottom: -6px;
-	min-width: 22px;
-	height: 22px;
-	box-sizing: border-box;
-	padding: 0 4px;
-	display: grid;
-	place-items: center;
-	font-size: 15px;
+	bottom: -13px;
+	font-size: 30px;
 	font-weight: 400;
+	line-height: 1;
 	color: var(--ink);
-	background: var(--gold);
-	border: 2px solid var(--ink);
-	border-radius: 11px;
-}
-.moba-info {
-	position: absolute;
-	left: -7px;
-	top: -6px;
-	width: 20px;
-	height: 20px;
-	box-sizing: border-box;
-	display: grid;
-	place-items: center;
-	font:
-		italic 700 12px / 1 Georgia,
-		serif;
-	color: var(--ink);
-	background: var(--cream);
-	border: 2px solid var(--ink);
-	border-radius: 50%;
-	cursor: help;
+	-webkit-text-stroke: 5px var(--cream);
+	paint-order: stroke fill;
+	font-variant-numeric: tabular-nums;
 }
 .moba-respawn {
 	position: absolute;
@@ -531,10 +508,13 @@
 	text-shadow: 2px 2px 0 var(--ink);
 }
 .moba-portrait.dead .moba-avatar svg {
-	filter: grayscale(1) opacity(0.45);
+	filter: grayscale(1) opacity(0.35);
 }
 .moba-portrait.dead .moba-respawn {
 	display: grid;
+}
+.moba-portrait.dead .moba-lv {
+	display: none;
 }
 .moba-vitals {
 	display: grid;
@@ -561,13 +541,14 @@
 	width: 16px;
 	height: 16px;
 }
+/* A strip painted on the paper: thin ink edge, square ends, the team's colour laid in. */
 .moba-meter {
 	position: relative;
-	height: 16px;
-	border: 2px solid var(--ink);
-	border-radius: 7px;
+	height: 15px;
+	border: 1.5px solid var(--ink);
+	border-radius: 2px;
 	overflow: hidden;
-	background: rgba(38, 68, 95, 0.16);
+	background: color-mix(in srgb, var(--ink) 10%, transparent);
 	display: grid;
 	place-items: center;
 }
@@ -585,8 +566,8 @@
 	inset: 0;
 	background: repeating-linear-gradient(
 		90deg,
-		transparent 0 calc(var(--tick, 14%) - 2px),
-		rgba(38, 68, 95, 0.55) calc(var(--tick, 14%) - 2px) var(--tick, 14%)
+		transparent 0 calc(var(--tick, 14%) - 1.5px),
+		color-mix(in srgb, var(--ink) 45%, transparent) calc(var(--tick, 14%) - 1.5px) var(--tick, 14%)
 	);
 }
 .moba-meter span {
@@ -600,14 +581,57 @@
 		0 0 2px var(--cream);
 	white-space: nowrap;
 }
+/* Experience: a gold rule under the health, filling toward the next level. The numbers stay for
+   screen readers; the eye only needs how full it is. */
 .moba-xp {
-	height: 11px;
+	height: 7px;
+	border-width: 1px;
+	border-radius: 1px;
 }
 .moba-xp::before {
 	background: var(--gold);
 }
 .moba-xp span {
-	font-size: 9px;
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip-path: inset(50%);
+}
+.moba-party {
+	display: grid;
+	gap: 2px;
+	justify-items: start;
+}
+.moba-party:empty {
+	display: none;
+}
+.moba-mate {
+	gap: 7px;
+	border-width: 9px;
+	border-image-width: 9px;
+	padding: 0 2px 0 0;
+}
+.moba-mate .moba-avatar,
+.moba-mate .moba-avatar svg {
+	width: 28px;
+	height: 28px;
+	margin: -2px 0;
+}
+.moba-mate .moba-respawn {
+	font-size: 16px;
+	text-shadow: 1px 1px 0 var(--ink);
+}
+.moba-mate .moba-vitals {
+	gap: 3px;
+	width: 110px;
+}
+.moba-mate .moba-name {
+	font-size: 13px;
+}
+.moba-mate .moba-meter {
+	height: 7px;
+	border-width: 1px;
 }
 .moba-slots {
 	display: flex;
@@ -933,16 +957,23 @@
 		gap: 6px;
 	}
 	.moba-portrait {
-		padding: 5px 10px 5px 5px;
+		border-width: 9px;
+		border-image-width: 9px;
 		gap: 6px;
 	}
 	.moba-avatar,
 	.moba-avatar svg {
-		width: 42px;
-		height: 42px;
+		width: 40px;
+		height: 40px;
+	}
+	.moba-lv {
+		font-size: 20px;
 	}
 	.moba-vitals {
 		width: 108px;
+	}
+	.moba-party {
+		display: none;
 	}
 	.moba-name {
 		font-size: 14px;

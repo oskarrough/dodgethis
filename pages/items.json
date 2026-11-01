@@ -1,5 +1,16 @@
 [
 	{
+		"at": "2026-11-01T19:15:34.123Z",
+		"title": "Unit frame on paper",
+		"ask": "Left is today, right is the new frame: Salvia's mark printed straight on a scrap of the splash paper with her level inked on its corner, and a smaller scrap for each teammate under it. Keep it, or push it further?",
+		"status": "To review",
+		"decision": "",
+		"media": ["media/2026-11-01-unit-frame-on-paper/unit-frame-before-after.png"],
+		"links": [],
+		"thread": "thr_rc9wwza6vx",
+		"page": "2026-11-01-unit-frame-on-paper/"
+	},
+	{
 		"at": "2026-11-01T11:18:22.454Z",
 		"title": "Switching controls shows you how to play",
 		"ask": "Could a child walk, attack and cast from these? One switch each: MOBA, WASD, keyboard only (tile icon top right).",
