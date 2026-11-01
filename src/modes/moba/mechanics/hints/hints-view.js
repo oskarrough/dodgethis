@@ -6,17 +6,19 @@ import { PRESETS, attackKey, presetKeys } from '../../../../core/intents.js'
 import { SLOTS } from '../../sim-kit.js'
 import { botTactics } from '../../ability-bots.js'
 import { inOwnBase } from '../../base.js'
+import { openRow } from '../../talents.js'
 import { look } from '../../look.js'
 import { tune } from '../../tune.js'
 import { hintMemory } from './hints-memory.js'
 
-// The match teaches each danger once, on the floor, at the moment it matters. Three lessons:
+// The match teaches each danger once, on the floor, at the moment it matters. Four lessons:
 // - dodge: a threat the bots would dodge is about to land on you (`sim.bots.sense`); your dash or
 //   blink key is printed at your feet with an ink arrow out, or the way you walk if it is cooling.
 //   Each Warden's kind of blow is its own lesson; everything a lane throws is one.
 // - recall: you are low where a tear can take you home; the recall key.
 // - ally: a friend nearby is low; your heal or shield key at their feet, else your attack key at
 //   the feet of whoever is on them.
+// - talent: a talent row has opened; the key that opens the tree, until you take one.
 // A lesson is learned when you answer it (cast the key, open the tear, step clear), and then never
 // shows again in this browser (`hints-memory.js`). The glyph wears the ability bar's own key labels.
 const PAD_KEYS = ['RB', 'RT', 'LB', 'LT']
@@ -271,6 +273,20 @@ export function hints({ scene, sim, hero, onPresent }) {
 		return { id: 'ally', ally, glyph: attackGlyph(device), answer: 'primary', anchor: foe }
 	}
 
+	// A talent row has opened: the key that opens the tree, until a talent is taken.
+	function talentHint(device) {
+		if (!ready('talent')) return null
+		const row = openRow(hero)
+		if (row < 0) return null
+		return {
+			id: 'talent',
+			row,
+			glyph: { kind: 'key', label: device === 'gamepad' ? '▲' : 'T' },
+			answer: 'talent',
+			anchor: hero,
+		}
+	}
+
 	// Still standing in what the hint was about? `false` ends it, unanswered.
 	function holds(hint) {
 		if (hint.id.startsWith('dodge')) {
@@ -284,6 +300,11 @@ export function hints({ scene, sim, hero, onPresent }) {
 			}
 			// Clear of it with time to spare: the player stepped out, which is the lesson.
 			if (hint.impact > 0.12) answer()
+			return false
+		}
+		if (hint.id === 'talent') {
+			if (hero.talents?.[hint.row] == null) return true
+			answer()
 			return false
 		}
 		if (hint.id === 'recall') return hero.hp <= hero.maxHp * t.lowHp * 1.25 && !hero.dead
@@ -327,7 +348,8 @@ export function hints({ scene, sim, hero, onPresent }) {
 			if (shown && !shown.ending && (!live || !holds(shown))) end()
 			if (shown?.ending && fade <= 0) shown = null
 			if (!shown && live) {
-				const next = dodgeHint(device) ?? recallHint(device) ?? allyHint(device)
+				const next =
+					dodgeHint(device) ?? recallHint(device) ?? allyHint(device) ?? talentHint(device)
 				if (next) {
 					if (hintMemory.shown(next.id) >= t.patience) hintMemory.learn(next.id)
 					else {
