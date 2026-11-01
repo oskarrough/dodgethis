@@ -101,10 +101,8 @@ export function createLobbyPropsView({ scene, sim, gallery, onPresent }) {
 	// is pressed a touch lower and a hairline groove round its face lights up; the others stay quiet stone.
 	const g = tune.lobby.gallery
 	const lamp = own(makeStyleMaterial('cream', { flat: true }))
-	const bedding = own(makeStyleMaterial('driftwood'))
 	const w = g.plate.halfX * 2
 	const d = g.plate.halfZ * 2
-	const bedGeo = own(new THREE.BoxGeometry(w + 0.3, 0.08, d + 0.3))
 	// A flat frame: the groove's outline minus its inside, a hand's breadth in from the stone's edge.
 	const frame = new THREE.Shape()
 	const groove = g.plate.groove
@@ -131,9 +129,6 @@ export function createLobbyPropsView({ scene, sim, gallery, onPresent }) {
 		slab.position.set(stand.x, 0, stand.z)
 		slab.rotation.y = (rand() - 0.5) * g.plate.skew
 		group.add(slab)
-		const bed = new THREE.Mesh(bedGeo, bedding)
-		bed.position.y = 0.03
-		slab.add(bed)
 		const stoneMesh = new THREE.Mesh(body, stone)
 		slab.add(stoneMesh)
 		const light = new THREE.Mesh(grooveGeo, lamp)

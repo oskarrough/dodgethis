@@ -100,7 +100,8 @@
 	-webkit-appearance: none;
 	width: 1em;
 	height: 1em;
-	margin-top: calc((var(--track) - 1em) / 2 - 2px);
+	box-sizing: border-box;
+	margin-top: calc((var(--track) - 1em) / 2);
 	border: 2px solid var(--ui-text);
 	border-radius: 50%;
 	background: var(--ui-cream);

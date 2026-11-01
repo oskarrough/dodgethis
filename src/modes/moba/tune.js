@@ -224,7 +224,6 @@ export const tune = {
 		recapSources: 12, // hits the death recap keeps; it groups them by source
 		tipGrace: 0.3, // a hovered card stays this long after the pointer leaves its source, so it can reach the card
 		longPress: 0.4, // touch hold that opens a HUD card
-		inspectHold: 0.35, // pad Y hold that opens a card
 		hpTick: 200, // HP per tick on the portrait bar
 		warn: 5, // timers pulse in their last seconds
 	},

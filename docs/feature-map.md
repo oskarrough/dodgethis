@@ -66,9 +66,8 @@ Paths are under `src/modes/moba/` unless they start with `src/`. `tune.js` means
 - Ability slot keys (Q, W, E and pad RB, RT, LB): `hud.js` `KEYS`, `SLOTS`
 - Health bars over units: `health-bars.js` `createHealthBars`; `health-bars.css`; `look.js` `healthBars`
 
-### Tooltips and inspect
+### Tooltips
 
-- Inspect mode (hold I or pad button, hover to read cards): `hud.js` `KEY_INSPECT`, `PAD_INSPECT`, `pickUnit`
 - Tooltips and unit cards (hero, tower, minion, Ball, level, kills, clock): `tooltip.js` `createTooltip`, `heroCard`, `abilityCard`, `structureCard`, `minionCard`, `ballCard`, `levelCard`, `killsCard`, `clockCard`; `hud.js` `cardFor`, `updateTip`. Ability `card.summary`/`card.notes` and hero trait text are checked templates: `tooltip.js` `renderCardTemplate`, `formatCardValue` resolves local `{radius}` or root `{catching.pocketLife}` tune references through declared units; hp prose may use `{damage:damage}` or `{hp:HP}`. `scripts/check-moba-effects.js` rejects unresolved tokens. `bun run kit` (`scripts/kit.js`) prints all registered heroes' basic attacks, slots and traits with live units
 - Match clock (its card carries the next wave and the Ball): `tooltip.js` `clock`, `clockCard`; `hud.js`
 

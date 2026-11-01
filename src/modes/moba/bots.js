@@ -34,7 +34,7 @@ export function interceptTime(from, target, speed) {
 // Bots fill a team with Kappa and Ibis; the enemy's third seat is a seeded random listed hero.
 export function practiceRoster(
 	local = 'local',
-	difficulty = 'easy',
+	difficulty = 'normal',
 	picks = {},
 	seed = tune.bots.seed,
 	humans = [local],

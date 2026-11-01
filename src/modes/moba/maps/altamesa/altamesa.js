@@ -13,7 +13,7 @@ export default {
 	mechanics: ['packs', 'dungeon', 'bots', 'hints', 'memory'],
 	// One companion starts with you; empty lobby seats can be filled up to the party of five.
 	party: ['oolong'],
-	suggestedHero: 'salvia',
+	suggestedHero: 'ibis',
 	online: false,
 	palette: () => ({ ...tune.altamesa.palette, light: tune.altamesa.light }),
 	cut: () => {

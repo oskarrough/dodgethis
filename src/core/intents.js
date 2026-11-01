@@ -194,7 +194,7 @@ const PAD_AIMS = [
 const PAD_TAPS = [
 	[0, 'primary'],
 	[2, 'slot5'],
-	[13, 'recall'], // d-pad down: Y is the HUD's inspect
+	[13, 'recall'], // d-pad down
 ]
 
 // A radial deadzone, the usable range rescaled to 0–1 and bent by `curve`: fine steering near the centre, full speed at the rim.

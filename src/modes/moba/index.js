@@ -593,11 +593,7 @@ export default function moba(app, map) {
 			})
 			run.clock.scale(feedback.beat) // frame timer for `later`; always 1
 			run.intents.suspend(() => coreTune.physics.paused)
-			run.input.stickAim((dir, magnitude, slot) =>
-				lobby && input.pad()?.buttons[3]
-					? lobby.inspectAim(dir, magnitude)
-					: sim.stickAim(local, dir, magnitude, slot),
-			)
+			run.input.stickAim((dir, magnitude, slot) => sim.stickAim(local, dir, magnitude, slot))
 			run.system('input', () => {
 				playerControls.throwClick =
 					!!sim.ball?.carrying(hero) || !!hero.definition.outOfPlay?.({ hero, sim })

@@ -485,6 +485,10 @@ export function createPortalLobby({
 			view.box.dataset.ready = String(!!occupant && !occupant.bot && seat.full)
 			view.face.innerHTML = occupant ? icon(heroId) : '+'
 			view.name.textContent = occupant ? heroId : 'add'
+			view.name.parentElement.style.setProperty(
+				'--chars',
+				String(Math.max(6, view.name.textContent.length)),
+			)
 			view.who.textContent = !occupant ? '' : occupant.bot ? 'bot' : label(occupant.id)
 			view.who.dataset.who = !occupant
 				? ''
@@ -594,7 +598,6 @@ export function createPortalLobby({
 		resume() {},
 		result() {},
 		touchMode: () => false,
-		inspectAim: () => null,
 		prepareInput() {},
 		step() {
 			const locked = ending || slipping()
@@ -661,8 +664,6 @@ export function createPortalLobby({
 		},
 		hudFrame: () => ({
 			lobby: true,
-			inspectionDisabled: false,
-			inspectables: [],
 			hero,
 			sim,
 			step: app.clock.step,

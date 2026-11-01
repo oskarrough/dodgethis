@@ -748,12 +748,6 @@
 			3px 4px 0 var(--ink);
 	}
 }
-.moba-top .inspected,
-.moba-hud .inspected {
-	outline: 3px solid var(--gold);
-	outline-offset: 3px;
-	border-radius: 12px;
-}
 .moba-feed {
 	/* A drum mid-right printed with the calls: bare cream lines, right-aligned. The newest faces you; older lines
 	   ride the cylinder up and away, so perspective makes them smaller and squashed, and they fade. */
@@ -968,67 +962,6 @@
 	.moba-slots {
 		gap: 5px;
 	}
-}
-/* Inspect sits left of the controls, fullscreen and mute tiles (index.html), the same size and spacing. */
-.moba-inspect {
-	--corner-size: clamp(38px, 3.2vw, 52px);
-	position: fixed;
-	top: 12px;
-	right: calc(36px + 2 * var(--corner-size));
-	z-index: 6;
-	display: grid;
-	place-items: center;
-	width: var(--corner-size);
-	height: var(--corner-size);
-	padding: 0;
-	border: 3px solid var(--ui-text);
-	border-radius: 10px;
-	background: var(--ui-cream);
-	box-shadow: 3px 4px 0 var(--ui-text);
-	color: var(--ui-text);
-	cursor: pointer;
-	transition: transform 0.12s cubic-bezier(0.2, 1.9, 0.45, 1);
-}
-body:has(.controls-toggle:not([hidden])) .moba-inspect {
-	right: calc(48px + 3 * var(--corner-size));
-}
-.moba-inspect[hidden] {
-	display: none;
-}
-.moba-inspect svg {
-	display: block;
-	width: 62%;
-	height: 62%;
-	fill: none;
-	stroke: currentColor;
-	stroke-width: 3.2;
-	stroke-linecap: round;
-}
-.moba-inspect kbd {
-	position: absolute;
-	top: -10px;
-	left: -9px;
-	padding: 0.1em 0.35em 0;
-	border: 2px solid var(--ui-text);
-	border-radius: 0.55em;
-	background: var(--ui-cream);
-	box-shadow: 2px 3px 0 var(--ui-text);
-	font: 400 clamp(12px, 0.9vw, 15px) / 1.2 var(--ui-font);
-	rotate: -8deg;
-}
-.moba-inspect kbd:empty {
-	display: none;
-}
-.moba-inspect:hover,
-.moba-inspect:focus-visible {
-	outline: none;
-	background: var(--ui-button);
-	transform: translate(-1px, -2px) rotate(4deg);
-}
-.moba-inspect[aria-pressed='true'] {
-	background: var(--ui-gold);
-	transform: translate(2px, 3px);
-	box-shadow: 1px 1px 0 var(--ui-text);
 }
 
 /* The after-pull sheet reuses the recap's paper and scoreboard tables. */

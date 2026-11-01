@@ -17,7 +17,7 @@ export const tuneUnits = {
 		`cooldown castPoint duration dur life time tell windup backswing delay interval lateInterval
 		channel warning stun silence lock linger respawn hold reaction dodgeReaction burstWindow late
 		first passiveStart fullHealSeconds slipTime spitTime closeTime focusUntil decision maxWait maxSeconds think
-		feedLife ending runEnding tipGrace longPress inspectHold warn objective lateStep minInterval growthPeriod helpHold
+		feedLife ending runEnding tipGrace longPress warn objective lateStep minInterval growthPeriod helpHold
 		calm coyoteTime stallTime repeatPing cancelLockout buffer returnTell pocketLife maxStep response
 		flipMin flipMax castEvery minFlight popTell puddle resetCooldown prone deathRefund sweep payout shieldLife
 		dragTime reset firstSlam slamEvery lateEvery window immunity swim fly lifeStep handoffFor flipTime
@@ -178,7 +178,6 @@ export const tuneUnits = {
 	'lobby.camera.top': 'px',
 	'lobby.camera.back': 'm',
 	'follow.back': 'm',
-	'lobby.inspect.deadzone': 'fraction',
 	jitter: 'rad',
 	'lobby.floor.crazing.jitter': 'fraction',
 	'lobby.floor.cradle.angles': 'deg',

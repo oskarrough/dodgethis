@@ -118,7 +118,7 @@
    frame and no shadow, so it reads as printed on, never as a button. */
 .portal-tag {
 	position: absolute;
-	right: -10px;
+	right: 8px;
 	bottom: -7px;
 	z-index: 2;
 	margin: 0;

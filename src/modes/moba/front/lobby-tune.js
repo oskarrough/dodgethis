@@ -34,12 +34,6 @@ export const lobby = {
 	handoffFor: 3, // seconds of live lane simulation carrying the loading roster
 	style: { line: 0.65, pastel: 0.65 },
 	practice: { damage: 0, tell: 0.8, tellY: 0.23 },
-	inspect: {
-		range: 16,
-		deadzone: 0.2,
-		openSound: { freq: 710, slideTo: 1060, dur: 0.12, gain: 0.045, type: 'sine' },
-		closeSound: { freq: 590, slideTo: 390, dur: 0.1, gain: 0.045, type: 'triangle' },
-	},
 	// The camera fits the whole floor between the team columns, `margin` px clear of them, the
 	// HUD and the screen edges, and `top` px under the screen's top for the corner buttons; live.
 	// height/back keep the lane's 58° pitch.

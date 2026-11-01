@@ -252,7 +252,6 @@ export function createTooltip(parent = document.body, id = 'moba-tip') {
 	let inside = false
 	let openWord = null
 	let shownSide = 'above'
-	const words = () => [...root.querySelectorAll('.moba-kw')]
 	// A keyword's card opens outside the whole card, on the side away from the card's source (above it
 	// when the card sits above its source), else to its right or left; it never covers the card.
 	function openKeyword(word) {
@@ -349,15 +348,6 @@ export function createTooltip(parent = document.body, id = 'moba-tip') {
 					openKeyword(word)
 				}
 			}
-		},
-		// Steps the open keyword: the keyboard's way through a card's terms.
-		stepKeyword(direction) {
-			const all = words()
-			if (!all.length || root.hidden) return false
-			const at = all.indexOf(openWord)
-			const next = at < 0 ? (direction > 0 ? 0 : all.length - 1) : at + direction
-			openKeyword(all[next] ?? null)
-			return true
 		},
 		hide() {
 			if (root.hidden) return

@@ -66,7 +66,7 @@ export function parseMatchSetup(query, options = {}, warn = console.warn) {
 			'random',
 			(v) => v === 'random' || Object.hasOwn(lights, v),
 		),
-		difficulty: read('bots', options.difficulty ?? query.get('bots'), 'easy', (v) =>
+		difficulty: read('bots', options.difficulty ?? query.get('bots'), 'normal', (v) =>
 			['easy', 'normal', 'hard'].includes(v),
 		),
 		heroId: read('hero', heroParam(options.heroId ?? query.get('hero')), DEFAULT_HERO, playable),

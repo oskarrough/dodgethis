@@ -28,7 +28,7 @@ export function createMatchMenu({
 	clearCamera,
 	focusCore = () => {},
 	ready = () => true,
-	difficulty = 'easy',
+	difficulty = 'normal',
 	setup = { difficulty },
 	returnToLobby = () => false,
 	roster = [],
@@ -143,6 +143,16 @@ export function createMatchMenu({
 		paper(card).classList.add('moba-page', 'moba-pause')
 		const [, leaveButton, quick, hintsButton] = card.querySelectorAll('.actions button')
 		door(leaveButton)
+		// Where you are and how hard: the map, and the difficulty in its lobby plate's colour.
+		const level = setup.difficulty ?? difficulty
+		const label = (id) => id[0].toUpperCase() + id.slice(1)
+		const stone = tune.lobby.gallery.stones[level]
+		const line = el('p', 'pause-setting', null, '')
+		line.append(`${label(setup.map ?? 'overthrow')}, `)
+		const word = el('span', 'pause-level', line)
+		word.textContent = label(level)
+		if (stone) word.style.color = stone.color
+		card.querySelector('h1')?.after(line)
 		for (const [button, on, name] of [
 			[quick, controls.quickCast, 'pause-quick'],
 			[hintsButton, hintMemory.on, 'pause-hints'],

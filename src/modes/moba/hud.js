@@ -1,4 +1,3 @@
-import * as THREE from 'three'
 import { statusBar } from './statuses.js'
 import './hud.css'
 import { setKeyCap } from '../../core/keycap.js'
@@ -12,7 +11,6 @@ import {
 	abilityCard,
 	clock,
 	clockCard,
-	abilityName,
 	createTooltip,
 	heroCard,
 	heroTrait,
@@ -28,17 +26,13 @@ import { STEP } from '../../core/app.js'
 import mechanicViews from './mechanics/all-mechanic-views.js'
 
 // The match HUD: top bar, portrait, ability slots and their tooltips. World units get no card in a
-// match; the lobby's inspect cursor still reads its props and dummies.
+// match.
 // Every DOM write goes through `put`, which skips unchanged values.
 
 const SLOTS = ['slot1', 'slot2', 'slot3']
 const PAD_KEYS = ['RB', 'RT', 'LB']
 // The ability bar's key labels, shared with the lobby's lesson so a key looks the same in both.
 export const keysFor = (device) => (device === 'gamepad' ? PAD_KEYS : presetKeys(controls.preset))
-const KEY_INSPECT = 'KeyI'
-const PAD_INSPECT = 3
-const PAD_LEFT = 14
-const PAD_RIGHT = 15
 
 const svg = (body) => `<svg viewBox="0 0 48 48" aria-hidden="true">${body}</svg>`
 export const ICONS = {
@@ -315,146 +309,9 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 	}
 	let lastSwap = null
 
-	// The lobby's inspect cursor picks the prop under the mouse.
-	const pointer = { x: 0, y: 0 }
-	const onMove = (e) => {
-		if (e.pointerType === 'touch') return
-		pointer.x = e.clientX
-		pointer.y = e.clientY
-	}
-	globalThis.window?.addEventListener('pointermove', onMove, { passive: true })
-
 	// Lane totals come from the host ledger; training falls back to visible death edges.
 	const kills = { A: 0, B: 0 }
 	const wasDead = new Map()
-	// One inspect cursor for keys and pad: I toggles it, or hold Y; arrows or the d-pad step through
-	// every HUD target a mouse can hover (in the lobby, first the aimed unit). With keys, up and down
-	// open the card's keywords one by one.
-	const inspect = { by: null, index: 0, held: 0 }
-	let previousPad = []
-	let targets = []
-	const available = (i) =>
-		i === 0
-			? lobby
-			: !targets[i - 1].classList?.contains('none') && !targets[i - 1].closest?.('[hidden]')
-	function step(direction) {
-		const count = targets.length + 1
-		do inspect.index = (inspect.index + direction + count) % count
-		while (!available(inspect.index))
-	}
-	const onKey = (e) => {
-		if (e.ctrlKey || e.metaKey || e.altKey) return
-		if (e.type !== 'keydown' || e.target?.closest?.('input, textarea, select, [contenteditable]'))
-			return
-		if (e.code === KEY_INSPECT && !e.repeat) {
-			inspect.by = inspect.by === 'keys' ? null : 'keys'
-			inspect.index = 0
-		} else if (inspect.by === 'keys' && (e.code === 'ArrowLeft' || e.code === 'ArrowRight')) {
-			e.preventDefault() // steps the cursor instead of panning; the keyup still reaches the camera
-			step(e.code === 'ArrowRight' ? 1 : -1)
-		} else if (inspect.by === 'keys' && (e.code === 'ArrowUp' || e.code === 'ArrowDown')) {
-			if (tip.stepKeyword(e.code === 'ArrowDown' ? 1 : -1)) e.preventDefault()
-		}
-	}
-	globalThis.window?.addEventListener('keydown', onKey)
-	// The match's way into inspect without a legend: a corner tile that toggles it, its key stuck on.
-	const lens = lobby ? null : el('button', 'moba-inspect')
-	if (lens) {
-		lens.type = 'button'
-		lens.setAttribute('aria-label', 'Inspect')
-		lens.title = 'Inspect (I)'
-		lens.innerHTML =
-			'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="7"/><path d="M15.2 15.2 21 21"/></svg><kbd></kbd>'
-		lens.onclick = () => {
-			inspect.by = inspect.by ? null : 'keys'
-			inspect.index = 0
-		}
-		document.body.append(lens)
-	}
-	targets = [
-		...slots.map((s) => s.slot),
-		portrait,
-		trait,
-		clockNode,
-		...timers.map((t) => t.node),
-		objective,
-		...['mine', 'theirs'].flatMap((which) => [sides[which].dots, sides[which].kills]),
-	]
-	const projected = new THREE.Vector3()
-
-	function pickUnit(sim, aim, frame) {
-		// Cardboard is picked against its rendered bounds, not an imaginary combat body.
-		// This also covers the difficulty magnets, picked by their hover box.
-		let prop = null,
-			nearest = Infinity
-		let cursorX = pointer.x,
-			cursorY = pointer.y
-		if (frame?.device === 'gamepad' && frame.camera) {
-			projected.set(aim.x, 0, aim.z).project(frame.camera)
-			cursorX = ((projected.x + 1) * innerWidth) / 2
-			cursorY = ((1 - projected.y) * innerHeight) / 2
-		}
-		for (const candidate of frame?.inspectables ?? []) {
-			if (!candidate.visible()) continue
-			if (!frame.camera) continue
-			const box = candidate.bounds()
-			let left = Infinity,
-				right = -Infinity,
-				top = Infinity,
-				bottom = -Infinity
-			for (const x of [box.min.x, box.max.x])
-				for (const y of [box.min.y, box.max.y])
-					for (const z of [box.min.z, box.max.z]) {
-						projected.set(x, y, z).project(frame.camera)
-						if (projected.z < -1 || projected.z > 1) continue
-						const sx = ((projected.x + 1) * innerWidth) / 2,
-							sy = ((1 - projected.y) * innerHeight) / 2
-						left = Math.min(left, sx)
-						right = Math.max(right, sx)
-						top = Math.min(top, sy)
-						bottom = Math.max(bottom, sy)
-					}
-			if (cursorX < left || cursorX > right || cursorY < top || cursorY > bottom) continue
-			const gap = Math.hypot(cursorX - (left + right) / 2, cursorY - (top + bottom) / 2)
-			if (gap < nearest || (gap === nearest && candidate.id < prop.id)) {
-				prop = candidate
-				nearest = gap
-			}
-		}
-		if (prop) return prop
-		let best = null
-		let bestGap = Infinity
-		const units = [
-			...sim.heroes,
-			...(sim.dummies ?? []),
-			...(sim.lane?.minions ?? []),
-			...(sim.lane?.structures ?? []),
-		]
-		for (const unit of units) {
-			if (unit.dead) continue
-			const p = unit.body.mesh?.position ?? unit.body.position
-			const gap = Math.hypot(p.x - aim.x, p.z - aim.z) - (unit.body.radius ?? 0.5)
-			// Ties fall to the unit whose id sorts first, never to list order.
-			if (gap > tune.orders.pick) continue
-			if (gap < bestGap || (gap === bestGap && String(unit.id) < String(best.id))) {
-				best = unit
-				bestGap = gap
-			}
-		}
-		return best
-	}
-
-	function screenOf(unit, camera) {
-		const p = unit.position ?? unit.body.mesh?.position ?? unit.body.position
-		projected.set(p.x, p.y ?? 0, p.z).project(camera)
-		const w = globalThis.innerWidth ?? 1024
-		const h = globalThis.innerHeight ?? 768
-		return {
-			x: Math.max(0, Math.min(w, ((projected.x + 1) / 2) * w)),
-			y: Math.max(0, Math.min(h, ((1 - projected.y) / 2) * h - 24)),
-		}
-	}
-
 	function cardFor(source, frame) {
 		const { hero, sim, teams, localTeam, elapsed, nextWave } = frame
 		const enemy = localTeam === 'A' ? 'B' : 'A'
@@ -491,90 +348,25 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 			}
 			case 'objective':
 				return goal?.card(sim) ?? objectiveCard()
-			case 'unit': {
-				// Only the lobby's inspect cursor reads units: its cardboard bots and sparring dummies.
-				const unit = source.unit
-				if (!unit || unit.dead) return null
-				if (unit.card) {
-					const prop = unit.card()
-					const definition = heroDefinition(prop.heroId)
-					const trait = heroTrait(prop.heroId)
-					const kit = Object.values(definition.abilities).filter(Boolean).map(abilityName)
-					return {
-						title: definition.name ?? prop.heroId,
-						tag: prop.seat,
-						sentence: `A ready bot for team ${prop.seat[0]}, in cardboard; it plays ${kit.join(', ')}.`,
-						more: trait ? [`${trait.name}: ${trait.summary}`] : [],
-					}
-				}
-				const card = heroCard(unit, { localTeam, localId: hero?.id, lobby: true })
-				if (sim?.dummies?.includes(unit)) {
-					card.title = 'Sparring dummy'
-					card.sentence = `A stuffed target to practise your kit on; it walks at ${tune.dummies.speed} m/s.`
-					card.facts = [['Back up after', `${tune.dummies.respawn} s`]]
-				}
-				return card
-			}
 		}
 		return null
 	}
 
 	function updateTip(dt, frame) {
-		const { sim, aim, camera, pad } = frame
 		if (frame.device === 'touch' || hover?.source.node?.closest?.('[hidden]')) hover = null
 		if (press?.source.node?.closest?.('[hidden]')) press = null
 		if (pinned?.source.node?.closest?.('[hidden]')) pinned = null
 		// The grace runs while the pointer crosses from the source to its card, and pauses on the card.
 		if (hover?.grace !== undefined && !tip.held && (hover.grace -= dt) <= 0) hover = null
-		if (lens) {
-			put(lens, 'hidden', !!frame.inspectionDisabled, (hidden) => (lens.hidden = hidden))
-			// The pad's Y sticks on; the keyboard's I reads like a 1 there, so it lives in the tooltip.
-			const key = frame.device === 'gamepad' ? 'Y' : ''
-			put(lens.lastChild, 'key', key, (k) => (lens.lastChild.textContent = k))
-			put(lens, 'pressed', String(!!inspect.by), (v) => lens.setAttribute('aria-pressed', v))
-		}
-		if (frame.inspectionDisabled) {
-			inspect.by = null
-			inspect.held = 0
-			previousPad = pad?.buttons.slice() ?? []
-			tip.hide()
-			return
-		}
-		// Pad: Y held past the threshold opens the cursor, release closes it; the d-pad steps.
-		const buttons = pad?.buttons ?? []
-		const edge = (i) => buttons[i] && !previousPad[i]
-		inspect.held = buttons[PAD_INSPECT] ? inspect.held + dt : 0
-		if (inspect.held >= tune.hud.inspectHold && inspect.by !== 'pad') {
-			inspect.by = 'pad'
-			inspect.index = 0
-		} else if (!buttons[PAD_INSPECT] && inspect.by === 'pad') inspect.by = null
-		if (inspect.by === 'pad' && edge(PAD_RIGHT)) step(1)
-		if (inspect.by === 'pad' && edge(PAD_LEFT)) step(-1)
-		previousPad = buttons.slice()
 		if (press) press.held += dt
-		if (inspect.by && !available(inspect.index)) step(1)
-		const picked = inspect.by && inspect.index > 0 ? targets[inspect.index - 1] : null
-		for (const node of targets) flag(node, 'inspected', node === picked)
 
 		let source = null
 		let anchor = null
 		let live = false
-		if (inspect.by) {
-			if (picked) {
-				source = sourceOf.get(picked)
-				anchor = anchorOf(source)
-				live = true
-			} else if (sim && lobby) {
-				const unit = (aim && pickUnit(sim, aim, frame)) ?? frame.hero
-				if (unit && !unit.dead) {
-					source = { kind: 'unit', unit }
-					anchor = camera ? screenOf(unit, camera) : { x: 0, y: 0 }
-				}
-			}
-		} else if (press && press.held >= tune.hud.longPress) ({ source, anchor } = press)
+		if (press && press.held >= tune.hud.longPress) ({ source, anchor } = press)
 		else if (pinned) ({ source, anchor } = pinned)
 		else if (hover) ({ source, anchor } = hover)
-		if (!inspect.by && (pinned || hover)) live = true
+		if (pinned || hover) live = true
 		const card = source && cardFor(source, frame)
 		if (card) tip.show(card, anchor, { live })
 		else tip.hide()
@@ -858,15 +650,12 @@ export function createHud({ lobby = false, layout, mechanics, onMinimap } = {}) 
 		},
 		dispose() {
 			minimap?.dispose()
-			globalThis.window?.removeEventListener('pointermove', onMove)
-			globalThis.window?.removeEventListener('keydown', onKey)
 			globalThis.window?.removeEventListener('pointerdown', onDown, { capture: true })
 			top.remove()
 			root.remove()
 			bossBar.node.remove()
 			talents?.dispose()
 			unitFrame.remove()
-			lens?.remove()
 			feed.remove()
 			tip.dispose()
 		},

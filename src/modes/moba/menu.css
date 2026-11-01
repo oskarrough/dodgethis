@@ -387,7 +387,7 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden])) > .moba-top {
    it, the title and the actions held in the middle of the left columns, clear of the unit frame. */
 .overlay .dialog-card.moba-pause {
 	--wash-pause: color-mix(in srgb, var(--ui-cream) 62%, transparent);
-	grid-template-rows: 1fr auto auto 1.4fr;
+	grid-template-rows: 1fr auto auto auto auto 1.4fr;
 	background: linear-gradient(
 		to right,
 		var(--wash-pause) 30%,
@@ -400,8 +400,22 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden])) > .moba-top {
 .overlay .moba-pause h1 {
 	margin-top: 0;
 }
-.overlay .moba-pause .actions {
+/* The map and difficulty under the title; the difficulty wears its lobby plate's colour, with an ink edge so pale sandstone still reads. */
+.overlay .moba-pause .pause-setting {
 	grid-row: 3;
+	grid-column: 1 / span 6;
+	margin: 0.2em 0 0;
+	padding: 0 0.3em;
+	font: 400 clamp(22px, min(2.4vw, 4vh), 36px) / 1.1 var(--ui-font);
+	letter-spacing: 0.04em;
+	color: var(--ui-text);
+}
+.overlay .moba-pause .pause-level {
+	paint-order: stroke fill;
+	-webkit-text-stroke: 0.14em var(--ui-text);
+}
+.overlay .moba-pause .actions {
+	grid-row: 4;
 	grid-column: 1 / span 6;
 	flex-direction: column;
 	flex-wrap: nowrap;
@@ -589,7 +603,7 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden])) > .moba-top {
 
 /* The volume rows sit in the pause page's left column, right under Hints, on the same left edge. */
 .overlay .moba-pause > .volumes {
-	grid-row: 4;
+	grid-row: 5;
 	grid-column: 1 / span 6;
 	align-self: start;
 	margin: 0;

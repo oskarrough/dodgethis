@@ -5,7 +5,7 @@ import { HEROES, heroDefinition } from '../src/modes/moba/heroes.js'
 
 const defaults = {
 	map: 'overthrow',
-	difficulty: 'easy',
+	difficulty: 'normal',
 	heroId: 'ibis',
 	seed: tune.bots.seed,
 	seeded: false,

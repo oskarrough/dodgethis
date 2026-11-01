@@ -62,7 +62,7 @@
 .moba-castbar-boss {
 	--cast-color: #e0473f;
 	position: fixed;
-	top: 72px;
+	top: 100px;
 	left: 50%;
 	transform: translateX(-50%);
 	z-index: 4;

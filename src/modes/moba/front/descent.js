@@ -15,7 +15,7 @@ import './descent.css'
 // scope keeps the world, so the lane is rebuilt on it.
 export function startLoading(
 	app,
-	{ el: lobby, backdrop, difficulty = 'easy', setup, roster, handoff },
+	{ el: lobby, backdrop, difficulty = 'normal', setup, roster, handoff },
 ) {
 	let session = app.session
 	let contract = app.modes.current

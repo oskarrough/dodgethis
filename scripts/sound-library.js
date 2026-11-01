@@ -117,8 +117,6 @@ const USE = {
 	'descent.arrival': /landing|drop|thud|soft-heavy/,
 	'lobby.start': /confirm|start|powerup/,
 	'lobby.back': /back|close/,
-	'lobby.inspectOpen': /menu-open|maximize|bookopen|bookflip/,
-	'lobby.inspectClose': /menu-close|minimize|bookclose/,
 	'lobby.pick': /confirm|select|pick/,
 	'lobby.pickDenied': /error|reject|deny/,
 	'lobby.readyWalk': /tick|tap/,

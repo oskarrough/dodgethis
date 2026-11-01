@@ -89,7 +89,8 @@
 }
 .lobby-hero-strip-name {
 	padding: 0.3em 0 0.35em;
-	font-size: 0.95em;
+	/* A long name (portal-lobby.js sets --chars) shrinks to stay inside the card. */
+	font-size: calc(0.95em * min(1, 6.5 / var(--chars, 6.5)));
 	text-transform: capitalize;
 	letter-spacing: 0.04em;
 	text-align: center;
