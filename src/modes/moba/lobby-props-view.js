@@ -7,7 +7,7 @@ import { tune } from './tune.js'
 // What the lobby's props do when you use them: the bell swings in its arch when something rings it
 // (lobby-props.js `createBell`), and the acequia rings round anyone wading through it.
 // `onPresent` listeners live as long as the run, so a disposed view just stops answering.
-export function createLobbyPropsView({ scene, sim, onPresent }) {
+export function createLobbyPropsView({ scene, sim, gallery, onPresent }) {
 	const v = tune.lobby.bell
 	const c = tune.lobby.channel
 	const group = new THREE.Group()
@@ -94,6 +94,33 @@ export function createLobbyPropsView({ scene, sim, onPresent }) {
 	const clapper = new THREE.Mesh(own(new THREE.SphereGeometry(0.075, 10, 8)), ink)
 	clapper.position.y = -0.56
 	pivot.add(clapper)
+
+	// The difficulty plates: three slabs flush with the floor, the picked one pressed in and lit, the others
+	// raised and dull. Stepping onto one answers the same frame, with a ring spreading from it.
+	const g = tune.lobby.gallery
+	const slabGeo = own(new THREE.BoxGeometry(g.plate.halfX * 2, 0.16, g.plate.halfZ * 2))
+	const lit = own(makeStyleMaterial('seaTeal'))
+	const dull = own(makeStyleMaterial('ink'))
+	const slabs = gallery.standees.map((stand) => {
+		const slab = new THREE.Mesh(slabGeo, dull)
+		slab.name = `lobby-plate-${stand.id}`
+		slab.position.set(stand.x, 0, stand.z)
+		group.add(slab)
+		return { stand, slab }
+	})
+	function setPlates() {
+		for (const { stand, slab } of slabs) {
+			const on = stand.id === gallery.difficulty
+			slab.material = on ? lit : dull
+			slab.position.y = on ? 0.08 - g.plate.sink : 0.08
+		}
+	}
+	setPlates()
+	onPresent?.((fact) => {
+		if (!live || fact.type !== 'pick') return
+		setPlates()
+		effects.ring(fact.point, { color: c.colors.glint, from: 0.5, to: 1.8, life: 0.4, width: 0.08 })
+	})
 
 	// A ring sets the bell swinging away from whatever struck it, harder while it is still moving.
 	let swing = null

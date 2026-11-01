@@ -217,11 +217,6 @@ export const uses = {
 		'You leave the ready seat',
 		() => tune.lobby.ready.cancelSound,
 	),
-	'lobby.galleryShot': synth(
-		'Lobby',
-		'You shoot at a difficulty magnet',
-		() => tune.lobby.gallery.shotSound,
-	),
 	'lobby.galleryPick': synth('Lobby', 'A difficulty is picked', () => tune.lobby.gallery.pickSound),
 	'lobby.bell': synth(
 		'Lobby',

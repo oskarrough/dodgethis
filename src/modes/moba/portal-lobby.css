@@ -173,7 +173,7 @@
 .portal-map b {
 	font: 400 clamp(26px, 2.4vw, 40px) / 1 var(--ui-font);
 }
-/* The difficulty gallery: words painted like the map's name, standing on the floor where they are shot. */
+/* The difficulty gallery: words painted like the map's name, standing on the floor plates you walk onto. */
 .portal-gallery span {
 	position: absolute;
 	top: 0;
@@ -193,6 +193,12 @@
 }
 .portal-gallery span[data-picked='true'] {
 	opacity: 1;
+	color: var(--ui-text);
+	text-shadow:
+		0 1.5px 0 var(--ui-cream),
+		0 -1px 0 var(--ui-cream),
+		1px 0 0 var(--ui-cream),
+		-1px 0 0 var(--ui-cream);
 }
 /* The lesson (lobby-lesson.js): the ability bar's key glyphs, larger, standing over the thing they use.
    They rise in when you come near and pop away the moment you press them. */

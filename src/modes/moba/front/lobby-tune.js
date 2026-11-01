@@ -8,8 +8,7 @@ export const lobby = {
 	portal: {
 		x: 0, // the tear's centre across the floor
 		z: -6.3, // the tear's centre: far side, so you walk up from the spawn marks, over the channel, into its face
-		// The training dummies strafe on the flanks, out of the tear's way and out of the line between
-		// the floor's middle and the difficulty words, so a shot at a word reaches it.
+		// The training dummies strafe on the flanks, out of the tear's way.
 		dummies: [
 			{ x: -5.4, z: 1.4 },
 			{ x: 5.4, z: 1.4 },
@@ -108,19 +107,19 @@ export const lobby = {
 	// The lobby's first lesson (lobby-lesson.js): a key appears by each thing you haven't yet done, in the
 	// HUD's key glyphs, and goes for good once you do it. `near` metres from a prop shows its keys; you
 	// have walked once you are `walked` m from your mark.
-	lesson: { near: { gallery: 4.2, bell: 5, channel: 2.4 }, walked: 0.6 },
-	// The difficulty picks (lobby-props.js): authored positions apply on restart; aim and settling are live.
+	lesson: { near: { bell: 5, channel: 2.4 }, walked: 0.6 },
+	// The difficulty plates (lobby-props.js): three stone plates on the floor; stand on one to pick it.
+	// A plate reaches `plate.halfX` and `plate.halfZ` m from its middle, `sink` m of it pressing in when picked.
+	// Authored positions apply on restart; settling is live.
 	gallery: {
 		x: 0,
-		z: 5.7,
+		z: 5.2,
 		spacing: 3.2,
-		radius: 0.4,
-		aimRadius: 2,
+		plate: { halfX: 1.2, halfZ: 0.8, sink: 0.05 },
 		settleTime: 0.35,
 		overshoot: 0.12,
 		// How far, in degrees, an unpicked word leans back toward the floor in the party lobby.
 		lie: 45,
-		shotSound: { freq: 790, slideTo: 350, dur: 0.09, gain: 0.07, type: 'sine' },
 		pickSound: { freq: 140, slideTo: 420, dur: 0.2, gain: 0.1, type: 'sine' },
 		// The old magnets' sounds, still in the sound table (sound-table.js).
 		magnet: {

@@ -9,8 +9,8 @@ import { hintMemory } from './mechanics/hints/hints-memory.js'
 
 // The lobby's first lesson, given without a word: by each thing on the floor stands the key that
 // uses it, in the ability bar's glyphs, until you have pressed it once. Your feet get the walking
-// keys, the difficulty words the attack key, the acequia your dash, the bell your other spells; the
-// portal needs no key. A key you have pressed goes for good on this device and control scheme, so a
+// keys, the acequia your dash, the bell your attack and your other spells; the difficulty plates and the
+// portal need no key, you just walk onto them. A key you have pressed goes for good on this device and control scheme, so a
 // veteran sees nothing at all. It shares the match hints' memory: the pause menu's Hints switch hides
 // these keys too, and turning it back on starts the lesson over (mechanics/hints/hints-memory.js).
 const SLOTS = ['slot1', 'slot2', 'slot3']
@@ -32,7 +32,7 @@ function walkKeys(scheme) {
 	return `<span class="key-cross">${cap(up)}${cap(left)}${cap(down)}${cap(right)}</span>`
 }
 
-export function createLobbyLesson({ el, hero, gallery, bell, onPresent }) {
+export function createLobbyLesson({ el, hero, bell, onPresent }) {
 	const v = tune.lobby.lesson
 	const layer = document.createElement('div')
 	layer.className = 'lobby-lesson'
@@ -45,7 +45,7 @@ export function createLobbyLesson({ el, hero, gallery, bell, onPresent }) {
 		layer.append(node)
 		return { node, shown: false, html: '' }
 	}
-	const cues = { walk: cue('walk'), attack: cue('attack'), dash: cue('dash'), bell: cue('bell') }
+	const cues = { walk: cue('walk'), dash: cue('dash'), bell: cue('bell') }
 	const scheme = () => (activeDevice() === 'gamepad' ? 'pad' : controls.preset)
 	const known = (verb) => hintMemory.learned(`lobby.${verb}:${scheme()}`)
 	const learn = (verb) => hintMemory.learn(`lobby.${verb}:${scheme()}`)
@@ -96,17 +96,6 @@ export function createLobbyLesson({ el, hero, gallery, bell, onPresent }) {
 			const dash = kit.find((slot) => moves(abilities[slot]))
 			// Walking: at your feet, until you have walked.
 			place(cues.walk, camera, { x: p.x, z: p.z + 0.9 }, known('walk') ? '' : walkKeys(s), true)
-			// Attacking: over the difficulty words when you come near them.
-			const words = { x: gallery.standees[1].x, y: 0.9, z: gallery.standees[1].z }
-			place(
-				cues.attack,
-				camera,
-				words,
-				!known('attack') && near(words, v.near.gallery)
-					? cap(attackKey(controls.preset, activeDevice()))
-					: '',
-				known('attack'),
-			)
 			// The dash: at your feet, where the walking keys were, when you walk up to the acequia.
 			const water = channelAt(p.x, p.z)
 			const bank = channelPoint(water.angle)
@@ -118,16 +107,16 @@ export function createLobbyLesson({ el, hero, gallery, bell, onPresent }) {
 				dash && !known(dash) && atBank && !water.wet ? cap(keys[SLOTS.indexOf(dash)]) : '',
 				!!dash && known(dash),
 			)
-			// The bell: the rest of your kit, one key each, over its arch.
+			// The bell: your attack and the rest of your kit, one key each, over its arch.
 			const left = kit.filter((slot) => slot !== dash && !known(slot))
+			const strike = known('attack') ? [] : [cap(attackKey(controls.preset, activeDevice()))]
+			const rings = [...strike, ...left.map((slot) => cap(keys[SLOTS.indexOf(slot)]))]
 			place(
 				cues.bell,
 				camera,
 				{ x: bell.x, y: 4, z: bell.z },
-				left.length && near(bell, v.near.bell)
-					? left.map((slot) => cap(keys[SLOTS.indexOf(slot)])).join('')
-					: '',
-				!left.length,
+				rings.length && near(bell, v.near.bell) ? rings.join('') : '',
+				!rings.length,
 			)
 		},
 		dispose() {

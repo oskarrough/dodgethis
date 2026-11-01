@@ -31,15 +31,14 @@ function reach(f, s) {
 	return distance
 }
 
-// DOM-free picking: the sim offers only the footprint that actually happened,
-// clipped by cover/body contact, and retains a successful result on its cast token.
-export function createDifficultyGallery({ local, difficulty, present, dummies = () => [] }) {
+// DOM-free picking: three plates on the floor, and the local hero standing on one has chosen it.
+// The pick is answered the same tick the hero's feet cross the plate's edge.
+export function createDifficultyGallery({ local, difficulty, present }) {
 	const v = tune.lobby.gallery
 	const standees = ['easy', 'normal', 'hard'].map((id, i) => ({
 		id,
 		x: v.x + (i - 1) * v.spacing,
 		z: v.z,
-		radius: v.radius,
 		from: id === difficulty ? 0 : -Math.PI / 2,
 		to: id === difficulty ? 0 : -Math.PI / 2,
 		changedAt: -Infinity,
@@ -51,47 +50,26 @@ export function createDifficultyGallery({ local, difficulty, present, dummies = 
 		const ease = 1 - (1 - age) ** 3
 		return stand.from + (stand.to - stand.from) * (ease + Math.sin(age * Math.PI) * v.overshoot)
 	}
-	function aimsAt(aim, radius = v.aimRadius) {
-		return !!aim && standees.some((s) => Math.hypot(aim.x - s.x, aim.z - s.z) <= radius)
+	// Which plate the point (x, z) stands on, if any.
+	function under(x, z) {
+		return standees.find(
+			(s) => Math.abs(x - s.x) <= v.plate.halfX && Math.abs(z - s.z) <= v.plate.halfZ,
+		)
 	}
-	function contact(f) {
-		if (f.hero !== local || !aimsAt(f.aim)) return false
-		if (f.phase === 'aim') return true
-		const centre = f.from ? { x: (f.from.x + f.to.x) / 2, z: (f.from.z + f.to.z) / 2 } : f.point
-		let best = null,
-			nearest = Infinity
-		for (const s of standees) {
-			const aimDistance = Math.hypot(f.aim.x - s.x, f.aim.z - s.z)
-			if (aimDistance > v.aimRadius) continue
-			if (
-				dummies().some(
-					(d) =>
-						!d.dead &&
-						Math.hypot(f.aim.x - d.body.position.x, f.aim.z - d.body.position.z) < aimDistance,
-				)
-			)
-				continue
-			const distance = reach(f, s)
-			if (distance > s.radius) continue
-			const d = Math.hypot(s.x - centre.x, s.z - centre.z)
-			if (d < nearest || (d === nearest && (!best || s.id < best.id))) {
-				best = s
-				nearest = d
-			}
-		}
-		if (!best) return false
-		select(best.id, f.tick, f.step)
+	// Called every tick with the local hero's feet: stepping onto a plate other than the picked one picks it.
+	function stand(hero, tick, step) {
+		if (!hero || hero.dead || hero.body.dashing) return
+		const p = hero.body.position
+		const plate = under(p.x, p.z)
+		if (!plate || plate.id === picked) return
+		select(plate.id, tick, step)
 		present({
 			type: 'pick',
 			hero: local,
 			difficulty: picked,
-			cast: f.cast,
-			ability: f.ability,
-			footprint: f.kind,
-			point: { x: best.x, y: 0, z: best.z },
-			tick: f.tick,
+			point: { x: plate.x, y: 0, z: plate.z },
+			tick,
 		})
-		return true
 	}
 	function select(id, tick, step) {
 		picked = id
@@ -104,8 +82,8 @@ export function createDifficultyGallery({ local, difficulty, present, dummies = 
 	return {
 		standees,
 		select,
-		aimsAt,
-		contact,
+		stand,
+		under,
 		angle,
 		get difficulty() {
 			return picked

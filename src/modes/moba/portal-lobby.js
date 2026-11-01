@@ -106,7 +106,7 @@ export function createPortalLobby({
 		mapCaption.style.left = `${((projected.x + 1) * innerWidth) / 2}px`
 		mapCaption.style.top = `${((1 - projected.y) * innerHeight) / 2}px`
 	}
-	// The difficulty gallery (lobby-props.js): three words on the floor, shot to pick one.
+	// The difficulty gallery (lobby-props.js): three plates on the floor, each with its word; stand on one to pick it.
 	// The pick stands up, the others lie flat; it sets how hard the enemy bots play, or how hard the Wardens and their packs come.
 	const galleryEl = el.querySelector('.portal-gallery')
 	const galleryWords = gallery.standees.map((stand) => {
@@ -128,8 +128,8 @@ export function createPortalLobby({
 		}
 	}
 	// The bell rings and the acequia ripples; keys stand by each until you've pressed them once.
-	const props = createLobbyPropsView({ scene: app.scene, sim, onPresent })
-	const lesson = createLobbyLesson({ el, hero, gallery, bell, onPresent })
+	const props = createLobbyPropsView({ scene: app.scene, sim, gallery, onPresent })
+	const lesson = createLobbyLesson({ el, hero, bell, onPresent })
 	let viewTime = sim.tick * app.clock.step
 	const squeezed = new Set()
 	const entered = new Set() // heroes in the tear last frame, so each step in flashes it once
@@ -589,6 +589,7 @@ export function createPortalLobby({
 		prepareInput() {},
 		step() {
 			const locked = ending || slipping()
+			if (!locked) gallery.stand(hero, sim.tick, app.clock.step)
 			for (const human of sim.heroes) {
 				const frame = app.intents.get(human.id)
 				if (locked) {

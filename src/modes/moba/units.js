@@ -183,6 +183,7 @@ export const tuneUnits = {
 	'lobby.floor.crazing.jitter': 'fraction',
 	'lobby.floor.cradle.angles': 'deg',
 	'lobby.gallery.lie': 'deg',
+	'lobby.gallery.plate.sink': 'm',
 	'lobby.floor.cradle.open': 'deg',
 	'lobby.floor.cradle.pole': 'm',
 	'lobby.floor.grounds.flags.centre': 'm',

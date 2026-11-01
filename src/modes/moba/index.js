@@ -304,7 +304,6 @@ export default function moba(app, map) {
 						local,
 						difficulty,
 						present: run.present,
-						dummies: () => sim.dummies,
 					})
 				: null
 			const bell = isLobby ? createBell({ present: run.present }) : null
@@ -371,7 +370,7 @@ export default function moba(app, map) {
 							...(isLobby && { posts: tune.lobby.portal.dummies }),
 							spawns: lobbySpawns,
 							respawn: tune.lobby.respawn,
-							footprint: (f) => gallery.contact(f) || bell.contact(f),
+							footprint: (f) => bell.contact(f),
 						}),
 						seed: setup.seed,
 					}),
