@@ -16,12 +16,10 @@ import abilities_pass from './pass/pass.js'
 import abilities_pinball from './pinball/pinball.js'
 import abilities_rain from './rain/rain.js'
 import abilities_rallyRing from './rallyRing/rallyRing.js'
-import abilities_redLight from './redLight/redLight.js'
 import abilities_slam from './slam/slam.js'
 import abilities_slide from './slide/slide.js'
 import abilities_sprinkler from './sprinkler/sprinkler.js'
 import abilities_stagger from './stagger/stagger.js'
-import abilities_swap from './swap/swap.js'
 import abilities_swig from './swig/swig.js'
 import abilities_swing from './swing/swing.js'
 import abilities_tagOut from './tagOut/tagOut.js'
@@ -52,12 +50,10 @@ export default {
 	pinball: abilities_pinball,
 	rain: abilities_rain,
 	rallyRing: abilities_rallyRing,
-	redLight: abilities_redLight,
 	slam: abilities_slam,
 	slide: abilities_slide,
 	sprinkler: abilities_sprinkler,
 	stagger: abilities_stagger,
-	swap: abilities_swap,
 	swig: abilities_swig,
 	swing: abilities_swing,
 	tagOut: abilities_tagOut,

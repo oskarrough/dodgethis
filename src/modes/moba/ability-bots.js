@@ -24,7 +24,6 @@ export function botTactics(ability) {
 	if (ability.kind === 'shot') tactics.add('shoot')
 	if (ability.kind === 'zone') tactics.add('zone')
 	if (ability.kind === 'dash') tactics.add('dash')
-	if (ability.blinkTo) tactics.add('blink')
 	if (ability.placesCover) tactics.add('cover')
 	if (ability.kind === 'stance' && ability.catchesShots) tactics.add('catch')
 	return tactics

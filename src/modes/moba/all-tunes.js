@@ -30,14 +30,12 @@ import abilities_rain from './abilities/rain/rain-tune.js'
 import abilities_rallyRing, {
 	units as abilities_rallyRing_units,
 } from './abilities/rallyRing/rallyRing-tune.js'
-import abilities_redLight from './abilities/redLight/redLight-tune.js'
 import abilities_slam, { units as abilities_slam_units } from './abilities/slam/slam-tune.js'
 import abilities_slide from './abilities/slide/slide-tune.js'
 import abilities_sprinkler, {
 	units as abilities_sprinkler_units,
 } from './abilities/sprinkler/sprinkler-tune.js'
 import abilities_stagger from './abilities/stagger/stagger-tune.js'
-import abilities_swap from './abilities/swap/swap-tune.js'
 import abilities_swig from './abilities/swig/swig-tune.js'
 import abilities_swing from './abilities/swing/swing-tune.js'
 import abilities_tagOut, {
@@ -112,12 +110,10 @@ export const abilities = {
 	pinball: abilities_pinball,
 	rain: abilities_rain,
 	rallyRing: abilities_rallyRing,
-	redLight: abilities_redLight,
 	slam: abilities_slam,
 	slide: abilities_slide,
 	sprinkler: abilities_sprinkler,
 	stagger: abilities_stagger,
-	swap: abilities_swap,
 	swig: abilities_swig,
 	swing: abilities_swing,
 	tagOut: abilities_tagOut,

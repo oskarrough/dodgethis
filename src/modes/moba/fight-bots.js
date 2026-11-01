@@ -60,7 +60,6 @@ export function createFightBot(
 		const [zoneSlot, zoneAbility] = abilities.find(([slot]) => tactics.get(slot).has('zone')) ?? []
 		const [dashSlot, dashAbility = null] =
 			abilities.find(([slot]) => tactics.get(slot).has('dash')) ?? []
-		const [swapSlot, swapAbility] = abilities.find(([slot]) => tactics.get(slot).has('blink')) ?? []
 		const [coverSlot, coverAbility] =
 			abilities.find(([slot]) => tactics.get(slot).has('cover')) ?? []
 		const melee = h.definition.basic?.kind === 'melee'
@@ -110,8 +109,6 @@ export function createFightBot(
 			zoneAbility,
 			dashSlot,
 			dashAbility,
-			swapSlot,
-			swapAbility,
 			coverSlot,
 			coverAbility,
 			melee,
@@ -300,8 +297,6 @@ export function createFightBot(
 			zoneSlot,
 			dashAbility,
 			dashSlot,
-			swapAbility,
-			swapSlot,
 			coverAbility,
 			coverSlot,
 			shotSlot,
@@ -330,27 +325,6 @@ export function createFightBot(
 					if (victim && safe(p, [victim]) && cast(slot, victim.pos)) return frame
 				}
 			}
-		// Swap (trade places with your own Ricochet shot): out when hurt, in on a low target.
-		const mark = swapAbility?.blinkTo({ hero: h, sim, tick: now })
-		if (mark) {
-			const threat = (at) => Math.min(...enemies.map((u) => distance(u.pos, at)))
-			if (
-				h.hp < h.maxHp * b.retreatHp &&
-				enemies.length &&
-				threat(mark) > threat(p) + b.stutter &&
-				cast(swapSlot, mark)
-			)
-				return frame
-			if (
-				target &&
-				target.hp < target.maxHp * b.chaseHp &&
-				distance(p, target.pos) > attackReach &&
-				distance(mark, target.pos) <= attackReach &&
-				safe(mark, [target]) &&
-				cast(swapSlot, mark)
-			)
-				return frame
-		}
 		if (!target && h.definition.basic) {
 			const summon = (ctx.perceived.summons ?? [])
 				.filter(
