@@ -14,7 +14,7 @@ import {
 } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { syncShowcase } from './scripts/sound-showcase.js'
+import { syncCandidates } from './scripts/sound-candidates.js'
 
 // Rapier (non-compat) ships its physics engine as a real .wasm file. vite-plugin-wasm
 // rewrites Rapier's `import * as wasm from './…_bg.wasm'` into a generated module that
@@ -317,18 +317,18 @@ const soundKeep = {
 	},
 }
 
-// Production sound board is read-only: swap the live board for the committed showcase.
-const soundShowcase = {
-	name: 'sound-showcase',
+// Production sound board is read-only: swap the live board for the committed candidates.
+const soundCandidates = {
+	name: 'sound-candidates',
 	apply: 'build',
 	buildStart() {
-		syncShowcase()
+		syncCandidates()
 	},
 	transformIndexHtml: {
 		order: 'pre',
 		handler(html, context) {
 			return context.filename.endsWith('/pages/sound/index.html')
-				? html.replace('src="./board.js"', 'src="./showcase.js"')
+				? html.replace('src="./board.js"', 'src="./candidates.js"')
 				: html
 		},
 	},
@@ -373,7 +373,7 @@ const drune = {
 }
 
 export default defineConfig({
-	plugins: [wasm(), folderSlash, soundKeep, soundShowcase, pages, drune],
+	plugins: [wasm(), folderSlash, soundKeep, soundCandidates, pages, drune],
 	// The build's id, its time: online rooms only seat guests from the same build (online/net.js `BUILD`).
 	define: { __BUILD__: String(Date.now()) },
 	server: {

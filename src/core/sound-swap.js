@@ -4,7 +4,7 @@
 // Keep copies the file to public/sfx/kept/ and writes the swap into sfx/kept.json, the layer under local swaps.
 import kept from './sfx/kept.json'
 
-// The deployed board is a showcase of committed picks, not this browser's workbench.
+// The deployed board shows committed picks and candidates, not this browser's workbench.
 const readOnly =
 	import.meta.env?.PROD && globalThis.location?.pathname.replace(/\/$/, '') === '/pages/sound'
 const DB = 'dodgethis-sound'
@@ -86,9 +86,9 @@ export function swapOf(id) {
 }
 export const swapList = () => [...swaps]
 export const keptUrl = (name) => `/sfx/kept/${encodeURIComponent(name)}`
-// The showcase ships only shortlisted files; the workbench can play the entire dev library.
+// The candidates folder ships only shortlisted files; the workbench can play the entire dev library.
 export const libraryUrl = (path) =>
-	`${readOnly ? '/sfx/showcase/library' : '/sounds/osk-sfx'}/${path.split('/').map(encodeURIComponent).join('/')}`
+	`${readOnly ? '/sfx/candidates/library' : '/sounds/osk-sfx'}/${path.split('/').map(encodeURIComponent).join('/')}`
 // The URL a file swap plays, or null for a voice swap. { shuffle: [swap…] } plays one of its swaps at random
 // (audio.js `swapped`); its URL here is the first one's.
 export const swapUrl = (swap) =>

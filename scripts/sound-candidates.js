@@ -12,12 +12,12 @@ import {
 } from 'node:fs'
 import { dirname, join } from 'node:path'
 
-const ROOT = 'public/sfx/showcase'
+const ROOT = 'public/sfx/candidates'
 const MANIFEST = join(ROOT, 'shortlists.json')
 const SOURCE = 'sounds/shortlists.json'
 const LIBRARY = 'sounds/osk-sfx'
 
-export function syncShowcase() {
+export function syncCandidates() {
 	const local = existsSync(SOURCE) && existsSync(LIBRARY)
 	const lists = JSON.parse(readFileSync(local ? SOURCE : MANIFEST, 'utf8'))
 	const shortlists = Object.fromEntries(
@@ -32,9 +32,9 @@ export function syncShowcase() {
 	].sort()
 	for (const file of files) {
 		if (!file || file.startsWith('/') || file.split(/[\\/]/).some((part) => part === '..' || !part))
-			throw new Error(`Invalid showcase path: ${file}`)
+			throw new Error(`Invalid candidate path: ${file}`)
 		if (!existsSync(join(local ? LIBRARY : join(ROOT, 'library'), file)))
-			throw new Error(`Missing showcase sound: ${file}`)
+			throw new Error(`Missing candidate sound: ${file}`)
 	}
 	if (local) {
 		// Validate first, then replace the snapshot so removed candidates cannot linger in the deploy.
@@ -50,11 +50,13 @@ export function syncShowcase() {
 		.filter((file) => statSync(join(ROOT, 'library', file)).isFile())
 		.sort()
 	if (JSON.stringify(shipped) !== JSON.stringify(files))
-		throw new Error('Showcase library differs from its shortlist snapshot. Rebuild on the dev box.')
+		throw new Error(
+			'Candidates library differs from its shortlist snapshot. Rebuild on the dev box.',
+		)
 	const bytes = files.reduce((sum, file) => sum + statSync(join(ROOT, 'library', file)).size, 0)
 	console.log(
-		`Sound showcase: ${files.length} library files, ${(bytes / 1024 / 1024).toFixed(2)} MiB.`,
+		`Sound candidates: ${files.length} library files, ${(bytes / 1024 / 1024).toFixed(2)} MiB.`,
 	)
 }
 
-if (import.meta.main) syncShowcase()
+if (import.meta.main) syncCandidates()

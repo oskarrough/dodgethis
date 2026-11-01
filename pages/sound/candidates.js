@@ -7,7 +7,7 @@ import { uses } from '/src/modes/moba/sound-table.js'
 createSounds(audio)
 audio.previewMusic(null)
 await swap.loaded
-const response = await fetch('/sfx/showcase/shortlists.json')
+const response = await fetch('/sfx/candidates/shortlists.json')
 if (!response.ok) throw new Error(`Sound shortlist: ${response.status}`)
 const shortlists = await response.json()
 const ids = Object.keys(uses)
