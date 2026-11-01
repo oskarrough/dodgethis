@@ -248,14 +248,14 @@
 	justify-items: center;
 }
 .front-group[data-group='dungeon'] {
-	flex: 1.2 1 0;
+	flex: 1 1 0; /* one card to the three's three: every card the same size */
 }
 .front-group-row {
 	width: 100%;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	gap: 3.5vw;
+	gap: 2vw;
 }
 .front-group-name {
 	margin: 0;
@@ -278,11 +278,12 @@
 .front-tile {
 	--tile-rest: -1;
 	--tile-pad: clamp(10px, 1vw, 16px);
-	flex: 0 1 min(28vw, 460px);
+	flex: 1 1 0;
 	min-width: 0;
 	max-width: 460px;
+	container-type: inline-size; /* the name is sized by its card, not by the window */
 	display: grid;
-	grid-template-rows: auto auto;
+	grid-template: auto auto / minmax(0, 1fr);
 	padding: var(--tile-pad) var(--skin-line) var(--skin-line);
 	background: transparent;
 	pointer-events: auto;
@@ -412,7 +413,7 @@
 	position: relative;
 }
 .front-tile-name {
-	font: 400 clamp(36px, 4.4vw, 80px) / 0.95 var(--ui-font);
+	font: 400 clamp(13px, 17cqi, 80px) / 0.95 var(--ui-font);
 	text-align: center;
 	letter-spacing: 0.01em;
 	transition: color var(--skin-press) linear;
@@ -611,7 +612,7 @@
 	.front-tiles,
 	.front-group-row {
 		flex-direction: column;
-		gap: 26px;
+		gap: 18px;
 	}
 	.front-tiles {
 		padding: clamp(110px, 18vh, 150px) 7vw clamp(96px, 14vh, 130px);
@@ -622,7 +623,7 @@
 		width: 100%;
 	}
 	.front-group-row {
-		gap: 18px;
+		gap: 14px;
 	}
 	.front-tile {
 		flex: 0 0 auto;
@@ -635,6 +636,15 @@
 	.front-tile-art {
 		margin: calc(var(--tile-pad) - var(--skin-line)) 0;
 		align-self: center;
+	}
+	/* Painted: the strip sits inside the frame on all four sides, not just the top. */
+	.moba-front[data-skin='painted'] .front-tile {
+		--sheet-paper: 12px;
+		--sheet-frame: 15px;
+		padding: var(--sheet-frame);
+	}
+	.moba-front[data-skin='painted'] .front-tile-label {
+		padding-bottom: 0.4em;
 	}
 	.front-tile-label {
 		align-content: center;
