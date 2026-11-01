@@ -238,7 +238,7 @@
 	padding: clamp(150px, 26vh, 260px) 5vw clamp(190px, 28vh, 300px);
 	pointer-events: none;
 }
-/* The cards stand in groups by kind, each under a small painted heading. */
+/* The cards stand in groups by kind, the dungeon set apart on the right. */
 .front-group {
 	flex: 3 1 0;
 	min-width: 0;
@@ -256,22 +256,6 @@
 	align-items: center;
 	justify-content: center;
 	gap: 2vw;
-}
-.front-group-name {
-	margin: 0;
-	font: 400 clamp(18px, 1.7vw, 30px) / 1 var(--ui-font);
-	letter-spacing: 0.02em;
-	color: var(--ui-cream);
-	-webkit-text-stroke: 0.14em var(--ui-text);
-	paint-order: stroke fill;
-	text-shadow: 0.06em 0.08em 0 var(--ui-text);
-	transform: rotate(-1.5deg);
-	position: relative;
-	z-index: 2; /* over the focused card's wash bloom */
-}
-.front-group[data-group='dungeon'] .front-group-name {
-	color: #f3b48f;
-	transform: rotate(1.5deg);
 }
 /* A map card: the illustration in an ink frame, the name on a band that floods ink when
    you're on it. */
@@ -446,16 +430,10 @@
 	box-shadow: 0.2em 0.25em 0 var(--ui-text);
 	font-size: 0.86em;
 	line-height: 1.45;
-	text-align: center;
+	text-align: left;
 	text-wrap: pretty;
 	transform: translateX(-50%) rotate(-0.4deg);
 	pointer-events: none;
-}
-.front-brief[data-group='dungeon'] {
-	background: #f6e2c9;
-	border-color: #7a3a24;
-	box-shadow: 0.2em 0.25em 0 #7a3a24;
-	color: #4a2618;
 }
 .moba-front[data-skin='stone'] .front-tile.selected .front-tile-name {
 	color: var(--ui-cream);

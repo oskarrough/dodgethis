@@ -169,7 +169,7 @@ export function mobaFront(app, map) {
 					.filter(([, , tiles]) => tiles.length)
 					.map(
 						([group, heading, tiles]) =>
-							`<section class="front-group" data-group="${group}" aria-label="${heading}"><h2 class="front-group-name">${heading}</h2><div class="front-group-row">${tiles.map((tile) => tileHtml(tile, maps.indexOf(tile))).join('')}</div></section>`,
+							`<section class="front-group" data-group="${group}" aria-label="${heading}"><div class="front-group-row">${tiles.map((tile) => tileHtml(tile, maps.indexOf(tile))).join('')}</div></section>`,
 					)
 					.join('')}</div>
 				<p class="front-brief" aria-live="polite" hidden></p>
@@ -183,7 +183,6 @@ export function mobaFront(app, map) {
 				brief.hidden = !tile?.brief
 				if (!tile?.brief) return
 				brief.textContent = tile.brief
-				brief.dataset.group = tile.group
 			}
 			notice.textContent = options.notice ?? ''
 			notice.hidden = !options.notice
