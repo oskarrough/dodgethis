@@ -108,14 +108,30 @@ export const lobby = {
 	// HUD's key glyphs, and goes for good once you do it. `near` metres from a prop shows its keys; you
 	// have walked once you are `walked` m from your mark.
 	lesson: { near: { bell: 5, channel: 2.4 }, walked: 0.6 },
-	// The difficulty plates (lobby-props.js): three stone plates on the floor; stand on one to pick it.
-	// A plate reaches `plate.halfX` and `plate.halfZ` m from its middle, `sink` m of it pressing in when picked.
-	// Authored positions apply on restart; settling is live.
+	// The difficulty plates (lobby-props.js): three worn stones bedded in the floor; stand on one to pick it.
+	// A plate reaches `plate.halfX` and `plate.halfZ` m from its middle; its top stands `top` m up and presses `sink` m
+	// lower when picked, when a groove `groove` m wide, `inset` m in from its edge, lights up. `wear` is carve.js's bevel and the most a corner may be bitten off.
+	// `stones` give each difficulty its lobby palette role and colour. Authored positions apply on restart; settling is live.
 	gallery: {
 		x: 0,
 		z: 5.2,
 		spacing: 3.2,
-		plate: { halfX: 1.2, halfZ: 0.8, sink: 0.05 },
+		plate: {
+			halfX: 1.2,
+			halfZ: 0.8,
+			height: 0.32,
+			top: 0.15,
+			sink: 0.04,
+			inset: 0.16,
+			groove: 0.06,
+			skew: 0.07,
+			wear: { bevel: 0.08, chip: 0.34 },
+		},
+		stones: {
+			easy: { role: 'portalChill', color: '#d9c391' }, // pale sandstone
+			normal: { role: 'portalSpicy', color: '#a9503f' }, // oxide-red clay
+			hard: { role: 'portalChaos', color: '#463d58' }, // basalt, aubergine-dark
+		},
 		settleTime: 0.35,
 		overshoot: 0.12,
 		// How far, in degrees, an unpicked word leans back toward the floor in the party lobby.

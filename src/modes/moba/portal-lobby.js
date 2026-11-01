@@ -64,8 +64,15 @@ export function createPortalLobby({
 	app.audio.setMusicScene('theme')
 	run.setStylePreset({ line: tune.lobby.style.line, hatch: 1, alpha: true })
 	const cream = new THREE.Color(PALETTE.cream)
-	app.setPalette(
-		Object.fromEntries(
+	// The difficulty stones keep their own colours, unwashed: the unused dodgeball portal roles carry them.
+	const stoneRoles = Object.fromEntries(
+		Object.values(tune.lobby.gallery.stones).map((stone) => [
+			stone.role,
+			new THREE.Color(stone.color).getHex(),
+		]),
+	)
+	app.setPalette({
+		...Object.fromEntries(
 			Object.entries(PALETTE).map(([role, color]) => [
 				role,
 				['ink', 'cream'].includes(role)
@@ -73,7 +80,8 @@ export function createPortalLobby({
 					: new THREE.Color(color).lerp(cream, tune.lobby.style.pastel).getHex(),
 			]),
 		),
-	)
+		...stoneRoles,
+	})
 
 	const floor = createLobbyFloor(app.scene, app.renderer)
 	const far = createPortalFar(setup.map)
@@ -111,6 +119,7 @@ export function createPortalLobby({
 	const galleryEl = el.querySelector('.portal-gallery')
 	const galleryWords = gallery.standees.map((stand) => {
 		const word = document.createElement('span')
+		word.dataset.stone = stand.id
 		word.textContent = stand.id[0].toUpperCase() + stand.id.slice(1)
 		galleryEl.append(word)
 		return { stand, word, at: new THREE.Vector3(stand.x, 0, stand.z) }

@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { makeStyleMaterial } from '../../core/stylepass.js'
+import { chippedBlock } from './carve.js'
 import { createEffects } from './effects.js'
 import { channelAt } from './maps/lobby/lobby-layout.js'
 import { tune } from './tune.js'
@@ -95,24 +96,57 @@ export function createLobbyPropsView({ scene, sim, gallery, onPresent }) {
 	clapper.position.y = -0.56
 	pivot.add(clapper)
 
-	// The difficulty plates: three slabs flush with the floor, the picked one pressed in and lit, the others
-	// raised and dull. Stepping onto one answers the same frame, with a ring spreading from it.
+	// The difficulty plates: three worn stones bedded in the brick, easy to hard as sandstone, red clay and
+	// basalt (their colours are the lobby palette's `portal*` roles, set in portal-lobby.js). The picked one
+	// is pressed a touch lower and a hairline groove round its face lights up; the others stay quiet stone.
 	const g = tune.lobby.gallery
-	const slabGeo = own(new THREE.BoxGeometry(g.plate.halfX * 2, 0.16, g.plate.halfZ * 2))
-	const lit = own(makeStyleMaterial('seaTeal'))
-	const dull = own(makeStyleMaterial('ink'))
-	const slabs = gallery.standees.map((stand) => {
-		const slab = new THREE.Mesh(slabGeo, dull)
+	const lamp = own(makeStyleMaterial('cream', { flat: true }))
+	const bedding = own(makeStyleMaterial('driftwood'))
+	const w = g.plate.halfX * 2
+	const d = g.plate.halfZ * 2
+	const bedGeo = own(new THREE.BoxGeometry(w + 0.3, 0.08, d + 0.3))
+	// A flat frame: the groove's outline minus its inside, a hand's breadth in from the stone's edge.
+	const frame = new THREE.Shape()
+	const groove = g.plate.groove
+	const rect = (path, hx, hz) => {
+		path.moveTo(-hx, -hz)
+		path.lineTo(hx, -hz)
+		path.lineTo(hx, hz)
+		path.lineTo(-hx, hz)
+		path.closePath()
+	}
+	rect(frame, g.plate.halfX - g.plate.inset, g.plate.halfZ - g.plate.inset)
+	const inner = new THREE.Path()
+	rect(inner, g.plate.halfX - g.plate.inset - groove, g.plate.halfZ - g.plate.inset - groove)
+	frame.holes.push(inner)
+	const grooveGeo = own(new THREE.ShapeGeometry(frame))
+	grooveGeo.rotateX(-Math.PI / 2)
+	const slabs = gallery.standees.map((stand, i) => {
+		let seed = 7919 * (i + 3)
+		const rand = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646
+		const stone = own(makeStyleMaterial(g.stones[stand.id].role))
+		const body = own(chippedBlock(w * 0.96, g.plate.height, d * 0.96, g.plate.wear, rand))
+		const slab = new THREE.Group()
 		slab.name = `lobby-plate-${stand.id}`
 		slab.position.set(stand.x, 0, stand.z)
+		slab.rotation.y = (rand() - 0.5) * g.plate.skew
 		group.add(slab)
-		return { stand, slab }
+		const bed = new THREE.Mesh(bedGeo, bedding)
+		bed.position.y = 0.03
+		slab.add(bed)
+		const stoneMesh = new THREE.Mesh(body, stone)
+		slab.add(stoneMesh)
+		const light = new THREE.Mesh(grooveGeo, lamp)
+		slab.add(light)
+		return { stand, slab, stoneMesh, light }
 	})
 	function setPlates() {
-		for (const { stand, slab } of slabs) {
+		for (const { stand, stoneMesh, light } of slabs) {
 			const on = stand.id === gallery.difficulty
-			slab.material = on ? lit : dull
-			slab.position.y = on ? 0.08 - g.plate.sink : 0.08
+			const top = g.plate.top - (on ? g.plate.sink : 0)
+			stoneMesh.position.y = top - g.plate.height / 2
+			light.position.y = top + 0.004
+			light.visible = on
 		}
 	}
 	setPlates()

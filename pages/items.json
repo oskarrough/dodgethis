@@ -1,5 +1,20 @@
 [
 	{
+		"at": "2026-11-01T11:06:31.439Z",
+		"title": "Stone difficulty plates",
+		"ask": "Do the sandstone, red clay and basalt plates sit in the floor like part of the world?",
+		"status": "To review",
+		"decision": "",
+		"media": [
+			"media/2026-11-01-stone-difficulty-plates/plates-easy-crop.png",
+			"media/2026-11-01-stone-difficulty-plates/plates-hard-crop.png",
+			"media/2026-11-01-stone-difficulty-plates/stone-plates-easy.png"
+		],
+		"links": [],
+		"thread": "thr_yuqj74hh63",
+		"page": "2026-11-01-stone-difficulty-plates/"
+	},
+	{
 		"at": "2026-11-01T11:02:58.163Z",
 		"title": "Splash cards without group headings",
 		"ask": "Altamesa hovered: headings and versus taglines gone, new co-op line, briefing left-aligned on one background. Good?",
