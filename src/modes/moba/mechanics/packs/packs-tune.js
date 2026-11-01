@@ -9,9 +9,9 @@ export default {
 		calm: 3,
 		spread: 1.4,
 		guards: {
-			brute: { hp: 900, damage: 0.3, xp: 300 },
-			melee: { hp: 350, damage: 0.6, xp: 100 },
-			ranged: { hp: 250, damage: 0.6, xp: 100 },
+			brute: { hp: 1800, damage: 0.3, xp: 300 },
+			melee: { hp: 700, damage: 0.6, xp: 100 },
+			ranged: { hp: 500, damage: 0.6, xp: 100 },
 		},
 	},
 }

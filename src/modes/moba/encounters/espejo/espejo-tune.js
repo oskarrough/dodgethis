@@ -12,8 +12,8 @@ export default {
 	// A blow struck from within `cone` degrees of where it faces lands at only `front`, and `back`
 	// of it is thrown back at the striker. Every `every` s of the fight it stops for `polish` s to
 	// polish its face, taking every blow whole, then forgets every grudge and turns on the nearest.
-	hp: 9000,
-	damage: 0.7,
+	hp: 8500,
+	damage: 0.35,
 	turn: 90,
 	cone: 120,
 	front: 0.5,
