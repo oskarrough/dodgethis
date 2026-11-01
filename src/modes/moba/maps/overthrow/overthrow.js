@@ -10,7 +10,7 @@ export default {
 		return tune.map.late
 	},
 	layout: overthrowLayout,
-	mechanics: ['structures', 'minions', 'ball', 'bots'],
+	mechanics: ['structures', 'minions', 'ball', 'bots', 'hints'],
 	palette: () => ({ ...tune.overthrow.palette, light: tune.overthrow.light }),
 	// The splash woodcut's flat colours: morning haze, sage court and lavender stone.
 	cut: () => {

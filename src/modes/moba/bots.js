@@ -7,6 +7,8 @@ import { abilityTactics, saveTactics } from './ability-bots.js'
 import { statusDefinition } from './statuses.js'
 import { createDodgeBot } from './dodge-bots.js'
 import { laneRoute } from './maps/paths.js'
+import { sweepHit } from './obstacles.js'
+import { distance } from '../../core/spatial.js'
 
 import { DEFAULT_HERO, listed } from './heroes.js'
 
@@ -156,8 +158,56 @@ export function createBots(seats, seed = tune.bots.seed, modules = []) {
 			modules,
 		),
 	)
+	// The danger a bot would dodge, read for any hero as it stands now, with no reaction lag: each
+	// threat that covers it, its kind (the key's first word, every shot one kind), seconds to impact
+	// and the way out. View-only: the hints mechanic shows a human the same danger the bots see.
+	const senses = new Map()
+	function sense(sim, heroId) {
+		const h = sim.heroes.find((u) => u.id === heroId)
+		if (!h || h.dead) return []
+		let reader = senses.get(heroId)
+		if (!reader) {
+			const random = botRandom(seed, `sense:${heroId}`)
+			reader = {
+				combat: createFightBot({ id: heroId, team: h.team }, botIds, random, interceptTime),
+				habits: modules.map((m) => m.createBot()),
+				dodge: createDodgeBot(random),
+			}
+			senses.set(heroId, reader)
+		}
+		const latest = history.at(-1)
+		const perceived = latest?.tick === sim.tick ? latest : view(sim, births, modules)
+		const ctx = reader.combat.perceive(sim, perceived, h)
+		for (const habit of reader.habits) habit.botPerceive?.(ctx)
+		const p = ctx.p
+		const out = []
+		for (const threat of reader.dodge.read(ctx, reader.habits)) {
+			const reach = threat.radius + h.body.radius
+			let impact, away
+			if (threat.centre) {
+				const d = distance(p, threat.centre)
+				if (d > reach) continue
+				impact = threat.delay
+				away = d > 1e-3 ? { x: (p.x - threat.centre.x) / d, z: (p.z - threat.centre.z) / d } : null
+			} else {
+				const { from, dir } = threat
+				const end = { x: from.x + dir.x * threat.range, z: from.z + dir.z * threat.range }
+				if (sweepHit(from.x, from.z, end.x, end.z, p.x, p.z, reach) === null) continue
+				impact = threat.delay + distance(p, from) / threat.speed
+				const side = Math.sign((p.x - from.x) * dir.z - (p.z - from.z) * dir.x) || 1
+				away = { x: dir.z * side, z: -dir.x * side }
+			}
+			impact -= (sim.tick - perceived.tick) * STEP
+			if (impact <= 0) continue
+			const word = threat.key.split(':')[0]
+			const kind = threat.centre || ['ball', 'zone'].includes(word) ? word : 'shot'
+			out.push({ kind, impact, away })
+		}
+		return out
+	}
 	return {
 		brains,
+		sense,
 		step(sim, intents) {
 			history.push(view(sim, births, modules))
 			const retention = ticks(tune.bots.history)

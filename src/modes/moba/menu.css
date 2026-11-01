@@ -454,6 +454,11 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden])) > .moba-top {
 	box-shadow: none;
 	transform: none;
 }
+/* Hints sits right under Quick cast: two settings, one group. */
+.overlay .moba-pause .actions button.pause-check + button.pause-check {
+	margin-top: 0;
+	padding-top: 8px;
+}
 .overlay .moba-pause .actions .pause-check .label {
 	padding: 0 0 0.12em;
 }

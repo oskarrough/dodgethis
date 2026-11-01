@@ -405,6 +405,14 @@ export default function moba(app, map) {
 					sim,
 					hero,
 				}) ?? null
+			// First-time hints on the floor, for the maps that list them (mechanics/hints).
+			const hints =
+				mechanics.map((mechanic) => mechanicViews[mechanic.id]?.hints).find(Boolean)?.({
+					scene,
+					sim,
+					hero,
+					onPresent,
+				}) ?? null
 			const feedback = createFeedback({
 				juice,
 				sfx,
@@ -773,6 +781,7 @@ export default function moba(app, map) {
 						carrying: sim.ball?.carrying(hero) ?? false,
 					},
 				)
+				hints?.update({ camera: app.camera.view, dt, device, frozen })
 				onboarding?.update({
 					camera: app.camera.view,
 					alpha: blend,
@@ -839,6 +848,7 @@ export default function moba(app, map) {
 			run.signal.addEventListener('abort', () => {
 				if (!isLobby) app.setPalette({})
 				onboarding?.dispose()
+				hints?.dispose()
 				cursor.dispose()
 				feedback.reset()
 				replica?.dispose()

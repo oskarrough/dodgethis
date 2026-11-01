@@ -6,6 +6,7 @@ import { createRecap } from './recap.js'
 import { tune as front } from './front/tune.js'
 import { el } from '../../core/dom.js'
 import { runResult } from './run-result.js'
+import { hintMemory } from './mechanics/hints/hints-memory.js'
 import './menu.css'
 
 // The map's name in the manual's Japanese running head.
@@ -91,6 +92,8 @@ export function createMatchMenu({
 				// A setting, not an action: the last cursor stop, drawn small under the two. The
 				// controls preset lives on the top-right tile.
 				{ label: 'Quick cast', onSelect: toggleQuickCast },
+				// Off hides the first-time hints; on again starts their lessons over (mechanics/hints).
+				{ label: 'Hints', onSelect: toggleHints },
 			],
 		})
 		const card = document.querySelector('.overlay[data-theme="moba-pause"] .dialog-card')
@@ -100,8 +103,14 @@ export function createMatchMenu({
 	function toggleQuickCast() {
 		setQuickCast(!controls.quickCast)
 		document
-			.querySelector('.overlay[data-theme="moba-pause"] .pause-check')
+			.querySelector('.overlay[data-theme="moba-pause"] .pause-quick')
 			?.setAttribute('aria-checked', String(controls.quickCast))
+	}
+	function toggleHints() {
+		hintMemory.setOn(!hintMemory.on)
+		document
+			.querySelector('.overlay[data-theme="moba-pause"] .pause-hints')
+			?.setAttribute('aria-checked', String(hintMemory.on))
 	}
 	// The front end's paper for anything that stops play: the map's wash, day or night, and the
 	// two team inks (menu.css).
@@ -131,20 +140,25 @@ export function createMatchMenu({
 	// how the match stands, so the page holds only what you can do.
 	function pausePage(card) {
 		paper(card).classList.add('moba-page', 'moba-pause')
-		const [, leaveButton, quick] = card.querySelectorAll('.actions button')
+		const [, leaveButton, quick, hintsButton] = card.querySelectorAll('.actions button')
 		door(leaveButton)
-		if (!quick) return
-		quick.classList.add('pause-check')
-		quick.setAttribute('role', 'checkbox')
-		quick.setAttribute('aria-checked', String(controls.quickCast))
-		quick.prepend(
-			el(
-				'span',
-				'pause-box',
-				null,
-				'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>',
-			),
-		)
+		for (const [button, on, name] of [
+			[quick, controls.quickCast, 'pause-quick'],
+			[hintsButton, hintMemory.on, 'pause-hints'],
+		]) {
+			if (!button) continue
+			button.classList.add('pause-check', name)
+			button.setAttribute('role', 'checkbox')
+			button.setAttribute('aria-checked', String(on))
+			button.prepend(
+				el(
+					'span',
+					'pause-box',
+					null,
+					'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>',
+				),
+			)
+		}
 	}
 	function result(dt = 0) {
 		recap.update({

@@ -91,6 +91,7 @@ import mechanics_ball, { units as mechanics_ball_units } from './mechanics/ball/
 import mechanics_dungeon, {
 	units as mechanics_dungeon_units,
 } from './mechanics/dungeon/dungeon-tune.js'
+import mechanics_hints, { units as mechanics_hints_units } from './mechanics/hints/hints-tune.js'
 import mechanics_packs, { units as mechanics_packs_units } from './mechanics/packs/packs-tune.js'
 
 export const abilities = {
@@ -158,6 +159,7 @@ export const maps = {
 export const mechanics = {
 	ball: mechanics_ball,
 	dungeon: mechanics_dungeon,
+	hints: mechanics_hints,
 	packs: mechanics_packs,
 }
 export const units = {
@@ -198,5 +200,6 @@ export const units = {
 	...maps_tileroom_units,
 	...mechanics_ball_units,
 	...mechanics_dungeon_units,
+	...mechanics_hints_units,
 	...mechanics_packs_units,
 }

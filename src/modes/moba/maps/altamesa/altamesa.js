@@ -10,7 +10,7 @@ export default {
 	kind: 'garden',
 	order: 3,
 	layout: altamesaLayout,
-	mechanics: ['packs', 'dungeon', 'bots'],
+	mechanics: ['packs', 'dungeon', 'bots', 'hints'],
 	// One companion starts with you; empty lobby seats can be filled up to the party of five.
 	party: ['oolong'],
 	suggestedHero: 'salvia',
