@@ -16,6 +16,20 @@ function dungeonObjective(ctx) {
 	if (guard) {
 		return strike(ctx, { ...guard, radius: tune.waves.radius }, 'pack')
 	}
+	// Not yet called on: keep within `follow` m of the one who leads, and walk no further.
+	if (!perceived.called) {
+		setState('muster')
+		const leader = perceived.leader
+		const reach = perceived.muster?.follow ?? 0
+		const d = leader ? distance(leader, p) : 0
+		if (d > reach)
+			ctx.move({
+				x: leader.x + ((p.x - leader.x) / d) * reach,
+				z: leader.z + ((p.z - leader.z) / d) * reach,
+			})
+		else frame.pressed = [{ action: 'stop' }]
+		return frame
+	}
 	// An encounter that only warns (no `botGoal`) is fought as its boss.
 	const encounter = perceived.encounter
 	const botGoal = encounter && encounters[encounter.id].botGoal
@@ -39,7 +53,16 @@ const awakeGuards = ({ perceived, p }) =>
 export const dungeonBots = {
 	botView(sim, packUnit) {
 		const current = sim.dungeon.current()
+		// Who the party waits on while it musters: the first living hero no bot drives. A party of
+		// bots alone has nobody to wait on.
+		const bots = new Set(sim.bots?.brains.map((brain) => brain.id) ?? [])
+		const leader = sim.dungeon.called()
+			? null
+			: sim.heroes.find((h) => !h.dead && !bots.has(h.id))?.body.position
 		return {
+			called: !leader,
+			muster: sim.layout.muster ?? null,
+			leader: leader ? { x: leader.x, z: leader.z } : null,
 			// Any encounter under way, boss or no: a waystone mends nobody while one is.
 			engaged: sim.dungeon.engaged(),
 			boss: current?.unit ? { phase: current.state.phase, unit: packUnit(current.unit) } : null,

@@ -37,6 +37,9 @@ export default {
 		thickness: 1,
 		spawnSpacing: 1.5,
 		entrance: { x: -44, z: 0 },
+		// The party's bots wait at the entrance, keeping within `follow` m of you, until you join
+		// the first fight (strike a foe, wake a pack, pull a boss) or `wait` s pass (`dungeon-run.js`).
+		muster: { wait: 30, follow: 4 },
 		encounters: [
 			{ id: 'manos', x: -26, z: 0, wing: 'gate' },
 			{ id: 'tinajaBotijo', x: -6, z: 0, wing: 'court' },
@@ -324,6 +327,8 @@ export const units = {
 	'altamesa.walls.flowerHeart': 'fraction',
 	'altamesa.walls.mossChance': 'fraction',
 	'altamesa.rim.density': 'count',
+	'altamesa.muster.wait': 's',
+	'altamesa.muster.follow': 'm',
 }
 
 // Camera spots for `bun run shot altamesa`: [x, z] where hero 0 stands and the camera looks.

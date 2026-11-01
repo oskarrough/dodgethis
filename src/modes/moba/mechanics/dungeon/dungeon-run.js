@@ -31,6 +31,8 @@ function wardenStandIn(args, spot) {
 // leaves it when won, and the last is told each time (`bless`).
 // `current()` is the encounter being fought, or else the next one; `bossUnit()` is its boss for the
 // HUD bar, `engaged()` says a pull is on, and `addThreat` routes damage to the unit's own encounter.
+// A map with a `muster` holds the party's bots at the entrance until the fight is joined or
+// `muster.wait` s pass; `run.called` says when and why.
 export function createDungeon(input) {
 	// One dial for the whole run, set by who walked in and the difficulty picked in the lobby.
 	const args = { ...input, dial: createDial(input.heroes.length, input.difficulty) }
@@ -58,7 +60,7 @@ export function createDungeon(input) {
 		for (const unit of entry.units) unit.dormant = dormant
 	}
 	// `boons`: what the won encounters left for the last (`boon` in their folder), in the order won.
-	const run = { endedTick: null, boons: [] }
+	const run = { endedTick: null, boons: [], called: layout.muster ? null : { tick: 0, by: 'none' } }
 	const engaged = () => list.find((e) => !e.killed && e.state.phase === 'engaged')
 	// Bots take the encounters in map order; the last one first once it wakes.
 	const next = () =>
@@ -105,8 +107,26 @@ export function createDungeon(input) {
 			if (!engaged()) h.hp = Math.min(h.maxHp, h.hp + (h.maxHp * dt) / tune.waystone.mend)
 		})
 	}
+	// The muster: the party waits until the fight is joined (a hero swings at a foe, a foe is hurt,
+	// a pack wakes, a boss is pulled), or the clock runs out.
+	const foes = () => [
+		...(lane?.minions ?? []).filter((m) => m.pack),
+		...list.flatMap((e) => e.units),
+	]
+	function muster(t) {
+		if (run.called) return
+		const standing = foes().filter((u) => !u.dead)
+		const ids = new Set(standing.map((u) => u.id))
+		const joined =
+			list.some((e) => fighting(e.state.phase)) ||
+			standing.some((u) => u.forced || u.hp < u.maxHp) ||
+			heroes.some((h) => !h.dead && ids.has(h.attack?.target))
+		const by = joined ? 'fight' : t >= ticks(layout.muster.wait) ? 'time' : null
+		if (by) run.called = { tick: t, by }
+	}
 	function step(t, dt) {
 		if (run.endedTick != null) return
+		muster(t)
 		attune(dt)
 		for (const entry of list) {
 			if (entry.killed || entry.dormant) continue
@@ -139,6 +159,7 @@ export function createDungeon(input) {
 		dial: args.dial,
 		current,
 		engaged: () => !!engaged(),
+		called: () => !!run.called,
 		bossUnit: () => current().unit ?? anyBoss?.unit,
 		step,
 		addThreat(source, damage, unit) {

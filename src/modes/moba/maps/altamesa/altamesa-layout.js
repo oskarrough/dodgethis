@@ -27,5 +27,6 @@ export function altamesaLayout() {
 		wings: [...s.wings],
 		waystones: s.waystones.map((w) => ({ ...w })),
 		packs: s.packs.map((p) => ({ ...p })),
+		muster: s.muster,
 	}
 }
