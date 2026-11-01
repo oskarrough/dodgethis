@@ -24,6 +24,7 @@ import { hintMemory } from './hints-memory.js'
 const PAD_KEYS = ['RB', 'RT', 'LB', 'LT']
 const LANE_THREATS = new Set(['shot', 'zone', 'ball'])
 const SIZE = 256
+const ARROWS = { '→': 0, '↓': Math.PI / 2, '←': Math.PI, '↑': -Math.PI / 2 }
 
 const slotGlyph = (index, device) =>
 	device === 'gamepad'
@@ -41,8 +42,9 @@ const attackGlyph = (device) => {
 	return label === 'Click' ? { kind: 'mouse', button: 'left' } : { kind: 'key', label }
 }
 
-// Ink on cream, the pressable's offset lip under it; `pressed` sinks the cap onto its lip.
-function drawGlyph(canvas, glyph, pressed) {
+// Ink on cream, the pressable's offset lip under it; `pressed` sinks the cap onto its lip. The
+// controls card (`scheme-view.js`) lays several of these out around the hero.
+export function drawGlyph(canvas, glyph, pressed) {
 	const g = canvas.getContext('2d')
 	g.clearRect(0, 0, SIZE, SIZE)
 	const ink = hex('ink')
@@ -79,6 +81,22 @@ function drawGlyph(canvas, glyph, pressed) {
 		}
 		if (!label) return
 		g.fillStyle = ink
+		const turn = ARROWS[label]
+		if (turn !== undefined) {
+			// The face's arrows print too small to read on the floor; draw a solid one instead.
+			g.save()
+			g.translate(x + w / 2, y + sink + h / 2)
+			g.rotate(turn)
+			const a = size * 0.42
+			g.beginPath()
+			g.moveTo(a, 0)
+			g.lineTo(-a * 0.55, -a * 0.8)
+			g.lineTo(-a * 0.55, a * 0.8)
+			g.closePath()
+			g.fill()
+			g.restore()
+			return
+		}
 		g.textAlign = 'center'
 		g.textBaseline = 'middle'
 		g.font = `700 ${size}px ${font}`
@@ -90,11 +108,12 @@ function drawGlyph(canvas, glyph, pressed) {
 		else cap(36, 40, 184, 160, 34, 22, 10, glyph.label, size)
 	} else if (glyph.kind === 'walk') {
 		const k = 72
+		const [up, left, down, right] = glyph.keys ?? ['W', 'A', 'S', 'D']
 		for (const [label, x, y] of [
-			['W', 92, 26],
-			['A', 14, 112],
-			['S', 92, 112],
-			['D', 170, 112],
+			[up, 92, 26],
+			[left, 14, 112],
+			[down, 92, 112],
+			[right, 170, 112],
 		])
 			cap(x, y, k, k, 14, 12, 7, label, 50)
 	} else if (glyph.kind === 'mouse') {

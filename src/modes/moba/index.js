@@ -37,6 +37,7 @@ import { createLobbyReplica } from './lobby-replica.js'
 import { createLaneReplica } from './lane-replica.js'
 import { DEFAULT_HERO, HEROES } from './heroes.js'
 import { controls as playerControls } from '../../core/controls.js'
+import { schemeCard } from './mechanics/hints/scheme-view.js'
 
 const FACTS = [
 	'boardExpired',
@@ -430,6 +431,9 @@ export default function moba(app, map) {
 					hero,
 					onPresent,
 				}) ?? null
+			// Switching controls prints the new scheme on the floor around you (mechanics/hints/scheme-view.js).
+			// The lobby casts three abilities, a match four.
+			const controlsCard = schemeCard({ scene, hero, slots: isLobby ? 3 : 4 })
 			const feedback = createFeedback({
 				juice,
 				sfx,
@@ -800,6 +804,7 @@ export default function moba(app, map) {
 					},
 				)
 				hints?.update({ camera: app.camera.view, dt, device, frozen })
+				controlsCard.update({ camera: app.camera.view, dt, device, frozen })
 				onboarding?.update({
 					camera: app.camera.view,
 					alpha: blend,
@@ -867,6 +872,7 @@ export default function moba(app, map) {
 				if (!isLobby) app.setPalette({})
 				onboarding?.dispose()
 				hints?.dispose()
+				controlsCard.dispose()
 				cursor.dispose()
 				feedback.reset()
 				replica?.dispose()

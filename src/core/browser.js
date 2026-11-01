@@ -134,18 +134,25 @@ export async function createBrowserApp() {
 	document.addEventListener('fullscreenchange', renderFullscreen)
 	renderFullscreen()
 
-	// The keyboard and mouse preset, beside fullscreen so it's reachable in every lobby and match. Its icon is
-	// the current preset: a mouse for MOBA, the WASD cluster, a keyboard. Only pointClick modes read presets.
+	// The keyboard and mouse preset, beside fullscreen so it's reachable in every lobby and match. Its icon says
+	// what the preset asks of your hands: a mouse for MOBA, keys and a mouse for WASD, keys alone for keyboard
+	// only. Switching prints the scheme on the floor around your hero (moba's scheme-view.js). Only pointClick modes read presets.
 	const controlsBtn = document.querySelector('.controls-toggle')
 	const presetIcons = {
-		moba: 'M12 2A7 7 0 0 1 19 9v6a7 7 0 0 1-14 0V9a7 7 0 0 1 7-7zM12 6.5v3.5',
-		wasd: 'M9.5 4.5h5v5h-5zM1.5 14h5v5h-5zM9.5 14h5v5h-5zM17.5 14h5v5h-5z',
-		keyboard: 'M1.5 5h21v14h-21zM6 10h0M10 10h0M14 10h0M18 10h0M7.5 14.5h9',
+		moba: { d: 'M12 2A7 7 0 0 1 19 9v6a7 7 0 0 1-14 0V9a7 7 0 0 1 7-7zM12 6.5v3.5', width: 3 },
+		wasd: {
+			d: 'M6 7.2h4.2v4.2H6zM.6 12.6h4.2v4.2H.6zM6 12.6h4.2v4.2H6zM11.4 12.6h4.2v4.2h-4.2zM20.6 4.5a2.8 2.8 0 0 1 2.8 2.8v9.4a2.8 2.8 0 0 1-5.6 0V7.3a2.8 2.8 0 0 1 2.8-2.8zM20.6 7.2v2.6',
+			width: 2.2,
+		},
+		keyboard: { d: 'M9.5 4.5h5v5h-5zM1.5 14h5v5h-5zM9.5 14h5v5h-5zM17.5 14h5v5h-5z', width: 3 },
 	}
 	function renderPreset() {
 		const ids = Object.keys(PRESETS)
 		const next = ids[(ids.indexOf(controls.preset) + 1) % ids.length]
-		controlsBtn.querySelector('path').setAttribute('d', presetIcons[controls.preset])
+		const icon = presetIcons[controls.preset]
+		const path = controlsBtn.querySelector('path')
+		path.setAttribute('d', icon.d)
+		path.setAttribute('stroke-width', icon.width)
 		controlsBtn.title = `Controls: ${PRESETS[controls.preset].name}`
 		controlsBtn.setAttribute('aria-label', `${controlsBtn.title}. Switch to ${PRESETS[next].name}`)
 	}

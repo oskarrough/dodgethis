@@ -49,6 +49,8 @@ Replay uses the CLI's WASM build and validates its final state.
 
 ## Browser proofs
 
+Back-to-back headless screenshots alternate between a frame with the forward layer (floor hints, the hero's ring) at full ink and one where it is pale; take two and keep the one with more contrast before judging a floor print.
+
 1. `uptime`: load past 12 makes timing failures random; go headless or wait.
 2. `bun run dev:agent` prints `http://127.0.0.1:5199/`, starting the shared server if needed. Every thread uses it; never stop it. It doesn't live-reload: reload for fresh code.
 3. First `export AGENT_BROWSER_SESSION=$BB_THREAD_ID`, or threads drive the same tab. `agent-browser open <url>/?mode=moba&play&hero=ibis&bots=easy&seed=2` jumps into `match`; `<url>/` starts the route.

@@ -19,6 +19,10 @@ export default {
 		fadeIn: 0.16,
 		fadeOut: 0.22,
 		arrow: 1.1,
+		// The controls card (`scheme-view.js`): switching presets prints how to walk, attack and cast
+		// on the floor around the hero, `width` m across. It lasts `hold` s, or until the hero walks
+		// `leave` m from where they stood when it appeared.
+		scheme: { width: 8.5, hold: 6, leave: 2.2 },
 	},
 }
 
@@ -36,4 +40,7 @@ export const units = {
 	'hints.fadeIn': 's',
 	'hints.fadeOut': 's',
 	'hints.arrow': 'm',
+	'hints.scheme.width': 'm',
+	'hints.scheme.hold': 's',
+	'hints.scheme.leave': 'm',
 }

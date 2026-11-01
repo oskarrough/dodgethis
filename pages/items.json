@@ -1,5 +1,20 @@
 [
 	{
+		"at": "2026-11-01T11:18:22.454Z",
+		"title": "Switching controls shows you how to play",
+		"ask": "Could a child walk, attack and cast from these? One switch each: MOBA, WASD, keyboard only (tile icon top right).",
+		"status": "To review",
+		"decision": "",
+		"media": [
+			"media/2026-11-01-switching-controls-shows-you-how-to-play/controls-mouse-moba.png",
+			"media/2026-11-01-switching-controls-shows-you-how-to-play/controls-keys-and-mouse-wasd.png",
+			"media/2026-11-01-switching-controls-shows-you-how-to-play/controls-keys-alone-keyboard.png"
+		],
+		"links": [],
+		"thread": "thr_hy7hsd648h",
+		"page": "2026-11-01-switching-controls-shows-you-how-to-play/"
+	},
+	{
 		"at": "2026-11-01T11:08:42.761Z",
 		"title": "Key labels you can read",
 		"ask": "Space is a bar now, letters and digits sit in a plain face on a small cream keycap. Does the bar read?",
