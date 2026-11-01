@@ -1,10 +1,11 @@
 import { tune } from '../../tune.js'
+import { strike } from '../../mechanics/dungeon/dungeon-warden-bots.js'
 import { distance } from '../../../../core/spatial.js'
 
 // Bots fight Fornax as they fight any Warden, but a bot that holds `retreat` stacks of Heat walks
 // back into the shade and stays there, shooting if it can, until it has cooled.
 export function fornaxBotGoal(ctx, view) {
-	const { perceived, h, p, move, attack, shoot, setState, frame } = ctx
+	const { perceived, h, p, move, shoot, setState, frame } = ctx
 	const boss = perceived.boss
 	if (!boss || boss.unit.dead) return null
 	const { shade } = view
@@ -19,8 +20,5 @@ export function fornaxBotGoal(ctx, view) {
 		else if (h.cast || !shoot(boss.unit)) frame.pressed = [{ action: 'stop' }]
 		return frame
 	}
-	setState('boss')
-	if (!h.cast && shoot(boss.unit)) return frame
-	attack(boss.unit)
-	return frame
+	return strike(ctx, boss.unit, 'boss')
 }

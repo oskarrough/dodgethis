@@ -1,6 +1,19 @@
 import { tune } from '../../tune.js'
 import { STEP } from '../../../../core/app.js'
 
+// Fight a foe with the whole kit, as a lane bot would: its casts, shots and dashes first, and
+// only when the fight has nothing to do (the foe is out of reach, or the odds are poor) a plain
+// walk-up attack. `state` names what the bot reports itself doing.
+export function strike(ctx, foe, state) {
+	if (ctx.fight(ctx)) {
+		ctx.setState(state)
+		return ctx.frame
+	}
+	ctx.setState(state)
+	ctx.attack(foe)
+	return ctx.frame
+}
+
 function bossObjective(ctx) {
 	const boss = ctx.perceived.boss
 	if (!boss || boss.phase === 'ended' || boss.unit.dead) {
@@ -8,11 +21,8 @@ function bossObjective(ctx) {
 		ctx.frame.pressed = [{ action: 'stop' }]
 		return ctx.frame
 	}
-	ctx.setState('boss')
-	// Keep the unavoidable Slam target planted; only splash recipients need to leave.
-	if (!ctx.h.cast && ctx.shoot(boss.unit)) return ctx.frame
-	ctx.attack(boss.unit)
-	return ctx.frame
+	// The unavoidable Slam target stays planted; only splash recipients need to leave.
+	return strike(ctx, boss.unit, 'boss')
 }
 
 export const bossBots = {

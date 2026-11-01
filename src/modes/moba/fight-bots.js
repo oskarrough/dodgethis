@@ -209,7 +209,7 @@ export function createFightBot(
 				cast(shotSlot, aim)
 			)
 		}
-		Object.assign(ctx, { move, attack, cast, shoot })
+		Object.assign(ctx, { move, attack, cast, shoot, fight })
 		return ctx
 	}
 

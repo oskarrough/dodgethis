@@ -1,9 +1,10 @@
 import { tune } from '../../tune.js'
+import { strike } from '../../mechanics/dungeon/dungeon-warden-bots.js'
 
 // The bot Espejo hates holds it and strikes on; the others walk round to its back, `behind` m
 // opposite its face, and strike from there. While it polishes, everyone strikes where they stand.
 export function espejoBotGoal(ctx, view) {
-	const { perceived, h, p, move, attack, shoot, setState, frame } = ctx
+	const { perceived, h, p, move, setState, frame } = ctx
 	const boss = perceived.boss
 	if (!boss || boss.unit.dead) return null
 	const q = boss.unit.pos
@@ -18,8 +19,5 @@ export function espejoBotGoal(ctx, view) {
 			return frame
 		}
 	}
-	setState('boss')
-	if (!h.cast && shoot(boss.unit)) return frame
-	attack(boss.unit)
-	return frame
+	return strike(ctx, boss.unit, 'boss')
 }
