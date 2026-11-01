@@ -1,6 +1,6 @@
 ---
 name: map
-description: Make a new map for dodgethis or improve how one looks: its target frame, light, stone, rim, sky, floor and decals, checked fast against the target. Use whenever a task says new map, polish a map, make it look like the references, or dress a court.
+description: 'Make a new map for dodgethis or improve how one looks: its target frame, light, stone, rim, sky, floor and decals, checked fast against the target. Use whenever a task says new map, polish a map, make it look like the references, or dress a court.'
 ---
 
 # Map
