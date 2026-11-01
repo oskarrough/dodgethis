@@ -40,6 +40,8 @@ export const dungeonBots = {
 	botView(sim, packUnit) {
 		const current = sim.dungeon.current()
 		return {
+			// Any encounter under way, boss or no: a waystone mends nobody while one is.
+			engaged: sim.dungeon.engaged(),
 			boss: current?.unit ? { phase: current.state.phase, unit: packUnit(current.unit) } : null,
 			encounter: current?.botView ? { id: current.id, ...current.botView() } : null,
 			// A guard is seen as any unit is, so the lane's fight can aim, lead and cast at it.
@@ -85,6 +87,7 @@ export const dungeonBots = {
 					// hurt bot fights on rather than drag the boss or a pack home. Only a bot nearly
 					// down, or one out of any fight and hurt, goes back to mend.
 					holdGround:
+						ctx.perceived.engaged ||
 						boss?.phase === 'engaged' ||
 						h.hp >= h.maxHp * b.recoverHp ||
 						(guards.length > 0 && h.hp >= h.maxHp * b.retreatHp),
