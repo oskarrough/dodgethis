@@ -5,6 +5,7 @@ import { blocked, moveSpeed } from './statuses.js'
 import { SLOTS, ticks, yawOf, dirOf, cancelAttack } from './sim-kit.js'
 import { stepUnitDisplacement } from './displacement.js'
 import { openRow, pickTalent, botColumn } from './talents.js'
+import { channelAt } from './maps/lobby/lobby-layout.js'
 
 // One tick of one unit: a hero turns its intents frame into orders, casts and movement; a dummy strafes and shoots.
 export function createControl(ctx) {
@@ -181,7 +182,13 @@ export function createControl(ctx) {
 			return
 		}
 		// Movement queues behind cast points, including held RMB resends and walking aim.
-		if (frame.order) issue(h, frame.order)
+		// An attack-move click on a lobby prop (a difficulty word, the bell) attacks the prop, as Space and WASD's click do.
+		const prop =
+			frame.order?.kind === 'attack-move' && frame.order.pick && !ball?.carrying(h)
+				? aimBasic(h, frame.order)
+				: false
+		if (prop) h.order = null
+		else if (frame.order) issue(h, frame.order)
 		if (h.cast && frame.pressed.some((e) => ['stop', 'cancel'].includes(e.action))) {
 			const cast = h.cast
 			const slotIndex = SLOTS.indexOf(cast.slot)
@@ -246,8 +253,13 @@ export function createControl(ctx) {
 		if (!heldBall) casts(h, frame)
 		else h.buffered = null
 		if (h.cast?.left === 0) release(h)
+		// The lobby's acequia: wading is slow, so a dash over it is worth the key.
+		const wading = lobby && channelAt(h.body.position.x, h.body.position.z).wet
 		h.body.speedMul =
-			moveSpeed(h, ctx.t) * (h.stance?.factor ?? 1) * (ball?.carrying(h) ? tune.ball.carrySpeed : 1)
+			moveSpeed(h, ctx.t) *
+			(h.stance?.factor ?? 1) *
+			(ball?.carrying(h) ? tune.ball.carrySpeed : 1) *
+			(wading ? tune.lobby.channel.wade : 1)
 		move(h, frame, dt)
 	}
 

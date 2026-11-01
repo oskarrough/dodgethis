@@ -15,6 +15,8 @@ import { validLobbyHandoff } from './lobby-handoff.js'
 import { createPortal } from '../../core/portal.js'
 import { createPortalFar } from './portal-far.js'
 import { playUse } from './sounds.js'
+import { createLobbyLesson } from './lobby-lesson.js'
+import { createLobbyPropsView } from './lobby-props-view.js'
 import './lobby-heroes.css'
 import './lobby.css'
 import './portal-lobby.css'
@@ -22,7 +24,17 @@ import './portal-lobby.css'
 // The lobby: the teams are strips of seats, the floor is for playing, and
 // everyone standing in the portal for `tune.lobby.portal.countdown` s goes in. Seats are the hero
 // strip's painted cards, the hero popover holds spell-bar buttons, open while you edit a seat (tap yours or a bot's).
-export function createPortalLobby({ app, run, sim, hero, setup, options, gallery }) {
+export function createPortalLobby({
+	app,
+	run,
+	sim,
+	hero,
+	setup,
+	options,
+	gallery,
+	bell,
+	onPresent,
+}) {
 	const p = tune.lobby.portal
 	const readySeats = sim.readySeats
 	const choices = listedHeroes({ ...setup, party: true, debug: true })
@@ -115,6 +127,9 @@ export function createPortalLobby({ app, run, sim, hero, setup, options, gallery
 			word.style.transform = `translate(-50%, -100%) perspective(200px) rotateX(${lean * tune.lobby.gallery.lie}deg)`
 		}
 	}
+	// The bell rings and the acequia ripples; keys stand by each until you've pressed them once.
+	const props = createLobbyPropsView({ scene: app.scene, sim, onPresent })
+	const lesson = createLobbyLesson({ el, hero, gallery, bell, onPresent })
 	let viewTime = sim.tick * app.clock.step
 	const squeezed = new Set()
 	const entered = new Set() // heroes in the tear last frame, so each step in flashes it once
@@ -537,6 +552,8 @@ export function createPortalLobby({ app, run, sim, hero, setup, options, gallery
 			el.remove()
 			app.setPalette({})
 			floor.dispose()
+			props.dispose()
+			lesson.dispose()
 			tear.dispose()
 			far.dispose()
 			for (const h of squeezed) h.body.mesh?.scale.setScalar(1)
@@ -626,8 +643,10 @@ export function createPortalLobby({ app, run, sim, hero, setup, options, gallery
 				tear.update(dt, app.camera.view)
 				slip(time, from)
 			}
+			if (!ending) props.update(dt)
 			placeCaption(app.camera.view)
 			placeGallery(app.camera.view, time)
+			lesson.update(app.camera.view, ending || from !== null || !!open)
 			update(from)
 		},
 		hudFrame: () => ({

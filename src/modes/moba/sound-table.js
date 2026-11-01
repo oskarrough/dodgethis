@@ -223,6 +223,11 @@ export const uses = {
 		() => tune.lobby.gallery.shotSound,
 	),
 	'lobby.galleryPick': synth('Lobby', 'A difficulty is picked', () => tune.lobby.gallery.pickSound),
+	'lobby.bell': synth(
+		'Lobby',
+		'A shot or spell rings the bell by the tear',
+		() => tune.lobby.bell.sound,
+	),
 	'lobby.magnetClack': synth(
 		'Lobby',
 		'Balls clack onto the picked magnet',
@@ -328,6 +333,7 @@ export const facts = {
 	talent: ['talent'],
 	swap: ['lobby.pick', 'lobby.flip'],
 	pick: ['lobby.galleryPick'],
+	bell: ['lobby.bell'],
 	seatClaim: [],
 	seatDenied: ['lobby.seatDenied'],
 	seatEnter: ['lobby.seatEnter'],

@@ -352,7 +352,81 @@ function drawFlags(s, ground) {
 		g.fill()
 	}
 	g.globalAlpha = 1
+	drawChannel(g, { px, pz, ppm, sz, rand })
 	return canvas
+}
+
+// The acequia: a channel of water cut along one of the paving's rings, its coping stones a shade
+// paler than the flags, the water darker at its banks, a few glints where the light lies on it.
+function drawChannel(g, { px, pz, ppm, sz, rand }) {
+	const c = tune.lobby.channel
+	const k = c.colors
+	const DEG = Math.PI / 180
+	const at = (r, a) => [px(Math.cos(a) * r), pz(Math.sin(a) * r * sz)]
+	// A band between radii r0 and r1 from angle a0 to a1 (radians), traced as one closed shape.
+	const band = (r0, r1, a0, a1) => {
+		const steps = Math.max(8, Math.round(((a1 - a0) * r1 * ppm) / 6))
+		g.beginPath()
+		for (let i = 0; i <= steps; i++) g.lineTo(...at(r1, a0 + ((a1 - a0) * i) / steps))
+		for (let i = steps; i >= 0; i--) g.lineTo(...at(r0, a0 + ((a1 - a0) * i) / steps))
+		g.closePath()
+	}
+	const cope = 0.17
+	const a0 = c.from * DEG,
+		a1 = c.to * DEG
+	const ends = cope / c.r
+	// Coping: one ring of cut stones round the water, its ends capped.
+	band(c.r - c.half - cope, c.r + c.half + cope, a0 - ends, a1 + ends)
+	g.fillStyle = k.copingShade
+	g.fill()
+	const length = (a1 - a0 + 2 * ends) * c.r
+	const stones = Math.round(length / 0.42)
+	for (const [r0, r1] of [
+		[c.r - c.half - cope, c.r - c.half],
+		[c.r + c.half, c.r + c.half + cope],
+	])
+		for (let i = 0; i < stones; i++) {
+			const s0 = a0 - ends + ((a1 - a0 + 2 * ends) * i) / stones
+			const s1 = a0 - ends + ((a1 - a0 + 2 * ends) * (i + 1)) / stones
+			band(r0 + 0.012, r1 - 0.012, s0 + 0.012 / c.r, s1 - 0.012 / c.r)
+			g.fillStyle = k.coping
+			g.globalAlpha = 0.82 + rand() * 0.18
+			g.fill()
+		}
+	g.globalAlpha = 1
+	for (const a of [a0 - ends, a1]) {
+		band(c.r - c.half, c.r + c.half, a, a + ends)
+		g.fillStyle = k.coping
+		g.fill()
+	}
+	// Water, deeper toward its banks.
+	band(c.r - c.half, c.r + c.half, a0, a1)
+	g.fillStyle = k.deep
+	g.fill()
+	band(c.r - c.half * 0.62, c.r + c.half * 0.62, a0, a1)
+	g.fillStyle = k.water
+	g.fill()
+	// Glints: short pale strokes lying along the current.
+	g.strokeStyle = k.glint
+	g.lineCap = 'round'
+	g.lineWidth = 0.035 * ppm
+	for (let i = 0; i < 22; i++) {
+		const a = a0 + (a1 - a0) * rand()
+		const r = c.r + (rand() - 0.5) * c.half * 1.1
+		const span = (0.12 + rand() * 0.28) / r
+		g.globalAlpha = 0.35 + rand() * 0.45
+		g.beginPath()
+		for (let j = 0; j <= 4; j++) g.lineTo(...at(r, Math.min(a1, a + (span * j) / 4)))
+		g.stroke()
+	}
+	g.globalAlpha = 1
+	// One thin ink line where the water meets the stone.
+	band(c.r - c.half, c.r + c.half, a0, a1)
+	g.strokeStyle = k.ink
+	g.globalAlpha = 0.55
+	g.lineWidth = 0.022 * ppm
+	g.stroke()
+	g.globalAlpha = 1
 }
 
 // One sweep for rim, band and cradles: `profile` [u, v] points laid along `path` frames

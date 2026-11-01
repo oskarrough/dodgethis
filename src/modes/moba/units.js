@@ -103,6 +103,10 @@ export const tuneUnits = {
 	'fog.sight': 'm',
 	'lobby.bounds': 'm',
 	'lobby.fall': 'm',
+	'lobby.bell.cover': 'm',
+	'lobby.bell.yaw': 'rad',
+	'lobby.bell.settle': 's',
+	'lobby.lesson.walked': 'm',
 	'lobby.portal.countdown': 's',
 	// The hit kit's recipe parts (effects.js createImpacts).
 	skid: 'm',

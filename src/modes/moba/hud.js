@@ -32,7 +32,8 @@ import mechanicViews from './mechanics/all-mechanic-views.js'
 
 const SLOTS = ['slot1', 'slot2', 'slot3']
 const PAD_KEYS = ['RB', 'RT', 'LB']
-const keysFor = (device) => (device === 'gamepad' ? PAD_KEYS : presetKeys(controls.preset))
+// The ability bar's key labels, shared with the lobby's lesson so a key looks the same in both.
+export const keysFor = (device) => (device === 'gamepad' ? PAD_KEYS : presetKeys(controls.preset))
 const KEY_INSPECT = 'KeyI'
 const PAD_INSPECT = 3
 const PAD_LEFT = 14

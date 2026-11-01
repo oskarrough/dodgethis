@@ -7,11 +7,12 @@ export const lobby = {
 	// The portal lobby (portal-lobby.js): walk into the tear to go; it stands top centre, clear of both team columns.
 	portal: {
 		x: 0, // the tear's centre across the floor
-		z: -4.6, // the tear's centre: far side, so you walk up from the spawn marks into its face
-		// The training dummies move to the near side, out of the tear's way.
+		z: -6.3, // the tear's centre: far side, so you walk up from the spawn marks, over the channel, into its face
+		// The training dummies strafe on the flanks, out of the tear's way and out of the line between
+		// the floor's middle and the difficulty words, so a shot at a word reaches it.
 		dummies: [
-			{ x: -1.5, z: 3.8 },
-			{ x: 1.5, z: 3.8 },
+			{ x: -5.4, z: 1.4 },
+			{ x: 5.4, z: 1.4 },
 		],
 		width: 0.6, // walking through its plane within this share of tearRadius either side readies a human
 		reach: 3, // metres past the plane that still count as in
@@ -70,6 +71,44 @@ export const lobby = {
 		// Your groove starts filling: rising, like a bottle under a tap.
 		grooveSound: { freq: 240, slideTo: 480, dur: 0.3, gain: 0.05, type: 'sine' },
 	},
+	// The acequia (lobby-layout.js `inChannel`): a stone water channel arcing across the way to the tear,
+	// along the paving's rings. `r` and `half` are metres on the rings' scale (z squashed like the floor),
+	// `from`/`to` degrees round from +x (−90 is the tear's side). Wading walks at `wade` speed; a dash
+	// clears it dry. `ripple` s between rings round a wading hero.
+	channel: {
+		r: 3,
+		half: 0.48,
+		from: -146,
+		to: -34,
+		wade: 0.5,
+		ripple: 0.28,
+		colors: {
+			coping: '#e6c79c',
+			copingShade: '#b98a62',
+			water: '#8fc3bd',
+			deep: '#5f9a98',
+			glint: '#f4fbf2',
+			ink: '#26445f',
+		},
+	},
+	// The bell in its arch (lobby-props.js `createBell`, lobby-bell.js): anything aimed within `aimRadius` m
+	// that touches its `radius` rings it; it swings `swing` radians and settles over `settle` s.
+	// The arch stands on a round cover `cover` m across, so bodies walk round it.
+	bell: {
+		x: -4.6,
+		z: -4.9,
+		yaw: 0.3, // radians the arch turns from facing the camera toward the floor's middle
+		cover: 0.6,
+		radius: 1.1, // a shot stops on the cover a step short of the wall, so the bell rings from further out
+		aimRadius: 1.6,
+		swing: 0.55,
+		settle: 2.2,
+		sound: { freq: 1320, slideTo: 1290, dur: 0.38, gain: 0.07, type: 'sine' },
+	},
+	// The lobby's first lesson (lobby-lesson.js): a key appears by each thing you haven't yet done, in the
+	// HUD's key glyphs, and goes for good once you do it. `near` metres from a prop shows its keys; you
+	// have walked once you are `walked` m from your mark.
+	lesson: { near: { gallery: 4.2, bell: 5, channel: 2.4 }, walked: 0.6 },
 	// The difficulty picks (lobby-props.js): authored positions apply on restart; aim and settling are live.
 	gallery: {
 		x: 0,
@@ -190,11 +229,11 @@ export const lobby = {
 	respawn: 0.5,
 	// Where you spawn and recover: index 0 for team A, 3 for team B. Not drawn.
 	marks: [
-		{ x: -1.4, z: -1.25 },
-		{ x: -1.4, z: 0 },
-		{ x: -1.4, z: 1.25 },
-		{ x: 1.4, z: -1.25 },
-		{ x: 1.4, z: 0 },
-		{ x: 1.4, z: 1.25 },
+		{ x: -1.4, z: -0.1 },
+		{ x: -1.4, z: 1.1 },
+		{ x: -1.4, z: 2.3 },
+		{ x: 1.4, z: -0.1 },
+		{ x: 1.4, z: 1.1 },
+		{ x: 1.4, z: 2.3 },
 	],
 }

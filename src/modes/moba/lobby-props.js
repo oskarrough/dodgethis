@@ -1,6 +1,36 @@
 import { tune } from './tune.js'
 import { closest } from './skillshot.js'
 
+// How far a footprint's edge falls short of the point s (x, z), in metres: a shot's swept segment,
+// a zone's disc or a cone's wedge. Zero or less touches.
+function reach(f, s) {
+	let distance = f.from
+		? closest(f.from.x, f.from.z, f.to.x, f.to.z, s.x, s.z).d - f.radius
+		: Math.hypot(s.x - f.point.x, s.z - f.point.z) - f.radius
+	if (f.dir && f.angle < 360) {
+		const dx = s.x - f.point.x,
+			dz = s.z - f.point.z
+		const len = Math.hypot(dx, dz)
+		const half = (f.angle * Math.PI) / 360
+		if ((dx * f.dir.x + dz * f.dir.z) / (len || 1) < Math.cos(half)) {
+			distance = Math.min(
+				...[-1, 1].map((sign) => {
+					const a = Math.atan2(f.dir.x, f.dir.z) + sign * half
+					return closest(
+						f.point.x,
+						f.point.z,
+						f.point.x + Math.sin(a) * f.radius,
+						f.point.z + Math.cos(a) * f.radius,
+						s.x,
+						s.z,
+					).d
+				}),
+			)
+		}
+	}
+	return distance
+}
+
 // DOM-free picking: the sim offers only the footprint that actually happened,
 // clipped by cover/body contact, and retains a successful result on its cast token.
 export function createDifficultyGallery({ local, difficulty, present, dummies = () => [] }) {
@@ -41,30 +71,7 @@ export function createDifficultyGallery({ local, difficulty, present, dummies = 
 				)
 			)
 				continue
-			let distance = f.from
-				? closest(f.from.x, f.from.z, f.to.x, f.to.z, s.x, s.z).d - f.radius
-				: Math.hypot(s.x - f.point.x, s.z - f.point.z) - f.radius
-			if (f.dir && f.angle < 360) {
-				const dx = s.x - f.point.x,
-					dz = s.z - f.point.z
-				const len = Math.hypot(dx, dz)
-				const half = (f.angle * Math.PI) / 360
-				if ((dx * f.dir.x + dz * f.dir.z) / (len || 1) < Math.cos(half)) {
-					distance = Math.min(
-						...[-1, 1].map((sign) => {
-							const a = Math.atan2(f.dir.x, f.dir.z) + sign * half
-							return closest(
-								f.point.x,
-								f.point.z,
-								f.point.x + Math.sin(a) * f.radius,
-								f.point.z + Math.cos(a) * f.radius,
-								s.x,
-								s.z,
-							).d
-						}),
-					)
-				}
-			}
+			const distance = reach(f, s)
 			if (distance > s.radius) continue
 			const d = Math.hypot(s.x - centre.x, s.z - centre.z)
 			if (d < nearest || (d === nearest && (!best || s.id < best.id))) {
@@ -104,4 +111,27 @@ export function createDifficultyGallery({ local, difficulty, present, dummies = 
 			return picked
 		},
 	}
+}
+
+// The bell in its arch by the tear: anyone's attack or ability aimed at it and touching it rings it.
+// The sim offers each footprint once; a ring is a `bell` fact, which the view swings and sounds.
+export function createBell({ present }) {
+	const v = tune.lobby.bell
+	const bell = { x: v.x, z: v.z, radius: v.radius }
+	function contact(f) {
+		if (!f.aim || Math.hypot(f.aim.x - bell.x, f.aim.z - bell.z) > v.aimRadius) return false
+		if (f.phase === 'aim') return true
+		if (reach(f, bell) > bell.radius) return false
+		present({
+			type: 'bell',
+			hero: f.hero,
+			ability: f.ability,
+			footprint: f.kind,
+			point: { x: bell.x, y: 0, z: bell.z },
+			from: f.from ?? f.point,
+			tick: f.tick,
+		})
+		return true
+	}
+	return { ...bell, contact }
 }

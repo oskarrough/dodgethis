@@ -32,7 +32,7 @@ import { restyle, styleKnobs } from './restyle.js'
 import { addSliders, sliderSections } from './sliders.js'
 import { resolveUnit } from './units.js'
 import { createPortalLobby } from './portal-lobby.js'
-import { createDifficultyGallery } from './lobby-props.js'
+import { createDifficultyGallery, createBell } from './lobby-props.js'
 import { createLobbyReplica } from './lobby-replica.js'
 import { createLaneReplica } from './lane-replica.js'
 import { DEFAULT_HERO, HEROES } from './heroes.js'
@@ -307,6 +307,7 @@ export default function moba(app, map) {
 						dummies: () => sim.dummies,
 					})
 				: null
+			const bell = isLobby ? createBell({ present: run.present }) : null
 			const botsOnly = query.has('debug') && query.has('bots-only')
 			const simulation = map.start(
 				run,
@@ -370,7 +371,7 @@ export default function moba(app, map) {
 							...(isLobby && { posts: tune.lobby.portal.dummies }),
 							spawns: lobbySpawns,
 							respawn: tune.lobby.respawn,
-							footprint: gallery.contact,
+							footprint: (f) => gallery.contact(f) || bell.contact(f),
 						}),
 						seed: setup.seed,
 					}),
@@ -469,6 +470,7 @@ export default function moba(app, map) {
 						setup,
 						options,
 						gallery,
+						bell,
 						onPresent,
 					})
 				: null
