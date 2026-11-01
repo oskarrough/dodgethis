@@ -24,17 +24,33 @@ export function createOrders(ctx) {
 		nearestToClick,
 	} = ctx
 
-	function plan(h, goal) {
+	function plan(h, goal, aim = goal) {
 		const p = h.body.position
 		h.stall = 0
 		h.lastRemaining = null
-		return {
-			points: [
-				{ x: p.x, z: p.z },
-				...ctx.planPath(p, goal, { radius: h.body.radius, ...tune.orders }),
-			],
-			leg: 0,
+		const route = ctx.planPath(p, goal, { radius: h.body.radius, ...tune.orders })
+		// A goal past a wall (a click outside the map) has no route: walk the line toward the click as far as it stays clear, and make that the goal.
+		if (!route.length) {
+			const clear = (t) =>
+				segmentClear(
+					p,
+					{ x: p.x + (aim.x - p.x) * t, z: p.z + (aim.z - p.z) * t },
+					h.body.radius + tune.orders.clearance,
+					obstacles,
+					field,
+				)
+			let lo = 0
+			let hi = 1
+			for (let i = 0; i < 16; i++) {
+				const mid = (lo + hi) / 2
+				if (clear(mid)) lo = mid
+				else hi = mid
+			}
+			goal.x = p.x + (aim.x - p.x) * lo
+			goal.z = p.z + (aim.z - p.z) * lo
+			route.push({ x: goal.x, z: goal.z })
 		}
+		return { points: [{ x: p.x, z: p.z }, ...route], leg: 0 }
 	}
 
 	// Re-clicks still acknowledge input; only the expensive plan is suppressed while the hero stays on it.
@@ -96,7 +112,7 @@ export function createOrders(ctx) {
 			Math.hypot(h.order.goal.x - goal.x, h.order.goal.z - goal.z) >= tune.collision.epsilon ||
 			offPath(h)
 		)
-			h.order = { kind: point.kind ?? 'move', target: null, goal, path: plan(h, goal) }
+			h.order = { kind: point.kind ?? 'move', target: null, goal, path: plan(h, goal, point) }
 		present({ type: 'order', hero: h.id, kind: h.order.kind, target: null, point: goal, repeat })
 	}
 
