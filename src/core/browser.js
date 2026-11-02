@@ -12,6 +12,7 @@ import { log, createCombatLog, createDebugPanel } from './debug.js'
 import { createProofApi } from './proof.js'
 import { tune } from './tune.js'
 import { controls, cyclePreset, onPreset } from './controls.js'
+import { createPlayerFeedback, shortAgent } from './player-feedback.js'
 
 // The browser shell: builds the DOM services, runs the requestAnimationFrame loop, and owns diagnostics, mute and the collider overlay.
 export async function createBrowserApp() {
@@ -163,6 +164,21 @@ export async function createBrowserApp() {
 	})
 	onPreset(renderPreset)
 	renderPreset()
+
+	// Feedback, last in the corner row: what the player writes goes out with where they were.
+	createPlayerFeedback(document.querySelector('.feedback-toggle'), {
+		context: () => ({
+			url: location.href,
+			screen: app.debug.game.screen ?? app.modes.active,
+			device: input.activeDevice(),
+			controls: controls.preset,
+			browser: shortAgent(navigator.userAgent, matchMedia('(pointer: coarse)').matches),
+			window: `${innerWidth}×${innerHeight}`,
+			// The deployed commit (vite.config.js `define`).
+			// oxlint-disable-next-line no-undef
+			version: typeof __COMMIT__ === 'string' ? __COMMIT__ : 'dev',
+		}),
+	})
 
 	const debugGeom = new THREE.BufferGeometry()
 	const debugLines = new THREE.LineSegments(

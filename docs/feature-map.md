@@ -13,6 +13,7 @@ Paths are under `src/modes/moba/` unless they start with `src/`. `tune.js` means
 - Dodgeball bonus tag under the tiles: `front/index.js` (`bonus` const, `.front-bonus`); `moba.md`, `roadmap.md`
 - Splash keyboard and pad focus, deny shake, back button: `front/controls.js` `createControls`; `front/tune.js` `deny`, `back`, `move`, `enter`
 - Stickers, mute button, corner row, online panel, shell CSS: `index.html`; `src/core/browser.js` `createBrowserApp`
+- Player feedback (speech-bubble tile top right, posts to the dodgethis inkast list with url, screen, device, browser and commit; the read key is kept off the repo): `src/core/player-feedback.js` `createPlayerFeedback`; `index.html` `.feedback-toggle`, `.player-feedback`; `vite.config.js` `__COMMIT__`
 - Boot error screen: `src/core/browser.js` `reportBootError`
 - Mode registration, `window.game.moba`: `index.js` `moba` (default export); `src/core/app.js` `createApp`; `extending.md`
 - Match setup from the URL (`?mode=moba&play&bots=&hero=&seed=&debug`): `setup.js` `parseMatchSetup`, `wantsDirectPlay`, `matchLink`; `verify.md`

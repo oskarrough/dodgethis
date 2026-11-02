@@ -658,7 +658,7 @@
 			   overlay): the same square tile as the corner row on the left, mute outermost, fullscreen
 			   beside it (edge panning needs the real screen edge), then controls, which closes the gap
 			   when fullscreen is unavailable. */
-			:is(.mute, .fullscreen, .controls-toggle) {
+			:is(.mute, .fullscreen, .controls-toggle, .feedback-toggle) {
 				--corner-size: clamp(38px, 3.2vw, 52px);
 				position: fixed;
 				top: 12px;
@@ -687,23 +687,84 @@
 			.fullscreen[hidden] + .controls-toggle {
 				right: calc(24px + var(--corner-size));
 			}
+			/* Feedback sits last in the row and closes up behind whichever tiles are hidden. */
+			.feedback-toggle {
+				right: calc(48px + 3 * var(--corner-size));
+			}
+			.controls-toggle[hidden] + .feedback-toggle,
+			.fullscreen[hidden] + .controls-toggle:not([hidden]) + .feedback-toggle {
+				right: calc(36px + 2 * var(--corner-size));
+			}
+			.fullscreen[hidden] + .controls-toggle[hidden] + .feedback-toggle {
+				right: calc(24px + var(--corner-size));
+			}
 			:is(.fullscreen, .controls-toggle)[hidden] {
 				display: none;
 			}
-			:is(.mute, .fullscreen, .controls-toggle):hover,
-			:is(.mute, .fullscreen, .controls-toggle):focus-visible {
+			:is(.mute, .fullscreen, .controls-toggle, .feedback-toggle):hover,
+			:is(.mute, .fullscreen, .controls-toggle, .feedback-toggle):focus-visible {
 				outline: none;
 				background: var(--ui-button);
 				transform: translate(-1px, -2px) rotate(4deg);
 			}
-			:is(.mute, .fullscreen, .controls-toggle):active {
+			:is(.mute, .fullscreen, .controls-toggle, .feedback-toggle):active {
 				transform: translate(2px, 3px) scale(0.95);
 				transition-duration: 0.06s;
 			}
-			:is(.mute, .fullscreen, .controls-toggle) svg {
+			:is(.mute, .fullscreen, .controls-toggle, .feedback-toggle) svg {
 				display: block;
 				width: 55%;
 				height: 55%;
+			}
+			/* The feedback box hangs under the corner tiles (core/player-feedback.js). */
+			.player-feedback {
+				position: fixed;
+				top: calc(24px + clamp(38px, 3.2vw, 52px));
+				right: 12px;
+				z-index: 20;
+				width: min(360px, calc(100vw - 24px));
+				padding: 12px;
+				border: 3px solid var(--ui-text);
+				border-radius: 10px;
+				background: var(--ui-cream);
+				box-shadow: 3px 4px 0 var(--ui-text);
+				color: var(--ui-text);
+			}
+			.player-feedback[hidden] {
+				display: none;
+			}
+			.player-feedback textarea {
+				box-sizing: border-box;
+				width: 100%;
+				resize: vertical;
+				font: inherit;
+				padding: 6px 8px;
+				border: 2px solid var(--ui-text);
+				border-radius: 8px;
+			}
+			.player-feedback p {
+				margin: 8px 0;
+				font-size: 0.85em;
+				line-height: 1.35;
+			}
+			.player-feedback div {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				gap: 12px;
+			}
+			.player-feedback button {
+				font: inherit;
+				padding: 6px 16px;
+				border: 2px solid var(--ui-text);
+				border-radius: 8px;
+				background: var(--ui-button);
+				color: var(--ui-text);
+				cursor: pointer;
+			}
+			.player-feedback button:disabled {
+				opacity: 0.55;
+				cursor: default;
 			}
 
 			/* Splash title — big candy letters over the hub. The hub stays playable
@@ -1125,6 +1186,18 @@
 				stroke-linejoin="round"
 			>
 				<path d="" />
+			</svg>
+		</button>
+		<button class="feedback-toggle" type="button" title="Feedback" aria-label="Send feedback">
+			<svg
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="3"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+			>
+				<path d="M4 4h16v12H10l-5 4v-4H4z" />
 			</svg>
 		</button>
 		<div class="overlay" hidden></div>

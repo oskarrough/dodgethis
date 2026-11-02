@@ -375,7 +375,11 @@ const drune = {
 export default defineConfig({
 	plugins: [wasm(), folderSlash, soundKeep, soundCandidates, pages, drune],
 	// The build's id, its time: online rooms only seat guests from the same build (online/net.js `BUILD`).
-	define: { __BUILD__: String(Date.now()) },
+	define: {
+		__BUILD__: String(Date.now()),
+		// The commit Workers Builds deploys, so player feedback names the version it came from.
+		__COMMIT__: JSON.stringify(process.env.WORKERS_CI_COMMIT_SHA?.slice(0, 7) || 'dev'),
+	},
 	server: {
 		// Vite rejects Host headers it does not recognise. Two dev setups need
 		// naming: portless gives each app a stable https://<name>.localhost URL,
