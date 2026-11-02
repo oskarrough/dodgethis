@@ -8,6 +8,9 @@ export default {
 		leash: 9,
 		calm: 3,
 		spread: 1.4,
+		// A side pack (`side`) is farm off the road. Bots never walk to one, but while the one who
+		// leads stands within `detour` m of a side pack still standing, they follow and fight there.
+		detour: 11,
 		guards: {
 			brute: { hp: 1800, damage: 0.3, xp: 300 },
 			melee: { hp: 700, damage: 0.6, xp: 100 },
@@ -19,4 +22,5 @@ export default {
 // The dimension of each number above that its name alone does not settle (src/modes/moba/units.js).
 export const units = {
 	'packs.spread': 'm',
+	'packs.detour': 'm',
 }

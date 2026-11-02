@@ -86,23 +86,55 @@ export default {
 					{ x: 32, z: 12 },
 				],
 			},
+			// The farm: three side courts off the road, each seen through a door in a wall, whose
+			// packs no bot walks to on its own (`side`). Vigía, a lookout terrace in the north-west
+			// under a great broken arch on the rim; Pozo, a dry well ringed by broken columns in the
+			// south-west; Solana, a sun terrace past Espejo whose stair falls off the south rim.
+			{ x: -31, z: -25, side: true, guards: ['brute', 'melee', 'ranged'] },
+			{ x: -33, z: 20.5, side: true, guards: ['melee', 'melee', 'ranged', 'ranged'] },
+			{ x: 42, z: 24, side: true, guards: ['brute', 'melee', 'ranged', 'ranged'] },
 		],
 		// Walls (`kind: 'wall'`) and low hedges: the gate road's two sides, the kiln block between
 		// the wings, and the gate wall.
 		boxes: [
-			{ kind: 'wall', x: -31, z: -14, halfX: 9, halfZ: 1 },
-			{ kind: 'wall', x: -31, z: 14, halfX: 9, halfZ: 1 },
+			// Each side of the gate road keeps a door onto its side court: Vigía's at x −32,
+			// Pozo's at x −34.
+			{ kind: 'wall', x: -37, z: -14, halfX: 3, halfZ: 1 },
+			{ kind: 'wall', x: -26, z: -14, halfX: 4, halfZ: 1 },
+			{ kind: 'wall', x: -38, z: 14, halfX: 2, halfZ: 1 },
+			{ kind: 'wall', x: -27, z: 14, halfX: 5, halfZ: 1 },
 			{ kind: 'wall', x: 14, z: 0, halfX: 6, halfZ: 7 },
 			// The gate wall from rim to rim; Manos keeps the door in its gap.
 			{ kind: 'wall', x: -20, z: -18.1, halfX: 1, halfZ: 13.9 },
 			{ kind: 'wall', x: -20, z: 18.1, halfX: 1, halfZ: 13.9 },
 			{ kind: 'hedge', x: 4, z: -30, halfX: 8, halfZ: 0.6 },
+			// Solana's balustrade, so the terrace opens toward Espejo and not onto Gnomon's court.
+			{ kind: 'hedge', x: 42.5, z: 14.5, halfX: 5.5, halfZ: 0.6 },
+		],
+		// The side courts' doors, each under a broken arch (altamesa-remnants.js).
+		doors: [
+			{ x: -32, z: -14, width: 4 },
+			{ x: -34, z: 14, width: 4 },
 		],
 		pillars: [
 			{ x: -12, z: -7, r: 1 },
 			{ x: -12, z: 7, r: 1 },
 			{ x: 0, z: -7, r: 1 },
 			{ x: 0, z: 7, r: 1 },
+			// The side courts' ruins (`ruin`), drawn in altamesa-remnants.js: Vigía's two columns,
+			// Pozo's well and the six that ring it, Solana's three.
+			{ x: -37, z: -27, r: 0.7, ruin: 'column' },
+			{ x: -25, z: -27, r: 0.7, ruin: 'column' },
+			{ x: -33, z: 24.5, r: 1.3, ruin: 'well' },
+			{ x: -26.5, z: 24.5, r: 0.6, ruin: 'column' },
+			{ x: -29.8, z: 29.7, r: 0.6, ruin: 'column' },
+			{ x: -36.2, z: 29.7, r: 0.6, ruin: 'column' },
+			{ x: -39.5, z: 24.5, r: 0.6, ruin: 'column' },
+			{ x: -36.2, z: 19.3, r: 0.6, ruin: 'column' },
+			{ x: -29.8, z: 19.3, r: 0.6, ruin: 'column' },
+			{ x: 37, z: 20, r: 0.7, ruin: 'column' },
+			{ x: 46, z: 20, r: 0.7, ruin: 'column' },
+			{ x: 37.5, z: 29, r: 0.7, ruin: 'column' },
 		],
 		view: { waystone: { top: 0.5, radius: 0.7, height: 1.4, sides: 8 }, pillarRelief: 0.14 },
 		// Painted images from public/art/altamesa/ (map-art.js): inlays on the court, a face over
@@ -340,4 +372,7 @@ export const shots = {
 	sun: [12, 22],
 	stair: [28, 0],
 	gnomon: [38, 0],
+	vigia: [-32, -20],
+	pozo: [-34, 18],
+	solana: [40, 22],
 }

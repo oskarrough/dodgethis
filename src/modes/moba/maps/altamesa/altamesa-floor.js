@@ -51,6 +51,28 @@ export function dressFloor(mesh, s) {
 			float tread = 1.0 - smoothstep(0.025, 0.12, fract((p.x - 22.0) / 1.5));
 			sacred *= 1.0 - stair * tread * 0.13;
 			stone = mix(stone, sacred, ritual);
+			// The side courts, each paved apart from the road with a short path from its door:
+			// Vigía's lookout in long slabs, Pozo's well in rings, Solana's terrace in sun brick.
+			float vigia = max(precinct(p, vec2(-32.0, -23.5), vec2(8.5, 6.0)),
+				precinct(p, vec2(-32.0, -15.5), vec2(1.6, 2.0)));
+			vec2 lookout = fGrid(p, vec2(3.6, 1.8), 0.5, 0.12);
+			stone = mix(stone, ritualStone * (1.0 - lookout.x * 0.09 + (lookout.y - 0.5) * 0.04), vigia);
+			vec2 well = p - vec2(-33.0, 24.5);
+			float basin = 1.0 - smoothstep(7.4, 8.4, length(well));
+			float pozo = max(basin, precinct(p, vec2(-34.0, 16.2), vec2(1.6, 2.4)));
+			float ring = 1.0 - smoothstep(0.03, 0.12, abs(fract(length(well) / 1.7) - 0.5) * 2.0 - 0.86);
+			float spoke = 1.0 - smoothstep(0.02, 0.09, abs(fract(atan(well.y, well.x) * 2.546 + floor(length(well) / 1.7) * 0.5) - 0.5) * 2.0 - 0.9);
+			vec3 rings = shadeStone * (1.0 - max(ring, spoke * basin) * 0.09);
+			stone = mix(stone, rings, pozo);
+			float solana = precinct(p, vec2(42.0, 24.0), vec2(5.6, 7.4));
+			vec2 terrace = fGrid(p, vec2(1.8), 0.0, 0.12);
+			vec2 edge = abs(p - vec2(42.0, 24.0));
+			float kerb = max(1.0 - smoothstep(0.12, 0.28, abs(edge.x - 4.9)),
+				1.0 - smoothstep(0.12, 0.28, abs(edge.y - 6.7)));
+			vec3 sunned = ritualStone * (1.0 - terrace.x * 0.08 - kerb * 0.12);
+			stone = mix(stone, sunned, solana);
+			float side = max(vigia, max(pozo, solana));
+			paved = max(paved, side);
 			// Broad scoured patches break the newly laid look without peppering the floor.
 			stone *= 0.96 + 0.06 * fFbm(p * 0.65);
 			float wornJoint = fNoise(p * 2.0);
@@ -58,6 +80,7 @@ export function dressFloor(mesh, s) {
 			float bank = smoothstep(0.38, 0.73, wind) * 0.7;
 			bank *= 1.0 - court * 0.6;
 			bank *= 1.0 - ritual * 0.8;
+			bank *= 1.0 - side * 0.5;
 			return mix(drift, stone, paved * (1.0 - bank));
 		}
 		void main() {`,

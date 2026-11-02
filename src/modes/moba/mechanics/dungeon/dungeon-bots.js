@@ -16,9 +16,10 @@ function dungeonObjective(ctx) {
 	if (guard) {
 		return strike(ctx, { ...guard, radius: tune.waves.radius }, 'pack')
 	}
-	// Not yet called on: keep within `follow` m of the one who leads, and walk no further.
-	if (!perceived.called) {
-		setState('muster')
+	// Not yet called on, or led off the road to a side court: keep within `follow` m of the one
+	// who leads, and walk no further.
+	if (!perceived.called || perceived.detour) {
+		setState(perceived.called ? 'detour' : 'muster')
 		const leader = perceived.leader
 		const reach = perceived.muster?.follow ?? 0
 		const d = leader ? distance(leader, p) : 0
@@ -56,11 +57,19 @@ export const dungeonBots = {
 		// Who the party waits on while it musters: the first living hero no bot drives. A party of
 		// bots alone has nobody to wait on.
 		const bots = new Set(sim.bots?.brains.map((brain) => brain.id) ?? [])
-		const leader = sim.dungeon.called()
-			? null
-			: sim.heroes.find((h) => !h.dead && !bots.has(h.id))?.body.position
+		const lead = sim.heroes.find((h) => !h.dead && !bots.has(h.id))?.body.position
+		const packs = sim.packs?.botView() ?? []
+		// Off the road the party goes where its leader goes: to a side pack still standing, and
+		// never while a Warden's pull is on.
+		const detour =
+			!!lead &&
+			sim.dungeon.called() &&
+			!sim.dungeon.engaged() &&
+			packs.some((pack) => pack.side && distance(pack.pos, lead) <= tune.packs.detour)
+		const leader = !sim.dungeon.called() || detour ? lead : null
 		return {
-			called: !leader,
+			called: sim.dungeon.called() || !lead,
+			detour,
 			muster: sim.layout.muster ?? null,
 			leader: leader ? { x: leader.x, z: leader.z } : null,
 			// Any encounter under way, boss or no: a waystone mends nobody while one is.
@@ -68,7 +77,7 @@ export const dungeonBots = {
 			boss: current?.unit ? { phase: current.state.phase, unit: packUnit(current.unit) } : null,
 			encounter: current?.botView ? { id: current.id, ...current.botView() } : null,
 			// A guard is seen as any unit is, so the lane's fight can aim, lead and cast at it.
-			packs: (sim.packs?.botView() ?? []).map((pack) => ({
+			packs: packs.map((pack) => ({
 				...pack,
 				guards: pack.guards.map((g) => {
 					const live = sim.find(g.id)

@@ -6,7 +6,7 @@ import { createDial } from '../dungeon/dungeon-dial.js'
 
 const ticks = (s) => Math.max(1, Math.round(s / STEP))
 
-// The packs at `layout.packs`: each `{ x, z, guards: [kind…], patrol?: [{ x, z }…] }`. Guards are
+// The packs at `layout.packs`: each `{ x, z, guards: [kind…], patrol?: [{ x, z }…], side? }`. Guards are
 // neutral (team 'N') lane minions that stand at their post, or walk the patrol loop, until a hero
 // comes near or strikes one; then the whole pack fights. A pack left alone heals and goes home. Dead guards stay dead: a dungeon is cleared once.
 export function createPacks({ layout, lane, heroes, makeMinion, obstacles, difficulty, view }) {
@@ -17,6 +17,8 @@ export function createPacks({ layout, lane, heroes, makeMinion, obstacles, diffi
 		id: `pack-${i + 1}`,
 		post: { x: spec.x, z: spec.z },
 		patrol: spec.patrol ?? null,
+		// A side pack stands off the road: bots fight it only where the one who leads goes.
+		side: spec.side ?? false,
 		leg: 0,
 		kinds: spec.guards,
 		guards: [],
@@ -130,6 +132,7 @@ export function createPacks({ layout, lane, heroes, makeMinion, obstacles, diffi
 				.map((pack) => ({
 					id: pack.id,
 					pos: { ...pack.post },
+					side: pack.side,
 					provoked: pack.provoked,
 					guards: pack.guards
 						.filter((g) => !g.dead)
