@@ -32,7 +32,7 @@ const { tune } = await import('../src/modes/moba/tune.js')
 const { HEROES, listed } = await import('../src/modes/moba/heroes.js')
 const { agentRoster } = await import('../src/modes/moba/agents.js')
 const { botRandom } = await import('../src/modes/moba/bots.js')
-const { playableMaps } = await import('../src/modes/moba/maps/all-maps.js')
+const { playableMaps, matchRecipe } = await import('../src/modes/moba/maps/all-maps.js')
 
 // The game modules of one checkout. The working copy's are the ones imported above; a --base
 // revision's come from its unpacked tree, so each side plays its own sim, bots and tune.
@@ -115,7 +115,7 @@ function matchRoster(
 	// --party N fields N heroes: the lineup's first, then the map's party over and over. A --lineup of
 	// mixed heroes is fielded as written instead, so `--lineup kappa,oolong,salvia` brings Salvia.
 	const own = new Set(lineups[0]).size > 1 ? lineups[0] : [lineups[0][0]]
-	const pool = [...own, ...(own.length > 1 ? [] : party)]
+	const pool = [...own, ...(own.length > 1 ? [] : (party ?? []))]
 	if (party)
 		return Array.from(
 			{ length: size ?? (own.length > 1 ? own.length : party.length + 1) },
@@ -441,7 +441,7 @@ Teams
   --cross-only              skip mirror matchups
   --idle A1[,B2]            seats that stand still; --practice = idle A1, allies normal, enemies --difficulty
   --player A1[:north]       a stand-in human: its own bot plays the seat outside the team's lane deal, in that lane
-  --difficulty hard         easy, normal or hard; on a party map (altamesa) the dungeon dial's spot, and bots play normal
+  --difficulty hard         easy, normal or hard (easy on a party map); on a party map (altamesa) the dungeon dial's spot, and bots play normal
   --party N                 on a party map, field N heroes (1 to 5; default the map's party and the lineup's first, or a mixed --lineup as written)
   --map flagfall            overthrow or flagfall (default: the game's default map)
 Sampling
@@ -485,7 +485,7 @@ export async function farm(argv = process.argv.slice(2)) {
 			matches: { type: 'string' },
 			heroes: { type: 'string' },
 			lineup: { type: 'string', multiple: true, default: [] },
-			difficulty: { type: 'string', default: 'hard' },
+			difficulty: { type: 'string' },
 			party: { type: 'string' },
 			map: { type: 'string' },
 			jobs: { type: 'string' },
@@ -536,6 +536,9 @@ export async function farm(argv = process.argv.slice(2)) {
 	}
 	if (values.map && !playableMaps.includes(values.map))
 		throw new Error(`--map ${values.map}: expected ${playableMaps.join(' or ')}`)
+	// The default party has no healer, which Normal and Hard make the mesa wall: Easy is the spot
+	// where the default dungeon run clears, so it is the smoke alarm's. Lane maps keep hard bots.
+	values.difficulty ??= values.map && matchRecipe(values.map).party ? 'easy' : 'hard'
 	if (values.logs) {
 		const path =
 			existsSync(values.logs) && statSync(values.logs).isDirectory()
