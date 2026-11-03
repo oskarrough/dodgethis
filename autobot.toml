@@ -8,4 +8,4 @@ orchestrator = "acp-cursor grok-4.6 low"
 fix = "acp-cursor grok-4.6 high"
 verify = "acp-cursor grok-4.6 high"
 max_threads = 3
-lookback = "2 hours"   # schedule interval plus overlap
+lookback = "2 hours" # schedule interval plus overlap
