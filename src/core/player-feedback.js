@@ -3,7 +3,7 @@ import { el } from './dom.js'
 // Player feedback from the speech-bubble tile, top right: one text box, posted to dodgethis' inkast list.
 // The send URL is public by design (anyone can add to the list, only its owner reads it); the read key never ships.
 // Ported from NK GTA's Post app (oskarrough/nkgta src/feedback.js).
-const INKAST = 'https://inkast.0sk.ar/rtk4gwbs'
+const INKAST = 'https://inkast.0sk.ar/xnhkphxn'
 const MAX_TEXT = 2000
 const MAX_BYTES = 4000 // inkast takes up to 4 KB a string
 
