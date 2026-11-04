@@ -16,6 +16,7 @@ A web game: two modes, dodgeball and a MOBA, on one engine.
 - `?mode=moba|dodgeball`, `&play` skips the lobby, `&map=overthrow|flagfall`, `&hero=ibis`
 - `&bots=easy|normal|hard`, `&seed=2`, `&debug` for the panel, `&bots-only`, `&fog=0`, `&replay=<tape>`
 - `/CODE` joins an online room
+- Direct Altamesa play currently starts with one bot; check `sim.bots.brains.length` and add the requested party before profiling a four-bot fight.
 
 ## Scripts
 

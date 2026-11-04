@@ -432,6 +432,18 @@ export function createStylePass(canvas) {
 
 	// `target` (optional) takes the styled frame still linear, for a view drawn inside the next frame (a portal's far side).
 	function render(scene, camera, target = null) {
+		// All passes share the same pose. Avoid walking the whole scene again for effects and glow.
+		const auto = scene.matrixWorldAutoUpdate
+		if (auto) scene.updateMatrixWorld()
+		scene.matrixWorldAutoUpdate = false
+		try {
+			draw(scene, camera, target)
+		} finally {
+			scene.matrixWorldAutoUpdate = auto
+		}
+	}
+
+	function draw(scene, camera, target) {
 		renderer.info.reset()
 		camera.updateMatrixWorld()
 		camera.matrixWorldInverse.copy(camera.matrixWorld).invert()
