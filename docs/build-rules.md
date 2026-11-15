@@ -13,7 +13,7 @@ Discoverable names. Agents find code by plain-text search, so every identifier i
 
 A surgical edit outside your owned files (a setter, an export, a hook) is fine without asking; name it in the report.
 
-- When the user's judgment is useful, report the actual local dev URL and shortest route plus one specific thing to judge. The coordinator pings them; don't leave review hidden in a long completion report.
+- When the user's judgment is useful, report the tailnet link from `bun run dev:agent --lan <page>` and shortest route plus one specific thing to judge. The coordinator pings them; don't leave review hidden in a long completion report.
 - A proof says how it was made: a bots-only fast-forward proves nothing about a human playing.
 - Every number lives in a tune file (the mode's `tune.js` or a folder's `<id>-tune.js`), and every slider has a sane range (fractions 0–1, times at least one step). No slider value may produce NaN or reverse movement.
 - Tune sliders apply live, or are labelled "applies on restart". HUD text is built from tune, never hard-coded, and written only when it changes.
