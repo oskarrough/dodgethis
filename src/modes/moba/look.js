@@ -284,6 +284,17 @@ export const look = {
 		yoursGap: 0.02,
 		yoursWidth: 0.12,
 	},
+	// How units meet the ground (core/shadows.js): a dark contact shadow underfoot, reaching
+	// `contactReach` times the unit's radius plus `contactPad` m so it shows past the foot disc,
+	// and a cast shadow `castWidth` times as wide and at most `castMax` times the unit's height.
+	unitShadows: {
+		contact: 0.8,
+		contactReach: 1.3,
+		contactPad: 0.35,
+		cast: 0.7,
+		castWidth: 1,
+		castMax: 1.2,
+	},
 	abilityView: {
 		bouncedAimRadius: 0.06,
 		bouncedAimSpacing: 0.3,

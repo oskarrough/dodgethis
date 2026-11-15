@@ -202,6 +202,9 @@ export default function moba(app, map) {
 			const ground = isLobby ? FLOOR : layout.bounds
 			const shadows = createShadows(scene, {
 				onGround: (x, z) => Math.abs(x) <= ground.halfX && Math.abs(z) <= ground.halfZ,
+				// Units stand in the map's light: a contact shadow underfoot and one cast shadow.
+				sun: palette.light?.shadow ? () => palette.light : null,
+				look: look.unitShadows,
 			})
 			const view = createView(
 				scene,
@@ -758,11 +761,24 @@ export default function moba(app, map) {
 					camera: app.camera.view,
 				})
 				shadows.update((cast) => {
+					const tall = (d) => (d.body.radius + d.body.halfHeight) * 2
 					for (const d of [...sim.heroes, ...sim.dummies]) {
 						if (d.dead || unseen(d)) continue
 						const q = d.body.mesh.position
-						cast(q.x, q.y - d.body.radius - d.body.halfHeight, q.z, 0.5)
+						cast(
+							q.x,
+							q.y - d.body.radius - d.body.halfHeight,
+							q.z,
+							Math.max(0.5, d.body.radius),
+							tall(d),
+						)
 					}
+					if (palette.light?.shadow)
+						for (const d of sim.lane?.minions ?? []) {
+							if (d.dead || unseen(d) || !d.body.mesh) continue
+							const q = d.body.mesh.position
+							cast(q.x, 0, q.z, d.body.radius, tall(d))
+						}
 				})
 				const device =
 					lobby?.touchMode() && input.activeDevice() !== 'gamepad' ? 'touch' : input.activeDevice()
