@@ -73,13 +73,24 @@ export function run(cmd, args, { quiet = false } = {}) {
 	return text
 }
 
+// Launch flags that put headless Chrome on this box's GPU (a Radeon 780M through Vulkan) instead of
+// SwiftShader: real frame times, about 60 fps capped, and `uncapped` lifts vsync to show the headroom.
+export const GPU_ARGS = '--enable-gpu,--use-angle=vulkan,--ignore-gpu-blocklist'
+export const UNCAPPED_ARGS = `${GPU_ARGS},--disable-gpu-vsync,--disable-frame-rate-limit`
+
 // An agent-browser session of its own. `evaluate` runs the JS and returns its (JSON-able) result;
-// a promise is awaited by the page.
-export function browserSession(name) {
+// a promise is awaited by the page. `args` are launch flags, given only on the call that starts Chrome.
+export function browserSession(name, { args } = {}) {
 	const session = `${name}-${process.pid}`
-	const browser = (...args) => run('agent-browser', ['--session', session, ...args])
+	let launch = args ? ['--args', args] : []
+	const agent = (rest) => {
+		const flags = launch
+		launch = []
+		return run('agent-browser', ['--session', session, ...flags, ...rest])
+	}
+	const browser = (...rest) => agent(rest)
 	const evaluate = (js) => {
-		const reply = JSON.parse(run('agent-browser', ['--session', session, '--json', 'eval', js]))
+		const reply = JSON.parse(agent(['--json', 'eval', js]))
 		if (!reply.success) throw new Error(`eval: ${reply.error}`)
 		return reply.data?.result
 	}
@@ -88,6 +99,7 @@ export function browserSession(name) {
 		browser,
 		evaluate,
 		errors: () => run('agent-browser', ['--session', session, 'errors'], { quiet: true }),
+		console: () => run('agent-browser', ['--session', session, 'console'], { quiet: true }),
 		close: () => run('agent-browser', ['--session', session, 'close'], { quiet: true }),
 	}
 }
@@ -95,19 +107,24 @@ export function browserSession(name) {
 // The shared dev server's URL, started if needed.
 export const devServer = () => run('sh', [join(root, 'scripts/dev-agent.sh')])
 
+// Waits for a match to land: the HUD is up and the descent over.
+export function waitForMatch({ browser }) {
+	browser(
+		'wait',
+		'--timeout',
+		'90000',
+		'--fn',
+		"window.dt?.screen()==='match' && !document.querySelector('.moba-front')",
+	)
+	browser('wait', '1500')
+}
+
 // Opens `page` at 1600×900 and waits for the match to land (retries once); the HUD is up and the descent over.
 export function bootMatch({ browser }, page, { width = 1600, height = 900 } = {}) {
 	const boot = () => {
 		browser('set', 'viewport', String(width), String(height))
 		browser('open', page)
-		browser(
-			'wait',
-			'--timeout',
-			'90000',
-			'--fn',
-			"window.dt?.screen()==='match' && !document.querySelector('.moba-front')",
-		)
-		browser('wait', '1500')
+		waitForMatch({ browser })
 	}
 	try {
 		boot()
