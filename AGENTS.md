@@ -20,12 +20,13 @@ A web game: two modes, dodgeball and a MOBA, on one engine.
 
 ## Scripts
 
-- `bun run dev:agent` shared dev server, never stop it
+- `bun run dev:agent` shared dev server, never stop it; `bun run dev:agent --lan [pagepath]` serves on all interfaces, prints the `office-linux.heron-mermaid.ts.net` URL for Oskar and curls the page and its media, failing if any is missing
+- `bun run refs [--new N]` contact sheets (captioned, any format) of Oskar's inspiration folder; read the printed sheets, and never copy those images into the repo
 - If the shared server serves stale code, check it runs from this checkout (`readlink /proc/<vite pid>/cwd`)
 - `bun run check` lint, format and leftovers, a few seconds: run it often
 - `bun run test` the unit tests and map smoke, before every push (the pre-push hook runs it under git; jj skips hooks, so run it yourself)
 - `bun run simulate --summary` headless bot matches; `play:headless` drives one
-- `bun run review` pins a proof to `pages/`
+- `bun run review` pins a proof to `pages/`; `--pair before.png after.png` makes a side-by-side, `--body notes.md` adds prose, `--update <slug>` replaces an existing page in place, and it prints the link to hand over
 - `bun run where <word>` finds a feature
 - `bun run collect-mods` after adding or removing a mod folder
 - Read big files with `ast-grep outline` or `grep -n`, never cat; tokens are the budget
@@ -38,6 +39,7 @@ A web game: two modes, dodgeball and a MOBA, on one engine.
 - Quick code changes stay in this checkout. Take a bb worktree when your job proves a look (shots, clips) or runs for hours, so other threads' half-done edits can't break your proof; there `bun run dev:agent` starts a server of your own, and you commit with git, since a bb worktree has no jj workspace; once your branch is on `main`, delete it locally and on origin
 - Commit your own files with a user-facing message; in jj name them (`jj commit <paths> -m …`), since a bare `jj commit` takes every thread's edits in the checkout
 - When something costs you time (a wrong guess, a tool that misled you, a pitfall you hit), write one sentence where the next agent will meet it: the skill you were using, or this file if no skill covers it, in the same commit. Fix a skill that misled you rather than working around it
+- Read `git status` before any push, and push only your own commits
 - Every push to `main` deploys: push checkpoints, never `wrangler deploy`
 
 ## Proving

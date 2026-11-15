@@ -10,7 +10,7 @@ The coordinator holds the goal and the bar; builders hold the code.
 ## Who does what
 
 - **A standing builder per area.** One thread that keeps the code in its head beats a fresh thread per task: it learns the map code once and then builds three maps, structures, lights and units. Send follow-ups with `bb thread tell` to that thread. Start fresh threads for one-off paintings and standalone tools.
-- **Pick the model for the job.** GPT Astra (Codex) for big visual builds and every image. Opus for tools and careful plumbing; it catches bugs in the brief. A cheap model (DeepSeek Flash on pi) for well-specified jobs that have a recipe and a check. It follows recipes in one pass, but its own eye is weaker, so judge its look work.
+- **Pick the model for the job.** Fable for art and visual design, Opus for building features and tools, Sonnet only for mechanical work; the images themselves still come from a Codex thread (art skill).
 - **Painting is a service.** Code threads ask a painter thread by message for an image with an exact path and spec, then wait. Never ask a thread that can't make images to make one.
 - **The coordinator doesn't dig.** Hunting through code for where a thing lives is a worker's job, even a small one: hand it to a cheap model with the leads you have, and stay free to talk with Oskar.
 - **Bring Oskar ideas, unasked.** Between his messages, look at the game the way a new player would (screens, a headless run, the workers' proof pages) and come back with what's weakest and your pick for it. Most of what he asks for, you could have proposed first.
@@ -26,6 +26,10 @@ Six parts, every time: the goal (in the player's terms, plus the target image), 
 - Steer the first step or two hard, with numbered notes, each a look fact ("the haze swallows the cliff"), not a code instruction. Then let go: "send a compare every two steps", "go to the end".
 - Judge with `bun run shot <map> --compare <target> --gray`: one picture, one look.
 - When a builder reports a bug in a file you own, fix it at once and tell them; when a builder needs a shared file, hand it over by name for one job.
+
+## Serving and review links
+
+Workers hand Oskar a link, never a path: `bun run dev:agent --lan <pagepath>` serves a page on the tailnet and fails if it or its media is missing, and `bun run review` (`--pair`, `--body`, `--update <slug>`) pins a proof and prints its checked tailnet link while that server runs.
 
 ## Keep the thread
 

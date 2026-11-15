@@ -18,6 +18,7 @@
 		"heat": "bun scripts/heat.js",
 		"kit": "bun run collect-mods && bun scripts/kit.js",
 		"review": "bun scripts/review.js",
+		"refs": "bun scripts/refs.js",
 		"shot": "bun scripts/shot.js",
 		"cast": "bun scripts/cast.js",
 		"capture": "bun scripts/capture.js",

@@ -23,6 +23,8 @@ The script pastes the style block, the keywords and the avoid list for the kind,
 
 Pass `--ref` once per reference image. Name what to take from each one in the brief (value, light, framing), never its ornament. Keep the exact prompt sent to the generator beside each image, including any edits to the script's output and the references in their submitted order; do not reconstruct it afterwards.
 
+Oskar's inspiration folder is one command: `bun run refs [--new N]` writes captioned contact sheets (avif and webp included) outside the repo and prints their paths; read those instead of building your own.
+
 ## Generate
 
 - **Codex:** ask a GPT model in a Codex thread to generate the image, passing the prompt and references.

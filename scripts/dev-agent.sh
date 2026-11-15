@@ -3,6 +3,15 @@
 # Live reload is off (see vite.config.js); reload the page yourself when you want fresh code.
 # Never stop a server you did not start: other threads are using them.
 # A git worktree gets a port of its own, so shots and casts render that checkout's code.
+# --lan [pagepath]: serve on all interfaces, print the tailnet URL, curl the page and its media.
+lan=
+pagepath=/
+for arg in "$@"; do
+	case "$arg" in
+	--lan) lan=1 ;;
+	*) pagepath=$arg ;;
+	esac
+done
 root="$(cd "$(dirname "$0")/.." && pwd)"
 
 # bun wants a writable temp dir for its caches and bunx; some sandboxes hand it none, and then vite
@@ -24,6 +33,18 @@ else
 	base=5199
 fi
 
+bindhost=127.0.0.1
+[ -z "$lan" ] || bindhost=0.0.0.0
+
+# Prints the URL; with --lan, the tailnet URL after checking the page and its media load from it.
+finish() {
+	if [ -z "$lan" ]; then
+		echo "http://127.0.0.1:$1/"
+		exit 0
+	fi
+	exec bun "$root/scripts/dev-agent-lan.js" "$1" "$pagepath"
+}
+
 # Something is listening on the port.
 listening() {
 	if command -v ss >/dev/null 2>&1; then
@@ -37,7 +58,10 @@ listening() {
 ours() {
 	curl -sf --max-time 1 -o /dev/null "http://127.0.0.1:$1/" || return 1
 	command -v ss >/dev/null 2>&1 || return 0
-	pid=$(ss -ltnp 2>/dev/null | grep -F ":$1 " | grep -o 'pid=[0-9]*' | head -n 1 | cut -d= -f2)
+	line=$(ss -ltnp 2>/dev/null | grep -F ":$1 " | head -n 1)
+	# A LAN server must listen beyond loopback; a loopback-only one is left alone and the next port is tried.
+	[ -z "$lan" ] || ! printf '%s' "$line" | grep -q '127\.0\.0\.1:' || return 1
+	pid=$(printf '%s' "$line" | grep -o 'pid=[0-9]*' | head -n 1 | cut -d= -f2)
 	[ -n "$pid" ] || return 1
 	[ "$(readlink "/proc/$pid/cwd" 2>/dev/null)" = "$root" ]
 }
@@ -48,9 +72,8 @@ port=$base
 i=0
 while :; do
 	if ours "$port"; then
-		[ "$port" = "$base" ] || echo "dev:agent: $base is another checkout's server, using $port" >&2
-		echo "http://127.0.0.1:$port/"
-		exit 0
+		[ "$port" = "$base" ] || echo "dev:agent: $base is taken (another checkout, or loopback only), using $port" >&2
+		finish "$port"
 	fi
 	listening "$port" || break
 	i=$((i + 1))
@@ -60,12 +83,12 @@ while :; do
 	fi
 	port=$((port + 1))
 done
-[ "$port" = "$base" ] || echo "dev:agent: $base is another checkout's server, using $port" >&2
+[ "$port" = "$base" ] || echo "dev:agent: $base is taken (another checkout, or loopback only), using $port" >&2
 
 cd "$root" || exit 1
 [ -d node_modules ] || bun install --silent >&2 || { echo "dev:agent: bun install failed" >&2; exit 1; }
 log="$tmp/dodgethis-dev-agent-$port.log"
-DEV_AGENT=1 setsid nohup bunx vite --host 127.0.0.1 --port "$port" --strictPort </dev/null >"$log" 2>&1 &
+DEV_AGENT=1 setsid nohup bunx vite --host "$bindhost" --port "$port" --strictPort </dev/null >"$log" 2>&1 &
 i=0
 until ours "$port"; do
 	i=$((i + 1))
@@ -76,4 +99,4 @@ until ours "$port"; do
 	fi
 	sleep 0.2
 done
-echo "http://127.0.0.1:$port/"
+finish "$port"
