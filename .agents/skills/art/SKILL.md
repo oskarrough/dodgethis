@@ -52,5 +52,6 @@ The rest of a hero's path, from build to readability and feel, is the `hero` ski
 - No plush, no glossy eyes, no black outlines, no gold outside the Ball, no text in the world.
 - A tile tiles: offset it by half in both directions and look for seams before you hand it on.
 - Look at the image yourself, at the size it will be seen, before anyone else does.
+- On a review page, open each proposal with one plain sentence on what changes on screen, as you would say it to a friend, and show before and after with `--pair` cropped tight enough that the difference is obvious at a glance; motion gets a clip or a frame strip. Oskar could not read a page of clever captions over full frames.
 
 Keep what was approved in `pages/art/<slug>/` with its `prompt.md`, and have the pinboard owner list it in the gallery; do not edit their index or items registry without ownership. Oskar's own references (other people's art) stay out of the public repo; they live in the project files under `lore/refs/`.
