@@ -244,6 +244,8 @@ try {
 			call(seatLineup, { entries: lineup, at, preferred: mapTune.shots?.lineup ?? null }),
 		)
 		if (row.blocked) say(`warning: part of the row at ${at} stands in a wall`)
+		if (row.span > 16 && !values.photo)
+			say(`warning: a ${Math.round(row.span)} m row is wider than the match camera; add --photo`)
 		say(`lineup at ${row.x.toFixed(1)},${row.z.toFixed(1)}`)
 		browser('wait', '1200')
 		if (!values.photo) evaluate('dt.photo({ hud: true })')
@@ -396,7 +398,14 @@ try {
 	if (deduped.length && !trouble) trouble = `page error: ${deduped[0]}`
 	if (trouble) {
 		const first = trouble.split('\n')[0]
-		const rest = [...new Set(trouble.split('\n').slice(1))]
+		const rest = [
+			...new Set(
+				trouble
+					.split('\n')
+					.slice(1)
+					.map((l) => l.trim()),
+			),
+		]
 		console.error(`✗ ${first}`)
 		for (const line of [...rest, ...deduped].slice(0, 6)) console.error(`  ${line}`)
 		console.error(`  full log: ${logFile}`)

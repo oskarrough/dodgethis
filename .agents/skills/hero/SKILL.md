@@ -10,7 +10,7 @@ A hero is done when a player can name them from the match camera at a glance and
 1. **Design.** Write the hero's row in `docs/heroes.md`'s silhouettes table: role, shape from above, one prop, the one team-coloured part. No two rows may share a shape or a prop. For a rework, check the row still holds.
 2. **Concept.** Two studies through the `art` skill; skip this for a fix that keeps the shape and the prop. Pick one and say why in a sentence, then name the two or three shapes that must survive at match size.
 3. **Build** the hero in `src/modes/moba/heroes/<id>/`.
-4. **Read.** Run `bun run shot overthrow --lineup --read` and look at `read.png`: the whole cast in colour, then in grayscale at match size. Fix the build and shoot again until the new hero is clearly their own shape in grayscale.
+4. **Read.** Run `bun run shot overthrow --lineup --read` and look at `read.png`: the whole cast in colour, then in grayscale at match size. Fix the build and shoot again until the new hero is clearly their own shape in grayscale. To stand them beside mobs or Wardens, list them: `--lineup ibis,mob:jar,warden:fornax --photo`.
 5. **Feel.** Run `bun run cast <id> --clip` through the `ability-feel` skill, with the basic attack and at least one ability. Every press should answer on its first frame. Look at the `sheet-*.jpg` it writes beside the clip, one per step.
 6. **Second eye.** Have a different model critique `read.png` and the clip sheet: `bb thread spawn --project $BB_PROJECT_ID --parent-self --provider codex --prompt-file -` with the image paths and what to judge, then read its answer with `bb thread output <id>`. Fix one round of what it finds, and file the rest as a GitHub issue assigned to oskarrough (`gh issue create --assignee oskarrough`) rather than dropping them.
 
@@ -20,4 +20,3 @@ A hero is done when a player can name them from the match camera at a glance and
 - A long beak pointed through its own health bar when the hero faced away.
 - Team colour on a small part seen edge-on goes pale. Give it a face the camera can see; on a prop that turns with the hero, put the accent on top, not on a side.
 - The image generator adds red scarves, blue sashes and gold fittings. Leave them out of the build.
-- `--lineup` seats heroes only. To judge mobs side by side, eval in the page: `await import('/src/…-view.js')`, make bodies with `dt.game.moba.sim.laneView.makeBody(x, z, 'N', kind)`, dress them, then `dt.photo({ hud: true })` and screenshot.

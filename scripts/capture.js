@@ -89,9 +89,17 @@ export function browserSession(name, { args } = {}) {
 		return run('agent-browser', ['--session', session, ...flags, ...rest])
 	}
 	const browser = (...rest) => agent(rest)
+	// A page-side throw comes back as its own message and stack, not agent-browser's JSON around it.
 	const evaluate = (js) => {
-		const reply = JSON.parse(agent(['--json', 'eval', js]))
-		if (!reply.success) throw new Error(`eval: ${reply.error}`)
+		let text
+		try {
+			text = agent(['--json', 'eval', js])
+		} catch (error) {
+			text = error.message.slice(error.message.indexOf('{'))
+		}
+		const reply = JSON.parse(text)
+		if (!reply.success)
+			throw new Error(String(reply.error).replace(/^Evaluation error: (\w*Error: )?/, ''))
 		return reply.data?.result
 	}
 	return {

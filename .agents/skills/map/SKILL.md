@@ -58,7 +58,7 @@ The art skill paints a 4×4 sheet on magenta; `bun run decal-sheet <in.png> publ
 
 ## Seeing it
 
-Use `bun run shot`, not a hand-driven browser: it boots, retries once, places spots and reports triangles and errors. `--hero <id>` picks your hero and `--lineup` stands the cast in a row. `--light <name>` picks a time of day, `--photo` takes HUD-free wide, rim and lane views, `--compare` puts a target beside the frame, and `bun run heat <map>` shows where bots stand, fight and die. Open the files it prints; files freshly written to /tmp can race the image reader, so read the copy under the out dir.
+Use `bun run shot` (`--help` lists every flag), never a hand-written browser script; it exits non-zero with a `✗` line on any page error. `--at x,z` looks anywhere and `--crop x,y,w,h` keeps a detail. `--tune path=value` tries a value without editing the tune, and `--eval file.js` stages anything else in the page first. `--save before`, then after your change `--vs before`, gives a colour and grayscale pair. `bun run heat <map>` shows where bots stand, fight and die.
 
 ## Working with other agents
 
