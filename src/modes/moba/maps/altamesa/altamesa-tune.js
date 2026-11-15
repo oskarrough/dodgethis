@@ -212,8 +212,8 @@ export default {
 			sun: 0xffdfb5,
 			shade: 0x56466e,
 			bandMix: [0.4, 0.45],
-			shadow: '#7d6596',
-			shadowStrength: 0.42,
+			shadow: '#5a4372',
+			shadowStrength: 0.5,
 			shadowLength: 0.8, // fraction of the true projected length
 			shadowPixelsPerMetre: 16,
 		},
@@ -230,11 +230,19 @@ export default {
 			sky: '#b198b2',
 			heart: '#efd0be',
 		},
+		// The paving is one warm sandstone at mid value, painted a stone at a time
+		// (altamesa-floor.js). Its life is wear: worn sunward edges, cracks, missing stones, and
+		// sand in the joints and heaped at the foot of the walls.
 		groundColors: {
-			sand: '#e6c9a4',
-			shadeStone: '#cec8ce',
-			sunStone: '#dfb99b',
-			ritualStone: '#d8cbbf',
+			stones: ['#c0966e', '#b98d67', '#c79f78'], // three close cuts of one stone
+			joint: '#7c5646',
+			edge: '#f0d6ae', // the worn, lit edge on each stone's sunward side
+			sunSide: [-0.86, -0.5], // toward the sun on the ground, x and z
+			sand: '#d9bd96',
+			shadeStone: '#b59a86', // the shade wing's stone, a touch greyer
+			sunStone: '#c98f66', // the sun wing's, a touch redder
+			ritualStone: '#c4a585',
+			pool: '#ffe2ae', // warm light round the council's braziers, pale enough to leave the stone its colour
 		},
 		floor: {
 			// Mapped, not raw: the tile keeps its drawing but is lifted to pale terracotta, so
@@ -242,10 +250,10 @@ export default {
 			style: 'mapped',
 			image: '/tiles/flags-drawn.webp',
 			size: 5, // metres per repeat of the tile
-			base: '#eed8bb',
-			joint: '#c8ab90',
-			accent: '#dbc0a0',
-			vary: 0.16, // how much of the drawing survives the lift
+			base: '#c0966e',
+			joint: '#7c5646',
+			accent: '#b98d67',
+			vary: 0.3, // how much of the drawing survives the lift
 		},
 		// Painted decals on the court (floor-decals.js): a 4×4 sheet with alpha.
 		decals: {
@@ -253,22 +261,22 @@ export default {
 			grid: 4,
 			count: 80,
 			size: [1.6, 4],
-			strength: 0.65,
+			strength: 0.5,
 			mute: 0.48,
 			skip: [3, 12, 14], // both broken rings and the tracks read as telegraphs and arrows
 			seed: 11,
 			clear: 0.5,
 		},
 		look: {
-			contact: { reach: 1.2, strength: 0.3 },
-			shadow: 0.55,
+			contact: { reach: 1.7, strength: 0.4 },
+			shadow: 0.6,
 			clouds: { scale: 26, speed: 0.6, strength: 0.06 },
 			border: 0,
 			joints: 0.035,
 		},
 		isle: {
-			tarmac: '#eccfba', // the margin past the tile, close to the flagstones' mean
-			chalk: '#eccfba',
+			tarmac: '#d9bd96', // the margin past the paving is sand
+			chalk: '#d9bd96',
 			moss: '#a39457',
 			mossShade: '#6f6236',
 			stoneLit: '#d08a62',

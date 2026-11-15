@@ -7,6 +7,7 @@ import { createFloorPrint } from '../../floor-print.js'
 import { createFloorDecals } from '../../floor-decals.js'
 import { overgrowth } from '../../overgrowth.js'
 import { createMapArt } from '../../map-art.js'
+import { glows } from '../../../../core/stylepass.js'
 export { scenery } from './altamesa-scenery.js'
 export { cover } from './altamesa-walls.js'
 export { pillars } from './altamesa-pillars.js'
@@ -58,6 +59,17 @@ export function ground(scope) {
 			stone.height / 2,
 			w.z,
 		)
+	// The council's four pillars each carry a brazier: a small bright bowl that blooms.
+	for (const p of layout.pillars.filter((p) => !p.ruin)) {
+		const bowl = add(
+			new THREE.SphereGeometry(0.34, 10, 6),
+			material('cream'),
+			p.x,
+			m.pillarHeight + m.capHeight + 0.42,
+			p.z,
+		)
+		glows(bowl, '#ffc94a')
+	}
 	const dispose = () => {
 		unart()
 		floors.dispose()
