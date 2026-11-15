@@ -80,6 +80,7 @@ export function createMatchMenu({
 		paused = !paused
 		resetInput()
 		app.audio.setMusicScene(paused ? 'paused' : 'play')
+		printWorld(paused)
 		if (!paused) return app.overlay.hide()
 		app.overlay.show({
 			title: 'PAUSED',
@@ -99,6 +100,27 @@ export function createMatchMenu({
 		})
 		const card = document.querySelector('.overlay[data-theme="moba-pause"] .dialog-card')
 		if (card) pausePage(card)
+	}
+	// The stopped world as a two-ink print (menu.css, .pause-print): layers laid straight over the
+	// canvas and under the HUD, each with a hole over your hero, who alone keeps their colour.
+	let print = null
+	const aimPrint = () => {
+		if (!print) return
+		const at = hero.body.mesh.position.clone().project(app.camera.view)
+		print.style.setProperty('--you-x', `${(at.x * 0.5 + 0.5) * 100}%`)
+		print.style.setProperty('--you-y', `${(-at.y * 0.5 + 0.5) * 100}%`)
+	}
+	// After a resize the camera takes its new shape on the next frame.
+	const reaimPrint = () => requestAnimationFrame(aimPrint)
+	function printWorld(on) {
+		print?.remove()
+		print = null
+		window.removeEventListener('resize', reaimPrint)
+		if (!on || !app.renderer) return
+		print = el('div', 'pause-print', null, '<i></i><i></i><i></i><i></i>')
+		app.renderer.domElement.after(print)
+		aimPrint()
+		window.addEventListener('resize', reaimPrint)
 	}
 	// The checkbox flips in place so the selection stays put.
 	function toggleQuickCast() {
@@ -137,22 +159,13 @@ export function createMatchMenu({
 		).setAttribute('aria-hidden', 'true')
 		el('p', 'page-kana', card, kana).setAttribute('aria-hidden', 'true')
 	}
-	// The pause page is a wash over the stopped world, not a sheet: the top bar stays up and says
-	// how the match stands, so the page holds only what you can do.
+	// The pause page is no sheet: the world itself goes to print and the whole HUD stays up to say
+	// how the match stands, so the page holds only what you can do. Its title is drawn as the two
+	// bars of a pause mark (menu.css); the word stays for screen readers.
 	function pausePage(card) {
 		paper(card).classList.add('moba-page', 'moba-pause')
 		const [, leaveButton, quick, hintsButton] = card.querySelectorAll('.actions button')
 		door(leaveButton)
-		// Where you are and how hard: the map, and the difficulty in its lobby plate's colour.
-		const level = setup.difficulty ?? difficulty
-		const label = (id) => id[0].toUpperCase() + id.slice(1)
-		const stone = tune.lobby.gallery.stones[level]
-		const line = el('p', 'pause-setting', null, '')
-		line.append(`${label(setup.map ?? 'overthrow')}, `)
-		const word = el('span', 'pause-level', line)
-		word.textContent = label(level)
-		if (stone) word.style.color = stone.color
-		card.querySelector('h1')?.after(line)
 		for (const [button, on, name] of [
 			[quick, controls.quickCast, 'pause-quick'],
 			[hintsButton, hintMemory.on, 'pause-hints'],
@@ -309,6 +322,7 @@ export function createMatchMenu({
 		'abort',
 		() => {
 			recap.dispose()
+			printWorld(false)
 			corner?.el.remove()
 			app.overlay.hide()
 		},

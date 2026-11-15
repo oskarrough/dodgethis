@@ -383,36 +383,82 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden])) > .moba-top {
 	transition-duration: var(--tile-press, 0.06s);
 }
 
-/* The pause page: no sheet, only a wash over the whole stopped world with the column lines on
-   it, the title and the actions held in the middle of the left columns, clear of the unit frame. */
-.overlay .dialog-card.moba-pause {
-	--wash-pause: color-mix(in srgb, var(--ui-cream) 62%, transparent);
-	grid-template-rows: 1fr auto auto auto auto 1.4fr;
+/* The stopped world as a two-ink print, navy on yellow: three blend layers laid straight over
+   the canvas (the first drains its colour, the second prints its lights yellow, the third its
+   darks in ink) and a field of flat yellow at the left for the menu to stand on. They sit under
+   the HUD, which keeps its own colours, and each of the three leaves a soft hole over your hero
+   (`--you-x`, `--you-y` from menu.js), who alone stays in colour. The wrapper has no box, so the
+   layers blend with the canvas itself. */
+.pause-print {
+	--print-yellow: #ffcc1c;
+	--you: radial-gradient(
+		circle at var(--you-x, 50%) var(--you-y, 50%),
+		transparent 6.5vh,
+		#000 11.5vh
+	);
+	display: contents;
+}
+.pause-print i {
+	position: fixed;
+	inset: 0;
+	z-index: 0;
+	pointer-events: none;
+	-webkit-mask-image: var(--you);
+	mask-image: var(--you);
+}
+.pause-print i:nth-child(1) {
+	background: #808080;
+	mix-blend-mode: saturation;
+}
+.pause-print i:nth-child(2) {
+	background: var(--print-yellow);
+	mix-blend-mode: multiply;
+}
+.pause-print i:nth-child(3) {
+	background: var(--ui-text);
+	mix-blend-mode: lighten;
+}
+.pause-print i:nth-child(4) {
 	background: linear-gradient(
 		to right,
-		var(--wash-pause) 30%,
-		color-mix(in srgb, var(--ui-cream) 30%, transparent)
+		var(--print-yellow) 0,
+		var(--print-yellow) 17%,
+		transparent 40%
 	);
+	-webkit-mask-image: none;
+	mask-image: none;
 }
-.dialog-card.moba-pause::before {
+
+/* The pause page: no sheet and no wash of its own. The print above is the page; the mark and
+   the actions stand in the left columns on its yellow field. */
+.overlay .dialog-card.moba-pause {
+	/* The menu starts clear of the unit frame and the Talents chip, which stay up beside it. */
+	grid-template-rows: minmax(206px, 1.3fr) auto auto auto auto 1fr;
+	background: none;
+}
+.dialog-card.moba-pause::before,
+.dialog-card.moba-pause::after {
 	display: none;
 }
+/* The title is the pause mark itself: two ink bars at the head of the menu. */
 .overlay .moba-pause h1 {
-	margin-top: 0;
+	width: 28px;
+	height: 34px;
+	margin: 0 0 clamp(4px, 0.8vw, 10px);
+	padding: 0;
+	overflow: hidden;
+	font-size: 0;
+	color: transparent;
+	background: linear-gradient(
+		to right,
+		var(--ui-text) 0 10px,
+		transparent 10px 18px,
+		var(--ui-text) 18px
+	);
+	border-radius: 2px;
 }
-/* The map and difficulty under the title; the difficulty wears its lobby plate's colour, with an ink edge so pale sandstone still reads. */
-.overlay .moba-pause .pause-setting {
-	grid-row: 3;
-	grid-column: 1 / span 6;
-	margin: 0.2em 0 0;
-	padding: 0 0.3em;
-	font: 400 clamp(22px, min(2.4vw, 4vh), 36px) / 1.1 var(--ui-font);
-	letter-spacing: 0.04em;
-	color: var(--ui-text);
-}
-.overlay .moba-pause .pause-level {
-	paint-order: stroke fill;
-	-webkit-text-stroke: 0.14em var(--ui-text);
+.overlay .moba-pause h1::after {
+	display: none;
 }
 .overlay .moba-pause .actions {
 	grid-row: 4;
@@ -589,9 +635,18 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden])) > .moba-top {
 	.moba-page .page-kana {
 		display: none;
 	}
-	/* The hero stands mid-screen on a phone, so the menu drops under it, above the action bar. */
+	/* The hero stands mid-screen on a phone, so the menu drops under it, above the action bar,
+	   and the yellow field rises from the bottom to carry it. */
 	.overlay .dialog-card.moba-pause {
-		grid-template-rows: 1fr auto auto 150px;
+		grid-template-rows: 1fr auto auto auto auto 96px;
+	}
+	.pause-print i:nth-child(4) {
+		background: linear-gradient(
+			to top,
+			var(--print-yellow) 0,
+			var(--print-yellow) 38%,
+			transparent 62%
+		);
 	}
 	.overlay .moba-pause .actions {
 		grid-column: 1 / -1;
@@ -608,4 +663,23 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden])) > .moba-top {
 	align-self: start;
 	margin: 0;
 	padding-top: clamp(14px, 1.6vw, 22px);
+}
+
+/* A short screen: the pause menu closes its ranks, so it ends above the tally in the corner. */
+@media (max-height: 800px) and (min-width: 701px) {
+	.overlay .moba-pause .actions {
+		gap: 8px;
+		margin-top: 8px;
+	}
+	.overlay .moba-pause .actions button:not(.pause-check) {
+		font-size: clamp(20px, 1.9vw, 30px);
+	}
+	.overlay .moba-pause .actions button.pause-check {
+		margin-top: 0;
+		padding-top: 6px;
+	}
+	.overlay .moba-pause > .volumes {
+		gap: 2px;
+		padding-top: 6px;
+	}
 }
