@@ -1,7 +1,7 @@
 # Settings for arbe-inkast-to-issues and arbe-autobot.
 repo = "oskarrough/dodgethis"
 inbox = { inkast = "xnhkphxn", key = "~/.config/inkast/dodgethis.env", label = "player-feedback" }
-bb = { project = "proj_dhp5r3qujz", machine = "hetzner" }
+bb = { project = "proj_dhp5r3qujz", machine = ["office-linux", "home-wsl", "hetzner"] }
 # Cursor (acp-cursor) without a payment method on file runs only composer-2.5, grok-4.6 and Auto; Opus 5, Fable 5 and GPT-5.6 Sol answer "Add a payment method".
 # composer-2.5 as orchestrator skipped the fix and verify threads and did both itself, so the orchestrator runs grok-4.6 too.
 orchestrator = "acp-cursor grok-4.6 low"
