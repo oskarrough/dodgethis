@@ -4,11 +4,11 @@
 // `--files` measures Oskar's library (sounds/osk-sfx/) instead; `--shortlist [words]` ranks library files for each
 // use the words pick (every use without words) and writes the top five to sounds/shortlists.json for the board.
 import { execFileSync } from 'node:child_process'
-import { writeFileSync } from 'node:fs'
+import { mkdirSync, writeFileSync } from 'node:fs'
 import { libraryNumbers, writeShortlists } from './sound-library.js'
 
 const args = process.argv.slice(2)
-const base = args.find((arg) => arg.startsWith('http')) ?? 'http://localhost:5173'
+const base = args.find((arg) => arg.startsWith('http')) ?? 'http://127.0.0.1:5199'
 const words = args.filter((arg) => !arg.startsWith('http') && !arg.startsWith('--'))
 const session = `sound-check-${process.pid}`
 const browser = (...rest) =>
@@ -35,6 +35,7 @@ try {
 	browser('close')
 }
 const { rows, flags } = result
+mkdirSync('sounds', { recursive: true })
 writeFileSync('sounds/builtins.json', JSON.stringify(rows)) // the built-in levels shortlists match, for sound:sync
 const shown = rows.filter((row) =>
 	words.length
