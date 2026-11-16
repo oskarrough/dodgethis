@@ -4,6 +4,14 @@
    wash, and the lobby's painted cards for the actions. Readouts are printed; actions are the only
    frames. `paper()` in menu.js adds `.moba-paper` and sets `--page-wash`, the team inks and
    `data-light` from the map. */
+/* The pages' Japanese in a rounded face cut to just the glyphs menu.js prints, so a machine
+   without a Japanese font draws words, not empty boxes. A new glyph there needs the font cut again. */
+@font-face {
+	font-family: 'Dodgethis kana';
+	font-weight: 400;
+	font-display: swap;
+	src: url('/fonts/m-plus-rounded-1c-kana.woff2') format('woff2');
+}
 .moba-paper {
 	--rule: color-mix(in srgb, var(--ui-text) 55%, transparent);
 	/* Between rows of one list: there to guide the eye along a line, not to box each row. */
@@ -32,7 +40,7 @@
 }
 .moba-paper [lang='ja'] {
 	margin-left: 0.7em;
-	font-family: var(--ui-font);
+	font-family: var(--ui-font), 'Dodgethis kana';
 	font-weight: 400;
 	letter-spacing: 0.05em;
 	opacity: 0.65;
@@ -292,7 +300,9 @@ body:has(> .overlay[data-theme='moba-pause']:not([hidden])) > .moba-top {
 	justify-self: end;
 	margin: 0.6em 0.4em 0 0;
 	writing-mode: vertical-rl;
-	font: 400 clamp(20px, 2.2vw, 34px) / 1 var(--ui-font);
+	font:
+		400 clamp(20px, 2.2vw, 34px) / 1 var(--ui-font),
+		'Dodgethis kana';
 	letter-spacing: 0.12em;
 	opacity: 0.7;
 }
