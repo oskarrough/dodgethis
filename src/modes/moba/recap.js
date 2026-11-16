@@ -62,7 +62,7 @@ export function createRecap({ sim, hero, canvas, paper = (node) => node }) {
 	// Packs and encounter units outlive their combat bodies; find() only returns living targets.
 	const sources = new Map([
 		...(sim.packs?.packs ?? []).flatMap((pack) =>
-			pack.guards.map((unit) => [unit.id, titleCase(unit.kind) + ' minion']),
+			pack.guards.map((unit) => [unit.id, titleCase(unit.kind) + ' guard']),
 		),
 		...(sim.dungeon?.units ?? []).map((unit) => [unit.id, unit.definition.name]),
 		...(sim.dungeon?.encounters ?? []).flatMap((encounter) =>
