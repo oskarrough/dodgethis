@@ -1,3 +1,5 @@
+import talents from './lasso-talents.js'
+
 export default {
 	unit: {
 		hp: 'hp',
@@ -7,6 +9,7 @@ export default {
 		kit: { slot1: 'throw', slot2: 'tangle', slot3: 'aroundTheWorld' },
 	},
 	name: 'Lasso',
+	talents,
 	order: 4,
 	color: 'enamelViolet',
 	silhouette: 'crescent',

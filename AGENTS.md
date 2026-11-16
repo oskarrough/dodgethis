@@ -40,6 +40,7 @@ A web game: two modes, dodgeball and a MOBA, on one engine.
 - Commit your own files with a user-facing message; in jj name them (`jj commit <paths> -m …`), since a bare `jj commit` takes every thread's edits in the checkout
 - When something costs you time (a wrong guess, a tool that misled you, a pitfall you hit), write one sentence where the next agent will meet it: the skill you were using, or this file if no skill covers it, in the same commit. Fix a skill that misled you rather than working around it
 - Read `git status` before any push, and push only your own commits
+- Run `jj st` right before `jj commit <paths>`: another thread's `jj new` can leave your edits behind in an undescribed sibling change, and a commit on paths that are no longer in `@` comes out empty. Find them with `jj log -r 'files("<path>") & ~::main'`
 - Every push to `main` deploys: push checkpoints, never `wrangler deploy`
 
 ## Proving
