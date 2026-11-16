@@ -1,6 +1,6 @@
 import { el } from '../../core/dom.js'
 import { tune as frontTune } from './front/tune.js'
-import { DEFAULT_HERO } from './heroes.js'
+import { DEFAULT_HERO, HEROES } from './heroes.js'
 import { abilityOf } from './ability.js'
 
 const titleCase = (word) => word[0].toUpperCase() + word.slice(1)
@@ -41,13 +41,14 @@ export function createRecap({ sim, hero, canvas, paper = (node) => node }) {
 	function bySource(list) {
 		const groups = new Map()
 		for (const hit of list) {
-			const group = groups.get(hit.source) ?? {
-				source: hit.source,
+			const source = sourceName(hit.source)
+			const group = groups.get(source) ?? {
+				source,
 				damage: 0,
 				count: 0,
 				abilities: [],
 			}
-			groups.set(hit.source, group)
+			groups.set(source, group)
 			group.damage += hit.damage
 			group.count++
 			const unit = sim.heroes?.find((h) => h.id === hit.source)
@@ -57,14 +58,27 @@ export function createRecap({ sim, hero, canvas, paper = (node) => node }) {
 		}
 		return [...groups.values()].sort((a, b) => b.damage - a.damage)
 	}
-	const heroName = (unit) => titleCase(unit.definition?.id ?? unit.heroId ?? DEFAULT_HERO)
+	const heroName = (unit) => unit.definition?.name ?? HEROES[unit.heroId ?? DEFAULT_HERO].name
+	// Packs and encounter units outlive their combat bodies; find() only returns living targets.
+	const sources = new Map([
+		...(sim.packs?.packs ?? []).flatMap((pack) =>
+			pack.guards.map((unit) => [unit.id, titleCase(unit.kind) + ' minion']),
+		),
+		...(sim.dungeon?.units ?? []).map((unit) => [unit.id, unit.definition.name]),
+		...(sim.dungeon?.encounters ?? []).flatMap((encounter) =>
+			(encounter.tiestos ?? []).map((pot) => [pot.id, titleCase(pot.id.replace(/-\d+$/, ''))]),
+		),
+	])
 	const sourceName = (id) => {
 		const row = sim.matchStats?.[id]
 		if (row) return `${heroName(row)}${id === hero.id ? ' (you)' : row.bot ? ' bot' : ''}`
+		if (sources.has(id)) return sources.get(id)
+		const unit = sim.find?.(id)
+		if (unit?.definition?.name || unit?.name) return unit.definition?.name ?? unit.name
 		if (structures.has(id)) return titleCase(structures.get(id))
 		if (id?.startsWith('minion-')) return 'Minions'
 		if (id?.startsWith('dummy')) return 'Training dummy'
-		return id ? titleCase(id) : 'Environment'
+		return 'Environment'
 	}
 	function update({ device, hidden = false }) {
 		if (!root) return
@@ -75,7 +89,7 @@ export function createRecap({ sim, hero, canvas, paper = (node) => node }) {
 			hits.replaceChildren()
 			for (const group of bySource(death.hits)) {
 				const item = el('li', '', hits)
-				el('b', 'moba-recap-name', item).textContent = sourceName(group.source)
+				el('b', 'moba-recap-name', item).textContent = group.source
 				el('span', 'moba-recap-damage', item).textContent = number(group.damage)
 				el('span', 'moba-recap-hits', item).textContent = [
 					group.count === 1 ? '1 hit' : `${group.count} hits`,
