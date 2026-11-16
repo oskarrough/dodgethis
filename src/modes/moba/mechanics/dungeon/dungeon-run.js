@@ -135,6 +135,9 @@ export function createDungeon(input) {
 			if (!entry.won()) continue
 			entry.killed = true
 			entry.killedTick = t
+			// A fight won without a kill (Manos's hands, Barquero's ferry) still pays a Warden's prize.
+			if (!entry.units.length)
+				lane.addXp('A', tune.warden.xp, { x: entry.spot.x, y: 0, z: entry.spot.z })
 			const boon = encounters[entry.id].boon
 			if (boon) {
 				run.boons.push(boon)
