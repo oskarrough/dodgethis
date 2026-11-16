@@ -29,6 +29,7 @@
 		"collect-mods": "bun scripts/collect-mods.js",
 		"sync-jukebox": "bun scripts/sync-jukebox.js",
 		"play:headless": "bun scripts/play.js",
+		"online:check": "bun scripts/online-check.js",
 		"verify:browser": "node scripts/verify-moba-playability.mjs",
 		"deploy": "wrangler deploy"
 	},

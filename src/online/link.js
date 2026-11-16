@@ -47,6 +47,7 @@ export function createLink({
 		received: 0,
 		intents: 0,
 		rejected: 0,
+		dropped: 0,
 		rejectionReason: null,
 		skipped: 0,
 		get envelopeP95() {
@@ -79,6 +80,7 @@ export function createLink({
 		const current = typeof contract === 'function' ? contract() : contract
 		if (current !== activeContract) {
 			// Facts belong to a run's tick clock; never carry lobby cues into its replacement.
+			stats.dropped += facts.length
 			facts = []
 			for (const seat of seats.values()) seat.fact = factId
 			activeContract = current
@@ -116,9 +118,18 @@ export function createLink({
 		)
 			return false
 		if (!Array.isArray(envelope.facts) || envelope.facts.length > MAX_FACTS) return false
-		return envelope.facts.every(
-			(entry) => entry && safeInt(entry.id) && current.validFact(entry.fact),
-		)
+		let ok = true
+		for (const entry of envelope.facts) {
+			if (!entry || !safeInt(entry.id)) {
+				ok = false
+				continue
+			}
+			if (!current.validFact(entry.fact)) {
+				stats.dropped++
+				ok = false
+			}
+		}
+		return ok
 	}
 
 	function receiveState(envelope, from) {

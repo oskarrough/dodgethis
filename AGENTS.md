@@ -25,7 +25,7 @@ A web game: two modes, dodgeball and a MOBA, on one engine.
 - If the shared server serves stale code, check it runs from this checkout (`readlink /proc/<vite pid>/cwd`)
 - `bun run check` lint, format and leftovers, a few seconds: run it often
 - `bun run test` the unit tests and map smoke, before every push (the pre-push hook runs it under git; jj skips hooks, so run it yourself)
-- `bun run simulate --summary` headless bot matches; `play:headless` drives one
+- `bun run simulate --summary` headless bot matches; `play:headless` drives one; `online:check` a host and guest through JSON
 - `bun run review` pins a proof to `pages/`; `--pair before.png after.png` makes a side-by-side, `--body notes.md` adds prose, `--update <slug>` replaces an existing page in place, and it prints the link to hand over
 - `bun run where <word>` finds a feature
 - `bun run collect-mods` after adding or removing a mod folder
