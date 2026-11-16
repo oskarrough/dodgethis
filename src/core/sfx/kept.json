@@ -154,5 +154,9 @@
 	"warden.gnomon.fall": {
 		"kept": "warden.gnomon.fall--slide-rock.ogg",
 		"gain": 0.7
+	},
+	"lobby.seatDenied": {
+		"kept": "lobby.seatDenied--open-close-menu-close-2.ogg",
+		"gain": 0.5
 	}
 }
