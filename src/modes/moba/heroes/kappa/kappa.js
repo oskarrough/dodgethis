@@ -1,3 +1,5 @@
+import talents from './kappa-talents.js'
+
 export default {
 	// Keywords this folder's cards may name with [[Term]] (glossary.js).
 	terms: {
@@ -20,6 +22,7 @@ export default {
 		},
 	},
 	name: 'Kappa',
+	talents,
 	order: 2,
 	color: 'terracotta',
 	silhouette: 'square',
