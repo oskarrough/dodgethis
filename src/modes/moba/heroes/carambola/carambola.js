@@ -1,3 +1,5 @@
+import talents from './carambola-talents.js'
+
 export default {
 	unit: {
 		hp: 'hp',
@@ -6,6 +8,7 @@ export default {
 		kit: { slot1: 'bank', slot2: 'lob', slot3: 'pinball' },
 	},
 	name: 'Carambola',
+	talents,
 	color: 'cream',
 	silhouette: 'triangle',
 }

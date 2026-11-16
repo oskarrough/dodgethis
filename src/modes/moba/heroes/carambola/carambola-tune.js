@@ -1,6 +1,25 @@
 export default {
 	hp: 1300,
 	speed: 5,
+	// His talent tree's numbers (carambola-talents.js), one block per talent.
+	talents: {
+		thirdCushion: { bounces: 1 },
+		hotCelluloid: { damage: 30 },
+		english: { slow: 0.3, duration: 1.5 },
+		deadDrop: { duration: 1 },
+		longBurn: { fieldLife: 2, burnDamage: 12 },
+		wideShadow: { radius: 1 },
+		rally: { cut: 0.5 },
+		hardRubber: { falloff: 0.05 },
+		longServe: { range: 3, cooldown: 2 },
+		sweetSpot: { window: 3, factor: 1.5 },
+		backhand: { every: 3, range: 4, fraction: 0.6 },
+		volley: { cut: 0.5 },
+		stoneBeak: { fraction: 0.2 },
+		cleanUp: { heal: 120 },
+		rolledNet: { health: 0.35, fraction: 0.25, cooldown: 30 },
+		trickShot: { factor: 1.5 },
+	},
 	view: {
 		basic: {
 			swingTurn: 0.5,
@@ -35,4 +54,24 @@ export default {
 			releaseRecover: 0.19,
 		},
 	},
+}
+
+// The dimension of each number above that its name alone does not settle (src/modes/moba/units.js).
+const talent = (id, key) => `heroes.carambola.talents.${id}.${key}`
+export const units = {
+	[talent('thirdCushion', 'bounces')]: 'count',
+	[talent('english', 'slow')]: 'fraction',
+	[talent('longBurn', 'fieldLife')]: 's',
+	[talent('longBurn', 'burnDamage')]: 'hp',
+	[talent('rally', 'cut')]: 's',
+	[talent('hardRubber', 'falloff')]: 'fraction',
+	[talent('sweetSpot', 'window')]: 's',
+	[talent('sweetSpot', 'factor')]: 'multiplier',
+	[talent('backhand', 'fraction')]: 'fraction',
+	[talent('volley', 'cut')]: 's',
+	[talent('stoneBeak', 'fraction')]: 'fraction',
+	[talent('cleanUp', 'heal')]: 'hp',
+	[talent('rolledNet', 'health')]: 'fraction',
+	[talent('rolledNet', 'fraction')]: 'fraction',
+	[talent('trickShot', 'factor')]: 'multiplier',
 }

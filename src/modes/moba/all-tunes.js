@@ -72,7 +72,9 @@ import encounters_manos, { units as encounters_manos_units } from './encounters/
 import encounters_tinajaBotijo, {
 	units as encounters_tinajaBotijo_units,
 } from './encounters/tinajaBotijo/tinajaBotijo-tune.js'
-import heroes_carambola from './heroes/carambola/carambola-tune.js'
+import heroes_carambola, {
+	units as heroes_carambola_units,
+} from './heroes/carambola/carambola-tune.js'
 import heroes_ibis, { units as heroes_ibis_units } from './heroes/ibis/ibis-tune.js'
 import heroes_kappa, { units as heroes_kappa_units } from './heroes/kappa/kappa-tune.js'
 import heroes_lasso, { units as heroes_lasso_units } from './heroes/lasso/lasso-tune.js'
@@ -188,6 +190,7 @@ export const units = {
 	...encounters_gnomon_units,
 	...encounters_manos_units,
 	...encounters_tinajaBotijo_units,
+	...heroes_carambola_units,
 	...heroes_ibis_units,
 	...heroes_kappa_units,
 	...heroes_lasso_units,
