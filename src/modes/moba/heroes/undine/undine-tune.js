@@ -2,6 +2,25 @@ export default {
 	hp: 1500,
 	speed: 5,
 	bot: { saveHp: 0.6 },
+	// Her talent tree's numbers (undine-talents.js), one block per talent.
+	talents: {
+		refill: { cut: 0.5 },
+		undercurrent: { factor: 1.4 },
+		bigBalloon: { heal: 80 },
+		hardWater: { factor: 1.8 },
+		longThrow: { range: 3 },
+		deepRoots: { fraction: 0.25 },
+		spray: { every: 1, damage: 40 },
+		longHose: { range: 3, cooldown: 4 },
+		slick: { cooldown: 3 },
+		wake: { radius: 1.5, damage: 80 },
+		splashdown: { radius: 4, heal: 90 },
+		stillWater: { fraction: 0.25 },
+		wellspring: { health: 0.35, fraction: 0.25, cooldown: 30 },
+		quickFill: { cooldown: 1.5 },
+		flood: { distance: 2.5, time: 0.25 },
+		monsoon: { delay: 1, fraction: 0.5 },
+	},
 	view: {
 		width: 0.75,
 		height: 0.7,
@@ -38,7 +57,20 @@ export default {
 }
 
 // The dimension of each number above that its name alone does not settle (src/modes/moba/units.js).
+const talent = (id, key) => `heroes.undine.talents.${id}.${key}`
 export const units = {
+	[talent('refill', 'cut')]: 's',
+	[talent('undercurrent', 'factor')]: 'multiplier',
+	[talent('bigBalloon', 'heal')]: 'hp',
+	[talent('hardWater', 'factor')]: 'multiplier',
+	[talent('deepRoots', 'fraction')]: 'fraction',
+	[talent('spray', 'every')]: 's',
+	[talent('splashdown', 'heal')]: 'hp',
+	[talent('stillWater', 'fraction')]: 'fraction',
+	[talent('wellspring', 'health')]: 'fraction',
+	[talent('wellspring', 'fraction')]: 'fraction',
+	[talent('flood', 'distance')]: 'm',
+	[talent('monsoon', 'fraction')]: 'fraction',
 	'heroes.undine.view.flickLean': 'rad',
 	'heroes.undine.view.slideRecover': 's',
 	'heroes.undine.view.castSquash': 'fraction',

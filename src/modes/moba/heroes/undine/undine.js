@@ -1,4 +1,5 @@
 import { undineBot } from './undine-bot.js'
+import talents from './undine-talents.js'
 
 export default {
 	unit: {
@@ -10,6 +11,7 @@ export default {
 		brain: undineBot,
 	},
 	name: 'Undine',
+	talents,
 	order: 6,
 	color: 'seaTeal',
 	silhouette: 'circle',
