@@ -1,6 +1,7 @@
 import { tune } from '../../tune.js'
 import { mandadorCutoutDeath, mandadorCutoutTick, mandadorCutoutFrame } from './mandador-cutout.js'
 import { mandadorBotDead } from './mandador-bots.js'
+import talents from './mandador-talents.js'
 
 export default {
 	unit: {
@@ -19,6 +20,7 @@ export default {
 		},
 	},
 	name: 'Mandador',
+	talents,
 	order: 4,
 	color: 'cream',
 	silhouette: 'bar',

@@ -2,6 +2,27 @@ export default {
 	hp: 1450,
 	speed: 5,
 	cutout: { speed: 5, inset: 0.05, searchStep: 2 },
+	// The talent tree's numbers (mandador-talents.js), one block per talent.
+	talents: {
+		drill: { slow: 0.25, duration: 1 },
+		goodForm: { radius: 8, heal: 25 },
+		keepScore: { cut: 0.5 },
+		longPass: { range: 4, speed: 6 },
+		heavyBall: { healAmount: 120, cooldown: 1.5 },
+		giveAndGo: { fraction: 0.4 },
+		longReach: { range: 4, cooldown: 4 },
+		freshLegs: { fraction: 0.2 },
+		holdTheLine: { range: 3, slow: 0.4, duration: 1.5 },
+		wideRing: { radius: 1.5 },
+		shout: { stun: 0.6 },
+		longBout: { duration: 2, cooldown: 3 },
+		coolHead: { health: 0.35, cooldown: 30 },
+		stretcher: { radius: 10, health: 0.35, cooldown: 20 },
+		thickBoard: { fraction: 0.2 },
+		finalWhistle: { damage: 150 },
+		teamTalk: { radius: 6, fraction: 0.6 },
+		showman: { radius: 3, stun: 0.8 },
+	},
 	// How the board moves. Each action coils over its cast point, snaps on release and settles. Angles are radians
 	// (back is a lean away from the aim, forward past it), reaches are metres, crouch and stretch are fractions of the
 	// board's height, hop is metres. snap and recover are seconds of presentation after the release.
@@ -85,6 +106,21 @@ export default {
 }
 
 // The dimension of each number above that its name alone does not settle (src/modes/moba/units.js).
+const talent = (id, key) => `heroes.mandador.talents.${id}.${key}`
 export const units = {
 	'heroes.mandador.cutout.searchStep': 'm',
+	[talent('drill', 'slow')]: 'fraction',
+	[talent('goodForm', 'heal')]: 'hp',
+	[talent('keepScore', 'cut')]: 's',
+	[talent('longPass', 'speed')]: 'm/s',
+	[talent('heavyBall', 'healAmount')]: 'hp',
+	[talent('giveAndGo', 'fraction')]: 'fraction',
+	[talent('freshLegs', 'fraction')]: 'fraction',
+	[talent('holdTheLine', 'slow')]: 'fraction',
+	[talent('shout', 'stun')]: 's',
+	[talent('coolHead', 'health')]: 'fraction',
+	[talent('stretcher', 'health')]: 'fraction',
+	[talent('thickBoard', 'fraction')]: 'fraction',
+	[talent('teamTalk', 'fraction')]: 'fraction',
+	[talent('showman', 'stun')]: 's',
 }
