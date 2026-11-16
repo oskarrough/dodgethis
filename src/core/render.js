@@ -158,7 +158,7 @@ export function createRenderer() {
 	function updateCamera(dt) {
 		if (framers.length) applyFrame(framers.at(-1)(dt))
 		if (!tune.output.shake) shake = 0
-		const fovActive = stepFov(dt)
+		const fovActive = stepFov(Math.min(dt, 0.05))
 		const nudging = stepNudge(Math.min(dt, 0.05))
 		// Common case: no active shake — snap back to base once, then idle with no jitter or lookAt() recompute.
 		if (shake <= 0) {
