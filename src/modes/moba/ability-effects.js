@@ -119,6 +119,9 @@ export function createAbilityEffects(ctx) {
 						unit,
 						{ x: at.x + dir.x * effect.distance, z: at.z + dir.z * effect.distance },
 						effect.duration,
+						effect.effect === 'knockback' && unit.team !== actor.team
+							? { source: actor.id, team: actor.team }
+							: null,
 					)
 				} else if (effect.effect === 'cleanse') {
 					for (const tag of effect.tags) ctx.cleanse(unit, tag)

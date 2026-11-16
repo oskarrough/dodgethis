@@ -53,6 +53,7 @@ export function shove(sim, unit, from, distance, time) {
 		unit,
 		{ x: p.x + (dx / length) * distance, z: p.z + (dz / length) * distance },
 		time,
+		{},
 	)
 }
 
