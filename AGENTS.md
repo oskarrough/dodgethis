@@ -23,6 +23,7 @@ A web game: two modes, dodgeball and a MOBA, on one engine.
 - `bun run dev:agent` shared dev server, never stop it; `bun run dev:agent --lan [pagepath]` serves on all interfaces, prints the `office-linux.heron-mermaid.ts.net` URL for Oskar and curls the page and its media, failing if any is missing
 - `bun run refs [--new N]` contact sheets (captioned, any format) of Oskar's inspiration folder; read the printed sheets, and never copy those images into the repo
 - If the shared server serves stale code, check it runs from this checkout (`readlink /proc/<vite pid>/cwd`)
+- The shared server is not on :5173 (another project holds that port); take the URL `bun run dev:agent` prints
 - `bun run check` lint, format and leftovers, a few seconds: run it often; its leftovers lint reads `git ls-files`, so a file jj has not snapshotted yet makes its tune keys look unread: run `jj st` and check again
 - `bun run test` the unit tests and map smoke, before every push (the pre-push hook runs it under git; jj skips hooks, so run it yourself)
 - `bun run simulate --summary` headless bot matches; `play:headless` drives one; `online:check` a host and guest through JSON

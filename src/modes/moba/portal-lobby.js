@@ -124,16 +124,28 @@ export function createPortalLobby({
 		galleryEl.append(word)
 		return { stand, word, at: new THREE.Vector3(stand.x, 0, stand.z) }
 	})
+	// Each word sits centred on its plate and shrinks to fit the plate's width on screen, standing or lying.
+	const edge = new THREE.Vector3()
 	function placeGallery(camera, time) {
-		for (const { stand, word, at } of galleryWords) {
+		const { lie, plate } = tune.lobby.gallery
+		for (const item of galleryWords) {
+			const { stand, word, at } = item
 			projected.copy(at).project(camera)
+			edge.set(at.x + plate.halfX, at.y, at.z).project(camera)
 			// Lying flat is a lean of `lie`, not a right angle, so the word is still read from above.
 			const lean = (-gallery.angle(stand, time / app.clock.step, app.clock.step) * 2) / Math.PI
 			word.hidden = projected.z < -1 || projected.z > 1
 			word.dataset.picked = String(stand.id === gallery.difficulty)
 			word.style.left = `${((projected.x + 1) * innerWidth) / 2}px`
 			word.style.top = `${((1 - projected.y) * innerHeight) / 2}px`
-			word.style.transform = `translate(-50%, -100%) perspective(200px) rotateX(${lean * tune.lobby.gallery.lie}deg)`
+			// The type grows with the screen (portal-lobby.css), so its width is measured again on resize.
+			if (item.measuredAt !== innerWidth || !item.width) {
+				item.measuredAt = innerWidth
+				item.width = word.offsetWidth
+			}
+			const room = 0.8 * Math.abs(edge.x - projected.x) * innerWidth
+			const fit = item.width ? Math.min(1, room / item.width) : 1
+			word.style.transform = `translate(-50%, -50%) perspective(200px) rotateX(${lean * lie}deg) scale(${fit})`
 		}
 	}
 	// The bell rings and the acequia ripples; keys stand by each until you've pressed them once.
