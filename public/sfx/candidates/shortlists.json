@@ -19,9 +19,9 @@
 			"why": "name fits, Splash and descent family"
 		},
 		{
-			"file": "tap/click-003.ogg",
+			"file": "tap/click-007.ogg",
 			"score": 6,
-			"gain": 0.1,
+			"gain": 0.05,
 			"why": "name fits, Splash and descent family"
 		},
 		{
@@ -33,25 +33,25 @@
 	],
 	"splash.enter": [
 		{
-			"file": "confirm/confirm-017.ogg",
-			"score": 6,
-			"gain": 0.05,
-			"why": "name fits, Splash and descent family"
-		},
-		{
 			"file": "confirm/confirm-016.ogg",
 			"score": 6,
 			"gain": 0.05,
 			"why": "name fits, Splash and descent family"
 		},
 		{
-			"file": "switch/toggle-004.ogg",
+			"file": "confirm/confirm-017.ogg",
+			"score": 6,
+			"gain": 0.05,
+			"why": "name fits, Splash and descent family"
+		},
+		{
+			"file": "switch/toggle-002.ogg",
 			"score": 2,
 			"gain": 0.05,
 			"why": "Splash and descent family"
 		},
 		{
-			"file": "switch/toggle-002.ogg",
+			"file": "switch/toggle-004.ogg",
 			"score": 2,
 			"gain": 0.05,
 			"why": "Splash and descent family"
@@ -97,15 +97,15 @@
 	],
 	"splash.mode": [
 		{
-			"file": "switch/toggle-004.ogg",
-			"score": 6,
-			"gain": 0.1,
-			"why": "name fits, Splash and descent family"
-		},
-		{
 			"file": "switch/toggle-002.ogg",
 			"score": 6,
 			"gain": 0.05,
+			"why": "name fits, Splash and descent family"
+		},
+		{
+			"file": "switch/toggle-004.ogg",
+			"score": 6,
+			"gain": 0.1,
 			"why": "name fits, Splash and descent family"
 		},
 		{
@@ -129,25 +129,25 @@
 	],
 	"descent.back": [
 		{
-			"file": "error/back-002.ogg",
-			"score": 6,
-			"gain": 0.05,
-			"why": "name fits, Splash and descent family"
-		},
-		{
 			"file": "error/back-001.ogg",
 			"score": 6,
 			"gain": 0.1,
 			"why": "name fits, Splash and descent family"
 		},
 		{
-			"file": "open-close/close-001.ogg",
+			"file": "error/back-002.ogg",
+			"score": 6,
+			"gain": 0.05,
+			"why": "name fits, Splash and descent family"
+		},
+		{
+			"file": "open-close/close-002.ogg",
 			"score": 4,
 			"gain": 0.05,
 			"why": "name fits"
 		},
 		{
-			"file": "open-close/close-003.ogg",
+			"file": "open-close/close-001.ogg",
 			"score": 4,
 			"gain": 0.05,
 			"why": "name fits"
@@ -179,13 +179,13 @@
 			"why": "name fits, Splash and descent family"
 		},
 		{
-			"file": "misc/drop-003.ogg",
+			"file": "misc/drop-002.ogg",
 			"score": 4,
 			"gain": 0.05,
 			"why": "name fits"
 		},
 		{
-			"file": "misc/drop-001.ogg",
+			"file": "misc/drop-003.ogg",
 			"score": 4,
 			"gain": 0.05,
 			"why": "name fits"
@@ -193,13 +193,13 @@
 	],
 	"descent.arrival": [
 		{
-			"file": "misc/drop-003.ogg",
+			"file": "misc/drop-002.ogg",
 			"score": 4,
 			"gain": 0.05,
 			"why": "name fits"
 		},
 		{
-			"file": "misc/drop-001.ogg",
+			"file": "misc/drop-003.ogg",
 			"score": 4,
 			"gain": 0.05,
 			"why": "name fits"
@@ -211,13 +211,13 @@
 			"why": "name fits"
 		},
 		{
-			"file": "impact/soft-heavy-003.ogg",
+			"file": "impact/soft-heavy-005.ogg",
 			"score": 4,
 			"gain": 0.05,
 			"why": "name fits"
 		},
 		{
-			"file": "impact/soft-heavy-001.ogg",
+			"file": "impact/soft-heavy-002.ogg",
 			"score": 4,
 			"gain": 0.05,
 			"why": "name fits"
@@ -225,13 +225,13 @@
 	],
 	"lobby.start": [
 		{
-			"file": "confirm/confirm-017.ogg",
+			"file": "confirm/confirm-016.ogg",
 			"score": 6,
 			"gain": 0.05,
 			"why": "name fits, Lobby family"
 		},
 		{
-			"file": "confirm/confirm-016.ogg",
+			"file": "confirm/confirm-017.ogg",
 			"score": 6,
 			"gain": 0.05,
 			"why": "name fits, Lobby family"
@@ -269,13 +269,13 @@
 			"why": "name fits, Lobby family"
 		},
 		{
-			"file": "open-close/close-001.ogg",
+			"file": "open-close/close-002.ogg",
 			"score": 4,
 			"gain": 0.05,
 			"why": "name fits"
 		},
 		{
-			"file": "open-close/close-003.ogg",
+			"file": "open-close/close-001.ogg",
 			"score": 4,
 			"gain": 0.05,
 			"why": "name fits"
@@ -285,70 +285,6 @@
 			"score": 4,
 			"gain": 0.1,
 			"why": "name fits"
-		}
-	],
-	"lobby.inspectOpen": [
-		{
-			"file": "open-close/maximize-007.ogg",
-			"score": 4,
-			"gain": 0.05,
-			"why": "name fits"
-		},
-		{
-			"file": "open-close/maximize-009.ogg",
-			"score": 2.8,
-			"gain": 0.05,
-			"why": "name fits"
-		},
-		{
-			"file": "rpg/bookflip-003.ogg",
-			"score": 2.6799999999999997,
-			"gain": 0.2,
-			"why": "name fits"
-		},
-		{
-			"file": "rpg/bookflip-002.ogg",
-			"score": 2.48,
-			"gain": 0.3,
-			"why": "name fits"
-		},
-		{
-			"file": "error/error-015.ogg",
-			"score": 2,
-			"gain": 0.05,
-			"why": "Lobby family"
-		}
-	],
-	"lobby.inspectClose": [
-		{
-			"file": "open-close/minimize-003.ogg",
-			"score": 4,
-			"gain": 0.05,
-			"why": "name fits"
-		},
-		{
-			"file": "open-close/minimize-002.ogg",
-			"score": 4,
-			"gain": 0.05,
-			"why": "name fits"
-		},
-		{
-			"file": "error/error-015.ogg",
-			"score": 2,
-			"gain": 0.05,
-			"why": "Lobby family"
-		},
-		{
-			"file": "error/glitch-003.ogg",
-			"score": 2,
-			"gain": 0.05,
-			"why": "Lobby family"
-		},
-		{
-			"file": "misc/beep-bop.wav",
-			"score": 2,
-			"gain": 0.35,
-			"why": "Lobby family"
 		}
 	],
 	"lobby.pick": [
@@ -409,9 +345,9 @@
 			"why": "Lobby family"
 		},
 		{
-			"file": "misc/drop-003.ogg",
+			"file": "misc/drop-002.ogg",
 			"score": 2,
-			"gain": 0.1,
+			"gain": 0.15,
 			"why": "Lobby family"
 		}
 	],
@@ -429,19 +365,19 @@
 			"why": "Lobby family"
 		},
 		{
+			"file": "misc/drop-002.ogg",
+			"score": 2,
+			"gain": 0.1,
+			"why": "Lobby family"
+		},
+		{
 			"file": "misc/drop-003.ogg",
 			"score": 2,
 			"gain": 0.1,
 			"why": "Lobby family"
 		},
 		{
-			"file": "misc/drop-001.ogg",
-			"score": 2,
-			"gain": 0.1,
-			"why": "Lobby family"
-		},
-		{
-			"file": "misc/glass-002.ogg",
+			"file": "misc/glass-005.ogg",
 			"score": 2,
 			"gain": 0.1,
 			"why": "Lobby family"
@@ -449,13 +385,19 @@
 	],
 	"lobby.flip": [
 		{
+			"file": "misc/drop-002.ogg",
+			"score": 2,
+			"gain": 0.05,
+			"why": "Lobby family"
+		},
+		{
 			"file": "misc/drop-003.ogg",
 			"score": 2,
 			"gain": 0.05,
 			"why": "Lobby family"
 		},
 		{
-			"file": "misc/drop-001.ogg",
+			"file": "misc/glass-005.ogg",
 			"score": 2,
 			"gain": 0.05,
 			"why": "Lobby family"
@@ -467,13 +409,7 @@
 			"why": "Lobby family"
 		},
 		{
-			"file": "misc/glass-001.ogg",
-			"score": 2,
-			"gain": 0.05,
-			"why": "Lobby family"
-		},
-		{
-			"file": "switch/toggle-004.ogg",
+			"file": "switch/toggle-002.ogg",
 			"score": 2,
 			"gain": 0.05,
 			"why": "Lobby family"
@@ -481,7 +417,13 @@
 	],
 	"lobby.grooveFill": [
 		{
-			"file": "misc/drop-002.ogg",
+			"file": "misc/drop-001.ogg",
+			"score": 2,
+			"gain": 0.05,
+			"why": "Lobby family"
+		},
+		{
+			"file": "misc/glass-005.ogg",
 			"score": 2,
 			"gain": 0.05,
 			"why": "Lobby family"
@@ -493,19 +435,13 @@
 			"why": "Lobby family"
 		},
 		{
-			"file": "misc/glass-001.ogg",
+			"file": "switch/toggle-002.ogg",
 			"score": 2,
 			"gain": 0.05,
 			"why": "Lobby family"
 		},
 		{
 			"file": "switch/toggle-004.ogg",
-			"score": 2,
-			"gain": 0.05,
-			"why": "Lobby family"
-		},
-		{
-			"file": "switch/toggle-002.ogg",
 			"score": 2,
 			"gain": 0.05,
 			"why": "Lobby family"
@@ -545,27 +481,27 @@
 	],
 	"lobby.seatDenied": [
 		{
-			"file": "misc/glass-001.ogg",
+			"file": "misc/glass-002.ogg",
 			"score": 2,
 			"gain": 0.15,
 			"why": "Lobby family"
 		},
 		{
-			"file": "misc/glass-005.ogg",
+			"file": "misc/glass-006.ogg",
 			"score": 2,
 			"gain": 0.15,
-			"why": "Lobby family"
-		},
-		{
-			"file": "switch/toggle-004.ogg",
-			"score": 2,
-			"gain": 0.1,
 			"why": "Lobby family"
 		},
 		{
 			"file": "switch/toggle-002.ogg",
 			"score": 2,
 			"gain": 0.05,
+			"why": "Lobby family"
+		},
+		{
+			"file": "switch/toggle-004.ogg",
+			"score": 2,
+			"gain": 0.1,
 			"why": "Lobby family"
 		},
 		{
@@ -595,7 +531,7 @@
 			"why": "name fits, Lobby family"
 		},
 		{
-			"file": "tap/click-003.ogg",
+			"file": "tap/click-007.ogg",
 			"score": 6,
 			"gain": 0.05,
 			"why": "name fits, Lobby family"
@@ -609,13 +545,13 @@
 	],
 	"lobby.seatEnter": [
 		{
-			"file": "switch/toggle-004.ogg",
+			"file": "switch/toggle-002.ogg",
 			"score": 6,
 			"gain": 0.05,
 			"why": "name fits, Lobby family"
 		},
 		{
-			"file": "switch/toggle-002.ogg",
+			"file": "switch/toggle-004.ogg",
 			"score": 6,
 			"gain": 0.05,
 			"why": "name fits, Lobby family"
@@ -659,7 +595,7 @@
 			"why": "name fits"
 		},
 		{
-			"file": "misc/glass-006.ogg",
+			"file": "misc/glass-001.ogg",
 			"score": 2,
 			"gain": 0.1,
 			"why": "Lobby family"
@@ -673,16 +609,22 @@
 	],
 	"lobby.readyCancel": [
 		{
+			"file": "error/back-001.ogg",
+			"score": 6,
+			"gain": 0.1,
+			"why": "name fits, Lobby family"
+		},
+		{
 			"file": "error/back-002.ogg",
 			"score": 6,
 			"gain": 0.05,
 			"why": "name fits, Lobby family"
 		},
 		{
-			"file": "error/back-001.ogg",
-			"score": 6,
-			"gain": 0.1,
-			"why": "name fits, Lobby family"
+			"file": "open-close/close-002.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
 		},
 		{
 			"file": "open-close/close-001.ogg",
@@ -691,48 +633,10 @@
 			"why": "name fits"
 		},
 		{
-			"file": "open-close/close-003.ogg",
+			"file": "open-close/minimize-003.ogg",
 			"score": 4,
-			"gain": 0.05,
-			"why": "name fits"
-		},
-		{
-			"file": "open-close/minimize-001.ogg",
-			"score": 4,
-			"gain": 0.05,
-			"why": "name fits"
-		}
-	],
-	"lobby.galleryShot": [
-		{
-			"file": "digital/laser-005.ogg",
-			"score": 4,
-			"gain": 0.05,
-			"why": "name fits"
-		},
-		{
-			"file": "game/player/hit/throw-002.wav",
-			"score": 4,
-			"gain": 0.3,
-			"why": "name fits"
-		},
-		{
-			"file": "misc/glass-006.ogg",
-			"score": 2,
 			"gain": 0.1,
-			"why": "Lobby family"
-		},
-		{
-			"file": "tap/click-005.ogg",
-			"score": 2,
-			"gain": 0.05,
-			"why": "Lobby family"
-		},
-		{
-			"file": "tap/click-003.ogg",
-			"score": 2,
-			"gain": 0.05,
-			"why": "Lobby family"
+			"why": "name fits"
 		}
 	],
 	"lobby.galleryPick": [
@@ -761,15 +665,47 @@
 			"why": "name fits"
 		},
 		{
-			"file": "misc/glass-006.ogg",
+			"file": "misc/glass-001.ogg",
+			"score": 2,
+			"gain": 0.15,
+			"why": "Lobby family"
+		}
+	],
+	"lobby.bell": [
+		{
+			"file": "misc/glass-001.ogg",
 			"score": 2,
 			"gain": 0.1,
+			"why": "Lobby family"
+		},
+		{
+			"file": "tap/click-005.ogg",
+			"score": 2,
+			"gain": 0.05,
+			"why": "Lobby family"
+		},
+		{
+			"file": "tap/click-007.ogg",
+			"score": 2,
+			"gain": 0.05,
+			"why": "Lobby family"
+		},
+		{
+			"file": "tap/tap-kissy.wav",
+			"score": 2,
+			"gain": 0.45,
+			"why": "Lobby family"
+		},
+		{
+			"file": "tap/tap-simple.wav",
+			"score": 2,
+			"gain": 0.25,
 			"why": "Lobby family"
 		}
 	],
 	"lobby.magnetClack": [
 		{
-			"file": "tap/click-005.ogg",
+			"file": "tap/click-007.ogg",
 			"score": 6,
 			"gain": 0.05,
 			"why": "name fits, Lobby family"
@@ -807,16 +743,10 @@
 			"why": "name fits, Lobby family"
 		},
 		{
-			"file": "misc/drop-003.ogg",
+			"file": "misc/drop-002.ogg",
 			"score": 4.5,
 			"gain": 0.05,
 			"why": "name fits, Lobby family"
-		},
-		{
-			"file": "impact/plate-heavy-001.ogg",
-			"score": 4,
-			"gain": 0.1,
-			"why": "name fits"
 		},
 		{
 			"file": "impact/plate-light-002.ogg",
@@ -825,7 +755,13 @@
 			"why": "name fits"
 		},
 		{
-			"file": "impact/plate-light-004.ogg",
+			"file": "impact/plate-heavy-001.ogg",
+			"score": 4,
+			"gain": 0.1,
+			"why": "name fits"
+		},
+		{
+			"file": "impact/plate-medium-003.ogg",
 			"score": 4,
 			"gain": 0.1,
 			"why": "name fits"
@@ -857,7 +793,7 @@
 			"why": "name fits"
 		},
 		{
-			"file": "misc/glass-006.ogg",
+			"file": "tap/click-011.wav",
 			"score": 2,
 			"gain": 0.05,
 			"why": "Lobby family"
@@ -865,25 +801,25 @@
 	],
 	"ui.hover": [
 		{
-			"file": "tap/hover-003.wav",
-			"score": 6,
-			"gain": 0.3,
-			"why": "name fits, Menus family"
-		},
-		{
 			"file": "tap/hover-001.wav",
 			"score": 6,
 			"gain": 0.1,
 			"why": "name fits, Menus family"
 		},
 		{
-			"file": "open-close/close-001.ogg",
+			"file": "tap/hover-004.wav",
+			"score": 6,
+			"gain": 0.1,
+			"why": "name fits, Menus family"
+		},
+		{
+			"file": "open-close/close-002.ogg",
 			"score": 2,
 			"gain": 0.05,
 			"why": "Menus family"
 		},
 		{
-			"file": "open-close/close-003.ogg",
+			"file": "open-close/close-001.ogg",
 			"score": 2,
 			"gain": 0.05,
 			"why": "Menus family"
@@ -915,7 +851,7 @@
 			"why": "name fits, Menus family"
 		},
 		{
-			"file": "tap/click-003.ogg",
+			"file": "tap/click-007.ogg",
 			"score": 6,
 			"gain": 0.1,
 			"why": "name fits, Menus family"
@@ -935,25 +871,25 @@
 			"why": "name fits, Menus family"
 		},
 		{
-			"file": "confirm/confirm-017.ogg",
-			"score": 4,
-			"gain": 0.05,
-			"why": "name fits"
-		},
-		{
 			"file": "confirm/confirm-016.ogg",
 			"score": 4,
 			"gain": 0.05,
 			"why": "name fits"
 		},
 		{
-			"file": "open-close/close-001.ogg",
+			"file": "confirm/confirm-017.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "open-close/close-002.ogg",
 			"score": 2,
 			"gain": 0.05,
 			"why": "Menus family"
 		},
 		{
-			"file": "open-close/close-003.ogg",
+			"file": "open-close/close-001.ogg",
 			"score": 2,
 			"gain": 0.05,
 			"why": "Menus family"
@@ -967,7 +903,7 @@
 			"why": "name fits, Menus family"
 		},
 		{
-			"file": "tap/click-003.ogg",
+			"file": "tap/click-007.ogg",
 			"score": 6,
 			"gain": 0.05,
 			"why": "name fits, Menus family"
@@ -987,13 +923,13 @@
 		{
 			"file": "tap/mouseclick-001.ogg",
 			"score": 6,
-			"gain": 0.1,
+			"gain": 0.05,
 			"why": "name fits, Menus family"
 		}
 	],
 	"ui.nav": [
 		{
-			"file": "tap/click-007.ogg",
+			"file": "tap/click-003.ogg",
 			"score": 6,
 			"gain": 0.05,
 			"why": "name fits, Menus family"
@@ -1025,15 +961,15 @@
 	],
 	"ui.switch": [
 		{
-			"file": "switch/toggle-004.ogg",
-			"score": 6,
-			"gain": 0.1,
-			"why": "name fits, Menus family"
-		},
-		{
 			"file": "switch/toggle-002.ogg",
 			"score": 6,
 			"gain": 0.05,
+			"why": "name fits, Menus family"
+		},
+		{
+			"file": "switch/toggle-004.ogg",
+			"score": 6,
+			"gain": 0.1,
 			"why": "name fits, Menus family"
 		},
 		{
@@ -1075,13 +1011,13 @@
 			"why": "name fits, Menus family"
 		},
 		{
-			"file": "open-close/close-001.ogg",
+			"file": "open-close/close-002.ogg",
 			"score": 2,
 			"gain": 0.05,
 			"why": "Menus family"
 		},
 		{
-			"file": "open-close/close-003.ogg",
+			"file": "open-close/close-001.ogg",
 			"score": 2,
 			"gain": 0.05,
 			"why": "Menus family"
@@ -1089,13 +1025,13 @@
 	],
 	"ui.menuClose": [
 		{
-			"file": "open-close/close-001.ogg",
+			"file": "open-close/close-002.ogg",
 			"score": 6,
 			"gain": 0.05,
 			"why": "name fits, Menus family"
 		},
 		{
-			"file": "open-close/close-003.ogg",
+			"file": "open-close/close-001.ogg",
 			"score": 6,
 			"gain": 0.05,
 			"why": "name fits, Menus family"
@@ -1107,7 +1043,7 @@
 			"why": "name fits, Menus family"
 		},
 		{
-			"file": "open-close/minimize-002.ogg",
+			"file": "open-close/minimize-001.ogg",
 			"score": 6,
 			"gain": 0.05,
 			"why": "name fits, Menus family"
@@ -1153,25 +1089,25 @@
 	],
 	"ballSpawn": [
 		{
-			"file": "impact/glass-light-005.ogg",
-			"score": 2,
-			"gain": 0.2,
-			"why": "Ball family"
-		},
-		{
-			"file": "impact/glass-light-004.ogg",
-			"score": 2,
-			"gain": 0.2,
-			"why": "Ball family"
-		},
-		{
-			"file": "misc/glass-002.ogg",
+			"file": "impact/glass-light-001.ogg",
 			"score": 2,
 			"gain": 0.25,
 			"why": "Ball family"
 		},
 		{
-			"file": "misc/glass-001.ogg",
+			"file": "impact/glass-light-003.ogg",
+			"score": 2,
+			"gain": 0.2,
+			"why": "Ball family"
+		},
+		{
+			"file": "misc/glass-005.ogg",
+			"score": 2,
+			"gain": 0.25,
+			"why": "Ball family"
+		},
+		{
+			"file": "misc/glass-002.ogg",
 			"score": 2,
 			"gain": 0.25,
 			"why": "Ball family"
@@ -1229,19 +1165,19 @@
 			"why": "name fits"
 		},
 		{
-			"file": "impact/glass-light-001.ogg",
+			"file": "impact/glass-light-005.ogg",
 			"score": 2,
 			"gain": 0.1,
 			"why": "Ball family"
 		},
 		{
-			"file": "impact/glass-light-002.ogg",
+			"file": "impact/glass-light-004.ogg",
 			"score": 2,
 			"gain": 0.1,
 			"why": "Ball family"
 		},
 		{
-			"file": "misc/glass-002.ogg",
+			"file": "misc/glass-005.ogg",
 			"score": 2,
 			"gain": 0.1,
 			"why": "Ball family"
@@ -1249,13 +1185,13 @@
 	],
 	"ballInterrupted": [
 		{
-			"file": "open-close/close-001.ogg",
+			"file": "open-close/close-002.ogg",
 			"score": 4,
 			"gain": 0.1,
 			"why": "name fits"
 		},
 		{
-			"file": "open-close/close-003.ogg",
+			"file": "open-close/close-001.ogg",
 			"score": 4,
 			"gain": 0.1,
 			"why": "name fits"
@@ -1313,25 +1249,25 @@
 	],
 	"ballPickup": [
 		{
-			"file": "impact/glass-light-001.ogg",
+			"file": "impact/glass-light-005.ogg",
 			"score": 6,
-			"gain": 0.2,
+			"gain": 0.15,
 			"why": "name fits, Ball family"
 		},
 		{
-			"file": "impact/glass-light-002.ogg",
+			"file": "impact/glass-light-004.ogg",
+			"score": 6,
+			"gain": 0.15,
+			"why": "name fits, Ball family"
+		},
+		{
+			"file": "misc/glass-005.ogg",
 			"score": 6,
 			"gain": 0.2,
 			"why": "name fits, Ball family"
 		},
 		{
 			"file": "misc/glass-002.ogg",
-			"score": 6,
-			"gain": 0.2,
-			"why": "name fits, Ball family"
-		},
-		{
-			"file": "misc/glass-001.ogg",
 			"score": 6,
 			"gain": 0.2,
 			"why": "name fits, Ball family"
@@ -1363,13 +1299,13 @@
 			"why": "name fits"
 		},
 		{
-			"file": "impact/glass-light-003.ogg",
+			"file": "impact/glass-light-002.ogg",
 			"score": 2,
 			"gain": 0.1,
 			"why": "Ball family"
 		},
 		{
-			"file": "misc/glass-002.ogg",
+			"file": "misc/glass-005.ogg",
 			"score": 2,
 			"gain": 0.1,
 			"why": "Ball family"
@@ -1383,19 +1319,19 @@
 			"why": "name fits"
 		},
 		{
-			"file": "impact/glass-light-003.ogg",
+			"file": "impact/glass-light-002.ogg",
 			"score": 2,
 			"gain": 0.15,
 			"why": "Ball family"
 		},
 		{
-			"file": "misc/glass-002.ogg",
+			"file": "misc/glass-005.ogg",
 			"score": 2,
 			"gain": 0.2,
 			"why": "Ball family"
 		},
 		{
-			"file": "misc/glass-001.ogg",
+			"file": "misc/glass-002.ogg",
 			"score": 2,
 			"gain": 0.2,
 			"why": "Ball family"
@@ -1411,7 +1347,7 @@
 		{
 			"file": "impact/bell-heavy-004.ogg",
 			"score": 5,
-			"gain": 0.45,
+			"gain": 0.4,
 			"why": "hit, Ball family"
 		},
 		{
@@ -1453,15 +1389,15 @@
 			"why": "name fits, Ball family"
 		},
 		{
-			"file": "misc/glass-002.ogg",
+			"file": "misc/glass-005.ogg",
 			"score": 2,
 			"gain": 0.3,
 			"why": "Ball family"
 		},
 		{
-			"file": "misc/glass-001.ogg",
+			"file": "misc/glass-002.ogg",
 			"score": 2,
-			"gain": 0.35,
+			"gain": 0.3,
 			"why": "Ball family"
 		},
 		{
@@ -1473,13 +1409,13 @@
 	],
 	"ballBounce": [
 		{
-			"file": "misc/glass-002.ogg",
+			"file": "misc/glass-005.ogg",
 			"score": 6,
 			"gain": 0.2,
 			"why": "name fits, Ball family"
 		},
 		{
-			"file": "misc/glass-001.ogg",
+			"file": "misc/glass-002.ogg",
 			"score": 6,
 			"gain": 0.2,
 			"why": "name fits, Ball family"
@@ -1505,13 +1441,13 @@
 	],
 	"ballDrop": [
 		{
-			"file": "misc/glass-005.ogg",
+			"file": "misc/glass-006.ogg",
 			"score": 6,
 			"gain": 0.15,
 			"why": "name fits, Ball family"
 		},
 		{
-			"file": "misc/glass-006.ogg",
+			"file": "misc/glass-001.ogg",
 			"score": 6,
 			"gain": 0.15,
 			"why": "name fits, Ball family"
@@ -1561,7 +1497,7 @@
 			"why": "name fits, Ball family"
 		},
 		{
-			"file": "impact/glass-light-005.ogg",
+			"file": "impact/glass-light-001.ogg",
 			"score": 4.5,
 			"gain": 0.25,
 			"why": "name fits, Ball family"
@@ -1587,13 +1523,13 @@
 			"why": "numbers only"
 		},
 		{
-			"file": "impact/glass-light-005.ogg",
+			"file": "impact/glass-light-001.ogg",
 			"score": 0,
 			"gain": 0.05,
 			"why": "numbers only"
 		},
 		{
-			"file": "impact/glass-light-004.ogg",
+			"file": "impact/glass-light-003.ogg",
 			"score": 0,
 			"gain": 0.05,
 			"why": "numbers only"
@@ -1607,15 +1543,15 @@
 			"why": "numbers only"
 		},
 		{
-			"file": "impact/glass-light-005.ogg",
+			"file": "impact/glass-light-001.ogg",
 			"score": 0,
 			"gain": 0.25,
 			"why": "numbers only"
 		},
 		{
-			"file": "impact/glass-light-004.ogg",
+			"file": "impact/glass-light-003.ogg",
 			"score": 0,
-			"gain": 0.25,
+			"gain": 0.2,
 			"why": "numbers only"
 		},
 		{
@@ -1633,15 +1569,15 @@
 	],
 	"flagUp": [
 		{
-			"file": "impact/glass-light-004.ogg",
+			"file": "impact/glass-light-003.ogg",
 			"score": 0,
 			"gain": 0.2,
 			"why": "numbers only"
 		},
 		{
-			"file": "impact/glass-light-001.ogg",
+			"file": "impact/glass-light-005.ogg",
 			"score": 0,
-			"gain": 0.25,
+			"gain": 0.2,
 			"why": "numbers only"
 		},
 		{
@@ -1665,15 +1601,15 @@
 	],
 	"flagTaken": [
 		{
-			"file": "impact/glass-light-002.ogg",
+			"file": "impact/glass-light-004.ogg",
 			"score": 0,
 			"gain": 0.25,
 			"why": "numbers only"
 		},
 		{
-			"file": "impact/glass-light-003.ogg",
+			"file": "impact/glass-light-002.ogg",
 			"score": 0,
-			"gain": 0.2,
+			"gain": 0.25,
 			"why": "numbers only"
 		},
 		{
@@ -1721,7 +1657,7 @@
 			"why": "numbers only"
 		},
 		{
-			"file": "misc/drop-003.ogg",
+			"file": "misc/drop-002.ogg",
 			"score": 0,
 			"gain": 0.2,
 			"why": "numbers only"
@@ -1817,9 +1753,9 @@
 			"why": "Structures family"
 		},
 		{
-			"file": "impact/metal-light-004.ogg",
+			"file": "impact/metal-light-003.ogg",
 			"score": 2,
-			"gain": 0.25,
+			"gain": 0.2,
 			"why": "Structures family"
 		}
 	],
@@ -1831,15 +1767,15 @@
 			"why": "hit, Structures family"
 		},
 		{
-			"file": "impact/metal-light-004.ogg",
-			"score": 5,
-			"gain": 0.25,
-			"why": "hit, Structures family"
-		},
-		{
 			"file": "impact/metal-light-003.ogg",
 			"score": 5,
 			"gain": 0.2,
+			"why": "hit, Structures family"
+		},
+		{
+			"file": "impact/metal-light-004.ogg",
+			"score": 5,
+			"gain": 0.25,
 			"why": "hit, Structures family"
 		},
 		{
@@ -1869,15 +1805,15 @@
 			"why": "name fits, Structures family"
 		},
 		{
-			"file": "impact/metal-heavy-003.ogg",
-			"score": 6,
-			"gain": 0.15,
-			"why": "name fits, Structures family"
-		},
-		{
 			"file": "impact/metal-heavy-001.ogg",
 			"score": 6,
 			"gain": 0.2,
+			"why": "name fits, Structures family"
+		},
+		{
+			"file": "impact/metal-heavy-002.ogg",
+			"score": 6,
+			"gain": 0.3,
 			"why": "name fits, Structures family"
 		},
 		{
@@ -1889,7 +1825,7 @@
 	],
 	"aggro": [
 		{
-			"file": "impact/metal-light-003.ogg",
+			"file": "impact/metal-light-004.ogg",
 			"score": 2,
 			"gain": 0.25,
 			"why": "Structures family"
@@ -1907,15 +1843,15 @@
 			"why": "Structures family"
 		},
 		{
-			"file": "impact/plate-light-004.ogg",
-			"score": 2,
-			"gain": 0.4,
-			"why": "Structures family"
-		},
-		{
 			"file": "impact/plate-medium-001.ogg",
 			"score": 2,
 			"gain": 0.45,
+			"why": "Structures family"
+		},
+		{
+			"file": "impact/plate-light-004.ogg",
+			"score": 2,
+			"gain": 0.4,
 			"why": "Structures family"
 		}
 	],
@@ -1933,13 +1869,13 @@
 			"why": "hit, Minions family"
 		},
 		{
-			"file": "impact/wood-light-001.ogg",
+			"file": "impact/wood-light-003.ogg",
 			"score": 5,
 			"gain": 0.05,
 			"why": "hit, Minions family"
 		},
 		{
-			"file": "impact/wood-light-004.ogg",
+			"file": "impact/wood-light-002.ogg",
 			"score": 5,
 			"gain": 0.1,
 			"why": "hit, Minions family"
@@ -1953,25 +1889,25 @@
 	],
 	"brute.hit": [
 		{
-			"file": "impact/wood-light-001.ogg",
+			"file": "impact/wood-light-003.ogg",
 			"score": 5,
 			"gain": 0.1,
 			"why": "hit, Minions family"
 		},
 		{
-			"file": "impact/wood-light-004.ogg",
+			"file": "impact/wood-light-002.ogg",
 			"score": 5,
 			"gain": 0.1,
 			"why": "hit, Minions family"
 		},
 		{
-			"file": "impact/generic-light-004.ogg",
+			"file": "impact/generic-light-002.ogg",
 			"score": 5,
 			"gain": 0.05,
 			"why": "hit, Minions family"
 		},
 		{
-			"file": "impact/generic-light-002.ogg",
+			"file": "impact/generic-light-004.ogg",
 			"score": 5,
 			"gain": 0.05,
 			"why": "hit, Minions family"
@@ -2017,19 +1953,13 @@
 	],
 	"ranged.hit": [
 		{
-			"file": "impact/wood-light-003.ogg",
+			"file": "impact/wood-light-004.ogg",
 			"score": 5,
 			"gain": 0.1,
 			"why": "hit, Minions family"
 		},
 		{
-			"file": "impact/wood-light-002.ogg",
-			"score": 5,
-			"gain": 0.1,
-			"why": "hit, Minions family"
-		},
-		{
-			"file": "impact/generic-light-004.ogg",
+			"file": "impact/wood-light-001.ogg",
 			"score": 5,
 			"gain": 0.1,
 			"why": "hit, Minions family"
@@ -2038,6 +1968,12 @@
 			"file": "impact/generic-light-002.ogg",
 			"score": 5,
 			"gain": 0.05,
+			"why": "hit, Minions family"
+		},
+		{
+			"file": "impact/generic-light-004.ogg",
+			"score": 5,
+			"gain": 0.1,
 			"why": "hit, Minions family"
 		},
 		{
@@ -2073,7 +2009,7 @@
 			"why": "Minions family"
 		},
 		{
-			"file": "impact/generic-light-004.ogg",
+			"file": "impact/generic-light-002.ogg",
 			"score": 2,
 			"gain": 0.1,
 			"why": "Minions family"
@@ -2087,13 +2023,13 @@
 			"why": "hit, Minions family"
 		},
 		{
-			"file": "impact/generic-light-004.ogg",
+			"file": "impact/generic-light-002.ogg",
 			"score": 5,
 			"gain": 0.1,
 			"why": "hit, Minions family"
 		},
 		{
-			"file": "impact/generic-light-002.ogg",
+			"file": "impact/generic-light-004.ogg",
 			"score": 5,
 			"gain": 0.1,
 			"why": "hit, Minions family"
@@ -2105,7 +2041,7 @@
 			"why": "hit, Minions family"
 		},
 		{
-			"file": "impact/soft-medium-003.ogg",
+			"file": "impact/soft-medium-002.ogg",
 			"score": 5,
 			"gain": 0.05,
 			"why": "hit, Minions family"
@@ -2145,25 +2081,25 @@
 	],
 	"shielded": [
 		{
-			"file": "impact/glass-light-005.ogg",
+			"file": "impact/glass-light-001.ogg",
 			"score": 4,
 			"gain": 0.1,
 			"why": "name fits"
 		},
 		{
-			"file": "impact/glass-light-004.ogg",
+			"file": "impact/glass-light-003.ogg",
+			"score": 4,
+			"gain": 0.1,
+			"why": "name fits"
+		},
+		{
+			"file": "misc/glass-005.ogg",
 			"score": 4,
 			"gain": 0.1,
 			"why": "name fits"
 		},
 		{
 			"file": "misc/glass-002.ogg",
-			"score": 4,
-			"gain": 0.1,
-			"why": "name fits"
-		},
-		{
-			"file": "misc/glass-001.ogg",
 			"score": 4,
 			"gain": 0.1,
 			"why": "name fits"
@@ -2305,13 +2241,13 @@
 	],
 	"denied": [
 		{
-			"file": "impact/glass-light-001.ogg",
+			"file": "impact/glass-light-005.ogg",
 			"score": 0,
-			"gain": 0.1,
+			"gain": 0.05,
 			"why": "numbers only"
 		},
 		{
-			"file": "impact/glass-light-002.ogg",
+			"file": "impact/glass-light-004.ogg",
 			"score": 0,
 			"gain": 0.1,
 			"why": "numbers only"
@@ -2329,7 +2265,7 @@
 			"why": "numbers only"
 		},
 		{
-			"file": "misc/drop-003.ogg",
+			"file": "misc/drop-002.ogg",
 			"score": 0,
 			"gain": 0.05,
 			"why": "numbers only"
@@ -2369,13 +2305,13 @@
 	],
 	"death": [
 		{
-			"file": "misc/drop-003.ogg",
+			"file": "misc/drop-002.ogg",
 			"score": 4,
 			"gain": 0.15,
 			"why": "name fits"
 		},
 		{
-			"file": "misc/drop-001.ogg",
+			"file": "misc/drop-003.ogg",
 			"score": 4,
 			"gain": 0.15,
 			"why": "name fits"
@@ -2413,7 +2349,7 @@
 			"why": "name fits"
 		},
 		{
-			"file": "impact/soft-medium-003.ogg",
+			"file": "impact/soft-medium-002.ogg",
 			"score": 4,
 			"gain": 0.05,
 			"why": "name fits"
@@ -2433,7 +2369,7 @@
 	],
 	"dunk": [
 		{
-			"file": "misc/drop-002.ogg",
+			"file": "misc/drop-001.ogg",
 			"score": 4,
 			"gain": 0.3,
 			"why": "name fits"
@@ -2465,13 +2401,13 @@
 	],
 	"dunk.splash": [
 		{
-			"file": "misc/drop-003.ogg",
+			"file": "misc/drop-002.ogg",
 			"score": 2.5,
 			"gain": 0.1,
 			"why": "name fits"
 		},
 		{
-			"file": "misc/drop-001.ogg",
+			"file": "misc/drop-003.ogg",
 			"score": 2.5,
 			"gain": 0.1,
 			"why": "name fits"
@@ -2515,13 +2451,13 @@
 			"why": "numbers only"
 		},
 		{
-			"file": "impact/glass-light-005.ogg",
+			"file": "impact/glass-light-001.ogg",
 			"score": 0,
 			"gain": 0.1,
 			"why": "numbers only"
 		},
 		{
-			"file": "impact/glass-light-004.ogg",
+			"file": "impact/glass-light-003.ogg",
 			"score": 0,
 			"gain": 0.1,
 			"why": "numbers only"
@@ -2547,13 +2483,13 @@
 			"why": "numbers only"
 		},
 		{
-			"file": "impact/glass-light-005.ogg",
+			"file": "impact/glass-light-001.ogg",
 			"score": 0,
 			"gain": 0.1,
 			"why": "numbers only"
 		},
 		{
-			"file": "impact/glass-light-004.ogg",
+			"file": "impact/glass-light-003.ogg",
 			"score": 0,
 			"gain": 0.1,
 			"why": "numbers only"
@@ -2567,13 +2503,13 @@
 			"why": "numbers only"
 		},
 		{
-			"file": "impact/glass-light-005.ogg",
+			"file": "impact/glass-light-001.ogg",
 			"score": 0,
 			"gain": 0.1,
 			"why": "numbers only"
 		},
 		{
-			"file": "impact/glass-light-004.ogg",
+			"file": "impact/glass-light-003.ogg",
 			"score": 0,
 			"gain": 0.1,
 			"why": "numbers only"
@@ -2593,13 +2529,13 @@
 	],
 	"recallEnter": [
 		{
-			"file": "impact/glass-light-004.ogg",
+			"file": "impact/glass-light-003.ogg",
 			"score": 0,
 			"gain": 0.1,
 			"why": "numbers only"
 		},
 		{
-			"file": "impact/glass-light-001.ogg",
+			"file": "impact/glass-light-005.ogg",
 			"score": 0,
 			"gain": 0.1,
 			"why": "numbers only"
@@ -2625,13 +2561,13 @@
 	],
 	"recallCancelled": [
 		{
-			"file": "impact/glass-light-002.ogg",
+			"file": "impact/glass-light-004.ogg",
 			"score": 0,
 			"gain": 0.1,
 			"why": "numbers only"
 		},
 		{
-			"file": "impact/glass-light-003.ogg",
+			"file": "impact/glass-light-002.ogg",
 			"score": 0,
 			"gain": 0.1,
 			"why": "numbers only"
@@ -2681,7 +2617,7 @@
 			"why": "numbers only"
 		},
 		{
-			"file": "misc/drop-003.ogg",
+			"file": "misc/drop-002.ogg",
 			"score": 0,
 			"gain": 0.1,
 			"why": "numbers only"
@@ -2689,25 +2625,25 @@
 	],
 	"step": [
 		{
+			"file": "game/player/footsteps/concrete/footstep-concrete-002.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
 			"file": "game/player/footsteps/concrete/footstep-concrete-003.ogg",
 			"score": 4,
 			"gain": 0.05,
 			"why": "name fits"
 		},
 		{
-			"file": "game/player/footsteps/concrete/footstep-concrete-001.ogg",
-			"score": 4,
-			"gain": 0.05,
-			"why": "name fits"
-		},
-		{
-			"file": "game/player/footsteps/grass/footstep-grass-003.ogg",
-			"score": 4,
-			"gain": 0.05,
-			"why": "name fits"
-		},
-		{
 			"file": "game/player/footsteps/grass/footstep-grass-005.ogg",
+			"score": 4,
+			"gain": 0.05,
+			"why": "name fits"
+		},
+		{
+			"file": "game/player/footsteps/grass/footstep-grass-002.ogg",
 			"score": 4,
 			"gain": 0.05,
 			"why": "name fits"
@@ -2785,13 +2721,13 @@
 	],
 	"levelUp": [
 		{
-			"file": "confirm/confirm-017.ogg",
+			"file": "confirm/confirm-016.ogg",
 			"score": 4,
 			"gain": 0.15,
 			"why": "name fits"
 		},
 		{
-			"file": "confirm/confirm-016.ogg",
+			"file": "confirm/confirm-017.ogg",
 			"score": 4,
 			"gain": 0.15,
 			"why": "name fits"
@@ -2813,6 +2749,38 @@
 			"score": 1.6,
 			"gain": 0.15,
 			"why": "name fits"
+		}
+	],
+	"talent": [
+		{
+			"file": "error/error-015.ogg",
+			"score": 0,
+			"gain": 0.1,
+			"why": "numbers only"
+		},
+		{
+			"file": "error/glitch-003.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "impact/glass-light-001.ogg",
+			"score": 0,
+			"gain": 0.15,
+			"why": "numbers only"
+		},
+		{
+			"file": "impact/glass-light-003.ogg",
+			"score": 0,
+			"gain": 0.15,
+			"why": "numbers only"
+		},
+		{
+			"file": "impact/metal-light-002.ogg",
+			"score": 0,
+			"gain": 0.15,
+			"why": "numbers only"
 		}
 	],
 	"globe": [
@@ -2849,13 +2817,13 @@
 	],
 	"matchOver": [
 		{
-			"file": "open-close/close-001.ogg",
+			"file": "open-close/close-002.ogg",
 			"score": 4,
 			"gain": 0.2,
 			"why": "name fits"
 		},
 		{
-			"file": "open-close/close-003.ogg",
+			"file": "open-close/close-001.ogg",
 			"score": 4,
 			"gain": 0.2,
 			"why": "name fits"
@@ -2873,9 +2841,9 @@
 			"why": "name fits"
 		},
 		{
-			"file": "open-close/minimize-002.ogg",
+			"file": "open-close/minimize-001.ogg",
 			"score": 4,
-			"gain": 0.1,
+			"gain": 0.15,
 			"why": "name fits"
 		}
 	],
@@ -2947,7 +2915,7 @@
 		{
 			"file": "popup/woosh-003.wav",
 			"score": 3.76,
-			"gain": 0.8,
+			"gain": 0.7,
 			"why": "cast, Carambola family"
 		},
 		{
@@ -2971,7 +2939,7 @@
 		{
 			"file": "popup/woosh-001.wav",
 			"score": 2.96,
-			"gain": 1.5,
+			"gain": 1.35,
 			"why": "cast, Carambola family"
 		}
 	],
@@ -2985,25 +2953,25 @@
 		{
 			"file": "game/player/hit/sword-001.wav",
 			"score": 3,
-			"gain": 0.5,
+			"gain": 0.6,
 			"why": "shot"
 		},
 		{
 			"file": "game/player/hit/throw-002.wav",
 			"score": 3,
-			"gain": 0.4,
+			"gain": 0.5,
 			"why": "shot"
 		},
 		{
 			"file": "digital/phaserup-006.ogg",
 			"score": 3,
-			"gain": 0.05,
+			"gain": 0.1,
 			"why": "shot"
 		},
 		{
 			"file": "game/player/hit/sword-002.wav",
 			"score": 3,
-			"gain": 0.45,
+			"gain": 0.55,
 			"why": "shot"
 		}
 	],
@@ -3011,31 +2979,31 @@
 		{
 			"file": "impact/plate-heavy-001.ogg",
 			"score": 5,
-			"gain": 0.35,
-			"why": "hit, Carambola family"
-		},
-		{
-			"file": "impact/plate-light-004.ogg",
-			"score": 5,
-			"gain": 0.45,
+			"gain": 0.2,
 			"why": "hit, Carambola family"
 		},
 		{
 			"file": "impact/plate-medium-001.ogg",
 			"score": 5,
-			"gain": 0.5,
+			"gain": 0.25,
 			"why": "hit, Carambola family"
 		},
 		{
-			"file": "impact/tin-medium-004.ogg",
+			"file": "impact/plate-light-004.ogg",
 			"score": 5,
-			"gain": 0.4,
+			"gain": 0.25,
 			"why": "hit, Carambola family"
 		},
 		{
-			"file": "impact/tin-medium-005.ogg",
+			"file": "impact/tin-medium-001.ogg",
 			"score": 5,
-			"gain": 0.35,
+			"gain": 0.15,
+			"why": "hit, Carambola family"
+		},
+		{
+			"file": "impact/tin-medium-002.ogg",
+			"score": 5,
+			"gain": 0.2,
 			"why": "hit, Carambola family"
 		}
 	],
@@ -3073,21 +3041,21 @@
 	],
 	"lob.impact": [
 		{
-			"file": "impact/plate-medium-001.ogg",
+			"file": "impact/plate-light-004.ogg",
 			"score": 5,
-			"gain": 0.4,
+			"gain": 0.35,
 			"why": "hit, Carambola family"
 		},
 		{
-			"file": "impact/tin-medium-004.ogg",
+			"file": "impact/tin-medium-001.ogg",
 			"score": 5,
-			"gain": 0.3,
+			"gain": 0.2,
 			"why": "hit, Carambola family"
 		},
 		{
-			"file": "impact/tin-medium-005.ogg",
+			"file": "impact/tin-medium-002.ogg",
 			"score": 5,
-			"gain": 0.3,
+			"gain": 0.25,
 			"why": "hit, Carambola family"
 		},
 		{
@@ -3129,7 +3097,7 @@
 			"why": "Carambola family"
 		},
 		{
-			"file": "tap/click-003.ogg",
+			"file": "tap/click-007.ogg",
 			"score": 2,
 			"gain": 0.05,
 			"why": "Carambola family"
@@ -3137,15 +3105,15 @@
 	],
 	"pinball.impact": [
 		{
-			"file": "impact/tin-medium-005.ogg",
+			"file": "impact/tin-medium-002.ogg",
 			"score": 5,
 			"gain": 0.1,
 			"why": "hit, Carambola family"
 		},
 		{
-			"file": "impact/tin-medium-001.ogg",
+			"file": "impact/tin-medium-004.ogg",
 			"score": 5,
-			"gain": 0.1,
+			"gain": 0.15,
 			"why": "hit, Carambola family"
 		},
 		{
@@ -3213,7 +3181,7 @@
 			"why": "Carambola family"
 		},
 		{
-			"file": "tap/click-003.ogg",
+			"file": "tap/click-007.ogg",
 			"score": 2,
 			"gain": 0.15,
 			"why": "Carambola family"
@@ -3251,13 +3219,13 @@
 			"why": "cast"
 		},
 		{
-			"file": "impact/wood-light-001.ogg",
+			"file": "impact/wood-light-003.ogg",
 			"score": 2,
 			"gain": 0.1,
 			"why": "Ibis family"
 		},
 		{
-			"file": "impact/wood-light-004.ogg",
+			"file": "impact/wood-light-002.ogg",
 			"score": 2,
 			"gain": 0.15,
 			"why": "Ibis family"
@@ -3289,45 +3257,13 @@
 			"why": "shot"
 		},
 		{
-			"file": "impact/wood-light-001.ogg",
+			"file": "impact/wood-light-003.ogg",
 			"score": 2,
 			"gain": 0.05,
 			"why": "Ibis family"
 		}
 	],
 	"loose.hit": [
-		{
-			"file": "impact/wood-light-001.ogg",
-			"score": 5,
-			"gain": 0.25,
-			"why": "hit, Ibis family"
-		},
-		{
-			"file": "impact/wood-light-004.ogg",
-			"score": 5,
-			"gain": 0.3,
-			"why": "hit, Ibis family"
-		},
-		{
-			"file": "impact/wood-medium-004.ogg",
-			"score": 5,
-			"gain": 0.25,
-			"why": "hit, Ibis family"
-		},
-		{
-			"file": "impact/wood-medium-001.ogg",
-			"score": 5,
-			"gain": 0.25,
-			"why": "hit, Ibis family"
-		},
-		{
-			"file": "impact/plank-medium-005.ogg",
-			"score": 5,
-			"gain": 0.25,
-			"why": "hit, Ibis family"
-		}
-	],
-	"rain.impact": [
 		{
 			"file": "impact/wood-light-003.ogg",
 			"score": 5,
@@ -3337,11 +3273,37 @@
 		{
 			"file": "impact/wood-light-002.ogg",
 			"score": 5,
+			"gain": 0.3,
+			"why": "hit, Ibis family"
+		},
+		{
+			"file": "impact/wood-medium-001.ogg",
+			"score": 5,
+			"gain": 0.25,
+			"why": "hit, Ibis family"
+		},
+		{
+			"file": "impact/wood-medium-005.ogg",
+			"score": 5,
+			"gain": 0.25,
+			"why": "hit, Ibis family"
+		},
+		{
+			"file": "impact/plank-medium-005.ogg",
+			"score": 5,
+			"gain": 0.3,
+			"why": "hit, Ibis family"
+		}
+	],
+	"rain.impact": [
+		{
+			"file": "impact/wood-light-004.ogg",
+			"score": 5,
 			"gain": 0.35,
 			"why": "hit, Ibis family"
 		},
 		{
-			"file": "impact/wood-medium-004.ogg",
+			"file": "impact/wood-light-001.ogg",
 			"score": 5,
 			"gain": 0.3,
 			"why": "hit, Ibis family"
@@ -3350,6 +3312,12 @@
 			"file": "impact/wood-medium-001.ogg",
 			"score": 5,
 			"gain": 0.3,
+			"why": "hit, Ibis family"
+		},
+		{
+			"file": "impact/wood-medium-005.ogg",
+			"score": 5,
+			"gain": 0.25,
 			"why": "hit, Ibis family"
 		},
 		{
@@ -3411,15 +3379,15 @@
 			"why": "cast"
 		},
 		{
-			"file": "misc/drop-003.ogg",
+			"file": "misc/drop-002.ogg",
 			"score": 2,
 			"gain": 0.1,
 			"why": "Kappa family"
 		},
 		{
-			"file": "misc/drop-001.ogg",
+			"file": "misc/drop-003.ogg",
 			"score": 2,
-			"gain": 0.15,
+			"gain": 0.1,
 			"why": "Kappa family"
 		}
 	],
@@ -3431,13 +3399,13 @@
 			"why": "cast"
 		},
 		{
-			"file": "misc/drop-003.ogg",
+			"file": "misc/drop-002.ogg",
 			"score": 2,
 			"gain": 0.1,
 			"why": "Kappa family"
 		},
 		{
-			"file": "misc/drop-001.ogg",
+			"file": "misc/drop-003.ogg",
 			"score": 2,
 			"gain": 0.1,
 			"why": "Kappa family"
@@ -3457,13 +3425,13 @@
 	],
 	"gloveSlap.cast": [
 		{
-			"file": "misc/drop-001.ogg",
+			"file": "misc/drop-003.ogg",
 			"score": 2,
-			"gain": 0.1,
+			"gain": 0.05,
 			"why": "Kappa family"
 		},
 		{
-			"file": "misc/drop-002.ogg",
+			"file": "misc/drop-001.ogg",
 			"score": 2,
 			"gain": 0.1,
 			"why": "Kappa family"
@@ -3481,7 +3449,7 @@
 			"why": "Kappa family"
 		},
 		{
-			"file": "impact/soft-medium-003.ogg",
+			"file": "impact/soft-medium-002.ogg",
 			"score": 2,
 			"gain": 0.05,
 			"why": "Kappa family"
@@ -3495,7 +3463,7 @@
 			"why": "hit, Kappa family"
 		},
 		{
-			"file": "impact/soft-medium-003.ogg",
+			"file": "impact/soft-medium-002.ogg",
 			"score": 5,
 			"gain": 0.1,
 			"why": "hit, Kappa family"
@@ -3533,13 +3501,13 @@
 			"why": "Kappa family"
 		},
 		{
-			"file": "impact/soft-medium-002.ogg",
+			"file": "impact/soft-medium-003.ogg",
 			"score": 2,
 			"gain": 0.05,
 			"why": "Kappa family"
 		},
 		{
-			"file": "impact/soft-medium-004.ogg",
+			"file": "impact/soft-medium-005.ogg",
 			"score": 2,
 			"gain": 0.05,
 			"why": "Kappa family"
@@ -3571,13 +3539,13 @@
 			"why": "shot"
 		},
 		{
-			"file": "impact/soft-medium-002.ogg",
+			"file": "impact/soft-medium-003.ogg",
 			"score": 2,
 			"gain": 0.1,
 			"why": "Kappa family"
 		},
 		{
-			"file": "impact/soft-medium-004.ogg",
+			"file": "impact/soft-medium-005.ogg",
 			"score": 2,
 			"gain": 0.1,
 			"why": "Kappa family"
@@ -3585,13 +3553,13 @@
 	],
 	"toss.hit": [
 		{
-			"file": "impact/soft-medium-002.ogg",
+			"file": "impact/soft-medium-003.ogg",
 			"score": 5,
 			"gain": 0.1,
 			"why": "hit, Kappa family"
 		},
 		{
-			"file": "impact/soft-medium-004.ogg",
+			"file": "impact/soft-medium-005.ogg",
 			"score": 5,
 			"gain": 0.1,
 			"why": "hit, Kappa family"
@@ -3617,7 +3585,7 @@
 	],
 	"return.cast": [
 		{
-			"file": "impact/soft-medium-005.ogg",
+			"file": "impact/soft-medium-004.ogg",
 			"score": 2,
 			"gain": 0.05,
 			"why": "Kappa family"
@@ -3687,7 +3655,7 @@
 			"why": "hit, Kappa family"
 		},
 		{
-			"file": "game/player/hit/punch-heavy-005.ogg",
+			"file": "game/player/hit/punch-heavy-002.ogg",
 			"score": 5,
 			"gain": 0.15,
 			"why": "hit, Kappa family"
@@ -3713,7 +3681,7 @@
 	],
 	"caught": [
 		{
-			"file": "game/player/hit/punch-heavy-002.ogg",
+			"file": "game/player/hit/punch-heavy-005.ogg",
 			"score": 6,
 			"gain": 0.1,
 			"why": "name fits, Kappa family"
@@ -3745,13 +3713,13 @@
 	],
 	"catchExpired": [
 		{
-			"file": "open-close/close-001.ogg",
+			"file": "open-close/close-002.ogg",
 			"score": 4,
 			"gain": 0.05,
 			"why": "name fits"
 		},
 		{
-			"file": "open-close/close-003.ogg",
+			"file": "open-close/close-001.ogg",
 			"score": 4,
 			"gain": 0.05,
 			"why": "name fits"
@@ -3769,7 +3737,7 @@
 			"why": "name fits"
 		},
 		{
-			"file": "open-close/minimize-002.ogg",
+			"file": "open-close/minimize-001.ogg",
 			"score": 4,
 			"gain": 0.05,
 			"why": "name fits"
@@ -3809,13 +3777,13 @@
 	],
 	"aroundTheWorld.impact": [
 		{
-			"file": "impact/glass-light-005.ogg",
+			"file": "impact/glass-light-001.ogg",
 			"score": 3,
-			"gain": 0.15,
+			"gain": 0.2,
 			"why": "hit"
 		},
 		{
-			"file": "impact/glass-light-004.ogg",
+			"file": "impact/glass-light-003.ogg",
 			"score": 3,
 			"gain": 0.15,
 			"why": "hit"
@@ -3873,13 +3841,13 @@
 	],
 	"tangle.impact": [
 		{
-			"file": "impact/glass-light-001.ogg",
+			"file": "impact/glass-light-005.ogg",
 			"score": 3,
 			"gain": 0.1,
 			"why": "hit"
 		},
 		{
-			"file": "impact/glass-light-002.ogg",
+			"file": "impact/glass-light-004.ogg",
 			"score": 3,
 			"gain": 0.1,
 			"why": "hit"
@@ -3969,9 +3937,9 @@
 	],
 	"throw.hit": [
 		{
-			"file": "impact/glass-light-003.ogg",
+			"file": "impact/glass-light-002.ogg",
 			"score": 3,
-			"gain": 0.2,
+			"gain": 0.25,
 			"why": "hit"
 		},
 		{
@@ -4129,13 +4097,13 @@
 	],
 	"pass.hit": [
 		{
-			"file": "impact/glass-light-005.ogg",
+			"file": "impact/glass-light-001.ogg",
 			"score": 3,
-			"gain": 0.1,
+			"gain": 0.15,
 			"why": "hit"
 		},
 		{
-			"file": "impact/glass-light-004.ogg",
+			"file": "impact/glass-light-003.ogg",
 			"score": 3,
 			"gain": 0.1,
 			"why": "hit"
@@ -4225,13 +4193,13 @@
 	],
 	"tagOut.impact": [
 		{
-			"file": "impact/glass-light-001.ogg",
+			"file": "impact/glass-light-005.ogg",
 			"score": 3,
 			"gain": 0.15,
 			"why": "hit"
 		},
 		{
-			"file": "impact/glass-light-002.ogg",
+			"file": "impact/glass-light-004.ogg",
 			"score": 3,
 			"gain": 0.15,
 			"why": "hit"
@@ -4321,9 +4289,9 @@
 	],
 	"tennisBall.hit": [
 		{
-			"file": "impact/glass-light-003.ogg",
+			"file": "impact/glass-light-002.ogg",
 			"score": 3,
-			"gain": 0.05,
+			"gain": 0.1,
 			"why": "hit"
 		},
 		{
@@ -4385,13 +4353,13 @@
 	],
 	"flyingKick.hit": [
 		{
-			"file": "impact/glass-light-005.ogg",
+			"file": "impact/glass-light-001.ogg",
 			"score": 3,
-			"gain": 0.2,
+			"gain": 0.25,
 			"why": "hit"
 		},
 		{
-			"file": "impact/glass-light-004.ogg",
+			"file": "impact/glass-light-003.ogg",
 			"score": 3,
 			"gain": 0.2,
 			"why": "hit"
@@ -4449,13 +4417,13 @@
 	],
 	"palmStrike.impact": [
 		{
-			"file": "impact/glass-light-001.ogg",
+			"file": "impact/glass-light-005.ogg",
 			"score": 3,
 			"gain": 0.15,
 			"why": "hit"
 		},
 		{
-			"file": "impact/glass-light-002.ogg",
+			"file": "impact/glass-light-004.ogg",
 			"score": 3,
 			"gain": 0.15,
 			"why": "hit"
@@ -4577,15 +4545,15 @@
 	],
 	"mend.impact": [
 		{
-			"file": "impact/glass-light-005.ogg",
+			"file": "impact/glass-light-001.ogg",
 			"score": 3,
 			"gain": 0.15,
 			"why": "hit"
 		},
 		{
-			"file": "impact/glass-light-004.ogg",
+			"file": "impact/glass-light-003.ogg",
 			"score": 3,
-			"gain": 0.15,
+			"gain": 0.1,
 			"why": "hit"
 		},
 		{
@@ -4641,13 +4609,13 @@
 	],
 	"ward.impact": [
 		{
-			"file": "impact/glass-light-001.ogg",
+			"file": "impact/glass-light-005.ogg",
 			"score": 3,
 			"gain": 0.1,
 			"why": "hit"
 		},
 		{
-			"file": "impact/glass-light-002.ogg",
+			"file": "impact/glass-light-004.ogg",
 			"score": 3,
 			"gain": 0.1,
 			"why": "hit"
@@ -4705,13 +4673,13 @@
 	],
 	"balloon.hit": [
 		{
-			"file": "impact/glass-light-005.ogg",
+			"file": "impact/glass-light-001.ogg",
 			"score": 3,
 			"gain": 0.1,
 			"why": "hit"
 		},
 		{
-			"file": "impact/glass-light-004.ogg",
+			"file": "impact/glass-light-003.ogg",
 			"score": 3,
 			"gain": 0.1,
 			"why": "hit"
@@ -4737,13 +4705,13 @@
 	],
 	"balloon.impact": [
 		{
-			"file": "impact/glass-light-001.ogg",
+			"file": "impact/glass-light-005.ogg",
 			"score": 3,
 			"gain": 0.15,
 			"why": "hit"
 		},
 		{
-			"file": "impact/glass-light-002.ogg",
+			"file": "impact/glass-light-004.ogg",
 			"score": 3,
 			"gain": 0.15,
 			"why": "hit"
@@ -4833,7 +4801,7 @@
 	],
 	"sprinkler.hit": [
 		{
-			"file": "impact/glass-light-003.ogg",
+			"file": "impact/glass-light-002.ogg",
 			"score": 3,
 			"gain": 0.05,
 			"why": "hit"
@@ -5089,79 +5057,15 @@
 	],
 	"outThrow.hit": [
 		{
-			"file": "impact/glass-light-005.ogg",
-			"score": 3,
-			"gain": 0.1,
-			"why": "hit"
-		},
-		{
-			"file": "impact/glass-light-004.ogg",
-			"score": 3,
-			"gain": 0.1,
-			"why": "hit"
-		},
-		{
-			"file": "impact/metal-light-002.ogg",
-			"score": 3,
-			"gain": 0.1,
-			"why": "hit"
-		},
-		{
-			"file": "impact/metal-light-005.ogg",
-			"score": 3,
-			"gain": 0.1,
-			"why": "hit"
-		},
-		{
-			"file": "impact/bell-heavy-004.ogg",
-			"score": 3,
-			"gain": 0.2,
-			"why": "hit"
-		}
-	],
-	"redLight.cast": [
-		{
-			"file": "digital/phaserup-004.ogg",
-			"score": 1.72,
-			"gain": 0.1,
-			"why": "cast"
-		},
-		{
-			"file": "rpg/knifeslice-002.ogg",
-			"score": 1.5,
-			"gain": 0.1,
-			"why": "cast"
-		},
-		{
-			"file": "digital/phaserup-007.ogg",
-			"score": 1.5,
-			"gain": 0.05,
-			"why": "cast"
-		},
-		{
-			"file": "popup/woosh-001.wav",
-			"score": 0.96,
-			"gain": 1.5,
-			"why": "cast"
-		},
-		{
-			"file": "digital/powerup-007.ogg",
-			"score": 0.6000000000000001,
-			"gain": 0.05,
-			"why": "cast"
-		}
-	],
-	"redLight.impact": [
-		{
 			"file": "impact/glass-light-001.ogg",
 			"score": 3,
-			"gain": 0.15,
+			"gain": 0.1,
 			"why": "hit"
 		},
 		{
-			"file": "impact/glass-light-002.ogg",
+			"file": "impact/glass-light-003.ogg",
 			"score": 3,
-			"gain": 0.15,
+			"gain": 0.1,
 			"why": "hit"
 		},
 		{
@@ -5185,6 +5089,12 @@
 	],
 	"slam.cast": [
 		{
+			"file": "digital/phaserup-004.ogg",
+			"score": 1.72,
+			"gain": 0.15,
+			"why": "cast"
+		},
+		{
 			"file": "rpg/knifeslice-002.ogg",
 			"score": 1.5,
 			"gain": 0.15,
@@ -5194,12 +5104,6 @@
 			"file": "digital/phaserup-007.ogg",
 			"score": 1.5,
 			"gain": 0.1,
-			"why": "cast"
-		},
-		{
-			"file": "digital/phaserup-006.ogg",
-			"score": 1.5,
-			"gain": 0.15,
 			"why": "cast"
 		},
 		{
@@ -5217,7 +5121,13 @@
 	],
 	"slam.hit": [
 		{
-			"file": "impact/glass-light-003.ogg",
+			"file": "impact/glass-light-005.ogg",
+			"score": 3,
+			"gain": 0.2,
+			"why": "hit"
+		},
+		{
+			"file": "impact/glass-light-004.ogg",
 			"score": 3,
 			"gain": 0.2,
 			"why": "hit"
@@ -5239,15 +5149,21 @@
 			"score": 3,
 			"gain": 0.35,
 			"why": "hit"
-		},
-		{
-			"file": "impact/generic-light-001.ogg",
-			"score": 3,
-			"gain": 0.2,
-			"why": "hit"
 		}
 	],
 	"slam.impact": [
+		{
+			"file": "impact/glass-light-002.ogg",
+			"score": 3,
+			"gain": 0.35,
+			"why": "hit"
+		},
+		{
+			"file": "impact/metal-light-002.ogg",
+			"score": 3,
+			"gain": 0.3,
+			"why": "hit"
+		},
 		{
 			"file": "impact/metal-light-005.ogg",
 			"score": 3,
@@ -5265,50 +5181,6 @@
 			"score": 3,
 			"gain": 0.3,
 			"why": "hit"
-		},
-		{
-			"file": "impact/generic-light-003.ogg",
-			"score": 3,
-			"gain": 0.3,
-			"why": "hit"
-		},
-		{
-			"file": "impact/glass-heavy-004.ogg",
-			"score": 3,
-			"gain": 0.3,
-			"why": "hit"
-		}
-	],
-	"swap.cast": [
-		{
-			"file": "rpg/knifeslice-002.ogg",
-			"score": 1.5,
-			"gain": 0.1,
-			"why": "cast"
-		},
-		{
-			"file": "digital/phaserup-007.ogg",
-			"score": 1.5,
-			"gain": 0.05,
-			"why": "cast"
-		},
-		{
-			"file": "digital/phaserup-006.ogg",
-			"score": 1.5,
-			"gain": 0.05,
-			"why": "cast"
-		},
-		{
-			"file": "popup/woosh-001.wav",
-			"score": 0.96,
-			"gain": 1.5,
-			"why": "cast"
-		},
-		{
-			"file": "digital/powerup-007.ogg",
-			"score": 0.6000000000000001,
-			"gain": 0.05,
-			"why": "cast"
 		}
 	],
 	"swing.cast": [
@@ -5345,6 +5217,18 @@
 	],
 	"swing.hit": [
 		{
+			"file": "impact/metal-light-005.ogg",
+			"score": 3,
+			"gain": 0.15,
+			"why": "hit"
+		},
+		{
+			"file": "impact/bell-heavy-004.ogg",
+			"score": 3,
+			"gain": 0.25,
+			"why": "hit"
+		},
+		{
 			"file": "impact/generic-light-001.ogg",
 			"score": 3,
 			"gain": 0.15,
@@ -5361,18 +5245,454 @@
 			"score": 3,
 			"gain": 0.15,
 			"why": "hit"
+		}
+	],
+	"warden.barquero.arrival": [
+		{
+			"file": "confirm/confirm-017.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
 		},
 		{
-			"file": "impact/glass-heavy-003.ogg",
-			"score": 3,
-			"gain": 0.25,
-			"why": "hit"
+			"file": "error/error-015.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
 		},
 		{
-			"file": "impact/glass-medium-005.ogg",
-			"score": 3,
-			"gain": 0.25,
-			"why": "hit"
+			"file": "error/glitch-003.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "impact/glass-light-001.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "impact/glass-light-003.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		}
+	],
+	"warden.barquero.fall": [
+		{
+			"file": "error/glitch-003.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "impact/glass-light-001.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "impact/glass-light-003.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "impact/metal-light-002.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "impact/metal-light-005.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		}
+	],
+	"warden.carillon.arrival": [
+		{
+			"file": "confirm/confirm-017.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "error/error-015.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "error/glitch-003.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "impact/glass-light-001.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "impact/glass-light-003.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		}
+	],
+	"warden.carillon.fall": [
+		{
+			"file": "error/glitch-003.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "impact/glass-light-001.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "impact/glass-light-003.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "impact/metal-light-002.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "impact/metal-light-005.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		}
+	],
+	"warden.espejo.arrival": [
+		{
+			"file": "confirm/confirm-017.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "error/error-015.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "error/glitch-003.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "impact/glass-light-001.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "impact/glass-light-003.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		}
+	],
+	"warden.espejo.fall": [
+		{
+			"file": "error/glitch-003.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "impact/glass-light-001.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "impact/glass-light-003.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "impact/metal-light-002.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "impact/metal-light-005.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		}
+	],
+	"warden.fornax.arrival": [
+		{
+			"file": "confirm/confirm-017.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "error/error-015.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "error/glitch-003.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "impact/glass-light-001.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "impact/glass-light-003.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		}
+	],
+	"warden.fornax.fall": [
+		{
+			"file": "error/glitch-003.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "impact/glass-light-001.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "impact/glass-light-003.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "impact/metal-light-002.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "impact/metal-light-005.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		}
+	],
+	"warden.gnomon.arrival": [
+		{
+			"file": "confirm/confirm-017.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "error/error-015.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "error/glitch-003.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "impact/glass-light-001.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "impact/glass-light-003.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		}
+	],
+	"warden.gnomon.fall": [
+		{
+			"file": "error/glitch-003.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "impact/glass-light-001.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "impact/glass-light-003.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "impact/metal-light-002.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "impact/metal-light-005.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		}
+	],
+	"warden.manos.arrival": [
+		{
+			"file": "confirm/confirm-017.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "error/error-015.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "error/glitch-003.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "impact/glass-light-001.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "impact/glass-light-003.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		}
+	],
+	"warden.manos.fall": [
+		{
+			"file": "error/glitch-003.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "impact/glass-light-001.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "impact/glass-light-003.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "impact/metal-light-002.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "impact/metal-light-005.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		}
+	],
+	"warden.tinajaBotijo.arrival": [
+		{
+			"file": "confirm/confirm-017.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "error/error-015.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "error/glitch-003.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "impact/glass-light-001.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "impact/glass-light-003.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		}
+	],
+	"warden.tinajaBotijo.fall": [
+		{
+			"file": "error/glitch-003.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "impact/glass-light-001.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "impact/glass-light-003.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "impact/metal-light-002.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
+		},
+		{
+			"file": "impact/metal-light-005.ogg",
+			"score": 0,
+			"gain": 0.05,
+			"why": "numbers only"
 		}
 	]
 }
