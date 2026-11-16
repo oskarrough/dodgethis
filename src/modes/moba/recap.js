@@ -167,9 +167,6 @@ export function createRecap({ sim, hero, canvas, paper = (node) => node }) {
 			card.style.setProperty(`--tile-${key}`, `${value}${unit}`)
 		}
 		const wrap = buildTable()
-		if (!sim.dungeon)
-			el('p', 'moba-result-note', wrap).textContent =
-				'XP: minion soak shared between nearby heroes; takedowns and siege credited to the killer. Passive and minion-earned team XP excluded.'
 		card.querySelector('.actions').before(wrap)
 	}
 	return {

@@ -203,10 +203,6 @@ canvas.moba-dead-world {
 .moba-results tr[data-local='true'] {
 	background: color-mix(in srgb, var(--page-wash) 35%, transparent);
 }
-.moba-result-note {
-	margin: 12px 0 0;
-	font: var(--note);
-}
 
 /* The two pages: a Japanese game manual on a Swiss grid, the stopped match as its figure.
    Twelve faint columns, the sheet over the left ones. Markup is the shared overlay card plus
