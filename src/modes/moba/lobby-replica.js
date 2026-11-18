@@ -331,7 +331,11 @@ export function createUnitReplica(
 			unit.corpse = null
 			unit.body = body
 		}
-		for (const key of fields) if (Object.hasOwn(a, key)) unit[key] = structuredClone(a[key])
+		for (const key of fields) {
+			if (!Object.hasOwn(a, key)) continue
+			const value = a[key]
+			unit[key] = value !== null && typeof value === 'object' ? structuredClone(value) : value
+		}
 		unit.statuses = unpackStatuses(unit.statuses)
 		const continuous = b && a.dead === b.dead && a.heroId === b.heroId && a.seatTeam === b.seatTeam
 		if (a.pos && !unit.body.retired) {
@@ -379,7 +383,6 @@ export function createUnitReplica(
 		for (const [i, seat] of (lobby ? before.readySeats : []).entries())
 			Object.assign(sim.readySeats.seats[i], structuredClone(seat))
 		if (lobby && sim.readySeats.party) sim.readySeats.revision = before.partyRevision
-		const live = new Set()
 		for (const [id, a] of before.projectiles) {
 			let shot = shots.get(id)
 			if (!shot) {
@@ -392,9 +395,8 @@ export function createUnitReplica(
 			shot.z = lerp(a.pos.z, b.pos.z, blend)
 			shot.dx = lerp(a.dir.x, b.dir.x, blend)
 			shot.dz = lerp(a.dir.z, b.dir.z, blend)
-			live.add(id)
 		}
-		for (const id of shots.keys()) if (!live.has(id)) shots.delete(id)
+		for (const id of shots.keys()) if (!before.projectiles.has(id)) shots.delete(id)
 		sim.shots.splice(0, sim.shots.length, ...shots.values())
 		sim.zones.splice(
 			0,
