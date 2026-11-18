@@ -613,7 +613,11 @@ export function createPortalLobby({
 		prepareInput() {},
 		step() {
 			const locked = ending || slipping()
-			if (!locked) gallery.stand(hero, sim.tick, app.clock.step)
+			if (!locked) {
+				gallery.stand(hero, sim.tick, app.clock.step)
+				// Setup keeps the live picks, so the address bar can reopen the lobby as it stands.
+				if (setup.difficulty !== gallery.difficulty) setup.difficulty = gallery.difficulty
+			}
 			for (const human of sim.heroes) {
 				const frame = app.intents.get(human.id)
 				if (locked) {
@@ -631,7 +635,10 @@ export function createPortalLobby({
 				for (const edge of picks) run.intents.consume(human.id, edge.action)
 				const at = picks.at(-1)?.at
 				const choice = at?.z === 0 && Number.isInteger(at.x) ? choices[at.x] : null
-				if (choice && choice.id !== human.heroId) sim.swapHero(human.id, choice.id)
+				if (choice && choice.id !== human.heroId) {
+					sim.swapHero(human.id, choice.id)
+					if (human === hero) syncPick()
+				}
 			}
 		},
 		afterStep() {

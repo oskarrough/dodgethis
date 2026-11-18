@@ -46,6 +46,8 @@ export function addressFor({ mode, screen, setup, room }, from) {
 export function followScreen(app, route) {
 	let lastMode = null
 	let backing = false
+	// What the last address was built from; a frame that changes none of it builds nothing.
+	let seenMode, seenScreen, seenRoom, seenMap, seenHero, seenBots, seenHref
 	window.addEventListener('popstate', () => {
 		backing = false
 		route(new URL(location.href))
@@ -55,23 +57,35 @@ export function followScreen(app, route) {
 		// A replay is opened by its own link and never writes one.
 		if (!mode || mode === 'moba-replay' || backing) return
 		const game = app.debug.game
-		const href = addressFor(
-			{
-				mode,
-				screen: game.screen,
-				setup: game.moba?.setup ?? game.lobby?.setup,
-				room: game.room,
-			},
-			new URL(location.href),
+		const { screen, room } = game
+		const setup = game.moba?.setup ?? game.portalParty?.setup
+		if (
+			mode === seenMode &&
+			screen === seenScreen &&
+			room === seenRoom &&
+			setup?.map === seenMap &&
+			setup?.heroId === seenHero &&
+			setup?.difficulty === seenBots &&
+			location.href === seenHref
 		)
+			return
+		const href = addressFor({ mode, screen, setup, room }, new URL(location.href))
 		const left = lastMode === 'moba-front' && mode !== 'moba-front'
 		lastMode = mode
-		if (href === location.href) return
-		if (left) history.pushState({ fromSplash: true }, '', href)
-		else if (mode === 'moba-front' && history.state?.fromSplash) {
-			// Back to the splash we pushed from: step back instead of stacking another `/`.
-			backing = true
-			history.back()
-		} else history.replaceState(history.state, '', href)
+		if (href !== location.href) {
+			if (left) history.pushState({ fromSplash: true }, '', href)
+			else if (mode === 'moba-front' && history.state?.fromSplash) {
+				// Back to the splash we pushed from: step back instead of stacking another `/`.
+				backing = true
+				history.back()
+			} else history.replaceState(history.state, '', href)
+		}
+		seenMode = mode
+		seenScreen = screen
+		seenRoom = room
+		seenMap = setup?.map
+		seenHero = setup?.heroId
+		seenBots = setup?.difficulty
+		seenHref = location.href
 	})
 }
