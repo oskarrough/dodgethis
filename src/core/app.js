@@ -34,11 +34,18 @@ export function createApp(services = {}) {
 
 	let session = SOLO
 
-	function enlist(list, item, signal) {
+	// A callback may register another or abort its scope. Each dispatch keeps the list it started with.
+	function snapshot(list) {
+		return (list.snapshot ??= list.slice())
+	}
+	function enlist(list, fn, signal) {
+		const item = { fn, signal }
+		list.snapshot = null
 		list.push(item)
 		onAbort(signal, () => {
 			const i = list.indexOf(item)
 			if (i >= 0) list.splice(i, 1)
+			list.snapshot = null
 		})
 	}
 	// Keyed registration: a duplicate key throws, and the key frees when `signal` aborts.
@@ -71,43 +78,43 @@ export function createApp(services = {}) {
 
 	function emit(type, payload) {
 		if (!EVENTS.includes(type)) throw new Error(`Unknown event: ${type}`)
-		for (const l of listeners[type].slice()) if (!l.signal.aborted) l.fn(payload)
+		dispatch(listeners[type], payload)
 	}
 
 	function held() {
 		return tune.physics.paused || holds.some((h) => !h.signal.aborted && h.fn())
 	}
 
-	function runPhase(phase, arg) {
-		for (const s of systems[phase].slice()) if (!s.signal.aborted) s.fn(arg)
+	function dispatch(list, arg) {
+		for (const s of snapshot(list)) if (!s.signal.aborted) s.fn(arg)
 	}
 
 	// One rendered frame. `dt` is real seconds, already clamped by the caller.
 	function frame(dt) {
 		let scale = 1
-		for (const s of scales.slice()) if (!s.signal.aborted) scale *= s.fn(dt)
+		for (const s of snapshot(scales)) if (!s.signal.aborted) scale *= s.fn(dt)
 		const t = { dt, gameDt: session.shared ? dt : dt * scale, alpha: acc / STEP }
-		runPhase('input', t)
+		dispatch(systems.input, t)
 		// Core fills the local frame before any mode reads it.
 		if (device && current) {
 			const stickAim = aimers.findLast((a) => !a.signal.aborted)?.fn ?? null
 			intents.feed(session.local[0], device.sample(current.scheme, { stickAim }), suspended())
 		}
-		runPhase('intents', t)
+		dispatch(systems.intents, t)
 		if (session.authoritative && !held()) {
 			acc += t.gameDt * tune.physics.timeScale
 			// Spend the step first, so a clock.reset() inside it lands on zero.
 			while (acc >= STEP && !held()) {
 				acc -= STEP
-				runPhase('simulate', STEP)
+				dispatch(systems.simulate, STEP)
 				intents.age(STEP)
 				smoother.capture()
 			}
 		}
 		t.alpha = Math.min(acc / STEP, 1)
-		runPhase('replicate', t)
+		dispatch(systems.replicate, t)
 		smoother.pose(t.alpha)
-		runPhase('present', t)
+		dispatch(systems.present, t)
 	}
 
 	function use(plugin, parent) {
@@ -138,7 +145,7 @@ export function createApp(services = {}) {
 				input: {
 					...fields.input,
 					// `fn(dir, magnitude, slot) → point`: how the pad's right stick aims. The latest live one wins.
-					stickAim: (fn) => enlist(aimers, { fn, signal }, signal),
+					stickAim: (fn) => enlist(aimers, fn, signal),
 				},
 			}),
 			...(fields.camera?.frame && {
@@ -153,7 +160,7 @@ export function createApp(services = {}) {
 				},
 			}),
 			signal,
-			renderDemand: (fn) => enlist(renderDemands, { fn, signal }, signal),
+			renderDemand: (fn) => enlist(renderDemands, fn, signal),
 			get shouldRender() {
 				return renderDemands.every((d) => d.signal.aborted || d.fn())
 			},
@@ -170,11 +177,11 @@ export function createApp(services = {}) {
 			use: (plugin) => use(plugin, signal),
 			system(phase, fn) {
 				if (!PHASES.includes(phase)) throw new Error(`Unknown phase: ${phase}`)
-				enlist(systems[phase], { fn, signal }, signal)
+				enlist(systems[phase], fn, signal)
 			},
 			on(type, fn) {
 				if (!EVENTS.includes(type)) throw new Error(`Unknown event: ${type}`)
-				enlist(listeners[type], { fn, signal }, signal)
+				enlist(listeners[type], fn, signal)
 			},
 			emit,
 			present: (fact) => emit('present', fact),
@@ -195,7 +202,7 @@ export function createApp(services = {}) {
 					intents.cancel(id)
 				},
 				// While any `fn()` is true the local frame is neutral; entering that state queues one cancel.
-				suspend: (fn) => enlist(suspends, { fn, signal }, signal),
+				suspend: (fn) => enlist(suspends, fn, signal),
 			},
 			smooth: Object.assign(
 				(object, read) => {
@@ -211,9 +218,9 @@ export function createApp(services = {}) {
 			clock: {
 				step: STEP,
 				// Hitstop and other slow-motion: `fn(dt)` returns a multiplier. Every fn runs each frame; shared sessions ignore the product.
-				scale: (fn) => enlist(scales, { fn, signal }, signal),
+				scale: (fn) => enlist(scales, fn, signal),
 				// The simulation holds while any `fn()` is true (checked before every step), or while tune.physics.paused.
-				pause: (fn) => enlist(holds, { fn, signal }, signal),
+				pause: (fn) => enlist(holds, fn, signal),
 				reset() {
 					acc = 0
 					smoother.snapAll()
@@ -223,7 +230,7 @@ export function createApp(services = {}) {
 				stepOnce() {
 					if (session.shared || !session.authoritative || !current || !held()) return false
 					acc = 0
-					runPhase('simulate', STEP)
+					dispatch(systems.simulate, STEP)
 					intents.age(STEP)
 					smoother.snapAll()
 					smoother.capture()

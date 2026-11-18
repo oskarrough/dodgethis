@@ -205,13 +205,19 @@ export function stickVector(x, z, deadzone, curve = 1) {
 	return { x: (x / len) * magnitude, z: (z / len) * magnitude, magnitude }
 }
 
+function newestAim(actions) {
+	let slot = null
+	for (const action of actions) slot = action
+	return slot
+}
+
 // Returns a sampler with its own edge state. `device` is core/input.js (or a fake), `ground()` the cursor's ground point or null.
 // `options.quickCast` overrides the saved preference (tests); `options.controls` holds the armed state.
 export function pointClick(device, ground, options = POINT_CLICK) {
 	const prefs = options.controls ?? controls
 	const aiming = new Set() // pad slots held to aim, in press order
 	const keyAims = new Map() // keyboard codes held to aim → slot, in press order
-	let previous = []
+	let previous
 	let resendAt = 0
 
 	return function sample(stickAim = null) {
@@ -223,9 +229,9 @@ export function pointClick(device, ground, options = POINT_CLICK) {
 		device.consumeDash()
 		device.consumeJump()
 		const pad = device.pad()
-		const buttons = pad?.buttons ?? []
-		const down = (i) => !!buttons[i] && !previous[i]
-		const up = (i) => !buttons[i] && !!previous[i]
+		const buttons = pad?.buttons
+		const down = (i) => !!buttons?.[i] && !previous?.[i]
+		const up = (i) => !buttons?.[i] && !!previous?.[i]
 		const onPad = device.activeDevice() === 'gamepad'
 		const stick = pad
 			? stickVector(pad.axes[0] ?? 0, pad.axes[1] ?? 0, options.deadzone, options.curve)
@@ -251,9 +257,8 @@ export function pointClick(device, ground, options = POINT_CLICK) {
 		}
 		const keyAt = (slot) => (preset.facing ? facingAim(slot) : at)
 
-		const pressed = queued
-			.filter((a) => ACTIONS.includes(a))
-			.map((action) => ({ action, at: null }))
+		const pressed = []
+		for (const action of queued) if (ACTIONS.includes(action)) pressed.push({ action, at: null })
 		if (!pad) aiming.clear() // a lost pad or a blur drops held aims without casting (keyboard aims check keyHeld below)
 		for (const [i, slot] of PAD_AIMS)
 			if (down(i)) {
@@ -264,7 +269,6 @@ export function pointClick(device, ground, options = POINT_CLICK) {
 			aiming.clear()
 			pressed.push({ action: 'cancel', at: null })
 		}
-		const slot = [...aiming].at(-1) ?? null
 		let aim = at
 		if (onPad) {
 			const right = pad ? stickVector(pad.axes[2] ?? 0, pad.axes[3] ?? 0, options.deadzone) : null
@@ -272,14 +276,13 @@ export function pointClick(device, ground, options = POINT_CLICK) {
 			const dir = right?.magnitude
 				? { x: right.x / right.magnitude, z: right.z / right.magnitude }
 				: null
-			const point = stickAim?.(dir, dir ? raw : 0, slot)
+			const point = stickAim?.(dir, dir ? raw : 0, newestAim(aiming))
 			aim = point ? { x: point.x, z: point.z } : null
 		}
 		for (const [i, action] of PAD_AIMS)
 			if (up(i) && aiming.delete(action)) pressed.push({ action, at: aim })
 		for (const [i, action] of PAD_TAPS) if (down(i)) pressed.push({ action, at: aim })
 		const quick = options.quickCast ?? prefs.quickCast
-		const taps = { ...preset.aims, ...preset.taps }
 		const dropAims = () => {
 			const had = keyAims.size > 0 || prefs.attackArmed
 			keyAims.clear()
@@ -287,6 +290,7 @@ export function pointClick(device, ground, options = POINT_CLICK) {
 			return had
 		}
 		for (const code of device.consumeKeys()) {
+			const action = preset.taps[code] ?? preset.aims[code]
 			if (code === 'Escape') {
 				if (dropAims()) pressed.push({ action: 'cancel', at: null })
 			} else if (code === 'KeyA' && preset.mouse === 'orders') {
@@ -295,11 +299,11 @@ export function pointClick(device, ground, options = POINT_CLICK) {
 				prefs.attackArmed = false
 				keyAims.delete(code) // re-adding moves it last: the newest held aim is the one shown
 				keyAims.set(code, preset.aims[code])
-			} else if (taps[code]) {
-				const stop = taps[code] === 'stop'
+			} else if (action) {
+				const stop = action === 'stop'
 				if (stop) dropAims()
 				else prefs.attackArmed = false
-				pressed.push({ action: taps[code], at: stop ? null : keyAt(taps[code]) })
+				pressed.push({ action, at: stop ? null : keyAt(action) })
 			}
 		}
 		// A release casts at the cursor now; a hold that lost its key without a release (blur, pause) is dropped without casting.
@@ -310,15 +314,17 @@ export function pointClick(device, ground, options = POINT_CLICK) {
 				pressed.push({ action, at: keyAt(action) })
 			} else if (!(device.keyHeld?.(code) ?? true)) keyAims.delete(code)
 		}
-		previous = buttons.slice()
+		previous = buttons?.slice()
 
 		let order = null
-		const now = device.now()
 		const fresh = device.consumeOrder()
 		if (fresh) prefs.attackArmed = false // a right click moves and disarms attack-move; held aims survive it
-		if (preset.mouse === 'orders' && (fresh || (device.orderDown() && now >= resendAt))) {
-			order = at
-			resendAt = now + options.resend
+		if (preset.mouse === 'orders' && (fresh || device.orderDown())) {
+			const now = device.now()
+			if (fresh || now >= resendAt) {
+				order = at
+				resendAt = now + options.resend
+			}
 		}
 		if (clicked && !onPad && at) {
 			if (prefs.attackArmed) {
@@ -336,12 +342,15 @@ export function pointClick(device, ground, options = POINT_CLICK) {
 			move.x /= length
 			move.z /= length
 		}
-		if (!onPad && preset.facing) aim = facingAim([...keyAims.values()].at(-1) ?? null)
+		if (!onPad && preset.facing) aim = facingAim(newestAim(keyAims.values()))
+		const heldActions = {}
+		for (const action of aiming) heldActions[action] = true
+		for (const action of keyAims.values()) heldActions[action] = true
 		return {
 			move,
 			order,
 			aim,
-			held: Object.fromEntries([...aiming, ...keyAims.values()].map((a) => [a, true])),
+			held: heldActions,
 			pressed,
 			released: [],
 		}
