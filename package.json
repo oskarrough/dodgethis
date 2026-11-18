@@ -35,6 +35,7 @@
 	},
 	"dependencies": {
 		"@dimforge/rapier3d": "0.21.0",
+		"peerjs": "1.5.4",
 		"three": "^0.186.1"
 	},
 	"devDependencies": {

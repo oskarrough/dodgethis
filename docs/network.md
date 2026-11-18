@@ -1,6 +1,6 @@
 # Configure online connections
 
-DodgeThis uses pinned PeerJS 1.5.4, loaded in [index.html](../index.html), with private lobby codes and a host-to-guests connection pattern adapted from Doodle District. [net.js](../src/online/net.js) owns the handshake, version checks, timeouts, and connection cleanup.
+DodgeThis uses pinned PeerJS 1.5.4, loaded when a player hosts or joins a room, with private lobby codes and a host-to-guests connection pattern adapted from Doodle District. [net.js](../src/online/net.js) owns the handshake, version checks, timeouts, and connection cleanup.
 
 The defaults use PeerJS's public signaling service, Google/Cloudflare STUN, and the reference's public OpenRelay TURN configuration. Signaling connects peers; STUN discovers direct routes; TURN relays traffic when direct routes fail. These third-party services can be blocked, rate-limited, or unavailable. The public relay is for best-effort use and carries no production reliability guarantee.
 

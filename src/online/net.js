@@ -190,15 +190,19 @@ export class Net {
 		}
 	}
 
-	_openPeer(id, generation) {
+	async _openPeer(id, generation) {
+		let Peer = this.Peer
+		if (Peer === undefined) {
+			const library = await import('peerjs').catch(() => null)
+			if (generation !== this._generation) throw cancelled()
+			Peer = library?.Peer
+		}
+		if (typeof Peer !== 'function')
+			throw new Error('Networking library did not load; refresh the page')
 		return new Promise((resolve, reject) => {
-			if (typeof this.Peer !== 'function') {
-				reject(new Error('Networking library did not load; refresh the page'))
-				return
-			}
 			let peer
 			try {
-				peer = new this.Peer(id, this.peerOptions)
+				peer = new Peer(id, this.peerOptions)
 			} catch (error) {
 				reject(new Error(errorMessage(error)))
 				return
