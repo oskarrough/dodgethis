@@ -913,13 +913,7 @@
 .moba-kw-card b {
 	font-weight: 600;
 }
-/* In the tooltip the card is placed against the whole card; on the numbers sheet, under its word. */
-.lobby-number-scroll .moba-kw {
-	position: relative;
-}
-.moba-kw.open > .moba-kw-card,
-.lobby-number-scroll .moba-kw:hover > .moba-kw-card,
-.lobby-number-scroll .moba-kw:focus > .moba-kw-card {
+.moba-kw.open > .moba-kw-card {
 	display: block;
 }
 

@@ -12,15 +12,7 @@ import { roomCode } from './online/net.js'
 try {
 	const app = await createBrowserApp()
 	const map = createMapScope(app.scene, app.RAPIER, app.clock.step)
-	app.use((scope) =>
-		dodgeball(scope, {
-			hubPortal: {
-				label: 'MOBA',
-				onSelect: () => scope.modes.start('moba-lobby'),
-			},
-			lobbyExit: { onSelect: () => scope.modes.start('moba-front') },
-		}),
-	)
+	app.use((scope) => dodgeball(scope, () => scope.modes.start('moba-front')))
 	app.use((scope) => moba(scope, map))
 	app.use((scope) => mobaFront(scope, map))
 	// A room link (/ABCDE) skips the splash: solo practice in the lobby while online joins the room.
