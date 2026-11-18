@@ -5,6 +5,7 @@ import { LOCK, wardenMarks } from './dungeon-marks.js'
 import encounterViews from '../../encounters/all-encounter-views.js'
 
 export { dressBoss as dress } from './dungeon-dress.js'
+export { createGateArrow as onboarding } from './dungeon-onboarding.js'
 
 // The run's drawing is its encounters' drawings, each from its folder's view.
 export function view(scene, options) {

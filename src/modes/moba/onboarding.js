@@ -12,38 +12,14 @@ import { look } from './look.js'
 const arrowFor = (angle) =>
 	['→', '↘', '↓', '↙', '←', '↖', '↑', '↗'][((Math.round(angle / (Math.PI / 4)) % 8) + 8) % 8]
 
-// Render-only guidance. All lifetime and movement state belongs to this match.
-export function createOnboarding({ scene, sim, hero }) {
+// The yellow arrow on the floor that shows a newcomer the way, flat and pointing along +x until
+// turned; `fade` stipples it away. The lanes point it at the enemy, the dungeon at its gate.
+export function floorArrow(scene) {
 	const t = look.onboarding
-	const root = el('div', 'moba-onboarding', document.body)
-	root.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:3'
-	const sticker = (name, text) => {
-		const node = el('div', name, root)
-		node.textContent = text
-		node.style.cssText = `position:absolute;background:${hex('cream')};color:${hex('ink')};border:${t.stickerBorder}px solid ${hex('ink')};border-radius:${t.stickerCorner}px;padding:${t.stickerPadding}px;box-shadow:0 3px 10px rgba(38,68,95,${t.stickerShadow});font:bold ${t.font}px/1.2 var(--ui-font);text-align:center`
-		return node
-	}
-	const pointer = sticker('moba-ball-pointer', '')
-	pointer.style.whiteSpace = 'nowrap'
-	const owned = []
-	const material = (role) => {
-		const mat = makeStyleMaterial(role, { flat: true })
-		owned.push(mat)
-		return mat
-	}
-	const group = new THREE.Group()
-	scene.add(group)
-	const mesh = (geometry, mat) => {
-		owned.push(geometry)
-		const node = new THREE.Mesh(geometry, mat)
-		node.rotation.x = -Math.PI / 2
-		group.add(node)
-		return node
-	}
-	const arrowMaterial = material('ammo')
-	arrowMaterial.uniforms.uFade = { value: 1 }
-	arrowMaterial.uniforms.uStipple = { value: t.stipplePixels * window.devicePixelRatio }
-	arrowMaterial.fragmentShader = arrowMaterial.fragmentShader.replace(
+	const material = makeStyleMaterial('ammo', { flat: true })
+	material.uniforms.uFade = { value: 1 }
+	material.uniforms.uStipple = { value: t.stipplePixels * window.devicePixelRatio }
+	material.fragmentShader = material.fragmentShader.replace(
 		'void main() {',
 		`uniform float uFade;
 uniform float uStipple;
@@ -61,7 +37,38 @@ void main() {
 	shape.lineTo(t.arrowLength - t.arrowHead, t.arrowWidth / 2)
 	shape.lineTo(0, t.arrowWidth / 2)
 	shape.closePath()
-	const arrow = mesh(new THREE.ShapeGeometry(shape), arrowMaterial)
+	const geometry = new THREE.ShapeGeometry(shape)
+	const mesh = new THREE.Mesh(geometry, material)
+	mesh.rotation.x = -Math.PI / 2
+	scene.add(mesh)
+	return {
+		mesh,
+		fade(value) {
+			material.uniforms.uFade.value = value
+			material.uniforms.uStipple.value = t.stipplePixels * window.devicePixelRatio
+		},
+		dispose() {
+			mesh.removeFromParent()
+			geometry.dispose()
+			material.dispose()
+		},
+	}
+}
+
+// Render-only guidance. All lifetime and movement state belongs to this match.
+export function createOnboarding({ scene, sim, hero }) {
+	const t = look.onboarding
+	const root = el('div', 'moba-onboarding', document.body)
+	root.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:3'
+	const sticker = (name, text) => {
+		const node = el('div', name, root)
+		node.textContent = text
+		node.style.cssText = `position:absolute;background:${hex('cream')};color:${hex('ink')};border:${t.stickerBorder}px solid ${hex('ink')};border-radius:${t.stickerCorner}px;padding:${t.stickerPadding}px;box-shadow:0 3px 10px rgba(38,68,95,${t.stickerShadow});font:bold ${t.font}px/1.2 var(--ui-font);text-align:center`
+		return node
+	}
+	const pointer = sticker('moba-ball-pointer', '')
+	pointer.style.whiteSpace = 'nowrap'
+	const arrow = floorArrow(scene)
 	const point = new THREE.Vector3(),
 		local = new THREE.Vector3(),
 		goal = new THREE.Vector3()
@@ -93,13 +100,12 @@ void main() {
 			wasDead = hero.dead
 			if (distance >= t.walkDistance && fadedAt === null) fadedAt = tick
 			const fade = fadedAt === null ? 1 : Math.max(0, 1 - ((tick - fadedAt) * STEP) / t.arrowFade)
-			arrowMaterial.uniforms.uFade.value = fade
-			arrowMaterial.uniforms.uStipple.value = t.stipplePixels * window.devicePixelRatio
-			arrow.visible = !hero.dead && fade > 0 && !sim.lane.match.winner
+			arrow.fade(fade)
+			arrow.mesh.visible = !hero.dead && fade > 0 && !sim.lane.match.winner
 			const direction = hero.team === 'A' ? 1 : -1
 			const at = clampMap({ x: p.x + direction * t.arrowOffset, z: p.z })
-			arrow.position.set(at.x, t.arrowY, at.z)
-			arrow.rotation.z = direction === 1 ? 0 : Math.PI
+			arrow.mesh.position.set(at.x, t.arrowY, at.z)
+			arrow.mesh.rotation.z = direction === 1 ? 0 : Math.PI
 			pointer.hidden = true
 			if (sim.lane.match.winner) return
 			const goalUnit =
@@ -146,8 +152,7 @@ void main() {
 		},
 		dispose() {
 			root.remove()
-			group.removeFromParent()
-			for (const resource of owned) resource.dispose()
+			arrow.dispose()
 		},
 	}
 }

@@ -2,7 +2,8 @@ export default {
 	ceremony: {
 		name: 'Manos',
 		title: 'The hands at the gate',
-		arrival: 'The old hands have felt your step. Hold their marks, and they may yet let go.',
+		arrival:
+			'Stand on each hand until it glows. Dodge the pots and light all three before the first goes dark.',
 		fall: 'The hands have loosened. The road into Altamesa lies open.',
 		color: 'terracotta',
 	},
