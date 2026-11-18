@@ -10,7 +10,7 @@ const PORTAL_ROLES = { 1: 'portalChill', 2: 'portalSpicy', 3: 'portalChaos' }
 const INK = hex('ink')
 const CREAM = hex('cream')
 
-function makeLabel(enemies, color, label = String(enemies), labelSize = 150) {
+function makeLabel(enemies, color) {
 	const c = document.createElement('canvas')
 	const dpr = globalThis.devicePixelRatio || 1
 	c.width = 256 * dpr
@@ -21,15 +21,20 @@ function makeLabel(enemies, color, label = String(enemies), labelSize = 150) {
 	g.textBaseline = 'middle'
 	g.lineJoin = 'round'
 
-	g.font = `${labelSize}px "Darumadrop One", "Comico", "Apfel Grotezk", system-ui, sans-serif`
-	g.lineWidth = 30
-	g.strokeStyle = CREAM
-	g.strokeText(label, 128, 128)
-	g.lineWidth = 14
-	g.strokeStyle = INK
-	g.strokeText(label, 128, 128)
-	g.fillStyle = color
-	g.fillText(label, 128, 128)
+	for (const [label, size, y] of [
+		[String(enemies), 138, 84],
+		[enemies === 1 ? 'FOE' : 'FOES', 72, 184],
+	]) {
+		g.font = `${size}px "Darumadrop One", "Comico", "Apfel Grotezk", system-ui, sans-serif`
+		g.lineWidth = size * 0.2
+		g.strokeStyle = CREAM
+		g.strokeText(label, 128, y)
+		g.lineWidth = size * 0.09
+		g.strokeStyle = INK
+		g.strokeText(label, 128, y)
+		g.fillStyle = color
+		g.fillText(label, 128, y)
+	}
 
 	const tex = new THREE.CanvasTexture(c)
 	tex.colorSpace = THREE.SRGBColorSpace
@@ -90,7 +95,7 @@ function buildPortalPad(enemies) {
 	return group
 }
 
-export function createPortal(scene, { x, z, enemies, label, labelSize }) {
+export function createPortal(scene, { x, z, enemies }) {
 	const color = hex(PORTAL_ROLES[enemies] || 'portalSpicy')
 	const group = buildPortalPad(enemies)
 	group.position.set(x, 0.05, z)
@@ -151,7 +156,7 @@ export function createPortal(scene, { x, z, enemies, label, labelSize }) {
 		sp.sprite.position.set(Math.cos(sp.angle) * sp.r, sp.y, Math.sin(sp.angle) * sp.r)
 	}
 
-	const labelSprite = makeLabel(enemies, color, label, labelSize)
+	const labelSprite = makeLabel(enemies, color)
 	group.add(labelSprite)
 
 	scene.add(group)
