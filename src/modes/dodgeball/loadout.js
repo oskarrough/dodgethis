@@ -112,10 +112,10 @@ export function createLoadout(body, { id, participant, hp = 1, replica = false }
 		return handPoint(rendered ? body.mesh.position : body.position, unit.aim, _hand)
 	}
 
-	function update(dir, dt) {
+	function update(dir, dt, plannedPositions) {
 		if (replica || !unit.alive) return
 		if (dashCd > 0) dashCd -= dt
-		body.update(dir, dt)
+		body.update(dir, dt, Infinity, plannedPositions)
 	}
 
 	function sync() {

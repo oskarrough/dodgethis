@@ -180,7 +180,7 @@ export function createRound(
 			if (!b.unit.alive) continue
 			const intent = b.think(ictx, dt)
 			if (intent.dash) dashUnit(b.unit, intent.move)
-			b.unit.update(intent.move, dt)
+			b.unit.update(intent.move, dt, plannedPositions)
 			if (intent.grab) grabNearestArrow(b.unit)
 			if (intent.shoot) looseArrow(b.unit, intent.shoot, solveLaunch(intent.shoot.dist))
 		}
@@ -299,10 +299,14 @@ export function createRound(
 		overDelay = 1.4 * Math.max(0.25, tune.fx.deathTime)
 	}
 
+	// Share planned positions across walkers until a unit moves or physics advances.
+	const plannedPositions = new Map()
+
 	// Remote moves: Map<participantId, {x,z}> or (participantId) => {x,z}.
 	// Missing moves are neutral each tick (never AI or a latched network input).
 	// The second argument remains local movement for existing solo callers.
 	function step(dt, move = STILL, remoteMoves) {
+		plannedPositions.clear()
 		for (const unit of humans) {
 			nockInfinite(unit)
 			let direction = move
@@ -312,7 +316,7 @@ export function createRound(
 						? remoteMoves(unit.participantId)
 						: remoteMoves?.get(unit.participantId)
 			}
-			unit.update(direction ?? STILL, dt)
+			unit.update(direction ?? STILL, dt, plannedPositions)
 		}
 		thinkAI(dt)
 		// Landings above a step-down/snap threshold are events so feedback can squash, thud and mark.
@@ -412,6 +416,7 @@ export function createRound(
 
 	// Dispose every owned body and mesh; the next round needs a fresh instance.
 	function dispose() {
+		plannedPositions.clear()
 		nearMiss.reset()
 		for (const u of units) u.dispose()
 		for (const a of arrows) a.dispose()

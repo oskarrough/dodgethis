@@ -219,7 +219,7 @@ export function createBody(
 	}
 
 	// `maxSpeed` caps this step's horizontal speed: a mode that plans arrival passes the remaining distance over dt.
-	function update(dir, dt, maxSpeed = Infinity) {
+	function update(dir, dt, maxSpeed = Infinity, plannedPositions) {
 		if (replica || retired) return
 		const speed = profile.speed * body.speedMul
 		const dashing = dashT > 0
@@ -256,7 +256,7 @@ export function createBody(
 		desired.y = vy * dt
 
 		const t = rigidBody.translation()
-		separate(t, desired, dt)
+		separate(t, desired, dt, plannedPositions)
 		controller.computeColliderMovement(collider, desired, undefined, CONTROLLER_GROUPS)
 		const mv = controller.computedMovement()
 		let nx = t.x + mv.x
@@ -272,6 +272,7 @@ export function createBody(
 			nz = clampedZ
 		}
 		rigidBody.setNextKinematicTranslation({ x: nx, y: t.y + mv.y, z: nz })
+		plannedPositions?.delete(body) // The next walker must see the new Rapier pose.
 		// A sideways contact with a higher step must not cancel takeoff.
 		const wasGrounded = grounded
 		grounded = vy <= 0 && controller.computedGrounded()
@@ -288,13 +289,17 @@ export function createBody(
 
 	// Clip this step's horizontal move against the other bodies' planned poses: walking into one slides around it,
 	// and an overlap (spawns, displacements) may only shrink, by `tune.physics.separation` m/s, so stuck bodies ease apart.
-	function separate(at, desired, dt) {
+	function separate(at, desired, dt, plannedPositions) {
 		const ease = tune.physics.separation * dt
 		const top = at.y + halfHeight + radius
 		const bottom = at.y - halfHeight - radius
 		for (const other of others) {
 			if (other === body || other.retired) continue
-			const q = other.rigidBody.nextTranslation()
+			let q = plannedPositions?.get(other)
+			if (!q) {
+				q = other.rigidBody.nextTranslation()
+				plannedPositions?.set(other, q)
+			}
 			if (
 				q.y - other.halfHeight - other.radius >= top ||
 				q.y + other.halfHeight + other.radius <= bottom
@@ -303,6 +308,7 @@ export function createBody(
 			const reach = radius + other.radius
 			const tx = at.x + desired.x - q.x
 			const tz = at.z + desired.z - q.z
+			if (Math.abs(tx) >= reach || Math.abs(tz) >= reach) continue
 			const after = Math.hypot(tx, tz)
 			if (after >= reach) continue
 			const before = Math.hypot(at.x - q.x, at.z - q.z)
