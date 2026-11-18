@@ -43,7 +43,7 @@ Prints each file it writes, then triangles and draw calls. Writes shot.log besid
 
 Where and what
   --spots a,b        only these spots (with --photo: these poses)
-  --at x,z           one spot at these coordinates, named at; with --lineup, where the row stands
+  --at=x,z           one spot, or where a lineup stands (negative x: --at=-36,0)
   --photo            freeze, hide the HUD and shoot fixed poses: the tune's \`photos\`, else wide, rim and lane
                      (add topdown to --spots for a straight-down survey)
   --hud              keep the HUD in --photo shots (match spots and lineups keep it anyway)

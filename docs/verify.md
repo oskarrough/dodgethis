@@ -4,7 +4,7 @@ Pick the cheapest proof that answers the question.
 
 - Logic, sim, bots, balance: `bun test <file>`, `bun run play:headless --help`, `bun run simulate --summary`. No browser.
 - Sound: `bun run sound:check [words]` prints each sound's numbers and rule flags (docs/sound.md, Tooling). Never claim a sound is better by ear.
-- Oskar is testing: hand him http://office-linux.heron-mermaid.ts.net:5173 (never `127.0.0.1` or the agent port) and one thing to judge; skip your own visual proof.
+- For a live test with Oskar, use the URL printed by `bun run dev:agent --lan` and name one thing to judge.
 - Otherwise use one browser session, one device, one width; expand only the axis that input or layout work changed. A local visual fix goes straight to its screen. Prove the full route once at a checkpoint, only when navigation or transitions changed. Don't repeat a passing proof unless a new edit or failure calls for it.
 - Route and wiring on a prod build (`bun run verify:browser <preview URL> <shots directory>`) and frozen builds (`bunx vite build --outDir /tmp/<slug>`) are orchestrator checkpoint smokes, not builder work.
 
@@ -12,7 +12,7 @@ Pick the cheapest proof that answers the question.
 
 `bun run check` from the repository root runs the fast checks: mod collection, unit and leftover lints, oxlint and oxfmt. Run it often. `bun run test` runs the test suite in parallel, printing only failures, including `tests/map-smoke.test.js` (every map's layout is finite and its bots move); run it before pushing. The `.githooks/pre-push` hook runs it on `git push` (`bun install` sets `core.hooksPath`); jj does not run git hooks. Iterate with `bun test <file>`; tests cover logic and contracts, not tuning, timing budgets or visuals. `bun run test:slow` adds the long agent-session proof. `bun run build` runs the fast check, not the tests. Gameplay and replica tests use real Rapier worlds; transport failure tests use fake PeerJS connections and clocks.
 
-`bun run profile:dodgeball [preset] [seed]` measures physics and AI tick time (defaults: 20v20, seed 42), not rendering or FPS.
+`bun run profile:dodgeball [preset] [seed]` measures physics and AI tick time (defaults: 20v20, seed 42). For a speed comparison, alternate the two revisions on the same seeds and check their gameplay outcomes. Collect operation counts in a separate run so the instrumentation stays out of the timings.
 
 `bun run simulate --summary` plays headless bot matches through `createAgentMatch`, printing tables without logs. Use simulations for bot behavior and balance, before writing a probe script, a `git archive` baseline or an env-var hack. Name the question first; a short play proof is cheaper for a local mechanic or human interaction. Bot-only samples cannot prove human winnability or how bots treat a human seat; an idle seat is no human.
 
@@ -52,14 +52,15 @@ Replay uses the CLI's WASM build and validates its final state.
 Back-to-back headless screenshots alternate between a frame with the forward layer (floor hints, the hero's ring) at full ink and one where it is pale; take two and keep the one with more contrast before judging a floor print.
 
 1. `uptime`: load past 12 makes timing failures random; go headless or wait.
-2. `bun run dev:agent` prints `http://127.0.0.1:5199/`, starting the shared server if needed. Every thread uses it; never stop it. It doesn't live-reload: reload for fresh code.
+2. `bun run dev:agent` prints the URL for this checkout. Threads in the same checkout share that server. Leave it running. It doesn't live-reload: reload for fresh code.
 3. First `export AGENT_BROWSER_SESSION=$BB_THREAD_ID`, or threads drive the same tab. `agent-browser open <url>/?mode=moba&play&hero=ibis&bots=easy&seed=2` jumps into `match`; `<url>/` starts the route.
 4. Before blaming your code, check `agent-browser errors` is empty and `agent-browser eval "dt.screen()"` answers. A boot error after reload may be another thread's half-done edit.
 
-Find the feature in `docs/feature-map.md`. agent-browser key presses don't reach the game: use `window.dt` (`src/core/proof.js`), `dt.key(code, { hold, until })`, `dt.pad.press(name)`, `dt.pad.stick(x, y)`, `dt.device()`, `dt.screen()` (splash, lobby, match, paused, result; descent is a transition). A prod build exposes `dt` after Backquote. Match state is `dt.game.moba`: `sim.heroes[i].body.position`, `.body.place(x, y, z)` (direct play: `heroes[0]` is you), `snapshot()`, `focus({ x, z })`, `fastForward({ ticks })` (at most 3600/call; set long timers on live state instead). Lobby sim is `dt.game.lobby.sim`. Poke what you need with `eval`; don't dump `Object.keys`.
+Find the feature in `docs/feature-map.md`. agent-browser key presses don't reach the game: use `window.dt` (`src/core/proof.js`), `dt.key(code, { hold, until })`, `dt.pad.press(name)`, `dt.pad.stick(x, y)`, `dt.device()`, `dt.screen()` (splash, lobby, match, paused, result; descent is a transition). A prod build exposes `dt` after Backquote. Match state is `dt.game.moba`: `sim.heroes[i].body.position`, `.body.place(x, y, z)` (direct play: `heroes[0]` is you), `snapshot()`, `focus({ x, z })`, `fastForward({ ticks })` (at most 3600/call; set long timers on live state instead). The MOBA lobby sim is `dt.game.portalParty.sim`. Poke what you need with `eval`; don't dump `Object.keys`.
 
 - For fresh-entry proof, wait for both the onboarding root and the absence of `.moba-front`: the match and its HUD are already mounted during loading.
 - Route from `<url>/`: click `.front-tile[data-mode=moba]` → `wait --fn "dt.screen()==='lobby'"`. The lobby has no menu keys: lobby state is `dt.game.portalParty` (`sim`, `readySeats`, `setup`); pick a hero by clicking your seat card (`.lobby-hero-strip[data-team=A] .portal-seat:first-child button`), then `.portal-picker [data-hero=kappa]`; pick a difficulty by standing on its stone (`[data-picked=true]` names it; `tune.lobby.gallery`); go by walking into the tear (`tune.lobby.portal`) → `wait --timeout 60000 --fn "dt.screen()==='match'"`. Walk with `dt.pad.stick(x, y)` (+y is +z); under the default mouse controls `dt.key('KeyW')` doesn't move a MOBA hero. The Backquote that exposes `dt` also opens the tuner, which covers the seat cards: press it twice.
+- From the dodgeball lobby spawn, `await dt.key('KeyW', { until: () => dt.game.phase === 'playing' })` walks through the middle portal.
 - Scoreboard: `dt.key('Tab')` or `dt.pad.press('back')` (pad Select); `.moba-scoreboard` loses `hidden`, then gains it when pressed again. Pause: `dt.key('Escape')`, assert `dt.screen()==='paused'` and `.overlay[data-theme=moba-pause]`; press again to resume.
 - Result: open `?mode=moba&play&debug&bots-only&seed=2`, repeat `eval "dt.game.moba.fastForward({ ticks: 3600 }).winner"` until non-null (about eight calls), assert `dt.screen()==='result'` and VICTORY or DEFEAT in `.overlay`. This proves wiring, not human winnability.
 - Anywhere: `bun run shot <map> --at x,z`; stage anything else with `--eval file.js` and try a value with `--tune path=value` (`bun run shot --help`). Flagfall coordinates are scaled: read `sim.obstacles` for real positions.

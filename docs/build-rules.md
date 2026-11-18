@@ -17,7 +17,8 @@ A surgical edit outside your owned files (a setter, an export, a hook) is fine w
 - A proof says how it was made: a bots-only fast-forward proves nothing about a human playing.
 - Every number lives in a tune file (the mode's `tune.js` or a folder's `<id>-tune.js`), and every slider has a sane range (fractions 0–1, times at least one step). No slider value may produce NaN or reverse movement.
 - Tune sliders apply live, or are labelled "applies on restart". HUD text is built from tune, never hard-coded, and written only when it changes.
-- Update the docs line your change contradicts.
+- Before removing an API, search for its factory and callers in the whole checkout. The tool pages use game APIs from inline scripts, including `createTuner` in `pages/type/index.html`.
+- Update the docs line your change contradicts. When navigation changes, update the route in `docs/verify.md` and the matching steps in `scripts/verify-moba-playability.mjs`.
 - App-wide and run-owned debug APIs share one namespace: check both registrations before renaming a key, keep duplicate protection, and prove unregister/re-entry. Scope helpers by action or mode so a lobby object cannot collide with a lobby action.
 - The local hero is looked up by participant id, never heroes[0].
 - Browser work follows `docs/verify.md`. Never `pkill` anything; you share the box.
