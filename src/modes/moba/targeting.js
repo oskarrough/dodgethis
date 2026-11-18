@@ -12,30 +12,22 @@ export function createTargeting({
 	summons = [],
 	outOfPlay = () => null,
 }) {
-	// Everyone who can be shot, targeted or picked, as plain circles.
-	const units = () => [
-		...summons
-			.filter((u) => !u.dead && u.hp !== null)
-			.map((u) => ({ id: u.id, team: u.team, unit: u, hero: false })),
-		...heroes.filter((h) => !h.dead).map((h) => ({ id: h.id, team: h.team, unit: h, hero: true })),
-		...dummies
-			.filter((d) => !d.dead && !d.dormant)
-			.map((d) => ({ id: d.id, team: d.team, unit: d, hero: true })),
-		...(lane
-			? [...lane.minions, ...lane.structures]
-					.filter((u) => !u.dead)
-					.map((u) => ({ id: u.id, team: u.team, unit: u, hero: false }))
-			: []),
-	]
-	const enemiesOf = (team) =>
-		units()
-			.filter((u) => u.team !== team)
-			.map((u) => ({
-				...u,
-				x: u.unit.body.position.x,
-				z: u.unit.body.position.z,
-				radius: u.unit.body.radius,
-			}))
+	function enemiesOf(team) {
+		const targets = []
+		function add(unit, hero) {
+			if (unit.dead || unit.team === team) return
+			const { x, z } = unit.body.position
+			targets.push({ id: unit.id, team: unit.team, unit, hero, x, z, radius: unit.body.radius })
+		}
+		for (const unit of summons) if (unit.hp !== null) add(unit, false)
+		for (const unit of heroes) add(unit, true)
+		for (const unit of dummies) if (!unit.dormant) add(unit, true)
+		if (lane) {
+			for (const unit of lane.minions) add(unit, false)
+			for (const unit of lane.structures) add(unit, false)
+		}
+		return targets
+	}
 	const find = (id) =>
 		heroes.find((h) => h.id === id && !h.dead) ??
 		dummies.find((d) => d.id === id && !d.dead) ??
