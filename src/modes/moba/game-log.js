@@ -16,7 +16,11 @@ export function createGameLog({ sim, local, unitOf, keep = 200 }) {
 		if (!unit) return said('the enemy')
 		if (unit.id === local) return said('you')
 		const side = unit.team === localTeam() ? 'ally' : 'enemy'
-		if (unit.definition) return said(`${side} ${titleCase(unit.definition.id)}`)
+		if (unit.pack) return `${titleCase(unit.kind)} guard`
+		if (unit.definition) {
+			const name = unit.definition.name ?? titleCase(unit.definition.id)
+			return unit.boss ? name : said(`${side} ${name}`)
+		}
 		if (unit.structure)
 			return said(`${unit.team === localTeam() ? 'your' : 'enemy'} ${structureName(unit.kind)}`)
 		return said(`${side} minions`)
@@ -66,7 +70,8 @@ export function createGameLog({ sim, local, unitOf, keep = 200 }) {
 							? 'All out! Your whole team is out'
 							: 'All out! The whole enemy team is out',
 					]
-				const taker = unitOf(fact.source)
+				const taker =
+					unitOf(fact.source) ?? sim.dungeon?.units.find((unit) => unit.id === fact.source)
 				return [
 					'out',
 					fact.type === 'dunk'
