@@ -6,7 +6,7 @@ import { join, resolve } from 'node:path'
 
 if (process.argv.includes('--help')) {
 	console.log(
-		'bun run verify:browser <preview URL> <shots directory>\nChecks a real MOBA entry, layouts, movement, pause/resume, Dodgeball entry and a seeded bot result/restart. Saves screenshots and stage timings. Requires agent-browser.',
+		'bun run verify:browser <preview URL> <shots directory>\nWalks the MOBA lobby into a match, then checks layouts, movement, pause/resume/leave, Dodgeball entry and a seeded bot result/again. Saves screenshots and stage timings. Requires agent-browser.',
 	)
 	process.exit(0)
 }
@@ -55,7 +55,19 @@ function helpers() {
 		window.proof = {
 			assert(ok, message) { if (!ok) throw Error(message) },
 			frame: () => new Promise(requestAnimationFrame),
-			local: () => dt.game.moba.sim.heroes.find(hero=>hero.id==='local'),
+			local: () => (dt.game.moba?.sim ?? dt.game.portalParty.sim).heroes.find(hero=>hero.id==='local'),
+			// Steer the left stick toward (x, z) each frame until done(); the lobby walks, it has no menus.
+			async walk(x, z, done) {
+				const end=performance.now()+10000;
+				while (!done()) {
+					const at=proof.local().body.position;
+					if (performance.now()>end) { await dt.pad.stick(0,0); throw Error('Walk stalled at '+at.x.toFixed(1)+','+at.z.toFixed(1)); }
+					const dx=x-at.x,dz=z-at.z,length=Math.hypot(dx,dz)||1;
+					await dt.pad.stick(dx/length,dz/length);
+				}
+				await dt.pad.stick(0,0);
+			},
+			picked: () => document.querySelector('[data-picked=true]')?.textContent.toLowerCase(),
 			button(label) {
 				const button=[...document.querySelectorAll('.overlay button')].find((candidate)=>candidate.querySelector('.label').textContent.startsWith(label));
 				if (!button) throw Error('Missing '+label);
@@ -84,7 +96,7 @@ try {
 		browser('wait', '.front-lobby')
 		evaluate(`
 			proof.assert(dt.screen()==='lobby','Mouse MOBA tile failed');
-			proof.assert(dt.game.lobby.setup.difficulty==='easy','Practice did not default to easy');
+			proof.assert(proof.local().heroId==='ibis'&&proof.picked()==='normal','Lobby did not start on Ibis and Normal');
 			proof.assert(!document.querySelector('.front-ready,.front-hero-row,.front-practice'),'Removed lobby controls returned');
 			return true;
 		`)
@@ -101,31 +113,39 @@ try {
 				await proof.frame(); await proof.frame();
 				proof.assert(dt.screen()==='lobby','Resize left the lobby');
 				const rect=selector=>document.querySelector(selector).getBoundingClientRect();
-				const strip=rect('.lobby-hero-strip'),back=rect('.back-button');
-				proof.assert(strip.left>=0&&strip.bottom<=innerHeight&&strip.right<=innerWidth&&back.top>=0&&back.left>=0,'Lobby controls left the frame');
+				const back=rect('.back-button');
+				const strips=[...document.querySelectorAll('.lobby-hero-strip')].map(strip=>strip.getBoundingClientRect());
+				proof.assert(strips.length===2&&strips.every(strip=>strip.left>=0&&strip.top>=0&&strip.bottom<=innerHeight&&strip.right<=innerWidth)&&back.top>=0&&back.left>=0,'Lobby controls left the frame');
 				return true;
 			`)
 			shot(`lobby-${width}`)
 			report.layouts.push({ width, height })
 		}
 		browser('set', 'viewport', '1440', '900')
+		// A player picks a hero on their own seat card, a difficulty by standing on its stone, and goes by walking into the tear.
+		// Its stone and tear positions come from tune.lobby.gallery and tune.lobby.portal (src/modes/moba/front/lobby-tune.js).
+		browser('click', '.lobby-hero-strip[data-team=A] .portal-seat:first-child button')
+		browser('click', '.portal-picker [data-hero=kappa]')
 		evaluate(`
-			await dt.key('KeyN'); proof.assert(dt.game.lobby.numbers.open,'Numbers did not open');
-			await dt.key('KeyN'); proof.assert(!dt.game.lobby.numbers.open,'Numbers did not close');
-			await dt.key('KeyH'); await dt.key('KeyG');
-			proof.assert(dt.game.lobby.setup.heroId==='kappa','H did not pick Kappa');
+			await proof.frame(); await proof.frame();
+			proof.assert(proof.local().heroId==='kappa','Seat card did not pick Kappa');
+			await proof.walk(3.2,5.2,()=>proof.picked()==='hard');
 			return true;
 		`)
-		browser('wait', '--timeout', '5000', '--fn', 'dt.game.lobby.setup.difficulty==="normal"')
 	})
 	timed('Real loading journey', () => {
-		evaluate(`await dt.pad.press('start'); return true;`)
-		browser('wait', '--timeout', '20000', '--fn', 'dt.screen()==="match"')
+		evaluate(`
+			await proof.walk(0,-6.3,()=>dt.game.portalParty.readySeats.seatOf('local').full);
+			return true;
+		`)
+		browser('wait', '--timeout', '30000', '--fn', 'dt.screen()==="match"')
 		evaluate(`
 			proof.assert(!document.querySelector('.moba-front'),'Loading did not finish');
 			proof.assert(document.querySelector('.splash').hidden,'Dodgeball splash leaked into MOBA');
-			proof.assert(document.querySelector('.overlay').hidden,'Queued Start paused the match');
+			proof.assert(document.querySelector('.overlay').hidden,'Walking in paused the match');
 			proof.assert(proof.local().heroId==='kappa','Match lost the chosen hero');
+			proof.assert(dt.game.moba.setup.difficulty==='hard','Match lost the chosen difficulty');
+			proof.assert(dt.game.moba.sim.heroes.length===6,'Lobby seats did not fill both teams');
 			return true;
 		`)
 	})
@@ -146,7 +166,7 @@ try {
 			'Math.hypot(proof.local().body.position.x-movementOrigin.x,proof.local().body.position.z-movementOrigin.z)>.25',
 		)
 		evaluate(`
-			await dt.key('Escape'); proof.assert(dt.screen()==='paused','Keyboard pause failed');
+			await dt.key('Escape'); proof.assert(dt.screen()==='paused'&&!!document.querySelector('.overlay[data-theme=moba-pause]'),'Keyboard pause failed');
 			proof.assert(document.querySelector('.overlay button.selected .label').textContent==='Resume','Pause selected a destructive action');
 			document.querySelector('.overlay button:nth-child(3)').dispatchEvent(new PointerEvent('pointerenter'));
 			await dt.key('Space');
@@ -167,22 +187,31 @@ try {
 		`)
 		shot('pause')
 		evaluate(`
-			proof.button('Restart'); await proof.frame();
-			proof.assert(dt.screen()==='match'&&dt.game.moba.sim.tick<60,'Restart did not start a fresh match');
-			await dt.key('Escape'); proof.button('Hero select'); return true;
+			proof.button('Leave'); await proof.frame();
+			proof.assert(dt.screen()==='splash','Leave did not go home');
+			return true;
 		`)
+		browser('click', '.front-tile[data-mode=moba]')
 		browser('wait', '.front-lobby')
 		evaluate(`
-			proof.assert(dt.screen()==='lobby'&&dt.game.lobby.setup.heroId==='kappa','Hero select lost the pick');
+			proof.assert(dt.screen()==='lobby'&&proof.local().heroId==='kappa'&&proof.picked()==='hard','Lobby lost the picks');
 			await dt.key('Escape'); proof.assert(dt.screen()==='splash','Esc did not return to splash');
 			return true;
 		`)
 	})
 	timed('Dodgeball portal', () => {
+		// The splash lays its cards back down after the lobby; click once the tile is on top.
+		browser(
+			'wait',
+			'--timeout',
+			'5000',
+			'--fn',
+			`(()=>{const tile=document.querySelector('.front-bonus[data-mode=dodgeball]'),box=tile?.getBoundingClientRect();return !!box&&tile.contains(document.elementFromPoint(box.x+box.width/2,box.y+box.height/2))})()`,
+		)
 		browser('click', '.front-bonus[data-mode=dodgeball]')
 		browser('wait', '.splash:not([hidden])')
 		evaluate(`
-			proof.assert(dt.game.phase==='menu'&&!dt.game.moba,'Dodgeball tile did not open its hub');
+			proof.assert(dt.game.phase==='lobby'&&!dt.game.moba,'Dodgeball tile did not open its lobby');
 			await dt.key('KeyW',{until:()=>dt.game.phase==='playing'});
 			proof.assert(!dt.game.moba&&dt.game.phase==='playing','Dodgeball portal entered the wrong mode');
 			return true;
@@ -191,7 +220,7 @@ try {
 	})
 	timed('Seeded bot match and result', () => {
 		browser('open', `${base}/?mode=moba&play&debug&bots-only&bots=normal&seed=2`)
-		browser('wait', '.moba-forts')
+		browser('wait', '.moba-hud')
 		helpers()
 		report.match = evaluate(`
 			proof.assert(dt.screen()==='match'&&!document.querySelector('.moba-front'),'Direct play did not enter match');
@@ -222,8 +251,8 @@ try {
 		evaluate(`
 			proof.button('Again'); await proof.frame();
 			proof.assert(dt.screen()==='match'&&dt.game.moba.sim.tick<60&&dt.game.moba.sim.shots.length===0&&!dt.game.moba.sim.lane.match.winner,'Again did not start clean');
-			await dt.key('Escape'); proof.button('Modes'); await proof.frame();
-			proof.assert(dt.screen()==='splash','Final Modes exit failed'); return true;
+			await dt.key('Escape'); proof.button('Leave'); await proof.frame();
+			proof.assert(dt.screen()==='splash','Final Leave exit failed'); return true;
 		`)
 		errors()
 	})
