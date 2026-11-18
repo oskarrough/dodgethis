@@ -93,6 +93,20 @@ export function createTuner(source) {
 	let browse = null // the folder the index has drilled into, or null at the top
 	let shownKeys = ''
 	const restored = new Set()
+	let frame = null
+	let needsRebuild = false
+
+	function requestTick() {
+		frame ??= requestAnimationFrame(tick)
+	}
+
+	function tick(now) {
+		frame = null
+		if (needsRebuild) rebuild()
+		if (root.hidden || !modules.length) return
+		requestTick()
+		for (const m of modules) m.draw(now)
+	}
 
 	function matches() {
 		const qs = state.queries.map((q) => q.toLowerCase())
@@ -231,10 +245,12 @@ export function createTuner(source) {
 
 	// With nothing pinned the board shows the screen's featured values, in players' words.
 	function rebuild() {
+		needsRebuild = false
 		const pinned = matches()
 		const featured = state.queries.length ? [] : (source.featured?.() ?? [])
 		const found = pinned.length ? pinned : featured.map((c) => ({ key: c.path, c, featured: true }))
 		root.hidden = !shown
+		if (shown && found.length) requestTick()
 		renderIndex()
 		chips.replaceChildren(
 			...state.queries.map((q) => {
@@ -376,15 +392,6 @@ export function createTuner(source) {
 		save()
 	})
 
-	let frame = 0
-	function tick(now) {
-		frame = requestAnimationFrame(tick)
-		if (root.hidden) return
-		for (const m of modules) m.draw(now)
-	}
-	frame = requestAnimationFrame(tick)
-
-	let pending = false
 	return {
 		pin,
 		// Backquote hides the Tuner; pins and values stay.
@@ -394,12 +401,8 @@ export function createTuner(source) {
 		},
 		// Registrations come in bursts as a screen loads: rebuild once per frame.
 		refresh() {
-			if (pending) return
-			pending = true
-			requestAnimationFrame(() => {
-				pending = false
-				rebuild()
-			})
+			needsRebuild = true
+			requestTick()
 		},
 		setInert(inert) {
 			root.inert = inert
